@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { FocusScope } from "@radix-ui/react-focus-scope";
+import dynamic from "next/dynamic";
 import { FontPicker, ThemePicker } from "@/components/ThemeFontPicker";
 import { levels, notesHref, topic as topicById, topicHref, topics } from "@/lib/topics";
 import { escapeHtml } from "@/lib/format";
@@ -12,6 +12,11 @@ import { SITE_NAME } from "@/lib/site";
 
 const SIDEBAR_KEY = "jsnotes:sidebar-collapsed";
 import { useClientValue, useLastLevel, useMounted, useProgressValue } from "@/lib/hooks";
+
+// Split out of the main bundle — it's dead weight on every page (including
+// the homepage's LCP-critical first paint) until someone actually opens the
+// mobile drawer, which is the only time it's used.
+const FocusScope = dynamic(() => import("@radix-ui/react-focus-scope").then((m) => m.FocusScope));
 
 /**
  * Radix's FocusScope pulls focus to its first tabbable child as soon as it
