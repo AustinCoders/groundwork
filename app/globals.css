@@ -57,52 +57,66 @@
   --font-body: var(--font-kalam), "Comic Sans MS", "Segoe Print", cursive;
   --font-mono: var(--font-cutive-mono), ui-monospace, monospace;
 
-  /* Fixed IDE palette for the practice editor — deliberately not tied to
-     the paper theme. A real editor stays a real editor regardless of
-     which notebook skin the rest of the site is wearing. */
-  --ide-bg: #1e1e2e;
-  --ide-bg-elevated: #181825;
-  --ide-gutter: #191926;
-  --ide-border: #313244;
-  --ide-fg: #cdd6f4;
-  --ide-fg-dim: #8087a2;
-  --ide-fg-faint: #585b70;
-  --ide-accent: #89b4fa;
-  --ide-selection: rgba(137, 180, 250, 0.28);
-  --ide-red: #f38ba8;
-  --ide-yellow: #f9e2af;
-  --ide-green: #a6e3a1;
-  --ide-cursor: #f5e0dc;
+  /* IDE palette for the practice editor — indirected through the same
+     tokens the rest of the theme uses, so it's defined once here but
+     picks up whichever theme is active wherever it's actually used
+     (custom properties resolve at use time, not at this declaration).
+     No need to repeat this in every html[data-theme] block below. */
+  --ide-bg: var(--sheet-2);
+  --ide-bg-elevated: var(--sheet);
+  --ide-gutter: var(--sheet-2);
+  --ide-border: var(--line);
+  --ide-fg: var(--ink);
+  --ide-fg-dim: var(--ink-soft);
+  --ide-fg-faint: var(--pencil);
+  --ide-accent: var(--green);
+  --ide-selection: var(--line-soft);
+  --ide-red: var(--red);
+  --ide-yellow: var(--dg-yellow-stroke);
+  --ide-green: var(--green);
+  --ide-cursor: var(--ink);
+
+  /* What the practice editor's code content and gutter render in —
+     defaults to the mono face; each data-font style below points it at
+     that style's own body face instead, so switching the handwriting
+     style also restyles code, not just prose. */
+  --font-code: var(--font-mono);
 }
 
 html[data-font="marker"] {
   --font-heading: var(--font-patrick-hand), "Comic Sans MS", cursive;
   --font-body: var(--font-shadows-into-light), "Comic Sans MS", cursive;
+  --font-code: var(--font-body);
 }
 
 html[data-font="sketch"] {
   --font-heading: var(--font-architects-daughter), "Comic Sans MS", cursive;
   --font-body: var(--font-reenie-beanie), "Comic Sans MS", cursive;
+  --font-code: var(--font-body);
 }
 
 html[data-font="pen"] {
   --font-heading: var(--font-gochi-hand), "Comic Sans MS", cursive;
   --font-body: var(--font-neucha), "Comic Sans MS", cursive;
+  --font-code: var(--font-body);
 }
 
 html[data-font="chalk"] {
   --font-heading: var(--font-permanent-marker), "Comic Sans MS", cursive;
   --font-body: var(--font-indie-flower), "Comic Sans MS", cursive;
+  --font-code: var(--font-body);
 }
 
 html[data-font="script"] {
   --font-heading: var(--font-dancing-script), "Comic Sans MS", cursive;
   --font-body: var(--font-handlee), "Comic Sans MS", cursive;
+  --font-code: var(--font-body);
 }
 
 html[data-font="bold"] {
   --font-heading: var(--font-bangers), "Comic Sans MS", cursive;
   --font-body: var(--font-schoolbell), "Comic Sans MS", cursive;
+  --font-code: var(--font-body);
 }
 
 html[data-theme="dark"] {
@@ -4131,7 +4145,6 @@ a.step__title:hover {
   border-radius: var(--radius);
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  color-scheme: dark;
 }
 
 .ed.is-fullscreen {
@@ -4188,7 +4201,7 @@ a.step__title:hover {
   align-items: center;
   gap: 7px;
   padding: 7px 12px 8px;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 12.5px;
   color: var(--ide-fg-dim);
   background: transparent;
@@ -4312,7 +4325,7 @@ a.step__title:hover {
 
 .ed__bar .dd__opt[aria-selected="true"] {
   background: var(--ide-accent);
-  color: #11111b;
+  color: var(--ide-bg);
 }
 
 .ed__bar .dd__menu--grid .dd__opt[aria-selected="true"] {
@@ -4335,7 +4348,7 @@ a.step__title:hover {
 .lc-topbar .btn--run,
 .lc-topbar .btn--test {
   font-weight: 700;
-  color: #11111b;
+  color: var(--ide-bg);
   transition:
     transform 0.14s ease,
     box-shadow 0.14s ease,
@@ -4416,7 +4429,7 @@ a.step__title:hover {
   padding: 5px 12px;
   background: var(--ide-bg-elevated);
   border-top: 1px solid var(--ide-border);
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 12px;
   color: var(--ide-fg-dim);
 }
@@ -4453,6 +4466,10 @@ a.step__title:hover {
 
 /* Syntax palette — fixed regardless of site theme, since the editor
    always runs the dark IDE chrome now. */
+/* Token colors lean only on --ide-* tokens (already contrast-checked per
+   theme) rather than fixed hex — a set of hardcoded pastel hues tuned for
+   one dark palette went unreadable the moment the editor started
+   following light themes too. */
 .tok-com {
   color: var(--ide-fg-faint);
   font-style: italic;
@@ -4461,20 +4478,22 @@ a.step__title:hover {
   color: var(--ide-green);
 }
 .tok-num {
-  color: #fab387;
+  color: var(--ide-yellow);
 }
 .tok-key {
-  color: #cba6f7;
+  color: var(--ide-red);
   font-weight: 700;
 }
 .tok-lit {
-  color: var(--ide-red);
+  color: var(--ide-accent);
+  font-weight: 700;
 }
 .tok-fn {
-  color: var(--ide-accent);
+  color: var(--ide-fg);
+  font-weight: 700;
 }
 .tok-op {
-  color: #94e2d5;
+  color: var(--ide-fg-dim);
 }
 .tok-cls {
   color: var(--ide-yellow);
@@ -4487,7 +4506,6 @@ a.step__title:hover {
   border-radius: var(--radius);
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  color-scheme: dark;
 }
 
 .panel__tabs {
@@ -4513,7 +4531,7 @@ a.step__title:hover {
   align-items: center;
   gap: 7px;
   padding: 5px 13px;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 13px;
   color: var(--ide-fg-dim);
   background: transparent;
@@ -4555,7 +4573,7 @@ a.step__title:hover {
   max-height: 320px;
   overflow: auto;
   padding: 10px 12px;
-  font-family: var(--font-mono);
+  font-family: var(--font-code);
   font-size: 13.5px;
   line-height: 1.6;
   background: var(--ide-bg);
@@ -4671,7 +4689,7 @@ a.step__title:hover {
   gap: 10px;
   padding: 7px 0;
   border-bottom: 1px dashed var(--ide-border);
-  font-family: var(--font-mono);
+  font-family: var(--font-code);
   font-size: 13.5px;
   color: var(--ide-fg);
 }
@@ -4695,7 +4713,7 @@ a.step__title:hover {
 
 .test__why {
   display: block;
-  font-family: var(--font-mono);
+  font-family: var(--font-code);
   font-size: 12.5px;
   color: var(--ide-red);
   margin-top: 2px;
@@ -4814,8 +4832,9 @@ a.step__title:hover {
   height: 12px;
 }
 
-/* editor skeleton — same fixed dark IDE palette as the real editor, so
-   nothing flashes light-then-dark when CodeMirror finishes loading. */
+/* editor skeleton — same theme-reactive --ide-* tokens as the real editor,
+   so nothing flashes to a different palette when CodeMirror finishes
+   loading, on any theme. */
 .ed--skeleton .sk {
   background: var(--ide-border);
   background-image: linear-gradient(
@@ -4838,7 +4857,7 @@ a.step__title:hover {
   flex-direction: column;
   gap: 9px;
   padding-left: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--font-code);
   font-size: 13px;
   line-height: 12px;
   color: var(--ide-fg-faint);
@@ -4856,7 +4875,7 @@ a.step__title:hover {
 }
 
 .ed-sk__note {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 12px;
   color: var(--ide-fg-dim);
 }
