@@ -52,7 +52,10 @@ function StatCounter({
 
   return (
     <div className="stat">
-      <span className="stat__num">
+      {/* Reserve the final width up front — counting up from 0 changes the
+          digit count, and without a fixed box that reflows the stats row
+          on every frame (this was the biggest source of layout shift). */}
+      <span className="stat__num" style={{ minWidth: `${String(target).length + suffix.length}ch` }}>
         {display}
         {suffix}
       </span>
