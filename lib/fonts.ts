@@ -12,6 +12,7 @@ import {
   Patrick_Hand,
   Permanent_Marker,
   Reenie_Beanie,
+  Roboto,
   Schoolbell,
   Shadows_Into_Light,
 } from "next/font/google";
@@ -101,6 +102,15 @@ export const schoolbell = Schoolbell({
   variable: "--font-schoolbell",
   preload: false,
 });
+// The one non-handwriting option — a clean sans for readers who want the
+// content without the notebook conceit. One family, two weights: 700 for
+// headings (existing CSS already sets font-weight there), 400 for body.
+export const roboto = Roboto({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-roboto",
+  preload: false,
+});
 
 export const fontVariables = [
   caveat.variable,
@@ -118,4 +128,5 @@ export const fontVariables = [
   handlee.variable,
   bangers.variable,
   schoolbell.variable,
+  roboto.variable,
 ].join(" ");

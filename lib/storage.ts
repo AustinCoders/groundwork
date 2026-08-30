@@ -8,6 +8,8 @@ export const KEYS = {
   code: "jsnotes:code:",
   narration: "jsnotes:narration",
   activity: "jsnotes:activity",
+  clockFormat: "jsnotes:clock-format",
+  weather: "jsnotes:weather",
 } as const;
 
 export const store = {
@@ -222,7 +224,7 @@ export function lastLevel(): string | null {
 }
 
 export type ThemeValue = "light" | "dark" | "kraft" | "blueprint" | "sepia" | "forest" | "rose" | "mono" | "lavender";
-export type FontValue = "classic" | "marker" | "sketch" | "pen" | "chalk" | "script" | "bold";
+export type FontValue = "classic" | "marker" | "sketch" | "pen" | "chalk" | "script" | "bold" | "roboto";
 
 export const THEME_ITEMS: { value: ThemeValue; label: string }[] = [
   { value: "light", label: "📄 Paper" },
@@ -244,6 +246,7 @@ export const FONT_ITEMS: { value: FontValue; label: string }[] = [
   { value: "chalk", label: "✎ Chalk" },
   { value: "script", label: "✎ Script" },
   { value: "bold", label: "✎ Bold" },
+  { value: "roboto", label: "Aa Roboto" },
 ];
 
 export function savedTheme(): ThemeValue | null {

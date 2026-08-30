@@ -119,6 +119,33 @@ function Heatmap() {
   );
 }
 
+function LevelRing({ level, pct }: { level: number; pct: number }) {
+  const radius = 54;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference * (1 - pct / 100);
+
+  return (
+    <div className="level-ring">
+      <svg viewBox="0 0 140 140" width="140" height="140" aria-hidden="true">
+        <circle className="level-ring__track" cx="70" cy="70" r={radius} />
+        <circle
+          className="level-ring__fill"
+          cx="70"
+          cy="70"
+          r={radius}
+          style={{ strokeDasharray: circumference, strokeDashoffset: offset }}
+        />
+      </svg>
+      <div className="level-ring__center">
+        <span className="level-ring__num">
+          <CountUp value={level} />
+        </span>
+        <span className="level-ring__label">level</span>
+      </div>
+    </div>
+  );
+}
+
 function JokeCard() {
   const [joke, setJoke] = useState<string | null>(null);
 
@@ -169,6 +196,7 @@ export function ProgressView() {
       )}
 
       <section className="sheet hero">
+        <div className="progress-glow" aria-hidden="true" />
         <span className="hero__kicker">stats · streaks · badges</span>
         <h1>Your progress</h1>
         <p className="hero__lead">
@@ -177,58 +205,72 @@ export function ProgressView() {
         </p>
 
         <div className="progress-hero">
-          <div className="progress-hero__level">
-            <span className="progress-hero__level-num">
-              Lv <CountUp value={stats.level} />
-            </span>
-            <div className="meter">
-              <div className="meter__track">
-                <div className="meter__fill" style={{ width: `${xpPct}%` }} />
-              </div>
-            </div>
-            <span className="progress-hero__xp">
-              {stats.xpIntoLevel} / {stats.xpForNextLevel} XP to level {stats.level + 1}
-            </span>
-          </div>
+          <LevelRing level={stats.level} pct={xpPct} />
 
-          <div className="progress-hero__streak">
-            <span className="progress-hero__streak-flame" aria-hidden="true">
-              🔥
+          <div className="progress-hero__info">
+            <span className="progress-hero__xp">
+              <CountUp value={stats.xpIntoLevel} /> / {stats.xpForNextLevel} XP to level {stats.level + 1}
             </span>
-            <div>
-              <span className="progress-hero__streak-num">
-                <CountUp value={stats.streak} />
+
+            <div className="progress-hero__streak">
+              <span className={`progress-hero__streak-flame${stats.streak > 0 ? " is-lit" : ""}`} aria-hidden="true">
+                🔥
               </span>
-              <span className="progress-hero__streak-label">{plural(stats.streak, "day")} streak</span>
+              <div>
+                <span className="progress-hero__streak-num">
+                  <CountUp value={stats.streak} />
+                </span>
+                <span className="progress-hero__streak-label">{plural(stats.streak, "day")} streak</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       <div className="stat-row">
-        <div className="stat">
-          <span className="stat__num">
-            <CountUp value={stats.exercisesSolved} />
+        <div className="stat-card stat-card--a">
+          <span className="stat-card__icon" aria-hidden="true">
+            🧩
           </span>
-          <span className="stat__label">exercises solved</span>
+          <div>
+            <span className="stat-card__num">
+              <CountUp value={stats.exercisesSolved} />
+            </span>
+            <span className="stat-card__label">exercises solved</span>
+          </div>
         </div>
-        <div className="stat">
-          <span className="stat__num">
-            <CountUp value={stats.chaptersRead} />
+        <div className="stat-card stat-card--b">
+          <span className="stat-card__icon" aria-hidden="true">
+            📖
           </span>
-          <span className="stat__label">chapters read</span>
+          <div>
+            <span className="stat-card__num">
+              <CountUp value={stats.chaptersRead} />
+            </span>
+            <span className="stat-card__label">chapters read</span>
+          </div>
         </div>
-        <div className="stat">
-          <span className="stat__num">
-            <CountUp value={stats.bestStreak} />
+        <div className="stat-card stat-card--c">
+          <span className="stat-card__icon" aria-hidden="true">
+            🏅
           </span>
-          <span className="stat__label">best streak</span>
+          <div>
+            <span className="stat-card__num">
+              <CountUp value={stats.bestStreak} />
+            </span>
+            <span className="stat-card__label">best streak</span>
+          </div>
         </div>
-        <div className="stat">
-          <span className="stat__num">
-            <CountUp value={stats.xp} />
+        <div className="stat-card stat-card--d">
+          <span className="stat-card__icon" aria-hidden="true">
+            ⚡
           </span>
-          <span className="stat__label">total XP</span>
+          <div>
+            <span className="stat-card__num">
+              <CountUp value={stats.xp} />
+            </span>
+            <span className="stat-card__label">total XP</span>
+          </div>
         </div>
       </div>
 

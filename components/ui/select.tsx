@@ -91,7 +91,13 @@ function Dropdown({ items, value, onChange, ariaLabel, openUp, compact, plain, c
         <SelectContent
           side={openUp ? "top" : "bottom"}
           className={columns ? "dd__menu--grid" : undefined}
-          style={columns ? ({ "--dd-cols": columns } as React.CSSProperties) : undefined}
+          // Only pass `style` at all when there's a real value — an
+          // explicit `style={undefined}` here would still get spread onto
+          // SelectContent's props, clobbering its own default `minWidth:
+          // var(--radix-select-trigger-width)` and leaving the popup's
+          // width to whatever CSS's min-width:100% resolves against on a
+          // portaled element (not the trigger's actual width).
+          {...(columns ? { style: { "--dd-cols": columns } as React.CSSProperties } : {})}
         >
           {items.map((item) => (
             <SelectItem key={item.value} value={item.value}>

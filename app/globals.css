@@ -119,6 +119,15 @@ html[data-font="bold"] {
   --font-code: var(--font-body);
 }
 
+/* The one clean, non-handwritten option — same family for both, the
+   weight difference (headings already set font-weight: 700 in their own
+   rules) is what tells them apart, same as any normal UI font pairing. */
+html[data-font="roboto"] {
+  --font-heading: var(--font-roboto), system-ui, sans-serif;
+  --font-body: var(--font-roboto), system-ui, sans-serif;
+  --font-code: var(--font-body);
+}
+
 html[data-theme="dark"] {
   color-scheme: dark;
 
@@ -766,31 +775,81 @@ li::marker {
 
 .clock-weather {
   display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 4px 8px;
+  flex-direction: column;
+  gap: 2px;
   padding: 0 6px 14px;
   margin-bottom: 8px;
   border-bottom: 1px dashed var(--line-soft);
-  font-family: var(--font-heading);
+}
+
+.clock-weather__top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .clock-weather__time {
+  font-family: var(--font-heading);
   font-size: 22px;
   font-weight: 700;
   line-height: 1;
 }
 
+.clock-weather__format {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--pencil);
+  background: var(--btn-bg);
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  padding: 1px 7px;
+  cursor: pointer;
+  transition: background 0.14s ease;
+}
+
+.clock-weather__format:hover {
+  background: var(--btn-hover);
+  color: var(--ink);
+}
+
 .clock-weather__day {
+  font-family: var(--font-heading);
   font-size: 12.5px;
   color: var(--pencil);
-  flex: 1 1 auto;
 }
 
 .clock-weather__weather {
+  font-family: var(--font-heading);
   font-size: 13.5px;
   color: var(--ink-soft);
-  flex: none;
+  margin-top: 2px;
+}
+
+.clock-weather__weather-cta {
+  align-self: flex-start;
+  margin-top: 4px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--ink-soft);
+  background: none;
+  border: 1px dashed var(--line-soft);
+  border-radius: 999px;
+  padding: 2px 9px;
+  cursor: pointer;
+  transition:
+    background 0.14s ease,
+    border-color 0.14s ease;
+}
+
+.clock-weather__weather-cta:hover:not(:disabled) {
+  background: var(--btn-hover);
+  border-color: var(--ink-soft);
+}
+
+.clock-weather__weather-cta:disabled {
+  cursor: default;
+  opacity: 0.7;
 }
 
 .site-sidenav__section {
@@ -2556,6 +2615,7 @@ span.tone-bad {
   .chapter .sticky,
   .chapter pre,
   .stat,
+  .stat-card,
   .badge-card {
     animation: reveal-up linear both;
     animation-timeline: view();
@@ -2786,15 +2846,59 @@ span.tone-bad {
 
 /* ---- /progress: XP, streak, heatmap, badges --------------------------- */
 
+/* A dedicated clipping box for the glow below, deliberately NOT relying on
+   .hero itself for overflow:hidden — .hero already has its own
+   overflow: visible (so the homepage hero's doodle SVGs can bleed past
+   its edges), and fighting that with a more specific selector here was
+   fragile: this file's build step was observed collapsing a compound
+   .hero.progress-hero-wrap selector down to just .progress-hero-wrap,
+   silently losing the specificity edge and letting the glow blow out
+   the mobile layout's width again. A separate absolutely-positioned
+   wrapper sidesteps the fight entirely. */
+.progress-glow {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* A slow-breathing glow behind the ring — pure decoration, so it's the
+   first thing @media (prefers-reduced-motion) freezes (global rule). */
+.progress-glow::before {
+  content: "";
+  position: absolute;
+  top: -35%;
+  right: -12%;
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--green) 22%, transparent), transparent 70%);
+  animation: progress-glow 7s ease-in-out infinite;
+}
+
+@keyframes progress-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
 .stat-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 22px;
+  gap: 14px;
   margin: 20px 0 28px;
 }
 
 .progress-hero {
+  position: relative;
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: 28px;
   margin-top: 22px;
@@ -2802,23 +2906,66 @@ span.tone-bad {
   border-top: 1px dashed var(--line-soft);
 }
 
-.progress-hero__level {
-  flex: 1 1 260px;
-  min-width: 220px;
+.level-ring {
+  position: relative;
+  flex: none;
+  width: 140px;
+  height: 140px;
 }
 
-.progress-hero__level-num {
+.level-ring svg {
+  transform: rotate(-90deg);
+}
+
+.level-ring__track {
+  fill: none;
+  stroke: var(--line-soft);
+  stroke-width: 10;
+}
+
+.level-ring__fill {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.9s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.level-ring__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.level-ring__num {
   font-family: var(--font-heading);
-  font-size: 22px;
+  font-size: 42px;
   font-weight: 700;
-  display: block;
-  margin-bottom: 8px;
+  line-height: 1;
+}
+
+.level-ring__label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pencil);
+  margin-top: 2px;
+}
+
+.progress-hero__info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1 1 220px;
 }
 
 .progress-hero__xp {
   display: block;
-  margin-top: 6px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--pencil);
 }
 
@@ -2830,13 +2977,32 @@ span.tone-bad {
 }
 
 .progress-hero__streak-flame {
-  font-size: 38px;
+  font-size: 40px;
   line-height: 1;
+  filter: grayscale(1) opacity(0.4);
+}
+
+.progress-hero__streak-flame.is-lit {
+  filter: none;
+  animation: flame-flicker 1.6s ease-in-out infinite;
+}
+
+@keyframes flame-flicker {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.06) rotate(-2deg);
+  }
+  75% {
+    transform: scale(0.97) rotate(2deg);
+  }
 }
 
 .progress-hero__streak-num {
   font-family: var(--font-heading);
-  font-size: 30px;
+  font-size: 32px;
   font-weight: 700;
   display: block;
   line-height: 1.1;
@@ -2847,11 +3013,71 @@ span.tone-bad {
   color: var(--pencil);
 }
 
+.stat-card {
+  flex: 1 1 190px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--sheet);
+  transition:
+    transform 0.14s ease,
+    box-shadow 0.14s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-card__icon {
+  flex: none;
+  font-size: 26px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+}
+
+.stat-card--a .stat-card__icon {
+  background: color-mix(in srgb, var(--green) 18%, var(--sheet));
+}
+.stat-card--b .stat-card__icon {
+  background: color-mix(in srgb, var(--ink) 12%, var(--sheet));
+}
+.stat-card--c .stat-card__icon {
+  background: color-mix(in srgb, var(--hl-yellow) 55%, var(--sheet));
+}
+.stat-card--d .stat-card__icon {
+  background: color-mix(in srgb, var(--red) 16%, var(--sheet));
+}
+
+.stat-card__num {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.stat-card__label {
+  font-size: 12.5px;
+  color: var(--pencil);
+}
+
 .heatmap {
   display: flex;
   gap: 8px;
   overflow-x: auto;
   padding-bottom: 4px;
+  /* Without this, the 52-week grid's intrinsic width (~800px) pushes this
+     box wider instead of scrolling once the viewport is narrower than
+     that — overflow-x:auto only kicks in once the element itself is
+     allowed to be narrower than its content. */
+  min-width: 0;
 }
 
 .heatmap__weekdays {
@@ -2960,10 +3186,39 @@ span.tone-bad {
 }
 
 .badge-card.is-earned {
+  position: relative;
+  overflow: hidden;
   opacity: 1;
   filter: none;
   border-color: var(--card-accent, var(--green));
   box-shadow: var(--shadow-sm);
+}
+
+.badge-card.is-earned::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    color-mix(in srgb, var(--card-accent, var(--green)) 35%, transparent) 45%,
+    transparent 60%
+  );
+  background-size: 250% 100%;
+  background-position: 120% 0;
+  animation: badge-shine 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes badge-shine {
+  0%,
+  40% {
+    background-position: 120% 0;
+  }
+  60%,
+  100% {
+    background-position: -20% 0;
+  }
 }
 
 .badge-card.is-earned:hover {
