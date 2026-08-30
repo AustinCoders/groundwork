@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Crumbs } from "@/components/Crumbs";
 import { CodeEditor, type CodeEditorHandle } from "@/components/practice/CodeEditor";
 import { EditorSkeleton } from "@/components/practice/EditorSkeleton";
-import type { LanguageKey, LanguageMeta } from "@/lib/codeLanguages";
+import type { LanguageKey } from "@/lib/codeLanguages";
 import { useClientValue, useMounted } from "@/lib/hooks";
 import type { PracticeExercise } from "@/lib/practiceFree";
 import { runPython } from "@/lib/pythonRunner";
@@ -118,7 +118,6 @@ export function PracticeWorkspace({
 
   const mounted = useMounted();
   const [currentLang, setCurrentLang] = useState<LanguageKey>("javascript");
-  const [currentLangMeta, setCurrentLangMeta] = useState<LanguageMeta | null>(null);
   const [activeTab, setActiveTab] = useState<"console" | "tests">("console");
   const [consoleLines, setConsoleLines] = useState<RunnerOutputEntry[]>([]);
   const [consolePhase, setConsolePhase] = useState<"idle" | "compiling" | "ran" | "cleared">("idle");
@@ -155,17 +154,15 @@ export function PracticeWorkspace({
   const savedCode = mounted ? codeStore.load(exercise.id, initialLanguage) : null;
   const initialValue = savedCode != null ? savedCode : initialLanguage === "javascript" ? exercise.starter : "";
 
-  function handleLanguageChange(lang: LanguageKey, meta: LanguageMeta) {
+  function handleLanguageChange(lang: LanguageKey) {
     store.set(langKey, lang);
     currentLangRef.current = lang;
     setCurrentLang(lang);
-    setCurrentLangMeta(meta);
     const saved = codeStore.load(exercise.id, lang);
     const next = saved != null ? saved : lang === "javascript" ? exercise.starter : "";
     editorRef.current?.setValue(next);
   }
 
-  const canRun = currentLangMeta ? currentLangMeta.runnable !== null : true;
   const showsTestButton = !isFree && exercise.tests.length > 0 && currentLang === "javascript";
 
   function runCode(withTests: boolean) {
@@ -174,18 +171,6 @@ export function PracticeWorkspace({
     runningRef.current?.stop();
 
     const meta = editor.getLanguageMeta();
-
-    if (meta.runnable === null) {
-      setConsoleLines([
-        {
-          kind: "system",
-          text: `✎ ${meta.label} has no in-browser runner here — there's no backend to compile or execute it, this editor is for writing it only.`,
-        },
-      ]);
-      setConsolePhase("ran");
-      setActiveTab("console");
-      return;
-    }
 
     setConsoleLines([]);
     setConsolePhase("idle");
@@ -297,12 +282,7 @@ export function PracticeWorkspace({
           <button
             className="btn btn--run"
             type="button"
-            disabled={!canRun}
-            title={
-              canRun
-                ? "Run the code (⌘/Ctrl + Enter)"
-                : `${currentLangMeta?.label ?? "This language"} has no in-browser runner here — there's no backend to compile it.`
-            }
+            title="Run the code (⌘/Ctrl + Enter)"
             aria-label="Run the code"
             onClick={() => runCode(false)}
           >

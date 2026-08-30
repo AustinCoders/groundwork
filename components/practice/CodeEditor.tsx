@@ -407,7 +407,7 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
         <span className="ed__len">{stats}</span>
         <span className="ed__spacer" />
         <span className={`ed__saved${savedFlash ? " is-on" : ""}`}>saved</span>
-        <span className="ed__hint">{HINTS[meta.runnable || "none"]}</span>
+        <span className="ed__hint">{HINTS[meta.runnable]}</span>
       </div>
     </div>
   );
