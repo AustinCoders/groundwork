@@ -787,22 +787,6 @@ li::marker {
   border-bottom: 1px solid var(--line);
 }
 
-.clock-weather--morning {
-  background: linear-gradient(165deg, color-mix(in srgb, var(--hl-mint) 60%, var(--sheet)) 0%, var(--sheet) 85%);
-}
-
-.clock-weather--afternoon {
-  background: linear-gradient(165deg, color-mix(in srgb, var(--hl-yellow) 55%, var(--sheet)) 0%, var(--sheet) 85%);
-}
-
-.clock-weather--evening {
-  background: linear-gradient(165deg, color-mix(in srgb, var(--hl-pink) 55%, var(--sheet)) 0%, var(--sheet) 85%);
-}
-
-.clock-weather--night {
-  background: linear-gradient(165deg, color-mix(in srgb, var(--ink) 18%, var(--sheet)) 0%, var(--sheet) 85%);
-}
-
 .clock-weather__top {
   display: flex;
   align-items: center;
