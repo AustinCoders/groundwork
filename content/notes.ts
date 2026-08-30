@@ -1888,9 +1888,258 @@ console.log(3 &gt; 2 &gt; 1);    <span class="c">// what happens?</span></code><
       short: "Functions (first half)",
       levels: ["beginner"],
       practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "A function is a value first, a block of code second.",
+      body: `<h3>Three ways to write one</h3>
+<p>
+  Same function, three spellings — and the differences between them
+  aren't cosmetic. They change <em>when</em> the function exists and
+  <em>what</em> it's allowed to do.
+</p>
+<pre><code><span class="c">// 1. Declaration — a named statement</span>
+function add(a, b) {
+  return a + b;
+}
+
+<span class="c">// 2. Expression — a value, happens to be a function, assigned like any other</span>
+const subtract = function (a, b) {
+  return a - b;
+};
+
+<span class="c">// 3. Arrow — an expression too, but lighter and with no own "this"</span>
+const multiply = (a, b) =&gt; a * b;</code></pre>
+
+<table>
+  <tr>
+    <th></th>
+    <th>Declaration</th>
+    <th>Expression</th>
+    <th>Arrow</th>
+  </tr>
+  <tr>
+    <th>Hoisted, fully usable early?</th>
+    <td class="tone-yes">yes</td>
+    <td class="tone-bad">no</td>
+    <td class="tone-bad">no</td>
+  </tr>
+  <tr>
+    <th>Has its own <code>this</code></th>
+    <td class="tone-yes">yes</td>
+    <td class="tone-yes">yes</td>
+    <td class="tone-bad">no — inherits it</td>
+  </tr>
+  <tr>
+    <th>Has its own <code>arguments</code></th>
+    <td class="tone-yes">yes</td>
+    <td class="tone-yes">yes</td>
+    <td class="tone-bad">no — inherits it</td>
+  </tr>
+  <tr>
+    <th>Works as a constructor (<code>new</code>)</th>
+    <td class="tone-yes">yes</td>
+    <td class="tone-yes">yes</td>
+    <td class="tone-bad">no</td>
+  </tr>
+</table>
+
+<div class="try">
+  <pre><code>console.log(declared());     <span class="c">// what happens?</span>
+function declared() { return "I work before my own definition"; }
+
+console.log(typeof viaVar);  <span class="c">// what happens?</span>
+viaVar();
+var viaVar = function () { return "x"; };</code></pre>
+</div>
+<p class="sub">
+  <code>declared()</code> works — function <b>declarations</b> are
+  hoisted completely: name and body, both ready before line 1 runs.
+  <code>viaVar</code> is different: <code>var</code> hoists the
+  <em>name</em> (pre-filled with <code>undefined</code>) but not the
+  function it's later assigned. So <code>typeof viaVar</code> is
+  <code>"undefined"</code>, and calling it throws
+  <code>TypeError: viaVar is not a function</code> — you're calling
+  <code>undefined()</code>. Swap <code>var</code> for <code>const</code>
+  and it's worse: a <code>ReferenceError</code>, because the name sits
+  in the Temporal Dead Zone until its line runs.
+</p>
+
+<div class="sticky mint">
+  <span class="ttl">Rule</span> A function you need to call before its
+  own line in the file must be a <code>function</code> declaration. An
+  expression or arrow only exists from its own line onward — same as
+  any other <code>const</code>.
+</div>
+
+<h3>Arrow functions — the concise cousin</h3>
+<p>
+  Arrows drop the <code>function</code> keyword and, with exactly one
+  parameter, the parentheses too. A one-expression body skips
+  <code>return</code> entirely — the expression's value <em>is</em> the
+  return value.
+</p>
+<pre><code>const square = n =&gt; n * n;                  <span class="c">// implicit return</span>
+const clamp = (n, lo, hi) =&gt; Math.min(Math.max(n, lo), hi);
+const noisy = n =&gt; {                          <span class="c">// block body needs an explicit return</span>
+  console.log("squaring", n);
+  return n * n;
+};</code></pre>
+<div class="warn">
+  <span class="ttl">⚠ Returning an object literal from a one-liner</span>
+  <code>const make = () =&gt; { name: "a" };</code> does <b>not</b> return
+  an object — the <code>{</code> is read as the start of a block body,
+  and <code>name: "a"</code> is parsed as a label, not a key. Wrap it in
+  parens: <code>() =&gt; ({ name: "a" })</code>.
+</div>
+<p>
+  The bigger difference isn't syntax, it's <code>this</code> and
+  <code>arguments</code>. An arrow doesn't create either — it reads
+  through to whatever function it's <em>lexically</em> written inside:
+</p>
+<div class="try">
+  <pre><code>function outer(a, b) {
+  const arrow = (x, y, z) =&gt; arguments.length;
+  return arrow(1, 2, 3);
+}
+console.log(outer(10, 20));   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>2</code>, not <code>3</code>. The arrow's <code>arguments</code>
+  isn't its own — it's <code>outer</code>'s, which was called with two
+  values. The same logic governs <code>this</code> inside an arrow, and
+  it's the whole reason arrows became the default choice for callbacks:
+  no more <code>const self = this;</code> workaround. The full mechanics
+  of <code>this</code> get their own chapter later — for now, remember
+  arrows borrow it rather than own it.
+</p>
+
+<h3>Parameters, arguments, defaults</h3>
+<p>
+  A <b>parameter</b> is the name in the function's own definition. An
+  <b>argument</b> is the actual value handed over at the call site.
+  Extra arguments are silently dropped; missing ones become
+  <code>undefined</code> — unless a default says otherwise.
+</p>
+<pre><code>function greet(name, greeting = "Hello") {
+  return greeting + ", " + name + "!";
+}
+greet("Ana");              <span class="c">// "Hello, Ana!"</span>
+greet("Ana", "Hi");        <span class="c">// "Hi, Ana!"</span>
+greet("Ana", undefined);   <span class="c">// "Hello, Ana!" — undefined also triggers the default</span></code></pre>
+<p>
+  Defaults aren't static values baked in once — they're expressions,
+  evaluated fresh on every call that needs them, and they can reference
+  earlier parameters:
+</p>
+<div class="try">
+  <pre><code>function withDefault(a, b = a + 1) {
+  return b;
+}
+console.log(withDefault(5));       <span class="c">// what happens?</span>
+console.log(withDefault(5, 100));  <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>6</code>, then <code>100</code> — the default only runs when the
+  argument is missing (or explicitly <code>undefined</code>); supply
+  anything else and the default expression never executes at all.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ Defaults can only look left</span>
+  <code>a</code> can default from an earlier parameter, but not a
+  <em>later</em> one — <code>function f(a = b, b = 1) {}</code> throws
+  <code>ReferenceError: Cannot access 'b' before initialization</code>
+  the moment <code>a</code>'s default needs to run, because <code>b</code>
+  is still in its own Temporal Dead Zone at that point.
+</div>
+
+<h3>Rest parameters — the modern arguments</h3>
+<p>
+  <code>...args</code> in a parameter list collects every remaining
+  argument into a <b>real array</b> — unlike the old
+  <code>arguments</code> object, which looks array-ish but has no
+  <code>map</code>/<code>filter</code>/<code>reduce</code> of its own.
+  Arrows don't get <code>arguments</code> at all, so rest params are
+  their only option for "however many args you send me."
+</p>
+<pre><code>function sum(...nums) {
+  return nums.reduce((total, n) =&gt; total + n, 0);
+}
+sum(1, 2, 3, 4);   <span class="c">// 10</span>
+
+function logAll(label, ...rest) {   <span class="c">// rest must be LAST</span>
+  console.log(label, rest);
+}</code></pre>
+
+<h3>Return — and the newline that eats it</h3>
+<p>
+  No <code>return</code> statement, or a bare <code>return;</code>, both
+  give back <code>undefined</code>. That's not the interesting part —
+  this is:
+</p>
+<div class="try">
+  <pre><code>function makeUser() {
+  return
+  { name: "Ana" };
+}
+console.log(makeUser());   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>undefined</code> — not the object. Automatic Semicolon
+  Insertion sees a line break right after <code>return</code> and
+  quietly inserts a semicolon there, turning it into
+  <code>return;</code> followed by an unreachable, orphaned block. The
+  object literal on the next line never has a chance to be returned.
+</p>
+<div class="sticky mint">
+  <span class="ttl">Rule</span> Never put a line break between
+  <code>return</code> and the value. If the value is long, wrap it in
+  parens and break <em>inside</em> them:
+  <code>return (<br />&nbsp;&nbsp;{ name: "Ana" }<br />);</code>
+</div>
+
+<h3>Scope basics</h3>
+<p>
+  Every function creates its own scope — variables declared inside are
+  invisible outside. Nested functions can see everything in their
+  parent's scope (that's a <b>closure</b>, coming properly in a later
+  chapter); the reverse is never true.
+</p>
+<pre><code>function outer() {
+  let secret = 42;
+  function inner() {
+    console.log(secret);   <span class="c">// fine — inner can see outer's variables</span>
+  }
+  inner();
+}
+console.log(typeof secret);   <span class="c">// "undefined" — outer can't be seen from here</span></code></pre>
+<p>
+  Inside a function, <code>let</code>/<code>const</code> are still
+  block-scoped exactly like in <a href="/notes/operators-flow">the last
+  chapter</a> — an <code>if</code> or a <code>for</code> loop makes its
+  own little scope even inside a function body. <code>var</code>
+  ignores those inner blocks completely and belongs to the whole
+  function.
+</p>
+
+<h3>Hoisting, one level up</h3>
+<p>
+  The Temporal Dead Zone from the last two chapters applies exactly the
+  same way inside a function body — the only new piece here is that
+  <b>parameters</b> are hoisted too, as already-initialized bindings, so
+  a default value can reference an earlier parameter without a TDZ
+  error (as shown above), and the function body can shadow a parameter
+  name with its own <code>let</code>:
+</p>
+<pre><code>function shadow(x) {
+  console.log(x);     <span class="c">// the parameter's value</span>
+  let x2 = x;          <span class="c">// (renamed here only to keep the example simple —</span>
+  <span class="c">//  redeclaring "x" itself with let in the same scope is a SyntaxError)</span>
+}</code></pre>
+<p class="sub">
+  That's a deliberate restriction: a parameter and a
+  <code>let</code>/<code>const</code> of the same name can't coexist in
+  one function scope — JS won't let you accidentally shadow an argument
+  you probably still needed.
+</p>`,
     },
     {
       id: "objects-arrays-basics",
@@ -1899,9 +2148,228 @@ console.log(3 &gt; 2 &gt; 1);    <span class="c">// what happens?</span></code><
       short: "Objects & arrays (first half)",
       levels: ["beginner"],
       practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "The two shapes almost everything you build is made of.",
+      body: `<h3>Object literals</h3>
+<pre><code>const user = {
+  name: "Ana",
+  age: 29,
+  isAdmin: false,
+  address: {                    <span class="c">// objects nest freely</span>
+    city: "Pune",
+  },
+};</code></pre>
+<p>
+  Two ways to reach a property, and they're not interchangeable.
+  <b>Dot notation</b> needs a literal, valid identifier known when you
+  write the code. <b>Bracket notation</b> takes any expression — a
+  variable, a computed string, a key with a space in it.
+</p>
+<pre><code>user.name;              <span class="c">// "Ana" — the key is a literal you typed</span>
+user["name"];           <span class="c">// same thing, spelled differently</span>
+
+const key = "age";
+user[key];              <span class="c">// 26 — dot notation CAN'T do this; user.key would look for a property literally named "key"</span>
+user["favorite color"]; <span class="c">// dot notation can't have a space in it at all</span></code></pre>
+<p class="sub">
+  As a reminder from <a href="/notes/types-values">the types chapter</a>:
+  an object variable holds a <em>reference</em>, not the data itself —
+  copying the variable copies the pointer, not the object.
+</p>
+
+<h3>Shorthand and computed keys</h3>
+<pre><code>const name = "Ana", age = 29;
+const user2 = { name, age };            <span class="c">// shorthand — same as { name: name, age: age }</span>
+
+const field = "role";
+const user3 = { [field]: "admin" };     <span class="c">// computed key — the property is named by field's VALUE</span>
+console.log(user3);                     <span class="c">// { role: "admin" }, not { field: "admin" }</span></code></pre>
+
+<h3>Arrays — indexed, ordered, still objects underneath</h3>
+<pre><code>const nums = [10, 20, 30];
+nums[0];          <span class="c">// 10 — indexing starts at 0</span>
+nums.length;       <span class="c">// 3</span>
+nums[nums.length - 1];  <span class="c">// 30 — the standard "last element" idiom</span>
+nums[10];          <span class="c">// undefined — out of range, not an error</span></code></pre>
+<p class="sub">
+  <code>typeof []</code> is <code>"object"</code> and
+  <code>Array.isArray()</code> is the only reliable check — both covered
+  back in <a href="/notes/setup-mental-model">the mental model
+  chapter</a>. What actually makes an array useful is the ordered,
+  numerically-indexed methods below.
+</p>
+
+<h3>Mutating methods — they change the array in place</h3>
+<table>
+  <tr>
+    <th>Call</th>
+    <th>Does</th>
+    <th>Returns</th>
+  </tr>
+  <tr><td><code>arr.push(x)</code></td><td>adds to the end</td><td>new length</td></tr>
+  <tr><td><code>arr.pop()</code></td><td>removes from the end</td><td>the removed element</td></tr>
+  <tr><td><code>arr.unshift(x)</code></td><td>adds to the start</td><td>new length</td></tr>
+  <tr><td><code>arr.shift()</code></td><td>removes from the start</td><td>the removed element</td></tr>
+  <tr><td><code>arr.splice(start, count, …items)</code></td><td>removes <code>count</code> at <code>start</code>, inserts <code>…items</code> there</td><td>array of removed elements</td></tr>
+  <tr><td><code>arr.sort(cmp)</code></td><td>sorts in place</td><td>the same array</td></tr>
+  <tr><td><code>arr.reverse()</code></td><td>reverses in place</td><td>the same array</td></tr>
+</table>
+<div class="try">
+  <pre><code>console.log([10, 1, 2].sort());              <span class="c">// what happens?</span>
+console.log([10, 1, 2].sort((a, b) =&gt; a - b)); <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  Without a comparator, <code>sort()</code> converts everything to a
+  <b>string</b> and sorts lexicographically — so <code>10</code> comes
+  before <code>2</code>, because <code>"1"</code> sorts before
+  <code>"2"</code>. A comparator that returns negative/zero/positive is
+  the only reliable way to sort numbers.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ push/pop are cheap, shift/unshift are not</span>
+  Adding or removing at the <em>end</em> of an array is O(1). Doing it
+  at the <em>start</em> is O(n) — every other element has to shift
+  index. For a queue you fill from one end and drain from the other,
+  reach for <code>push</code>/<code>shift</code> and know that's a
+  trade-off, not a free choice.
+</div>
+
+<h3>Non-mutating methods — they read, they don't touch</h3>
+<table>
+  <tr>
+    <th>Call</th>
+    <th>Returns</th>
+  </tr>
+  <tr><td><code>arr.slice(start, end)</code></td><td>a new array, <code>end</code> excluded — negative indices count from the back</td></tr>
+  <tr><td><code>arr.indexOf(x)</code></td><td>first matching index, or <code>-1</code> — compares with <code>===</code></td></tr>
+  <tr><td><code>arr.includes(x)</code></td><td><code>true</code>/<code>false</code> — the one case where it differs from <code>indexOf</code>: it also matches <code>NaN</code></td></tr>
+</table>
+<div class="try">
+  <pre><code>console.log([NaN].indexOf(NaN));   <span class="c">// what happens?</span>
+console.log([NaN].includes(NaN));  <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>-1</code>, then <code>true</code>. <code>indexOf</code> compares
+  with <code>===</code>, and <code>NaN === NaN</code> is
+  <code>false</code> — so <code>indexOf</code> can never find a
+  <code>NaN</code>, no matter how many are in the array.
+  <code>includes</code> uses a different algorithm (SameValueZero) that
+  treats <code>NaN</code> as equal to itself. It's a small detail with a
+  real consequence: <code>includes</code> is the safer default unless
+  you specifically need the index back.
+</p>
+<div class="sticky mint">
+  <span class="ttl">Rule</span> <code>splice</code> mutates,
+  <code>slice</code> doesn't — same six letters, opposite behavior. If
+  you're not sure whether a method is safe on a shared array, check
+  first; it's the single most common source of "why did this other
+  variable change too" bugs.
+</div>
+
+<h3>map / filter / find / forEach / reduce</h3>
+<p>
+  Five methods that all walk the array element by element — the
+  difference is entirely in what each one hands back.
+</p>
+<table>
+  <tr>
+    <th>Method</th>
+    <th>Gives back</th>
+    <th>Use it when</th>
+  </tr>
+  <tr><td><code>.map(fn)</code></td><td>a new array, same length</td><td>you're transforming every element</td></tr>
+  <tr><td><code>.filter(fn)</code></td><td>a new array, shorter or equal</td><td>you're keeping some elements, dropping others</td></tr>
+  <tr><td><code>.find(fn)</code></td><td>one element, or <code>undefined</code></td><td>you want the first match and nothing else</td></tr>
+  <tr><td><code>.forEach(fn)</code></td><td>nothing (<code>undefined</code>)</td><td>you're only running side effects — no new array</td></tr>
+  <tr><td><code>.reduce(fn, initial)</code></td><td>whatever you build up</td><td>collapsing the array into one value — a sum, an object, another array</td></tr>
+</table>
+<pre><code>const cart = [
+  { name: "Pen", price: 20, qty: 3 },
+  { name: "Book", price: 150, qty: 1 },
+  { name: "Eraser", price: 5, qty: 0 },
+];
+
+cart.map(item =&gt; item.name);              <span class="c">// ["Pen", "Book", "Eraser"]</span>
+cart.filter(item =&gt; item.qty &gt; 0);         <span class="c">// Pen and Book only</span>
+cart.find(item =&gt; item.price &gt; 100);      <span class="c">// the Book object itself</span>
+cart.forEach(item =&gt; console.log(item.name)); <span class="c">// logs 3 times, returns undefined</span>
+cart.reduce((total, item) =&gt; total + item.price * item.qty, 0); <span class="c">// 210</span></code></pre>
+<div class="warn">
+  <span class="ttl">⚠ forEach can't be stopped, and its return is
+  thrown away</span>
+  <code>break</code> doesn't work inside a <code>forEach</code>
+  callback, and <code>return</code>ing from it just skips to the next
+  element — it does not exit the loop. Need to stop early? Use a real
+  <code>for</code>/<code>for...of</code> loop, or <code>.find</code>/
+  <code>.some</code> if you're really just searching.
+</div>
+<div class="say">
+  <span class="ttl">Say it like this →</span> "map and filter are for
+  building a new array. forEach is for side effects — logging,
+  pushing into something outside the callback. reduce is the general
+  case underneath map and filter — either one could be written with
+  reduce, but reduce for a simple transform reads worse, not better."
+</div>
+
+<h3>Destructuring</h3>
+<p>
+  Unpacking values out of an object or array into their own named
+  variables, in one line instead of one assignment per field.
+</p>
+<pre><code><span class="c">// Object destructuring — order doesn't matter, names must match</span>
+const { name, age } = user;
+const { name: fullName } = user;         <span class="c">// rename while unpacking</span>
+const { role = "guest" } = user;         <span class="c">// default when the key is missing</span>
+const { address: { city } } = user;      <span class="c">// nested, straight to "city"</span>
+
+<span class="c">// Array destructuring — position IS the match, gaps are allowed</span>
+const [first, , third] = [10, 20, 30];   <span class="c">// skips index 1</span>
+const [head, ...tail] = [1, 2, 3, 4];    <span class="c">// head = 1, tail = [2, 3, 4]</span></code></pre>
+<div class="try">
+  <pre><code>let x = 1, y = 2;
+[x, y] = [y, x];
+console.log(x, y);   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>2 1</code> — swapped, with no temporary variable. The right
+  side builds a whole new array <code>[y, x]</code> first, then
+  destructuring unpacks it back into <code>x</code> and <code>y</code>
+  in one step.
+</p>
+<p>
+  Destructuring is everywhere a value shows up, including function
+  parameters — a very common way to accept an options object:
+</p>
+<pre><code>function createUser({ name, age = 18 }) {
+  return name + " is " + age;
+}
+createUser({ name: "Ana" });   <span class="c">// "Ana is 18"</span></code></pre>
+
+<h3>Spread — the opposite of destructuring</h3>
+<p>
+  <code>...</code> on the way <em>in</em> (an array/object literal, a
+  function call) expands a collection into its individual elements.
+</p>
+<pre><code>const a = [1, 2, 3];
+const b = [...a, 4, 5];        <span class="c">// [1, 2, 3, 4, 5] — a new array</span>
+
+const base = { name: "Ana", age: 29 };
+const patched = { ...base, age: 30 };  <span class="c">// { name: "Ana", age: 30 } — later keys win</span>
+
+Math.max(...a);                <span class="c">// spreads the array into 3 separate arguments</span></code></pre>
+<div class="warn">
+  <span class="ttl">⚠ Spread copies one level deep only</span>
+  <code>{ ...base }</code> makes a fresh top-level object, but any
+  property that's itself an object or array is still the
+  <em>same reference</em>, shared between the original and the copy.
+  Mutate a nested field through the copy and the original sees it too —
+  the reference-copying rule from earlier never went away, spread just
+  copies the outer layer for you.
+</div>
+<pre><code>const original = { nested: { count: 1 } };
+const copy = { ...original };
+copy.nested.count = 99;
+console.log(original.nested.count);   <span class="c">// 99 — same nested object, not a copy of it</span></code></pre>`,
     },
     {
       id: "dom-events",
@@ -1910,9 +2378,230 @@ console.log(3 &gt; 2 &gt; 1);    <span class="c">// what happens?</span></code><
       short: "DOM & events",
       levels: ["beginner"],
       practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "The DOM is a live tree of objects — and JS can poke every branch of it.",
+      body: `<p>
+  Everything below runs against a <b>real, live sandbox</b> on this
+  page, not a simulation — the buttons genuinely call
+  <code>querySelector</code>, <code>classList</code>,
+  <code>appendChild</code> and friends against the little page snippet
+  right above them. Push every button before reading on; watching it
+  happen is most of the lesson.
+</p>
+
+<div class="demo">
+  <div class="demo__bar">Live DOM playground</div>
+  <div class="demo__body">
+    <div class="dom-sandbox" id="de-sandbox">
+      <h4>Sandbox page</h4>
+      <p id="de-text">Click a button below to mutate me.</p>
+      <ul id="de-list">
+        <li>Item 1</li>
+        <li>Item 2</li>
+      </ul>
+      <form id="de-form">
+        <input id="de-input" type="text" placeholder="type something, then submit" />
+        <button class="btn" type="submit">Submit</button>
+      </form>
+    </div>
+    <div class="demo__ctl">
+      <button class="btn" id="de-text-btn" type="button">Change text</button>
+      <button class="btn" id="de-class-btn" type="button">Toggle highlight</button>
+      <button class="btn" id="de-add-btn" type="button">Add list item</button>
+      <button class="btn" id="de-remove-btn" type="button">Remove last item</button>
+      <button class="btn btn--ghost" id="de-reset-btn" type="button">Reset</button>
+    </div>
+    <p class="demo__note">Every click below is logged with the exact DOM call that ran.</p>
+    <div class="demo__term" id="de-log"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var sandbox = document.getElementById("de-sandbox");
+  if (!sandbox) return;
+  if (sandbox.dataset.demoInit) return;
+  sandbox.dataset.demoInit = "1";
+
+  var textEl = document.getElementById("de-text");
+  var listEl = document.getElementById("de-list");
+  var formEl = document.getElementById("de-form");
+  var inputEl = document.getElementById("de-input");
+  var logEl = document.getElementById("de-log");
+
+  var TEXTS = [
+    "Click a button below to mutate me.",
+    "That was textEl.textContent = \\"...\\" — a real DOM write."
+  ];
+  var textIndex = 0;
+  var itemCount = 2;
+
+  function log(msg) {
+    var line = document.createElement("div");
+    line.className = "ok";
+    line.textContent = msg;
+    logEl.appendChild(line);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  document.getElementById("de-text-btn").addEventListener("click", function () {
+    textIndex = (textIndex + 1) % TEXTS.length;
+    textEl.textContent = TEXTS[textIndex];
+    log('textEl.textContent = "' + TEXTS[textIndex] + '"');
+  });
+
+  document.getElementById("de-class-btn").addEventListener("click", function () {
+    var on = textEl.classList.toggle("de-highlight");
+    log('textEl.classList.toggle("de-highlight") -> ' + on);
+  });
+
+  document.getElementById("de-add-btn").addEventListener("click", function () {
+    itemCount++;
+    var li = document.createElement("li");
+    li.textContent = "Item " + itemCount;
+    listEl.appendChild(li);
+    log("document.createElement + listEl.appendChild -> " + listEl.children.length + " items now");
+  });
+
+  document.getElementById("de-remove-btn").addEventListener("click", function () {
+    if (!listEl.lastElementChild) { log("nothing left to remove"); return; }
+    listEl.removeChild(listEl.lastElementChild);
+    log("listEl.removeChild(listEl.lastElementChild) -> " + listEl.children.length + " items now");
+  });
+
+  formEl.addEventListener("submit", function (e) {
+    e.preventDefault();
+    log('submit caught — e.type="' + e.type + '", e.target.tagName="' + e.target.tagName + '", value="' + inputEl.value + '"');
+    inputEl.value = "";
+  });
+
+  document.getElementById("de-reset-btn").addEventListener("click", function () {
+    textIndex = 0;
+    textEl.textContent = TEXTS[0];
+    textEl.classList.remove("de-highlight");
+    while (listEl.children.length > 2) listEl.removeChild(listEl.lastElementChild);
+    itemCount = 2;
+    logEl.innerHTML = "";
+    log("reset to the starting state");
+  });
+})();
+</script>
+
+<h3>Selecting elements</h3>
+<table>
+  <tr>
+    <th>Call</th>
+    <th>Returns</th>
+  </tr>
+  <tr><td><code>document.getElementById(id)</code></td><td>one element, or <code>null</code> — no <code>#</code> prefix</td></tr>
+  <tr><td><code>document.querySelector(css)</code></td><td>the first match for any CSS selector, or <code>null</code></td></tr>
+  <tr><td><code>document.querySelectorAll(css)</code></td><td>a <code>NodeList</code> of every match — not a real array, but it has <code>.forEach</code></td></tr>
+</table>
+<pre><code>document.getElementById("de-text");         <span class="c">// exact id match</span>
+document.querySelector("#de-text");         <span class="c">// same element, CSS-selector syntax</span>
+document.querySelector(".btn");             <span class="c">// the FIRST element with class "btn"</span>
+document.querySelectorAll(".btn");          <span class="c">// every element with class "btn"</span></code></pre>
+<div class="sticky mint">
+  <span class="ttl">Rule</span> <code>querySelector</code>/
+  <code>querySelectorAll</code> take real CSS selectors, so anything you
+  can write in a stylesheet works here too —
+  <code>"ul li:last-child"</code>, <code>"[data-active]"</code>,
+  <code>"input[type=email]"</code>. That flexibility is why they've
+  mostly replaced the older, narrower
+  <code>getElementsByClassName</code>/<code>getElementsByTagName</code>.
+</div>
+
+<h3>Reading and changing content</h3>
+<table>
+  <tr>
+    <th>Property</th>
+    <th>Reads/writes</th>
+    <th>Watch out for</th>
+  </tr>
+  <tr><td><code>el.textContent</code></td><td>plain text only</td><td>the safe default — never parses HTML</td></tr>
+  <tr><td><code>el.innerHTML</code></td><td>markup, parsed as HTML</td><td>user-supplied text through here is an XSS hole — see the security chapter</td></tr>
+  <tr><td><code>el.getAttribute(name)</code> / <code>setAttribute(name, v)</code></td><td>any HTML attribute, always as a string</td><td>use for custom/<code>data-*</code> attributes</td></tr>
+  <tr><td><code>el.classList</code></td><td><code>.add()</code>, <code>.remove()</code>, <code>.toggle()</code>, <code>.contains()</code></td><td>the modern way to manage classes — no manual string splitting</td></tr>
+</table>
+<pre><code>el.textContent = "hello &lt;b&gt;there&lt;/b&gt;";  <span class="c">// literal text — tags show up as text, not bold</span>
+el.innerHTML = "hello &lt;b&gt;there&lt;/b&gt;";     <span class="c">// actually renders as bold</span>
+
+el.setAttribute("data-user-id", "42");
+el.getAttribute("data-user-id");            <span class="c">// "42" — always a string, even for numbers</span>
+
+el.classList.add("active");
+el.classList.toggle("open");                <span class="c">// on if it was off, off if it was on</span>
+el.classList.contains("active");            <span class="c">// true</span></code></pre>
+
+<h3>Creating, appending, removing</h3>
+<pre><code>const li = document.createElement("li");   <span class="c">// exists only in memory so far</span>
+li.textContent = "New item";
+listEl.appendChild(li);                     <span class="c">// now it's actually in the page</span>
+
+listEl.removeChild(li);                     <span class="c">// gone from the page (still exists in memory until GC'd)</span>
+li.remove();                                <span class="c">// modern shorthand — no need to know the parent</span></code></pre>
+<div class="warn">
+  <span class="ttl">⚠ appendChild moves, it doesn't copy</span>
+  If <code>li</code> is already somewhere in the page and you
+  <code>appendChild</code> it again elsewhere, it's <em>relocated</em>,
+  not duplicated — an element can only exist at one spot in the tree at
+  a time. Need it in two places? Use
+  <code>el.cloneNode(true)</code> (the <code>true</code> means "deep
+  clone, children included") and append the clone.
+</div>
+
+<h3>Events — addEventListener and the event object</h3>
+<pre><code>button.addEventListener("click", function (event) {
+  console.log(event.type);          <span class="c">// "click"</span>
+  console.log(event.target);        <span class="c">// the exact element that was clicked</span>
+  console.log(event.currentTarget); <span class="c">// the element the LISTENER is attached to</span>
+});</code></pre>
+<p>
+  <code>target</code> and <code>currentTarget</code> only differ when
+  events <b>bubble</b> — a click starts at the exact element you tapped
+  and travels upward through every ancestor that's listening.
+  <code>target</code> stays fixed at where it started;
+  <code>currentTarget</code> is always whichever element's listener is
+  currently running. That bubbling is what makes event delegation work:
+  put <em>one</em> listener on a parent list instead of one on every
+  item, and check <code>event.target</code> inside it to see which item
+  was actually clicked.
+</p>
+
+<h3>preventDefault — stopping the browser's own reaction</h3>
+<p>
+  Some elements have a built-in behavior for certain events — a form
+  submits and reloads the page, an <code>&lt;a&gt;</code> navigates.
+  <code>event.preventDefault()</code> cancels <em>that specific
+  default</em> without stopping the event from continuing to bubble or
+  running your own handler.
+</p>
+<pre><code>form.addEventListener("submit", function (event) {
+  event.preventDefault();          <span class="c">// stop the page reload</span>
+  const data = new FormData(form); <span class="c">// now handle it yourself — fetch(), validation, etc.</span>
+});</code></pre>
+<div class="sticky mint">
+  <span class="ttl">Rule</span> <code>preventDefault()</code> stops the
+  browser's built-in reaction. <code>stopPropagation()</code> stops the
+  event from bubbling further up the tree. They solve two different
+  problems and it's common to need only one of them.
+</div>
+
+<h3>Forms and input values</h3>
+<pre><code>input.value;                 <span class="c">// the current text — always a string, even for type="number"</span>
+input.value = "";            <span class="c">// clearing it programmatically</span>
+
+checkbox.checked;            <span class="c">// boolean — .value on a checkbox is NOT what's checked</span>
+select.value;                <span class="c">// the selected &lt;option&gt;'s value</span>
+
+input.addEventListener("input", e =&gt; console.log(e.target.value));  <span class="c">// fires on every keystroke</span>
+input.addEventListener("change", e =&gt; console.log(e.target.value)); <span class="c">// fires once, on blur/commit</span></code></pre>
+<p class="sub">
+  <code>input</code> vs <code>change</code> trips a lot of people up:
+  <code>input</code> is for "react live, as they type" (a character
+  counter, live search); <code>change</code> is for "react once they're
+  done" (a select dropdown, a checkbox, a field that loses focus).
+</p>`,
     },
     {
       id: "basic-async",
@@ -1921,9 +2610,135 @@ console.log(3 &gt; 2 &gt; 1);    <span class="c">// what happens?</span></code><
       short: "Basic async",
       levels: ["beginner"],
       practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "Just enough to fetch something and not freeze the page doing it.",
+      body: `<p>
+  This is the surface level — <em>how</em> to fire off something that
+  takes time and react when it's done. <em>Why</em> it works that way
+  underneath — the call stack, the microtask queue, the exact ordering
+  rules — is the demo you already stepped through back in
+  <a href="/notes/setup-mental-model">the mental model chapter</a>, and
+  gets a full chapter of its own later. Here, just the tools.
+</p>
+
+<h3>setTimeout / setInterval</h3>
+<pre><code>const id = setTimeout(() =&gt; {
+  console.log("ran once, after the delay");
+}, 1000);                        <span class="c">// milliseconds — 1000 = 1 second</span>
+
+clearTimeout(id);                <span class="c">// cancel it before it fires</span>
+
+const tick = setInterval(() =&gt; {
+  console.log("runs again, and again, every 500ms");
+}, 500);
+
+clearInterval(tick);             <span class="c">// the ONLY way to make it stop</span></code></pre>
+<div class="warn">
+  <span class="ttl">⚠ The delay is a minimum, not a guarantee</span>
+  <code>setTimeout(fn, 0)</code> does not run immediately — it means
+  "as soon as the call stack is empty and it's this callback's turn,"
+  which could be milliseconds later if the thread is busy with
+  something else. JS is single-threaded; a timer can never interrupt
+  code that's already running.
+</div>
+<div class="try">
+  <pre><code>let count = 0;
+await new Promise((resolve) =&gt; {
+  const id = setInterval(() =&gt; {
+    count++;
+    console.log("tick", count);
+    if (count === 3) { clearInterval(id); resolve(); }
+  }, 50);
+});</code></pre>
+</div>
+<p class="sub">
+  Run it — three ticks, then silence. (The <code>await</code> around it
+  is only here so this sandbox waits for all three ticks before calling
+  the run finished — in your own code you'd rarely wrap a
+  <code>setInterval</code> like that.) Forgetting the
+  <code>clearInterval</code> in real code is one of the most common
+  memory leaks: the interval keeps a reference to everything its
+  callback closes over, alive forever, long after whatever UI it was
+  updating is gone from the page.
+</p>
+
+<h3>fetch — asking the network for something</h3>
+<pre><code>fetch("/api/users/1")
+  .then(response =&gt; response.json())   <span class="c">// parses the response body as JSON — itself async</span>
+  .then(data =&gt; console.log(data))
+  .catch(error =&gt; console.error("request failed:", error));</code></pre>
+<p>
+  <code>fetch</code> resolves as soon as the server sends back
+  <em>any</em> response — even a 404 or a 500. It only rejects on a real
+  network failure (offline, DNS gone, CORS blocked). That means status
+  codes need their own check:
+</p>
+<pre><code>fetch("/api/users/1").then(response =&gt; {
+  if (!response.ok) {              <span class="c">// true for 200-299, false for 404/500/etc.</span>
+    throw new Error("Request failed: " + response.status);
+  }
+  return response.json();
+});</code></pre>
+<div class="sticky mint">
+  <span class="ttl">Rule</span> A rejected <code>fetch</code> promise
+  means the network itself failed. A "successful" 404 still resolves —
+  always check <code>response.ok</code> before trusting the body.
+</div>
+<p class="sub">
+  <code>.then()</code>/<code>.catch()</code> chains work, but
+  <code>async</code>/<code>await</code> — the same request rewritten
+  without the chain — reads more like ordinary code and is what you'll
+  actually reach for day to day. It gets its own proper chapter once
+  promises themselves have been covered in depth.
+</p>
+
+<h3>JSON.stringify / JSON.parse</h3>
+<p>
+  JavaScript objects and JSON text are not the same thing — every
+  network request body, every <code>localStorage</code> value, every
+  config file round-trips through a real conversion, and that
+  conversion drops things silently.
+</p>
+<div class="try">
+  <pre><code>const obj = { a: 1, b: undefined, c: function () {}, d: [1, undefined, 2] };
+console.log(JSON.stringify(obj));   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>{"a":1,"d":[1,null,2]}</code> — <code>b</code> and
+  <code>c</code> vanish completely, because JSON has no way to
+  represent <code>undefined</code> or a function as a
+  <em>property value</em>. Inside an array, though, the same
+  <code>undefined</code> can't just be skipped without shifting every
+  index after it — so it becomes <code>null</code> instead.
+</p>
+<pre><code>JSON.stringify({ a: 1, b: 2 }, null, 2);
+<span class="c">// {
+//   "a": 1,
+//   "b": 2
+// }        — the third argument is indent width, for readable output</span>
+
+JSON.parse('{"a":1,"b":[1,2,3]}');    <span class="c">// back to a real object — { a: 1, b: [1, 2, 3] }</span></code></pre>
+<div class="warn">
+  <span class="ttl">⚠ A circular reference throws</span>
+  <code>const o = {}; o.self = o; JSON.stringify(o);</code> throws
+  <code>TypeError: Converting circular structure to JSON</code> —
+  <code>stringify</code> walks the whole object graph and has no way to
+  represent a reference back to something it's already visiting.
+</div>
+<p>
+  This pairing is also the standard, dependency-free way to deep-clone
+  a plain object — with real limits:
+</p>
+<pre><code>const clone = JSON.parse(JSON.stringify(original));</code></pre>
+<p class="sub">
+  Works for plain data — objects, arrays, strings, numbers, booleans,
+  <code>null</code>. Silently mangles anything else: <code>Date</code>
+  becomes a string, <code>Map</code>/<code>Set</code> become
+  <code>{}</code>, functions and <code>undefined</code> vanish exactly
+  as above. Fine for a config blob; wrong for cloning anything richer —
+  <code>structuredClone()</code> (built into every modern runtime) does
+  a real deep clone, Dates and Maps included.
+</p>`,
     },
     {
       id: "errors-tools",
@@ -1932,9 +2747,154 @@ console.log(3 &gt; 2 &gt; 1);    <span class="c">// what happens?</span></code><
       short: "Errors & tools",
       levels: ["beginner"],
       practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "The beginner track's last stop — reading what the engine is trying to tell you.",
+      body: `<h3>try / catch / finally</h3>
+<pre><code>try {
+  JSON.parse("this isn't JSON");     <span class="c">// throws a SyntaxError</span>
+} catch (error) {
+  console.log("caught:", error.message);
+} finally {
+  console.log("finally always runs — success, failure, doesn't matter");
+}</code></pre>
+<div class="try">
+  <pre><code>try {
+  throw new Error("inner");
+} finally {
+  console.log("finally ran");
+}</code></pre>
+</div>
+<p class="sub">
+  Click run — you'll see <code>"finally ran"</code>, and then the
+  error still shows up as uncaught below it. There's no
+  <code>catch</code> here at all, and <code>finally</code> doesn't stop
+  the error from propagating — it just guarantees that cleanup code
+  (closing a connection, hiding a spinner) runs on the way out, whether
+  the block succeeded or not.
+</p>
+<p>
+  The caught value doesn't have to be named if you don't need it —
+  useful when you only care <em>that</em> something failed:
+</p>
+<pre><code>try {
+  riskyThing();
+} catch {                 <span class="c">// no (error) — the binding is optional since ES2019</span>
+  showFallbackUI();
+}</code></pre>
+
+<h3>Custom errors</h3>
+<p>
+  <code>Error</code> is a class like any other — extend it to attach
+  your own data, and <code>instanceof</code> still recognizes the whole
+  chain.
+</p>
+<div class="try">
+  <pre><code>class ValidationError extends Error {
+  constructor(message, field) {
+    super(message);
+    this.name = "ValidationError";
+    this.field = field;
+  }
+}
+
+try {
+  throw new ValidationError("age must be positive", "age");
+} catch (e) {
+  console.log(e.name, "-", e.message, "- field:", e.field);
+  console.log("is an Error:", e instanceof Error);
+  console.log("is a ValidationError:", e instanceof ValidationError);
+}</code></pre>
+</div>
+<p class="sub">
+  Both <code>instanceof</code> checks come back <code>true</code> —
+  <code>super(message)</code> wires up the normal <code>Error</code>
+  machinery (<code>.message</code>, <code>.stack</code>), and the
+  <code>class ... extends Error</code> keeps the prototype chain intact.
+  That lets calling code catch broadly (<code>instanceof Error</code>)
+  or specifically (<code>instanceof ValidationError</code>) depending on
+  what it actually needs to handle differently.
+</p>
+
+<h3>Reading a stack trace</h3>
+<p>
+  Every <code>Error</code> carries a <code>.stack</code> string — a
+  snapshot of every function call that was still active the moment it
+  was thrown, most-recent first:
+</p>
+<pre><code>Error: Cannot read properties of undefined (reading 'name')
+    at getDisplayName (utils.js:12:18)
+    at renderUser (UserCard.js:8:24)
+    at renderApp (App.js:22:3)
+    at main (index.js:5:1)</code></pre>
+<p class="sub">
+  Read it <b>top to bottom, most specific first</b>: line 1 is where
+  the error actually happened — inside <code>getDisplayName</code>, at
+  <code>utils.js</code> line 12. Every line under it is a caller, in
+  order, all the way out to where the whole chain started. The bug is
+  almost always at or near the top; the rest of the trace is just
+  "how did we get here."
+</p>
+<div class="warn">
+  <span class="ttl">⚠ The throw site isn't always the bug</span>
+  A <code>TypeError</code> reading a property of <code>undefined</code>
+  tells you <em>where it blew up</em>, not <em>where it went wrong</em>.
+  The real bug is usually a few frames up — whatever handed
+  <code>getDisplayName</code> an object it shouldn't have. Read the
+  whole trace before fixing the top line.
+</div>
+
+<h3>console — more than .log</h3>
+<table>
+  <tr>
+    <th>Call</th>
+    <th>For</th>
+  </tr>
+  <tr><td><code>console.log(...)</code></td><td>general output</td></tr>
+  <tr><td><code>console.info(...)</code>, <code>console.debug(...)</code></td><td>same as log, different icon — some filters hide/show them separately</td></tr>
+  <tr><td><code>console.warn(...)</code></td><td>yellow, doesn't stop anything — a heads-up</td></tr>
+  <tr><td><code>console.error(...)</code></td><td>red, includes a stack trace automatically</td></tr>
+  <tr><td><code>console.table(data)</code></td><td>an array of objects, rendered as an actual table</td></tr>
+  <tr><td><code>console.group(label)</code> / <code>.groupEnd()</code></td><td>indents everything between them — collapsible in DevTools</td></tr>
+  <tr><td><code>console.time(label)</code> / <code>.timeEnd(label)</code></td><td>how long the code between them took</td></tr>
+</table>
+<pre><code>console.table([
+  { name: "Ana", age: 29, role: "admin" },
+  { name: "Ravi", age: 34, role: "editor" },
+]);</code></pre>
+<p class="sub">
+  Open your own DevTools console and run that — every object becomes a
+  row, every shared key becomes a column, automatically. It's the
+  single fastest way to eyeball an array of records without writing a
+  loop just to look at it.
+</p>
+
+<h3>DevTools, the short version</h3>
+<ul>
+  <li>
+    <b>Elements panel</b> — the live DOM tree, editable in place. Change
+    a class or a style here to test an idea before touching the file.
+  </li>
+  <li>
+    <b>Console panel</b> — everything above, plus a REPL you can run
+    arbitrary code in, against the actual page that's open.
+  </li>
+  <li>
+    <b>Sources panel</b> — set a real breakpoint by clicking a line
+    number, or drop <code>debugger;</code> directly in your code. Either
+    one pauses execution right there, with every variable in scope
+    inspectable.
+  </li>
+  <li>
+    <b>Network panel</b> — every request the page made, its status,
+    timing, and response — the first place to look when "the data never
+    showed up."
+  </li>
+</ul>
+<div class="say">
+  <span class="ttl">Say it like this →</span> "console.log tells you
+  what you thought to ask for. A breakpoint lets you stop time and
+  inspect everything — including the things you didn't think to log."
+</div>`,
     },
 
     {

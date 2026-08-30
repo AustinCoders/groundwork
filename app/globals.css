@@ -2433,6 +2433,53 @@ figcaption {
   margin-bottom: 10px;
 }
 
+.dom-sandbox {
+  border: 1.5px dashed var(--line-soft);
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: var(--sheet);
+  margin-bottom: 4px;
+}
+
+.dom-sandbox h4 {
+  margin: 0 0 8px;
+  font-family: var(--font-heading);
+  font-size: 17px;
+}
+
+.dom-sandbox p {
+  margin: 0 0 10px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.dom-sandbox p.de-highlight {
+  background: var(--hl-yellow);
+}
+
+.dom-sandbox ul {
+  margin: 0 0 10px;
+  padding-left: 20px;
+}
+
+.dom-sandbox form {
+  display: flex;
+  gap: 8px;
+}
+
+.dom-sandbox input {
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 5px 8px;
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  background: var(--btn-bg);
+  color: var(--ink);
+}
+
 .try__run {
   min-height: 34px;
   padding: 5px 14px;
