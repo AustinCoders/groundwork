@@ -1,0 +1,104 @@
+:root {
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--sheet);
+  --card-foreground: var(--ink);
+  --popover: var(--sheet);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--sheet);
+  --secondary: var(--sheet-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--line);
+  --muted-foreground: var(--pencil);
+  --accent: var(--hl-mint);
+  --accent-foreground: var(--ink);
+  --destructive: var(--red);
+  --destructive-foreground: var(--sheet);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--ink-soft);
+}
+
+@theme inline static {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-paper: var(--paper);
+  --color-grid: var(--grid);
+  --color-sheet: var(--sheet);
+  --color-sheet-2: var(--sheet-2);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-pencil: var(--pencil);
+  --color-red: var(--red);
+  --color-green: var(--green);
+
+  --color-hl-yellow: var(--hl-yellow);
+  --color-hl-mint: var(--hl-mint);
+  --color-hl-pink: var(--hl-pink);
+  --color-tape: var(--tape);
+  --color-hole: var(--hole);
+
+  --color-sticky-bg: var(--sticky-bg);
+  --color-sticky-fg: var(--sticky-fg);
+  --color-sticky-mint-bg: var(--sticky-mint-bg);
+  --color-sticky-mint-fg: var(--sticky-mint-fg);
+  --color-warn-bg: var(--warn-bg);
+  --color-say-bg: var(--say-bg);
+
+  --color-code-bg: var(--code-bg);
+  --color-code-fg: var(--code-fg);
+  --color-code-inline-bg: var(--code-inline-bg);
+  --color-code-comment: var(--code-comment);
+
+  --color-dg-box: var(--dg-box);
+  --color-dg-box-green: var(--dg-box-green);
+  --color-dg-box-red: var(--dg-box-red);
+  --color-dg-box-yellow: var(--dg-box-yellow);
+  --color-dg-yellow-stroke: var(--dg-yellow-stroke);
+
+  --color-bar: var(--bar);
+  --color-bar-border: var(--bar-border);
+  --color-btn-bg: var(--btn-bg);
+  --color-btn-hover: var(--btn-hover);
+
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+[data-slot="select-item"][data-highlighted] {
+  background: var(--btn-hover);
+}
+
+[data-slot="select-item"][data-state="checked"] {
+  background: var(--hl-mint);
+  color: var(--sticky-mint-fg);
+  font-weight: 700;
+}

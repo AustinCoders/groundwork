@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # msedge-tts ships a pnpm-only preinstall gate; its published dist is
+      # prebuilt, so skipping lifecycle scripts is safe here.
+      - run: npm ci --ignore-scripts
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npx eslint app components lib
+
+      - name: Content integrity tests
+        run: npm test
+
+      - name: Build
+        run: npm run build

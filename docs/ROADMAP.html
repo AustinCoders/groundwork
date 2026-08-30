@@ -1,0 +1,1135 @@
+<title>My Notes — Audit &amp; Roadmap</title>
+
+<style>
+  :root {
+    --ground: #f6f7f9;
+    --surface: #ffffff;
+    --surface-2: #edf0f4;
+    --ink: #131c26;
+    --ink-2: #3d4c5c;
+    --muted: #6b7c8d;
+    --line: #dbe1e8;
+    --line-soft: #e7ebf0;
+    --accent: #e5b71f;
+    --accent-soft: rgba(229, 183, 31, 0.22);
+    --crit: #b4342a;
+    --crit-bg: rgba(180, 52, 42, 0.09);
+    --high: #b5701a;
+    --high-bg: rgba(181, 112, 26, 0.1);
+    --med: #1f6f6b;
+    --med-bg: rgba(31, 111, 107, 0.1);
+    --good: #1f6f4a;
+    --good-bg: rgba(31, 111, 74, 0.1);
+
+    --font-display: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-body: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, ui-serif, serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #10151b;
+      --surface: #161d25;
+      --surface-2: #1d262f;
+      --ink: #e8edf2;
+      --ink-2: #b4c0cc;
+      --muted: #8497a6;
+      --line: #2a353f;
+      --line-soft: #222c35;
+      --accent: #f0c63a;
+      --accent-soft: rgba(240, 198, 58, 0.18);
+      --crit: #e8695c;
+      --crit-bg: rgba(232, 105, 92, 0.13);
+      --high: #e0a03f;
+      --high-bg: rgba(224, 160, 63, 0.13);
+      --med: #4fb3ac;
+      --med-bg: rgba(79, 179, 172, 0.13);
+      --good: #4fb37e;
+      --good-bg: rgba(79, 179, 126, 0.13);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #10151b;
+    --surface: #161d25;
+    --surface-2: #1d262f;
+    --ink: #e8edf2;
+    --ink-2: #b4c0cc;
+    --muted: #8497a6;
+    --line: #2a353f;
+    --line-soft: #222c35;
+    --accent: #f0c63a;
+    --accent-soft: rgba(240, 198, 58, 0.18);
+    --crit: #e8695c;
+    --crit-bg: rgba(232, 105, 92, 0.13);
+    --high: #e0a03f;
+    --high-bg: rgba(224, 160, 63, 0.13);
+    --med: #4fb3ac;
+    --med-bg: rgba(79, 179, 172, 0.13);
+    --good: #4fb37e;
+    --good-bg: rgba(79, 179, 126, 0.13);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 56px 28px 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 5vw, 46px);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.08;
+    text-wrap: balance;
+    margin: 0;
+  }
+  h1 .mark {
+    background: linear-gradient(to bottom, transparent 62%, var(--accent-soft) 62%);
+    padding: 0 2px;
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-size: 25px;
+    font-weight: 700;
+    letter-spacing: -0.018em;
+    line-height: 1.2;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  h3 {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+    max-width: 68ch;
+  }
+  .dek {
+    font-size: 19px;
+    color: var(--ink-2);
+    max-width: 62ch;
+  }
+  em {
+    font-style: italic;
+  }
+
+  header.head {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .sec-head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  /* ---- stat band ---- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .stat {
+    background: var(--surface);
+    padding: 18px 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .stat .n {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .stat .n.warn {
+    color: var(--crit);
+  }
+  .stat .n.ok {
+    color: var(--good);
+  }
+  .stat .l {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  /* ---- findings ---- */
+  .findings {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--line);
+  }
+  .finding {
+    display: grid;
+    grid-template-columns: 104px 1fr;
+    gap: 20px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .finding > div:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    padding: 4px 0 4px 8px;
+    border-left: 3px solid currentColor;
+    height: fit-content;
+  }
+  .chip.c1 {
+    color: var(--crit);
+    background: var(--crit-bg);
+  }
+  .chip.c2 {
+    color: var(--high);
+    background: var(--high-bg);
+  }
+  .chip.c3 {
+    color: var(--med);
+    background: var(--med-bg);
+  }
+  .chip.done {
+    color: var(--good);
+    background: var(--good-bg);
+  }
+
+  .finding p {
+    font-size: 16px;
+    color: var(--ink-2);
+    max-width: 66ch;
+  }
+  .finding.is-done h3 {
+    color: var(--muted);
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+  }
+  .finding.is-done p {
+    color: var(--muted);
+  }
+  /* Must out-specify `.finding.is-done p`, or the resolution note inherits
+     the muted grey meant for the stale description. */
+  .finding p.fixed,
+  .finding.is-done p.fixed {
+    font-size: 15px;
+    color: var(--good);
+    max-width: 66ch;
+  }
+  .finding p.fixed b {
+    font-weight: 600;
+  }
+  .where {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.87em;
+    background: var(--surface-2);
+    padding: 1.5px 5px;
+    border-radius: 2px;
+  }
+
+  /* ---- tables ---- */
+  .t-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    background: var(--surface);
+    font-size: 15.5px;
+  }
+  th,
+  td {
+    text-align: left;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    background: var(--surface-2);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+  td.num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .pill {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .pill.no {
+    color: var(--crit);
+    background: var(--crit-bg);
+  }
+  .pill.yes {
+    color: var(--good);
+    background: var(--good-bg);
+  }
+  .pill.part {
+    color: var(--high);
+    background: var(--high-bg);
+  }
+
+  /* ---- callout ---- */
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--accent);
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .callout.verdict {
+    border-top-color: var(--crit);
+  }
+  .callout h3 {
+    font-size: 16px;
+  }
+  .callout p {
+    font-size: 16px;
+    color: var(--ink-2);
+  }
+
+  /* ---- phases ---- */
+  .phases {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .phase {
+    background: var(--surface);
+    padding: 22px;
+    display: grid;
+    grid-template-columns: 54px 1fr;
+    gap: 20px;
+  }
+  .phase-n {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    padding-top: 3px;
+  }
+  .phase-b {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+  }
+  .phase-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .phase-cost {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  .phase p {
+    font-size: 16px;
+    color: var(--ink-2);
+  }
+  .phase.is-done .phase-n {
+    color: var(--good);
+  }
+  .phase.is-done h3 {
+    color: var(--muted);
+  }
+
+  .status {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .status.shipped {
+    color: var(--good);
+    background: var(--good-bg);
+  }
+  .status.next {
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  ul.tight {
+    margin: 0;
+    padding-left: 19px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  ul.tight li {
+    font-size: 15.5px;
+    color: var(--ink-2);
+  }
+  ul.tight li::marker {
+    color: var(--muted);
+  }
+
+  .impact {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+    color: var(--accent);
+    background: var(--accent-soft);
+    white-space: nowrap;
+  }
+
+  .foot {
+    font-size: 15px;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+    padding-top: 20px;
+  }
+
+  @media (max-width: 620px) {
+    .finding {
+      grid-template-columns: 1fr;
+      gap: 9px;
+    }
+    .phase {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .wrap {
+      padding: 40px 20px 72px;
+      gap: 44px;
+    }
+  }
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <div class="eyebrow">Codebase audit &amp; roadmap · js-next · third pass, 8 Aug 2026</div>
+    <h1>Two tracks written, the app is sound. <span class="mark">You still can't practise on it.</span></h1>
+    <p class="dek">
+      An audit of the app and a direct answer on whether this content gets you a $500K offer. Phases 1-3 have shipped;
+      the findings they resolved are struck through rather than deleted, so this stays a record of what was wrong and
+      what fixed it. Two new issues were found in this pass. Edit this file at <code>docs/ROADMAP.html</code> to keep it
+      current.
+    </p>
+  </header>
+
+  <section>
+    <div class="stats">
+      <div class="stat">
+        <span class="n ok">60</span>
+        <span class="l">Chapters written — was 36</span>
+      </div>
+      <div class="stat">
+        <span class="n warn">421</span>
+        <span class="l">Empty stubs, of 481 planned</span>
+      </div>
+      <div class="stat">
+        <span class="n warn">0</span>
+        <span class="l">Problems on the finished tracks</span>
+      </div>
+      <div class="stat">
+        <span class="n ok">504</span>
+        <span class="l">Pages prerendered, all indexable</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PART 1 ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Part 1</div>
+      <h2>Where the content stands</h2>
+    </div>
+
+    <p>
+      Two tracks are finished and genuinely dense. DSA carries 172 worked code examples, 67 diagrams and 60 tables
+      across 10,189 lines. System Design adds 8,227 lines with 61 diagrams, 104 tradeoff tables and two full end-to-end
+      walkthroughs. Both are written at the right level. Every other topic is still a shelf with labels and no books.
+    </p>
+
+    <div class="t-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Topic</th>
+            <th>Written</th>
+            <th>Planned</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>DSA in JS</td>
+            <td class="num">34</td>
+            <td class="num">34</td>
+            <td><span class="pill yes">complete</span></td>
+          </tr>
+          <tr>
+            <td>System Design</td>
+            <td class="num">24</td>
+            <td class="num">24</td>
+            <td><span class="pill yes">complete — phase 3</span></td>
+          </tr>
+          <tr>
+            <td>JavaScript</td>
+            <td class="num">2</td>
+            <td class="num">24</td>
+            <td><span class="pill part">started</span></td>
+          </tr>
+          <tr>
+            <td>React</td>
+            <td class="num">0</td>
+            <td class="num">41</td>
+            <td><span class="pill no">empty</span></td>
+          </tr>
+          <tr>
+            <td>Node.js</td>
+            <td class="num">0</td>
+            <td class="num">41</td>
+            <td><span class="pill no">empty</span></td>
+          </tr>
+          <tr>
+            <td>TypeScript</td>
+            <td class="num">0</td>
+            <td class="num">29</td>
+            <td><span class="pill no">empty</span></td>
+          </tr>
+          <tr>
+            <td>Next.js</td>
+            <td class="num">0</td>
+            <td class="num">29</td>
+            <td><span class="pill no">empty</span></td>
+          </tr>
+          <tr>
+            <td>Nest.js</td>
+            <td class="num">0</td>
+            <td class="num">26</td>
+            <td><span class="pill no">empty</span></td>
+          </tr>
+          <tr>
+            <td>CSS · Databases</td>
+            <td class="num">0</td>
+            <td class="num">50</td>
+            <td><span class="pill no">empty</span></td>
+          </tr>
+          <tr>
+            <td>Security · Testing · K8s · Cloud</td>
+            <td class="num">0</td>
+            <td class="num">96</td>
+            <td><span class="pill no">empty</span></td>
+          </tr>
+          <tr>
+            <td>HTML · Docker · GraphQL · Redis</td>
+            <td class="num">0</td>
+            <td class="num">87</td>
+            <td><span class="pill no">empty</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <h3>The finished tracks have no practice at all</h3>
+      <p>
+        16 exercises exist with real tests, and the workspace that runs them works. They are correctly wired — but only
+        to <em>JavaScript</em> chapters, and 22 of those 24 are still unwritten. DSA and System Design, the two complete
+        tracks, have zero problems between them. You can read 58 chapters end to end and never write a line of code.
+      </p>
+      <p style="font-size: 15px; color: var(--muted)">
+        Correction carried from the first pass: it reported the 16 exercises as unwired. They were wired; the grep that
+        produced that claim missed <code>content/notes.ts</code>. The real gap is that no exercises have been authored
+        for the finished topics.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ PART 2 ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Part 2</div>
+      <h2>Engineering audit</h2>
+      <p style="font-size: 16px; color: var(--ink-2)">
+        Gaps in the app itself, not the content. Nothing here requires touching the visual design. Build, typecheck,
+        lint and all 15 tests pass; 504 pages prerender.
+      </p>
+    </div>
+
+    <div class="findings">
+      <div class="finding">
+        <span class="chip c2">New · High</span>
+        <div>
+          <h3>Chapter pages have no <code>&lt;h1&gt;</code> at all</h3>
+          <p>
+            Found in this pass. A chapter page's heading order is
+            <code>h2 Chapters → h2 Jump to a level → h2 Topics → h2 Your progress → h2 Tries</code>. The sidebar's four
+            headings come first, and the actual chapter title is an <code>h2</code> buried behind them. There is no
+            <code>h1</code> on the page.
+          </p>
+          <p>
+            This mattered less when a topic was one page; now that every chapter is its own indexable route it is the
+            strongest on-page signal Google looks for, and it is missing on all 504 of them. For screen-reader users
+            navigating by heading, the document also reads as four navigation sections before any content.
+          </p>
+          <span class="where"
+            >components/reader/ChapterSheet.tsx — title renders as h2; Shell sidebar uses h2 for nav groups</span
+          >
+        </div>
+      </div>
+
+      <div class="finding">
+        <span class="chip c3">New · Medium</span>
+        <div>
+          <h3>No security headers</h3>
+          <p>
+            <code>next.config.ts</code> is empty and there is no middleware, so the app ships without CSP,
+            <code>X-Frame-Options</code>, <code>X-Content-Type-Options</code> or <code>Referrer-Policy</code>. The
+            reader injects chapter HTML with <code>dangerouslySetInnerHTML</code> — that content is authored by you, not
+            user input, so this is hardening rather than an open hole, but a CSP is the thing that would contain a
+            mistake in 30,000 lines of hand-written HTML.
+          </p>
+          <span class="where">next.config.ts — no headers() block, no middleware.ts</span>
+        </div>
+      </div>
+
+      <div class="finding is-done">
+        <span class="chip done">Not real</span>
+        <div>
+          <h3>An unlabelled button on every page</h3>
+          <p>Flagged by the automated accessibility sweep on all four page types.</p>
+          <p class="fixed">
+            <b>✓ Not a real problem</b> — it is the mobile drawer backdrop, which already carries
+            <code>aria-hidden="true"</code> and <code>tabindex="-1"</code>. Assistive tech never sees it. Recorded here
+            so the next audit doesn't re-raise it.
+          </p>
+        </div>
+      </div>
+
+      <div class="finding is-done">
+        <span class="chip done">Fixed</span>
+        <div>
+          <h3>The site is invisible to search engines</h3>
+          <p>
+            No sitemap, robots, favicon, manifest, or Open Graph images — nothing indexable and every shared link a
+            blank grey card.
+          </p>
+          <span class="where">app/ — sitemap.ts, robots.ts, manifest.ts, opengraph-image.tsx all absent</span>
+          <p class="fixed">
+            <b>✓ Fixed</b> — phase 1. All present, plus a generated favicon and apple-icon. Sitemap priority is weighted
+            by how much of a topic is actually written.
+          </p>
+        </div>
+      </div>
+
+      <div class="finding is-done">
+        <span class="chip done">Fixed</span>
+        <div>
+          <h3>Any runtime error shows a blank white page</h3>
+          <p>No error boundaries at any level — one thrown error and the reader gets nothing.</p>
+          <span class="where">app/ — no error.tsx, not-found.tsx or global-error.tsx</span>
+          <p class="fixed">
+            <b>✓ Fixed</b> — phase 1. All three, in the notebook aesthetic; the 404 carries a rotated stamp like the
+            rest of the site.
+          </p>
+        </div>
+      </div>
+
+      <div class="finding is-done">
+        <span class="chip done">Fixed</span>
+        <div>
+          <h3>Sidebar progress always reported JavaScript, on every topic</h3>
+          <p>
+            The shell called <code>chapters()</code> with no topic argument and hardcoded the label, so the finished DSA
+            track reported progress against a near-empty topic.
+          </p>
+          <span class="where">components/Shell.tsx</span>
+          <p class="fixed">
+            <b>✓ Fixed</b> — phase 1. <code>Shell</code> takes a <code>topicId</code>. A second bug surfaced while
+            fixing it: asking for a topic with no notes file (Git) silently returned JavaScript's chapters — that now
+            returns empty.
+          </p>
+        </div>
+      </div>
+
+      <div class="finding is-done">
+        <span class="chip done">Fixed</span>
+        <div>
+          <h3>You couldn't mark a chapter done from the chapter</h3>
+          <p>
+            <code>setChapterDone</code> was only called from <code>/path</code>, so in practice progress never got
+            recorded and the whole system was decorative.
+          </p>
+          <p class="fixed">
+            <b>✓ Fixed</b> — phase 1. A checkbox in the chapter footer, plus a subscription in <code>progress</code> so
+            the sidebar meter updates live from anywhere it is ticked.
+          </p>
+        </div>
+      </div>
+
+      <div class="finding is-done">
+        <span class="chip done">Fixed</span>
+        <div>
+          <h3>Every chapter of every topic shipped to the browser at once</h3>
+          <p>
+            <code>app/dsa/page.tsx</code> was a client component importing all 504 KB of <code>dsa-notes.ts</code> — an
+            880 KB JavaScript chunk of pure prose to read one chapter.
+          </p>
+          <span class="where">app/dsa/page.tsx — "use client" + full content import</span>
+          <p class="fixed">
+            <b>✓ Fixed</b> — phase 2, the big one. Chapters are real routes rendered as server components. The 880 KB
+            chunk is gone — verified no client chunk contains chapter prose. A reading page is 84 KB of HTML and 257 KB
+            gzipped of framework JS, and every chapter is independently indexable.
+          </p>
+        </div>
+      </div>
+
+      <div class="finding is-done">
+        <span class="chip done">Fixed</span>
+        <div>
+          <h3>No tests and no CI</h3>
+          <p>Zero test files, no runner, no GitHub Actions — every change verified by hand.</p>
+          <p class="fixed">
+            <b>✓ Fixed</b> — phase 2. Vitest with 15 content-integrity tests: ready-but-empty bodies, URL-safe chapter
+            ids (they are route segments now), practice and syllabus wiring, aria-labels on every diagram. Proven to
+            fail on a real break, not just pass. CI runs typecheck, lint, tests and build.
+          </p>
+        </div>
+      </div>
+
+      <div class="finding is-done">
+        <span class="chip done">Fixed</span>
+        <div>
+          <h3>The sidebar search box stole focus on every page load</h3>
+          <p>
+            Not in the original audit — it surfaced while testing phase 2. Radix's
+            <code>FocusScope</code> pulls focus to its first tabbable child on mount, and the sidebar is always mounted,
+            so the caret landed in the search input on every page. Keyboard shortcuts silently did nothing.
+          </p>
+          <p class="fixed"><b>✓ Fixed</b> — the focus trap mounts only while the mobile drawer is open.</p>
+        </div>
+      </div>
+
+      <div class="finding is-done">
+        <span class="chip done">Not real</span>
+        <div>
+          <h3>A 3.4 MB editor chunk loads for readers who never open the editor</h3>
+          <p>CodeMirror and the bundled TypeScript library dominate the build.</p>
+          <p class="fixed">
+            <b>✓ Not a real problem</b> — measured in phase 2 and the claim did not survive. The chunk is already lazy:
+            it appears on no page's initial load, not even <code>/practice</code>. The first audit inferred this from
+            total build size rather than from what a page actually requests.
+          </p>
+        </div>
+      </div>
+
+      <div class="finding">
+        <span class="chip c3">Medium</span>
+        <div>
+          <h3>Narration depends on an unofficial Microsoft endpoint</h3>
+          <p>
+            Known and accepted when it was chosen: <code>msedge-tts</code> reverse-engineers Edge's Read Aloud API. It
+            can break without notice, needs <code>--ignore-scripts</code> on a fresh install, and has no fallback path.
+          </p>
+          <span class="where">app/api/tts/route.ts</span>
+        </div>
+      </div>
+
+      <div class="finding">
+        <span class="chip c3">Medium</span>
+        <div>
+          <h3>No analytics, so content decisions are guesses</h3>
+          <p>
+            Nothing records which chapters get opened, where reading stops, or which searches return nothing. With 421
+            chapters left to write, that last signal in particular would tell you what to write next.
+          </p>
+        </div>
+      </div>
+
+      <div class="finding">
+        <span class="chip c3">Medium</span>
+        <div>
+          <h3>Search only covers the topic you're already in</h3>
+          <p>
+            The reader fetches one topic's index, so searching "caching" from DSA can't surface the System Design
+            chapters that now cover it in depth — a real loss, because those two tracks genuinely overlap.
+          </p>
+          <span class="where">components/reader/ReaderShell.tsx — per-topic search-index.json</span>
+        </div>
+      </div>
+
+      <div class="finding">
+        <span class="chip c3">Medium</span>
+        <div>
+          <h3>No offline support</h3>
+          <p>
+            The most valuable time to read interview notes is on a commute. A service worker caching visited chapters
+            would cover it, and the content is static enough to make this low-risk.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PART 3 ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Part 3</div>
+      <h2>Can this content get you a $500K offer?</h2>
+    </div>
+
+    <div class="callout verdict">
+      <h3>Short answer: not yet — and the reason has changed</h3>
+      <p>
+        It is no longer a coverage problem on the two hardest subjects. DSA and System Design are both written end to
+        end at genuinely senior depth. The blocker now is that
+        <b>this is a library, not a gym</b>. Sixty chapters of reading with zero problems trains recognition; an
+        interview tests recall under time pressure with someone watching. Those are different skills, and only one of
+        them is on the site.
+      </p>
+    </div>
+
+    <p>
+      $500K total compensation is senior-to-staff at a top payer: Google L6, Meta E6, Amazon L7, or senior at Netflix /
+      OpenAI / Stripe. At that level the coding round is the entry ticket, not what decides the offer. Here is where the
+      site stands against a real loop.
+    </p>
+
+    <div class="t-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>What a senior/staff loop weighs</th>
+            <th>Share</th>
+            <th>Content</th>
+            <th>Can you practise it?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>System design</strong> — the biggest lever at this level</td>
+            <td class="num">~35%</td>
+            <td><span class="pill yes">24 / 24 written</span></td>
+            <td><span class="pill no">no prompts, no rubric</span></td>
+          </tr>
+          <tr>
+            <td><strong>Coding / DSA</strong> — necessary, rarely the differentiator</td>
+            <td class="num">~30%</td>
+            <td><span class="pill yes">34 / 34 written</span></td>
+            <td><span class="pill no">0 problems</span></td>
+          </tr>
+          <tr>
+            <td><strong>Behavioral &amp; scope</strong> — influence, ambiguity, conflict, impact</td>
+            <td class="num">~25%</td>
+            <td><span class="pill no">nothing on the site</span></td>
+            <td><span class="pill no">—</span></td>
+          </tr>
+          <tr>
+            <td><strong>Domain / craft depth</strong> — language and runtime internals</td>
+            <td class="num">~10%</td>
+            <td><span class="pill no">2 of 24 JS, 0 of 41 Node</span></td>
+            <td><span class="pill part">16 JS exercises exist</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size: 15px; color: var(--muted)">
+      Share-of-loop figures are informed estimates, not published numbers; they move by company and by interviewer.
+    </p>
+
+    <div class="callout">
+      <h3>The uncomfortable one: behavioral is where the money actually moves</h3>
+      <p>
+        Candidates who can code get downlevelled from L6 to L5 — a six-figure difference — on the behavioral round,
+        almost always for the same reason: they describe work they <em>did</em> instead of work they <em>drove</em>.
+        Scope, influence without authority, decisions under ambiguity, disagreement handled well. The curriculum has no
+        topic for this at all, and it is the cheapest gap on this page to close.
+      </p>
+    </div>
+
+    <h3 style="margin-top: 8px">What would actually change the answer to "yes"</h3>
+    <ul class="tight">
+      <li>
+        <strong>A problem bank for both finished tracks.</strong> ~150 DSA problems mapped to the 34 chapters, plus
+        System Design prompts with a rubric. This is the single biggest gap between "I read it" and "I can do it".
+      </li>
+      <li>
+        <strong>A behavioral / staff-scope track.</strong> STAR structure, a story bank you fill in yourself, the
+        L5-vs-L6 signal table, and how to talk about scope and influence.
+      </li>
+      <li>
+        <strong>A timed mock mode.</strong> Two chapters now teach a 45-minute framework — DSA A12 and the System Design
+        walkthroughs. Nothing lets you rehearse either against a clock.
+      </li>
+      <li>
+        <strong>Language and runtime depth.</strong> JavaScript 2/24, Node 0/41. Senior loops probe the event loop,
+        memory and concurrency directly, and this is also the part a JS-heavy résumé gets grilled on hardest.
+      </li>
+      <li>
+        <strong>Spaced repetition.</strong> 60 chapters is already more than you can hold. Without resurfacing, the
+        early DSA chapters are gone by the time you interview.
+      </li>
+      <li>
+        <strong>Company-specific tracks.</strong> Meta's product-design bias, Google's algorithmic bar, Amazon's
+        leadership principles — the same content, filtered per target.
+      </li>
+    </ul>
+
+    <div class="callout">
+      <h3>An honest caveat about the site itself</h3>
+      <p>
+        No study site gets anyone an offer on its own. What this one can realistically do is make your preparation
+        ordered, complete and free of blind spots — which is worth a lot, because most candidates prepare in a scattered
+        way. The parts it cannot supply are reps against a real person, feedback on how you sound while thinking, and
+        the actual project experience the behavioral round asks you to narrate.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ PART 4 ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Part 4</div>
+      <h2>The plan</h2>
+      <p style="font-size: 16px; color: var(--ink-2)">
+        Reordered after this pass: making the finished tracks practisable now outranks writing more topics, because it
+        is what converts reading into interview ability.
+      </p>
+    </div>
+
+    <div class="phases">
+      <div class="phase is-done">
+        <div class="phase-n">01</div>
+        <div class="phase-b">
+          <div class="phase-top">
+            <h3>Fix what's broken</h3>
+            <span class="status shipped">✓ shipped</span>
+          </div>
+          <ul class="tight">
+            <li>SEO infrastructure: sitemap, robots, manifest, favicon, OG images</li>
+            <li>Error boundaries at every level</li>
+            <li>Topic-aware sidebar progress</li>
+            <li>"Mark as read" in the reader itself</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase is-done">
+        <div class="phase-n">02</div>
+        <div class="phase-b">
+          <div class="phase-top">
+            <h3>Make it fast and keep it correct</h3>
+            <span class="status shipped">✓ shipped</span>
+            <span class="impact">880 KB → 0 content JS</span>
+          </div>
+          <p>Done before writing more chapters, not after — the bundle problem compounds with every chapter added.</p>
+          <ul class="tight">
+            <li>Content out of client components; chapters render on the server</li>
+            <li>Route per chapter, so one chapter loads one chapter</li>
+            <li>Vitest + 15 content-integrity tests, GitHub Actions CI</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase is-done">
+        <div class="phase-n">03</div>
+        <div class="phase-b">
+          <div class="phase-top">
+            <h3>System Design — all 24 chapters</h3>
+            <span class="status shipped">✓ shipped</span>
+          </div>
+          <p>
+            Written to the same standard as the DSA advanced tier. The two end-to-end walkthroughs (URL shortener, news
+            feed) carry the most weight — they are what the interview actually looks like.
+          </p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-n">04</div>
+        <div class="phase-b">
+          <div class="phase-top">
+            <h3>Turn the finished tracks into a gym</h3>
+            <span class="status next">next up</span>
+            <span class="phase-cost">~3–4 sessions</span>
+            <span class="impact">recall, not recognition</span>
+          </div>
+          <p>
+            Promoted above the behavioral track after this pass: 58 chapters with zero problems is now the largest
+            single weakness, and the runner to support it already exists.
+          </p>
+          <ul class="tight">
+            <li>~150 DSA problems mapped across the 34 chapters, using the existing runner and test format</li>
+            <li>System Design prompts with a self-scoring rubric</li>
+            <li>A timed mock mode that runs the 45-minute framework under a real clock</li>
+            <li>Spaced repetition that resurfaces chapters you read weeks ago</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-n">05</div>
+        <div class="phase-b">
+          <div class="phase-top">
+            <h3>The behavioral track</h3>
+            <span class="phase-cost">~1–2 sessions</span>
+            <span class="impact">the downlevel guard</span>
+          </div>
+          <p>
+            A new topic in the same shelf format: STAR structure, the L5-vs-L6 signal table, scope and influence
+            framing, plus a story bank you fill in and reread before a loop. Small to build, disproportionate effect on
+            offer level.
+          </p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-n">06</div>
+        <div class="phase-b">
+          <div class="phase-top">
+            <h3>Fix what this pass found</h3>
+            <span class="phase-cost">~1 session</span>
+          </div>
+          <ul class="tight">
+            <li>
+              Give chapter pages a real <code>h1</code>, and demote the sidebar's nav headings so the document outline
+              reads content-first
+            </li>
+            <li>Add security headers (CSP, X-Frame-Options, Referrer-Policy) in <code>next.config.ts</code></li>
+            <li>Cross-topic search, so DSA and System Design surface each other</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-n">07</div>
+        <div class="phase-b">
+          <div class="phase-top">
+            <h3>Fill the remaining topics by interview relevance</h3>
+            <span class="phase-cost">ongoing</span>
+          </div>
+          <p>
+            Not alphabetically, and not all of them. Suggested order: JavaScript (finish the 22) → Node → React →
+            TypeScript → Databases → Security → Testing → the rest. Some topics may be worth cutting rather than writing
+            — 22 HTML chapters will not move a staff-level loop.
+          </p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-n">08</div>
+        <div class="phase-b">
+          <div class="phase-top">
+            <h3>Product polish</h3>
+            <span class="phase-cost">ongoing</span>
+          </div>
+          <ul class="tight">
+            <li>Analytics on chapter reads, drop-off, and zero-result searches</li>
+            <li>Offline reading via a service worker</li>
+            <li>A narration fallback for when the unofficial TTS endpoint breaks</li>
+            <li>Full keyboard and screen-reader pass</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="callout">
+      <h3>If you only do one thing next</h3>
+      <p>
+        Build the DSA problem bank. Everything upstream of it is written, the runner and test format already exist, and
+        it is the step that converts 58 chapters of reading into something an interview can actually measure. The
+        behavioral track is the close second and the cheaper build — do it immediately after, or in parallel if you get
+        bored.
+      </p>
+    </div>
+    <p class="foot">
+      Third audit pass, 8 August 2026, against the working tree. All counts measured from the codebase: chapter totals
+      from <code>content/*.ts</code>, bundle and page counts from a production <code>next build</code>, the "no chapter
+      prose in any client chunk" claim by grepping built chunks, and the accessibility and heading findings from a
+      headless browser sweep over the home, cover, chapter and practice pages. Keep this file current by editing
+      <code>docs/ROADMAP.html</code>.
+    </p>
+  </section>
+</div>
