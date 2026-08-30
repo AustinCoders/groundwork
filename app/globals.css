@@ -749,6 +749,9 @@ li::marker {
   border-right: 1px solid var(--line);
   scrollbar-width: none;
   -ms-overflow-style: none;
+  transition:
+    width 0.24s ease,
+    padding 0.24s ease;
 }
 
 .site-sidenav::-webkit-scrollbar {
@@ -759,6 +762,35 @@ li::marker {
   padding: 4px 6px 16px;
   margin-bottom: 8px;
   border-bottom: 1px dashed var(--line-soft);
+}
+
+.clock-weather {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  padding: 0 6px 14px;
+  margin-bottom: 8px;
+  border-bottom: 1px dashed var(--line-soft);
+  font-family: var(--font-heading);
+}
+
+.clock-weather__time {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.clock-weather__day {
+  font-size: 12.5px;
+  color: var(--pencil);
+  flex: 1 1 auto;
+}
+
+.clock-weather__weather {
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  flex: none;
 }
 
 .site-sidenav__section {
@@ -2522,7 +2554,9 @@ span.tone-bad {
   .chapter > div > .dg,
   .chapter .say,
   .chapter .sticky,
-  .chapter pre {
+  .chapter pre,
+  .stat,
+  .badge-card {
     animation: reveal-up linear both;
     animation-timeline: view();
     animation-range: entry 0% cover 25%;
@@ -2847,10 +2881,40 @@ span.tone-bad {
 }
 
 .heatmap__day {
+  position: relative;
   width: 12px;
   height: 12px;
   border-radius: 3px;
   background: var(--line-soft);
+  transition: transform 0.1s ease;
+}
+
+.heatmap__day:not(.is-pad):hover,
+.heatmap__day:not(.is-pad):focus-visible {
+  transform: scale(1.3);
+  outline: none;
+}
+
+/* A custom tooltip instead of the browser's native title — themeable,
+   and it doesn't wait a second to appear. */
+.heatmap__day[data-tooltip]:hover::after,
+.heatmap__day[data-tooltip]:focus-visible::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: var(--sheet);
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  line-height: 1.3;
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .heatmap__day.is-pad {
@@ -2889,6 +2953,10 @@ span.tone-bad {
   background: var(--sheet);
   opacity: 0.45;
   filter: grayscale(0.6);
+  transition:
+    transform 0.14s ease,
+    box-shadow 0.14s ease,
+    opacity 0.14s ease;
 }
 
 .badge-card.is-earned {
@@ -2896,6 +2964,34 @@ span.tone-bad {
   filter: none;
   border-color: var(--card-accent, var(--green));
   box-shadow: var(--shadow-sm);
+}
+
+.badge-card.is-earned:hover {
+  transform: translateY(-3px) rotate(-1deg);
+  box-shadow: var(--shadow-md);
+}
+
+.level-up-banner {
+  margin: 0 0 16px;
+  padding: 12px 18px;
+  border-radius: var(--radius);
+  background: var(--hl-mint);
+  color: var(--sticky-mint-fg);
+  font-family: var(--font-heading);
+  font-size: 18px;
+  text-align: center;
+  animation: level-up-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes level-up-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .badge-card__icon {
@@ -5431,6 +5527,7 @@ a.step__title:hover {
   .site-sidenav.is-collapsed .nav-group__count,
   .site-sidenav.is-collapsed .nav-group__arrow,
   .site-sidenav.is-collapsed #sidenav-progress,
+  .site-sidenav.is-collapsed .clock-weather,
   .site-sidenav.is-collapsed .site-sidenav__foot {
     display: none;
   }

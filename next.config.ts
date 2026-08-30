@@ -37,7 +37,9 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   // Superseded by frame-ancestors above, kept for older browsers.
   { key: "X-Frame-Options", value: "DENY" },
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
+  // geolocation=(self): the sidebar weather widget asks for it — scoped to
+  // this origin only, no third-party iframe can request it through us.
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self), interest-cohort=()" },
 ];
 
 const nextConfig: NextConfig = {

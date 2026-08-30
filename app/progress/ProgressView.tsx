@@ -3,9 +3,46 @@
 import { useEffect, useMemo, useState } from "react";
 import { Shell } from "@/components/Shell";
 import { Crumbs } from "@/components/Crumbs";
+import { Confetti } from "@/components/practice/Confetti";
+import { CountUp } from "@/components/CountUp";
 import { BADGES, computeStats, earnedBadges, recentActivity, type Stats } from "@/lib/gamification";
 import { useMounted, useProgressValue } from "@/lib/hooks";
 import { plural } from "@/lib/format";
+
+const LAST_SEEN_LEVEL_KEY = "jsnotes:last-seen-level";
+
+/** True for exactly one render, the first time `level` is higher than
+ * whatever was last recorded — a real level-up, not just the first paint
+ * of a returning level-5 reader. */
+function useLevelUpCelebration(level: number): boolean {
+  const [celebrate, setCelebrate] = useState(false);
+
+  useEffect(() => {
+    if (level <= 1) return;
+    let lastSeen = 1;
+    try {
+      lastSeen = Number(localStorage.getItem(LAST_SEEN_LEVEL_KEY) || "1");
+    } catch {
+      return;
+    }
+    if (level > lastSeen) {
+      const kick = setTimeout(() => setCelebrate(true), 0);
+      try {
+        localStorage.setItem(LAST_SEEN_LEVEL_KEY, String(level));
+      } catch {
+        // best-effort — worst case the celebration replays next visit
+      }
+      return () => clearTimeout(kick);
+    }
+    if (level !== lastSeen) {
+      try {
+        localStorage.setItem(LAST_SEEN_LEVEL_KEY, String(level));
+      } catch {}
+    }
+  }, [level]);
+
+  return celebrate;
+}
 
 const DEFAULT_STATS: Stats = {
   exercisesSolved: 0,
@@ -68,7 +105,8 @@ function Heatmap() {
                 <span
                   key={cell.day}
                   className={`heatmap__day is-level-${heatLevel(cell.count)}`}
-                  title={`${cell.day}: ${plural(cell.count, "thing")} done`}
+                  data-tooltip={`${cell.day}: ${plural(cell.count, "thing")} done`}
+                  tabIndex={0}
                 />
               ) : (
                 <span key={`pad-${di}`} className="heatmap__day is-pad" aria-hidden="true" />
@@ -115,12 +153,20 @@ export function ProgressView() {
   const earned = useMemo(() => earnedBadges(stats), [stats]);
   const earnedIds = useMemo(() => new Set(earned.map((b) => b.id)), [earned]);
   const xpPct = stats.xpForNextLevel > 0 ? Math.min(100, Math.round((stats.xpIntoLevel / stats.xpForNextLevel) * 100)) : 100;
+  const leveledUp = useLevelUpCelebration(stats.level);
 
   if (!mounted) return null;
 
   return (
     <Shell skipLabel="Skip to your progress">
+      <Confetti fire={leveledUp} />
       <Crumbs items={[{ label: "All topics", href: "/" }, { label: "Your progress" }]} />
+
+      {leveledUp && (
+        <div className="level-up-banner" role="status">
+          🎉 Level up! You&apos;re now level {stats.level}.
+        </div>
+      )}
 
       <section className="sheet hero">
         <span className="hero__kicker">stats · streaks · badges</span>
@@ -132,7 +178,9 @@ export function ProgressView() {
 
         <div className="progress-hero">
           <div className="progress-hero__level">
-            <span className="progress-hero__level-num">Lv {stats.level}</span>
+            <span className="progress-hero__level-num">
+              Lv <CountUp value={stats.level} />
+            </span>
             <div className="meter">
               <div className="meter__track">
                 <div className="meter__fill" style={{ width: `${xpPct}%` }} />
@@ -148,7 +196,9 @@ export function ProgressView() {
               🔥
             </span>
             <div>
-              <span className="progress-hero__streak-num">{stats.streak}</span>
+              <span className="progress-hero__streak-num">
+                <CountUp value={stats.streak} />
+              </span>
               <span className="progress-hero__streak-label">{plural(stats.streak, "day")} streak</span>
             </div>
           </div>
@@ -157,19 +207,27 @@ export function ProgressView() {
 
       <div className="stat-row">
         <div className="stat">
-          <span className="stat__num">{stats.exercisesSolved}</span>
+          <span className="stat__num">
+            <CountUp value={stats.exercisesSolved} />
+          </span>
           <span className="stat__label">exercises solved</span>
         </div>
         <div className="stat">
-          <span className="stat__num">{stats.chaptersRead}</span>
+          <span className="stat__num">
+            <CountUp value={stats.chaptersRead} />
+          </span>
           <span className="stat__label">chapters read</span>
         </div>
         <div className="stat">
-          <span className="stat__num">{stats.bestStreak}</span>
+          <span className="stat__num">
+            <CountUp value={stats.bestStreak} />
+          </span>
           <span className="stat__label">best streak</span>
         </div>
         <div className="stat">
-          <span className="stat__num">{stats.xp}</span>
+          <span className="stat__num">
+            <CountUp value={stats.xp} />
+          </span>
           <span className="stat__label">total XP</span>
         </div>
       </div>

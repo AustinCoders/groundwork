@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { ClockWeather } from "@/components/ClockWeather";
 import { FontPicker, ThemePicker } from "@/components/ThemeFontPicker";
 import { levels, notesHref, topic as topicById, topicHref, topics } from "@/lib/topics";
 import { escapeHtml } from "@/lib/format";
@@ -209,6 +210,8 @@ export function Shell({
                 <span className="brand__name">{SITE_NAME}</span> <span className="brand__meta">handwritten · web dev</span>
               </span>
             </Link>
+
+            <ClockWeather />
 
             {playgroundNav ?? (
               <nav className="site-sidenav__section" aria-label="Playground">
