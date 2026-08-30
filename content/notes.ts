@@ -20,7 +20,7 @@ export const jsNotes: NotesFile = {
       title: "Setup & mental model",
       short: "Setup & mental model",
       levels: ["beginner"],
-      practice: [],
+      practice: ["ex-tdz-order"],
       ready: true,
       subtitle: "The layer everybody skips — and it shows in interviews.",
       body: `<h3>Two boxes, not one</h3>
@@ -1887,7 +1887,7 @@ console.log(3 &gt; 2 &gt; 1);    <span class="c">// what happens?</span></code><
       title: "Functions (first half)",
       short: "Functions (first half)",
       levels: ["beginner"],
-      practice: [],
+      practice: ["ex-return-newline", "ex-rest-sum"],
       ready: true,
       subtitle: "A function is a value first, a block of code second.",
       body: `<h3>Three ways to write one</h3>
@@ -2147,7 +2147,7 @@ console.log(typeof secret);   <span class="c">// "undefined" — outer can't be 
       title: "Objects & arrays (first half)",
       short: "Objects & arrays (first half)",
       levels: ["beginner"],
-      practice: [],
+      practice: ["ex-array-methods-chain", "ex-nested-destructure"],
       ready: true,
       subtitle: "The two shapes almost everything you build is made of.",
       body: `<h3>Object literals</h3>
@@ -2377,7 +2377,7 @@ console.log(original.nested.count);   <span class="c">// 99 — same nested obje
       title: "DOM & events",
       short: "DOM & events",
       levels: ["beginner"],
-      practice: [],
+      practice: ["ex-mini-emitter"],
       ready: true,
       subtitle: "The DOM is a live tree of objects — and JS can poke every branch of it.",
       body: `<p>
@@ -2609,7 +2609,7 @@ input.addEventListener("change", e =&gt; console.log(e.target.value)); <span cla
       title: "Basic async",
       short: "Basic async",
       levels: ["beginner"],
-      practice: [],
+      practice: ["ex-delayed-double", "ex-json-roundtrip"],
       ready: true,
       subtitle: "Just enough to fetch something and not freeze the page doing it.",
       body: `<p>
@@ -2746,7 +2746,7 @@ JSON.parse('{"a":1,"b":[1,2,3]}');    <span class="c">// back to a real object �
       title: "Errors & tools",
       short: "Errors & tools",
       levels: ["beginner"],
-      practice: [],
+      practice: ["ex-safe-parse", "ex-custom-error"],
       ready: true,
       subtitle: "The beginner track's last stop — reading what the engine is trying to tell you.",
       body: `<h3>try / catch / finally</h3>

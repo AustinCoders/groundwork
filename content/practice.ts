@@ -9948,4 +9948,262 @@ export const practice: Exercise[] = [
       },
     ],
   },
+  {
+    id: "ex-tdz-order",
+    chapter: "setup-mental-model",
+    level: "beginner",
+    title: "Fix the temporal dead zone bug",
+    brief:
+      "<p><code>greetMember(name)</code> should return a welcome-back message for a known member, or a generic greeting otherwise — but right now, calling it with a name throws instead of returning anything.</p><ul><li>The bug is a <b>Temporal Dead Zone</b> error: something is read before its own <code>let</code> line has run</li><li>Don't change what the function returns — only reorder what's already there</li></ul>",
+    starter:
+      'function greetMember(name) {\n  if (name) {\n    return greeting + ", " + name + "!";\n  }\n  let greeting = "Welcome back";\n  return "Welcome, guest!";\n}\n',
+    hints: [
+      "The error happens on the line that reads \"greeting\" — but the real fix is where the let is declared, not that line.",
+      "let is hoisted to the top of its scope but stays uninitialized (the TDZ) until its own declaration line actually executes. Move the declaration so it runs before anything reads it.",
+    ],
+    solution:
+      'function greetMember(name) {\n  let greeting = "Welcome back";\n  if (name) {\n    return greeting + ", " + name + "!";\n  }\n  return "Welcome, guest!";\n}\n',
+    tests: [
+      {
+        name: "returns the member greeting when a name is given",
+        body: 'assert.equal(greetMember("Ana"), "Welcome back, Ana!");',
+      },
+      {
+        name: "returns the generic greeting for no name",
+        body: 'assert.equal(greetMember(""), "Welcome, guest!");',
+      },
+      {
+        name: "works for a different name too",
+        body: 'assert.equal(greetMember("Ravi"), "Welcome back, Ravi!");',
+      },
+    ],
+  },
+  {
+    id: "ex-return-newline",
+    chapter: "functions-basics",
+    level: "beginner",
+    title: "Find the line break that ate the return value",
+    brief:
+      "<p><code>makeUser(name, age)</code> is supposed to return <code>[name, age]</code>, but every call currently returns <code>undefined</code>.</p><ul><li>This is Automatic Semicolon Insertion, not a typo — the value being returned is on the wrong side of an invisible semicolon</li><li>Fix it without changing what gets returned</li></ul>",
+    starter: 'function makeUser(name, age) {\n  return\n  [name, age];\n}\n',
+    hints: [
+      "A line break immediately after \"return\" is dangerous — ASI can quietly insert a semicolon right there.",
+      'Keep the value on the same line as "return", or wrap it in parentheses that open before the line break.',
+    ],
+    solution: 'function makeUser(name, age) {\n  return [name, age];\n}\n',
+    tests: [
+      {
+        name: "returns a two-element array",
+        body: 'assert.deepEqual(makeUser("Ana", 29), ["Ana", 29]);',
+      },
+      {
+        name: "works for different inputs",
+        body: 'assert.deepEqual(makeUser("Ravi", 40), ["Ravi", 40]);',
+      },
+      {
+        name: "does not return undefined",
+        body: 'assert.notEqual(makeUser("X", 1), undefined);',
+      },
+    ],
+  },
+  {
+    id: "ex-rest-sum",
+    chapter: "functions-basics",
+    level: "beginner",
+    title: "Sum any number of arguments",
+    brief:
+      "<p>Write <code>sum(...nums)</code> that adds up however many numbers it's called with — including zero of them.</p><ul><li>Use a rest parameter, not the old <code>arguments</code> object</li><li><code>sum()</code> with nothing at all returns <code>0</code></li></ul>",
+    starter: "function sum(...nums) {\n  // TODO: add every argument together, starting from 0\n}\n",
+    hints: [
+      "Rest params collect every remaining argument into a real array — reduce is a natural fit.",
+      "array.reduce((total, n) => total + n, 0) starts the total at 0, which also makes sum() with no arguments correct for free.",
+    ],
+    solution: "function sum(...nums) {\n  return nums.reduce((total, n) => total + n, 0);\n}\n",
+    tests: [
+      { name: "adds three numbers", body: "assert.equal(sum(1, 2, 3), 6);" },
+      { name: "no arguments returns 0", body: "assert.equal(sum(), 0);" },
+      { name: "a single argument", body: "assert.equal(sum(5), 5);" },
+      { name: "five arguments", body: "assert.equal(sum(1, 2, 3, 4, 5), 15);" },
+    ],
+  },
+  {
+    id: "ex-array-methods-chain",
+    chapter: "objects-arrays-basics",
+    level: "beginner",
+    title: "Total up a shopping cart",
+    brief:
+      "<p>Given an array of <code>{ price, qty }</code> items, write <code>cartTotal(items)</code> that returns the total cost — but skip any item with <code>qty</code> of <code>0</code> or less.</p><ul><li>Chain <code>.filter()</code> and <code>.reduce()</code> — don't write a manual <code>for</code> loop</li></ul>",
+    starter:
+      "function cartTotal(items) {\n  // TODO: filter out non-positive qty, then reduce to a total of price * qty\n}\n",
+    hints: [
+      "filter() first to drop the items that shouldn't count at all.",
+      "Then reduce() the survivors: (total, item) => total + item.price * item.qty, starting from 0.",
+    ],
+    solution:
+      "function cartTotal(items) {\n  return items\n    .filter((item) => item.qty > 0)\n    .reduce((total, item) => total + item.price * item.qty, 0);\n}\n",
+    tests: [
+      {
+        name: "sums positive-quantity items only",
+        body: "assert.equal(cartTotal([{ price: 10, qty: 2 }, { price: 5, qty: 0 }, { price: 3, qty: 3 }]), 29);",
+      },
+      { name: "empty cart is 0", body: "assert.equal(cartTotal([]), 0);" },
+      { name: "a single item", body: "assert.equal(cartTotal([{ price: 100, qty: 1 }]), 100);" },
+      {
+        name: "a negative qty is also skipped",
+        body: "assert.equal(cartTotal([{ price: 10, qty: -1 }, { price: 10, qty: 1 }]), 10);",
+      },
+    ],
+  },
+  {
+    id: "ex-nested-destructure",
+    chapter: "objects-arrays-basics",
+    level: "beginner",
+    title: "Format an address, safely",
+    brief:
+      "<p>Write <code>formatAddress(address)</code> that destructures <code>{ street, city, country }</code> and returns <code>\"street, city, country\"</code>.</p><ul><li><code>country</code> defaults to <code>\"India\"</code> when missing</li><li>If <code>address</code> itself is missing, or <code>street</code>/<code>city</code> is missing, return <code>\"Unknown address\"</code> instead — don't throw</li></ul>",
+    starter:
+      "function formatAddress(address) {\n  // TODO: destructure street/city/country (default \"India\") right in the parameter list\n  // return \"Unknown address\" if street or city is missing, or address itself is missing\n}\n",
+    hints: [
+      "A default for the whole parameter (= {}) stops destructuring a missing address from throwing at all.",
+      'Destructure with { street, city, country = "India" } = {}, then check street && city before building the string.',
+    ],
+    solution:
+      'function formatAddress({ street, city, country = "India" } = {}) {\n  if (!street || !city) return "Unknown address";\n  return street + ", " + city + ", " + country;\n}\n',
+    tests: [
+      {
+        name: "defaults the country",
+        body: 'assert.equal(formatAddress({ street: "MG Road", city: "Pune" }), "MG Road, Pune, India");',
+      },
+      {
+        name: "uses a given country",
+        body: 'assert.equal(formatAddress({ street: "5th Ave", city: "NYC", country: "USA" }), "5th Ave, NYC, USA");',
+      },
+      { name: "no address at all", body: 'assert.equal(formatAddress(), "Unknown address");' },
+      { name: "missing street", body: 'assert.equal(formatAddress({ city: "Pune" }), "Unknown address");' },
+    ],
+  },
+  {
+    id: "ex-mini-emitter",
+    chapter: "dom-events",
+    level: "beginner",
+    title: "Build a mini event emitter",
+    brief:
+      "<p>The DOM's <code>addEventListener</code> pattern, without a DOM: write <code>createEmitter()</code> returning <code>{ on, off, emit }</code>.</p><ul><li><code>on(event, fn)</code> registers a listener</li><li><code>off(event, fn)</code> removes that exact listener</li><li><code>emit(event, ...args)</code> calls every listener still registered for that event, in order, with those arguments</li><li>Emitting an event with no listeners must not throw</li></ul>",
+    starter:
+      "function createEmitter() {\n  // TODO: track listeners per event name, and implement on/off/emit\n}\n",
+    hints: [
+      "A Map from event name to an array of listener functions is enough to track everything.",
+      "off() should filter the stored array down to functions that aren't the one being removed — same reference check as removeEventListener.",
+    ],
+    solution:
+      "function createEmitter() {\n  const listeners = new Map();\n  return {\n    on(event, fn) {\n      if (!listeners.has(event)) listeners.set(event, []);\n      listeners.get(event).push(fn);\n    },\n    off(event, fn) {\n      const fns = listeners.get(event);\n      if (fns) listeners.set(event, fns.filter((f) => f !== fn));\n    },\n    emit(event, ...args) {\n      (listeners.get(event) || []).forEach((fn) => fn(...args));\n    },\n  };\n}\n",
+    tests: [
+      {
+        name: "calls a registered listener with the emitted arguments",
+        body: 'const e = createEmitter();\nconst calls = [];\ne.on("greet", (name) => calls.push(name));\ne.emit("greet", "Ana");\nassert.deepEqual(calls, ["Ana"]);',
+      },
+      {
+        name: "off() stops that exact listener",
+        body: 'const e = createEmitter();\nconst calls = [];\nconst handler = (x) => calls.push(x);\ne.on("t", handler);\ne.emit("t", 1);\ne.off("t", handler);\ne.emit("t", 2);\nassert.deepEqual(calls, [1]);',
+      },
+      {
+        name: "emitting with no listeners does not throw",
+        body: 'const e = createEmitter();\ne.emit("nothing", 1);\nassert.ok(true);',
+      },
+      {
+        name: "two different listeners on the same event both fire",
+        body: 'const e = createEmitter();\nconst calls = [];\ne.on("t", () => calls.push("a"));\ne.on("t", () => calls.push("b"));\ne.emit("t");\nassert.deepEqual(calls, ["a", "b"]);',
+      },
+    ],
+  },
+  {
+    id: "ex-delayed-double",
+    chapter: "basic-async",
+    level: "beginner",
+    title: "Wrap setTimeout in a promise",
+    brief:
+      "<p>Write <code>delayedDouble(n)</code> that returns a promise resolving to <code>n * 2</code>, after a short delay — using <code>setTimeout</code> underneath.</p><ul><li>No <code>fetch</code>, no external calls — just a timer</li></ul>",
+    starter:
+      "function delayedDouble(n) {\n  // TODO: return a new Promise that resolves with n * 2 after a setTimeout\n}\n",
+    hints: [
+      "new Promise((resolve) => { ... }) — call resolve(...) inside the setTimeout callback.",
+      "The delay length barely matters for the test — even 10-20ms is enough to prove it's genuinely async.",
+    ],
+    solution:
+      "function delayedDouble(n) {\n  return new Promise((resolve) => {\n    setTimeout(() => resolve(n * 2), 20);\n  });\n}\n",
+    tests: [
+      { name: "doubles a positive number", body: "assert.equal(await delayedDouble(5), 10);" },
+      { name: "doubles zero", body: "assert.equal(await delayedDouble(0), 0);" },
+      { name: "doubles a negative number", body: "assert.equal(await delayedDouble(-3), -6);" },
+    ],
+  },
+  {
+    id: "ex-json-roundtrip",
+    chapter: "basic-async",
+    level: "beginner",
+    title: "Clean an object for storage",
+    brief:
+      "<p>Write <code>cleanForStorage(obj)</code> that strips anything <code>JSON</code> can't represent — functions and <code>undefined</code> values — by round-tripping through <code>JSON.stringify</code>/<code>JSON.parse</code>.</p>",
+    starter: "function cleanForStorage(obj) {\n  // TODO: one line, using JSON.stringify and JSON.parse together\n}\n",
+    hints: [
+      "JSON.parse(JSON.stringify(obj)) is the whole exercise — the interesting part is knowing WHY it cleans the object.",
+    ],
+    solution: "function cleanForStorage(obj) {\n  return JSON.parse(JSON.stringify(obj));\n}\n",
+    tests: [
+      {
+        name: "drops undefined and function properties",
+        body: 'assert.deepEqual(cleanForStorage({ a: 1, b: undefined, c: function () {} }), { a: 1 });',
+      },
+      {
+        name: "undefined inside an array becomes null",
+        body: "assert.deepEqual(cleanForStorage({ nested: { x: [1, 2, undefined] } }), { nested: { x: [1, 2, null] } });",
+      },
+      { name: "plain data survives unchanged", body: 'assert.deepEqual(cleanForStorage({ a: 1, b: "two" }), { a: 1, b: "two" });' },
+    ],
+  },
+  {
+    id: "ex-safe-parse",
+    chapter: "errors-tools",
+    level: "beginner",
+    title: "Parse JSON without crashing",
+    brief:
+      "<p>Write <code>safeParseJSON(text, fallback)</code> that parses <code>text</code> as JSON and returns the result — or <code>fallback</code> if <code>text</code> isn't valid JSON, instead of letting the error escape.</p>",
+    starter:
+      "function safeParseJSON(text, fallback) {\n  // TODO: try/catch around JSON.parse, return fallback in the catch\n}\n",
+    hints: ["try { return JSON.parse(text); } — and return fallback from the catch block."],
+    solution:
+      "function safeParseJSON(text, fallback) {\n  try {\n    return JSON.parse(text);\n  } catch {\n    return fallback;\n  }\n}\n",
+    tests: [
+      { name: "parses valid JSON", body: 'assert.deepEqual(safeParseJSON(\'{"a":1}\', null), { a: 1 });' },
+      { name: "falls back on invalid JSON", body: 'assert.equal(safeParseJSON("not json", "fallback"), "fallback");' },
+      { name: "falls back on empty string", body: 'assert.deepEqual(safeParseJSON("", []), []);' },
+    ],
+  },
+  {
+    id: "ex-custom-error",
+    chapter: "errors-tools",
+    level: "beginner",
+    title: "Throw a real, typed error",
+    brief:
+      "<p>Write a <code>ValidationError</code> class extending <code>Error</code>, with a <code>field</code> property, and a function <code>validateAge(age)</code> that throws one when <code>age</code> isn't a non-negative number — otherwise returns <code>age</code> unchanged.</p><ul><li><code>new ValidationError(message, field)</code> — the thrown error's <code>field</code> should be <code>\"age\"</code></li></ul>",
+    starter:
+      'class ValidationError extends Error {\n  constructor(message, field) {\n    // TODO: call super(message), set this.name and this.field\n  }\n}\n\nfunction validateAge(age) {\n  // TODO: throw a ValidationError("age must be a non-negative number", "age") when invalid\n  return age;\n}\n',
+    hints: [
+      "super(message) has to run before this.field can be set — the same rule as any class extends.",
+      'typeof age !== "number" || age < 0 covers both "not a number" and "negative".',
+    ],
+    solution:
+      'class ValidationError extends Error {\n  constructor(message, field) {\n    super(message);\n    this.name = "ValidationError";\n    this.field = field;\n  }\n}\n\nfunction validateAge(age) {\n  if (typeof age !== "number" || age < 0) {\n    throw new ValidationError("age must be a non-negative number", "age");\n  }\n  return age;\n}\n',
+    tests: [
+      { name: "returns a valid age unchanged", body: "assert.equal(validateAge(25), 25);" },
+      {
+        name: "throws a ValidationError for a negative age",
+        body: 'assert.throws(() => validateAge(-5));\ntry {\n  validateAge(-5);\n} catch (e) {\n  assert.ok(e instanceof ValidationError);\n  assert.ok(e instanceof Error);\n  assert.equal(e.field, "age");\n}',
+      },
+      {
+        name: "throws for a non-number too",
+        body: 'try {\n  validateAge("old");\n  assert.fail("should have thrown");\n} catch (e) {\n  assert.ok(e instanceof ValidationError);\n}',
+      },
+    ],
+  },
 ];
