@@ -4552,9 +4552,232 @@ console.log(frozen.a);    <span class="c">// 1 either way — the object never a
       short: "Engine & memory",
       levels: ["advanced"],
       practice: ["ex-weakmap-cache"],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "What V8 is actually doing while your code just runs.",
+      body: `<p>
+  Everything so far has been the language as you write it. This
+  chapter is what the engine does with it — and it's the layer most
+  senior-level interviews actually probe, because it's the layer where
+  "it works" and "it works <em>well</em>" stop being the same question.
+</p>
+
+<h3>Stack vs heap</h3>
+<div class="boxes">
+  <div class="bx is-prim">
+    <div class="bx__cap">call stack — fixed-size frames, LIFO</div>
+    <div class="bx__slot"><b>main()</b><span>x = 5</span></div>
+    <div class="bx__slot"><b>makePoint()</b><span>x = 1, y = 2</span></div>
+    <div class="bx__arrow">a frame's local primitives live right here</div>
+  </div>
+  <div class="bx is-ref">
+    <div class="bx__cap">heap — dynamic, garbage-collected</div>
+    <div class="bx__slot"><b>Point { x: 1, y: 2 }</b><span>0x7a2f…</span></div>
+    <div class="bx__arrow">the stack only ever holds a REFERENCE to this</div>
+  </div>
+</div>
+<p>
+  This is <a href="/notes/types-values">the exact primitive-vs-reference
+  split from the types chapter</a>, one level lower: a primitive that
+  never leaves its function lives directly in that function's stack
+  frame — cheap to allocate, cheap to reclaim, gone the instant the
+  frame pops. An object always lives on the heap, and the stack only
+  ever holds a pointer to it — which is the entire mechanical reason
+  copying a variable copies the reference and not the data.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ The real engine is smarter than this diagram</span>
+  V8 actually runs <b>escape analysis</b> — if it can prove an object
+  never leaves the function that creates it, it may stack-allocate that
+  object anyway, and a captured primitive can get promoted onto the
+  heap as part of a closure's context. The stack/heap split above is
+  the correct mental model for reasoning about your code; the engine's
+  actual placement decisions are an optimization detail on top of it,
+  not a contradiction of it.
+</div>
+<p>
+  Each function call gets its own <b>execution context</b> — the
+  formal name for what's been informally called a "scope" in every
+  chapter so far. It bundles an <b>environment record</b> (the actual
+  variable bindings) with a reference to the outer context, and that
+  chain of outer references <em>is</em>
+  <a href="/notes/scope-functions">the scope chain</a> from two
+  chapters back. A closure, mechanically, is just a function holding
+  onto a reference to an execution context that would otherwise have
+  been popped off the stack and discarded.
+</p>
+
+<h3>Garbage collection</h3>
+<p>
+  JS never frees memory by counting references down to zero the moment
+  they drop — it periodically asks a different question:
+  <b>reachability</b>. Starting from a set of <b>roots</b> (global
+  variables, everything currently on the call stack), the collector
+  walks every reference it can find. Anything it never reaches is
+  garbage, full stop — <em>not</em> "has zero references," which
+  matters the instant two objects reference only each other.
+</p>
+<div class="try">
+  <pre><code>function makeCycle() {
+  const a = {};
+  const b = {};
+  a.friend = b;
+  b.friend = a;      <span class="c">// a and b reference EACH OTHER</span>
+  return "created a cycle";
+}
+console.log(makeCycle());
+<span class="c">// once makeCycle() returns, nothing on the stack points to a or b anymore —</span>
+<span class="c">// they're unreachable from any root, cycle or not, and get collected</span></code></pre>
+</div>
+<p class="sub">
+  A reference-counting collector (like older versions of Python) would
+  actually leak this — <code>a</code> and <code>b</code> each hold one
+  reference to the other, so neither ever hits zero on its own.
+  Reachability-based collection sidesteps that entire class of bug for
+  free: once <code>makeCycle</code> returns, nothing reachable from a
+  root points at either object, cycle or not, so both are simply gone.
+</p>
+<p>
+  V8 specifically runs a <b>generational</b> collector, built on one
+  observation: most objects die young. New objects go into a small
+  "young generation" that gets swept frequently and cheaply
+  (<b>Scavenger</b>); anything that survives a few sweeps gets promoted
+  to the "old generation," which is collected far less often, using a
+  slower <b>mark-and-sweep</b> (mark everything reachable, then sweep
+  away everything that wasn't marked) with an occasional
+  <b>mark-compact</b> pass to defragment. Optimizing for the common
+  case — short-lived objects — instead of treating every object
+  identically is most of where the speed comes from.
+</p>
+
+<h3>Memory leaks — JS still has them</h3>
+<p>
+  "Garbage collected" means unreachable memory gets freed
+  automatically. It does <em>not</em> mean memory can't leak — it means
+  every JS leak is really the same root cause: something is <b>still
+  reachable</b> that the program no longer actually needs.
+</p>
+<table>
+  <tr>
+    <th>Pattern</th>
+    <th>What keeps it reachable</th>
+  </tr>
+  <tr><td>A forgotten <code>setInterval</code></td><td>the timer itself holds a live reference to its callback and everything that callback closes over, forever, until <code>clearInterval</code></td></tr>
+  <tr><td>A detached DOM node</td><td>removed from the page, but still referenced by a JS variable or an event listener you forgot to remove — the node itself, and everything it references, stays alive</td></tr>
+  <tr><td>An unbounded cache</td><td>a plain <code>Map</code> used as a cache that only ever grows — every entry is reachable through it forever, since nothing ever calls <code>.delete()</code></td></tr>
+  <tr><td>A closure over something huge</td><td>a small, long-lived closure that happens to reference one variable from a scope containing something large — the ENTIRE execution context stays alive to keep that one binding around</td></tr>
+</table>
+<pre><code><span class="c">// The fix for the cache row above — cap it, or use a WeakMap when the</span>
+<span class="c">// key's natural lifetime should decide the entry's lifetime (I2 covered this)</span>
+const cache = new Map();
+function memoizedButBounded(key, compute) {
+  if (cache.has(key)) return cache.get(key);
+  if (cache.size &gt;= 500) cache.delete(cache.keys().next().value);   <span class="c">// evict oldest</span>
+  const value = compute();
+  cache.set(key, value);
+  return value;
+}</code></pre>
+<div class="sticky mint">
+  <span class="ttl">Rule</span> Every leak is a lifetime mismatch: some
+  reference is living longer than the data it points to should. Fixing
+  a leak is almost always "stop something from holding a reference it
+  no longer needs" — clear the interval, remove the listener, cap the
+  cache, null out the field — never a special "free this memory" call,
+  because JS has no such call.
+</div>
+
+<h3>Heap snapshots and allocation timelines</h3>
+<p>
+  DevTools' Memory panel is how a suspected leak actually gets
+  confirmed rather than guessed at: take a heap snapshot, perform the
+  suspect action several times (open and close a modal, navigate back
+  and forth), take another snapshot, and compare. An object count that
+  keeps climbing across that comparison — for a thing you'd expect to
+  be fully cleaned up — is the leak, and the snapshot's retainer tree
+  shows <em>exactly</em> what's still holding a reference to it. The
+  allocation timeline view is the same idea over time instead of two
+  fixed points — useful for catching steady growth during normal use
+  rather than one specific suspected action.
+</p>
+
+<h3>Hidden classes and inline caches</h3>
+<p>
+  V8 doesn't store objects as generic key/value hash maps the way this
+  sentence probably makes you picture — it dynamically builds a
+  <b>hidden class</b> (an internal, fixed layout) for every distinct
+  shape of object it sees, and every object with that same shape shares
+  the same hidden class.
+</p>
+<pre><code>function Point(x, y) { this.x = x; this.y = y; }
+
+const a = new Point(1, 2);   <span class="c">// x then y — hidden class C0</span>
+const b = new Point(3, 4);   <span class="c">// x then y — SAME hidden class C0, shares it with a</span>
+
+const c = new Point(5, 6);
+c.z = 7;                      <span class="c">// now c has a DIFFERENT shape — its own hidden class C1</span></code></pre>
+<p>
+  A property access like <code>point.x</code> compiled at a specific
+  call site gets an <b>inline cache</b>: after the first call, V8
+  remembers "the object at this call site had hidden class C0, and its
+  <code>x</code> was at this exact offset" — so the next call with the
+  same hidden class skips property lookup entirely and reads straight
+  from that offset.
+</p>
+<table>
+  <tr>
+    <th>Term</th>
+    <th>Means</th>
+    <th>Speed</th>
+  </tr>
+  <tr><td><b>Monomorphic</b></td><td>a call site has only ever seen one hidden class</td><td class="tone-yes">fastest — the inline cache is a direct hit every time</td></tr>
+  <tr><td><b>Polymorphic</b></td><td>a call site has seen a handful (2-4) of different hidden classes</td><td class="tone-warn">still fast — checks a short list</td></tr>
+  <tr><td><b>Megamorphic</b></td><td>a call site has seen too many shapes to track</td><td class="tone-bad">slow — V8 gives up on the inline cache and falls back to a generic lookup</td></tr>
+</table>
+<div class="warn">
+  <span class="ttl">⚠ This is genuinely hard to see with a stopwatch</span>
+  It's tempting to prove this with <code>performance.now()</code>
+  around a quick loop — in practice, allocation cost, garbage
+  collection pauses, and JIT warm-up noise routinely swamp the actual
+  effect at small scale, and a rushed 3-line "benchmark" is exactly how
+  people ship confidently wrong performance conclusions. The takeaway
+  isn't "go measure this" — it's the practical rule below, which holds
+  regardless of what any one quick timing run happens to show.
+</div>
+<div class="sticky mint">
+  <span class="ttl">Rule</span> Build objects of the same "kind" with
+  their properties assigned in the <b>same order, every time</b> —
+  ideally all in the constructor, none bolted on conditionally
+  afterward. Shape consistency is what keeps a hot call site
+  monomorphic; it's a real, well-documented V8 optimization concern,
+  not premature optimization folklore.
+</div>
+
+<h3>JIT and deoptimization</h3>
+<p>
+  V8 starts running everything through <b>Ignition</b>, a fast-starting
+  interpreter — there's no compile pause before your code runs at all.
+  A function called enough times gets handed to <b>TurboFan</b>, the
+  optimizing compiler, which compiles it down to fast machine code
+  <em>under the assumptions it's observed so far</em> — including the
+  hidden classes and argument types it's seen at every call site inside
+  it.
+</p>
+<p>
+  Break one of those assumptions — a function optimized for numbers
+  suddenly gets called with a string, a monomorphic call site starts
+  seeing a new shape — and V8 <b>deoptimizes</b>: throws away the
+  compiled machine code and drops back to the slower interpreter for
+  that function, at least until it can safely re-optimize with the
+  new reality accounted for. A function that gets optimized, called
+  differently, deoptimized, called differently again, and
+  re-optimized in a loop never settles into its fast path at all.
+</p>
+<div class="say">
+  <span class="ttl">Say it like this →</span> "Predictable shapes and
+  stable argument types aren't just a style preference — they're what
+  let TurboFan's assumptions hold, which is what keeps a hot function
+  compiled instead of bouncing back to the interpreter every time
+  something unexpected shows up at one of its call sites."
+</div>`,
     },
     {
       id: "advanced-async",
@@ -4563,9 +4786,223 @@ console.log(frozen.a);    <span class="c">// 1 either way — the object never a
       short: "Advanced async",
       levels: ["advanced"],
       practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "Past promises: pausable functions, streams, and running real work concurrently.",
+      body: `<h3>Microtask starvation</h3>
+<p>
+  <a href="/notes/async-properly">The microtask queue always drains
+  completely</a> before the event loop touches a macrotask — which is
+  usually the right behavior, until a microtask keeps scheduling
+  <em>another</em> microtask. Nothing else — not a timer, not a render,
+  not user input — ever gets a turn.
+</p>
+<pre><code>function loopForever() {
+  queueMicrotask(loopForever);   <span class="c">// each run schedules the next one before yielding</span>
+}
+loopForever();
+<span class="c">// the page is now permanently frozen — every macrotask queued after this</span>
+<span class="c">// point (clicks, timers, even rendering) waits behind an infinite microtask queue</span></code></pre>
+<p>
+  <code>queueMicrotask(fn)</code> schedules <code>fn</code> directly on
+  that same microtask queue a resolved promise's <code>.then()</code>
+  uses — the explicit version of the implicit scheduling promises do.
+  Node has an even higher-priority version,
+  <code>process.nextTick(fn)</code>, which drains completely before
+  <em>even the microtask queue</em> gets its turn — Node-only, and easy
+  to sample yourself into starvation with the same recursive pattern
+  above.
+</p>
+
+<h3>Node's event loop has phases; the browser's doesn't</h3>
+<p>
+  Browser-side, "macrotask" is one flat queue. Node's <code>libuv</code>
+  event loop is a fixed cycle of named phases, each with its own queue,
+  run in order every tick: <b>timers</b> (due
+  <code>setTimeout</code>/<code>setInterval</code> callbacks) →
+  <b>pending callbacks</b> → <b>poll</b> (I/O — the bulk of real work)
+  → <b>check</b> (<code>setImmediate</code>) → <b>close callbacks</b>,
+  then back to the top. <code>setImmediate</code> is Node's own
+  addition — no equivalent in the browser at all — meaning "run after
+  I/O this cycle, before the next timers phase," a more precise
+  guarantee than <code>setTimeout(fn, 0)</code> gives you.
+</p>
+
+<h3>Generators — functions that pause</h3>
+<p>
+  A <code>function*</code> doesn't run to completion when called — it
+  returns an iterator, and each <code>.next()</code> runs the body only
+  until the next <code>yield</code>, then pauses with everything
+  (local variables included) intact until <code>.next()</code> is
+  called again.
+</p>
+<div class="try">
+  <pre><code>function* range(start, end) {
+  for (let i = start; i &lt; end; i++) yield i;
+}
+console.log([...range(1, 5)]);   <span class="c">// what happens?</span>
+
+function* outer() {
+  yield 1;
+  yield* [2, 3];        <span class="c">// yield* delegates to another iterable, one value at a time</span>
+  yield* innerGen();
+}
+function* innerGen() {
+  yield 4;
+  yield 5;
+}
+console.log([...outer()]);   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>[1, 2, 3, 4]</code>, then <code>[1, 2, 3, 4, 5]</code>. Spread
+  works on any generator because a generator's return value <em>is</em>
+  an iterator (it implements <code>Symbol.iterator</code>, covered
+  properly next chapter). <code>yield*</code> is what makes generators
+  composable — one generator can hand off to another without unpacking
+  it into an array first.
+</p>
+<p>
+  The genuinely two-way part: <code>.next(value)</code> doesn't just
+  resume the generator, it becomes the <em>result</em> of the
+  <code>yield</code> expression that paused it.
+</p>
+<div class="try">
+  <pre><code>function* runningTotal() {
+  let total = 0;
+  while (true) {
+    const n = yield total;    <span class="c">// pauses here, returning "total" — resumes with whatever .next(n) sends</span>
+    total += n;
+  }
+}
+const calc = runningTotal();
+console.log(calc.next().value);      <span class="c">// what happens? (no value to send yet — this call just starts it)</span>
+console.log(calc.next(5).value);     <span class="c">// what happens?</span>
+console.log(calc.next(10).value);    <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>0</code>, then <code>5</code>, then <code>15</code>. The first
+  <code>.next()</code> has nothing to send <em>into</em> — there's no
+  paused <code>yield</code> waiting for a value yet, it just runs the
+  generator up to its first <code>yield total</code> and returns that
+  <code>0</code>. Every call after that both resumes execution
+  <em>and</em> delivers a value into the paused expression — genuine
+  two-way communication, not just "give me the next thing."
+</p>
+
+<h3>Async generators and for await...of</h3>
+<pre><code>async function* pageThrough(url) {
+  let next = url;
+  while (next) {
+    const page = await fetch(next).then((r) =&gt; r.json());
+    yield page.items;
+    next = page.nextUrl;
+  }
+}
+
+for await (const items of pageThrough("/api/items")) {
+  render(items);   <span class="c">// runs once per page, as each one arrives — never holds every page in memory at once</span>
+}</code></pre>
+<p class="sub">
+  <code>async function*</code> combines both ideas at once — every
+  <code>.next()</code> now returns a <em>promise</em> of the next
+  value, so the consumer can <code>await</code> each item as it's
+  produced instead of needing everything ready up front.
+  <code>for await...of</code> is the loop built to consume exactly
+  that: pause for each value's promise, unwrap it, run the body,
+  repeat.
+</p>
+
+<h3>Streams and backpressure</h3>
+<pre><code>const response = await fetch("/api/large-file");
+const reader = response.body.getReader();   <span class="c">// a ReadableStream, read chunk by chunk</span>
+
+while (true) {
+  const { done, value } = await reader.read();   <span class="c">// value is one chunk (a Uint8Array), not the whole file</span>
+  if (done) break;
+  processChunk(value);
+}</code></pre>
+<p>
+  The point of a stream is never holding the whole thing in memory —
+  a multi-gigabyte download processed chunk by chunk costs roughly one
+  chunk's worth of memory, not the whole file's. <b>Backpressure</b> is
+  what keeps a fast producer from burying a slow consumer in memory:
+  a well-built stream only pulls the next chunk once the consumer
+  signals it's ready for one, rather than the producer blasting data in
+  as fast as it can regardless of whether anything downstream can keep
+  up.
+</p>
+
+<h3>Web Workers, SharedArrayBuffer, Atomics</h3>
+<p>
+  A regular Worker (like the one this very playground runs your code
+  in, so a hung loop can't freeze the tab) communicates with the main
+  thread by <b>copying</b> messages via <code>postMessage</code> — even
+  a huge object gets serialized, sent, and rebuilt on the other side.
+  <code>SharedArrayBuffer</code> is the exception: actual shared memory
+  both threads can read and write directly, no copying.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ Shared memory needs its own locking</span>
+  Two threads writing the same <code>SharedArrayBuffer</code> at once
+  is a real, classic race condition — JS's usual single-threaded
+  "nothing interrupts mid-statement" guarantee doesn't cover memory two
+  separate threads can both touch simultaneously.
+  <code>Atomics.wait</code>/<code>Atomics.notify</code> /
+  <code>Atomics.add</code> exist specifically to coordinate that
+  safely, the same job a mutex does in a traditionally threaded
+  language. This is genuinely rare in day-to-day app code — mostly
+  reserved for CPU-heavy work like audio/video processing or a WASM
+  module that needs real shared-memory parallelism.
+</div>
+
+<h3>Concurrency control — running a lot of things, but not all at once</h3>
+<p>
+  <a href="/notes/async-properly">Promise.all</a> runs everything at
+  once. Sometimes that's wrong — 500 requests fired simultaneously can
+  overwhelm a server or hit a rate limit. A concurrency-limited queue
+  runs a fixed number in flight, always starting the next one the
+  moment a slot frees up.
+</p>
+<div class="try">
+  <pre><code>function wait(ms, label) {
+  return new Promise((resolve) =&gt; setTimeout(() =&gt; resolve(label), ms));
+}
+
+async function runWithLimit(tasks, limit) {
+  const results = [];
+  let index = 0;
+  async function worker() {
+    while (index &lt; tasks.length) {
+      const current = index++;
+      results[current] = await tasks[current]();
+    }
+  }
+  await Promise.all(Array.from({ length: limit }, worker));
+  return results;
+}
+
+const order = [];
+const tasks = [1, 2, 3, 4, 5].map((n) =&gt; async () =&gt; {
+  order.push("start " + n);
+  await wait(10);
+  order.push("end " + n);
+  return n * 10;
+});
+
+const results = await runWithLimit(tasks, 2);
+console.log("results:", results);
+console.log("order:", order.join(", "));</code></pre>
+</div>
+<p class="sub">
+  Watch the order: <code>start 1, start 2</code> — only two run
+  immediately, the limit — then each <code>end</code> is immediately
+  followed by the next <code>start</code>, never more than two "start"s
+  without a matching "end" between them. That's the whole
+  pattern: a fixed pool of <code>worker()</code> functions, all sharing
+  one <code>index</code> counter, each one pulling the next task the
+  moment it's free. This exact shape — sometimes called a
+  <b>semaphore</b> when the limit is explicit — is what a real batch
+  job (upload 500 files, 6 at a time) is built on.
+</p>`,
     },
     {
       id: "metaprogramming",
@@ -4574,9 +5011,208 @@ console.log(frozen.a);    <span class="c">// 1 either way — the object never a
       short: "Metaprogramming",
       levels: ["advanced"],
       practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "Code that changes how ordinary-looking code behaves.",
+      body: `<h3>Symbol — a key that can never collide</h3>
+<p>
+  Every <code>Symbol()</code> call creates a value that's unique, even
+  against another symbol created with the exact same description — it
+  exists specifically to be usable as a property key that can never
+  accidentally collide with a string key some other piece of code
+  happens to also use.
+</p>
+<pre><code>const id = Symbol("id");
+const obj = { name: "Ana", [id]: 42 };
+Object.keys(obj);          <span class="c">// ["name"] — symbol keys are invisible to normal enumeration</span>
+obj[Symbol("id")];         <span class="c">// undefined — a DIFFERENT symbol, even with the identical description</span>
+obj[id];                    <span class="c">// 42 — only the exact same symbol reference works</span></code></pre>
+<p>
+  JS itself uses a handful of <b>well-known symbols</b> as hooks the
+  engine calls automatically at specific moments — this is the actual
+  mechanism behind several "special" behaviors from earlier chapters.
+</p>
+<table>
+  <tr>
+    <th>Symbol</th>
+    <th>Called when</th>
+  </tr>
+  <tr><td><code>Symbol.iterator</code></td><td><code>for...of</code>, spread, or destructuring needs to walk the object's values</td></tr>
+  <tr><td><code>Symbol.toPrimitive</code></td><td>the object is used where a primitive is needed — <code>+obj</code>, template interpolation, <code>obj + ""</code></td></tr>
+  <tr><td><code>Symbol.hasInstance</code></td><td><code>instanceof</code> checks this object as the right-hand side</td></tr>
+  <tr><td><code>Symbol.toStringTag</code></td><td><code>Object.prototype.toString.call(obj)</code> builds its <code>"[object X]"</code> label</td></tr>
+</table>
+<div class="try">
+  <pre><code>class Money {
+  constructor(amount) { this.amount = amount; }
+  [Symbol.toPrimitive](hint) {
+    if (hint === "number") return this.amount;
+    if (hint === "string") return "$" + this.amount.toFixed(2);
+    return "Money(" + this.amount + ")";
+  }
+}
+const price = new Money(9.5);
+console.log(+price);        <span class="c">// "number" hint — what happens?</span>
+console.log(\`\${price}\`);  <span class="c">// "string" hint — what happens?</span>
+console.log(price + "");    <span class="c">// "default" hint — what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>9.5</code>, then <code>"$9.50"</code>, then
+  <code>"Money(9.5)"</code> — the exact same object gives three
+  different answers, because the engine tells
+  <code>Symbol.toPrimitive</code> <em>which</em> conversion it's
+  trying to do. This is the real mechanism behind why
+  <code>+new Date()</code> gives a timestamp while
+  <code>\`\${new Date()}\`</code> gives a readable string — same object,
+  hint-aware conversion.
+</p>
+
+<h3>Iteration protocols, formally</h3>
+<p>
+  Two related but separate contracts. An object is <b>iterable</b> if
+  it has a <code>[Symbol.iterator]()</code> method that returns an
+  <b>iterator</b> — and an iterator is just any object with a
+  <code>.next()</code> method that returns
+  <code>{ value, done }</code>. That's the entire protocol
+  <code>for...of</code>, spread, and destructuring are all built on —
+  which is exactly why the custom <code>Range</code> class below works
+  with every one of them for free, the moment it implements one method.
+</p>
+<div class="try">
+  <pre><code>class Range {
+  constructor(start, end) {
+    this.start = start;
+    this.end = end;
+  }
+  [Symbol.iterator]() {
+    let current = this.start;
+    const end = this.end;
+    return {
+      next() {
+        return current &lt; end
+          ? { value: current++, done: false }
+          : { value: undefined, done: true };
+      },
+    };
+  }
+}
+console.log([...new Range(1, 5)]);   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>[1, 2, 3, 4]</code> — spread never needed to know
+  <code>Range</code> exists as a concept. It only ever asked "does this
+  have <code>Symbol.iterator</code>?", called it, and kept calling
+  <code>.next()</code> until <code>done</code> came back
+  <code>true</code>. <a href="/notes/advanced-async">Generators</a> are
+  just a shortcut for writing exactly this object without building it
+  by hand — every generator already implements this protocol for you.
+  Async iteration is the same shape with one difference:
+  <code>[Symbol.asyncIterator]()</code> instead, and
+  <code>.next()</code> returns a <em>promise</em> of
+  <code>{ value, done }</code>, which is what <code>for await...of</code>
+  knows how to unwrap.
+</p>
+
+<h3>Proxy and Reflect</h3>
+<p>
+  A <code>Proxy</code> wraps an object and lets you intercept the
+  fundamental operations on it — <code>get</code>, <code>set</code>,
+  <code>has</code>, <code>deleteProperty</code>, and more — with your
+  own function, called a <b>trap</b>. <code>Reflect</code> is the
+  companion: the same set of operations, exposed as plain functions,
+  so a trap can perform the <em>real</em> default behavior after doing
+  its own work, instead of re-implementing it by hand.
+</p>
+<div class="try">
+  <pre><code>const target = { name: "Ana", age: 29 };
+const logged = new Proxy(target, {
+  get(obj, prop) {
+    console.log("GET", String(prop));
+    return Reflect.get(obj, prop);   <span class="c">// the real, normal read</span>
+  },
+  set(obj, prop, value) {
+    console.log("SET", String(prop), "=", value);
+    return Reflect.set(obj, prop, value);   <span class="c">// the real, normal write</span>
+  },
+});
+
+logged.name;
+logged.age = 30;</code></pre>
+</div>
+<p class="sub">
+  Every single property access on <code>logged</code> — reads and
+  writes both — is now observable, without <code>target</code> itself
+  ever knowing it's being watched. This exact shape (intercept, log or
+  validate, then delegate to <code>Reflect</code>) is the whole
+  mechanism behind validation libraries, ORMs that track which fields
+  changed, and framework reactivity.
+</p>
+<pre><code>function createValidated(schema) {
+  return new Proxy({}, {
+    set(obj, prop, value) {
+      if (schema[prop] &amp;&amp; typeof value !== schema[prop]) {
+        throw new TypeError(String(prop) + " must be a " + schema[prop]);
+      }
+      return Reflect.set(obj, prop, value);
+    },
+  });
+}
+const user = createValidated({ age: "number" });
+user.age = "nope";   <span class="c">// throws immediately — invalid data can't even be assigned</span></code></pre>
+
+<h3>Object.defineProperty vs Proxy — Vue 2 vs Vue 3</h3>
+<p>
+  Before <code>Proxy</code> existed everywhere, reactive frameworks
+  used <code>Object.defineProperty</code> to turn each property into a
+  getter/setter pair that could track reads and notify on writes — this
+  was Vue 2's actual reactivity engine, property by property.
+</p>
+<table>
+  <tr>
+    <th></th>
+    <th><code>Object.defineProperty</code> (Vue 2)</th>
+    <th><code>Proxy</code> (Vue 3)</th>
+  </tr>
+  <tr><td>New properties added later</td><td class="tone-bad">invisible — never converted, needed a special <code>Vue.set()</code></td><td class="tone-yes">caught automatically — the trap fires for any key</td></tr>
+  <tr><td>Arrays</td><td class="tone-bad">index writes and <code>length</code> changes needed special-cased method overrides</td><td class="tone-yes">just works — array mutation is property access too</td></tr>
+  <tr><td>Setup cost</td><td>walks every property up front, recursively</td><td>wraps once — nested objects are wrapped lazily, on first access</td></tr>
+</table>
+
+<h3>Invariants Proxy has to respect</h3>
+<p>
+  A trap isn't a completely free rewrite of an object's behavior —
+  a handful of invariants are enforced by the engine no matter what a
+  trap tries to return, mostly around <code>Object.freeze</code>. A
+  <code>get</code> trap on a frozen, non-configurable, non-writable
+  property <b>must</b> return the real, actual value — returning
+  anything else throws a <code>TypeError</code>. This exists so
+  <code>Object.freeze</code>'s guarantee from
+  <a href="/notes/error-handling-debugging">two chapters back</a> stays
+  a real guarantee, not something a misbehaving Proxy trap could
+  quietly undermine.
+</p>
+
+<h3>eval and new Function — and why almost never</h3>
+<pre><code>eval("console.log(1 + 1)");           <span class="c">// runs in the CALLING scope — can read/write local variables</span>
+new Function("a", "b", "return a + b");  <span class="c">// runs in GLOBAL scope only — can't see any local variable</span></code></pre>
+<p>
+  Both compile and run a string as code, and both come with the same
+  three costs: the engine can't statically analyze code that doesn't
+  exist yet at parse time, so it gets none of the optimization this
+  whole chapter has been about; a strict Content-Security-Policy
+  (covered next chapter) blocks them outright; and if that string ever
+  contains anything derived from user input, it's arbitrary code
+  execution, full stop — not a bug class, the actual worst case.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ This site's own code runner uses new Function</span>
+  Every <code>.try</code> block on this page, and the whole practice
+  playground, really does run your code through
+  <code>new Function(...)</code> inside a Web Worker — that's not a
+  contradiction of the warning above, it's the actual legitimate use
+  case: a sandboxed worker with no DOM access, running code the reader
+  explicitly chose to execute, not untrusted input silently reaching
+  <code>eval</code> in a real production app.
+</div>`,
     },
     {
       id: "types-data",
@@ -4585,9 +5221,141 @@ console.log(frozen.a);    <span class="c">// 1 either way — the object never a
       short: "Types & data",
       levels: ["advanced"],
       practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "What happens once a number, a string, or a file gets big or exotic enough to need its own type.",
+      body: `<h3>BigInt — exact integers, past 2^53</h3>
+<p>
+  Every regular JS number is a 64-bit float, which means integers stop
+  being exactly representable past
+  <code>Number.MAX_SAFE_INTEGER</code> — <code>2^53 - 1</code>.
+  <code>BigInt</code> is a genuinely separate type for arbitrary-size
+  integers with no such ceiling, spelled with a trailing <code>n</code>.
+</p>
+<div class="try">
+  <pre><code>console.log(Number.MAX_SAFE_INTEGER + 1 === Number.MAX_SAFE_INTEGER + 2);   <span class="c">// what happens?</span>
+console.log(9007199254740991n + 1n === 9007199254740991n + 2n);              <span class="c">// same numbers, as BigInt — what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>true</code>, then <code>false</code>. Past the safe integer
+  limit, regular numbers genuinely can't tell
+  <code>MAX_SAFE_INTEGER + 1</code> and <code>+ 2</code> apart — both
+  round to the same closest representable float. The <code>n</code>
+  suffix versions stay exact, because <code>BigInt</code> isn't a
+  float at all.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ BigInt and Number don't mix</span>
+  <code>10n + 5</code> throws <code>TypeError: Cannot mix BigInt and
+  other types</code> — there's no implicit conversion between them in
+  either direction. Convert explicitly, one way or the other:
+  <code>10n + BigInt(5)</code> or <code>Number(10n) + 5</code>.
+</div>
+
+<h3>ArrayBuffer, TypedArrays, DataView</h3>
+<p>
+  An <code>ArrayBuffer</code> is a fixed-length block of raw bytes —
+  nothing more, no way to read or write it directly. A
+  <b>TypedArray</b> (<code>Int32Array</code>, <code>Uint8Array</code>,
+  etc.) is a typed <em>view</em> onto that same memory, interpreting
+  its bytes as a specific numeric type. Multiple views can share one
+  buffer at once, and writing through any of them changes the
+  <em>same</em> underlying bytes every other view sees.
+</p>
+<div class="try">
+  <pre><code>const buffer = new ArrayBuffer(4);       <span class="c">// 4 raw bytes</span>
+const asInt32 = new Int32Array(buffer);  <span class="c">// one view: "these 4 bytes are one 32-bit int"</span>
+asInt32[0] = 42;
+
+const dv = new DataView(buffer);          <span class="c">// a second, more manual view of the SAME bytes</span>
+console.log(dv.getInt32(0));              <span class="c">// what happens?</span>
+console.log(dv.getInt32(0, true));        <span class="c">// second argument: littleEndian — what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>704643072</code>, then <code>42</code>. Not a bug — a genuine
+  byte-order mismatch. TypedArrays use the platform's native byte
+  order (little-endian on essentially every real device today).
+  <code>DataView.getInt32</code> defaults to <b>big-endian</b> unless
+  you explicitly pass <code>true</code> for its second argument. Same
+  4 bytes, same buffer, two different interpretations of what order
+  they represent a number in — exactly the kind of detail that matters
+  the moment you're parsing a binary file format or a network protocol
+  that specifies its own byte order.
+</p>
+
+<h3>Blob, File, FileReader</h3>
+<pre><code>const blob = new Blob(["hello world"], { type: "text/plain" });
+blob.size;    <span class="c">// 11 — bytes, not characters (matters once text isn't plain ASCII)</span>
+blob.type;    <span class="c">// "text/plain"</span>
+
+<span class="c">// A File (from an &lt;input type="file"&gt; or a drop event) is a Blob with a name and a modified date</span>
+fileInput.addEventListener("change", (e) =&gt; {
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = () =&gt; console.log(reader.result);   <span class="c">// the fully-read contents</span>
+  reader.readAsText(file);          <span class="c">// or readAsArrayBuffer, readAsDataURL</span>
+});
+
+<span class="c">// modern alternative — same result, promise-based, no event wiring</span>
+const text = await file.text();
+const bytes = await file.arrayBuffer();</code></pre>
+<p class="sub">
+  <code>FileReader</code> predates promises; a <code>File</code>
+  object itself now has <code>.text()</code>/<code>.arrayBuffer()</code>
+  methods that return promises directly — same underlying read, no
+  callback wiring needed in new code.
+</p>
+
+<h3>Unicode — code points vs code units</h3>
+<p>
+  A JS string's <code>.length</code> counts <b>UTF-16 code units</b>,
+  not visible characters. Most characters fit in one 16-bit unit; a
+  large chunk of emoji and some rarer scripts need <b>two</b> units — a
+  <b>surrogate pair</b> — and <code>.length</code> counts both of them
+  as 2.
+</p>
+<div class="try">
+  <pre><code>const emoji = "😀";
+console.log(emoji.length);            <span class="c">// what happens?</span>
+console.log([...emoji].length);       <span class="c">// spreading iterates by CODE POINT, not code unit — what happens?</span>
+console.log(JSON.stringify(emoji[0])); <span class="c">// indexing still grabs one code UNIT — what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>2</code>, then <code>1</code>, then <code>"\\ud83d"</code> — half
+  of a surrogate pair, not a valid character on its own.
+  <code>emoji[0]</code> silently cuts an emoji in half; spreading a
+  string (or <code>for...of</code>, or <code>Array.from</code>) walks
+  it by actual code point and never splits one. Slicing a string by
+  raw index — a search-result excerpt, a truncated preview — risks
+  exactly this cut, and it's an easy one to never notice until a
+  specific emoji or script breaks in production.
+</p>
+<pre><code>"café".normalize("NFC").length === "café".normalize("NFC").length;
+<span class="c">// true — but two strings that VISUALLY look identical can be genuinely unequal:</span>
+<span class="c">// "é" can be one single code point, OR "e" + a separate combining accent mark.</span>
+<span class="c">// .normalize() converts both spellings to one canonical form before comparing.</span></code></pre>
+<div class="sticky mint">
+  <span class="ttl">Rule</span> Comparing user-typed text for equality
+  without <code>.normalize()</code> first is a real, if rare, bug — two
+  strings can render pixel-identical and still fail
+  <code>===</code>, if one came from a source that encodes accents
+  differently.
+</div>
+
+<h3>Intl — past basic formatting</h3>
+<pre><code>["café", "cafe", "cafz"].sort(new Intl.Collator("en").compare);
+<span class="c">// ["cafe", "café", "cafz"] — locale-aware ordering; a plain .sort() compares raw code</span>
+<span class="c">// points instead, which gets accented characters and non-Latin scripts sorted wrong</span>
+
+new Intl.RelativeTimeFormat("en").format(-1, "day");   <span class="c">// "1 day ago"</span>
+new Intl.RelativeTimeFormat("en").format(3, "hour");   <span class="c">// "in 3 hours"</span></code></pre>
+<p class="sub">
+  All three <code>Intl</code> constructors from this and earlier
+  chapters — <code>Collator</code>, <code>DateTimeFormat</code>,
+  <code>NumberFormat</code>, and <code>RelativeTimeFormat</code> — take
+  the same first argument, a locale string, and are the built-in answer
+  to "format this correctly for the reader's language and region"
+  without hand-writing rules that differ by country.
+</p>`,
     },
     {
       id: "patterns-architecture",
@@ -4596,9 +5364,202 @@ console.log(frozen.a);    <span class="c">// 1 either way — the object never a
       short: "Patterns & architecture",
       levels: ["advanced"],
       practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "Shapes that show up again and again once code has to scale past one file.",
+      body: `<h3>Functional programming basics</h3>
+<p>
+  A <b>pure</b> function's output depends only on its inputs, and it
+  touches nothing outside itself — no network call, no mutating an
+  argument, no reading a global. The upside isn't philosophical: a pure
+  function is trivially testable (call it, check the return value, no
+  setup), safely memoizable
+  (<a href="/notes/scope-functions">already covered</a>), and safe to
+  run in any order or in parallel, since it can't step on anything
+  else's state.
+</p>
+<pre><code><span class="c">// impure — depends on and mutates something outside itself</span>
+let discount = 0.1;
+function applyDiscount(price) { return price - price * discount; }
+
+<span class="c">// pure — same inputs, same output, forever, no matter what else is happening</span>
+function applyDiscountPure(price, rate) { return price - price * rate; }</code></pre>
+<p>
+  <b>Immutability</b> — building new values instead of changing
+  existing ones — is what keeps a codebase full of pure functions
+  actually pure; it's the same idea
+  <a href="/notes/error-handling-debugging">already covered</a> for why
+  React checks <code>===</code> instead of deep-comparing.
+</p>
+<p>
+  A <b>transducer</b> is a composable transformation that's independent
+  of the collection it eventually runs against — instead of
+  <code>arr.map(f).filter(p)</code> building one throwaway intermediate
+  array between the two steps, a transducer combines <code>map</code>
+  and <code>filter</code> into a <em>single</em> combined step function,
+  run once per element, zero intermediate arrays:
+</p>
+<div class="try">
+  <pre><code>const mapping = (fn) =&gt; (reducer) =&gt; (acc, val) =&gt; reducer(acc, fn(val));
+const filtering = (pred) =&gt; (reducer) =&gt; (acc, val) =&gt; (pred(val) ? reducer(acc, val) : acc);
+const compose = (...fns) =&gt; fns.reduce((f, g) =&gt; (...args) =&gt; f(g(...args)));
+
+const push = (acc, val) =&gt; (acc.push(val), acc);
+const transform = compose(mapping((x) =&gt; x * 2), filtering((x) =&gt; x &gt; 5));
+
+console.log([1, 2, 3, 4, 5].reduce(transform(push), []));   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>[6, 8, 10]</code> — every element is doubled, then kept only if
+  the doubled value clears 5, all inside <em>one</em>
+  <code>reduce</code> pass with no intermediate array built between the
+  two steps. This is a genuinely deep rabbit hole (it's the core idea
+  behind libraries like <code>transducers-js</code>) — the takeaway at
+  this level is what problem it solves: composing transformations
+  without paying for an intermediate array at every step.
+</p>
+
+<h3>Design patterns, in JS terms</h3>
+<table>
+  <tr>
+    <th>Pattern</th>
+    <th>Shape</th>
+    <th>Already seen it</th>
+  </tr>
+  <tr><td><b>Module</b></td><td>a closure exposing a small public surface, hiding the rest</td><td><a href="/notes/scope-functions">closures chapter</a>, use #2</td></tr>
+  <tr><td><b>Observer / Pub-Sub</b></td><td>subscribers register a callback; a publisher calls every one when something happens</td><td><code>addEventListener</code> IS this pattern, built into the platform</td></tr>
+  <tr><td><b>Strategy</b></td><td>swap the algorithm at runtime by passing a different function/object with the same interface</td><td>the comparator argument to <code>.sort()</code></td></tr>
+  <tr><td><b>Factory</b></td><td>a function that builds and returns objects, hiding the construction details</td><td><code>document.createElement</code></td></tr>
+  <tr><td><b>Singleton</b></td><td>exactly one instance, created lazily on first request</td><td>an ES module itself — importing it twice gives the same instance, module caching does this for free</td></tr>
+</table>
+<div class="try">
+  <pre><code>class EventBus {
+  #listeners = new Map();
+  on(event, fn) {
+    if (!this.#listeners.has(event)) this.#listeners.set(event, []);
+    this.#listeners.get(event).push(fn);
+    return () =&gt; this.off(event, fn);   <span class="c">// returns its own unsubscribe function</span>
+  }
+  off(event, fn) {
+    const fns = this.#listeners.get(event);
+    if (fns) this.#listeners.set(event, fns.filter((f) =&gt; f !== fn));
+  }
+  emit(event, ...args) {
+    (this.#listeners.get(event) || []).forEach((fn) =&gt; fn(...args));
+  }
+}
+
+const bus = new EventBus();
+const unsubscribe = bus.on("greet", (name) =&gt; console.log("hello", name));
+bus.emit("greet", "Ana");
+unsubscribe();
+bus.emit("greet", "Ravi");   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  Only <code>"hello Ana"</code> prints — the second
+  <code>emit</code> finds no listeners left, because calling the
+  function <code>on()</code> returned removed it. This exact shape,
+  hand-rolled, is what every pub/sub library and every framework's
+  event system is doing underneath, whether it's 20 lines like this one
+  or a much larger implementation.
+</p>
+
+<h3>Dependency injection</h3>
+<p>
+  A function or class that <b>receives</b> what it depends on instead
+  of reaching out and constructing or importing it directly.
+</p>
+<pre><code><span class="c">// tightly coupled — this function can ONLY ever hit the real API</span>
+async function loadUser(id) {
+  return fetch("/api/users/" + id).then((r) =&gt; r.json());
+}
+
+<span class="c">// injected — the caller decides what "fetch a user" actually means</span>
+async function loadUserWith(fetchImpl, id) {
+  return fetchImpl(id);
+}
+loadUserWith(realApiFetch, 1);       <span class="c">// production</span>
+loadUserWith(fakeFetchForTests, 1);  <span class="c">// tests — no real network needed</span></code></pre>
+<p class="sub">
+  <b>Inversion of control</b> is the broader principle this is one
+  instance of: instead of a piece of code deciding and calling its own
+  dependencies, something outside it decides and hands them in. A
+  framework calling <em>your</em> component function, instead of your
+  code calling into the framework, is the same inversion at a larger
+  scale.
+</p>
+
+<h3>State machines</h3>
+<div class="try">
+  <pre><code>function createTrafficLight() {
+  const transitions = { red: "green", green: "yellow", yellow: "red" };
+  let state = "red";
+  return {
+    next() { state = transitions[state]; return state; },
+    current() { return state; },
+  };
+}
+const light = createTrafficLight();
+console.log(light.current());   <span class="c">// what happens?</span>
+console.log(light.next(), light.next(), light.next());   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>"red"</code>, then <code>"green" "yellow" "red"</code> — the
+  entire idea of a state machine in one small table: a fixed set of
+  named states, and one function per state that says exactly what the
+  next state is allowed to be. The value over a scattering of booleans
+  (<code>isLoading</code>, <code>isError</code>, <code>isSuccess</code>,
+  all mutable independently) is that an <b>impossible combination</b>
+  — loading AND error AND success all true at once — simply can't be
+  represented at all, instead of being a bug waiting to happen.
+</p>
+
+<h3>Error boundaries and resilience</h3>
+<pre><code>function withFallback(fn, fallback) {
+  return async (...args) =&gt; {
+    try {
+      return await fn(...args);
+    } catch (error) {
+      console.error("recovered from:", error);
+      return fallback;
+    }
+  };
+}
+const safeLoad = withFallback(loadUserProfile, { name: "Guest" });</code></pre>
+<p class="sub">
+  React's actual <code>ErrorBoundary</code> component is this same
+  idea at the UI layer — catch a failure from a whole subtree of
+  components, render a fallback UI instead of taking down the entire
+  page. The general architectural principle underneath both: contain a
+  failure at the smallest boundary that can meaningfully recover from
+  it, instead of letting it propagate and take out something much
+  bigger that didn't need to fail too.
+</p>
+
+<h3>API design</h3>
+<p>
+  A request is <b>idempotent</b> if making it twice has the exact same
+  effect as making it once. <code>PUT /users/1 { name: "Ana" }</code>
+  is idempotent — running it five times still leaves the name
+  <code>"Ana"</code>. <code>POST /users</code> to create a new one
+  usually isn't — five identical calls create five accounts.
+</p>
+<div class="sticky mint">
+  <span class="ttl">Rule</span> Idempotency is exactly what makes a
+  <a href="/notes/advanced-async">retry-with-backoff</a> safe to write
+  blindly. Retrying an idempotent request after a timeout is harmless —
+  it might have already succeeded, and running it again changes
+  nothing. Retrying a non-idempotent one risks a real duplicate,
+  usually solved with a client-generated <b>idempotency key</b> the
+  server deduplicates by.
+</div>
+<p>
+  <b>Caching</b> closes the loop: the same request, made again, doesn't
+  even need to reach the server. An HTTP <code>Cache-Control</code>
+  header, an in-memory <code>Map</code> keyed by request, or the
+  <a href="/notes/scope-functions">memoize</a> pattern from three
+  chapters back are all the identical idea at different layers of the
+  stack — don't redo work whose answer hasn't changed.
+</p>`,
     },
     {
       id: "performance",
@@ -4607,9 +5568,140 @@ console.log(frozen.a);    <span class="c">// 1 either way — the object never a
       short: "Performance",
       levels: ["advanced"],
       practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "Making a page feel fast is a different skill than making code run fast.",
+      body: `<h3>The critical rendering path</h3>
+<p>
+  What actually has to happen before a browser can paint a single
+  pixel: download the HTML, parse it into a <b>DOM</b>, download and
+  parse CSS into a <b>CSSOM</b>, combine the two into a
+  <b>render tree</b> (only the nodes that will actually be visible),
+  compute every element's exact size and position
+  (<b>layout</b>, also called <b>reflow</b>), then finally
+  <b>paint</b> pixels for each one. A <code>&lt;script&gt;</code> with
+  no <code>defer</code>/<code>async</code> blocks this whole pipeline
+  at the HTML-parsing step — the exact mechanism behind
+  <a href="/notes/setup-mental-model">the script-vs-module blocking
+  behavior</a> from the very first chapter.
+</p>
+<table>
+  <tr>
+    <th></th>
+    <th>Reflow (layout)</th>
+    <th>Repaint</th>
+  </tr>
+  <tr><td>Triggered by</td><td>anything that changes size or position — width, font-size, adding/removing an element</td><td>anything that changes appearance only — color, background, visibility</td></tr>
+  <tr><td>Cost</td><td>expensive — can cascade to the whole subtree, sometimes the whole page</td><td>cheaper — no geometry to recompute</td></tr>
+  <tr><td>Cheapest of all</td><td colspan="2"><code>transform</code> and <code>opacity</code> — these two can often skip layout AND paint entirely, handled straight on the compositor thread</td></tr>
+</table>
+<div class="warn">
+  <span class="ttl">⚠ Reading layout in a loop forces it early, repeatedly</span>
+  <code>el.offsetHeight</code> (or <code>getBoundingClientRect()</code>)
+  forces the browser to run layout <em>right now</em> if anything is
+  pending, instead of waiting for its natural time. Alternating writes
+  and reads of layout properties in a loop —
+  <code>el.style.width = x; console.log(el.offsetHeight);</code>,
+  repeated — forces a full synchronous reflow on <em>every
+  iteration</em>. This pattern has an actual name: <b>layout
+  thrashing</b>. The fix is always the same shape: batch every read
+  first, then batch every write.
+</div>
+
+<h3>Not blocking the main thread</h3>
+<p>
+  <code>requestAnimationFrame(fn)</code> schedules <code>fn</code> to
+  run right before the browser's next paint — the correct place for
+  any animation logic, because it's synced to the actual screen
+  refresh instead of guessing at a delay like
+  <code>setTimeout</code> would.
+  <code>requestIdleCallback(fn)</code> is the opposite priority: run
+  <code>fn</code> only when the browser is otherwise idle, with time to
+  spare before the next frame — for genuinely low-priority work
+  (analytics batching, prefetching) that should never compete with
+  anything the user is actually looking at.
+</p>
+<pre><code>function animate() {
+  el.style.transform = "translateX(" + x + "px)";
+  x += 2;
+  if (x &lt; 300) requestAnimationFrame(animate);   <span class="c">// re-schedule for the NEXT frame</span>
+}
+requestAnimationFrame(animate);
+
+requestIdleCallback(() =&gt; {
+  sendAnalyticsBatch();   <span class="c">// only runs if the browser has spare time before the next frame</span>
+});</code></pre>
+<p class="sub">
+  <a href="/notes/scope-functions">Debounce and throttle</a> solve a
+  different problem — how <em>often</em> a handler runs at all — and
+  compose naturally with this: throttle a scroll handler down to a
+  sane rate, then do the actual DOM write inside
+  <code>requestAnimationFrame</code> so it lands at the right moment in
+  the render pipeline.
+</p>
+
+<h3>The metrics that actually get measured</h3>
+<table>
+  <tr>
+    <th>Metric</th>
+    <th>Measures</th>
+  </tr>
+  <tr><td><b>LCP</b> — Largest Contentful Paint</td><td>how long until the biggest visible element (usually a hero image or heading) renders</td></tr>
+  <tr><td><b>INP</b> — Interaction to Next Paint</td><td>how long the page takes to visibly respond to a click, tap, or keypress — replaced the older FID metric for exactly this reason: FID only measured the delay before a handler started running, INP measures the whole thing including how long the handler itself takes</td></tr>
+  <tr><td><b>CLS</b> — Cumulative Layout Shift</td><td>how much visible content jumps around unexpectedly — an image with no reserved <code>width</code>/<code>height</code> popping in and shoving everything below it down is the classic cause</td></tr>
+</table>
+<p>
+  A <b>long task</b> is any single chunk of main-thread JS running
+  longer than 50ms without yielding — the main thread can't paint, or
+  respond to input, until it's done, so a long task directly hurts
+  both LCP and INP at once. Lighthouse is the tool that turns all of
+  this into one number and a prioritized list of fixes; the metrics
+  above are what it's actually measuring underneath that score.
+</p>
+
+<h3>Rendering less, later, or not yet</h3>
+<pre><code><span class="c">// Virtual list — render only the ~20 rows actually visible, not all 50,000</span>
+function VirtualList({ items, rowHeight, viewportHeight }) {
+  const [scrollTop, setScrollTop] = useState(0);
+  const start = Math.floor(scrollTop / rowHeight);
+  const visibleCount = Math.ceil(viewportHeight / rowHeight);
+  const visible = items.slice(start, start + visibleCount);
+  <span class="c">// render "visible" only, with top/bottom spacers sized to fill the scroll area</span>
+}</code></pre>
+<p>
+  A virtual list keeps DOM node count roughly constant regardless of
+  data size — 50,000 rows and 50 rows cost the same, because only
+  what's actually in the viewport (plus a small buffer) is ever
+  mounted. <code>loading="lazy"</code> on an <code>&lt;img&gt;</code>
+  is the built-in, no-JS version of the same idea for images below the
+  fold. <b>Prefetching</b> is the opposite bet — load something
+  <em>before</em> it's needed, on a strong signal it's about to be
+  (hovering a link, an <code>IntersectionObserver</code> from
+  <a href="/notes/regex-dates-apis">two chapters back</a> firing near
+  the bottom of the page) — trading a little wasted bandwidth on guesses
+  that don't pan out for a page that already has the next thing ready.
+</p>
+
+<h3>Tree shaking and bundle size</h3>
+<p>
+  <a href="/notes/modules-tooling">Already covered</a>: tree shaking
+  only works because ESM imports are static and analyzable — a
+  bundler can see the entire dependency graph and delete anything
+  provably unused. "Provably" is the load-bearing word: a module with
+  <b>side effects</b> at its top level (code that runs just from being
+  imported — registering something globally, patching a prototype)
+  can't be safely deleted even if nothing imports a name from it,
+  because deleting it would change behavior. <code>package.json</code>'s
+  <code>"sideEffects": false</code> field is a library author's
+  explicit promise that none of their files do this, which is what
+  lets a bundler tree-shake it aggressively instead of playing it safe.
+</p>
+<p class="sub">
+  A bundle analyzer (a treemap of what's actually inside the shipped
+  JS, sized by byte) is how "why is this bundle 400kb" stops being a
+  guess — it routinely surfaces one unexpectedly heavy dependency, or
+  an entire library imported for one small utility function that could
+  have been hand-written in ten lines instead.
+</p>`,
     },
     {
       id: "security",
@@ -4618,9 +5710,158 @@ console.log(frozen.a);    <span class="c">// 1 either way — the object never a
       short: "Security",
       levels: ["advanced"],
       practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "The mistakes that turn into a real incident, not just a bug.",
+      body: `<h3>XSS — three flavors, one root cause</h3>
+<p>
+  Cross-site scripting is always the same underlying failure: text that
+  came from somewhere untrusted got treated as <b>markup</b> instead of
+  <b>data</b>. The three flavors differ only in <em>where</em> the
+  untrusted text entered.
+</p>
+<table>
+  <tr>
+    <th>Flavor</th>
+    <th>Untrusted text comes from</th>
+  </tr>
+  <tr><td><b>Stored</b></td><td>the database — a comment, a username, a bio someone else submitted, rendered later for other visitors</td></tr>
+  <tr><td><b>Reflected</b></td><td>the current request — a URL/search-query parameter echoed straight into the page's HTML</td></tr>
+  <tr><td><b>DOM-based</b></td><td>client-side JS itself — reading <code>location.hash</code> or similar and writing it into the DOM, no server involved at all</td></tr>
+</table>
+<pre><code><span class="c">// the actual vulnerable line looks the same in all three flavors:</span>
+el.innerHTML = someValueThatCameFromOutsideThisFile;
+
+<span class="c">// the fix is the same in all three, too:</span>
+el.textContent = someValueThatCameFromOutsideThisFile;   <span class="c">// never parsed as HTML — see the DOM chapter</span>
+<span class="c">// — or, if actual formatted HTML is genuinely needed, sanitize FIRST:</span>
+el.innerHTML = DOMPurify.sanitize(someValueThatCameFromOutsideThisFile);</code></pre>
+<div class="sticky mint">
+  <span class="ttl">Rule</span> <code>textContent</code> by default.
+  <code>innerHTML</code> only for markup you trust completely — your
+  own hardcoded strings, or output that's been through a real
+  sanitizer. "I'll just strip <code>&lt;script&gt;</code> tags myself"
+  is not a sanitizer; there are too many other ways to smuggle
+  executable content into HTML (an <code>onerror</code> attribute on an
+  <code>&lt;img&gt;</code>, a <code>javascript:</code> URL) to
+  reimplement correctly by hand.
+</div>
+<p>
+  A <b>Content-Security-Policy</b> header is the defense-in-depth
+  layer underneath sanitization — even if a payload does slip through,
+  a strict CSP can refuse to execute it:
+</p>
+<pre><code>Content-Security-Policy: script-src 'self'; object-src 'none'</code></pre>
+<p class="sub">
+  That policy tells the browser to run scripts only from the site's own
+  origin — an injected <code>&lt;script src="https://evil.example"&gt;</code>
+  or an inline <code>&lt;script&gt;alert(1)&lt;/script&gt;</code> both
+  get refused at the browser level, entirely independent of whether the
+  injection itself was ever caught.
+</p>
+
+<h3>CSRF, SameSite, and CORS — three names for "who's actually making this request"</h3>
+<p>
+  A browser attaches cookies to a request automatically, based purely
+  on the target domain — it doesn't check <em>which site's page</em>
+  triggered the request. <b>CSRF</b> abuses exactly that: a malicious
+  page auto-submits a form to
+  <code>your-bank.com/transfer</code>, and the browser happily attaches
+  the visitor's real, valid <code>your-bank.com</code> session cookie
+  to it, because from the cookie's point of view it's a normal request
+  to the right domain.
+</p>
+<pre><code>Set-Cookie: session=abc123; SameSite=Strict; Secure; HttpOnly</code></pre>
+<table>
+  <tr>
+    <th><code>SameSite</code> value</th>
+    <th>Cookie sent on a cross-site request?</th>
+  </tr>
+  <tr><td><code>Strict</code></td><td class="tone-bad">never</td></tr>
+  <tr><td><code>Lax</code> (most browsers' default today)</td><td class="tone-warn">only on top-level navigation (clicking a real link), not on a background <code>fetch</code>/form auto-submit</td></tr>
+  <tr><td><code>None</code></td><td class="tone-yes">always — requires <code>Secure</code> too</td></tr>
+</table>
+<p>
+  <a href="/notes/async-properly">CORS</a>, revisited: it's the
+  opposite direction from CSRF — CORS decides whether <em>JavaScript
+  can read the response</em> of a cross-origin request; it does nothing
+  to stop the request from being <em>sent</em> in the first place (a
+  plain HTML form auto-submit isn't subject to CORS at all).
+  <code>SameSite</code> cookies are what actually close the CSRF hole;
+  CORS closes a different one.
+</p>
+
+<h3>Prototype pollution</h3>
+<p>
+  A "deep merge" utility that copies keys with a plain
+  <code>for...in</code> and bracket assignment has a landmine baked in:
+  <code>"__proto__"</code> is a legal object key, and writing through
+  it doesn't set a normal property — it reaches all the way up to
+  <code>Object.prototype</code> itself.
+</p>
+<pre><code>function unsafeMerge(target, source) {
+  for (const key in source) {
+    if (typeof source[key] === "object" &amp;&amp; source[key] !== null) {
+      if (!target[key]) target[key] = {};
+      unsafeMerge(target[key], source[key]);   <span class="c">// recurses into "__proto__" just like any other key</span>
+    } else {
+      target[key] = source[key];
+    }
+  }
+  return target;
+}
+
+const attackerPayload = JSON.parse('{"__proto__": {"isAdmin": true}}');
+unsafeMerge({}, attackerPayload);
+
+({}).isAdmin;   <span class="c">// true — on a BRAND NEW, completely unrelated object, anywhere in the whole program</span></code></pre>
+<div class="warn">
+  <span class="ttl">⚠ This isn't a toy example</span>
+  A merge/clone utility that accepts <em>any</em> JSON from outside the
+  program (a request body, a config file) and doesn't guard against
+  this is a real, repeatedly-exploited vulnerability class — several
+  popular npm packages have shipped exactly this bug. The fix: skip
+  <code>"__proto__"</code>, <code>"constructor"</code>, and
+  <code>"prototype"</code> explicitly during a merge, or build the
+  result with <code>Object.create(null)</code> so it has no prototype
+  at all to pollute.
+</div>
+
+<h3>Supply-chain risk</h3>
+<p>
+  Every dependency's <code>postinstall</code> script and every
+  transitive dependency (a dependency of a dependency, several layers
+  deep, that nobody on the team ever chose or reviewed) runs with the
+  same trust and access as your own code the moment
+  <code>npm install</code> finishes. A compromised popular package —
+  through a hijacked maintainer account or a typosquatted name one
+  character off from a real one — is a genuine, repeatedly-realized
+  attack vector, not a hypothetical one.
+</p>
+<p class="sub">
+  A committed lockfile
+  (<a href="/notes/modules-tooling">already covered</a>) is part of the
+  defense here too: it pins the exact resolved tree, so a compromised
+  new version of a transitive dependency published after the lockfile
+  was generated doesn't get silently pulled in on the next install.
+</p>
+
+<h3>innerHTML and postMessage, safely</h3>
+<pre><code><span class="c">// postMessage — always check the origin, on both ends</span>
+window.addEventListener("message", (event) =&gt; {
+  if (event.origin !== "https://trusted-partner.example") return;   <span class="c">// reject everything else</span>
+  handleMessage(event.data);
+});
+
+otherWindow.postMessage(payload, "https://trusted-partner.example");   <span class="c">// NEVER "*" for anything sensitive</span></code></pre>
+<div class="warn">
+  <span class="ttl">⚠ A missing origin check accepts messages from ANY page</span>
+  Without the <code>event.origin</code> check, any page anywhere that
+  can get a reference to your window (an iframe embedding it, a popup
+  it opened) can send it a message your handler will act on as if it
+  were trusted. Sending with <code>"*"</code> as the target origin has
+  the same problem in the other direction — the payload gets delivered
+  to whatever page is currently there, trusted or not.
+</div>`,
     },
     {
       id: "ecosystem-professional",
@@ -4629,9 +5870,154 @@ console.log(frozen.a);    <span class="c">// 1 either way — the object never a
       short: "Ecosystem",
       levels: ["advanced"],
       practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "The close-out — how the tools around JS actually work, and where the language itself comes from.",
+      body: `<p>
+  TypeScript, Node, and testing each have their own full shelf on this
+  site — this section is deliberately brief on all three, just enough
+  to place them, with a link to go deep. What gets real depth here is
+  what doesn't have a shelf of its own: how source code actually
+  becomes a running program, and where new JS syntax comes from before
+  it's syntax at all.
+</p>
+
+<h3>TypeScript, Node, testing — in one paragraph each</h3>
+<p>
+  TypeScript adds a type system checked entirely at compile time and
+  erased before anything runs — it's <b>structural</b>, meaning two
+  differently-named types with the same shape are compatible, unlike
+  languages that check by declared name. Generics, narrowing, and the
+  built-in utility types (<code>Partial</code>, <code>Pick</code>,
+  <code>Omit</code>) get their own full treatment on
+  <a href="/typescript">the TypeScript shelf</a>.
+</p>
+<p>
+  Node extends JS past the browser with a filesystem, a process, and
+  no DOM — streams, <code>cluster</code> (multi-process scaling across
+  CPU cores), worker threads, and <code>AsyncLocalStorage</code>
+  (request-scoped context that survives across
+  <code>await</code>s without threading a parameter through every
+  function) are covered on <a href="/node">the Node shelf</a>.
+</p>
+<p>
+  Testing splits into unit (one function, isolated), integration
+  (several real pieces together), and end-to-end (the actual app,
+  driven like a user would). <b>Fake timers</b>
+  (<code>vi.useFakeTimers()</code> in this project's own test suite) let
+  a test fast-forward through a <code>setTimeout</code> instantly
+  instead of genuinely waiting; <b>mocking</b> replaces a real
+  dependency with a controlled fake, the same
+  <a href="/notes/patterns-architecture">dependency-injection</a> idea
+  applied specifically to make code testable. Full depth on
+  <a href="/testing">the testing shelf</a>.
+</p>
+
+<h3>What a bundler is actually doing: ASTs</h3>
+<p>
+  Every tool in this chapter — a bundler, a linter, a formatter, a
+  minifier, a codemod — starts the exact same way:
+  <b>parse the source into an Abstract Syntax Tree</b>, a plain nested
+  object describing the code's structure, then walk and transform
+  <em>that tree</em>, never the raw text itself.
+</p>
+<div class="try">
+  <pre><code><span class="c">// A hand-built AST for: const x = 1 + 2;
+     // Real parsers (Babel, Acorn) produce something like this automatically.</span>
+const ast = {
+  type: "VariableDeclaration",
+  kind: "const",
+  declarations: [{
+    type: "VariableDeclarator",
+    id: { type: "Identifier", name: "x" },
+    init: {
+      type: "BinaryExpression",
+      operator: "+",
+      left: { type: "Literal", value: 1 },
+      right: { type: "Literal", value: 2 },
+    },
+  }],
+};
+console.log(JSON.stringify(ast.declarations[0].init, null, 2));</code></pre>
+</div>
+<p class="sub">
+  That's genuinely close to what
+  <a href="https://astexplorer.net">astexplorer.net</a> shows for the
+  real thing — every operator, every identifier, every literal is its
+  own typed node. Editing code programmatically (a <b>codemod</b>,
+  the tool behind large automated migrations like a big React version
+  bump across a whole codebase) means finding the right node type in
+  this tree and swapping it, then printing the tree back out to text —
+  never regex-replacing the source directly, which breaks the instant
+  the pattern shows up somewhere the author didn't anticipate (inside a
+  string, a comment, a different context entirely).
+</p>
+<p>
+  A Babel <b>plugin</b> is exactly this walk-and-transform step,
+  packaged: it's handed the AST, given a chance to visit specific node
+  types (<code>ArrowFunctionExpression</code>,
+  <code>ClassDeclaration</code>, …), and returns a modified tree that
+  Babel then prints back to JS — this is the actual mechanism behind
+  "transpile modern syntax down to something older browsers run."
+</p>
+
+<h3>Polyfills vs transpilation — two different problems</h3>
+<p>
+  These get bundled together in conversation constantly, and they fix
+  genuinely different gaps.
+</p>
+<table>
+  <tr>
+    <th></th>
+    <th>Transpilation</th>
+    <th>Polyfill</th>
+  </tr>
+  <tr><td>Fixes a missing…</td><td><b>syntax</b> — arrow functions, optional chaining, classes</td><td><b>runtime feature</b> — <code>Array.prototype.flat</code>, <code>Promise</code>, <code>fetch</code></td></tr>
+  <tr><td>How</td><td>rewrites your source into older-syntax equivalent code, before shipping</td><td>ships extra JS that <em>adds</em> the missing method/object at runtime, if it's not already there</td></tr>
+  <tr><td>Can it be fixed at build time alone?</td><td class="tone-yes">yes — syntax is fully resolved before the browser ever sees it</td><td class="tone-bad">no — the feature has to actually exist in the running environment, one way or another</td></tr>
+</table>
+<p>
+  <code>core-js</code> is the actual polyfill implementation most
+  tooling pulls from; <b>browser targeting</b>
+  (a <code>browserslist</code> config, shared by most of this
+  toolchain) is what tells both the transpiler and the polyfill loader
+  which engines actually need to be supported — the newer the target
+  list, the less of either gets shipped, which is a direct, measurable
+  bundle-size win for a team that can drop support for old browsers.
+</p>
+
+<h3>Reading the spec, and where new syntax comes from</h3>
+<p>
+  Every JS feature in every chapter on this site started as a TC39
+  proposal and moved through five fixed stages before landing in the
+  language:
+</p>
+<table>
+  <tr>
+    <th>Stage</th>
+    <th>Means</th>
+  </tr>
+  <tr><td><b>0 — Strawperson</b></td><td>any committee member's idea, no formal backing yet</td></tr>
+  <tr><td><b>1 — Proposal</b></td><td>the problem is real, worth solving, has a champion</td></tr>
+  <tr><td><b>2 — Draft</b></td><td>real syntax and semantics written out</td></tr>
+  <tr><td><b>3 — Candidate</b></td><td>spec-complete, feedback comes from real implementations, not just discussion</td></tr>
+  <tr><td><b>4 — Finished</b></td><td>shipped in engines, included in the next yearly ECMAScript edition</td></tr>
+</table>
+<p class="sub">
+  Optional chaining, nullish coalescing, and top-level await all went
+  through exactly this pipeline before ever reaching a browser. The
+  official spec (<a href="https://tc39.es/ecma262/">ecma262</a>) reads
+  as dense, formal pseudocode — genuinely worth being able to skim once
+  in a while, because it's the actual final authority any time a
+  blog post's explanation of some edge case and the engine's real
+  behavior disagree.
+</p>
+<div class="say">
+  <span class="ttl">Say it like this →</span> "When I hit a genuinely
+  ambiguous edge case — something two blog posts explain differently —
+  I check the spec or a quick <code>node -p</code>/console test rather
+  than trust either post. This whole site was built the same way: every
+  runnable claim in it was verified against a real engine first."
+</div>`,
     },
 
     {
