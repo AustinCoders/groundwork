@@ -3343,9 +3343,250 @@ try {
       short: "Objects deeply",
       levels: ["intermediate"],
       practice: ["ex-group-by", "ex-no-mutation", "ex-dedupe-map"],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "The rest of the object/array toolbox — past what B5 already covered.",
+      body: `<p>
+  <a href="/notes/objects-arrays-basics">The first pass at objects and
+  arrays</a> covered literals, the core mutating/non-mutating array
+  methods, and basic destructuring/spread. This chapter is everything
+  past that: computed behavior on objects, the two collection types
+  that aren't arrays, and the JSON details that only bite in real apps.
+</p>
+
+<h3>Getters and setters</h3>
+<p>
+  A property that runs code on read or write, while still looking like
+  a plain field to anything using it — no <code>()</code> at the call
+  site.
+</p>
+<div class="try">
+  <pre><code>const person = {
+  first: "Ana",
+  last: "Rao",
+  get fullName() {
+    return this.first + " " + this.last;
+  },
+  set fullName(value) {
+    [this.first, this.last] = value.split(" ");
+  },
+};
+
+console.log(person.fullName);      <span class="c">// what happens?</span>
+person.fullName = "Ravi Shah";     <span class="c">// looks like a plain assignment</span>
+console.log(person.first, person.last);   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>"Ana Rao"</code>, then <code>"Ravi" "Shah"</code> — the setter
+  ran and split the incoming string back into two real fields. This is
+  the standard way to keep a derived value (<code>fullName</code>) in
+  sync with the data it's derived from, without callers ever calling a
+  method to get it.
+</p>
+
+<h3>Object statics — the whole-object toolkit</h3>
+<table>
+  <tr>
+    <th>Call</th>
+    <th>Returns</th>
+  </tr>
+  <tr><td><code>Object.keys(obj)</code></td><td>array of own, enumerable key names</td></tr>
+  <tr><td><code>Object.values(obj)</code></td><td>array of the matching values</td></tr>
+  <tr><td><code>Object.entries(obj)</code></td><td>array of <code>[key, value]</code> pairs — feeds straight into a <code>for...of</code> or <code>new Map()</code></td></tr>
+  <tr><td><code>Object.fromEntries(pairs)</code></td><td>the reverse — pairs back into an object</td></tr>
+  <tr><td><code>Object.assign(target, ...sources)</code></td><td>copies own enumerable props from each source onto <code>target</code>, left to right — <b>mutates target</b></td></tr>
+  <tr><td><code>Object.hasOwn(obj, key)</code></td><td><code>true</code> only for the object's <b>own</b> property, never an inherited one</td></tr>
+</table>
+<pre><code>const o = { a: 1, b: 2 };
+Object.entries(o);                       <span class="c">// [["a", 1], ["b", 2]]</span>
+Object.fromEntries([["x", 1], ["y", 2]]); <span class="c">// { x: 1, y: 2 }</span>
+Object.hasOwn(o, "a");                   <span class="c">// true</span>
+Object.hasOwn(o, "toString");            <span class="c">// false — toString is inherited, not o's own</span></code></pre>
+<div class="warn">
+  <span class="ttl">⚠ Object.assign mutates its first argument</span>
+  <code>Object.assign(base, patch)</code> changes <code>base</code> in
+  place and returns it. To merge without touching either input, pass an
+  empty object as the target — or reach for spread instead:
+  <code>{ ...base, ...patch }</code> does the same merge, immutably.
+</div>
+
+<h3>Copying — shallow, deep, and what actually does which</h3>
+<p>
+  <a href="/notes/objects-arrays-basics">Already established</a>:
+  spread and <code>Object.assign</code> both copy one level deep, so a
+  nested object stays shared. For a <b>real</b> deep copy of plain
+  data, <code>structuredClone()</code> is the built-in answer — no
+  library, works on objects, arrays, <code>Date</code>, <code>Map</code>,
+  <code>Set</code>, and it correctly throws rather than silently
+  mangling a function or a DOM node it can't clone.
+</p>
+<pre><code>const original = { nested: { count: 1 }, tags: new Set(["a"]) };
+const deep = structuredClone(original);
+deep.nested.count = 99;
+console.log(original.nested.count);   <span class="c">// 1 — untouched, unlike a spread copy</span>
+console.log(deep.tags instanceof Set); <span class="c">// true — the Set survived the clone</span></code></pre>
+
+<h3>Map and Set — objects and arrays with better rules</h3>
+<p>
+  A <code>Map</code> is a key/value store like an object, but with two
+  things a plain object can't do: <b>any value</b> can be a key
+  (not just strings/symbols), and it remembers <b>insertion order</b>
+  reliably, including for keys that look numeric.
+</p>
+<div class="try">
+  <pre><code>const objKey = { id: 1 };
+const cache = new Map();
+cache.set(objKey, "cached result");
+cache.set("plain-string-key", "also fine");
+
+console.log(cache.get(objKey));         <span class="c">// what happens?</span>
+console.log(cache.get({ id: 1 }));      <span class="c">// a DIFFERENT object, same shape — what happens?</span>
+console.log(cache.size);</code></pre>
+</div>
+<p class="sub">
+  <code>"cached result"</code>, then <code>undefined</code>. Map keys
+  are compared by <b>identity</b>, same as everything else about
+  object references — a freshly-built <code>{ id: 1 }</code> is not the
+  <code>objKey</code> it was stored under, no matter how identical it
+  looks. This is exactly why an object can be used to key a private,
+  un-guessable cache entry.
+</p>
+<table>
+  <tr>
+    <th></th>
+    <th><code>Object</code></th>
+    <th><code>Map</code></th>
+  </tr>
+  <tr><td>Key types</td><td>strings and symbols only</td><td>anything — objects, functions, <code>NaN</code></td></tr>
+  <tr><td>Size</td><td><code>Object.keys(o).length</code></td><td><code>map.size</code>, directly</td></tr>
+  <tr><td>Iteration order</td><td>mostly insertion, but integer-like keys sort first — a real gotcha</td><td>always insertion order, no exceptions</td></tr>
+  <tr><td>Extra baggage</td><td>inherits from <code>Object.prototype</code> (<code>toString</code>, etc.)</td><td>starts empty — nothing to accidentally collide with</td></tr>
+</table>
+<p>
+  <code>Set</code> is the same idea for values with no key at all —
+  a list that silently refuses duplicates, compared the same way
+  <code>Map</code> keys are:
+</p>
+<pre><code>const unique = new Set([1, 2, 2, 3, 3, 3]);
+[...unique];              <span class="c">// [1, 2, 3]</span>
+unique.has(2);             <span class="c">// true</span>
+[...new Set(array)];       <span class="c">// the standard one-liner for "de-duplicate this array"</span></code></pre>
+
+<h3>WeakMap and WeakSet</h3>
+<p>
+  Same idea as <code>Map</code>/<code>Set</code>, with one restriction
+  and one superpower: keys (or values, for a <code>WeakSet</code>) must
+  be objects, and they're held <b>weakly</b> — if nothing else in the
+  program references that object anymore, the garbage collector is
+  free to remove it, entry and all.
+</p>
+<pre><code>const wm = new WeakMap();
+let el = { id: "temp" };
+wm.set(el, { extra: "metadata tied to el's lifetime" });
+el = null;   <span class="c">// no other reference to the object exists anymore —</span>
+             <span class="c">// the WeakMap's entry can now be garbage collected too</span></code></pre>
+<div class="sticky mint">
+  <span class="ttl">Rule</span> Reach for a <code>WeakMap</code> when
+  you're attaching extra data to objects you don't own the lifetime of
+  — DOM nodes, other modules' objects — so that data doesn't
+  accidentally keep them alive forever. A regular <code>Map</code>
+  would hold a strong reference and leak memory as long as the map
+  itself exists.
+</div>
+
+<h3>Array methods B5 didn't cover</h3>
+<table>
+  <tr>
+    <th>Call</th>
+    <th>Does</th>
+  </tr>
+  <tr><td><code>Array.from(iterable, mapFn?)</code></td><td>builds a real array from anything iterable OR array-like — a string, a <code>Set</code>, a <code>{ length: n }</code> object — with an optional map step built in</td></tr>
+  <tr><td><code>arr.flat(depth)</code></td><td>flattens nested arrays <code>depth</code> levels (default 1)</td></tr>
+  <tr><td><code>arr.flatMap(fn)</code></td><td><code>.map(fn).flat(1)</code>, done in one pass — for when a mapper sometimes returns 0 or several items per input</td></tr>
+  <tr><td><code>arr.at(-1)</code></td><td>same as <code>arr[arr.length - 1]</code>, but works with negative indices directly</td></tr>
+</table>
+<pre><code>Array.from({ length: 3 }, (_, i) =&gt; i * 2);   <span class="c">// [0, 2, 4] — no real array needed to start</span>
+Array.from("abc");                             <span class="c">// ["a", "b", "c"]</span>
+[1, [2, [3, [4]]]].flat(2);                    <span class="c">// [1, 2, 3, [4]] — only 2 levels deep</span>
+[1, 2, 3].flatMap(x =&gt; [x, x * 10]);           <span class="c">// [1, 10, 2, 20, 3, 30]</span>
+[1, 2, 3].at(-1);                              <span class="c">// 3</span></code></pre>
+
+<h3>Sort stability</h3>
+<p>
+  Modern <code>Array.prototype.sort</code> is guaranteed
+  <b>stable</b>: elements that compare equal keep their original
+  relative order. That's not a minor implementation detail — it's what
+  makes multi-key sorting possible with two simple, separate sorts.
+</p>
+<div class="try">
+  <pre><code>const items = [
+  { key: "a", group: 1 },
+  { key: "b", group: 1 },
+  { key: "c", group: 0 },
+];
+const sorted = items.sort((x, y) =&gt; x.group - y.group);
+console.log(sorted.map((i) =&gt; i.key));   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>["c", "a", "b"]</code> — <code>"a"</code> and <code>"b"</code>
+  both have <code>group: 1</code>, tied under the comparator, and
+  stability guarantees they stay in their original relative order (a
+  before b) rather than the sort being free to swap them arbitrarily.
+</p>
+
+<h3>JSON — replacer and reviver</h3>
+<p>
+  Both <code>stringify</code> and <code>parse</code> take an optional
+  second function that runs on every key/value pair — a hook to filter
+  or transform as the conversion happens, instead of after.
+</p>
+<pre><code>JSON.stringify(
+  { name: "Ana", email: "ana@x.com", passwordHash: "…" },
+  (key, value) =&gt; (key === "passwordHash" ? undefined : value)
+);   <span class="c">// {"name":"Ana","email":"ana@x.com"} — dropped before it ever became text</span>
+
+JSON.parse(
+  '{"createdAt":"2024-01-01T00:00:00.000Z"}',
+  (key, value) =&gt; (key === "createdAt" ? new Date(value) : value)
+);   <span class="c">// { createdAt: <a real Date object> } — JSON has no date type, so this is how you get one back</span></code></pre>
+<p class="sub">
+  The replacer can also be an array instead of a function — a plain
+  allow-list of key names to keep, everything else dropped. Simpler
+  when you just need a fixed subset of fields, no per-key logic.
+</p>
+
+<h3>Nested destructuring and defaults, past the basics</h3>
+<pre><code>function render({
+  user: { name, address: { city = "Unknown" } = {} } = {},
+  theme = "light",
+} = {}) {
+  return name + " · " + city + " · " + theme;
+}
+render({ user: { name: "Ana" } });   <span class="c">// "Ana · Unknown · light"</span>
+render();                             <span class="c">// no crash — every level has a fallback</span></code></pre>
+<p class="sub">
+  Each <code>= {}</code> is a default for <em>that specific level</em>
+  — without it, destructuring a level that's missing (like
+  <code>address</code> not existing on a bare <code>{ name: "Ana" }</code>)
+  throws instead of quietly falling through, because you can't
+  destructure a property off of <code>undefined</code>.
+</p>
+
+<h3>Optional chaining meets deep data</h3>
+<pre><code>const config = { server: { retries: 0 } };
+
+config.server?.timeout ?? 5000;    <span class="c">// 5000 — timeout doesn't exist, ?? catches it</span>
+config.server?.retries ?? 5000;    <span class="c">// 0 — retries DOES exist, so its real value wins</span>
+config.client?.host ?? "localhost";  <span class="c">// "localhost" — client itself is missing, chain stops safely</span></code></pre>
+<p class="sub">
+  That middle line is the one worth sitting with:
+  <a href="/notes/operators-flow">?? only falls back on null/undefined</a>,
+  so a genuinely present <code>0</code> survives untouched — exactly
+  the combination (<code>?.</code> to reach safely,
+  <code>??</code> to default correctly) that a plain
+  <code>config.server &amp;&amp; config.server.retries || 5000</code>
+  gets wrong, because <code>||</code> would treat that real
+  <code>0</code> as missing too.
+</p>`,
     },
     {
       id: "prototypes-oop",
@@ -3354,9 +3595,171 @@ try {
       short: "Prototypes & OOP",
       levels: ["intermediate"],
       practice: ["ex-class-extends"],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "class is real syntax now — but it's still prototypes underneath, every time.",
+      body: `<h3>The prototype chain</h3>
+<p>
+  Every object has an internal link to another object — its
+  <b>prototype</b> — and property lookup that doesn't find a match
+  walks that link outward, exactly like the scope chain walked outward
+  in the last chapter. The chain ends at <code>null</code>.
+</p>
+<div class="boxes">
+  <div class="bx is-ref">
+    <div class="bx__cap">rex (a Dog instance)</div>
+    <div class="bx__slot"><b>name</b><span>"Rex"</span></div>
+    <div class="bx__slot"><b>breed</b><span>"Labrador"</span></div>
+    <div class="bx__arrow">no "speak" here → check its prototype ↓</div>
+  </div>
+  <div class="bx is-ref">
+    <div class="bx__cap">Dog.prototype</div>
+    <div class="bx__slot"><b>speak</b><span>ƒ ()</span></div>
+    <div class="bx__arrow">found it — lookup stops here</div>
+  </div>
+  <div class="bx">
+    <div class="bx__cap">Object.prototype</div>
+    <div class="bx__slot"><b>toString</b><span>ƒ ()</span></div>
+    <div class="bx__arrow">the chain's final stop before null</div>
+  </div>
+</div>
+<div class="warn">
+  <span class="ttl">⚠ __proto__ and .prototype are not the same thing</span>
+  <code>obj.__proto__</code> (or the modern
+  <code>Object.getPrototypeOf(obj)</code>) is the link an
+  <em>instance</em> follows. <code>Dog.prototype</code> is a plain
+  object that <em>becomes</em> that link for every instance
+  <code>new Dog()</code> creates. A function has a
+  <code>.prototype</code> property; an object has a
+  <code>__proto__</code> link. They're related, never interchangeable.
+</div>
+<pre><code>function Animal(name) { this.name = name; }
+Animal.prototype.speak = function () { return this.name + " makes a sound"; };
+
+const rex = new Animal("Rex");
+Object.getPrototypeOf(rex) === Animal.prototype;   <span class="c">// true</span>
+rex instanceof Animal;                              <span class="c">// true — checks exactly this chain</span>
+rex.hasOwnProperty("name");                          <span class="c">// true — set directly on rex</span>
+rex.hasOwnProperty("speak");                          <span class="c">// false — it's on the prototype, not rex itself</span></code></pre>
+
+<h3>What new actually does</h3>
+<p>
+  <code>new Fn(...)</code> is four steps, always, whether
+  <code>Fn</code> is an old-style constructor function or a modern
+  <code>class</code>:
+</p>
+<ol>
+  <li>A brand-new, empty object is created.</li>
+  <li>Its internal prototype link is set to <code>Fn.prototype</code>.</li>
+  <li><code>Fn</code> runs with <code>this</code> bound to that new object (the "new" row from <a href="/notes/scope-functions">the this-binding table</a>).</li>
+  <li>If <code>Fn</code> returns an object explicitly, <em>that's</em> the result instead — otherwise the new object from step 1 is returned automatically.</li>
+</ol>
+<div class="try">
+  <pre><code>function myNew(Ctor, ...args) {
+  const obj = Object.create(Ctor.prototype);        <span class="c">// steps 1 &amp; 2</span>
+  const result = Ctor.apply(obj, args);              <span class="c">// step 3</span>
+  return typeof result === "object" &amp;&amp; result !== null ? result : obj;  <span class="c">// step 4</span>
+}
+
+function Dog(name) { this.name = name; }
+Dog.prototype.speak = function () { return this.name + " barks"; };
+
+const rex = myNew(Dog, "Rex");
+console.log(rex.speak(), rex instanceof Dog);   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>"Rex barks" true</code> — a hand-rolled <code>new</code> that
+  behaves identically to the real keyword, because those are genuinely
+  all four steps it performs. It's worth building once, because it
+  turns "new is magic" into "new is <code>Object.create</code> plus a
+  function call plus a return-value check."
+</p>
+
+<h3>class — the same four steps, with real syntax</h3>
+<pre><code>class Shape {
+  static count = 0;        <span class="c">// lives on the class itself, not on instances</span>
+  #id;                      <span class="c">// private field — declared up front, "#" is part of the name</span>
+
+  constructor(name) {
+    this.name = name;
+    this.#id = ++Shape.count;
+  }
+
+  get id() { return this.#id; }        <span class="c">// getters/setters, same as plain objects</span>
+
+  describe() {
+    return this.name + " #" + this.id;
+  }
+
+  static reset() { Shape.count = 0; }  <span class="c">// called as Shape.reset(), never on an instance</span>
+}
+
+class Circle extends Shape {
+  constructor(radius) {
+    super("Circle");                    <span class="c">// MUST run before "this" is usable at all</span>
+    this.radius = radius;
+  }
+  describe() {
+    return super.describe() + " (r=" + this.radius + ")";   <span class="c">// extend, don't just replace</span>
+  }
+}
+
+const c1 = new Circle(5);
+c1.describe();   <span class="c">// "Circle #1 (r=5)"</span></code></pre>
+<div class="sticky mint">
+  <span class="ttl">Rule</span> Everything <code>class</code> does is
+  still prototypes: methods land on <code>Circle.prototype</code>, not
+  on each instance, and <code>extends</code> just wires up the
+  prototype chain from the diagram above automatically.
+  <code>class</code> is real, enforced syntax on top of the exact same
+  machinery — not a different object model bolted on beside it.
+</div>
+<div class="warn">
+  <span class="ttl">⚠ #private is enforced by the parser, not by convention</span>
+  <code>c1.#id</code> written <em>outside</em> the class body isn't a
+  runtime access-denied error — it's a
+  <code>SyntaxError</code> at parse time, because <code>#id</code>
+  simply isn't valid syntax anywhere the class hasn't declared it. It's
+  a much harder guarantee than the old <code>_id</code>
+  underscore-means-private convention, which was never actually
+  enforced by anything.
+</div>
+
+<h3>Composition vs inheritance, and mixins</h3>
+<p>
+  <code>extends</code> models "is-a" — a <code>Circle</code>
+  <em>is a</em> <code>Shape</code>. Composition models "has-a" or
+  "can-do" — building an object out of smaller pieces it holds or uses,
+  rather than a class it descends from. Deep inheritance chains tend to
+  get brittle (change a base class, every descendant feels it); most
+  modern guidance leans composition first, inheritance only for a
+  genuinely stable, narrow "is-a" relationship.
+</p>
+<p>
+  A <b>mixin</b> is the middle ground: a function that takes a base
+  class and returns a new one with extra behavior bolted on — reusable
+  across classes that don't otherwise share a family tree.
+</p>
+<div class="try">
+  <pre><code>const Serializable = (Base) =&gt; class extends Base {
+  serialize() { return JSON.stringify(this); }
+};
+
+class Point {
+  constructor(x, y) { this.x = x; this.y = y; }
+}
+class SerializablePoint extends Serializable(Point) {}
+
+const p = new SerializablePoint(1, 2);
+console.log(p.serialize());   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>{"x":1,"y":2}</code> — <code>Point</code> never mentions
+  serialization at all. <code>Serializable(Point)</code> returns a
+  brand-new anonymous class that extends <code>Point</code>, so
+  <code>SerializablePoint</code> gets both its own fields and the
+  mixed-in method, and the same <code>Serializable</code> mixin could
+  wrap any other base class exactly the same way.
+</p>`,
     },
     {
       id: "async-properly",
@@ -3365,9 +3768,234 @@ try {
       short: "Async, properly",
       levels: ["intermediate"],
       practice: ["ex-order-predict", "ex-parallel-load", "ex-retry"],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "Promises, done right — and the sequential-vs-parallel mistake almost everyone makes once.",
+      body: `<p>
+  The event loop itself — call stack, microtask queue, why a 0ms timer
+  still loses to a promise — already got two full step-through demos
+  back in <a href="/notes/setup-mental-model">the mental model
+  chapter</a>. If that ordering isn't solid yet, that's the place to
+  build it; this chapter assumes it and moves straight to the layer on
+  top: what a Promise actually <em>is</em>, and how to not shoot
+  yourself in the foot with <code>await</code>.
+</p>
+
+<h3>A promise has exactly three states</h3>
+<table>
+  <tr>
+    <th>State</th>
+    <th>Meaning</th>
+    <th>Can it change again?</th>
+  </tr>
+  <tr><td><b>pending</b></td><td>not settled yet</td><td>yes — to fulfilled or rejected</td></tr>
+  <tr><td><b>fulfilled</b></td><td>succeeded, has a value</td><td class="tone-bad">no — permanent</td></tr>
+  <tr><td><b>rejected</b></td><td>failed, has a reason</td><td class="tone-bad">no — permanent</td></tr>
+</table>
+<p>
+  "Settled" means fulfilled <em>or</em> rejected — either way, done,
+  forever. A promise can only make that transition once; every
+  <code>.then()</code>/<code>.catch()</code> attached to it (even
+  attached late, after it already settled) gets called with that same
+  final outcome.
+</p>
+<pre><code>fetch("/api/user")
+  .then((response) =&gt; response.json())   <span class="c">// each .then returns a NEW promise</span>
+  .then((user) =&gt; console.log(user.name))
+  .catch((error) =&gt; console.error("failed:", error))   <span class="c">// catches a rejection from ANY step above</span>
+  .finally(() =&gt; hideSpinner());          <span class="c">// runs either way, exactly like try/finally</span></code></pre>
+<div class="sticky mint">
+  <span class="ttl">Rule</span> A single <code>.catch()</code> at the
+  end of a chain catches a failure from every step before it — you
+  don't need one per <code>.then()</code>. That's the real advantage
+  over callback-style error handling from <a href="/notes/scope-functions">last chapter</a>: one
+  handler instead of one check at every level.
+</div>
+
+<h3>async / await is the same promises, different spelling</h3>
+<pre><code>async function loadUser() {
+  try {
+    const response = await fetch("/api/user");
+    if (!response.ok) throw new Error("Request failed: " + response.status);
+    return await response.json();
+  } catch (error) {
+    console.error("failed:", error);
+    throw error;   <span class="c">// re-throw so the caller still knows it failed</span>
+  }
+}</code></pre>
+<p>
+  Two things worth being precise about: an <code>async function</code>
+  <b>always returns a promise</b>, even if the body has no
+  <code>await</code> at all and just <code>return</code>s a plain
+  value — that value gets silently wrapped. And
+  <code>try/catch</code> around <code>await</code> catches a rejected
+  awaited promise exactly like a thrown synchronous error — same
+  syntax, unified handling.
+</p>
+
+<h3>The mistake: accidental sequential awaiting</h3>
+<div class="try">
+  <pre><code>function wait(ms, label) {
+  return new Promise((resolve) =&gt; setTimeout(() =&gt; resolve(label), ms));
+}
+
+async function sequential() {
+  const t0 = Date.now();
+  await wait(50, "a");
+  await wait(50, "b");
+  return Date.now() - t0;
+}
+async function parallel() {
+  const t0 = Date.now();
+  await Promise.all([wait(50, "a"), wait(50, "b")]);
+  return Date.now() - t0;
+}
+
+console.log("sequential ~", await sequential(), "ms");
+console.log("parallel ~", await parallel(), "ms");</code></pre>
+</div>
+<p class="sub">
+  Roughly <code>100ms</code>, then roughly <code>50ms</code>. Two
+  <code>await</code>s back to back run one after the other — the
+  second doesn't even <em>start</em> until the first finishes, even
+  though the two waits have nothing to do with each other. If the work
+  doesn't depend on the previous result, <b>start both first</b>
+  (<code>Promise.all</code>, or just call both functions before
+  awaiting either), and only then await. This exact mistake — awaiting
+  three independent API calls one by one instead of together — is
+  a very common, very real source of a slow page.
+</p>
+
+<h3>The four combinators</h3>
+<table>
+  <tr>
+    <th>Call</th>
+    <th>Settles when</th>
+    <th>Result</th>
+  </tr>
+  <tr><td><code>Promise.all(promises)</code></td><td>all fulfill, <b>or</b> the first one rejects</td><td>array of values, in order — or rejects with that first error</td></tr>
+  <tr><td><code>Promise.allSettled(promises)</code></td><td>every one has settled, success or failure</td><td>array of <code>{ status, value }</code> or <code>{ status, reason }</code> — never rejects itself</td></tr>
+  <tr><td><code>Promise.race(promises)</code></td><td>the very first one settles, fulfilled or rejected</td><td>that one result — could be a rejection</td></tr>
+  <tr><td><code>Promise.any(promises)</code></td><td>the first one <b>fulfills</b> — ignores rejections until one succeeds</td><td>that fulfilled value, or an <code>AggregateError</code> if all rejected</td></tr>
+</table>
+<div class="try">
+  <pre><code>function wait(ms, value, fails) {
+  return new Promise((resolve, reject) =&gt;
+    setTimeout(() =&gt; (fails ? reject(new Error(value)) : resolve(value)), ms)
+  );
+}
+
+const settled = await Promise.allSettled([
+  wait(10, "ok-1"),
+  wait(10, "broke", true),
+]);
+console.log(JSON.stringify(settled));   <span class="c">// what happens?</span>
+
+const winner = await Promise.any([
+  wait(10, "fails-fast", true),
+  wait(30, "succeeds-slower"),
+]);
+console.log(winner);   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>allSettled</code> reports both outcomes without ever throwing —
+  the standard choice for "run everything, tell me what worked and
+  what didn't," like a batch upload. <code>any</code> returns
+  <code>"succeeds-slower"</code>: the early rejection doesn't disqualify
+  the batch, <code>any</code> just keeps waiting until something
+  actually succeeds — the opposite instinct from <code>race</code>,
+  which would have surfaced that first rejection immediately.
+</p>
+
+<h3>AbortController — cancelling something already in flight</h3>
+<p>
+  Promises can't be cancelled directly once started — there's no
+  <code>.cancel()</code>. <code>AbortController</code> is the
+  standard workaround: a signal that in-flight work can watch for, and
+  react to by stopping itself.
+</p>
+<pre><code>async function withTimeout(taskFn, ms) {
+  const controller = new AbortController();
+  const timer = setTimeout(() =&gt; controller.abort(), ms);
+  try {
+    return await taskFn(controller.signal);
+  } finally {
+    clearTimeout(timer);   <span class="c">// clean up even if taskFn finished before the timeout</span>
+  }
+}
+
+fetch("/api/slow-report", { signal: controller.signal });  <span class="c">// fetch understands AbortSignal natively</span></code></pre>
+<p class="sub">
+  For the specific "give up after N ms" case, there's a built-in
+  shortcut that skips the manual timer entirely:
+  <code>AbortSignal.timeout(5000)</code> returns a signal that aborts
+  itself on schedule — pass it straight to <code>fetch</code>'s
+  <code>signal</code> option.
+</p>
+
+<h3>Retries</h3>
+<div class="try">
+  <pre><code>function wait(ms) {
+  return new Promise((resolve) =&gt; setTimeout(resolve, ms));
+}
+
+async function retry(fn, attempts, delay) {
+  for (let i = 0; i &lt; attempts; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (i === attempts - 1) throw error;   <span class="c">// out of attempts — let the real error surface</span>
+      await wait(delay);
+    }
+  }
+}
+
+let tries = 0;
+async function flaky() {
+  tries++;
+  if (tries &lt; 3) throw new Error("not ready yet");
+  return "succeeded on attempt " + tries;
+}
+
+console.log(await retry(flaky, 5, 10));   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>"succeeded on attempt 3"</code> — the first two calls throw and
+  get swallowed (with a delay between attempts), the third succeeds and
+  its result is what <code>retry</code> finally returns. A real
+  implementation almost always adds
+  <b>exponential backoff</b> — <code>delay * 2 ** i</code> instead of a
+  fixed delay — so retries space out instead of hammering a struggling
+  server at a constant rate.
+</p>
+
+<h3>fetch, past the surface level</h3>
+<pre><code>const response = await fetch("/api/users", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ name: "Ana" }),
+});
+
+response.ok;              <span class="c">// true for 200-299 — <a href="/notes/basic-async">already covered</a>, still the #1 fetch mistake to forget</span>
+response.status;          <span class="c">// 201, 404, 500, …</span>
+response.headers.get("content-type");   <span class="c">// header access is case-insensitive</span></code></pre>
+<p>
+  <b>CORS</b>, briefly: a browser blocks a script on
+  <code>a.com</code> from reading a response from <code>b.com</code>
+  unless <code>b.com</code>'s server explicitly opts in with an
+  <code>Access-Control-Allow-Origin</code> response header. This is
+  enforced by the <em>browser</em>, not the server — the request
+  usually still reaches the server and can still have side effects; the
+  browser just refuses to hand the <em>response</em> back to your
+  JavaScript. It's a client-side protection for the person visiting the
+  page, not a way for a server to protect itself from being called.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ A CORS error is almost never a JS bug</span>
+  If a request works fine in Postman/curl but fails only from the
+  browser with a CORS message in the console, the fix is server-side
+  (adding the right header) — there is no client-side JavaScript
+  workaround for a server that hasn't opted in.
+</div>`,
     },
     {
       id: "modules-tooling",
@@ -3376,9 +4004,136 @@ try {
       short: "Modules & tooling",
       levels: ["intermediate"],
       practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "Everything that turns files full of JS into one thing a browser can run.",
+      body: `<p>
+  Nothing in this chapter runs in the sandbox above the way earlier
+  <code>.try</code> blocks did — <code>import</code>/<code>export</code>
+  are only valid inside a real module, not inside an arbitrary function
+  body, so every example here is read, not clicked.
+</p>
+
+<h3>ESM — import and export</h3>
+<pre><code><span class="c">// math.js</span>
+export const PI = 3.14159;
+export function square(n) { return n * n; }
+export default function add(a, b) { return a + b; }   <span class="c">// at most ONE default per module</span>
+
+<span class="c">// app.js</span>
+import add, { PI, square } from "./math.js";   <span class="c">// default + named, one import statement</span>
+import * as math from "./math.js";              <span class="c">// everything, under one namespace object</span></code></pre>
+<div class="sticky mint">
+  <span class="ttl">Rule</span> An imported binding is a
+  <b>live view</b> into the exporting module, not a value copied once
+  at import time. If <code>math.js</code> later reassigns an exported
+  <code>let</code>, every file that imported it sees the new value —
+  the same "reference, not snapshot" idea from
+  <a href="/notes/objects-arrays-basics">objects and arrays</a>,
+  applied to module bindings instead of object properties.
+</div>
+<p>
+  This live-binding rule, plus imports being <b>static</b> — resolved
+  before any module code runs, always at the top level, never
+  conditional — is exactly what lets a bundler safely
+  <b>tree-shake</b>: it can see every import/export at compile time and
+  delete anything nothing else actually uses, something CommonJS's
+  fully dynamic <code>require()</code> can't guarantee.
+
+</p>
+
+<h3>CommonJS vs ESM</h3>
+<table>
+  <tr>
+    <th></th>
+    <th>CommonJS (Node's original)</th>
+    <th>ESM</th>
+  </tr>
+  <tr><td>Syntax</td><td><code>require()</code> / <code>module.exports</code></td><td><code>import</code> / <code>export</code></td></tr>
+  <tr><td>Loading</td><td>synchronous</td><td>can be async (dynamic <code>import()</code>)</td></tr>
+  <tr><td>Resolved</td><td>at runtime, can be conditional</td><td>statically, before execution</td></tr>
+  <tr><td>Top-level <code>this</code></td><td><code>module.exports</code></td><td><code>undefined</code></td></tr>
+  <tr><td>File markers</td><td><code>.cjs</code>, or default in a plain <code>package.json</code></td><td><code>.mjs</code>, or <code>"type": "module"</code> in <code>package.json</code></td></tr>
+</table>
+<p class="sub">
+  Node runs both today; browsers only ever understood ESM
+  (<code>&lt;script type="module"&gt;</code>). ESM is the forward
+  direction — new libraries default to it, and most tooling exists
+  partly to smooth over the gap for code still shipping CommonJS.
+</p>
+
+<h3>Dynamic import()</h3>
+<pre><code>button.addEventListener("click", async () =&gt; {
+  const { openModal } = await import("./modal.js");   <span class="c">// only fetched when actually needed</span>
+  openModal();
+});</code></pre>
+<p class="sub">
+  Unlike a static <code>import</code>, this one is a real function call
+  — it can go inside an <code>if</code>, a click handler, anywhere —
+  and it returns a promise. This is the mechanism behind
+  <b>code splitting</b>: a bundler sees a dynamic <code>import()</code>
+  and automatically cuts that module (and everything only it needs)
+  into its own separate file, downloaded only when that line actually
+  runs, instead of bloating the very first page load with code most
+  visitors may never trigger.
+</p>
+
+<h3>npm, package.json, semver</h3>
+<pre><code>{
+  "name": "my-app",
+  "version": "1.4.2",
+  "dependencies": { "react": "^18.2.0" },
+  "devDependencies": { "vitest": "^4.1.10" }
+}</code></pre>
+<p>
+  A version is <code>MAJOR.MINOR.PATCH</code> — <b>major</b> for
+  breaking changes, <b>minor</b> for new, backward-compatible features,
+  <b>patch</b> for backward-compatible fixes. The prefix in front of a
+  dependency's version controls how far an install is allowed to drift:
+</p>
+<table>
+  <tr>
+    <th>Range</th>
+    <th>Allows</th>
+  </tr>
+  <tr><td><code>^18.2.0</code></td><td>anything up to, not including, <code>19.0.0</code> — new minors and patches, never a new major</td></tr>
+  <tr><td><code>~18.2.0</code></td><td>anything up to, not including, <code>18.3.0</code> — patches only</td></tr>
+  <tr><td><code>18.2.0</code></td><td>that exact version, nothing else</td></tr>
+</table>
+<div class="warn">
+  <span class="ttl">⚠ package.json alone isn't reproducible</span>
+  <code>^18.2.0</code> is a range, not one specific version — two
+  installs weeks apart can legitimately resolve to different actual
+  versions. <code>package-lock.json</code> (or <code>yarn.lock</code>,
+  <code>pnpm-lock.yaml</code>) pins the <em>exact</em> resolved tree,
+  which is why it's committed to the repo and why "works on my
+  machine" so often traces back to a missing or ignored lockfile.
+</div>
+
+<h3>A bundler, briefly</h3>
+<p>
+  A bundler (Vite, webpack, esbuild, Rollup) does three jobs at once:
+  follows every <code>import</code> to build one dependency graph,
+  <b>transpiles</b> newer syntax and JSX/TS down to something the
+  target browsers understand, and packs the result into as few files
+  as make sense (splitting where a dynamic <code>import()</code> says
+  to). The <b>source map</b> it emits alongside the bundle is what lets
+  a browser's DevTools show your original <code>Button.tsx</code> and
+  its real line numbers in a stack trace, instead of line 1 of one
+  giant minified file.
+</p>
+
+<h3>Linting and formatting</h3>
+<p>
+  Two different jobs, often confused because they're configured
+  together. <b>ESLint</b> reads your code for actual
+  <em>problems</em> — an unused variable, a missing dependency in a
+  React hook, a variable that shadows an outer one by accident.
+  <b>Prettier</b> doesn't look for problems at all — it just rewrites
+  every file into one consistent style (quotes, spacing, line length),
+  so a diff shows what actually changed instead of a formatting
+  argument. Running both: Prettier decides how the code looks, ESLint
+  decides whether the code is right.
+</p>`,
     },
     {
       id: "regex-dates-apis",
@@ -3387,9 +4142,269 @@ try {
       short: "Regex, dates & APIs",
       levels: ["intermediate"],
       practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "Four unrelated toolboxes every real app ends up reaching for.",
+      body: `<h3>Regex — the essentials</h3>
+<pre><code>/abc/         <span class="c">// literal — matches "abc" exactly</span>
+/abc/i        <span class="c">// flag: i = case-insensitive</span>
+/abc/g        <span class="c">// flag: g = find ALL matches, not just the first</span>
+/(\\w+)@(\\w+)/  <span class="c">// ( ) = a capturing group — grabbed separately from the full match</span></code></pre>
+<div class="try">
+  <pre><code>const text = "contact: ana@example.com today";
+const match = text.match(/(\\w+)@(\\w+)\\.com/);
+console.log(match[0]);   <span class="c">// the whole match — what happens?</span>
+console.log(match[1]);   <span class="c">// group 1 — what happens?</span>
+console.log(match[2]);   <span class="c">// group 2 — what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>"ana@example.com"</code>, then <code>"ana"</code>, then
+  <code>"example"</code> — the full match is always index 0, and every
+  parenthesized group after it fills in one more slot, in order.
+</p>
+<pre><code><span class="c">// Named groups — same idea, readable by name instead of position</span>
+const parsed = "2024-01".match(/(?&lt;year&gt;\\d{4})-(?&lt;month&gt;\\d{2})/);
+parsed.groups.year;    <span class="c">// "2024"</span>
+parsed.groups.month;   <span class="c">// "01"</span>
+
+"2024-01-15".replace(/(\\d+)-(\\d+)-(\\d+)/, "$3/$2/$1");   <span class="c">// "15/01/2024" — $1/$2/$3 refer back to the groups</span>
+
+[..."a1 b22 c333".matchAll(/[a-z](\\d+)/g)].map((m) =&gt; m[1]);  <span class="c">// ["1", "22", "333"] — every match, not just the first</span></code></pre>
+<div class="warn">
+  <span class="ttl">⚠ A /g regex remembers where it left off</span>
+  <code>.test()</code> and <code>.exec()</code> on a regex literal
+  with the <code>g</code> flag mutate the regex object's own
+  <code>lastIndex</code> — the next call resumes searching from there,
+  not from the start of the string.
+</div>
+<div class="try">
+  <pre><code>const stateful = /\\d/g;
+console.log(stateful.test("a1"));   <span class="c">// what happens?</span>
+console.log(stateful.test("a1"));   <span class="c">// SAME regex, same string — what happens?</span>
+console.log(stateful.test("a1"));   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>true</code>, <code>false</code>, <code>true</code> — alternating,
+  on the exact same input. First call finds the digit and leaves
+  <code>lastIndex</code> at <code>2</code>; second call starts
+  searching from index <code>2</code> in a 2-character string, finds
+  nothing, and resets <code>lastIndex</code> back to <code>0</code>;
+  third call starts over and finds it again. Reusing one global-flagged
+  regex object across unrelated calls is exactly how this bites — a
+  fresh <code>/\\d/g</code> literal each time, or dropping the
+  <code>g</code> flag for a one-shot <code>.test()</code>, avoids it.
+</p>
+
+<h3>Dates</h3>
+<div class="try">
+  <pre><code>const d = new Date(2024, 0, 15);   <span class="c">// year, MONTH (0-indexed!), day</span>
+console.log(d.getMonth());   <span class="c">// what happens?</span>
+console.log(d.getDate());    <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>0</code>, then <code>15</code> — <code>getMonth()</code> is
+  January-is-<code>0</code>, a decision baked into
+  <code>Date</code> since the original Java date API it was modeled on
+  in 1995, and never fixed since without breaking every existing
+  script.
+</p>
+<pre><code>const start = new Date("2024-01-15");
+const end = new Date("2024-02-15");
+(end - start) / 86_400_000;   <span class="c">// 31 — subtracting Dates gives milliseconds; divide to get days</span></code></pre>
+<div class="warn">
+  <span class="ttl">⚠ Why almost nobody hand-rolls date math</span>
+  Time zones, daylight saving transitions, leap years, and leap
+  seconds all make "add one day" genuinely harder than
+  <code>+ 86400000</code> — a DST boundary can make that arithmetic
+  land on the wrong calendar day entirely. This is the real reason
+  libraries like <code>date-fns</code>/<code>Temporal</code> (the
+  successor API, still stabilizing) exist: not laziness, a
+  correctness problem that's easy to get subtly wrong by hand.
+</div>
+<pre><code>new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(d);
+<span class="c">// "15 January 2024" — locale-correct formatting, no manual string building</span>
+
+new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(150000);
+<span class="c">// "₹1,50,000.00" — Indian digit grouping, handled for you</span></code></pre>
+
+<h3>Browser storage</h3>
+<table>
+  <tr>
+    <th></th>
+    <th><code>localStorage</code></th>
+    <th><code>sessionStorage</code></th>
+  </tr>
+  <tr><td>Survives</td><td>closing the tab, the browser, the computer restarting</td><td>only this tab; gone when it closes</td></tr>
+  <tr><td>Shared across tabs?</td><td>yes, same origin</td><td>no — each tab gets its own</td></tr>
+  <tr><td>Capacity</td><td>~5-10MB, string values only</td><td>same</td></tr>
+</table>
+<pre><code>localStorage.setItem("theme", "dark");
+localStorage.getItem("theme");     <span class="c">// "dark" — always a string</span>
+localStorage.setItem("user", JSON.stringify({ name: "Ana" }));
+JSON.parse(localStorage.getItem("user"));   <span class="c">// objects need to round-trip through JSON yourself</span>
+localStorage.removeItem("theme");</code></pre>
+
+<h3>URL and URLSearchParams</h3>
+<div class="try">
+  <pre><code>const url = new URL("https://shop.example.com/search?q=js&amp;page=2");
+console.log(url.pathname);              <span class="c">// what happens?</span>
+console.log(url.searchParams.get("q")); <span class="c">// what happens?</span>
+
+url.searchParams.set("page", "3");
+console.log(url.toString());   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  A parsed <code>URL</code> gives every piece
+  (<code>pathname</code>, <code>hostname</code>, <code>protocol</code>)
+  as its own property, and <code>searchParams</code> is a live,
+  mutable view — editing it and reading <code>url.toString()</code>
+  again reflects the change immediately, no manual query-string
+  concatenation required.
+</p>
+
+<h3>History and IntersectionObserver, briefly</h3>
+<pre><code>history.pushState({ page: 2 }, "", "/products?page=2");  <span class="c">// changes the URL bar, no page reload</span>
+window.addEventListener("popstate", (e) =&gt; {
+  console.log("back/forward pressed, state:", e.state);   <span class="c">// fires on browser back/forward, not on pushState itself</span>
+});</code></pre>
+<p class="sub">
+  This is the mechanism every client-side router (React Router,
+  Next.js's own routing) is built on — a URL that changes without a
+  real navigation, plus a way to hear when the user manually goes
+  back or forward.
+</p>
+<pre><code>const observer = new IntersectionObserver((entries) =&gt; {
+  entries.forEach((entry) =&gt; {
+    if (entry.isIntersecting) console.log(entry.target, "scrolled into view");
+  });
+});
+document.querySelectorAll(".lazy-image").forEach((img) =&gt; observer.observe(img));</code></pre>
+<p class="sub">
+  The standard, efficient way to know when an element enters or leaves
+  the viewport — infinite scroll, lazy-loaded images, and "animate in
+  on scroll" effects all run on this instead of a
+  <code>scroll</code> listener doing math on every single pixel of
+  scrolling.
+</p>
+
+<h3>Events, in depth — live</h3>
+<p>
+  Click the innermost box below and watch the log. Every listener here
+  is a real <code>addEventListener</code> call against the actual
+  nested boxes on this page.
+</p>
+<div class="demo">
+  <div class="demo__bar">Bubbling, capturing, and stopPropagation</div>
+  <div class="demo__body">
+    <div class="dom-sandbox" id="ev-sandbox">
+      <div class="ev-box ev-box--outer" id="ev-outer">
+        outer
+        <div class="ev-box ev-box--middle" id="ev-middle">
+          middle
+          <div class="ev-box ev-box--inner" id="ev-inner">inner — click me</div>
+        </div>
+      </div>
+    </div>
+    <div class="demo__ctl">
+      <label class="ev-check"><input type="checkbox" id="ev-capture" /> listen during the capture phase</label>
+      <label class="ev-check"><input type="checkbox" id="ev-stop" /> inner listener calls stopPropagation()</label>
+      <button class="btn btn--ghost" id="ev-clear" type="button">Clear log</button>
+    </div>
+    <div class="demo__term" id="ev-log"></div>
+  </div>
+</div>
+<script>
+(function () {
+  var sandbox = document.getElementById("ev-sandbox");
+  if (!sandbox) return;
+  if (sandbox.dataset.demoInit) return;
+  sandbox.dataset.demoInit = "1";
+
+  var outer = document.getElementById("ev-outer");
+  var middle = document.getElementById("ev-middle");
+  var inner = document.getElementById("ev-inner");
+  var captureBox = document.getElementById("ev-capture");
+  var stopBox = document.getElementById("ev-stop");
+  var logEl = document.getElementById("ev-log");
+
+  function log(msg, cls) {
+    var line = document.createElement("div");
+    line.className = cls || "ok";
+    line.textContent = msg;
+    logEl.appendChild(line);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function makeHandler(name) {
+    return function (e) {
+      var phase = e.eventPhase === 1 ? "capture" : e.eventPhase === 3 ? "bubble" : "target";
+      log(name + " listener fired (" + phase + " phase)");
+      if (name === "inner" && stopBox.checked) {
+        e.stopPropagation();
+        log("inner called stopPropagation() — nothing above hears this click", "dim");
+      }
+    };
+  }
+
+  var outerHandler = makeHandler("outer");
+  var middleHandler = makeHandler("middle");
+  var innerHandler = makeHandler("inner");
+
+  function attach() {
+    var useCapture = captureBox.checked;
+    outer.removeEventListener("click", outerHandler, true);
+    outer.removeEventListener("click", outerHandler, false);
+    middle.removeEventListener("click", middleHandler, true);
+    middle.removeEventListener("click", middleHandler, false);
+    inner.removeEventListener("click", innerHandler, true);
+    inner.removeEventListener("click", innerHandler, false);
+    outer.addEventListener("click", outerHandler, useCapture);
+    middle.addEventListener("click", middleHandler, useCapture);
+    inner.addEventListener("click", innerHandler, useCapture);
+  }
+
+  attach();
+  captureBox.addEventListener("change", attach);
+
+  document.getElementById("ev-clear").addEventListener("click", function () {
+    logEl.innerHTML = "";
+  });
+})();
+</script>
+<p class="sub">
+  With the capture checkbox off (the default), clicking "inner" logs
+  <code>inner → middle → outer</code> — the event starts at the exact
+  element clicked and <b>bubbles</b> upward through every ancestor
+  listening for it. Check the capture box and it reverses to
+  <code>outer → middle → inner</code> — capture-phase listeners run on
+  the way <em>down</em>, before the event even reaches its target.
+  Check "stopPropagation" and only the inner listener fires at all —
+  the click never continues past it in either direction.
+</p>
+
+<h3>Delegation and custom events</h3>
+<p>
+  Bubbling is what makes <b>event delegation</b> work: one listener on
+  a parent container, instead of one per child, checking
+  <code>event.target</code> to see which child was actually clicked.
+</p>
+<pre><code>list.addEventListener("click", (e) =&gt; {
+  const item = e.target.closest("li");    <span class="c">// works even if the click landed on a span INSIDE the li</span>
+  if (!item) return;
+  console.log("clicked:", item.dataset.id);
+});
+<span class="c">// one listener handles every current AND future &lt;li&gt; — no re-binding when items are added later</span></code></pre>
+<pre><code>const updated = new CustomEvent("cart:updated", { detail: { count: 3 } });
+cartElement.dispatchEvent(updated);
+
+cartElement.addEventListener("cart:updated", (e) =&gt; {
+  console.log("new count:", e.detail.count);
+});</code></pre>
+<p class="sub">
+  A custom event bubbles and can be listened for exactly like a real
+  browser event — the standard way for one part of a page to announce
+  something happened without being directly wired to whoever might
+  care.
+</p>`,
     },
     {
       id: "error-handling-debugging",
@@ -3398,9 +4413,136 @@ try {
       short: "Error handling",
       levels: ["intermediate"],
       practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
+      ready: true,
+      subtitle: "The Intermediate track's close-out — past what B8 already covered.",
+      body: `<p>
+  <a href="/notes/errors-tools">The first pass at errors</a> covered
+  <code>try/catch/finally</code>, custom <code>Error</code> subclasses,
+  and reading a stack trace. This is what's past that: chaining errors
+  together, what happens to a rejection nobody catches, why
+  immutability keeps coming up in framework code, and debugging tools
+  past <code>console.log</code>.
+</p>
+
+<h3>Error chaining with cause</h3>
+<p>
+  Catching a low-level error and throwing a more meaningful one is
+  normal — but doing that used to destroy the original error entirely.
+  The <code>cause</code> option keeps it attached.
+</p>
+<div class="try">
+  <pre><code>function loadUser() {
+  try {
+    JSON.parse("not valid json");
+  } catch (dbError) {
+    throw new Error("failed to load user", { cause: dbError });
+  }
+}
+
+try {
+  loadUser();
+} catch (e) {
+  console.log(e.message);
+  console.log(e.cause.message);   <span class="c">// what happens?</span>
+}</code></pre>
+</div>
+<p class="sub">
+  <code>"failed to load user"</code>, then the original
+  <code>SyntaxError</code>'s message. Without <code>cause</code>, that
+  original error is just gone — whoever's debugging this in production
+  sees "failed to load user" and has to guess why. With it,
+  <code>e.cause</code> carries the full original error (and its own
+  stack trace) all the way up, however many layers re-throw in between.
+</p>
+
+<h3>Unhandled promise rejections</h3>
+<p>
+  A rejected promise with no <code>.catch()</code> anywhere in its
+  chain doesn't fail silently — it surfaces as a top-level
+  <code>unhandledrejection</code> event (the same mechanism
+  <a href="/notes/basic-async">this site's own code runner</a> listens
+  to, to show you an error even from code with no explicit
+  <code>catch</code> at all).
+</p>
+<pre><code>window.addEventListener("unhandledrejection", (event) =&gt; {
+  console.error("Unhandled:", event.reason);
+  event.preventDefault();   <span class="c">// stops it from also logging as a browser console error</span>
+});</code></pre>
+<div class="warn">
+  <span class="ttl">⚠ Forgetting to return inside a .then breaks the chain's error handling</span>
+  <code>promise.then(() =&gt; { anotherAsyncCall(); })</code> — without a
+  <code>return</code> — lets <code>anotherAsyncCall()</code>'s promise
+  run <b>completely detached</b> from the outer chain. If it rejects,
+  no <code>.catch()</code> further down that outer chain will ever see
+  it; it becomes its own separate unhandled rejection.
+</div>
+
+<h3>Immutability — why frameworks care so much</h3>
+<p>
+  React, Redux, and similar tools decide "did this change?" with a
+  single <code>===</code> check, not a deep comparison — because a
+  deep comparison of a large tree, on every single render, is far too
+  slow to do constantly.
+</p>
+<div class="try">
+  <pre><code>const state1 = { count: 0 };
+
+function mutateInPlace(state) {
+  state.count++;
+  return state;
+}
+function updateImmutably(state) {
+  return { ...state, count: state.count + 1 };
+}
+
+const afterMutate = mutateInPlace(state1);
+console.log(state1 === afterMutate);   <span class="c">// what happens?</span>
+
+const state2 = { count: 0 };
+const afterUpdate = updateImmutably(state2);
+console.log(state2 === afterUpdate);   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>true</code>, then <code>false</code>. Mutating in place changes
+  the <em>same object</em> — a <code>===</code> check comparing the old
+  reference to the new one sees no difference at all and a framework
+  built on that check will skip re-rendering, even though the data
+  genuinely changed. Building a fresh object every update
+  guarantees a new reference exactly when something actually changed —
+  which is the entire reason "don't mutate state directly" is a rule in
+  React, not just a style preference.
+</p>
+<pre><code>const frozen = Object.freeze({ a: 1 });
+frozen.a = 2;             <span class="c">// non-strict script: fails silently, "a" stays 1</span>
+                            <span class="c">// strict mode / modules (the normal case today): throws a TypeError</span>
+console.log(frozen.a);    <span class="c">// 1 either way — the object never actually changed</span></code></pre>
+<div class="sticky mint">
+  <span class="ttl">Rule</span> <code>Object.freeze</code> is shallow —
+  it locks the object's own top-level properties, but a nested object
+  inside a frozen one is still fully mutable. It's a debugging aid for
+  catching accidental top-level mutation, not a deep-immutability
+  guarantee.
+</div>
+
+<h3>Debugging, past console.log</h3>
+<table>
+  <tr>
+    <th>Tool</th>
+    <th>For</th>
+  </tr>
+  <tr><td>A line-number breakpoint (Sources panel)</td><td>pause every time execution reaches that exact line</td></tr>
+  <tr><td>A conditional breakpoint</td><td>right-click the line number — pause only when an expression you type is true, e.g. <code>user.id === 42</code>. Essential once a bug only shows up for one specific input out of thousands.</td></tr>
+  <tr><td>A watch expression</td><td>pin any expression to re-evaluate and display at every pause, without retyping it in the console each time</td></tr>
+  <tr><td><code>debugger;</code></td><td>a breakpoint written directly in the source — pauses there whenever DevTools is open, no manual click needed</td></tr>
+  <tr><td>The Network tab</td><td>every request's status, timing, headers, and actual response body — the first stop when data "never showed up"</td></tr>
+</table>
+<p class="sub">
+  Once paused at any breakpoint, the call stack panel shows the exact
+  chain of calls that got you there — the same information a
+  <code>.stack</code> string gives you after the fact, except you can
+  now inspect every live variable at every level of it, not just read a
+  frozen snapshot of what the values were.
+</p>`,
     },
 
     {
