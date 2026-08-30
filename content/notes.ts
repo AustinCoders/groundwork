@@ -4003,7 +4003,7 @@ response.headers.get("content-type");   <span class="c">// header access is case
       title: "Modules & tooling",
       short: "Modules & tooling",
       levels: ["intermediate"],
-      practice: [],
+      practice: ["ex-semver-satisfies", "ex-pipe"],
       ready: true,
       subtitle: "Everything that turns files full of JS into one thing a browser can run.",
       body: `<p>
@@ -4141,7 +4141,7 @@ import * as math from "./math.js";              <span class="c">// everything, u
       title: "Regex, dates & browser APIs",
       short: "Regex, dates & APIs",
       levels: ["intermediate"],
-      practice: [],
+      practice: ["ex-extract-hashtags", "ex-query-param"],
       ready: true,
       subtitle: "Four unrelated toolboxes every real app ends up reaching for.",
       body: `<h3>Regex — the essentials</h3>
@@ -4412,7 +4412,7 @@ cartElement.addEventListener("cart:updated", (e) =&gt; {
       title: "Error handling & debugging",
       short: "Error handling",
       levels: ["intermediate"],
-      practice: [],
+      practice: ["ex-error-chain", "ex-immutable-update"],
       ready: true,
       subtitle: "The Intermediate track's close-out — past what B8 already covered.",
       body: `<p>
@@ -4785,7 +4785,7 @@ c.z = 7;                      <span class="c">// now c has a DIFFERENT shape —
       title: "Advanced async",
       short: "Advanced async",
       levels: ["advanced"],
-      practice: [],
+      practice: ["ex-take-n", "ex-concurrency-limit"],
       ready: true,
       subtitle: "Past promises: pausable functions, streams, and running real work concurrently.",
       body: `<h3>Microtask starvation</h3>
@@ -5010,7 +5010,7 @@ console.log("order:", order.join(", "));</code></pre>
       title: "Metaprogramming",
       short: "Metaprogramming",
       levels: ["advanced"],
-      practice: [],
+      practice: ["ex-custom-iterable", "ex-positive-only-proxy"],
       ready: true,
       subtitle: "Code that changes how ordinary-looking code behaves.",
       body: `<h3>Symbol — a key that can never collide</h3>
@@ -5220,7 +5220,7 @@ new Function("a", "b", "return a + b");  <span class="c">// runs in GLOBAL scope
       title: "Types & data",
       short: "Types & data",
       levels: ["advanced"],
-      practice: [],
+      practice: ["ex-bigint-factorial", "ex-proper-length"],
       ready: true,
       subtitle: "What happens once a number, a string, or a file gets big or exotic enough to need its own type.",
       body: `<h3>BigInt — exact integers, past 2^53</h3>
@@ -5363,7 +5363,7 @@ new Intl.RelativeTimeFormat("en").format(3, "hour");   <span class="c">// "in 3 
       title: "Patterns & architecture",
       short: "Patterns & architecture",
       levels: ["advanced"],
-      practice: [],
+      practice: ["ex-order-state-machine", "ex-compose-patterns"],
       ready: true,
       subtitle: "Shapes that show up again and again once code has to scale past one file.",
       body: `<h3>Functional programming basics</h3>
@@ -5567,7 +5567,7 @@ const safeLoad = withFallback(loadUserProfile, { name: "Guest" });</code></pre>
       title: "Performance",
       short: "Performance",
       levels: ["advanced"],
-      practice: [],
+      practice: ["ex-bounded-cache", "ex-process-in-batches"],
       ready: true,
       subtitle: "Making a page feel fast is a different skill than making code run fast.",
       body: `<h3>The critical rendering path</h3>
@@ -5709,7 +5709,7 @@ function VirtualList({ items, rowHeight, viewportHeight }) {
       title: "Security",
       short: "Security",
       levels: ["advanced"],
-      practice: [],
+      practice: ["ex-escape-html", "ex-safe-merge"],
       ready: true,
       subtitle: "The mistakes that turn into a real incident, not just a bug.",
       body: `<h3>XSS — three flavors, one root cause</h3>
@@ -5869,7 +5869,7 @@ otherWindow.postMessage(payload, "https://trusted-partner.example");   <span cla
       title: "Ecosystem & professional",
       short: "Ecosystem",
       levels: ["advanced"],
-      practice: [],
+      practice: ["ex-flat-polyfill", "ex-ast-node-counter"],
       ready: true,
       subtitle: "The close-out — how the tools around JS actually work, and where the language itself comes from.",
       body: `<p>

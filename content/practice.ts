@@ -10202,7 +10202,470 @@ export const practice: Exercise[] = [
       },
       {
         name: "throws for a non-number too",
-        body: 'try {\n  validateAge("old");\n  assert.fail("should have thrown");\n} catch (e) {\n  assert.ok(e instanceof ValidationError);\n}',
+        body: 'try {\n  validateAge("old");\n  assert.ok(false, "should have thrown");\n} catch (e) {\n  assert.ok(e instanceof ValidationError);\n}',
+      },
+    ],
+  },
+  {
+    id: "ex-semver-satisfies",
+    chapter: "modules-tooling",
+    level: "intermediate",
+    title: "Does this version satisfy a caret range?",
+    brief:
+      '<p>Write <code>satisfiesCaret(range, version)</code> — given a caret range like <code>"^1.2.0"</code> and a version like <code>"1.3.5"</code>, return whether the version is allowed under that range.</p><ul><li>Same major version, required</li><li>Minor/patch can be anything <b>equal to or greater than</b> the range\'s own minor/patch</li></ul>',
+    starter:
+      'function satisfiesCaret(range, version) {\n  // TODO: parse both into [major, minor, patch], compare per the ^ rules\n}\n',
+    hints: [
+      'range.replace("^", "").split(".").map(Number) turns "^1.2.0" into [1, 2, 0].',
+      "Major must match exactly. If minor is higher, it's always fine. If minor is equal, patch must be >= the range's patch. If minor is lower, it fails.",
+    ],
+    solution:
+      'function satisfiesCaret(range, version) {\n  const rv = range.replace("^", "").split(".").map(Number);\n  const v = version.split(".").map(Number);\n  if (rv[0] !== v[0]) return false;\n  if (v[1] > rv[1]) return true;\n  if (v[1] < rv[1]) return false;\n  return v[2] >= rv[2];\n}\n',
+    tests: [
+      { name: "the exact version satisfies", body: 'assert.equal(satisfiesCaret("^1.2.0", "1.2.0"), true);' },
+      { name: "a higher minor satisfies", body: 'assert.equal(satisfiesCaret("^1.2.0", "1.3.5"), true);' },
+      { name: "a lower minor does not", body: 'assert.equal(satisfiesCaret("^1.2.0", "1.1.9"), false);' },
+      { name: "a different major does not", body: 'assert.equal(satisfiesCaret("^1.2.0", "2.0.0"), false);' },
+      { name: "a lower patch on the same minor does not", body: 'assert.equal(satisfiesCaret("^1.2.5", "1.2.4"), false);' },
+    ],
+  },
+  {
+    id: "ex-pipe",
+    chapter: "modules-tooling",
+    level: "intermediate",
+    title: "Build a left-to-right pipe",
+    brief:
+      "<p>Write <code>pipe(...fns)</code> that returns a function running every given function in order, left to right — the reverse reading direction from <code>compose</code>.</p><ul><li><code>pipe(f, g)(x)</code> means <code>g(f(x))</code>, not <code>f(g(x))</code></li></ul>",
+    starter: "function pipe(...fns) {\n  // TODO: return a function that reduces x through every fn, left to right\n}\n",
+    hints: ["fns.reduce((acc, fn) => fn(acc), x) — start the accumulator at x, apply each function in array order."],
+    solution: "function pipe(...fns) {\n  return (x) => fns.reduce((acc, fn) => fn(acc), x);\n}\n",
+    tests: [
+      {
+        name: "runs two functions left to right",
+        body: "const double = (x) => x * 2;\nconst inc = (x) => x + 1;\nassert.equal(pipe(double, inc)(5), 11);",
+      },
+      {
+        name: "runs three functions in order",
+        body: "const double = (x) => x * 2;\nconst inc = (x) => x + 1;\nassert.equal(pipe(inc, double, inc)(1), 5);",
+      },
+      { name: "a single function just runs once", body: "assert.equal(pipe((x) => x + 10)(5), 15);" },
+    ],
+  },
+  {
+    id: "ex-extract-hashtags",
+    chapter: "regex-dates-apis",
+    level: "intermediate",
+    title: "Pull every hashtag out of a post",
+    brief:
+      '<p>Write <code>extractHashtags(text)</code> returning an array of hashtag words (without the <code>#</code>) found in <code>text</code>, in order.</p><ul><li><code>"loving #javascript today"</code> → <code>["javascript"]</code></li></ul>',
+    starter: "function extractHashtags(text) {\n  // TODO: matchAll with a /#(\\w+)/g pattern, pull group 1 out of each match\n}\n",
+    hints: [
+      "[...text.matchAll(/#(\\w+)/g)] gives you every match as an array — each match's index 1 is the captured group.",
+      ".map(m => m[1]) turns the match objects into just the captured words.",
+    ],
+    solution: "function extractHashtags(text) {\n  return [...text.matchAll(/#(\\w+)/g)].map((m) => m[1]);\n}\n",
+    tests: [
+      {
+        name: "extracts two hashtags",
+        body: 'assert.deepEqual(extractHashtags("loving #javascript and #webdev today"), ["javascript", "webdev"]);',
+      },
+      { name: "no hashtags at all", body: 'assert.deepEqual(extractHashtags("no tags here"), []);' },
+      { name: "hashtags with no space between them", body: 'assert.deepEqual(extractHashtags("#one#two #three"), ["one", "two", "three"]);' },
+    ],
+  },
+  {
+    id: "ex-query-param",
+    chapter: "regex-dates-apis",
+    level: "intermediate",
+    title: "Read one query parameter from a URL",
+    brief:
+      "<p>Write <code>getQueryParam(url, key)</code> that returns the value of one query parameter, or <code>null</code> if it isn't present.</p><ul><li>Use the real <code>URL</code> API — no manual string splitting</li></ul>",
+    starter: "function getQueryParam(url, key) {\n  // TODO: new URL(url).searchParams has exactly what you need\n}\n",
+    hints: ["new URL(url).searchParams.get(key) does the whole thing in one line."],
+    solution: "function getQueryParam(url, key) {\n  return new URL(url).searchParams.get(key);\n}\n",
+    tests: [
+      { name: "reads an existing param", body: 'assert.equal(getQueryParam("https://x.com/search?q=js&page=2", "q"), "js");' },
+      { name: "reads a different existing param", body: 'assert.equal(getQueryParam("https://x.com/search?q=js&page=2", "page"), "2");' },
+      { name: "missing param returns null", body: 'assert.equal(getQueryParam("https://x.com/search?q=js", "missing"), null);' },
+    ],
+  },
+  {
+    id: "ex-error-chain",
+    chapter: "error-handling-debugging",
+    level: "intermediate",
+    title: "Chain a caught error into a new one",
+    brief:
+      '<p>Write <code>loadUserSafely(rawJson)</code> that parses <code>rawJson</code> and returns the result — but if parsing fails, throw a new <code>Error("failed to load user")</code> with the original error attached as its <code>cause</code>, instead of letting the original error escape as-is.</p>',
+    starter:
+      'function loadUserSafely(rawJson) {\n  // TODO: try JSON.parse; on failure, throw new Error("failed to load user", { cause: originalError })\n}\n',
+    hints: [
+      "The second argument to Error's constructor can be { cause: someError } — that's the whole feature.",
+      "Catch the JSON.parse failure, then throw a NEW error referencing it as cause, rather than re-throwing the original.",
+    ],
+    solution:
+      'function loadUserSafely(rawJson) {\n  try {\n    return JSON.parse(rawJson);\n  } catch (dbError) {\n    throw new Error("failed to load user", { cause: dbError });\n  }\n}\n',
+    tests: [
+      {
+        name: "wraps a parse failure with the right message and cause",
+        body: 'try {\n  loadUserSafely("not json");\n  assert.ok(false, "should have thrown");\n} catch (e) {\n  assert.equal(e.message, "failed to load user");\n  assert.ok(e.cause instanceof Error);\n}',
+      },
+      { name: "valid JSON parses through normally", body: 'assert.deepEqual(loadUserSafely(\'{"name":"Ana"}\'), { name: "Ana" });' },
+    ],
+  },
+  {
+    id: "ex-immutable-update",
+    chapter: "error-handling-debugging",
+    level: "intermediate",
+    title: "Update state without mutating it",
+    brief:
+      "<p>Write <code>updateImmutable(state, changes)</code> that returns a <b>new</b> object combining <code>state</code> with <code>changes</code> — the original <code>state</code> object must be left completely untouched.</p>",
+    starter: "function updateImmutable(state, changes) {\n  // TODO: return a new object, don't mutate state\n}\n",
+    hints: ["{ ...state, ...changes } builds a new object where changes' keys win over state's."],
+    solution: "function updateImmutable(state, changes) {\n  return { ...state, ...changes };\n}\n",
+    tests: [
+      {
+        name: "returns a different reference",
+        body: 'const s1 = { count: 0, name: "x" };\nconst s2 = updateImmutable(s1, { count: 1 });\nassert.notEqual(s1, s2);',
+      },
+      {
+        name: "the original object is untouched",
+        body: 'const s1 = { count: 0 };\nupdateImmutable(s1, { count: 5 });\nassert.equal(s1.count, 0);',
+      },
+      {
+        name: "the new object has the merged values",
+        body: 'const s2 = updateImmutable({ count: 0, name: "x" }, { count: 1 });\nassert.equal(s2.count, 1);\nassert.equal(s2.name, "x");',
+      },
+    ],
+  },
+  {
+    id: "ex-take-n",
+    chapter: "advanced-async",
+    level: "advanced",
+    title: "Take N values from any iterable",
+    brief:
+      "<p>Write <code>take(iterable, n)</code> that returns the first <code>n</code> values from <em>any</em> iterable — including an infinite generator — as a real array.</p><ul><li>Must work on a generator that never runs out on its own</li><li>Stops early if the iterable itself runs out before <code>n</code> values</li></ul>",
+    starter:
+      "function take(iterable, n) {\n  // TODO: manually call [Symbol.iterator]() and .next() up to n times, stopping on done\n}\n",
+    hints: [
+      "iterable[Symbol.iterator]() gets you the underlying iterator directly, same protocol from the metaprogramming chapter.",
+      "Call .next() in a loop up to n times, but stop early if a result comes back with done: true.",
+    ],
+    solution:
+      "function take(iterable, n) {\n  const result = [];\n  const iterator = iterable[Symbol.iterator]();\n  for (let i = 0; i < n; i++) {\n    const { value, done } = iterator.next();\n    if (done) break;\n    result.push(value);\n  }\n  return result;\n}\n",
+    tests: [
+      {
+        name: "takes 5 from an infinite generator",
+        body: "function* naturals() { let n = 1; while (true) yield n++; }\nassert.deepEqual(take(naturals(), 5), [1, 2, 3, 4, 5]);",
+      },
+      {
+        name: "taking 0 gives an empty array",
+        body: "function* naturals() { let n = 1; while (true) yield n++; }\nassert.deepEqual(take(naturals(), 0), []);",
+      },
+      { name: "works on a plain array too", body: "assert.deepEqual(take([10, 20, 30], 2), [10, 20]);" },
+      { name: "stops early if the iterable is shorter than n", body: "assert.deepEqual(take([10, 20], 5), [10, 20]);" },
+    ],
+  },
+  {
+    id: "ex-concurrency-limit",
+    chapter: "advanced-async",
+    level: "advanced",
+    title: "Cap how many tasks run at once",
+    brief:
+      "<p>Write <code>runWithLimit(tasks, limit)</code> — given an array of zero-argument async functions, run at most <code>limit</code> of them concurrently, and return their results in the <b>original order</b> once all are done.</p>",
+    starter:
+      "async function runWithLimit(tasks, limit) {\n  // TODO: a fixed pool of `limit` workers, each pulling the next unstarted task\n}\n",
+    hints: [
+      "One shared index counter, and `limit` worker functions all racing to grab the next index — Promise.all over the workers themselves.",
+      "Store each result at results[current index] so the final order matches the input order regardless of finish order.",
+    ],
+    solution:
+      "async function runWithLimit(tasks, limit) {\n  const results = [];\n  let index = 0;\n  async function worker() {\n    while (index < tasks.length) {\n      const current = index++;\n      results[current] = await tasks[current]();\n    }\n  }\n  await Promise.all(Array.from({ length: limit }, worker));\n  return results;\n}\n",
+    tests: [
+      {
+        name: "results come back in original order",
+        body: 'function wait(ms, v) { return new Promise((r) => setTimeout(() => r(v), ms)); }\nconst tasks = [1, 2, 3, 4].map((n) => () => wait(5, n * 10));\nconst results = await runWithLimit(tasks, 2);\nassert.deepEqual(results, [10, 20, 30, 40]);',
+      },
+      {
+        name: "never runs more than the limit at once",
+        body: 'function wait(ms) { return new Promise((r) => setTimeout(r, ms)); }\nlet active = 0, maxActive = 0;\nconst tasks = [1, 2, 3, 4, 5, 6].map((n) => async () => {\n  active++;\n  maxActive = Math.max(maxActive, active);\n  await wait(15);\n  active--;\n  return n;\n});\nawait runWithLimit(tasks, 2);\nassert.ok(maxActive <= 2, "maxActive was " + maxActive);',
+      },
+    ],
+  },
+  {
+    id: "ex-custom-iterable",
+    chapter: "metaprogramming",
+    level: "advanced",
+    title: "A Fibonacci class you can spread",
+    brief:
+      "<p>Write a class <code>FibonacciUpTo</code> whose constructor takes a <code>max</code>, and implements <code>[Symbol.iterator]</code> so spreading an instance gives every Fibonacci number up to and including <code>max</code>.</p><ul><li><code>[...new FibonacciUpTo(10)]</code> → <code>[0, 1, 1, 2, 3, 5, 8]</code></li></ul>",
+    starter:
+      "class FibonacciUpTo {\n  constructor(max) {\n    this.max = max;\n  }\n  [Symbol.iterator]() {\n    // TODO: return an object with a next() that yields Fibonacci numbers up to this.max\n  }\n}\n",
+    hints: [
+      "next() needs its own state (the current pair of numbers) captured in variables local to the iterator object it returns — a closure, same as the Range example in this chapter.",
+      "Stop by returning { value: undefined, done: true } once the next number would exceed max.",
+    ],
+    solution:
+      "class FibonacciUpTo {\n  constructor(max) {\n    this.max = max;\n  }\n  [Symbol.iterator]() {\n    let [a, b] = [0, 1];\n    const max = this.max;\n    return {\n      next() {\n        if (a > max) return { value: undefined, done: true };\n        const value = a;\n        [a, b] = [b, a + b];\n        return { value, done: false };\n      },\n    };\n  }\n}\n",
+    tests: [
+      { name: "gives Fibonacci numbers up to 10", body: "assert.deepEqual([...new FibonacciUpTo(10)], [0, 1, 1, 2, 3, 5, 8]);" },
+      { name: "max of 0 gives just [0]", body: "assert.deepEqual([...new FibonacciUpTo(0)], [0]);" },
+      { name: "a negative max gives nothing", body: "assert.deepEqual([...new FibonacciUpTo(-1)], []);" },
+    ],
+  },
+  {
+    id: "ex-positive-only-proxy",
+    chapter: "metaprogramming",
+    level: "advanced",
+    title: "An array that rejects non-positive numbers",
+    brief:
+      "<p>Write <code>createPositiveArray()</code> returning a <code>Proxy</code>-wrapped array where pushing anything that isn't a positive number throws a <code>TypeError</code> immediately.</p><ul><li>Valid pushes still behave like a normal array</li></ul>",
+    starter:
+      "function createPositiveArray() {\n  // TODO: wrap [] in a Proxy with a set trap that validates numeric-index writes\n}\n",
+    hints: [
+      "The set trap receives (target, prop, value) — prop is a string, even for numeric indices, so check it's not \"length\" before validating.",
+      "Number.isNaN(Number(prop)) is a quick way to tell an index key from \"length\" or any other property name.",
+    ],
+    solution:
+      'function createPositiveArray() {\n  return new Proxy([], {\n    set(arr, prop, value) {\n      if (prop !== "length" && !Number.isNaN(Number(prop))) {\n        if (typeof value !== "number" || value <= 0) {\n          throw new TypeError("only positive numbers allowed");\n        }\n      }\n      return Reflect.set(arr, prop, value);\n    },\n  });\n}\n',
+    tests: [
+      {
+        name: "valid pushes work like a normal array",
+        body: "const arr = createPositiveArray();\narr.push(5);\narr.push(10);\nassert.deepEqual([...arr], [5, 10]);",
+      },
+      { name: "pushing a negative number throws", body: "const arr = createPositiveArray();\nassert.throws(() => arr.push(-1), TypeError);" },
+      { name: "pushing zero throws", body: "const arr = createPositiveArray();\nassert.throws(() => arr.push(0), TypeError);" },
+    ],
+  },
+  {
+    id: "ex-bigint-factorial",
+    chapter: "types-data",
+    level: "advanced",
+    title: "A factorial that doesn't lose precision",
+    brief:
+      "<p>Write <code>bigFactorial(n)</code> returning <code>n!</code> as a <code>BigInt</code> — correct even well past the point where a regular <code>Number</code> factorial would start rounding.</p>",
+    starter: "function bigFactorial(n) {\n  // TODO: multiply 1n through BigInt(n), entirely in BigInt\n}\n",
+    hints: [
+      "Start an accumulator at 1n, and loop a BigInt counter from 2n up to BigInt(n), multiplying as you go.",
+      "Never mix a plain number into the multiplication — every operand needs to already be a BigInt.",
+    ],
+    solution:
+      "function bigFactorial(n) {\n  let result = 1n;\n  for (let i = 2n; i <= BigInt(n); i++) result *= i;\n  return result;\n}\n",
+    tests: [
+      { name: "5! is 120", body: "assert.equal(bigFactorial(5), 120n);" },
+      { name: "0! is 1", body: "assert.equal(bigFactorial(0), 1n);" },
+      { name: "20! matches the known exact value", body: "assert.equal(bigFactorial(20), 2432902008176640000n);" },
+      {
+        name: "25! is exact, well past Number.MAX_SAFE_INTEGER",
+        body: "assert.equal(bigFactorial(25), 15511210043330985984000000n);",
+      },
+    ],
+  },
+  {
+    id: "ex-proper-length",
+    chapter: "types-data",
+    level: "advanced",
+    title: "Count actual characters, not code units",
+    brief:
+      '<p>Write <code>properLength(str)</code> that returns the number of real characters (code points) in <code>str</code> — not <code>str.length</code>, which counts UTF-16 code units and gets emoji wrong.</p>',
+    starter: "function properLength(str) {\n  // TODO: one line — iterate the string properly instead of reading .length\n}\n",
+    hints: ["Spreading a string ([...str]) iterates by code point, correctly pairing up surrogate pairs into one character each."],
+    solution: "function properLength(str) {\n  return [...str].length;\n}\n",
+    tests: [
+      { name: "plain ASCII text", body: 'assert.equal(properLength("hello"), 5);' },
+      { name: "a single emoji is 1, not 2", body: 'assert.equal(properLength("\\ud83d\\ude00"), 1);' },
+      { name: "mixed text and emoji", body: 'assert.equal(properLength("cafe" + String.fromCodePoint(128512)), 5);' },
+      { name: "empty string", body: 'assert.equal(properLength(""), 0);' },
+    ],
+  },
+  {
+    id: "ex-order-state-machine",
+    chapter: "patterns-architecture",
+    level: "advanced",
+    title: "An order that can't skip states",
+    brief:
+      '<p>Write <code>createOrderMachine()</code> returning <code>{ current, transition }</code> for an order that starts <code>"placed"</code>, and can only move: placed → shipped or cancelled; shipped → delivered. Any other transition should throw.</p>',
+    starter:
+      'function createOrderMachine() {\n  // TODO: a transitions table + current state, transition() validates against the table before changing state\n}\n',
+    hints: [
+      'A plain object works as the transitions table: { placed: ["shipped", "cancelled"], shipped: ["delivered"], delivered: [], cancelled: [] }.',
+      "transition(next) should check transitions[state].includes(next) before actually changing state — throw if it's not allowed.",
+    ],
+    solution:
+      'function createOrderMachine() {\n  const transitions = {\n    placed: ["shipped", "cancelled"],\n    shipped: ["delivered"],\n    delivered: [],\n    cancelled: [],\n  };\n  let state = "placed";\n  return {\n    current() {\n      return state;\n    },\n    transition(next) {\n      if (!transitions[state].includes(next)) {\n        throw new Error("cannot go from " + state + " to " + next);\n      }\n      state = next;\n      return state;\n    },\n  };\n}\n',
+    tests: [
+      {
+        name: "walks the normal happy path",
+        body: 'const order = createOrderMachine();\nassert.equal(order.current(), "placed");\norder.transition("shipped");\nassert.equal(order.current(), "shipped");\norder.transition("delivered");\nassert.equal(order.current(), "delivered");',
+      },
+      {
+        name: "cancelling from placed works",
+        body: 'const order = createOrderMachine();\norder.transition("cancelled");\nassert.equal(order.current(), "cancelled");',
+      },
+      {
+        name: "an impossible transition throws",
+        body: 'const order = createOrderMachine();\nassert.throws(() => order.transition("delivered"));',
+      },
+    ],
+  },
+  {
+    id: "ex-compose-patterns",
+    chapter: "patterns-architecture",
+    level: "advanced",
+    title: "Compose functions, right to left",
+    brief:
+      "<p>Write <code>compose(...fns)</code> — the mirror image of <code>pipe</code> from the modules chapter: <code>compose(f, g)(x)</code> means <code>f(g(x))</code>, running right to left.</p>",
+    starter: "function compose(...fns) {\n  // TODO: reduceRight instead of reduce\n}\n",
+    hints: ["fns.reduceRight((acc, fn) => fn(acc), x) — same shape as pipe, just reducing from the other end."],
+    solution: "function compose(...fns) {\n  return (x) => fns.reduceRight((acc, fn) => fn(acc), x);\n}\n",
+    tests: [
+      {
+        name: "applies the rightmost function first",
+        body: "const sq = (x) => x * x;\nconst addOne = (x) => x + 1;\nassert.equal(compose(sq, addOne)(3), 16);",
+      },
+      {
+        name: "order matters",
+        body: "const sq = (x) => x * x;\nconst addOne = (x) => x + 1;\nassert.equal(compose(addOne, sq)(3), 10);",
+      },
+    ],
+  },
+  {
+    id: "ex-bounded-cache",
+    chapter: "performance",
+    level: "advanced",
+    title: "A cache that can't grow forever",
+    brief:
+      "<p>Write <code>createBoundedCache(maxSize)</code> returning <code>{ get, set, size }</code> — a cache that evicts its <b>oldest</b> entry once it's full, instead of growing without limit.</p>",
+    starter:
+      "function createBoundedCache(maxSize) {\n  // TODO: a Map, evicting the oldest key (Map keeps insertion order) once full\n}\n",
+    hints: [
+      "cache.keys().next().value gives you the oldest key in a Map, since Maps always iterate in insertion order.",
+      "Only evict when you're about to add a genuinely NEW key at capacity — updating an existing key shouldn't evict anything.",
+    ],
+    solution:
+      "function createBoundedCache(maxSize) {\n  const cache = new Map();\n  return {\n    get(key) {\n      return cache.get(key);\n    },\n    set(key, value) {\n      if (cache.size >= maxSize && !cache.has(key)) {\n        cache.delete(cache.keys().next().value);\n      }\n      cache.delete(key);\n      cache.set(key, value);\n    },\n    size() {\n      return cache.size;\n    },\n  };\n}\n",
+    tests: [
+      {
+        name: "evicts the oldest entry once full",
+        body: 'const cache = createBoundedCache(2);\ncache.set("a", 1);\ncache.set("b", 2);\ncache.set("c", 3);\nassert.equal(cache.size(), 2);\nassert.equal(cache.get("a"), undefined);\nassert.equal(cache.get("b"), 2);\nassert.equal(cache.get("c"), 3);',
+      },
+      {
+        name: "stays within maxSize the whole time",
+        body: 'const cache = createBoundedCache(2);\ncache.set("a", 1);\nassert.equal(cache.size(), 1);\ncache.set("b", 2);\nassert.equal(cache.size(), 2);',
+      },
+    ],
+  },
+  {
+    id: "ex-process-in-batches",
+    chapter: "performance",
+    level: "advanced",
+    title: "Process a big array in chunks",
+    brief:
+      "<p>Write <code>processInBatches(items, batchSize, fn)</code> that applies <code>fn</code> to every item, but processes them <code>batchSize</code> at a time, returning one flat array of all the results in original order.</p>",
+    starter:
+      "function processInBatches(items, batchSize, fn) {\n  // TODO: slice items into chunks of batchSize, map each chunk with fn, flatten the results\n}\n",
+    hints: ["A for loop stepping by batchSize, slicing out each chunk, is enough — no need for anything async here."],
+    solution:
+      "function processInBatches(items, batchSize, fn) {\n  const results = [];\n  for (let i = 0; i < items.length; i += batchSize) {\n    const batch = items.slice(i, i + batchSize);\n    results.push(...batch.map(fn));\n  }\n  return results;\n}\n",
+    tests: [
+      { name: "processes everything in order", body: "assert.deepEqual(processInBatches([1, 2, 3, 4, 5], 2, (x) => x * 2), [2, 4, 6, 8, 10]);" },
+      { name: "empty input gives empty output", body: "assert.deepEqual(processInBatches([], 3, (x) => x), []);" },
+      { name: "a batch size bigger than the array", body: "assert.deepEqual(processInBatches([1], 5, (x) => x + 1), [2]);" },
+    ],
+  },
+  {
+    id: "ex-escape-html",
+    chapter: "security",
+    level: "advanced",
+    title: "Escape text before it becomes HTML",
+    brief:
+      "<p>Write <code>escapeHtml(str)</code> that escapes the characters that matter for XSS — <code>&amp; &lt; &gt; \" '</code> — so the result is safe to insert as HTML text.</p>",
+    starter: "function escapeHtml(str) {\n  // TODO: replace each dangerous character with its HTML entity, & first\n}\n",
+    hints: [
+      "Escape & FIRST, before any of the others — otherwise you'd double-escape the & that your own &lt; replacement just introduced.",
+      "&amp; &lt; &gt; &quot; &#39; are the five entities you need, one .replace(/.../g, ...) per character.",
+    ],
+    solution:
+      'function escapeHtml(str) {\n  return str\n    .replace(/&/g, "&amp;")\n    .replace(/</g, "&lt;")\n    .replace(/>/g, "&gt;")\n    .replace(/"/g, "&quot;")\n    .replace(/\'/g, "&#39;");\n}\n',
+    tests: [
+      {
+        name: "escapes a script tag",
+        body: 'assert.equal(escapeHtml("<script>alert(1)</script>"), "&lt;script&gt;alert(1)&lt;/script&gt;");',
+      },
+      { name: "escapes an ampersand", body: 'assert.equal(escapeHtml("Ana & Ravi"), "Ana &amp; Ravi");' },
+      { name: "escapes quotes", body: 'assert.equal(escapeHtml(\'say "hi"\'), "say &quot;hi&quot;");' },
+      { name: "plain text passes through unchanged", body: 'assert.equal(escapeHtml("plain text"), "plain text");' },
+    ],
+  },
+  {
+    id: "ex-safe-merge",
+    chapter: "security",
+    level: "advanced",
+    title: "Fix the merge so it can't pollute Object.prototype",
+    brief:
+      '<p>The chapter showed how a naive recursive merge lets <code>"__proto__"</code> in the source object reach and pollute <code>Object.prototype</code> itself. Write <code>safeMerge(target, source)</code> that merges recursively like the original — but is immune to that attack.</p>',
+    starter:
+      'function safeMerge(target, source) {\n  for (const key in source) {\n    // TODO: skip "__proto__", "constructor", "prototype" — merge everything else recursively\n  }\n  return target;\n}\n',
+    hints: [
+      'A simple "continue" at the top of the loop for the three dangerous key names blocks the whole attack.',
+      "Everything else should behave exactly like the vulnerable version: recurse into nested objects, assign primitives directly.",
+    ],
+    solution:
+      'function safeMerge(target, source) {\n  for (const key in source) {\n    if (key === "__proto__" || key === "constructor" || key === "prototype") continue;\n    if (typeof source[key] === "object" && source[key] !== null) {\n      if (!target[key] || typeof target[key] !== "object") target[key] = {};\n      safeMerge(target[key], source[key]);\n    } else {\n      target[key] = source[key];\n    }\n  }\n  return target;\n}\n',
+    tests: [
+      {
+        name: "a __proto__ payload does not pollute Object.prototype",
+        body: 'const malicious = JSON.parse(\'{"__proto__": {"isAdmin": true}}\');\nsafeMerge({}, malicious);\nassert.equal(({}).isAdmin, undefined);',
+      },
+      {
+        name: "normal nested merging still works",
+        body: 'assert.deepEqual(safeMerge({}, { a: 1, b: { c: 2 } }), { a: 1, b: { c: 2 } });',
+      },
+    ],
+  },
+  {
+    id: "ex-flat-polyfill",
+    chapter: "ecosystem-professional",
+    level: "advanced",
+    title: "Write your own Array.prototype.flat",
+    brief:
+      "<p>Write <code>myFlat(arr, depth = 1)</code> reimplementing <code>Array.prototype.flat</code> from scratch — flattening nested arrays up to <code>depth</code> levels deep.</p>",
+    starter: "function myFlat(arr, depth = 1) {\n  // TODO: recurse into array items while depth > 0, decrementing depth each level down\n}\n",
+    hints: [
+      "reduce works well here: for each item, if it's an array and depth > 0, spread its own myFlat(item, depth - 1) in; otherwise push it directly.",
+      "depth of 0 should just return a shallow copy — no flattening at all.",
+    ],
+    solution:
+      "function myFlat(arr, depth = 1) {\n  if (depth < 1) return arr.slice();\n  return arr.reduce((flat, item) => {\n    if (Array.isArray(item)) flat.push(...myFlat(item, depth - 1));\n    else flat.push(item);\n    return flat;\n  }, []);\n}\n",
+    tests: [
+      { name: "default depth of 1", body: "assert.deepEqual(myFlat([1, [2, [3, [4]]]]), [1, 2, [3, [4]]]);" },
+      { name: "depth of 2", body: "assert.deepEqual(myFlat([1, [2, [3, [4]]]], 2), [1, 2, 3, [4]]);" },
+      { name: "Infinity flattens everything", body: "assert.deepEqual(myFlat([1, [2, [3, [4]]]], Infinity), [1, 2, 3, 4]);" },
+      { name: "an already-flat array is unchanged", body: "assert.deepEqual(myFlat([1, 2, 3]), [1, 2, 3]);" },
+    ],
+  },
+  {
+    id: "ex-ast-node-counter",
+    chapter: "ecosystem-professional",
+    level: "advanced",
+    title: "Count nodes of one type in a tree",
+    brief:
+      '<p>Write <code>countNodesByType(node, type)</code> — given a tree of <code>{ type, children }</code> nodes (like the hand-built AST from this chapter), count how many nodes anywhere in the tree have that exact <code>type</code>.</p>',
+    starter:
+      "function countNodesByType(node, type, count = 0) {\n  // TODO: check this node's type, then recurse into every child, accumulating count\n}\n",
+    hints: [
+      "This is plain tree recursion: check the current node, then fold the count through every child in node.children.",
+      "node.children might be undefined on a leaf — default it to an empty array before iterating.",
+    ],
+    solution:
+      "function countNodesByType(node, type, count = 0) {\n  if (!node) return count;\n  if (node.type === type) count++;\n  for (const child of node.children || []) {\n    count = countNodesByType(child, type, count);\n  }\n  return count;\n}\n",
+    tests: [
+      {
+        name: "counts matching nodes anywhere in the tree",
+        body: 'const ast = {\n  type: "Program",\n  children: [\n    { type: "VariableDeclaration", children: [{ type: "Literal", children: [] }] },\n    { type: "FunctionDeclaration", children: [\n      { type: "VariableDeclaration", children: [] },\n      { type: "Literal", children: [] },\n    ] },\n  ],\n};\nassert.equal(countNodesByType(ast, "Literal"), 2);\nassert.equal(countNodesByType(ast, "VariableDeclaration"), 2);',
+      },
+      {
+        name: "a type that never appears is 0",
+        body: 'const ast = { type: "Program", children: [] };\nassert.equal(countNodesByType(ast, "Nonexistent"), 0);',
       },
     ],
   },
