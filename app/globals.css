@@ -4090,6 +4090,39 @@ a.step__title:hover {
   min-width: 0;
 }
 
+.resize-handle {
+  flex: none;
+  margin: -9px 0;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: row-resize;
+  touch-action: none;
+  position: relative;
+  z-index: 2;
+}
+
+.resize-handle__grip {
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line-soft);
+  transition:
+    background 0.14s ease,
+    width 0.14s ease;
+}
+
+.resize-handle:hover .resize-handle__grip,
+.resize-handle:focus-visible .resize-handle__grip {
+  background: var(--ink-soft);
+  width: 64px;
+}
+
+.resize-handle:focus-visible {
+  outline: none;
+}
+
 .ed {
   display: flex;
   flex-direction: column;
@@ -4301,20 +4334,47 @@ a.step__title:hover {
    the way an actual judge's Run/Submit pair reads (no green/blue coding). */
 .lc-topbar .btn--run,
 .lc-topbar .btn--test {
-  background: transparent;
-  border-color: var(--ide-fg-faint);
-  color: var(--ide-fg);
   font-weight: 700;
+  color: #11111b;
+  transition:
+    transform 0.14s ease,
+    box-shadow 0.14s ease,
+    background 0.14s ease;
 }
 
-.lc-topbar .btn--run:hover,
+.lc-topbar .btn--run {
+  background: var(--ide-green);
+  border-color: var(--ide-green);
+}
+
+.lc-topbar .btn--test {
+  background: var(--ide-accent);
+  border-color: var(--ide-accent);
+}
+
+.lc-topbar .btn--run:hover:not(:disabled),
 .lc-topbar .btn--test:hover {
-  background: rgba(205, 214, 244, 0.08);
-  border-color: var(--ide-fg-dim);
+  transform: translateY(-1px);
+}
+
+.lc-topbar .btn--run:hover:not(:disabled) {
+  box-shadow: 0 6px 16px -6px rgba(166, 227, 161, 0.6);
+}
+
+.lc-topbar .btn--test:hover {
+  box-shadow: 0 6px 16px -6px rgba(137, 180, 250, 0.6);
+}
+
+.lc-topbar .btn--run:active:not(:disabled),
+.lc-topbar .btn--test:active {
+  transform: translateY(0);
 }
 
 .lc-topbar .btn--run:disabled {
-  opacity: 0.4;
+  background: transparent;
+  border-color: var(--ide-fg-faint);
+  color: var(--ide-fg-faint);
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
@@ -4551,6 +4611,61 @@ a.step__title:hover {
   font-style: italic;
 }
 
+.sql-result {
+  padding: 4px 0 10px;
+}
+
+.sql-result__scroll {
+  overflow-x: auto;
+  border: 1px solid var(--ide-border);
+  border-radius: 8px;
+}
+
+.sql-result table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+
+.sql-result th,
+.sql-result td {
+  padding: 6px 12px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--ide-border);
+}
+
+.sql-result th {
+  background: var(--ide-bg-elevated);
+  color: var(--ide-fg-dim);
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+}
+
+.sql-result td {
+  color: var(--ide-fg);
+}
+
+.sql-result td em {
+  color: var(--ide-fg-faint);
+  font-style: italic;
+}
+
+.sql-result tbody tr:nth-child(even) td {
+  background: rgba(205, 214, 244, 0.04);
+}
+
+.sql-result tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.sql-result__count {
+  margin: 6px 2px 0;
+  font-size: 12px;
+  color: var(--ide-fg-faint);
+}
+
 .test {
   display: flex;
   gap: 10px;
@@ -4628,6 +4743,20 @@ a.step__title:hover {
 
   .panel__body {
     max-height: 260px;
+  }
+
+  /* ⌘/Ctrl, Alt-click — none of these exist on a touch keyboard. */
+  .workbench > .keys {
+    display: none;
+  }
+}
+
+/* Coarse pointers (touch) never see hover, so the resize handle needs a
+   bigger hit area than the 18px a mouse gets away with. */
+@media (pointer: coarse) {
+  .resize-handle {
+    height: 28px;
+    margin: -14px 0;
   }
 }
 

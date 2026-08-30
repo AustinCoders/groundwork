@@ -3,6 +3,15 @@ export interface RunnerConsoleEntry {
   text: string;
 }
 
+/** A SQL result set, rendered as a table instead of a text line. */
+export interface RunnerTableEntry {
+  kind: "table";
+  columns: string[];
+  rows: (string | number | null)[][];
+}
+
+export type RunnerOutputEntry = RunnerConsoleEntry | RunnerTableEntry;
+
 export interface RunnerTestResult {
   index: number;
   name: string;
@@ -25,7 +34,7 @@ export interface RunOptions {
   extraHead?: string;
   extraBody?: string;
   linger?: number;
-  onConsole?: (entry: RunnerConsoleEntry) => void;
+  onConsole?: (entry: RunnerOutputEntry) => void;
   onDone?: (payload: RunnerDonePayload) => void;
 }
 

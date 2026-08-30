@@ -8,11 +8,59 @@ import { EditorSkeleton } from "@/components/practice/EditorSkeleton";
 import type { LanguageKey, LanguageMeta } from "@/lib/codeLanguages";
 import { useClientValue, useMounted } from "@/lib/hooks";
 import type { PracticeExercise } from "@/lib/practiceFree";
-import { run as runnerRun, transpileTS, type RunnerConsoleEntry, type RunnerTestResult } from "@/lib/runner";
+import { runPython } from "@/lib/pythonRunner";
+import { run as runnerRun, transpileTS, type RunnerOutputEntry, type RunnerTestResult } from "@/lib/runner";
+import { runSQL } from "@/lib/sqlRunner";
 import { code as codeStore, progress, store } from "@/lib/storage";
 import type { ChapterLink } from "@/app/practice/PracticeClient";
 
 const MARKS: Record<string, string> = { log: "›", info: "i", warn: "!", error: "✕", system: "·" };
+
+const EDITOR_HEIGHT_KEY = "jsnotes:editor-height";
+const EDITOR_HEIGHT_MIN = 220;
+const EDITOR_HEIGHT_MAX = 900;
+
+/** Drag handle between the editor and the console/test panel — mouse and
+ * touch both work off the same Pointer Events, and the split is remembered
+ * per device via localStorage. */
+function ResizeHandle({ height, onResize }: { height: number; onResize: (next: number) => void }) {
+  const dragRef = useRef<{ startY: number; startHeight: number } | null>(null);
+
+  function clamp(v: number) {
+    return Math.min(EDITOR_HEIGHT_MAX, Math.max(EDITOR_HEIGHT_MIN, v));
+  }
+
+  return (
+    <div
+      className="resize-handle"
+      role="separator"
+      aria-orientation="horizontal"
+      aria-label="Resize the editor"
+      aria-valuenow={Math.round(height)}
+      aria-valuemin={EDITOR_HEIGHT_MIN}
+      aria-valuemax={EDITOR_HEIGHT_MAX}
+      tabIndex={0}
+      onPointerDown={(e) => {
+        e.preventDefault();
+        e.currentTarget.setPointerCapture(e.pointerId);
+        dragRef.current = { startY: e.clientY, startHeight: height };
+      }}
+      onPointerMove={(e) => {
+        if (!dragRef.current) return;
+        onResize(clamp(dragRef.current.startHeight + (e.clientY - dragRef.current.startY)));
+      }}
+      onPointerUp={() => {
+        dragRef.current = null;
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "ArrowUp") onResize(clamp(height - 20));
+        if (e.key === "ArrowDown") onResize(clamp(height + 20));
+      }}
+    >
+      <span className="resize-handle__grip" aria-hidden="true" />
+    </div>
+  );
+}
 
 function copyText(text: string): Promise<boolean> {
   if (navigator.clipboard && window.isSecureContext) {
@@ -65,13 +113,17 @@ export function PracticeWorkspace({
   const [currentLang, setCurrentLang] = useState<LanguageKey>("javascript");
   const [currentLangMeta, setCurrentLangMeta] = useState<LanguageMeta | null>(null);
   const [activeTab, setActiveTab] = useState<"console" | "tests">("console");
-  const [consoleLines, setConsoleLines] = useState<RunnerConsoleEntry[]>([]);
+  const [consoleLines, setConsoleLines] = useState<RunnerOutputEntry[]>([]);
   const [consolePhase, setConsolePhase] = useState<"idle" | "compiling" | "ran" | "cleared">("idle");
   const [testResults, setTestResults] = useState<RunnerTestResult[] | null>(null);
   const alreadySolved = useClientValue(() => !isFree && progress.isExerciseSolved(exercise.id), false);
   const [justSolved, setJustSolved] = useState(false);
   const solved = alreadySolved || justSolved;
   const [hintsShown, setHintsShown] = useState(0);
+
+  const savedEditorHeight = useClientValue(() => store.get<number>(EDITOR_HEIGHT_KEY, 430), 430);
+  const [editorHeightOverride, setEditorHeightOverride] = useState<number | null>(null);
+  const editorHeight = editorHeightOverride ?? savedEditorHeight;
 
   useEffect(() => {
     function onKeydown(e: KeyboardEvent) {
@@ -147,6 +199,30 @@ export function PracticeWorkspace({
 
     if (meta.runnable === "js") {
       startRunner(editor.getValue(), withTests);
+      return;
+    }
+
+    if (meta.runnable === "python") {
+      runningRef.current = runPython({
+        code: editor.getValue(),
+        onConsole: (entry) => setConsoleLines((prev) => [...prev, entry]),
+        onDone: () => {
+          runningRef.current = null;
+          setConsolePhase("ran");
+        },
+      });
+      return;
+    }
+
+    if (meta.runnable === "sql") {
+      runningRef.current = runSQL({
+        code: editor.getValue(),
+        onConsole: (entry) => setConsoleLines((prev) => [...prev, entry]),
+        onDone: () => {
+          runningRef.current = null;
+          setConsolePhase("ran");
+        },
+      });
       return;
     }
 
@@ -331,7 +407,7 @@ export function PracticeWorkspace({
               filename={isFree ? "playground" : exercise.id}
               language={initialLanguage}
               value={initialValue}
-              height={430}
+              height={editorHeight}
               onChange={(value) => codeStore.save(exercise.id, value)}
               onRun={() => runCode(false)}
               onSave={() => {
@@ -363,6 +439,16 @@ export function PracticeWorkspace({
             />
           ) : (
             <EditorSkeleton />
+          )}
+
+          {mounted && (
+            <ResizeHandle
+              height={editorHeight}
+              onResize={(next) => {
+                setEditorHeightOverride(next);
+                store.set(EDITOR_HEIGHT_KEY, next);
+              }}
+            />
           )}
 
           <section className="panel">
@@ -433,12 +519,40 @@ export function PracticeWorkspace({
                     )}
                   </p>
                 ) : (
-                  consoleLines.map((entry, i) => (
-                    <div className={`line line--${entry.kind}`} key={i}>
-                      <span className="line__mark">{MARKS[entry.kind] || "›"}</span>
-                      <span>{entry.text}</span>
-                    </div>
-                  ))
+                  consoleLines.map((entry, i) =>
+                    entry.kind === "table" ? (
+                      <div className="sql-result" key={i}>
+                        <div className="sql-result__scroll">
+                          <table>
+                            <thead>
+                              <tr>
+                                {entry.columns.map((col, c) => (
+                                  <th key={c}>{col}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {entry.rows.map((row, r) => (
+                                <tr key={r}>
+                                  {row.map((cell, c) => (
+                                    <td key={c}>{cell === null ? <em>null</em> : String(cell)}</td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <p className="sql-result__count">
+                          {entry.rows.length} {entry.rows.length === 1 ? "row" : "rows"}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className={`line line--${entry.kind}`} key={i}>
+                        <span className="line__mark">{MARKS[entry.kind] || "›"}</span>
+                        <span>{entry.text}</span>
+                      </div>
+                    )
+                  )
                 )}
               </div>
               <div className={`panel__view${activeTab === "tests" ? " is-active" : ""}`} id="view-tests" role="tabpanel">

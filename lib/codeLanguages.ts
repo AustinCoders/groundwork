@@ -5,7 +5,7 @@ import { cpp } from "@codemirror/lang-cpp";
 import { java } from "@codemirror/lang-java";
 import { sql } from "@codemirror/lang-sql";
 
-export type RunnableKind = "js" | "ts" | null;
+export type RunnableKind = "js" | "ts" | "python" | "sql" | null;
 
 export interface LanguageMeta {
   label: string;
@@ -25,15 +25,17 @@ export type LanguageKey = (typeof LANG_ORDER)[number];
 export const LANGUAGES: Record<LanguageKey, LanguageMeta> = {
   javascript: { label: "JavaScript", ext: "js", runnable: "js", support: () => javascript() },
   typescript: { label: "TypeScript", ext: "ts", runnable: "ts", support: () => javascript({ typescript: true }) },
-  python: { label: "Python", ext: "py", runnable: null, support: () => python() },
+  python: { label: "Python", ext: "py", runnable: "python", support: () => python() },
   c: { label: "C", ext: "c", runnable: null, support: () => cpp() },
   cpp: { label: "C++", ext: "cpp", runnable: null, support: () => cpp() },
   java: { label: "Java", ext: "java", runnable: null, support: () => java() },
-  sql: { label: "SQL", ext: "sql", runnable: null, support: () => sql() },
+  sql: { label: "SQL", ext: "sql", runnable: "sql", support: () => sql() },
 };
 
 export const HINTS: Record<string, string> = {
   js: "⌘/Ctrl + Enter to run",
   ts: "⌘/Ctrl + Enter to compile & run",
+  python: "⌘/Ctrl + Enter to run — first run downloads the Python runtime (~13MB, cached after)",
+  sql: "⌘/Ctrl + Enter to run against an in-memory SQLite database",
   none: "✎ editing only — no in-browser runner for this language",
 };

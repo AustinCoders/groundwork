@@ -17,6 +17,10 @@
 /.next/
 /out/
 
+# WASM runtimes for the playground (Pyodide, sql.js) — copied from
+# node_modules by scripts/copy-wasm-assets.mjs before dev/build
+/public/wasm/
+
 # production
 /build
 

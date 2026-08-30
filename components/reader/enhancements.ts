@@ -111,6 +111,9 @@ export function enhanceTryBlocks(container: HTMLElement) {
         code,
         timeout: 3000,
         onConsole: (entry) => {
+          // Table entries only ever come from the SQL runner, never from
+          // this plain JS `run()` — narrow it away rather than widen the UI.
+          if (entry.kind === "table") return;
           const line = el(
             "div",
             entry.kind === "error" ? "err" : entry.kind === "warn" || entry.kind === "system" ? "dim" : "ok"

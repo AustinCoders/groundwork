@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 
 /**
@@ -11,19 +11,15 @@ import { usePathname } from "next/navigation";
  * The very first render (the actual page load, not a navigation) must
  * skip the animation: fading in the whole page delays when the browser
  * considers the largest element "painted", which directly inflates LCP.
- * The ref only needs to be read correctly by the *next* render (the
- * first real navigation), so mutating it without a state update is fine.
+ * `useState`'s lazy initializer runs exactly once, on mount, so it
+ * captures "the pathname this page loaded with" without touching a ref
+ * during render.
  */
 export function RouteFade({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const mounted = useRef(false);
-  const skipAnimation = !mounted.current;
+  const [initialPathname] = useState(pathname);
 
-  useEffect(() => {
-    mounted.current = true;
-  }, []);
-
-  if (skipAnimation) return <>{children}</>;
+  if (pathname === initialPathname) return <>{children}</>;
   return (
     <div key={pathname} className="route-fade">
       {children}
