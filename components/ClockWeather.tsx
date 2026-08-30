@@ -10,8 +10,23 @@ interface WeatherData {
 }
 
 type ClockFormat = "12" | "24";
+type Period = "morning" | "afternoon" | "evening" | "night";
 
 const WEATHER_TTL_MS = 30 * 60 * 1000;
+
+const GREETING: Record<Period, { label: string; emoji: string }> = {
+  morning: { label: "morning", emoji: "☀️" },
+  afternoon: { label: "afternoon", emoji: "🌤️" },
+  evening: { label: "evening", emoji: "🌇" },
+  night: { label: "night", emoji: "🌙" },
+};
+
+function periodOf(hour: number): Period {
+  if (hour >= 5 && hour < 12) return "morning";
+  if (hour >= 12 && hour < 17) return "afternoon";
+  if (hour >= 17 && hour < 21) return "evening";
+  return "night";
+}
 
 function useClock(): Date | null {
   // Starts null so the server and the first client render agree (no
@@ -99,13 +114,25 @@ export function ClockWeather() {
 
   if (!now) return null;
 
-  const time = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: format === "12" });
+  const period = periodOf(now.getHours());
+  const greeting = GREETING[period];
+  const hourNum = format === "12" ? now.getHours() % 12 || 12 : now.getHours();
+  const minute = String(now.getMinutes()).padStart(2, "0");
+  const ampm = now.getHours() >= 12 ? "PM" : "AM";
   const day = now.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
 
   return (
-    <div className="clock-weather">
+    <div className={`clock-weather clock-weather--${period}`}>
+      <div className="clock-weather__greeting">
+        <span aria-hidden="true">{greeting.emoji}</span> good {greeting.label}
+      </div>
       <div className="clock-weather__top">
-        <div className="clock-weather__time">{time}</div>
+        <div className="clock-weather__time">
+          {hourNum}
+          <span className="clock-weather__colon">:</span>
+          {minute}
+          {format === "12" && <span className="clock-weather__ampm">{ampm}</span>}
+        </div>
         <button
           className="clock-weather__format"
           type="button"

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ClockWeather } from "@/components/ClockWeather";
+import { DailyRecap } from "@/components/DailyRecap";
 import { FontPicker, ThemePicker } from "@/components/ThemeFontPicker";
 import { StreakMini } from "@/components/StreakMini";
 import { TopicOfDay } from "@/components/TopicOfDay";
@@ -151,6 +152,8 @@ export function Shell({
       </a>
 
       {progressBar}
+
+      <DailyRecap topics={readyTopics} />
 
       <header className="topbar">
         <button

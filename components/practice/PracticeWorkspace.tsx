@@ -6,12 +6,14 @@ import { Crumbs } from "@/components/Crumbs";
 import { CodeEditor, type CodeEditorHandle } from "@/components/practice/CodeEditor";
 import { Confetti } from "@/components/practice/Confetti";
 import { EditorSkeleton } from "@/components/practice/EditorSkeleton";
+import { ShortcutHelp } from "@/components/practice/ShortcutHelp";
 import type { LanguageKey } from "@/lib/codeLanguages";
 import { useClientValue, useMounted } from "@/lib/hooks";
 import type { PracticeExercise } from "@/lib/practiceFree";
 import { runPython } from "@/lib/pythonRunner";
 import { run as runnerRun, transpileTS, type RunnerOutputEntry, type RunnerTestResult } from "@/lib/runner";
 import { runSQL } from "@/lib/sqlRunner";
+import { isSoundEnabled, playSolvedDing, setSoundEnabled } from "@/lib/sound";
 import { code as codeStore, progress, store } from "@/lib/storage";
 import type { ChapterLink } from "@/app/practice/PracticeClient";
 
@@ -60,6 +62,16 @@ function ResizeHandle({ height, onResize }: { height: number; onResize: (next: n
     >
       <span className="resize-handle__grip" aria-hidden="true" />
     </div>
+  );
+}
+
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return (
+    target.tagName === "INPUT" ||
+    target.tagName === "TEXTAREA" ||
+    target.isContentEditable ||
+    Boolean(target.closest(".cm-editor"))
   );
 }
 
@@ -132,6 +144,33 @@ export function PracticeWorkspace({
   const [editorHeightOverride, setEditorHeightOverride] = useState<number | null>(null);
   const editorHeight = editorHeightOverride ?? savedEditorHeight;
 
+  const [soundOn, setSoundOnState] = useState(true);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+  useEffect(() => {
+    const kick = setTimeout(() => setSoundOnState(isSoundEnabled()), 0);
+    return () => clearTimeout(kick);
+  }, []);
+
+  function toggleSound() {
+    const next = !soundOn;
+    setSoundOnState(next);
+    setSoundEnabled(next);
+  }
+
+  useEffect(() => {
+    function onKeydown(e: KeyboardEvent) {
+      if (e.key === "?" && !isTypingTarget(e.target)) {
+        e.preventDefault();
+        setShortcutsOpen((o) => !o);
+        return;
+      }
+      if (e.key === "Escape") setShortcutsOpen((o) => (o ? false : o));
+    }
+    document.addEventListener("keydown", onKeydown);
+    return () => document.removeEventListener("keydown", onKeydown);
+  }, []);
+
   useEffect(() => {
     function onKeydown(e: KeyboardEvent) {
       if (e.key === "Escape" && editorRef.current?.isFullscreen()) {
@@ -193,6 +232,7 @@ export function PracticeWorkspace({
             if (results.length && results.every((r) => r.ok) && !isFree) {
               progress.setExerciseSolved(exercise.id, true);
               setJustSolved(true);
+              playSolvedDing();
             }
           }
         },
@@ -302,8 +342,28 @@ export function PracticeWorkspace({
               ☁ Submit
             </button>
           )}
+          <button
+            className="lc-icon-btn"
+            type="button"
+            title={soundOn ? "Mute the solved sound" : "Unmute the solved sound"}
+            aria-label={soundOn ? "Mute the solved sound" : "Unmute the solved sound"}
+            onClick={toggleSound}
+          >
+            {soundOn ? "🔊" : "🔇"}
+          </button>
+          <button
+            className="lc-icon-btn"
+            type="button"
+            title="Keyboard shortcuts (?)"
+            aria-label="Keyboard shortcuts"
+            onClick={() => setShortcutsOpen(true)}
+          >
+            ⌨
+          </button>
         </div>
       </div>
+
+      <ShortcutHelp open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
 
       <div className="practice-layout">
         <aside className="brief" id="brief">

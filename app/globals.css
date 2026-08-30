@@ -783,9 +783,33 @@ li::marker {
   text-align: center;
   gap: 2px;
   margin: -18px -16px 16px;
-  padding: 26px 16px 20px;
-  background: linear-gradient(165deg, color-mix(in srgb, var(--ink) 8%, var(--sheet)) 0%, var(--sheet) 78%);
+  padding: 20px 16px 20px;
   border-bottom: 1px solid var(--line);
+}
+
+.clock-weather--morning {
+  background: linear-gradient(165deg, color-mix(in srgb, var(--hl-mint) 60%, var(--sheet)) 0%, var(--sheet) 85%);
+}
+
+.clock-weather--afternoon {
+  background: linear-gradient(165deg, color-mix(in srgb, var(--hl-yellow) 55%, var(--sheet)) 0%, var(--sheet) 85%);
+}
+
+.clock-weather--evening {
+  background: linear-gradient(165deg, color-mix(in srgb, var(--hl-pink) 55%, var(--sheet)) 0%, var(--sheet) 85%);
+}
+
+.clock-weather--night {
+  background: linear-gradient(165deg, color-mix(in srgb, var(--ink) 18%, var(--sheet)) 0%, var(--sheet) 85%);
+}
+
+.clock-weather__greeting {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
 }
 
 .clock-weather__top {
@@ -793,13 +817,33 @@ li::marker {
   align-items: baseline;
   justify-content: center;
   gap: 8px;
+  margin-top: 4px;
 }
 
 .clock-weather__time {
   font-family: var(--font-heading);
-  font-size: 42px;
+  font-size: 40px;
   font-weight: 700;
   line-height: 1;
+}
+
+.clock-weather__colon {
+  display: inline-block;
+  animation: clock-weather-blink 2s steps(1) infinite;
+}
+
+@keyframes clock-weather-blink {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.clock-weather__ampm {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  margin-left: 2px;
+  vertical-align: super;
 }
 
 .clock-weather__format {
@@ -828,9 +872,13 @@ li::marker {
 
 .clock-weather__weather {
   font-family: var(--font-heading);
-  font-size: 15px;
+  font-size: 13.5px;
   color: var(--ink-soft);
-  margin-top: 6px;
+  margin-top: 8px;
+  background: var(--btn-bg);
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  padding: 3px 11px;
 }
 
 .clock-weather__weather-cta {
@@ -950,6 +998,157 @@ li::marker {
   font-family: var(--font-heading);
   font-size: 13.5px;
   color: var(--ink);
+}
+
+.daily-recap {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 60;
+  max-width: 260px;
+  padding: 14px 30px 14px 16px;
+  background: var(--sticky-bg);
+  color: var(--sticky-fg);
+  border-radius: 3px;
+  box-shadow: var(--shadow-md);
+  transform: rotate(-1deg);
+  animation: daily-recap-in 0.3s ease;
+}
+
+@keyframes daily-recap-in {
+  from {
+    opacity: 0;
+    transform: rotate(-1deg) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-1deg) translateY(0);
+  }
+}
+
+.daily-recap p {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.daily-recap__yesterday {
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.daily-recap__today a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  font-weight: 700;
+}
+
+.daily-recap__close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.6;
+  font-size: 12px;
+  line-height: 1;
+  padding: 4px;
+}
+
+.daily-recap__close:hover {
+  opacity: 1;
+}
+
+@media (max-width: 640px) {
+  .daily-recap {
+    left: 16px;
+    right: 16px;
+    max-width: none;
+  }
+}
+
+.shortcut-help {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shortcut-help__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(20, 20, 20, 0.35);
+  cursor: default;
+}
+
+.shortcut-help__panel {
+  position: relative;
+  width: min(360px, calc(100vw - 32px));
+  max-height: min(480px, calc(100vh - 32px));
+  overflow-y: auto;
+  background: var(--sheet);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  padding: 18px 20px 20px;
+}
+
+.shortcut-help__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.shortcut-help__head h2 {
+  font-family: var(--font-heading);
+  font-size: 19px;
+  margin: 0;
+}
+
+.shortcut-help__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+}
+
+.shortcut-help__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.shortcut-help__row dt {
+  flex: none;
+}
+
+.shortcut-help__row dd {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-align: right;
+}
+
+.shortcut-help kbd {
+  font-family: var(--font-code);
+  font-size: 12px;
+  background: var(--btn-bg);
+  border: 1px solid var(--line-soft);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  padding: 3px 8px;
+  color: var(--ink);
+  white-space: nowrap;
 }
 
 .site-sidenav__section {

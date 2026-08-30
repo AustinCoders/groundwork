@@ -10,6 +10,7 @@ export const KEYS = {
   activity: "jsnotes:activity",
   clockFormat: "jsnotes:clock-format",
   weather: "jsnotes:weather",
+  soundEnabled: "jsnotes:sound-enabled",
 } as const;
 
 export const store = {

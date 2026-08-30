@@ -78,3 +78,14 @@ export function topicHref(t: Topic, savedLevel?: string | null): string {
   const known = savedLevel && byId(levels(t.id), savedLevel);
   return known ? `/path?topic=${t.id}&level=${savedLevel}` : `/level?topic=${t.id}`;
 }
+
+/** Same topic all day (day-of-year mod topic count), different tomorrow —
+ * shared by the sidebar's "today's pick" card and the daily recap toast so
+ * they always agree. */
+export function topicOfDay(candidates: Topic[]): Topic | null {
+  if (!candidates.length) return null;
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((now.getTime() - start.getTime()) / 86_400_000);
+  return candidates[dayOfYear % candidates.length];
+}

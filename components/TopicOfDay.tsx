@@ -2,29 +2,22 @@
 
 import Link from "next/link";
 import { TiltCard } from "@/components/TiltCard";
-import { topicHref } from "@/lib/topics";
+import { topicHref, topicOfDay } from "@/lib/topics";
 import { escapeHtml } from "@/lib/format";
 import { useLastLevel, useMounted } from "@/lib/hooks";
 import type { Topic } from "@/content/types";
 
-function dayOfYear(): number {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 0);
-  return Math.floor((now.getTime() - start.getTime()) / 86_400_000);
-}
-
-/** Same topic all day (day-of-year mod topic count), different tomorrow —
- * a nudge toward something other than whatever's already mid-read. Only
+/** A nudge toward something other than whatever's already mid-read. Only
  * picks from topics with actual chapters, not just an outline. */
 export function TopicOfDay({ topics }: { topics: Topic[] }) {
   const mounted = useMounted();
   const savedLevel = useLastLevel();
+  const topic = topicOfDay(topics);
 
   // Date math is client-only (server/client timezones can disagree right
   // at a day boundary) — same guard ThemePicker/FontPicker use.
-  if (!mounted || !topics.length) return null;
+  if (!mounted || !topic) return null;
 
-  const topic = topics[dayOfYear() % topics.length];
   const href = topicHref(topic, savedLevel);
 
   return (
