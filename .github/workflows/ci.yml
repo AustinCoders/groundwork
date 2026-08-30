@@ -20,6 +20,11 @@ jobs:
       # prebuilt, so skipping lifecycle scripts is safe here.
       - run: npm ci --ignore-scripts
 
+      # LayoutProps/PageProps are globally generated helper types that
+      # tsc needs on disk before it can typecheck app/ routes.
+      - name: Generate route types
+        run: npx next typegen
+
       - name: Typecheck
         run: npx tsc --noEmit
 
