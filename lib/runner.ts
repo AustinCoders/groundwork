@@ -31,125 +31,9 @@ export interface RunOptions {
   code: string;
   tests?: { name: string; body: string }[];
   timeout?: number;
-  extraHead?: string;
-  extraBody?: string;
-  linger?: number;
   onConsole?: (entry: RunnerOutputEntry) => void;
   onDone?: (payload: RunnerDonePayload) => void;
 }
-
-const BOOT = `(function () {
-  var send = function (type, payload) {
-    parent.postMessage({ __pg: true, type: type, payload: payload }, '*');
-  };
-  window.__send = send;
-
-  var fmt = function (value, depth, seen) {
-    depth = depth || 0;
-    seen = seen || [];
-    if (value === null) return 'null';
-    if (value === undefined) return 'undefined';
-    var t = typeof value;
-    if (t === 'string') return depth === 0 ? value : JSON.stringify(value);
-    if (t === 'number' || t === 'boolean' || t === 'bigint') return String(value);
-    if (t === 'symbol') return value.toString();
-    if (t === 'function') return value.name ? 'ƒ ' + value.name + '()' : 'ƒ ()';
-    if (value instanceof Error) return value.name + ': ' + value.message;
-    if (seen.indexOf(value) !== -1) return '[circular]';
-    if (depth > 3) return Array.isArray(value) ? '[…]' : '{…}';
-    seen = seen.concat([value]);
-    if (Array.isArray(value)) {
-      return '[' + value.map(function (v) { return fmt(v, depth + 1, seen); }).join(', ') + ']';
-    }
-    if (value instanceof Map) {
-      var pairs = [];
-      value.forEach(function (v, k) { pairs.push(fmt(k, depth + 1, seen) + ' => ' + fmt(v, depth + 1, seen)); });
-      return 'Map(' + value.size + ') { ' + pairs.join(', ') + ' }';
-    }
-    if (value instanceof Set) {
-      var items = [];
-      value.forEach(function (v) { items.push(fmt(v, depth + 1, seen)); });
-      return 'Set(' + value.size + ') { ' + items.join(', ') + ' }';
-    }
-    if (value instanceof Date) return value.toISOString();
-    if (value instanceof Promise) return 'Promise { … }';
-    var keys = Object.keys(value);
-    if (!keys.length) return '{}';
-    return '{ ' + keys.map(function (k) {
-      return k + ': ' + fmt(value[k], depth + 1, seen);
-    }).join(', ') + ' }';
-  };
-
-  var line = function (kind) {
-    return function () {
-      var parts = Array.prototype.map.call(arguments, function (a) { return fmt(a, 0); });
-      send('console', { kind: kind, text: parts.join(' ') });
-    };
-  };
-
-  console.log = line('log');
-  console.info = line('info');
-  console.debug = line('log');
-  console.warn = line('warn');
-  console.error = line('error');
-  console.table = line('log');
-  console.dir = line('log');
-
-  window.onerror = function (message) {
-    send('console', { kind: 'error', text: String(message) });
-    return true;
-  };
-  window.addEventListener('unhandledrejection', function (e) {
-    var reason = e.reason;
-    send('console', { kind: 'error', text: 'Uncaught (in promise) ' + fmt(reason && reason.message ? reason.message : reason, 0) });
-  });
-
-  var same = function (a, b) {
-    if (a === b) return true;
-    if (typeof a === 'number' && typeof b === 'number') {
-      return Number.isNaN(a) && Number.isNaN(b);
-    }
-    if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
-    if (Array.isArray(a) !== Array.isArray(b)) return false;
-    if (a instanceof Map || b instanceof Map || a instanceof Set || b instanceof Set) {
-      return fmt(a, 1) === fmt(b, 1);
-    }
-    var ka = Object.keys(a);
-    var kb = Object.keys(b);
-    if (ka.length !== kb.length) return false;
-    return ka.every(function (k) { return same(a[k], b[k]); });
-  };
-
-  window.assert = {
-    ok: function (value, message) {
-      if (!value) throw new Error(message || 'expected something truthy, got ' + fmt(value, 1));
-    },
-    equal: function (actual, expected, message) {
-      if (actual !== expected) {
-        throw new Error(message || ('expected ' + fmt(expected, 1) + ' but got ' + fmt(actual, 1)));
-      }
-    },
-    notEqual: function (actual, unexpected, message) {
-      if (actual === unexpected) {
-        throw new Error(message || ('expected something other than ' + fmt(unexpected, 1)));
-      }
-    },
-    deepEqual: function (actual, expected, message) {
-      if (!same(actual, expected)) {
-        throw new Error(message || ('expected ' + fmt(expected, 1) + ' but got ' + fmt(actual, 1)));
-      }
-    },
-    type: function (value, expected, message) {
-      if (typeof value !== expected) {
-        throw new Error(message || ('expected a ' + expected + ' but got ' + typeof value));
-      }
-    },
-    throws: function (fn, message) {
-      try { fn(); } catch (e) { return; }
-      throw new Error(message || 'expected that to throw');
-    },
-  };
-})();`;
 
 function buildTestSource(tests: { name: string; body: string }[]) {
   if (!tests || !tests.length) return "";
@@ -176,14 +60,29 @@ function buildTestSource(tests: { name: string; body: string }[]) {
     .join("\n");
 }
 
+// Reused across runs so a normal Run doesn't pay worker-spin-up cost every
+// time. Only discarded when a run has to be force-terminated (timeout or
+// stop) — see lib/jsWorker.ts for why this needs to be a worker at all.
+let sharedWorker: Worker | null = null;
+
+function getWorker(): Worker {
+  if (!sharedWorker) {
+    sharedWorker = new Worker(new URL("./jsWorker.ts", import.meta.url), { type: "module" });
+  }
+  return sharedWorker;
+}
+
+function discardWorker() {
+  sharedWorker?.terminate();
+  sharedWorker = null;
+}
+
 export function run(options: RunOptions): { stop: () => void } {
   const code = options.code || "";
   const tests = options.tests || [];
   const timeout = options.timeout || 5000;
   const onConsole = options.onConsole || (() => {});
   const onDone = options.onDone || (() => {});
-  const extraHead = options.extraHead || "";
-  const extraBody = options.extraBody || "";
 
   try {
     new Function("return (async function () {\n" + code + "\n});");
@@ -193,58 +92,30 @@ export function run(options: RunOptions): { stop: () => void } {
     return { stop: () => {} };
   }
 
-  const frame = document.createElement("iframe");
-  frame.setAttribute("sandbox", "allow-scripts");
-  frame.setAttribute("aria-hidden", "true");
-
-  frame.style.cssText =
-    "position:fixed;top:0;left:0;width:1px;height:1px;border:0;" + "opacity:0.01;pointer-events:none;z-index:-1";
-
+  const worker = getWorker();
   let finished = false;
-  let destroyed = false;
-
-  // eslint-disable-next-line prefer-const
+  // eslint-disable-next-line prefer-const -- assigned once, right after the listener below is wired up
   let timer: ReturnType<typeof setTimeout> | undefined;
-  let lingerTimer: ReturnType<typeof setTimeout> | undefined;
-  const linger = options.linger == null ? 3000 : options.linger;
 
-  function destroy() {
-    if (destroyed) return;
-    destroyed = true;
-    window.removeEventListener("message", onMessage);
+  function cleanup() {
+    worker.removeEventListener("message", onMessage);
     clearTimeout(timer);
-    clearTimeout(lingerTimer);
-    if (frame.parentNode) frame.parentNode.removeChild(frame);
-  }
-
-  function finish(payload?: RunnerDonePayload) {
-    if (finished) return;
-    finished = true;
-    clearTimeout(timer);
-    onDone(payload || { results: [] });
-    lingerTimer = setTimeout(destroy, linger);
   }
 
   function onMessage(event: MessageEvent) {
     const data = event.data;
-    if (!data || data.__pg !== true) return;
-    if (frame.contentWindow && event.source !== frame.contentWindow) return;
-
-    if (data.type === "console") onConsole(data.payload);
-    if (data.type === "done") finish(data.payload);
+    if (!data) return;
+    if (data.type === "console") onConsole(data.payload as RunnerOutputEntry);
+    if (data.type === "done") {
+      finished = true;
+      cleanup();
+      onDone(data.payload as RunnerDonePayload);
+    }
   }
 
-  window.addEventListener("message", onMessage);
+  worker.addEventListener("message", onMessage);
 
-  const body =
-    "<!doctype html><html><head><meta charset='utf-8'>" +
-    extraHead +
-    "</head><body>" +
-    extraBody +
-    "<script>" +
-    BOOT +
-    "<\/script>" +
-    "<script>(async function () {\n" +
+  const source =
     "'use strict';\n" +
     "var __results = [];\n" +
     "try {\n" +
@@ -252,30 +123,32 @@ export function run(options: RunOptions): { stop: () => void } {
     "\n" +
     buildTestSource(tests) +
     "\n} catch (err) {\n" +
-    "  window.__send('console', { kind: 'error', text: (err && err.stack ? String(err.message) : String(err)) });\n" +
-    "  window.__send('done', { results: __results, crashed: true });\n" +
+    "  __send('console', { kind: 'error', text: (err && err.stack ? String(err.message) : String(err)) });\n" +
+    "  __send('done', { results: __results, crashed: true });\n" +
     "  return;\n" +
     "}\n" +
-    "window.__send('done', { results: __results });\n" +
-    "})();<\/script>" +
-    "</body></html>";
+    "__send('done', { results: __results });\n";
 
-  frame.srcdoc = body;
-  document.body.appendChild(frame);
+  worker.postMessage({ type: "run", source });
 
   timer = setTimeout(() => {
+    if (finished) return;
     onConsole({
       kind: "system",
       text: "⏱ stopped after " + timeout / 1000 + "s — an endless loop, or code that never finishes?",
     });
-    finish({ results: [], timedOut: true });
-    destroy();
+    cleanup();
+    discardWorker();
+    onDone({ results: [], timedOut: true });
   }, timeout);
 
   return {
     stop: () => {
-      finish({ results: [], stopped: true });
-      destroy();
+      if (finished) return;
+      finished = true;
+      cleanup();
+      discardWorker();
+      onDone({ results: [], stopped: true });
     },
   };
 }
@@ -288,8 +161,40 @@ function loadTypeScript() {
   return tsModulePromise;
 }
 
+// `ts.transpileModule` below only does per-file syntax transformation — it
+// has no Program/TypeChecker behind it, so it silently accepts genuinely
+// type-incorrect code (`const x: number = "oops"` transpiles and runs
+// with zero complaint). Real type errors need a full ts.createProgram,
+// which needs the standard lib declarations to check against. This is
+// the exact file set TypeScript resolves for `lib: ["ES2020", "WebWorker"]`
+// (WebWorker, not DOM, because that's what the code actually runs in —
+// see lib/jsWorker.ts) — derived by instrumenting a real compile and
+// recording every lib.*.d.ts it asked for. Self-hosted under
+// public/wasm/typescript-lib/ by scripts/copy-wasm-assets.mjs, and kept
+// in lib/tsLibFiles.json so the script and this file share one list.
+import tsLibFileNames from "@/lib/tsLibFiles.json";
+
+const TS_DEFAULT_LIB = "lib.es2020.d.ts";
+const TS_INPUT_FILE = "input.ts";
+
+let tsLibPromise: Promise<Map<string, string>> | null = null;
+function loadTsLib(): Promise<Map<string, string>> {
+  if (!tsLibPromise) {
+    tsLibPromise = Promise.all(
+      tsLibFileNames.map((name) =>
+        fetch(`/wasm/typescript-lib/${name}`)
+          .then((r) => r.text())
+          .then((text) => [name, text] as const)
+      )
+    ).then((entries) => new Map(entries));
+  }
+  return tsLibPromise;
+}
+
 export async function transpileTS(code: string, opts: { jsx?: boolean } = {}): Promise<string> {
   const ts = await loadTypeScript();
+
+  // Fast, always-available syntax check + the JS that actually runs.
   const result = ts.transpileModule(code, {
     compilerOptions: {
       target: ts.ScriptTarget.ES2020,
@@ -300,10 +205,46 @@ export async function transpileTS(code: string, opts: { jsx?: boolean } = {}): P
     reportDiagnostics: true,
   });
 
-  const errors = (result.diagnostics || []).filter((d) => d.category === ts.DiagnosticCategory.Error);
+  const syntaxErrors = (result.diagnostics || []).filter((d) => d.category === ts.DiagnosticCategory.Error);
+  if (syntaxErrors.length) {
+    const message = syntaxErrors.map((d) => ts.flattenDiagnosticMessageText(d.messageText, " ")).join("; ");
+    throw new Error(message);
+  }
 
-  if (errors.length) {
-    const message = errors.map((d) => ts.flattenDiagnosticMessageText(d.messageText, " ")).join("; ");
+  // Separate full type-check pass, purely for diagnostics — its emit is
+  // discarded, transpileModule's output above is what actually runs.
+  const libFiles = await loadTsLib();
+  const compilerOptions: import("typescript").CompilerOptions = {
+    target: ts.ScriptTarget.ES2020,
+    lib: [TS_DEFAULT_LIB, "lib.webworker.d.ts"],
+    module: ts.ModuleKind.None,
+    noEmit: true,
+    types: [],
+    skipLibCheck: true,
+    ...(opts.jsx ? { jsx: ts.JsxEmit.React } : {}),
+  };
+  const sourceFile = ts.createSourceFile(TS_INPUT_FILE, code, ts.ScriptTarget.ES2020, false);
+  const getLib = (fileName: string) => libFiles.get(fileName.split("/").pop() || fileName);
+  const host: import("typescript").CompilerHost = {
+    getSourceFile: (fileName) => {
+      if (fileName === TS_INPUT_FILE) return sourceFile;
+      const text = getLib(fileName);
+      return text ? ts.createSourceFile(fileName, text, ts.ScriptTarget.ES2020, false) : undefined;
+    },
+    getDefaultLibFileName: () => TS_DEFAULT_LIB,
+    writeFile: () => {},
+    getCurrentDirectory: () => "/",
+    getCanonicalFileName: (fileName) => fileName,
+    useCaseSensitiveFileNames: () => true,
+    getNewLine: () => "\n",
+    fileExists: (fileName) => fileName === TS_INPUT_FILE || getLib(fileName) !== undefined,
+    readFile: (fileName) => (fileName === TS_INPUT_FILE ? code : getLib(fileName)),
+  };
+
+  const program = ts.createProgram([TS_INPUT_FILE], compilerOptions, host);
+  const typeDiagnostics = program.getSemanticDiagnostics(sourceFile);
+  if (typeDiagnostics.length) {
+    const message = typeDiagnostics.map((d) => ts.flattenDiagnosticMessageText(d.messageText, " ")).join("; ");
     throw new Error(message);
   }
 

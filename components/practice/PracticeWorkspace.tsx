@@ -108,6 +108,13 @@ export function PracticeWorkspace({
 }) {
   const editorRef = useRef<CodeEditorHandle | null>(null);
   const runningRef = useRef<{ stop: () => void } | null>(null);
+  // handleLanguageChange below calls editor.setValue() to swap in the new
+  // language's saved code, which synchronously fires CodeEditor's onChange
+  // before React has applied the setCurrentLang() update from this same
+  // call — so that onChange (below) saves through this ref instead of the
+  // currentLang state value, or it would persist the new language's code
+  // under the previous language's storage key.
+  const currentLangRef = useRef<LanguageKey>("javascript");
 
   const mounted = useMounted();
   const [currentLang, setCurrentLang] = useState<LanguageKey>("javascript");
@@ -139,14 +146,23 @@ export function PracticeWorkspace({
   }, []);
 
   const langKey = `jsnotes:lang:${exercise.id}`;
-  const savedCode = mounted ? codeStore.load(exercise.id) : null;
   const initialLanguage = mounted ? store.get<string>(langKey, "javascript") : "javascript";
-  const initialValue = savedCode == null ? exercise.starter : savedCode;
+  // Code is saved per language (see lib/storage.ts's codeKey) — each
+  // language keeps its own slot, so switching the dropdown can't stomp on
+  // work saved under a different one. Only "javascript" has a starter
+  // template to fall back to; a language with no saved code yet just
+  // starts blank rather than showing JS's starter under its highlighting.
+  const savedCode = mounted ? codeStore.load(exercise.id, initialLanguage) : null;
+  const initialValue = savedCode != null ? savedCode : initialLanguage === "javascript" ? exercise.starter : "";
 
   function handleLanguageChange(lang: LanguageKey, meta: LanguageMeta) {
     store.set(langKey, lang);
+    currentLangRef.current = lang;
     setCurrentLang(lang);
     setCurrentLangMeta(meta);
+    const saved = codeStore.load(exercise.id, lang);
+    const next = saved != null ? saved : lang === "javascript" ? exercise.starter : "";
+    editorRef.current?.setValue(next);
   }
 
   const canRun = currentLangMeta ? currentLangMeta.runnable !== null : true;
@@ -408,12 +424,12 @@ export function PracticeWorkspace({
               language={initialLanguage}
               value={initialValue}
               height={editorHeight}
-              onChange={(value) => codeStore.save(exercise.id, value)}
+              onChange={(value) => codeStore.save(exercise.id, value, currentLangRef.current)}
               onRun={() => runCode(false)}
               onSave={() => {
                 const editor = editorRef.current;
                 if (!editor) return;
-                codeStore.save(exercise.id, editor.getValue());
+                codeStore.save(exercise.id, editor.getValue(), currentLangRef.current);
                 editor.flashSaved();
               }}
               onLanguageChange={handleLanguageChange}
@@ -426,8 +442,9 @@ export function PracticeWorkspace({
                     aria-label="Reset to the starting code"
                     onClick={() => {
                       if (!window.confirm("Throw away your version and start again?")) return;
-                      codeStore.clear(exercise.id);
-                      editorRef.current?.setValue(exercise.starter);
+                      const lang = currentLangRef.current;
+                      codeStore.clear(exercise.id, lang);
+                      editorRef.current?.setValue(lang === "javascript" ? exercise.starter : "");
                       editorRef.current?.focus();
                     }}
                   >

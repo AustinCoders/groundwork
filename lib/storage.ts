@@ -155,15 +155,24 @@ export const progress = {
   },
 };
 
+// "javascript" keeps the bare, un-suffixed key so code already saved
+// before per-language storage existed isn't orphaned — every other
+// language gets its own namespaced slot. Without this, switching the
+// language dropdown and typing anything silently overwrote whatever was
+// saved under any other language, since they all shared one key.
+function codeKey(exerciseId: string, language?: string): string {
+  return KEYS.code + exerciseId + (!language || language === "javascript" ? "" : ":" + language);
+}
+
 export const code = {
-  load(exerciseId: string): string | null {
-    return store.get<string | null>(KEYS.code + exerciseId, null);
+  load(exerciseId: string, language?: string): string | null {
+    return store.get<string | null>(codeKey(exerciseId, language), null);
   },
-  save(exerciseId: string, text: string): boolean {
-    return store.set(KEYS.code + exerciseId, text);
+  save(exerciseId: string, text: string, language?: string): boolean {
+    return store.set(codeKey(exerciseId, language), text);
   },
-  clear(exerciseId: string): void {
-    store.remove(KEYS.code + exerciseId);
+  clear(exerciseId: string, language?: string): void {
+    store.remove(codeKey(exerciseId, language));
   },
 };
 
