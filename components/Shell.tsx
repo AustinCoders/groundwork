@@ -234,6 +234,12 @@ export function Shell({
                   <span className="site-navlink__name">Review</span>
                   {dueCount > 0 && <span className="site-navlink__hits">{dueCount}</span>}
                 </Link>
+                <Link className="site-navlink" href="/progress" title="Your progress — streaks, XP, badges">
+                  <span className="site-navlink__icon" aria-hidden="true">
+                    🔥
+                  </span>
+                  <span className="site-navlink__name">Progress</span>
+                </Link>
               </nav>
             )}
 

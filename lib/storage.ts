@@ -7,6 +7,7 @@ export const KEYS = {
   progress: "jsnotes:progress",
   code: "jsnotes:code:",
   narration: "jsnotes:narration",
+  activity: "jsnotes:activity",
 } as const;
 
 export const store = {
@@ -88,6 +89,38 @@ function emitProgressChange(): void {
   progressListeners.forEach((fn) => fn());
 }
 
+/** Local-timezone day key ("2026-08-30") — a streak is about the reader's
+ * own day, not UTC's, so this deliberately isn't toISOString(). */
+export function dayKey(date: number = Date.now()): string {
+  const d = new Date(date);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function recordActivity(): void {
+  const data = store.get<Record<string, number>>(KEYS.activity, {});
+  const key = dayKey();
+  data[key] = (data[key] || 0) + 1;
+  store.set(KEYS.activity, data);
+  emitProgressChange();
+}
+
+/** One count per local day something was solved or read — the raw log
+ * behind the streak counter and the contribution heatmap. Chapters
+ * un-ticked or exercises reset don't remove past activity; a streak is
+ * about what you *did*, not what's currently marked done. */
+export const activity = {
+  all(): Record<string, number> {
+    return store.get<Record<string, number>>(KEYS.activity, {});
+  },
+  subscribe(listener: () => void): () => void {
+    progressListeners.add(listener);
+    return () => progressListeners.delete(listener);
+  },
+};
+
 export const progress = {
   all: readProgress,
 
@@ -102,9 +135,11 @@ export const progress = {
 
   setChapterDone(id: string, done: boolean): boolean {
     const data = readProgress();
+    const wasDone = Boolean(data.chapters[id]);
     if (done) data.chapters[id] = { at: Date.now(), reviews: 0 };
     else delete data.chapters[id];
     store.set(KEYS.progress, data);
+    if (done && !wasDone) recordActivity();
     emitProgressChange();
     return done;
   },
@@ -137,9 +172,11 @@ export const progress = {
 
   setExerciseSolved(id: string, solved: boolean): boolean {
     const data = readProgress();
+    const wasSolved = data.exercises[id] === true;
     if (solved) data.exercises[id] = true;
     else delete data.exercises[id];
     store.set(KEYS.progress, data);
+    if (solved && !wasSolved) recordActivity();
     emitProgressChange();
     return solved;
   },

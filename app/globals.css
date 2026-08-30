@@ -2529,6 +2529,36 @@ span.tone-bad {
   }
 }
 
+.confetti {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 200;
+  overflow: hidden;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  width: 8px;
+  height: 14px;
+  background: var(--piece-color);
+  opacity: 0.9;
+  border-radius: 2px;
+  animation: confetti-fall var(--fall-duration) ease-in var(--fall-delay) both;
+}
+
+@keyframes confetti-fall {
+  from {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: translate(var(--drift), 100vh) rotate(var(--piece-rotate));
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -2718,6 +2748,194 @@ span.tone-bad {
 .stat__label {
   font-size: 14px;
   color: var(--pencil);
+}
+
+/* ---- /progress: XP, streak, heatmap, badges --------------------------- */
+
+.stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  margin: 20px 0 28px;
+}
+
+.progress-hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--line-soft);
+}
+
+.progress-hero__level {
+  flex: 1 1 260px;
+  min-width: 220px;
+}
+
+.progress-hero__level-num {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.progress-hero__xp {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--pencil);
+}
+
+.progress-hero__streak {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+}
+
+.progress-hero__streak-flame {
+  font-size: 38px;
+  line-height: 1;
+}
+
+.progress-hero__streak-num {
+  font-family: var(--font-heading);
+  font-size: 30px;
+  font-weight: 700;
+  display: block;
+  line-height: 1.1;
+}
+
+.progress-hero__streak-label {
+  font-size: 13px;
+  color: var(--pencil);
+}
+
+.heatmap {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.heatmap__weekdays {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: none;
+  padding-top: 1px;
+}
+
+.heatmap__weekdays span {
+  height: 12px;
+  font-size: 10px;
+  line-height: 12px;
+  color: var(--pencil);
+}
+
+.heatmap__grid {
+  display: flex;
+  gap: 3px;
+}
+
+.heatmap__week {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.heatmap__day {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--line-soft);
+}
+
+.heatmap__day.is-pad {
+  background: transparent;
+}
+
+.heatmap__day.is-level-1 {
+  background: color-mix(in srgb, var(--green) 30%, var(--sheet));
+}
+.heatmap__day.is-level-2 {
+  background: color-mix(in srgb, var(--green) 55%, var(--sheet));
+}
+.heatmap__day.is-level-3 {
+  background: color-mix(in srgb, var(--green) 78%, var(--sheet));
+}
+.heatmap__day.is-level-4 {
+  background: var(--green);
+}
+
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.badge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  padding: 16px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--sheet);
+  opacity: 0.45;
+  filter: grayscale(0.6);
+}
+
+.badge-card.is-earned {
+  opacity: 1;
+  filter: none;
+  border-color: var(--card-accent, var(--green));
+  box-shadow: var(--shadow-sm);
+}
+
+.badge-card__icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.badge-card__name {
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.badge-card__desc {
+  font-size: 11.5px;
+  color: var(--pencil);
+}
+
+.joke-card {
+  margin: 8px 0 40px;
+  padding: 18px 20px;
+  border: 1.5px dashed var(--line-soft);
+  border-radius: var(--radius);
+  background: var(--say-bg);
+}
+
+.joke-card__kicker {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--pencil);
+  margin-bottom: 6px;
+}
+
+.joke-card p {
+  margin: 0;
+  white-space: pre-line;
+  font-family: var(--font-body);
+  font-size: 16px;
 }
 
 .t-yellow {

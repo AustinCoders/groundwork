@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Crumbs } from "@/components/Crumbs";
 import { CodeEditor, type CodeEditorHandle } from "@/components/practice/CodeEditor";
+import { Confetti } from "@/components/practice/Confetti";
 import { EditorSkeleton } from "@/components/practice/EditorSkeleton";
 import type { LanguageKey } from "@/lib/codeLanguages";
 import { useClientValue, useMounted } from "@/lib/hooks";
@@ -243,6 +244,7 @@ export function PracticeWorkspace({
 
   return (
     <>
+      <Confetti fire={justSolved} />
       <div className="lc-topbar">
         <div className="lc-topbar__nav">
           <Link className="lc-icon-btn" href="/problems" title="Problem list" aria-label="Problem list">
