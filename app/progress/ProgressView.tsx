@@ -20,7 +20,7 @@ const DEFAULT_STATS: Stats = {
   xpForNextLevel: 25,
 };
 
-const HEATMAP_DAYS = 91; // 13 full weeks
+const HEATMAP_DAYS = 364; // 52 full weeks — a GitHub-style full year
 
 const WEEKDAY_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""];
 
@@ -175,7 +175,7 @@ export function ProgressView() {
       </div>
 
       <h2 className="section-title">Activity</h2>
-      <p className="section-note">The last 13 weeks — darker means more got done that day.</p>
+      <p className="section-note">The last year — darker means more got done that day.</p>
       <section className="sheet">
         <Heatmap />
       </section>
