@@ -5,6 +5,8 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ClockWeather } from "@/components/ClockWeather";
 import { FontPicker, ThemePicker } from "@/components/ThemeFontPicker";
+import { StreakMini } from "@/components/StreakMini";
+import { TopicOfDay } from "@/components/TopicOfDay";
 import { levels, notesHref, topic as topicById, topicHref, topics } from "@/lib/topics";
 import { escapeHtml } from "@/lib/format";
 import { progress, rememberLevel, store } from "@/lib/storage";
@@ -212,6 +214,8 @@ export function Shell({
             </Link>
 
             <ClockWeather />
+            <StreakMini />
+            <TopicOfDay topics={readyTopics} />
 
             {playgroundNav ?? (
               <nav className="site-sidenav__section" aria-label="Playground">

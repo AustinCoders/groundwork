@@ -773,24 +773,31 @@ li::marker {
   border-bottom: 1px dashed var(--line-soft);
 }
 
+/* Breaks out of .site-sidenav's own padding (18px top, 16px sides) with
+   matching negative margins, so this reads as a banner spanning the rail
+   edge-to-edge rather than another inset row of text. */
 .clock-weather {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 2px;
-  padding: 0 6px 14px;
-  margin-bottom: 8px;
-  border-bottom: 1px dashed var(--line-soft);
+  margin: -18px -16px 16px;
+  padding: 26px 16px 20px;
+  background: linear-gradient(165deg, color-mix(in srgb, var(--ink) 8%, var(--sheet)) 0%, var(--sheet) 78%);
+  border-bottom: 1px solid var(--line);
 }
 
 .clock-weather__top {
   display: flex;
   align-items: baseline;
+  justify-content: center;
   gap: 8px;
 }
 
 .clock-weather__time {
   font-family: var(--font-heading);
-  font-size: 22px;
+  font-size: 42px;
   font-weight: 700;
   line-height: 1;
 }
@@ -821,14 +828,13 @@ li::marker {
 
 .clock-weather__weather {
   font-family: var(--font-heading);
-  font-size: 13.5px;
+  font-size: 15px;
   color: var(--ink-soft);
-  margin-top: 2px;
+  margin-top: 6px;
 }
 
 .clock-weather__weather-cta {
-  align-self: flex-start;
-  margin-top: 4px;
+  margin-top: 6px;
   font-family: var(--font-body);
   font-size: 12px;
   color: var(--ink-soft);
@@ -850,6 +856,100 @@ li::marker {
 .clock-weather__weather-cta:disabled {
   cursor: default;
   opacity: 0.7;
+}
+
+.tilt-card {
+  transform: perspective(600px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease;
+}
+
+.streak-mini {
+  margin-bottom: 8px;
+}
+
+.streak-mini__link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  background: var(--btn-bg);
+  text-decoration: none;
+  transition:
+    background 0.14s ease,
+    border-color 0.14s ease;
+}
+
+.streak-mini__link:hover {
+  background: var(--btn-hover);
+  border-color: var(--ink-soft);
+}
+
+.streak-mini__flame {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.streak-mini__text {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.streak-mini__text b {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.topic-of-day {
+  margin-bottom: 8px;
+}
+
+.topic-of-day__link {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px 10px;
+  border: 1px dashed var(--line-soft);
+  border-radius: 10px;
+  text-decoration: none;
+  transition:
+    background 0.14s ease,
+    border-color 0.14s ease;
+}
+
+.topic-of-day__link:hover {
+  background: var(--btn-hover);
+  border-color: var(--ink-soft);
+}
+
+.topic-of-day__kicker {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--pencil);
+  text-transform: uppercase;
+}
+
+.topic-of-day__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topic-of-day__mark {
+  font-size: 16px;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.topic-of-day__name {
+  font-family: var(--font-heading);
+  font-size: 13.5px;
+  color: var(--ink);
 }
 
 .site-sidenav__section {
@@ -5783,6 +5883,8 @@ a.step__title:hover {
   .site-sidenav.is-collapsed .nav-group__arrow,
   .site-sidenav.is-collapsed #sidenav-progress,
   .site-sidenav.is-collapsed .clock-weather,
+  .site-sidenav.is-collapsed .streak-mini,
+  .site-sidenav.is-collapsed .topic-of-day,
   .site-sidenav.is-collapsed .site-sidenav__foot {
     display: none;
   }
