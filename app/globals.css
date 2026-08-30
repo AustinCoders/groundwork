@@ -53,9 +53,9 @@
   --side-w: 268px;
   --radius: 12px;
 
-  --font-heading: "Caveat", "Comic Sans MS", cursive;
-  --font-body: "Kalam", "Comic Sans MS", "Segoe Print", cursive;
-  --font-mono: "Cutive Mono", ui-monospace, monospace;
+  --font-heading: var(--font-caveat), "Comic Sans MS", cursive;
+  --font-body: var(--font-kalam), "Comic Sans MS", "Segoe Print", cursive;
+  --font-mono: var(--font-cutive-mono), ui-monospace, monospace;
 
   /* Fixed IDE palette for the practice editor — deliberately not tied to
      the paper theme. A real editor stays a real editor regardless of
@@ -76,33 +76,33 @@
 }
 
 html[data-font="marker"] {
-  --font-heading: "Patrick Hand", "Comic Sans MS", cursive;
-  --font-body: "Shadows Into Light", "Comic Sans MS", cursive;
+  --font-heading: var(--font-patrick-hand), "Comic Sans MS", cursive;
+  --font-body: var(--font-shadows-into-light), "Comic Sans MS", cursive;
 }
 
 html[data-font="sketch"] {
-  --font-heading: "Architects Daughter", "Comic Sans MS", cursive;
-  --font-body: "Reenie Beanie", "Comic Sans MS", cursive;
+  --font-heading: var(--font-architects-daughter), "Comic Sans MS", cursive;
+  --font-body: var(--font-reenie-beanie), "Comic Sans MS", cursive;
 }
 
 html[data-font="pen"] {
-  --font-heading: "Gochi Hand", "Comic Sans MS", cursive;
-  --font-body: "Neucha", "Comic Sans MS", cursive;
+  --font-heading: var(--font-gochi-hand), "Comic Sans MS", cursive;
+  --font-body: var(--font-neucha), "Comic Sans MS", cursive;
 }
 
 html[data-font="chalk"] {
-  --font-heading: "Permanent Marker", "Comic Sans MS", cursive;
-  --font-body: "Indie Flower", "Comic Sans MS", cursive;
+  --font-heading: var(--font-permanent-marker), "Comic Sans MS", cursive;
+  --font-body: var(--font-indie-flower), "Comic Sans MS", cursive;
 }
 
 html[data-font="script"] {
-  --font-heading: "Dancing Script", "Comic Sans MS", cursive;
-  --font-body: "Handlee", "Comic Sans MS", cursive;
+  --font-heading: var(--font-dancing-script), "Comic Sans MS", cursive;
+  --font-body: var(--font-handlee), "Comic Sans MS", cursive;
 }
 
 html[data-font="bold"] {
-  --font-heading: "Bangers", "Comic Sans MS", cursive;
-  --font-body: "Schoolbell", "Comic Sans MS", cursive;
+  --font-heading: var(--font-bangers), "Comic Sans MS", cursive;
+  --font-body: var(--font-schoolbell), "Comic Sans MS", cursive;
 }
 
 html[data-theme="dark"] {
@@ -2461,6 +2461,57 @@ span.tone-bad {
 
   figure {
     padding: 10px 6px 8px;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Motion: route fades, scroll reveal, and nav micro-interactions.
+   Scroll reveal uses native scroll-driven animations (animation-timeline),
+   guarded by @supports so unsupported browsers just render everything
+   visible with zero cost — no JS, no IntersectionObserver, no bundle. ---- */
+
+/* Opacity only, deliberately no transform: a transform here (even one
+   that resolves to translateY(0) at rest) would make .route-fade a
+   containing block for its position:fixed descendants (the back-to-top
+   fab, the mobile drawer backdrop), knocking them loose from the
+   viewport. */
+@keyframes route-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.route-fade {
+  animation: route-fade-in 0.28s ease-out;
+}
+
+@supports (animation-timeline: view()) {
+  @keyframes reveal-up {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .featured,
+  .topic-row,
+  .howto-strip > li,
+  .syllabus-level,
+  .chapter h3,
+  .chapter > div > .dg,
+  .chapter .say,
+  .chapter .sticky,
+  .chapter pre {
+    animation: reveal-up linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 25%;
   }
 }
 

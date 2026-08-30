@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { RouteFade } from "@/components/RouteFade";
+import { fontVariables } from "@/lib/fonts";
 import { THEME_INIT_SCRIPT } from "@/lib/themeInitScript";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { TopicsReadyProvider } from "@/lib/topicReadiness";
@@ -35,19 +37,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     .map(([id]) => id);
 
   return (
-    <html lang="en" data-theme="light" suppressHydrationWarning>
+    <html lang="en" data-theme="light" suppressHydrationWarning className={fontVariables}>
       <head>
         <meta name="color-scheme" content="light dark" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@300;400;700&family=Cutive+Mono&family=Patrick+Hand&family=Shadows+Into+Light&family=Architects+Daughter&family=Reenie+Beanie&family=Gochi+Hand&family=Neucha&family=Permanent+Marker&family=Indie+Flower&family=Dancing+Script:wght@600;700&family=Handlee&family=Bangers&family=Schoolbell&display=swap"
-          rel="stylesheet"
-        />
         <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body>
-        <TopicsReadyProvider ids={readyTopicIds}>{children}</TopicsReadyProvider>
+        <TopicsReadyProvider ids={readyTopicIds}>
+          <RouteFade>{children}</RouteFade>
+        </TopicsReadyProvider>
       </body>
     </html>
   );
