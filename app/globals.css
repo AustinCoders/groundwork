@@ -803,6 +803,14 @@ li::marker {
   background: linear-gradient(165deg, color-mix(in srgb, var(--ink) 18%, var(--sheet)) 0%, var(--sheet) 85%);
 }
 
+.clock-weather__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+
 .clock-weather__greeting {
   font-family: var(--font-body);
   font-size: 11px;
@@ -812,24 +820,26 @@ li::marker {
   color: var(--ink-soft);
 }
 
-.clock-weather__top {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 4px;
-}
-
 .clock-weather__time {
   font-family: var(--font-heading);
-  font-size: 40px;
+  font-size: 38px;
   font-weight: 700;
   line-height: 1;
+  margin-top: 8px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--ink) 6%, transparent);
 }
 
 .clock-weather__colon {
   display: inline-block;
   animation: clock-weather-blink 2s steps(1) infinite;
+}
+
+.clock-weather__colon--sec {
+  font-size: 20px;
+  color: var(--ink-soft);
+  opacity: 0.7;
 }
 
 @keyframes clock-weather-blink {
@@ -838,15 +848,24 @@ li::marker {
   }
 }
 
+.clock-weather__seconds {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
 .clock-weather__ampm {
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
-  margin-left: 2px;
+  margin-left: 4px;
   vertical-align: super;
+  color: var(--ink-soft);
 }
 
 .clock-weather__format {
+  flex: none;
   font-family: var(--font-body);
   font-size: 10.5px;
   font-weight: 700;
@@ -854,35 +873,45 @@ li::marker {
   background: var(--btn-bg);
   border: 1px solid var(--line-soft);
   border-radius: 999px;
-  padding: 1px 7px;
+  padding: 2px 8px;
   cursor: pointer;
-  transition: background 0.14s ease;
+  transition:
+    background 0.14s ease,
+    border-color 0.14s ease;
 }
 
 .clock-weather__format:hover {
   background: var(--btn-hover);
+  border-color: var(--ink-soft);
   color: var(--ink);
 }
 
-.clock-weather__day {
+.clock-weather__meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
   font-family: var(--font-heading);
   font-size: 12.5px;
+}
+
+.clock-weather__day {
   color: var(--pencil);
 }
 
+.clock-weather__dot {
+  color: var(--pencil);
+  opacity: 0.5;
+  font-size: 9px;
+}
+
 .clock-weather__weather {
-  font-family: var(--font-heading);
-  font-size: 13.5px;
   color: var(--ink-soft);
-  margin-top: 8px;
-  background: var(--btn-bg);
-  border: 1px solid var(--line-soft);
-  border-radius: 999px;
-  padding: 3px 11px;
 }
 
 .clock-weather__weather-cta {
-  margin-top: 6px;
+  margin-top: 8px;
   font-family: var(--font-body);
   font-size: 12px;
   color: var(--ink-soft);

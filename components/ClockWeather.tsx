@@ -30,14 +30,15 @@ function periodOf(hour: number): Period {
 
 function useClock(): Date | null {
   // Starts null so the server and the first client render agree (no
-  // hydration mismatch), then ticks once mounted.
+  // hydration mismatch), then ticks once mounted. Once-a-second so the
+  // seconds readout is actually live, not just decorative.
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
     const tick = () => setNow(new Date());
     // Deferred rather than called directly in the effect body — a
     // synchronous setState here would cascade into an extra render.
     const kick = setTimeout(tick, 0);
-    const id = setInterval(tick, 1000 * 15);
+    const id = setInterval(tick, 1000);
     return () => {
       clearTimeout(kick);
       clearInterval(id);
@@ -118,20 +119,15 @@ export function ClockWeather() {
   const greeting = GREETING[period];
   const hourNum = format === "12" ? now.getHours() % 12 || 12 : now.getHours();
   const minute = String(now.getMinutes()).padStart(2, "0");
+  const second = String(now.getSeconds()).padStart(2, "0");
   const ampm = now.getHours() >= 12 ? "PM" : "AM";
   const day = now.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
 
   return (
     <div className={`clock-weather clock-weather--${period}`}>
-      <div className="clock-weather__greeting">
-        <span aria-hidden="true">{greeting.emoji}</span> good {greeting.label}
-      </div>
       <div className="clock-weather__top">
-        <div className="clock-weather__time">
-          {hourNum}
-          <span className="clock-weather__colon">:</span>
-          {minute}
-          {format === "12" && <span className="clock-weather__ampm">{ampm}</span>}
+        <div className="clock-weather__greeting">
+          <span aria-hidden="true">{greeting.emoji}</span> good {greeting.label}
         </div>
         <button
           className="clock-weather__format"
@@ -142,13 +138,29 @@ export function ClockWeather() {
           {format}h
         </button>
       </div>
-      <div className="clock-weather__day">{day}</div>
+      <div className="clock-weather__time">
+        {hourNum}
+        <span className="clock-weather__colon">:</span>
+        {minute}
+        <span className="clock-weather__colon clock-weather__colon--sec">:</span>
+        <span className="clock-weather__seconds">{second}</span>
+        {format === "12" && <span className="clock-weather__ampm">{ampm}</span>}
+      </div>
 
-      {typeof weather === "object" ? (
-        <div className="clock-weather__weather" title={weather.label}>
-          <span aria-hidden="true">{weather.icon}</span> {weather.temp}°C
-        </div>
-      ) : (
+      <div className="clock-weather__meta">
+        <span className="clock-weather__day">{day}</span>
+        {typeof weather === "object" && (
+          <>
+            <span className="clock-weather__dot" aria-hidden="true">
+              •
+            </span>
+            <span className="clock-weather__weather" title={weather.label}>
+              <span aria-hidden="true">{weather.icon}</span> {weather.temp}°C
+            </span>
+          </>
+        )}
+      </div>
+      {typeof weather !== "object" && (
         <button
           className="clock-weather__weather-cta"
           type="button"
