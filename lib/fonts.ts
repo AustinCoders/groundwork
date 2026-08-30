@@ -19,8 +19,24 @@ import {
 // Only the default pairing (Caveat/Kalam) and the mono face used by code
 // blocks are worth preloading — the rest are alternate handwriting styles
 // picked via ThemeFontPicker and are fetched on demand when selected.
-export const caveat = Caveat({ subsets: ["latin"], weight: ["500", "700"], variable: "--font-caveat" });
-export const kalam = Kalam({ subsets: ["latin"], weight: ["300", "400", "700"], variable: "--font-kalam" });
+//
+// display: "optional" on the default pair — they're self-hosted and
+// preloaded, so they're almost always ready in time, but "swap" was
+// letting the fallback-to-Caveat/Kalam reflow show up as layout shift
+// (CLS) on the hero heading, which is also the LCP element. "optional"
+// paints once, with whichever font is ready, and never swaps later.
+export const caveat = Caveat({
+  subsets: ["latin"],
+  weight: ["500", "700"],
+  variable: "--font-caveat",
+  display: "optional",
+});
+export const kalam = Kalam({
+  subsets: ["latin"],
+  weight: ["300", "400", "700"],
+  variable: "--font-kalam",
+  display: "optional",
+});
 export const cutiveMono = Cutive_Mono({
   subsets: ["latin"],
   weight: "400",
