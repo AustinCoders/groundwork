@@ -191,6 +191,16 @@ export const topics: TopicsData = {
             "Debugging — breakpoints, watch, conditional breakpoints, network tab",
           ],
         },
+        {
+          title: "Real-time connections",
+          chapter: "realtime-connections",
+          items: [
+            "WebSocket — handshake, onmessage, sending data, reconnect logic",
+            "Server-Sent Events / EventSource — one-way, auto-reconnect built in",
+            "Long polling — when it's still the right answer",
+            "WebSocket vs SSE vs polling — a decision table",
+          ],
+        },
       ],
     },
     {

@@ -10709,4 +10709,46 @@ export const practice: Exercise[] = [
       { name: "exactly at expiry is not yet expired", body: "assert.equal(isExpired(1000, () => 1000), false);" },
     ],
   },
+  {
+    id: "ex-backoff-delay",
+    chapter: "realtime-connections",
+    level: "intermediate",
+    title: "Exponential backoff, capped",
+    brief:
+      "<p>Write <code>backoffDelay(attempt, base = 500, max = 30000)</code> — the delay before reconnect attempt number <code>attempt</code> (starting at 0), doubling each time and never exceeding <code>max</code>.</p>",
+    starter:
+      "function backoffDelay(attempt, base = 500, max = 30000) {\n  // TODO: base * 2^attempt, capped at max\n}\n",
+    hints: ["Math.min(base * 2 ** attempt, max) is the whole function."],
+    solution: "function backoffDelay(attempt, base = 500, max = 30000) {\n  return Math.min(base * 2 ** attempt, max);\n}\n",
+    tests: [
+      { name: "attempt 0 is the base delay", body: "assert.equal(backoffDelay(0), 500);" },
+      { name: "doubles each attempt", body: "assert.equal(backoffDelay(1), 1000);\nassert.equal(backoffDelay(2), 2000);" },
+      { name: "caps at max for a large attempt", body: "assert.equal(backoffDelay(10), 30000);" },
+      { name: "respects a custom base", body: "assert.equal(backoffDelay(0, 1000), 1000);" },
+      { name: "respects a custom max", body: "assert.equal(backoffDelay(3, 1000, 5000), 5000);" },
+    ],
+  },
+  {
+    id: "ex-reconnect-tracker",
+    chapter: "realtime-connections",
+    level: "intermediate",
+    title: "Track reconnect attempts, and know when to give up",
+    brief:
+      "<p>Write <code>createReconnectTracker(maxAttempts)</code> returning <code>{ shouldRetry, recordAttempt, recordSuccess, attemptCount }</code>.</p><ul><li><code>shouldRetry()</code> is <code>false</code> once <code>attemptCount()</code> reaches <code>maxAttempts</code></li><li><code>recordSuccess()</code> resets the count back to 0</li></ul>",
+    starter:
+      "function createReconnectTracker(maxAttempts) {\n  // TODO: track a count; shouldRetry compares it to maxAttempts\n}\n",
+    hints: ["One closed-over counter variable, incremented by recordAttempt and reset by recordSuccess, is enough."],
+    solution:
+      "function createReconnectTracker(maxAttempts) {\n  let attempts = 0;\n  return {\n    shouldRetry() {\n      return attempts < maxAttempts;\n    },\n    recordAttempt() {\n      attempts++;\n    },\n    recordSuccess() {\n      attempts = 0;\n    },\n    attemptCount() {\n      return attempts;\n    },\n  };\n}\n",
+    tests: [
+      {
+        name: "allows retrying up to the limit, then stops",
+        body: "const t = createReconnectTracker(3);\nassert.equal(t.shouldRetry(), true);\nt.recordAttempt();\nt.recordAttempt();\nt.recordAttempt();\nassert.equal(t.shouldRetry(), false);\nassert.equal(t.attemptCount(), 3);",
+      },
+      {
+        name: "a success resets the counter",
+        body: "const t = createReconnectTracker(2);\nt.recordAttempt();\nt.recordAttempt();\nassert.equal(t.shouldRetry(), false);\nt.recordSuccess();\nassert.equal(t.attemptCount(), 0);\nassert.equal(t.shouldRetry(), true);",
+      },
+    ],
+  },
 ];
