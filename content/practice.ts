@@ -10751,4 +10751,98 @@ export const practice: Exercise[] = [
       },
     ],
   },
+  {
+    id: "ex-cache-first",
+    chapter: "offline-storage",
+    level: "intermediate",
+    title: "A cache-first lookup, the shape a service worker uses",
+    brief:
+      "<p>Write <code>cacheFirst(cache, network, key)</code> — a <code>Map</code> stands in for the Cache API, and <code>network</code> is an async function standing in for a real fetch. Return the cached value if it exists; otherwise call <code>network(key)</code>, store the result in <code>cache</code>, and return it.</p>",
+    starter:
+      "async function cacheFirst(cache, network, key) {\n  // TODO: cache.has/get first, otherwise await network(key) and cache.set it\n}\n",
+    hints: [
+      "cache.has(key) ? cache.get(key) : ... — the whole cache-hit branch in one line.",
+      "On a miss: await the network call, cache.set(key, value) before returning it, so the NEXT call for the same key hits the cache branch instead.",
+    ],
+    solution:
+      "async function cacheFirst(cache, network, key) {\n  if (cache.has(key)) return cache.get(key);\n  const value = await network(key);\n  cache.set(key, value);\n  return value;\n}\n",
+    tests: [
+      {
+        name: "a cache hit never calls network",
+        body: 'const cache = new Map([["a", "cached-a"]]);\nlet calls = 0;\nconst network = async () => { calls++; return "x"; };\nassert.equal(await cacheFirst(cache, network, "a"), "cached-a");\nassert.equal(calls, 0);',
+      },
+      {
+        name: "a miss calls network once and caches the result",
+        body: 'const cache = new Map();\nlet calls = 0;\nconst network = async (key) => { calls++; return "fetched-" + key; };\nassert.equal(await cacheFirst(cache, network, "b"), "fetched-b");\nassert.equal(calls, 1);\nassert.equal(await cacheFirst(cache, network, "b"), "fetched-b");\nassert.equal(calls, 1);',
+      },
+    ],
+  },
+  {
+    id: "ex-storage-picker",
+    chapter: "offline-storage",
+    level: "intermediate",
+    title: "Pick the right storage for the job",
+    brief:
+      '<p>Write <code>pickStorage({ sizeMB, structured, mustSurviveTabClose, sentToServer })</code> returning one of <code>"cookie"</code>, <code>"IndexedDB"</code>, <code>"sessionStorage"</code>, <code>"localStorage"</code> — in that priority order:</p><ul><li>Needs to ride along on server requests automatically → <code>"cookie"</code></li><li>Otherwise, big (&gt;5MB) or structured (not a plain string) → <code>"IndexedDB"</code></li><li>Otherwise, doesn\'t need to survive closing the tab → <code>"sessionStorage"</code></li><li>Otherwise → <code>"localStorage"</code></li></ul>',
+    starter:
+      "function pickStorage({ sizeMB, structured, mustSurviveTabClose, sentToServer }) {\n  // TODO: check the four conditions in priority order, return the matching string\n}\n",
+    hints: ["Four early returns, checked in the exact priority order listed, covers every case."],
+    solution:
+      'function pickStorage({ sizeMB, structured, mustSurviveTabClose, sentToServer }) {\n  if (sentToServer) return "cookie";\n  if (sizeMB > 5 || structured) return "IndexedDB";\n  if (!mustSurviveTabClose) return "sessionStorage";\n  return "localStorage";\n}\n',
+    tests: [
+      {
+        name: "small, simple, persistent data",
+        body: 'assert.equal(pickStorage({ sizeMB: 0.01, structured: false, mustSurviveTabClose: true, sentToServer: false }), "localStorage");',
+      },
+      {
+        name: "small, simple, tab-only data",
+        body: 'assert.equal(pickStorage({ sizeMB: 0.01, structured: false, mustSurviveTabClose: false, sentToServer: false }), "sessionStorage");',
+      },
+      {
+        name: "large structured data",
+        body: 'assert.equal(pickStorage({ sizeMB: 50, structured: true, mustSurviveTabClose: true, sentToServer: false }), "IndexedDB");',
+      },
+      {
+        name: "anything the server needs to see is a cookie",
+        body: 'assert.equal(pickStorage({ sizeMB: 0.001, structured: false, mustSurviveTabClose: true, sentToServer: true }), "cookie");',
+      },
+    ],
+  },
+  {
+    id: "ex-decode-jwt-payload",
+    chapter: "security",
+    level: "advanced",
+    title: "Decode a JWT payload — no secret required",
+    brief:
+      "<p>Write <code>decodeJwtPayload(token)</code> — given a <code>header.payload.signature</code> JWT string, return the decoded payload as a real object.</p>",
+    starter:
+      "function decodeJwtPayload(token) {\n  // TODO: split on \".\", the payload is segment 1 — atob + JSON.parse it\n}\n",
+    hints: [
+      'token.split(".") gives you [header, payload, signature] — index 1 is the one you want.',
+      "atob(part) base64-decodes to a JSON string; JSON.parse the result.",
+    ],
+    solution: 'function decodeJwtPayload(token) {\n  const parts = token.split(".");\n  return JSON.parse(atob(parts[1]));\n}\n',
+    tests: [
+      {
+        name: "decodes a real payload segment",
+        body: 'const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMTIzIiwibmFtZSI6IkFuYSJ9.sig";\nassert.deepEqual(decodeJwtPayload(token), { sub: "user123", name: "Ana" });',
+      },
+    ],
+  },
+  {
+    id: "ex-is-token-expired",
+    chapter: "security",
+    level: "advanced",
+    title: "Check token expiry with an injectable clock",
+    brief:
+      '<p>Write <code>isTokenExpired(payload, now)</code> — <code>payload.exp</code> is a Unix timestamp in seconds; <code>now</code> is a function (default: the real clock) returning the current time the same way. Return whether the token has expired.</p>',
+    starter:
+      "function isTokenExpired(payload, now = () => Date.now() / 1000) {\n  // TODO: call now() and compare to payload.exp\n}\n",
+    hints: ["Same shape as the injectable-clock exercise from the testing chapter — call now(), don't compare against the function itself."],
+    solution: "function isTokenExpired(payload, now = () => Date.now() / 1000) {\n  return now() > payload.exp;\n}\n",
+    tests: [
+      { name: "an expired token", body: "assert.equal(isTokenExpired({ exp: 1000 }, () => 2000), true);" },
+      { name: "a still-valid token", body: "assert.equal(isTokenExpired({ exp: 2000 }, () => 1000), false);" },
+    ],
+  },
 ];

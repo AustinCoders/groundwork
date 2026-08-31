@@ -201,6 +201,18 @@ export const topics: TopicsData = {
             "WebSocket vs SSE vs polling — a decision table",
           ],
         },
+        {
+          title: "Offline & storage",
+          chapter: "offline-storage",
+          items: [
+            "IndexedDB — past localStorage's size limit, structured and binary data",
+            "The Cache API",
+            "Service Worker lifecycle — install, activate, fetch",
+            "PWA basics — manifest, installability",
+            "navigator.onLine, background sync",
+            "Storage comparison: localStorage vs sessionStorage vs IndexedDB vs Cache vs cookies",
+          ],
+        },
       ],
     },
     {
@@ -296,6 +308,7 @@ export const topics: TopicsData = {
             "CSRF, SameSite cookies, CORS in depth",
             "Prototype pollution, supply-chain risk",
             "Safe use of innerHTML, postMessage origin checks",
+            "Auth in practice — token storage, JWT structure, session vs token, refresh flow, logout",
           ],
         },
         {
