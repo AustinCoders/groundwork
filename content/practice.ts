@@ -10669,4 +10669,44 @@ export const practice: Exercise[] = [
       },
     ],
   },
+  {
+    id: "ex-pure-refactor",
+    chapter: "testing-in-js",
+    level: "advanced",
+    title: "Make it testable: extract the pure part",
+    brief:
+      "<p>Write <code>calculateTotal(price, taxRate)</code> — a pure function computing <code>price</code> plus tax, taking <b>both</b> values as parameters instead of reading a tax rate from anywhere external.</p><ul><li>No module-level variables, no reading from anything outside the function</li></ul>",
+    starter: "function calculateTotal(price, taxRate) {\n  // TODO: return price plus tax, using only the two parameters\n}\n",
+    hints: [
+      "The whole exercise is the function signature itself — take taxRate as a real parameter instead of closing over an outside variable.",
+      "price + price * taxRate is the calculation.",
+    ],
+    solution: "function calculateTotal(price, taxRate) {\n  return price + price * taxRate;\n}\n",
+    tests: [
+      { name: "18% tax on 100", body: "assert.equal(calculateTotal(100, 0.18), 118);" },
+      { name: "zero price", body: "assert.equal(calculateTotal(0, 0.18), 0);" },
+      { name: "zero tax rate", body: "assert.equal(calculateTotal(200, 0), 200);" },
+      { name: "a different rate", body: "assert.equal(calculateTotal(50, 0.1), 55);" },
+    ],
+  },
+  {
+    id: "ex-injectable-clock",
+    chapter: "testing-in-js",
+    level: "advanced",
+    title: "Inject the clock instead of calling Date.now directly",
+    brief:
+      "<p>Write <code>isExpired(expiresAt, now = Date.now)</code> — returns whether <code>expiresAt</code> (a timestamp) has already passed. <code>now</code> defaults to the real clock, but a caller (like a test) can pass a fake one.</p>",
+    starter:
+      "function isExpired(expiresAt, now = Date.now) {\n  // TODO: call now() (not Date.now() directly) and compare to expiresAt\n}\n",
+    hints: [
+      "now is a function — call it as now(), don't compare against the function itself.",
+      "Expired means the current time is strictly after expiresAt.",
+    ],
+    solution: "function isExpired(expiresAt, now = Date.now) {\n  return now() > expiresAt;\n}\n",
+    tests: [
+      { name: "a fake clock past expiry", body: "assert.equal(isExpired(1000, () => 2000), true);" },
+      { name: "a fake clock before expiry", body: "assert.equal(isExpired(2000, () => 1000), false);" },
+      { name: "exactly at expiry is not yet expired", body: "assert.equal(isExpired(1000, () => 1000), false);" },
+    ],
+  },
 ];
