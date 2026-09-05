@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import { RouteFade } from "@/components/RouteFade";
 import { fontVariables } from "@/lib/fonts";
 import { THEME_INIT_SCRIPT } from "@/lib/themeInitScript";
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <TopicsReadyProvider ids={readyTopicIds}>
           <RouteFade>{children}</RouteFade>
         </TopicsReadyProvider>
+        <Analytics />
       </body>
     </html>
   );
