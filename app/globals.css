@@ -6241,3 +6241,257 @@ a.step__title:hover {
     padding: 8px 0;
   }
 }
+
+/* ============================================================
+   Interview prep reader — question cards, round meta, cards
+   and pills used inside answers. Scoped under .interview-body
+   so a generic name like .test can't collide with anything
+   elsewhere (the exercise runner already owns a bare .test).
+   Everything else (pre/code, tables, .say/.warn/.sticky) reuses
+   the reader's existing styles as-is.
+   ============================================================ */
+
+.interview-body .rmeta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  gap: 3px 22px;
+  margin: 0 0 18px;
+  border: 1.5px dashed var(--line-soft);
+  border-radius: 10px;
+  padding: 13px 16px;
+  background: var(--sheet-2);
+}
+
+.interview-body .rmeta .k {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pencil);
+  display: block;
+}
+
+.interview-body .rmeta .v {
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.interview-body .tiers {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 0 0 18px;
+}
+
+.interview-body .tier {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  padding: 2px 9px;
+  color: var(--pencil);
+}
+
+.interview-body .tier.hot {
+  background: var(--sticky-mint-bg);
+  color: var(--sticky-mint-fg);
+  border-color: transparent;
+}
+
+.interview-body .rintro {
+  color: var(--ink-soft);
+}
+
+/* ---- question cards ---- */
+
+.interview-body .q {
+  border-top: 1px solid var(--line);
+  padding: 22px 0 6px;
+}
+
+.interview-body .q:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.interview-body .qtop {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.interview-body .qnum {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--pencil);
+  flex: none;
+}
+
+.interview-body .qt {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  line-height: 1.3;
+  letter-spacing: 0.005em;
+}
+
+.interview-body .qt code {
+  font-size: 0.82em;
+}
+
+.interview-body .qbody {
+  margin: 12px 0 0;
+}
+
+.interview-body .qbody > p {
+  margin: 0 0 12px;
+}
+
+.interview-body .qbody ul,
+.interview-body .qbody ol {
+  margin: 0 0 13px;
+  padding-left: 22px;
+}
+
+.interview-body .qbody li {
+  margin-bottom: 6px;
+}
+
+.interview-body .qbody > *:last-child {
+  margin-bottom: 0;
+}
+
+/* ---- callouts specific to this reader ---- */
+
+.interview-body .test {
+  font-size: 0.94rem;
+  color: var(--ink-soft);
+  border-left: 2.5px solid var(--hl-yellow);
+  padding: 2px 0 2px 12px;
+  margin: 0 0 14px;
+}
+
+.interview-body .followups {
+  margin: 14px 0 0;
+  border-top: 1px dashed var(--line-soft);
+  padding-top: 11px;
+}
+
+.interview-body .followups ul {
+  margin: 0;
+  padding-left: 19px;
+}
+
+.interview-body .followups li {
+  font-size: 0.94rem;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+}
+
+.interview-body .codelabel {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pencil);
+  margin: 14px 0 -7px;
+}
+
+.interview-body pre .o {
+  background: var(--hl-yellow);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+/* ---- tables ---- */
+
+.interview-body td.n {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.interview-body tr.hi td {
+  background: var(--sticky-mint-bg);
+  color: var(--sticky-mint-fg);
+}
+
+/* ---- cards & pills used inside a few answers ---- */
+
+.interview-body .cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+  margin: 16px 0;
+}
+
+.interview-body .card {
+  background: var(--dg-box);
+  border: 1.5px solid var(--line);
+  border-radius: 11px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.interview-body .card.g {
+  background: var(--dg-box-green);
+}
+
+.interview-body .card.r {
+  background: var(--dg-box-red);
+}
+
+.interview-body .card.y {
+  background: var(--dg-box-yellow);
+}
+
+.interview-body .card h4 {
+  font-size: 1.1rem;
+  margin: 0 0 6px;
+}
+
+.interview-body .card p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+
+.interview-body .card ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+
+.interview-body .pill {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 5px;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+
+.interview-body .pill.y {
+  background: var(--sticky-bg);
+  color: var(--sticky-fg);
+}
+
+.interview-body .pill.m {
+  background: var(--sticky-mint-bg);
+  color: var(--sticky-mint-fg);
+}
+
+.interview-body .pill.r {
+  background: var(--warn-bg);
+  color: var(--red);
+  border: 1px solid var(--red);
+}
+
+.interview-body .pill.n {
+  background: var(--sheet-2);
+  color: var(--pencil);
+  border: 1px solid var(--line);
+}

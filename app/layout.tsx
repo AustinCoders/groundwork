@@ -5,6 +5,7 @@ import { fontVariables } from "@/lib/fonts";
 import { THEME_INIT_SCRIPT } from "@/lib/themeInitScript";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { TopicsReadyProvider } from "@/lib/topicReadiness";
+import { topics } from "@/lib/topics";
 import { topicStats } from "@/lib/topicStats";
 import "./globals.css";
 
@@ -32,9 +33,19 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
-  const readyTopicIds = Object.entries(topicStats())
-    .filter(([, stat]) => stat.written > 0)
-    .map(([id]) => id);
+  const readyTopicIds = [
+    ...Object.entries(topicStats())
+      .filter(([, stat]) => stat.written > 0)
+      .map(([id]) => id),
+    // Single-page readers (Git, Interview prep) have no chapter ladder, so
+    // topicStats always reports them as 0 written — that's right for the
+    // homepage's "N chapters written" count, but wrong here: a finished
+    // single-page doc belongs in the sidebar's "Ready to read" list, not
+    // buried under "More topics" as if it were still an outline.
+    ...topics()
+      .filter((t) => !t.levels && t.status === "ready")
+      .map((t) => t.id),
+  ];
 
   return (
     <html lang="en" data-theme="light" suppressHydrationWarning className={fontVariables}>

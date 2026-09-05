@@ -1992,6 +1992,17 @@ export const topics: TopicsData = {
       blurb: "What a commit really is, how branches move, rebase vs merge, and how to undo anything without panic.",
     },
     {
+      id: "interview",
+      name: "Interview prep",
+      mark: "◎",
+      accent: "red",
+      tagline: "Every round, every question, the answer",
+      status: "ready",
+      notes: "interview.html",
+      blurb:
+        "The whole loop, in order — screening call through the offer number. What each round is really testing, the answer, the code, the wrong answer that loses the room, and the follow-up they push with next.",
+    },
+    {
       id: "dsa",
       name: "DSA in JS",
       mark: "Σ",

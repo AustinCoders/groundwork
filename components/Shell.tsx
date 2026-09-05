@@ -255,7 +255,11 @@ export function Shell({
 
             {sidebarExtra}
 
-            {topicId && (
+            {/* Only for topics with their own beginner/intermediate/advanced
+                ladder — topicId alone isn't enough, since single-page readers
+                like Git and Interview prep pass it too (for the progress
+                block and page title) but have no such ladder to link to. */}
+            {topicId && topicById(topicId)?.levels && (
               <nav className="site-sidenav__section" aria-label="Levels">
                 <h2 className="site-sidenav__heading">{topicName} levels</h2>
                 <div id="sidenav-levels">

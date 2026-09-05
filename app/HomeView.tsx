@@ -2,17 +2,27 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Shell } from "@/components/Shell";
-import { topicHref } from "@/lib/topics";
+import { topic as findTopic, topicHref } from "@/lib/topics";
 import { escapeHtml, plural } from "@/lib/format";
 import type { SiteStats, TopicStat } from "@/lib/topicStats";
 import { prefersMotion } from "@/lib/dom";
 import { useClientValue, useLastLevel, useMounted } from "@/lib/hooks";
 import type { Topic } from "@/content/types";
 
+// Interview prep isn't a rung on the JS ladder — it's a standalone reader
+// with no chapter/level structure, so it gets its own homepage section
+// instead of falling into the written/planned topic grid below (where it
+// would wrongly show up as "0 chapters planned").
+const INTERVIEW_TOPIC_ID = "interview";
+
 export interface HomeViewProps {
   topicsList: Topic[];
   stats: SiteStats;
   perTopic: Record<string, TopicStat>;
+  // Computed server-side and passed down rather than imported here — every
+  // round's full body text lives behind that import, and this is a client
+  // component, so importing it directly would ship all of it to the browser.
+  interviewStats: { rounds: number; questions: number };
 }
 
 function raw(html: string) {
@@ -120,6 +130,35 @@ function FeaturedTopic({ topic, href, stat }: { topic: Topic; href: string; stat
   );
 }
 
+function InterviewBanner({
+  topic,
+  href,
+  stats,
+}: {
+  topic: Topic;
+  href: string;
+  stats: { rounds: number; questions: number };
+}) {
+  return (
+    <Link href={href} className={`featured t-${topic.accent}`}>
+      <span className="featured__badge">ready to read</span>
+      <div className="featured__body">
+        <span className="featured__mark" aria-hidden="true" dangerouslySetInnerHTML={raw(escapeHtml(topic.mark))} />
+        <div className="featured__text">
+          <h2 className="featured__name" dangerouslySetInnerHTML={raw(topic.name)} />
+          <p className="featured__tagline" dangerouslySetInnerHTML={raw(topic.tagline)} />
+          <p className="featured__blurb" dangerouslySetInnerHTML={raw(topic.blurb)} />
+          <div className="featured__meta">
+            <span>{plural(stats.rounds, "round")}</span>
+            <span>{stats.questions}+ questions</span>
+          </div>
+        </div>
+      </div>
+      <span className="btn btn--primary featured__cta">Start reading →</span>
+    </Link>
+  );
+}
+
 function TopicRow({
   topic,
   href,
@@ -146,7 +185,7 @@ function TopicRow({
   );
 }
 
-export function HomeView({ topicsList, stats: site, perTopic }: HomeViewProps) {
+export function HomeView({ topicsList, stats: site, perTopic, interviewStats }: HomeViewProps) {
   const mounted = useMounted();
   const savedLevel = useLastLevel();
   const [search, setSearch] = useState("");
@@ -166,9 +205,10 @@ export function HomeView({ topicsList, stats: site, perTopic }: HomeViewProps) {
     [topicsList, perTopic]
   );
   const soonTopics = useMemo(
-    () => topicsList.filter((t) => (perTopic[t.id]?.written ?? 0) === 0),
+    () => topicsList.filter((t) => t.id !== INTERVIEW_TOPIC_ID && (perTopic[t.id]?.written ?? 0) === 0),
     [topicsList, perTopic]
   );
+  const interviewTopic = useMemo(() => findTopic(INTERVIEW_TOPIC_ID), []);
 
   const q = search.trim().toLowerCase();
   const visibility = useMemo(() => {
@@ -256,6 +296,16 @@ export function HomeView({ topicsList, stats: site, perTopic }: HomeViewProps) {
               stat={perTopic[topic.id]}
             />
           ))}
+        </>
+      )}
+
+      {interviewTopic && (
+        <>
+          <h2 className="section-title">Interview prep</h2>
+          <p className="section-note">
+            A different kind of shelf — not a ladder to climb, a loop to walk into prepared.
+          </p>
+          <InterviewBanner topic={interviewTopic} href={topicHref(interviewTopic, null)} stats={interviewStats} />
         </>
       )}
 
