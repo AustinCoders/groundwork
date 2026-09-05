@@ -81,11 +81,11 @@ function toChapter(round: InterviewRoundRaw): Chapter {
     num: round.code,
     title: round.title,
     short: round.navTitle,
-    // The reader shell groups chapters by level; the loop has no natural
-    // difficulty split (it's read in a fixed order, not by tier), so every
-    // round shares one bucket rather than being tagged with a level that
-    // wouldn't mean anything for this content.
-    levels: ["beginner"],
+    // The reader shell groups chapters by level — a natural fit for the
+    // ₹20–28L core loop (read in order, no tiering) versus the ₹50L+ staff
+    // track (lv: 2), so that split becomes the Beginner/Advanced grouping
+    // in the sidebar instead of a bespoke track filter.
+    levels: [round.lv === 2 ? "advanced" : "beginner"],
     practice: [],
     ready: true,
     subtitle: "",
@@ -99,7 +99,7 @@ export const interviewNotes: NotesFile = {
   meta: {
     title: "Interview — the whole loop",
     subtitle: "Every round, every question, the answer, the code, and the follow-up they push with next.",
-    lead: "Twelve rounds, in the order you meet them, plus the scouting report on how your own resume reads from the other side of the table and a week-before prep plan. Read a round the night before you meet it.",
+    lead: "Twelve rounds, in the order you meet them, plus the scouting report on how your own resume reads from the other side of the table and a week-before prep plan — the ₹20–28L core loop. Under Advanced: the ₹50L+ staff track, for the two-jump plan to get there.",
     author: "Akshat",
     updated: "September 2026",
   },

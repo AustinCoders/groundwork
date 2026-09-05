@@ -2380,6 +2380,679 @@ a:`<p><b>They will ask:</b></p>
 }
 ]},
 {
+id:'s0', code:'50L', navTitle:'What changes at ₹50L', lv:2,
+title:'What actually changes at the ₹50L bar',
+meta:[['Track','Staff / SDE-3'],['Timeline','2–3 years, two jumps'],['Real blocker','The resume, not the interview']],
+tiers:[['read before you prep',1]],
+intro:'The ₹20–28L rounds test whether you can build. These test whether you can be trusted with a system nobody fully understands, and with decisions that cost money if you are wrong. Different bar, different preparation, different timeline — and one thing you already have that most candidates do not.',
+qs:[
+{
+q:'The five gaps between where you are and ₹50L',
+test:'Honest calibration. Prepping the wrong things for a year is the expensive mistake here.',
+a:`<div class="table-scroll"><table>
+<thead><tr><th>Gap</th><th>Where you are</th><th>Where the bar is</th></tr></thead>
+<tbody>
+<tr><td><b>Scale</b></td><td>5,000 users, one region, one database</td><td>Millions of users, sharded data, multi-region, real QPS numbers you have personally watched</td></tr>
+<tr><td><b>DSA</b></td><td>Patterns, mediums</td><td>Two rounds, at least one hard. Graphs, advanced DP, heaps, tries — solved live in 35 minutes</td></tr>
+<tr><td><b>Design</b></td><td>Caching, concurrency, a good API</td><td>Consistency models, consensus, partition tolerance, exactly-once semantics, capacity maths</td></tr>
+<tr><td><b>Brand</b></td><td>Three client studios</td><td>Recognisable product company on the resume — unfair, and it is what gets you shortlisted</td></tr>
+<tr><td><b>Scope of influence</b></td><td>You own four applications</td><td>You changed how several teams work, and can evidence it</td></tr>
+</tbody></table></div>
+<p>Four of those five are closeable with study. <b>Brand is not</b> — and it is the one that decides whether anybody reads your resume. That is why the path below is two jumps and not one.</p>`
+},
+{
+q:'The two-jump plan, with dates',
+test:'Whether you optimise for the next offer or for the one after it.',
+a:`<p><b>₹12L → ₹50L is not a job change. It is a trajectory.</b> Trying to do it in one move is the single most common way ambitious engineers waste two years applying to roles that never call back.</p>
+<div class="cards">
+<div class="card g"><h4>Now → 3 months</h4><p>Land ₹22–26L at a real product company. Optimise for <b>scale exposure and a name</b>, not for the top of the band. A ₹24L offer at a company with real traffic beats ₹27L at another studio, and it is not close.</p></div>
+<div class="card"><h4>Months 3–24</h4><p>Get on-call. Own a service with real QPS. Drive one migration that touches another team. Learn the distributed side <b>on the job</b>, where it is free, rather than from a book. Meanwhile: DSA, 4 hours a week, every week.</p></div>
+<div class="card"><h4>Months 24–30</h4><p>Interview at the ₹45–55L tier with two years of product-company scale on the resume, a brand recruiters recognise, and DSA that is warm rather than cold. This jump is <em>normal</em> at that point.</p></div>
+</div>
+<p>The uncomfortable part: the highest-leverage decision you make in the next three months is <b>which company</b>, not <b>which number</b>. A ₹2L difference today is worth nothing against the ₹25L difference that the right brand and the right traffic make in two years.</p>`,
+note:`<p>The one shortcut worth taking seriously: <b>US-remote roles hiring in India.</b> They skip the brand filter, pay well above local bands, and weigh portfolio and communication far more heavily — both of which you are strong on. It is a harder search with fewer openings and it needs referrals, but for your specific profile it is the most realistic way to compress two jumps into one.</p>`
+},
+{
+q:'Your resume is the blocker, not your ability.',
+test:'Nothing. This is the thing to fix first, because everything else is downstream of getting shortlisted.',
+a:`<p>At ₹22–28L a good recruiter reads your bullets. At ₹50L a screener spends eight seconds looking for a company name they recognise and a scale number that is large. You have neither, so the technical preparation never gets used.</p>
+<p><b>Three things that change that, in order of impact:</b></p>
+<ol>
+<li><b>Referrals.</b> Above ₹40L, cold applications convert at close to nothing. A referral skips the screener entirely. This is not a networking platitude — it is the actual mechanism, and it is the highest-return hour you can spend.</li>
+<li><b>Lead with Groundwork.</b> You built a learning platform with 85 chapters, 299 runnable exercises, and published tracks in JavaScript, DSA and System Design. Most six-year engineers have nothing like it. <b>Those are exactly the three subjects a ₹50L loop tests</b> — and you are teaching them. Put it in the top third of your resume with the numbers, not in a "personal projects" footer.</li>
+<li><b>Replace vanity numbers with hard ones.</b> "5,000 registered users" is a small number stated plainly. If you have p95 latency, requests per second, data volume, uptime, or cost figures, those read as an engineer who operates systems. If you do not have them, that is a thing to start collecting at your next job from week one.</li>
+</ol>`,
+say:`<p>Alongside my work I write and maintain Groundwork, a technical learning platform — 85 chapters and 299 runnable exercises across JavaScript engine internals, algorithms and system design, with about 15 hours of written material. Teaching a thing at that depth is how I know I actually understand it.</p>`
+},
+{
+q:'What to build in the next six months to close the scale gap',
+test:'Whether you can manufacture the evidence you are missing, honestly.',
+a:`<p>You cannot fake having handled millions of users. You <em>can</em> build something where the interesting problems are the ones that only appear at scale, and then talk about them with real numbers. Three that would genuinely move your interviews:</p>
+<ul>
+<li><b>Load-test something you own and write up what broke.</b> Point k6 or Artillery at one of your services, find the knee of the curve, fix the first bottleneck, measure again. "I took it from 400 to 3,000 requests per second and here is what the profile showed at each step" is a scale story with real numbers, and it takes a weekend.</li>
+<li><b>Build one thing that is genuinely distributed.</b> A job queue with at-least-once delivery, idempotent consumers and a dead letter queue. Small, but it forces you through exactly-once semantics, retries and partial failure — the vocabulary of the design round.</li>
+<li><b>Instrument something properly.</b> OpenTelemetry traces, p50/p95/p99 dashboards, an alert on an error budget. This closes attack 4 from the scouting report, and observability is a real interview topic at this level rather than a footnote.</li>
+</ul>
+<p>Each of these is small enough to finish and specific enough to talk about for ten minutes. That combination is what makes a side project useful in an interview; a half-built clone of a famous app is not.</p>`
+}
+]},
+{
+id:'s1', code:'50L', navTitle:'Hard DSA', lv:2,
+title:'DSA at the ₹50L bar',
+meta:[['Length','2 rounds, 45–60 min each'],['Who','SDE-3 / Staff'],['Bar','At least one hard, solved live'],['Prep','8–12 weeks, not one']],
+tiers:[['saas',1],['product',1]],
+intro:'At ₹20–28L the patterns in R7 are enough. Here they are the floor. You will get one medium as a warm-up and one hard, and the hard will be a graph, a non-obvious DP, or a heap problem wearing a disguise. The good news: the topic list is finite and the same twelve shapes recur endlessly.',
+qs:[
+{
+q:'Graphs — the four algorithms that cover most graph questions',
+test:'Graphs are the single biggest gap for self-taught full-stack engineers, and the most likely hard you will face.',
+a:`<p>Almost every graph question is one of four things wearing a costume. Learn to see the costume.</p>
+<ul>
+<li><b>BFS</b> — shortest path in an <em>unweighted</em> graph, level-by-level processing, "minimum number of steps".</li>
+<li><b>DFS</b> — connectivity, cycle detection, flood fill, "can I reach", path enumeration.</li>
+<li><b>Topological sort</b> — anything with dependencies or ordering. Course Schedule, build systems, task ordering. If the words "prerequisite", "depends on" or "order" appear, this is it.</li>
+<li><b>Union-Find</b> — connected components under incremental merging. Number of Provinces, Redundant Connection, Kruskal's MST, and the "are these two in the same group" family.</li>
+</ul>`,
+code:[{label:'topological sort — Kahn, and the cycle detection you get for free',code:`function topo(n, edges) {
+  const adj = Array.from({length:n}, () =&gt; [])
+  const indeg = new Array(n).fill(0)
+  for (const [a, b] of edges) { adj[a].push(b); indeg[b]++ }   <span class="c">// a → b</span>
+
+  const q = []
+  for (let i = 0; i &lt; n; i++) if (indeg[i] === 0) q.push(i)
+
+  const out = []
+  while (q.length) {
+    const v = q.shift()
+    out.push(v)
+    for (const nx of adj[v]) if (--indeg[nx] === 0) q.push(nx)
+  }
+  <span class="o">return out.length === n ? out : null</span>   <span class="c">// short → a cycle exists</span>
+}
+<span class="c">// O(V + E). Use a pointer instead of shift() for real performance.</span>`},
+{label:'union-find with both optimisations — write it from memory',code:`class DSU {
+  constructor(n) { this.p = [...Array(n).keys()]; this.r = new Array(n).fill(0) }
+  find(x) {
+    while (this.p[x] !== x) { this.p[x] = this.p[this.p[x]]; x = this.p[x] }  <span class="c">// path halving</span>
+    return x
+  }
+  union(a, b) {
+    let ra = this.find(a), rb = this.find(b)
+    if (ra === rb) return false                       <span class="c">// already connected → a cycle</span>
+    if (this.r[ra] &lt; this.r[rb]) [ra, rb] = [rb, ra]  <span class="c">// union by rank</span>
+    this.p[rb] = ra
+    if (this.r[ra] === this.r[rb]) this.r[ra]++
+    return true
+  }
+}
+<span class="c">// near O(1) amortised per operation</span>`}],
+after:`<p><b>Practise:</b> Number of Islands · Course Schedule I &amp; II · Clone Graph · Rotting Oranges · Word Ladder · Pacific Atlantic Water Flow · Number of Provinces · Redundant Connection · Accounts Merge · Alien Dictionary.</p>
+<p>The two things interviewers watch for: do you build the adjacency list cleanly, and do you handle the <b>disconnected graph</b> — a single BFS from node 0 misses everything else, so the outer loop over all nodes is not optional.</p>`,
+fu:['Now do it iteratively instead of recursively.','What if the graph has 10 million nodes?','How do you detect a cycle in a directed vs undirected graph?']
+},
+{
+q:'Dijkstra, and when it is the wrong answer',
+test:'Weighted shortest path. Asked directly, and hidden inside "cheapest route" problems.',
+code:[{code:`function dijkstra(n, adj, src) {          <span class="c">// adj[u] = [[v, w], ...]</span>
+  const dist = new Array(n).fill(Infinity)
+  dist[src] = 0
+  const pq = new MinHeap([[0, src]])       <span class="c">// [distance, node]</span>
+
+  while (pq.size) {
+    const [d, u] = pq.pop()
+    if (d &gt; dist[u]) continue              <span class="o">// stale entry — the lazy-deletion trick</span>
+    for (const [v, w] of adj[u]) {
+      if (d + w &lt; dist[v]) { dist[v] = d + w; pq.push([d + w, v]) }
+    }
+  }
+  return dist
+}
+<span class="c">// O((V + E) log V)</span>`}],
+a:`<p>The <code>if (d &gt; dist[u]) continue</code> line is the whole trick: JavaScript has no decrease-key, so you push duplicates and skip the stale ones when they surface. Candidates who omit it get a correct but slow solution and usually cannot explain why.</p>
+<p><b>When Dijkstra is wrong:</b> negative edge weights — it will silently return the wrong answer, not fail. That is Bellman-Ford's territory (and it detects negative cycles). For unweighted graphs BFS is simpler and faster. For a grid with 0/1 weights, 0-1 BFS with a deque beats a heap.</p>`,
+fu:['What if there are negative weights?','Network Delay Time · Cheapest Flights Within K Stops · Path With Minimum Effort','Why not just use BFS?']
+},
+{
+q:'Heaps — the three shapes that keep coming back',
+test:'"Top K", "median", "merge K" — three problems, one data structure.',
+a:`<ul>
+<li><b>Top K largest.</b> Keep a <em>min</em>-heap of size K. Counter-intuitive and always asked: you pop the smallest, so what remains is the K largest. O(n log k), which beats sorting when k is small.</li>
+<li><b>Merge K sorted lists.</b> A heap holding the current head of each list. O(N log k).</li>
+<li><b>Median from a data stream.</b> Two heaps — a max-heap of the lower half, a min-heap of the upper half, kept balanced within one element. The median is a heap top or the average of two. This is the classic hard-flavoured question and it is entirely learnable.</li>
+</ul>`,
+code:[{label:'two heaps — median of a stream',code:`class MedianFinder {
+  lo = new MaxHeap()   <span class="c">// lower half</span>
+  hi = new MinHeap()   <span class="c">// upper half</span>
+
+  add(x) {
+    this.lo.push(x)
+    this.hi.push(this.lo.pop())              <span class="c">// funnel through, keeps order correct</span>
+    if (this.hi.size &gt; this.lo.size) this.lo.push(this.hi.pop())
+  }
+  median() {
+    return this.lo.size &gt; this.hi.size
+      ? this.lo.peek()
+      : (this.lo.peek() + this.hi.peek()) / 2
+  }
+}`}],
+after:`<p>JavaScript has no built-in heap, so <b>write one before the interview</b> and know it cold — sift-up, sift-down, and the array-as-tree indexing (<code>parent = (i-1) &gt;&gt; 1</code>, children <code>2i+1</code>, <code>2i+2</code>). Spending fifteen of your forty minutes writing a heap from scratch is how this round is lost.</p>
+<p><b>Practise:</b> Kth Largest Element · Top K Frequent · Merge K Sorted Lists · Find Median from Data Stream · Task Scheduler · Reorganize String.</p>`,
+fu:['Could you do Top K without a heap? (Quickselect, O(n) average.)','What if the stream is infinite and you need a sliding-window median?']
+},
+{
+q:'Dynamic programming beyond Climbing Stairs',
+test:'DP is where "medium" candidates and "hard" candidates separate. The bar is recognising the state, not memorising solutions.',
+a:`<p>Every DP question is three decisions: <b>what is the state</b>, <b>what is the transition</b>, <b>what is the base case</b>. Get the state right and the rest usually falls out. The recognisable families:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Family</th><th>State</th><th>Canonical problems</th></tr></thead>
+<tbody>
+<tr><td>1-D linear</td><td><code>dp[i]</code> = best answer ending at or up to i</td><td>House Robber · Climbing Stairs · Decode Ways · Longest Increasing Subsequence</td></tr>
+<tr><td>2-D on two strings</td><td><code>dp[i][j]</code> = answer for prefixes of length i and j</td><td>Edit Distance · Longest Common Subsequence · Distinct Subsequences</td></tr>
+<tr><td>Knapsack</td><td><code>dp[i][capacity]</code></td><td>Coin Change · Partition Equal Subset Sum · Target Sum</td></tr>
+<tr><td>Interval</td><td><code>dp[i][j]</code> = answer for the range i…j</td><td>Burst Balloons · Matrix Chain · Longest Palindromic Substring</td></tr>
+<tr><td>State machine</td><td><code>dp[i][holding?]</code></td><td>Best Time to Buy and Sell Stock with cooldown / fee / k transactions</td></tr>
+<tr><td>DP on grids</td><td><code>dp[r][c]</code></td><td>Unique Paths · Minimum Path Sum · Maximal Square</td></tr>
+</tbody></table></div>`,
+code:[{label:'edit distance — the 2-D template worth knowing by heart',code:`function editDistance(a, b) {
+  const m = a.length, n = b.length
+  const dp = Array.from({length:m+1}, () =&gt; new Array(n+1).fill(0))
+
+  for (let i = 0; i &lt;= m; i++) dp[i][0] = i     <span class="c">// delete everything</span>
+  for (let j = 0; j &lt;= n; j++) dp[0][j] = j     <span class="c">// insert everything</span>
+
+  for (let i = 1; i &lt;= m; i++)
+    for (let j = 1; j &lt;= n; j++)
+      dp[i][j] = a[i-1] === b[j-1]
+        ? dp[i-1][j-1]
+        : 1 + Math.min(dp[i-1][j-1],   <span class="c">// replace</span>
+                       dp[i-1][j],     <span class="c">// delete</span>
+                       dp[i][j-1])     <span class="c">// insert</span>
+  return dp[m][n]
+}
+<span class="c">// O(mn) time, O(mn) space — then say: "this rolls to O(n) space,</span>
+<span class="c">// because row i only depends on row i-1"</span>`}],
+after:`<p><b>The method that works in the room</b>, and say it out loud in this order: write the brute-force recursion first → identify the repeated subproblem → memoise it (top-down) → only then convert to a table (bottom-up) if they ask. Jumping straight to a table is how people freeze. Memoised recursion is a complete, acceptable answer.</p>`,
+fu:['Reduce the space to O(n).','Now reconstruct the actual sequence of edits, not just the count.','Why is this not greedy?']
+},
+{
+q:'Tries, backtracking, and monotonic stacks',
+test:'The three remaining shapes that account for most of the rest.',
+a:`<p><b>Trie</b> — prefix problems. Autocomplete, word search in a grid, "does any word start with", longest common prefix, and the surprisingly common XOR-maximum trick with a binary trie. Node is <code>{ children: Map, isWord: boolean }</code>; insert and search are both O(word length).</p>
+<p><b>Backtracking</b> — build a candidate, recurse, undo. One template covers permutations, combinations, subsets, N-Queens, Sudoku and Word Search. The two scoring details are <b>pruning early</b> and <b>handling duplicates</b> (sort first, then skip <code>i &gt; start &amp;&amp; nums[i] === nums[i-1]</code>).</p>`,
+code:[{label:'backtracking — the template',code:`function subsets(nums) {
+  const out = [], cur = []
+  ;(function go(start) {
+    out.push([...cur])                <span class="o">// copy — pushing cur pushes a reference</span>
+    for (let i = start; i &lt; nums.length; i++) {
+      cur.push(nums[i])
+      go(i + 1)
+      cur.pop()                       <span class="c">// undo — this is the "backtrack"</span>
+    }
+  })(0)
+  return out
+}`},
+{label:'monotonic stack — next greater element',code:`function nextGreater(nums) {
+  const res = new Array(nums.length).fill(-1)
+  const st = []                       <span class="c">// holds INDICES, decreasing values</span>
+  for (let i = 0; i &lt; nums.length; i++) {
+    while (st.length &amp;&amp; nums[st[st.length-1]] &lt; nums[i]) res[st.pop()] = nums[i]
+    st.push(i)
+  }
+  return res
+}
+<span class="c">// O(n) — each index is pushed once and popped once</span>`}],
+after:`<p><b>Monotonic stack</b> is the one people never recognise. The signal is "next/previous greater or smaller element", and it unlocks Daily Temperatures, Largest Rectangle in Histogram, Trapping Rain Water and Sum of Subarray Minimums — all of which look hard and are the same six lines. Its sibling, the monotonic <em>deque</em>, does Sliding Window Maximum in O(n).</p>`,
+fu:['Largest Rectangle in Histogram — walk me through it.','How do you handle duplicates in a permutation problem?','What is the space complexity of your recursion?']
+},
+{
+q:'Binary search on the answer',
+test:'The most under-recognised technique. It turns "find the minimum X such that…" from hard into medium.',
+a:`<p>When the answer is a number in a range, and you can <em>check</em> a candidate answer in linear time, and the check is <b>monotonic</b> (if X works then X+1 works), you can binary search the answer space instead of the array.</p>`,
+code:[{label:'Koko eating bananas — the canonical one',code:`function minSpeed(piles, hours) {
+  const can = (k) =&gt; piles.reduce((h, p) =&gt; h + Math.ceil(p / k), 0) &lt;= hours
+
+  let lo = 1, hi = Math.max(...piles)
+  while (lo &lt; hi) {
+    const mid = (lo + hi) &gt;&gt; 1
+    if (can(mid)) hi = mid       <span class="o">// mid works — it might be the answer, keep it</span>
+    else lo = mid + 1
+  }
+  return lo
+}
+<span class="c">// O(n log(max)) — the log is over the ANSWER range, not the input</span>`}],
+after:`<p>The template detail worth drilling: <code>while (lo &lt; hi)</code> with <code>hi = mid</code> and <code>lo = mid + 1</code> converges without an off-by-one and needs no post-loop adjustment. Practise it until you never have to think about the boundary again — boundary bugs under time pressure are how this round is actually lost.</p>
+<p><b>Practise:</b> Koko Eating Bananas · Capacity to Ship Packages · Split Array Largest Sum · Minimise Max Distance · Median of Two Sorted Arrays (the genuinely hard one).</p>`,
+fu:['How do you know the predicate is monotonic?','Median of Two Sorted Arrays in O(log(m+n)).']
+},
+{
+q:'The eight-week plan',
+test:'Realism. Three days of cramming does not move this bar and the attempt wastes the attempt.',
+a:`<div class="table-scroll"><table>
+<thead><tr><th>Weeks</th><th>Focus</th><th>Volume</th></tr></thead>
+<tbody>
+<tr><td class="n">1–2</td><td>Arrays, hashing, two pointers, sliding window, binary search — including binary search on the answer</td><td>~40 problems</td></tr>
+<tr><td class="n">3–4</td><td>Stacks and monotonic stacks, linked lists, trees, BST, heaps. Write your own heap.</td><td>~40 problems</td></tr>
+<tr><td class="n">5–6</td><td>Graphs: BFS, DFS, topological sort, union-find, Dijkstra</td><td>~35 problems</td></tr>
+<tr><td class="n">7–8</td><td>DP across all six families, plus backtracking and tries</td><td>~40 problems</td></tr>
+</tbody></table></div>
+<p>Around 150 problems, done properly. <b>Properly</b> means: attempt for 25 minutes, then read the solution rather than grinding for two hours; write it yourself from scratch afterwards; and <b>redo it a week later from memory</b>. That last step is the one everybody skips and it is where the retention actually comes from.</p>
+<p>Four focused hours a week beats twenty unfocused ones. And do the last three weeks with a timer and a whiteboard, out loud, because solving in an IDE in silence trains a different skill than the one being tested.</p>`,
+note:`<p>You have a genuine advantage here that most candidates do not: <b>your own DSA track — 34 chapters and 245 exercises.</b> You wrote it. Working through your own material is faster than any external list, and it is already structured the way you think. Start there.</p>`
+},
+{
+q:'How to run a hard you have never seen',
+test:'This is what the hard round actually measures — you are not expected to know it.',
+a:`<p>They chose a problem you have not seen on purpose. The score is not "solved / did not solve"; it is how far you got and how you moved.</p>
+<ol>
+<li><b>Restate it and give one concrete example</b> with real numbers. Confirm the example's expected output with them. Roughly a third of failures are solving a slightly different problem.</li>
+<li><b>Say the brute force and its complexity</b> within three minutes. You now have a working answer on the board and the pressure drops.</li>
+<li><b>Name what is redundant.</b> "I am recomputing the same range" → prefix sums or DP. "I am re-scanning for something I already saw" → hash map. "The input is sorted and I am not using it" → two pointers or binary search. <b>Say these out loud</b>; interviewers give hints to people who are visibly close.</li>
+<li><b>Ask for a hint at the twenty-minute mark</b> if you are stuck. It costs a little. Twenty-five minutes of silence costs the round.</li>
+<li><b>Code the best idea you have, even if suboptimal</b>, then dry-run it on your example. Working and O(n²) beats elegant and unfinished — every time.</li>
+</ol>
+<p>The trap to avoid: recognising the problem, half-remembering the clever solution, and trying to reproduce it from memory. That fails badly and visibly. Derive it, out loud, from the brute force — even if you know the trick, walking there is what gets scored.</p>`
+}
+]},
+{
+id:'s2', code:'50L', navTitle:'Distributed systems', lv:2,
+title:'Distributed systems design',
+meta:[['Length','60 min, sometimes twice'],['Who','Staff or principal'],['Bar','Trade-offs with numbers'],['Fail mode','Designing a monolith with more boxes']],
+tiers:[['saas',1],['product',1]],
+intro:'The R8 designs test whether you can build a system. These test whether you understand what breaks when the system is spread across machines that fail independently and cannot agree on what time it is. This is the largest single knowledge gap between where you are and the ₹50L bar — and unlike brand, it is entirely closeable by study.',
+qs:[
+{
+q:'Capacity estimation — do this before you draw anything',
+test:'Whether you size a system or just name components. Skipping this is the fastest way to look junior in a senior round.',
+a:`<p>Four numbers, ninety seconds, out loud. Nobody is checking your arithmetic — they are checking that you reason from load to architecture instead of pattern-matching to a diagram.</p>`,
+code:[{label:'the back-of-envelope, worked',code:`<span class="c">// "Design a feed for 100M daily active users"</span>
+
+Reads:   100M DAU x 20 feed loads/day = 2B reads/day
+         2B / 86,400s ~= 23,000 QPS average
+         peak ~= 3x average ~= 70,000 QPS          <span class="o">// always state a peak factor</span>
+
+Writes:  100M x 0.1 posts/day = 10M writes/day ~= 120 QPS
+         read:write ratio ~= 200:1                 <span class="o">// THIS drives the design</span>
+
+Storage: 10M posts/day x 1KB = 10GB/day ~= 3.6TB/year
+         + media, which dominates: 1M images/day x 500KB = 500GB/day
+
+Memory:  cache the hot 20% of the feed
+         100M users x 1KB of feed ids x 0.2 = 20GB  <span class="c">// fits in Redis, comfortably</span>`}],
+after:`<p>The numbers worth memorising because you will use them every time: 100,000 seconds in a day (86,400, round it); 1 million QPS is enormous, 10,000 QPS is a normal large service; a single Postgres box does roughly 5,000–20,000 simple QPS; a Redis node does 100,000+; disk seek about 10ms, SSD read about 100µs, memory read about 100ns, same-datacentre round trip about 0.5ms, cross-continent about 150ms.</p>
+<p>Then say the sentence that turns numbers into a design: <b>"a 200:1 read-to-write ratio means I should do the expensive work on write and keep reads dumb"</b> — which is exactly the fan-out decision two questions down.</p>`,
+fu:['Where did the 3x peak factor come from?','What if this grows 10x next year?','Which of those numbers would you actually measure first?']
+},
+{
+q:'CAP, PACELC, and the consistency models',
+test:'The vocabulary of this round. Getting CAP subtly wrong is a very common and very visible mistake.',
+a:`<p><b>CAP, stated correctly:</b> when a network <em>partition</em> occurs, you must choose between consistency and availability. That is all it says. It is not "pick two of three" — partitions are not optional, they happen, so you are really choosing CP or AP. When there is no partition you get both, which is why the theorem is less useful than people think.</p>
+<p><b>PACELC</b> is the more honest version and worth naming: if there is a <b>P</b>artition, choose <b>A</b>vailability or <b>C</b>onsistency; <b>E</b>lse (normal operation), choose <b>L</b>atency or <b>C</b>onsistency. That second half is the trade-off you actually make every day — synchronous replication costs latency, asynchronous replication costs consistency.</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Consistency model</th><th>Guarantee</th><th>Where you would accept it</th></tr></thead>
+<tbody>
+<tr><td><b>Strong / linearizable</b></td><td>Every read sees the latest write, globally ordered</td><td>Account balance, inventory at checkout, anything involving money</td></tr>
+<tr><td><b>Sequential</b></td><td>All nodes see operations in the same order, not necessarily real-time</td><td>Replicated state machines</td></tr>
+<tr><td><b>Causal</b></td><td>Causally related operations are ordered; concurrent ones may differ</td><td>Comment threads — a reply must never appear before its parent</td></tr>
+<tr><td><b>Read-your-writes</b></td><td>You always see your own changes</td><td>Profile edits, "post appears immediately for the author". The minimum users notice.</td></tr>
+<tr><td><b>Eventual</b></td><td>Replicas converge, eventually</td><td>Like counts, view counts, follower counts, search indexes</td></tr>
+</tbody></table></div>`,
+after:`<p>The practical answer that scores: <em>"I would not pick one model for the whole system. The balance is linearizable, the like count is eventual, and the user's own profile needs read-your-writes. Consistency is chosen per data type, not per database."</em></p>
+<p>And the concrete mechanism for read-your-writes, because they will ask: after a write, pin that user's reads to the primary for a few seconds, or carry the write's log position in a token and have the replica wait until it has caught up to it.</p>`,
+fu:['Give me a real example of losing read-your-writes.','Is Postgres with async replicas CP or AP?','What is a quorum read and write, and what does R + W > N give you?']
+},
+{
+q:'Consistent hashing — why the naive approach fails',
+test:'Asked verbatim at this level. The answer is short and the "why" is the whole thing.',
+a:`<p>The naive shard key is <code>hash(key) % N</code>. Add or remove one node and N changes, so <b>almost every key remaps</b> — with 4 nodes going to 5, roughly 80% of your cache is invalidated at once, which usually means the database falls over.</p>
+<p><b>Consistent hashing</b> puts both nodes and keys on a ring of hash values. A key belongs to the first node clockwise from it. Adding a node only steals keys from its immediate neighbour, so on average only <code>1/N</code> of keys move.</p>`,
+code:[{code:`ring:   0 ─── A ───── B ─────── C ─── (wraps to 0)
+        key k hashes here ─┘  → owned by B
+
+<span class="c">// add node D between A and B:</span>
+        0 ─── A ── D ── B ─────── C ───
+<span class="c">// only keys between A and D move, and only from B. Everything else stays put.</span>`}],
+after:`<p><b>Virtual nodes</b> are the part people forget and the part that makes it actually work: with only N points on the ring the distribution is lumpy and removing a node dumps its entire load onto one neighbour. So each physical node gets 100–200 virtual positions, which smooths distribution and spreads a failed node's load across all survivors.</p>
+<p>Where you have met it without knowing: Cassandra and DynamoDB partitioning, Memcached client-side sharding, and load balancers doing sticky routing.</p>`,
+fu:['How do you handle a hot key that consistent hashing cannot help with?','What happens to replicas on the ring?','How would you rebalance without downtime?']
+},
+{
+q:'Sharding — choosing the key, and living with the choice',
+test:'The shard key is the most expensive decision in the system and the hardest to change later.',
+a:`<div class="table-scroll"><table>
+<thead><tr><th>Strategy</th><th>Good</th><th>Bad</th></tr></thead>
+<tbody>
+<tr><td><b>Range</b> (by date, by id range)</td><td>Range queries are cheap; easy to reason about</td><td>Hotspots — all new writes land on the newest shard. Sharding by <code>created_at</code> is the classic mistake.</td></tr>
+<tr><td><b>Hash</b> (by user id)</td><td>Even distribution</td><td>Range queries must fan out to every shard</td></tr>
+<tr><td><b>Directory</b> (a lookup service)</td><td>Total flexibility; can move individual tenants</td><td>The directory is now a dependency and a single point of failure</td></tr>
+<tr><td><b>Geographic</b></td><td>Latency and data-residency compliance</td><td>Uneven load; cross-region queries are painful</td></tr>
+</tbody></table></div>
+<p><b>The questions that separate people who have done this from people who have read about it:</b></p>
+<ul>
+<li><b>Cross-shard joins.</b> They effectively do not exist. You either denormalise, or you fetch and join in the application, or you keep related data on the same shard by choosing the key so it co-locates.</li>
+<li><b>Cross-shard transactions.</b> Also effectively gone — which is what the saga question below is for.</li>
+<li><b>Resharding.</b> Doubling shard count is far easier than going from 3 to 5, because each shard splits cleanly in two. Plan for powers of two, or use logical shards: create 1,024 logical shards up front and map many onto each physical node, so growing is a remapping rather than a rehash.</li>
+<li><b>The celebrity problem.</b> One user with 50 million followers breaks any key-based scheme. It gets special-cased — and that is the correct answer, not a failure of the design.</li>
+</ul>`,
+fu:['Which key would you choose for a chat application?','How do you run a migration across 100 shards?','What is a logical shard?']
+},
+{
+q:'Distributed transactions — 2PC vs saga',
+test:'The single most likely deep-dive if you say the word "microservices".',
+a:`<p><b>Two-phase commit:</b> a coordinator asks every participant to prepare, and if all say yes, tells them all to commit. It gives you real atomicity — and it is rarely used, for a good reason worth stating: it is a <b>blocking</b> protocol. If the coordinator dies after the prepare phase, every participant holds its locks indefinitely, waiting. In practice that means an outage.</p>
+<p><b>Saga:</b> a sequence of local transactions, each with a <b>compensating action</b> that semantically undoes it. No distributed locks, no global atomicity — you get eventual consistency and you must design the undo path.</p>`,
+code:[{label:'a booking saga, and the part people forget',code:`reserve seat    →  charge card    →  send confirmation
+     |                  |
+     |                  └─ fails → compensate: release seat
+     └─ fails → nothing to undo, return 409
+
+<span class="c">// compensation is NOT a rollback — it is a new forward action.</span>
+<span class="c">// You cannot un-charge a card; you issue a refund, which is</span>
+<span class="c">// visible to the user and appears on their statement.</span>
+<span class="c">// That business consequence is the real cost of a saga.</span>`}],
+after:`<p>Two flavours worth naming: <b>choreography</b> (each service listens for events and reacts — no coordinator, but the flow is scattered across services and hard to follow) and <b>orchestration</b> (a single saga coordinator drives the steps — easier to reason about, monitor and debug, at the cost of a component that knows the whole flow). At six services, orchestration is almost always the right call, and saying so with that reasoning is a strong answer.</p>
+<p>And the related pattern they may fish for: the <b>outbox</b>. Writing to your database and publishing to Kafka are two systems and cannot be atomic — so you write the event into an <code>outbox</code> table in the <em>same</em> transaction as the business change, and a separate relay publishes from that table. That is how you avoid the "committed the order but never published the event" bug.</p>`,
+fu:['What if a compensating action itself fails?','How do you make a saga step idempotent?','What is the outbox pattern solving exactly?']
+},
+{
+q:'Exactly-once delivery — and why it does not exist',
+test:'A trick question with a specific correct answer. Claiming exactly-once delivery marks you immediately.',
+a:`<p><b>Exactly-once <em>delivery</em> is impossible</b> over an unreliable network. The sender cannot distinguish "message lost" from "acknowledgement lost", so it either retries (risking duplicates) or does not (risking loss). Every system that advertises exactly-once is really doing <b>at-least-once delivery plus idempotent processing</b>, which produces exactly-once <em>effects</em>. That distinction is the answer.</p>
+<p><b>At-most-once:</b> fire and forget. Fine for metrics, never for money.<br>
+<b>At-least-once:</b> retry until acknowledged. The default, and it means your consumer <em>will</em> see duplicates.<br>
+<b>Effectively-once:</b> at-least-once plus deduplication on a stable key.</p>`,
+code:[{label:'the idempotent consumer',code:`async function handle(event) {
+  <span class="c">// the dedupe key must come from the PRODUCER and be stable across retries</span>
+  const first = await db.processed.insert({ id: event.id })
+    .catch(e =&gt; e.code === 'UNIQUE_VIOLATION' ? null : Promise.reject(e))
+  if (!first) return                       <span class="o">// already handled, ack and move on</span>
+
+  await doTheWork(event)                   <span class="c">// same transaction, ideally</span>
+}`}],
+after:`<p>Three details that show real experience: the dedupe key must be generated by the producer, not the broker, or a producer retry creates a new id and defeats it; the dedupe table needs a retention policy or it grows forever; and if the work and the dedupe insert are not in one transaction there is a window where you can crash between them — which is why the natural business key (an order id, an idempotency key) is better than a separate table when you can use it.</p>`,
+fu:['What does Kafka mean by exactly-once semantics then?','How long do you keep dedupe keys?','What if the work is calling a third-party API that is not idempotent?']
+},
+{
+q:'Kafka — partitions, ordering, consumer groups, rebalance',
+test:'If you say "event-driven", this follows. It is also the concrete gap your resume has.',
+a:`<p>A topic is split into <b>partitions</b>; each partition is an ordered, append-only log. <b>Ordering is guaranteed within a partition and nowhere else</b> — that single sentence is most of the marks, and it drives everything else.</p>
+<ul>
+<li><b>The partition key decides ordering.</b> Key by <code>userId</code> and all events for one user land on one partition and stay ordered. Key randomly and you get even distribution and no ordering at all. This is the design decision.</li>
+<li><b>A consumer group</b> gets each message once; within a group, one partition is owned by exactly one consumer. So <b>partition count is your maximum parallelism</b> — 10 partitions means at most 10 useful consumers, and the eleventh sits idle.</li>
+<li><b>Offsets</b> are the consumer's bookmark. Commit after processing for at-least-once; commit before for at-most-once. There is no third option.</li>
+<li><b>Rebalance</b> is the operational pain: when a consumer joins, leaves or times out, partitions are reassigned and the whole group pauses. A slow consumer that exceeds <code>max.poll.interval.ms</code> gets kicked out, triggering a rebalance, which slows everyone — a classic cascading failure.</li>
+<li><b>Retention</b> is time or size based, not consumption based. Messages stay after being read, which is what makes replay possible and is the real difference from a queue.</li>
+</ul>`,
+after:`<p><b>Queue vs log, stated crisply:</b> a queue (SQS, RabbitMQ, BullMQ) distributes work — a message goes to one consumer and is then gone. A log (Kafka) retains an ordered history that many independent consumer groups read at their own offsets. Choose Kafka when you need replay, ordering, or several unrelated systems consuming the same stream. Choose a queue for background jobs. Using Kafka as a job queue is the most common over-engineering at this level, and saying that out loud is a point in your favour.</p>`,
+fu:['How do you handle a poison message?','What happens if you need to increase partitions later? (Ordering by key breaks for existing keys.)','How would you do a schema change on an event?']
+},
+{
+q:'Design a chat system at scale',
+test:'The most common ₹50L design question. It touches connections, ordering, fan-out and storage all at once.',
+a:`<p><b>Scope first:</b> one-to-one and group messages, delivery and read receipts, online presence, message history, push when offline. Exclude voice, video and end-to-end encryption unless asked.</p>
+<p><b>Connections.</b> WebSockets, one persistent connection per device. At 10 million concurrent connections and roughly 50–100k connections per gateway node, that is 100–200 gateway nodes. The gateway is stateful — it knows which sockets it holds — so you need a <b>session registry</b> in Redis mapping <code>userId → gatewayNodeId</code>, so a message for user B can be routed to the node holding B's socket.</p>
+<p><b>Sending a message.</b> Client → gateway → message service → persist → route to recipient's gateway → push down the socket. If the recipient is offline, hand off to the push notification service. Persist <em>before</em> acknowledging, or a crash loses a message the sender believes was sent.</p>
+<p><b>Ordering</b> is the subtle part. Wall-clock timestamps from clients are unreliable — clocks skew. Use a per-conversation monotonic sequence number assigned server-side, or a Snowflake-style id that is time-sortable and globally unique. Then the client sorts by that, not by <code>Date.now()</code>.</p>
+<p><b>Storage.</b> Extremely write-heavy, always read by conversation, almost never updated — that shape points at Cassandra or DynamoDB with a partition key of <code>conversationId</code> and a clustering key of the sequence number, so "the last 50 messages in this conversation" is one sequential read.</p>`,
+after:`<p><b>Group messages</b> are the fan-out decision: for a 10-person group, write to all 10 inboxes. For a 100,000-member channel, that is 100,000 writes per message — so large groups switch to fan-out-on-read, where members pull from a shared conversation log. Naming that threshold explicitly is exactly the kind of trade-off this round rewards.</p>
+<p><b>Presence</b> is the sneaky scale problem: naive presence means every status change is broadcast to every contact, which is O(users × contacts) and will dominate your traffic. The real answers are a heartbeat with a TTL in Redis, and only pushing presence for conversations the user currently has open.</p>`,
+fu:['How do you guarantee a message is not lost if the gateway crashes mid-send?','How do read receipts work for a group of 500?','How would you add end-to-end encryption, and what breaks? (Server-side search.)']
+},
+{
+q:'Design a news feed — the fan-out decision',
+test:'The canonical read-heavy design, and a clean test of whether you reason from the read:write ratio.',
+a:`<p>Everything follows from the 200:1 read-to-write ratio you computed at the start.</p>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th>Fan-out on write (push)</th><th>Fan-out on read (pull)</th></tr></thead>
+<tbody>
+<tr><td>How</td><td>On posting, write the post id into every follower's precomputed feed list</td><td>On opening the feed, query the people you follow and merge their recent posts</td></tr>
+<tr><td>Read</td><td>One cheap read of a ready list. Fast.</td><td>Expensive fan-in and merge on every open</td></tr>
+<tr><td>Write</td><td>Expensive — one write per follower</td><td>Cheap</td></tr>
+<tr><td>Breaks on</td><td>Celebrities. 50M followers = 50M writes for one post.</td><td>Users following thousands of accounts</td></tr>
+</tbody></table></div>
+<p><b>The real answer is hybrid</b>, and this is what they are waiting for: fan-out on write for normal accounts, and for accounts above a follower threshold, do not fan out — merge their posts in at read time. Twitter's actual design, and it is the correct answer because it puts each strategy where its cost is lowest.</p>`,
+after:`<p>Store the feed as a capped list of post ids in Redis (say the newest 800), not the post bodies — hydrate the bodies from a cache or the database at read time, so an edited or deleted post does not need rewriting across millions of feed lists.</p>`,
+fu:['What happens when someone follows 5,000 accounts?','How do you handle a deleted post that is already in a million feeds?','Where does ranking fit into this?']
+},
+{
+q:'Design a payment system',
+test:'Where correctness matters more than scale. A good answer here is worth two ordinary ones.',
+a:`<p>The framing that sets the tone: <em>"this is the one system where I will trade availability and latency for consistency without hesitating."</em></p>
+<ul>
+<li><b>Double-entry ledger, append-only.</b> Every transaction is two entries that sum to zero — debit one account, credit another. Balances are derived from the ledger, never stored as a mutable field you increment. This makes every balance auditable and makes a lost update impossible by construction.</li>
+<li><b>Idempotency everywhere.</b> An idempotency key on every payment request, unique-indexed. A retry returns the original result rather than charging again.</li>
+<li><b>State machine, explicitly.</b> <code>initiated → authorised → captured → settled</code>, with <code>failed</code> and <code>refunded</code> as terminal states. Only legal transitions allowed, enforced in the database rather than in the application.</li>
+<li><b>Webhooks plus reconciliation.</b> Confirm on the provider's webhook, verify its signature, and dedupe on the provider's event id. Then run a scheduled job that queries the provider for anything still pending past its window — because webhooks are lost, and reconciliation is how real payment systems stay correct.</li>
+<li><b>Money as integer minor units.</b> Never a float. Store the currency alongside every amount.</li>
+<li><b>Exactly-once effects via the saga above</b>, with refund as the compensating action, and the human consequence acknowledged.</li>
+</ul>`,
+after:`<p>If they push on scale: payments are usually low-QPS and high-stakes, so the interesting scaling problem is not throughput but <b>the ledger growing forever</b> — which is solved with periodic balance snapshots so you never replay the whole history, plus partitioning by account and archiving cold periods.</p>`,
+fu:['What if the provider says success but your database write fails?','How do you handle a partial refund?','How would you detect a double charge after the fact?']
+},
+{
+q:'Observability and reliability at this level',
+test:'The gap the scouting report flagged. At ₹50L, "we have logs" is not an answer.',
+a:`<p><b>The three pillars, and what each is actually for:</b> metrics tell you <em>something is wrong</em> (cheap, aggregate, alertable); traces tell you <em>where</em> (per-request, sampled, expensive); logs tell you <em>why</em> (detailed, most expensive to store). Alert on metrics, diagnose with traces, confirm with logs — in that order.</p>
+<p><b>SLI, SLO, error budget</b> — the vocabulary of this round:</p>
+<ul>
+<li><b>SLI</b> — the measurement. "Proportion of requests served under 300ms."</li>
+<li><b>SLO</b> — the target. "99.9% over 30 days."</li>
+<li><b>Error budget</b> — what 99.9% permits: about 43 minutes of failure per month. <b>The budget is the point.</b> It converts reliability from an argument into arithmetic: budget remaining means you can ship risky changes, budget spent means you stop feature work and fix reliability. Being able to explain that trade-off is a staff-level signal.</li>
+</ul>
+<p><b>Alert on symptoms, not causes.</b> Page on "checkout error rate above 1%" — a user-visible symptom — not on "CPU above 80%", which may be entirely fine. Every alert that does not require a human to act on it immediately should be a dashboard instead, because alert fatigue is how real outages get missed.</p>`,
+after:`<p>Also know: <b>p99 over average</b>, always — an average hides the tail, and the tail is what users actually complain about. <b>Percentiles do not average</b> across services, so you aggregate histograms, not percentiles. And the <b>four golden signals</b> — latency, traffic, errors, saturation — which is the shortest correct answer to "what would you monitor?"</p>`,
+fu:['Your p99 is bad but p50 is fine. Where do you look?','How do you decide what to sample in tracing?','What goes in a runbook?']
+}
+]},
+{
+id:'s3', code:'50L', navTitle:'Runtime internals', lv:2,
+title:'Runtime internals',
+meta:[['Length','Folded into the deep dive'],['Who','Staff engineer'],['Bar','Below the framework'],['Fail mode','Knowing the API, not the machine']],
+tiers:[['saas',1],['product',1]],
+intro:'At ₹20–28L nobody asks how V8 stores an object. At the top of the band they do, because at that level you are expected to debug things the framework cannot explain. This round is finite and learnable — perhaps two weekends of reading — and it is disproportionately impressive because most candidates have never looked.',
+qs:[
+{
+q:'How does V8 execute your JavaScript?',
+test:'Whether you know why some JavaScript is 100x slower than other JavaScript that looks identical.',
+a:`<p>Source → parser → AST → <b>Ignition</b>, the bytecode interpreter, which starts executing immediately. While running, V8 collects type feedback. Functions that run hot get sent to <b>TurboFan</b>, the optimising compiler, which produces machine code specialised to the types it has observed. If a later call violates those assumptions, the code is <b>deoptimised</b> and falls back to bytecode.</p>
+<p><b>Hidden classes</b> (V8 calls them Maps) are the mechanism underneath. Objects with the same properties added in the same order share a hidden class, which lets property access compile to a fixed memory offset instead of a hash lookup. <b>Inline caches</b> then remember "at this call site, the object had hidden class X, so the property is at offset 4" — and that is what makes property access fast.</p>`,
+code:[{label:'why these two are not the same speed',code:`<span class="c">// SAME hidden class — monomorphic call site, fast</span>
+function P(x, y) { this.x = x; this.y = y }
+const a = new P(1, 2), b = new P(3, 4)
+
+<span class="c">// DIFFERENT hidden classes — property order differs</span>
+const c = { x: 1 }; c.y = 2
+const d = { y: 2 }; d.x = 1
+<span class="c">// a function reading .x from both goes polymorphic, then megamorphic,</span>
+<span class="c">// and the inline cache stops helping entirely</span>
+
+<span class="c">// also deoptimising: adding a property after construction,</span>
+<span class="c">// deleting a property (delete o.x), and mixing types in an array</span>
+const arr = [1, 2, 3]      <span class="c">// PACKED_SMI — fastest element kind</span>
+arr.push(1.5)              <span class="c">// → PACKED_DOUBLE</span>
+arr.push('x')              <span class="c">// → PACKED_ELEMENTS, boxed, slow</span>
+arr[100] = 1               <span class="c">// → HOLEY, slower still, and it never goes back</span>`}],
+after:`<p>The practical rules that follow, which is what they actually want: initialise all properties in the constructor and in the same order; never <code>delete</code> a property (set it to <code>null</code> or <code>undefined</code>); keep arrays type-homogeneous and hole-free; and prefer monomorphic functions — one that receives four different object shapes is far slower than four specialised ones.</p>`,
+fu:['What is a megamorphic call site?','Why is delete so expensive?','How would you actually verify any of this? (--trace-deopt, --allow-natives-syntax.)']
+},
+{
+q:'Garbage collection, and how you find a leak',
+test:'Directly relevant to a long-running Node service, and a real staff-level debugging skill.',
+a:`<p>V8's heap is <b>generational</b>, on the observation that most objects die young.</p>
+<ul>
+<li><b>Young generation (nursery).</b> Collected by <b>Scavenger</b>, a copying collector: live objects are copied to the other semi-space and everything else is discarded wholesale. Frequent, very fast, pauses of well under a millisecond. An object that survives two scavenges is promoted.</li>
+<li><b>Old generation.</b> Collected by <b>mark-sweep-compact</b>: mark what is reachable from the roots, sweep the rest, compact to remove fragmentation. Much less frequent, much more expensive. Modern V8 does most of the marking concurrently and incrementally to keep pauses short, but a major GC on a large heap is still measured in tens of milliseconds.</li>
+</ul>
+<p><b>The key insight:</b> allocating a lot of short-lived objects is cheap — that is what the nursery is for. Allocating objects that <em>survive</em> is expensive, because they get promoted and then cost you major GCs. So the performance problem is rarely "too many allocations"; it is "too many long-lived allocations".</p>`,
+code:[{label:'the leak-hunting workflow, which is the real answer',code:`<span class="c">// 1. confirm it is a leak, not just a large heap</span>
+node --expose-gc app.js
+process.memoryUsage()   <span class="c">// heapUsed climbing across forced GCs = a real leak</span>
+
+<span class="c">// 2. three heap snapshots: baseline, after load, after more load</span>
+<span class="c">//    Chrome DevTools → Memory → Comparison view</span>
+<span class="c">//    look at "Delta" — what keeps growing between snapshots?</span>
+
+<span class="c">// 3. select the growing constructor → Retainers panel</span>
+<span class="c">//    the retainer chain names the thing holding it alive.</span>
+<span class="c">//    In Node it is almost always one of four things:</span>
+<span class="c">//      - an event listener never removed</span>
+<span class="c">//      - a Map or array used as a cache with no eviction</span>
+<span class="c">//      - a closure capturing a request context</span>
+<span class="c">//      - a timer that was never cleared</span>`}],
+after:`<p>The fixes map one to one: remove listeners on cleanup or use <code>once</code>; give every in-memory cache a size bound and a TTL, or use a <code>WeakMap</code> keyed by an object whose lifetime you do not control; clear timers; and in production, expose heap metrics so you see the sawtooth flatten into a ramp before it becomes an out-of-memory crash.</p>`,
+fu:['What is the difference between a memory leak and high memory usage?','Why is a WeakMap the right cache key sometimes?','What does --max-old-space-size actually change?']
+},
+{
+q:'The browser rendering pipeline, and what triggers each stage',
+test:'The frontend half of internals. It is what separates "I used a CSS transition" from "I know why that one janks".',
+a:`<p><b>Style → Layout → Paint → Composite.</b> The cost of a change depends entirely on how far up that chain it starts.</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Change</th><th>Triggers</th><th>Cost</th></tr></thead>
+<tbody>
+<tr><td><code>width</code>, <code>height</code>, <code>top</code>, <code>margin</code>, <code>font-size</code></td><td>Layout → Paint → Composite</td><td>Most expensive — geometry of other elements may change too</td></tr>
+<tr><td><code>color</code>, <code>background</code>, <code>box-shadow</code>, <code>border-radius</code></td><td>Paint → Composite</td><td>Moderate — repaints the affected area</td></tr>
+<tr><td><code>transform</code>, <code>opacity</code></td><td class="n">Composite only</td><td>Cheapest — handled on the compositor, often off the main thread entirely</td></tr>
+</tbody></table></div>
+<p><b>Therefore: animate <code>transform</code> and <code>opacity</code>, never <code>left</code>/<code>top</code>/<code>width</code>.</b> That one rule is the entire practical takeaway, and being able to explain <em>why</em> in terms of the pipeline is what gets scored.</p>`,
+code:[{label:'layout thrashing — the classic main-thread killer',code:`<span class="c">// BAD: read, write, read, write — forces a synchronous layout every iteration</span>
+for (const el of els) {
+  el.style.height = el.offsetHeight + 10 + 'px'   <span class="o">// read forces flush of pending writes</span>
+}
+
+<span class="c">// GOOD: batch all reads, then all writes</span>
+const heights = els.map(el =&gt; el.offsetHeight)    <span class="c">// read phase</span>
+els.forEach((el, i) =&gt; el.style.height = heights[i] + 10 + 'px')  <span class="c">// write phase</span>`}],
+after:`<p>The properties that force a synchronous layout when read — <code>offsetHeight</code>, <code>getBoundingClientRect</code>, <code>scrollTop</code>, <code>getComputedStyle</code> — are worth memorising, because reading one after a write is what causes the thrash.</p>
+<p><b><code>will-change</code></b> promotes an element to its own compositor layer, which makes it cheap to animate — but each layer costs GPU memory, and applying it to everything makes things slower, not faster. Add it just before the animation and remove it after.</p>
+<p>And connect it to <b>INP</b> from R4: a long task blocks the main thread, so the next paint after an interaction is delayed. That is why breaking up long tasks (with <code>scheduler.yield()</code> or <code>setTimeout</code>) improves a metric that looks like it should be about rendering.</p>`,
+fu:['What is the compositor thread and what can it do without the main thread?','Why is a CSS animation often smoother than a JS one?','How would you find a long task in production?']
+},
+{
+q:'Node internals — libuv, event loop lag, and where the threads are',
+test:'Deeper than R5.1. This is the version asked when they suspect you actually know.',
+a:`<p><b>Node has four thread pools you should be able to distinguish:</b> the single main thread running your JavaScript; the libuv thread pool (default 4) used by file I/O, DNS via <code>getaddrinfo</code>, zlib and crypto; the V8 threads for concurrent GC and TurboFan compilation; and any <code>worker_threads</code> you create.</p>
+<p>Network I/O does <b>not</b> use the thread pool — it uses the operating system's event notification (epoll on Linux, kqueue on BSD, IOCP on Windows), which is why Node handles tens of thousands of sockets on one thread but stalls on four concurrent <code>bcrypt</code> calls.</p>`,
+code:[{label:'measuring event loop lag — the metric that finds the problem',code:`<span class="c">// the crude version, good enough to alert on</span>
+let last = process.hrtime.bigint()
+setInterval(() =&gt; {
+  const now = process.hrtime.bigint()
+  const lag = Number(now - last) / 1e6 - 100     <span class="c">// expected 100ms interval</span>
+  last = now
+  metrics.gauge('eventloop.lag_ms', lag)          <span class="o">// &gt;50ms sustained = trouble</span>
+}, 100)
+
+<span class="c">// the proper version, built in:</span>
+const { monitorEventLoopDelay } = require('node:perf_hooks')
+const h = monitorEventLoopDelay({ resolution: 10 })
+h.enable()
+<span class="c">// h.mean, h.percentile(99) — alert on the p99, not the mean</span>`}],
+after:`<p>This is the single most useful Node production metric and almost nobody instruments it. High event loop lag with low CPU means you are blocked on something synchronous; high lag with high CPU means genuine CPU work that belongs on a worker thread or a queue. Being able to say that diagnostic split is a staff-level answer.</p>
+<p>Also worth knowing: <code>process.nextTick</code> has its own queue that drains before promise microtasks and can starve the loop if it recurses; and <code>setImmediate</code> versus <code>setTimeout(fn, 0)</code> is non-deterministic at the top level but deterministic inside an I/O callback, where <code>setImmediate</code> always fires first because the check phase follows poll.</p>`,
+fu:['You see 300ms event loop lag in production. Walk me through the diagnosis.','When would you reach for worker_threads over a queue?','What does clustering actually give you and what does it not?']
+},
+{
+q:'The network layer — HTTP/2, HTTP/3, and connection cost',
+test:'Performance work at this level goes below the framework. Directly relevant to your page-load claims.',
+a:`<ul>
+<li><b>HTTP/1.1</b> — one request at a time per connection, so browsers open about six connections per origin. Head-of-line blocking at the application layer, which is why bundling and sprite sheets existed.</li>
+<li><b>HTTP/2</b> — multiplexed streams over one connection, header compression (HPACK), server push (now largely deprecated). This is why aggressive bundling became counterproductive: many small cacheable files are now often better than one big one.</li>
+<li><b>HTTP/3 / QUIC</b> — runs over UDP. Solves the remaining problem: HTTP/2 still suffered <b>TCP-level</b> head-of-line blocking, where one lost packet stalls every multiplexed stream. QUIC makes streams independent, and adds 0-RTT connection resumption.</li>
+</ul>
+<p><b>The costs worth quoting:</b> a TCP handshake is one round trip; TLS 1.3 adds one more (TLS 1.2 added two); so a fresh HTTPS connection to a distant origin costs roughly 2 round trips before a single byte of your content moves. At 150ms cross-continent that is 300ms of nothing.</p>
+<p>Which explains the fixes: <code>preconnect</code> for origins you will definitely use, keep-alive and connection reuse, and reducing the number of distinct origins — every third-party domain is another handshake.</p>`,
+after:`<p>Resource hints, in order of aggressiveness: <code>dns-prefetch</code> (resolve only) → <code>preconnect</code> (resolve, connect, TLS) → <code>preload</code> (fetch this now, high priority, I need it this navigation) → <code>prefetch</code> (fetch idly, I will probably need it next navigation). Misusing <code>preload</code> for everything makes things worse by competing with the LCP resource for bandwidth.</p>`,
+fu:['Why did bundling everything become an anti-pattern with HTTP/2?','What is 0-RTT and what is its security caveat? (Replay attacks.)','How does a CDN change any of this?']
+}
+]},
+{
+id:'s4', code:'50L', navTitle:'Staff behavioural', lv:2,
+title:'Behavioural at staff level',
+meta:[['Length','45–60 min, sometimes two'],['Who','Senior EM, director, or a staff peer'],['Bar','Impact beyond your own keyboard'],['Fail mode','Great stories about code you wrote']],
+tiers:[['saas',1],['product',1]],
+intro:'This round is why strong engineers get levelled down. The stories that win at ₹24L — I built it, I owned it, I shipped it — are the wrong shape here. At staff level they are looking for scope that extends past your own hands: decisions that changed how other people work, and judgement about what not to build.',
+qs:[
+{
+q:'What actually changes in the stories',
+test:'Calibration. Same events, different emphasis.',
+a:`<div class="table-scroll"><table>
+<thead><tr><th>They ask about</th><th>Senior answer</th><th>Staff answer</th></tr></thead>
+<tbody>
+<tr><td>A project</td><td>What you built and how</td><td>Why it was the right thing to build, what you chose not to build, and how you got others aligned</td></tr>
+<tr><td>A conflict</td><td>How you resolved it</td><td>How you changed the decision-making process so that class of conflict stopped recurring</td></tr>
+<tr><td>An incident</td><td>How you fixed it</td><td>The systemic change, and how you got other teams to adopt it</td></tr>
+<tr><td>Mentoring</td><td>You helped a junior</td><td>You raised the bar for a group — a standard, a review culture, a practice that outlived you</td></tr>
+<tr><td>Scope</td><td>Your service</td><td>Several teams, or a decision with a budget attached</td></tr>
+</tbody></table></div>
+<p><b>The tell they listen for is the pronoun.</b> A senior story is full of "I". A staff story has "I" for the decision and the persuasion, and "we" for the execution — because at that level you are judged on outcomes you could not have produced alone.</p>`,
+note:`<p>You have a real staff-level story already and you are probably not telling it: you authored the frontend and API standards that an engineering team now works to. That is influence beyond your own keyboard. Tell it with the parts that matter — how you got people to actually follow them, what you did about the person who disagreed, and how you kept them from decaying.</p>`
+},
+{
+q:'Tell me about a time you influenced without authority.',
+test:'The defining staff-level competency. Nobody reports to you and the thing still happened.',
+a:`<p>Structure the answer around <b>how you built the case</b>, not how right you were:</p>
+<ol>
+<li><b>The problem, in their currency.</b> Not "the code is messy" but "we are spending two days a sprint on this and here is the measurement."</li>
+<li><b>The evidence.</b> A prototype, a benchmark, an incident count. Data beats opinion, and a working demo beats data.</li>
+<li><b>The objections you had to answer</b> — and who raised them. Naming a real sceptic and how you won them over is the most convincing part of any story like this.</li>
+<li><b>The outcome, measured.</b></li>
+</ol>
+<p>Your standards story fits this exactly. So does the Redux to Zustand migration, if you tell it as a persuasion problem rather than a technical one: you had to convince a team to accept a migration cost, and the honest naming of what was lost is what made it credible.</p>`,
+trap:`<p>The story where you were right, nobody listened, and it later broke. It answers a different question — it shows you were correct, not that you were persuasive — and at this level being unable to move people is the actual gap they are testing for.</p>`,
+fu:['Who disagreed most and why?','What would you do differently if you had to do it again?','How did you know it worked?']
+},
+{
+q:'Tell me about a technical decision that turned out to be wrong.',
+test:'Whether you can hold a strong opinion and still update. This gets asked in some form every single time at this level.',
+a:`<p>The shape that lands: <b>the decision → the reasoning that was sound at the time → the signal that contradicted it → how long you took to accept it → what you did → the rule you now carry.</b></p>
+<p>The part most candidates skip is the fourth: <b>how long you took to accept it.</b> Being honest that you defended it for two weeks before the evidence became undeniable is more credible than a story where you updated instantly, and it demonstrates the thing they are actually probing — whether ego gets in the way of the data.</p>`,
+fu:['What was the cost of the delay in changing course?','How do you decide when to reverse versus push through?','Has that rule ever been wrong?']
+},
+{
+q:'How do you decide what NOT to build?',
+test:'The clearest staff signal there is. Senior engineers ship; staff engineers also prevent work.',
+a:`<p>Have a real framework and a real example. The framework:</p>
+<ul>
+<li><b>Whose problem is it, and how many people have it?</b> One loud customer is not a product signal.</li>
+<li><b>What is the cost of being wrong in each direction?</b> A reversible decision made quickly beats a perfect decision made slowly; an irreversible one deserves the opposite treatment.</li>
+<li><b>What does it cost to <em>own</em>, not to build?</b> The build is a few weeks; the maintenance, the on-call surface and the migration cost when it needs replacing are the real bill. This is the argument you already make about not adding a message broker.</li>
+<li><b>What does it stop us doing?</b> Opportunity cost is the argument that actually persuades product people, because it is in their language.</li>
+</ul>
+<p>Then a concrete story: something you argued against, and either won or lost. Losing is fine — "I lost that argument, we built it, and it was retired eighteen months later" is a strong ending, as long as you do not tell it smugly.</p>`,
+fu:['Give me an example where you were the one who wanted to build it and were talked down.','How do you say no to a founder?']
+},
+{
+q:'Build versus buy — walk me through one.',
+test:'Whether you can reason about cost, risk and time rather than just preference. Engineers over-index on build.',
+a:`<p>The factors, in the order that actually decides it:</p>
+<ul>
+<li><b>Is it core to what makes the business different?</b> Build the differentiator, buy everything else. You do not build an auth provider; you might build a matching engine.</li>
+<li><b>Total cost of ownership, not licence cost.</b> Engineer-months to build, plus maintenance forever, plus the on-call burden, versus a subscription. Engineers systematically underestimate the "forever" column by a large factor.</li>
+<li><b>Time to value.</b> Six months of building is six months of not shipping the thing customers asked for.</li>
+<li><b>Exit cost.</b> How hard is it to leave the vendor in two years? A wrapper layer at the boundary makes a buy decision reversible, and that is often what makes it acceptable.</li>
+<li><b>Compliance and data residency</b>, which sometimes decide it outright regardless of the rest.</li>
+</ul>
+<p>Say the default out loud: <b>buy, unless it is core or the vendor cost scales badly with your growth.</b> Then give the exception you have actually lived.</p>`,
+fu:['When did you build something you should have bought?','How would you decide on a vendor with no exit path?']
+},
+{
+q:'The rest of the staff round',
+test:'Same six stories from R11, reframed for scope.',
+a:`<ul>
+<li><b>Tell me about a project you killed.</b> Or should have. What was the sunk-cost pressure and how did you handle it?</li>
+<li><b>How do you drive a migration across teams that do not report to you?</b> The real answer involves making the new path easier than the old one, not writing a policy.</li>
+<li><b>How do you set technical direction without becoming a bottleneck?</b> Written design docs, a review forum, and defaults that make the right thing easy.</li>
+<li><b>Tell me about mentoring someone senior</b>, not a junior. Different skill entirely — it is peer coaching, not teaching.</li>
+<li><b>How do you handle disagreeing with a director or a founder?</b> Privately first, with data, and with a clear statement of what you will do if the decision goes the other way.</li>
+<li><b>Describe an incident that crossed team boundaries.</b> Who coordinated? How was the post-mortem run and what actually changed?</li>
+<li><b>How do you balance technical debt against features?</b> The error-budget framing from the observability card is the strongest answer — it turns the argument into arithmetic.</li>
+<li><b>What is your approach to on-call and to alert quality?</b></li>
+<li><b>How do you evaluate a new technology before adopting it?</b> A time-boxed spike with predefined success criteria written down <em>before</em> starting, so the decision is not made by whoever is most excited.</li>
+<li><b>How do you hire?</b> What do you look for, what do you screen out, how do you run your part of a loop.</li>
+<li><b>What is the largest scope you have owned, honestly?</b> Answer truthfully. Overclaiming scope is trivially exposed by two follow-up questions, and it ends the round.</li>
+</ul>`,
+note:`<p><b>Where you are genuinely light:</b> most of your evidence is one-team scope. Do not manufacture stories you do not have — say plainly that your scope has been depth on four systems rather than breadth across teams, name the standards work as your clearest cross-cutting example, and say what scope you are looking to grow into. Interviewers respect an accurate self-assessment far more than an inflated one, and they will find out either way.</p>`
+}
+]},
+{
 id:'plan', code:'✓', navTitle:'The week before',
 title:'The week before, and the day itself',
 meta:[['Use','Seven days out'],['If you have one night','Do day 1 and go']],
