@@ -1,10 +1,5 @@
 import { chapters } from "@/lib/content";
 
-/**
- * Full-text search index for one topic, served as a static JSON file and
- * fetched only when the reader first types in the search box — so chapter
- * bodies stay off the initial page load.
- */
 export function buildSearchIndex(topicId: string) {
   return chapters(topicId).map((ch) => ({
     id: ch.id,

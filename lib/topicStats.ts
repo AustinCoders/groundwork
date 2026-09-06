@@ -1,9 +1,5 @@
 import { chapters, exercises, topicExerciseCount, topics, totalTime } from "@/lib/content";
 
-/**
- * Counts the home page needs. Computed on the server so the landing page
- * never imports chapter bodies just to say "34 chapters written".
- */
 export interface TopicStat {
   written: number;
   planned: number;

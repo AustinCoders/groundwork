@@ -35,7 +35,6 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
   const [level, setLevel] = useState<LevelFilter>("all");
   const [status, setStatus] = useState<StatusFilter>("all");
 
-  // A joined string, not a Set — useSyncExternalStore compares with Object.is.
   const solvedKey = useProgressValue(
     () =>
       groups

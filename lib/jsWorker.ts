@@ -1,17 +1,3 @@
-/// <reference lib="webworker" />
-
-// The JS/TS runner used to execute inside a sandboxed iframe on the main
-// thread. That meant a genuine `while (true) {}` blocked the ONE thread
-// everything else needed too — including the setTimeout callback meant to
-// time it out — so the "stopped after 5s" safety net could never fire and
-// the whole tab froze permanently. Running here, in a dedicated worker,
-// fixes that the same way pythonRunner.ts does: a hung run gets
-// worker.terminate()'d from the main thread regardless of what the code
-// inside is doing.
-//
-// No exercise in content/practice.ts touches document/window/DOM, so
-// losing that (workers can't see the page's DOM) costs nothing real.
-
 function send(type: string, payload: unknown) {
   postMessage({ type, payload });
 }
@@ -58,9 +44,6 @@ function line(kind: string) {
   };
 }
 
-// Workers have their own `console` and `self` (the worker's global
-// object) — overriding console here shadows it only inside this worker,
-// same as BOOT overriding window.console used to, only inside its iframe.
 console.log = line("log");
 console.info = line("info");
 console.debug = line("log");
@@ -92,7 +75,6 @@ function same(a: unknown, b: unknown): boolean {
 }
 
 // @ts-expect-error -- assert is a global exposed to the Function-constructed
-// user code below, same trick BOOT used with `window.assert` for the iframe.
 self.assert = {
   ok(value: unknown, message?: string) {
     if (!value) throw new Error(message || `expected something truthy, got ${fmt(value, 1)}`);
@@ -128,9 +110,6 @@ self.onmessage = async (event: MessageEvent) => {
     ) => Promise<void>;
     await fn(send);
   } catch (err) {
-    // The generated source already wraps everything in its own try/catch
-    // and always ends by posting "done" — this only catches a genuinely
-    // unexpected failure to even construct/start it.
     const text = err instanceof Error ? err.message : String(err);
     send("console", { kind: "error", text });
     send("done", { results: [], crashed: true });

@@ -10,9 +10,6 @@ import type { Topic } from "@/content/types";
 
 const RECAP_SHOWN_KEY = "jsnotes:recap-shown";
 
-/** A once-a-day toast: what got done yesterday, and today's topic pick.
- * Silent when there's nothing to recap — a brand-new or lapsed reader
- * doesn't need to be told they did zero things yesterday. */
 export function DailyRecap({ topics }: { topics: Topic[] }) {
   const [yesterdayCount, setYesterdayCount] = useState(0);
   const [visible, setVisible] = useState(false);

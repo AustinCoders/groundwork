@@ -23,8 +23,6 @@ export function ReviewView({ chapters }: { chapters: ReviewChapter[] }) {
   const mounted = useMounted();
   const ids = useMemo(() => chapters.map((c) => c.id), [chapters]);
 
-  // A joined string rather than an array: useSyncExternalStore compares
-  // snapshots with Object.is, so a fresh array every read would loop.
   const dueKey = useProgressValue(() => progress.dueForReview(ids).join(","), "");
   const doneCount = useProgressValue(() => progress.countDone(chapters), 0);
 

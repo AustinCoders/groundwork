@@ -1,11 +1,5 @@
-// Proxies Open-Meteo (open-meteo.com) — free, no key, no rate-limit
-// surprises like Piston/Judge0 turned out to have. Server-side so the CSP
-// stays at connect-src 'self' and lat/lon never need a client-side fetch
-// to a third party.
 export const runtime = "nodejs";
 
-// WMO weather codes → a short label + emoji. Open-Meteo returns the
-// numeric code; this is the same table their own docs publish.
 const WEATHER_CODES: Record<number, { label: string; icon: string }> = {
   0: { label: "Clear sky", icon: "☀️" },
   1: { label: "Mostly clear", icon: "🌤️" },

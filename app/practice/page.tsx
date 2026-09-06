@@ -16,8 +16,6 @@ export async function generateMetadata({
 }
 
 export default function PracticePage() {
-  // Exercises name a chapter id; resolve those to real routes here so the
-  // editor page never imports chapter bodies to render one back-link.
   const chapterLinks: Record<string, ChapterLink> = {};
   topics().forEach((t) => {
     if (!t.levels) return;

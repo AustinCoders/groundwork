@@ -48,10 +48,6 @@ export function useClientValue<T>(getValue: () => T, fallback: T): T {
   return useSyncExternalStore(subscribeNever, getValue, () => fallback);
 }
 
-/**
- * Like useClientValue, but re-reads whenever progress changes anywhere in
- * the app — so the sidebar meter tracks a chapter ticked in the reader.
- */
 export function useProgressValue<T>(getValue: () => T, fallback: T): T {
   return useSyncExternalStore(progress.subscribe, getValue, () => fallback);
 }

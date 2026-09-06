@@ -1,4 +1,3 @@
-/** One labelled code sample inside a question's answer. */
 export interface InterviewCodeBlock {
   label?: string;
   code: string;
@@ -27,6 +26,5 @@ export interface InterviewRoundRaw {
   pre?: string;
   post?: string;
   qs: InterviewQuestionRaw[];
-  /** 2 marks the ₹50L+ staff track; absent (or 1) is the core loop. */
   lv?: number;
 }

@@ -1,13 +1,6 @@
 import { topics as topicsData } from "@/content/topics";
 import type { Level, Topic } from "@/content/types";
 
-/**
- * Topic and syllabus lookups. This module deliberately imports only
- * content/topics.ts — never the per-topic notes files — so client
- * components can use it without dragging every chapter body into the
- * browser bundle. Anything needing chapter bodies belongs in lib/content.
- */
-
 function byId<T extends { id: string }>(list: T[], id: string | null | undefined): T | null {
   if (!id) return null;
   for (let i = 0; i < list.length; i++) {
@@ -56,17 +49,12 @@ export function syllabusSectionForChapter(
   return found;
 }
 
-/**
- * Route to a topic's reader page. Topics store their notes as a legacy
- * "<name>.html" filename; the app routes are the same name without it.
- */
 export function notesHref(topicId?: string | null): string {
   const t = topicId ? byId(topics(), topicId) : null;
   const file = (t && t.notes) || "notes.html";
   return `/${file.replace(/\.html$/, "")}`;
 }
 
-/** Canonical URL for one chapter, e.g. /dsa/dsa-tries. */
 export function chapterHref(topicId: string | null | undefined, chapterId: string): string {
   return `${notesHref(topicId)}/${chapterId}`;
 }
@@ -79,9 +67,6 @@ export function topicHref(t: Topic, savedLevel?: string | null): string {
   return known ? `/path?topic=${t.id}&level=${savedLevel}` : `/level?topic=${t.id}`;
 }
 
-/** Same topic all day (day-of-year mod topic count), different tomorrow —
- * shared by the sidebar's "today's pick" card and the daily recap toast so
- * they always agree. */
 export function topicOfDay(candidates: Topic[]): Topic | null {
   if (!candidates.length) return null;
   const now = new Date();

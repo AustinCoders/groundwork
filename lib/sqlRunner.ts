@@ -7,8 +7,6 @@ export interface SqlRunOptions {
   onDone?: (payload: RunnerDonePayload) => void;
 }
 
-// Lazy — sql.js's WASM glue only loads once SQL is actually selected and
-// run, not bundled into every practice page's initial JS.
 let sqlJsPromise: Promise<SqlJsStatic> | null = null;
 
 function loadSqlJs(): Promise<SqlJsStatic> {
@@ -23,10 +21,6 @@ function loadSqlJs(): Promise<SqlJsStatic> {
   return sqlJsPromise;
 }
 
-// SQL queries run synchronously once sql.js is loaded, on the main thread —
-// fast enough for anything a learner writes here, and simpler than routing
-// through a worker. A genuinely pathological recursive query can still hang
-// the tab; that's an accepted tradeoff for keeping this path simple.
 export function runSQL(options: SqlRunOptions): { stop: () => void } {
   const onConsole = options.onConsole || (() => {});
   const onDone = options.onDone || (() => {});

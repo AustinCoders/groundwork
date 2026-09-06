@@ -6,18 +6,12 @@ import { ChapterSheet } from "@/components/reader/ChapterSheet";
 import { HashRedirect } from "@/components/reader/HashRedirect";
 import { chapterMetas, chapters, notesData, notesHref } from "@/lib/content";
 
-/**
- * Every topic's two routes are identical apart from the topic id, so they
- * are built here once. Each app/<topic>/… file is a thin call into these.
- */
-
 export function TopicCoverPage({ topicId }: { topicId: string }) {
   const data = notesData(topicId);
   const basePath = notesHref(topicId);
 
   return (
     <ReaderShell topicId={topicId} chapters={chapterMetas(topicId)} basePath={basePath} activeId={null}>
-      {/* Old links were /topic#chapter-id; send them to the real route. */}
       <HashRedirect basePath={basePath} />
       <CoverSheet data={data} basePath={basePath} />
     </ReaderShell>

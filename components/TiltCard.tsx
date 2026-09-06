@@ -3,8 +3,6 @@
 import { useRef } from "react";
 import { prefersMotion } from "@/lib/dom";
 
-/** Wraps children in a card that tilts toward the cursor on hover — pure
- * CSS custom properties driven by mousemove, no library. */
 export function TiltCard({ children, className }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
 

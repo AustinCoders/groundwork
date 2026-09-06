@@ -11,9 +11,6 @@ import { plural } from "@/lib/format";
 
 const LAST_SEEN_LEVEL_KEY = "jsnotes:last-seen-level";
 
-/** True for exactly one render, the first time `level` is higher than
- * whatever was last recorded — a real level-up, not just the first paint
- * of a returning level-5 reader. */
 function useLevelUpCelebration(level: number): boolean {
   const [celebrate, setCelebrate] = useState(false);
 
@@ -29,9 +26,7 @@ function useLevelUpCelebration(level: number): boolean {
       const kick = setTimeout(() => setCelebrate(true), 0);
       try {
         localStorage.setItem(LAST_SEEN_LEVEL_KEY, String(level));
-      } catch {
-        // best-effort — worst case the celebration replays next visit
-      }
+      } catch {}
       return () => clearTimeout(kick);
     }
     if (level !== lastSeen) {
@@ -57,7 +52,7 @@ const DEFAULT_STATS: Stats = {
   xpForNextLevel: 25,
 };
 
-const HEATMAP_DAYS = 364; // 52 full weeks — a GitHub-style full year
+const HEATMAP_DAYS = 364;
 
 const WEEKDAY_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""];
 
@@ -70,15 +65,9 @@ function heatLevel(count: number): 0 | 1 | 2 | 3 | 4 {
 }
 
 function Heatmap() {
-  // useSyncExternalStore (which useProgressValue wraps) compares snapshots
-  // with Object.is — recentActivity() building a fresh array every call
-  // would look "always changed" and loop forever. Read it as a stable
-  // string, then parse — same fix ReviewView.tsx uses for its due list.
   const daysKey = useProgressValue(() => JSON.stringify(recentActivity(HEATMAP_DAYS)), "[]");
   const days = useMemo(() => JSON.parse(daysKey) as { day: string; count: number }[], [daysKey]);
 
-  // GitHub-style grid: columns are weeks, rows are Sun..Sat. Pad the front
-  // so the first column starts on a Sunday, same as the real calendar.
   const weeks = useMemo(() => {
     type Cell = { day: string; count: number } | null;
     if (!days.length) return [] as Cell[][];
@@ -172,8 +161,6 @@ function JokeCard() {
 
 export function ProgressView() {
   const mounted = useMounted();
-  // Same Object.is-stability issue as the heatmap above — go through a
-  // stable string rather than handing useSyncExternalStore a fresh object.
   const statsKey = useProgressValue(() => JSON.stringify(computeStats()), "");
   const stats = useMemo(() => (statsKey ? (JSON.parse(statsKey) as Stats) : DEFAULT_STATS), [statsKey]);
 

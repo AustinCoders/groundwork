@@ -18,8 +18,6 @@ export function setSoundEnabled(on: boolean): void {
   store.set(KEYS.soundEnabled, on);
 }
 
-/** Two-note synthesized "ding" — no audio asset to fetch or license, just
- * a couple of short sine-wave blips through the Web Audio API. */
 export function playSolvedDing(): void {
   if (!isSoundEnabled()) return;
   const audio = getContext();

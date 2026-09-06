@@ -1,11 +1,3 @@
-/**
- * Stands in for the editor while the CodeMirror chunk loads — around four
- * seconds on a mid-range connection, which used to be a blank rectangle.
- * It reuses the editor's own `.ed` shell so the toolbar, gutter and status
- * bar land in their final positions and nothing shifts when the real
- * editor swaps in.
- */
-
 const LINE_WIDTHS = [72, 45, 88, 30, 64, 52, 78, 38, 60, 84, 26, 56, 70, 42];
 
 export function EditorSkeleton({ height = 430 }: { height?: number }) {

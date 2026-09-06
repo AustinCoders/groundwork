@@ -11,10 +11,7 @@ export interface PracticeLink {
   level: string;
 }
 
-/** Client-side only because each row shows whether you've solved it. */
 export function PracticeStrip({ exercises }: { exercises: PracticeLink[] }) {
-  // useSyncExternalStore compares snapshots with Object.is, so this has to
-  // be a stable primitive — a fresh array every read would loop forever.
   const solvedKey = useProgressValue(
     () =>
       exercises

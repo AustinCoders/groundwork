@@ -20,13 +20,6 @@ import { interviewNotes } from "@/lib/interviewContent";
 import { practice as practiceData } from "@/content/practice";
 import type { Chapter, ChapterMeta, Exercise, LevelId, NotesFile, Topic } from "@/content/types";
 
-/**
- * IMPORTANT: this module imports every chapter body in the site. Importing
- * it from a client component ships all of that to the browser. Client code
- * should import lib/topics (topic + syllabus lookups) or lib/format
- * instead, and receive chapter data as props from a server component.
- */
-
 const NOTES_BY_TOPIC: Record<string, NotesFile> = {
   js: jsNotes,
   react: reactNotes,
@@ -76,11 +69,6 @@ export {
 } from "@/lib/topics";
 export { escapeHtml, plural } from "@/lib/format";
 
-/**
- * Asking for a topic that has no notes file (Git, which renders its own
- * body) must not silently hand back JavaScript's chapters — that's how the
- * sidebar ended up reporting JS progress on every topic.
- */
 export function notesData(topicId?: string | null): NotesFile {
   if (!topicId) return jsNotes;
   return NOTES_BY_TOPIC[topicId] || EMPTY_NOTES;
@@ -95,7 +83,6 @@ export function chapters(topicId?: string | null): Chapter[] {
   return (data && data.chapters) || [];
 }
 
-/** Chapter list with bodies stripped — safe to hand to a client component. */
 export function chapterMetas(topicId?: string | null): ChapterMeta[] {
   return chapters(topicId).map(({ body, ...meta }) => ({ ...meta, readMinutes: minutesFor(body) }));
 }

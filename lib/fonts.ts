@@ -17,15 +17,6 @@ import {
   Shadows_Into_Light,
 } from "next/font/google";
 
-// Only the default pairing (Caveat/Kalam) and the mono face used by code
-// blocks are worth preloading — the rest are alternate handwriting styles
-// picked via ThemeFontPicker and are fetched on demand when selected.
-//
-// display: "optional" on the default pair — they're self-hosted and
-// preloaded, so they're almost always ready in time, but "swap" was
-// letting the fallback-to-Caveat/Kalam reflow show up as layout shift
-// (CLS) on the hero heading, which is also the LCP element. "optional"
-// paints once, with whichever font is ready, and never swaps later.
 export const caveat = Caveat({
   subsets: ["latin"],
   weight: ["500", "700"],
@@ -102,9 +93,6 @@ export const schoolbell = Schoolbell({
   variable: "--font-schoolbell",
   preload: false,
 });
-// The one non-handwriting option — a clean sans for readers who want the
-// content without the notebook conceit. One family, two weights: 700 for
-// headings (existing CSS already sets font-weight there), 400 for body.
 export const roboto = Roboto({
   subsets: ["latin"],
   weight: ["400", "700"],

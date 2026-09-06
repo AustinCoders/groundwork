@@ -40,15 +40,8 @@ export const store = {
   },
 };
 
-/**
- * A chapter's progress entry. `true` is the pre-spaced-repetition format
- * and is still read, so nobody loses ticks — it just carries no dates, and
- * such a chapter becomes due for review immediately.
- */
 export interface ChapterMark {
-  /** when it was last read or reviewed, ms since epoch */
   at: number;
-  /** how many times it has come back around */
   reviews: number;
 }
 
@@ -66,34 +59,25 @@ function readProgress(): ProgressData {
   return data;
 }
 
-/** Gaps between reviews. Past the last one a chapter is considered learned. */
 const REVIEW_GAPS_DAYS = [3, 7, 21, 60, 180];
 const DAY = 24 * 60 * 60 * 1000;
 
 function markOf(v: true | ChapterMark): ChapterMark {
-  // A legacy `true` has no date, so treat it as read long ago — it surfaces
-  // for review on the next visit, which is the safe direction.
   return v === true ? { at: 0, reviews: 0 } : v;
 }
 
-/** ms timestamp when this chapter should next be reviewed, or null if learned. */
 export function dueAt(v: true | ChapterMark): number | null {
   const m = markOf(v);
   if (m.reviews >= REVIEW_GAPS_DAYS.length) return null;
   return m.at + REVIEW_GAPS_DAYS[m.reviews] * DAY;
 }
 
-// Progress is read in several places at once (the sidebar meter, the path
-// checklist, the reader's own toggle). They subscribe here so ticking a
-// chapter anywhere updates all of them without a reload.
 const progressListeners = new Set<() => void>();
 
 function emitProgressChange(): void {
   progressListeners.forEach((fn) => fn());
 }
 
-/** Local-timezone day key ("2026-08-30") — a streak is about the reader's
- * own day, not UTC's, so this deliberately isn't toISOString(). */
 export function dayKey(date: number = Date.now()): string {
   const d = new Date(date);
   const y = d.getFullYear();
@@ -110,10 +94,6 @@ function recordActivity(): void {
   emitProgressChange();
 }
 
-/** One count per local day something was solved or read — the raw log
- * behind the streak counter and the contribution heatmap. Chapters
- * un-ticked or exercises reset don't remove past activity; a streak is
- * about what you *did*, not what's currently marked done. */
 export const activity = {
   all(): Record<string, number> {
     return store.get<Record<string, number>>(KEYS.activity, {});
@@ -147,7 +127,6 @@ export const progress = {
     return done;
   },
 
-  /** Chapter ids whose next review has come round, oldest-due first. */
   dueForReview(ids: string[], now: number = Date.now()): string[] {
     const { chapters } = readProgress();
     return ids
@@ -158,7 +137,6 @@ export const progress = {
       .map((r) => r.id);
   },
 
-  /** Records a successful review and pushes the chapter to the next gap. */
   markReviewed(id: string): void {
     const data = readProgress();
     const cur = data.chapters[id];
@@ -195,11 +173,6 @@ export const progress = {
   },
 };
 
-// "javascript" keeps the bare, un-suffixed key so code already saved
-// before per-language storage existed isn't orphaned — every other
-// language gets its own namespaced slot. Without this, switching the
-// language dropdown and typing anything silently overwrote whatever was
-// saved under any other language, since they all shared one key.
 function codeKey(exerciseId: string, language?: string): string {
   return KEYS.code + exerciseId + (!language || language === "javascript" ? "" : ":" + language);
 }

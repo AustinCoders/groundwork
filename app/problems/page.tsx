@@ -10,7 +10,6 @@ export const metadata: Metadata = {
 export default function ProblemsPage() {
   const all = exercises();
 
-  // chapter id -> where it sits, so each problem can name its pattern
   const chapterInfo: Record<string, { num: string; title: string; topicId: string; topicName: string; href: string }> =
     {};
   topics()
@@ -41,7 +40,6 @@ export default function ProblemsPage() {
     });
   }
 
-  // keep curriculum order: walk topics and their chapters, not the map
   topics()
     .filter((t) => t.levels)
     .forEach((t) => {

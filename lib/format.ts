@@ -1,5 +1,3 @@
-/** Pure string helpers — safe to import from client components. */
-
 export function escapeHtml(value: unknown): string {
   const map: Record<string, string> = {
     "&": "&amp;",

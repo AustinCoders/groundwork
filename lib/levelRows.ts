@@ -4,11 +4,6 @@ export type LevelRow =
   | { ready: true; chapter: ChapterMeta; section?: undefined }
   | { ready: false; section: SyllabusSection; chapter: ChapterMeta | null };
 
-/**
- * Takes an id → chapter-metadata map rather than looking chapters up
- * itself: this runs inside client components, and importing lib/content
- * here would pull every chapter body into the browser bundle.
- */
 export function levelRows(level: Level, chapterById: Record<string, ChapterMeta>): LevelRow[] {
   const seenChapters: Record<string, boolean> = {};
   const rows: LevelRow[] = [];

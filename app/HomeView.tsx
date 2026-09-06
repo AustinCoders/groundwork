@@ -9,19 +9,12 @@ import { prefersMotion } from "@/lib/dom";
 import { useClientValue, useLastLevel, useMounted } from "@/lib/hooks";
 import type { Topic } from "@/content/types";
 
-// Interview prep isn't a rung on the JS ladder — it's a standalone reader
-// with no chapter/level structure, so it gets its own homepage section
-// instead of falling into the written/planned topic grid below (where it
-// would wrongly show up as "0 chapters planned").
 const INTERVIEW_TOPIC_ID = "interview";
 
 export interface HomeViewProps {
   topicsList: Topic[];
   stats: SiteStats;
   perTopic: Record<string, TopicStat>;
-  // Computed server-side and passed down rather than imported here — every
-  // round's full body text lives behind that import, and this is a client
-  // component, so importing it directly would ship all of it to the browser.
   interviewStats: { rounds: number; questions: number };
 }
 
@@ -62,9 +55,6 @@ function StatCounter({
 
   return (
     <div className="stat">
-      {/* Reserve the final width up front — counting up from 0 changes the
-          digit count, and without a fixed box that reflows the stats row
-          on every frame (this was the biggest source of layout shift). */}
       <span className="stat__num" style={{ minWidth: `${String(target).length + suffix.length}ch` }}>
         {display}
         {suffix}
@@ -197,9 +187,6 @@ export function HomeView({ topicsList, stats: site, perTopic, interviewStats }: 
     [site.topics, "topics on the shelf"],
   ];
 
-  // "Featured" means the topic actually has written chapters, not just a
-  // route (topic.status "ready" just means the page exists — most topics
-  // have that with zero written chapters, so it's not a useful signal here).
   const readyTopics = useMemo(
     () => topicsList.filter((t) => (perTopic[t.id]?.written ?? 0) > 0),
     [topicsList, perTopic]

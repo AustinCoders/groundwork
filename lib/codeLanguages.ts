@@ -12,11 +12,6 @@ export interface LanguageMeta {
   support: () => Extension;
 }
 
-// Only languages that actually run here — C/C++/Java were dropped: there's
-// no free, no-signup way to execute them in-browser (Piston's public API
-// went whitelist-only, Judge0 is pay-per-use, and a WASM compiler is a
-// 50MB+, fragile install for what this site needs). An editor you can't
-// run code in isn't worth the confusion of listing it.
 export const LANG_ORDER = ["javascript", "typescript", "python", "sql"] as const;
 
 export type LanguageKey = (typeof LANG_ORDER)[number];
