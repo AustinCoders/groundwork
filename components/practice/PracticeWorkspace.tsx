@@ -605,7 +605,11 @@ export function PracticeWorkspace({
                   )
                 )}
               </div>
-              <div className={`panel__view${activeTab === "tests" ? " is-active" : ""}`} id="view-tests" role="tabpanel">
+              <div
+                className={`panel__view${activeTab === "tests" ? " is-active" : ""}`}
+                id="view-tests"
+                role="tabpanel"
+              >
                 {!testResults ? (
                   <p className="panel__empty">Submit to see how you did.</p>
                 ) : testResults.length === 0 ? (

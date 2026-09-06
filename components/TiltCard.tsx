@@ -25,7 +25,12 @@ export function TiltCard({ children, className }: { children: React.ReactNode; c
   }
 
   return (
-    <div ref={ref} className={`tilt-card${className ? ` ${className}` : ""}`} onMouseMove={handleMove} onMouseLeave={handleLeave}>
+    <div
+      ref={ref}
+      className={`tilt-card${className ? ` ${className}` : ""}`}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
+    >
       {children}
     </div>
   );

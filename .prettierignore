@@ -2,3 +2,9 @@
 node_modules
 public
 package-lock.json
+
+# Hand-authored data files. They are written one field per line on purpose —
+# prettier would explode interview-data.ts alone into thousands of lines
+# without changing a character of what the site renders.
+content/interview-data.ts
+content/practice.ts

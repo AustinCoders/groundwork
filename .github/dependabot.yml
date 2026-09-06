@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # One PR per ecosystem instead of a dozen — these move together anyway.
+      next:
+        patterns: ["next", "eslint-config-next", "@next/*"]
+      react:
+        patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
+      codemirror:
+        patterns: ["@codemirror/*", "@lezer/*", "codemirror"]
+      dev-tooling:
+        patterns: ["eslint*", "prettier", "vitest", "cspell", "husky", "lint-staged", "typescript"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

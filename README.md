@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Groundwork
 
-## Getting Started
+Handwritten web-dev notes, in public — [groundwork.austincoders.com](https://groundwork.austincoders.com)
 
-First, run the development server:
+Notes written while learning, layered bottom to top so nothing uses a word that has not been
+explained yet. Every topic opens as a reading path for the level you are at, and every layer that
+needs practice links to a code editor that runs the code in the browser and checks it against real
+tests.
+
+## What is in here
+
+| Area               | What it is                                                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- |
+| **Reader**         | Topic covers and chapters — an interactive route with read state, time budget and per-chapter progress        |
+| **Interview prep** | 23 rounds of a real loop, from the screening formats through system design to the offer number                |
+| **Playground**     | A CodeMirror editor running JavaScript, TypeScript, Python (Pyodide) and SQL (sql.js) entirely in the browser |
+| **Problems**       | Runnable exercises with test suites, linked from the chapters that teach them                                 |
+| **Review**         | Spaced repetition over what you have read                                                                     |
+| **Progress**       | Streaks, XP, badges and an activity heatmap, all stored on the device                                         |
+
+Nothing is stored on a server. Progress, theme, narration settings and unsaved code all live in
+`localStorage`, which is why every progress-aware component reads through `useSyncExternalStore`
+rather than rendering straight from storage.
+
+## Running it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install     # Node 22.11+ (see .nvmrc)
+npm run dev     # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`predev` copies the Pyodide, sql.js and TypeScript-lib runtimes into `public/wasm/` — the playground
+needs them and they are deliberately not committed.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Checks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run check   # typecheck + lint + format + spelling + tests
+```
 
-## Learn More
+Or individually: `npm run typecheck`, `npm run lint`, `npm run format:check`, `npm run spell`,
+`npm test`. The same set runs in CI on every push and pull request, plus a production build.
 
-To learn more about Next.js, take a look at the following resources:
+A pre-commit hook runs eslint, prettier and the spell checker over staged files only.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Layout
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+app/          routes — one folder per topic, plus /practice /problems /review /progress
+components/   Shell (sidebar), reader/, practice/, and shared widgets
+content/      the notes themselves — chapters, exercises, interview rounds, topic metadata
+lib/          storage, content helpers, code runners, gamification, fonts
+tests/        content integrity — every chapter and exercise is checked structurally
+```
 
-## Deploy on Vercel
+Adding a chapter means adding it to the topic's notes file in `content/`; routes, search index,
+sitemap and progress tracking all read from there.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js 16 (App Router, Turbopack) · React 19 · TypeScript · plain CSS with theme tokens ·
+CodeMirror 6 · Pyodide · sql.js · Vitest · deployed on Vercel.

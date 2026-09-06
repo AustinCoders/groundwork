@@ -166,7 +166,8 @@ export function ProgressView() {
 
   const earned = useMemo(() => earnedBadges(stats), [stats]);
   const earnedIds = useMemo(() => new Set(earned.map((b) => b.id)), [earned]);
-  const xpPct = stats.xpForNextLevel > 0 ? Math.min(100, Math.round((stats.xpIntoLevel / stats.xpForNextLevel) * 100)) : 100;
+  const xpPct =
+    stats.xpForNextLevel > 0 ? Math.min(100, Math.round((stats.xpIntoLevel / stats.xpForNextLevel) * 100)) : 100;
   const leveledUp = useLevelUpCelebration(stats.level);
 
   if (!mounted) return null;
@@ -187,8 +188,8 @@ export function ProgressView() {
         <span className="hero__kicker">stats · streaks · badges</span>
         <h1>Your progress</h1>
         <p className="hero__lead">
-          Every chapter you finish and exercise you solve counts toward this. Nothing here is graded — it&apos;s just
-          a record of the work, and a reason to keep the streak alive.
+          Every chapter you finish and exercise you solve counts toward this. Nothing here is graded — it&apos;s just a
+          record of the work, and a reason to keep the streak alive.
         </p>
 
         <div className="progress-hero">
