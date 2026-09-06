@@ -10,8 +10,6 @@ export const metadata: Metadata = {
 };
 
 export default function PathPage() {
-  // The page picks its topic from the query string on the client, so every
-  // topic's metadata is prepared here — metadata only, never bodies.
   const chapterById: Record<string, ChapterMeta> = {};
   const chapterExercises: Record<string, ExerciseLink[]> = {};
   const levelExercises: Record<string, ExerciseLink[]> = {};

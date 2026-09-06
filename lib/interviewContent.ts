@@ -2,16 +2,11 @@ import { INTERVIEW_ROUNDS_RAW } from "@/content/interview-data";
 import type { InterviewCodeBlock, InterviewQuestionRaw, InterviewRoundRaw } from "@/content/interview-types";
 import type { Chapter, NotesFile } from "@/content/types";
 
-/** A round is "bulk" when its single card is actually a checklist of many
- * sub-questions (the rapid-fire rounds) — counting it as one card badly
- * undersells how much ground it covers. */
 const BULK_TITLE = /rapid-fire|the rest of|the ten numbers|implementations they ask|say out loud/i;
 
 function codeBlocksHTML(blocks: InterviewCodeBlock | InterviewCodeBlock[] | undefined): string {
   if (!blocks) return "";
   const arr = Array.isArray(blocks) ? blocks : [blocks];
-  // Plain <pre><code> — the reader shell wraps every bare <pre> in a
-  // .codeblock with a copy button itself, on every navigation.
   return arr
     .map((b) => (b.label ? `<div class="codelabel">${b.label}</div>` : "") + `<pre><code>${b.code}</code></pre>`)
     .join("");
@@ -37,8 +32,6 @@ function questionHTML(q: InterviewQuestionRaw, roundId: string, i: number): stri
   return h;
 }
 
-/** The count shown against a round — bulk rounds count their list items
- * rather than the single card that holds them. */
 function questionCount(round: InterviewRoundRaw): number {
   return round.qs.reduce((sum, q) => {
     if (BULK_TITLE.test(q.q)) {
@@ -49,8 +42,6 @@ function questionCount(round: InterviewRoundRaw): number {
   }, 0);
 }
 
-/** A round's content, without the chapter shell (title/badge/prev-next) —
- * ChapterSheet already supplies that from the Chapter fields below. */
 function roundBodyHTML(round: InterviewRoundRaw): string {
   let h = `<div class="interview-body">`;
   if (round.meta && round.meta.length) {
@@ -81,10 +72,6 @@ function toChapter(round: InterviewRoundRaw): Chapter {
     num: round.code,
     title: round.title,
     short: round.navTitle,
-    // The reader shell groups chapters by level — a natural fit for the
-    // ₹20–28L core loop (read in order, no tiering) versus the ₹50L+ staff
-    // track (lv: 2), so that split becomes the Beginner/Advanced grouping
-    // in the sidebar instead of a bespoke track filter.
     levels: [round.lv === 2 ? "advanced" : "beginner"],
     practice: [],
     ready: true,

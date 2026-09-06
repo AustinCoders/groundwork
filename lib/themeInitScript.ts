@@ -19,7 +19,5 @@ export const THEME_INIT_SCRIPT = `(function () {
 
     var savedFont = readJSON("jsnotes:font");
     document.documentElement.setAttribute("data-font", savedFont || "classic");
-  } catch (e) {
-    /* the default light/classic look is fine */
-  }
+  } catch (e) {}
 })();`;

@@ -3,12 +3,9 @@
 import { useEffect, useRef } from "react";
 import { prefersMotion } from "@/lib/dom";
 
-// Reuses the page's own theme tokens for the pieces' colors, so the burst
-// matches whichever of the 9 themes is active instead of a fixed palette.
 const PIECE_COLORS = ["--red", "--green", "--hl-yellow", "--ink", "--ink-soft"];
 const PIECE_COUNT = 60;
 
-/** Fires a one-shot confetti burst whenever `fire` flips to true. */
 export function Confetti({ fire }: { fire: boolean }) {
   const hostRef = useRef<HTMLDivElement>(null);
 

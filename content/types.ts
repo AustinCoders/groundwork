@@ -50,14 +50,6 @@ export interface Chapter {
   body: string;
 }
 
-/**
- * A chapter without its body. The reader shell (sidebar, search, nav) only
- * ever needs this — keeping bodies out of it is what stops every chapter
- * of a topic being shipped to the browser to read one of them.
- *
- * readMinutes is precomputed on the server precisely because working it
- * out requires the body.
- */
 export interface ChapterMeta extends Omit<Chapter, "body"> {
   readMinutes: number;
 }

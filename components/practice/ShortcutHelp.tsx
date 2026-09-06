@@ -2,8 +2,6 @@
 
 import dynamic from "next/dynamic";
 
-// Same lazy-load reasoning as Shell.tsx's mobile drawer trap — dead weight
-// on every playground load until someone actually opens the cheatsheet.
 const FocusScope = dynamic(() => import("@radix-ui/react-focus-scope").then((m) => m.FocusScope));
 
 const SHORTCUTS: { keys: string; desc: string }[] = [
@@ -18,8 +16,6 @@ const SHORTCUTS: { keys: string; desc: string }[] = [
   { keys: "?", desc: "Show this cheatsheet" },
 ];
 
-/** Opened by the toolbar's ⌨ button or the "?" key (outside the editor
- * itself, so it doesn't hijack a literal "?" typed into code). */
 export function ShortcutHelp({ open, onClose }: { open: boolean; onClose: () => void }) {
   if (!open) return null;
 

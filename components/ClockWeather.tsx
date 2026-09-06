@@ -29,14 +29,9 @@ function periodOf(hour: number): Period {
 }
 
 function useClock(): Date | null {
-  // Starts null so the server and the first client render agree (no
-  // hydration mismatch), then ticks once mounted. Once-a-second so the
-  // seconds readout is actually live, not just decorative.
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
     const tick = () => setNow(new Date());
-    // Deferred rather than called directly in the effect body — a
-    // synchronous setState here would cascade into an extra render.
     const kick = setTimeout(tick, 0);
     const id = setInterval(tick, 1000);
     return () => {
@@ -66,10 +61,6 @@ type WeatherState = "idle" | "loading" | "denied" | WeatherData;
 function useWeather(): [WeatherState, () => void] {
   const [weather, setWeather] = useState<WeatherState>("idle");
 
-  // Only reads a fresh cache on mount — never requests location on its
-  // own. A silent background geolocation prompt is easy to miss (or to
-  // have dismissed once and forgotten); a click the reader chooses to
-  // make is the reliable way to actually get weather showing.
   useEffect(() => {
     const cached = store.get<{ at: number; data: WeatherData } | null>(KEYS.weather, null);
     if (cached && Date.now() - cached.at < WEATHER_TTL_MS) {
@@ -106,8 +97,6 @@ function useWeather(): [WeatherState, () => void] {
   return [weather, request];
 }
 
-/** A small always-on clock (12h by default, toggle for 24h) + opt-in,
- * click-to-fetch geolocated weather for the sidebar. */
 export function ClockWeather() {
   const now = useClock();
   const [format, setFormat] = useClockFormat();

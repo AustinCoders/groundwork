@@ -3,9 +3,6 @@ import { savedNarration } from "@/lib/storage";
 const SPEECH_EXCLUDE = "pre, script, table, .demo, .try, .chipset, .chapter__foot, .practice-strip";
 const SPEECH_SELECTOR = "h3, p, li, figcaption, .say, .warn, .sticky";
 
-// Each chunk becomes one network request to /api/tts, so blocks are grouped
-// up to this size instead of firing one request per <p>/<li> — keeps
-// playback latency and request count reasonable per chapter.
 const MAX_CHUNK_CHARS = 700;
 
 interface NodeMapEntry {
@@ -31,9 +28,6 @@ interface ResolvedWord extends WordEvent {
   charEnd: number;
 }
 
-// Text and its text-node map are built together, with zero string
-// transformation in between, so character offsets always line up exactly
-// with the DOM — needed to turn a word's position back into a Range.
 function elementTextAndMap(el: Element): { text: string; map: NodeMapEntry[] } {
   let text = "";
   const map: NodeMapEntry[] = [];
@@ -62,7 +56,7 @@ function collectSpeechChunks(section: Element): SpeechChunk[] {
       current = { text: block.text, elements: [block.el], map: block.map.slice() };
       chunks.push(current);
     } else {
-      const base = current.text.length + 1; // +1 for the joining space below
+      const base = current.text.length + 1;
       current.map.push(...block.map.map((m) => ({ node: m.node, start: m.start + base, end: m.end + base })));
       current.text += " " + block.text;
       current.elements.push(block.el);
@@ -82,11 +76,6 @@ function rangeForOffsets(map: NodeMapEntry[], start: number, end: number): Range
   return null;
 }
 
-// Edge's word boundaries come back as {offset (seconds), duration, text} —
-// audio-timeline positions, not character offsets. Recover character
-// offsets by walking the words in order and locating each one in the exact
-// text we sent, advancing a cursor so repeated words don't all match the
-// first occurrence.
 function resolveWordOffsets(chunkText: string, words: WordEvent[]): ResolvedWord[] {
   let cursor = 0;
   return words.map((w) => {
@@ -132,11 +121,6 @@ export function setupNarration(container: HTMLElement): () => void {
     !!(CSS as unknown as { highlights?: unknown }).highlights &&
     typeof Highlight === "function";
 
-  // ::highlight() (CSS Custom Highlight API) is injected here rather than
-  // living in globals.css: Turbopack's CSS parser (Lightning CSS) doesn't
-  // yet recognize this pseudo-element and would flag it as a parse warning
-  // on every build, even though browsers that support the API render it
-  // fine. Only added once, and only when the API is actually supported.
   if (canHighlight && !document.getElementById("narration-highlight-style")) {
     const style = document.createElement("style");
     style.id = "narration-highlight-style";

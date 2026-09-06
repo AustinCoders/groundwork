@@ -57,11 +57,6 @@
   --font-body: var(--font-kalam), "Comic Sans MS", "Segoe Print", cursive;
   --font-mono: var(--font-cutive-mono), ui-monospace, monospace;
 
-  /* IDE palette for the practice editor — indirected through the same
-     tokens the rest of the theme uses, so it's defined once here but
-     picks up whichever theme is active wherever it's actually used
-     (custom properties resolve at use time, not at this declaration).
-     No need to repeat this in every html[data-theme] block below. */
   --ide-bg: var(--sheet-2);
   --ide-bg-elevated: var(--sheet);
   --ide-gutter: var(--sheet-2);
@@ -76,10 +71,6 @@
   --ide-green: var(--green);
   --ide-cursor: var(--ink);
 
-  /* What the practice editor's code content and gutter render in —
-     defaults to the mono face; each data-font style below points it at
-     that style's own body face instead, so switching the handwriting
-     style also restyles code, not just prose. */
   --font-code: var(--font-mono);
 }
 
@@ -119,9 +110,6 @@ html[data-font="bold"] {
   --font-code: var(--font-body);
 }
 
-/* The one clean, non-handwritten option — same family for both, the
-   weight difference (headings already set font-weight: 700 in their own
-   rules) is what tells them apart, same as any normal UI font pairing. */
 html[data-font="roboto"] {
   --font-heading: var(--font-roboto), system-ui, sans-serif;
   --font-body: var(--font-roboto), system-ui, sans-serif;
@@ -773,9 +761,6 @@ li::marker {
   border-bottom: 1px dashed var(--line-soft);
 }
 
-/* Breaks out of .site-sidenav's own padding (18px top, 16px sides) with
-   matching negative margins, so this reads as a banner spanning the rail
-   edge-to-edge rather than another inset row of text. */
 .clock-weather {
   display: flex;
   flex-direction: column;
@@ -1217,15 +1202,16 @@ li::marker {
 
 .site-sidenav__foot {
   margin-top: auto;
-  padding-top: 14px;
+  padding-top: 8px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
 }
 
 .site-sidenav__foot-row {
   display: flex;
   gap: 8px;
+  margin-top: 2px;
 }
 
 .site-sidenav__foot-row .btn {
@@ -1237,45 +1223,133 @@ li::marker {
   flex: none;
 }
 
-.zoomctl {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.zoomctl .btn--icon {
-  font-family: var(--font-heading);
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.zoomctl__pct {
-  min-width: 38px;
-  text-align: center;
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  color: var(--pencil);
-}
-
-.narrationctl {
+.setgroup {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-top: 10px;
-  margin-top: 4px;
+  gap: 6px;
+  padding-top: 11px;
   border-top: 1.5px dashed var(--line-soft);
 }
 
-.narrationctl__label {
+.site-sidenav__foot > .setgroup:first-child {
+  border-top: 0;
+  padding-top: 2px;
+}
+
+.setgroup__title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 2px;
   font-family: var(--font-heading);
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
   color: var(--pencil);
 }
 
-.narrationctl .zoomctl {
-  justify-content: space-between;
+.setgroup__title::after {
+  content: none;
+}
+
+.setrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.setrow__label {
+  flex: none;
+  width: 66px;
+  font-size: 13.5px;
+  color: var(--pencil);
+}
+
+.setrow__ctl,
+.setrow .dd {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.setrow .stepper {
+  margin-left: auto;
+}
+
+.setrow .dd__btn {
+  min-height: 32px;
+  padding: 4px 9px;
+  font-size: 13.5px;
+}
+
+.setrow--wide .setrow__play {
+  flex: none;
+  width: 32px;
+  min-height: 32px;
+  font-size: 13px;
+}
+
+.setrow__play.is-on {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: stretch;
+  flex: none;
+  background: var(--btn-bg);
+  border: 1.5px solid var(--line-soft);
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.stepper__btn {
+  width: 28px;
+  padding: 0;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: background 0.14s ease;
+}
+
+.stepper__btn--type {
+  font-family: var(--font-heading);
+  font-size: 13.5px;
+  font-weight: 700;
+  width: 30px;
+}
+
+.stepper__btn:hover:not([disabled]) {
+  background: var(--btn-hover);
+}
+
+.stepper__btn:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: -3px;
+}
+
+.stepper__btn[disabled] {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.stepper__val {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  padding: 4px 2px;
+  border-left: 1.5px dashed var(--line-soft);
+  border-right: 1.5px dashed var(--line-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--pencil);
 }
 
 .site-navlink {
@@ -1680,8 +1754,6 @@ kbd {
   color: var(--green);
 }
 
-/* Multi-column, checkmark-on-selection layout — matches a language picker
-   like an IDE's, rather than our usual single-column highlighted list. */
 .dd__menu--grid .dd__viewport {
   display: grid;
   grid-template-columns: repeat(var(--dd-cols, 3), max-content);
@@ -1900,9 +1972,6 @@ kbd {
   box-shadow: none;
 }
 
-/* Each chapter is its own route, so its title is the page's h1 — but it keeps
-   the h2 treatment it has always had. The cover's h1 stays the only
-   display-size heading in the reader. */
 .chapter__head h1 {
   font-size: clamp(28px, 4vw, 40px);
   letter-spacing: normal;
@@ -2696,6 +2765,10 @@ figcaption {
   color: var(--pencil);
 }
 
+.setgroup__title::after {
+  content: none;
+}
+
 .readout__v {
   font-family: var(--font-mono);
   font-size: 14.5px;
@@ -2867,6 +2940,10 @@ span.tone-bad {
   color: var(--pencil);
 }
 
+.setgroup__title::after {
+  content: none;
+}
+
 .fld input[type="range"] {
   accent-color: var(--ink);
 }
@@ -2971,17 +3048,6 @@ span.tone-bad {
   }
 }
 
-/* ---------------------------------------------------------------------
-   Motion: route fades, scroll reveal, and nav micro-interactions.
-   Scroll reveal uses native scroll-driven animations (animation-timeline),
-   guarded by @supports so unsupported browsers just render everything
-   visible with zero cost — no JS, no IntersectionObserver, no bundle. ---- */
-
-/* Opacity only, deliberately no transform: a transform here (even one
-   that resolves to translateY(0) at rest) would make .route-fade a
-   containing block for its position:fixed descendants (the back-to-top
-   fab, the mobile drawer backdrop), knocking them loose from the
-   viewport. */
 @keyframes route-fade-in {
   from {
     opacity: 0;
@@ -3246,17 +3312,6 @@ span.tone-bad {
   color: var(--pencil);
 }
 
-/* ---- /progress: XP, streak, heatmap, badges --------------------------- */
-
-/* A dedicated clipping box for the glow below, deliberately NOT relying on
-   .hero itself for overflow:hidden — .hero already has its own
-   overflow: visible (so the homepage hero's doodle SVGs can bleed past
-   its edges), and fighting that with a more specific selector here was
-   fragile: this file's build step was observed collapsing a compound
-   .hero.progress-hero-wrap selector down to just .progress-hero-wrap,
-   silently losing the specificity edge and letting the glow blow out
-   the mobile layout's width again. A separate absolutely-positioned
-   wrapper sidesteps the fight entirely. */
 .progress-glow {
   position: absolute;
   inset: 0;
@@ -3265,8 +3320,6 @@ span.tone-bad {
   border-radius: inherit;
 }
 
-/* A slow-breathing glow behind the ring — pure decoration, so it's the
-   first thing @media (prefers-reduced-motion) freezes (global rule). */
 .progress-glow::before {
   content: "";
   position: absolute;
@@ -3475,10 +3528,6 @@ span.tone-bad {
   gap: 8px;
   overflow-x: auto;
   padding-bottom: 4px;
-  /* Without this, the 52-week grid's intrinsic width (~800px) pushes this
-     box wider instead of scrolling once the viewport is narrower than
-     that — overflow-x:auto only kicks in once the element itself is
-     allowed to be narrower than its content. */
   min-width: 0;
 }
 
@@ -3523,8 +3572,6 @@ span.tone-bad {
   outline: none;
 }
 
-/* A custom tooltip instead of the browser's native title — themeable,
-   and it doesn't wait a second to appear. */
 .heatmap__day[data-tooltip]:hover::after,
 .heatmap__day[data-tooltip]:focus-visible::after {
   content: attr(data-tooltip);
@@ -3707,8 +3754,6 @@ span.tone-bad {
   --card-accent: var(--ink-soft);
 }
 
-/* --- featured (ready-to-read) topic ------------------------------------ */
-
 .featured {
   position: relative;
   display: flex;
@@ -3810,8 +3855,6 @@ span.tone-bad {
   flex: none;
   margin-left: auto;
 }
-
-/* --- more topics (compact rows) ----------------------------------------- */
 
 .topics-head {
   display: flex;
@@ -5313,9 +5356,6 @@ a.step__title:hover {
   outline-offset: -2px;
 }
 
-/* Run and Submit live in the top control bar now, not the editor toolbar —
-   styled as matching neutral outline pills off the fixed IDE palette,
-   the way an actual judge's Run/Submit pair reads (no green/blue coding). */
 .lc-topbar .btn--run,
 .lc-topbar .btn--test {
   font-weight: 700;
@@ -5435,12 +5475,6 @@ a.step__title:hover {
   opacity: 1;
 }
 
-/* Syntax palette — fixed regardless of site theme, since the editor
-   always runs the dark IDE chrome now. */
-/* Token colors lean only on --ide-* tokens (already contrast-checked per
-   theme) rather than fixed hex — a set of hardcoded pastel hues tuned for
-   one dark palette went unreadable the moment the editor started
-   following light themes too. */
 .tok-com {
   color: var(--ide-fg-faint);
   font-style: italic;
@@ -5734,14 +5768,11 @@ a.step__title:hover {
     max-height: 260px;
   }
 
-  /* ⌘/Ctrl, Alt-click — none of these exist on a touch keyboard. */
   .workbench > .keys {
     display: none;
   }
 }
 
-/* Coarse pointers (touch) never see hover, so the resize handle needs a
-   bigger hit area than the 18px a mouse gets away with. */
 @media (pointer: coarse) {
   .resize-handle {
     height: 28px;
@@ -5757,11 +5788,6 @@ a.step__title:hover {
   }
 }
 
-/* ---- loading skeletons ------------------------------------------------ */
-
-/* One shimmer definition for every skeleton on the site. The gradient rides
-   across a neutral block; under reduced-motion it holds still and just
-   reads as a placeholder shape. */
 .sk {
   display: block;
   border-radius: 4px;
@@ -5803,9 +5829,6 @@ a.step__title:hover {
   height: 12px;
 }
 
-/* editor skeleton — same theme-reactive --ide-* tokens as the real editor,
-   so nothing flashes to a different palette when CodeMirror finishes
-   loading, on any theme. */
 .ed--skeleton .sk {
   background: var(--ide-border);
   background-image: linear-gradient(
@@ -5851,7 +5874,6 @@ a.step__title:hover {
   color: var(--ide-fg-dim);
 }
 
-/* chapter skeleton — shown while a chapter route streams in */
 .sheet.chapter--skeleton {
   display: flex;
   flex-direction: column;
@@ -5883,7 +5905,6 @@ a.step__title:hover {
   border-radius: 10px;
 }
 
-/* cross-topic search results */
 .search-other__title {
   font-family: var(--font-heading);
   font-size: 21px;
@@ -5891,8 +5912,6 @@ a.step__title:hover {
   margin: 26px 0 0;
 }
 
-/* The pill is laid out as a column here so the topic name sits under the
-   chapter name instead of fighting it for horizontal room. */
 .toc a:has(.search-other__topic) {
   flex-direction: column;
   gap: 1px;
@@ -5904,10 +5923,6 @@ a.step__title:hover {
   letter-spacing: 0.04em;
   color: var(--pencil);
 }
-
-/* ---- step-through visualisations -------------------------------------- */
-/* Used by the algorithm demos. Every colour comes from the theme tokens so
-   these re-theme with the rest of the site. */
 
 .viz {
   display: flex;
@@ -5927,6 +5942,10 @@ a.step__title:hover {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--pencil);
+}
+
+.setgroup__title::after {
+  content: none;
 }
 
 .viz__cells {
@@ -5960,7 +5979,6 @@ a.step__title:hover {
   min-height: 12px;
 }
 
-/* semantic cell states */
 .viz__cell--lo {
   border-color: var(--green);
   background: var(--dg-box-green);
@@ -5986,7 +6004,6 @@ a.step__title:hover {
   color: var(--green);
 }
 
-/* grid, for DP tables */
 .viz__grid {
   display: grid;
   gap: 4px;
@@ -6022,8 +6039,6 @@ a.step__title:hover {
   color: var(--green);
   border-color: var(--green);
 }
-
-/* ---- problems index ---------------------------------------------------- */
 
 .prob-controls {
   display: flex;
@@ -6132,8 +6147,6 @@ a.step__title:hover {
   }
 }
 
-/* ---- desktop sidebar collapse ----------------------------------------- */
-
 .sidenav-collapse {
   position: absolute;
   top: 14px;
@@ -6152,8 +6165,6 @@ a.step__title:hover {
   opacity: 1;
 }
 
-/* On phones the drawer already handles this, so the toggle would only
-   confuse — the ☰ button is the control there. */
 @media (max-width: 900px) {
   .sidenav-collapse {
     display: none;
@@ -6168,9 +6179,6 @@ a.step__title:hover {
     overflow-x: hidden;
   }
 
-  /* Collapsed is an ICON RAIL, not an empty strip: the glyphs stay
-     clickable, only their labels go. Everything that has no icon of its
-     own — search, headings, counts, progress, the foot pickers — folds. */
   .site-sidenav.is-collapsed .site-navlink__name,
   .site-sidenav.is-collapsed .site-navlink__go,
   .site-sidenav.is-collapsed .site-navlink__dot,
@@ -6191,7 +6199,6 @@ a.step__title:hover {
     display: none;
   }
 
-  /* The chapter list would be dozens of bare numbers — not a useful rail. */
   .site-sidenav.is-collapsed .nav-group__body,
   .site-sidenav.is-collapsed .nav-group__summary {
     display: none;
@@ -6215,7 +6222,6 @@ a.step__title:hover {
     padding-right: 0;
   }
 
-  /* A hit count still matters when the label is gone — show it as a dot. */
   .site-sidenav.is-collapsed .site-navlink__hits {
     position: absolute;
     transform: translate(14px, -10px);
@@ -6228,28 +6234,16 @@ a.step__title:hover {
     position: relative;
   }
 
-  /* In the rail the toggle sits in the flow, above the brand, instead of
-     floating over it. */
   .site-sidenav.is-collapsed .sidenav-collapse {
     position: static;
     align-self: center;
     margin: 0 0 10px;
   }
 
-  /* The accent pill would still paint a full-width green block. */
   .site-sidenav.is-collapsed .site-navlink--accent {
     padding: 8px 0;
   }
 }
-
-/* ============================================================
-   Interview prep reader — question cards, round meta, cards
-   and pills used inside answers. Scoped under .interview-body
-   so a generic name like .test can't collide with anything
-   elsewhere (the exercise runner already owns a bare .test).
-   Everything else (pre/code, tables, .say/.warn/.sticky) reuses
-   the reader's existing styles as-is.
-   ============================================================ */
 
 .interview-body .rmeta {
   display: grid;
@@ -6303,8 +6297,6 @@ a.step__title:hover {
 .interview-body .rintro {
   color: var(--ink-soft);
 }
-
-/* ---- question cards ---- */
 
 .interview-body .q {
   border-top: 1px solid var(--line);
@@ -6362,8 +6354,6 @@ a.step__title:hover {
   margin-bottom: 0;
 }
 
-/* ---- callouts specific to this reader ---- */
-
 .interview-body .test {
   font-size: 0.94rem;
   color: var(--ink-soft);
@@ -6404,8 +6394,6 @@ a.step__title:hover {
   padding: 0 2px;
 }
 
-/* ---- tables ---- */
-
 .interview-body td.n {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -6416,8 +6404,6 @@ a.step__title:hover {
   background: var(--sticky-mint-bg);
   color: var(--sticky-mint-fg);
 }
-
-/* ---- cards & pills used inside a few answers ---- */
 
 .interview-body .cards {
   display: grid;

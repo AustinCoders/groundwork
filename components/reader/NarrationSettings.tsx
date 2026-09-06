@@ -59,9 +59,12 @@ export function NarrationSettings() {
   const pitchIndex = Math.max(0, PITCH_STEPS.indexOf(settings.pitch));
 
   return (
-    <div className="narrationctl">
-      <span className="narrationctl__label">🔊 Narrator</span>
-      <div className="zoomctl" role="group" aria-label="Narrator voice and preview">
+    <section className="setgroup" aria-label="Narrator">
+      <h2 className="setgroup__title">
+        <span aria-hidden="true">🔊</span> Narrator
+      </h2>
+
+      <div className="setrow setrow--wide">
         <Dropdown
           items={EDGE_VOICES}
           value={settings.voice}
@@ -73,7 +76,7 @@ export function NarrationSettings() {
           openUp
         />
         <button
-          className="btn btn--icon"
+          className={`btn btn--icon setrow__play${previewState === "playing" ? " is-on" : ""}`}
           type="button"
           title="Preview this voice"
           aria-label="Preview narrator voice"
@@ -83,52 +86,60 @@ export function NarrationSettings() {
           {previewState === "playing" ? "⏹" : previewState === "loading" ? "…" : "▶"}
         </button>
       </div>
-      <div className="zoomctl" role="group" aria-label="Narration speed">
-        <button
-          className="btn btn--icon"
-          type="button"
-          title="Slower"
-          aria-label="Decrease narration speed"
-          disabled={rateIndex === 0}
-          onClick={() => update({ rate: RATE_STEPS[Math.max(0, rateIndex - 1)] })}
-        >
-          −
-        </button>
-        <span className="zoomctl__pct">{settings.rate}×</span>
-        <button
-          className="btn btn--icon"
-          type="button"
-          title="Faster"
-          aria-label="Increase narration speed"
-          disabled={rateIndex === RATE_STEPS.length - 1}
-          onClick={() => update({ rate: RATE_STEPS[Math.min(RATE_STEPS.length - 1, rateIndex + 1)] })}
-        >
-          +
-        </button>
+
+      <div className="setrow" role="group" aria-label="Narration speed">
+        <span className="setrow__label">Speed</span>
+        <div className="stepper">
+          <button
+            className="stepper__btn"
+            type="button"
+            title="Slower"
+            aria-label="Decrease narration speed"
+            disabled={rateIndex === 0}
+            onClick={() => update({ rate: RATE_STEPS[Math.max(0, rateIndex - 1)] })}
+          >
+            −
+          </button>
+          <span className="stepper__val">{settings.rate}×</span>
+          <button
+            className="stepper__btn"
+            type="button"
+            title="Faster"
+            aria-label="Increase narration speed"
+            disabled={rateIndex === RATE_STEPS.length - 1}
+            onClick={() => update({ rate: RATE_STEPS[Math.min(RATE_STEPS.length - 1, rateIndex + 1)] })}
+          >
+            +
+          </button>
+        </div>
       </div>
-      <div className="zoomctl" role="group" aria-label="Narration pitch">
-        <button
-          className="btn btn--icon"
-          type="button"
-          title="Lower pitch"
-          aria-label="Decrease narration pitch"
-          disabled={pitchIndex === 0}
-          onClick={() => update({ pitch: PITCH_STEPS[Math.max(0, pitchIndex - 1)] })}
-        >
-          −
-        </button>
-        <span className="zoomctl__pct">{settings.pitch} pitch</span>
-        <button
-          className="btn btn--icon"
-          type="button"
-          title="Higher pitch"
-          aria-label="Increase narration pitch"
-          disabled={pitchIndex === PITCH_STEPS.length - 1}
-          onClick={() => update({ pitch: PITCH_STEPS[Math.min(PITCH_STEPS.length - 1, pitchIndex + 1)] })}
-        >
-          +
-        </button>
+
+      <div className="setrow" role="group" aria-label="Narration pitch">
+        <span className="setrow__label">Pitch</span>
+        <div className="stepper">
+          <button
+            className="stepper__btn"
+            type="button"
+            title="Lower pitch"
+            aria-label="Decrease narration pitch"
+            disabled={pitchIndex === 0}
+            onClick={() => update({ pitch: PITCH_STEPS[Math.max(0, pitchIndex - 1)] })}
+          >
+            −
+          </button>
+          <span className="stepper__val">{settings.pitch}</span>
+          <button
+            className="stepper__btn"
+            type="button"
+            title="Higher pitch"
+            aria-label="Increase narration pitch"
+            disabled={pitchIndex === PITCH_STEPS.length - 1}
+            onClick={() => update({ pitch: PITCH_STEPS[Math.min(PITCH_STEPS.length - 1, pitchIndex + 1)] })}
+          >
+            +
+          </button>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

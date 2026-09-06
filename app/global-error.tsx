@@ -2,11 +2,6 @@
 
 import { useEffect } from "react";
 
-/**
- * Replaces the root layout entirely, so it can't use Shell or rely on the
- * theme system having booted. Styles are inline and self-contained on
- * purpose — this is the screen that has to render when nothing else did.
- */
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
     console.error("Fatal error:", error);

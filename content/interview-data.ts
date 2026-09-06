@@ -1,6 +1,3 @@
-// AUTO-EXTRACTED from the original interview.html round data.
-// Field names match the source 1:1 (q/test/a/say/trap/note/after/fu/code, r.meta/tiers/intro/pre/qs).
-// Rendering into site-consistent markup happens in lib/interviewRender.ts.
 import type { InterviewRoundRaw } from "./interview-types";
 
 export const INTERVIEW_ROUNDS_RAW: InterviewRoundRaw[] = [

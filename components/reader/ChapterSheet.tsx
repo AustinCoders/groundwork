@@ -4,11 +4,6 @@ import { ChapterDone } from "@/components/reader/ChapterDone";
 import { PracticeStrip } from "@/components/reader/PracticeStrip";
 import type { Chapter } from "@/content/types";
 
-/**
- * Server component — a chapter's body HTML is rendered here and never
- * enters the client bundle. Only the two interactive strips below are
- * client components, and they receive ids, not content.
- */
 export function ChapterSheet({
   chapter,
   topicId,

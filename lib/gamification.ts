@@ -13,8 +13,6 @@ export interface Stats {
   xpForNextLevel: number;
 }
 
-// Quadratic curve — level N starts at 25*(N-1)^2 XP, so early levels come
-// fast (hook) and later ones stretch out (something to keep working toward).
 function levelForXP(xp: number): number {
   return Math.floor(Math.sqrt(xp / 25)) + 1;
 }
@@ -33,8 +31,6 @@ export function computeStats(): Stats {
   const log = activity.all();
   const activeDays = Object.keys(log).length;
 
-  // Walk backward from today; a day with no activity YET doesn't break the
-  // streak (the day isn't over), but yesterday having none does.
   let streak = 0;
   const oneDay = 24 * 60 * 60 * 1000;
   let cursor = Date.now();
@@ -44,7 +40,6 @@ export function computeStats(): Stats {
     cursor -= oneDay;
   }
 
-  // Longest run of consecutive active days across the whole log.
   const days = Object.keys(log).sort();
   let bestStreak = 0;
   let run = 0;
@@ -102,7 +97,6 @@ export function earnedBadges(stats: Stats): Badge[] {
   return BADGES.filter((b) => b.earned(stats));
 }
 
-/** Last `days` entries, oldest first, for a contribution-style heatmap. */
 export function recentActivity(days: number): { day: string; count: number }[] {
   const log = activity.all();
   const out: { day: string; count: number }[] = [];

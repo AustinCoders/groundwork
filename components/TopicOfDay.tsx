@@ -7,15 +7,11 @@ import { escapeHtml } from "@/lib/format";
 import { useLastLevel, useMounted } from "@/lib/hooks";
 import type { Topic } from "@/content/types";
 
-/** A nudge toward something other than whatever's already mid-read. Only
- * picks from topics with actual chapters, not just an outline. */
 export function TopicOfDay({ topics }: { topics: Topic[] }) {
   const mounted = useMounted();
   const savedLevel = useLastLevel();
   const topic = topicOfDay(topics);
 
-  // Date math is client-only (server/client timezones can disagree right
-  // at a day boundary) — same guard ThemePicker/FontPicker use.
   if (!mounted || !topic) return null;
 
   const href = topicHref(topic, savedLevel);

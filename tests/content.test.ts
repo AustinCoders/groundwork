@@ -22,8 +22,6 @@ describe("chapter integrity", () => {
     }
   });
 
-  // Chapter ids are URL path segments now, so a stray space or slash is a
-  // broken route rather than just an ugly anchor.
   it("keeps every chapter id URL-safe", () => {
     for (const { topicId, ch } of allChapters) {
       expect(ch.id, `"${ch.id}" in ${topicId} is not a clean URL segment`).toMatch(/^[a-z0-9][a-z0-9-]*$/);

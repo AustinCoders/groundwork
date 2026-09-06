@@ -15,7 +15,6 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: `${SITE_NAME} — the whole map`,
-    // Per-page titles already read "<Topic> — notes"; keep them as-authored.
     template: "%s",
   },
   description: SITE_DESCRIPTION,
@@ -39,11 +38,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     ...Object.entries(topicStats())
       .filter(([, stat]) => stat.written > 0)
       .map(([id]) => id),
-    // Single-page readers (Git, Interview prep) have no chapter ladder, so
-    // topicStats always reports them as 0 written — that's right for the
-    // homepage's "N chapters written" count, but wrong here: a finished
-    // single-page doc belongs in the sidebar's "Ready to read" list, not
-    // buried under "More topics" as if it were still an outline.
     ...topics()
       .filter((t) => !t.levels && t.status === "ready")
       .map((t) => t.id),

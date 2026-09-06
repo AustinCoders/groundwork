@@ -1,6 +1,3 @@
-// Proxies JokeAPI (v2.jokeapi.dev) server-side — free, no key, but this
-// keeps the CSP's connect-src at 'self' and gives one place to add
-// caching if the fun-content card gets used more widely.
 export const runtime = "nodejs";
 
 interface JokeApiSingle {
@@ -26,7 +23,6 @@ export async function GET() {
   try {
     const res = await fetch("https://v2.jokeapi.dev/joke/Programming?safe-mode", {
       headers: { accept: "application/json" },
-      // Jokes are cheap and cacheable — no need to hit JokeAPI on every load.
       next: { revalidate: 300 },
     });
     if (!res.ok) throw new Error(`JokeAPI responded ${res.status}`);

@@ -17,19 +17,8 @@ import { SITE_NAME } from "@/lib/site";
 const SIDEBAR_KEY = "jsnotes:sidebar-collapsed";
 import { useClientValue, useLastLevel, useMounted, useProgressValue } from "@/lib/hooks";
 
-// Split out of the main bundle — it's dead weight on every page (including
-// the homepage's LCP-critical first paint) until someone actually opens the
-// mobile drawer, which is the only time it's used.
 const FocusScope = dynamic(() => import("@radix-ui/react-focus-scope").then((m) => m.FocusScope));
 
-/**
- * Radix's FocusScope pulls focus to its first tabbable child as soon as it
- * mounts. The sidebar is always in the DOM, so mounting it unconditionally
- * meant every page load — and, once chapters became routes, every chapter
- * navigation — parked the caret in the sidebar search box, swallowing the
- * reader's keyboard shortcuts. Mount the trap only while the mobile drawer
- * is open, which is the only time focus should be captured.
- */
 function MaybeFocusTrap({ active, children }: { active: boolean; children: React.ReactElement }) {
   if (!active) return children;
   return (
@@ -58,14 +47,8 @@ export interface ShellProps {
 
   playgroundNav?: React.ReactNode;
 
-  /** Which topic's progress the sidebar reports. Defaults to JavaScript. */
   topicId?: string;
 
-  /**
-   * Chapter list for the progress meter. Passed in rather than looked up,
-   * because looking it up here would pull every chapter body into the
-   * client bundle. Omit it to hide the progress block.
-   */
   progressChapters?: { id: string; short: string }[];
 }
 
@@ -83,9 +66,6 @@ export function Shell({
   progressChapters,
 }: ShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  // Desktop collapse. Read through useClientValue — the same shape the zoom
-  // control uses — so the server render stays expanded and hydration agrees,
-  // without setting state inside an effect.
   const savedCollapsed = useClientValue(() => store.get<boolean>(SIDEBAR_KEY, false), false);
   const [collapsedOverride, setCollapsedOverride] = useState<boolean | null>(null);
   const collapsed = collapsedOverride ?? savedCollapsed;
@@ -103,15 +83,10 @@ export function Shell({
   const readyTopicIds = useReadyTopicIds();
   const [readyTopics, plannedTopics] = useMemo(() => {
     const all = topics();
-    // Fall back to route status if the readiness context is ever missing —
-    // still correct, just doesn't split out topics that are routable but
-    // still empty outlines.
     if (!readyTopicIds) return [all.filter((t) => t.status === "ready"), all.filter((t) => t.status !== "ready")];
     return [all.filter((t) => readyTopicIds.has(t.id)), all.filter((t) => !readyTopicIds.has(t.id))];
   }, [readyTopicIds]);
   const done = useProgressValue(() => progress.countDone(chs), 0);
-  // Only the chapters this shell knows about — enough for a nudge in the
-  // sidebar; /review computes the real, cross-topic list.
   const dueCount = useProgressValue(() => progress.dueForReview(chs.map((c) => c.id)).length, 0);
   const progressState: { done: number; total: number; chapters: { id: string; short: string }[] } | null =
     mounted && chs.length ? { done, total: chs.length, chapters: chs } : null;
@@ -212,7 +187,8 @@ export function Shell({
                 JS
               </span>
               <span>
-                <span className="brand__name">{SITE_NAME}</span> <span className="brand__meta">handwritten · web dev</span>
+                <span className="brand__name">{SITE_NAME}</span>{" "}
+                <span className="brand__meta">handwritten · web dev</span>
               </span>
             </Link>
 
@@ -255,10 +231,6 @@ export function Shell({
 
             {sidebarExtra}
 
-            {/* Only for topics with their own beginner/intermediate/advanced
-                ladder — topicId alone isn't enough, since single-page readers
-                like Git and Interview prep pass it too (for the progress
-                block and page title) but have no such ladder to link to. */}
             {topicId && topicById(topicId)?.levels && (
               <nav className="site-sidenav__section" aria-label="Levels">
                 <h2 className="site-sidenav__heading">{topicName} levels</h2>
@@ -378,13 +350,24 @@ export function Shell({
             </div>
 
             <div className="site-sidenav__foot">
-              {footBefore}
-              <div id="theme-picker">
-                <ThemePicker />
-              </div>
-              <div id="font-picker">
-                <FontPicker />
-              </div>
+              <section className="setgroup" aria-label="Display settings">
+                <h2 className="setgroup__title">
+                  <span aria-hidden="true">⚙</span> Display
+                </h2>
+                {footBefore}
+                <div className="setrow">
+                  <span className="setrow__label">Theme</span>
+                  <div className="setrow__ctl" id="theme-picker">
+                    <ThemePicker />
+                  </div>
+                </div>
+                <div className="setrow">
+                  <span className="setrow__label">Style</span>
+                  <div className="setrow__ctl" id="font-picker">
+                    <FontPicker />
+                  </div>
+                </div>
+              </section>
               {footAfter}
             </div>
           </aside>

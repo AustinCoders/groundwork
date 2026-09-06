@@ -16,10 +16,8 @@ function LevelTag({ level }: { level: string }) {
 }
 
 export interface PathClientProps {
-  /** id -> chapter metadata for every chapter in every topic on the shelf. */
   chapterById: Record<string, ChapterMeta>;
   chapterExercises: Record<string, ExerciseLink[]>;
-  /** level key `${topicId}:${levelId}` -> the exercises tagged for it. */
   levelExercises: Record<string, ExerciseLink[]>;
 }
 

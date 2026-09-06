@@ -24,7 +24,6 @@ interface SearchEntry {
   text: string;
 }
 
-/** A chapter in some other topic — titles only, see app/search-index.json. */
 interface GlobalEntry {
   id: string;
   topicId: string;
@@ -37,11 +36,8 @@ interface GlobalEntry {
 
 export interface ReaderShellProps {
   topicId: string;
-  /** Metadata only — bodies stay on the server. */
   chapters: ChapterMeta[];
-  /** Base route for this topic, e.g. "/dsa". */
   basePath: string;
-  /** Chapter currently being read, or null on the cover. */
   activeId: string | null;
   children: React.ReactNode;
 }
@@ -68,8 +64,6 @@ export function ReaderShell({ topicId, chapters, basePath, activeId, children }:
 
   const searching = query.trim().length > 0;
 
-  // Both indexes live on the server and are fetched once, the first time the
-  // reader actually searches, so neither sits on the critical path.
   const [fullIndex, setFullIndex] = useState<SearchEntry[] | null>(null);
   const [globalIndex, setGlobalIndex] = useState<GlobalEntry[] | null>(null);
   useEffect(() => {
@@ -96,7 +90,6 @@ export function ReaderShell({ topicId, chapters, basePath, activeId, children }:
     };
   }, [searching, fullIndex, globalIndex, basePath]);
 
-  // Until the full index arrives, match on titles so typing feels instant.
   const searchIndex = useMemo<SearchEntry[]>(() => {
     if (fullIndex) return fullIndex;
     return chapters.map((ch) => ({
@@ -118,8 +111,6 @@ export function ReaderShell({ topicId, chapters, basePath, activeId, children }:
     return hits;
   }, [query, searchIndex]);
 
-  // Chapters in *other* topics that match — this is what stops "caching"
-  // searched from DSA missing the System Design chapters that cover it.
   const otherTopicMatches = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q || !globalIndex) return [];
@@ -172,7 +163,6 @@ export function ReaderShell({ topicId, chapters, basePath, activeId, children }:
     };
   }, [mounted]);
 
-  // Re-run on every navigation: the server swapped in different content.
   useEffect(() => {
     if (!mounted || !contentRef.current) return;
     activateScripts(contentRef.current);
@@ -352,10 +342,11 @@ export function ReaderShell({ topicId, chapters, basePath, activeId, children }:
         </nav>
       }
       footBefore={
-        <>
-          <div className="zoomctl" role="group" aria-label="Text size">
+        <div className="setrow" role="group" aria-label="Text size">
+          <span className="setrow__label">Text size</span>
+          <div className="stepper">
             <button
-              className="btn btn--icon"
+              className="stepper__btn stepper__btn--type"
               id="zoom-out"
               type="button"
               title="Smaller text"
@@ -365,11 +356,11 @@ export function ReaderShell({ topicId, chapters, basePath, activeId, children }:
             >
               A−
             </button>
-            <span className="zoomctl__pct" id="zoom-pct">
+            <span className="stepper__val" id="zoom-pct">
               {ZOOM_STEPS[zoomIndex]}%
             </span>
             <button
-              className="btn btn--icon"
+              className="stepper__btn stepper__btn--type"
               id="zoom-in"
               type="button"
               title="Larger text"
@@ -380,23 +371,25 @@ export function ReaderShell({ topicId, chapters, basePath, activeId, children }:
               A+
             </button>
           </div>
-          <NarrationSettings />
-        </>
+        </div>
       }
       footAfter={
-        <div className="site-sidenav__foot-row">
-          <button
-            className="btn btn--wide"
-            id="print-btn"
-            type="button"
-            title="Print / save as PDF"
-            aria-label="Print or save as PDF"
-            onClick={() => window.print()}
-          >
-            <span aria-hidden="true">⎙</span>
-            <span className="btn__label">Print</span>
-          </button>
-        </div>
+        <>
+          <NarrationSettings />
+          <div className="site-sidenav__foot-row">
+            <button
+              className="btn btn--wide"
+              id="print-btn"
+              type="button"
+              title="Print / save as PDF"
+              aria-label="Print or save as PDF"
+              onClick={() => window.print()}
+            >
+              <span aria-hidden="true">⎙</span>
+              <span className="btn__label">Print</span>
+            </button>
+          </div>
+        </>
       }
     >
       <div className={`searchbar${searching ? " is-visible" : ""}`} id="searchbar" role="status">

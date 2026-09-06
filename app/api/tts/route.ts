@@ -3,13 +3,10 @@ import { EDGE_VOICES } from "@/lib/edge-voices";
 
 export const runtime = "nodejs";
 
-// Only forward whitelisted voice names into the SSML template below —
-// the client should only ever send one of EDGE_VOICES, but never trust that.
 const ALLOWED_VOICES = new Set(EDGE_VOICES.map((v) => v.value));
 
 const MAX_TEXT_LENGTH = 2000;
 
-// Azure/Edge reports word timings in 100-nanosecond ticks.
 const TICKS_PER_SECOND = 10_000_000;
 
 function escapeSSML(text: string): string {
@@ -27,8 +24,6 @@ interface WordEvent {
   text: string;
 }
 
-// SSML attribute, so it's regex-validated rather than trusted — matches
-// the existing "+N%"/"-N%" shape produced by the pitch stepper in the UI.
 const PITCH_PATTERN = /^[+-]\d{1,2}%$|^0%$/;
 
 export async function POST(req: Request) {
@@ -84,9 +79,7 @@ export async function POST(req: Request) {
               });
             }
           }
-        } catch {
-          // malformed metadata chunk — word highlighting degrades gracefully, audio is unaffected
-        }
+        } catch {}
       });
       metadataStream?.once("error", () => {
         metaDone = true;

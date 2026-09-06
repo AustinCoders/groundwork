@@ -1,10 +1,3 @@
-/**
- * Shape of a chapter sheet, shown while the route streams. Navigation is
- * usually instant because Next prefetches the sidebar links, so this is
- * mostly seen on a cold or slow connection — but a blank sheet in that
- * case is the one moment the reader looks broken.
- */
-
 const PARAGRAPH_WIDTHS = [
   [98, 96, 94, 61],
   [97, 99, 72],

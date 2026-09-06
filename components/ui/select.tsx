@@ -62,6 +62,7 @@ function SelectItem({ className, children, ...props }: React.ComponentProps<type
 export interface DropdownItem {
   value: string;
   label: string;
+  short?: string;
 }
 
 export interface DropdownProps {
@@ -71,9 +72,7 @@ export interface DropdownProps {
   ariaLabel: string;
   openUp?: boolean;
   compact?: boolean;
-  /** Plain text-and-chevron trigger, no button chrome — matches an IDE's language picker. */
   plain?: boolean;
-  /** Lay options out in N columns with a checkmark on the selection, instead of one column with a highlight fill. */
   columns?: number;
 }
 
@@ -81,22 +80,14 @@ function Dropdown({ items, value, onChange, ariaLabel, openUp, compact, plain, c
   const [open, setOpen] = React.useState(false);
 
   return (
-    <div
-      className={cn("dd", openUp && "dd--up", compact && "dd--compact", plain && "dd--plain", open && "is-open")}
-    >
+    <div className={cn("dd", openUp && "dd--up", compact && "dd--compact", plain && "dd--plain", open && "is-open")}>
       <Select value={value} onValueChange={onChange} open={open} onOpenChange={setOpen}>
         <SelectTrigger aria-label={ariaLabel}>
-          <SelectValue />
+          <SelectValue>{items.find((i) => i.value === value)?.short}</SelectValue>
         </SelectTrigger>
         <SelectContent
           side={openUp ? "top" : "bottom"}
           className={columns ? "dd__menu--grid" : undefined}
-          // Only pass `style` at all when there's a real value — an
-          // explicit `style={undefined}` here would still get spread onto
-          // SelectContent's props, clobbering its own default `minWidth:
-          // var(--radix-select-trigger-width)` and leaving the popup's
-          // width to whatever CSS's min-width:100% resolves against on a
-          // portaled element (not the trigger's actual width).
           {...(columns ? { style: { "--dd-cols": columns } as React.CSSProperties } : {})}
         >
           {items.map((item) => (

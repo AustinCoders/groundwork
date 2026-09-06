@@ -3,7 +3,6 @@ import { ImageResponse } from "next/og";
 export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 
-// iOS masks and rounds this itself, so it needs padding the favicon doesn't.
 export default function AppleIcon() {
   return new ImageResponse(
     <div

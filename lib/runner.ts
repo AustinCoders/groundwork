@@ -3,7 +3,6 @@ export interface RunnerConsoleEntry {
   text: string;
 }
 
-/** A SQL result set, rendered as a table instead of a text line. */
 export interface RunnerTableEntry {
   kind: "table";
   columns: string[];
@@ -60,9 +59,6 @@ function buildTestSource(tests: { name: string; body: string }[]) {
     .join("\n");
 }
 
-// Reused across runs so a normal Run doesn't pay worker-spin-up cost every
-// time. Only discarded when a run has to be force-terminated (timeout or
-// stop) — see lib/jsWorker.ts for why this needs to be a worker at all.
 let sharedWorker: Worker | null = null;
 
 function getWorker(): Worker {
@@ -161,17 +157,6 @@ function loadTypeScript() {
   return tsModulePromise;
 }
 
-// `ts.transpileModule` below only does per-file syntax transformation — it
-// has no Program/TypeChecker behind it, so it silently accepts genuinely
-// type-incorrect code (`const x: number = "oops"` transpiles and runs
-// with zero complaint). Real type errors need a full ts.createProgram,
-// which needs the standard lib declarations to check against. This is
-// the exact file set TypeScript resolves for `lib: ["ES2020", "WebWorker"]`
-// (WebWorker, not DOM, because that's what the code actually runs in —
-// see lib/jsWorker.ts) — derived by instrumenting a real compile and
-// recording every lib.*.d.ts it asked for. Self-hosted under
-// public/wasm/typescript-lib/ by scripts/copy-wasm-assets.mjs, and kept
-// in lib/tsLibFiles.json so the script and this file share one list.
 import tsLibFileNames from "@/lib/tsLibFiles.json";
 
 const TS_DEFAULT_LIB = "lib.es2020.d.ts";
@@ -194,7 +179,6 @@ function loadTsLib(): Promise<Map<string, string>> {
 export async function transpileTS(code: string, opts: { jsx?: boolean } = {}): Promise<string> {
   const ts = await loadTypeScript();
 
-  // Fast, always-available syntax check + the JS that actually runs.
   const result = ts.transpileModule(code, {
     compilerOptions: {
       target: ts.ScriptTarget.ES2020,
@@ -211,8 +195,6 @@ export async function transpileTS(code: string, opts: { jsx?: boolean } = {}): P
     throw new Error(message);
   }
 
-  // Separate full type-check pass, purely for diagnostics — its emit is
-  // discarded, transpileModule's output above is what actually runs.
   const libFiles = await loadTsLib();
   const compilerOptions: import("typescript").CompilerOptions = {
     target: ts.ScriptTarget.ES2020,

@@ -7,9 +7,6 @@ export interface PythonRunOptions {
   onDone?: (payload: RunnerDonePayload) => void;
 }
 
-// Reused across runs — spinning up a fresh worker (and re-downloading/
-// re-initializing Pyodide) every keystroke-to-run cycle would be slow.
-// Only replaced if a run has to be force-terminated (timeout or stop).
 let sharedWorker: Worker | null = null;
 
 function getWorker(): Worker {
@@ -27,8 +24,6 @@ function discardWorker() {
 export function runPython(options: PythonRunOptions): { stop: () => void } {
   const onConsole = options.onConsole || (() => {});
   const onDone = options.onDone || (() => {});
-  // Pyodide's first load downloads and instantiates ~13MB of WASM — give
-  // it real headroom before assuming the code itself is hung.
   const timeout = options.timeout ?? 20000;
 
   const worker = getWorker();
