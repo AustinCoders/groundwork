@@ -63,7 +63,8 @@ function PracticePageInner({ chapterLinks }: PracticeClientProps) {
     <Shell
       skipLabel="Skip to the editor"
       skipHref="#editor"
-      playgroundNav={
+      variant="focused"
+      contextNav={
         <nav className="site-sidenav__section" aria-label="This exercise">
           <Link className="site-navlink" id="back-chapter" href={chapter ? chapter.href : "/"}>
             <span className="site-navlink__icon" aria-hidden="true">

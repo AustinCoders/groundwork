@@ -122,6 +122,10 @@ function minutesFor(body: string): number {
   return Math.max(2, Math.round(words / 180));
 }
 
+export function htmlMinutes(html: string): number {
+  return minutesFor(html);
+}
+
 export function readTime(chapter: Chapter): number {
   return minutesFor(chapter.body);
 }

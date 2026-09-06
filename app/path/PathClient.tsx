@@ -4,8 +4,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { Crumbs } from "@/components/Crumbs";
 import { Shell } from "@/components/Shell";
+import { ChapterNavSection } from "@/components/reader/ChapterNavSection";
 import { escapeHtml, plural } from "@/lib/format";
-import { level as findLevel, topic as findTopic } from "@/lib/topics";
+import { level as findLevel, levels as levelsFor, topic as findTopic } from "@/lib/topics";
 import { lastLevel, progress, rememberLevel } from "@/lib/storage";
 import { levelRows } from "@/lib/levelRows";
 import type { ChapterMeta } from "@/content/types";
@@ -89,7 +90,19 @@ function PathPageInner({ chapterById, chapterExercises, levelExercises }: PathCl
   const levelExerciseList = levelExercises[`${topic.id}:${level.id}`] ?? [];
 
   return (
-    <Shell skipLabel="Skip to the path" topicId={topic.id} progressChapters={chapters}>
+    <Shell
+      skipLabel="Skip to the path"
+      topicId={topic.id}
+      progressChapters={chapters}
+      sidebarExtra={
+        <ChapterNavSection
+          chapters={Object.values(chapterById)}
+          levels={levelsFor(topic.id)}
+          basePath={notesHref}
+          defaultLevel={level.id}
+        />
+      }
+    >
       <Crumbs
         items={[
           { label: "All topics", href: "/" },

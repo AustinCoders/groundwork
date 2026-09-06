@@ -3,27 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Shell } from "@/components/Shell";
-import { GIT_BODY_HTML } from "@/content/git-body";
+import { GIT_BODY_HTML, GIT_SECTIONS } from "@/content/git-body";
 import { useMounted } from "@/lib/hooks";
-
-const SECTIONS: { id: string; num: string; title: string }[] = [
-  { id: "model", num: "G1", title: "The mental model" },
-  { id: "objects", num: "G2", title: "What Git stores" },
-  { id: "areas", num: "G3", title: "The three areas" },
-  { id: "daily", num: "G4", title: "Everyday commands" },
-  { id: "branch", num: "G5", title: "Branches & HEAD" },
-  { id: "remote", num: "G6", title: "Remotes & syncing" },
-  { id: "merge", num: "G7", title: "Merging & conflicts" },
-  { id: "rebase", num: "G8", title: "Rebase" },
-  { id: "undo", num: "G9", title: "Undoing anything" },
-  { id: "tools", num: "G10", title: "Detective tools" },
-  { id: "flow", num: "G11", title: "Team workflows" },
-  { id: "hygiene", num: "G12", title: "Commit hygiene" },
-  { id: "scale", num: "G13", title: "Scale & edge cases" },
-  { id: "danger", num: "G14", title: "Danger zone" },
-  { id: "interview", num: "G15", title: "Interview bank" },
-  { id: "cheat", num: "G16", title: "Cheat sheet" },
-];
 
 function legacyCopy(text: string): boolean {
   const ta = document.createElement("textarea");
@@ -85,7 +66,9 @@ export default function GitPage() {
 
   useEffect(() => {
     if (!mounted) return;
-    const sections = SECTIONS.map((s) => document.getElementById(s.id)).filter((el): el is HTMLElement => Boolean(el));
+    const sections = GIT_SECTIONS.map((s) => document.getElementById(s.id)).filter((el): el is HTMLElement =>
+      Boolean(el)
+    );
     if (!("IntersectionObserver" in window) || !sections.length) return;
 
     const seen = new Set<Element>();
@@ -109,15 +92,16 @@ export default function GitPage() {
   return (
     <Shell
       skipLabel="Skip to the content"
+      variant="focused"
       topicId="git"
       sidebarExtra={
         <nav className="site-sidenav__section" aria-label="Contents">
           <div className="site-sidenav__head">
             <h2 className="site-sidenav__heading">Contents</h2>
-            <span className="site-sidenav__count">16 sections</span>
+            <span className="site-sidenav__count">{GIT_SECTIONS.length} sections</span>
           </div>
           <div id="git-nav-list">
-            {SECTIONS.map((s) => (
+            {GIT_SECTIONS.map((s) => (
               <a
                 key={s.id}
                 className={`site-navlink${activeId === s.id ? " is-active" : ""}`}
@@ -134,7 +118,7 @@ export default function GitPage() {
         </nav>
       }
     >
-      <div ref={mainRef} dangerouslySetInnerHTML={{ __html: GIT_BODY_HTML }} />
+      <div ref={mainRef} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: GIT_BODY_HTML }} />
 
       <footer className="site-foot">
         <Link href="/">All topics</Link>

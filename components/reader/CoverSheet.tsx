@@ -16,7 +16,7 @@ export function CoverSheet({ data, basePath }: { data: NotesFile; basePath: stri
         <span className="chip">by {data.meta.author}</span>
         <span className="chip">updated {data.meta.updated}</span>
       </div>
-      {data.hero?.figure && <div dangerouslySetInnerHTML={{ __html: data.hero.figure }} />}
+      {data.hero?.figure && <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: data.hero.figure }} />}
       <nav className="toc" aria-label="Chapters">
         {data.chapters.map((ch) => (
           <Link key={ch.id} href={`${basePath}/${ch.id}`}>

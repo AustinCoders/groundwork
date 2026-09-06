@@ -385,7 +385,12 @@ export function PracticeWorkspace({
                 </>
               )}
             </div>
-            <div className="brief__body" id="ex-body" dangerouslySetInnerHTML={{ __html: exercise.brief }} />
+            <div
+              className="brief__body"
+              id="ex-body"
+              suppressHydrationWarning
+              dangerouslySetInnerHTML={{ __html: exercise.brief }}
+            />
 
             {!(isFree && !exercise.solution) && (
               <div className="brief__section" id="hint-section">

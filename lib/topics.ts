@@ -1,6 +1,8 @@
 import { topics as topicsData } from "@/content/topics";
 import type { Level, Topic } from "@/content/types";
 
+export const INTERVIEW_TOPIC_ID = "interview";
+
 function byId<T extends { id: string }>(list: T[], id: string | null | undefined): T | null {
   if (!id) return null;
   for (let i = 0; i < list.length; i++) {

@@ -2,14 +2,12 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Shell } from "@/components/Shell";
-import { topic as findTopic, topicHref } from "@/lib/topics";
+import { INTERVIEW_TOPIC_ID, topic as findTopic, topicHref } from "@/lib/topics";
 import { escapeHtml, plural } from "@/lib/format";
 import type { SiteStats, TopicStat } from "@/lib/topicStats";
 import { prefersMotion } from "@/lib/dom";
 import { useClientValue, useLastLevel, useMounted } from "@/lib/hooks";
 import type { Topic } from "@/content/types";
-
-const INTERVIEW_TOPIC_ID = "interview";
 
 export interface HomeViewProps {
   topicsList: Topic[];
@@ -109,7 +107,7 @@ function FeaturedTopic({ topic, href, stat }: { topic: Topic; href: string; stat
           <p className="featured__tagline" dangerouslySetInnerHTML={raw(topic.tagline)} />
           <p className="featured__blurb" dangerouslySetInnerHTML={raw(topic.blurb)} />
           <div className="featured__meta">
-            <span>{plural(written, "chapter")} written</span>
+            <span>{plural(written, topic.levels ? "chapter" : "section")} written</span>
             {exerciseCount > 0 && <span>{plural(exerciseCount, "exercise")}</span>}
             <span>{minutes} min read</span>
           </div>
@@ -188,7 +186,7 @@ export function HomeView({ topicsList, stats: site, perTopic, interviewStats }: 
   ];
 
   const readyTopics = useMemo(
-    () => topicsList.filter((t) => (perTopic[t.id]?.written ?? 0) > 0),
+    () => topicsList.filter((t) => t.id !== INTERVIEW_TOPIC_ID && (perTopic[t.id]?.written ?? 0) > 0),
     [topicsList, perTopic]
   );
   const soonTopics = useMemo(

@@ -7,7 +7,6 @@ import { fontVariables } from "@/lib/fonts";
 import { THEME_INIT_SCRIPT } from "@/lib/themeInitScript";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { TopicsReadyProvider } from "@/lib/topicReadiness";
-import { topics } from "@/lib/topics";
 import { topicStats } from "@/lib/topicStats";
 import "./globals.css";
 
@@ -34,14 +33,9 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
-  const readyTopicIds = [
-    ...Object.entries(topicStats())
-      .filter(([, stat]) => stat.written > 0)
-      .map(([id]) => id),
-    ...topics()
-      .filter((t) => !t.levels && t.status === "ready")
-      .map((t) => t.id),
-  ];
+  const readyTopicIds = Object.entries(topicStats())
+    .filter(([, stat]) => stat.written > 0)
+    .map(([id]) => id);
 
   return (
     <html lang="en" data-theme="light" suppressHydrationWarning className={fontVariables}>

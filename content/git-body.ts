@@ -1,3 +1,22 @@
+export const GIT_SECTIONS: { id: string; num: string; title: string }[] = [
+  { id: "model", num: "G1", title: "The mental model" },
+  { id: "objects", num: "G2", title: "What Git stores" },
+  { id: "areas", num: "G3", title: "The three areas" },
+  { id: "daily", num: "G4", title: "Everyday commands" },
+  { id: "branch", num: "G5", title: "Branches & HEAD" },
+  { id: "remote", num: "G6", title: "Remotes & syncing" },
+  { id: "merge", num: "G7", title: "Merging & conflicts" },
+  { id: "rebase", num: "G8", title: "Rebase" },
+  { id: "undo", num: "G9", title: "Undoing anything" },
+  { id: "tools", num: "G10", title: "Detective tools" },
+  { id: "flow", num: "G11", title: "Team workflows" },
+  { id: "hygiene", num: "G12", title: "Commit hygiene" },
+  { id: "scale", num: "G13", title: "Scale & edge cases" },
+  { id: "danger", num: "G14", title: "Danger zone" },
+  { id: "interview", num: "G15", title: "Interview bank" },
+  { id: "cheat", num: "G16", title: "Cheat sheet" },
+];
+
 export const GIT_BODY_HTML = `
 <section class="sheet hero" id="top">
   <span class="hero__kicker">a working reference · fresher → senior</span>

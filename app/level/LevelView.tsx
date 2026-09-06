@@ -4,8 +4,10 @@ import Link from "next/link";
 import { Crumbs } from "@/components/Crumbs";
 import { Shell } from "@/components/Shell";
 import { Syllabus } from "@/components/Syllabus";
+import { ChapterNavSection } from "@/components/reader/ChapterNavSection";
 import { plural } from "@/lib/format";
 import { rememberLevel } from "@/lib/storage";
+import { useLastLevel } from "@/lib/hooks";
 import type { ChapterMeta, Level, Topic } from "@/content/types";
 
 export interface LevelStat {
@@ -21,7 +23,7 @@ export interface LevelViewProps {
   perLevel: Record<string, LevelStat>;
   chapterById: Record<string, ChapterMeta>;
   curriculumNotes: string[];
-  progressChapters: { id: string; short: string }[];
+  progressChapters: ChapterMeta[];
 }
 
 export function LevelView({
@@ -33,8 +35,17 @@ export function LevelView({
   curriculumNotes,
   progressChapters,
 }: LevelViewProps) {
+  const savedLevel = useLastLevel();
+
   return (
-    <Shell skipLabel="Skip to the levels" topicId={topic.id} progressChapters={progressChapters}>
+    <Shell
+      skipLabel="Skip to the levels"
+      topicId={topic.id}
+      progressChapters={progressChapters}
+      sidebarExtra={
+        <ChapterNavSection chapters={progressChapters} levels={levels} basePath={notesHref} defaultLevel={savedLevel} />
+      }
+    >
       <Crumbs items={[{ label: "All topics", href: "/" }, { label: topic.name }, { label: "Your level" }]} />
 
       <section className="sheet hero">

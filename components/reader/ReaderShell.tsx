@@ -10,6 +10,7 @@ import { useClientValue, useMounted } from "@/lib/hooks";
 import { activateScripts, enhanceCodeBlocks, enhanceTables, enhanceTryBlocks } from "@/components/reader/enhancements";
 import { setupNarration } from "@/components/reader/narration";
 import { NarrationSettings } from "@/components/reader/NarrationSettings";
+import { ChapterNav } from "@/components/reader/ChapterNav";
 import type { ChapterMeta } from "@/content/types";
 
 const ZOOM_STEPS = [85, 92, 100, 110, 120, 132, 145, 160];
@@ -208,6 +209,7 @@ export function ReaderShell({ topicId, chapters, basePath, activeId, children }:
   return (
     <Shell
       skipLabel="Skip to the notes"
+      variant="focused"
       topicId={topicId}
       progressChapters={chapters}
       progressBar={
@@ -280,53 +282,16 @@ export function ReaderShell({ topicId, chapters, basePath, activeId, children }:
             </button>
           </div>
 
-          <div id="nav-list">
-            {levels.map((level) => {
-              const chaptersInLevel = chapters.filter((ch) => (ch.levels || []).indexOf(level.id) !== -1);
-              if (!chaptersInLevel.length) return null;
-              const isOpen = searching || level.id === openLevel;
-              return (
-                <details
-                  key={level.id}
-                  className="nav-group"
-                  data-level={level.id}
-                  open={isOpen}
-                  onToggle={(e) => {
-                    if ((e.target as HTMLDetailsElement).open && !searching) setOpenLevel(level.id);
-                  }}
-                >
-                  <summary className="nav-group__summary">
-                    <span className="nav-group__name">{level.name}</span>
-                    <span className="nav-group__count">{chaptersInLevel.length}</span>
-                    <span className="nav-group__arrow" aria-hidden="true">
-                      ›
-                    </span>
-                  </summary>
-                  <div className="nav-group__body">
-                    {chaptersInLevel.map((ch) => {
-                      const isActive = !searching && ch.id === activeId;
-                      const hits = matchInfo?.get(ch.id);
-                      const isHidden = searching && hits === undefined;
-                      return (
-                        <Link
-                          key={ch.id}
-                          className={`site-navlink${isActive ? " is-active" : ""}${isHidden ? " is-hidden" : ""}`}
-                          href={`${basePath}/${ch.id}`}
-                          data-target={ch.id}
-                        >
-                          <span className="site-navlink__num" aria-hidden="true">
-                            {ch.num}
-                          </span>
-                          <span className="site-navlink__name">{ch.short}</span>
-                          {hits !== undefined && <span className="site-navlink__hits">{hits}</span>}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </details>
-              );
-            })}
-          </div>
+          <ChapterNav
+            chapters={chapters}
+            levels={levels}
+            basePath={basePath}
+            activeId={activeId}
+            openLevel={openLevel}
+            onOpenLevel={setOpenLevel}
+            searching={searching}
+            matchInfo={matchInfo}
+          />
 
           <div className="keys keys--tight" style={{ marginTop: 10 }}>
             <span>
