@@ -161,6 +161,50 @@ a:`<p>Have three separate numbers ready and keep them consistent across every co
 trap:`<p>Rounding every number up to your total experience. A recruiter who asks four of these and gets "six, six, six, six" stops believing all of them.</p>`
 },
 {
+q:'This role is mostly backend. Your resume looks frontend-leaning.',
+test:'Whether you argue with the framing or reframe it. The recruiter is reading a checklist and yours has a gap on it.',
+a:`<p>Never dispute the observation — it is correct, and your resume does read frontend-first. Concede it in four words, then move the conversation to the part of your backend work that is hardest to fake: production ownership.</p>
+<p>The shape is <b>concede, quantify, prove, redirect</b>. The proof has to be a system you ran, not a framework you touched.</p>`,
+say:`<p>That is a fair read of the resume. What it does not show is that at Skynox the services are mine too — NestJS behind all four applications, and I own the deploy. On GetDandy I designed the service layer across five environments and took infrastructure cost down twenty-five percent, which is not a thing you get to do from the frontend. So the split is genuinely closer to sixty-forty than the resume suggests, and if the role is eighty percent backend I would want that, not fight it.</p>`,
+trap:`<p>"No no, I am equally strong in both." You are not, and R5 will prove it inside ten minutes. Overclaiming here does not get you past the screen — it gets you a backend deep dive you were not ready for, with an interviewer who was told you were equally strong.</p>`,
+fu:['How much of your week is backend today?','Have you owned a database schema end to end?','Would you be happy if this role never touched React again?']
+},
+{
+q:'The call you were not expecting.',
+test:'Nothing, yet. But this is the call where most candidates give their worst version of every answer in this chapter.',
+a:`<p>Recruiters call at 3pm on a Tuesday while you are in a standup. The instinct is to take it anyway because you do not want to seem uninterested. Do not — a rushed screening call is where the bad number gets said out loud, and the number is the one thing you cannot walk back.</p>
+<p>Rescheduling costs you nothing if you do it in one sentence, give a specific slot, and sound pleased rather than inconvenienced.</p>`,
+say:`<p>Thanks for calling — I am in the middle of something at work right now and I would rather give this a proper twenty minutes. Are you free at 6:30 this evening, or any time tomorrow morning?</p>`,
+note:`<p>Then use the gap: open this chapter, re-read your CTC paragraph out loud once, and check the JD. Twenty minutes of prep is the difference between ₹26 lakh and "I am flexible, what is the budget?"</p>`,
+fu:['Can I call you back in ten minutes?','Is now a bad time?']
+},
+{
+q:'The recruiter who does not work for the company.',
+test:'Whether you understand who you are talking to. Agency and consultancy recruiters are paid on placement, not on fit — their incentives are not yours.',
+a:`<p>A third of the calls you take will be from a staffing firm, a consultancy, or a platform sourcer on Naukri, InstaHyre or Cutshort. The questions look identical to a company recruiter's. The stakes are not.</p>
+<ul>
+<li><b>Ask who the client is before you say a number.</b> "Which company is this for?" If they will not name it, give a range instead of a figure — you cannot anchor properly against an unnamed employer.</li>
+<li><b>Never let two agencies submit you to the same company.</b> Duplicate submission gets your profile rejected by both, and it happens constantly. Keep a note of every company each recruiter names, and say plainly: "I am already in process there through someone else."</li>
+<li><b>Ask whether it is payroll or contract.</b> "Is this a direct role or C2H?" Contract-to-hire at ₹26 lakh is not the same offer as ₹26 lakh on the company's payroll — no ESOPs, different notice, and the conversion is a promise, not a term.</li>
+<li><b>The questionnaire before the call.</b> Many recruiters now screen over WhatsApp or a form first — current CTC, expected CTC, notice, location, five lines on your last project. Treat it as the real screen, because it is: write it in a text editor, use the same numbers you would say out loud, and keep it to five lines.</li>
+</ul>`,
+trap:`<p>Letting a consultancy "adjust" your CTC upward on the profile they send. They do it to justify a higher billing rate, you get caught at document verification, and the rejection is yours, not theirs.</p>`,
+fu:['Which company is this for?','Is this direct payroll or through your firm?','Have you already submitted my profile anywhere?']
+},
+{
+q:'Do you have any questions for me?',
+test:'Interest, and seniority. A candidate with no questions has no other options — that is exactly how it reads.',
+a:`<p>Ask four, and pick ones a recruiter can actually answer. This is also your only free intel-gathering pass before <a href="#r12">R12</a>, so make the fourth one about the band.</p>
+<ul>
+<li><b>What does the loop look like — how many rounds, and what is in them?</b> This tells you whether you are walking into a machine coding round or a DSA round, which decides what you revise this week.</li>
+<li><b>Is this a new position or a backfill?</b> A backfill means someone left; a new position means the team is growing and the scope is less defined.</li>
+<li><b>Who would I report to, and how big is the team?</b> Four engineers and a founder is a different job from forty and an EM.</li>
+<li><b>What is the band for this role?</b> Ask it plainly and early. Recruiters usually answer, and it is far cheaper to learn the ceiling now than after four rounds.</li>
+</ul>`,
+say:`<p>Two things — what does the interview loop look like, so I can prepare properly? And what is the band you are working with for this role? I have given you my expectation, so it helps to know early if we are in the same range.</p>`,
+trap:`<p>"No, I think you covered everything." It is the single most common answer and it reads as indifference every time.</p>`
+},
+{
 q:'The rest of the screening call',
 test:'Nothing. These are box-ticks — answer in one line each and keep the call moving.',
 a:`<ul>
@@ -172,6 +216,329 @@ a:`<ul>
 <li>Do you have a passport? <em>(Asked by service companies with onsite roles.)</em></li>
 <li>What is your date of birth / do you have a PAN? <em>(Background verification prep.)</em></li>
 </ul>`
+}
+]},
+{
+id:'r1oa', code:'R1·OA', navTitle:'Online assessment',
+title:'The online assessment',
+meta:[['Length','60–120 min, unattended'],['Who','Nobody — a platform and a cutoff'],['Decides','Whether a human ever opens your resume'],['Fail mode','Both problems half-solved, neither submitted']],
+tiers:[['product',1],['saas',1],['service',1],['agency',0]],
+intro:'The only round with no human in it, and the only one you can fail without ever being told. Mid-size product and SaaS loops put this first — before the recruiter call, sometimes before anyone has read your resume. A machine decides, and a cutoff you never see decides again.',
+qs:[
+{
+q:'What is the platform actually scoring?',
+test:'Whether you understand that "it worked on the sample input" and "it passed" are unrelated statements.',
+a:`<p>Every submission is run against a hidden set — typically fifteen to thirty cases you never see, including the empty input, the single element, the maximum size and one adversarial case built to blow up an O(n²) solution. Three things get scored:</p>
+<ul>
+<li><b>Cases passed</b>, usually as a percentage. Most platforms give partial credit — eleven of fifteen is a real score, not a fail.</li>
+<li><b>Time limit</b>, per case. A correct brute force on n = 10⁵ does not "run slowly", it is killed and marked failed.</li>
+<li><b>Memory limit</b>, which almost never matters unless you are memoising an entire grid.</li>
+</ul>
+<p>The consequence is the whole strategy for this round: <b>a submitted brute force scoring 60% beats an unsubmitted optimal solution scoring nothing</b>, and unsubmitted is what happens when you spend fifty minutes on the elegant version.</p>`,
+trap:`<p>Running the sample, seeing it match, and moving on. The sample is the easy case, deliberately. If you have not typed in the empty array and the single-element array yourself, you have not tested.</p>`
+},
+{
+q:'Which language do you pick — and the JavaScript trap in this round.',
+test:'Nothing, but the wrong answer here costs you fifteen minutes you do not have.',
+a:`<p>Pick the language you will not have to think about. For you that is TypeScript or JavaScript — a round that filters on speed is not the round to prove you know Python.</p>
+<p>The trap is input handling. Most platforms hand JavaScript candidates a bare <code>process.stdin</code> and no scaffold, and a real number of people lose the first fifteen minutes to reading input instead of solving anything. Learn this block once and type it from memory:</p>`,
+code:[{label:'the only stdin boilerplate you need — memorise it',code:`const lines = require("fs").readFileSync(0, "utf8").split("\\n");
+
+let p = 0;
+const nextLine = () =&gt; lines[p++];
+const nextInt = () =&gt; Number(nextLine().trim());
+const nextInts = () =&gt; nextLine().trim().split(/\\s+/).map(Number);
+
+const n = nextInt();
+const arr = nextInts();
+
+const out = [];
+out.push(solve(n, arr));
+console.log(out.join("\\n"));`}],
+after:`<p>Two more JavaScript-specific things that fail silently on a platform and never in your editor:</p>
+<ul>
+<li><b>Integer overflow.</b> Anything past 2⁵³ needs <code>BigInt</code>. Sum-of-large-numbers problems are written specifically to catch this.</li>
+<li><b>Recursion depth.</b> Node blows the stack around ten thousand frames. A recursive DFS over 10⁵ nodes crashes — convert to an explicit stack.</li>
+<li><b>Printing inside a loop.</b> <code>console.log</code> per line on 10⁵ lines is slow enough to time out on its own. Buffer into an array and print once, as above.</li>
+</ul>`,
+note:`<p>If the platform offers a language-specific time multiplier, it is usually already applied to JavaScript. Do not switch to C++ for speed unless you write C++ weekly — the syntax cost is bigger than the runtime cost at this level.</p>`
+},
+{
+q:'The MCQ section nobody prepares for.',
+test:'Breadth, cheaply. Twenty questions, one mark each, and they are worth as much as a whole DSA problem.',
+a:`<p>Product and service assessments usually bolt fifteen to twenty-five multiple-choice questions onto the front. Candidates skip preparing for them entirely and then lose the cutoff by four marks. They come from a small, predictable pool:</p>
+<ul>
+<li><b>Output prediction.</b> Hoisting, <code>this</code>, closures in loops, promise versus <code>setTimeout</code> ordering, type coercion. This is <a href="#r3">R3</a> content in multiple-choice form — if you have read that round, you already have these.</li>
+<li><b>Complexity.</b> "What is the time complexity of this snippet?" Nested loop over the same array, binary search inside a loop, sort then scan.</li>
+<li><b>SQL.</b> One or two: what a <code>LEFT JOIN</code> returns when the right side is empty, what <code>GROUP BY</code> without an aggregate does, index usage. <a href="#r6">R6</a> covers this properly.</li>
+<li><b>HTTP and web basics.</b> Status codes, idempotency, CORS, what a preflight is.</li>
+<li><b>Occasionally aptitude.</b> Percentages, ratios, one series. Service companies only. Do not lose sleep, but do not be surprised.</li>
+</ul>
+<p>Answer every one — there is no negative marking on any platform in common use, so a blank is strictly worse than a guess.</p>`,
+trap:`<p>Spending eight minutes on one output-prediction question with three nested closures. Flag it, guess, move on. The MCQ section is a time trap disguised as an easy section.</p>`
+},
+{
+q:'How do you spend sixty minutes on two problems?',
+test:'Triage under a clock, which is the actual skill this round measures.',
+a:`<ul>
+<li><b>0–5 min.</b> Read <em>both</em> problems before writing anything. Then start with the one you can see the ending of. There are no bonus marks for order and the second problem is not always the harder one.</li>
+<li><b>5–20 min.</b> Brute force the easier one, submit it, and take the partial score. It is now banked and cannot be lost.</li>
+<li><b>20–40 min.</b> Optimise only if the brute force actually timed out. If it passed everything, do not touch it — go to the second problem.</li>
+<li><b>40–55 min.</b> Second problem, same pattern: working first, fast second.</li>
+<li><b>55–60 min.</b> Submit everything, including the half-solution. Test one edge case per problem with custom input.</li>
+</ul>
+<p>The people who fail this round are almost never the people who could not solve the problems. They are the people who solved one beautifully and ran out of clock on the other.</p>`,
+say:`<p>There is nobody to say this to. That is the point — write the plan down on paper before the timer starts, because there is no interviewer to pull you out of a hole at minute forty.</p>`
+},
+{
+q:'Proctoring: tab switches, the webcam, and the plagiarism flag.',
+test:'Whether the score they are about to trust is yours.',
+a:`<p>Assume everything is recorded, because it is. Standard proctoring on HackerRank, Codility, HackerEarth and CodeSignal logs all of this:</p>
+<ul>
+<li><b>Tab and window focus.</b> Every time you leave the tab is timestamped and shown to the reviewer as a count. Two or three is normal and nobody cares. Fifteen reads as a second screen.</li>
+<li><b>Full-screen exit</b>, if the test enforces it. Exiting can end the attempt outright on strict settings.</li>
+<li><b>Paste events.</b> A 40-line paste into an empty editor is flagged and shown as one event with a size. Typing your own boilerplate takes twenty seconds and looks like typing.</li>
+<li><b>Webcam and screen capture</b>, on senior and remote-first roles. Sit somewhere plain, and do not talk to anyone in the room.</li>
+<li><b>Code similarity.</b> Submissions are compared against every other submission for that problem and against public solutions. A pasted LeetCode answer with the variable names intact is the most-caught thing in this round.</li>
+</ul>`,
+note:`<p><b>2026:</b> platforms now flag suspiciously perfect first drafts — no compile errors, optimal on the first submission, typed at an even pace. That pattern gets a human review, not an automatic pass. The safe version is honest: solve it yourself, and let the keystroke rhythm look like thinking. If a company allows AI assistance they say so explicitly in the instructions; silence is not permission.</p>`,
+trap:`<p>Opening a second browser to check a syntax detail. Use the platform docs or your own memory. One tab switch to Google an array method costs nothing; a rhythm of them costs the round.</p>`
+},
+{
+q:'The variants: timed window, certified score, and the 24-hour OA.',
+test:'Nothing. Knowing which one you agreed to.',
+a:`<ul>
+<li><b>Fixed-window OA.</b> "Complete within 72 hours, 90 minutes once you open it." Open it when you are sharp, not at 11pm because it expires tomorrow. The window is for scheduling; the clock inside is real.</li>
+<li><b>Certified assessment.</b> CodeSignal-style, one score reused across many companies. Worth taking seriously once — a good score gets you skipped past this round elsewhere for a year.</li>
+<li><b>The 24-hour take-home OA.</b> A small build task on the platform rather than DSA. This is a <a href="#r1th">take-home round</a> wearing an OA badge — read that chapter, not this one.</li>
+<li><b>The paired follow-up.</b> Some companies bring your OA solution into the next round and ask you to explain or extend it. Keep a copy of what you submitted. You will not get it back from the platform.</li>
+</ul>`
+},
+{
+q:'You did not hear back. What actually happened?',
+test:'Nothing — but the answer changes what you do next.',
+a:`<p>OA rejections are almost never communicated, and the cutoff is not published. Three real reasons, in order of frequency:</p>
+<ul>
+<li><b>You were under the cutoff</b>, which is often set at a percentile of that week's applicant pool rather than an absolute score. The same submission passes in a quiet week.</li>
+<li><b>A proctoring flag</b> put your attempt in a manual review queue that nobody drained.</li>
+<li><b>Nothing to do with you.</b> The role was filled or frozen and the pipeline was dropped whole.</li>
+</ul>
+<p>The useful response is to keep your own record: date, company, platform, problems, roughly what you scored. After four of them a pattern shows up — usually "I keep timing out on the second problem", which is a fixable thing, not a talent problem.</p>`
+}
+]},
+{
+id:'r1th', code:'R1·TH', navTitle:'Take-home round',
+title:'The take-home assignment',
+meta:[['Length','4–8 hours of work, a 3–7 day window'],['Who','A senior engineer, reading for fifteen minutes'],['Decides','Startup and agency loops — often instead of machine coding'],['Fail mode','Two days of work and no README']],
+tiers:[['product',1],['agency',1],['saas',1],['service',0]],
+intro:'This is the round your profile should win outright. Four production applications and an AI platform mean you have shipped the exact thing they are asking for, at real scale, with real edges. The candidates who beat you here are not better engineers — they are the ones who made the reviewer\'s fifteen minutes easy.',
+qs:[
+{
+q:'What actually happens to your submission?',
+test:'Whether you built for a reviewer or for yourself.',
+a:`<p>A senior engineer opens your repository between two meetings. In order: reads the README, tries to run it, skims the folder structure, opens the one file the task is really about, looks at the tests, checks the commit list. Fifteen minutes, sometimes ten.</p>
+<p>Everything follows from that. If <code>npm install &amp;&amp; npm run dev</code> does not produce a working thing on the first try, the rest of your work is not read — not because they are lazy, but because "it does not run on a clean machine" is itself the finding.</p>`,
+say:`<p>Test this by cloning your own repository into a fresh folder and following your own README literally, on a machine where you have not been developing. Every missing step shows up in ninety seconds.</p>`,
+trap:`<p>A <code>.env</code> that only exists on your laptop. Ship <code>.env.example</code> with every key, and make the app fail loudly with a readable message when one is missing — that is a point in your favour, not an excuse.</p>`
+},
+{
+q:'They said four hours. How much do you actually build?',
+test:'Scope control. This is a seniority signal and it is the one most candidates fail.',
+a:`<p>Build the stated requirements completely and nothing else. A junior adds features; a senior finishes the brief and writes down what they deliberately left out.</p>
+<ul>
+<li><b>Do the whole brief.</b> Every bullet in the spec, including the boring one at the bottom. Reviewers score against the list.</li>
+<li><b>Cut breadth, not quality.</b> Three endpoints done properly beat eight endpoints with no validation.</li>
+<li><b>Put everything else in "what I would do next".</b> Auth, pagination, caching, rate limits — listing them costs one line each and proves you saw them.</li>
+</ul>
+<p>On time: spend roughly what they asked, plus the polish hour. Twenty hours on a four-hour task is not impressive — if it comes out, it reads as someone who cannot estimate, and it makes every future estimate you give suspect.</p>`,
+trap:`<p>Adding a feature they did not ask for to show range — a dashboard, a dark mode, a websocket. It reads as an inability to hold scope, and it steals the time your error handling needed.</p>`,
+fu:['What did you leave out and why?','How long did this actually take?','What would you do differently with another day?']
+},
+{
+q:'The README that does the reviewing for them.',
+test:'Written communication, which is most of a senior job.',
+a:`<p>The README is the highest-leverage file in the submission — it is the only one guaranteed to be read. Six sections, no more than a page:</p>`,
+code:[{label:'README.md — the shape that gets you the call',code:`# Order service
+
+## Run it
+docker compose up        # postgres + redis
+cp .env.example .env
+npm install &amp;&amp; npm run migrate &amp;&amp; npm run seed
+npm run dev              # http://localhost:3000
+npm test
+
+## What it does
+Three endpoints from the brief: create order, list orders
+by customer, cancel within the 30-minute window.
+
+## Decisions
+- **Postgres over Mongo.** Orders are relational and the
+  cancel rule needs a transaction.
+- **Service layer separate from controllers.** Controllers
+  parse and shape HTTP; nothing else knows about HTTP.
+- **Validation at the boundary** with DTOs, unknown keys
+  stripped — malformed input and mass assignment both die
+  at the edge.
+
+## Trade-offs I made on purpose
+- In-memory idempotency keys. Correct for one instance,
+  wrong behind a load balancer — Redis in production.
+- No pagination on list. Fine for the seeded volume,
+  not for real.
+
+## What I would do next
+Auth, cursor pagination, an outbox for the cancel event,
+and a metric on cancel latency.
+
+## Time
+About five hours.`}],
+after:`<p>The "trade-offs I made on purpose" section is the one that separates you. It converts every shortcut from something they find into something you decided — and it is the exact conversation they will open the defence call with.</p>`
+},
+{
+q:'Tests: how many, and which ones?',
+test:'Judgement. Both extremes read badly.',
+a:`<p>Nobody expects full coverage on a take-home, and 100% coverage on a four-hour task reads as either padding or a wildly over-spent weekend. What gets scored is whether you tested <em>the right thing</em>.</p>
+<ul>
+<li><b>The core rule, unit tested, including its edges.</b> If the brief has a thirty-minute cancellation window, test twenty-nine minutes, thirty-one minutes, and exactly thirty.</li>
+<li><b>One integration test</b> through the real HTTP layer for the happy path. It proves the wiring, which unit tests never do.</li>
+<li><b>One failure test.</b> Bad payload returns a 400 with a useful body.</li>
+</ul>
+<p>Five to ten meaningful tests. Then make sure <code>npm test</code> passes on a clean clone — a failing test suite in a submission is worse than no tests at all.</p>`,
+trap:`<p>Tests that assert on mocks you wrote yourself, proving only that your mock returns what you told it to. One real test through the stack outweighs twenty of those.</p>`
+},
+{
+q:'Your commit history is part of the submission.',
+test:'How you work, not just what you produced.',
+a:`<p>Reviewers open the commit list. It is the closest thing they have to watching you work, and it takes them ten seconds.</p>
+<ul>
+<li><b>Eight to fifteen commits</b>, each a coherent step: scaffold, schema, service, controller, validation, tests, README, polish.</li>
+<li><b>Messages in the imperative</b>, describing intent: "reject cancel after the 30-minute window", not "fix bug".</li>
+<li><b>No single "initial commit"</b> containing the entire project. It says you developed it somewhere else, and it removes the one artefact that showed your process.</li>
+<li><b>No commented-out code and no <code>console.log</code></b> in the final commit. Both are read as how you actually work.</li>
+</ul>`,
+note:`<p>If the repository is private and they ask you to zip it, include the <code>.git</code> folder. Most candidates strip it and lose the signal entirely.</p>`
+},
+{
+q:'The five things that get scored and almost nobody ships.',
+test:'Production instinct — exactly the thing your Skynox work should make automatic.',
+a:`<ul>
+<li><b>Input validation at the boundary</b> with unknown properties stripped. Say why in the README: malformed input and mass assignment both stop at the edge.</li>
+<li><b>Error responses with a shape.</b> A consistent <code>{ error, message }</code> and correct status codes. Not a stack trace, not a 200 with <code>{ success: false }</code>.</li>
+<li><b>Configuration through env</b>, with <code>.env.example</code> committed and no secrets in the repository. A committed key is an instant no in a security-aware team.</li>
+<li><b>One migration and one seed script.</b> It is the difference between "I can run it" and "I cannot see your data model".</li>
+<li><b>A one-command start.</b> <code>docker compose up</code> for the dependencies. On a Node take-home this alone puts you above most of the pile.</li>
+</ul>`
+},
+{
+q:'"How long did this take you?"',
+test:'Honesty, and estimation. They already know roughly, from the commit timestamps.',
+a:`<p>Give the real figure, rounded honestly, then attach what it bought. Under-reporting to look fast is the trap — commit timestamps are right there, and a claimed three hours against nine hours of commits is a credibility problem in a round that was supposed to be about your code.</p>`,
+say:`<p>About five hours — roughly three on the service and the cancel rule, one on tests, and the last hour on the README and the docker setup. If you want a version with auth and pagination I would want another half day.</p>`,
+fu:['Was that in one sitting?','Which part took longest?','What would you cut if you had two hours?']
+},
+{
+q:'The defence call, and the feature they add live.',
+test:'Whether you wrote it. This is the real reason the take-home exists.',
+a:`<p>Nearly every take-home is followed by a thirty to forty-five minute call on the code. Two things happen in it, and both are predictable:</p>
+<ul>
+<li><b>"Walk me through your decisions."</b> Your README already answers this — reread it before the call so the story matches, word for word.</li>
+<li><b>"Now add X, here, with me watching."</b> Add a field, add an endpoint, change the rule. This is where a well-separated codebase pays: if the change is a new file plus three lines, you pass. If you have to open a 400-line controller and hunt, the structure was decoration.</li>
+</ul>
+<p>Reopen the project the morning of the call. A week is long enough to forget your own file names, and hesitating in your own repository is the one thing that reads as "someone else wrote this".</p>`,
+fu:['Why this folder structure?','Where would this break at a thousand requests a second?','What is the first thing you would refactor?']
+}
+]},
+{
+id:'r1tp', code:'R1·TP', navTitle:'Tech phone screen',
+title:'The technical phone screen',
+meta:[['Length','30–45 min'],['Who','A senior engineer — sometimes the hiring manager'],['Decides','Whether four more hours of their team is worth booking'],['Fail mode','Answers that never reach a specific']],
+tiers:[['product',1],['saas',1],['service',1],['agency',1]],
+intro:'The first time an engineer talks to you. It is short, it is cheap for them, and it exists to kill loops before they cost anybody a day. Nothing here is hard — the bar is "does this person sound like they have actually built the thing on their resume", and it is failed almost entirely by vagueness.',
+qs:[
+{
+q:'Walk me through your last project — the engineer\'s version.',
+test:'Depth. The recruiter wanted a story; this person wants a system, and they can tell within two sentences which one you are giving.',
+a:`<p>Same project as <a href="#r1">R1</a>, completely different answer. The recruiter version was four beats and no jargon. This version has architecture, a number, and a problem you solved that was genuinely hard.</p>
+<p>Shape it as <b>what it does → how it is put together → the hardest part → what it cost or saved</b>, and stop at ninety seconds so they can steer.</p>`,
+say:`<p>GetDandy is an AI front-office platform — it answers inbound calls and hands off to a human when it should. Next.js on the front, NestJS services behind it, Postgres and Redis, all on AWS. I designed the service layer and the deploy across five environments, which was the hard part: five sets of data, secrets and provider keys, with a real-time dashboard over agent performance on top. Rationalising how those environments were provisioned took infrastructure cost down about twenty-five percent. Happy to go deeper on the environment split or on the real-time piece — whichever is more useful.</p>`,
+trap:`<p>"I worked on the frontend and also did some backend work." That sentence contains no system, no decision and no number, and it is the most common opening in this round. Every sentence should be something only a person who built it could say.</p>`,
+fu:['Why NestJS and not plain Express?','What was in the five environments that differed?','Where did the twenty-five percent come from?']
+},
+{
+q:'The twenty-minute shared editor question.',
+test:'Whether you can write working code while someone watches, at a level well below the DSA round.',
+a:`<p>Roughly half of phone screens include a small problem in CoderPad, CodeSandbox or a plain shared doc. It is deliberately not hard — a string or array transform, a debounce, a promise sequencing task, a small React component. It is the "can this person type" round.</p>
+<p>Two rules. Clarify the input shape before you write anything. And write the obvious version first — nobody has ever failed this for being O(n) instead of O(log n), and plenty have failed it by disappearing into a clever solution.</p>`,
+code:[{label:'the genuinely common ones at this stage',code:`// group an array of objects by a key
+// flatten a nested array without .flat()
+// debounce(fn, ms)
+// retry(fn, times) with async/await
+// run promises with a concurrency limit of 2
+// a &lt;SearchInput /&gt; that debounces and cancels the stale request`}],
+after:`<p>That last one is the one to have ready cold. It is the phone-screen favourite for anyone with React on their resume, and it has an obviously wrong answer — debouncing without cancelling the in-flight request, so a slow early response overwrites a fast late one.</p>`
+},
+{
+q:'Talking while you type.',
+test:'Collaboration. On a call with no shared body language, silence reads as being stuck.',
+a:`<p>Narrate at three moments, not continuously:</p>
+<ul>
+<li><b>Before you type.</b> "I will build a map from key to array, then one pass to fill it — O(n), and it handles the empty case by returning an empty object."</li>
+<li><b>When you make a choice.</b> "Using a Map rather than an object here so non-string keys survive."</li>
+<li><b>When you are stuck.</b> Say what you tried and what you are considering. "The recursive version blows up on cycles — I am going to track visited nodes in a Set." A stuck candidate who is thinking out loud is a hire; a stuck candidate who goes quiet for ninety seconds is not.</li>
+</ul>
+<p>Then shut up and type. Continuous commentary is as bad as silence.</p>`,
+say:`<p>Let me make sure I have the input right — an array of objects, and I return an object keyed by the field, values as arrays, order preserved. Can the field be missing on some objects?</p>`
+},
+{
+q:'The two or three language questions used as a filter.',
+test:'Whether six years of JavaScript is six years of JavaScript.',
+a:`<p>This round rarely goes deep — it picks two or three from a small set and moves on. The whole set is in <a href="#r3">R3</a>; the ones that show up at this stage specifically are:</p>
+<ul>
+<li><b>Event loop ordering.</b> A <code>setTimeout(0)</code> and a resolved promise in the same tick — which logs first, and why microtasks drain before the next macrotask.</li>
+<li><b>Closures.</b> The <code>var</code>-in-a-loop classic, and what <code>let</code> changes about it.</li>
+<li><b><code>this</code> in an arrow function versus a regular function</b>, in a class method passed as a callback.</li>
+<li><b>Shallow versus deep copy</b>, and what spread actually does to a nested object.</li>
+<li><b>One TypeScript question</b> if TS is on the job description — usually <code>interface</code> versus <code>type</code>, or what <code>unknown</code> buys you over <code>any</code>. That is <a href="#r3ts">R3·TS</a>.</li>
+</ul>
+<p>Answer in three sentences and stop. Long answers in a phone screen eat the coding time and the interviewer is watching the clock.</p>`,
+trap:`<p>Reciting a memorised definition. "A closure is a function bundled with its lexical environment" is a phrase, not an answer. Give the behaviour and one line of code where it bites.</p>`
+},
+{
+q:'When the first call is the hiring manager, not an engineer.',
+test:'Fit and level. They are deciding what to open you at, not whether you can code.',
+a:`<p>In smaller companies the first technical conversation is with the person you would report to, and the questions change shape completely. They will ask why this role, what you want to own, how you work with a team, and what you are looking for in your next two years — with one or two technical probes to confirm the resume.</p>
+<p>Three things to get across, all of them things a manager buys:</p>
+<ul>
+<li><b>Ownership, not tasks.</b> "I own release and reliability for four applications" is the sentence. Feature lists are not.</li>
+<li><b>A reason to want this job specifically.</b> The client-studio-to-product story from <a href="#r1">R1</a> works here and lands harder, because this person lives the difference.</li>
+<li><b>A question about scope.</b> "What would you want me to own in the first six months?" It is the question a senior asks and a mid-level does not.</li>
+</ul>`,
+trap:`<p>Treating it as a warm-up because "it is only the manager". This conversation frequently decides your level, and level decides your number long before <a href="#r12">R12</a> gets to argue about it.</p>`,
+fu:['Where do you want to be in two years?','What kind of team do you do your best work in?','What would make you turn this down?']
+},
+{
+q:'What you ask an engineer.',
+test:'Whether you evaluate them back. Seniors do.',
+a:`<p>Different questions from the ones you asked the recruiter — this person can answer things nobody else in the loop can, and their answers tell you whether the job is actually good.</p>
+<ul>
+<li><b>What does the codebase look like today — where is the pain?</b> The honest answer tells you what your first year is. An engineer who says "there is no pain" is either new or not listening.</li>
+<li><b>How does something get to production here?</b> Branch, review, CI, who presses deploy. This is the single most predictive question about your day-to-day.</li>
+<li><b>What is on call like?</b> Ask before the offer, not after.</li>
+<li><b>What does the rest of the loop cover?</b> They will usually tell you exactly what to prepare for, and that is a free advantage.</li>
+</ul>`,
+say:`<p>What does the codebase look like right now — where does the team feel the most friction? And how does a change get from a branch to production?</p>`
+},
+{
+q:'The setup that quietly loses this round.',
+test:'Nothing. It just costs you the round anyway.',
+a:`<ul>
+<li><b>Wired headphones and a tested mic.</b> Laptop speakers plus a room echo makes forty-five minutes of you exhausting to listen to.</li>
+<li><b>The editor link opened five minutes early.</b> CoderPad and CodeSandbox both take a minute to load and both can be blocked on a work network.</li>
+<li><b>A second network ready.</b> Phone hotspot on standby, because it will be the day your wifi drops.</li>
+<li><b>A closed room and a silenced phone.</b> If you must take it from the office, book a room — taking a technical call from a corridor is audible and it reads as unserious.</li>
+<li><b>Your resume open on a second screen</b>, plus the four numbers you might be asked to defend. You will be asked about something on page two.</li>
+</ul>`,
+note:`<p>If the connection genuinely fails, say so immediately and switch to phone audio while keeping the editor. Interviewers are entirely forgiving about network problems and entirely unforgiving about ten minutes of silence they had to interpret.</p>`
 }
 ]},
 {
