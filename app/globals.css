@@ -1409,15 +1409,24 @@ li::marker {
 .site-navlink__mark {
   display: grid;
   place-items: center;
-  width: 25px;
+  min-width: 25px;
   height: 25px;
+  padding: 0 5px;
   flex: none;
   font-family: var(--font-heading);
   font-size: 14px;
   font-weight: 700;
   border: 1.5px solid var(--line-soft);
-  border-radius: 50%;
+  border-radius: 999px;
   background: var(--sheet-2);
+}
+
+/* Codes like R1·OA and R3·TS are wider than a circle — let the badge grow
+   into a pill instead of spilling into the chapter name. */
+.site-navlink__num {
+  font-size: 12.5px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
 .site-navlink__name {
@@ -2106,6 +2115,403 @@ kbd {
   border: 1px solid var(--line-soft);
   border-radius: 999px;
   padding: 2px 12px;
+}
+
+.covermap {
+  margin-top: 22px;
+}
+
+.covermap__bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 14px 16px;
+  background: var(--sheet-2);
+  border: 1.5px solid var(--line-soft);
+  border-radius: 14px;
+}
+
+.covermap__score {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.covermap__score-num {
+  font-family: var(--font-heading);
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.covermap__score-of {
+  font-size: 19px;
+  color: var(--pencil);
+  margin-left: 4px;
+}
+
+.covermap__score-label {
+  font-size: 13px;
+  color: var(--pencil);
+}
+
+.covermap__meter {
+  flex: 1 1 220px;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.covermap__left {
+  font-size: 13.5px;
+  color: var(--pencil);
+}
+
+.covermap__continue {
+  flex: 0 1 auto;
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+  font-weight: 700;
+}
+
+.covermap__budget {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 0 2px;
+  font-size: 14.5px;
+  color: var(--pencil);
+}
+
+.covermap__budget-q {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  color: var(--ink);
+}
+
+.covermap__budget-steps {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  background: var(--btn-bg);
+  border: 1.5px solid var(--line-soft);
+  border-radius: 999px;
+}
+
+.covermap__budget-step {
+  min-width: 44px;
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--pencil);
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background 0.14s ease,
+    color 0.14s ease;
+}
+
+.covermap__budget-step:hover {
+  background: var(--btn-hover);
+}
+
+.covermap__budget-step.is-on {
+  color: var(--ink);
+  background: var(--hl-mint);
+}
+
+.covermap__budget-step:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 1px;
+}
+
+.covermap__budget-out {
+  font-style: italic;
+}
+
+.covermap__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 20px;
+  margin-top: 16px;
+  align-items: start;
+}
+
+.route + .route {
+  margin-top: 20px;
+}
+
+.route__name {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 10px;
+  font-family: var(--font-heading);
+  font-size: 20px;
+}
+
+.route__name::after {
+  content: none;
+}
+
+.route__meta {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--pencil);
+}
+
+/* The dashed spine every station sits on — a route drawn through the topic
+   rather than a grid of equal-looking boxes. */
+.route__line {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.route__line::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 9px;
+  border-left: 2px dashed var(--line);
+}
+
+.station {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px 7px 10px;
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--ink);
+  transition:
+    background 0.14s ease,
+    border-color 0.14s ease,
+    transform 0.12s ease;
+}
+
+.station::before {
+  content: "";
+  position: absolute;
+  left: -21px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  background: var(--sheet);
+}
+
+.station:hover,
+.station:focus-visible {
+  background: var(--btn-hover);
+  border-color: var(--line-soft);
+  transform: translateX(2px);
+}
+
+.station__num {
+  flex: none;
+  min-width: 42px;
+  font-family: var(--font-heading);
+  font-size: 16px;
+  white-space: nowrap;
+  font-weight: 700;
+  color: var(--pencil);
+}
+
+.station__name {
+  flex: 1 1 auto;
+  font-size: 15.5px;
+}
+
+.station__min {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--pencil);
+}
+
+.station.is-done .station__num {
+  color: var(--green);
+}
+
+.station.is-done .station__name {
+  color: var(--pencil);
+}
+
+.station.is-done::before {
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.station.is-next {
+  background: var(--hl-mint);
+  border-color: var(--green);
+}
+
+.station.is-next::before {
+  background: var(--green);
+  border-color: var(--green);
+  box-shadow: 0 0 0 4px var(--dg-box-green);
+}
+
+.station-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.station-row .station {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.station__tick {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--line);
+  background: transparent;
+  border: 1.5px dashed var(--line-soft);
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.14s ease,
+    color 0.14s ease,
+    border-color 0.14s ease;
+}
+
+.station-row:hover .station__tick,
+.station__tick:focus-visible,
+.station__tick.is-done {
+  opacity: 1;
+}
+
+.station__tick:hover {
+  color: var(--green);
+  border-color: var(--green);
+}
+
+.station__tick.is-done {
+  color: var(--green);
+  border-style: solid;
+  border-color: var(--green);
+  background: var(--dg-box-green);
+}
+
+/* Everything the chosen time budget reaches, starting at the next unread
+   chapter — the run you could actually finish tonight. */
+.station.is-reach {
+  background: var(--dg-box-green);
+  border-color: var(--line-soft);
+  border-style: dashed;
+}
+
+.station.is-reach .station__min {
+  color: var(--green);
+}
+
+.station.is-reach::before {
+  border-color: var(--green);
+}
+
+.station.is-peeked {
+  border-color: var(--ink-soft);
+}
+
+.station.is-soon {
+  color: var(--pencil);
+  font-style: italic;
+}
+
+.station.is-soon::before {
+  border-style: dashed;
+}
+
+.covermap__peek {
+  position: sticky;
+  top: 78px;
+  padding: 14px 16px;
+  background: var(--sheet-2);
+  border: 1.5px dashed var(--line);
+  border-radius: 14px;
+}
+
+.covermap__peek-num {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  color: var(--pencil);
+}
+
+.covermap__peek-title {
+  margin: 2px 0 6px;
+  font-family: var(--font-heading);
+  font-size: 22px;
+}
+
+.covermap__peek-title::after {
+  content: none;
+}
+
+.covermap__peek-sub {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--pencil);
+}
+
+.covermap__peek-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.chip--done {
+  color: var(--green);
+  border-color: var(--green);
+}
+
+.covermap__peek-go {
+  width: 100%;
+  justify-content: center;
+}
+
+@media (max-width: 860px) {
+  .covermap__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .covermap__peek {
+    position: static;
+    order: -1;
+  }
+
+  .covermap__continue {
+    width: 100%;
+  }
+
+  .covermap__budget {
+    align-items: flex-start;
+  }
 }
 
 .toc {

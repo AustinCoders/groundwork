@@ -13,7 +13,7 @@ export function TopicCoverPage({ topicId }: { topicId: string }) {
   return (
     <ReaderShell topicId={topicId} chapters={chapterMetas(topicId)} basePath={basePath} activeId={null}>
       <HashRedirect basePath={basePath} />
-      <CoverSheet data={data} basePath={basePath} />
+      <CoverSheet data={data} basePath={basePath} topicId={topicId} />
     </ReaderShell>
   );
 }
