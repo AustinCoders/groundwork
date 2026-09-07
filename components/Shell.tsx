@@ -248,6 +248,7 @@ export function Shell({
                   className="site-navlink"
                   href={notesHref(INTERVIEW_TOPIC_ID)}
                   title="Interview prep — every round of the loop"
+                  prefetch={false}
                 >
                   <span className="site-navlink__icon" aria-hidden="true">
                     ◎
