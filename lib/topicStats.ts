@@ -1,5 +1,6 @@
 import { chapters, exercises, hasNotes, htmlMinutes, topicExerciseCount, topics, totalTime } from "@/lib/content";
 import { GIT_BODY_HTML, GIT_SECTIONS } from "@/content/git-body";
+import { onShelf } from "@/lib/topicIds";
 
 export interface TopicStat {
   written: number;
@@ -57,6 +58,6 @@ export function siteStats(): SiteStats {
     writtenChapters: totals.chapters,
     exercises: exercises().length,
     minutes: totals.minutes,
-    topics: list.length,
+    topics: list.filter((t) => onShelf(t.id)).length,
   };
 }

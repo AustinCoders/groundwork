@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Shell } from "@/components/Shell";
-import { INTERVIEW_TOPIC_ID } from "@/lib/topicIds";
+import { INTERVIEW_TOPIC_ID, onShelf } from "@/lib/topicIds";
 import { findNav, navHref } from "@/lib/topicNav";
 import { escapeHtml, formatSpan, plural } from "@/lib/format";
 import type { SiteStats, TopicStat } from "@/lib/topicStats";
@@ -187,11 +187,11 @@ export function HomeView({ topicsList, stats: site, perTopic, interviewStats }: 
   ];
 
   const readyTopics = useMemo(
-    () => topicsList.filter((t) => t.id !== INTERVIEW_TOPIC_ID && (perTopic[t.id]?.written ?? 0) > 0),
+    () => topicsList.filter((t) => onShelf(t.id) && (perTopic[t.id]?.written ?? 0) > 0),
     [topicsList, perTopic]
   );
   const soonTopics = useMemo(
-    () => topicsList.filter((t) => t.id !== INTERVIEW_TOPIC_ID && (perTopic[t.id]?.written ?? 0) === 0),
+    () => topicsList.filter((t) => onShelf(t.id) && (perTopic[t.id]?.written ?? 0) === 0),
     [topicsList, perTopic]
   );
   const interviewTopic = useMemo(() => findNav(topicsList, INTERVIEW_TOPIC_ID), [topicsList]);

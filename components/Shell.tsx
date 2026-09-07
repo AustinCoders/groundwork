@@ -8,7 +8,7 @@ import { DailyRecap } from "@/components/DailyRecap";
 import { FontPicker, ThemePicker } from "@/components/ThemeFontPicker";
 import { StreakMini } from "@/components/StreakMini";
 import { TopicOfDay } from "@/components/TopicOfDay";
-import { INTERVIEW_TOPIC_ID } from "@/lib/topicIds";
+import { INTERVIEW_TOPIC_ID, onShelf } from "@/lib/topicIds";
 import { findNav, navHref, navNotesHref, useTopicsNav } from "@/lib/topicNav";
 import { escapeHtml } from "@/lib/format";
 import { progress, store } from "@/lib/storage";
@@ -122,7 +122,7 @@ export function Shell({
     if (!readyTopicIds) return [all.filter((t) => t.status === "ready"), all.filter((t) => t.status !== "ready")];
     return [all.filter((t) => readyTopicIds.has(t.id)), all.filter((t) => !readyTopicIds.has(t.id))];
   }, [navTopics, readyTopicIds]);
-  const shelfTopics = useMemo(() => readyTopics.filter((t) => t.id !== INTERVIEW_TOPIC_ID), [readyTopics]);
+  const shelfTopics = useMemo(() => readyTopics.filter((t) => onShelf(t.id)), [readyTopics]);
   const interviewReady = useMemo(() => readyTopics.some((t) => t.id === INTERVIEW_TOPIC_ID), [readyTopics]);
   const done = useProgressValue(() => progress.countDone(chs), 0);
   const dueCount = useProgressValue(() => progress.dueForReview(chs.map((c) => c.id)).length, 0);
