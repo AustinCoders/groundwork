@@ -40,11 +40,15 @@ import { reactDesignSystems } from "./react/react-design-systems";
 import { reactAdvancedTypescript } from "./react/react-advanced-typescript";
 import { reactArchitectureScale } from "./react/react-architecture-scale";
 import { reactCustomRenderers } from "./react/react-custom-renderers";
+import { reactMigration } from "./react/react-migration";
+import { reactDebuggingProduction } from "./react/react-debugging-production";
+import { reactReviewJudgement } from "./react/react-review-judgement";
 
 export const reactNotes: NotesFile = {
   meta: {
     title: "React — the whole map",
-    subtitle: "41 sections across three levels, all written — JSX through custom renderers.",
+    subtitle:
+      "44 sections across three levels, all written — JSX through migration, production debugging and judgement.",
     lead: "Pick a level and you'll get these sections in the order that makes sense — from what JSX compiles to, through why it re-rendered, to the reconciler underneath and the server boundary above it.",
     author: "Akshat",
     updated: "September 2026",
@@ -94,5 +98,8 @@ export const reactNotes: NotesFile = {
     reactAdvancedTypescript,
     reactArchitectureScale,
     reactCustomRenderers,
+    reactMigration,
+    reactDebuggingProduction,
+    reactReviewJudgement,
   ],
 };

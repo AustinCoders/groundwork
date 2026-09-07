@@ -1019,6 +1019,21 @@ export const topics: TopicsData = {
               chapter: "react-custom-renderers",
               items: ["Writing custom renderers or understanding react-reconciler (rare, but the deepest layer)"],
             },
+            {
+              title: "Migrating and upgrading",
+              chapter: "react-migration",
+              items: ["Strangler over rewrite, version by version, classes and Redux"],
+            },
+            {
+              title: "Debugging in production",
+              chapter: "react-debugging-production",
+              items: ["Source maps, leaks, field vitals at p75"],
+            },
+            {
+              title: "Review and judgement",
+              chapter: "react-review-judgement",
+              items: ["What to look for, and when not to use React"],
+            },
           ],
         },
       ],

@@ -163,8 +163,10 @@ Heapsort
 heartbeating
 hklv
 Horspool
+Hotwire
 HPACK
 HSTS
+htmx
 humblebrag
 hypergrowth
 Hyre
