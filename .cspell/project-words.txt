@@ -46,6 +46,12 @@ twopart
 webdev
 
 # People, companies and places that appear in the notes
+Gurgaon
+Noida
+Swiggy
+Zomato
+Doist
+Deel
 Akshat
 Aman
 Chargebee

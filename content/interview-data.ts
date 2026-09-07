@@ -2892,6 +2892,41 @@ a:`<ol>
 note:`<p><b>The tactic worth more than every script on this page:</b> get two offers in the same week. Technique moves a number by maybe ten percent; a second live offer moves it by thirty. That is the real argument for walk-ins — do not treat them as one interview at a time, treat them as a compressed campaign where four processes land in the same seven days. Interview at the companies you want least on day one.</p>`
 },
 {
+q:'Does the number change if the job is in Pune, Hyderabad or NCR?',
+test:'Whether you know what you are anchoring to. Every figure in this round is a Bangalore figure.',
+a:`<p>Yes, and less than people think. The band follows the company, not the city — a Series B product company pays close to its own band wherever its office is. What moves is the <em>floor</em>: the same title at the same size of company sits a little lower outside Bangalore, and the number of companies bidding for you drops a lot.</p>
+<p>Rough multipliers on the ₹26 lakh you are asking in Bangalore, for the same kind of company:</p>`,
+after:`<div class="table-scroll"><table>
+<thead><tr><th>City</th><th>Same role, roughly</th><th>What actually differs</th></tr></thead>
+<tbody>
+<tr><td><b>Bangalore</b></td><td>₹26L</td><td>The most product companies, the most competing offers, the highest rent. Your leverage is that a second offer is easy to get here.</td></tr>
+<tr><td><b>Hyderabad</b></td><td>₹24–26L</td><td>Effectively the same for product and global capability centres. Living cost is meaningfully lower, so take-home goes further.</td></tr>
+<tr><td><b>NCR (Gurgaon, Noida)</b></td><td>₹24–26L</td><td>Strong for product and fintech. More service and agency noise in the pipeline to filter out.</td></tr>
+<tr><td><b>Pune</b></td><td>₹22–25L</td><td>Fewer product companies, more engineering centres of foreign firms. Slower processes, longer notice expectations.</td></tr>
+<tr><td><b>Mumbai</b></td><td>₹24–27L</td><td>Fintech and media pay well; rent eats the difference and then some.</td></tr>
+<tr><td><b>Chennai</b></td><td>₹20–24L</td><td>Thinner product market. The offers that do come are often from global centres and are worth taking seriously.</td></tr>
+</tbody>
+</table></div>
+<p>Two things that matter more than the multiplier. First, <b>ask what a company\\'s band is rather than what the city pays</b> — the spread between two companies in one city is far wider than the spread between two cities. Second, if you are being hired remotely by a Bangalore company while living elsewhere, some will try to pay a location-adjusted number. That is negotiable and often just an opening position; the work is the same work.</p>`,
+trap:`<p>Quoting your Bangalore figure to a Chennai company without checking, then discovering it is two bands above theirs and being screened out before anyone has met you. Ask the band first — <a href="#r1">R1</a> covers doing that on the screening call.</p>`,
+fu:['Would you consider relocating for this?','Is your expectation negotiable for a lower cost-of-living city?','Would you take a remote role at a lower number?']
+},
+{
+q:'Your current company counter-offers.',
+test:'Nothing — they are not interviewing you any more. But this is where a resignation most often falls apart.',
+a:`<p>It usually arrives within a day of your resignation, it is usually 20–40% up, and it usually comes with a sentence about how much they value you. Take it seriously enough to think for a night, and then know what you are looking at.</p>
+<ul>
+<li><b>Ask why the number was available yesterday and was not offered.</b> Not out loud, necessarily. But if they could pay it all along and did not, that is the answer to your original question about whether to leave.</li>
+<li><b>The structural reason you are leaving does not change.</b> Yours is that a client studio ends in handover and you want to own a product for years. A raise does not turn a studio into a product company.</li>
+<li><b>You are now a flight risk on record.</b> In a lot of places the counter buys them the time to plan around you, and the next cycle is quieter than it should be.</li>
+<li><b>Consider it seriously only if what changes is the work</b> — a different team, a product they are actually keeping, a scope they will put in writing. Money alone puts you here again in eight months, and you will have burned a process to get it.</li>
+</ul>`,
+say:`<p>I appreciate that, genuinely, and it is a good number. But the reason I looked was not the money — it is that I want to own a product past handover, and that is not something this role can give me. I would rather leave well than take a raise to stay in the same shape.</p>`,
+trap:`<p>Using the new offer to extract a counter you were always going to accept. Word travels in a small market, the new company withdraws, and you keep a raise and lose the option. If you would take the counter, do not run the process.</p>`,
+note:`<p>The other direction is worth knowing too: telling the new company "my current employer counter-offered at X" occasionally moves their number, and occasionally makes them withdraw because it reads as leverage-shopping. Only do it if you would genuinely take the counter.</p>`,
+fu:['What would it take for you to stay?','Is it only about money?','Have you already signed?']
+},
+{
 q:'The rest of the HR round, and what to have on your phone',
 test:'Logistics. Walk-ins ask for documents on the spot.',
 a:`<p><b>They will ask:</b></p>
@@ -2911,6 +2946,222 @@ a:`<p><b>They will ask:</b></p>
 <li>Degree and diploma certificates as PDFs.</li>
 <li>PAN and Aadhaar.</li>
 <li><b>Six printed copies of your resume.</b> Walk-ins run on paper and you will be asked for it three times in one building.</li>
+</ul>`
+}
+]},
+{
+id:'r12lv', code:'R12·LV', navTitle:'Levels & equity',
+title:'The big-company offer: levels and equity',
+meta:[['When','After the loop, before the number'],['Who','Recruiter, then a compensation team'],['Decides','More than negotiation does'],['Fail mode','Comparing a CTC to a package and calling it a raise']],
+tiers:[['product',1],['saas',1],['service',0],['agency',0]],
+intro:'Everything in R12 assumes a cash offer you can compare on monthly in-hand. A big-company offer is not that. It is a level, a base, a stock grant that vests over four years, and a sign-on that exists to cover the years the stock does not. The level is decided before anyone talks about money, and it moves the number far more than anything you say afterwards.',
+pre:`<div class="table-scroll"><table>
+<thead><tr><th>Company</th><th>Where six years usually lands</th><th>The level above</th></tr></thead>
+<tbody>
+<tr><td>Amazon</td><td>SDE-2</td><td>SDE-3 — needs scope beyond your own team, not more years</td></tr>
+<tr><td>Google</td><td>L4</td><td>L5 — the jump most people take two attempts at</td></tr>
+<tr><td>Microsoft</td><td>Software Engineer II (61–62)</td><td>Senior (63–64)</td></tr>
+<tr><td>Flipkart, Swiggy, Razorpay, Zomato</td><td>SDE-2</td><td>SDE-3 / Lead</td></tr>
+<tr><td>Uber, Atlassian, Salesforce</td><td>L4 / P4 / Senior-1</td><td>L5 / P5</td></tr>
+</tbody>
+</table></div>
+<p class="rintro">Two people with the same six years can be two levels apart, and the gap between those levels is larger than any negotiation you will ever win. That is the thing worth optimising.</p>`,
+qs:[
+{
+q:'What actually decides your level?',
+test:'Whether you understand where the money is decided. It is not in the compensation conversation.',
+a:`<p>The loop produces a level recommendation, and it comes from <b>scope evidence</b>, not from years. Three things move it:</p>
+<ul>
+<li><b>The size of the thing you owned.</b> "I built features on four applications" is one level. "I own architecture, release and reliability across four applications, and designed the service layer on a platform in five environments" is the next one. Both describe your job.</li>
+<li><b>Whether your decisions affected people outside your team.</b> This is the SDE-2 to SDE-3 line almost everywhere. Setting a standard others followed counts; shipping a lot does not.</li>
+<li><b>How you answered system design and the behavioural rounds.</b> A strong coding round rarely raises a level. A design round where you named trade-offs with numbers does.</li>
+</ul>
+<p>So the level conversation happens in <a href="#r8">R8</a> and <a href="#r10">R10</a>, hours before anyone says a number.</p>`,
+note:`<p><b>Ask for the level in writing before you discuss compensation.</b> "What level is this role, and what would put a candidate at the level above?" Recruiters answer this. It tells you the ceiling you are negotiating inside, and occasionally it tells you to ask for a re-level before the offer is drafted.</p>`,
+fu:['What level are you being considered for?','What would take you to the next one?','Would you accept a lower level with a faster path?']
+},
+{
+q:'They offer a level below what you expected. Down-levelling.',
+test:'Whether you can tell a bad offer from a slow start.',
+a:`<p>It happens for two reasons that look identical from outside: the loop did not produce the evidence, or the team has a headcount at that level and nothing above it. The first is about you and the second is not, and the recruiter will usually tell you which if you ask plainly.</p>
+<ul>
+<li><b>Worth accepting</b> when the company is a level up from where you are, when the band at the lower level still beats your current number substantially, and when promotion cycles there are known and real. Getting into a strong company one level low and promoting in eighteen months is a common, good path.</li>
+<li><b>Not worth accepting</b> when it comes with the same money as your current role, when the team cannot describe what promotion requires, or when "we will re-evaluate in six months" is offered instead of anything written.</li>
+</ul>`,
+say:`<p>I understand the level. Can you tell me whether that came out of the loop, or whether it is what this team has headcount for? And what does the path to the next level look like here — what has to be true, and roughly on what cycle?</p>`,
+trap:`<p>Accepting a down-level on a verbal promise of an early review. Promotion at big companies runs on calendars and committees, not on a hiring manager\\'s intent. If it is not a written start-level or a written review date, treat it as not happening.</p>`
+},
+{
+q:'Read the offer: base, RSUs, sign-on',
+test:'Whether you can compare paper to cash.',
+a:`<p>A typical Indian big-company offer for six years of experience is three things:</p>
+<ul>
+<li><b>Base</b> — paid monthly, taxed as salary. This is the only part you can plan around.</li>
+<li><b>RSUs</b> — a grant of shares vesting over four years. Restricted stock, not options: you do not pay to get them, and they are worth the share price on the day they vest.</li>
+<li><b>Sign-on</b> — cash, usually paid across the first one or two years, and usually there to fill the gap while the stock is still vesting slowly. Frequently clawed back if you leave inside a year.</li>
+</ul>
+<p>The vesting schedule is the part that decides what a package is actually worth in year one:</p>`,
+after:`<div class="table-scroll"><table>
+<thead><tr><th>Schedule</th><th>Year 1</th><th>Year 2</th><th>Year 3</th><th>Year 4</th><th>Who</th></tr></thead>
+<tbody>
+<tr><td><b>Back-loaded</b></td><td>5%</td><td>15%</td><td>40%</td><td>40%</td><td>Amazon. The sign-on covers years one and two, and then stops.</td></tr>
+<tr><td><b>Even, quarterly</b></td><td>25%</td><td>25%</td><td>25%</td><td>25%</td><td>Google, Microsoft, most others. Usually a one-year cliff first.</td></tr>
+<tr><td><b>Front-loaded</b></td><td>33%</td><td>33%</td><td>22%</td><td>12%</td><td>Some Indian unicorns, to compete on year-one cash.</td></tr>
+</tbody>
+</table></div>
+<p>Which means a "₹48 lakh" Amazon offer and a "₹48 lakh" Google offer can differ by several lakh in the first year, in Google\\'s favour, and then reverse in year three. Compare <b>year one</b> and <b>year four</b> separately, and know which one you are optimising for.</p>`,
+note:`<p><b>The cliff.</b> Most grants vest nothing for the first year and then all of year one at once. Leaving at month eleven means leaving with nothing from the grant. Amazon\\'s schedule is the exception — it vests something at six months, which is part of why the sign-on is structured the way it is.</p>`
+},
+{
+q:'What is the equity actually worth?',
+test:'Whether you value paper honestly. Both directions are mistakes.',
+a:`<ul>
+<li><b>Listed company (Amazon, Google, Microsoft, Salesforce).</b> The stock is liquid — it vests, you can sell it that day. Value it at today\\'s price with a haircut for the fact that you are exposed to one company\\'s share price for four years. Treating it as cash is roughly right; treating it as zero is throwing money away.</li>
+<li><b>Late-stage private (a unicorn, pre-IPO).</b> Value it at the last round\\'s price and then discount it hard. There is no buyer until there is a buyer, secondaries are rare, and the last round\\'s valuation is a negotiated number, not a market price.</li>
+<li><b>Startup ESOPs.</b> Assume zero for planning and negotiate on cash. If you are told otherwise, ask for the strike price, the total shares outstanding and the last preference stack — the answers are usually the end of the conversation.</li>
+</ul>
+<p>The tax part matters and surprises people. In India, RSUs are taxed <b>twice</b>: as a perquisite at the moment they vest, at your slab, on the full market value; and then as capital gains on whatever the price does between vesting and selling. Foreign shares held over two years are long-term. Employers usually sell a slice at vest to cover the perquisite tax, which is why the number of shares that land in your account is smaller than the number that vested.</p>`,
+trap:`<p>Adding four years of grant to one year of base and calling it your CTC. A ₹28 lakh base with a ₹40 lakh grant is not a ₹68 lakh package — it is roughly ₹38 lakh in year one on an even schedule, and about ₹30 lakh in year one on Amazon\\'s.</p>`,
+fu:['What is the grant value and over what period?','What is the vesting schedule?','Are there annual refreshers, and what has the team actually seen?','Is the sign-on clawed back if I leave?']
+},
+{
+q:'Refreshers — the part nobody asks about',
+test:'Whether you can see past year one.',
+a:`<p>The initial grant runs out. What replaces it is the annual refresher: a new grant made each year at review time, also vesting over four years, which after two or three years stacks so that something vests every quarter. This is how big-company compensation actually compounds, and it is invisible in the offer letter.</p>
+<p>It is also the honest answer to the Amazon back-loading question. Years three and four look enormous on paper because the original grant is 80% of it — but by then refreshers are also landing, which is why total compensation keeps climbing rather than falling off a cliff in year five.</p>`,
+say:`<p>Two questions about the equity. What has a typical refresher looked like for this level over the last couple of years? And is the sign-on structured across one year or two?</p>`,
+note:`<p>Recruiters will not put refresher numbers in writing and should not be pushed to. What they will do is describe the range, and a recruiter who will not describe it at all is telling you something.</p>`,
+fu:['Do refreshers depend on rating?','What happens if the share price falls — is the grant topped up?']
+},
+{
+q:'Comparing a big-company offer with a startup offer',
+test:'Arithmetic, and knowing what you are buying.',
+a:`<p>Put both on the same footing before you feel anything about them. Four numbers, not one:</p>
+<ul>
+<li><b>Year-one cash</b> — base plus sign-on plus whatever vests in year one, after the perquisite tax.</li>
+<li><b>Year-four run rate</b> — base plus a full year of vesting, assuming the price does nothing.</li>
+<li><b>Guaranteed</b> — the part that arrives even if the stock halves and you leave in eighteen months.</li>
+<li><b>Monthly in-hand</b> — the number your life runs on. Yours is currently ₹1,02,000 with no deductions, which is the comparison you keep making in <a href="#r12">R12</a>, and it stays the right one.</li>
+</ul>
+<p>A ₹32 lakh fully-fixed startup offer and a ₹45 lakh big-company package can be the same money in year one and very different money in year four. Neither is automatically better; they are different bets, and the deciding factor is usually not the money at all — it is whether you want the scope of a small company or the levelling ladder of a large one.</p>`,
+trap:`<p>Negotiating the base at a big company as if it were a startup. Bands are narrow and enforced, and base has the least room in it. If you are pushing on something, push in this order: <b>level</b> first, then <b>sign-on</b>, then <b>equity</b>, and base last. The first one is worth more than the other three together.</p>`,
+fu:['Is the level negotiable?','Can the sign-on be increased if the base cannot move?','What is the band for this level?']
+},
+{
+q:'The rest of a big-company offer',
+test:'Nothing. Know the words before someone says them to you.',
+a:`<ul>
+<li><b>Team matching</b> — at Google and some others you can pass the loop and then wait for a team. It is normal, it takes weeks, and the offer is not real until it lands somewhere.</li>
+<li><b>Hiring committee</b> — a group who never met you reviews the packet and decides. Your interviewers\\' written notes are the entire input, which is <a href="#r11lp">R11·LP</a>\\'s whole point.</li>
+<li><b>Offer expiry</b> — usually a week, occasionally "exploding" in 48 hours. Ask for time; a company that will not give you a few days to compare is telling you how it operates.</li>
+<li><b>Relocation and joining bonus</b> are separate line items and are often the easiest thing to add when the base cannot move.</li>
+<li><b>Background verification</b> at this size takes weeks and checks everything you claimed — dates, titles, and the CTC you stated in <a href="#r1">R1</a>. This is why that number had to be true.</li>
+</ul>`
+}
+]},
+{
+id:'r13',code:'R13',navTitle:'Remote & global roles',
+title:'Working remotely for a company abroad',
+meta:[['Length','3–6 rounds over 2–5 weeks'],['Who','Often nobody senior until late'],['Decides','Whether you can be trusted unsupervised'],['Fail mode','Treating it like an Indian product loop']],
+tiers:[['product',1],['saas',1],['agency',1],['service',0]],
+intro:'A remote role for a company abroad is a different job, hired differently, paid in a different currency, and employing you through a structure most candidates have never heard of. Everything else in this book assumes an Indian employer and an Indian offer letter. This round is what changes when neither is true — and for your profile, with three years of remote work already behind you, this is the market where that history stops being an objection and starts being the qualification.',
+pre:`<div class="table-scroll"><table>
+<thead><tr><th>The Indian loop</th><th>The global remote loop</th></tr></thead>
+<tbody>
+<tr><td>Live rounds, back to back, often in one day</td><td>Spread over weeks, asynchronous, more of it written</td></tr>
+<tr><td>Whiteboard or shared editor with someone watching</td><td>A take-home you do alone, then a call about it</td></tr>
+<tr><td>Screening on CTC and notice period</td><td>Screening on timezone overlap and written English</td></tr>
+<tr><td>Culture fit judged in a room</td><td>Judged on how you write — the application form is the first test</td></tr>
+<tr><td>Offer in CTC, one number</td><td>Offer in USD or EUR, and an employment structure you have to understand</td></tr>
+</tbody>
+</table></div>`,
+qs:[
+{
+q:'The written application is the first round.',
+test:'Whether you can write. In a company where nobody sits near you, writing is the job.',
+a:`<p>Remote-first companies — GitLab, Automattic, Zapier, Doist, and most of the small SaaS firms hiring from India — screen on a written application before anyone speaks to you. It is three to five questions, answered in a box, and it eliminates most candidates.</p>
+<p>What they are reading for:</p>
+<ul>
+<li><b>Structure.</b> A short answer with a point, not a paragraph that arrives at one.</li>
+<li><b>Specifics.</b> The same rule as every other round in this book — numbers, names, what you personally did.</li>
+<li><b>Whether you answered the question asked.</b> A shocking number of applications do not.</li>
+</ul>
+<p>Write it in an editor, not in the box. Read it once out loud. Keep each answer under 200 words unless they ask for more.</p>`,
+trap:`<p>Pasting your resume summary into a written application. They already have the resume; the form exists to see whether you can think in writing.</p>`,
+note:`<p>Your three years of remote work is the single strongest line you have here, and it is worth stating plainly: you have already done this job in this shape. In an Indian office loop the same fact is an objection to defend (<a href="#r1">R1</a>, <a href="#r11">R11</a>). Same fact, opposite sign — which is worth knowing when you decide which market to spend your weeks on.</p>`
+},
+{
+q:'"What is your timezone overlap?"',
+test:'The only hard constraint in remote hiring. Everything else is negotiable; this is not.',
+a:`<p>Companies advertise a required overlap and mean it. From IST:</p>
+<ul>
+<li><b>Europe (CET)</b> — 3.5–4.5 hours behind. An IST afternoon and evening covers their morning comfortably. This is the easiest market from India and where most of the realistic roles are.</li>
+<li><b>UK</b> — 4.5–5.5 hours behind. Same as above, slightly later.</li>
+<li><b>US East</b> — 9.5–10.5 hours behind. Their 9am is your 6.30pm. Four hours of overlap means working until 10pm.</li>
+<li><b>US West</b> — 12.5–13.5 hours behind. Real overlap means nights. Companies hiring from India for Pacific hours either want async only, or they want your evenings and should say so.</li>
+</ul>
+<p>Answer with a specific window you will actually keep, not the widest one you could survive. The people who burn out of remote roles in six months are the ones who agreed to a window they could not hold.</p>`,
+say:`<p>I am in IST, so I overlap comfortably with European hours — I can hold 2pm to 10pm IST as core hours, which is most of a CET working day. For US Eastern I can do a two to three hour overlap in my evening, and I would want the rest of the collaboration to be async.</p>`,
+trap:`<p>Saying "I am flexible with timezones" to a US West company. You are agreeing to permanent night shifts, and both of you will find out in month three.</p>`,
+fu:['Which hours are your core hours?','Are you comfortable with occasional late calls?','How do you handle being the only person online?']
+},
+{
+q:'How they will actually employ you — and why it matters',
+test:'Nothing. But getting this wrong costs you money and occasionally legality.',
+a:`<p>A foreign company cannot simply put an Indian resident on its payroll. There are three structures, and they are not equivalent:</p>
+<ul>
+<li><b>Employer of Record (Deel, Remote.com, Velocity, Multiplier).</b> The EOR is your legal employer in India; the company pays the EOR. You get an Indian employment contract, TDS deducted, PF if applicable, paid leave, and Form 16. Cleanest option and increasingly the default. You are an employee, with employee protections.</li>
+<li><b>Independent contractor.</b> You invoice monthly, they pay into your bank. No TDS deducted, no PF, no paid leave, no notice protection. You handle advance tax quarterly, and if your receipts cross ₹20 lakh you need GST registration — export of services is zero-rated but you still have to file, and you will need a LUT to avoid paying and reclaiming. Your bank will ask for purpose codes and issue FIRCs for inward remittance.</li>
+<li><b>Indian subsidiary.</b> The company has an Indian entity and you are a normal Indian employee of it. Same as any local job, with a foreign parent.</li>
+</ul>`,
+after:`<p>Contractor pays more per month and costs more than it looks: no leave, no notice period in your favour, no employer PF, and roughly 30% of the gross needs setting aside for tax you pay yourself. A ₹2,00,000 monthly contract is not twice a ₹1,00,000 salaried job.</p>`,
+note:`<p><b>Ask which one it is on the first call.</b> "Would I be engaged through an EOR, as a contractor, or through an Indian entity?" A company that has not thought about it is a company that will improvise your tax situation.</p>`,
+trap:`<p>Accepting "we will just transfer the money each month" with no contract, no EOR and no invoice trail. Nothing about that is enforceable, and the money arriving without a purpose code is a problem you get to explain later.</p>`,
+fu:['Who is the legal employer?','Is there a notice period on either side?','Who covers the EOR fee?','What happens to leave and holidays?']
+},
+{
+q:'What the number looks like in USD',
+test:'Whether you know what you are worth in a market that is not Bangalore.',
+a:`<p>Global remote pay is not one market. It splits by how the company decides to pay:</p>
+<ul>
+<li><b>Location-adjusted</b> (most common). They pay a local-plus rate — often 1.3–2× the Indian band for the same role. For your profile that is roughly <b>$35,000–55,000</b> a year, which is ₹30–47 lakh, and usually meaningfully better than the ₹26 lakh you are asking locally.</li>
+<li><b>Location-independent</b> (rarer, and the reason people chase remote). One global band, sometimes anchored to a US or European rate. <b>$70,000–110,000</b> for six years of full-stack, which is ₹60 lakh–₹95 lakh. GitLab, Automattic and a handful of others publish this openly; most do not.</li>
+<li><b>Agency and contract work</b> from abroad. Often quoted hourly, $25–60. Higher per hour, no stability, and you carry every cost.</li>
+</ul>
+<p>The negotiating question is <b>which model they use</b>, and it is fair to ask directly: "Is compensation location-adjusted or is there a single global band?" The answer tells you the ceiling before you name a number, exactly as the band question does in <a href="#r1">R1</a>.</p>`,
+say:`<p>Before I give a number — is your compensation location-adjusted, or do you pay a single global band for the role? And is this an EOR arrangement or a contract?</p>`,
+trap:`<p>Converting your Indian expectation to dollars and quoting that. ₹26 lakh is about $31,000, and quoting $31,000 to a company with a $70,000 band anchors you at less than half of what the role pays. Ask their band first — this is the single most expensive mistake in this round.</p>`,
+fu:['What is the range for this role?','Is it reviewed annually, and in which currency?','Is there equity, and can a non-US resident hold it?']
+},
+{
+q:'The take-home is longer, and it is most of the decision',
+test:'Whether you can work unsupervised — which is the entire question a remote company is asking.',
+a:`<p>Remote loops lean on take-homes because they cannot watch you work. Expect a bigger brief than <a href="#r1th">R1·TH</a> describes — often 4–8 hours, sometimes paid — and expect the follow-up call to go deep on your decisions rather than your syntax.</p>
+<p>Everything in the take-home round applies, plus two things specific to this context:</p>
+<ul>
+<li><b>Write more than you would locally.</b> The README is not documentation here, it is the interview. Decisions, trade-offs, what you would do next.</li>
+<li><b>Show your commits.</b> They are reading how you work over eight hours, because that is the thing they cannot otherwise see.</li>
+</ul>`,
+note:`<p>If the task is unpaid and would take more than about six hours, it is reasonable to say so and ask to scope it down. A remote-first company will usually agree; the ones that will not are telling you how they treat people\\'s time.</p>`
+},
+{
+q:'"How do you work when nobody is online?"',
+test:'Async judgement. The failure mode they are screening for is someone who stops and waits.',
+a:`<p>The answer they want has three parts: you unblock yourself, you write things down so the answer arrives while you sleep, and you know when to stop and escalate rather than guess for six hours.</p>`,
+say:`<p>I work in a way that assumes the answer comes tomorrow. If I hit something ambiguous I write the question with the two options I see and what I would pick, and then carry on with the version I would pick — so if I am wrong it is one commit to undo, and if the answer comes back at 6am it is already unblocked. The things I do not guess on are anything that touches data or money; those wait.</p>`,
+trap:`<p>"I message my lead and wait for a reply." In a nine-hour timezone gap that is a day lost, and it is exactly the behaviour that makes a company stop hiring from your timezone.</p>`,
+fu:['Give me an example where you got that wrong.','How do you handle a disagreement in writing?','How do you know when something needs a call instead?']
+},
+{
+q:'The rest of the remote round',
+test:'Nothing. The questions that come up once and matter.',
+a:`<ul>
+<li><b>Notice period.</b> Foreign companies routinely expect two to four weeks and are startled by 60 or 90 days. Raise your real notice early — <a href="#r1">R1</a> covers planting the buyout question — because it is one of the more common reasons a remote offer falls through.</li>
+<li><b>Equipment and internet.</b> Most provide a laptop or a stipend. Ask; it is a normal question and the answer says something about how they treat remote staff.</li>
+<li><b>Moonlighting.</b> If you are still employed while contracting, check your current contract. Indian employers have terminated over this, and a contract with a foreign company is exactly the shape they look for.</li>
+<li><b>Time off.</b> "Unlimited leave" in a company with no Indian entity often means no accrual and no payout. Ask what people actually take.</li>
+<li><b>Equity.</b> A non-resident can usually hold RSUs in a US company, but options in a private company get complicated fast — exercise cost, foreign asset reporting in your ITR, and Schedule FA. Ask before you value it.</li>
+<li><b>Contract in writing, before you resign.</b> Nothing unusual about a remote process; every part of it should still end in a document.</li>
 </ul>`
 }
 ]},
