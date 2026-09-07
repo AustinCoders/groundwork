@@ -1,7 +1,12 @@
 import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
 import { EDGE_VOICES } from "@/lib/edge-voices";
+import { overRateLimit } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
+
+// A synthesis is a websocket to Microsoft; without a cap a hung upstream holds
+// the function for the platform maximum.
+export const maxDuration = 20;
 
 const ALLOWED_VOICES = new Set(EDGE_VOICES.map((v) => v.value));
 
@@ -25,28 +30,6 @@ interface WordEvent {
 }
 
 const PITCH_PATTERN = /^[+-]\d{1,2}%$|^0%$/;
-
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX = 40;
-const hits = new Map<string, { count: number; resetAt: number }>();
-
-/**
- * Per-instance limiter. Serverless spreads traffic over many instances, so this
- * is a floor rather than a guarantee — it stops one client hammering a single
- * instance. Vercel Firewall rate limiting is the account-wide equivalent.
- */
-function overRateLimit(req: Request): boolean {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
-  const now = Date.now();
-  const seen = hits.get(ip);
-  if (!seen || now > seen.resetAt) {
-    hits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    if (hits.size > 5000) for (const [key, v] of hits) if (now > v.resetAt) hits.delete(key);
-    return false;
-  }
-  seen.count += 1;
-  return seen.count > RATE_LIMIT_MAX;
-}
 
 /** [offset ms, duration ms, text] — a third the size of the object form. */
 type CompactWord = [number, number, string];
@@ -148,7 +131,7 @@ async function synthesise(
 }
 
 export async function GET(req: Request) {
-  if (overRateLimit(req)) return Response.json({ error: "Too many requests" }, { status: 429 });
+  if (overRateLimit(req, "tts", 40)) return Response.json({ error: "Too many requests" }, { status: 429 });
 
   const { searchParams } = new URL(req.url);
   const rawRate = Number(searchParams.get("rate"));
@@ -164,7 +147,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  if (overRateLimit(req)) return Response.json({ error: "Too many requests" }, { status: 429 });
+  if (overRateLimit(req, "tts", 40)) return Response.json({ error: "Too many requests" }, { status: 429 });
 
   let body: { text?: unknown; voice?: unknown; rate?: unknown; pitch?: unknown };
   try {
