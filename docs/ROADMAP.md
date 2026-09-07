@@ -1,31 +1,35 @@
 # Roadmap
 
-What is left to build, in the order it is worth building. Written September 2026, after the
-production audit — every number in here was measured against the live site, not estimated.
+What is left to build, in the order it is worth building. Every number here was measured against the
+site, not estimated. Last measured September 2026.
 
-The site is production-ready as it stands: 567 static pages on a CDN, security headers, CI that
-typechecks, lints, spell-checks, runs unit tests, a Playwright smoke and accessibility suite, and
-Lighthouse budgets. Nothing below is broken. It is what the site needs in order to grow.
+The site is production-ready as it stands: 559 prerendered pages on a CDN, security headers, and CI
+that typechecks, lints, spell-checks, runs unit tests, a Playwright smoke and accessibility suite,
+and Lighthouse budgets. Nothing below is broken. It is what the site needs in order to grow.
+
+A visual version of this file, with progress bars, is [`roadmap.html`](roadmap.html).
 
 ---
 
 ## 0. Content — the half the engineering serves
 
-Measured today: **4 of 20 topics have written chapters.**
+Measured today: **4 of 20 topics have written chapters** — 112 written, 399 still outlines.
 
-| Topic          | Chapters     | Exercises |
+| Topic          | Written      | Exercises |
 | -------------- | ------------ | --------- |
-| JavaScript     | 27           | 54        |
 | DSA in JS      | 34           | 245       |
+| JavaScript     | 27           | 54        |
+| Interview book | 27 rounds    | **0**     |
 | System Design  | 24           | **0**     |
-| Interview book | 23           | **0**     |
 | The other 16   | outline only | —         |
+
+The interview book is 27 rounds and 405 questions, eleven of them carrying a level ladder.
 
 Two things stand out.
 
-**System Design and the Interview book have no practice at all.** They are the two tracks most tied to
-getting hired and the two where a reader cannot do anything but read. Exercises for these do not look
-like the DSA ones — a system design "exercise" is a prompt and a rubric, an interview one is a
+**System Design and the Interview book have no practice at all.** They are the two tracks most tied
+to getting hired and the two where a reader cannot do anything but read. Exercises for these do not
+look like the DSA ones — a system design "exercise" is a prompt and a rubric, an interview one is a
 question with a model answer to compare against. That is a content format decision before it is a
 code one.
 
@@ -34,92 +38,109 @@ Which to write next is a question about who the site is for; the interview loop 
 rounds that matter most, and React, Node and TypeScript are the three that appear in nearly every
 job description this site is aimed at.
 
-There is no engineering blocker on any of this. Adding a chapter means adding it to the topic's notes
-file in `content/`; routes, search index, sitemap, reading time and progress all follow from there.
+There is no engineering blocker on any of this. Adding a chapter means adding a file under
+`content/<topic>/`; routes, search index, sitemap, reading time and progress all follow from there.
+
+---
 
 ## 1. Progress that survives the browser
 
 **The single biggest product gap.** Everything a reader earns — chapters read, exercises solved,
-streaks, XP, review schedule, narration settings, unsaved editor code — lives in `localStorage` on
-one device. Clear the browser and it is gone. Open the site on a phone and it starts from zero.
+streaks, review schedule, narration settings, unsaved editor code — lives in `localStorage` on one
+device. Clear the browser and it is gone. Open the site on a phone and it starts from zero.
 
 That is fine for a personal notes site and wrong for anything with readers.
 
 **What it takes**
 
 - Accounts. Given the stack, the least new machinery is a hosted auth provider with a Postgres
-  behind it — Vercel is already the host, so Neon or Supabase are the short paths.
-- A `progress` table keyed by user and chapter, mirroring what `lib/storage.ts` writes today:
-  chapter done + timestamp + review count, exercise solved, activity days, streak.
+  behind it — Vercel is already the host, so Supabase (auth and database together) or Neon with
+  Auth.js are the short paths.
+- Tables mirroring what `lib/storage.ts` writes today: `progress` keyed by user and chapter with
+  done-at and review count, `exercise_progress`, `activity` by day, and `settings` for theme, font,
+  level and narration.
 - **Migration, not replacement.** The reader who already has six months of localStorage progress
   must not lose it at sign-in. Read local, push once, then treat the server as the source of truth.
 - Keep working signed out. The whole site is readable without an account today and should stay that
   way; the account adds sync, it does not gate reading.
 
 **Where the code already helps:** every progress-aware component reads through `useSyncExternalStore`
-via `useProgressValue`, so the storage layer is one seam. Swapping `lib/storage.ts` for a synced
-implementation does not touch the components.
+via `useProgressValue`, and `progress`, `activity` and `code` each already expose `subscribe()`. The
+storage layer is one seam — a synced implementation behind it touches no components.
 
 ---
 
 ## 2. Content pipeline
 
-Chapters are TypeScript files compiled into the bundle. `content/interview-data.ts` alone is twelve
-thousand lines, and `content/practice.ts` is larger. Every typo fix is a rebuild and a redeploy.
+Chapters are TypeScript files compiled into the bundle. Every typo fix is a rebuild and a redeploy.
 
-**What hurts today**
+The size half of this problem is solved: the four files that had grown past editing — `practice.ts`
+at 840 KB, `dsa-notes.ts` at 626 KB, `system-design-notes.ts` at 577 KB and `notes.ts` at 306 KB —
+are now barrels over per-chapter files, and the largest hand-edited content files left are
+`interview-data.ts` at 429 KB and `topics.ts` at 165 KB.
+
+**What still hurts**
 
 - No preview of a chapter without running the dev server.
-- The two biggest content files are prettier-ignored because formatting them is a four-thousand-line
-  diff that changes nothing — a sign the format is fighting the tooling.
 - Chapter bodies are HTML strings, so an editing mistake is only caught by the integrity tests in
   `tests/content.test.ts`, not by a schema.
 
 **Options, cheapest first**
 
-1. **MDX files on disk.** One file per chapter, real markdown, components for the callout boxes.
-   Keeps everything in git, no service to run. Biggest win per hour of work.
-2. **A CMS with ISR.** Content moves out of the repo; publishing stops being a deploy. More moving
+1. **A schema.** Zod over the chapter shape, so a malformed chapter fails the build with a useful
+   message rather than rendering oddly. Smallest change, catches the most common mistake.
+2. **MDX files on disk.** One file per chapter, real markdown, components for the callout boxes.
+   Keeps everything in git, no service to run.
+3. **A CMS with ISR.** Content moves out of the repo; publishing stops being a deploy. More moving
    parts and a monthly bill.
-3. **Stay as-is but add a schema.** Zod over the chapter shape, so a malformed chapter fails the
-   build with a useful message rather than rendering oddly.
 
 Whichever way this goes, the search index, sitemap, reading-time estimates and progress tracking all
 read from `lib/content.ts` — that is the interface to keep stable.
 
 ---
 
-## 3. Search that scales past twenty topics
+## 3. Search that scales
 
-Search fetches a per-topic JSON index in the browser and greps it. It works because a topic index is
-small and there are twenty topics.
+Search fetches a per-topic JSON index in the browser and greps it. It is fetched lazily, on the first
+keystroke rather than on page load, so it costs nothing to a reader who never searches.
 
-**Where it breaks:** every new topic adds a payload; cross-topic search already pulls the global
-index. Somewhere past a few hundred chapters this stops being reasonable to ship to a phone.
+Measured payloads:
+
+| Index        | Raw    | gzip       |
+| ------------ | ------ | ---------- |
+| `/interview` | 378 KB | **134 KB** |
+| `/dsa`       | 339 KB | **115 KB** |
+| global       | 25 KB  | 6.6 KB     |
+| `/css`       | 1.9 KB | 0.6 KB     |
+
+**Where it breaks:** two topics already cost over 100 KB gzip on the first keystroke, and both are
+the ones a reader is most likely to search. Every written topic adds another.
 
 **Options**
 
-- Precomputed inverted index, sharded per topic, loaded on demand — no service, more code.
+- Trim what goes into the index — strip HTML, cap the text kept per chapter. Cheapest, roughly halves
+  it, changes nothing else.
+- A precomputed inverted index, term to chapter ids, sharded per topic — no service, more code.
 - A hosted search service (Algolia, Typesense, Meilisearch). Costs money, gives typo tolerance and
   ranking for free, and is the right answer if search becomes something readers rely on.
 
-Worth doing when a search misses something a reader knows is there.
+Do the trim now. Revisit when a third topic crosses 100 KB.
 
 ---
 
 ## 4. The interview book as a product
 
-The interview material is 23 rounds and 354 questions written to a standard that people pay for. It
+The interview material is 27 rounds and 405 questions written to a standard that people pay for. It
 is the most obvious thing on the site to charge for.
 
 **What that needs, in order**
 
 1. Accounts (section 1) — nothing else works without them.
 2. Payments. Stripe, one-time or subscription; Razorpay if the buyers are mostly Indian.
-3. A gate. Free rounds as the sample, the rest behind sign-in. The current cover page already reads
-   like a shelf, so the split is a content decision, not a rebuild.
+3. A gate. Free rounds as the sample, the rest behind sign-in. The cover page already reads like a
+   shelf, so the split is a content decision, not a rebuild.
 4. A licence decision. `LICENSE` currently reserves all rights on `content/`, which is the right
-   default for this and should stay that way if it becomes paid.
+   default and should stay that way if it becomes paid.
 
 Do not start here. Do section 1 first; everything in this section sits on it.
 
@@ -159,50 +180,95 @@ third-party origin in the CSP and a dependency on their uptime for the Python ru
 
 ## 7. Smaller things worth doing
 
-**Rate limiting that actually holds.** `/api/tts` has a per-instance limiter, which is a floor, not
-a guarantee — serverless spreads traffic over instances. Vercel Firewall rate limiting is the
+**Rate limiting that actually holds.** `/api/tts` has a per-instance limiter, which is a floor, not a
+guarantee — serverless spreads traffic over instances. Vercel Firewall rate limiting is the
 account-wide version and is configuration rather than code.
 
 **Sentry.** Client errors currently post to `/api/client-error` and land in the Vercel function log:
-no grouping, no alerting, and the log expires. Swapping in a real error tracker is one function —
-the reporting component and endpoint already exist as the seam.
+no grouping, no alerting, and the log expires. `components/ErrorReporter.tsx` and the endpoint are
+already the seam. Note that the CSP has blocked a third-party script before — Sentry needs
+`connect-src`, and a tunnel route if ad blockers are a concern.
+
+**The home page loads the code editor.** Measured: `/` downloads 1,986 KB of uncompressed JavaScript
+across 15 files, against 653 KB across 13 on a chapter page. The difference is one 1.3 MB chunk —
+313 KB brotli — and it is CodeMirror. It is not in the home page's script set; the Next router
+prefetches it, because the two `/practice?id=free` links in `app/HomeView.tsx` (the hero's secondary
+call to action and the footer link) are the only ones on the page without `prefetch={false}`. Adding
+it to both is the fix.
+
+**Offline reading.** A service worker over the chapters would make the site work on a train.
+`app/manifest.ts` already exists, so this is the worker and a cache strategy — and a decision about
+what "offline" means for the playground, which needs its 18 MB of wasm runtimes. The fiddly part is
+that the App Router serves RSC payloads, not only HTML, so the caching rules have to account for
+both.
 
 **`Kalam 300`.** The light weight exists for `.sub` and `.brand__meta` — around six elements on a
-page — and costs its own font file, roughly 13 KB of the 145 KB a chapter page loads. Moving those
-to 400 drops the file. It is a design decision, not a technical one: the subtitle gets slightly
-heavier.
-
-**Home page JavaScript.** Lighthouse measures 650 KB of script on `/` against 251 KB on a chapter
-page. Worth finding out what the difference is; the performance score is 100 either way, so it is
-curiosity rather than a problem.
-
-**Offline reading.** A service worker over the chapters would make the site work on a train. The
-content is static and already cached hard, so this is mostly about a manifest and a cache strategy —
-and about deciding what "offline" means for the playground, which needs its wasm runtimes.
+page — and costs its own font file, roughly 13 KB of the 145 KB a chapter page loads. Moving those to
+400 drops the file. It is a design decision, not a technical one: the subtitle gets slightly heavier.
 
 ---
 
-## Earlier audit
+## 8. What to do next, and roughly how long
 
-[`2026-08-audit.html`](2026-08-audit.html) is the August audit, kept as a snapshot rather than
-maintained. Nearly everything engineering in it is now done — chapter `<h1>`s, security headers,
-sitemap and robots, cross-topic search, error boundaries, per-chapter routes, tests and CI, the
-focus-stealing search box, the editor chunk splitting out of the reader bundle, analytics. What is
-still open from it lives in this file: the unofficial Microsoft dependency behind narration, offline
-support, and the content plan above.
+Estimates are focused working days for one person who knows this codebase. They cover building,
+testing and shipping, not learning a service from scratch.
 
-## What was finished in the audit pass
+### Ordered by what to pick up first
 
-Kept here so nobody re-does it.
+| #   | Item                       | Effort        | Why here                                            |
+| --- | -------------------------- | ------------- | --------------------------------------------------- |
+| 1   | Home page prefetch         | **15 min**    | Two attributes; drops 313 KB brotli from `/`        |
+| 2   | Vercel Firewall rate limit | **1–2 hours** | Configuration, not code; closes a real hole         |
+| 3   | Search index trim          | **0.5 day**   | Halves the two indexes that already cost 100 KB+    |
+| 4   | Sentry                     | **0.5–1 day** | Wanted before there are accounts to break           |
+| 5   | Offline reading            | **2–3 days**  | Content is already static; mostly a caching problem |
+| 6   | Accounts and sync          | **5–8 days**  | The biggest gap, and the biggest commitment         |
 
-| Area           | Result                                                                                       |
-| -------------- | -------------------------------------------------------------------------------------------- |
-| Reader load    | 623 KB / 56 requests → 470 KB / 26; RSC prefetch 25 → 0                                      |
-| Dynamic routes | `/practice`, `/level`, `/soon` were server-rendered per request; all static now              |
-| `/api/tts`     | base64 JSON with `no-store` → binary mp3, CDN-cached, rate-limited                           |
-| `/api/weather` | Coordinates round to one decimal, so a city shares one upstream call                         |
-| CSP            | Vercel Analytics and Speed Insights were blocked by our own policy                           |
-| Layout shift   | Sidebar accordion opened after mount; CLS on `/interview` 0.116 → 0.030                      |
-| Accessibility  | axe over 12 pages: tablist children, an unnamed editor, tag contrast at 3.94:1               |
-| Fonts          | 16 families → 6; every remaining weight verified in use; two buttons were rendering in Arial |
-| CI             | Now also formatting, spelling, 27 Playwright tests, and Lighthouse budgets                   |
+**Total: roughly 9 to 14 focused days.** The first four come to about two days together and are
+independent of each other — a weekend closes all four.
+
+### 1. Home page prefetch — 15 minutes
+
+Add `prefetch={false}` to the two `/practice?id=free` links in `app/HomeView.tsx`. Re-measure the
+JavaScript on `/` afterwards; it should drop by the 1.3 MB CodeMirror chunk.
+
+### 2. Vercel Firewall rate limiting — 1 to 2 hours
+
+Rules on `/api/tts`, `/api/weather`, `/api/joke` and `/api/client-error` in the Vercel dashboard.
+Check first whether rate-limit rules need a paid plan. Keep `lib/rateLimit.ts` afterwards as defence
+in depth rather than deleting it.
+
+### 3. Search index trim — half a day
+
+Strip HTML from the indexed text and cap what is kept per chapter, then re-measure `/dsa` and
+`/interview`. Target is under 60 KB gzip each. No interface changes: `ReaderShell` fetches the same
+URL and greps the same shape.
+
+### 4. Sentry — half a day to a day
+
+- `@sentry/nextjs`, DSN in the environment, source maps uploaded from CI.
+- `ErrorReporter` calls `Sentry.captureException` instead of posting to `/api/client-error`.
+- Update the CSP for `connect-src`, and add a tunnel route if reports are being blocked.
+
+Free tier covers this traffic comfortably.
+
+### 5. Offline reading — 2 to 3 days
+
+- A service worker (Serwist is the maintained option) precaching the app shell.
+- Runtime caching for visited chapters, covering both the HTML and the RSC payload.
+- A decision on the playground: either leave it online-only or make the wasm runtimes an explicit
+  "download for offline" action. Do not precache 18 MB by default.
+- An offline indicator and a fallback page for an uncached route.
+
+Most of the time goes on the App Router caching rules and testing them, not on the worker itself.
+
+### 6. Accounts and progress sync — 5 to 8 days
+
+- Provider, schema and auth flow — 1 to 2 days.
+- The synced storage layer behind the existing seam — 2 days. Components do not change.
+- Migration from localStorage, signed-out behaviour, and the edge cases around both — 1 to 2 days.
+- Playwright coverage with a test account, and CI — 1 day.
+
+This is the only item on the list that adds ongoing work rather than removing it: a database to keep
+alive, auth email deliverability, and an account-deletion path. Worth deciding that you want those
+before starting, because they do not go away.
