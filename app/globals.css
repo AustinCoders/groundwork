@@ -6778,6 +6778,41 @@ a.step__title:hover {
   margin: 0 0 14px;
 }
 
+/* The book points at the tracks that teach each round in depth — the reader
+   should not have to guess that 34 DSA chapters exist. */
+.interview-body .prep {
+  margin: 26px 0 0;
+  padding: 16px 18px;
+  background: var(--dg-box-green);
+  border: 1.5px solid var(--green);
+  border-radius: 12px;
+}
+
+.interview-body .prep .ttl {
+  display: block;
+  margin-bottom: 8px;
+  font-family: var(--font-heading);
+  font-size: 18px;
+  color: var(--green);
+}
+
+.interview-body .prep p {
+  margin: 0 0 10px;
+}
+
+.interview-body .prep ul {
+  margin: 0;
+  padding-left: 19px;
+}
+
+.interview-body .prep li {
+  margin-bottom: 6px;
+}
+
+.interview-body .prep p:last-child {
+  margin: 10px 0 0;
+}
+
 .interview-body .followups {
   margin: 14px 0 0;
   border-top: 1px dashed var(--line-soft);

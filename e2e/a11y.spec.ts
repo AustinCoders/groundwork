@@ -7,6 +7,7 @@ const PAGES = [
   "/notes/setup-mental-model",
   "/interview",
   "/interview/r1oa",
+  "/interview/r7",
   "/level/js",
   "/path?topic=js&level=beginner",
   "/practice?id=free",

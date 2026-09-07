@@ -558,6 +558,14 @@ pre:`<div class="table-scroll"><table>
 </tbody></table></div>
 
 <div class="note"><span class="lbl">The first ten minutes</span><p>Do not open the editor. Spend six to eight minutes out loud: restate the requirements in your own words, ask two clarifying questions, say what you will build and what you are explicitly leaving out, then sketch the file structure. Interviewers score this. Candidates who start typing at second thirty almost always finish with a mess.</p></div>`,
+post:`<div class="prep">
+<span class="ttl">Practise this round on the site</span>
+<ul>
+<li><a href="/notes/patterns-architecture">Patterns &amp; architecture</a> — the separation this round scores 25% on</li>
+<li><a href="/notes/testing-in-js">Testing</a> — for the last ten minutes, when they ask you to prove it works</li>
+<li><a href="/practice?id=free">The playground</a> — build a small CRUD feature in ninety minutes until it is boring</li>
+</ul>
+</div>`,
 qs:[
 {
 q:'Build a task board with drag-and-drop between three columns, persisted locally.',
@@ -680,6 +688,18 @@ title:'JavaScript & TypeScript',
 meta:[['Length','30–60 min'],['Who','Senior engineer'],['Decides','Whether six years is real'],['Fail mode','Framework knowledge, no language knowledge']],
 tiers:[['service',1],['product',1],['saas',1],['agency',1]],
 intro:'The most common way a six-year candidate gets rejected is knowing React deeply and JavaScript shallowly. These are the questions that expose it. Every answer here has a shallow version that every candidate gives and a deep version that almost nobody does — the deep half is what is written out.',
+post:`<div class="prep">
+<span class="ttl">Read this round on the site</span>
+<p>Every answer above has a chapter behind it. These are the ones this round draws on, in the order they build.</p>
+<ul>
+<li><a href="/notes/scope-functions">Scope &amp; functions, properly</a> — closures, hoisting and <code>this</code>, which is most of the first ten minutes</li>
+<li><a href="/notes/async-properly">Async, properly</a> and <a href="/notes/advanced-async">Advanced async</a> — the event loop, microtasks, and the ordering questions</li>
+<li><a href="/notes/prototypes-oop">Prototypes &amp; OOP</a> — the chain, and why <code>class</code> is sugar over it</li>
+<li><a href="/notes/objects-deep">Objects deeply</a> and <a href="/notes/types-data">Types &amp; data</a> — copying, equality, coercion</li>
+<li><a href="/notes/engine-memory">Engine &amp; memory</a> — for when they push past the API into the machine</li>
+</ul>
+<p><a href="/problems">Runnable exercises</a> sit under these chapters. Reading the answer is not the same as having typed it.</p>
+</div>`,
 qs:[
 {
 q:'Explain the event loop. Where do promises and <code>setTimeout</code> sit?',
@@ -1855,6 +1875,14 @@ title:'Databases & Redis',
 meta:[['Length','20–40 min, often folded into R5'],['Who','Backend lead'],['Decides','Whether you can be trusted with data'],['Fail mode','Knowing an ORM but not SQL']],
 tiers:[['service',1],['product',1],['saas',1],['agency',0]],
 intro:'The most reliable way to find out whether a full-stack engineer is actually full-stack. An ORM hides everything in this round until someone asks you to read a query plan.',
+post:`<div class="prep">
+<span class="ttl">Read this round on the site</span>
+<ul>
+<li><a href="/system-design/sysdes-databases-in-design">Databases in design</a> — picking one, and defending the pick</li>
+<li><a href="/system-design/sysdes-caching-fundamentals">Caching fundamentals</a> — where Redis actually belongs</li>
+<li><a href="/system-design/sysdes-storage-systems">Storage systems</a> — when the answer is not a database at all</li>
+</ul>
+</div>`,
 qs:[
 {
 q:'A query got slow. Walk me through what you do.',
@@ -2065,6 +2093,16 @@ meta:[['Length','45–60 min'],['Who','SDE-3 or above'],['Decides','Mid-size pro
 tiers:[['saas',1],['product',1],['service',0],['agency',0]],
 intro:'Your background shows no competitive programming, so this is your weakest round and the reason to sequence mid-size product companies later in your campaign. The good news: at six years on a full-stack profile they ask easy and medium problems from a narrow set of patterns, not hard graph theory. Pattern recognition beats volume.',
 pre:`<div class="note"><span class="lbl">If you have three days, not three weeks</span><p>Do not attempt breadth. Do the first four patterns only — hash map, two pointers, sliding window, stack — about eight problems each, until recognition is instant. Those four cover the large majority of mediums given to full-stack candidates. Add intervals as a fifth, because your booking-marketplace background means an interviewer may reach for it deliberately.</p></div>`,
+post:`<div class="prep">
+<span class="ttl">The DSA track on this site</span>
+<p>This round is six questions about how to behave in the room. The patterns themselves are a whole track — <a href="/dsa">34 chapters and 245 exercises</a> — and this is the order to walk it.</p>
+<ul>
+<li><a href="/dsa/dsa-interview-strategy">Interview strategy</a> and <a href="/dsa/dsa-complexity-analysis">Complexity analysis</a> — start here; they change how you answer everything else</li>
+<li>The patterns that carry most interviews: <a href="/dsa/dsa-hashing">Hashing</a>, <a href="/dsa/dsa-two-pointers">Two pointers</a>, <a href="/dsa/dsa-sliding-window">Sliding window</a>, <a href="/dsa/dsa-binary-search">Binary search</a></li>
+<li>Then the structures: <a href="/dsa/dsa-trees">Trees</a>, <a href="/dsa/dsa-graphs-representation-traversal">Graphs</a>, <a href="/dsa/dsa-heaps-priority-queues">Heaps</a>, <a href="/dsa/dsa-stacks-queues">Stacks &amp; queues</a></li>
+<li>Then the two that decide mid-size product loops: <a href="/dsa/dsa-dp-1d">DP: 1D</a> and <a href="/dsa/dsa-backtracking">Backtracking</a></li>
+</ul>
+</div>`,
 qs:[
 {
 q:'The eight patterns that cover most of what you will be asked',
@@ -2209,6 +2247,16 @@ pre:`<div class="cards">
 <li><b>Deep dive · 15 min.</b> They pick one piece. Have caching and concurrency ready — those are yours.</li>
 <li><b>Failure &amp; scale · 7 min.</b> What breaks first at ten times the load, and what you would do.</li>
 </ul></div>
+</div>`,
+post:`<div class="prep">
+<span class="ttl">The system design track on this site</span>
+<p>Eight questions here; <a href="/system-design">24 chapters</a> behind them.</p>
+<ul>
+<li><a href="/system-design/sysdes-interview-mental-model">The mental model</a> — how to open, and what the interviewer is scoring</li>
+<li><a href="/system-design/sysdes-capacity-estimation">Capacity estimation</a> — the numbers you are expected to produce without a calculator</li>
+<li>Work two end to end: <a href="/system-design/sysdes-walkthrough-simple">URL shortener</a>, then <a href="/system-design/sysdes-walkthrough-medium">feed and chat</a></li>
+<li><a href="/system-design/sysdes-tradeoff-thinking">Tradeoff thinking</a> — the difference between boxes and a design</li>
+</ul>
 </div>`,
 qs:[
 {
@@ -2806,6 +2854,15 @@ title:'DSA at the ₹50L bar',
 meta:[['Length','2 rounds, 45–60 min each'],['Who','SDE-3 / Staff'],['Bar','At least one hard, solved live'],['Prep','8–12 weeks, not one']],
 tiers:[['saas',1],['product',1]],
 intro:'At ₹20–28L the patterns in R7 are enough. Here they are the floor. You will get one medium as a warm-up and one hard, and the hard will be a graph, a non-obvious DP, or a heap problem wearing a disguise. The good news: the topic list is finite and the same twelve shapes recur endlessly.',
+post:`<div class="prep">
+<span class="ttl">Where the hard patterns live</span>
+<p>The staff bar is not more of the same patterns — it is these, and they are written out on the site.</p>
+<ul>
+<li><a href="/dsa/dsa-advanced-dp">Advanced DP</a> and <a href="/dsa/dsa-advanced-backtracking">Advanced backtracking</a></li>
+<li><a href="/dsa/dsa-advanced-graph-algorithms">Advanced graph algorithms</a>, <a href="/dsa/dsa-union-find">Union-Find</a>, <a href="/dsa/dsa-minimum-spanning-tree">Minimum spanning tree</a>, <a href="/dsa/dsa-topological-patterns">Topological patterns</a></li>
+<li><a href="/dsa/dsa-segment-fenwick-trees">Segment &amp; Fenwick trees</a>, <a href="/dsa/dsa-tries">Tries</a>, <a href="/dsa/dsa-monotonic-stack-queue">Monotonic stack &amp; queue</a>, <a href="/dsa/dsa-string-algorithms">String algorithms</a></li>
+</ul>
+</div>`,
 qs:[
 {
 q:'Graphs — the four algorithms that cover most graph questions',
@@ -3023,6 +3080,14 @@ title:'Distributed systems design',
 meta:[['Length','60 min, sometimes twice'],['Who','Staff or principal'],['Bar','Trade-offs with numbers'],['Fail mode','Designing a monolith with more boxes']],
 tiers:[['saas',1],['product',1]],
 intro:'The R8 designs test whether you can build a system. These test whether you understand what breaks when the system is spread across machines that fail independently and cannot agree on what time it is. This is the largest single knowledge gap between where you are and the ₹50L bar — and unlike brand, it is entirely closeable by study.',
+post:`<div class="prep">
+<span class="ttl">Where the distributed chapters live</span>
+<ul>
+<li><a href="/system-design/sysdes-consistency-models">Consistency models</a> and <a href="/system-design/sysdes-cap-theorem-depth">CAP in depth</a></li>
+<li><a href="/system-design/sysdes-sharding-partitioning">Sharding at scale</a> and <a href="/system-design/sysdes-distributed-consensus">Distributed consensus</a></li>
+<li><a href="/system-design/sysdes-fault-tolerance">Fault tolerance</a> and <a href="/system-design/sysdes-observability-scale">Observability at scale</a></li>
+</ul>
+</div>`,
 qs:[
 {
 q:'Capacity estimation — do this before you draw anything',
