@@ -9,6 +9,34 @@ Lighthouse budgets. Nothing below is broken. It is what the site needs in order 
 
 ---
 
+## 0. Content — the half the engineering serves
+
+Measured today: **4 of 20 topics have written chapters.**
+
+| Topic          | Chapters     | Exercises |
+| -------------- | ------------ | --------- |
+| JavaScript     | 27           | 54        |
+| DSA in JS      | 34           | 245       |
+| System Design  | 24           | **0**     |
+| Interview prep | 23           | **0**     |
+| The other 16   | outline only | —         |
+
+Two things stand out.
+
+**System Design and Interview prep have no practice at all.** They are the two tracks most tied to
+getting hired and the two where a reader cannot do anything but read. Exercises for these do not look
+like the DSA ones — a system design "exercise" is a prompt and a rubric, an interview one is a
+question with a model answer to compare against. That is a content format decision before it is a
+code one.
+
+**Sixteen topics are outlines.** They render, they sit in "More topics", and they say so honestly.
+Which to write next is a question about who the site is for; the interview loop already names the
+rounds that matter most, and React, Node and TypeScript are the three that appear in nearly every
+job description this site is aimed at.
+
+There is no engineering blocker on any of this. Adding a chapter means adding it to the topic's notes
+file in `content/`; routes, search index, sitemap, reading time and progress all follow from there.
+
 ## 1. Progress that survives the browser
 
 **The single biggest product gap.** Everything a reader earns — chapters read, exercises solved,
@@ -153,6 +181,15 @@ content is static and already cached hard, so this is mostly about a manifest an
 and about deciding what "offline" means for the playground, which needs its wasm runtimes.
 
 ---
+
+## Earlier audit
+
+[`2026-08-audit.html`](2026-08-audit.html) is the August audit, kept as a snapshot rather than
+maintained. Nearly everything engineering in it is now done — chapter `<h1>`s, security headers,
+sitemap and robots, cross-topic search, error boundaries, per-chapter routes, tests and CI, the
+focus-stealing search box, the editor chunk splitting out of the reader bundle, analytics. What is
+still open from it lives in this file: the unofficial Microsoft dependency behind narration, offline
+support, and the content plan above.
 
 ## What was finished in the audit pass
 
