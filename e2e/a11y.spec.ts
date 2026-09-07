@@ -15,6 +15,7 @@ const PAGES = [
   "/review",
   "/progress",
   "/git",
+  "/architecture",
 ];
 
 for (const path of PAGES) {

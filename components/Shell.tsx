@@ -255,6 +255,12 @@ export function Shell({
                 </span>
                 <span className="site-navlink__name">Problems</span>
               </Link>
+              <Link className="site-navlink" href="/architecture" title="How this site is built" prefetch={false}>
+                <span className="site-navlink__icon" aria-hidden="true">
+                  ▤
+                </span>
+                <span className="site-navlink__name">How this is built</span>
+              </Link>
               {interviewReady && (
                 <Link
                   className="site-navlink"
