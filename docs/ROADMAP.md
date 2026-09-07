@@ -189,13 +189,6 @@ no grouping, no alerting, and the log expires. `components/ErrorReporter.tsx` an
 already the seam. Note that the CSP has blocked a third-party script before — Sentry needs
 `connect-src`, and a tunnel route if ad blockers are a concern.
 
-**The home page loads the code editor.** Measured: `/` downloads 1,986 KB of uncompressed JavaScript
-across 15 files, against 653 KB across 13 on a chapter page. The difference is one 1.3 MB chunk —
-313 KB brotli — and it is CodeMirror. It is not in the home page's script set; the Next router
-prefetches it, because the two `/practice?id=free` links in `app/HomeView.tsx` (the hero's secondary
-call to action and the footer link) are the only ones on the page without `prefetch={false}`. Adding
-it to both is the fix.
-
 **Offline reading.** A service worker over the chapters would make the site work on a train.
 `app/manifest.ts` already exists, so this is the worker and a cache strategy — and a decision about
 what "offline" means for the playground, which needs its 18 MB of wasm runtimes. The fiddly part is
@@ -217,34 +210,28 @@ testing and shipping, not learning a service from scratch.
 
 | #   | Item                       | Effort        | Why here                                            |
 | --- | -------------------------- | ------------- | --------------------------------------------------- |
-| 1   | Home page prefetch         | **15 min**    | Two attributes; drops 313 KB brotli from `/`        |
-| 2   | Vercel Firewall rate limit | **1–2 hours** | Configuration, not code; closes a real hole         |
-| 3   | Search index trim          | **0.5 day**   | Halves the two indexes that already cost 100 KB+    |
-| 4   | Sentry                     | **0.5–1 day** | Wanted before there are accounts to break           |
-| 5   | Offline reading            | **2–3 days**  | Content is already static; mostly a caching problem |
-| 6   | Accounts and sync          | **5–8 days**  | The biggest gap, and the biggest commitment         |
+| 1   | Vercel Firewall rate limit | **1–2 hours** | Configuration, not code; closes a real hole         |
+| 2   | Search index trim          | **0.5 day**   | Halves the two indexes that already cost 100 KB+    |
+| 3   | Sentry                     | **0.5–1 day** | Wanted before there are accounts to break           |
+| 4   | Offline reading            | **2–3 days**  | Content is already static; mostly a caching problem |
+| 5   | Accounts and sync          | **5–8 days**  | The biggest gap, and the biggest commitment         |
 
-**Total: roughly 9 to 14 focused days.** The first four come to about two days together and are
-independent of each other — a weekend closes all four.
+**Total: roughly 9 to 13 focused days.** The first three come to about a day and a half together and
+are independent of each other — one sitting closes all three.
 
-### 1. Home page prefetch — 15 minutes
-
-Add `prefetch={false}` to the two `/practice?id=free` links in `app/HomeView.tsx`. Re-measure the
-JavaScript on `/` afterwards; it should drop by the 1.3 MB CodeMirror chunk.
-
-### 2. Vercel Firewall rate limiting — 1 to 2 hours
+### 1. Vercel Firewall rate limiting — 1 to 2 hours
 
 Rules on `/api/tts`, `/api/weather`, `/api/joke` and `/api/client-error` in the Vercel dashboard.
 Check first whether rate-limit rules need a paid plan. Keep `lib/rateLimit.ts` afterwards as defence
 in depth rather than deleting it.
 
-### 3. Search index trim — half a day
+### 2. Search index trim — half a day
 
 Strip HTML from the indexed text and cap what is kept per chapter, then re-measure `/dsa` and
 `/interview`. Target is under 60 KB gzip each. No interface changes: `ReaderShell` fetches the same
 URL and greps the same shape.
 
-### 4. Sentry — half a day to a day
+### 3. Sentry — half a day to a day
 
 - `@sentry/nextjs`, DSN in the environment, source maps uploaded from CI.
 - `ErrorReporter` calls `Sentry.captureException` instead of posting to `/api/client-error`.
@@ -252,7 +239,7 @@ URL and greps the same shape.
 
 Free tier covers this traffic comfortably.
 
-### 5. Offline reading — 2 to 3 days
+### 4. Offline reading — 2 to 3 days
 
 - A service worker (Serwist is the maintained option) precaching the app shell.
 - Runtime caching for visited chapters, covering both the HTML and the RSC payload.
@@ -262,7 +249,7 @@ Free tier covers this traffic comfortably.
 
 Most of the time goes on the App Router caching rules and testing them, not on the worker itself.
 
-### 6. Accounts and progress sync — 5 to 8 days
+### 5. Accounts and progress sync — 5 to 8 days
 
 - Provider, schema and auth flow — 1 to 2 days.
 - The synced storage layer behind the existing seam — 2 days. Components do not change.

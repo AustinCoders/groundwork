@@ -238,7 +238,7 @@ export function HomeView({ topicsList, stats: site, perTopic, interviewStats }: 
           <Link className="btn btn--primary btn--big" href="/level/js">
             Start with JavaScript →
           </Link>
-          <Link className="hero__secondary" href="/practice?id=free">
+          <Link className="hero__secondary" href="/practice?id=free" prefetch={false}>
             or open the playground
           </Link>
         </div>
@@ -336,7 +336,9 @@ export function HomeView({ topicsList, stats: site, perTopic, interviewStats }: 
       <footer className="site-foot">
         <span>Written by hand, rendered by a browser.</span>
         <Link href="/notes">JS notes</Link>
-        <Link href="/practice?id=free">Playground</Link>
+        <Link href="/practice?id=free" prefetch={false}>
+          Playground
+        </Link>
       </footer>
     </Shell>
   );

@@ -754,6 +754,7 @@
       <span class="chip">CI: format, spelling, 28 e2e, Lighthouse</span>
       <span class="chip">Sidebar data off every page bundle</span>
       <span class="chip">Four content files split for editing</span>
+      <span class="chip">Home page JS 1,986 KB → 647 KB</span>
     </div>
   </section>
 
@@ -784,22 +785,6 @@
           Fetched lazily on the first keystroke, so it costs nothing to a reader who never searches — but
           <b>the interview index is 134 KB gzip and DSA is 115 KB</b>, and those are the two people search most.
           Trimming HTML out of the indexed text roughly halves it.
-        </p>
-      </div>
-
-      <div class="item">
-        <div class="item-head">
-          <h3>The home page loads the code editor</h3>
-          <span class="tag">Diagnosed</span>
-        </div>
-        <p>
-          <code>/</code> downloads 1,986 KB of uncompressed JavaScript across 15 files against 653 KB across 13 on a
-          chapter page. The difference is one 1.3 MB chunk — CodeMirror — pulled in by the router prefetching
-          <code>/practice</code>, because
-          <b
-            >the two links to it in <code>HomeView.tsx</code> are the only ones on the page without
-            <code>prefetch={false}</code></b
-          >.
         </p>
       </div>
 
@@ -874,14 +859,6 @@
       <div class="plan-scroll">
         <div class="plan-grid">
           <span class="step">1</span>
-          <span class="task">Home page prefetch</span>
-          <span class="band">
-            <span class="band-track"></span>
-            <span class="band-fill tiny" style="left: 0; width: 0.8%"></span>
-          </span>
-          <span class="est">15 min</span>
-
-          <span class="step">2</span>
           <span class="task">Vercel Firewall limits</span>
           <span class="band">
             <span class="band-track"></span>
@@ -889,7 +866,7 @@
           </span>
           <span class="est">1–2 hrs</span>
 
-          <span class="step">3</span>
+          <span class="step">2</span>
           <span class="task">Search index trim</span>
           <span class="band">
             <span class="band-track"></span>
@@ -897,7 +874,7 @@
           </span>
           <span class="est">0.5 day</span>
 
-          <span class="step">4</span>
+          <span class="step">3</span>
           <span class="task">Sentry</span>
           <span class="band">
             <span class="band-track"></span>
@@ -905,7 +882,7 @@
           </span>
           <span class="est">0.5–1 day</span>
 
-          <span class="step">5</span>
+          <span class="step">4</span>
           <span class="task">Offline reading</span>
           <span class="band">
             <span class="band-track"></span>
@@ -913,7 +890,7 @@
           </span>
           <span class="est">2–3 days</span>
 
-          <span class="step">6</span>
+          <span class="step">5</span>
           <span class="task">Accounts and sync</span>
           <span class="band">
             <span class="band-track"></span>
@@ -937,9 +914,10 @@
       </div>
 
       <div class="total">
-        <strong>9 to 14 days for all six</strong>
+        <strong>9 to 13 days for all five</strong>
         <span>
-          The first four come to about two days together and none depends on another — a weekend closes all four.
+          The first three come to about a day and a half together and none depends on another — one sitting closes all
+          three.
         </span>
       </div>
     </div>
