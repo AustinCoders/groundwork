@@ -19,7 +19,7 @@
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run spell && npm test",
     "prepare": "husky",
     "test:e2e": "playwright test",
-    "test:perf": "lhci autorun"
+    "test:perf": "npx --yes @lhci/cli@0.15 autorun"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.3",
@@ -57,10 +57,9 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
-    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/sql.js": "^1.4.11",
@@ -71,10 +70,10 @@
     "lint-staged": "^16.4.0",
     "prettier": "^3.9.6",
     "tailwindcss": "^4",
-    "vitest": "^4.1.10"
+    "vitest": "^5.0.0"
   },
   "engines": {
-    "node": ">=22.11"
+    "node": "22.x"
   },
   "lint-staged": {
     "*.{ts,tsx,mjs}": [

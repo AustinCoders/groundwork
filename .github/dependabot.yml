@@ -14,7 +14,14 @@ updates:
       codemirror:
         patterns: ["@codemirror/*", "@lezer/*", "codemirror"]
       dev-tooling:
-        patterns: ["eslint*", "prettier", "vitest", "cspell", "husky", "lint-staged", "typescript"]
+        # @types/node belongs here: vitest declares it as a peer, so splitting
+        # them into separate PRs gives you two that only build together.
+        patterns: ["eslint*", "prettier", "vitest", "cspell", "husky", "lint-staged", "typescript", "@types/node"]
+
+    ignore:
+      # @types/node tracks the runtime in .nvmrc, not the newest release.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /

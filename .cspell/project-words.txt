@@ -76,6 +76,8 @@ Naukri
 sourcer
 
 # Libraries, tools and infrastructure named in the notes
+treosh
+lighthouserc
 Supabase
 Typesense
 Meilisearch
