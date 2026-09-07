@@ -20,7 +20,7 @@ export const archScaling: Chapter = {
 </tr>
 <tr>
   <td>A burst on the narrator</td>
-  <td>Function cost and the upstream. The firewall holds the edge, but its counters are per region, so a distributed client sees a higher ceiling than 100 a minute suggests.</td>
+  <td>Function cost and the upstream. The firewall holds the edge, but its counters are regional rather than global, so it is a high wall rather than an absolute one.</td>
   <td>A shared counter &mdash; which means state, which is the thing this design does not have</td>
 </tr>
 <tr>

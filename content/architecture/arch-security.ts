@@ -52,7 +52,7 @@ export const archSecurity: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Layer</th><th>Runs</th><th>Limit</th><th>Blind spot</th></tr></thead>
 <tbody>
-<tr><td>Vercel Firewall</td><td>At the edge, before a function is invoked</td><td>100/min per IP on <code>/api/</code></td><td>Counters are per region</td></tr>
+<tr><td>Vercel Firewall</td><td>At the edge, before a function is invoked</td><td>A per-IP request rate on <code>/api/</code></td><td>Its counters are regional rather than global</td></tr>
 <tr><td>In-process limiter</td><td>Inside the function</td><td>40/min TTS, 20/min the rest</td><td>Per instance, and serverless spreads traffic</td></tr>
 <tr><td>Upstream caching</td><td>Between function and service</td><td>10 min weather, 5 min joke</td><td>Only helps repeated inputs</td></tr>
 </tbody>

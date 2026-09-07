@@ -42,7 +42,7 @@ export const archApis: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Layer</th><th>Where it runs</th><th>Limit</th><th>What it cannot do</th></tr></thead>
 <tbody>
-<tr><td>Vercel Firewall</td><td>The edge, before any function</td><td>100 requests a minute per IP on <code>/api/</code></td><td>Counters are per region, so a spread-out client sees a higher ceiling</td></tr>
+<tr><td>Vercel Firewall</td><td>The edge, before any function</td><td>A per-IP request rate on <code>/api/</code></td><td>Its counters are regional rather than global</td></tr>
 <tr><td>In-process limiter</td><td>Inside the function</td><td>40 a minute for TTS, 20 for the rest</td><td>Serverless spreads traffic over instances, so each instance counts alone</td></tr>
 <tr><td>Upstream caching</td><td>Between the function and the service</td><td>Weather 10 minutes, joke 5</td><td>Only helps for repeated inputs</td></tr>
 </tbody>

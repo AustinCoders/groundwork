@@ -180,17 +180,17 @@ third-party origin in the CSP and a dependency on their uptime for the Python ru
 
 ## 7. Smaller things worth doing
 
-**Rate limiting: one step left.** All four API routes carry a per-instance limiter — `/api/tts` at 40 a
-minute, `/api/weather`, `/api/joke` and `/api/client-error` at 20 — and a Vercel Firewall rule now
-sits in front of them at the edge: `Request Path starts with /api/`, fixed window, 100 requests a
-minute keyed on IP. It is published and running in **Log** mode, so it counts and does not block.
+**Rate limiting: one step left.** All four API routes carry a per-instance limiter, and a Vercel
+Firewall rule now sits in front of them at the edge, matching `Request Path starts with /api/` on a
+fixed window keyed by IP.
 
-The remaining step is a dashboard toggle, not a task: after a day of traffic, open Firewall →
-Overview and read the **Rate Limited** figure. If it is at or near zero, edit the rule and change the
-action from **Log** to **Too Many Requests (429)**, then publish. If it is not, the narrator's TTS
-requests are the likely cause — raise the limit to 200 and then switch.
+The remaining step is a dashboard toggle, not a task. The rule's current action, the exact threshold
+and the review date are not written down here — this file is in a public repository, and live
+enforcement settings are the one thing in it that would be useful to somebody probing the site. They
+live in the Vercel dashboard, which is where they are authoritative anyway. Firewall → Overview shows
+the **Rate Limited** figure and the rule editor shows the rest.
 
-Note that Firewall counters are per region rather than global, so this is a much higher wall than the
+Note that Firewall counters are regional rather than global, so this is a much higher wall than the
 in-process limiter, not an absolute one. Keep `lib/rateLimit.ts`: it runs in the function, the
 Firewall runs at the edge, and they fail in different ways.
 

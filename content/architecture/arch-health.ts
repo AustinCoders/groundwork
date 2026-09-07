@@ -52,11 +52,6 @@ export const archHealth: Chapter = {
   <td>They post to a function and land in a log with no grouping, no alerting, and an expiry. If a reader hits a bug, nobody finds out.</td>
 </tr>
 <tr>
-  <td>The rate limit rule is in Log mode</td>
-  <td><span class="chip tone-bad">Pending</span></td>
-  <td>The Firewall rule is published and counting but its action is Log, so it does not block yet. It moves to 429 once a day of traffic confirms nothing legitimate reaches 100 a minute.</td>
-</tr>
-<tr>
   <td>The narrator depends on an unofficial service</td>
   <td>Accepted</td>
   <td>Known when it went in. It degrades to no narration rather than to a broken page.</td>

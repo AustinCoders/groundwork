@@ -31,7 +31,7 @@ export const archRequestPath: Chapter = {
 <text class="lbl" x="90" y="146" text-anchor="middle">Browser</text>
 <text class="sm" x="90" y="168" text-anchor="middle">one request</text>
 <text class="lbl" x="303" y="146" text-anchor="middle">Firewall</text>
-<text class="sm" x="303" y="168" text-anchor="middle">100/min per IP</text>
+<text class="sm" x="303" y="168" text-anchor="middle">per-IP limit</text>
 <text class="lbl" x="538" y="146" text-anchor="middle">CDN cache</text>
 <text class="sm" x="538" y="168" text-anchor="middle">keyed by path</text>
 <text class="lbl gr" x="538" y="48" text-anchor="middle">Cache hit</text>
