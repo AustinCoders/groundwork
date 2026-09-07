@@ -1993,7 +1993,7 @@ export const topics: TopicsData = {
     },
     {
       id: "interview",
-      name: "Interview prep",
+      name: "Interview book",
       mark: "◎",
       accent: "red",
       tagline: "Every round, every question, the answer",

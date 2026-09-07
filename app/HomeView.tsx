@@ -286,7 +286,7 @@ export function HomeView({ topicsList, stats: site, perTopic, interviewStats }: 
 
       {interviewTopic && (
         <>
-          <h2 className="section-title">Interview prep</h2>
+          <h2 className="section-title">Interview book</h2>
           <p className="section-note">
             A different kind of shelf — not a ladder to climb, a loop to walk into prepared.
           </p>

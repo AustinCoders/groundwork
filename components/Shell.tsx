@@ -247,13 +247,13 @@ export function Shell({
                 <Link
                   className="site-navlink"
                   href={notesHref(INTERVIEW_TOPIC_ID)}
-                  title="Interview prep — every round of the loop"
+                  title="Interview book — every round of the loop"
                   prefetch={false}
                 >
                   <span className="site-navlink__icon" aria-hidden="true">
                     ◎
                   </span>
-                  <span className="site-navlink__name">Interview prep</span>
+                  <span className="site-navlink__name">Interview book</span>
                 </Link>
               )}
               <Link className="site-navlink" href="/review" title="Review — spaced repetition" prefetch={false}>

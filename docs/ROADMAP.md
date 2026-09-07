@@ -18,12 +18,12 @@ Measured today: **4 of 20 topics have written chapters.**
 | JavaScript     | 27           | 54        |
 | DSA in JS      | 34           | 245       |
 | System Design  | 24           | **0**     |
-| Interview prep | 23           | **0**     |
+| Interview book | 23           | **0**     |
 | The other 16   | outline only | —         |
 
 Two things stand out.
 
-**System Design and Interview prep have no practice at all.** They are the two tracks most tied to
+**System Design and the Interview book have no practice at all.** They are the two tracks most tied to
 getting hired and the two where a reader cannot do anything but read. Exercises for these do not look
 like the DSA ones — a system design "exercise" is a prompt and a rubric, an interview one is a
 question with a model answer to compare against. That is a content format decision before it is a
@@ -107,7 +107,7 @@ Worth doing when a search misses something a reader knows is there.
 
 ---
 
-## 4. Interview prep as a product
+## 4. The interview book as a product
 
 The interview material is 23 rounds and 354 questions written to a standard that people pay for. It
 is the most obvious thing on the site to charge for.

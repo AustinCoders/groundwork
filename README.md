@@ -12,7 +12,7 @@ tests.
 | Area               | What it is                                                                                                    |
 | ------------------ | ------------------------------------------------------------------------------------------------------------- |
 | **Reader**         | Topic covers and chapters — an interactive route with read state, time budget and per-chapter progress        |
-| **Interview prep** | 23 rounds of a real loop, from the screening formats through system design to the offer number                |
+| **Interview book** | 23 rounds of a real loop, from the screening formats through system design to the offer number                |
 | **Playground**     | A CodeMirror editor running JavaScript, TypeScript, Python (Pyodide) and SQL (sql.js) entirely in the browser |
 | **Problems**       | Runnable exercises with test suites, linked from the chapters that teach them                                 |
 | **Review**         | Spaced repetition over what you have read                                                                     |
