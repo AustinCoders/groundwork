@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Shell } from "@/components/Shell";
 import { INTERVIEW_TOPIC_ID } from "@/lib/topicIds";
 import { findNav, navHref } from "@/lib/topicNav";
-import { escapeHtml, plural } from "@/lib/format";
+import { escapeHtml, formatSpan, plural } from "@/lib/format";
 import type { SiteStats, TopicStat } from "@/lib/topicStats";
 import { prefersMotion } from "@/lib/dom";
 import { useClientValue, useLastLevel, useMounted } from "@/lib/hooks";
@@ -110,7 +110,7 @@ function FeaturedTopic({ topic, href, stat }: { topic: TopicNav; href: string; s
           <div className="featured__meta">
             <span>{plural(written, topic.levelIds ? "chapter" : "section")} written</span>
             {exerciseCount > 0 && <span>{plural(exerciseCount, "exercise")}</span>}
-            <span>{minutes} min read</span>
+            <span>{formatSpan(minutes)} read</span>
           </div>
         </div>
       </div>
@@ -182,7 +182,7 @@ export function HomeView({ topicsList, stats: site, perTopic, interviewStats }: 
   const stats: [number, string, string?][] = [
     [site.writtenChapters, "chapters written"],
     [site.exercises, "runnable exercises"],
-    [site.minutes, "of reading", " min"],
+    site.minutes > 60 ? [Math.round(site.minutes / 60), "of reading", " hours"] : [site.minutes, "of reading", " min"],
     [site.topics, "topics on the shelf"],
   ];
 

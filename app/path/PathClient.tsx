@@ -5,7 +5,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { Crumbs } from "@/components/Crumbs";
 import { Shell } from "@/components/Shell";
 import { ChapterNavSection } from "@/components/reader/ChapterNavSection";
-import { escapeHtml, plural } from "@/lib/format";
+import { escapeHtml, formatSpan, plural } from "@/lib/format";
 import { level as findLevel, levels as levelsFor, topic as findTopic } from "@/lib/topics";
 import { lastLevel, progress, rememberLevel } from "@/lib/storage";
 import { levelRows } from "@/lib/levelRows";
@@ -163,7 +163,7 @@ function PathPageInner({ chapterById, chapterExercises, levelExercises }: PathCl
       <h2 className="section-title">The order I&apos;d read them in</h2>
       <p className="section-note" id="path-note">
         {plural(chapters.length, "chapter")} written so far, about{" "}
-        {chapters.reduce((sum, ch) => sum + ch.readMinutes, 0)} minutes of reading
+        {formatSpan(chapters.reduce((sum, ch) => sum + ch.readMinutes, 0))} of reading
         {plannedCount ? ` · ${plural(plannedCount, "section")} still on the desk` : ""}. Tick off what you&apos;ve read
         — it is remembered on this device.
       </p>

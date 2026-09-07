@@ -5,7 +5,7 @@ import { Crumbs } from "@/components/Crumbs";
 import { Shell } from "@/components/Shell";
 import { Syllabus } from "@/components/Syllabus";
 import { ChapterNavSection } from "@/components/reader/ChapterNavSection";
-import { plural } from "@/lib/format";
+import { formatSpan, plural } from "@/lib/format";
 import { rememberLevel } from "@/lib/storage";
 import { useLastLevel } from "@/lib/hooks";
 import type { ChapterMeta, Level, Topic } from "@/content/types";
@@ -75,7 +75,7 @@ export function LevelView({
               <span className="level__name">{level.name}</span>
               <p className="level__tagline">“{level.tagline}”</p>
               <p className="level__meta">
-                {plural(stat.chapters, "chapter")} · ~{stat.minutes} min · {plural(stat.exercises, "exercise")}
+                {plural(stat.chapters, "chapter")} · ~{formatSpan(stat.minutes)} · {plural(stat.exercises, "exercise")}
               </p>
               <p className="level__blurb">{level.blurb}</p>
               <ul className="level__list">

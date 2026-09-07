@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { progress, store } from "@/lib/storage";
 import { useClientValue, useMounted, useProgressValue } from "@/lib/hooks";
-import { plural } from "@/lib/format";
+import { formatSpan, plural } from "@/lib/format";
 
 const BUDGET_KEY = "jsnotes:reading-budget";
 const BUDGET_STEPS = [10, 20, 30, 45, 60, 90];
@@ -24,13 +24,6 @@ export interface RouteGroup {
   id: string;
   name: string;
   stations: Station[];
-}
-
-function formatSpan(minutes: number): string {
-  if (minutes < 60) return `${minutes} min`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m ? `${h} h ${m} min` : `${h} h`;
 }
 
 export function CoverMap({ groups, basePath }: { groups: RouteGroup[]; basePath: string }) {
