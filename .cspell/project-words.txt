@@ -250,6 +250,7 @@ treemap
 unmemoised
 
 # Words the notes coin or use as adjectives
+humblebrag
 practisable
 alertable
 attendable

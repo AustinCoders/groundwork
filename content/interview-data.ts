@@ -2684,6 +2684,129 @@ note:`<p><b>The one worth asking every single time:</b> "Is there anything about
 }
 ]},
 {
+id:'r11lp', code:'R11·LP', navTitle:'Leadership Principles',
+title:'Amazon: the Leadership Principles loop',
+meta:[['Length','Every round, 20–30 min of it'],['Who','All five interviewers, plus a Bar Raiser'],['Decides','More of the outcome than your code does'],['Fail mode','"We" instead of "I", and no numbers']],
+tiers:[['product',1],['saas',1],['service',0],['agency',0]],
+intro:'Amazon is the largest hirer of experienced engineers in India, and its loop does not work like the others in this book. There is no separate behavioural round to prepare for — every interviewer spends part of their hour on Leadership Principles, writes up what you said, and the decision gets made in a room you are not in. Prepare for this the way you would prepare for a system design round, because it carries about as much weight.',
+pre:`<div class="table-scroll"><table>
+<thead><tr><th>What happens</th><th>What it means for you</th></tr></thead>
+<tbody>
+<tr><td>Every interviewer is assigned two or three Leadership Principles</td><td>The same story gets asked for three times in one day, from three angles. It has to survive being retold.</td></tr>
+<tr><td>They take near-verbatim notes while you talk</td><td>A vague sentence becomes a vague note. Specifics are the only thing that survives into the debrief.</td></tr>
+<tr><td>One interviewer is a <b>Bar Raiser</b> — from another org, not hiring for this team, trained for it</td><td>They are measuring you against everyone Amazon has hired, not against this team's opening. They can block a hire on their own.</td></tr>
+<tr><td>The decision is made in a <b>debrief</b> after the loop, from those notes</td><td>You are not there to clarify. What is written is what gets argued over.</td></tr>
+</tbody>
+</table></div>`,
+qs:[
+{
+q:'Which principles actually come up for an SDE-2 or SDE-3?',
+test:'Nothing yet — but preparing all sixteen equally is how people run out of time.',
+a:`<p>There are sixteen. For an individual contributor at your level, six carry most of the loop:</p>
+<ul>
+<li><b>Ownership</b> — you did something nobody asked you to own, and stayed with it.</li>
+<li><b>Dive Deep</b> — you went to the bottom of a problem rather than around it. This is the one engineers under-prepare and the one Bar Raisers love.</li>
+<li><b>Deliver Results</b> — it shipped, and you can say what it moved.</li>
+<li><b>Have Backbone; Disagree and Commit</b> — you pushed back on someone with more authority, and then committed to whatever was decided.</li>
+<li><b>Customer Obsession</b> — you changed something because of a user, not because of a ticket.</li>
+<li><b>Are Right, A Lot</b> — usually asked backwards: tell me when you were wrong.</li>
+</ul>
+<p>The others turn up, but rarely as the main question: Invent and Simplify, Learn and Be Curious, Insist on the Highest Standards, Bias for Action, Frugality, Earn Trust, Think Big, Hire and Develop, Best Employer, Success and Scale.</p>`,
+note:`<p><b>2026:</b> most orgs have stopped running a standalone behavioural round and folded the principles into every technical round instead. Do not wait for the LP round — the coding interviewer will ask one too, usually in the last fifteen minutes.</p>`
+},
+{
+q:'The story bank: six events, sixteen principles',
+test:'Preparation. Nobody improvises a specific answer with numbers in it.',
+a:`<p>You do not need sixteen stories. You need six real events, told at enough depth that they can be cut different ways. From your own work, these are the six:</p>`,
+after:`<div class="table-scroll"><table>
+<thead><tr><th>Event</th><th>Cuts for</th></tr></thead>
+<tbody>
+<tr><td><b>The five environments on GetDandy</b> — different data, secrets and provider keys, rationalised into one provisioning path, infrastructure cost down twenty-five percent</td><td>Ownership · Dive Deep · Frugality · Deliver Results</td></tr>
+<tr><td><b>The real-time dashboard</b> over agent performance and reliability metrics — you built the thing that told everyone whether the platform was actually working</td><td>Customer Obsession · Insist on the Highest Standards · Invent and Simplify</td></tr>
+<tr><td><b>A technical decision you pushed back on</b> and lost, then implemented properly anyway</td><td>Have Backbone; Disagree and Commit · Earn Trust</td></tr>
+<tr><td><b>A decision of yours that turned out wrong</b>, and what it cost before you caught it</td><td>Are Right, A Lot · Learn and Be Curious</td></tr>
+<tr><td><b>A client handover at Skynox</b> — a codebase someone else had to run after you left</td><td>Earn Trust · Insist on the Highest Standards · Hire and Develop</td></tr>
+<tr><td><b>Something you shipped under a deadline that was not negotiable</b>, and what you cut to make it</td><td>Bias for Action · Deliver Results · Think Big</td></tr>
+</tbody>
+</table></div>
+<p>Write each one out once, properly, and the loop stops being twenty questions. It becomes six things you know cold, re-aimed.</p>`,
+trap:`<p>Using the same story twice in the same interview. Interviewers compare notes; a candidate with two stories reads as a candidate with two years. Keep a mental note of which event you have already spent.</p>`
+},
+{
+q:'STAR, and the part everyone gets wrong',
+test:'Whether your answer has a shape the interviewer can write down.',
+a:`<p>Situation, Task, Action, Result. The mistake is the proportions: most candidates spend two minutes setting up the situation and thirty seconds on what they did. Amazon is scoring the Action, and the Action has to be <b>yours</b>.</p>
+<ul>
+<li><b>Situation</b> — two sentences. Enough to know why it mattered.</li>
+<li><b>Task</b> — one sentence. What was on you specifically.</li>
+<li><b>Action</b> — sixty to ninety seconds, and every verb is "I". This is the answer.</li>
+<li><b>Result</b> — a number, and how you know it.</li>
+</ul>`,
+say:`<p><em>Situation.</em> GetDandy ran across five environments and each one had drifted — different data, different secrets, different provider keys. Deploys were taking most of a day and breaking in ways that only showed up in one of them. <em>Task.</em> I owned the service layer and the deploy, so it was mine to fix. <em>Action.</em> I mapped what actually differed between the five, moved every difference into configuration rather than code, rebuilt provisioning so an environment came up the same way every time, and cut the ones nobody was using. <em>Result.</em> Infrastructure cost dropped about twenty-five percent, and a deploy went from most of a day to something we did without thinking about it.</p>`,
+trap:`<p>"We migrated the environments." The interviewer cannot write that down as your action. If the team did it, say what <em>you</em> did inside it — the honest version is always more specific than the "we" version, not less.</p>`,
+fu:['What did you personally build versus what did someone else build?','How did you measure the twenty-five percent?','What would you do differently?','Who disagreed with you, and what did they say?']
+},
+{
+q:'Tell me about a time you took ownership of something outside your remit.',
+test:'Ownership. Whether you act like the outcome is yours when nobody has made it your job.',
+a:`<p>The story wants three beats: it was not yours, you took it, and you stayed with it past the interesting part. That last one is where most answers stop early — Amazon reads "I fixed it and moved on" as enthusiasm, and "I fixed it and then owned the thing it became" as ownership.</p>`,
+say:`<p>Nobody owned reliability across the four client applications — each project had a lead and reliability fell between them. I started with our own alerting because I was tired of hearing about outages from the client, then extended the same setup across the other three, and ended up owning the on-call rotation and the post-incident notes for all four. That was not my role when I started; it is what I do now.</p>`,
+trap:`<p>A story where you took something on and handed it away the moment it got boring. Ownership at Amazon explicitly includes the boring part — "leaders never say that is not my job" is the second line of the principle.</p>`,
+fu:['What did you stop doing to make room for it?','Did you ask permission, or ask forgiveness?','What broke after you took it on?']
+},
+{
+q:'Tell me about a time you disagreed with a senior engineer or your manager.',
+test:'Have Backbone; Disagree and Commit — and the second half is the half people forget.',
+a:`<p>The principle is two things joined: you argue hard when you think something is wrong, and then you commit fully to whatever the group decides even when it was not your call. An answer that only does the first half reads as difficult. An answer that only does the second half reads as having no opinions.</p>
+<p>So the story must end after the decision, not at it. What did you do once you lost?</p>`,
+say:`<p>We were about to put booking confirmation emails inline in the request path. I thought it was wrong — a slow provider would become our latency, and a failed send would fail the booking. I brought numbers from our own logs on provider response times and argued for a queue. The lead decided to ship it inline for the launch because the queue was another week. I disagreed, said so once more clearly, and then built the inline version properly with a timeout and a retry so it would fail safely. It bit us three weeks later exactly the way I expected, and by then the queue was a small change because I had left the seam for it.</p>`,
+trap:`<p>Picking a disagreement you won. It is a weaker answer: the principle is about how you behave when the decision goes against you, and a story where you were overruled and still delivered is worth more than one where you were right and got your way.</p>`,
+fu:['How did you raise it — in the room or afterwards?','What would you have done if it had never bitten you?','Has anyone ever disagreed with you like that?']
+},
+{
+q:'Tell me about the most complex problem you have dug into.',
+test:'Dive Deep. Whether you go to the bottom of a thing or stop at the layer you are comfortable in.',
+a:`<p>This is the one where a Bar Raiser will keep pulling. Expect four or five follow-ups, each one a layer down, until you either hit something you genuinely do not know or they run out of questions. Both endings are fine; pretending is not.</p>
+<p>Pick something where you actually went below your own stack. A React bug is not a deep dive. A bug you chased from a symptom in the browser into the runtime, the network, or the database is.</p>`,
+say:`<p>Agent performance metrics on the dashboard were drifting from what the provider reported, by a few percent, only under load. I could have rounded it away. Instead I traced one call end to end — the event we recorded, the timestamps we took, and where they came from. The provider timestamps were their clock, ours were ours, and under load our queue added enough delay between the two that the windows we were bucketing into no longer lined up. I moved the bucketing to a single clock and the drift went away. The number was small; the reason it existed was not.</p>`,
+trap:`<p>"I checked the logs and found the issue." That is the shape of an answer, not an answer. The interviewer wants the chain — what you saw, what you suspected, what you ruled out, and how.</p>`,
+note:`<p>If they push past what you know, say so and say what you would have looked at next. "I never found out why the provider clock skewed — I would have started by comparing their timestamps against a third source" scores better than a confident invention. Bar Raisers are unusually good at spotting the invention.</p>`,
+fu:['Why did that only happen under load?','What did you rule out first, and why?','How would you stop it recurring?','What did you not get to the bottom of?']
+},
+{
+q:'Tell me about a time you were wrong.',
+test:'Are Right, A Lot — which is asked backwards, because being wrong well is the evidence.',
+a:`<p>Two failure modes here, and most candidates hit one of them: the humblebrag ("I was wrong to work too hard on quality") and the disaster with no learning attached. What scores is a real decision, a real cost, and a change in how you decide now.</p>
+<p>Say the cost in a number if you have one. Time, money, or an outage — an unquantified mistake reads as one you did not really absorb.</p>`,
+say:`<p>On one of the client applications I chose a document database because the shape of the data looked flexible early on. Two months in, half the features were joins I was doing in application code, and one report took a page of aggregation to write. It was my call and I had made it on the shape of week one rather than the shape of the roadmap. We moved to Postgres, which cost about three weeks. What changed is that I now ask what the reporting will look like before I pick the store, because reporting is where the relational shape shows up whether you planned for it or not.</p>`,
+trap:`<p>A mistake that was really someone else's — a bad spec, a manager's deadline, an unreliable vendor. The question is what <em>you</em> got wrong. Choosing a story where you were the decision-maker is most of the answer.</p>`,
+fu:['When did you realise?','Who did you tell, and how quickly?','What do you do differently now?','Have you made the same class of mistake since?']
+},
+{
+q:'The Bar Raiser, and how to behave when it is your last round',
+test:'Consistency. They are checking whether the person in the fifth hour is the same one from the first.',
+a:`<ul>
+<li><b>They are not from the team.</b> Enthusiasm about this specific role lands less than usual; what lands is whether you are above the bar generally.</li>
+<li><b>They will ask the same principle another interviewer asked.</b> The answer must match. Do not improve the story between rounds — a detail that grows across a day is the thing the debrief notices.</li>
+<li><b>They will push further than anyone else.</b> Four follow-ups deep is normal. Slow down rather than speed up.</li>
+<li><b>They can block on their own.</b> A team that wants you cannot override them, which is exactly the point of the role.</li>
+</ul>`,
+say:`<p>If you are asked something you already answered: "I think I covered this with [name] earlier, but happy to go through it again —" and then tell it the same way. Recognising the repeat is a good signal; a different version of it is a bad one.</p>`,
+trap:`<p>Running out of stories by round four and reusing one you have already spent. Six events, mapped in advance, is the whole defence — that is what the story bank above is for.</p>`
+},
+{
+q:'The rest of the loop',
+test:'Nothing. Answer in a line each and keep it moving.',
+a:`<ul>
+<li><b>Why Amazon?</b> One reason about scale or ownership, one about the specific org if you know it. Not "it is a great company".</li>
+<li><b>Where do you want to be in three years?</b> An answer that involves owning more, not managing more, unless you actually want to manage.</li>
+<li><b>What are you looking for that you do not have?</b> The client-studio-to-product story from <a href="#r1">R1</a> works here unchanged.</li>
+<li><b>Do you have questions?</b> Ask what the team owns end to end, and what the on-call load actually is. Both are answerable and both tell you something.</li>
+<li><b>Writing.</b> Some orgs will ask you to talk through a document, or mention that the team writes six-pagers. If it comes up, know that Amazon runs on written narratives rather than slides, and that meetings open with everyone reading in silence.</li>
+</ul>`
+}
+]},
+{
 id:'r12', code:'R12', navTitle:'HR & the number',
 title:'HR & the number',
 meta:[['Length','15–30 min'],['Who','HR business partner'],['Decides','What is actually on your offer letter'],['Fail mode','Accepting in the room']],

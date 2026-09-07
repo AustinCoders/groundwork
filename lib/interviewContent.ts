@@ -86,7 +86,7 @@ export const interviewNotes: NotesFile = {
   meta: {
     title: "Interview — the whole loop",
     subtitle: "Every round, every question, the answer, the code, and the follow-up they push with next.",
-    lead: "Twelve rounds in the order you meet them, plus the three screening formats that decide a loop before anyone talks to you — the online assessment, the take-home and the technical phone screen. With the scouting report on how your own resume reads from the other side of the table, and a week-before prep plan — the ₹20–28L core loop. Under Advanced: the ₹50L+ staff track, for the two-jump plan to get there.",
+    lead: "Twelve rounds in the order you meet them, plus the three screening formats that decide a loop before anyone talks to you — the online assessment, the take-home and the technical phone screen — and Amazon's Leadership Principles loop, which is scored differently from every other round in here. With the scouting report on how your own resume reads from the other side of the table, and a week-before prep plan — the ₹20–28L core loop. Under Advanced: the ₹50L+ staff track, for the two-jump plan to get there.",
     author: "Akshat",
     updated: "September 2026",
   },
