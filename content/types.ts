@@ -32,6 +32,23 @@ export interface Topic {
   planned?: string[];
 }
 
+export interface TopicNav {
+  id: string;
+  name: string;
+  mark: string;
+  accent: string;
+  tagline: string;
+  status: "ready" | "soon";
+  notes: string | null;
+  blurb: string;
+  levelIds: LevelId[] | null;
+}
+
+export interface LevelNav {
+  id: LevelId;
+  name: string;
+}
+
 export interface TopicsData {
   levels: Level[];
   curriculumNotes: string[];

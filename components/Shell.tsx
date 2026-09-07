@@ -8,12 +8,13 @@ import { DailyRecap } from "@/components/DailyRecap";
 import { FontPicker, ThemePicker } from "@/components/ThemeFontPicker";
 import { StreakMini } from "@/components/StreakMini";
 import { TopicOfDay } from "@/components/TopicOfDay";
-import { INTERVIEW_TOPIC_ID, notesHref, topic as topicById, topicHref, topics } from "@/lib/topics";
+import { INTERVIEW_TOPIC_ID } from "@/lib/topicIds";
+import { findNav, navHref, navNotesHref, useTopicsNav } from "@/lib/topicNav";
 import { escapeHtml } from "@/lib/format";
 import { progress, store } from "@/lib/storage";
 import { useReadyTopicIds } from "@/lib/topicReadiness";
 import { SITE_NAME } from "@/lib/site";
-import type { Topic } from "@/content/types";
+import type { TopicNav } from "@/content/types";
 
 const SIDEBAR_KEY = "jsnotes:sidebar-collapsed";
 import { useClientValue, useLastLevel, useMounted, useProgressValue } from "@/lib/hooks";
@@ -29,7 +30,17 @@ function MaybeFocusTrap({ active, children }: { active: boolean; children: React
   );
 }
 
-function TopicLink({ topic, href, active, muted }: { topic: Topic; href: string; active?: boolean; muted?: boolean }) {
+function TopicLink({
+  topic,
+  href,
+  active,
+  muted,
+}: {
+  topic: TopicNav;
+  href: string;
+  active?: boolean;
+  muted?: boolean;
+}) {
   return (
     <Link
       className={`site-navlink${muted ? " site-navlink--muted" : ""}${active ? " is-active" : ""}`}
@@ -102,14 +113,15 @@ export function Shell({
   const mounted = useMounted();
   const savedLevel = useLastLevel();
   const chs = useMemo(() => progressChapters || [], [progressChapters]);
-  const topicName = useMemo(() => (topicId && topicById(topicId)?.name) || "JavaScript", [topicId]);
-  const readerHref = useMemo(() => notesHref(topicId), [topicId]);
+  const navTopics = useTopicsNav();
+  const topicName = useMemo(() => (topicId && findNav(navTopics, topicId)?.name) || "JavaScript", [navTopics, topicId]);
+  const readerHref = useMemo(() => navNotesHref(navTopics, topicId), [navTopics, topicId]);
   const readyTopicIds = useReadyTopicIds();
   const [readyTopics, plannedTopics] = useMemo(() => {
-    const all = topics();
+    const all = navTopics;
     if (!readyTopicIds) return [all.filter((t) => t.status === "ready"), all.filter((t) => t.status !== "ready")];
     return [all.filter((t) => readyTopicIds.has(t.id)), all.filter((t) => !readyTopicIds.has(t.id))];
-  }, [readyTopicIds]);
+  }, [navTopics, readyTopicIds]);
   const shelfTopics = useMemo(() => readyTopics.filter((t) => t.id !== INTERVIEW_TOPIC_ID), [readyTopics]);
   const interviewReady = useMemo(() => readyTopics.some((t) => t.id === INTERVIEW_TOPIC_ID), [readyTopics]);
   const done = useProgressValue(() => progress.countDone(chs), 0);
@@ -246,7 +258,7 @@ export function Shell({
               {interviewReady && (
                 <Link
                   className="site-navlink"
-                  href={notesHref(INTERVIEW_TOPIC_ID)}
+                  href={navNotesHref(navTopics, INTERVIEW_TOPIC_ID)}
                   title="Interview book — every round of the loop"
                   prefetch={false}
                 >
@@ -296,7 +308,7 @@ export function Shell({
                         <TopicLink
                           key={t.id}
                           topic={t}
-                          href={topicHref(t, mounted ? savedLevel : null)}
+                          href={navHref(t, mounted ? savedLevel : null)}
                           active={t.id === topicId}
                         />
                       ))}
@@ -310,7 +322,7 @@ export function Shell({
                       <h2 className="site-sidenav__heading">Ready to read</h2>
                       <div id="sidenav-topics-ready">
                         {shelfTopics.map((t) => (
-                          <TopicLink key={t.id} topic={t} href={topicHref(t, mounted ? savedLevel : null)} />
+                          <TopicLink key={t.id} topic={t} href={navHref(t, mounted ? savedLevel : null)} />
                         ))}
                       </div>
                     </>
@@ -327,7 +339,7 @@ export function Shell({
                       </summary>
                       <div id="sidenav-topics-planned">
                         {plannedTopics.map((t) => (
-                          <TopicLink key={t.id} topic={t} href={topicHref(t, mounted ? savedLevel : null)} muted />
+                          <TopicLink key={t.id} topic={t} href={navHref(t, mounted ? savedLevel : null)} muted />
                         ))}
                       </div>
                     </details>

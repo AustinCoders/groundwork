@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import type { ChapterMeta, Level } from "@/content/types";
+import type { ChapterMeta, LevelNav } from "@/content/types";
 
 export interface ChapterNavProps {
   chapters: ChapterMeta[];
-  levels: Level[];
+  levels: LevelNav[];
   basePath: string;
   activeId?: string | null;
   openLevel: string | null;

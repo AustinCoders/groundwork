@@ -2,19 +2,19 @@
 
 import Link from "next/link";
 import { TiltCard } from "@/components/TiltCard";
-import { topicHref, topicOfDay } from "@/lib/topics";
+import { navHref, topicOfDay } from "@/lib/topicNav";
 import { escapeHtml } from "@/lib/format";
 import { useLastLevel, useMounted } from "@/lib/hooks";
-import type { Topic } from "@/content/types";
+import type { TopicNav } from "@/content/types";
 
-export function TopicOfDay({ topics }: { topics: Topic[] }) {
+export function TopicOfDay({ topics }: { topics: TopicNav[] }) {
   const mounted = useMounted();
   const savedLevel = useLastLevel();
   const topic = topicOfDay(topics);
 
   if (!mounted || !topic) return null;
 
-  const href = topicHref(topic, savedLevel);
+  const href = navHref(topic, savedLevel);
 
   return (
     <TiltCard className="topic-of-day">

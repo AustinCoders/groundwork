@@ -2,15 +2,16 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Shell } from "@/components/Shell";
-import { INTERVIEW_TOPIC_ID, topic as findTopic, topicHref } from "@/lib/topics";
+import { INTERVIEW_TOPIC_ID } from "@/lib/topicIds";
+import { findNav, navHref } from "@/lib/topicNav";
 import { escapeHtml, plural } from "@/lib/format";
 import type { SiteStats, TopicStat } from "@/lib/topicStats";
 import { prefersMotion } from "@/lib/dom";
 import { useClientValue, useLastLevel, useMounted } from "@/lib/hooks";
-import type { Topic } from "@/content/types";
+import type { TopicNav } from "@/content/types";
 
 export interface HomeViewProps {
-  topicsList: Topic[];
+  topicsList: TopicNav[];
   stats: SiteStats;
   perTopic: Record<string, TopicStat>;
   interviewStats: { rounds: number; questions: number };
@@ -94,7 +95,7 @@ function HeroStats({ stats }: { stats: [number, string, string?][] }) {
   );
 }
 
-function FeaturedTopic({ topic, href, stat }: { topic: Topic; href: string; stat: TopicStat }) {
+function FeaturedTopic({ topic, href, stat }: { topic: TopicNav; href: string; stat: TopicStat }) {
   const { written, exercises: exerciseCount, minutes } = stat;
 
   return (
@@ -107,7 +108,7 @@ function FeaturedTopic({ topic, href, stat }: { topic: Topic; href: string; stat
           <p className="featured__tagline" dangerouslySetInnerHTML={raw(topic.tagline)} />
           <p className="featured__blurb" dangerouslySetInnerHTML={raw(topic.blurb)} />
           <div className="featured__meta">
-            <span>{plural(written, topic.levels ? "chapter" : "section")} written</span>
+            <span>{plural(written, topic.levelIds ? "chapter" : "section")} written</span>
             {exerciseCount > 0 && <span>{plural(exerciseCount, "exercise")}</span>}
             <span>{minutes} min read</span>
           </div>
@@ -123,7 +124,7 @@ function InterviewBanner({
   href,
   stats,
 }: {
-  topic: Topic;
+  topic: TopicNav;
   href: string;
   stats: { rounds: number; questions: number };
 }) {
@@ -153,7 +154,7 @@ function TopicRow({
   visible,
   plannedCount,
 }: {
-  topic: Topic;
+  topic: TopicNav;
   href: string;
   visible: boolean;
   plannedCount: number;
@@ -193,7 +194,7 @@ export function HomeView({ topicsList, stats: site, perTopic, interviewStats }: 
     () => topicsList.filter((t) => t.id !== INTERVIEW_TOPIC_ID && (perTopic[t.id]?.written ?? 0) === 0),
     [topicsList, perTopic]
   );
-  const interviewTopic = useMemo(() => findTopic(INTERVIEW_TOPIC_ID), []);
+  const interviewTopic = useMemo(() => findNav(topicsList, INTERVIEW_TOPIC_ID), [topicsList]);
 
   const q = search.trim().toLowerCase();
   const visibility = useMemo(() => {
@@ -277,7 +278,7 @@ export function HomeView({ topicsList, stats: site, perTopic, interviewStats }: 
             <FeaturedTopic
               key={topic.id}
               topic={topic}
-              href={mounted ? topicHref(topic, savedLevel) : topicHref(topic, null)}
+              href={mounted ? navHref(topic, savedLevel) : navHref(topic, null)}
               stat={perTopic[topic.id]}
             />
           ))}
@@ -290,7 +291,7 @@ export function HomeView({ topicsList, stats: site, perTopic, interviewStats }: 
           <p className="section-note">
             A different kind of shelf — not a ladder to climb, a loop to walk into prepared.
           </p>
-          <InterviewBanner topic={interviewTopic} href={topicHref(interviewTopic, null)} stats={interviewStats} />
+          <InterviewBanner topic={interviewTopic} href={navHref(interviewTopic, null)} stats={interviewStats} />
         </>
       )}
 
@@ -322,7 +323,7 @@ export function HomeView({ topicsList, stats: site, perTopic, interviewStats }: 
           <TopicRow
             key={topic.id}
             topic={topic}
-            href={mounted ? topicHref(topic, savedLevel) : topicHref(topic, null)}
+            href={mounted ? navHref(topic, savedLevel) : navHref(topic, null)}
             visible={visibility.get(topic.id) ?? true}
             plannedCount={perTopic[topic.id]?.planned ?? 0}
           />

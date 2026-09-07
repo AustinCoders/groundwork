@@ -1,7 +1,7 @@
 import { topics as topicsData } from "@/content/topics";
-import type { Level, Topic } from "@/content/types";
+import type { Level, LevelNav, Topic, TopicNav } from "@/content/types";
 
-export const INTERVIEW_TOPIC_ID = "interview";
+export { INTERVIEW_TOPIC_ID } from "./topicIds";
 
 function byId<T extends { id: string }>(list: T[], id: string | null | undefined): T | null {
   if (!id) return null;
@@ -69,10 +69,20 @@ export function topicHref(t: Topic, savedLevel?: string | null): string {
   return known ? `/path?topic=${t.id}&level=${savedLevel}` : `/level/${t.id}`;
 }
 
-export function topicOfDay(candidates: Topic[]): Topic | null {
-  if (!candidates.length) return null;
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 0);
-  const dayOfYear = Math.floor((now.getTime() - start.getTime()) / 86_400_000);
-  return candidates[dayOfYear % candidates.length];
+export function topicsNav(): TopicNav[] {
+  return topics().map((t) => ({
+    id: t.id,
+    name: t.name,
+    mark: t.mark,
+    accent: t.accent,
+    tagline: t.tagline,
+    status: t.status,
+    notes: t.notes,
+    blurb: t.blurb,
+    levelIds: t.levels ? t.levels.map((l) => l.id) : null,
+  }));
+}
+
+export function levelsNav(topicId?: string | null): LevelNav[] {
+  return levels(topicId).map((l) => ({ id: l.id, name: l.name }));
 }

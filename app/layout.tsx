@@ -8,6 +8,8 @@ import { fontVariables } from "@/lib/fonts";
 import { THEME_INIT_SCRIPT } from "@/lib/themeInitScript";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { TopicsReadyProvider } from "@/lib/topicReadiness";
+import { TopicsNavProvider } from "@/lib/topicNav";
+import { topicsNav } from "@/lib/topics";
 import { topicStats } from "@/lib/topicStats";
 import "./globals.css";
 
@@ -45,9 +47,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body>
-        <TopicsReadyProvider ids={readyTopicIds}>
-          <RouteFade>{children}</RouteFade>
-        </TopicsReadyProvider>
+        <TopicsNavProvider topics={topicsNav()}>
+          <TopicsReadyProvider ids={readyTopicIds}>
+            <RouteFade>{children}</RouteFade>
+          </TopicsReadyProvider>
+        </TopicsNavProvider>
         <ErrorReporter />
         <Analytics />
         <SpeedInsights />

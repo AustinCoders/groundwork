@@ -4,14 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Shell } from "@/components/Shell";
-import { levels as levelsFor } from "@/lib/topics";
 import { lastLevel, store } from "@/lib/storage";
 import { useClientValue, useMounted } from "@/lib/hooks";
 import { activateScripts, enhanceCodeBlocks, enhanceTables, enhanceTryBlocks } from "@/components/reader/enhancements";
 import { setupNarration } from "@/components/reader/narration";
 import { NarrationSettings } from "@/components/reader/NarrationSettings";
 import { ChapterNav } from "@/components/reader/ChapterNav";
-import type { ChapterMeta } from "@/content/types";
+import type { ChapterMeta, LevelNav } from "@/content/types";
 
 const ZOOM_STEPS = [85, 92, 100, 110, 120, 132, 145, 160];
 const ZOOM_KEY = "jsnotes:zoom";
@@ -37,13 +36,14 @@ interface GlobalEntry {
 
 export interface ReaderShellProps {
   topicId: string;
+  levels: LevelNav[];
   chapters: ChapterMeta[];
   basePath: string;
   activeId: string | null;
   children: React.ReactNode;
 }
 
-export function ReaderShell({ topicId, chapters, basePath, activeId, children }: ReaderShellProps) {
+export function ReaderShell({ topicId, levels, chapters, basePath, activeId, children }: ReaderShellProps) {
   const router = useRouter();
   const mounted = useMounted();
   const [query, setQuery] = useState("");
@@ -53,7 +53,6 @@ export function ReaderShell({ topicId, chapters, basePath, activeId, children }:
   const fabRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const levels = useMemo(() => levelsFor(topicId), [topicId]);
   const activeChapter = useMemo(() => chapters.find((c) => c.id === activeId) || null, [chapters, activeId]);
 
   // Which group opens is knowable on the server for a chapter page — the

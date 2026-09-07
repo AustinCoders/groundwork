@@ -5,13 +5,20 @@ import { CoverSheet } from "@/components/reader/CoverSheet";
 import { ChapterSheet } from "@/components/reader/ChapterSheet";
 import { HashRedirect } from "@/components/reader/HashRedirect";
 import { chapterMetas, chapters, notesData, notesHref } from "@/lib/content";
+import { levelsNav } from "@/lib/topics";
 
 export function TopicCoverPage({ topicId }: { topicId: string }) {
   const data = notesData(topicId);
   const basePath = notesHref(topicId);
 
   return (
-    <ReaderShell topicId={topicId} chapters={chapterMetas(topicId)} basePath={basePath} activeId={null}>
+    <ReaderShell
+      topicId={topicId}
+      levels={levelsNav(topicId)}
+      chapters={chapterMetas(topicId)}
+      basePath={basePath}
+      activeId={null}
+    >
       <HashRedirect basePath={basePath} />
       <CoverSheet data={data} basePath={basePath} topicId={topicId} />
     </ReaderShell>
@@ -54,7 +61,13 @@ export function TopicChapterPage({ topicId, chapterId }: { topicId: string; chap
   const basePath = notesHref(topicId);
 
   return (
-    <ReaderShell topicId={topicId} chapters={chapterMetas(topicId)} basePath={basePath} activeId={chapter.id}>
+    <ReaderShell
+      topicId={topicId}
+      levels={levelsNav(topicId)}
+      chapters={chapterMetas(topicId)}
+      basePath={basePath}
+      activeId={chapter.id}
+    >
       <ChapterSheet
         chapter={chapter}
         topicId={topicId}

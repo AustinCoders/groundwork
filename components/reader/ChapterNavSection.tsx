@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { ChapterNav } from "@/components/reader/ChapterNav";
-import type { ChapterMeta, Level } from "@/content/types";
+import type { ChapterMeta, LevelNav } from "@/content/types";
 
 export interface ChapterNavSectionProps {
   chapters: ChapterMeta[];
-  levels: Level[];
+  levels: LevelNav[];
   basePath: string;
   defaultLevel: string | null;
 }
