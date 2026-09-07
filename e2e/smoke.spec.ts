@@ -15,7 +15,8 @@ const PAGES = [
   { path: "/review", heading: /read again/i },
   { path: "/progress", heading: /progress/i },
   { path: "/git", heading: /Git/i },
-  { path: "/architecture", heading: /system design of/i },
+  { path: "/architecture", heading: /How this site is built/i },
+  { path: "/architecture/arch-health", heading: /Current health/i },
 ];
 
 // The analytics scripts live on Vercel's edge, so a local production build

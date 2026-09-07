@@ -1982,6 +1982,138 @@ export const topics: TopicsData = {
       ],
     },
     {
+      id: "architecture",
+      name: "How this is built",
+      mark: "▤",
+      accent: "blue",
+      tagline: "The system design of this site",
+      status: "ready",
+      notes: "architecture.html",
+      blurb:
+        "A worked example rather than a lesson: the architecture of the site you are reading. The request path, the build, the content model, where state lives, how the playground runs code without a server, and what would break first. Every figure was measured against the running site.",
+      curriculumNotes: [
+        "This is the only topic on the shelf about the site itself, which is why it reads as a reference rather than a course \u2014 there is no exercise to do, only a system to understand.",
+        "The advanced tier is the point of it. Anyone can describe an architecture that works; the chapters on performance, current health and what breaks first are the ones that make it a design review rather than a tour.",
+        "It doubles as the missing practice for System Design: a real system, with real numbers, including the parts that are wrong.",
+      ],
+      levels: [
+        {
+          id: "beginner",
+          name: "Beginner",
+          mark: "1",
+          tagline: "I want to know what this thing is.",
+          blurb:
+            "Orientation \u2014 the one decision that shaped the site, every dependency and why it is there, where the code lives, how the content is modelled, and what is written versus what is still an outline.",
+          bullets: [
+            "You have opened the repository and want the map",
+            "You want the stack without reading package.json",
+            "You want to know what is real and what is planned",
+          ],
+          checkpoint: "you can say what the site is built from and why it has no database",
+          syllabus: [
+            {
+              title: "What this site is",
+              chapter: "arch-overview",
+              items: ["The build-artifact decision and what it costs"],
+            },
+            {
+              title: "The tech stack",
+              chapter: "arch-tech-stack",
+              items: ["Every dependency, and what is deliberately absent"],
+            },
+            {
+              title: "Where everything lives",
+              chapter: "arch-repo-map",
+              items: ["Nine directories and the rule each follows"],
+            },
+            {
+              title: "The content model",
+              chapter: "arch-content-model",
+              items: ["Topic, level, chapter, exercise \u2014 and the URLs"],
+            },
+            {
+              title: "Written vs planned",
+              chapter: "arch-coming-soon",
+              items: ["4 topics of 20, and what coming soon means"],
+            },
+          ],
+        },
+        {
+          id: "intermediate",
+          name: "Intermediate",
+          mark: "2",
+          tagline: "I want to know how it runs.",
+          blurb:
+            "The moving parts: what happens on a request, how 559 pages are produced, where the server ends and the browser begins, where a reader's state lives, how the playground executes code, the four endpoints, and search without a search service.",
+          bullets: [
+            "You are comfortable with the map and want the mechanics",
+            "You want to know why every page route is static",
+            "You want the server/client boundary explained with numbers",
+          ],
+          checkpoint: "you can trace a request from the browser to the file that answers it",
+          syllabus: [
+            {
+              title: "Opening a page",
+              chapter: "arch-request-path",
+              items: ["Edge, cache, and the two paths a request can take"],
+            },
+            { title: "The build", chapter: "arch-build", items: ["One interface, and everything derived from it"] },
+            {
+              title: "Server vs client",
+              chapter: "arch-rendering",
+              items: ["What crosses into the bundle, and the mistake made twice"],
+            },
+            { title: "Where state lives", chapter: "arch-state", items: ["Ten keys, one seam, no accounts"] },
+            {
+              title: "The playground",
+              chapter: "arch-playground",
+              items: ["A Web Worker, three wasm runtimes, no server"],
+            },
+            {
+              title: "The four endpoints",
+              chapter: "arch-apis",
+              items: ["What they call and what happens when it fails"],
+            },
+            { title: "Search", chapter: "arch-search", items: ["Static JSON, fetched lazily, and what it costs"] },
+          ],
+        },
+        {
+          id: "advanced",
+          name: "Advanced",
+          mark: "3",
+          tagline: "I want to know whether it holds up.",
+          blurb:
+            "The design review: what was measured and what changed, the security posture, what CI actually checks, the current health of the project including what is failing, what breaks first under pressure, and what is next.",
+          bullets: [
+            "You want the regressions, not the highlights",
+            "You want to know where this design stops being right",
+            "You are looking for a worked example for a design interview",
+          ],
+          checkpoint: "you can name what would break first, and what it would take to fix",
+          syllabus: [
+            {
+              title: "Performance",
+              chapter: "arch-performance",
+              items: ["Four real regressions and how each was found"],
+            },
+            {
+              title: "Security & limits",
+              chapter: "arch-security",
+              items: ["CSP, headers, and three layers of rate limiting"],
+            },
+            { title: "CI and tests", chapter: "arch-testing", items: ["Fifteen tests, none of them on a component"] },
+            {
+              title: "Current health",
+              chapter: "arch-health",
+              items: ["A real error sweep, and what is still unresolved"],
+            },
+            { title: "What breaks first", chapter: "arch-scaling", items: ["In order, with what each would take"] },
+            { title: "What is next", chapter: "arch-roadmap", items: ["Four items, sized, and why accounts are last"] },
+          ],
+        },
+      ],
+    },
+    {
       id: "git",
       name: "Git",
       mark: "⑂",

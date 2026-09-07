@@ -16,6 +16,7 @@ const PAGES = [
   "/progress",
   "/git",
   "/architecture",
+  "/architecture/arch-request-path",
 ];
 
 for (const path of PAGES) {

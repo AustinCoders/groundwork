@@ -16,6 +16,7 @@ import { graphqlNotes } from "@/content/graphql-notes";
 import { redisNotes } from "@/content/redis-notes";
 import { kubernetesNotes } from "@/content/kubernetes-notes";
 import { dsaNotes } from "@/content/dsa-notes";
+import { architectureNotes } from "@/content/architecture-notes";
 import { interviewNotes } from "@/lib/interviewContent";
 import { practice as practiceData } from "@/content/practice";
 import type { Chapter, ChapterMeta, Exercise, LevelId, NotesFile, Topic } from "@/content/types";
@@ -39,6 +40,7 @@ const NOTES_BY_TOPIC: Record<string, NotesFile> = {
   redis: redisNotes,
   kubernetes: kubernetesNotes,
   dsa: dsaNotes,
+  architecture: architectureNotes,
   interview: interviewNotes,
 };
 

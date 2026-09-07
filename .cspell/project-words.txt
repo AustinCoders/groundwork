@@ -351,12 +351,14 @@ Turbopack
 twopart
 typedarrays
 Typesense
+uncacheable
 unevictable
 unfinalized
 unflushed
 univers
 unmakeable
 unmemoised
+unminified
 unpushed
 unrecoverably
 unreplicated
