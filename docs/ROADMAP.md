@@ -180,10 +180,19 @@ third-party origin in the CSP and a dependency on their uptime for the Python ru
 
 ## 7. Smaller things worth doing
 
-**Rate limiting that actually holds.** All four API routes now carry a per-instance limiter — `/api/tts`
-at 40 a minute, `/api/weather`, `/api/joke` and `/api/client-error` at 20 — which is a floor rather
-than a guarantee, because serverless spreads traffic over instances. Vercel Firewall is the edge
-version, and it blocks before the function is invoked. See section 1 below.
+**Rate limiting: one step left.** All four API routes carry a per-instance limiter — `/api/tts` at 40 a
+minute, `/api/weather`, `/api/joke` and `/api/client-error` at 20 — and a Vercel Firewall rule now
+sits in front of them at the edge: `Request Path starts with /api/`, fixed window, 100 requests a
+minute keyed on IP. It is published and running in **Log** mode, so it counts and does not block.
+
+The remaining step is a dashboard toggle, not a task: after a day of traffic, open Firewall →
+Overview and read the **Rate Limited** figure. If it is at or near zero, edit the rule and change the
+action from **Log** to **Too Many Requests (429)**, then publish. If it is not, the narrator's TTS
+requests are the likely cause — raise the limit to 200 and then switch.
+
+Note that Firewall counters are per region rather than global, so this is a much higher wall than the
+in-process limiter, not an absolute one. Keep `lib/rateLimit.ts`: it runs in the function, the
+Firewall runs at the edge, and they fail in different ways.
 
 **Sentry.** Client errors currently post to `/api/client-error` and land in the Vercel function log:
 no grouping, no alerting, and the log expires. `components/ErrorReporter.tsx` and the endpoint are
@@ -209,58 +218,23 @@ testing and shipping, not learning a service from scratch.
 
 ### Ordered by what to pick up first
 
-| #   | Item                       | Effort        | Why here                                            |
-| --- | -------------------------- | ------------- | --------------------------------------------------- |
-| 1   | Vercel Firewall rate limit | **1–2 hours** | Configuration, not code; closes a real hole         |
-| 2   | Search index trim          | **0.5 day**   | Halves the two indexes that already cost 100 KB+    |
-| 3   | Sentry                     | **0.5–1 day** | Wanted before there are accounts to break           |
-| 4   | Offline reading            | **2–3 days**  | Content is already static; mostly a caching problem |
-| 5   | Accounts and sync          | **5–8 days**  | The biggest gap, and the biggest commitment         |
+| #   | Item              | Effort        | Why here                                            |
+| --- | ----------------- | ------------- | --------------------------------------------------- |
+| 1   | Search index trim | **0.5 day**   | Halves the two indexes that already cost 100 KB+    |
+| 2   | Sentry            | **0.5–1 day** | Wanted before there are accounts to break           |
+| 3   | Offline reading   | **2–3 days**  | Content is already static; mostly a caching problem |
+| 4   | Accounts and sync | **5–8 days**  | The biggest gap, and the biggest commitment         |
 
-**Total: roughly 9 to 13 focused days.** The first three come to about a day and a half together and
-are independent of each other — one sitting closes all three.
+**Total: roughly 8 to 13 focused days.** The first two come to about a day together and are
+independent of each other.
 
-### 1. Vercel Firewall rate limiting — 1 to 2 hours
-
-This is the one item that cannot be done from the repository: the rule lives in the Vercel dashboard,
-against the account that owns the project.
-
-**Two constraints that decide the shape of the rule**
-
-- **Hobby allows one rate-limit rule per project** (Pro allows 40). So on Hobby it is a single rule
-  matching all of `/api/`, not four rules. Rate limiting is available on Hobby — it does not need a
-  paid plan.
-- **Counters are per region, not global.** Traffic arriving in several regions can exceed the limit
-  in each of them. It is a much higher wall than the in-process limiter, not an absolute one.
-
-**The steps**
-
-1. Vercel dashboard → the project → **Firewall** → **Configure** → **+ New Rule**.
-2. Name it something like `API abuse`.
-3. **If**: Request Path — starts with — `/api/`.
-4. **Then**: Rate Limit. Fixed window; the algorithm choice beyond that is Enterprise-only.
-5. Time window 60s, request limit 100, key **IP**. That is well above what a real reader generates —
-   the client calls `/api/weather` and `/api/joke` about once a session, and `/api/tts` only while
-   the narrator is running.
-6. Action: start on **Log**, publish, and watch the Firewall overview for a day. Switch to **Deny**
-   once you can see that no legitimate traffic is being counted.
-7. **Review Changes** → **Publish**. Nothing applies until you publish.
-
-**Do not delete `lib/rateLimit.ts` afterwards.** It runs in the function, the Firewall runs at the
-edge, and they fail in different ways — keep both.
-
-There is also a `@vercel/firewall` SDK with `checkRateLimit()`, for limits that need conditions the
-dashboard cannot express. It is the wrong tool here: it still needs a dashboard rule to exist, it
-would consume the single Hobby rule, and it runs _inside_ the function, so the invocation is already
-paid for by the time it says no.
-
-### 2. Search index trim — half a day
+### 1. Search index trim — half a day
 
 Strip HTML from the indexed text and cap what is kept per chapter, then re-measure `/dsa` and
 `/interview`. Target is under 60 KB gzip each. No interface changes: `ReaderShell` fetches the same
 URL and greps the same shape.
 
-### 3. Sentry — half a day to a day
+### 2. Sentry — half a day to a day
 
 - `@sentry/nextjs`, DSN in the environment, source maps uploaded from CI.
 - `ErrorReporter` calls `Sentry.captureException` instead of posting to `/api/client-error`.
@@ -268,7 +242,7 @@ URL and greps the same shape.
 
 Free tier covers this traffic comfortably.
 
-### 4. Offline reading — 2 to 3 days
+### 3. Offline reading — 2 to 3 days
 
 - A service worker (Serwist is the maintained option) precaching the app shell.
 - Runtime caching for visited chapters, covering both the HTML and the RSC payload.
@@ -278,7 +252,7 @@ Free tier covers this traffic comfortably.
 
 Most of the time goes on the App Router caching rules and testing them, not on the worker itself.
 
-### 5. Accounts and progress sync — 5 to 8 days
+### 4. Accounts and progress sync — 5 to 8 days
 
 - Provider, schema and auth flow — 1 to 2 days.
 - The synced storage layer behind the existing seam — 2 days. Components do not change.

@@ -755,6 +755,7 @@
       <span class="chip">Sidebar data off every page bundle</span>
       <span class="chip">Four content files split for editing</span>
       <span class="chip">Home page JS 1,986 KB → 647 KB</span>
+      <span class="chip">Edge rate limit on /api/</span>
     </div>
   </section>
 
@@ -790,12 +791,14 @@
 
       <div class="item">
         <div class="item-head">
-          <h3>Rate limiting that actually holds</h3>
-          <span class="tag">Config only</span>
+          <h3>Turn the rate limit rule from Log to 429</h3>
+          <span class="tag">One toggle</span>
         </div>
         <p>
-          <code>/api/tts</code> has a per-instance limiter, which is a floor rather than a guarantee — serverless
-          spreads traffic across instances. Vercel Firewall is the account-wide version.
+          The Firewall rule is published and counting — <code>Request Path starts with /api/</code>, 100 requests a
+          minute keyed on IP — but its action is <b>Log</b>, so it does not block yet. After a day, read the
+          <b>Rate Limited</b> figure on the Firewall overview: at or near zero, switch the action to 429; higher than
+          that, the narrator's TTS requests are the likely cause, so raise the limit to 200 first.
         </p>
       </div>
 
@@ -859,14 +862,6 @@
       <div class="plan-scroll">
         <div class="plan-grid">
           <span class="step">1</span>
-          <span class="task">Vercel Firewall limits</span>
-          <span class="band">
-            <span class="band-track"></span>
-            <span class="band-fill tiny" style="left: 1.5%; width: 1.6%"></span>
-          </span>
-          <span class="est">1–2 hrs</span>
-
-          <span class="step">2</span>
           <span class="task">Search index trim</span>
           <span class="band">
             <span class="band-track"></span>
@@ -874,7 +869,7 @@
           </span>
           <span class="est">0.5 day</span>
 
-          <span class="step">3</span>
+          <span class="step">2</span>
           <span class="task">Sentry</span>
           <span class="band">
             <span class="band-track"></span>
@@ -882,7 +877,7 @@
           </span>
           <span class="est">0.5–1 day</span>
 
-          <span class="step">4</span>
+          <span class="step">3</span>
           <span class="task">Offline reading</span>
           <span class="band">
             <span class="band-track"></span>
@@ -890,7 +885,7 @@
           </span>
           <span class="est">2–3 days</span>
 
-          <span class="step">5</span>
+          <span class="step">4</span>
           <span class="task">Accounts and sync</span>
           <span class="band">
             <span class="band-track"></span>
@@ -914,11 +909,8 @@
       </div>
 
       <div class="total">
-        <strong>9 to 13 days for all five</strong>
-        <span>
-          The first three come to about a day and a half together and none depends on another — one sitting closes all
-          three.
-        </span>
+        <strong>8 to 13 days for all four</strong>
+        <span>The first two come to about a day together and neither depends on the other.</span>
       </div>
     </div>
 
