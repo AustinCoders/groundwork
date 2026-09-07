@@ -137,6 +137,24 @@ const { user, loading, error } = useUser(userId);</code></pre>
   its own, and the composition reads like a description of the feature.
 </p>
 
+<h3>useDebugValue</h3>
+<pre><code>function useOnlineStatus() {
+  const isOnline = useSyncExternalStore(subscribe, getSnapshot);
+  useDebugValue(isOnline ? "Online" : "Offline");   <span class="c">// label in DevTools</span>
+  return isOnline;
+}</code></pre>
+<p>
+  Purely a development affordance: React DevTools shows
+  <code>OnlineStatus: "Online"</code> next to the hook instead of a bare
+  <code>true</code>. It is stripped from production builds.
+</p>
+<p class="sub">
+  Worth it for a hook used across a codebase or shipped in a library, where
+  somebody debugging will meet it without having read it. Not worth it for a
+  hook used in one component. If formatting the value is expensive, pass a
+  function as the second argument &mdash; it only runs when DevTools is open.
+</p>
+
 <h3>Mistakes worth avoiding</h3>
 <div class="table-scroll"><table>
 <thead><tr><th>Mistake</th><th>Why it hurts</th></tr></thead>

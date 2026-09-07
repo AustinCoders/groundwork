@@ -43,6 +43,32 @@ function handleChange(e) {
   staying visible is the point.
 </p>
 
+<h3>useTransition versus startTransition</h3>
+<pre><code>const [isPending, startTransition] = useTransition();   <span class="c">// the hook</span>
+import { startTransition } from "react";                 <span class="c">// the standalone</span></code></pre>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th><code>useTransition</code></th><th><code>startTransition</code></th></tr></thead>
+<tbody>
+<tr><td>Gives you <code>isPending</code></td><td><span class="chip tone-yes">yes</span></td><td>no</td></tr>
+<tr><td>Callable outside a component</td><td>no &mdash; it is a hook</td><td><span class="chip tone-yes">yes</span></td></tr>
+<tr><td>Use it</td><td>when the UI shows pending state</td><td>in a store, a router, an event outside React</td></tr>
+</tbody>
+</table></div>
+<pre><code>&lt;div style={{ opacity: isPending ? 0.6 : 1 }}&gt;
+  &lt;Results items={results} /&gt;      <span class="c">// dim the stale list, do not blank it</span>
+&lt;/div&gt;</code></pre>
+<p>
+  <code>isPending</code> is the reason to prefer the hook. Replacing the results
+  with a spinner throws away content the user was reading; dimming it says
+  "working" without taking anything away. That distinction is most of what makes
+  a transition <em>feel</em> different from a loading state.
+</p>
+<p class="sub">
+  Async work inside a transition keeps <code>isPending</code> true until the
+  awaited work settles, so an action that saves and then updates state stays
+  pending across the whole operation rather than flickering between the two.
+</p>
+
 <h3>useDeferredValue</h3>
 <pre><code>const deferred = useDeferredValue(query);
 const results = useMemo(() =&gt; filter(deferred), [deferred]);
@@ -71,6 +97,31 @@ const results = useMemo(() =&gt; filter(deferred), [deferred]);
     never stutters. It adapts; a 300ms timeout does not.
   </p>
 </div>
+
+<h3>&lt;Activity&gt;: keeping a subtree alive but hidden</h3>
+<pre><code>&lt;Activity mode={tab === "chat" ? "visible" : "hidden"}&gt;
+  &lt;ChatPanel /&gt;
+&lt;/Activity&gt;</code></pre>
+<p>
+  Stable since React 19.2. A hidden Activity is not unmounted &mdash; its state,
+  scroll position and DOM stay alive, its effects are torn down, and React
+  renders it at the lowest priority in the background. Switching back is instant
+  and nothing was lost.
+</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Approach</th><th>State kept</th><th>Effects run</th><th>Cost</th></tr></thead>
+<tbody>
+<tr><td>Unmount it</td><td><span class="chip tone-bad">lost</span></td><td>no</td><td>rebuild on return</td></tr>
+<tr><td><code>display: none</code></td><td>kept</td><td><span class="chip tone-bad">yes &mdash; still running</span></td><td>timers and subscriptions stay live</td></tr>
+<tr><td><code>&lt;Activity mode="hidden"&gt;</code></td><td>kept</td><td>torn down</td><td>memory only</td></tr>
+</tbody>
+</table></div>
+<p>
+  The middle row is what most tab implementations do today, and it is why a
+  hidden panel keeps polling. Activity is the first API that gives you "keep the
+  state, stop the work" without writing it yourself &mdash; and it can pre-render
+  a hidden route so the next navigation has nothing left to do.
+</p>
 
 <h3>Automatic batching</h3>
 <pre><code>setA(1); setB(2);                            <span class="c">// one render, always</span>

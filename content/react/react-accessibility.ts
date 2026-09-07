@@ -45,6 +45,36 @@ export const reactAccessibility: Chapter = {
   <code>getByRole("button", { name: /delete/i })</code> simply will not find it.
 </p>
 
+<h3>useId: labels in a reusable component</h3>
+<pre><code>function Field({ label, ...rest }) {
+  const id = useId();
+  return (
+    &lt;&gt;
+      &lt;label htmlFor={id}&gt;{label}&lt;/label&gt;
+      &lt;input id={id} {...rest} /&gt;
+    &lt;/&gt;
+  );
+}</code></pre>
+<p>
+  A hardcoded <code>id</code> breaks the moment the component is rendered twice
+  &mdash; duplicate ids, and the second label points at the first input.
+  <code>Math.random()</code> breaks server rendering, because the server and the
+  client generate different values and hydration mismatches.
+</p>
+<p>
+  <code>useId</code> generates an id that is stable across renders and
+  <b>identical on the server and the client</b>, which is exactly the guarantee
+  the other two options fail to give.
+</p>
+<pre><code>const id = useId();
+&lt;input aria-describedby={id + "-hint"} /&gt;
+&lt;p id={id + "-hint"}&gt;Must be at least 8 characters&lt;/p&gt;   <span class="c">// derive, don't call twice</span></code></pre>
+<p class="sub">
+  Call it once per component and derive related ids by suffixing. It is for
+  linking elements to each other &mdash; not for list keys, where you want the
+  data's own id.
+</p>
+
 <h3>Focus management: React's specific problem</h3>
 <p>
   In a server-rendered site, clicking a link loads a new document and the

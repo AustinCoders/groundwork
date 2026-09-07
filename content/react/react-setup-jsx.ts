@@ -22,6 +22,34 @@ npm create next-app@latest my-app</code></pre>
   tutorial that starts with it, the rest of the tutorial is old too.
 </p>
 
+<h3>Where the app actually starts</h3>
+<pre><code><span class="c">// main.tsx — the file every tutorial skips</span>
+import { createRoot } from "react-dom/client";
+import App from "./App";
+
+createRoot(document.getElementById("root")).render(
+  &lt;StrictMode&gt;
+    &lt;App /&gt;
+  &lt;/StrictMode&gt;
+);</code></pre>
+<p>
+  <code>createRoot</code> takes a real DOM node and hands React control of
+  everything inside it. That is the only place React and the document meet
+  &mdash; from here down, React owns the tree.
+</p>
+<p>
+  For a server-rendered page the call is <code>hydrateRoot</code> instead: the
+  HTML already exists, so React attaches to it rather than building it. Using
+  <code>createRoot</code> on server HTML throws it away and re-renders from
+  scratch, which quietly discards the whole point of rendering on the server.
+</p>
+<p class="sub">
+  <code>&lt;StrictMode&gt;</code> is development-only and adds nothing to the
+  production build. It deliberately double-invokes components and effects to
+  surface impure renders and missing cleanups &mdash; which is why your effect
+  runs twice locally and once in production.
+</p>
+
 <h3>What JSX actually is</h3>
 <p>
   This is the single most useful thing to understand on day one, because

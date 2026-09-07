@@ -25,16 +25,64 @@ export const reactEffectsDepth: Chapter = {
   <em>that render's</em> <code>count</code> &mdash; zero. It never re-runs, so it
   never sees another one. The counter goes 0, 1, 1, 1, 1.
 </p>
-<p>Three fixes, in order of preference:</p>
+<p>Four fixes, in order of preference:</p>
 <pre><code><span class="c">// 1. don't read it at all — the updater form gets the latest value</span>
 setCount((c) =&gt; c + 1);
 
 <span class="c">// 2. depend on it, and accept the interval restarting</span>
 }, [count]);
 
-<span class="c">// 3. a ref, when restarting is unacceptable</span>
+<span class="c">// 3. useEffectEvent — read the latest value without depending on it</span>
+const onTick = useEffectEvent(() =&gt; setCount(count + increment));
+useEffect(() =&gt; {
+  const id = setInterval(onTick, 1000);
+  return () =&gt; clearInterval(id);
+}, []);                          <span class="c">// no dependencies, no stale values</span>
+
+<span class="c">// 4. the ref workaround this replaces — still everywhere in existing code</span>
 const latest = useRef(count);
 useEffect(() =&gt; { latest.current = count; });</code></pre>
+
+<h3>useEffectEvent, properly</h3>
+<p>
+  Stable since React 19.2, and it is the sanctioned answer to the problem the
+  ref workaround was invented for. An Effect Event is a function that always
+  sees the latest props and state, but has a <b>stable identity</b> &mdash; so
+  an effect can call it without listing it as a dependency.
+</p>
+<pre><code>function ChatRoom({ roomId, theme }) {
+  const onConnected = useEffectEvent(() =&gt; {
+    showToast("Connected!", theme);        <span class="c">// always the current theme</span>
+  });
+
+  useEffect(() =&gt; {
+    const conn = connect(roomId);
+    conn.on("connected", onConnected);
+    return () =&gt; conn.disconnect();
+  }, [roomId]);                            <span class="c">// theme is NOT a dependency</span>
+}</code></pre>
+<p>
+  Without it, adding <code>theme</code> to the dependencies reconnects the chat
+  every time the user switches to dark mode; leaving it out shows the toast in
+  the wrong theme. Neither is right, and that is the gap the hook closes.
+</p>
+<div class="bx is-prim">
+  <span class="ttl">The line it draws</span>
+  <p>
+    An effect's dependencies should be the things it <b>synchronises with</b>.
+    Values it merely <b>reads when something happens</b> are not synchronisation
+    &mdash; they are event logic that happens to live inside an effect. That is
+    the distinction the hook makes explicit, and it is why the name is
+    "Effect Event" rather than "latest ref".
+  </p>
+</div>
+<p>
+  Two constraints. An Effect Event can only be called from inside an effect in
+  the same component &mdash; never passed to a child, never called during
+  render. And it is not a general escape from the dependency array: if you find
+  yourself wrapping the whole effect body in one, the effect is synchronising
+  with nothing and should be an event handler instead.
+</p>
 
 <h3>The dependency array is a contract, not a lint rule</h3>
 <p>

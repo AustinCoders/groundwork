@@ -111,6 +111,32 @@ const { x, y } = useMouse();                                   <span class="c">/
   measurement.
 </p>
 
+<h3>The element APIs you will meet in older code</h3>
+<pre><code>Children.map(children, (child) =&gt; ...)     <span class="c">// safe iteration, handles one child or many</span>
+Children.count(children)
+isValidElement(child)                       <span class="c">// is this an element or a string?</span>
+cloneElement(child, { extra: "prop" })      <span class="c">// copy with props merged in</span></code></pre>
+<p>
+  Before context and hooks, a parent injected behaviour into its children by
+  cloning them:
+</p>
+<pre><code>function RadioGroup({ value, onChange, children }) {
+  return Children.map(children, (child) =&gt;
+    cloneElement(child, { checked: child.props.value === value, onChange })
+  );
+}</code></pre>
+<p>
+  It works, and it is fragile: it only reaches direct children, so wrapping one
+  in a <code>&lt;div&gt;</code> silently breaks it, and the props a child
+  receives are invisible at the call site. Context does the same job through any
+  depth, which is why <a href="/react/react-context">compound components</a>
+  replaced this pattern.
+</p>
+<p class="sub">
+  Learn these to read older code and a few libraries, not to write new
+  components with.
+</p>
+
 <h3>Higher-order components</h3>
 <pre><code>const Enhanced = withAuth(withTheme(withRouter(MyComponent)));   <span class="c">// where does a prop come from?</span></code></pre>
 <p>
