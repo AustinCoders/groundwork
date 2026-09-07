@@ -50,6 +50,46 @@ export const reactEventsConditionals: Chapter = {
   listener can stop a React handler firing.
 </p>
 
+<h3>Passing arguments without recreating the world</h3>
+<pre><code>{rows.map((row) =&gt; (
+  &lt;Row key={row.id} onSelect={() =&gt; select(row.id)} /&gt;    <span class="c">// fine</span>
+))}</code></pre>
+<p>
+  An arrow in JSX creates a new function every render. On a normal list that is
+  irrelevant &mdash; making a closure is cheap. It only matters when the child
+  is memoised, because a new function is a new prop and defeats the memo; that
+  is <a href="/react/react-memoisation">memoisation</a>'s problem, not
+  something to pre-optimise here.
+</p>
+<p>The alternative, when you want one stable handler for a whole list:</p>
+<pre><code>function handleClick(e) {
+  const id = e.currentTarget.dataset.id;   <span class="c">// read it off the DOM</span>
+  select(id);
+}
+
+&lt;button data-id={row.id} onClick={handleClick}&gt;</code></pre>
+
+<h3>Keyboard, focus and the events worth knowing</h3>
+<pre><code>&lt;input
+  onKeyDown={(e) =&gt; { if (e.key === "Enter") submit(); }}
+  onFocus={...}
+  onBlur={...}
+/&gt;
+
+&lt;div onClickCapture={...}&gt;      <span class="c">// fires on the way down, before children</span></code></pre>
+<p>
+  <code>e.key</code> is the modern property &mdash; <code>"Enter"</code>,
+  <code>"Escape"</code>, <code>"ArrowDown"</code>. <code>keyCode</code> is
+  deprecated. Every React event also has a <code>Capture</code> variant that
+  runs during the capture phase, which is occasionally the only way to
+  intercept something before a child handles it.
+</p>
+<p class="sub">
+  Event pooling &mdash; where the event object was reused and reading it
+  asynchronously gave you nulls &mdash; was removed in React 17. If you find
+  advice about calling <code>e.persist()</code>, it no longer applies.
+</p>
+
 <h3>Conditional rendering: four ways</h3>
 
 <h4>Ternary, when there are two outcomes</h4>
@@ -95,6 +135,29 @@ return views[status] ?? null;</code></pre>
   Cleaner than a chain of ternaries, and it fails loudly if you add a status and
   forget the view. Note that every branch is <em>constructed</em> here, so keep
   the elements cheap or use a function per key.
+</p>
+
+<h3>stopPropagation, and when it is the wrong tool</h3>
+<pre><code>&lt;div onClick={closeMenu}&gt;
+  &lt;div className="menu" onClick={(e) =&gt; e.stopPropagation()}&gt;   <span class="c">// ✗ fragile</span>
+    ...
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+<p>
+  The click-outside-to-close pattern written with <code>stopPropagation</code>
+  silently breaks anything else listening further up &mdash; analytics, a
+  parent's keyboard handling, a library's outside-click detection. Check what
+  was clicked instead:
+</p>
+<pre><code>function handleClick(e) {
+  if (menuRef.current?.contains(e.target)) return;   <span class="c">// inside — ignore</span>
+  closeMenu();
+}</code></pre>
+<p class="sub">
+  <code>preventDefault</code> and <code>stopPropagation</code> do different
+  things: the first cancels the browser's default action (submitting,
+  navigating, checking a box), the second stops the event travelling. Reaching
+  for the wrong one is a common source of "the form still reloads".
 </p>
 
 <h3>The four states every screen has</h3>

@@ -102,6 +102,39 @@ useEffect(() =&gt; {
   stop hand-rolling it.
 </p>
 
+<h3>When exactly it runs</h3>
+<ol>
+  <li>You set state, React re-renders the component.</li>
+  <li>React applies the changes to the DOM.</li>
+  <li>The browser paints.</li>
+  <li><b>Then</b> effects run &mdash; children before parents.</li>
+</ol>
+<p>
+  Because it runs after paint, an effect that measures the DOM and then changes
+  layout produces a visible flicker: the user sees the first version. That is
+  what <code>useLayoutEffect</code> is for &mdash; identical API, but it runs
+  <em>before</em> paint, so the browser never shows the intermediate state. It
+  blocks painting, so use it only for measuring and adjusting, never for
+  fetching.
+</p>
+
+<h3>How dependencies are compared</h3>
+<pre><code>useEffect(fn, [user.id]);        <span class="c">// a string — compares by value ✓</span>
+useEffect(fn, [user]);           <span class="c">// an object — compares by reference</span>
+useEffect(fn, [{ id }]);         <span class="c">// ✗ new object every render → runs every render</span>
+useEffect(fn, [items.length]);   <span class="c">// ✓ a number</span></code></pre>
+<p>
+  React uses <code>Object.is</code> on each entry. Primitives compare by value,
+  everything else by identity. If a dependency is an object or a function
+  created during render, it is new every time &mdash; which is the single most
+  common cause of an effect that will not stop running.
+</p>
+<p class="sub">
+  The array length must also be constant between renders. React compares
+  position by position, so a conditionally built dependency array is the same
+  class of bug as a conditional hook.
+</p>
+
 <h3>Most effects should not exist</h3>
 <p>
   This is the part that separates people who use the hook from people who

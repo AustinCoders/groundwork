@@ -108,6 +108,33 @@ function Child({ count, onIncrement }) {
 &lt;List items={rows} renderItem={(row) =&gt; &lt;Row key={row.id} {...row} /&gt;} /&gt;
 &lt;Route element={&lt;Dashboard /&gt;} /&gt;</code></pre>
 
+<h3>Two props React takes for itself</h3>
+<pre><code>&lt;Row key={item.id} ref={rowRef} item={item} /&gt;</code></pre>
+<p>
+  <code>key</code> and <code>ref</code> look like props and are not. React
+  strips both before your component is called &mdash; <code>key</code> is for
+  <a href="/react/react-lists-keys">list identity</a>, <code>ref</code> for
+  <a href="/react/react-useref">reaching a DOM node</a>. Neither appears in
+  <code>props</code>.
+</p>
+<p class="sub">
+  In React 19 <code>ref</code> is finally a normal prop for function components,
+  so <code>forwardRef</code> is no longer needed for new code. You will still
+  meet it constantly in existing codebases.
+</p>
+
+<h3>children is more flexible than it looks</h3>
+<pre><code>&lt;Wrapper&gt;text&lt;/Wrapper&gt;              <span class="c">// children: "text"</span>
+&lt;Wrapper&gt;&lt;A /&gt;&lt;/Wrapper&gt;            <span class="c">// children: one element</span>
+&lt;Wrapper&gt;&lt;A /&gt;&lt;B /&gt;&lt;/Wrapper&gt;       <span class="c">// children: an array</span>
+&lt;Wrapper&gt;{(x) =&gt; &lt;A v={x} /&gt;}&lt;/Wrapper&gt; <span class="c">// children: a function</span></code></pre>
+<p>
+  The last one is the <b>render prop</b> pattern &mdash; the wrapper owns some
+  state and hands it to the caller to render. Hooks replaced most uses of it,
+  but you will still find it in libraries where the wrapper needs to control
+  when and how often the children render.
+</p>
+
 <h3>Naming that survives contact with other people</h3>
 <div class="table-scroll"><table>
 <thead><tr><th>Kind</th><th>Convention</th><th>Example</th></tr></thead>
@@ -122,6 +149,31 @@ function Child({ count, onIncrement }) {
   Name handlers after <em>what happened</em>, not what should occur.
   <code>onDelete</code> ties the child to one outcome;
   <code>onConfirm</code> lets the parent decide what confirming means.
+</p>
+
+<h3>An object prop is a new reference every render</h3>
+<pre><code>&lt;Chart options={{ grid: true }} /&gt;          <span class="c">// new object every render</span>
+&lt;Chart onZoom={() =&gt; zoom(1)} /&gt;           <span class="c">// new function every render</span></code></pre>
+<p>
+  Harmless most of the time &mdash; creating a small object is cheap. It starts
+  to matter in exactly two places: when the child is memoised, where a new
+  reference defeats the memo entirely; and when the prop ends up in a
+  dependency array, where it makes an effect run on every render. Both are
+  covered later, but the shape is worth recognising now.
+</p>
+
+<h3>Checking props without TypeScript</h3>
+<p>
+  <code>PropTypes</code> was removed from React in version 19. In a plain
+  JavaScript project the remaining options are a runtime check at the top of the
+  component, or JSDoc types that your editor understands:
+</p>
+<pre><code><span class="c">/** @param {{ items: string[], onPick: (s: string) =&gt; void }} props */</span>
+function Picker({ items, onPick }) { ... }</code></pre>
+<p class="sub">
+  The real answer is TypeScript, which is what
+  <a href="/react/react-typescript">the intermediate tier</a> covers &mdash;
+  props are a function's parameters, so typing them is typing a function.
 </p>
 
 <h3>A prop that changes is not a variable you can watch</h3>

@@ -124,6 +124,59 @@ const age = 30;
   <a href="/react/react-events-conditionals">Conditional rendering</a> covers the fix.
 </p>
 
+<h3>Two transforms, and why old code imports React</h3>
+<p>
+  Before React 17, JSX compiled to <code>React.createElement(...)</code>, so
+  <code>React</code> had to be in scope &mdash; hence
+  <code>import React from "react"</code> at the top of every file, even ones
+  that never mentioned it. That was the <b>classic runtime</b>.
+</p>
+<p>
+  The <b>automatic runtime</b> compiles to <code>jsx()</code> imported from
+  <code>react/jsx-runtime</code> by the compiler itself. You no longer import
+  React to write JSX. You still import it for hooks, but
+  <code>import { useState } from "react"</code> is the modern form.
+</p>
+<pre><code><span class="c">// classic — what you will see in older tutorials</span>
+import React from "react";
+React.createElement("h1", { className: "title" }, "Hello");
+
+<span class="c">// automatic — what your build actually emits today</span>
+import { jsx as _jsx } from "react/jsx-runtime";
+_jsx("h1", { className: "title", children: "Hello" });</code></pre>
+<p class="sub">
+  If a tutorial tells you a missing React import is why your JSX broke, it is
+  written for a version you are not using.
+</p>
+
+<h3>Comments and whitespace</h3>
+<pre><code>&lt;div&gt;
+  {<span class="c">/* a JSX comment — braces, then a block comment */</span>}
+  &lt;span&gt;a&lt;/span&gt; &lt;span&gt;b&lt;/span&gt;      <span class="c">// space between them: kept</span>
+  &lt;span&gt;a&lt;/span&gt;
+  &lt;span&gt;b&lt;/span&gt;                      <span class="c">// newline between them: removed</span>
+  &lt;span&gt;a&lt;/span&gt;{" "}
+  &lt;span&gt;b&lt;/span&gt;                      <span class="c">// {" "} puts it back</span>
+&lt;/div&gt;</code></pre>
+<p>
+  JSX strips whitespace that includes a newline at the start or end of a line.
+  That is why two elements on separate lines run together, and why
+  <code>{" "}</code> exists &mdash; it is an explicit space that survives
+  formatting. A missing space after a link is nearly always this.
+</p>
+
+<h3>The compile errors you will actually see</h3>
+<div class="table-scroll"><table>
+<thead><tr><th>Message</th><th>What it means</th></tr></thead>
+<tbody>
+<tr><td>Adjacent JSX elements must be wrapped</td><td>Two siblings at the top level. Add a fragment.</td></tr>
+<tr><td>Objects are not valid as a React child</td><td>You rendered an object &mdash; often a whole record instead of a field, or a Date. Render a string.</td></tr>
+<tr><td>Unexpected token, expected ","</td><td>Usually a stray <code>class=</code> or an unclosed tag a few lines above.</td></tr>
+<tr><td>Each child in a list should have a unique "key"</td><td>A <code>.map()</code> without keys &mdash; see <a href="/react/react-lists-keys">lists and keys</a>.</td></tr>
+<tr><td>Functions are not valid as a React child</td><td><code>{handleClick}</code> where you meant <code>{handleClick()}</code>, or a component used without angle brackets.</td></tr>
+</tbody>
+</table></div>
+
 <h3>Escaping is automatic</h3>
 <p>
   Anything you interpolate is escaped before it reaches the DOM, so

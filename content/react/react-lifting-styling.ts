@@ -73,6 +73,36 @@ function SearchBox({ value, onChange }) {
   global store on the third prop.
 </p>
 
+<h3>Composition beats drilling</h3>
+<p>
+  Before adding context, check whether the prop needs to travel at all. If the
+  middle layers only pass it through, hand them the finished element instead.
+</p>
+<pre><code><span class="c">// ✗ Layout and Sidebar both take a prop neither uses</span>
+&lt;Layout user={user}&gt;
+  &lt;Sidebar user={user}&gt;
+    &lt;Profile user={user} /&gt;
+
+<span class="c">// ✓ built at the top, passed as an element — nothing in between knows</span>
+&lt;Layout sidebar={&lt;Sidebar&gt;&lt;Profile user={user} /&gt;&lt;/Sidebar&gt;} /&gt;</code></pre>
+<p>
+  The element is created where the data lives, so the layers it travels through
+  carry it as opaque <code>children</code>. This removes most prop drilling
+  people reach for a store to solve.
+</p>
+
+<h3>Colocation: keep state as low as it will go</h3>
+<p>
+  The opposite of lifting, and just as important. A modal's open/closed flag
+  belongs to the component that owns the modal, not to the page. State at the
+  top of the tree re-renders everything below it and couples components that
+  should not know about each other.
+</p>
+<p>
+  Lift when two components genuinely need the same value. Push it back down the
+  moment only one does.
+</p>
+
 <h3>Styling: the four options</h3>
 <div class="table-scroll"><table>
 <thead><tr><th>Approach</th><th>Good for</th><th>Cost</th></tr></thead>
@@ -129,6 +159,28 @@ import styles from "./Card.module.css";
     and the component can be dropped anywhere without fighting it.
   </p>
 </div>
+
+<h3>Design tokens beat scattered values</h3>
+<pre><code>:root {
+  --ink: #1f3a73;
+  --paper: #fffdf6;
+  --radius: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --ink: #d9e5fb; --paper: #191d25; }
+}
+
+.card { background: var(--paper); color: var(--ink); border-radius: var(--radius); }</code></pre>
+<p>
+  Custom properties cascade and can be swapped at runtime, so dark mode becomes
+  a handful of redefinitions rather than a second stylesheet. Components read
+  tokens and never literals &mdash; then a colour changes in one place, not
+  forty.
+</p>
+<p class="sub">
+  This is worth setting up on day one of a project. Retrofitting tokens onto a
+  codebase full of hex codes is a long afternoon.
+</p>
 
 <h3>Putting the tier together</h3>
 <p>

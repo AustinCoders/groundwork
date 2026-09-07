@@ -114,6 +114,40 @@ function Row({ id, item }) {    <span class="c">// ✓ pass it again if you need
   a prop changes", and it is much less code than the alternative.
 </p>
 
+<h3>What React does with a key, step by step</h3>
+<p>
+  When it reconciles a list, React builds a map of the old children by key, then
+  walks the new list:
+</p>
+<ol>
+  <li>Key exists in the old map and the element type matches &rarr; <b>update</b> that DOM node in place, keeping its state.</li>
+  <li>Key exists but the type changed &rarr; <b>unmount</b> the old, <b>mount</b> a new one.</li>
+  <li>Key is new &rarr; <b>mount</b>.</li>
+  <li>Old key not claimed by anything &rarr; <b>unmount</b>.</li>
+</ol>
+<p>
+  Reordering a keyed list therefore moves DOM nodes rather than rebuilding them,
+  which is why a keyed list keeps input values and focus across a sort and an
+  index-keyed one does not.
+</p>
+
+<h3>Lists inside lists</h3>
+<pre><code>{groups.map((group) =&gt; (
+  &lt;section key={group.id}&gt;
+    &lt;h3&gt;{group.name}&lt;/h3&gt;
+    &lt;ul&gt;
+      {group.items.map((item) =&gt; (
+        &lt;li key={item.id}&gt;{item.label}&lt;/li&gt;    <span class="c">// only unique within this ul</span>
+      ))}
+    &lt;/ul&gt;
+  &lt;/section&gt;
+))}</code></pre>
+<p>
+  Keys are scoped to siblings, so the inner list does not need
+  <code>group.id + item.id</code> &mdash; the items are only ever compared with
+  each other.
+</p>
+
 <h3>Filtering and sorting</h3>
 <pre><code>{tasks
   .filter((t) =&gt; !t.done)

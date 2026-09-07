@@ -125,6 +125,31 @@ export const reactComponents: Chapter = {
   render, and start again without your code noticing.
 </p>
 
+<h3>Splitting one that grew</h3>
+<pre><code>function Dashboard({ userId }) {
+  <span class="c">// fetches, formats, and renders three unrelated panels</span>
+  const [user, setUser] = useState(null);
+  const [invoices, setInvoices] = useState([]);
+  const [alerts, setAlerts] = useState([]);
+  ...180 lines...
+}</code></pre>
+<p>The split follows the data, not the line count:</p>
+<pre><code>function Dashboard({ userId }) {
+  return (
+    &lt;Grid&gt;
+      &lt;ProfilePanel userId={userId} /&gt;
+      &lt;InvoicePanel userId={userId} /&gt;
+      &lt;AlertPanel userId={userId} /&gt;
+    &lt;/Grid&gt;
+  );
+}</code></pre>
+<p>
+  Each panel now owns its own loading and error state, so a slow invoice request
+  no longer blocks the profile from appearing. That is the real payoff of
+  splitting &mdash; not tidiness, but independent failure and independent
+  loading.
+</p>
+
 <h3>The mistake that costs an afternoon</h3>
 <p>
   Never define a component inside another component.
@@ -142,6 +167,51 @@ export const reactComponents: Chapter = {
   new type &mdash; so it throws the old node away and builds a fresh one every
   render. Anything inside loses its state, its focus and its scroll position.
   Move <code>Row</code> out to the module level and it is fixed.
+</p>
+
+<h3>The render tree is not the DOM tree</h3>
+<p>
+  React builds a tree of your components; the browser holds a tree of DOM nodes.
+  They are different shapes, and knowing that saves you when debugging.
+</p>
+<pre><code><span class="c">// render tree               // DOM tree</span>
+App                          div.layout
+ └ Layout                     ├ aside
+    ├ Nav                     │  └ ul...
+    └ Article                 └ main
+       └ Markdown                └ article...</code></pre>
+<p>
+  <code>Layout</code>, <code>Nav</code> and <code>Article</code> produce no DOM
+  node of their own &mdash; they are functions that returned something. This is
+  why React DevTools shows a tree the Elements panel does not, and why
+  "wrapping in a component" costs nothing in the output.
+</p>
+
+<h3>Returning nothing</h3>
+<pre><code>function Banner({ message }) {
+  if (!message) return null;      <span class="c">// legal, renders nothing</span>
+  return &lt;div className="banner"&gt;{message}&lt;/div&gt;;
+}</code></pre>
+<p>
+  <code>null</code>, <code>undefined</code> and <code>false</code> are all valid
+  returns. A component that renders conditionally does not need a wrapper
+  around its call site &mdash; it can decide for itself.
+</p>
+
+<h3>One component per file, named after the file</h3>
+<p>
+  Not a rule React enforces, but the convention every codebase converges on
+  because it makes a file findable from a stack trace and from an import.
+  Helpers used only by that component live in the same file, below it.
+</p>
+<pre><code>components/
+  TaskList.jsx        <span class="c">// export function TaskList</span>
+  TaskList.module.css
+  TaskRow.jsx</code></pre>
+<p class="sub">
+  Give the function a name rather than exporting an anonymous arrow. React
+  DevTools and error stacks both read that name, and
+  <code>export default () =&gt; ...</code> shows up as <code>Anonymous</code>.
 </p>
 
 <h3>How big should a component be?</h3>

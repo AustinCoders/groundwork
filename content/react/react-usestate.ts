@@ -75,6 +75,50 @@ setCount((c) =&gt; c + 1);   <span class="c">// 3</span></code></pre>
   and native event handlers.
 </p>
 
+<h3>How React knows which state is which</h3>
+<p>
+  <code>useState</code> does not take a name. So how does React tell two
+  <code>useState</code> calls in the same component apart? <b>By call order.</b>
+  It keeps a list per component instance and walks it in the same order every
+  render.
+</p>
+<pre><code>const [name, setName] = useState("");   <span class="c">// slot 0</span>
+const [age, setAge] = useState(0);      <span class="c">// slot 1</span></code></pre>
+<p>
+  Which is the entire reason for the rules of hooks. Put a hook inside an
+  <code>if</code> and the call order changes between renders, so slot 1 returns
+  the value that belonged to slot 0 &mdash; your age lands in your name.
+</p>
+<pre><code>if (loggedIn) {
+  const [x, setX] = useState(0);   <span class="c">// ✗ shifts every slot after it</span>
+}</code></pre>
+<div class="bx is-prim">
+  <span class="ttl">The rules of hooks, and why they exist</span>
+  <ul>
+    <li><b>Only at the top level.</b> Not in conditions, loops, or nested functions &mdash; call order must be identical on every render.</li>
+    <li><b>Only from React functions.</b> Components or other hooks; there is no component instance to attach to otherwise.</li>
+  </ul>
+  <p>
+    Both are lint rules, and both catch real bugs rather than style. If you need
+    conditional state, put the condition <em>inside</em> the component that owns
+    it, or split it into two components.
+  </p>
+</div>
+
+<h3>Several states or one object?</h3>
+<pre><code><span class="c">// separate — usually better</span>
+const [name, setName] = useState("");
+const [age, setAge] = useState(0);
+
+<span class="c">// one object — when the fields always change together</span>
+const [form, setForm] = useState({ name: "", age: 0 });</code></pre>
+<p>
+  Separate state is simpler to update and lets React skip renders more often.
+  Group fields only when they genuinely move as a unit &mdash; a form's values,
+  a coordinate pair &mdash; and remember that grouping means every update needs
+  a spread.
+</p>
+
 <h3>State must be replaced, never mutated</h3>
 <p>
   React decides whether to re-render by comparing the old value with the new
@@ -122,6 +166,21 @@ setItems([...items].sort());</code></pre>
   If you are writing three levels of that, the state is shaped wrong. Flatten
   it, or split it into separate <code>useState</code> calls, or move to
   <a href="/react/react-usereducer">useReducer</a>.
+</p>
+
+<h3>Bailing out of a render</h3>
+<p>
+  If you set state to a value React considers equal &mdash; compared with
+  <code>Object.is</code> &mdash; it may skip the re-render entirely.
+</p>
+<pre><code>setCount(5);      <span class="c">// count is already 5 → no re-render</span>
+setUser({ ...user });  <span class="c">// a new object → always re-renders</span></code></pre>
+<p>
+  This is why spreading an object "just to be safe" is not free: an identical
+  copy is a different reference, so React re-renders even though nothing
+  changed. React may still render once more before bailing out, so do not treat
+  it as a guarantee &mdash; treat it as a reason not to churn objects
+  needlessly.
 </p>
 
 <h3>Lazy initial state</h3>

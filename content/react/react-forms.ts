@@ -103,6 +103,46 @@ async function handleSubmit(e) {
   <code>type="button"</code>.
 </p>
 
+<h3>The uncontrolled alternative</h3>
+<p>
+  Controlled inputs re-render on every keystroke. Usually that is fine. When it
+  is not &mdash; a long form, a slow parent &mdash; let the DOM hold the values
+  and read them at submit.
+</p>
+<pre><code>function Form({ onSave }) {
+  return (
+    &lt;form onSubmit={(e) =&gt; {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.currentTarget));
+      onSave(data);                       <span class="c">// { name: "...", email: "..." }</span>
+    }}&gt;
+      &lt;input name="name" defaultValue="" /&gt;
+      &lt;input name="email" type="email" /&gt;
+      &lt;button&gt;Save&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}</code></pre>
+<p>
+  <code>defaultValue</code> rather than <code>value</code> is what makes an
+  input uncontrolled: React sets it once and then leaves it alone.
+  <code>FormData</code> reads every named field with no state at all.
+</p>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th>Controlled</th><th>Uncontrolled</th></tr></thead>
+<tbody>
+<tr><td>Source of truth</td><td>React state</td><td>The DOM</td></tr>
+<tr><td>Live validation, formatting as you type</td><td><span class="chip tone-yes">easy</span></td><td><span class="chip tone-bad">no</span></td></tr>
+<tr><td>Disable submit until valid</td><td><span class="chip tone-yes">easy</span></td><td><span class="chip tone-bad">awkward</span></td></tr>
+<tr><td>Re-renders while typing</td><td>every keystroke</td><td>none</td></tr>
+<tr><td>Code for a plain form</td><td>more</td><td>almost none</td></tr>
+</tbody>
+</table></div>
+<p class="sub">
+  Default to controlled. Reach for uncontrolled when the form is large and does
+  nothing until submit &mdash; and note that React 19's form actions are built
+  on exactly this shape.
+</p>
+
 <h3>Validation that does not fight the user</h3>
 <p>
   Validating on every keystroke means telling somebody their email is invalid
@@ -147,6 +187,32 @@ const showError = (field) =&gt; touched[field] &amp;&amp; errors[field];
   contrast requirements in most designs, and it is not reliably announced.
   <code>autoComplete</code> is worth the two seconds &mdash; it is the difference
   between a form the browser can fill and one it cannot.
+</p>
+
+<h3>Two edge cases that bite</h3>
+<h4>The cursor jumps to the end</h4>
+<pre><code>&lt;input value={value.toUpperCase()} onChange={(e) =&gt; setValue(e.target.value)} /&gt;</code></pre>
+<p>
+  Transforming the value on the way out means the string React writes back
+  differs from what the user typed, and the browser resets the caret to the end.
+  Type in the middle of the word and the cursor jumps. Format on blur or on
+  submit, not on every render.
+</p>
+
+<h4>Search that fires a request per keystroke</h4>
+<pre><code>const [query, setQuery] = useState("");
+const [debounced, setDebounced] = useState("");
+
+useEffect(() =&gt; {
+  const id = setTimeout(() =&gt; setDebounced(query), 300);
+  return () =&gt; clearTimeout(id);        <span class="c">// cancels the previous timer</span>
+}, [query]);
+
+<span class="c">// then fetch on [debounced], not on [query]</span></code></pre>
+<p>
+  The input stays controlled and instant; only the value the request depends on
+  lags behind. The cleanup is what makes it a debounce &mdash; every keystroke
+  cancels the pending timer.
 </p>
 
 <h3>When to reach for a library</h3>
