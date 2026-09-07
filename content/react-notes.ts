@@ -44,8 +44,8 @@ import { reactCustomRenderers } from "./react/react-custom-renderers";
 export const reactNotes: NotesFile = {
   meta: {
     title: "React — the whole map",
-    subtitle: "41 sections across three levels — the beginner tier is written, the rest is on its way.",
-    lead: "Pick a level and you'll get these sections in the order that makes sense. The beginner nine are written — JSX through lifting state up — and each remaining section opens here the moment it is written.",
+    subtitle: "41 sections across three levels — beginner and intermediate are written, advanced is on its way.",
+    lead: "Pick a level and you'll get these sections in the order that makes sense. Twenty-four are written — JSX through TypeScript, covering everything you need to build and reason about a real React app — and each remaining section opens here the moment it is written.",
     author: "Akshat",
     updated: "September 2026",
   },
