@@ -77,7 +77,7 @@ a:`<p>Every scripted answer in this book is written at one level — six years, 
 <li><b>5–7 years.</b> Mechanism, plus where it bit you. The proof that you have used a thing is that you know how it fails, and you name the number — the latency, the cost, the incident.</li>
 <li><b>10+ years.</b> Mechanism, failure, and <em>the trade-off you would make differently</em>. At this level an answer that is only correct is a weak answer; they are listening for judgement about when the correct thing is the wrong choice.</li>
 </ul>
-<p>Ten questions across this book carry a <b>ladder</b> showing exactly that — the same question answered three ways, so you can see the shape of your own level rather than borrowing one. They sit on the questions every loop asks: <a href="#r1">tell me about yourself</a>, <a href="#r3">the event loop</a> and <a href="#r3">closures</a>, <a href="#r4">useEffect</a> and <a href="#r4">reconciliation</a>, <a href="#r2">machine coding</a>, <a href="#r7">the DSA round</a>, <a href="#r8">system design</a>, <a href="#r11">disagreeing with a decision</a>, and <a href="#r12">the number</a>.</p>`,
+<p>Eleven questions across this book carry a <b>ladder</b>: the bar at each level, the words you would actually say there, and why those words land at that level and not the one above. They sit on the questions every loop asks — <a href="#r1">tell me about yourself</a>, <a href="#r3">the event loop</a> and <a href="#r3">closures</a>, <a href="#r4">useEffect</a> and <a href="#r4">reconciliation</a>, <a href="#r4fe">stacking contexts</a>, <a href="#r2">machine coding</a>, <a href="#r7">the DSA round</a>, <a href="#r8">system design</a>, <a href="#r11">disagreeing with a decision</a>, and <a href="#r12">the number</a>. Read the column that matches you, then read the one above it, because that is the gap you are being asked to close.</p>`,
 note:`<p>Two rules that hold at every level. <b>Never answer above your level.</b> A two-year candidate who talks about organisational trade-offs invites questions they cannot survive, and the interviewer has already noticed. <b>Never answer below it.</b> A ten-year candidate who recites the definition and stops has just tested at three years, and the debrief will say so in those words.</p>`,
 trap:`<p>Assuming your years decide your level. They do not — <a href="#r12lv">scope evidence does</a>. Six years of building features inside someone else\\'s architecture answers at the two-to-three-year rung on the design ladder, and three years of owning a system answers above it. Read the ladders and find the column that matches what you have actually done.</p>`
 },
@@ -117,12 +117,24 @@ a:`<p>Four beats: <b>what you are</b>, <b>what you own</b>, <b>one concrete proo
 fu:['Which of those four applications was hardest and why?','You said you own reliability — what does that mean day to day?','Why full-stack rather than specialising?'],
 after:`<div class="ladder">
 <span class="ttl">The same answer at three levels</span>
-<div class="table-scroll"><table>
-<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
-<tbody>
-<tr><td>Walks the CV forward. Lists technologies. Ends on what they want to learn.</td><td>Four beats — what you are, what you own, one concrete proof with a number, what you want next. Ends on a reason to want <em>this</em> role.</td><td>Opens with the shape of the problem they solve, not with themselves. One line of history, then the scope they carry and the kind of decision they are trusted with. Ends by handing the interviewer a thread to pull.</td></tr>
-</tbody>
-</table></div>
+<div class="rung">
+<span class="lv">2–3 years</span>
+<p class="bar"><b>The bar:</b> one clear line about what you build, one project you can defend end to end, one sentence about why this role. Ninety seconds.</p>
+<p class="script">&ldquo;I am a frontend developer, about two years in, mostly React and TypeScript. Most of that time has gone into one product, and the piece I know end to end is the booking flow — I built it, and I also fixed most of what broke in it. What I am looking for now is a bigger codebase, because I think I have learnt what a small one can teach me.&rdquo;</p>
+<p class="why"><b>Why it passes here:</b> Owning one thing properly beats listing ten technologies. Nobody expects scope at two years; they expect that you can talk about your own work without reciting the CV, and that you name a project you can survive questions about.</p>
+</div>
+<div class="rung">
+<span class="lv">5–7 years</span>
+<p class="bar"><b>The bar:</b> four beats — what you are, what you own, one concrete proof with a number in it, what you want next. Two minutes.</p>
+<p class="script">&ldquo;Full-stack engineer, six years, React and Node. At my current company I own the frontend architecture across four applications — releases, reliability and the shared component layer. The thing I would point at is the checkout: p95 went from 4.1 seconds to 1.3 by moving the pricing call server-side and caching it, and that was mine from diagnosis to ship. I am moving because I have taken that about as far as the scale here allows, and the platform work you are hiring for is a bigger version of the same problem.&rdquo;</p>
+<p class="why"><b>Why it lands:</b> The number is the entire difference between this and the rung above it. &ldquo;I own the architecture&rdquo; is a claim; 4.1 to 1.3 seconds is evidence, and it hands the interviewer their next question, which you have prepared. Ending on why <em>this</em> role stops them from asking it later, less kindly.</p>
+</div>
+<div class="rung">
+<span class="lv">10+ years</span>
+<p class="bar"><b>The bar:</b> open with the shape of the problem you solve rather than with yourself, then the scope you carry and the kind of decision you are trusted with. Hand them a thread to pull.</p>
+<p class="script">&ldquo;Most of the last decade has been the same problem in different clothes — teams shipping faster than their architecture can absorb. Ten years, the last four leading the platform group here: four teams, about thirty services. The decisions that land on me are the ones nobody can undo cheaply — what we split, what we keep, and what we deliberately do not build. Whichever of those is closest to what you are hiring for, I would rather start there than walk you through the CV.&rdquo;</p>
+<p class="why"><b>Why this is the level above:</b> At ten years this is a scoping question, not an icebreaker. You are choosing which interview you are about to have, which is itself a demonstration of the skill. A chronological walk through jobs here reads as someone who has never had to summarise for an executive — and that is exactly the read you cannot afford in the round that sets your level.</p>
+</div>
 </div>`
 },
 {
@@ -609,13 +621,25 @@ function move(b: Board, id: string, from: string, to: string, at: number): Board
   return { ...b, columns: { ...b.columns, [from]: src, [to]: dst } }
 }`}],
 after:`<div class="ladder">
-<span class="ttl">The same answer at three levels</span>
-<div class="table-scroll"><table>
-<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
-<tbody>
-<tr><td>Starts typing immediately. One file, state in the component, styling as they go. Working at the end, if the clock holds.</td><td>Five minutes on types and file boundaries first, then the happy path end to end, then states and edges. Something runs at every point in the ninety minutes.</td><td>Spends the first minutes on what they will <em>not</em> build and says so out loud, designs the seam the next feature will need, and leaves the last ten minutes to add the thing the interviewer asks for — which is the point of the round.</td></tr>
-</tbody>
-</table></div>
+<span class="ttl">The same round at three levels</span>
+<div class="rung">
+<span class="lv">2–3 years</span>
+<p class="bar"><b>The bar:</b> something that works by the end. Correctness and finishing beat structure.</p>
+<p class="script">&ldquo;Before I start — I will keep tasks flat, keyed by id, each with a columnId and an order, because then moving a card is one write instead of splicing between two arrays. I will get one card dragging between two columns first, then persistence, then the empty state. One file for now; I would split it into components if this were real.&rdquo;</p>
+<p class="why"><b>Why it passes here:</b> Nobody is grading architecture at two years — they are grading whether you freeze. A working single-file board beats an elegant unfinished one every time. Saying &ldquo;I would split this if it were real&rdquo; once buys you the structural credit without costing you minutes.</p>
+</div>
+<div class="rung">
+<span class="lv">5–7 years</span>
+<p class="bar"><b>The bar:</b> five minutes on types and file boundaries first, then the happy path end to end, then states and edges — and something that runs at every point in the ninety minutes.</p>
+<p class="script">&ldquo;Let me get the data model down before I touch the drag logic, because the drag logic falls out of it. Tasks flat in a record keyed by id, each with columnId and a fractional order so a reorder is one field and not a re-index of the column. Columns as an array of ids. That makes a move a single update and makes &lsquo;which column is this in&rsquo; O(1) instead of a scan. Then: drag between two columns, persistence, and the states — empty column, drag cancelled, reload.&rdquo;</p>
+<p class="why"><b>Why it lands:</b> The flat-versus-nested decision <em>is</em> this round. Nested arrays of task objects force a deep clone on every drag and turn &ldquo;which column is this card in&rdquo; into an O(n·m) search. Choosing it is worth something; saying out loud why you chose it is worth more, because the interviewer is writing down your reasoning, not your code.</p>
+</div>
+<div class="rung">
+<span class="lv">10+ years</span>
+<p class="bar"><b>The bar:</b> state what you will <em>not</em> build, design the seam the next feature needs, and keep the last ten minutes free.</p>
+<p class="script">&ldquo;In ninety minutes I am going to build the board, the drag, and local persistence. I am not going to build auth, multiple boards, or server sync — but I will put persistence behind a four-method interface so swapping localStorage for an API is one file and no component changes. If I run short, the thing I cut is animation, not the empty and error states. Tell me if you would rather I traded that differently.&rdquo;</p>
+<p class="why"><b>Why this is the level above:</b> The last ten minutes of a machine-coding round are almost always &ldquo;now add X&rdquo; — undo, a second tab, reload without losing order. The candidate who designed a seam adds it in four minutes; the one who did not starts rewriting and runs out of clock. Naming the cut list up front is a scope negotiation with your interviewer, which is the actual job at this level.</p>
+</div>
 </div>
 <p>Nested arrays of task objects force a deep clone on every drag and make "which column is this card in" an O(n·m) search. Say that out loud as you choose — the reasoning scores higher than the result.</p>`,
 fu:['Now persist it and reload without losing order.','Add an undo.','What happens if two tabs are open?']
@@ -756,12 +780,24 @@ console.log('6')
 <span class="c">// promises — then microtasks in scheduling order (3,5), then timers (2)</span>`}],
 after:`<div class="ladder">
 <span class="ttl">The same answer at three levels</span>
-<div class="table-scroll"><table>
-<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
-<tbody>
-<tr><td>Names the call stack, the queue and the loop. Knows promises go first. Stops there, because that is the answer they memorised.</td><td>Draws the distinction that matters: microtasks drain completely before the next macrotask, so a promise chain starves a timer. Reaches for a snippet and predicts the output.</td><td>Says why the design is that way — that microtasks exist so a promise settling cannot be interleaved with rendering — and then talks about the consequence: a long microtask chain blocks paint, which is why <code>await</code> in a render path shows up as INP and not as a slow function.</td></tr>
-</tbody>
-</table></div>
+<div class="rung">
+<span class="lv">2–3 years</span>
+<p class="bar"><b>The bar:</b> the order, correctly, with the right vocabulary. Then stop.</p>
+<p class="script">&ldquo;JavaScript runs on one thread with a call stack. Async work — timers, network, promises — is handed off, and when it finishes the callback waits in a queue. The loop only takes from a queue when the stack is empty. There are two queues that matter: promise callbacks go to the microtask queue, <code>setTimeout</code> to the macrotask queue, and all microtasks drain before the next macrotask. So <code>Promise.resolve().then(...)</code> logs before <code>setTimeout(..., 0)</code> even though the timeout is zero.&rdquo;</p>
+<p class="why"><b>Why it passes here:</b> That is a complete answer at two years — stack, handoff, both queues, and the priority between them, with the output you would predict. Do not add more. Anything you tack on that you cannot defend becomes the follow-up that undoes the rest.</p>
+</div>
+<div class="rung">
+<span class="lv">5–7 years</span>
+<p class="bar"><b>The bar:</b> the same mechanism, plus the place it has actually bitten you, with the failure named.</p>
+<p class="script">&ldquo;…and the part that matters in practice is that microtasks drain <em>completely</em> before the next macrotask, so a promise chain that keeps scheduling more promises can starve a timer indefinitely. I hit that on an import job that awaited inside a loop — the progress <code>setTimeout</code> never fired, so the UI looked frozen although the work was fine. Two fixes: break the chain by yielding to a macrotask, or stop awaiting in a loop and batch the requests, which is what we actually did.&rdquo;</p>
+<p class="why"><b>Why it lands:</b> At six years the mechanism alone is table stakes — everyone has it. What separates you is knowing the failure mode. &ldquo;A promise chain starves a timer&rdquo; is the sentence; the story with the symptom attached is the proof you did not read it in a blog post that morning.</p>
+</div>
+<div class="rung">
+<span class="lv">10+ years</span>
+<p class="bar"><b>The bar:</b> why the design is that way, and where it surfaces as a user-visible metric rather than as a slow function.</p>
+<p class="script">&ldquo;Microtasks exist so a promise settling cannot be interleaved with rendering or with another task — you get a consistent state before the browser is allowed to do anything else. The cost is that the microtask queue sits between your code and the next frame, so a long await chain in a render path does not show up in a profiler as one slow function, it shows up as INP. Which is why the fix is usually scheduling and not optimisation: yield with <code>scheduler.yield</code> or a macrotask so the browser can paint, rather than trying to make the work itself faster.&rdquo;</p>
+<p class="why"><b>Why this is the level above:</b> You connected a language-spec detail to a Core Web Vital and then proposed a remedy that is not &ldquo;make it faster&rdquo; — that is judgement, and it is what a staff interviewer is listening for. A ten-year candidate who recites the queue order and stops has just tested two levels down, and the debrief will say so.</p>
+</div>
 </div>
 <p>Two extras that make you sound like you have debugged this rather than read it: <code>setTimeout(fn, 0)</code> is clamped to roughly 1ms and nested timers get clamped to 4ms after five levels; and in the browser, rendering happens between macrotasks, which is why a long microtask chain freezes the page while a chain of <code>setTimeout</code>s does not.</p>`,
 trap:`<p>"Promises go to the callback queue and setTimeout goes to the callback queue, and the event loop picks them in order." That is the tutorial answer and it is wrong — there are two queues with different priorities, and the whole question exists to find out whether you know that.</p>`,
@@ -919,12 +955,24 @@ function handle(req) {
 }`}],
 after:`<div class="ladder">
 <span class="ttl">The same answer at three levels</span>
-<div class="table-scroll"><table>
-<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
-<tbody>
-<tr><td>"A function that remembers the variables around it." The example is a counter, which is nobody's real code.</td><td>The definition plus a real one — a debounce, a cache, a hook that holds a ref — and can say what would break without it.</td><td>Treats it as a memory question as much as a scope one: what the closure keeps alive, why that turns into a leak when a listener outlives the component, and how they found one.</td></tr>
-</tbody>
-</table></div>
+<div class="rung">
+<span class="lv">2–3 years</span>
+<p class="bar"><b>The bar:</b> a correct definition and one example you can walk through line by line.</p>
+<p class="script">&ldquo;A closure is a function that keeps access to the variables of the scope it was created in, even after that scope has finished running. So if I return a function from another function, the inner one still sees the outer one&rsquo;s variables — they are not garbage collected, because something still references them. The usual example is a counter: <code>makeCounter</code> returns an <code>increment</code> that keeps its own <code>count</code>, private, with nothing on the global scope.&rdquo;</p>
+<p class="why"><b>Why it passes here:</b> Correct plus walkable is the whole bar. Use the counter if that is what you genuinely know — but have the next answer ready, because the follow-up is always &ldquo;where have <em>you</em> used one?&rdquo; and a blank there costs more than the definition earned.</p>
+</div>
+<div class="rung">
+<span class="lv">5–7 years</span>
+<p class="bar"><b>The bar:</b> the definition plus one from your own code, and what would break without it.</p>
+<p class="script">&ldquo;Definition aside, the one I use constantly is debounce. The returned function closes over the <code>timer</code> variable, which is how it remembers the pending timeout between calls without a global or a class field — and because each call to <code>debounce</code> creates a fresh scope, two debounced inputs on the same page have separate timers instead of cancelling each other. Same shape in React: a callback closes over the props and state of the render it was created in, which is exactly where stale-closure bugs come from.&rdquo;</p>
+<p class="why"><b>Why it lands:</b> Naming a real one, and naming what breaks without it, proves you understand the mechanism rather than the sentence. The bridge into the stale closure is deliberate — interviewers almost always take it, and you have just chosen the follow-up you are best prepared for.</p>
+</div>
+<div class="rung">
+<span class="lv">10+ years</span>
+<p class="bar"><b>The bar:</b> treat it as a memory question as much as a scope one, with a leak you actually found.</p>
+<p class="script">&ldquo;The scope half is well known. The half that costs money is that a closure keeps its whole enclosing scope reachable for as long as the function is reachable — so a listener that closes over a large object holds that object until the listener is removed. I found exactly that hunting a leak: a resize listener registered in a component that never unregistered, closing over a cached dataset, so every navigation added a copy that could never be collected. Retained size in the heap snapshot climbed per route change, and that was the signature. The rule I hold now is that anything long-lived closing over anything large is a leak waiting to happen — listeners, intervals, subscriptions, memo caches.&rdquo;</p>
+<p class="why"><b>Why this is the level above:</b> At ten years &ldquo;what is a closure&rdquo; is a question about consequences. Retention, the tool you diagnosed it with, and a <em>class</em> of bug rather than one instance — that is the answer that gets written down verbatim in the debrief.</p>
+</div>
 </div>
 <p>Then the senior half: closures are the main way you leak memory in a long-lived Node process. A closure that captures a large object keeps it unreachable-for-collection as long as the returned function is referenced. The classic production leak is an event listener that closes over a request context and is never removed — every request adds a listener, each pinning its own context, and the heap climbs until the process dies.</p>`,
 fu:['How would you find that leak in production?','What does a WeakMap solve here?','Why does a loop with var and setTimeout print the same number?']
@@ -1394,12 +1442,24 @@ a:`<p>A state update schedules a re-render. React calls your component function 
 <p>Then it commits the minimal set of DOM mutations. The crucial sentence: <b>a re-render is not a DOM update.</b> Components re-render constantly; the DOM only changes where the diff found a difference. Candidates who conflate the two end up memoising things that were never touching the DOM anyway.</p>`,
 after:`<div class="ladder">
 <span class="ttl">The same answer at three levels</span>
-<div class="table-scroll"><table>
-<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
-<tbody>
-<tr><td>"React re-renders the component and updates the DOM." Mentions the virtual DOM as though it were the point.</td><td>Render is a pure call producing an element tree; commit is the mutation. Diffing is per-position and per-type, which is exactly why keys and stable types matter.</td><td>Talks about it as scheduling — that render is interruptible and commit is not, why that is what concurrent features are built on, and where re-render cost actually lands, which is usually a context provider high in the tree rather than the component being blamed.</td></tr>
-</tbody>
-</table></div>
+<div class="rung">
+<span class="lv">2–3 years</span>
+<p class="bar"><b>The bar:</b> render, diff, commit — in the right order and with the right vocabulary.</p>
+<p class="script">&ldquo;When state changes React re-runs the component function, which produces a new element tree. It compares that tree with the previous one, works out the smallest set of DOM changes, and applies those. It does not rebuild the DOM — it updates what actually differs. And it re-runs the children of that component too, unless they are memoised.&rdquo;</p>
+<p class="why"><b>Why it passes here:</b> They mainly want to hear that you do not think <code>setState</code> writes to the DOM directly. Saying &ldquo;virtual DOM&rdquo; is fine — but do not claim it is fast <em>because</em> it is virtual, because the follow-up is &ldquo;faster than what?&rdquo; and there is no good answer to it.</p>
+</div>
+<div class="rung">
+<span class="lv">5–7 years</span>
+<p class="bar"><b>The bar:</b> separate render from commit, and connect the two diff rules to keys.</p>
+<p class="script">&ldquo;Two phases. Render is a pure call — running the component produces an element tree and touches nothing outside. Commit is the mutation, and it is synchronous. The diff is per-position and per-type: same type in the same position and React updates the props and keeps the state; different type and it unmounts and remounts, losing state and refs. That is what keys are for — a key tells React which item is which when the order changes, and using the array index means deleting the first item makes React think every item after it changed identity. It is also why defining a component inside another component remounts it on every render: new function, new type, every time.&rdquo;</p>
+<p class="why"><b>Why it lands:</b> The two rules of the diff <em>explain</em> keys instead of asserting them, so you never have to fall back on &ldquo;React needs it for performance.&rdquo; The component-defined-inside-a-component bug is a strong tell: it is a thing you hit and debugged, not a thing you read.</p>
+</div>
+<div class="rung">
+<span class="lv">10+ years</span>
+<p class="bar"><b>The bar:</b> talk about it as scheduling, and about where re-render cost actually lands.</p>
+<p class="script">&ldquo;The shift worth talking about is that render is interruptible and commit is not. React can begin rendering, abandon it because something higher-priority arrived, and start again — which is what the concurrent features are built on, and it is why render has to be pure: it may run twice and you cannot see the difference. Practically, the re-render cost almost never lands on the component people blame. It is usually a context provider high in the tree whose value is a new object each render, so every consumer re-renders no matter what is memoised below it. I would rather split the context or push state down than reach for <code>memo</code> — memo on a component whose props are new objects every render is a cost with no benefit.&rdquo;</p>
+<p class="why"><b>Why this is the level above:</b> Scheduling, a diagnosis, and a preferred fix that is not the obvious one. An answer that stops cleanly at &ldquo;render and commit&rdquo; is correct and reads as five years — which is fine if that is where you are, and a problem if you are being interviewed for staff.</p>
+</div>
 </div>
 <p>If they push into Fiber: rendering is split into a <b>render phase</b> (interruptible, can be thrown away, must be pure — this is why Strict Mode double-invokes in development) and a <b>commit phase</b> (synchronous, applies the mutations, runs layout effects). That split is what makes concurrent features possible.</p>`,
 fu:['Why must the render phase be pure?','What does Strict Mode double-invoking actually catch?','Why does changing an element type remount the whole subtree?']
@@ -1449,12 +1509,24 @@ useEffect(() =&gt; { latest.current = count })`},{label:'the fetch race, fixed',
 }, [id])`}],
 after:`<div class="ladder">
 <span class="ttl">The same answer at three levels</span>
-<div class="table-scroll"><table>
-<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
-<tbody>
-<tr><td>Describes it as "runs after render" and names the missing dependency array. Often still calls it a lifecycle method.</td><td>Names the stale closure, the effect that should have been an event handler, and the object identity that re-runs it every render. Knows the cleanup runs before the next effect, not only on unmount.</td><td>Starts from the position that most effects should not exist — derived state, event handlers and data libraries take the majority — and treats the dependency array as a synchronisation contract rather than a list to satisfy the linter.</td></tr>
-</tbody>
-</table></div>
+<div class="rung">
+<span class="lv">2–3 years</span>
+<p class="bar"><b>The bar:</b> what it does, when it runs, what the dependency array controls, and what cleanup is for.</p>
+<p class="script">&ldquo;It runs after render, once the DOM is updated. The dependency array controls when it runs again — empty means once on mount, with values means whenever one of them changes, and no array at all means every render. The function you return is cleanup: it runs before the next effect and on unmount, and that is where you remove listeners or cancel a subscription. The most common bug is a missing dependency, so the effect keeps using a value from an older render.&rdquo;</p>
+<p class="why"><b>Why it passes here:</b> That is the complete two-year answer, including cleanup, which many candidates leave out. The word to avoid is &ldquo;lifecycle&rdquo; — calling it <code>componentDidMount</code> marks you as someone who learnt classes and is translating, and the interviewer will start probing there.</p>
+</div>
+<div class="rung">
+<span class="lv">5–7 years</span>
+<p class="bar"><b>The bar:</b> the distinct bug classes with their fixes, and knowing which effects should not exist at all.</p>
+<p class="script">&ldquo;Three bugs I actually see. One, the stale closure — the effect captured the value from the render it ran in, so an interval logs the initial count forever; fix it with a functional update or a ref. Two, an object or a function in the dependencies, which is a new reference every render, so the effect runs every render; fix it by memoising it or moving it inside the effect. Three, and this is the big one, an effect that should have been an event handler — if it runs in response to something the user did, it belongs in the handler, not in an effect watching state change. And cleanup is not only for unmount: without it, a fast request that resolves after a slow one lands the wrong data on screen.&rdquo;</p>
+<p class="why"><b>Why it lands:</b> Three distinct classes with three distinct fixes is what six years sounds like — you have debugged all of them. &ldquo;It should have been an event handler&rdquo; is the specific sentence a React interviewer is waiting for, because it is the line between using the hook and understanding it.</p>
+</div>
+<div class="rung">
+<span class="lv">10+ years</span>
+<p class="bar"><b>The bar:</b> start from the position that most effects should not exist, and treat the dependency array as a contract rather than a lint rule.</p>
+<p class="script">&ldquo;My default is that an effect is a bug until it argues for itself. Derived state should be computed during render, not synced in an effect. Anything the user triggered belongs in the handler. Data fetching belongs in a library or on the server. What is left is genuine synchronisation with something outside React — a subscription, a measurement, a socket — and for those the dependency array is not a list to satisfy the linter, it is the statement of what this effect stays in sync with. If satisfying the linter breaks the effect, the effect is modelling the wrong thing and I would rewrite it rather than add an ignore comment. On a codebase that flickers or double-fetches, counting effects is the fastest diagnostic I have.&rdquo;</p>
+<p class="why"><b>Why this is the level above:</b> A position, a rule for what survives it, and a use of the rule as a diagnostic across a codebase rather than a file. This is what someone sounds like when they have cleaned up a large React app, and it is not something you can fake with one more fact.</p>
+</div>
 </div>
 <p><b>Bug two: no cleanup.</b> A subscription or an in-flight request that outlives the component — a resolved response calls <code>setState</code> after unmount, or a slower earlier request overwrites a faster later one (the race that shows the wrong user's data).</p>`,
 note:`<p>React 18+ Strict Mode mounts, unmounts and remounts every effect in development precisely to surface these missing cleanups. That is a feature, not a bug — and saying so is a small credibility marker.</p>
@@ -1714,12 +1786,24 @@ a:`<p>The answer they want is that <code>z-index</code> is not global. An elemen
 </ul>`,
 after:`<div class="ladder">
 <span class="ttl">The same answer at three levels</span>
-<div class="table-scroll"><table>
-<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
-<tbody>
-<tr><td>Raises the z-index until it works. Knows z-index needs position.</td><td>Names stacking contexts and what creates them, and reaches for a portal rather than a bigger number.</td><td>Treats it as a component boundary problem — where overlays belong in the tree, and why a design system owns that decision rather than each feature.</td></tr>
-</tbody>
-</table></div>
+<div class="rung">
+<span class="lv">2–3 years</span>
+<p class="bar"><b>The bar:</b> know that <code>z-index</code> needs positioning, and that it orders siblings rather than the whole page.</p>
+<p class="script">&ldquo;<code>z-index</code> only applies to positioned elements — anything other than <code>position: static</code> — and it orders an element against its siblings. So if I set a z-index and nothing moves, the first thing I check is whether the element is positioned at all. If that is not it, I would go up the tree in devtools, because I have seen a parent affect this and I would want to find which one.&rdquo;</p>
+<p class="why"><b>Why it passes here:</b> Correct, and honest about the edge of what you know. If you have not met stacking contexts yet, saying you would inspect the parents is a much better answer than inventing a mechanism — the interviewer will usually just tell you, and you have shown a debugging instinct instead of a gap.</p>
+</div>
+<div class="rung">
+<span class="lv">5–7 years</span>
+<p class="bar"><b>The bar:</b> name the stacking context, list what creates one, and fix it structurally rather than numerically.</p>
+<p class="script">&ldquo;<code>z-index</code> is not global — it is scoped to a stacking context. A parent creates one when it has a position with a z-index, but also with <code>transform</code>, <code>opacity</code> below 1, <code>filter</code>, <code>will-change</code>, or <code>isolation: isolate</code>. Once a parent has one, nothing inside can escape it: the whole subtree is ordered as a single unit against the parent&rsquo;s siblings. Which is why a modal with <code>z-index: 9999</code> still renders behind the header — its parent has a transform on it from an animation, and that entire context sits below the header&rsquo;s. The fix is not a bigger number, it is a portal that renders the modal on <code>body</code>, outside that context.&rdquo;</p>
+<p class="why"><b>Why it lands:</b> <code>transform</code> creating a context is the tell. Almost everyone knows about <code>position</code>; the animation-created one is the one that actually costs somebody an afternoon, so naming it says you lost that afternoon.</p>
+</div>
+<div class="rung">
+<span class="lv">10+ years</span>
+<p class="bar"><b>The bar:</b> treat it as a component-boundary problem the system should prevent, not a bug to fix again.</p>
+<p class="script">&ldquo;Once you have debugged that twice you stop fixing it per instance. Overlays — modals, tooltips, dropdowns, toasts — belong in one layer owned by the design system: a single portal mount point and a small named scale for the layers, so no feature team is writing raw z-index numbers. The failure is not z-index, it is that every team is allowed to invent one. The deliberate version of the same mechanism is worth knowing too — <code>isolation: isolate</code> on a component root creates a context on purpose, so a child can never leak out of it into someone else&rsquo;s stacking order.&rdquo;</p>
+<p class="why"><b>Why this is the level above:</b> Identical knowledge, aimed at prevention instead of at the bug on screen. That reframe — from &ldquo;how do I fix this&rdquo; to &ldquo;how does the system stop this happening&rdquo; — is precisely the thing a frontend lead is trying to detect, because it is what they will be hiring you to do.</p>
+</div>
 </div>`,
 trap:`<p>"I would just use <code>z-index: 99999</code>." It is the answer that says you have never had to find out why the last one did not work.</p>`,
 fu:['What else creates a stacking context?','Where would you render a tooltip?','How do you debug this in devtools?']
@@ -2295,13 +2379,25 @@ a:`<div class="table-scroll"><table>
 <tr><td><b>Basic DP</b></td><td>"how many ways", "min cost", overlapping subproblems</td><td>Climbing Stairs · House Robber · Coin Change · Longest Increasing Subsequence</td></tr>
 </tbody></table></div>`,
 after:`<div class="ladder">
-<span class="ttl">The same answer at three levels</span>
-<div class="table-scroll"><table>
-<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
-<tbody>
-<tr><td>Recognises the pattern sometimes, codes first and thinks after. Silence when stuck.</td><td>Names the pattern out loud, states the complexity before typing, and dry-runs an edge case unprompted.</td><td>Says why this pattern and not the adjacent one, gives the complexity of both, and treats the interviewer as a colleague — asking about input scale before choosing, because at scale the answer changes.</td></tr>
-</tbody>
-</table></div>
+<span class="ttl">The same round at three levels</span>
+<div class="rung">
+<span class="lv">2–3 years</span>
+<p class="bar"><b>The bar:</b> recognise the pattern, reach a working solution, and keep talking the whole time.</p>
+<p class="script">&ldquo;This is asking for a contiguous subarray, so I think it is a sliding window. Let me say the brute force first — two nested loops, check every window, that is O(n²) and it will be too slow at the sizes they usually mean. I think I can drop the inner loop by keeping a running sum and moving a left pointer. Let me try that and I will talk through it as I go.&rdquo;</p>
+<p class="why"><b>Why it passes here:</b> At two years nobody expects the optimal solution to arrive fully formed. What is being graded is whether you go silent when stuck. Silence is the fail; &ldquo;I am working out whether a hash map removes the inner loop&rdquo; is not — it is the interviewer&rsquo;s cue to nudge you, which they are allowed to do.</p>
+</div>
+<div class="rung">
+<span class="lv">5–7 years</span>
+<p class="bar"><b>The bar:</b> name the pattern, state the complexity before you type, and dry-run an edge case unprompted.</p>
+<p class="script">&ldquo;Contiguous subarray with a constraint — sliding window. Expand right while the window is valid, shrink from the left when it breaks. O(n) time, O(k) space for whatever I keep about the window. Before I code it: empty input, a single element, and the case where no window is valid, which should return zero rather than minus one — I will confirm that with you. Then I will write it and dry-run it on [2, 1, 3] out loud.&rdquo;</p>
+<p class="why"><b>Why it lands:</b> Stating the complexity <em>before</em> implementing proves you chose the approach rather than stumbled into it. Volunteering the edge cases removes the interviewer&rsquo;s next question, which is worth real minutes in a forty-five minute round, and it is the behaviour that gets written down as &ldquo;rigorous&rdquo;.</p>
+</div>
+<div class="rung">
+<span class="lv">10+ years</span>
+<p class="bar"><b>The bar:</b> justify this pattern over the adjacent one, and make input scale a question rather than an assumption.</p>
+<p class="script">&ldquo;Before I pick — how large is the input, and does it fit in memory? If it is a stream the window still works but anything that sorts first does not, and that changes the answer. Assuming it fits: sliding window at O(n) versus sorting first at O(n log n). The sort is meaningfully simpler to get right, and for n in the low thousands I would genuinely ship it — but this is asking for the linear one, so I will do the window. If we have time afterwards I would like to talk about what happens when the constraint becomes two-dimensional, because that is where this pattern stops being enough.&rdquo;</p>
+<p class="why"><b>Why this is the level above:</b> Two things happen here that do not at five years. You made the input scale a question instead of an assumption, and you named a case where the simpler, asymptotically worse algorithm would be the right call. Senior DSA rounds are looking for that judgement more than for the trick — the trick they assume.</p>
+</div>
 </div>`
 },
 {
@@ -2459,13 +2555,25 @@ CREATE INDEX ON bookings (user_id, created_at DESC);
 CREATE UNIQUE INDEX ON bookings (idempotency_key);
 CREATE INDEX ON camps (location_id, price_cents) WHERE status = 'published';</span>`}],
 after:`<div class="ladder">
-<span class="ttl">The same answer at three levels</span>
-<div class="table-scroll"><table>
-<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
-<tbody>
-<tr><td>Draws boxes: client, server, database. Adds a cache because caches are good. No numbers.</td><td>Clarifies scale first, estimates reads and writes, picks a store with a reason, and names the one hard part — double booking — and how they prevent it.</td><td>Opens with what would make this design wrong, not what makes it right: which requirement is load-bearing, what breaks first at ten times the traffic, and what they would deliberately not build in version one. Numbers throughout, and a stated failure mode for each choice.</td></tr>
-</tbody>
-</table></div>
+<span class="ttl">The same round at three levels</span>
+<div class="rung">
+<span class="lv">2–3 years</span>
+<p class="bar"><b>The bar:</b> a coherent architecture, a few clarifying questions, and honesty about what you are unsure of.</p>
+<p class="script">&ldquo;Before I draw anything — who are the users, roughly how many bookings a day, and is this web only or mobile too? … Right. Clients hit an API, the API talks to a database. The entities are users, listings, availability slots, bookings and payments. The main flows are search a listing, view its availability, and create a booking. I would put a cache in front of search because that is the read-heavy part. I am not certain how I would stop two people booking the same slot — I think it needs to be handled in the database rather than in application code.&rdquo;</p>
+<p class="why"><b>Why it passes here:</b> At two to three years they are not grading the design, they are grading decomposition and communication. Naming the entities and the flows is a pass. Saying &ldquo;I am not certain, and here is the direction I would look&rdquo; is a pass too — adding a message queue because it sounds senior is not.</p>
+</div>
+<div class="rung">
+<span class="lv">5–7 years</span>
+<p class="bar"><b>The bar:</b> clarify scale, estimate it, choose stores with reasons, and name the one genuinely hard part.</p>
+<p class="script">&ldquo;Assume a hundred thousand daily actives and ten thousand bookings a day. That is tiny on writes — a couple per second at peak — but search is read-heavy, call it a hundred to one, so the write path can be a single relational database and the read path needs caching and probably a search index. Postgres for bookings, because the hard requirement is that two people cannot take the same slot, and I want a transaction and a unique constraint on listing and slot rather than an application-level check. The real difficulty is double booking under concurrency: I would take a row-level lock on the slot inside the transaction, and for the checkout window write a short-lived hold row with a TTL so an abandoned cart releases the inventory instead of stranding it.&rdquo;</p>
+<p class="why"><b>Why it lands:</b> Numbers first, then a datastore chosen <em>for the constraint</em> rather than by preference, then the one hard part named and actually solved. That sequence is the round — most candidates draw boxes and add a cache because caches are good, and never say a number.</p>
+</div>
+<div class="rung">
+<span class="lv">10+ years</span>
+<p class="bar"><b>The bar:</b> open with what would make the design wrong, name what breaks first, and say what you would deliberately not build.</p>
+<p class="script">&ldquo;The load-bearing requirement here is inventory correctness — the rest is a website. So I would design around that and let everything else follow: a single writer for availability, idempotency keys on the booking endpoint because payment retries are guaranteed rather than possible, and the payment and the booking reconciled through an outbox rather than a distributed transaction, because the failure I actually care about is a customer charged for a booking that does not exist. At ten times this traffic the thing that breaks first is not the database, it is search — that is the piece I would plan to split out, and I would want the seam there from day one. In version one I would deliberately not build dynamic pricing, multi-currency, or recommendations, because each one takes a dependency on availability data and makes the correctness argument harder to hold.&rdquo;</p>
+<p class="why"><b>Why this is the level above:</b> It opens on the risk rather than the boxes, states the failure in the customer&rsquo;s terms rather than the system&rsquo;s, says what breaks first at scale, and gives a cut list. Every one of those is a scope decision, and scope decisions are what a staff design round is actually scoring.</p>
+</div>
 </div>
 <p>The design hangs on <b>three</b> things, and the interviewer will pick one to go deep on:</p>
 <h4>1 · Search</h4>
@@ -2795,12 +2903,24 @@ trap:`<p>The story where you were right, they did not listen, and it later broke
 fu:['What would you do if the same thing happened here?','How did the other person feel about it afterwards?'],
 after:`<div class="ladder">
 <span class="ttl">The same answer at three levels</span>
-<div class="table-scroll"><table>
-<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
-<tbody>
-<tr><td>The story is about being right. It ends at the moment the decision went their way.</td><td>Names the trade-off both sides were arguing, brings evidence rather than opinion, and describes committing to the decision after losing it.</td><td>Picks a disagreement where they were overruled and it still went badly — and talks about what they should have done to make the argument land, which is a statement about influence rather than about being right.</td></tr>
-</tbody>
-</table></div>
+<div class="rung">
+<span class="lv">2–3 years</span>
+<p class="bar"><b>The bar:</b> a real, small disagreement, told with a structure, ending in what you did next.</p>
+<p class="script">&ldquo;On the notifications feature I thought the templates should live in the database so the content team could edit them without a deploy. My lead wanted them in code. I said why I preferred it — fewer deploys for copy changes — and he pointed out we had no review flow, so a typo would go straight to users with nothing in between. I had not thought about that. We kept them in code and I wrote a script that made copy changes a two-minute job instead of an hour. If we had got a review flow later I would have raised it again.&rdquo;</p>
+<p class="why"><b>Why it passes here:</b> Nobody expects you to have won an architecture argument at two years. They are checking that you can disagree without it becoming personal, and that you can say &ldquo;I had not thought about that&rdquo; — which most candidates carefully avoid, and which reads as honest rather than weak.</p>
+</div>
+<div class="rung">
+<span class="lv">5–7 years</span>
+<p class="bar"><b>The bar:</b> name the trade-off both sides were arguing, bring evidence rather than opinion, and describe committing after you lost.</p>
+<p class="script">&ldquo;We were deciding whether to move to a monorepo. The case for was shared code and atomic cross-repo changes. My case against was CI: we were at eleven minutes and I thought it would go to around forty without the task caching we did not have. I built that argument with a number rather than a feeling — I prototyped it and timed the pipeline and put the figure in the doc. The team went ahead anyway, because the duplication cost was hurting more than I had weighted it. So I committed: I took the caching work that made it viable and we landed at fourteen minutes. Looking back the decision was right and my objection was really about sequencing, not direction.&rdquo;</p>
+<p class="why"><b>Why it lands:</b> Three things score here. The trade-off is described as a trade-off instead of as you being right. The evidence is a measurement. And you committed after losing, with work attached — which is the specific behaviour this question exists to find, and the reason it is asked in almost every loop.</p>
+</div>
+<div class="rung">
+<span class="lv">10+ years</span>
+<p class="bar"><b>The bar:</b> pick one where you were overruled <em>and it went badly</em>, then talk about influence rather than about being right.</p>
+<p class="script">&ldquo;We had a chance to consolidate two payment integrations and I argued against doing it that quarter. I was overruled, it shipped, and it cost us two incidents and about six weeks of unplanned work. So I was right, and I still count it as my failure — being right in a document is worth nothing. I had raised it as a technical risk, in a technical forum, to people who were optimising for a date, and I never translated it into their terms: no number on the probability, no cost for the rollback, and no smaller version of the plan that would have given them most of what they wanted. Now when I disagree with something that is going to happen anyway, I bring the cheaper alternative rather than only the objection.&rdquo;</p>
+<p class="why"><b>Why this is the level above:</b> Choosing a story where being right did not help is a level marker on its own — most candidates cannot resist the one where they won. The lesson is about making an argument land inside an organisation, which is what senior means past the point where your technical judgement is already assumed.</p>
+</div>
 </div>`
 },
 {
@@ -3058,12 +3178,24 @@ trap:`<p>Softening the number in the same breath — "₹26 lakh, but I'm negoti
 fu:['Is that fixed or total?','What is driving that number?','Can you share your current payslip?'],
 after:`<div class="ladder">
 <span class="ttl">The same answer at three levels</span>
-<div class="table-scroll"><table>
-<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
-<tbody>
-<tr><td>Says "as per company standards" or gives current CTC plus a percentage. Anchors on their own past, not the market.</td><td>Gives a specific number with its structure attached, having asked the band first, and can say what the number is based on.</td><td>Talks about the level before the number, because the level is the band — and treats the conversation as scoping the role rather than as haggling.</td></tr>
-</tbody>
-</table></div>
+<div class="rung">
+<span class="lv">2–3 years</span>
+<p class="bar"><b>The bar:</b> a researched number, said once, without apologising for it.</p>
+<p class="script">&ldquo;Based on what I have seen for this role and my experience, I am looking at around ₹9 lakh fixed. Is that within the range you have for this position?&rdquo;</p>
+<p class="why"><b>Why it passes here:</b> The answer they do not want is &ldquo;as per company standards&rdquo; — it reads as no research and it invites the bottom of the band. You do not need a negotiation strategy yet; you need a number you can justify, and the discipline not to discount it in the next breath before anyone has pushed back.</p>
+</div>
+<div class="rung">
+<span class="lv">5–7 years</span>
+<p class="bar"><b>The bar:</b> ask their band first, then a specific number with its structure attached.</p>
+<p class="script">&ldquo;Before I give you a number — what is the band you have budgeted for this role? … Right. I am at ₹12.2 lakh fixed today and I am looking for ₹26 lakh fixed, with whatever variable sits on top of that. That is based on what full-stack roles at this scope are paying in Bangalore now, rather than on a percentage of my current number, and I am firm on the fixed component because that is what my planning actually runs on.&rdquo;</p>
+<p class="why"><b>Why it lands:</b> Asking their band first is the whole play — if their range starts above your number, speaking first costs you the difference permanently. Saying &ldquo;fixed&rdquo; out loud stops the offer coming back as a headline CTC padded with variable, a joining bonus and a retention component.</p>
+</div>
+<div class="rung">
+<span class="lv">10+ years</span>
+<p class="bar"><b>The bar:</b> talk about the level before the number, because the level is the band.</p>
+<p class="script">&ldquo;The number follows the level, so let us do that first — what level is this role mapped to, and what would put a candidate at the one above it? … At that level the market is around ₹45 to ₹60 lakh total, and I would expect the upper half of it given the scope I am carrying. On structure I care more about base and the vesting schedule than about the headline: a back-loaded grant and an even one with the same paper value are several lakh apart in year one. Once we agree the level, the number is mostly arithmetic.&rdquo;</p>
+<p class="why"><b>Why this is the level above:</b> At ten years you are not haggling, you are scoping the role — and the level moves the money far more than any negotiation ever will. Asking about vesting shape rather than the total is the tell that you have read an offer before and been surprised by one. <a href="#r12lv">R12·LV</a> is the whole of this conversation.</p>
+</div>
 </div>`
 },
 {

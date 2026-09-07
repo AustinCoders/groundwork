@@ -6799,17 +6799,39 @@ a.step__title:hover {
   color: var(--ink);
 }
 
-.interview-body .ladder table {
-  margin: 0;
+.interview-body .ladder .rung {
+  padding: 14px 0 4px;
+  border-top: 1px dashed var(--line);
 }
 
-.interview-body .ladder th {
-  white-space: nowrap;
+.interview-body .ladder .rung:first-of-type {
+  padding-top: 0;
+  border-top: 0;
 }
 
 .interview-body .ladder .lv {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 2px 11px;
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
   font-family: var(--font-heading);
-  font-size: 15px;
+  font-size: 14px;
+  color: var(--pencil);
+}
+
+.interview-body .ladder p {
+  margin: 0 0 9px;
+}
+
+.interview-body .ladder .script {
+  padding: 2px 0 2px 13px;
+  border-left: 3px solid var(--line);
+}
+
+.interview-body .ladder .why {
+  font-size: 0.95em;
   color: var(--pencil);
 }
 
