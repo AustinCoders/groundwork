@@ -353,6 +353,7 @@ Turbopack
 twopart
 typedarrays
 Typesense
+unawaited
 uncacheable
 unevictable
 unfinalized
