@@ -35,6 +35,7 @@ function TopicLink({ topic, href, active, muted }: { topic: Topic; href: string;
       className={`site-navlink${muted ? " site-navlink--muted" : ""}${active ? " is-active" : ""}`}
       href={href}
       title={muted ? `${topic.name} — coming soon` : `${topic.name} — ready to read`}
+      prefetch={false}
     >
       <span
         className="site-navlink__mark"
@@ -207,7 +208,7 @@ export function Shell({
               {collapsed ? "»" : "«"}
             </button>
 
-            <Link className="brand site-sidenav__brand" href="/">
+            <Link className="brand site-sidenav__brand" href="/" prefetch={false}>
               <span className="brand__mark" aria-hidden="true">
                 JS
               </span>
@@ -222,7 +223,12 @@ export function Shell({
             <TopicOfDay topics={readyTopics} />
 
             <nav className="site-sidenav__section" aria-label="Playground">
-              <Link className="site-navlink site-navlink--accent" href="/practice?id=free" title="Playground">
+              <Link
+                className="site-navlink site-navlink--accent"
+                href="/practice?id=free"
+                title="Playground"
+                prefetch={false}
+              >
                 <span className="site-navlink__icon" aria-hidden="true">
                   ✎
                 </span>
@@ -231,7 +237,7 @@ export function Shell({
                   →
                 </span>
               </Link>
-              <Link className="site-navlink" href="/problems" title="All problems">
+              <Link className="site-navlink" href="/problems" title="All problems" prefetch={false}>
                 <span className="site-navlink__icon" aria-hidden="true">
                   ⌘
                 </span>
@@ -249,14 +255,19 @@ export function Shell({
                   <span className="site-navlink__name">Interview prep</span>
                 </Link>
               )}
-              <Link className="site-navlink" href="/review" title="Review — spaced repetition">
+              <Link className="site-navlink" href="/review" title="Review — spaced repetition" prefetch={false}>
                 <span className="site-navlink__icon" aria-hidden="true">
                   ↻
                 </span>
                 <span className="site-navlink__name">Review</span>
                 {dueCount > 0 && <span className="site-navlink__hits">{dueCount}</span>}
               </Link>
-              <Link className="site-navlink" href="/progress" title="Your progress — streaks, XP, badges">
+              <Link
+                className="site-navlink"
+                href="/progress"
+                title="Your progress — streaks, XP, badges"
+                prefetch={false}
+              >
                 <span className="site-navlink__icon" aria-hidden="true">
                   🔥
                 </span>
@@ -333,7 +344,7 @@ export function Shell({
                       <p className="sidenav-progress__label">
                         Nothing ticked off yet — start the first chapter and it&apos;ll show up here.
                       </p>
-                      <Link className="btn sidenav-progress__cta" href={`/level/${topicId || "js"}`}>
+                      <Link className="btn sidenav-progress__cta" href={`/level/${topicId || "js"}`} prefetch={false}>
                         Start with {topicName} →
                       </Link>
                     </>

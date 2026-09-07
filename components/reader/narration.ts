@@ -102,12 +102,21 @@ export async function fetchNarration(
   const params = new URLSearchParams({ text, voice, rate: String(rate), pitch });
   const res = await fetch(`/api/tts?${params}`);
   if (!res.ok) throw new Error(`TTS request failed (${res.status})`);
-  const data = await res.json();
-  const binary = atob(data.audio as string);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  const blob = new Blob([bytes], { type: "audio/mpeg" });
-  return { url: URL.createObjectURL(blob), words: (data.words as WordEvent[]) || [] };
+
+  const blob = await res.blob();
+  return { url: URL.createObjectURL(blob), words: readWordTimings(res.headers.get("X-Word-Timings")) };
+}
+
+/** Tuples of [offset ms, duration ms, text], base64 in a response header. */
+function readWordTimings(header: string | null): WordEvent[] {
+  if (!header) return [];
+  try {
+    const tuples = JSON.parse(atob(header)) as [number, number, string][];
+    return tuples.map(([offset, duration, word]) => ({ offset: offset / 1000, duration: duration / 1000, text: word }));
+  } catch {
+    // Highlighting is a nicety; audio without it beats no audio.
+    return [];
+  }
 }
 
 export function setupNarration(container: HTMLElement): () => void {
@@ -218,6 +227,9 @@ export function setupNarration(container: HTMLElement): () => void {
       currentMap = chunk.map;
       wordCursor = 0;
       audio.src = result.url;
+      // stop() clears the element with removeAttribute("src"); load() is the
+      // explicit start of resource selection on whatever src replaces it.
+      audio.load();
       nextPrefetch =
         i + 1 < chunks.length
           ? fetchNarration(chunks[i + 1].text, settings.voice, settings.rate, settings.pitch)

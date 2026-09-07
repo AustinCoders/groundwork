@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { expect, test, type ConsoleMessage, type Page } from "@playwright/test";
 
 const PAGES = [
@@ -72,4 +74,30 @@ test("old /level?topic= links still land", async ({ page }) => {
   await page.goto("/level?topic=system-design");
   await page.waitForURL("**/level/system-design");
   await expect(page.locator("h1")).toContainText(/System Design/i);
+});
+
+test("narration plays a chapter", async ({ page }) => {
+  const audio = readFileSync(join(__dirname, "fixtures/tone.mp3"));
+  const timings = readFileSync(join(__dirname, "fixtures/tone-timings.txt"), "utf8").trim();
+
+  // Serve the audio ourselves: the real endpoint calls out to Microsoft, and
+  // what broke here was the client — a media element handed a fresh blob URL
+  // without a load() to start it.
+  await page.route("**/api/tts*", async (route) => {
+    // A real synthesis takes a second or two; fulfilling instantly hides races
+    // between resetting the media element and giving it the next source.
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    await route.fulfill({
+      status: 200,
+      contentType: "audio/mpeg",
+      headers: { "X-Word-Timings": timings },
+      body: audio,
+    });
+  });
+
+  await page.goto("/notes/basic-async");
+  await page.locator(".listenbtn").first().click();
+
+  await expect(page.locator(".listenbtn").first()).toHaveText(/Pause/);
+  await expect(page.locator(".is-narrating").first()).toBeVisible();
 });

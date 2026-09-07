@@ -48,6 +48,9 @@ function overRateLimit(req: Request): boolean {
   return seen.count > RATE_LIMIT_MAX;
 }
 
+/** [offset ms, duration ms, text] — a third the size of the object form. */
+type CompactWord = [number, number, string];
+
 async function synthesise(
   text: string,
   voice: string,
@@ -109,14 +112,34 @@ async function synthesise(
 
     tts.close();
 
-    const audio = Buffer.concat(audioChunks).toString("base64");
+    const mp3 = Buffer.concat(audioChunks);
     // Same text, voice, rate and pitch always synthesise to the same audio, so
     // let the CDN answer every repeat of it. A chapter narrated by a thousand
     // readers is one synthesis, not a thousand.
     const cacheControl = cacheable
       ? "public, max-age=3600, s-maxage=31536000, stale-while-revalidate=86400"
       : "no-store";
-    return Response.json({ audio, words }, { headers: { "Cache-Control": cacheControl } });
+
+    if (!cacheable) {
+      // The POST shape older clients still expect.
+      return Response.json({ audio: mp3.toString("base64"), words }, { headers: { "Cache-Control": cacheControl } });
+    }
+
+    // Binary body rather than base64 in JSON: a 700-character chunk is 280 KB
+    // of mp3 and was leaving here as 373 KB of text. Timings ride along in a
+    // header, compacted to tuples — 3 KB rather than 7.
+    const compact: CompactWord[] = words.map((w) => [
+      Math.round(w.offset * 1000),
+      Math.round(w.duration * 1000),
+      w.text,
+    ]);
+    return new Response(new Uint8Array(mp3), {
+      headers: {
+        "Content-Type": "audio/mpeg",
+        "Cache-Control": cacheControl,
+        "X-Word-Timings": Buffer.from(JSON.stringify(compact)).toString("base64"),
+      },
+    });
   } catch (err) {
     tts.close();
     console.error("TTS synthesis failed:", err);
