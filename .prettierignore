@@ -7,4 +7,4 @@ package-lock.json
 # prettier would explode interview-data.ts alone into thousands of lines
 # without changing a character of what the site renders.
 content/interview-data.ts
-content/practice.ts
+content/practice/
