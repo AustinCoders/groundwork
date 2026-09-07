@@ -18,7 +18,7 @@ export function TopicOfDay({ topics }: { topics: Topic[] }) {
 
   return (
     <TiltCard className="topic-of-day">
-      <Link href={href} className="topic-of-day__link">
+      <Link href={href} className="topic-of-day__link" prefetch={false}>
         <span className="topic-of-day__kicker">✨ today&apos;s pick</span>
         <span className="topic-of-day__row">
           <span

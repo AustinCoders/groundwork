@@ -48,7 +48,7 @@ export function DailyRecap({ topics }: { topics: Topic[] }) {
       <p className="daily-recap__yesterday">🔥 Yesterday you knocked out {plural(yesterdayCount, "thing")}.</p>
       <p className="daily-recap__today">
         Today, try{" "}
-        <Link href={href} onClick={dismiss}>
+        <Link href={href} onClick={dismiss} prefetch={false}>
           <span dangerouslySetInnerHTML={{ __html: topic.name }} />
         </Link>
       </p>
