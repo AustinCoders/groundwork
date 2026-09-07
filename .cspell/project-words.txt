@@ -4,7 +4,6 @@
 # Fonts loaded in lib/fonts.ts
 Literata
 Caveat
-Cutive
 Gochi
 Handlee
 Kalam
@@ -77,6 +76,13 @@ Naukri
 sourcer
 
 # Libraries, tools and infrastructure named in the notes
+Supabase
+Typesense
+Meilisearch
+lighthouseci
+lhci
+autorun
+axe
 requestfailed
 networkidle
 Turbopack

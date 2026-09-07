@@ -47,7 +47,6 @@ export function ReaderShell({ topicId, chapters, basePath, activeId, children }:
   const router = useRouter();
   const mounted = useMounted();
   const [query, setQuery] = useState("");
-  const [openLevel, setOpenLevel] = useState<string | null>(null);
 
   const contentRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
@@ -57,10 +56,17 @@ export function ReaderShell({ topicId, chapters, basePath, activeId, children }:
   const levels = useMemo(() => levelsFor(topicId), [topicId]);
   const activeChapter = useMemo(() => chapters.find((c) => c.id === activeId) || null, [chapters, activeId]);
 
-  const [levelForActive, setLevelForActive] = useState<string | null | undefined>(undefined);
+  // Which group opens is knowable on the server for a chapter page — the
+  // chapter's own level — so open it in the first render. Deciding it after
+  // mount grew the sidebar under the reader and was most of this page's
+  // layout shift.
+  const defaultLevel = activeChapter?.levels?.[0] || (levels.length ? levels[0].id : null);
+  const [openLevel, setOpenLevel] = useState<string | null>(defaultLevel);
+
+  const [levelForActive, setLevelForActive] = useState<string | null | undefined>(activeId);
   if (mounted && activeId !== levelForActive) {
     setLevelForActive(activeId);
-    setOpenLevel(activeChapter?.levels?.[0] || lastLevel() || (levels.length ? levels[0].id : null));
+    setOpenLevel(activeChapter?.levels?.[0] || lastLevel() || defaultLevel);
   }
 
   const searching = query.trim().length > 0;

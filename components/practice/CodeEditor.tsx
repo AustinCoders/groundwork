@@ -221,6 +221,9 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
       lintCompartment.of(initialLang === "javascript" ? [lintGutter(), linter(jsLinter)] : []),
       wrapCompartment.of([]),
       cmTheme,
+      // The content element is a textbox; without this it reaches a screen
+      // reader unnamed.
+      EditorView.contentAttributes.of({ "aria-label": "Code editor" }),
     ],
 
     // eslint-disable-next-line react-hooks/exhaustive-deps

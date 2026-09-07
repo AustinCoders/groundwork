@@ -55,3 +55,15 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+      # Budgets are set just under what the site measures today, so this fails
+      # on a regression rather than on noise.
+      - name: Lighthouse budgets
+        run: npm run test:perf
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: lighthouse-report
+          path: .lighthouseci/
+          retention-days: 7

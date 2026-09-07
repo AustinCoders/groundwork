@@ -1,7 +1,6 @@
 import {
   Architects_Daughter,
   Caveat,
-  Cutive_Mono,
   Dancing_Script,
   Gochi_Hand,
   Handlee,
@@ -26,12 +25,6 @@ export const kalam = Kalam({
   weight: ["300", "400", "700"],
   variable: "--font-kalam",
   display: "optional",
-});
-export const cutiveMono = Cutive_Mono({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-cutive-mono",
-  preload: false,
 });
 export const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -95,7 +88,6 @@ export const roboto = Roboto({
 export const fontVariables = [
   caveat.variable,
   kalam.variable,
-  cutiveMono.variable,
   jetbrainsMono.variable,
   patrickHand.variable,
   shadowsIntoLight.variable,

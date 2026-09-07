@@ -502,38 +502,40 @@ export function PracticeWorkspace({
           )}
 
           <section className="panel">
-            <div className="panel__tabs" role="tablist">
-              <button
-                className={`tab${activeTab === "console" ? " is-active" : ""}`}
-                id="tab-console"
-                type="button"
-                role="tab"
-                aria-selected={activeTab === "console"}
-                aria-controls="view-console"
-                onClick={() => setActiveTab("console")}
-              >
-                Console{" "}
-                <span className="tab__count" id="console-count">
-                  {consoleLines.length}
-                </span>
-              </button>
-              <button
-                className={`tab${activeTab === "tests" ? " is-active" : ""}`}
-                id="tab-tests"
-                type="button"
-                role="tab"
-                aria-selected={activeTab === "tests"}
-                aria-controls="view-tests"
-                onClick={() => setActiveTab("tests")}
-              >
-                Test Result{" "}
-                <span
-                  className={`tab__count${testResults ? (testResults.every((r) => r.ok) ? " is-pass" : " is-fail") : ""}`}
-                  id="tests-count"
+            <div className="panel__tabs">
+              <div className="panel__tablist" role="tablist" aria-label="Output">
+                <button
+                  className={`tab${activeTab === "console" ? " is-active" : ""}`}
+                  id="tab-console"
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === "console"}
+                  aria-controls="view-console"
+                  onClick={() => setActiveTab("console")}
                 >
-                  {testResults ? `${testResults.filter((r) => r.ok).length}/${testResults.length}` : "—"}
-                </span>
-              </button>
+                  Console{" "}
+                  <span className="tab__count" id="console-count">
+                    {consoleLines.length}
+                  </span>
+                </button>
+                <button
+                  className={`tab${activeTab === "tests" ? " is-active" : ""}`}
+                  id="tab-tests"
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === "tests"}
+                  aria-controls="view-tests"
+                  onClick={() => setActiveTab("tests")}
+                >
+                  Test Result{" "}
+                  <span
+                    className={`tab__count${testResults ? (testResults.every((r) => r.ok) ? " is-pass" : " is-fail") : ""}`}
+                    id="tests-count"
+                  >
+                    {testResults ? `${testResults.filter((r) => r.ok).length}/${testResults.length}` : "—"}
+                  </span>
+                </button>
+              </div>
               <span className="ed__spacer" style={{ flex: 1 }} />
               <button
                 className="btn btn--ghost"
