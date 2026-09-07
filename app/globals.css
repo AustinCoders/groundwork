@@ -55,7 +55,7 @@
 
   --font-heading: var(--font-caveat), "Comic Sans MS", cursive;
   --font-body: var(--font-kalam), "Comic Sans MS", "Segoe Print", cursive;
-  --font-mono: var(--font-cutive-mono), ui-monospace, monospace;
+  --font-mono: var(--font-jetbrains-mono), var(--font-cutive-mono), ui-monospace, monospace;
 
   --ide-bg: var(--sheet-2);
   --ide-bg-elevated: var(--sheet);
@@ -92,22 +92,16 @@ html[data-font="pen"] {
   --font-code: var(--font-body);
 }
 
-html[data-font="chalk"] {
-  --font-heading: var(--font-permanent-marker), "Comic Sans MS", cursive;
-  --font-body: var(--font-indie-flower), "Comic Sans MS", cursive;
-  --font-code: var(--font-body);
-}
-
 html[data-font="script"] {
   --font-heading: var(--font-dancing-script), "Comic Sans MS", cursive;
   --font-body: var(--font-handlee), "Comic Sans MS", cursive;
   --font-code: var(--font-body);
 }
 
-html[data-font="bold"] {
-  --font-heading: var(--font-bangers), "Comic Sans MS", cursive;
-  --font-body: var(--font-schoolbell), "Comic Sans MS", cursive;
-  --font-code: var(--font-body);
+html[data-font="serif"] {
+  --font-heading: var(--font-literata), Georgia, serif;
+  --font-body: var(--font-literata), Georgia, serif;
+  --font-code: var(--font-mono);
 }
 
 html[data-font="roboto"] {
@@ -2563,6 +2557,9 @@ kbd {
 
 pre {
   font-family: var(--font-mono);
+  /* JetBrains Mono ligates => into a single glyph. Fine in an editor, wrong in
+     teaching material where the reader has to type the characters. */
+  font-variant-ligatures: none;
   font-size: 15px;
   line-height: 1.65;
   color: var(--code-fg);
@@ -2598,6 +2595,7 @@ pre::after {
 
 code {
   font-family: var(--font-mono);
+  font-variant-ligatures: none;
   font-size: 0.93em;
   background: var(--code-inline-bg);
   padding: 1px 5px;
@@ -3024,6 +3022,7 @@ figcaption {
 
 .loop-code {
   font-family: var(--font-mono);
+  font-variant-ligatures: none;
   font-size: 13px;
   line-height: 1.7;
   background: var(--code-bg);

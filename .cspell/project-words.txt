@@ -1,7 +1,8 @@
 # Words this project uses that a dictionary does not know.
 # VS Code's "Add word to dictionary" quick fix appends here.
 
-# Handwriting fonts loaded in lib/fonts.ts
+# Fonts loaded in lib/fonts.ts
+Literata
 Caveat
 Cutive
 Gochi
@@ -9,7 +10,6 @@ Handlee
 Kalam
 Neucha
 Reenie
-Schoolbell
 
 # VS Code extension publisher ids in .vscode/extensions.json
 dbaeumer

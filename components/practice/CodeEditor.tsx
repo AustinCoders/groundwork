@@ -73,6 +73,7 @@ const cmTheme = EditorView.theme({
     backgroundColor: "transparent",
   },
   ".cm-content": {
+    fontVariantLigatures: "none",
     fontFamily: "var(--font-code)",
     fontSize: "var(--ed-size, 14.5px)",
     lineHeight: "1.65",

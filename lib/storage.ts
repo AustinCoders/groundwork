@@ -198,7 +198,7 @@ export function lastLevel(): string | null {
 }
 
 export type ThemeValue = "light" | "dark" | "kraft" | "blueprint" | "sepia" | "forest" | "rose" | "mono" | "lavender";
-export type FontValue = "classic" | "marker" | "sketch" | "pen" | "chalk" | "script" | "bold" | "roboto";
+export type FontValue = "classic" | "marker" | "sketch" | "pen" | "script" | "serif" | "roboto";
 
 export const THEME_ITEMS: { value: ThemeValue; label: string }[] = [
   { value: "light", label: "📄 Paper" },
@@ -217,9 +217,8 @@ export const FONT_ITEMS: { value: FontValue; label: string }[] = [
   { value: "marker", label: "✎ Marker" },
   { value: "sketch", label: "✎ Sketch" },
   { value: "pen", label: "✎ Pen" },
-  { value: "chalk", label: "✎ Chalk" },
   { value: "script", label: "✎ Script" },
-  { value: "bold", label: "✎ Bold" },
+  { value: "serif", label: "Aa Reading" },
   { value: "roboto", label: "Aa Roboto" },
 ];
 
@@ -232,7 +231,8 @@ export function setSavedTheme(theme: ThemeValue): void {
 }
 
 export function savedFont(): FontValue | null {
-  return store.get<FontValue | null>(KEYS.font, null);
+  const saved = store.get<string | null>(KEYS.font, null);
+  return FONT_ITEMS.some((item) => item.value === saved) ? (saved as FontValue) : null;
 }
 
 export function setSavedFont(font: FontValue): void {
