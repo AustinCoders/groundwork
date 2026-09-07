@@ -1,3 +1,5 @@
+import { overRateLimit } from "@/lib/rateLimit";
+
 export const runtime = "nodejs";
 
 interface JokeApiSingle {
@@ -19,7 +21,9 @@ interface JokeApiError {
 
 type JokeApiResponse = JokeApiSingle | JokeApiTwoPart | JokeApiError;
 
-export async function GET() {
+export async function GET(req: Request) {
+  if (overRateLimit(req, "joke", 20)) return Response.json({ error: "Too many requests" }, { status: 429 });
+
   try {
     const res = await fetch("https://v2.jokeapi.dev/joke/Programming?safe-mode", {
       headers: { accept: "application/json" },

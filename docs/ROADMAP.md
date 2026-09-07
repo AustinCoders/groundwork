@@ -180,9 +180,10 @@ third-party origin in the CSP and a dependency on their uptime for the Python ru
 
 ## 7. Smaller things worth doing
 
-**Rate limiting that actually holds.** `/api/tts` has a per-instance limiter, which is a floor, not a
-guarantee — serverless spreads traffic over instances. Vercel Firewall rate limiting is the
-account-wide version and is configuration rather than code.
+**Rate limiting that actually holds.** All four API routes now carry a per-instance limiter — `/api/tts`
+at 40 a minute, `/api/weather`, `/api/joke` and `/api/client-error` at 20 — which is a floor rather
+than a guarantee, because serverless spreads traffic over instances. Vercel Firewall is the edge
+version, and it blocks before the function is invoked. See section 1 below.
 
 **Sentry.** Client errors currently post to `/api/client-error` and land in the Vercel function log:
 no grouping, no alerting, and the log expires. `components/ErrorReporter.tsx` and the endpoint are
@@ -221,9 +222,37 @@ are independent of each other — one sitting closes all three.
 
 ### 1. Vercel Firewall rate limiting — 1 to 2 hours
 
-Rules on `/api/tts`, `/api/weather`, `/api/joke` and `/api/client-error` in the Vercel dashboard.
-Check first whether rate-limit rules need a paid plan. Keep `lib/rateLimit.ts` afterwards as defence
-in depth rather than deleting it.
+This is the one item that cannot be done from the repository: the rule lives in the Vercel dashboard,
+against the account that owns the project.
+
+**Two constraints that decide the shape of the rule**
+
+- **Hobby allows one rate-limit rule per project** (Pro allows 40). So on Hobby it is a single rule
+  matching all of `/api/`, not four rules. Rate limiting is available on Hobby — it does not need a
+  paid plan.
+- **Counters are per region, not global.** Traffic arriving in several regions can exceed the limit
+  in each of them. It is a much higher wall than the in-process limiter, not an absolute one.
+
+**The steps**
+
+1. Vercel dashboard → the project → **Firewall** → **Configure** → **+ New Rule**.
+2. Name it something like `API abuse`.
+3. **If**: Request Path — starts with — `/api/`.
+4. **Then**: Rate Limit. Fixed window; the algorithm choice beyond that is Enterprise-only.
+5. Time window 60s, request limit 100, key **IP**. That is well above what a real reader generates —
+   the client calls `/api/weather` and `/api/joke` about once a session, and `/api/tts` only while
+   the narrator is running.
+6. Action: start on **Log**, publish, and watch the Firewall overview for a day. Switch to **Deny**
+   once you can see that no legitimate traffic is being counted.
+7. **Review Changes** → **Publish**. Nothing applies until you publish.
+
+**Do not delete `lib/rateLimit.ts` afterwards.** It runs in the function, the Firewall runs at the
+edge, and they fail in different ways — keep both.
+
+There is also a `@vercel/firewall` SDK with `checkRateLimit()`, for limits that need conditions the
+dashboard cannot express. It is the wrong tool here: it still needs a dashboard rule to exist, it
+would consume the single Hobby rule, and it runs _inside_ the function, so the invocation is already
+paid for by the time it says no.
 
 ### 2. Search index trim — half a day
 

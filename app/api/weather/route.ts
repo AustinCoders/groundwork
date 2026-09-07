@@ -1,3 +1,5 @@
+import { overRateLimit } from "@/lib/rateLimit";
+
 export const runtime = "nodejs";
 
 const WEATHER_CODES: Record<number, { label: string; icon: string }> = {
@@ -32,6 +34,8 @@ const WEATHER_CODES: Record<number, { label: string; icon: string }> = {
 };
 
 export async function GET(req: Request) {
+  if (overRateLimit(req, "weather", 20)) return Response.json({ error: "Too many requests" }, { status: 429 });
+
   const { searchParams } = new URL(req.url);
   const lat = Number(searchParams.get("lat"));
   const lon = Number(searchParams.get("lon"));
