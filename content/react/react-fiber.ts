@@ -100,6 +100,56 @@ startTransition(() =&gt; setResults(list));  <span class="c">// can be interrupt
   re-render blocks the keystroke behind it.
 </p>
 
+<h3>Walking the tree, concretely</h3>
+<pre><code>beginWork(fiber)      <span class="c">// going down: run the component, create child fibers</span>
+completeWork(fiber)   <span class="c">// coming back up: build the effect list</span></code></pre>
+<p>
+  React descends through <code>child</code> pointers calling
+  <code>beginWork</code>, and when a fiber has no child it calls
+  <code>completeWork</code> and follows <code>sibling</code>, or
+  <code>return</code> if there is no sibling. Depth-first, with an explicit
+  pointer instead of the call stack &mdash; which is precisely what makes it
+  pausable.
+</p>
+<p>
+  Between units, React checks whether it has run out of its time slice. If it
+  has, it yields to the browser and schedules a continuation. The browser gets
+  to paint, handle input, and run its own work; React picks up from the fiber it
+  stopped at.
+</p>
+
+<h3>Bailouts: how React skips work</h3>
+<p>
+  Not every fiber in the path gets re-rendered. React bails out when it can, and
+  knowing the conditions explains most "why did this render" questions:
+</p>
+<ul>
+  <li><b>Props are referentially equal and there is no pending state</b> &mdash; React reuses the existing fiber and does not call your component.</li>
+  <li><b>The element object is identical</b> &mdash; passing <code>children</code> straight through means the same element, so the subtree is skipped even though the parent re-rendered. This is why the children pattern beats <code>memo</code>.</li>
+  <li><b>State was set to the same value</b> &mdash; React may re-render once and then bail before touching the DOM.</li>
+</ul>
+<p>
+  A bailout stops the walk at that node, so an entire subtree is skipped in one
+  check. That is why re-rendering is usually cheap and why the fix for a slow
+  tree is often structural rather than a cache.
+</p>
+
+<h3>The effect list</h3>
+<p>
+  During <code>completeWork</code>, React tags each fiber with flags &mdash;
+  placement, update, deletion, has-layout-effect &mdash; and links the tagged
+  ones together. Commit then walks that short list rather than the whole tree,
+  in three passes: <b>before mutation</b> (snapshots), <b>mutation</b> (DOM
+  changes, refs detached), <b>layout</b> (refs attached,
+  <code>useLayoutEffect</code>).
+</p>
+<p>
+  That three-pass structure is why <a href="/react/react-effect-timing">effect
+  timing</a> is what it is: refs are attached in the layout pass, which is why
+  every effect can rely on <code>ref.current</code>, and why nothing can during
+  render.
+</p>
+
 <h3>Where the time actually goes</h3>
 <p>
   A common misreading is that the virtual DOM is fast. It is not &mdash; it is

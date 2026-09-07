@@ -95,6 +95,34 @@ return &lt;p&gt;{mounted ? localValue : fallback}&lt;/p&gt;;</code></pre>
   exist to shrink that window.
 </p>
 
+<h3>Metadata and resources, hoisted</h3>
+<pre><code>function Post({ post }) {
+  return (
+    &lt;article&gt;
+      &lt;title&gt;{post.title}&lt;/title&gt;              <span class="c">// hoisted to &lt;head&gt;</span>
+      &lt;meta name="description" content={post.summary} /&gt;
+      &lt;link rel="canonical" href={post.url} /&gt;
+      ...
+    &lt;/article&gt;
+  );
+}</code></pre>
+<p>
+  React 19 hoists <code>&lt;title&gt;</code>, <code>&lt;meta&gt;</code> and
+  <code>&lt;link&gt;</code> out of wherever you render them and into the
+  document head, deduplicating as it goes. The component that knows the data
+  declares its own metadata, and libraries like Helmet stop being necessary.
+</p>
+<pre><code>import { preload, preconnect, prefetchDNS } from "react-dom";
+
+preconnect("https://api.example.com");          <span class="c">// warm the connection</span>
+preload("/fonts/body.woff2", { as: "font" });   <span class="c">// start the download early</span></code></pre>
+<p>
+  These let a component say what the browser will need before it needs it. The
+  most valuable is usually the font or the LCP image: preloading the hero image
+  can move the largest contentful paint by hundreds of milliseconds, because the
+  browser stops discovering it late in the parse.
+</p>
+
 <h3>Choosing per route, not per app</h3>
 <p>
   The real answer in a modern framework is that this is not one decision. A

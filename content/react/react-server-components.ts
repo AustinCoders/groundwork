@@ -113,6 +113,54 @@ export default function LikeButton({ postId }) {
 </tbody>
 </table></div>
 
+<h3>What actually travels over the wire</h3>
+<pre><code>0:["$","article",null,{"children":[["$","h1",null,{"children":"Title"}],
+   ["$L1",null,{"postId":7}]]}]
+1:I["./LikeButton.js",["chunk-a.js"],"default"]</code></pre>
+<p>
+  The RSC payload is a streamed, line-oriented format &mdash; not HTML and not
+  JSON in the usual sense. Rendered server output is inline;
+  <code>$L1</code> is a placeholder for a client component, and the
+  <code>I</code> line tells the browser which chunk to load for it.
+</p>
+<p>
+  Two consequences worth knowing. It <b>streams</b>, so the client can start
+  rendering the top of the page before the bottom has been produced. And it
+  describes <em>elements</em>, not HTML &mdash; which is why a client navigation
+  can patch a subtree without discarding the state of the components around it.
+  A full HTML response could not do that.
+</p>
+
+<h3>Request deduplication and cache</h3>
+<pre><code>const getUser = cache(async (id) =&gt; db.user.find(id));
+
+<span class="c">// three components calling getUser(7) in one render → one query</span></code></pre>
+<p>
+  Because Server Components fetch where they are used rather than at the top,
+  the same data is often requested several times in one render. React dedupes
+  identical <code>fetch</code> calls automatically within a request, and
+  <code>cache()</code> extends that to any function.
+</p>
+<p class="sub">
+  React 19.2 adds <code>cacheSignal</code>, which gives you an
+  <code>AbortSignal</code> tied to the cache entry's lifetime &mdash; so work can
+  be cancelled when the request that needed it goes away.
+</p>
+
+<h3>Errors and loading, per segment</h3>
+<pre><code>app/dashboard/
+  page.tsx
+  loading.tsx      <span class="c">// a Suspense fallback for this segment</span>
+  error.tsx        <span class="c">// a client error boundary for this segment</span></code></pre>
+<p>
+  Frameworks turn file conventions into the boundaries from
+  <a href="/react/react-suspense">Suspense</a> and
+  <a href="/react/react-boundaries-portals">error boundaries</a>. Worth knowing
+  it is the same mechanism &mdash; <code>error.tsx</code> must be a client
+  component, because error boundaries are still classes and still need to run in
+  the browser.
+</p>
+
 <h3>Where it goes wrong</h3>
 <ul>
   <li><b><code>"use client"</code> at the top of a layout.</b> Everything below becomes client. The directive belongs on the leaf that needs it.</li>

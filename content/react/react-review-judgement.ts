@@ -61,6 +61,33 @@ export const reactReviewJudgement: Chapter = {
   review that blocks on those trains people to stop asking for reviews.
 </p>
 
+<h3>The security review, specifically</h3>
+<p>
+  React escapes everything you interpolate, which removes the most common XSS
+  vector by default. The vulnerabilities that remain are the ones where you left
+  that protection, and a reviewer should know all four.
+</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Risk</th><th>What to look for</th></tr></thead>
+<tbody>
+<tr><td><code>dangerouslySetInnerHTML</code></td><td>Any use at all. If the HTML is not authored by you, it must be sanitised with DOMPurify first &mdash; and sanitised on the way in, not on the way out.</td></tr>
+<tr><td><b>URLs from data</b></td><td><code>&lt;a href={user.website}&gt;</code> with <code>javascript:</code> in it executes on click. Validate the protocol.</td></tr>
+<tr><td><b>Spreading unknown props</b></td><td><code>&lt;div {...fromApi} /&gt;</code> can set event handlers and <code>dangerouslySetInnerHTML</code>. Pick fields explicitly.</td></tr>
+<tr><td><b>Secrets in the bundle</b></td><td>Anything prefixed <code>VITE_</code> or <code>NEXT_PUBLIC_</code> is public. A key in client code is a published key.</td></tr>
+</tbody>
+</table></div>
+<pre><code>function SafeLink({ href, children }) {
+  const ok = /^(https?:|mailto:|\/)/i.test(href ?? "");
+  return ok ? &lt;a href={href}&gt;{children}&lt;/a&gt; : &lt;span&gt;{children}&lt;/span&gt;;
+}</code></pre>
+<p class="sub">
+  Two more worth a glance in review: tokens in <code>localStorage</code> are
+  readable by any script that gets injected, so an httpOnly cookie is the safer
+  default; and a Content Security Policy is a seatbelt that limits the damage
+  when one of the four above slips through &mdash; not a substitute for any of
+  them.
+</p>
+
 <h3>When not to use React</h3>
 <p>
   Being able to argue against your own default is most of what "senior" means in

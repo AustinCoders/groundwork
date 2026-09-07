@@ -107,6 +107,43 @@ expect(result.current.count).toBe(6);</code></pre>
   interface that matters.
 </p>
 
+<h3>Testing the async and the accessible</h3>
+<pre><code>test("shows an error when saving fails", async () =&gt; {
+  server.use(http.post("/api/todos", () =&gt; HttpResponse.error()));
+  const user = userEvent.setup();
+  render(&lt;TodoForm /&gt;);
+
+  await user.type(screen.getByLabelText(/title/i), "Ship it");
+  await user.click(screen.getByRole("button", { name: /save/i }));
+
+  expect(await screen.findByRole("alert")).toHaveTextContent(/could not save/i);
+});</code></pre>
+<p>
+  Overriding one handler per test is how you cover the failure paths &mdash; the
+  states most suites never exercise. Querying the error by
+  <code>role="alert"</code> asserts on the accessible experience at the same
+  time: if the message is not announced, the test fails.
+</p>
+
+<h3>Accessibility assertions in the same run</h3>
+<pre><code>import { axe } from "jest-axe";
+
+test("has no obvious accessibility violations", async () =&gt; {
+  const { container } = render(&lt;Checkout /&gt;);
+  expect(await axe(container)).toHaveNoViolations();
+});</code></pre>
+<p class="sub">
+  It catches the mechanical third &mdash; missing names, bad contrast, duplicate
+  ids. It cannot tell you whether the flow makes sense with a keyboard, which is
+  still five minutes and your hands off the mouse.
+</p>
+
+<h3>Two things that make suites flaky</h3>
+<ul>
+  <li><b>Real timers.</b> Use <code>vi.useFakeTimers()</code> for debounces and intervals, and advance them explicitly. Waiting 300ms in a test is a race you will lose on a slow CI machine.</li>
+  <li><b>Shared state between tests.</b> Reset MSW handlers, clear <code>localStorage</code>, and give each test its own render. A suite that only passes in order is not a suite.</li>
+</ul>
+
 <h3>What not to write</h3>
 <ul>
   <li><b>Snapshot tests of whole trees.</b> They fail on every change, get updated without being read, and assert nothing anybody chose.</li>

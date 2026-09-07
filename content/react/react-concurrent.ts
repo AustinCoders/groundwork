@@ -142,6 +142,34 @@ fetch(url).then(() =&gt; { setA(1); setB(2); }); <span class="c">// one render s
   Modern routers do this for you; knowing why matters when you have to debug it.
 </p>
 
+<h3>What "interruptible" means in milliseconds</h3>
+<p>
+  React works in slices of roughly five milliseconds, then checks whether it
+  should yield. If the browser has input waiting, React stops, lets the browser
+  handle it, and resumes afterwards &mdash; possibly discarding what it had if
+  that input made the work irrelevant.
+</p>
+<p>
+  Which sets the limit. React can only yield <b>between</b> units of work. One
+  component that spends 300ms in a single synchronous loop offers no yield
+  point, so a transition cannot help it. The fix there is to make the unit
+  smaller: memoise the calculation, virtualise the list, or move the work to a
+  Web Worker.
+</p>
+
+<h3>Reading it in DevTools</h3>
+<p>
+  React 19.2 adds custom tracks to the Chrome performance panel: a
+  <b>Scheduler</b> track showing which priority React was working at, and a
+  <b>Components</b> track showing render and effect phases per component.
+</p>
+<p>
+  What to look for: a long unbroken block at high priority is work that should
+  have been a transition; repeated identical renders in the Components track is
+  something re-rendering that did not need to. Both are visible there and
+  nowhere else.
+</p>
+
 <h3>The catch worth knowing</h3>
 <p>
   A transition can be interrupted and restarted, so anything inside it may run
