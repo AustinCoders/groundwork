@@ -69,6 +69,19 @@ a:`<p>Do not defend the gaps. <b>Convert them into decisions.</b></p>
 <p>The gap is identical. The candidate is not.</p>`
 },
 {
+q:'The same question, answered at your level',
+test:'Nothing yet. But this is the single thing that decides whether an answer lands above or below the bar you are being measured against.',
+a:`<p>Every scripted answer in this book is written at one level — six years, mid-to-senior. If that is not you, using it verbatim reads wrong in both directions: too thin against a staff bar, too grand against a two-year role. The fix is not different facts. It is knowing what each level is expected to <em>volunteer</em>.</p>
+<ul>
+<li><b>2–3 years.</b> Say the mechanism correctly. That is the whole bar. "Microtasks drain before the next macrotask" is a pass; you are not expected to have a production story attached to it.</li>
+<li><b>5–7 years.</b> Mechanism, plus where it bit you. The proof that you have used a thing is that you know how it fails, and you name the number — the latency, the cost, the incident.</li>
+<li><b>10+ years.</b> Mechanism, failure, and <em>the trade-off you would make differently</em>. At this level an answer that is only correct is a weak answer; they are listening for judgement about when the correct thing is the wrong choice.</li>
+</ul>
+<p>Ten questions across this book carry a <b>ladder</b> showing exactly that — the same question answered three ways, so you can see the shape of your own level rather than borrowing one. They sit on the questions every loop asks: <a href="#r1">tell me about yourself</a>, <a href="#r3">the event loop</a> and <a href="#r3">closures</a>, <a href="#r4">useEffect</a> and <a href="#r4">reconciliation</a>, <a href="#r2">machine coding</a>, <a href="#r7">the DSA round</a>, <a href="#r8">system design</a>, <a href="#r11">disagreeing with a decision</a>, and <a href="#r12">the number</a>.</p>`,
+note:`<p>Two rules that hold at every level. <b>Never answer above your level.</b> A two-year candidate who talks about organisational trade-offs invites questions they cannot survive, and the interviewer has already noticed. <b>Never answer below it.</b> A ten-year candidate who recites the definition and stops has just tested at three years, and the debrief will say so in those words.</p>`,
+trap:`<p>Assuming your years decide your level. They do not — <a href="#r12lv">scope evidence does</a>. Six years of building features inside someone else\\'s architecture answers at the two-to-three-year rung on the design ladder, and three years of owning a system answers above it. Read the ladders and find the column that matches what you have actually done.</p>`
+},
+{
 q:'Which loop are you in? Know by the end of the first conversation.',
 test:'It tells you where to spend your energy.',
 a:`<h4>Service &amp; consulting walk-in <span class="pill n">same day · 3–5 hours</span></h4>
@@ -101,7 +114,16 @@ test:'Whether you can compress six years into a pitch, and whether you sound sen
 say:`<p>I am a full-stack engineer, six years, all of it in TypeScript. For the last three at Skynox I have been the technical owner of four production client applications — Next.js on the front, NestJS services behind, deployed on AWS. That means I own architecture, release and reliability, not just features. The work I am proudest of is GetDandy, an AI front-office platform where I designed the service layer across five environments and cut infrastructure cost by a quarter. I have just moved to Bangalore and I am looking for a product role where I own a system for years instead of handing it over.</p>`,
 a:`<p>Four beats: <b>what you are</b>, <b>what you own</b>, <b>one concrete proof</b>, <b>what you want next</b>. Sixty seconds, not four minutes.</p>
 <p>Do not walk your career chronologically. Starting at 2020 and working forward is the single most common way this answer dies — by the time you reach the interesting part they have stopped listening.</p>`,
-fu:['Which of those four applications was hardest and why?','You said you own reliability — what does that mean day to day?','Why full-stack rather than specialising?']
+fu:['Which of those four applications was hardest and why?','You said you own reliability — what does that mean day to day?','Why full-stack rather than specialising?'],
+after:`<div class="ladder">
+<span class="ttl">The same answer at three levels</span>
+<div class="table-scroll"><table>
+<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
+<tbody>
+<tr><td>Walks the CV forward. Lists technologies. Ends on what they want to learn.</td><td>Four beats — what you are, what you own, one concrete proof with a number, what you want next. Ends on a reason to want <em>this</em> role.</td><td>Opens with the shape of the problem they solve, not with themselves. One line of history, then the scope they carry and the kind of decision they are trusted with. Ends by handing the interviewer a thread to pull.</td></tr>
+</tbody>
+</table></div>
+</div>`
 },
 {
 q:'Why are you leaving your current company?',
@@ -586,7 +608,16 @@ function move(b: Board, id: string, from: string, to: string, at: number): Board
   dst.splice(at, 0, id)
   return { ...b, columns: { ...b.columns, [from]: src, [to]: dst } }
 }`}],
-after:`<p>Nested arrays of task objects force a deep clone on every drag and make "which column is this card in" an O(n·m) search. Say that out loud as you choose — the reasoning scores higher than the result.</p>`,
+after:`<div class="ladder">
+<span class="ttl">The same answer at three levels</span>
+<div class="table-scroll"><table>
+<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
+<tbody>
+<tr><td>Starts typing immediately. One file, state in the component, styling as they go. Working at the end, if the clock holds.</td><td>Five minutes on types and file boundaries first, then the happy path end to end, then states and edges. Something runs at every point in the ninety minutes.</td><td>Spends the first minutes on what they will <em>not</em> build and says so out loud, designs the seam the next feature will need, and leaves the last ten minutes to add the thing the interviewer asks for — which is the point of the round.</td></tr>
+</tbody>
+</table></div>
+</div>
+<p>Nested arrays of task objects force a deep clone on every drag and make "which column is this card in" an O(n·m) search. Say that out loud as you choose — the reasoning scores higher than the result.</p>`,
 fu:['Now persist it and reload without losing order.','Add an undo.','What happens if two tabs are open?']
 },
 {
@@ -723,7 +754,16 @@ console.log('6')
 <span class="c">// 1 6 4 3 5 2</span>
 <span class="c">// sync first (1,6), then nextTick (4) — its own queue, ahead of</span>
 <span class="c">// promises — then microtasks in scheduling order (3,5), then timers (2)</span>`}],
-after:`<p>Two extras that make you sound like you have debugged this rather than read it: <code>setTimeout(fn, 0)</code> is clamped to roughly 1ms and nested timers get clamped to 4ms after five levels; and in the browser, rendering happens between macrotasks, which is why a long microtask chain freezes the page while a chain of <code>setTimeout</code>s does not.</p>`,
+after:`<div class="ladder">
+<span class="ttl">The same answer at three levels</span>
+<div class="table-scroll"><table>
+<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
+<tbody>
+<tr><td>Names the call stack, the queue and the loop. Knows promises go first. Stops there, because that is the answer they memorised.</td><td>Draws the distinction that matters: microtasks drain completely before the next macrotask, so a promise chain starves a timer. Reaches for a snippet and predicts the output.</td><td>Says why the design is that way — that microtasks exist so a promise settling cannot be interleaved with rendering — and then talks about the consequence: a long microtask chain blocks paint, which is why <code>await</code> in a render path shows up as INP and not as a slow function.</td></tr>
+</tbody>
+</table></div>
+</div>
+<p>Two extras that make you sound like you have debugged this rather than read it: <code>setTimeout(fn, 0)</code> is clamped to roughly 1ms and nested timers get clamped to 4ms after five levels; and in the browser, rendering happens between macrotasks, which is why a long microtask chain freezes the page while a chain of <code>setTimeout</code>s does not.</p>`,
 trap:`<p>"Promises go to the callback queue and setTimeout goes to the callback queue, and the event loop picks them in order." That is the tutorial answer and it is wrong — there are two queues with different priorities, and the whole question exists to find out whether you know that.</p>`,
 fu:['Why does an infinite promise chain freeze the browser but an infinite setTimeout chain does not?','Difference between setImmediate and setTimeout(fn, 0) in Node?','Where does async/await sit in this model?']
 },
@@ -877,7 +917,16 @@ function handle(req) {
   emitter.on('tick', onTick)
   req.on('close', () =&gt; emitter.off('tick', onTick))
 }`}],
-after:`<p>Then the senior half: closures are the main way you leak memory in a long-lived Node process. A closure that captures a large object keeps it unreachable-for-collection as long as the returned function is referenced. The classic production leak is an event listener that closes over a request context and is never removed — every request adds a listener, each pinning its own context, and the heap climbs until the process dies.</p>`,
+after:`<div class="ladder">
+<span class="ttl">The same answer at three levels</span>
+<div class="table-scroll"><table>
+<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
+<tbody>
+<tr><td>"A function that remembers the variables around it." The example is a counter, which is nobody's real code.</td><td>The definition plus a real one — a debounce, a cache, a hook that holds a ref — and can say what would break without it.</td><td>Treats it as a memory question as much as a scope one: what the closure keeps alive, why that turns into a leak when a listener outlives the component, and how they found one.</td></tr>
+</tbody>
+</table></div>
+</div>
+<p>Then the senior half: closures are the main way you leak memory in a long-lived Node process. A closure that captures a large object keeps it unreachable-for-collection as long as the returned function is referenced. The classic production leak is an event listener that closes over a request context and is never removed — every request adds a listener, each pinning its own context, and the heap climbs until the process dies.</p>`,
 fu:['How would you find that leak in production?','What does a WeakMap solve here?','Why does a loop with var and setTimeout print the same number?']
 },
 {
@@ -1343,7 +1392,16 @@ a:`<p>A state update schedules a re-render. React calls your component function 
 <li>Siblings are matched by <code>key</code>.</li>
 </ol>
 <p>Then it commits the minimal set of DOM mutations. The crucial sentence: <b>a re-render is not a DOM update.</b> Components re-render constantly; the DOM only changes where the diff found a difference. Candidates who conflate the two end up memoising things that were never touching the DOM anyway.</p>`,
-after:`<p>If they push into Fiber: rendering is split into a <b>render phase</b> (interruptible, can be thrown away, must be pure — this is why Strict Mode double-invokes in development) and a <b>commit phase</b> (synchronous, applies the mutations, runs layout effects). That split is what makes concurrent features possible.</p>`,
+after:`<div class="ladder">
+<span class="ttl">The same answer at three levels</span>
+<div class="table-scroll"><table>
+<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
+<tbody>
+<tr><td>"React re-renders the component and updates the DOM." Mentions the virtual DOM as though it were the point.</td><td>Render is a pure call producing an element tree; commit is the mutation. Diffing is per-position and per-type, which is exactly why keys and stable types matter.</td><td>Talks about it as scheduling — that render is interruptible and commit is not, why that is what concurrent features are built on, and where re-render cost actually lands, which is usually a context provider high in the tree rather than the component being blamed.</td></tr>
+</tbody>
+</table></div>
+</div>
+<p>If they push into Fiber: rendering is split into a <b>render phase</b> (interruptible, can be thrown away, must be pure — this is why Strict Mode double-invokes in development) and a <b>commit phase</b> (synchronous, applies the mutations, runs layout effects). That split is what makes concurrent features possible.</p>`,
 fu:['Why must the render phase be pure?','What does Strict Mode double-invoking actually catch?','Why does changing an element type remount the whole subtree?']
 },
 {
@@ -1389,7 +1447,16 @@ useEffect(() =&gt; { latest.current = count })`},{label:'the fetch race, fixed',
     .catch(e =&gt; { if (e.name !== 'AbortError') setError(e) })
   return () =&gt; ac.abort()        <span class="o">// stale request cancelled on id change</span>
 }, [id])`}],
-after:`<p><b>Bug two: no cleanup.</b> A subscription or an in-flight request that outlives the component — a resolved response calls <code>setState</code> after unmount, or a slower earlier request overwrites a faster later one (the race that shows the wrong user's data).</p>`,
+after:`<div class="ladder">
+<span class="ttl">The same answer at three levels</span>
+<div class="table-scroll"><table>
+<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
+<tbody>
+<tr><td>Describes it as "runs after render" and names the missing dependency array. Often still calls it a lifecycle method.</td><td>Names the stale closure, the effect that should have been an event handler, and the object identity that re-runs it every render. Knows the cleanup runs before the next effect, not only on unmount.</td><td>Starts from the position that most effects should not exist — derived state, event handlers and data libraries take the majority — and treats the dependency array as a synchronisation contract rather than a list to satisfy the linter.</td></tr>
+</tbody>
+</table></div>
+</div>
+<p><b>Bug two: no cleanup.</b> A subscription or an in-flight request that outlives the component — a resolved response calls <code>setState</code> after unmount, or a slower earlier request overwrites a faster later one (the race that shows the wrong user's data).</p>`,
 note:`<p>React 18+ Strict Mode mounts, unmounts and remounts every effect in development precisely to surface these missing cleanups. That is a feature, not a bug — and saying so is a small credibility marker.</p>
 <p>The modern framing to add: <em>"most effects I see should not be effects at all. Deriving state from props, transforming data for render, or reacting to a user event are all things that belong in render or in the handler. I use effects for genuine synchronisation with something outside React."</em></p>`,
 fu:['When should you NOT use an effect?','How do you fetch data in React today? (A query library or the framework, not raw useEffect.)','What is useLayoutEffect for?']
@@ -1626,6 +1693,114 @@ a:`<ul>
 <li><b>Parallel and intercepting routes.</b> Slot-based layouts and the "open a photo in a modal but deep-link to the full page" pattern.</li>
 <li><b>How do you test a component?</b> React Testing Library, asserting on what a user sees and does — roles and text, not class names. Do not test implementation details or internal state.</li>
 <li><b>WCAG 2.1 AA — name four things you actually did.</b> Semantic landmarks and heading order; focus management on route change; contrast ratios of 4.5:1 for text; labels on every control with ARIA only where semantics ran out; no keyboard traps in modals.</li>
+</ul>`
+}
+]},
+{
+id:'r4fe',code:'R4·FE',navTitle:'Frontend beyond React',
+title:'The frontend round that is not about React',
+meta:[['Length','30–45 min, often folded into R4'],['Who','Frontend lead'],['Decides','Whether "frontend" means React or means the browser'],['Fail mode','Framework fluency, no platform knowledge']],
+tiers:[['product',1],['saas',1],['agency',1],['service',1]],
+intro:'If the title on the job description is Frontend Engineer rather than Full Stack, the loop adds a round that React cannot answer. It is CSS you have to reason about rather than recall, the rendering pipeline underneath the framework, accessibility as a requirement rather than a nice-to-have, and how you fetch and cache data. Candidates who are strong in <a href="#r4">R4</a> and lose the offer usually lose it here.',
+qs:[
+{
+q:'Why is this element not where I put it? Walk me through stacking contexts.',
+test:'Whether CSS is something you reason about or something you try until it works.',
+a:`<p>The answer they want is that <code>z-index</code> is not global. An element only competes with siblings inside its own stacking context, and a parent creates one the moment it gets <code>position</code> with a <code>z-index</code>, or <code>transform</code>, <code>opacity</code> below 1, <code>filter</code>, <code>will-change</code>, or <code>isolation: isolate</code>.</p>
+<p>Which is why a modal with <code>z-index: 9999</code> still renders behind a header: the modal sits inside a parent that has a transform on it, and the whole context is below the header\\'s. No z-index inside that context can escape it.</p>
+<ul>
+<li><b>The fix</b> is to move the element out of the context — a portal to <code>body</code> — or to remove whatever created the context.</li>
+<li><b>The tell of experience</b> is saying <code>transform</code> creates one. Almost everybody knows about <code>position</code>; the animation-created context is the one that actually costs people an afternoon.</li>
+</ul>`,
+after:`<div class="ladder">
+<span class="ttl">The same answer at three levels</span>
+<div class="table-scroll"><table>
+<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
+<tbody>
+<tr><td>Raises the z-index until it works. Knows z-index needs position.</td><td>Names stacking contexts and what creates them, and reaches for a portal rather than a bigger number.</td><td>Treats it as a component boundary problem — where overlays belong in the tree, and why a design system owns that decision rather than each feature.</td></tr>
+</tbody>
+</table></div>
+</div>`,
+trap:`<p>"I would just use <code>z-index: 99999</code>." It is the answer that says you have never had to find out why the last one did not work.</p>`,
+fu:['What else creates a stacking context?','Where would you render a tooltip?','How do you debug this in devtools?']
+},
+{
+q:'Centre a box. Then: flexbox or grid, and why?',
+test:'Whether you have a model of layout or a set of remembered incantations.',
+a:`<p>The centring is a warm-up — <code>display: grid; place-items: center</code>, or flex with both axes. What they are actually asking is the second half.</p>
+<ul>
+<li><b>Flexbox is one dimension.</b> Content decides the sizes; you are distributing space along a row or a column. Reach for it for a toolbar, a list of chips, anything where the number of items varies and they should flow.</li>
+<li><b>Grid is two dimensions.</b> The container decides the shape; children go into it. Reach for it for page layout, a card grid, or anything where things must line up across both rows and columns.</li>
+</ul>
+<p>The sentence that lands: <em>flex sizes from the content out, grid sizes from the container in.</em> Then say where you have used each.</p>`,
+note:`<p>Worth having ready: <code>gap</code> works in flexbox too, which surprises people who learned it before 2021 and are still using margins; and <code>minmax()</code> with <code>auto-fit</code> is the one-line responsive card grid that removes most breakpoints.</p>`,
+fu:['How would you make that responsive without media queries?','What is the difference between auto-fit and auto-fill?','Where does subgrid help?']
+},
+{
+q:'What actually happens between a style change and a pixel on screen?',
+test:'Whether you know the pipeline your framework sits on. This is the frontend equivalent of the event loop question.',
+a:`<p>Style → layout → paint → composite. Which stage your change triggers is what decides whether an animation is smooth:</p>
+<ul>
+<li><b>Layout</b> (also called reflow) — anything geometric: <code>width</code>, <code>height</code>, <code>top</code>, <code>font-size</code>, adding a node. The most expensive, because it can invalidate the whole subtree.</li>
+<li><b>Paint</b> — <code>color</code>, <code>background</code>, <code>box-shadow</code>, <code>border-radius</code>. Skips layout, still costs.</li>
+<li><b>Composite only</b> — <code>transform</code> and <code>opacity</code>. Handled on the compositor, off the main thread. This is why every smooth animation on the web is written with those two and not with <code>left</code> and <code>top</code>.</li>
+</ul>
+<p>The other half is <b>layout thrashing</b>: reading a geometric property (<code>offsetHeight</code>, <code>getBoundingClientRect</code>) after a write forces the browser to flush layout synchronously. Do it in a loop and you have turned a list render into a freeze. Batch the reads, then the writes.</p>`,
+trap:`<p>Animating <code>left</code>/<code>top</code> and blaming React for the jank. The framework never touched it; the property choice did.</p>`,
+fu:['Why is transform cheaper?','What does will-change actually do, and why not put it everywhere?','How would you find a layout thrash in devtools?']
+},
+{
+q:'Make this accessible. What do you actually check?',
+test:'Whether accessibility is something you do or something you have heard of. At a product company with real users this is a scored requirement, not a bonus.',
+a:`<p>Four things, in the order they matter, and each one is checkable in a minute:</p>
+<ul>
+<li><b>Semantics first.</b> A <code>&lt;button&gt;</code> is focusable, activates on space and enter, and announces itself. A <code>&lt;div onClick&gt;</code> does none of that, and no amount of ARIA fully fixes it. The best ARIA is the ARIA you did not need.</li>
+<li><b>Keyboard.</b> Tab through the whole flow with the mouse untouched. Every interactive thing reachable, focus visible, order matching the visual order, and no trap — except in a modal, where a trap is exactly what you want, plus Escape to close and focus returning to the trigger.</li>
+<li><b>Names and state.</b> Every control has an accessible name (a label, or <code>aria-label</code> when there is no visible text), and anything that toggles says so: <code>aria-expanded</code>, <code>aria-pressed</code>, <code>aria-current</code>.</li>
+<li><b>Contrast and motion.</b> 4.5:1 for body text, 3:1 for large text and UI boundaries. Respect <code>prefers-reduced-motion</code>.</li>
+</ul>
+<p>Then say how you check: axe or Lighthouse in CI catches the mechanical half, and the other half only shows up when you tab through it yourself.</p>`,
+say:`<p>The first thing I do is delete ARIA. Most of what people add is fixing a div that should have been a button — so semantics first, then tab through the flow with the mouse away, then run axe in CI so the mechanical failures stop coming back. On the last project that meant landmarks and heading order, focus return on modal close, and a contrast pass that changed two tokens.</p>`,
+trap:`<p>Reciting "I use semantic HTML and ARIA labels" with no example. Interviewers ask this precisely because it is the easiest thing to claim and the easiest to check — one follow-up about focus management separates the two groups.</p>`,
+fu:['How do you handle focus when a modal closes?','What does aria-live do, and when have you needed it?','How do you test this in CI?']
+},
+{
+q:'How do you fetch and cache data on the client?',
+test:'Whether you have outgrown useEffect-and-fetch. This is the most common gap in an otherwise strong React candidate.',
+a:`<p>The answer starts by naming what raw <code>useEffect</code> fetching does not give you, because that list <em>is</em> the reason libraries exist: no caching, no deduplication when three components ask for the same thing, no revalidation, no request cancellation when the inputs change, and race conditions when a slow early response lands after a fast late one.</p>
+<ul>
+<li><b>TanStack Query or SWR</b> for server state. Key, fetcher, stale time — and the mental split that matters: server state is cached remote data with an owner elsewhere; client state is what the user is doing right now. Most state-management arguments are people using one tool for both.</li>
+<li><b>Stale-while-revalidate</b> — serve the cached value instantly, refetch in the background, replace if it changed. Instant screens without lying for long.</li>
+<li><b>Optimistic updates</b> — apply the change locally, keep the previous value, roll back on failure. Say the rollback part; that is what separates having read about it from having shipped it.</li>
+<li><b>Invalidation</b> — the hard half. Which keys does this mutation invalidate? Getting that wrong is why a list does not refresh after a create.</li>
+</ul>
+<p>And in the App Router the question shifts: fetching moves to the server component and the client library handles what stays interactive. Know which half you are talking about — <a href="#r4">R4</a> covers the server side.</p>`,
+trap:`<p>"I use useEffect with fetch and a loading state." True for a two-year candidate; at five or more it says you have not run into the race, which means you have not shipped anything with a search box in it.</p>`,
+fu:['How do you cancel an in-flight request?','What is your stale time and why?','How do you handle pagination and infinite scroll?','Where does this go in the App Router?']
+},
+{
+q:'How do you test a frontend?',
+test:'Whether your tests would survive a refactor.',
+a:`<p>The line to hold is <b>test behaviour, not implementation</b>. A test that asserts on internal state or a component\\'s props breaks on every refactor and protects nothing.</p>
+<ul>
+<li><b>React Testing Library</b> for components, queried the way a user finds things — role and accessible name first, then text, then <code>data-testid</code> as an admission of defeat. Queries by role also mean a component with no accessible name fails the test, which quietly enforces the previous question.</li>
+<li><b>MSW</b> to intercept requests at the network layer rather than mocking the fetch call. The component stays untouched, and the same handlers serve the tests and local development.</li>
+<li><b>Playwright</b> for the few flows that must never break — sign in, checkout, the thing that takes the money. Not for coverage.</li>
+<li><b>What not to write:</b> snapshot tests of whole trees, which are updated without being read; and unit tests of components that only assert they rendered.</li>
+</ul>`,
+note:`<p>If they ask about coverage numbers, say what the number is for rather than quoting one. Ninety percent on a codebase where all the tests assert on mocks is worth less than forty percent that covers the money path.</p>`,
+fu:['How do you test a hook?','How do you handle a component that fetches?','What is flaky in your suite and why?']
+},
+{
+q:'The rest of the frontend round',
+test:'Breadth. One clean sentence each.',
+a:`<ul>
+<li><b>How do you keep the bundle small?</b> Route-level code splitting first, then measure before you optimise — a bundle analyser, and the one dependency that is a third of the bundle.</li>
+<li><b>Images.</b> Correct format and size, explicit dimensions so they do not shift layout, lazy below the fold, eager and preloaded for the LCP element.</li>
+<li><b>What causes a bad CLS?</b> Images without dimensions, fonts swapping, and content injected above what is already on screen.</li>
+<li><b>Forms.</b> Validate on blur and on submit, not on every keystroke; show the error next to the field; keep the submit button enabled and explain the failure rather than disabling it silently.</li>
+<li><b>XSS on the frontend.</b> Never build HTML from user input; if you must render HTML, sanitise it. <code>dangerouslySetInnerHTML</code> is named that way deliberately. A CSP is the seatbelt, not the fix.</li>
+<li><b>Browser support.</b> Know what the product actually supports before you answer — the honest answer is "whatever our analytics say", not a list of browsers.</li>
 </ul>`
 }
 ]},
@@ -2118,7 +2293,16 @@ a:`<div class="table-scroll"><table>
 <tr><td><b>Tree / BFS-DFS</b></td><td>Anything with a tree, a grid, or nesting</td><td>Level Order · Max Depth · Validate BST · Lowest Common Ancestor · Number of Islands</td></tr>
 <tr><td><b>Intervals</b> <span class="pill m">your domain</span></td><td>Start and end times, booking, calendars, merging</td><td>Merge Intervals · Insert Interval · Meeting Rooms II · Non-overlapping Intervals</td></tr>
 <tr><td><b>Basic DP</b></td><td>"how many ways", "min cost", overlapping subproblems</td><td>Climbing Stairs · House Robber · Coin Change · Longest Increasing Subsequence</td></tr>
-</tbody></table></div>`
+</tbody></table></div>`,
+after:`<div class="ladder">
+<span class="ttl">The same answer at three levels</span>
+<div class="table-scroll"><table>
+<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
+<tbody>
+<tr><td>Recognises the pattern sometimes, codes first and thinks after. Silence when stuck.</td><td>Names the pattern out loud, states the complexity before typing, and dry-runs an edge case unprompted.</td><td>Says why this pattern and not the adjacent one, gives the complexity of both, and treats the interviewer as a colleague — asking about input scale before choosing, because at scale the answer changes.</td></tr>
+</tbody>
+</table></div>
+</div>`
 },
 {
 q:'Sliding window — the template to internalise',
@@ -2274,7 +2458,16 @@ CREATE INDEX ON slots (camp_id, starts_at);
 CREATE INDEX ON bookings (user_id, created_at DESC);
 CREATE UNIQUE INDEX ON bookings (idempotency_key);
 CREATE INDEX ON camps (location_id, price_cents) WHERE status = 'published';</span>`}],
-after:`<p>The design hangs on <b>three</b> things, and the interviewer will pick one to go deep on:</p>
+after:`<div class="ladder">
+<span class="ttl">The same answer at three levels</span>
+<div class="table-scroll"><table>
+<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
+<tbody>
+<tr><td>Draws boxes: client, server, database. Adds a cache because caches are good. No numbers.</td><td>Clarifies scale first, estimates reads and writes, picks a store with a reason, and names the one hard part — double booking — and how they prevent it.</td><td>Opens with what would make this design wrong, not what makes it right: which requirement is load-bearing, what breaks first at ten times the traffic, and what they would deliberately not build in version one. Numbers throughout, and a stated failure mode for each choice.</td></tr>
+</tbody>
+</table></div>
+</div>
+<p>The design hangs on <b>three</b> things, and the interviewer will pick one to go deep on:</p>
 <h4>1 · Search</h4>
 <p>Faceted filters over location, age band, interest and price. At a thousand listings this is a Postgres query with composite indexes and a GIN index for full-text — and say explicitly that you would <em>not</em> reach for Elasticsearch at that size, because it is a second system to operate and keep in sync for no measurable gain. The crossover is somewhere around a hundred thousand listings, or when you need relevance ranking and typo tolerance rather than filtering. Then the database stays the source of truth and the index is rebuilt from a change stream.</p>
 <h4>2 · Booking concurrency</h4>
@@ -2599,7 +2792,16 @@ test:'Whether hiring you means hiring an argument.',
 a:`<p>The strongest version of this story ends in one of two places: <em>"and I was wrong"</em>, or <em>"and I lost, and I committed fully anyway, and here is how I made it work."</em></p>
 <p>Managers are screening for disagree-and-commit. A candidate who wins every story they tell is either lucky, or is telling you they do not let things go.</p>`,
 trap:`<p>The story where you were right, they did not listen, and it later broke — told with satisfaction. Even when true, the tone is what gets scored, and it reads as "I will say I told you so."</p>`,
-fu:['What would you do if the same thing happened here?','How did the other person feel about it afterwards?']
+fu:['What would you do if the same thing happened here?','How did the other person feel about it afterwards?'],
+after:`<div class="ladder">
+<span class="ttl">The same answer at three levels</span>
+<div class="table-scroll"><table>
+<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
+<tbody>
+<tr><td>The story is about being right. It ends at the moment the decision went their way.</td><td>Names the trade-off both sides were arguing, brings evidence rather than opinion, and describes committing to the decision after losing it.</td><td>Picks a disagreement where they were overruled and it still went badly — and talks about what they should have done to make the argument land, which is a statement about influence rather than about being right.</td></tr>
+</tbody>
+</table></div>
+</div>`
 },
 {
 q:'Your app is down in production and you are the only engineer available. What do you do?',
@@ -2853,7 +3055,16 @@ test:'Whether you anchor or get anchored.',
 say:`<p>My current fixed is ₹12.2 lakh, and the important part is that it is entirely fixed and entirely in hand — no variable, no PF deduction, so I take home ₹1,02,000 every month. That is why I compare offers on monthly in-hand rather than CTC. For this role I am looking at ₹26 lakh, and I am flexible on how it is structured.</p>`,
 a:`<p>Then <b>stop talking.</b> The silence after a number is uncomfortable and the person who fills it loses. Practise this literally: say the number, close your mouth, and count to ten if you have to.</p>`,
 trap:`<p>Softening the number in the same breath — "₹26 lakh, but I'm negotiable, obviously it depends." You have just told them the real number is lower and invited them to find it. Be flexible on <em>structure</em>, out loud; be silent about flexibility on the total.</p>`,
-fu:['Is that fixed or total?','What is driving that number?','Can you share your current payslip?']
+fu:['Is that fixed or total?','What is driving that number?','Can you share your current payslip?'],
+after:`<div class="ladder">
+<span class="ttl">The same answer at three levels</span>
+<div class="table-scroll"><table>
+<thead><tr><th class="lv">2–3 years</th><th class="lv">5–7 years</th><th class="lv">10+ years</th></tr></thead>
+<tbody>
+<tr><td>Says "as per company standards" or gives current CTC plus a percentage. Anchors on their own past, not the market.</td><td>Gives a specific number with its structure attached, having asked the band first, and can say what the number is based on.</td><td>Talks about the level before the number, because the level is the band — and treats the conversation as scoping the role rather than as haggling.</td></tr>
+</tbody>
+</table></div>
+</div>`
 },
 {
 q:'That is above our band. What is the minimum you would accept?',

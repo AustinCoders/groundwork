@@ -6780,6 +6780,39 @@ a.step__title:hover {
 
 /* The book points at the tracks that teach each round in depth — the reader
    should not have to guess that 34 DSA chapters exist. */
+/* The same question has a different right answer at two years and at ten. The
+   ladder shows the three, so a reader aims at their own level instead of
+   reciting the one in the script. */
+.interview-body .ladder {
+  margin: 22px 0 0;
+  padding: 15px 17px 6px;
+  background: var(--sheet-2);
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+}
+
+.interview-body .ladder .ttl {
+  display: block;
+  margin-bottom: 10px;
+  font-family: var(--font-heading);
+  font-size: 18px;
+  color: var(--ink);
+}
+
+.interview-body .ladder table {
+  margin: 0;
+}
+
+.interview-body .ladder th {
+  white-space: nowrap;
+}
+
+.interview-body .ladder .lv {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  color: var(--pencil);
+}
+
 .interview-body .prep {
   margin: 26px 0 0;
   padding: 16px 18px;
