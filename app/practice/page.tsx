@@ -1,19 +1,11 @@
 import type { Metadata } from "next";
 import PracticeClient, { type ChapterLink } from "./PracticeClient";
-import { chapterMetas, exercise as findExercise, notesHref, topics } from "@/lib/content";
+import { chapterMetas, notesHref, topics } from "@/lib/content";
 
-export async function generateMetadata({
-  searchParams,
-}: {
-  searchParams: Promise<{ id?: string }>;
-}): Promise<Metadata> {
-  const params = await searchParams;
-  const isFree = !params.id || params.id === "free";
-  if (isFree) return { title: "Playground — practice" };
-  const exercise = findExercise(params.id!);
-  if (!exercise) return {};
-  return { title: `${exercise.title} — practice` };
-}
+// Static metadata on purpose. Deriving the title from ?id= made this a server
+// render on every visit for a page whose HTML never varies; PracticeClient sets
+// the per-exercise title on the client instead.
+export const metadata: Metadata = { title: "Playground — practice" };
 
 export default function PracticePage() {
   const chapterLinks: Record<string, ChapterLink> = {};

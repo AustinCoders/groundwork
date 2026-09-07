@@ -119,6 +119,7 @@ znode
 znodes
 
 # Protocol, runtime and systems vocabulary
+maxage
 acked
 acking
 acks

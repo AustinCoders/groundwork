@@ -1932,6 +1932,30 @@ kbd {
   border-color: var(--green);
 }
 
+/* Reading measure. Prose ran the full width of the sheet — 123 characters a
+   line on a wide screen, against the 45-90 that keeps the eye finding the
+   next line. Only the text is capped: code blocks, tables, figures and the
+   callout boxes keep the full width they need. */
+.prose > p,
+.prose > ul,
+.prose > ol,
+.prose > h2,
+.prose > h3,
+.prose > h4,
+.prose > blockquote,
+.prose > .warn,
+.prose > .say,
+.prose > .sticky,
+.chapter > .sub,
+.cover > .lead,
+.cover > .sub,
+.interview-body > .rintro,
+.interview-body .qbody > p,
+.interview-body .qbody > ul,
+.interview-body .qbody > ol {
+  max-width: 62ch;
+}
+
 .sheet {
   position: relative;
   background: var(--sheet);

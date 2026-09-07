@@ -26,6 +26,10 @@ function SoonPageInner() {
   const topic = findTopic(topicId);
 
   useEffect(() => {
+    document.title = topic ? `${topic.name} — coming soon` : "Coming soon";
+  }, [topic]);
+
+  useEffect(() => {
     if (!mounted) return;
     if (!topic) {
       router.replace("/");

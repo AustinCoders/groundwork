@@ -40,8 +40,11 @@ export async function GET(req: Request) {
     return Response.json({ error: "Invalid coordinates" }, { status: 400 });
   }
 
+  const gridLat = lat.toFixed(1);
+  const gridLon = lon.toFixed(1);
+
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${gridLat}&longitude=${gridLon}&current=temperature_2m,weather_code&timezone=auto`;
     const res = await fetch(url, { next: { revalidate: 600 } });
     if (!res.ok) throw new Error(`Open-Meteo responded ${res.status}`);
     const data = await res.json();

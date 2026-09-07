@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { Shell } from "@/components/Shell";
 import { PracticeWorkspace } from "@/components/practice/PracticeWorkspace";
 import { practice as allExercisesData } from "@/content/practice";
@@ -33,6 +33,12 @@ function PracticePageInner({ chapterLinks }: PracticeClientProps) {
   const exercise: PracticeExercise | null | undefined = isFree
     ? FREE_EXERCISE
     : allExercisesData.find((e) => e.id === id);
+
+  // The page ships one static title so it can be prerendered; the exercise name
+  // goes on the tab here.
+  useEffect(() => {
+    document.title = exercise && !isFree ? `${exercise.title} — practice` : "Playground — practice";
+  }, [exercise, isFree]);
 
   if (!exercise) {
     return (

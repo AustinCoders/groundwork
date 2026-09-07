@@ -98,11 +98,9 @@ export async function fetchNarration(
   rate: number,
   pitch: string
 ): Promise<NarrationResult> {
-  const res = await fetch("/api/tts", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, voice, rate, pitch }),
-  });
+  // GET, so the CDN can serve a chunk somebody else already had synthesised.
+  const params = new URLSearchParams({ text, voice, rate: String(rate), pitch });
+  const res = await fetch(`/api/tts?${params}`);
   if (!res.ok) throw new Error(`TTS request failed (${res.status})`);
   const data = await res.json();
   const binary = atob(data.audio as string);

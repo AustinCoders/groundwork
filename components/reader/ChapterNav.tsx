@@ -58,6 +58,7 @@ export function ChapterNav({
                     className={`site-navlink${isActive ? " is-active" : ""}${isHidden ? " is-hidden" : ""}`}
                     href={`${basePath}/${ch.id}`}
                     data-target={ch.id}
+                    prefetch={false}
                   >
                     <span className="site-navlink__num" aria-hidden="true">
                       {ch.num}

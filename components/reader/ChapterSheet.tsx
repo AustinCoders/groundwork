@@ -46,7 +46,7 @@ export function ChapterSheet({
       {chapter.subtitle && <p className="sub">{chapter.subtitle}</p>}
 
       {chapter.ready ? (
-        <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: chapter.body }} />
+        <div className="prose" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: chapter.body }} />
       ) : (
         <>
           <div className="soon-stamp">not written yet</div>
