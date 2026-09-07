@@ -36,7 +36,7 @@ function SoonPageInner() {
       return;
     }
     if (topic.status === "ready") {
-      router.replace(`/level?topic=${topic.id}`);
+      router.replace(`/level/${topic.id}`);
     }
   }, [mounted, topic, router]);
 
@@ -85,7 +85,7 @@ function SoonPageInner() {
           </p>
 
           <div className="hero__actions">
-            <Link className="btn btn--primary btn--big" href="/level?topic=js">
+            <Link className="btn btn--primary btn--big" href="/level/js">
               See the JavaScript path →
             </Link>
             <Link className="btn btn--big" href="/">

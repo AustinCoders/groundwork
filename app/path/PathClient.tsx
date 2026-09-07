@@ -62,7 +62,7 @@ function PathPageInner({ chapterById, chapterExercises, levelExercises }: PathCl
       return;
     }
     if (!level) {
-      router.replace(`/level?topic=${topic.id}`);
+      router.replace(`/level/${topic.id}`);
       return;
     }
     rememberLevel(level.id);
@@ -106,7 +106,7 @@ function PathPageInner({ chapterById, chapterExercises, levelExercises }: PathCl
       <Crumbs
         items={[
           { label: "All topics", href: "/" },
-          { label: topic.name, href: `/level?topic=${topic.id}` },
+          { label: topic.name, href: `/level/${topic.id}` },
           { label: level.name },
         ]}
       />
@@ -142,7 +142,7 @@ function PathPageInner({ chapterById, chapterExercises, levelExercises }: PathCl
           <Link className="btn btn--big" id="full-notes-btn" href={notesHref}>
             Open the full notes
           </Link>
-          <Link className="btn btn--big" id="change-level" href={`/level?topic=${topic.id}`}>
+          <Link className="btn btn--big" id="change-level" href={`/level/${topic.id}`}>
             <span aria-hidden="true">⇄</span> Change level
           </Link>
           <button

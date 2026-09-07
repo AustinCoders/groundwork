@@ -60,3 +60,7 @@ sitemap and progress tracking all read from there.
 
 Next.js 16 (App Router, Turbopack) · React 19 · TypeScript · plain CSS with theme tokens ·
 CodeMirror 6 · Pyodide · sql.js · Vitest · deployed on Vercel.
+
+## Licence
+
+The code is MIT. The writing under `content/` is not — see [LICENSE](LICENSE).

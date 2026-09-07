@@ -77,6 +77,8 @@ Naukri
 sourcer
 
 # Libraries, tools and infrastructure named in the notes
+requestfailed
+networkidle
 Turbopack
 prerendered
 downlevelled

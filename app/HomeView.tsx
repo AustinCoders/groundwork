@@ -234,7 +234,7 @@ export function HomeView({ topicsList, stats: site, perTopic, interviewStats }: 
         </p>
 
         <div className="hero__actions">
-          <Link className="btn btn--primary btn--big" href="/level?topic=js">
+          <Link className="btn btn--primary btn--big" href="/level/js">
             Start with JavaScript →
           </Link>
           <Link className="hero__secondary" href="/practice?id=free">

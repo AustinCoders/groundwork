@@ -333,7 +333,7 @@ export function Shell({
                       <p className="sidenav-progress__label">
                         Nothing ticked off yet — start the first chapter and it&apos;ll show up here.
                       </p>
-                      <Link className="btn sidenav-progress__cta" href={`/level?topic=${topicId || "js"}`}>
+                      <Link className="btn sidenav-progress__cta" href={`/level/${topicId || "js"}`}>
                         Start with {topicName} →
                       </Link>
                     </>
