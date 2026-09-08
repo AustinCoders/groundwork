@@ -158,7 +158,7 @@ test("has no obvious accessibility violations", async () =&gt; {
 <tbody>
 <tr><td>Unit</td><td>Vitest</td><td>Pure logic &mdash; reducers, formatters, validators. Fast and plentiful.</td></tr>
 <tr><td>Component</td><td>RTL + MSW</td><td>A feature behaves correctly, including loading, empty and error states.</td></tr>
-<tr><td>End-to-end</td><td>Playwright</td><td>The few flows that must never break: sign in, checkout, the thing that takes the money.</td></tr>
+<tr><td>End-to-end</td><td>Playwright &mdash; <a href="/react/react-e2e">its own chapter</a></td><td>The few flows that must never break: sign in, checkout, the thing that takes the money.</td></tr>
 </tbody>
 </table></div>
 <p>

@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const reactListsKeys: Chapter = {
   id: "react-lists-keys",
-  num: "B6",
+  num: "B7",
   title: "Lists with .map() and keys",
   short: "Lists & keys",
   levels: ["beginner"],

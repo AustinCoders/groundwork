@@ -1,5 +1,6 @@
 import type { NotesFile } from "./types";
 import { reactSetupJsx } from "./react/react-setup-jsx";
+import { reactThinking } from "./react/react-thinking";
 import { reactComponents } from "./react/react-components";
 import { reactProps } from "./react/react-props";
 import { reactUsestate } from "./react/react-usestate";
@@ -8,6 +9,7 @@ import { reactListsKeys } from "./react/react-lists-keys";
 import { reactForms } from "./react/react-forms";
 import { reactUseeffectBasics } from "./react/react-useeffect-basics";
 import { reactLiftingStyling } from "./react/react-lifting-styling";
+import { reactGuidedProject } from "./react/react-guided-project";
 import { reactUseref } from "./react/react-useref";
 import { reactContext } from "./react/react-context";
 import { reactUsereducer } from "./react/react-usereducer";
@@ -23,6 +25,8 @@ import { reactStateLibraries } from "./react/react-state-libraries";
 import { reactServerState } from "./react/react-server-state";
 import { reactTesting } from "./react/react-testing";
 import { reactTypescript } from "./react/react-typescript";
+import { reactAnimation } from "./react/react-animation";
+import { reactE2e } from "./react/react-e2e";
 import { reactFiber } from "./react/react-fiber";
 import { reactConcurrent } from "./react/react-concurrent";
 import { reactSuspense } from "./react/react-suspense";
@@ -51,7 +55,7 @@ export const reactNotes: NotesFile = {
   meta: {
     title: "React — the whole map",
     subtitle:
-      "44 sections across three levels, all written — JSX through migration, production debugging and judgement.",
+      "51 sections across three levels, all written — JSX through migration, production debugging and judgement.",
     lead: "Pick a level and you'll get these sections in the order that makes sense — from what JSX compiles to, through why it re-rendered, to the reconciler underneath and the server boundary above it.",
     author: "Akshat",
     updated: "September 2026",
@@ -61,6 +65,7 @@ export const reactNotes: NotesFile = {
 
   chapters: [
     reactSetupJsx,
+    reactThinking,
     reactComponents,
     reactProps,
     reactUsestate,
@@ -69,6 +74,7 @@ export const reactNotes: NotesFile = {
     reactForms,
     reactUseeffectBasics,
     reactLiftingStyling,
+    reactGuidedProject,
     reactUseref,
     reactContext,
     reactUsereducer,
@@ -85,6 +91,8 @@ export const reactNotes: NotesFile = {
     reactServerState,
     reactTesting,
     reactTypescript,
+    reactAnimation,
+    reactE2e,
     reactFiber,
     reactConcurrent,
     reactSuspense,

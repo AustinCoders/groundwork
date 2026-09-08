@@ -757,7 +757,7 @@
     <p class="lede">
       A topic being written is not the same as a topic being finished. A chapter-level audit of the six written topics
       found 121 specific missing chapters, plus 16 patterns that repeat across all of them. Graded P0 &mdash; blocks a
-      reader now &mdash; through P2.
+      reader now &mdash; through P2. Green bars are the two topics that have been worked.
     </p>
 
     <div class="ledger ledger--gaps">
@@ -768,13 +768,13 @@
       </div>
       <div class="row">
         <span class="name">JavaScript</span>
-        <span class="measure"><i style="width: 9%; background: var(--open)"></i></span>
-        <span class="count"><b>3</b> real &middot; 28 listed</span>
+        <span class="measure"><i style="width: 100%; background: var(--done)"></i></span>
+        <span class="count"><b>0</b> left &middot; 3 of 28 were real</span>
       </div>
       <div class="row">
         <span class="name">React</span>
-        <span class="measure"><i style="width: 29%; background: var(--open)"></i></span>
-        <span class="count"><b>~10</b> real &middot; 23 listed</span>
+        <span class="measure"><i style="width: 60%; background: var(--done)"></i></span>
+        <span class="count"><b>~6</b> left &middot; 4 written</span>
       </div>
       <div class="row">
         <span class="name">DSA in JS</span>
@@ -794,8 +794,10 @@
     </div>
 
     <p class="meter-note">
-      Two topics have been checked item by item against the content; the other four carry the audit's own count and are
-      marked unchecked. Checking is worth doing before writing &mdash; it took JavaScript from 28 gaps to 3.
+      Two topics have been checked item by item against the content, and both have since been worked: JavaScript's three
+      real gaps are closed, and React is down to depth on subjects it already mentions. The other four carry the audit's
+      own count and are still unchecked &mdash; checking is worth doing before writing, since it took JavaScript from 28
+      gaps to 3.
     </p>
 
     <div class="items">
@@ -805,14 +807,14 @@
           <span class="tag">The pattern</span>
         </div>
         <p>
-          Runnable exercises exist in JavaScript and DSA. A cheat page exists in JavaScript and Git. An inline interview
-          bank exists in Git alone. A guided project exists <b>nowhere</b>, on a site whose beginner checkpoint asks the
-          reader to build a to-do app.
+          Runnable exercises exist in JavaScript and DSA. Cheat pages, inline interview banks and guided projects now
+          exist in JavaScript and React too &mdash; that was the gap this pass closed. Git remains the only topic where
+          all four have always been there.
         </p>
         <p>
           Git's shape &mdash; model, internals, commands, workflow, danger zone, interview bank, cheat sheet &mdash; is
-          the only complete one here. Writing it down as a template is cheaper than deciding each topic's structure
-          again.
+          the template. DSA, System Design, TypeScript, testing and the interview book are still missing pieces of it;
+          writing the shape down once is cheaper than deciding each topic's structure again.
         </p>
       </div>
 
@@ -822,8 +824,8 @@
           <span class="tag">Sharpest</span>
         </div>
         <p>
-          React has 44 chapters and nothing to type. System Design has 24, Git 16, and the interview book has 27 rounds
-          that open into no problems.
+          React has 51 chapters and nothing to type &mdash; the guided project is a chapter you follow, not an exercise
+          you run. System Design has 24, Git 16, and the interview book has 27 rounds that open into no problems.
           <b>The site's own copy says reading trains recognition and practice trains recall</b> &mdash; four of six
           written topics currently do only the first.
         </p>
@@ -860,10 +862,12 @@
     </div>
 
     <p class="lede">
-      Every item was checked rather than taken on trust. JavaScript listed 28 gaps and has <b>3</b> &mdash; browser
-      observability, an interview bank, and a guided project. React listed 23 and has roughly 10. Search is already
-      cross-topic, and the home page count was corrected separately. The lesson for the next audit: a keyword missing
-      from a chapter <em>title</em> is not the same as the subject missing from the site.
+      Every item was checked rather than taken on trust. JavaScript listed 28 gaps and had <b>3</b> &mdash; browser
+      observability, an interview bank and a guided project &mdash; and all three are now written. React listed 23 and
+      had roughly 10; four of those shipped as chapters (Thinking in React, a guided project, animation, end-to-end
+      testing) and what remains is depth on subjects already mentioned, not absence. Search is already cross-topic, and
+      the home page count was corrected separately. The lesson for the next audit: a keyword missing from a chapter
+      <em>title</em> is not the same as the subject missing from the site.
     </p>
   </section>
 
@@ -886,6 +890,8 @@
       <span class="chip">Four content files split for editing</span>
       <span class="chip">Home page JS 1,986 KB → 647 KB</span>
       <span class="chip">Edge rate limit on /api/</span>
+      <span class="chip">JavaScript's three real gaps closed</span>
+      <span class="chip">React 41 &rarr; 51 chapters</span>
     </div>
   </section>
 

@@ -152,6 +152,7 @@ gcell
 geohash
 getrandom
 Gochi
+GSAP
 GTID
 Gurgaon
 halvings
@@ -181,6 +182,7 @@ IOCP
 issip
 jank
 janks
+Janky
 Jepsen
 jmjkbkjkv
 jsnotes

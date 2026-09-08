@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const reactUseeffectBasics: Chapter = {
   id: "react-useeffect-basics",
-  num: "B8",
+  num: "B9",
   title: "useEffect basics",
   short: "useEffect",
   levels: ["beginner"],

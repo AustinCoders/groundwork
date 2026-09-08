@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const reactUsestate: Chapter = {
   id: "react-usestate",
-  num: "B4",
+  num: "B5",
   title: "State with useState",
   short: "useState",
   levels: ["beginner"],

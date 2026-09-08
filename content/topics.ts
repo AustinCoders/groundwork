@@ -788,6 +788,11 @@ export const topics: TopicsData = {
               ],
             },
             {
+              title: "Thinking in React",
+              chapter: "react-thinking",
+              items: ["Breaking a mockup into a component tree", "Finding the minimal state, and where it lives"],
+            },
+            {
               title: "Components & composition",
               chapter: "react-components",
               items: ["Function components, composition, and file structure"],
@@ -831,6 +836,14 @@ export const topics: TopicsData = {
               items: [
                 "Lifting state up and passing callbacks down",
                 "Basic styling: CSS modules, inline styles, Tailwind",
+              ],
+            },
+            {
+              title: "Guided project: a task board",
+              chapter: "react-guided-project",
+              items: [
+                "Building a full app from data model to persistence",
+                "The machine-coding round, start to finish",
               ],
             },
           ],
@@ -929,6 +942,22 @@ export const topics: TopicsData = {
               title: "TypeScript with React",
               chapter: "react-typescript",
               items: ["TypeScript with React: typing props, hooks, generics in components"],
+            },
+            {
+              title: "Animation and transitions",
+              chapter: "react-animation",
+              items: [
+                "CSS transitions, delayed unmount, and motion libraries",
+                "FLIP, View Transitions, and prefers-reduced-motion",
+              ],
+            },
+            {
+              title: "End-to-end testing",
+              chapter: "react-e2e",
+              items: [
+                "Playwright: web-first assertions, auth state, traces",
+                "What belongs in E2E and what belongs one layer down",
+              ],
             },
           ],
         },

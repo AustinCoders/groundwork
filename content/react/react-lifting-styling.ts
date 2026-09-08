@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const reactLiftingStyling: Chapter = {
   id: "react-lifting-styling",
-  num: "B9",
+  num: "B10",
   title: "Lifting state up & basic styling",
   short: "Lifting state & styling",
   levels: ["beginner"],
@@ -184,13 +184,18 @@ import styles from "./Card.module.css";
 
 <h3>Putting the tier together</h3>
 <p>
-  With these nine chapters you can build a real screen: components composed from
+  With these ten chapters you can build a real screen: components composed from
   props, state where it belongs, events and conditions, lists with correct keys,
   a controlled form, and an effect for the one thing that genuinely needs to
   reach outside React.
 </p>
 <p>
-  What you cannot yet do is explain <em>why</em> it re-rendered. That is the
+  The next chapter is where you do exactly that, end to end &mdash;
+  <a href="/react/react-guided-project">a task board</a>, built in the order a
+  machine-coding round expects.
+</p>
+<p>
+  What you still cannot do is explain <em>why</em> it re-rendered. That is the
   intermediate tier &mdash; refs, context, memoisation, and the fetching
   patterns that do not race themselves &mdash; and it starts with
   <a href="/react/react-useref">useRef</a>.

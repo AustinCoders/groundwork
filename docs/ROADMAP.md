@@ -75,21 +75,27 @@ biggest — have none.
 **The audit over-counts, and by a lot.** Every item it lists was checked against the content rather
 than taken on trust.
 
-| Topic      | Listed | Actually missing   |
-| ---------- | ------ | ------------------ |
-| JavaScript | 28     | **3**, plus 2 thin |
-| React      | 23     | **~10**            |
+| Topic      | Listed | Actually missing | Now                                   |
+| ---------- | ------ | ---------------- | ------------------------------------- |
+| JavaScript | 28     | 3, plus 2 thin   | **0** — all three written             |
+| React      | 23     | ~10              | **~6**, all depth rather than absence |
 
-Of the 27 checkable JavaScript items, 22 are already written — iterators and generators, the event
+Of the 27 checkable JavaScript items, 22 were already written — iterators and generators, the event
 loop with microtask and macrotask, the observers and `AbortController`, symbols, `structuredClone`,
-Web Workers, tree-shaking, currying, the V8 pipeline. The three that genuinely do not exist are
-**browser observability**, a **JavaScript interview bank**, and a **guided project**. Streams and
-WebAssembly are thin.
+Web Workers, tree-shaking, currying, the V8 pipeline. The three that genuinely did not exist —
+**browser observability** (A10), a **JavaScript interview bank** (A11) and a **guided project** (B9)
+— have since been written, and WebAssembly was added to the performance chapter. Streams turned out
+not to be thin: the existing chapter already has the reader loop and backpressure. JavaScript's side
+of this audit is closed.
 
-For React, six were closed after the audit was written: security and XSS, virtualisation, React
-Native, bundle strategy, Web Vitals, and controlled versus uncontrolled inputs. The genuinely open
-ones are animation, i18n, "thinking in React", and deeper treatments of the React Compiler, streaming
-SSR, auth, file upload and end-to-end testing.
+For React, six were closed before this pass: security and XSS, virtualisation, React Native, bundle
+strategy, Web Vitals, and controlled versus uncontrolled inputs. Four more are now written as
+chapters of their own — **Thinking in React** (B2), a **guided project** (B11), **animation and
+transitions** (I17) and **end-to-end testing** (I18). React stands at 51 chapters.
+
+What is left in React is depth, not absence: the React Compiler, streaming SSR, file upload,
+micro-frontends and React Native are each mentioned in passing and deserve a section; i18n, state
+machines, feature flags and charts are named but not taught. None of these is a beginner blocker.
 
 The pattern is worth naming: **a keyword being absent from a chapter title is not the same as the
 subject being absent from the site.** The audit read titles and structure; the content underneath is
@@ -101,15 +107,16 @@ and are the part worth acting on.
 The audit's most useful section is the one that is not about any single topic. Sixteen items recur,
 and four of them are the same shape: **Git has something the others do not.**
 
-| Every topic should have  | Has it          |
-| ------------------------ | --------------- |
-| Runnable exercises       | JavaScript, DSA |
-| A cheat page             | JavaScript, Git |
-| An inline interview bank | Git             |
-| A guided project         | none            |
+| Every topic should have  | Has it                 |
+| ------------------------ | ---------------------- |
+| Runnable exercises       | JavaScript, DSA        |
+| A cheat page             | JavaScript, Git, React |
+| An inline interview bank | Git, JavaScript, React |
+| A guided project         | JavaScript, React      |
 
 Git's shape — model, then internals, then commands, then workflow, then danger zone, then interview
-bank, then cheat sheet — is the only complete one on the site. Writing that shape down as a template
+bank, then cheat sheet — was the only complete one on the site; JavaScript and React now have all
+four pieces too. DSA, system design, TypeScript, testing and the interview book still do not. Writing that shape down as a template
 and rebuilding the others against it is cheaper than deciding each topic's structure again.
 
 The rest, briefly: per-chapter recall cards, so the spaced-repetition review page has something

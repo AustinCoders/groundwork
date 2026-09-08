@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const reactProps: Chapter = {
   id: "react-props",
-  num: "B3",
+  num: "B4",
   title: "Props",
   short: "Props",
   levels: ["beginner"],

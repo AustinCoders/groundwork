@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const reactForms: Chapter = {
   id: "react-forms",
-  num: "B7",
+  num: "B8",
   title: "Controlled forms",
   short: "Forms",
   levels: ["beginner"],

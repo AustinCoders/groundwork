@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const reactComponents: Chapter = {
   id: "react-components",
-  num: "B2",
+  num: "B3",
   title: "Components & composition",
   short: "Components",
   levels: ["beginner"],

@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const reactEventsConditionals: Chapter = {
   id: "react-events-conditionals",
-  num: "B5",
+  num: "B6",
   title: "Events & conditional rendering",
   short: "Events & conditionals",
   levels: ["beginner"],
