@@ -43,6 +43,9 @@ import { reactCustomRenderers } from "./react/react-custom-renderers";
 import { reactMigration } from "./react/react-migration";
 import { reactDebuggingProduction } from "./react/react-debugging-production";
 import { reactReviewJudgement } from "./react/react-review-judgement";
+import { reactAuth } from "./react/react-auth";
+import { reactInterviewBank } from "./react/react-interview-bank";
+import { reactCheat } from "./react/react-cheat";
 
 export const reactNotes: NotesFile = {
   meta: {
@@ -78,6 +81,7 @@ export const reactNotes: NotesFile = {
     reactDataFetching,
     reactFormsAtScale,
     reactStateLibraries,
+    reactAuth,
     reactServerState,
     reactTesting,
     reactTypescript,
@@ -101,5 +105,7 @@ export const reactNotes: NotesFile = {
     reactMigration,
     reactDebuggingProduction,
     reactReviewJudgement,
+    reactInterviewBank,
+    reactCheat,
   ],
 };

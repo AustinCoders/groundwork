@@ -264,6 +264,7 @@ partitionable
 PAYPALISHIRING
 pgvector
 PINALSIGYAHRPI
+PKCE
 popcount
 popcounts
 postorder

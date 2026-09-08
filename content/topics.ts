@@ -901,6 +901,11 @@ export const topics: TopicsData = {
               items: ["Data fetching patterns: loading/error states, abort controllers, race conditions"],
             },
             {
+              title: "Auth in React",
+              chapter: "react-auth",
+              items: ["Where the token lives, guards, refresh without a stampede"],
+            },
+            {
               title: "Forms at scale",
               chapter: "react-forms-at-scale",
               items: ["Forms at scale — React Hook Form or Formik, plus validation (Zod/Yup)"],
@@ -1048,6 +1053,11 @@ export const topics: TopicsData = {
               title: "Review and judgement",
               chapter: "react-review-judgement",
               items: ["What to look for, and when not to use React"],
+            },
+            {
+              title: "Interview bank",
+              chapter: "react-interview-bank",
+              items: ["35 questions, split by the level they are asked at"],
             },
           ],
         },
