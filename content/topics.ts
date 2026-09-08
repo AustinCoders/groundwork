@@ -51,7 +51,7 @@ export const topics: TopicsData = {
           ],
         },
         {
-          title: "Functions (first half)",
+          title: "Functions",
           chapter: "functions-basics",
           items: [
             "Declarations vs expressions vs arrows",
@@ -60,7 +60,7 @@ export const topics: TopicsData = {
           ],
         },
         {
-          title: "Objects & arrays (first half)",
+          title: "Objects & arrays",
           chapter: "objects-arrays-basics",
           items: [
             "Object literals, dot vs bracket, nesting",
@@ -90,6 +90,11 @@ export const topics: TopicsData = {
           title: "Errors & tools",
           chapter: "errors-tools",
           items: ["try/catch, reading a stack trace", "console.log/table/error, browser DevTools basics"],
+        },
+        {
+          title: "Guided project: a to-do app",
+          chapter: "guided-project-todo",
+          items: ["State, render, events and storage in one small build"],
         },
       ],
     },
@@ -334,6 +339,16 @@ export const topics: TopicsData = {
             "Testing the DOM: query by role, not by class",
             "What coverage % actually tells you — and what it doesn't",
           ],
+        },
+        {
+          title: "Browser observability",
+          chapter: "browser-observability",
+          items: ["Error reporting, source maps, Web Vitals from the field"],
+        },
+        {
+          title: "Interview bank",
+          chapter: "interview-bank",
+          items: ["40 questions, split by the level they are asked at"],
         },
       ],
     },

@@ -120,6 +120,54 @@ function VirtualList({ items, rowHeight, viewportHeight }) {
   that don't pan out for a page that already has the next thing ready.
 </p>
 
+<h3>WebAssembly, and when it is worth it</h3>
+<p>
+  WebAssembly is a binary format that runs at near-native speed in the same
+  sandbox as your JavaScript. It is not a faster JavaScript &mdash; it is a
+  target for languages like Rust, C++ and Go, and it earns its place only for a
+  specific shape of work.
+</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Worth it</th><th>Not worth it</th></tr></thead>
+<tbody>
+<tr><td>Image, video and audio processing</td><td>DOM work &mdash; every call crosses back into JavaScript</td></tr>
+<tr><td>Compression, encryption, hashing</td><td>Anything dominated by network time</td></tr>
+<tr><td>Physics, simulation, 3D maths</td><td>Ordinary application logic</td></tr>
+<tr><td>Porting a large existing C or Rust library</td><td>Code you would otherwise write once in JS</td></tr>
+</tbody>
+</table></div>
+
+<h4>The boundary is the cost</h4>
+<pre><code>const { instance } = await WebAssembly.instantiateStreaming(fetch("/hash.wasm"));
+
+<span class="c">// ✗ crossing 100,000 times — the boundary dominates</span>
+for (const n of numbers) total += instance.exports.add(n, 1);
+
+<span class="c">// ✓ cross once, work in bulk inside linear memory</span>
+const mem = new Float64Array(instance.exports.memory.buffer, ptr, numbers.length);
+mem.set(numbers);
+instance.exports.sumAll(ptr, numbers.length);</code></pre>
+<p>
+  Numbers pass across cheaply. <b>Anything else does not</b> &mdash; strings,
+  arrays and objects have to be copied into the module's linear memory and back,
+  and that copy is frequently more expensive than the computation you moved. The
+  rule is to cross the boundary rarely and carry a lot each time.
+</p>
+<p class="sub">
+  It also has no direct DOM access. A WASM module that needs to touch the page
+  calls back into JavaScript to do it, which is another boundary crossing &mdash;
+  which is why "rewrite the UI in Rust" does not make a page faster.
+</p>
+
+<h4>What it costs before it runs</h4>
+<p>
+  A module is a download, a compile and an instantiation.
+  <code>instantiateStreaming</code> compiles while it downloads, which is the
+  version to use. But a 2 MB module that saves 30ms of computation has lost
+  before it started &mdash; measure the total, including fetch and compile, not
+  just the function call.
+</p>
+
 <h3>Tree shaking and bundle size</h3>
 <p>
   <a href="/notes/modules-tooling">Already covered</a>: tree shaking

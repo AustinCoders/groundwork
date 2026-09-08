@@ -3,8 +3,8 @@ import type { Chapter } from "../types";
 export const functionsBasics: Chapter = {
   id: "functions-basics",
   num: "B4",
-  title: "Functions (first half)",
-  short: "Functions (first half)",
+  title: "Functions",
+  short: "Functions",
   levels: ["beginner"],
   practice: ["ex-return-newline", "ex-rest-sum"],
   ready: true,
@@ -258,5 +258,16 @@ console.log(typeof secret);   <span class="c">// "undefined" — outer can't be 
   <code>let</code>/<code>const</code> of the same name can't coexist in
   one function scope — JS won't let you accidentally shadow an argument
   you probably still needed.
+</p>
+
+<h3>What comes next</h3>
+<p>
+  This is the mechanical half: how to write one, what the parameters do, where
+  the name lives. The half that interviews spend their time on &mdash;
+  <b>closures</b>, <b>this</b> and its five binding rules, <code>call</code> /
+  <code>apply</code> / <code>bind</code>, currying and composition &mdash; is
+  <a href="/notes/scope-functions">Scope &amp; functions, properly</a> at the
+  intermediate level. Nothing here is superseded there; it is the same subject,
+  one layer down.
 </p>`,
 };

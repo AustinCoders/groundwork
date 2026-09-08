@@ -3,8 +3,8 @@ import type { Chapter } from "../types";
 export const objectsArraysBasics: Chapter = {
   id: "objects-arrays-basics",
   num: "B5",
-  title: "Objects & arrays (first half)",
-  short: "Objects & arrays (first half)",
+  title: "Objects & arrays",
+  short: "Objects & arrays",
   levels: ["beginner"],
   practice: ["ex-array-methods-chain", "ex-nested-destructure"],
   ready: true,
@@ -228,5 +228,14 @@ Math.max(...a);                <span class="c">// spreads the array into 3 separ
 <pre><code>const original = { nested: { count: 1 } };
 const copy = { ...original };
 copy.nested.count = 99;
-console.log(original.nested.count);   <span class="c">// 99 — same nested object, not a copy of it</span></code></pre>`,
+console.log(original.nested.count);   <span class="c">// 99 — same nested object, not a copy of it</span></code></pre>
+
+<h3>What comes next</h3>
+<p>
+  The rest of the toolbox is <a href="/notes/objects-deep">Objects deeply</a>:
+  getters and setters, the <code>Object</code> statics, shallow versus deep
+  copying, <code>Map</code> and <code>Set</code> and their weak versions, sort
+  stability, <code>JSON</code> with a replacer and reviver, and the array methods
+  this chapter did not reach. It is written to follow directly from here.
+</p>`,
 };

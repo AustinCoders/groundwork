@@ -26,6 +26,9 @@ import { security } from "./js/security";
 import { ecosystemProfessional } from "./js/ecosystem-professional";
 import { testingInJs } from "./js/testing-in-js";
 import { cheat } from "./js/cheat";
+import { browserObservability } from "./js/browser-observability";
+import { interviewBank } from "./js/interview-bank";
+import { guidedProjectTodo } from "./js/guided-project-todo";
 
 export const jsNotes: NotesFile = {
   meta: {
@@ -49,6 +52,7 @@ export const jsNotes: NotesFile = {
     domEvents,
     basicAsync,
     errorsTools,
+    guidedProjectTodo,
     scopeFunctions,
     objectsDeep,
     prototypesOop,
@@ -67,6 +71,8 @@ export const jsNotes: NotesFile = {
     security,
     ecosystemProfessional,
     testingInJs,
+    browserObservability,
+    interviewBank,
     cheat,
   ],
 };

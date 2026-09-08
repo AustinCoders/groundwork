@@ -114,6 +114,7 @@ Debezium
 dedup
 Deel
 deopt
+deoptimise
 deoptimised
 deoptimising
 deoptimization
@@ -256,6 +257,7 @@ PACELC
 PACELC's
 pagebtn
 PAHNAPLSIIGYIR
+paise
 Pantnagar
 parameterised
 partitionable
