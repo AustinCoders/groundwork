@@ -6,7 +6,7 @@ export const reactContext: Chapter = {
   title: "Context API",
   short: "Context",
   levels: ["intermediate"],
-  practice: [],
+  practice: ["ex-react-pick-fields", "ex-react-relevant-change"],
   ready: true,
   subtitle: "A way to skip the middle layers — not a state manager, and not free.",
   body: `<h3>What it solves</h3>

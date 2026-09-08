@@ -6,7 +6,7 @@ export const reactStateArchitecture: Chapter = {
   title: "State architecture",
   short: "State architecture",
   levels: ["intermediate"],
-  practice: [],
+  practice: ["ex-react-normalize", "ex-react-denormalize"],
   ready: true,
   subtitle: "Most React problems are state in the wrong place, in the wrong shape, or duplicated.",
   body: `<h3>Five kinds of state</h3>

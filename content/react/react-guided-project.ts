@@ -6,7 +6,7 @@ export const reactGuidedProject: Chapter = {
   title: "Guided project: a task board",
   short: "Guided project",
   levels: ["beginner"],
-  practice: [],
+  practice: ["ex-react-move-task", "ex-react-remove-task"],
   ready: true,
   subtitle: "Every beginner chapter, in one app built end to end.",
   body: `<h3>What you are building</h3>

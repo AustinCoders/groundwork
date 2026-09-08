@@ -6,7 +6,7 @@ export const reactUsestate: Chapter = {
   title: "State with useState",
   short: "useState",
   levels: ["beginner"],
-  practice: [],
+  practice: ["ex-react-updater-batch", "ex-react-toggle-field"],
   ready: true,
   subtitle: "State is memory between renders — and setting it is a request, not an assignment.",
   body: `<h3>Why a plain variable does not work</h3>

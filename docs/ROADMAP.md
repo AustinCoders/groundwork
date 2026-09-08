@@ -18,7 +18,7 @@ Git's 16 standalone sections.
 
 | Topic             | Written   | Exercises | Cheat page |
 | ----------------- | --------- | --------- | ---------- |
-| React             | 51        | **0**     | yes        |
+| React             | 51        | 24        | yes        |
 | DSA in JS         | 34        | 245       | **no**     |
 | JavaScript        | 30        | 54        | yes        |
 | Interview book    | 27 rounds | **0**     | —          |
@@ -44,10 +44,12 @@ A chapter-level audit of the six written topics is kept as a separate, tickable 
 [**the build queue**](https://claude.ai/code/artifact/13c4f88f-eea2-416b-9c5b-bad7e5f0b416). It
 lists roughly 138 specific missing chapters, graded P0 to P2. The headlines:
 
-**Practice is the sharpest imbalance on the site.** All 299 exercises live in two topics. React has
-44 chapters and nothing to type; System Design has 24; the interview book has 27 rounds that open
-into no problems. The site's own copy says reading trains recognition and practice trains recall —
-four of six written topics currently do only the first.
+**Practice was the sharpest imbalance on the site.** All 299 exercises lived in two topics. React
+now has a first batch — 24 exercises across 12 chapters, extracted as pure functions (reducers,
+selectors, immutable updates) so they run in the same DOM-free sandbox as everything else — but 27
+of its 51 chapters, System Design's 24, and the interview book's 27 rounds still open into no
+problems. The site's own copy says reading trains recognition and practice trains recall — three of
+six written topics still do only the first.
 
 **Four chapter titles read worse than the chapters are.** This one was checked and did not hold.
 `functions-basics` and `objects-arrays-basics` are titled "(first half)", but the second half exists

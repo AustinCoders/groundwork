@@ -6,7 +6,7 @@ export const reactThinking: Chapter = {
   title: "Thinking in React",
   short: "Thinking in React",
   levels: ["beginner"],
-  practice: [],
+  practice: ["ex-react-classify-value", "ex-react-visible-products"],
   ready: true,
   subtitle: "Turning a picture into a component tree — the step that happens before you type anything.",
   body: `<h3>Why this is a chapter</h3>
