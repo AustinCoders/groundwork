@@ -3,7 +3,7 @@
 What is left to build, in the order it is worth building. Every number here was measured against the
 site, not estimated. Last measured September 2026.
 
-The site is production-ready as it stands: 582 prerendered pages on a CDN, security headers, and CI
+The site is production-ready as it stands: 624 prerendered pages on a CDN, security headers, and CI
 that typechecks, lints, spell-checks, runs unit tests, a Playwright smoke and accessibility suite,
 and Lighthouse budgets. Nothing below is broken. It is what the site needs in order to grow.
 
@@ -13,14 +13,14 @@ A visual version of this file, with progress bars, is [`roadmap.html`](roadmap.h
 
 ## 0. Content — the half the engineering serves
 
-Measured today: **6 of 21 topics have written chapters** — 174 written, 358 still outlines, plus
+Measured today: **6 of 21 topics have written chapters** — 184 written, 358 still outlines, plus
 Git's 16 standalone sections.
 
 | Topic             | Written   | Exercises | Cheat page |
 | ----------------- | --------- | --------- | ---------- |
-| React             | 44        | **0**     | **no**     |
+| React             | 51        | **0**     | yes        |
 | DSA in JS         | 34        | 245       | **no**     |
-| JavaScript        | 27        | 54        | yes        |
+| JavaScript        | 30        | 54        | yes        |
 | Interview book    | 27 rounds | **0**     | —          |
 | System Design     | 24        | **0**     | **no**     |
 | How this is built | 18        | —         | —          |
@@ -121,7 +121,7 @@ and rebuilding the others against it is cheaper than deciding each topic's struc
 
 The rest, briefly: per-chapter recall cards, so the spaced-repetition review page has something
 chapter-specific to resurface; a placement test instead of asking readers to guess their level; a
-prerequisite map, because there are 174 chapters and no edges between them; references on advanced
+prerequisite map, because there are 184 chapters and no edges between them; references on advanced
 chapters, since sourceless depth reads as opinion; and last-updated stamps, because React, Node and
 ES all move faster than the notes about them.
 
