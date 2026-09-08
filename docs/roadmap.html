@@ -764,34 +764,39 @@
       <div class="row">
         <span class="name">System Design</span>
         <span class="measure"><i style="width: 100%; background: var(--open)"></i></span>
-        <span class="count"><b>35</b> gaps &middot; 14 P0</span>
+        <span class="count">35 listed &middot; unchecked</span>
       </div>
       <div class="row">
         <span class="name">JavaScript</span>
-        <span class="measure"><i style="width: 80%; background: var(--open)"></i></span>
-        <span class="count"><b>28</b> gaps &middot; 9 P0</span>
+        <span class="measure"><i style="width: 9%; background: var(--open)"></i></span>
+        <span class="count"><b>3</b> real &middot; 28 listed</span>
       </div>
       <div class="row">
         <span class="name">React</span>
-        <span class="measure"><i style="width: 66%; background: var(--open)"></i></span>
-        <span class="count"><b>23</b> gaps &middot; 6 P0</span>
+        <span class="measure"><i style="width: 29%; background: var(--open)"></i></span>
+        <span class="count"><b>~10</b> real &middot; 23 listed</span>
       </div>
       <div class="row">
         <span class="name">DSA in JS</span>
         <span class="measure"><i style="width: 43%; background: var(--open)"></i></span>
-        <span class="count"><b>15</b> gaps &middot; 6 P0</span>
+        <span class="count">15 listed &middot; unchecked</span>
       </div>
       <div class="row">
         <span class="name">Interview book</span>
         <span class="measure"><i style="width: 34%; background: var(--open)"></i></span>
-        <span class="count"><b>12</b> gaps &middot; 5 P0</span>
+        <span class="count">12 listed &middot; unchecked</span>
       </div>
       <div class="row">
         <span class="name">Git</span>
         <span class="measure"><i style="width: 23%; background: var(--open)"></i></span>
-        <span class="count"><b>8</b> gaps &middot; 2 P0</span>
+        <span class="count">8 listed &middot; unchecked</span>
       </div>
     </div>
+
+    <p class="meter-note">
+      Two topics have been checked item by item against the content; the other four carry the audit's own count and are
+      marked unchecked. Checking is worth doing before writing &mdash; it took JavaScript from 28 gaps to 3.
+    </p>
 
     <div class="items">
       <div class="item">
@@ -826,27 +831,19 @@
 
       <div class="item">
         <div class="item-head">
-          <h3>Four chapters promise something undelivered in the title</h3>
-          <span class="tag">Fix first</span>
+          <h3>Two of the audit's headline findings did not survive a check</h3>
+          <span class="tag">Corrected</span>
         </div>
         <p>
-          Two JavaScript chapters are titled <code>(first half)</code> and the second half was never written. Two System
-          Design chapters are titled <code>(surface)</code> and say so honestly. They are the only places on the site
-          where the title itself records a gap, which makes them the cheapest credibility repair available.
+          The chapters titled <code>(first half)</code> do have a second half &mdash; it is
+          <code>scope-functions</code> and <code>objects-deep</code> at the intermediate level, and the latter has a
+          section named "Array methods B5 didn't cover". The two <code>(surface)</code> System Design chapters run 2,444
+          and 2,538 words against a topic median of 2,581, and already contain the inverted index, BM25, Elasticsearch
+          sharding, Raft elections and log replication the audit asks for.
         </p>
-      </div>
-
-      <div class="item">
-        <div class="item-head">
-          <h3>Three pages render nothing for a crawler</h3>
-          <span class="tag">Measured</span>
-        </div>
         <p>
-          <code>/git</code> emits 40 characters of visible text, <code>/review</code> 34 and <code>/progress</code> 21
-          &mdash; each returns <code>null</code> until mounted. <code>/problems</code> emits 17,741 for comparison. The
-          Git guide is among the best writing on the site and no search engine can see a word of it.
-          <code>/architecture</code> already shows the fix: render the body on the server, keep only the shell on the
-          client.
+          What is left is a <b>naming</b> problem, not a writing one, plus one fair point: both
+          <code>(surface)</code> chapters have zero code blocks.
         </p>
       </div>
 
@@ -863,9 +860,10 @@
     </div>
 
     <p class="lede">
-      Two of the audit's claims were checked and did not hold: search is already cross-topic, and the home page count
-      was corrected separately. Six of its React items were closed after it was written &mdash; security,
-      virtualisation, React Native, bundle strategy, Web Vitals, and controlled versus uncontrolled inputs.
+      Every item was checked rather than taken on trust. JavaScript listed 28 gaps and has <b>3</b> &mdash; browser
+      observability, an interview bank, and a guided project. React listed 23 and has roughly 10. Search is already
+      cross-topic, and the home page count was corrected separately. The lesson for the next audit: a keyword missing
+      from a chapter <em>title</em> is not the same as the subject missing from the site.
     </p>
   </section>
 

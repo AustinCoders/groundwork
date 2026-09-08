@@ -49,10 +49,18 @@ lists roughly 138 specific missing chapters, graded P0 to P2. The headlines:
 into no problems. The site's own copy says reading trains recognition and practice trains recall —
 four of six written topics currently do only the first.
 
-**Two chapters are titled "(first half)"** — `functions-basics` and `objects-arrays-basics` in
-JavaScript — and the second half was never written. Two System Design chapters are titled
-"(surface)" and say so honestly. Those four are the only places on the site that promise something
-undelivered in the title, which makes them the first thing to fix.
+**Four chapter titles read worse than the chapters are.** This one was checked and did not hold.
+`functions-basics` and `objects-arrays-basics` are titled "(first half)", but the second half exists
+— it is `scope-functions` and `objects-deep` at the intermediate level, and the latter has a section
+literally named "Array methods B5 didn't cover". The two System Design chapters titled "(surface)"
+run 2,444 and 2,538 words against a topic median of 2,581, and already contain the inverted index,
+BM25, Elasticsearch sharding, Raft elections and log replication that the audit asks for. "(surface)"
+there is an honest scoping statement — use a consensus system, do not write one — not an admission.
+
+What is left of it is a naming problem, not a writing one: "(first half)" reads as unfinished when it
+means "the beginner half". Renaming the four is an hour. The one fair criticism underneath is that
+both "(surface)" chapters have **zero code blocks**, where a minimal Raft state machine would earn
+its place.
 
 **System Design has no frontend track**, on a site whose entire audience is JavaScript and React
 developers, and 2 walkthroughs where a design course needs closer to ten.
@@ -64,10 +72,29 @@ the AI round, which became standard in the last two years.
 **Only two cheat pages exist**, for JavaScript and Git. React, DSA and System Design — the three
 biggest — have none.
 
-Six items the audit lists for React were closed after it was written: security and XSS,
-virtualisation, React Native, bundle strategy, Web Vitals, and controlled versus uncontrolled
-inputs. The genuinely open React gaps are animation, i18n, "thinking in React", and deeper
-treatments of the React Compiler, streaming SSR, auth, file upload and end-to-end testing.
+**The audit over-counts, and by a lot.** Every item it lists was checked against the content rather
+than taken on trust.
+
+| Topic      | Listed | Actually missing   |
+| ---------- | ------ | ------------------ |
+| JavaScript | 28     | **3**, plus 2 thin |
+| React      | 23     | **~10**            |
+
+Of the 27 checkable JavaScript items, 22 are already written — iterators and generators, the event
+loop with microtask and macrotask, the observers and `AbortController`, symbols, `structuredClone`,
+Web Workers, tree-shaking, currying, the V8 pipeline. The three that genuinely do not exist are
+**browser observability**, a **JavaScript interview bank**, and a **guided project**. Streams and
+WebAssembly are thin.
+
+For React, six were closed after the audit was written: security and XSS, virtualisation, React
+Native, bundle strategy, Web Vitals, and controlled versus uncontrolled inputs. The genuinely open
+ones are animation, i18n, "thinking in React", and deeper treatments of the React Compiler, streaming
+SSR, auth, file upload and end-to-end testing.
+
+The pattern is worth naming: **a keyword being absent from a chapter title is not the same as the
+subject being absent from the site.** The audit read titles and structure; the content underneath is
+further along than that reading suggests. The cross-cutting findings below survived the same check
+and are the part worth acting on.
 
 ### 0.3 The patterns that repeat across every topic
 
