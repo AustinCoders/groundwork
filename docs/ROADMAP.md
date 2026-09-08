@@ -3,7 +3,7 @@
 What is left to build, in the order it is worth building. Every number here was measured against the
 site, not estimated. Last measured September 2026.
 
-The site is production-ready as it stands: 559 prerendered pages on a CDN, security headers, and CI
+The site is production-ready as it stands: 582 prerendered pages on a CDN, security headers, and CI
 that typechecks, lints, spell-checks, runs unit tests, a Playwright smoke and accessibility suite,
 and Lighthouse budgets. Nothing below is broken. It is what the site needs in order to grow.
 
@@ -13,33 +13,88 @@ A visual version of this file, with progress bars, is [`roadmap.html`](roadmap.h
 
 ## 0. Content — the half the engineering serves
 
-Measured today: **4 of 20 topics have written chapters** — 112 written, 399 still outlines.
+Measured today: **6 of 21 topics have written chapters** — 174 written, 358 still outlines, plus
+Git's 16 standalone sections.
 
-| Topic          | Written      | Exercises |
-| -------------- | ------------ | --------- |
-| DSA in JS      | 34           | 245       |
-| JavaScript     | 27           | 54        |
-| Interview book | 27 rounds    | **0**     |
-| System Design  | 24           | **0**     |
-| The other 16   | outline only | —         |
+| Topic             | Written   | Exercises | Cheat page |
+| ----------------- | --------- | --------- | ---------- |
+| React             | 44        | **0**     | **no**     |
+| DSA in JS         | 34        | 245       | **no**     |
+| JavaScript        | 27        | 54        | yes        |
+| Interview book    | 27 rounds | **0**     | —          |
+| System Design     | 24        | **0**     | **no**     |
+| How this is built | 18        | —         | —          |
+| Git               | 16        | **0**     | yes        |
+| The other 15      | outline   | —         | —          |
 
-The interview book is 27 rounds and 405 questions, eleven of them carrying a level ladder.
+There are two separate content problems, and the roadmap used to record only the first.
 
-Two things stand out.
+### 0.1 Fifteen topics are outlines
 
-**System Design and the Interview book have no practice at all.** They are the two tracks most tied
-to getting hired and the two where a reader cannot do anything but read. Exercises for these do not
-look like the DSA ones — a system design "exercise" is a prompt and a rubric, an interview one is a
-question with a model answer to compare against. That is a content format decision before it is a
-code one.
-
-**Sixteen topics are outlines.** They render, they sit in "More topics", and they say so honestly.
-Which to write next is a question about who the site is for; the interview loop already names the
-rounds that matter most, and React, Node and TypeScript are the three that appear in nearly every
-job description this site is aimed at.
+They render, they sit in "More topics", and they say so honestly. Which to write next is a question
+about who the site is for; React is now written, and Node and TypeScript are the two remaining names
+that appear in nearly every job description this site is aimed at.
 
 There is no engineering blocker on any of this. Adding a chapter means adding a file under
 `content/<topic>/`; routes, search index, sitemap, reading time and progress all follow from there.
+
+### 0.2 The gaps inside what is already written
+
+A chapter-level audit of the six written topics is kept as a separate, tickable page:
+[**the build queue**](https://claude.ai/code/artifact/13c4f88f-eea2-416b-9c5b-bad7e5f0b416). It
+lists roughly 138 specific missing chapters, graded P0 to P2. The headlines:
+
+**Practice is the sharpest imbalance on the site.** All 299 exercises live in two topics. React has
+44 chapters and nothing to type; System Design has 24; the interview book has 27 rounds that open
+into no problems. The site's own copy says reading trains recognition and practice trains recall —
+four of six written topics currently do only the first.
+
+**Two chapters are titled "(first half)"** — `functions-basics` and `objects-arrays-basics` in
+JavaScript — and the second half was never written. Two System Design chapters are titled
+"(surface)" and say so honestly. Those four are the only places on the site that promise something
+undelivered in the title, which makes them the first thing to fix.
+
+**System Design has no frontend track**, on a site whose entire audience is JavaScript and React
+developers, and 2 walkthroughs where a design course needs closer to ten.
+
+**The interview book points at five rounds the site cannot teach** — TypeScript, Next.js, Node/Nest,
+Databases/Redis and AWS/Docker/CI-CD each have a round and no topic behind it. It is also missing
+the AI round, which became standard in the last two years.
+
+**Only two cheat pages exist**, for JavaScript and Git. React, DSA and System Design — the three
+biggest — have none.
+
+Six items the audit lists for React were closed after it was written: security and XSS,
+virtualisation, React Native, bundle strategy, Web Vitals, and controlled versus uncontrolled
+inputs. The genuinely open React gaps are animation, i18n, "thinking in React", and deeper
+treatments of the React Compiler, streaming SSR, auth, file upload and end-to-end testing.
+
+### 0.3 The patterns that repeat across every topic
+
+The audit's most useful section is the one that is not about any single topic. Sixteen items recur,
+and four of them are the same shape: **Git has something the others do not.**
+
+| Every topic should have  | Has it          |
+| ------------------------ | --------------- |
+| Runnable exercises       | JavaScript, DSA |
+| A cheat page             | JavaScript, Git |
+| An inline interview bank | Git             |
+| A guided project         | none            |
+
+Git's shape — model, then internals, then commands, then workflow, then danger zone, then interview
+bank, then cheat sheet — is the only complete one on the site. Writing that shape down as a template
+and rebuilding the others against it is cheaper than deciding each topic's structure again.
+
+The rest, briefly: per-chapter recall cards, so the spaced-repetition review page has something
+chapter-specific to resurface; a placement test instead of asking readers to guess their level; a
+prerequisite map, because there are 174 chapters and no edges between them; references on advanced
+chapters, since sourceless depth reads as opinion; and last-updated stamps, because React, Node and
+ES all move faster than the notes about them.
+
+Two of the audit's cross-cutting claims were checked and do not hold. **Search is already
+cross-topic** — the reader fetches the global index alongside the topic one. And the home page count
+was corrected separately: it now counts topics actually on the shelf rather than every topic that
+exists.
 
 ---
 
@@ -204,6 +259,12 @@ already the seam. Note that the CSP has blocked a third-party script before — 
 what "offline" means for the playground, which needs its 18 MB of wasm runtimes. The fiddly part is
 that the App Router serves RSC payloads, not only HTML, so the caching rules have to account for
 both.
+
+**Three pages render nothing for a crawler.** Measured on the build: `/git` emits 40 characters of
+visible text, `/review` 34 and `/progress` 21, because each returns `null` until mounted. `/problems`,
+by contrast, emits 17,741. The Git guide is one of the best things on the site and no search engine
+can see a word of it. The fix is the shape `/architecture` already uses: render the body on the
+server and keep only the interactive shell as a client component.
 
 **`Kalam 300`.** The light weight exists for `.sub` and `.brand__meta` — around six elements on a
 page — and costs its own font file, roughly 13 KB of the 145 KB a chapter page loads. Moving those to

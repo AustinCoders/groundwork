@@ -266,6 +266,10 @@
     background: var(--idle);
   }
 
+  .ledger--gaps .row {
+    grid-template-columns: minmax(120px, 1.25fr) minmax(90px, 2fr) 118px;
+  }
+
   .count {
     font-family: var(--mono);
     font-size: 13px;
@@ -601,8 +605,8 @@
 
   <section>
     <div class="figures">
-      <div class="figure"><b>559</b><span>prerendered pages</span></div>
-      <div class="figure"><b>112</b><span>chapters written</span></div>
+      <div class="figure"><b>582</b><span>prerendered pages</span></div>
+      <div class="figure"><b>174</b><span>chapters written</span></div>
       <div class="figure"><b>299</b><span>exercises with tests</span></div>
       <div class="figure"><b>405</b><span>interview questions</span></div>
     </div>
@@ -619,14 +623,19 @@
 
     <div class="meter">
       <div class="meter-head">
-        <strong>4 of 20 topics written</strong>
-        <em>112 chapters written · 399 still outlines</em>
+        <strong>6 of 21 topics written</strong>
+        <em>174 chapters written · 358 still outlines</em>
       </div>
-      <div class="meter-track"><i style="width: 20%"></i></div>
-      <p class="meter-note">By chapter rather than by topic it is 112 of 511, or 22%.</p>
+      <div class="meter-track"><i style="width: 29%"></i></div>
+      <p class="meter-note">By chapter rather than by topic it is 174 of 532, or 33%.</p>
     </div>
 
     <div class="ledger">
+      <div class="row">
+        <span class="name">React</span>
+        <span class="measure"><i style="width: 100%"></i></span>
+        <span class="count"><b>44</b> · 0 ex</span>
+      </div>
       <div class="row">
         <span class="name">DSA in JS</span>
         <span class="measure"><i style="width: 100%"></i></span>
@@ -647,10 +656,15 @@
         <span class="measure"><i style="width: 100%"></i></span>
         <span class="count"><b>24</b> · 0 ex</span>
       </div>
-      <div class="row is-idle">
-        <span class="name">React</span>
-        <span class="measure"><i class="none" style="width: 0"></i></span>
-        <span class="count">41 planned</span>
+      <div class="row">
+        <span class="name">How this is built</span>
+        <span class="measure"><i style="width: 100%"></i></span>
+        <span class="count"><b>18</b> chapters</span>
+      </div>
+      <div class="row">
+        <span class="name">Git</span>
+        <span class="measure"><i style="width: 100%"></i></span>
+        <span class="count"><b>16</b> · 0 ex</span>
       </div>
       <div class="row is-idle">
         <span class="name">Node.js</span>
@@ -734,6 +748,124 @@
       only read. Their exercises do not look like the DSA ones — a design exercise is a prompt and a rubric, an
       interview one a question with a model answer to compare against. That is a content format decision before it is a
       code one.
+    </p>
+  </section>
+
+  <section>
+    <span class="eyebrow">The second axis</span>
+    <h2>Depth inside what is written</h2>
+    <p class="lede">
+      A topic being written is not the same as a topic being finished. A chapter-level audit of the six written topics
+      found 121 specific missing chapters, plus 16 patterns that repeat across all of them. Graded P0 &mdash; blocks a
+      reader now &mdash; through P2.
+    </p>
+
+    <div class="ledger ledger--gaps">
+      <div class="row">
+        <span class="name">System Design</span>
+        <span class="measure"><i style="width: 100%; background: var(--open)"></i></span>
+        <span class="count"><b>35</b> gaps &middot; 14 P0</span>
+      </div>
+      <div class="row">
+        <span class="name">JavaScript</span>
+        <span class="measure"><i style="width: 80%; background: var(--open)"></i></span>
+        <span class="count"><b>28</b> gaps &middot; 9 P0</span>
+      </div>
+      <div class="row">
+        <span class="name">React</span>
+        <span class="measure"><i style="width: 66%; background: var(--open)"></i></span>
+        <span class="count"><b>23</b> gaps &middot; 6 P0</span>
+      </div>
+      <div class="row">
+        <span class="name">DSA in JS</span>
+        <span class="measure"><i style="width: 43%; background: var(--open)"></i></span>
+        <span class="count"><b>15</b> gaps &middot; 6 P0</span>
+      </div>
+      <div class="row">
+        <span class="name">Interview book</span>
+        <span class="measure"><i style="width: 34%; background: var(--open)"></i></span>
+        <span class="count"><b>12</b> gaps &middot; 5 P0</span>
+      </div>
+      <div class="row">
+        <span class="name">Git</span>
+        <span class="measure"><i style="width: 23%; background: var(--open)"></i></span>
+        <span class="count"><b>8</b> gaps &middot; 2 P0</span>
+      </div>
+    </div>
+
+    <div class="items">
+      <div class="item">
+        <div class="item-head">
+          <h3>Four things Git has and nothing else does</h3>
+          <span class="tag">The pattern</span>
+        </div>
+        <p>
+          Runnable exercises exist in JavaScript and DSA. A cheat page exists in JavaScript and Git. An inline interview
+          bank exists in Git alone. A guided project exists <b>nowhere</b>, on a site whose beginner checkpoint asks the
+          reader to build a to-do app.
+        </p>
+        <p>
+          Git's shape &mdash; model, internals, commands, workflow, danger zone, interview bank, cheat sheet &mdash; is
+          the only complete one here. Writing it down as a template is cheaper than deciding each topic's structure
+          again.
+        </p>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <h3>All 299 exercises live in two topics</h3>
+          <span class="tag">Sharpest</span>
+        </div>
+        <p>
+          React has 44 chapters and nothing to type. System Design has 24, Git 16, and the interview book has 27 rounds
+          that open into no problems.
+          <b>The site's own copy says reading trains recognition and practice trains recall</b> &mdash; four of six
+          written topics currently do only the first.
+        </p>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <h3>Four chapters promise something undelivered in the title</h3>
+          <span class="tag">Fix first</span>
+        </div>
+        <p>
+          Two JavaScript chapters are titled <code>(first half)</code> and the second half was never written. Two System
+          Design chapters are titled <code>(surface)</code> and say so honestly. They are the only places on the site
+          where the title itself records a gap, which makes them the cheapest credibility repair available.
+        </p>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <h3>Three pages render nothing for a crawler</h3>
+          <span class="tag">Measured</span>
+        </div>
+        <p>
+          <code>/git</code> emits 40 characters of visible text, <code>/review</code> 34 and <code>/progress</code> 21
+          &mdash; each returns <code>null</code> until mounted. <code>/problems</code> emits 17,741 for comparison. The
+          Git guide is among the best writing on the site and no search engine can see a word of it.
+          <code>/architecture</code> already shows the fix: render the body on the server, keep only the shell on the
+          client.
+        </p>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <h3>The interview book points at five topics that do not exist</h3>
+        </div>
+        <p>
+          TypeScript, Next.js, Node/Nest, Databases/Redis and AWS/Docker/CI-CD each have a round in the book and no
+          topic behind them. It is also missing the AI round, which became standard in the last two years, and a
+          frontend system design round &mdash; on a site whose readers are frontend candidates.
+        </p>
+      </div>
+    </div>
+
+    <p class="lede">
+      Two of the audit's claims were checked and did not hold: search is already cross-topic, and the home page count
+      was corrected separately. Six of its React items were closed after it was written &mdash; security,
+      virtualisation, React Native, bundle strategy, Web Vitals, and controlled versus uncontrolled inputs.
     </p>
   </section>
 
