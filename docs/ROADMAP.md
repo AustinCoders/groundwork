@@ -13,14 +13,14 @@ A visual version of this file, with progress bars, is [`roadmap.html`](roadmap.h
 
 ## 0. Content — the half the engineering serves
 
-Measured today: **6 of 21 topics have written chapters** — 188 written, 358 still outlines, plus
+Measured today: **6 of 21 topics have written chapters** — 189 written, 358 still outlines, plus
 Git's 16 standalone sections.
 
 | Topic             | Written   | Exercises | Cheat page |
 | ----------------- | --------- | --------- | ---------- |
 | React             | 51        | 24        | yes        |
 | DSA in JS         | 34        | 245       | **no**     |
-| JavaScript        | 34        | 65        | yes        |
+| JavaScript        | 35        | 65        | yes        |
 | Interview book    | 27 rounds | **0**     | —          |
 | System Design     | 24        | **0**     | **no**     |
 | How this is built | 18        | —         | —          |
@@ -123,7 +123,7 @@ and rebuilding the others against it is cheaper than deciding each topic's struc
 
 The rest, briefly: per-chapter recall cards, so the spaced-repetition review page has something
 chapter-specific to resurface; a placement test instead of asking readers to guess their level; a
-prerequisite map, because there are 188 chapters and no edges between them; references on advanced
+prerequisite map, because there are 189 chapters and no edges between them; references on advanced
 chapters, since sourceless depth reads as opinion; and last-updated stamps, because React, Node and
 ES all move faster than the notes about them.
 

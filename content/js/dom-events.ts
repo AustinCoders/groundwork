@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const domEvents: Chapter = {
   id: "dom-events",
-  num: "B10",
+  num: "B11",
   title: "DOM & events",
   short: "DOM & events",
   levels: ["beginner"],

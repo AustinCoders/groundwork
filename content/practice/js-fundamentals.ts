@@ -168,7 +168,7 @@ export const jsFundamentals: Exercise[] = [
   },
 {
     id: "ex-closure-counter",
-    chapter: "scope-functions",
+    chapter: "closures",
     level: "beginner",
     title: "A counter nobody can cheat",
     brief:
@@ -206,7 +206,7 @@ export const jsFundamentals: Exercise[] = [
   },
 {
     id: "ex-once",
-    chapter: "scope-functions",
+    chapter: "closures",
     level: "intermediate",
     title: "once() — run it a single time",
     brief:

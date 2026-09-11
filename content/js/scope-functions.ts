@@ -6,7 +6,7 @@ export const scopeFunctions: Chapter = {
   title: "Scope & functions, properly",
   short: "Scope & functions, properly",
   levels: ["intermediate"],
-  practice: ["ex-loop-fix", "ex-closure-counter", "ex-once", "ex-curry-multiply"],
+  practice: ["ex-loop-fix", "ex-curry-multiply"],
   ready: true,
   subtitle: "Closures and this — the two ideas most interviews spend the most time on.",
   body: `<h3>The scope chain</h3>
@@ -70,145 +70,23 @@ console.log(x);   <span class="c">// what happens?</span></code></pre>
   <code>let i</code> in its own block shadows the one outside it.
 </p>
 
-<h3>Closures</h3>
+<h3>Closures, and what this chapter adds to them</h3>
 <p>
-  A closure isn't a special syntax — it's just what already happens
-  every time an inner function outlives the call that created it. The
-  inner function keeps a live link to its outer variables, not a
-  snapshot of their values at the time.
+  The scope chain above is the whole mechanism behind closures: a
+  function keeps its outer reference, and if the function outlives the
+  call, the environment on the other end of that reference cannot be
+  collected. <a href="/notes/closures">The closures chapter</a> covers
+  that properly — the live link rather than a snapshot, one closure per
+  call, the five jobs they do, and the memory they hold on to.
 </p>
-<div class="try">
-  <pre><code>function makeCounter() {
-  let count = 0;
-  return {
-    inc: () =&gt; ++count,
-    get: () =&gt; count,
-  };
-}
-const counter = makeCounter();
-counter.inc();
-counter.inc();
-console.log(counter.get());   <span class="c">// what happens?</span></code></pre>
-</div>
-<p class="sub">
-  <code>2</code>. <code>makeCounter</code> already returned — normally
-  its local variables would be garbage collected the moment the
-  function exits. But <code>inc</code> and <code>get</code> both still
-  reference <code>count</code>, so the engine keeps that one variable
-  alive for as long as something can still reach it. Call
-  <code>makeCounter()</code> again and you get a brand new,
-  <em>completely independent</em> <code>count</code> — the closure
-  belongs to that specific call, not to the function definition.
-</p>
-<div class="warn">
-  <span class="ttl">⚠ The classic loop-and-closure bug</span>
-  <code>for (var i = 0; i &lt; 3; i++) setTimeout(() =&gt; console.log(i), 0);</code>
-  logs <code>3, 3, 3</code> — every callback closes over the exact same
-  <code>var i</code>, and by the time any of them run, the loop has
-  already finished and <code>i</code> is <code>3</code>. Switch
-  <code>var</code> to <code>let</code> and it logs <code>0, 1, 2</code>,
-  because <code>let</code> creates a <b>fresh binding per iteration</b>
-  — each callback closes over its own copy.
-</div>
-
-<h3>Five real jobs closures do</h3>
 <p>
-  This is the part interviews actually probe — not "what is a closure"
-  but "build me one of these":
+  What is worth adding here, now that the scope chain is fresh: a
+  closure is not a different kind of scope. It is the <em>same</em>
+  lookup you just read about, still working after the function that
+  created it has returned. Shadowing behaves identically inside one, and
+  a closure over a name that gets shadowed later still sees the binding
+  that was in scope where it was written.
 </p>
-
-<pre><code><span class="c">// 1. Factories — a function that builds customized functions</span>
-function multiplierOf(factor) {
-  return (n) =&gt; n * factor;
-}
-const double = multiplierOf(2);
-double(5);   <span class="c">// 10 — "factor" is remembered inside double, permanently</span></code></pre>
-
-<pre><code><span class="c">// 2. Privacy — variables no outside code can ever touch directly</span>
-function createAccount(startingBalance) {
-  let balance = startingBalance;   <span class="c">// truly private — no "this.balance" to poke at</span>
-  return {
-    deposit: (n) =&gt; (balance += n),
-    getBalance: () =&gt; balance,
-  };
-}</code></pre>
-
-<div class="try">
-  <pre><code><span class="c">// 3. Memoize — cache a function's results by its arguments</span>
-function memoize(fn) {
-  const cache = new Map();
-  return function (...args) {
-    const key = JSON.stringify(args);
-    if (cache.has(key)) return cache.get(key);
-    const result = fn(...args);
-    cache.set(key, result);
-    return result;
-  };
-}
-
-let calls = 0;
-const slowSquare = memoize((n) =&gt; { calls++; return n * n; });
-slowSquare(5);
-slowSquare(5);
-slowSquare(5);
-console.log("real calls:", calls);   <span class="c">// what happens?</span></code></pre>
-</div>
-<p class="sub">
-  <code>1</code> — the underlying function only ever runs once for a
-  given set of arguments. <code>cache</code> is closed over by the
-  returned function and nothing else, so every call checks the same
-  Map without any outside code able to reach or corrupt it.
-</p>
-
-<div class="try">
-  <pre><code><span class="c">// 4. Once — guarantee a function's real work happens a single time</span>
-function once(fn) {
-  let called = false, result;
-  return function (...args) {
-    if (!called) {
-      called = true;
-      result = fn.apply(this, args);
-    }
-    return result;
-  };
-}
-
-let inits = 0;
-const init = once(() =&gt; { inits++; return "ready"; });
-console.log(init(), init(), init());
-console.log("actual inits:", inits);   <span class="c">// what happens?</span></code></pre>
-</div>
-<p class="sub">
-  <code>ready ready ready</code>, then <code>1</code>. Every call after
-  the first returns the <em>same cached result</em> without
-  re-running <code>fn</code> — the standard shape behind "run this setup
-  code exactly once, no matter how many times it's requested."
-</p>
-
-<pre><code><span class="c">// 5. Debounce &amp; throttle — closures managing a timer nobody outside can see</span>
-function debounce(fn, delay) {
-  let timer;
-  return function (...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() =&gt; fn.apply(this, args), delay);
-  };
-}
-function throttle(fn, interval) {
-  let ready = true;
-  return function (...args) {
-    if (!ready) return;
-    ready = false;
-    fn.apply(this, args);
-    setTimeout(() =&gt; { ready = true; }, interval);
-  };
-}</code></pre>
-<div class="sticky mint">
-  <span class="ttl">Rule</span> <b>Debounce</b> waits for a pause and
-  runs once at the end (a search box: wait until they stop typing).
-  <b>Throttle</b> runs immediately, then enforces a cooldown (a scroll
-  handler: fire at most once every N ms, the whole time they scroll).
-</div>
-
 <h3>this, past the four rules</h3>
 <p>
   <a href="/notes/this-keyword">The beginner chapter on this</a> has the

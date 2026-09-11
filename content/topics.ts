@@ -118,6 +118,18 @@ export const topics: TopicsData = {
           ],
         },
         {
+          title: "Closures",
+          chapter: "closures",
+          items: [
+            "A function keeps a link to where it was created",
+            "Why the variable survives after the call returns",
+            "A live link, not a snapshot",
+            "One closure per call, not per function",
+            "Factories, privacy, memoize, once, debounce/throttle",
+            "The memory closures hold on to, and the leaks that follow",
+          ],
+        },
+        {
           title: "DOM & events",
           chapter: "dom-events",
           items: [
