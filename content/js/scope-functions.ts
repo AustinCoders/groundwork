@@ -71,6 +71,112 @@ console.log(x);   <span class="c">// what happens?</span></code></pre>
   <code>let i</code> in its own block shadows the one outside it.
 </p>
 
+<h3>Where the creation phase gets strange</h3>
+<p>
+  <a href="/notes/execution-context">Execution context</a> gave the
+  normal rules: what each declaration holds before its line runs. These
+  are the cases those rules do not settle on their own — the ones that
+  separate "I know hoisting" from "I know how a scope is built".
+</p>
+
+<h4>A function declaration inside a block</h4>
+<p>
+  <code>let</code> in a block is block-scoped. A
+  <code>function</code> declaration in a block is, too — but only in
+  strict mode. In old-style sloppy scripts, browsers kept a legacy
+  behaviour the spec now writes down as a special case: the name is
+  <em>also</em> declared on the enclosing function like a
+  <code>var</code>, holding <code>undefined</code> until the block runs.
+</p>
+<pre><code><span class="c">// sloppy script</span>
+f();                            <span class="c">// TypeError: f is not a function — f exists, holds undefined</span>
+{ function f() { return "ok"; } }
+f();                            <span class="c">// "ok" — running the block copied it out</span>
+
+<span class="c">// strict mode, or any ES module</span>
+{ function g() { return "ok"; } }
+g();                            <span class="c">// ReferenceError — g never left its block</span></code></pre>
+<p class="sub">
+  Same source, two behaviours, depending on a mode flag you may not
+  have set yourself (modules and class bodies are always strict). The
+  practical rule: if a function has to be visible outside a block,
+  declare it outside the block — or assign a function expression to a
+  <code>let</code> that is.
+</p>
+
+<h4>Default parameters get their own scope</h4>
+<p>
+  <a href="/notes/functions-basics">Functions</a> showed the first rule:
+  parameters are set up left to right, each in its TDZ until its turn,
+  so <code>function f(a = b, b = 1)</code> throws a
+  <code>ReferenceError</code> while <code>b = a + 1</code> works.
+</p>
+<p>
+  Less well known: once any parameter has a default, the parameter list
+  becomes a scope of its own, sitting <em>between</em> the outer scope
+  and the body. A default cannot see <code>var</code>s declared in the
+  body, even ones with the same name.
+</p>
+<div class="try">
+  <pre><code>var y = "outer";
+function g(read = () =&gt; y) {
+  var y = "inner";
+  return read();
+}
+console.log(g());   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>"outer"</code>. The arrow was created in the parameter scope, so
+  its chain goes parameters &rarr; outer, skipping the body entirely.
+  The body's <code>var y</code> is a different binding that the arrow
+  can never reach.
+</p>
+
+<h4>A named function expression's name is private</h4>
+<pre><code>const factorial = function fact(n) {
+  return n &lt;= 1 ? 1 : n * fact(n - 1);   <span class="c">// fact is visible in here</span>
+};
+factorial(5);    <span class="c">// 120</span>
+typeof fact;     <span class="c">// "undefined" — and nowhere out here</span></code></pre>
+<p class="sub">
+  The engine puts <code>fact</code> in a tiny scope wrapped around the
+  function alone. That makes it the safe way to recurse — it still works
+  if someone reassigns <code>factorial</code> — and the name shows up in
+  stack traces. The binding is read-only: <code>fact = 5</code> inside
+  the function is silently ignored in sloppy mode and a
+  <code>TypeError</code> in strict mode.
+</p>
+
+<h4>What the spec actually calls these boxes</h4>
+<p>
+  The beginner chapter drew one "variable environment" per context. The
+  spec splits it in two, and the split explains everything above:
+</p>
+<ul>
+  <li>
+    <b>VariableEnvironment</b> — where <code>var</code>s and (sloppy)
+    function declarations go. Set once when the function starts, never
+    changes. That is why <code>var</code> ignores blocks.
+  </li>
+  <li>
+    <b>LexicalEnvironment</b> — where <code>let</code>,
+    <code>const</code> and <code>class</code> go. Every time execution
+    enters a block, a new environment is created and becomes the current
+    LexicalEnvironment, with the old one as its outer reference; leaving
+    the block restores it. That is block scope, and it is also how each
+    loop iteration gets its own <code>let i</code>.
+  </li>
+</ul>
+<p>
+  Each environment is an <b>environment record</b> plus that outer
+  reference. The global one is a two-part record: an object part that
+  <em>is</em> <code>window</code> (for <code>var</code> and function
+  declarations) and a plain part beside it (for <code>let</code> and
+  <code>const</code>). That one detail is why top-level
+  <code>let</code> is not on <code>window</code>, yet two classic scripts
+  declaring the same <code>let</code> still collide.
+</p>
+
 <h3>Closures, and what this chapter adds to them</h3>
 <p>
   The scope chain above is the whole mechanism behind closures: a

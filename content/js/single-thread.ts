@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const singleThread: Chapter = {
   id: "single-thread",
-  num: "B3",
+  num: "B4",
   title: "One thread, one stack",
   short: "Single thread",
   levels: ["beginner"],

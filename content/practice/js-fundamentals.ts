@@ -635,6 +635,96 @@ export const jsFundamentals: Exercise[] = [
     ],
   },
   {
+    id: "ex-redeclare-check",
+    chapter: "var-let-const",
+    level: "beginner",
+    title: "Would this scope even parse?",
+    brief:
+      '<p>Redeclaring a name is found while the engine collects declarations, before any line runs. Write <code>firstRedeclaration(declarations)</code> that plays that part of the engine for <b>one</b> scope.</p><p>Each declaration is <code>{ kind, name }</code>, where <code>kind</code> is <code>"var"</code>, <code>"function"</code>, <code>"let"</code>, <code>"const"</code> or <code>"class"</code>. Walk them in order and return the <b>name</b> of the first declaration that would be a SyntaxError, or <code>null</code> if the scope is fine.</p><ul><li><code>var</code> and <code>function</code> may repeat each other freely</li><li><code>let</code>, <code>const</code> and <code>class</code> clash with <em>any</em> earlier declaration of the same name, and any later declaration clashes with them</li></ul>',
+    starter:
+      'function firstRedeclaration(declarations) {\n  // TODO: remember what each name was declared with so far\n}\n\nconsole.log(firstRedeclaration([{ kind: "var", name: "x" }, { kind: "var", name: "x" }]));  // null\nconsole.log(firstRedeclaration([{ kind: "let", name: "y" }, { kind: "var", name: "y" }]));  // "y"\n',
+    hints: [
+      "Keep a map from name to the kind it was first declared with.",
+      "A clash needs two things: the name was seen before, and at least one of the two declarations is let, const or class.",
+      "var followed by var, or var followed by function, is not a clash — that is the silent case.",
+    ],
+    solution:
+      'function firstRedeclaration(declarations) {\n  const lexical = ["let", "const", "class"];\n  const seen = {};\n  for (const d of declarations) {\n    if (Object.prototype.hasOwnProperty.call(seen, d.name)) {\n      if (lexical.includes(seen[d.name]) || lexical.includes(d.kind)) return d.name;\n    } else {\n      seen[d.name] = d.kind;\n    }\n  }\n  return null;\n}\n',
+    tests: [
+      {
+        name: "var twice is allowed",
+        body: 'assert.equal(firstRedeclaration([{ kind: "var", name: "x" }, { kind: "var", name: "x" }]), null);',
+      },
+      {
+        name: "var and function with one name are allowed",
+        body: 'assert.equal(firstRedeclaration([{ kind: "var", name: "f" }, { kind: "function", name: "f" }]), null);\nassert.equal(firstRedeclaration([{ kind: "function", name: "f" }, { kind: "var", name: "f" }]), null);',
+      },
+      {
+        name: "let twice is a clash",
+        body: 'assert.equal(firstRedeclaration([{ kind: "let", name: "y" }, { kind: "let", name: "y" }]), "y");',
+      },
+      {
+        name: "a clash works in both directions",
+        body: 'assert.equal(firstRedeclaration([{ kind: "var", name: "a" }, { kind: "let", name: "a" }]), "a");\nassert.equal(firstRedeclaration([{ kind: "const", name: "b" }, { kind: "var", name: "b" }]), "b");',
+      },
+      {
+        name: "class clashes like let",
+        body: 'assert.equal(firstRedeclaration([{ kind: "class", name: "C" }, { kind: "function", name: "C" }]), "C");',
+      },
+      {
+        name: "different names never clash",
+        body: 'assert.equal(firstRedeclaration([{ kind: "let", name: "a" }, { kind: "const", name: "b" }, { kind: "var", name: "c" }]), null);',
+      },
+      {
+        name: "reports the FIRST clash in order",
+        body: 'assert.equal(\n  firstRedeclaration([\n    { kind: "var", name: "p" },\n    { kind: "let", name: "q" },\n    { kind: "var", name: "p" },\n    { kind: "const", name: "q" },\n    { kind: "let", name: "p" },\n  ]),\n  "q"\n);',
+      },
+    ],
+  },
+  {
+    id: "ex-deep-freeze",
+    chapter: "var-let-const",
+    level: "beginner",
+    title: "Make const mean it",
+    brief:
+      "<p><code>const</code> locks the name, and <code>Object.freeze</code> locks only the top level. Write <code>deepFreeze(value)</code> that freezes an object and <b>every object and array inside it</b>, all the way down, and returns the same object.</p><ul><li>primitives passed in are returned unchanged</li><li>it must not loop forever if an object contains itself</li></ul>",
+    starter:
+      'function deepFreeze(value) {\n  // TODO: freeze this level, then every nested object\n}\n\nconst settings = deepFreeze({ theme: "dark", sizes: { base: 16 } });\nsettings.sizes.base = 20;\nconsole.log(settings.sizes.base);           // still 16\nconsole.log(Object.isFrozen(settings.sizes)); // true\n',
+    hints: [
+      "Anything that is not an object (or is null) has nothing to freeze — return it as it is.",
+      "Object.values(obj) gives you the nested values to visit; arrays work the same way.",
+      "Check Object.isFrozen before recursing. Freeze first, then visit the children, and a cycle stops by itself.",
+    ],
+    solution:
+      'function deepFreeze(value) {\n  if (value === null || typeof value !== "object" || Object.isFrozen(value)) return value;\n  Object.freeze(value);\n  for (const child of Object.values(value)) deepFreeze(child);\n  return value;\n}\n',
+    tests: [
+      {
+        name: "returns the same object, frozen",
+        body: "const obj = { a: 1 };\nassert.equal(deepFreeze(obj), obj);\nassert.ok(Object.isFrozen(obj));",
+      },
+      {
+        name: "freezes nested objects",
+        body: 'const obj = deepFreeze({ sizes: { base: 16, more: { x: 1 } } });\nassert.ok(Object.isFrozen(obj.sizes), "second level is not frozen");\nassert.ok(Object.isFrozen(obj.sizes.more), "third level is not frozen");',
+      },
+      {
+        name: "freezes arrays and the objects inside them",
+        body: "const obj = deepFreeze({ list: [{ id: 1 }, { id: 2 }] });\nassert.ok(Object.isFrozen(obj.list));\nassert.ok(Object.isFrozen(obj.list[1]));",
+      },
+      {
+        name: "nested writes no longer land",
+        body: "const obj = deepFreeze({ sizes: { base: 16 } });\ntry { obj.sizes.base = 20; } catch (e) {}\nassert.equal(obj.sizes.base, 16);",
+      },
+      {
+        name: "primitives come back unchanged",
+        body: 'assert.equal(deepFreeze(5), 5);\nassert.equal(deepFreeze("hi"), "hi");\nassert.equal(deepFreeze(null), null);',
+      },
+      {
+        name: "survives an object that contains itself",
+        body: "const loop = { name: \"loop\" };\nloop.self = loop;\nassert.equal(deepFreeze(loop), loop);\nassert.ok(Object.isFrozen(loop));",
+      },
+    ],
+  },
+  {
     id: "ex-call-stack-trace",
     chapter: "single-thread",
     level: "beginner",

@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const thisKeyword: Chapter = {
   id: "this-keyword",
-  num: "B9",
+  num: "B10",
   title: "The this keyword",
   short: "this",
   levels: ["beginner"],

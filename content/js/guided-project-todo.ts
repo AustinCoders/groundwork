@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const guidedProjectTodo: Chapter = {
   id: "guided-project-todo",
-  num: "B14",
+  num: "B15",
   title: "Guided project: build a to-do app",
   short: "Guided project",
   levels: ["beginner"],

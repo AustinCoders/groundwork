@@ -175,14 +175,15 @@ export const executionContext: Chapter = {
     viewBox="0 0 720 330"
     class="dg"
     role="img"
-    aria-label="An execution context box containing three parts: a variable environment listing names, an outer reference arrow pointing to the parent context, and a this binding"
+    aria-label="An execution context box containing three parts: a variable environment listing names; an outer reference, fixed by where the function was written; and a this binding, set by how the function was called, except arrows which borrow it from outside"
   >
     <g class="rough">
       <rect class="boxy" x="26" y="26" width="420" height="276" rx="10" />
       <rect class="box" x="50" y="78" width="370" height="96" rx="8" />
       <rect class="box" x="50" y="190" width="370" height="42" rx="8" />
       <rect class="box" x="50" y="246" width="370" height="42" rx="8" />
-      <rect class="boxg" x="516" y="120" width="176" height="86" rx="10" />
+      <rect class="boxg" x="508" y="150" width="196" height="64" rx="10" />
+      <rect class="boxg" x="508" y="234" width="196" height="64" rx="10" />
     </g>
     <text class="lbl" x="44" y="58" style="font-size: 19px">EXECUTION CONTEXT</text>
     <text class="lbl" x="66" y="102">1 · Variable environment</text>
@@ -191,16 +192,41 @@ export const executionContext: Chapter = {
     <text class="sm" x="66" y="166">a = 1 · b = 2 · f = fn</text>
     <text class="lbl" x="66" y="216">2 · Outer reference &rarr; the scope chain</text>
     <text class="lbl" x="66" y="272">3 · this</text>
-    <path class="ln" d="M424 210 L512 168" marker-end="url(#arrow)" />
-    <text class="lbl" x="534" y="152">The context it was</text>
-    <text class="lbl" x="534" y="174">WRITTEN inside</text>
-    <text class="sm" x="534" y="196">(not the one that called it)</text>
+    <path class="ln" d="M424 211 L504 184" marker-end="url(#arrow)" />
+    <path class="ln" d="M424 267 L504 266" marker-end="url(#arrow)" />
+    <text class="lbl" x="522" y="178">Where it was WRITTEN</text>
+    <text class="sm" x="522" y="200">fixed before any call</text>
+    <text class="lbl" x="522" y="262">How it was CALLED</text>
+    <text class="sm" x="522" y="284">arrows borrow it instead</text>
     <text class="sm" x="26" y="322">One of these per program (global), plus a fresh one per function CALL.</text>
   </svg>
   <figcaption>
-    A context is memory + a link to the memory around it + a this.
+    A context is memory + a link to the memory around it + a this. The
+    link comes from where the code sits; the this comes from the call.
   </figcaption>
 </figure>
+
+<p>
+  Those two arrows point in opposite directions, and mixing them up is
+  the classic mistake. The <b>outer reference</b> is lexical: read the
+  source and you know it. <b>this</b> is not — for a normal function it
+  is filled in fresh on every call, from the shape of that call:
+  <code>user.greet()</code> gives <code>user</code>, a bare
+  <code>greet()</code> gives nothing useful. Only an arrow function
+  skips that step and borrows the <code>this</code> of the scope it was
+  written in. The rules are in
+  <a href="/notes/this-keyword">the this chapter</a>; the one-line
+  version is "the call site decides".
+</p>
+<p>
+  The global context gets a <code>this</code> too, and it depends on how
+  the file was loaded: <code>window</code> at the top of a classic
+  <code>&lt;script&gt;</code>, <code>undefined</code> at the top of an
+  ES module, and <code>module.exports</code> at the top of a CommonJS
+  file in Node. Same source, three answers — which is why top-level
+  code should never lean on it. Use <code>globalThis</code> when you
+  genuinely mean the global object.
+</p>
 
 <p>
   You meet two kinds immediately. The <b>global execution context</b> is
@@ -208,7 +234,7 @@ export const executionContext: Chapter = {
   walking. A <b>function execution context</b> is created fresh on
   <em>every call</em>, not once per function. Call a function three
   times and you get three contexts, each with its own memory, created
-  and destroyed independently.
+  independently.
 </p>
 
 <div class="say">
@@ -300,6 +326,27 @@ var g = function () { console.log("g ran"); };</code></pre>
   callable thing.
 </p>
 
+<h4>When a var and a function share a name</h4>
+<p>
+  The table implies a tie-break, and interviewers love asking for it.
+  If one scope has both <code>var foo</code> and
+  <code>function foo() {}</code>, creation phase handles the function
+  first and stores the whole body. The <code>var</code> then finds the
+  name already taken and does nothing — it never resets it to
+  <code>undefined</code>. Order in the file does not matter.
+</p>
+<pre><code>console.log(typeof foo);  <span class="c">// "function" — the declaration won creation</span>
+var foo;
+function foo() {}
+console.log(typeof foo);  <span class="c">// "function" — a bare var foo assigns nothing</span>
+var foo = 1;
+console.log(typeof foo);  <span class="c">// "number" — but an assignment still runs in phase two</span></code></pre>
+<p class="sub">
+  The function wins the creation phase; any <code>=</code> still wins
+  the execution phase. (With <code>let foo</code> in place of
+  <code>var foo</code> there is no contest — it is a SyntaxError.)
+</p>
+
 <h3>The Temporal Dead Zone, precisely</h3>
 <p>
   The TDZ is not "before the declaration line" in the file. It is the
@@ -337,284 +384,17 @@ var g = function () { console.log("g ran"); };</code></pre>
   later.
 </p>
 
-<h3>var, let and const — the whole difference</h3>
-<table>
-  <tr>
-    <th></th>
-    <th>var</th>
-    <th>let</th>
-    <th>const</th>
-  </tr>
-  <tr>
-    <th>Scoped to</th>
-    <td>the whole function</td>
-    <td>the nearest block</td>
-    <td>the nearest block</td>
-  </tr>
-  <tr>
-    <th>Early access</th>
-    <td><code>undefined</code></td>
-    <td class="tone-bad">ReferenceError (TDZ)</td>
-    <td class="tone-bad">ReferenceError (TDZ)</td>
-  </tr>
-  <tr>
-    <th>Reassign</th>
-    <td class="tone-yes">yes</td>
-    <td class="tone-yes">yes</td>
-    <td class="tone-no">no</td>
-  </tr>
-  <tr>
-    <th>Redeclare in the same scope</th>
-    <td class="tone-warn">yes, silently</td>
-    <td class="tone-no">SyntaxError</td>
-    <td class="tone-no">SyntaxError</td>
-  </tr>
-  <tr>
-    <th>Must be initialised</th>
-    <td>no</td>
-    <td>no</td>
-    <td class="tone-yes">yes, on the spot</td>
-  </tr>
-  <tr>
-    <th>Fresh binding per loop iteration</th>
-    <td class="tone-no">no — one shared</td>
-    <td class="tone-yes">yes</td>
-    <td>n/a in a counting loop</td>
-  </tr>
-  <tr>
-    <th>Becomes a <code>window</code> property</th>
-    <td class="tone-warn">yes, at top level</td>
-    <td>no</td>
-    <td>no</td>
-  </tr>
-</table>
-
-<h4>Block scope is the big one</h4>
+<h3>var, let and const are next</h3>
 <p>
-  A block is any pair of braces — an <code>if</code>, a
-  <code>for</code>, or a bare <code>{ }</code> you typed for no reason.
-  <code>let</code> and <code>const</code> belong to that block.
-  <code>var</code> does not see blocks at all; it climbs up to the
-  nearest <em>function</em> and lives there.
+  The table above already holds the part of <code>var</code>,
+  <code>let</code> and <code>const</code> that belongs to this chapter:
+  what each one holds before its line runs. Everything else about them —
+  block scope, why a <code>var</code> loop and a <code>let</code> loop
+  print different numbers, what <code>const</code> actually locks,
+  redeclaration, and what happens at the top of a file — has
+  <a href="/notes/var-let-const">a chapter of its own, straight after
+  this one</a>.
 </p>
-
-<div class="try">
-  <pre><code>function demo() {
-  if (true) {
-    var loose = "var";
-    let tight = "let";
-  }
-  console.log(loose);   <span class="c">// ?</span>
-  console.log(tight);   <span class="c">// ?</span>
-}
-demo();</code></pre>
-</div>
-<p class="sub">
-  <code>loose</code> escapes the <code>if</code> and prints, because
-  <code>var</code> was registered on the whole function during creation.
-  <code>tight</code> was destroyed with its block, so the second line
-  throws. This is why a stray <code>var</code> inside a long function
-  can be assigned in one branch and read in another without anyone
-  noticing.
-</p>
-
-<h4>The loop that catches everybody</h4>
-<p>
-  Same loop, one keyword changed, two completely different results.
-  Step through it and watch the boxes, not the numbers — the answer is
-  about how many bindings exist, not about timing.
-</p>
-
-<div class="demo">
-  <div class="demo__bar">var vs let in a loop — the same code, two memories</div>
-  <div class="demo__body">
-    <div class="loop-grid">
-      <div>
-        <div class="loop-code" id="vl-code"></div>
-        <div class="loop-bar"><i id="vl-bar"></i></div>
-        <div class="demo__ctl">
-          <button class="btn" id="vl-prev" type="button">&larr; Back</button>
-          <button class="btn" id="vl-next" type="button">Next step &rarr;</button>
-          <button class="btn" id="vl-play" type="button">Play</button>
-          <button class="btn btn--ghost" id="vl-reset" type="button">Reset</button>
-        </div>
-      </div>
-      <div class="loop-queues">
-        <div class="loop-box">
-          <div class="loop-box__label">With var — bindings that exist</div>
-          <div id="vl-p-var"></div>
-        </div>
-        <div class="loop-box">
-          <div class="loop-box__label">With let — bindings that exist</div>
-          <div id="vl-p-let"></div>
-        </div>
-        <div class="loop-box">
-          <div class="loop-box__label">Calling all three at the end</div>
-          <div id="vl-p-out"></div>
-        </div>
-      </div>
-    </div>
-    <p class="demo__note" id="vl-note"></p>
-  </div>
-</div>
-
-<script>
-(function () {
-  var ID = "vl";
-  var CODE = [
-    "const fns = [];",
-    "for (var|let i = 0; i < 3; i++) {",
-    "  fns.push(function () { return i; });",
-    "}",
-    "fns.map(function (f) { return f(); });"
-  ];
-  var STEPS = [
-    {"line":null,"panels":{"var":[],"let":[],"out":[]},"note":"One loop, written twice — once with var, once with let. Watch how many boxes each version creates."},
-    {"line":1,"panels":{"var":[],"let":[],"out":[]},"note":"An empty array to collect three functions in."},
-    {"line":2,"panels":{"var":["i = 0  (function-scoped, ONE box)"],"let":["i = 0  (iteration 1's own box)"],"out":[]},"note":"Iteration 1. var makes a single box on the function. let makes a box that belongs to THIS pass of the loop body."},
-    {"line":3,"panels":{"var":["i = 0  (function-scoped, ONE box)","fn#1 -> the one box"],"let":["i = 0  (iteration 1's own box)","fn#1 -> iteration 1's box"],"out":[]},"note":"The function is stored. It does not copy i — it remembers WHICH box to read later."},
-    {"line":2,"panels":{"var":["i = 1  (same box, overwritten)","fn#1 -> the one box"],"let":["i = 0  (iteration 1's box, frozen in place)","fn#1 -> iteration 1's box","i = 1  (iteration 2's NEW box)"],"out":[]},"note":"i++ runs. var overwrites its single box. let copies the value into a brand-new box for iteration 2 and leaves the old one untouched."},
-    {"line":3,"panels":{"var":["i = 1  (same box)","fn#1 -> the one box","fn#2 -> the one box"],"let":["i = 0  (iteration 1)","fn#1 -> iteration 1's box","i = 1  (iteration 2)","fn#2 -> iteration 2's box"],"out":[]},"note":"Second function stored. In the var column both functions now point at the same box."},
-    {"line":2,"panels":{"var":["i = 2  (same box)","fn#1, fn#2 -> the one box"],"let":["i = 0 · i = 1 · i = 2  (three separate boxes)","fn#1 -> box 1","fn#2 -> box 2"],"out":[]},"note":"Third pass. Same story again."},
-    {"line":3,"panels":{"var":["i = 2  (same box)","fn#1, fn#2, fn#3 -> the one box"],"let":["i = 0 · i = 1 · i = 2","fn#1 -> box 1","fn#2 -> box 2","fn#3 -> box 3"],"out":[]},"note":"Three functions stored in both versions."},
-    {"line":2,"panels":{"var":["i = 3  <- the loop exits ON this value","fn#1, fn#2, fn#3 -> the one box"],"let":["i = 0 · i = 1 · i = 2","each fn -> its own box"],"out":[]},"note":"The condition fails at i = 3, so the loop stops. Note what the single var box is holding at that exact moment."},
-    {"line":5,"panels":{"var":["one box, holding 3"],"let":["three boxes: 0, 1, 2"],"out":["var  ->  [3, 3, 3]","let  ->  [0, 1, 2]"]},"note":"Now the functions run. Each reads its box AS IT IS NOW. var has one box holding 3, so all three answer 3. let gave each iteration its own box, and those boxes never changed."}
-  ];
-  var codeEl = document.getElementById(ID + "-code");
-  if (!codeEl) return;
-  if (codeEl.dataset.demoInit) return;
-  codeEl.dataset.demoInit = "1";
-
-  var barEl = document.getElementById(ID + "-bar");
-  var noteEl = document.getElementById(ID + "-note");
-  var nextBtn = document.getElementById(ID + "-next");
-  var prevBtn = document.getElementById(ID + "-prev");
-  var playBtn = document.getElementById(ID + "-play");
-  var resetBtn = document.getElementById(ID + "-reset");
-  var i = 0, timer = null;
-
-  CODE.forEach(function (text, idx) {
-    var row = document.createElement("div");
-    row.dataset.n = String(idx + 1);
-    row.textContent = text;
-    codeEl.appendChild(row);
-  });
-
-  function fill(el, items) {
-    if (!el) return;
-    el.innerHTML = "";
-    if (!items || !items.length) {
-      var em = document.createElement("span");
-      em.className = "demo__term dim";
-      em.style.cssText = "display:inline-block;border:0;padding:0;margin:0;min-height:0";
-      em.textContent = "empty";
-      el.appendChild(em);
-      return;
-    }
-    items.forEach(function (t) {
-      var chip = document.createElement("span");
-      chip.className = "loop-frame";
-      chip.textContent = t;
-      el.appendChild(chip);
-    });
-  }
-
-  function render() {
-    var s = STEPS[i];
-    Array.prototype.forEach.call(codeEl.children, function (row) {
-      row.classList.toggle("hot", Number(row.dataset.n) === s.line);
-    });
-    Object.keys(s.panels || {}).forEach(function (k) {
-      fill(document.getElementById(ID + "-p-" + k), s.panels[k]);
-    });
-    noteEl.textContent = s.note;
-    barEl.style.width = (i / (STEPS.length - 1)) * 100 + "%";
-    nextBtn.disabled = i === STEPS.length - 1;
-    prevBtn.disabled = i === 0;
-  }
-
-  function stop() { if (timer) { clearInterval(timer); timer = null; } playBtn.textContent = "Play"; }
-  nextBtn.addEventListener("click", function () { stop(); if (i < STEPS.length - 1) { i++; render(); } });
-  prevBtn.addEventListener("click", function () { stop(); if (i > 0) { i--; render(); } });
-  resetBtn.addEventListener("click", function () { stop(); i = 0; render(); });
-  playBtn.addEventListener("click", function () {
-    if (timer) { stop(); return; }
-    if (i === STEPS.length - 1) { i = 0; render(); }
-    playBtn.textContent = "Pause";
-    timer = setInterval(function () {
-      if (i >= STEPS.length - 1) { stop(); return; }
-      i++; render();
-    }, 1300);
-  });
-  render();
-})();
-</script>
-
-<div class="try">
-  <pre><code>const withVar = [];
-for (var i = 0; i &lt; 3; i++) withVar.push(function () { return i; });
-
-const withLet = [];
-for (let j = 0; j &lt; 3; j++) withLet.push(function () { return j; });
-
-console.log(withVar.map(function (f) { return f(); }));
-console.log(withLet.map(function (f) { return f(); }));</code></pre>
-</div>
-<p class="sub">
-  Run it to confirm: <code>[3, 3, 3]</code> then <code>[0, 1, 2]</code>.
-  Before <code>let</code> existed this needed a wrapper function per
-  iteration to manufacture a fresh scope by hand — the trick that made
-  IIFEs famous, covered in
-  <a href="/notes/scope-functions">Scope &amp; functions, properly</a>.
-</p>
-
-<h4>const locks the name, not the value</h4>
-<p>
-  <code>const</code> means "this name will never point at something
-  else". It says nothing about whether the thing it points at can
-  change. For a number or a string that distinction is invisible,
-  because those values cannot be edited anyway. For objects and arrays
-  it is the whole story.
-</p>
-<pre><code>const user = { name: "ana" };
-user.name = "bob";      <span class="c">// fine — same object, different contents</span>
-user = { name: "bob" }; <span class="c">// TypeError — that is a new object for the same name</span>
-
-const list = [1, 2];
-list.push(3);           <span class="c">// fine — [1, 2, 3]</span>
-list = [];              <span class="c">// TypeError</span></code></pre>
-<p class="sub">
-  If you want the contents locked too, that is
-  <code>Object.freeze(user)</code> — and it only goes one level deep.
-</p>
-
-<h4>Redeclaration, and the window question</h4>
-<pre><code>var x = 1;
-var x = 2;      <span class="c">// fine. no warning, no error, and now you have a bug to find</span>
-
-let y = 1;
-let y = 2;      <span class="c">// SyntaxError: Identifier 'y' has already been declared</span></code></pre>
-<p>
-  The <code>var</code> version is not a typo-catcher, and that is the
-  point of the newer keywords: a name declared twice in one scope is
-  almost always two people (or two afternoons) fighting over the same
-  variable.
-</p>
-<p>
-  The <code>window</code> difference bites in a different place. At the
-  top level of a classic script, <code>var greeting = "hi"</code> also
-  creates <code>window.greeting</code>. Two files both using
-  <code>var config</code> silently overwrite each other through the
-  global object. <code>let</code> and <code>const</code> stay out of
-  <code>window</code> entirely, and modules do not share a top-level
-  scope at all.
-</p>
-
-<div class="sticky mint">
-  <span class="ttl">Rule</span> <code>const</code> until the code forces
-  you to reassign, then <code>let</code>. <code>var</code> only when you
-  are reading someone else's old file.
-</div>
 
 <h3>A fresh context per call</h3>
 <p>
@@ -630,11 +410,44 @@ let y = 2;      <span class="c">// SyntaxError: Identifier 'y' has already been 
 console.log(counter(), counter(), counter());  <span class="c">// 1 1 1 — not 1 2 3</span></code></pre>
 <p>
   Three calls, three contexts, three separate <code>n</code> boxes, each
-  born at the start of the call and thrown away at the end of it. The
-  question of where these contexts are stacked — and what happens when
-  one of them never finishes — is
-  <a href="/notes/single-thread">the next chapter</a>.
+  born at the start of the call. The question of where these contexts
+  are stacked — and what happens when one of them never finishes — is
+  <a href="/notes/single-thread">One thread, one stack</a>.
 </p>
+
+<p>
+  A function's creation phase has one job the global one does not:
+  before any declaration inside the body is looked at, the
+  <b>parameters</b> are created and filled with the values the caller
+  passed. A parameter nobody passed gets <code>undefined</code>. Normal
+  (non-arrow) functions also get an <code>arguments</code> object at
+  this point, holding every value that was passed, however many
+  parameters you wrote.
+</p>
+<pre><code>function f(a, b) {
+  console.log(a, b, arguments.length);  <span class="c">// 1 undefined 1 — set up before line 1 of the body</span>
+  var a;                                <span class="c">// finds a already there, changes nothing</span>
+  console.log(a);                       <span class="c">// still 1</span>
+}
+f(1);</code></pre>
+<p class="sub">
+  Same tie-break as before: a <code>var</code> with the same name as a
+  parameter is ignored. A <code>function a() {}</code> inside the body
+  would replace it, though — function declarations are stored after the
+  parameters, and they overwrite.
+</p>
+
+<div class="warn">
+  <span class="ttl">&#9888; "Thrown away" has an exception</span>
+  The call ends and its context leaves the stack — but the
+  <em>memory</em> it built is only freed if nothing still points at it.
+  Return an inner function that uses <code>n</code>, and that function
+  keeps the whole environment alive for as long as it exists. That is
+  a closure, and it is exactly how <code>makeCounter</code> in
+  <a href="/notes/closures">the closures chapter</a> counts up instead
+  of printing 1 1 1. What that costs in memory is covered in
+  <a href="/notes/engine-memory">Engine &amp; memory</a>.
+</div>
 
 <h3>Looking a name up: the scope chain</h3>
 <p>
@@ -670,11 +483,6 @@ outer();</code></pre>
 <h3>The traps, collected</h3>
 <ul>
   <li>
-    <b>A <code>for</code> loop with <code>var</code> and any async work
-    inside it</b> — timers, listeners, fetches. All the callbacks read
-    the one shared box, long after the loop finished with it.
-  </li>
-  <li>
     <b><code>typeof</code> as a safety check on a <code>let</code></b> —
     it throws in the TDZ, so it is only safe for names that were never
     declared at all.
@@ -690,8 +498,9 @@ outer();</code></pre>
     Modules are strict by default, so it throws instead. Good.
   </li>
   <li>
-    <b>Expecting <code>const</code> to freeze an object</b> — it locks
-    the arrow, not the target.
+    <b>A <code>var</code> and a function sharing a name</b> — the
+    function wins the creation phase, so the name holds a function until
+    an <code>=</code> runs, not <code>undefined</code>.
   </li>
 </ul>
 

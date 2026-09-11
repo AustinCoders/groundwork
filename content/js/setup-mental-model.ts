@@ -228,12 +228,13 @@ let b = 2;</code></pre>
   script throws a real <code>ReferenceError</code> right there.
 </p>
 <p>
-  That is the whole of it you need today.
-  <a href="/notes/execution-context">The next chapter</a> is this
-  subject and nothing else — the two phases behind the scan, what the
-  TDZ actually spans, block scope, why a <code>var</code> loop and a
-  <code>let</code> loop print different numbers, and why
-  <code>const</code> does not freeze an object.
+  That is the whole of it you need today. The next two chapters take it
+  apart. <a href="/notes/execution-context">Execution context</a> is
+  the two phases behind the scan and what the TDZ actually spans;
+  <a href="/notes/var-let-const">var, let and const</a> is block scope,
+  why a <code>var</code> loop and a <code>let</code> loop print
+  different numbers, and why <code>const</code> does not freeze an
+  object.
 </p>
 
 <h3>Naming &amp; comments</h3>

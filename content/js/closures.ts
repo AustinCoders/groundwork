@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const closures: Chapter = {
   id: "closures",
-  num: "B10",
+  num: "B11",
   title: "Closures",
   short: "Closures",
   levels: ["beginner"],
@@ -248,7 +248,7 @@ next();   <span class="c">// 2  — count outlived the call that created it</spa
 <h3>Why the variable survives at all</h3>
 <p>
   In <a href="/notes/execution-context">the execution context chapter</a> you learned that a call gets an execution context,
-  and that the context is destroyed when the call finishes. That is
+  and that the context leaves the stack when the call finishes. That is
   still true — of the <b>stack frame</b>. The frame is bookkeeping: where
   to return to, what is running. It pops.
 </p>
@@ -429,7 +429,7 @@ function throttle(fn, interval) {
 
 <h3>The loop trap, from the closure side</h3>
 <p>
-  <a href="/notes/execution-context">The execution context chapter</a>
+  <a href="/notes/var-let-const">The var, let and const chapter</a>
   showed this as a question about how many bindings a loop creates. From
   here it is the same fact, viewed from the other end: all three
   callbacks closed over <em>the same environment</em>, so they all read

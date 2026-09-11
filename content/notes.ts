@@ -1,6 +1,7 @@
 import type { NotesFile } from "./types";
 import { setupMentalModel } from "./js/setup-mental-model";
 import { executionContext } from "./js/execution-context";
+import { varLetConst } from "./js/var-let-const";
 import { singleThread } from "./js/single-thread";
 import { inTheBrowser } from "./js/in-the-browser";
 import { typesValues } from "./js/types-values";
@@ -39,7 +40,7 @@ export const jsNotes: NotesFile = {
   meta: {
     title: "JavaScript — the whole map",
     subtitle:
-      "35 sections across three levels, all written — from how the engine runs your code to security and testing.",
+      "36 sections across three levels, all written — from how the engine runs your code to security and testing.",
     lead: "Pick a level and you'll get these sections in the order that makes sense — from what the engine does before line 1 runs, through the event loop, to testing and security.",
     author: "Akshat",
     updated: "September 2026",
@@ -52,6 +53,7 @@ export const jsNotes: NotesFile = {
   chapters: [
     setupMentalModel,
     executionContext,
+    varLetConst,
     singleThread,
     inTheBrowser,
     typesValues,

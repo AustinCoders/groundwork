@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const inTheBrowser: Chapter = {
   id: "in-the-browser",
-  num: "B4",
+  num: "B5",
   title: "Inside the browser",
   short: "In the browser",
   levels: ["beginner"],
