@@ -235,7 +235,6 @@ MMMCMXCIX
 MMMDCCXLIX
 Mphasis
 multiarch
-multiarch
 multicluster
 multiregion
 multiset
@@ -356,6 +355,7 @@ thumbnailing
 tickable
 topbar
 topo
+totl
 treemap
 treosh
 TTFB

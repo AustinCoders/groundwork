@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const objectsArraysBasics: Chapter = {
   id: "objects-arrays-basics",
-  num: "B9",
+  num: "B10",
   title: "Objects & arrays",
   short: "Objects & arrays",
   levels: ["beginner"],

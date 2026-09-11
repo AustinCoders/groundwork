@@ -16,7 +16,7 @@ export const patternsArchitecture: Chapter = {
   argument, no reading a global. The upside isn't philosophical: a pure
   function is trivially testable (call it, check the return value, no
   setup), safely memoizable
-  (<a href="/notes/scope-functions">already covered</a>), and safe to
+  (<a href="/notes/closures">already covered</a>), and safe to
   run in any order or in parallel, since it can't step on anything
   else's state.
 </p>
@@ -68,7 +68,7 @@ console.log([1, 2, 3, 4, 5].reduce(transform(push), []));   <span class="c">// w
     <th>Shape</th>
     <th>Already seen it</th>
   </tr>
-  <tr><td><b>Module</b></td><td>a closure exposing a small public surface, hiding the rest</td><td><a href="/notes/scope-functions">closures chapter</a>, use #2</td></tr>
+  <tr><td><b>Module</b></td><td>a closure exposing a small public surface, hiding the rest</td><td><a href="/notes/closures">closures chapter</a>, use #2</td></tr>
   <tr><td><b>Observer / Pub-Sub</b></td><td>subscribers register a callback; a publisher calls every one when something happens</td><td><code>addEventListener</code> IS this pattern, built into the platform</td></tr>
   <tr><td><b>Strategy</b></td><td>swap the algorithm at runtime by passing a different function/object with the same interface</td><td>the comparator argument to <code>.sort()</code></td></tr>
   <tr><td><b>Factory</b></td><td>a function that builds and returns objects, hiding the construction details</td><td><code>document.createElement</code></td></tr>

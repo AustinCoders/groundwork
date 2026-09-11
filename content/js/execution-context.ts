@@ -475,9 +475,10 @@ outer();</code></pre>
   The chain is built from <b>where the function was written</b>, not
   from who called it. That word is <em>lexical</em>, and it is the
   reason you can read a function's source and know what it can see
-  without knowing anything about the call site. The full consequences —
-  closures, and the five jobs they do — are in
-  <a href="/notes/scope-functions">the intermediate scope chapter</a>.
+  without knowing anything about the call site. This is only a first
+  look: every kind of scope, the lookup step by step, shadowing, and
+  what happens when you <em>write</em> to a name the chain cannot find
+  are in <a href="/notes/scope">Scope</a>, two chapters on.
 </p>
 
 <h3>The traps, collected</h3>

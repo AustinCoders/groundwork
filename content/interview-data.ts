@@ -747,7 +747,7 @@ post:`<div class="prep">
 <span class="ttl">Read this round on the site</span>
 <p>Every answer above has a chapter behind it. These are the ones this round draws on, in the order they build.</p>
 <ul>
-<li><a href="/notes/scope-functions">Scope &amp; functions, properly</a> — closures, hoisting and <code>this</code>, which is most of the first ten minutes</li>
+<li><a href="/notes/execution-context">Execution context</a>, <a href="/notes/scope">Scope</a>, <a href="/notes/this-keyword">this</a> and <a href="/notes/closures">Closures</a> — hoisting, scope, <code>this</code> and closures, which is most of the first ten minutes</li>
 <li><a href="/notes/async-properly">Async, properly</a> and <a href="/notes/advanced-async">Advanced async</a> — the event loop, microtasks, and the ordering questions</li>
 <li><a href="/notes/prototypes-oop">Prototypes &amp; OOP</a> — the chain, and why <code>class</code> is sugar over it</li>
 <li><a href="/notes/objects-deep">Objects deeply</a> and <a href="/notes/types-data">Types &amp; data</a> — copying, equality, coercion</li>

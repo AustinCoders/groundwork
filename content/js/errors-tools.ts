@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const errorsTools: Chapter = {
   id: "errors-tools",
-  num: "B14",
+  num: "B15",
   title: "Errors & tools",
   short: "Errors & tools",
   levels: ["beginner"],

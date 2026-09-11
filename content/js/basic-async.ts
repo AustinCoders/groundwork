@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const basicAsync: Chapter = {
   id: "basic-async",
-  num: "B13",
+  num: "B14",
   title: "Callbacks, then promises",
   short: "Callbacks & promises",
   levels: ["beginner"],

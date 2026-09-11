@@ -725,6 +725,88 @@ export const jsFundamentals: Exercise[] = [
     ],
   },
   {
+    id: "ex-where-declared",
+    chapter: "scope",
+    level: "beginner",
+    title: "Which scope does this name mean?",
+    brief:
+      '<p>Scopes nest like boxes, and a name resolves to the <b>nearest enclosing</b> scope that declares it — never an inner one, never a sibling. Write <code>whereDeclared(tree, path, name)</code>.</p><ul><li><code>tree</code> is the outermost scope: <code>{ name, declares, children }</code>, where <code>declares</code> is an array of names and <code>children</code> is an array of scopes shaped the same way</li><li><code>path</code> lists scope names from the outermost down to the scope where the name is <em>used</em>, e.g. <code>["global", "outer", "inner"]</code></li><li>return the <code>name</code> of the scope the identifier resolves to, or <code>null</code> if none declares it</li></ul>',
+    starter:
+      'function whereDeclared(tree, path, name) {\n  // TODO: collect the scopes along the path, then search from the inside out\n}\n\nconst tree = {\n  name: "global", declares: ["city"],\n  children: [{ name: "outer", declares: ["user"], children: [{ name: "inner", declares: ["age"], children: [] }] }],\n};\nconsole.log(whereDeclared(tree, ["global", "outer", "inner"], "city")); // "global"\n',
+    hints: [
+      "Walk down from the root: at each step, find the child whose name matches the next entry in path.",
+      "Once you have the list of scopes along the path, search it from the LAST one back to the first.",
+      "Scopes that are not on the path — siblings, or children of the use site — must never be searched.",
+    ],
+    solution:
+      "function whereDeclared(tree, path, name) {\n  const along = [tree];\n  for (const step of path.slice(1)) {\n    const current = along[along.length - 1];\n    along.push(current.children.find((child) => child.name === step));\n  }\n  for (let k = along.length - 1; k >= 0; k--) {\n    if (along[k].declares.includes(name)) return along[k].name;\n  }\n  return null;\n}\n",
+    tests: [
+      {
+        name: "finds a name declared where it is used",
+        body: 'const tree = { name: "global", declares: [], children: [{ name: "f", declares: ["x"], children: [] }] };\nassert.equal(whereDeclared(tree, ["global", "f"], "x"), "f");',
+      },
+      {
+        name: "walks outward to find it",
+        body: 'const tree = { name: "global", declares: ["city"], children: [{ name: "outer", declares: ["user"], children: [{ name: "inner", declares: ["age"], children: [] }] }] };\nassert.equal(whereDeclared(tree, ["global", "outer", "inner"], "user"), "outer");\nassert.equal(whereDeclared(tree, ["global", "outer", "inner"], "city"), "global");',
+      },
+      {
+        name: "the nearest declaration wins (shadowing)",
+        body: 'const tree = { name: "global", declares: ["x"], children: [{ name: "outer", declares: ["x"], children: [{ name: "inner", declares: [], children: [] }] }] };\nassert.equal(whereDeclared(tree, ["global", "outer", "inner"], "x"), "outer");',
+      },
+      {
+        name: "never looks into a sibling scope",
+        body: 'const tree = { name: "global", declares: [], children: [{ name: "a", declares: ["onlyA"], children: [] }, { name: "b", declares: [], children: [] }] };\nassert.equal(whereDeclared(tree, ["global", "b"], "onlyA"), null);',
+      },
+      {
+        name: "never looks inward",
+        body: 'const tree = { name: "global", declares: [], children: [{ name: "f", declares: ["local"], children: [] }] };\nassert.equal(whereDeclared(tree, ["global"], "local"), null);',
+      },
+      {
+        name: "returns null when nothing declares it",
+        body: 'const tree = { name: "global", declares: ["a"], children: [] };\nassert.equal(whereDeclared(tree, ["global"], "zip"), null);',
+      },
+    ],
+  },
+  {
+    id: "ex-assign-walk",
+    chapter: "scope",
+    level: "beginner",
+    title: "Where does this assignment land?",
+    brief:
+      '<p>Writing to a name walks the scope chain exactly like reading does — and when it finds nothing, sloppy mode creates a global while strict mode throws. Write <code>assign(chain, name, value, strict)</code> that does that.</p><ul><li><code>chain</code> is an array of scope objects, <b>innermost first</b>; the last one is the global scope</li><li>write <code>value</code> into the nearest scope that <em>declares</em> <code>name</code> — a scope declares it when it has it as an own property, even holding <code>undefined</code></li><li>if no scope declares it: when <code>strict</code> is true, throw a <code>ReferenceError</code>; otherwise create it on the global scope</li></ul>',
+    starter:
+      'function assign(chain, name, value, strict) {\n  // TODO: find the nearest declaring scope; handle "not found" by mode\n}\n\nconst global = { count: 0 };\nconst local = { total: 0 };\nassign([local, global], "count", 5, false);\nconsole.log(global.count); // 5\n',
+    hints: [
+      "Object.prototype.hasOwnProperty.call(scope, name) tells declared apart from absent.",
+      "Stop at the FIRST scope that declares the name — outer scopes with the same name must stay untouched.",
+      "The global scope is chain[chain.length - 1].",
+    ],
+    solution:
+      'function assign(chain, name, value, strict) {\n  for (const scope of chain) {\n    if (Object.prototype.hasOwnProperty.call(scope, name)) {\n      scope[name] = value;\n      return;\n    }\n  }\n  if (strict) throw new ReferenceError(name + " is not defined");\n  chain[chain.length - 1][name] = value;\n}\n',
+    tests: [
+      {
+        name: "writes to the nearest declaring scope",
+        body: 'const g = { count: 0 };\nconst f = { total: 0 };\nassign([f, g], "count", 5, false);\nassert.equal(g.count, 5);\nassert.equal("count" in f, false);',
+      },
+      {
+        name: "a shadowed outer binding is left alone",
+        body: 'const g = { x: "outer" };\nconst f = { x: "inner" };\nassign([f, g], "x", "changed", true);\nassert.equal(f.x, "changed");\nassert.equal(g.x, "outer");',
+      },
+      {
+        name: "a declared name holding undefined still counts",
+        body: 'const g = { x: 1 };\nconst f = { x: undefined };\nassign([f, g], "x", 2, false);\nassert.equal(f.x, 2);\nassert.equal(g.x, 1);',
+      },
+      {
+        name: "sloppy mode: an undeclared name becomes a global",
+        body: 'const g = {};\nconst f = { total: 0 };\nassign([f, g], "totl", 10, false);\nassert.equal(g.totl, 10);\nassert.equal("totl" in f, false);',
+      },
+      {
+        name: "strict mode: an undeclared name throws ReferenceError",
+        body: 'const g = {};\nconst f = {};\nassert.throws(() => assign([f, g], "totl", 10, true), ReferenceError);\nassert.equal("totl" in g, false);',
+      },
+    ],
+  },
+  {
     id: "ex-call-stack-trace",
     chapter: "single-thread",
     level: "beginner",

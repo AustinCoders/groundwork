@@ -130,7 +130,7 @@ it("debounce only calls the function once after the delay", () =&gt; {
   vi.useRealTimers();
 });</code></pre>
 <p class="sub">
-  This tests the exact <a href="/notes/scope-functions">debounce
+  This tests the exact <a href="/notes/closures">debounce
   implementation</a> from several chapters back — three rapid calls,
   one real invocation — and it runs in milliseconds despite testing a
   200ms delay, because <code>vi.advanceTimersByTime()</code> moves the

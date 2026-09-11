@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const functionsBasics: Chapter = {
   id: "functions-basics",
-  num: "B8",
+  num: "B9",
   title: "Functions",
   short: "Functions",
   levels: ["beginner"],
@@ -215,12 +215,11 @@ console.log(makeUser());   <span class="c">// what happens?</span></code></pre>
   <code>return (<br />&nbsp;&nbsp;{ name: "Ana" }<br />);</code>
 </div>
 
-<h3>Scope basics</h3>
+<h3>Where a function's variables live</h3>
 <p>
-  Every function creates its own scope — variables declared inside are
-  invisible outside. Nested functions can see everything in their
-  parent's scope (that's a <b>closure</b>, coming properly in a later
-  chapter); the reverse is never true.
+  Every call gets its own scope: variables declared inside are
+  invisible outside, and a nested function can see everything around
+  it, never the reverse.
 </p>
 <pre><code>function outer() {
   let secret = 42;
@@ -230,13 +229,11 @@ console.log(makeUser());   <span class="c">// what happens?</span></code></pre>
   inner();
 }
 console.log(typeof secret);   <span class="c">// "undefined" — outer can't be seen from here</span></code></pre>
-<p>
-  Inside a function, <code>let</code>/<code>const</code> are still
-  block-scoped exactly like in <a href="/notes/operators-flow">the last
-  chapter</a> — an <code>if</code> or a <code>for</code> loop makes its
-  own little scope even inside a function body. <code>var</code>
-  ignores those inner blocks completely and belongs to the whole
-  function.
+<p class="sub">
+  That is <a href="/notes/scope">Scope</a> applied to functions — the
+  lookup, shadowing, and why a function sees where it was written
+  rather than where it was called are all there. What is new in this
+  chapter is the part only functions have: parameters.
 </p>
 
 <h3>Hoisting, one level up</h3>

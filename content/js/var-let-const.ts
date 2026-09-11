@@ -602,8 +602,7 @@ console.log(withLet.map(function (f) { return f(); }));</code></pre>
   is the same bug in its most common form — every timer reads the one
   shared <code>var</code> box, long after the loop has finished with it.
   Before <code>let</code> existed the fix was a wrapper function per
-  iteration, covered in
-  <a href="/notes/scope-functions">Scope &amp; functions, properly</a>.
+  iteration — an IIFE, covered in <a href="/notes/scope">Scope</a>.
 </p>
 
 <h4>What "a fresh binding per iteration" means exactly</h4>
@@ -686,8 +685,8 @@ count = 0;                <span class="c">// no keyword: a plain property, and d
   modules (<code>&lt;script type="module"&gt;</code>, or any file with
   <code>import</code>/<code>export</code>) give each file a top-level
   scope of its own. Why the global scope is split into an object half
-  and a non-object half is in
-  <a href="/notes/scope-functions">Scope &amp; functions, properly</a>.
+  and a non-object half is in <a href="/notes/scope">Scope</a>, the
+  next chapter.
 </p>
 
 <h3>Which one to write</h3>

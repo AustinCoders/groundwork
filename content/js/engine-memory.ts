@@ -55,7 +55,7 @@ export const engineMemory: Chapter = {
   took apart at the beginner level. Seen from the engine, it bundles an
   <b>environment record</b> (the actual variable bindings) with a
   reference to the outer environment, and that chain of outer references
-  <em>is</em> <a href="/notes/scope-functions">the scope chain</a>. A
+  <em>is</em> <a href="/notes/scope">the scope chain</a>. A
   closure, mechanically, is just a function holding onto an environment
   that would otherwise have been discarded when the call's stack frame
   popped.

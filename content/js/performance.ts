@@ -70,7 +70,7 @@ requestIdleCallback(() =&gt; {
   sendAnalyticsBatch();   <span class="c">// only runs if the browser has spare time before the next frame</span>
 });</code></pre>
 <p class="sub">
-  <a href="/notes/scope-functions">Debounce and throttle</a> solve a
+  <a href="/notes/closures">Debounce and throttle</a> solve a
   different problem — how <em>often</em> a handler runs at all — and
   compose naturally with this: throttle a scroll handler down to a
   sane rate, then do the actual DOM write inside

@@ -9,66 +9,14 @@ export const scopeFunctions: Chapter = {
   practice: ["ex-loop-fix", "ex-curry-multiply"],
   ready: true,
   subtitle:
-    "The scope chain, new versus bind, and what you build once functions are values: currying, composition, recursion.",
-  body: `<h3>The scope chain</h3>
+    "The corners of how a scope is built, new versus bind, and what you build once functions are values: currying, composition, recursion.",
+  body: `<h3>Where this picks up</h3>
 <p>
-  Every function remembers the scope it was <em>written</em> in, not the
-  scope it's <em>called</em> from — that's what "lexical" means. Looking
-  up a name walks outward through that chain, one level at a time,
-  until it finds a match or runs out of scopes.
-</p>
-
-<div class="boxes">
-  <div class="bx">
-    <div class="bx__cap">global scope</div>
-    <div class="bx__slot"><b>let city</b><span>"Pune"</span></div>
-  </div>
-  <div class="bx">
-    <div class="bx__cap">outer() scope</div>
-    <div class="bx__slot"><b>let name</b><span>"Ana"</span></div>
-  </div>
-  <div class="bx is-ref">
-    <div class="bx__cap">inner() scope — looks up "city"</div>
-    <div class="bx__slot"><b>let age</b><span>29</span></div>
-    <div class="bx__arrow">not here → check outer() → not there either → check global → found "Pune"</div>
-  </div>
-</div>
-<pre><code>let city = "Pune";
-function outer() {
-  let name = "Ana";
-  function inner() {
-    let age = 29;
-    console.log(name, city);   <span class="c">// finds "name" one level out, "city" two levels out</span>
-  }
-  inner();
-}</code></pre>
-<p class="sub">
-  The chain is built from where the function <em>sits in the source</em>
-  — nesting on the page, not the order things get called in. A function
-  called from somewhere far away still only ever sees its own
-  lexical chain, never the caller's local variables.
-</p>
-
-<h3>Shadowing, briefly revisited</h3>
-<p>
-  A name declared in an inner scope hides — doesn't overwrite — the
-  same name further out. Once you leave the inner scope, the outer
-  binding is exactly as it was.
-</p>
-<div class="try">
-  <pre><code>let x = "outer";
-function show() {
-  let x = "inner";
-  console.log(x);
-}
-show();
-console.log(x);   <span class="c">// what happens?</span></code></pre>
-</div>
-<p class="sub">
-  <code>"inner"</code>, then <code>"outer"</code> — two completely
-  separate bindings that happen to share a name. This is also why
-  reusing a loop variable name inside nested loops is safe: each
-  <code>let i</code> in its own block shadows the one outside it.
+  <a href="/notes/scope">Scope</a> covered the lookup itself — every
+  kind of scope, the chain walked outward, shadowing, and writes that
+  find nothing. This chapter starts where those rules stop being enough
+  on their own: the corners of how a scope gets built, then what you
+  build once functions are ordinary values.
 </p>
 
 <h3>Where the creation phase gets strange</h3>
@@ -179,7 +127,7 @@ typeof fact;     <span class="c">// "undefined" — and nowhere out here</span><
 
 <h3>Closures, and what this chapter adds to them</h3>
 <p>
-  The scope chain above is the whole mechanism behind closures: a
+  <a href="/notes/scope">The scope chain</a> is the whole mechanism behind closures: a
   function keeps its outer reference, and if the function outlives the
   call, the environment on the other end of that reference cannot be
   collected. <a href="/notes/closures">The closures chapter</a> covers
@@ -187,7 +135,7 @@ typeof fact;     <span class="c">// "undefined" — and nowhere out here</span><
   call, the five jobs they do, and the memory they hold on to.
 </p>
 <p>
-  What is worth adding here, now that the scope chain is fresh: a
+  What is worth adding here: a
   closure is not a different kind of scope. It is the <em>same</em>
   lookup you just read about, still working after the function that
   created it has returned. Shadowing behaves identically inside one, and
@@ -223,21 +171,6 @@ console.log(created instanceof bound, created.tag);   <span class="c">// what ha
   of the newly created one. <b>new</b> beats <b>explicit</b> beats
   everything else, confirmed by experiment rather than by table.
 </p>
-<h3>IIFE — the closure that runs itself</h3>
-<pre><code>const counter = (function () {
-  let count = 0;               <span class="c">// invisible outside this expression</span>
-  return { inc: () =&gt; ++count };
-})();</code></pre>
-<p>
-  Before ES modules existed, every script shared one global scope —
-  wrapping code in an Immediately Invoked Function Expression was the
-  only way to get a private scope of your own, with just the return
-  value exposed. Modules made that automatic, so IIFEs are rare in new
-  code — but the pattern (function scope as a privacy boundary) is
-  exactly what the factory and privacy closures in
-  <a href="/notes/closures">Closures</a> are still doing today.
-</p>
-
 <h3>Two properties every function carries</h3>
 <p>
   Functions are objects, and two of their properties matter below:
