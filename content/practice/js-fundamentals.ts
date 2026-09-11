@@ -556,4 +556,226 @@ export const jsFundamentals: Exercise[] = [
       },
     ],
   },
+  {
+    id: "ex-hoist-snapshot",
+    chapter: "execution-context",
+    level: "beginner",
+    title: "Build the creation-phase snapshot",
+    brief:
+      '<p>Before any line runs, JS registers every declaration in the scope and gives it a starting state. Write <code>creationPhase(declarations)</code> that returns what memory looks like at that exact moment.</p><p>Each declaration is <code>{ kind, name }</code>, where <code>kind</code> is <code>"var"</code>, <code>"let"</code>, <code>"const"</code> or <code>"function"</code>. Return a plain object mapping each name to:</p><ul><li><code>"undefined"</code> for <code>var</code></li><li><code>"TDZ"</code> for <code>let</code> and <code>const</code></li><li><code>"function"</code> for a function declaration</li></ul>',
+    starter:
+      'function creationPhase(declarations) {\n  // TODO: walk the declarations and build the snapshot\n}\n\nconsole.log(creationPhase([{ kind: "var", name: "a" }, { kind: "let", name: "b" }]));\n// { a: "undefined", b: "TDZ" }\n',
+    hints: [
+      "Start with an empty object and add one key per declaration.",
+      "let and const behave identically here — both are created but left uninitialised.",
+      "A function declaration is the odd one out: its whole body is already stored.",
+    ],
+    solution:
+      'function creationPhase(declarations) {\n  const memory = {};\n  for (const d of declarations) {\n    if (d.kind === "var") memory[d.name] = "undefined";\n    else if (d.kind === "function") memory[d.name] = "function";\n    else memory[d.name] = "TDZ";\n  }\n  return memory;\n}\n',
+    tests: [
+      {
+        name: "var is pre-filled with undefined",
+        body: 'assert.deepEqual(creationPhase([{ kind: "var", name: "a" }]), { a: "undefined" });',
+      },
+      {
+        name: "let and const are both left in the TDZ",
+        body: 'assert.deepEqual(creationPhase([{ kind: "let", name: "b" }, { kind: "const", name: "c" }]), { b: "TDZ", c: "TDZ" });',
+      },
+      {
+        name: "a function declaration already holds its function",
+        body: 'assert.deepEqual(creationPhase([{ kind: "function", name: "f" }]), { f: "function" });',
+      },
+      {
+        name: "an empty scope has empty memory",
+        body: "assert.deepEqual(creationPhase([]), {});",
+      },
+      {
+        name: "a mixed scope, all four kinds at once",
+        body: 'assert.deepEqual(\n  creationPhase([\n    { kind: "var", name: "a" },\n    { kind: "let", name: "b" },\n    { kind: "function", name: "f" },\n    { kind: "const", name: "c" },\n  ]),\n  { a: "undefined", b: "TDZ", f: "function", c: "TDZ" }\n);',
+      },
+    ],
+  },
+  {
+    id: "ex-scope-lookup",
+    chapter: "execution-context",
+    level: "beginner",
+    title: "Walk the scope chain",
+    brief:
+      '<p>When a name is not in the current scope, JS follows the outer reference and looks again, until it finds it or runs out. Write <code>lookup(chain, name)</code> that does exactly that.</p><ul><li><code>chain</code> is an array of scope objects, <b>innermost first</b></li><li>return the value from the nearest scope that <em>declares</em> the name</li><li>a scope that declares a name but holds <code>undefined</code> still counts — stop there</li><li>if no scope declares it, throw a <code>ReferenceError</code></li></ul>',
+    starter:
+      'function lookup(chain, name) {\n  // TODO: search innermost -> outermost, then give up loudly\n}\n\nconsole.log(lookup([{ tool: "hammer" }, { level: "global" }], "level")); // "global"\n',
+    hints: [
+      "A plain for...of over the chain is enough — the array is already in lookup order.",
+      'Do not test with `scope[name] !== undefined`. A variable declared and holding undefined must still stop the search.',
+      "Object.prototype.hasOwnProperty.call(scope, name) is the check that tells declared apart from absent.",
+    ],
+    solution:
+      'function lookup(chain, name) {\n  for (const scope of chain) {\n    if (Object.prototype.hasOwnProperty.call(scope, name)) return scope[name];\n  }\n  throw new ReferenceError(name + " is not defined");\n}\n',
+    tests: [
+      {
+        name: "finds a name in the innermost scope",
+        body: 'assert.equal(lookup([{ tool: "hammer" }, { level: "global" }], "tool"), "hammer");',
+      },
+      {
+        name: "falls through to an outer scope",
+        body: 'assert.equal(lookup([{ tool: "hammer" }, { level: "global" }], "level"), "global");',
+      },
+      {
+        name: "the innermost declaration shadows the outer one",
+        body: 'assert.equal(lookup([{ name: "inner" }, { name: "outer" }], "name"), "inner");',
+      },
+      {
+        name: "a declared name holding undefined stops the search",
+        body: 'assert.equal(lookup([{ x: undefined }, { x: "outer" }], "x"), undefined);',
+      },
+      {
+        name: "throws when no scope declares it",
+        body: 'assert.throws(() => lookup([{ a: 1 }, { b: 2 }], "nope"));',
+      },
+    ],
+  },
+  {
+    id: "ex-call-stack-trace",
+    chapter: "single-thread",
+    level: "beginner",
+    title: "Read a stack trace back into a stack",
+    brief:
+      '<p>A stack trace is the call stack, printed from the top down. Write <code>framesFrom(trace)</code> that turns one back into an array of function names, innermost first.</p><ul><li>the first line is the error message — skip it</li><li>every frame line is indented and starts with <code>at</code></li><li>return just the function names, in order</li></ul>',
+    starter:
+      'function framesFrom(trace) {\n  // TODO: split into lines, keep the frame lines, pull out the names\n}\n\nconsole.log(framesFrom("Error: boom\\n    at third (app.js:1:20)\\n    at second (app.js:2:9)"));\n// ["third", "second"]\n',
+    hints: [
+      'Split on "\\n" first, then trim each line so the indentation stops mattering.',
+      'A frame line is one that starts with "at " once trimmed.',
+      'After dropping the leading "at ", the function name is everything up to the first space.',
+    ],
+    solution:
+      'function framesFrom(trace) {\n  return trace\n    .split("\\n")\n    .map((line) => line.trim())\n    .filter((line) => line.startsWith("at "))\n    .map((line) => line.slice(3).split(" ")[0]);\n}\n',
+    tests: [
+      {
+        name: "reads a four-frame trace innermost first",
+        body: 'assert.deepEqual(\n  framesFrom("Error: boom\\n    at third (app.js:1:20)\\n    at second (app.js:2:9)\\n    at first (app.js:3:9)\\n    at main (app.js:5:1)"),\n  ["third", "second", "first", "main"]\n);',
+      },
+      {
+        name: "the message line is not mistaken for a frame",
+        body: 'assert.equal(framesFrom("TypeError: x is not a function\\n    at handler (app.js:9:1)")[0], "handler");',
+      },
+      {
+        name: "handles a single frame",
+        body: 'assert.deepEqual(framesFrom("Error: e\\n    at only (a.js:1:1)"), ["only"]);',
+      },
+      {
+        name: "a trace with no frames gives an empty array",
+        body: 'assert.deepEqual(framesFrom("Error: nothing here"), []);',
+      },
+      {
+        name: "indentation depth does not matter",
+        body: 'assert.deepEqual(framesFrom("Error: e\\nat one (a.js:1:1)\\n        at two (a.js:2:1)"), ["one", "two"]);',
+      },
+    ],
+  },
+  {
+    id: "ex-chunk-work",
+    chapter: "single-thread",
+    level: "beginner",
+    title: "Chunk a long job so it stops blocking",
+    brief:
+      '<p>A loop over a million rows freezes the page, because rendering cannot happen while your function is on the stack. The fix is to do a slice of the work, hand the thread back, and continue on the next turn.</p><p>Write <code>sumInChunks(numbers, chunkSize)</code> that returns a <b>promise</b> of the total, adding at most <code>chunkSize</code> numbers per turn and yielding with <code>setTimeout</code> between chunks.</p>',
+    starter:
+      "function sumInChunks(numbers, chunkSize) {\n  // TODO: return a promise. Add one chunk, then setTimeout the next.\n}\n\nsumInChunks([1, 2, 3, 4], 2).then((total) => console.log(total)); // 10\n",
+    hints: [
+      "Wrap the whole thing in new Promise((resolve) => { ... }) and call resolve only when the last chunk is done.",
+      "Keep an index outside the step function so each turn knows where it left off.",
+      "If there is more work left, setTimeout(step, 0) — otherwise resolve(total).",
+    ],
+    solution:
+      "function sumInChunks(numbers, chunkSize) {\n  return new Promise((resolve) => {\n    let i = 0;\n    let total = 0;\n    function step() {\n      const end = Math.min(i + chunkSize, numbers.length);\n      while (i < end) total += numbers[i++];\n      if (i < numbers.length) setTimeout(step, 0);\n      else resolve(total);\n    }\n    step();\n  });\n}\n",
+    tests: [
+      { name: "adds up a short list", body: "assert.equal(await sumInChunks([1, 2, 3, 4], 2), 10);" },
+      { name: "handles a list that does not divide evenly", body: "assert.equal(await sumInChunks([1, 2, 3, 4, 5], 2), 15);" },
+      { name: "a chunk bigger than the list is fine", body: "assert.equal(await sumInChunks([5], 100), 5);" },
+      { name: "an empty list totals zero", body: "assert.equal(await sumInChunks([], 10), 0);" },
+      {
+        name: "it really yields between chunks instead of running straight through",
+        body: 'const pending = sumInChunks([1, 2, 3, 4], 2);\nconst winner = await Promise.race([pending, Promise.resolve("yielded")]);\nassert.equal(winner, "yielded", "a synchronous loop would have won this race — yours must hand the thread back");\nassert.equal(await pending, 10);',
+      },
+    ],
+  },
+  {
+    id: "ex-script-order",
+    chapter: "in-the-browser",
+    level: "beginner",
+    title: "Predict what runs when",
+    brief:
+      '<p>Three script tags, three different loading rules. Write <code>executionOrder(scripts)</code> that returns the <code>src</code> values in the order the browser would actually run them.</p><p>Each script is <code>{ src, mode, downloadMs }</code> with <code>mode</code> one of <code>"plain"</code>, <code>"defer"</code>, <code>"async"</code>. The rules, simplified:</p><ul><li><b>plain</b> blocks the parser, so these run first, in document order</li><li><b>async</b> runs the moment it arrives — order by <code>downloadMs</code>, smallest first; a tie keeps document order</li><li><b>defer</b> waits for the whole document, then runs in document order</li></ul>',
+    starter:
+      'function executionOrder(scripts) {\n  // TODO: plain in order, then async by arrival, then defer in order\n}\n\nconsole.log(executionOrder([{ src: "b.js", mode: "defer", downloadMs: 5 }, { src: "a.js", mode: "plain", downloadMs: 90 }]));\n// ["a.js", "b.js"]\n',
+    hints: [
+      "Three filters over the same array, then concatenate them in the right order.",
+      "Only the async group gets sorted. The other two keep the order they were written in.",
+      "For the tie-break, remember each script's original index before sorting — compare downloadMs first, then that index.",
+    ],
+    solution:
+      'function executionOrder(scripts) {\n  const plain = scripts.filter((s) => s.mode === "plain");\n  const asyncOnes = scripts\n    .map((s, i) => ({ s, i }))\n    .filter((x) => x.s.mode === "async")\n    .sort((a, b) => a.s.downloadMs - b.s.downloadMs || a.i - b.i)\n    .map((x) => x.s);\n  const deferred = scripts.filter((s) => s.mode === "defer");\n  return plain.concat(asyncOnes, deferred).map((s) => s.src);\n}\n',
+    tests: [
+      {
+        name: "plain scripts keep document order",
+        body: 'assert.deepEqual(\n  executionOrder([\n    { src: "a.js", mode: "plain", downloadMs: 90 },\n    { src: "b.js", mode: "plain", downloadMs: 1 },\n  ]),\n  ["a.js", "b.js"]\n);',
+      },
+      {
+        name: "defer runs after plain, however fast it downloaded",
+        body: 'assert.deepEqual(\n  executionOrder([\n    { src: "slow.js", mode: "defer", downloadMs: 1 },\n    { src: "blocking.js", mode: "plain", downloadMs: 500 },\n  ]),\n  ["blocking.js", "slow.js"]\n);',
+      },
+      {
+        name: "async is ordered by when it arrives, not where it was written",
+        body: 'assert.deepEqual(\n  executionOrder([\n    { src: "late.js", mode: "async", downloadMs: 200 },\n    { src: "early.js", mode: "async", downloadMs: 20 },\n  ]),\n  ["early.js", "late.js"]\n);',
+      },
+      {
+        name: "two async scripts arriving together keep document order",
+        body: 'assert.deepEqual(\n  executionOrder([\n    { src: "first.js", mode: "async", downloadMs: 30 },\n    { src: "second.js", mode: "async", downloadMs: 30 },\n  ]),\n  ["first.js", "second.js"]\n);',
+      },
+      {
+        name: "a realistic page with all three",
+        body: 'assert.deepEqual(\n  executionOrder([\n    { src: "app.js", mode: "defer", downloadMs: 40 },\n    { src: "analytics.js", mode: "async", downloadMs: 80 },\n    { src: "polyfill.js", mode: "plain", downloadMs: 120 },\n    { src: "ads.js", mode: "async", downloadMs: 10 },\n  ]),\n  ["polyfill.js", "ads.js", "analytics.js", "app.js"]\n);',
+      },
+    ],
+  },
+  {
+    id: "ex-frame-budget",
+    chapter: "in-the-browser",
+    level: "beginner",
+    title: "Count the frames you dropped",
+    brief:
+      '<p>A screen redraws roughly every 16ms, and rendering only happens when the stack is empty. So a task that runs for 100ms does not slow the page — it deletes frames.</p><p>Write <code>budgetReport(taskMs)</code>, taking an array of task durations in milliseconds, and return <code>{ longTasks, framesDropped }</code>:</p><ul><li><code>longTasks</code> — how many tasks ran for <b>more than</b> 50ms</li><li><code>framesDropped</code> — summed across all tasks, <code>Math.floor(ms / 16)</code> each</li></ul>',
+    starter:
+      "function budgetReport(taskMs) {\n  // TODO: one pass, two counters\n}\n\nconsole.log(budgetReport([4, 100])); // { longTasks: 1, framesDropped: 6 }\n",
+    hints: [
+      "One loop can build both numbers — there is no need to walk the array twice.",
+      "Exactly 50ms is not over 50ms. Use > and not >=.",
+      "Math.floor(ms / 16) — a task shorter than one frame drops nothing.",
+    ],
+    solution:
+      "function budgetReport(taskMs) {\n  let longTasks = 0;\n  let framesDropped = 0;\n  for (const ms of taskMs) {\n    if (ms > 50) longTasks++;\n    framesDropped += Math.floor(ms / 16);\n  }\n  return { longTasks, framesDropped };\n}\n",
+    tests: [
+      {
+        name: "short tasks drop nothing",
+        body: "assert.deepEqual(budgetReport([4, 8, 12]), { longTasks: 0, framesDropped: 0 });",
+      },
+      {
+        name: "one 100ms task costs six frames",
+        body: "assert.deepEqual(budgetReport([100]), { longTasks: 1, framesDropped: 6 });",
+      },
+      {
+        name: "exactly 50ms is not yet a long task",
+        body: "assert.deepEqual(budgetReport([50]), { longTasks: 0, framesDropped: 3 });",
+      },
+      {
+        name: "an idle page reports zeroes",
+        body: "assert.deepEqual(budgetReport([]), { longTasks: 0, framesDropped: 0 });",
+      },
+      {
+        name: "several tasks add up",
+        body: "assert.deepEqual(budgetReport([20, 51, 200]), { longTasks: 2, framesDropped: 16 });",
+      },
+    ],
+  },
 ];

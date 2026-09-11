@@ -898,4 +898,82 @@ export const jsApplied: Exercise[] = [
       { name: "a still-valid token", body: "assert.equal(isTokenExpired({ exp: 2000 }, () => 1000), false);" },
     ],
   },
+  {
+    id: "ex-todo-toggle",
+    chapter: "guided-project-todo",
+    level: "beginner",
+    title: "Tick a to-do off, without mutating",
+    brief:
+      '<p>The to-do app keeps one rule: the array is the truth, and the DOM is a picture of it. Every update therefore returns a <b>new</b> array instead of editing the old one — that is what lets you re-render from state and compare before/after.</p><p>Write <code>toggleTodo(todos, id)</code> that returns a new array where the matching to-do has its <code>done</code> flipped.</p><ul><li>the original array and its objects must be left untouched</li><li>to-dos that did not change should be the <em>same object</em> in the new array</li><li>an id that matches nothing just returns an equivalent list</li></ul>',
+    starter:
+      'function toggleTodo(todos, id) {\n  // TODO: map, and replace only the one that matches\n}\n\nconst todos = [{ id: 1, text: "ship it", done: false }];\nconsole.log(toggleTodo(todos, 1)); // [{ id: 1, text: "ship it", done: true }]\nconsole.log(todos[0].done);        // still false\n',
+    hints: [
+      "map gives you a new array for free — the question is only what you return for each item.",
+      "For the matching one, build a fresh object with spread: { ...todo, done: !todo.done }.",
+      "For every other one, return the item itself. Do not copy it — reusing the reference is the point.",
+    ],
+    solution:
+      "function toggleTodo(todos, id) {\n  return todos.map((todo) => (todo.id === id ? { ...todo, done: !todo.done } : todo));\n}\n",
+    tests: [
+      {
+        name: "flips the matching to-do",
+        body: 'const next = toggleTodo([{ id: 1, text: "a", done: false }], 1);\nassert.equal(next[0].done, true);',
+      },
+      {
+        name: "flips a done one back to not done",
+        body: 'assert.equal(toggleTodo([{ id: 7, text: "a", done: true }], 7)[0].done, false);',
+      },
+      {
+        name: "leaves the original array and object alone",
+        body: 'const todos = [{ id: 1, text: "a", done: false }];\nconst next = toggleTodo(todos, 1);\nassert.equal(todos[0].done, false, "the original object was mutated");\nassert.ok(next !== todos, "you returned the same array — re-rendering will not notice a change");',
+      },
+      {
+        name: "untouched to-dos keep their identity",
+        body: 'const todos = [{ id: 1, text: "a", done: false }, { id: 2, text: "b", done: false }];\nconst next = toggleTodo(todos, 1);\nassert.ok(next[1] === todos[1], "unchanged items should be reused, not copied");',
+      },
+      {
+        name: "an unknown id changes nothing",
+        body: 'const todos = [{ id: 1, text: "a", done: false }];\nassert.deepEqual(toggleTodo(todos, 99), todos);',
+      },
+    ],
+  },
+  {
+    id: "ex-todo-filter",
+    chapter: "guided-project-todo",
+    level: "beginner",
+    title: "The filter bar and the items-left count",
+    brief:
+      '<p>The other half of the to-do app is derived state: what to show, and how many are left. Neither is stored — both are computed from the one array every time it renders.</p><p>Write <code>summarise(todos, filter)</code> returning <code>{ visible, remaining }</code>:</p><ul><li><code>visible</code> — the to-dos to render: everything for <code>"all"</code>, the unfinished ones for <code>"active"</code>, the finished ones for <code>"completed"</code></li><li><code>remaining</code> — how many are not done, <b>regardless of the filter</b>. "2 items left" does not change just because you are looking at the Completed tab.</li></ul>',
+    starter:
+      'function summarise(todos, filter) {\n  // TODO: one filtered list to show, one count that ignores the filter\n}\n\nconst todos = [{ id: 1, done: false }, { id: 2, done: true }];\nconsole.log(summarise(todos, "completed")); // { visible: [{ id: 2, done: true }], remaining: 1 }\n',
+    hints: [
+      "Two separate filters. The one for remaining never looks at the filter argument.",
+      'For "all", the predicate is just true.',
+      "remaining is a count, not a list — .filter(...).length gets you there.",
+    ],
+    solution:
+      'function summarise(todos, filter) {\n  const visible = todos.filter((todo) => {\n    if (filter === "active") return !todo.done;\n    if (filter === "completed") return todo.done;\n    return true;\n  });\n  const remaining = todos.filter((todo) => !todo.done).length;\n  return { visible, remaining };\n}\n',
+    tests: [
+      {
+        name: '"all" shows everything',
+        body: 'const todos = [{ id: 1, done: false }, { id: 2, done: true }];\nassert.deepEqual(summarise(todos, "all").visible, todos);',
+      },
+      {
+        name: '"active" hides the finished ones',
+        body: 'assert.deepEqual(summarise([{ id: 1, done: false }, { id: 2, done: true }], "active").visible, [{ id: 1, done: false }]);',
+      },
+      {
+        name: '"completed" shows only the finished ones',
+        body: 'assert.deepEqual(summarise([{ id: 1, done: false }, { id: 2, done: true }], "completed").visible, [{ id: 2, done: true }]);',
+      },
+      {
+        name: "remaining ignores the filter completely",
+        body: 'const todos = [{ id: 1, done: false }, { id: 2, done: false }, { id: 3, done: true }];\nassert.equal(summarise(todos, "completed").remaining, 2);\nassert.equal(summarise(todos, "active").remaining, 2);\nassert.equal(summarise(todos, "all").remaining, 2);',
+      },
+      {
+        name: "an empty list is an empty list",
+        body: 'assert.deepEqual(summarise([], "all"), { visible: [], remaining: 0 });',
+      },
+    ],
+  },
 ];

@@ -8,7 +8,7 @@ export const objectsDeep: Chapter = {
   levels: ["intermediate"],
   practice: ["ex-group-by", "ex-no-mutation", "ex-dedupe-map"],
   ready: true,
-  subtitle: "The rest of the object/array toolbox — past what B5 already covered.",
+  subtitle: "The rest of the object/array toolbox — past what the beginner chapter covered.",
   body: `<p>
   <a href="/notes/objects-arrays-basics">The first pass at objects and
   arrays</a> covered literals, the core mutating/non-mutating array
@@ -157,7 +157,7 @@ el = null;   <span class="c">// no other reference to the object exists anymore 
   itself exists.
 </div>
 
-<h3>Array methods B5 didn't cover</h3>
+<h3>Array methods the beginner chapter skipped</h3>
 <table>
   <tr>
     <th>Call</th>

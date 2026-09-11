@@ -46,7 +46,7 @@ export const asyncProperly: Chapter = {
   <span class="ttl">Rule</span> A single <code>.catch()</code> at the
   end of a chain catches a failure from every step before it — you
   don't need one per <code>.then()</code>. That's the real advantage
-  over callback-style error handling from <a href="/notes/scope-functions">last chapter</a>: one
+  over callback-style error handling from <a href="/notes/scope-functions">the scope chapter</a>: one
   handler instead of one check at every level.
 </div>
 

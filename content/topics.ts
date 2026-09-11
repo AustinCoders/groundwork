@@ -8,7 +8,7 @@ export const topics: TopicsData = {
       mark: "1",
       tagline: "I can write working code.",
       blurb:
-        "Start at the bottom of the ladder. Types, values, operators, functions — the words every other explanation assumes you already know.",
+        "Start at the bottom of the ladder — what the engine does with your code before line 1 runs, why one thread is enough, and then types, values, operators and functions.",
       bullets: [
         "You have written a few scripts",
         "<code>this</code>, closures and hoisting still feel like magic",
@@ -25,6 +25,41 @@ export const topics: TopicsData = {
             "Where code runs: console, <script>, Node",
             "var / let / const, naming, comments",
             "'use strict', script vs module",
+          ],
+        },
+        {
+          title: "Execution context",
+          chapter: "execution-context",
+          items: [
+            "The creation phase and the execution phase",
+            "What a context holds: memory, outer reference, this",
+            "Hoisting as it actually works, not as code moving",
+            "The Temporal Dead Zone, precisely",
+            "var / let / const: scope, loops, redeclaration, window",
+            "The scope chain, and why it is lexical",
+          ],
+        },
+        {
+          title: "One thread, one stack",
+          chapter: "single-thread",
+          items: [
+            "The call stack, and why a stack trace is that stack",
+            "Why JavaScript is single-threaded: the DOM and no locks",
+            "What blocking actually freezes",
+            "How async works anyway: host APIs, the queue, the event loop",
+            "setTimeout's delay is a minimum",
+            "When you genuinely need a Web Worker",
+          ],
+        },
+        {
+          title: "Inside the browser",
+          chapter: "in-the-browser",
+          items: [
+            "HTML to DOM, and the script tag that stops the parser",
+            "defer vs async vs plain",
+            "What the engine does: tokens, AST, bytecode, JIT",
+            "The frame budget: style, layout, paint, composite",
+            "DOMContentLoaded vs load",
           ],
         },
         {
@@ -366,11 +401,11 @@ export const topics: TopicsData = {
       name: "JavaScript",
       mark: "JS",
       accent: "yellow",
-      tagline: "The whole map, 23 sections deep",
+      tagline: "The whole map, 33 sections deep",
       status: "ready",
       notes: "notes.html",
       blurb:
-        "Beginner, intermediate and advanced, laid out in full — from how the engine runs code to security and testing. The shelf is up; each section opens the moment it's written.",
+        "Beginner, intermediate and advanced, laid out in full and all written — from what the engine does before line 1 runs, through the event loop, to security and testing.",
 
       levels: null,
       curriculumNotes: null,

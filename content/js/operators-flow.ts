@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const operatorsFlow: Chapter = {
   id: "operators-flow",
-  num: "B3",
+  num: "B6",
   title: "Operators & flow",
   short: "Operators & flow",
   levels: ["beginner"],

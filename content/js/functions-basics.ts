@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const functionsBasics: Chapter = {
   id: "functions-basics",
-  num: "B4",
+  num: "B7",
   title: "Functions",
   short: "Functions",
   levels: ["beginner"],
@@ -241,8 +241,10 @@ console.log(typeof secret);   <span class="c">// "undefined" — outer can't be 
 
 <h3>Hoisting, one level up</h3>
 <p>
-  The Temporal Dead Zone from the last two chapters applies exactly the
-  same way inside a function body — the only new piece here is that
+  The Temporal Dead Zone from
+  <a href="/notes/execution-context">the execution context chapter</a>
+  applies exactly the same way inside a function body — the only new
+  piece here is that
   <b>parameters</b> are hoisted too, as already-initialized bindings, so
   a default value can reference an earlier parameter without a TDZ
   error (as shown above), and the function body can shadow a parameter

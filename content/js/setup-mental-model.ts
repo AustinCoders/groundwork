@@ -204,19 +204,14 @@ export const setupMentalModel: Chapter = {
     <td>yes</td>
     <td>no</td>
   </tr>
-  <tr>
-    <th>Becomes a <code>window</code> property?</th>
-    <td>yes, at the top level</td>
-    <td>no</td>
-    <td>no</td>
-  </tr>
 </table>
 <p>
-  <b>Hoisting</b> means: before running a line of code, JS scans the scope
-  and registers every name in it. <code>var</code> names get created
-  <em>and</em> pre-filled with <code>undefined</code>. <code>let</code> and
-  <code>const</code> names get created but left empty — touch one early and
-  you get an error. That empty gap has a dramatic name: the
+  Those two rows are both consequences of one thing: before running a
+  line, JS scans the scope and registers every name in it.
+  <code>var</code> names get created <em>and</em> pre-filled with
+  <code>undefined</code>; <code>let</code> and <code>const</code> names
+  get created but left empty, and touching one early throws. The scan is
+  called <b>hoisting</b>, and that empty gap has a dramatic name — the
   <b>Temporal Dead Zone</b>.
 </p>
 
@@ -232,11 +227,14 @@ let b = 2;</code></pre>
   chance: <code>b</code> is still in the Temporal Dead Zone, so the whole
   script throws a real <code>ReferenceError</code> right there.
 </p>
-
-<div class="sticky mint">
-  <span class="ttl">Rule</span> <code>const</code> by default →
-  <code>let</code> when you must reassign → <code>var</code> never.
-</div>
+<p>
+  That is the whole of it you need today.
+  <a href="/notes/execution-context">The next chapter</a> is this
+  subject and nothing else — the two phases behind the scan, what the
+  TDZ actually spans, block scope, why a <code>var</code> loop and a
+  <code>let</code> loop print different numbers, and why
+  <code>const</code> does not freeze an object.
+</p>
 
 <h3>Naming &amp; comments</h3>
 <p>

@@ -13,14 +13,14 @@ A visual version of this file, with progress bars, is [`roadmap.html`](roadmap.h
 
 ## 0. Content — the half the engineering serves
 
-Measured today: **6 of 21 topics have written chapters** — 184 written, 358 still outlines, plus
+Measured today: **6 of 21 topics have written chapters** — 187 written, 358 still outlines, plus
 Git's 16 standalone sections.
 
 | Topic             | Written   | Exercises | Cheat page |
 | ----------------- | --------- | --------- | ---------- |
 | React             | 51        | 24        | yes        |
 | DSA in JS         | 34        | 245       | **no**     |
-| JavaScript        | 30        | 54        | yes        |
+| JavaScript        | 33        | 62        | yes        |
 | Interview book    | 27 rounds | **0**     | —          |
 | System Design     | 24        | **0**     | **no**     |
 | How this is built | 18        | —         | —          |
@@ -54,7 +54,7 @@ six written topics still do only the first.
 **Four chapter titles read worse than the chapters are.** This one was checked and did not hold.
 `functions-basics` and `objects-arrays-basics` are titled "(first half)", but the second half exists
 — it is `scope-functions` and `objects-deep` at the intermediate level, and the latter has a section
-literally named "Array methods B5 didn't cover". The two System Design chapters titled "(surface)"
+literally named "Array methods B5 didn't cover" (since renamed). The two System Design chapters titled "(surface)"
 run 2,444 and 2,538 words against a topic median of 2,581, and already contain the inverted index,
 BM25, Elasticsearch sharding, Raft elections and log replication that the audit asks for. "(surface)"
 there is an honest scoping statement — use a consensus system, do not write one — not an admission.
@@ -85,7 +85,7 @@ than taken on trust.
 Of the 27 checkable JavaScript items, 22 were already written — iterators and generators, the event
 loop with microtask and macrotask, the observers and `AbortController`, symbols, `structuredClone`,
 Web Workers, tree-shaking, currying, the V8 pipeline. The three that genuinely did not exist —
-**browser observability** (A10), a **JavaScript interview bank** (A11) and a **guided project** (B9)
+**browser observability** (A10), a **JavaScript interview bank** (A11) and a **guided project** (then B9)
 — have since been written, and WebAssembly was added to the performance chapter. Streams turned out
 not to be thin: the existing chapter already has the reader loop and backpressure. JavaScript's side
 of this audit is closed.
@@ -123,7 +123,7 @@ and rebuilding the others against it is cheaper than deciding each topic's struc
 
 The rest, briefly: per-chapter recall cards, so the spaced-repetition review page has something
 chapter-specific to resurface; a placement test instead of asking readers to guess their level; a
-prerequisite map, because there are 184 chapters and no edges between them; references on advanced
+prerequisite map, because there are 187 chapters and no edges between them; references on advanced
 chapters, since sourceless depth reads as opinion; and last-updated stamps, because React, Node and
 ES all move faster than the notes about them.
 

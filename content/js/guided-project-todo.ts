@@ -2,11 +2,11 @@ import type { Chapter } from "../types";
 
 export const guidedProjectTodo: Chapter = {
   id: "guided-project-todo",
-  num: "B9",
+  num: "B12",
   title: "Guided project: build a to-do app",
   short: "Guided project",
   levels: ["beginner"],
-  practice: [],
+  practice: ["ex-todo-toggle", "ex-todo-filter"],
   ready: true,
   subtitle: "Everything from the beginner chapters, in one small thing that works.",
   body: `<h3>What you are building</h3>

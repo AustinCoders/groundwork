@@ -1,5 +1,8 @@
 import type { NotesFile } from "./types";
 import { setupMentalModel } from "./js/setup-mental-model";
+import { executionContext } from "./js/execution-context";
+import { singleThread } from "./js/single-thread";
+import { inTheBrowser } from "./js/in-the-browser";
 import { typesValues } from "./js/types-values";
 import { operatorsFlow } from "./js/operators-flow";
 import { functionsBasics } from "./js/functions-basics";
@@ -33,10 +36,11 @@ import { guidedProjectTodo } from "./js/guided-project-todo";
 export const jsNotes: NotesFile = {
   meta: {
     title: "JavaScript — the whole map",
-    subtitle: "23 sections across three levels. The first two are written — the rest are still on the desk.",
-    lead: "Pick a level and you'll get these sections in the order that makes sense. Each one opens here the moment it's written; until then it says so.",
+    subtitle:
+      "33 sections across three levels, all written — from how the engine runs your code to security and testing.",
+    lead: "Pick a level and you'll get these sections in the order that makes sense — from what the engine does before line 1 runs, through the event loop, to testing and security.",
     author: "Akshat",
-    updated: "August 2026",
+    updated: "September 2026",
   },
 
   hero: {
@@ -45,6 +49,9 @@ export const jsNotes: NotesFile = {
 
   chapters: [
     setupMentalModel,
+    executionContext,
+    singleThread,
+    inTheBrowser,
     typesValues,
     operatorsFlow,
     functionsBasics,
