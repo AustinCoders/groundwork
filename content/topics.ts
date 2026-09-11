@@ -106,6 +106,18 @@ export const topics: TopicsData = {
           ],
         },
         {
+          title: "The this keyword",
+          chapter: "this-keyword",
+          items: [
+            "this is decided by the call, not the definition",
+            "The four rules, ranked: new, explicit, implicit, default",
+            "call / apply / bind",
+            "Arrow functions have no this of their own",
+            "How this gets lost, and the three fixes",
+            "this in classes and event handlers",
+          ],
+        },
+        {
           title: "DOM & events",
           chapter: "dom-events",
           items: [
@@ -117,9 +129,18 @@ export const topics: TopicsData = {
           ],
         },
         {
-          title: "Basic async",
+          title: "Callbacks, then promises",
           chapter: "basic-async",
-          items: ["setTimeout / setInterval", "fetch + .then() (surface level)", "JSON.parse / JSON.stringify"],
+          items: [
+            "What a callback actually is, sync and async",
+            "setTimeout / setInterval, and clearing them",
+            "Error-first callbacks, and why try/catch can't reach them",
+            "A promise's three states, and settling once",
+            "Chaining: what each .then returns, .catch and .finally",
+            "async / await as the same thing, respelled",
+            "fetch and response.ok",
+            "JSON.parse / JSON.stringify",
+          ],
         },
         {
           title: "Errors & tools",

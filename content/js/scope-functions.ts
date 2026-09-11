@@ -209,74 +209,23 @@ function throttle(fn, interval) {
   handler: fire at most once every N ms, the whole time they scroll).
 </div>
 
-<h3>this — five binding rules, ranked</h3>
+<h3>this, past the four rules</h3>
 <p>
-  <code>this</code> isn't decided by where a function is written — it's
-  decided <b>at call time</b>, by <em>how</em> the function is called.
-  Four separate rules can set it, and they have a strict pecking order:
+  <a href="/notes/this-keyword">The beginner chapter on this</a> has the
+  four binding rules and the ways a method loses its object. What
+  belongs here is the part that is really about scope: an arrow has no
+  <code>this</code> of its own, so it resolves the name through the
+  scope chain like any other variable — which is why an arrow written
+  inside a method keeps that method's <code>this</code>, and an arrow
+  written at the top level never can.
 </p>
-<table>
-  <tr>
-    <th>Rank</th>
-    <th>Rule</th>
-    <th>Trigger</th>
-    <th><code>this</code> becomes</th>
-  </tr>
-  <tr><td>1 (wins)</td><td><b>new</b> binding</td><td><code>new Fn()</code></td><td>the brand-new object being constructed</td></tr>
-  <tr><td>2</td><td><b>Explicit</b> binding</td><td><code>fn.call(obj)</code>, <code>.apply(obj)</code>, <code>.bind(obj)</code></td><td>whatever object you handed it</td></tr>
-  <tr><td>3</td><td><b>Implicit</b> binding</td><td><code>obj.method()</code></td><td>the object left of the dot</td></tr>
-  <tr><td>4 (default)</td><td><b>Default</b> binding</td><td>a plain <code>fn()</code> call</td><td><code>undefined</code> in strict mode / modules (the global object in old-style sloppy scripts)</td></tr>
-</table>
-<p class="sub">
-  Arrows are the exception that sits outside this whole table — they
-  never bind their own <code>this</code> at all, so none of these four
-  rules ever apply to one directly; they just read <code>this</code>
-  from whichever scope they were written in, same as any other
-  variable.
+<p>
+  And one experiment worth running, because it settles the ranking for
+  good — <code>new</code> against a <code>this</code> that was already
+  welded on by <code>bind</code>:
 </p>
-
 <div class="try">
-  <pre><code>const obj = {
-  name: "obj",
-  whoAmI() { return this.name; },
-};
-
-console.log(obj.whoAmI());          <span class="c">// implicit — what happens?</span>
-
-const detached = obj.whoAmI;
-try {
-  console.log(detached());          <span class="c">// default — what happens?</span>
-} catch (e) {
-  console.log("threw:", e.message);
-}</code></pre>
-</div>
-<p class="sub">
-  <code>"obj"</code>, then a <code>TypeError</code>. Assigning
-  <code>obj.whoAmI</code> to <code>detached</code> copies the
-  <em>function</em>, not the object it was attached to — called bare,
-  as <code>detached()</code>, there's no object left of a dot, so
-  default binding kicks in and <code>this</code> is <code>undefined</code>.
-  <code>this.name</code> on <code>undefined</code> throws. This exact
-  bug is why <code>onClick={someObj.method}</code>-style callbacks
-  quietly lose their <code>this</code> unless bound first.
-</p>
-
-<h3>call, apply, bind</h3>
-<table>
-  <tr>
-    <th></th>
-    <th>Sets <code>this</code> to…</th>
-    <th>Runs the function?</th>
-    <th>Arguments</th>
-  </tr>
-  <tr><td><code>fn.call(obj, a, b)</code></td><td><code>obj</code></td><td>immediately</td><td>listed one by one</td></tr>
-  <tr><td><code>fn.apply(obj, [a, b])</code></td><td><code>obj</code></td><td>immediately</td><td>as a single array</td></tr>
-  <tr><td><code>fn.bind(obj, a)</code></td><td><code>obj</code>, permanently</td><td>never — returns a new function</td><td><code>a</code> is pre-filled; more can be added at the real call</td></tr>
-</table>
-<div class="try">
-  <pre><code>function whoAmI() { return this === undefined ? "still stuck" : this.tag; }
-
-const F = function () { return this; };
+  <pre><code>const F = function () { return this; };
 const bound = F.bind({ tag: "bound" });
 const created = new bound();          <span class="c">// new vs bind — who wins?</span>
 console.log(created instanceof bound, created.tag);   <span class="c">// what happens?</span></code></pre>
@@ -284,12 +233,11 @@ console.log(created instanceof bound, created.tag);   <span class="c">// what ha
 <p class="sub">
   <code>true undefined</code> — even a <code>this</code> locked in by
   <code>bind</code> gets overridden the moment the bound function is
-  called with <code>new</code>. It still constructs a real, correctly-typed
-  instance; the bound object is just discarded in favor of the newly
-  created one. That's the precedence table above, confirmed:
-  <b>new</b> beats <b>explicit</b> beats everything else.
+  called with <code>new</code>. It still constructs a real,
+  correctly-typed instance; the bound object is just discarded in favour
+  of the newly created one. <b>new</b> beats <b>explicit</b> beats
+  everything else, confirmed by experiment rather than by table.
 </p>
-
 <h3>IIFE — the closure that runs itself</h3>
 <pre><code>const counter = (function () {
   let count = 0;               <span class="c">// invisible outside this expression</span>
@@ -363,41 +311,24 @@ doubleThenShowOldValueIncremented(5);   <span class="c">// (5 + 1) * 2 = 12</spa
   <code>reduce</code>/<code>reduceRight</code> underneath.
 </p>
 
-<h3>Callbacks and the hell they used to cause</h3>
+<h3>Callbacks, as higher-order functions</h3>
 <p>
-  Before promises, "do this, then when it's done do that" meant passing
-  a function to be called later. Node standardized the shape:
-  <b>error-first</b> — the callback's first parameter is always either
-  an error or <code>null</code>.
+  A callback is the same idea as everything above it in this chapter —
+  a function treated as a value and handed to other code. The only
+  difference is who calls it and when.
+  <code>arr.map(fn)</code> calls yours immediately;
+  <code>setTimeout(fn)</code> parks it.
 </p>
-<pre><code>function readConfig(callback) {
-  fs.readFile("config.json", (err, data) =&gt; {
-    if (err) return callback(err);        <span class="c">// error path checked FIRST, always</span>
-    callback(null, JSON.parse(data));
-  });
-}</code></pre>
 <p>
-  The trouble starts once one async step needs another, which needs
-  another — each nested one level deeper, error handling repeated at
-  every level:
+  The historical shape — Node's error-first convention, the nested
+  staircase it produced, and why <code>try/catch</code> could not reach
+  inside it — is covered where it belongs, next to the promises that
+  replaced it, in
+  <a href="/notes/basic-async">Callbacks, then promises</a>. Worth
+  knowing here: a promise does not remove the callback. It just gives
+  you somewhere to hand it that can be chained and can fail in one
+  place.
 </p>
-<pre><code>getUser(id, (err, user) =&gt; {
-  if (err) return handleError(err);
-  getOrders(user.id, (err, orders) =&gt; {
-    if (err) return handleError(err);
-    getInvoice(orders[0].id, (err, invoice) =&gt; {
-      if (err) return handleError(err);
-      render(invoice);       <span class="c">// four levels deep and still growing sideways</span>
-    });
-  });
-});</code></pre>
-<p class="sub">
-  That rightward staircase is "callback hell" — not a formal term, just
-  what everyone called code that could only grow by indenting further.
-  Promises (next chapter) fix the shape without changing the underlying
-  idea: still "run this later," just chainable instead of nested.
-</p>
-
 <h3>Recursion</h3>
 <p>
   A function that calls itself, always working toward a

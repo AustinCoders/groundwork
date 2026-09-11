@@ -10,66 +10,23 @@ export const asyncProperly: Chapter = {
   ready: true,
   subtitle: "Promises, done right — and the sequential-vs-parallel mistake almost everyone makes once.",
   body: `<p>
-  The event loop itself — call stack, microtask queue, why a 0ms timer
-  still loses to a promise — already got two full step-through demos
-  back in <a href="/notes/setup-mental-model">the mental model
-  chapter</a>. If that ordering isn't solid yet, that's the place to
-  build it; this chapter assumes it and moves straight to the layer on
-  top: what a Promise actually <em>is</em>, and how to not shoot
-  yourself in the foot with <code>await</code>.
+  Three chapters already did the groundwork this one stands on:
+  <a href="/notes/single-thread">why async exists at all</a>,
+  <a href="/notes/setup-mental-model">the ordering demos</a>, and
+  <a href="/notes/basic-async">promises themselves</a> — the three
+  states, chaining, <code>.catch</code>, and <code>async</code>/<code>await</code>
+  as the same thing in different spelling. This chapter assumes all of
+  that and goes to the layer above it: the mistakes that survive knowing
+  the syntax.
 </p>
 
-<h3>A promise has exactly three states</h3>
-<table>
-  <tr>
-    <th>State</th>
-    <th>Meaning</th>
-    <th>Can it change again?</th>
-  </tr>
-  <tr><td><b>pending</b></td><td>not settled yet</td><td>yes — to fulfilled or rejected</td></tr>
-  <tr><td><b>fulfilled</b></td><td>succeeded, has a value</td><td class="tone-bad">no — permanent</td></tr>
-  <tr><td><b>rejected</b></td><td>failed, has a reason</td><td class="tone-bad">no — permanent</td></tr>
-</table>
-<p>
-  "Settled" means fulfilled <em>or</em> rejected — either way, done,
-  forever. A promise can only make that transition once; every
-  <code>.then()</code>/<code>.catch()</code> attached to it (even
-  attached late, after it already settled) gets called with that same
-  final outcome.
-</p>
-<pre><code>fetch("/api/user")
-  .then((response) =&gt; response.json())   <span class="c">// each .then returns a NEW promise</span>
-  .then((user) =&gt; console.log(user.name))
-  .catch((error) =&gt; console.error("failed:", error))   <span class="c">// catches a rejection from ANY step above</span>
-  .finally(() =&gt; hideSpinner());          <span class="c">// runs either way, exactly like try/finally</span></code></pre>
-<div class="sticky mint">
-  <span class="ttl">Rule</span> A single <code>.catch()</code> at the
-  end of a chain catches a failure from every step before it — you
-  don't need one per <code>.then()</code>. That's the real advantage
-  over callback-style error handling from <a href="/notes/scope-functions">the scope chapter</a>: one
-  handler instead of one check at every level.
+<div class="say">
+  <span class="ttl">One-line recap &rarr;</span> A promise settles once,
+  permanently, and every reaction on it runs as a microtask.
+  <code>.then</code> returns a new promise whose value is whatever your
+  callback returned. An <code>async</code> function always returns a
+  promise; <code>await</code> unwraps one and throws on rejection.
 </div>
-
-<h3>async / await is the same promises, different spelling</h3>
-<pre><code>async function loadUser() {
-  try {
-    const response = await fetch("/api/user");
-    if (!response.ok) throw new Error("Request failed: " + response.status);
-    return await response.json();
-  } catch (error) {
-    console.error("failed:", error);
-    throw error;   <span class="c">// re-throw so the caller still knows it failed</span>
-  }
-}</code></pre>
-<p>
-  Two things worth being precise about: an <code>async function</code>
-  <b>always returns a promise</b>, even if the body has no
-  <code>await</code> at all and just <code>return</code>s a plain
-  value — that value gets silently wrapped. And
-  <code>try/catch</code> around <code>await</code> catches a rejected
-  awaited promise exactly like a thrown synchronous error — same
-  syntax, unified handling.
-</p>
 
 <h3>The mistake: accidental sequential awaiting</h3>
 <div class="try">

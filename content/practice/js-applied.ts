@@ -976,4 +976,43 @@ export const jsApplied: Exercise[] = [
       },
     ],
   },
+  {
+    id: "ex-promise-chain",
+    chapter: "basic-async",
+    level: "beginner",
+    title: "Run promises one after another",
+    brief:
+      '<p><code>Promise.all</code> starts everything at once. Sometimes you need the opposite: each step must finish before the next one begins — a queue of uploads, or steps that hit a rate-limited API.</p><p>Write <code>sequence(tasks)</code>, where <code>tasks</code> is an array of functions that each return a promise. Run them <b>one at a time, in order</b>, and resolve with an array of their results in the same order.</p><ul><li>a task must not start until the one before it has finished</li><li>if any task rejects, the whole thing rejects</li></ul>',
+    starter:
+      'function sequence(tasks) {\n  // TODO: await each task in turn, collecting results\n}\n\nconst wait = (ms, v) => () => new Promise((r) => setTimeout(() => r(v), ms));\nsequence([wait(20, "a"), wait(10, "b")]).then((out) => console.log(out)); // ["a", "b"]\n',
+    hints: [
+      "An async function plus a for...of loop is the shortest honest version — push each awaited result onto an array.",
+      "Remember the tasks are functions, not promises. Call task() to start it, and not before you want it to start.",
+      "A rejection inside an async function already propagates on its own — you do not need to catch and re-throw.",
+    ],
+    solution:
+      "async function sequence(tasks) {\n  const results = [];\n  for (const task of tasks) {\n    results.push(await task());\n  }\n  return results;\n}\n",
+    tests: [
+      {
+        name: "results come back in order",
+        body: 'const wait = (ms, v) => () => new Promise((r) => setTimeout(() => r(v), ms));\nassert.deepEqual(await sequence([wait(20, "a"), wait(1, "b"), wait(1, "c")]), ["a", "b", "c"]);',
+      },
+      {
+        name: "an empty list resolves to an empty array",
+        body: "assert.deepEqual(await sequence([]), []);",
+      },
+      {
+        name: "each task finishes before the next one starts",
+        body: 'const log = [];\nconst task = (name) => () =>\n  new Promise((r) => {\n    log.push("start " + name);\n    setTimeout(() => { log.push("end " + name); r(name); }, 10);\n  });\nawait sequence([task("a"), task("b")]);\nassert.deepEqual(log, ["start a", "end a", "start b", "end b"], "they overlapped — that is Promise.all behaviour, not sequential");',
+      },
+      {
+        name: "a rejecting task rejects the whole run",
+        body: 'const ok = () => Promise.resolve(1);\nconst bad = () => Promise.reject(new Error("nope"));\nlet threw = false;\ntry {\n  await sequence([ok, bad, ok]);\n} catch (e) {\n  threw = e.message === "nope";\n}\nassert.ok(threw, "the rejection should have come out of sequence()");',
+      },
+      {
+        name: "it returns a promise rather than an array",
+        body: 'const out = sequence([() => Promise.resolve(1)]);\nassert.type(out.then, "function", "sequence must return a promise");\nassert.deepEqual(await out, [1]);',
+      },
+    ],
+  },
 ];

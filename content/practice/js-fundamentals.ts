@@ -778,4 +778,82 @@ export const jsFundamentals: Exercise[] = [
       },
     ],
   },
+  {
+    id: "ex-this-rule",
+    chapter: "this-keyword",
+    level: "beginner",
+    title: "Borrow a method using only the dot",
+    brief:
+      '<p>Implicit binding is not magic: <code>this</code> becomes whatever object sits left of the dot. Prove it by building <code>call</code> yourself.</p><p>Write <code>callWith(fn, thisArg, ...args)</code> that runs <code>fn</code> with <code>this</code> set to <code>thisArg</code> — <b>without</b> using <code>call</code>, <code>apply</code> or <code>bind</code>.</p><ul><li>pass the arguments through</li><li>return whatever <code>fn</code> returns</li><li>leave <code>thisArg</code> exactly as you found it</li></ul>',
+    starter:
+      'function callWith(fn, thisArg, ...args) {\n  // TODO: give thisArg the function temporarily, call it through the dot, tidy up\n}\n\nfunction whoAmI() { return this.name; }\nconsole.log(callWith(whoAmI, { name: "ana" })); // "ana"\n',
+    hints: [
+      "If the only way to set this is a dot, then you need thisArg to temporarily own the function.",
+      "Put it on as a property, call thisArg[key](...args), then delete the property again.",
+      "Use a Symbol as the key so you can never collide with a real property the object already had.",
+    ],
+    solution:
+      "function callWith(fn, thisArg, ...args) {\n  const key = Symbol(\"borrowed\");\n  thisArg[key] = fn;\n  try {\n    return thisArg[key](...args);\n  } finally {\n    delete thisArg[key];\n  }\n}\n",
+    tests: [
+      {
+        name: "this becomes the object you passed",
+        body: 'function whoAmI() { return this.name; }\nassert.equal(callWith(whoAmI, { name: "ana" }), "ana");',
+      },
+      {
+        name: "arguments are passed through",
+        body: 'function greet(greeting, mark) { return greeting + ", " + this.name + mark; }\nassert.equal(callWith(greet, { name: "ana" }, "Hi", "!"), "Hi, ana!");',
+      },
+      {
+        name: "the return value comes back",
+        body: "function sum(a, b) { return a + b + this.base; }\nassert.equal(callWith(sum, { base: 10 }, 1, 2), 13);",
+      },
+      {
+        name: "the object is left exactly as it was",
+        body: 'const target = { name: "ana" };\ncallWith(function () { return this.name; }, target);\nassert.deepEqual(Object.keys(target), ["name"], "you left a leftover property behind");\nassert.equal(Object.getOwnPropertySymbols(target).length, 0, "you left a leftover symbol key behind");',
+      },
+      {
+        name: "works twice in a row on the same object",
+        body: 'const target = { name: "ana" };\nfunction whoAmI() { return this.name; }\nassert.equal(callWith(whoAmI, target), "ana");\nassert.equal(callWith(whoAmI, target), "ana");',
+      },
+    ],
+  },
+  {
+    id: "ex-keep-this",
+    chapter: "this-keyword",
+    level: "beginner",
+    title: "A method that survives being detached",
+    brief:
+      '<p>The moment a method is pulled off its object — destructured, or passed as a callback — it loses the dot, and with it <code>this</code>.</p><p>Write <code>makeCounter()</code> returning an object with a <code>count</code> (starting at 0) and an <code>increment()</code> that adds one to it. The catch: <code>increment</code> must keep working even when it is called with no object in front of it.</p>',
+    starter:
+      "function makeCounter() {\n  // TODO: increment must still work after const { increment } = makeCounter();\n}\n\nconst c = makeCounter();\nconst detached = c.increment;\ndetached();\nconsole.log(c.count); // 1\n",
+    hints: [
+      "An arrow function has no this of its own, so nothing can take it away.",
+      "Name the object before you return it, and have increment reach it by name rather than through this.",
+      "Each call to makeCounter must build a fresh object — do not share one between counters.",
+    ],
+    solution:
+      "function makeCounter() {\n  const counter = {\n    count: 0,\n    increment: () => {\n      counter.count += 1;\n      return counter.count;\n    },\n  };\n  return counter;\n}\n",
+    tests: [
+      {
+        name: "counts up when called with the dot",
+        body: "const c = makeCounter();\nc.increment();\nc.increment();\nassert.equal(c.count, 2);",
+      },
+      {
+        name: "still counts up after being pulled off the object",
+        body: "const c = makeCounter();\nconst detached = c.increment;\ndetached();\ndetached();\nassert.equal(c.count, 2);",
+      },
+      {
+        name: "survives destructuring",
+        body: "const c = makeCounter();\nconst { increment } = c;\nincrement();\nassert.equal(c.count, 1);",
+      },
+      {
+        name: "works as a callback handed to something else",
+        body: "const c = makeCounter();\n[1, 2, 3].forEach(c.increment);\nassert.equal(c.count, 3);",
+      },
+      {
+        name: "two counters do not share a count",
+        body: "const a = makeCounter();\nconst b = makeCounter();\na.increment();\nassert.equal(a.count, 1);\nassert.equal(b.count, 0, \"the two counters are sharing state\");",
+      },
+    ],
+  },
 ];
