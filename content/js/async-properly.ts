@@ -119,7 +119,10 @@ console.log(winner);   <span class="c">// what happens?</span></code></pre>
   }
 }
 
-fetch("/api/slow-report", { signal: controller.signal });  <span class="c">// fetch understands AbortSignal natively</span></code></pre>
+const report = await withTimeout(
+  (signal) =&gt; fetch("/api/slow-report", { signal }),   <span class="c">// fetch understands AbortSignal natively</span>
+  5000
+);</code></pre>
 <p class="sub">
   For the specific "give up after N ms" case, there's a built-in
   shortcut that skips the manual timer entirely:

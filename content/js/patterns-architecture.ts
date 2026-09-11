@@ -199,8 +199,8 @@ const safeLoad = withFallback(loadUserProfile, { name: "Guest" });</code></pre>
   <b>Caching</b> closes the loop: the same request, made again, doesn't
   even need to reach the server. An HTTP <code>Cache-Control</code>
   header, an in-memory <code>Map</code> keyed by request, or the
-  <a href="/notes/scope-functions">memoize</a> pattern from three
-  chapters back are all the identical idea at different layers of the
+  <a href="/notes/closures">memoize</a> pattern from the closures
+  chapter are all the identical idea at different layers of the
   stack — don't redo work whose answer hasn't changed.
 </p>`,
 };

@@ -10,7 +10,7 @@ export const realtimeConnections: Chapter = {
   ready: true,
   subtitle: "fetch answers one question at a time. This is what answers a stream of them.",
   body: `<p>
-  Nothing below is a <code>.try</code> block — every option here needs
+  Nothing below is a runnable example — every option here needs
   a real server on the other end, so a live demo in this sandbox would
   either hang or fail for reasons that have nothing to do with the
   code being right or wrong. The one genuinely testable piece —
@@ -82,16 +82,22 @@ events.onerror = () =&gt; console.log("connection lost — EventSource is alread
 </div>
 
 <h3>Long polling</h3>
-<pre><code>async function poll() {
+<pre><code>async function poll(attempt = 0) {
   try {
     const response = await fetch("/api/updates?wait=30");   <span class="c">// server HOLDS this request open until there's something to say</span>
-    const data = await response.json();
-    handleUpdate(data);
-  } finally {
-    poll();   <span class="c">// immediately ask again — the "long" part is the server delaying its response, not the client waiting between requests</span>
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    handleUpdate(await response.json());
+    poll();   <span class="c">// success: ask again immediately — the "long" part is the server delaying its response, not the client waiting</span>
+  } catch {
+    setTimeout(() =&gt; poll(attempt + 1), backoffDelay(attempt));   <span class="c">// failure: back off instead of hammering a server that's down</span>
   }
 }
 poll();</code></pre>
+<p class="sub">
+  <code>backoffDelay</code> is built at the end of this chapter — the
+  same wait-longer-after-each-failure rule applies to every reconnect
+  strategy here, long polling included.
+</p>
 <p>
   Ordinary polling means asking every N seconds regardless of whether
   anything changed. <b>Long</b> polling flips who waits: the client

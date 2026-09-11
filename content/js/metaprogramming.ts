@@ -182,7 +182,7 @@ user.age = "nope";   <span class="c">// throws immediately — invalid data can'
   property <b>must</b> return the real, actual value — returning
   anything else throws a <code>TypeError</code>. This exists so
   <code>Object.freeze</code>'s guarantee from
-  <a href="/notes/error-handling-debugging">two chapters back</a> stays
+  <a href="/notes/error-handling-debugging">Error handling &amp; debugging</a> stays
   a real guarantee, not something a misbehaving Proxy trap could
   quietly undermine.
 </p>
@@ -195,13 +195,13 @@ new Function("a", "b", "return a + b");  <span class="c">// runs in GLOBAL scope
   three costs: the engine can't statically analyze code that doesn't
   exist yet at parse time, so it gets none of the optimization this
   whole chapter has been about; a strict Content-Security-Policy
-  (covered next chapter) blocks them outright; and if that string ever
+  (covered in <a href="/notes/security">Security</a>) blocks them outright; and if that string ever
   contains anything derived from user input, it's arbitrary code
   execution, full stop — not a bug class, the actual worst case.
 </p>
 <div class="warn">
   <span class="ttl">⚠ This site's own code runner uses new Function</span>
-  Every <code>.try</code> block on this page, and the whole practice
+  Every runnable example on this site, and the whole practice
   playground, really does run your code through
   <code>new Function(...)</code> inside a Web Worker — that's not a
   contradiction of the warning above, it's the actual legitimate use

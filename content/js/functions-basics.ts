@@ -243,33 +243,42 @@ console.log(typeof secret);   <span class="c">// "undefined" — outer can't be 
 <p>
   The Temporal Dead Zone from
   <a href="/notes/execution-context">the execution context chapter</a>
-  applies exactly the same way inside a function body — the only new
-  piece here is that
-  <b>parameters</b> are hoisted too, as already-initialized bindings, so
-  a default value can reference an earlier parameter without a TDZ
-  error (as shown above), and the function body can shadow a parameter
-  name with its own <code>let</code>:
+  applies the same way inside a function body. <b>Parameters</b> add one
+  rule on top: they are created when the call starts and initialised
+  left to right, each one ready before the next default runs. That is
+  why <code>b = a + 1</code> works and <code>a = b</code> throws, as shown
+  above.
 </p>
-<pre><code>function shadow(x) {
-  console.log(x);     <span class="c">// the parameter's value</span>
-  let x2 = x;          <span class="c">// (renamed here only to keep the example simple —</span>
-  <span class="c">//  redeclaring "x" itself with let in the same scope is a SyntaxError)</span>
+<pre><code>function rename(x) {
+  let y = x;     <span class="c">// fine — a new name</span>
+}
+
+function clash(x) {
+  let x = 1;     <span class="c">// SyntaxError: Identifier 'x' has already been declared</span>
+}
+
+function nested(x) {
+  if (x) {
+    let x = "inner";   <span class="c">// allowed — a new block, so this shadows the parameter</span>
+  }
 }</code></pre>
 <p class="sub">
-  That's a deliberate restriction: a parameter and a
-  <code>let</code>/<code>const</code> of the same name can't coexist in
-  one function scope — JS won't let you accidentally shadow an argument
-  you probably still needed.
+  A parameter and a <code>let</code>/<code>const</code> of the same name
+  can't coexist in the function's top-level scope — JS won't let you
+  silently replace an argument you probably still needed. Inside a
+  nested block the new name is fine, and the parameter is visible again
+  once the block ends.
 </p>
 
 <h3>What comes next</h3>
 <p>
   This is the mechanical half: how to write one, what the parameters do, where
-  the name lives. The half that interviews spend their time on &mdash;
-  <b>closures</b>, <b>this</b> and its five binding rules, <code>call</code> /
-  <code>apply</code> / <code>bind</code>, currying and composition &mdash; is
-  <a href="/notes/scope-functions">Scope &amp; functions, properly</a> at the
-  intermediate level. Nothing here is superseded there; it is the same subject,
-  one layer down.
+  the name lives. The half that interviews spend their time on comes next:
+  <a href="/notes/this-keyword"><b>this</b></a> with its four binding rules and
+  <code>call</code> / <code>apply</code> / <code>bind</code>, then
+  <a href="/notes/closures"><b>closures</b></a>, and at the intermediate level
+  currying, composition and recursion in
+  <a href="/notes/scope-functions">Scope &amp; functions, properly</a>. Nothing
+  here is superseded there; it is the same subject, one layer down.
 </p>`,
 };

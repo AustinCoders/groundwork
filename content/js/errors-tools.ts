@@ -8,7 +8,7 @@ export const errorsTools: Chapter = {
   levels: ["beginner"],
   practice: ["ex-safe-parse", "ex-custom-error"],
   ready: true,
-  subtitle: "The beginner track's last stop — reading what the engine is trying to tell you.",
+  subtitle: "The last lesson before the beginner project — reading what the engine is trying to tell you.",
   body: `<h3>try / catch / finally</h3>
 <pre><code>try {
   JSON.parse("this isn't JSON");     <span class="c">// throws a SyntaxError</span>

@@ -74,7 +74,7 @@ el.innerHTML = DOMPurify.sanitize(someValueThatCameFromOutsideThisFile);</code><
     <th>Cookie sent on a cross-site request?</th>
   </tr>
   <tr><td><code>Strict</code></td><td class="tone-bad">never</td></tr>
-  <tr><td><code>Lax</code> (most browsers' default today)</td><td class="tone-warn">only on top-level navigation (clicking a real link), not on a background <code>fetch</code>/form auto-submit</td></tr>
+  <tr><td><code>Lax</code> (what Chrome and Edge assume when the attribute is missing — Firefox and Safari don't, so set it explicitly)</td><td class="tone-warn">only on top-level <code>GET</code> navigation (clicking a link), not on a background <code>fetch</code> or a cross-site <code>POST</code> form</td></tr>
   <tr><td><code>None</code></td><td class="tone-yes">always — requires <code>Secure</code> too</td></tr>
 </table>
 <p>
@@ -177,10 +177,14 @@ otherWindow.postMessage(payload, "https://trusted-partner.example");   <span cla
 </table>
 <div class="sticky mint">
   <span class="ttl">Rule</span> An <code>httpOnly</code> cookie with
-  <code>SameSite=Lax</code> or <code>Strict</code> closes both holes at
-  once — invisible to a successful XSS payload, and not sent on the
-  cross-site requests CSRF depends on. localStorage is popular because
-  it's simple to reach from JS, not because it's the safer choice.
+  <code>SameSite=Lax</code> or <code>Strict</code> shuts the two easy
+  attacks at once — an XSS payload can't read the token and ship it
+  somewhere else, and cross-site requests don't carry it. It does
+  <em>not</em> make XSS harmless: injected script runs on your own
+  origin, so while the page is open it can still send requests that
+  carry the cookie. Prevent XSS first; where the token lives only limits
+  the damage. localStorage is popular because it's simple to reach from
+  JS, not because it's the safer choice.
 </div>
 
 <h3>JWT — signed, not encrypted</h3>
@@ -198,7 +202,10 @@ otherWindow.postMessage(payload, "https://trusted-partner.example");   <span cla
   ".signature-goes-here";
 
 const [headerPart, payloadPart] = token.split(".");
-const decode = (part) =&gt; JSON.parse(atob(part));
+const decode = (part) =&gt; {
+  const base64 = part.replace(/-/g, "+").replace(/_/g, "/");   <span class="c">// base64url → base64</span>
+  return JSON.parse(atob(base64));
+};
 
 console.log(decode(headerPart));    <span class="c">// what happens?</span>
 console.log(decode(payloadPart));   <span class="c">// what happens — with zero knowledge of the signing secret?</span></code></pre>
@@ -206,7 +213,9 @@ console.log(decode(payloadPart));   <span class="c">// what happens — with zer
 <p class="sub">
   <code>{ alg: "HS256", typ: "JWT" }</code>, then
   <code>{ sub: "user123", name: "Ana" }</code> — fully readable, no
-  secret required, just <code>atob</code>. Anyone holding a JWT can
+  secret required, just <code>atob</code> — once base64url's
+  <code>-</code> and <code>_</code> are swapped back to <code>+</code> and
+  <code>/</code>, which plain <code>atob</code> rejects. Anyone holding a JWT can
   read every claim inside it. Never put a password, a secret, or
   anything genuinely sensitive in the payload — the signature stops
   someone from <em>forging or editing</em> a valid-looking token, not

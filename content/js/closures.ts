@@ -247,7 +247,7 @@ next();   <span class="c">// 2  — count outlived the call that created it</spa
 
 <h3>Why the variable survives at all</h3>
 <p>
-  Two chapters back you learned that a call gets an execution context,
+  In <a href="/notes/execution-context">the execution context chapter</a> you learned that a call gets an execution context,
   and that the context is destroyed when the call finishes. That is
   still true — of the <b>stack frame</b>. The frame is bookkeeping: where
   to return to, what is running. It pops.
@@ -442,6 +442,139 @@ for (let j = 0; j &lt; 3; j++) setTimeout(() =&gt; console.log(j), 0);   <span c
   One shared box versus a fresh box per iteration. Nothing about the
   callbacks changed.
 </p>
+
+<h3>See what the callback captured</h3>
+<p>The same loop twice, one keyword apart. Watch how many bindings each version creates — that is the whole difference.</p>
+
+<div class="demo">
+  <div class="demo__bar">var vs let in a loop — what the callback actually captured</div>
+  <div class="demo__body">
+    <div class="loop-grid">
+      <div>
+        <div class="loop-code" id="lc-code"></div>
+        <div class="loop-bar"><i id="lc-bar"></i></div>
+        <div class="demo__ctl">
+          <button class="btn" id="lc-prev" type="button">← Back</button>
+          <button class="btn" id="lc-next" type="button">Next step →</button>
+          <button class="btn" id="lc-play" type="button">Play</button>
+          <button class="btn btn--ghost" id="lc-reset" type="button">Reset</button>
+        </div>
+      </div>
+      <div class="loop-queues">
+        <div class="loop-box">
+          <div class="loop-box__label">Bindings in scope</div>
+          <div id="lc-p-scope"></div>
+        </div>
+        <div class="loop-box">
+          <div class="loop-box__label">Queued callbacks</div>
+          <div id="lc-p-cbs"></div>
+        </div>
+      </div>
+    </div>
+    <p class="demo__note" id="lc-note"></p>
+  </div>
+</div>
+
+<script>
+(function () {
+  var ID = "lc";
+  var CODE = ["for (var i = 0; i < 3; i++)","  setTimeout(() => console.log(i));","","for (let j = 0; j < 3; j++)","  setTimeout(() => console.log(j));"];
+  var STEPS = [{"line":null,"panels":{"scope":[],"cbs":[]},"note":"Two loops, one keyword apart. This is the closure question that shows up in every junior-to-mid interview."},{"line":1,"panels":{"scope":["i (var) = 0"],"cbs":[]},"note":"\`var i\` creates ONE binding for the whole function — every iteration shares it."},{"line":2,"panels":{"scope":["i (var) = 0"],"cbs":["cb → reads i"]},"note":"Iteration 0 queues a callback. It captures the VARIABLE, not the value."},{"line":1,"panels":{"scope":["i (var) = 1"],"cbs":["cb → reads i"]},"note":"i becomes 1. The already-queued callback sees the change — same box."},{"line":2,"panels":{"scope":["i (var) = 1"],"cbs":["cb → reads i","cb → reads i"]},"note":"Iteration 1 queues another callback pointing at the same i."},{"line":1,"panels":{"scope":["i (var) = 2"],"cbs":["cb → reads i","cb → reads i"]},"note":"i becomes 2."},{"line":2,"panels":{"scope":["i (var) = 2"],"cbs":["cb → reads i","cb → reads i","cb → reads i"]},"note":"Third callback queued."},{"line":1,"panels":{"scope":["i (var) = 3"],"cbs":["cb → reads i","cb → reads i","cb → reads i"]},"note":"Loop ends when i reaches 3. i STAYS 3 — it outlives the loop."},{"line":null,"panels":{"scope":["i (var) = 3"],"cbs":[]},"note":"Timers fire. Each callback reads i now, and now i is 3."},{"line":null,"panels":{"scope":["i (var) = 3"],"cbs":[]},"note":"var prints 3, 3, 3."},{"line":4,"panels":{"scope":["j (let) = 0"],"cbs":[]},"note":"\`let j\` creates a FRESH binding per iteration — three separate boxes."},{"line":5,"panels":{"scope":["j₀ = 0"],"cbs":["cb → reads j₀"]},"note":"Iteration 0's callback captures its own j₀."},{"line":5,"panels":{"scope":["j₀ = 0","j₁ = 1"],"cbs":["cb → reads j₀","cb → reads j₁"]},"note":"Iteration 1 gets a brand-new j₁, copied from the previous value."},{"line":5,"panels":{"scope":["j₀ = 0","j₁ = 1","j₂ = 2"],"cbs":["cb → reads j₀","cb → reads j₁","cb → reads j₂"]},"note":"Three bindings, three callbacks, one each."},{"line":null,"panels":{"scope":["j₀ = 0","j₁ = 1","j₂ = 2"],"cbs":[]},"note":"let prints 0, 1, 2 — each callback still sees its own binding."}];
+  var codeEl = document.getElementById(ID + "-code");
+  if (!codeEl) return;
+  if (codeEl.dataset.demoInit) return;
+  codeEl.dataset.demoInit = "1";
+
+  var barEl = document.getElementById(ID + "-bar");
+  var noteEl = document.getElementById(ID + "-note");
+  var cellsEl = document.getElementById(ID + "-cells");
+  var gridEl = document.getElementById(ID + "-grid");
+  var nextBtn = document.getElementById(ID + "-next");
+  var prevBtn = document.getElementById(ID + "-prev");
+  var playBtn = document.getElementById(ID + "-play");
+  var resetBtn = document.getElementById(ID + "-reset");
+  var i = 0, timer = null;
+
+  CODE.forEach(function (text, idx) {
+    var row = document.createElement("div");
+    row.dataset.n = String(idx + 1);
+    row.textContent = text;
+    codeEl.appendChild(row);
+  });
+
+  function fill(el, items) {
+    if (!el) return;
+    el.innerHTML = "";
+    if (!items || !items.length) {
+      var em = document.createElement("span");
+      em.className = "demo__term dim";
+      em.style.cssText = "display:inline-block;border:0;padding:0;margin:0;min-height:0";
+      em.textContent = "empty";
+      el.appendChild(em);
+      return;
+    }
+    items.forEach(function (t) {
+      var chip = document.createElement("span");
+      chip.className = "loop-frame";
+      chip.textContent = t;
+      el.appendChild(chip);
+    });
+  }
+
+  function render() {
+    var s = STEPS[i];
+    Array.prototype.forEach.call(codeEl.children, function (row) {
+      row.classList.toggle("hot", Number(row.dataset.n) === s.line);
+    });
+    Object.keys(s.panels || {}).forEach(function (k) {
+      fill(document.getElementById(ID + "-p-" + k), s.panels[k]);
+    });
+    if (cellsEl && s.cells) {
+      cellsEl.innerHTML = "";
+      s.cells.forEach(function (c) {
+        var d0 = document.createElement("div");
+        d0.className = "viz__cell" + (c.c ? " viz__cell--" + c.c : "");
+        d0.appendChild(document.createTextNode(c.v));
+        var lab = document.createElement("i");
+        lab.textContent = c.p || "";
+        d0.appendChild(lab);
+        cellsEl.appendChild(d0);
+      });
+    }
+    if (gridEl && s.grid) {
+      gridEl.innerHTML = "";
+      gridEl.style.gridTemplateColumns = "repeat(" + s.grid[0].length + ", minmax(36px, 1fr))";
+      s.grid.forEach(function (row) {
+        row.forEach(function (c) {
+          var g = document.createElement("div");
+          g.className = "viz__gcell" + (c.c ? " viz__gcell--" + c.c : "");
+          g.textContent = c.v;
+          gridEl.appendChild(g);
+        });
+      });
+    }
+    noteEl.textContent = s.note;
+    barEl.style.width = (i / (STEPS.length - 1)) * 100 + "%";
+    nextBtn.disabled = i === STEPS.length - 1;
+    prevBtn.disabled = i === 0;
+  }
+
+  function stop() { if (timer) { clearInterval(timer); timer = null; } playBtn.textContent = "Play"; }
+  nextBtn.addEventListener("click", function () { stop(); if (i < STEPS.length - 1) { i++; render(); } });
+  prevBtn.addEventListener("click", function () { stop(); if (i > 0) { i--; render(); } });
+  resetBtn.addEventListener("click", function () { stop(); i = 0; render(); });
+  playBtn.addEventListener("click", function () {
+    if (timer) { stop(); return; }
+    if (i === STEPS.length - 1) { i = 0; render(); }
+    playBtn.textContent = "Pause";
+    timer = setInterval(function () {
+      if (i >= STEPS.length - 1) { stop(); return; }
+      i++; render();
+    }, 1100);
+  });
+  render();
+})();
+</script>
 
 <h3>Closures and memory — the part that bites in production</h3>
 <p>

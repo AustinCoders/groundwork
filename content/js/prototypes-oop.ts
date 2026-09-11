@@ -53,6 +53,139 @@ rex instanceof Animal;                              <span class="c">// true — 
 rex.hasOwnProperty("name");                          <span class="c">// true — set directly on rex</span>
 rex.hasOwnProperty("speak");                          <span class="c">// false — it's on the prototype, not rex itself</span></code></pre>
 
+<h3>See the lookup walk</h3>
+<p>Watch the lookup walk. JavaScript does not copy methods onto objects; it walks a chain until it finds one, and stops at the first hit.</p>
+
+<div class="demo">
+  <div class="demo__bar">Prototype chain — how a method is actually found</div>
+  <div class="demo__body">
+    <div class="loop-grid">
+      <div>
+        <div class="loop-code" id="pc-code"></div>
+        <div class="loop-bar"><i id="pc-bar"></i></div>
+        <div class="demo__ctl">
+          <button class="btn" id="pc-prev" type="button">← Back</button>
+          <button class="btn" id="pc-next" type="button">Next step →</button>
+          <button class="btn" id="pc-play" type="button">Play</button>
+          <button class="btn btn--ghost" id="pc-reset" type="button">Reset</button>
+        </div>
+      </div>
+      <div class="loop-queues">
+        <div class="loop-box">
+          <div class="loop-box__label">Lookup walk</div>
+          <div id="pc-p-chain"></div>
+        </div>
+        <div class="loop-box">
+          <div class="loop-box__label">What each level owns</div>
+          <div id="pc-p-props"></div>
+        </div>
+      </div>
+    </div>
+    <p class="demo__note" id="pc-note"></p>
+  </div>
+</div>
+
+<script>
+(function () {
+  var ID = "pc";
+  var CODE = ["function Animal(name) { this.name = name; }","Animal.prototype.speak = function () {","  return this.name + \\" makes a sound\\";","};","function Dog(name, breed) { Animal.call(this, name); }","Dog.prototype = Object.create(Animal.prototype);","dog.speak();"];
+  var STEPS = [{"line":null,"panels":{"chain":["dog"],"props":[]},"note":"d.speak() — JavaScript has to FIND speak before it can call it."},{"line":7,"panels":{"chain":["dog"],"props":["own: name, breed"]},"note":"Look on the object itself first. speak is not an own property."},{"line":7,"panels":{"chain":["dog","Dog.prototype"],"props":["own: name, breed","own: fetch"]},"note":"Follow [[Prototype]] to Dog.prototype. It has fetch, but still no speak."},{"line":7,"panels":{"chain":["dog","Dog.prototype","Animal.prototype"],"props":["own: name, breed","own: fetch","own: speak ✓"]},"note":"Next link: Animal.prototype. speak found — the search stops at the FIRST match."},{"line":7,"panels":{"chain":["dog"],"props":[]},"note":"It is called with \`this\` still bound to dog, which is why it can read this.name."},{"line":null,"panels":{"chain":["dog"],"props":["Object.prototype","null"]},"note":"Had it not been found, the walk would continue to Object.prototype, then null — and only then return undefined."},{"line":null,"panels":{"chain":[],"props":[]},"note":"Shadowing works the same way: define speak directly on dog and the walk stops at step one."}];
+  var codeEl = document.getElementById(ID + "-code");
+  if (!codeEl) return;
+  if (codeEl.dataset.demoInit) return;
+  codeEl.dataset.demoInit = "1";
+
+  var barEl = document.getElementById(ID + "-bar");
+  var noteEl = document.getElementById(ID + "-note");
+  var cellsEl = document.getElementById(ID + "-cells");
+  var gridEl = document.getElementById(ID + "-grid");
+  var nextBtn = document.getElementById(ID + "-next");
+  var prevBtn = document.getElementById(ID + "-prev");
+  var playBtn = document.getElementById(ID + "-play");
+  var resetBtn = document.getElementById(ID + "-reset");
+  var i = 0, timer = null;
+
+  CODE.forEach(function (text, idx) {
+    var row = document.createElement("div");
+    row.dataset.n = String(idx + 1);
+    row.textContent = text;
+    codeEl.appendChild(row);
+  });
+
+  function fill(el, items) {
+    if (!el) return;
+    el.innerHTML = "";
+    if (!items || !items.length) {
+      var em = document.createElement("span");
+      em.className = "demo__term dim";
+      em.style.cssText = "display:inline-block;border:0;padding:0;margin:0;min-height:0";
+      em.textContent = "empty";
+      el.appendChild(em);
+      return;
+    }
+    items.forEach(function (t) {
+      var chip = document.createElement("span");
+      chip.className = "loop-frame";
+      chip.textContent = t;
+      el.appendChild(chip);
+    });
+  }
+
+  function render() {
+    var s = STEPS[i];
+    Array.prototype.forEach.call(codeEl.children, function (row) {
+      row.classList.toggle("hot", Number(row.dataset.n) === s.line);
+    });
+    Object.keys(s.panels || {}).forEach(function (k) {
+      fill(document.getElementById(ID + "-p-" + k), s.panels[k]);
+    });
+    if (cellsEl && s.cells) {
+      cellsEl.innerHTML = "";
+      s.cells.forEach(function (c) {
+        var d0 = document.createElement("div");
+        d0.className = "viz__cell" + (c.c ? " viz__cell--" + c.c : "");
+        d0.appendChild(document.createTextNode(c.v));
+        var lab = document.createElement("i");
+        lab.textContent = c.p || "";
+        d0.appendChild(lab);
+        cellsEl.appendChild(d0);
+      });
+    }
+    if (gridEl && s.grid) {
+      gridEl.innerHTML = "";
+      gridEl.style.gridTemplateColumns = "repeat(" + s.grid[0].length + ", minmax(36px, 1fr))";
+      s.grid.forEach(function (row) {
+        row.forEach(function (c) {
+          var g = document.createElement("div");
+          g.className = "viz__gcell" + (c.c ? " viz__gcell--" + c.c : "");
+          g.textContent = c.v;
+          gridEl.appendChild(g);
+        });
+      });
+    }
+    noteEl.textContent = s.note;
+    barEl.style.width = (i / (STEPS.length - 1)) * 100 + "%";
+    nextBtn.disabled = i === STEPS.length - 1;
+    prevBtn.disabled = i === 0;
+  }
+
+  function stop() { if (timer) { clearInterval(timer); timer = null; } playBtn.textContent = "Play"; }
+  nextBtn.addEventListener("click", function () { stop(); if (i < STEPS.length - 1) { i++; render(); } });
+  prevBtn.addEventListener("click", function () { stop(); if (i > 0) { i--; render(); } });
+  resetBtn.addEventListener("click", function () { stop(); i = 0; render(); });
+  playBtn.addEventListener("click", function () {
+    if (timer) { stop(); return; }
+    if (i === STEPS.length - 1) { i = 0; render(); }
+    playBtn.textContent = "Pause";
+    timer = setInterval(function () {
+      if (i >= STEPS.length - 1) { stop(); return; }
+      i++; render();
+    }, 1100);
+  });
+  render();
+})();
+</script>
+
 <h3>What new actually does</h3>
 <p>
   <code>new Fn(...)</code> is four steps, always, whether
@@ -62,14 +195,15 @@ rex.hasOwnProperty("speak");                          <span class="c">// false �
 <ol>
   <li>A brand-new, empty object is created.</li>
   <li>Its internal prototype link is set to <code>Fn.prototype</code>.</li>
-  <li><code>Fn</code> runs with <code>this</code> bound to that new object (the "new" row from <a href="/notes/scope-functions">the this-binding table</a>).</li>
-  <li>If <code>Fn</code> returns an object explicitly, <em>that's</em> the result instead — otherwise the new object from step 1 is returned automatically.</li>
+  <li><code>Fn</code> runs with <code>this</code> bound to that new object (the "new" row from <a href="/notes/this-keyword">the this-binding table</a>).</li>
+  <li>If <code>Fn</code> explicitly returns an object (a function counts), <em>that's</em> the result instead — otherwise the new object from step 1 is returned automatically.</li>
 </ol>
 <div class="try">
   <pre><code>function myNew(Ctor, ...args) {
   const obj = Object.create(Ctor.prototype);        <span class="c">// steps 1 &amp; 2</span>
   const result = Ctor.apply(obj, args);              <span class="c">// step 3</span>
-  return typeof result === "object" &amp;&amp; result !== null ? result : obj;  <span class="c">// step 4</span>
+  const returnedObject = (typeof result === "object" &amp;&amp; result !== null) || typeof result === "function";
+  return returnedObject ? result : obj;                <span class="c">// step 4</span>
 }
 
 function Dog(name) { this.name = name; }

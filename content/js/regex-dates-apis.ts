@@ -81,10 +81,17 @@ const end = new Date("2024-02-15");
   seconds all make "add one day" genuinely harder than
   <code>+ 86400000</code> — a DST boundary can make that arithmetic
   land on the wrong calendar day entirely. This is the real reason
-  libraries like <code>date-fns</code>/<code>Temporal</code> (the
-  successor API, still stabilizing) exist: not laziness, a
-  correctness problem that's easy to get subtly wrong by hand.
+  libraries like <code>date-fns</code> exist, and why the language
+  now has <code>Temporal</code>: not laziness, a correctness problem
+  that's easy to get subtly wrong by hand.
 </div>
+<pre><code>Temporal.PlainDate.from("2024-01-31").add({ months: 1 }).toString();
+<span class="c">// "2024-02-29" — calendar-aware: no milliseconds, no time zone, no DST surprise</span></code></pre>
+<p class="sub">
+  <code>Temporal</code> is the built-in successor to <code>Date</code>. It
+  ships in Firefox (139+) and Chrome (144+); check support for the rest
+  of your audience, or load a polyfill, before relying on it.
+</p>
 <pre><code>new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(d);
 <span class="c">// "15 January 2024" — locale-correct formatting, no manual string building</span>
 

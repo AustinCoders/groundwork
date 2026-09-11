@@ -30,7 +30,7 @@ loopForever();
   Node has an even higher-priority version,
   <code>process.nextTick(fn)</code>, which drains completely before
   <em>even the microtask queue</em> gets its turn — Node-only, and easy
-  to sample yourself into starvation with the same recursive pattern
+  to starve yourself with the same recursive pattern
   above.
 </p>
 

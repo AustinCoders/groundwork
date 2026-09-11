@@ -8,7 +8,7 @@ export const interviewBank: Chapter = {
   levels: ["advanced"],
   practice: [],
   ready: true,
-  subtitle: "Forty questions, split by the level they are asked at, with the answer that lands.",
+  subtitle: "Thirty-four questions, split by the level they are asked at, with the answer that lands.",
   body: `<h3>How to use this</h3>
 <p>
   Answer out loud before reading. Recognising an answer and producing one are
@@ -38,7 +38,7 @@ export const interviewBank: Chapter = {
 <p><code>undefined</code> is the language's absence &mdash; unassigned variables, missing properties, no return. <code>null</code> is your absence, assigned deliberately to mean "nothing here".</p></div>
 
 <div class="qa"><p class="q">What does <code>this</code> refer to?</p>
-<p>How the function was <em>called</em>, not where it was written. Five rules in order: <code>new</code>, then explicit <code>call</code>/<code>apply</code>/<code>bind</code>, then a method call's object, then default (<code>undefined</code> in strict mode), and arrow functions, which have no <code>this</code> of their own and take the enclosing one. See <a href="/notes/scope-functions">Scope &amp; functions</a>.</p></div>
+<p>How the function was <em>called</em>, not where it was written. Four rules in order: <code>new</code>, then explicit <code>call</code>/<code>apply</code>/<code>bind</code>, then a method call's object, then default (<code>undefined</code> in strict mode). Arrow functions sit outside the rules &mdash; they have no <code>this</code> of their own and take the enclosing one. See <a href="/notes/this-keyword">The this keyword</a>.</p></div>
 
 <div class="qa"><p class="q">Which array methods mutate?</p>
 <p><code>push</code>, <code>pop</code>, <code>shift</code>, <code>unshift</code>, <code>splice</code>, <code>sort</code>, <code>reverse</code>, <code>fill</code>. The rest return a new array. The modern non-mutating twins are <code>toSorted</code>, <code>toReversed</code>, <code>toSpliced</code> and <code>with</code>.</p></div>

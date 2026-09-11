@@ -50,15 +50,15 @@ export const engineMemory: Chapter = {
   not a contradiction of it.
 </div>
 <p>
-  Each function call gets its own <b>execution context</b> — the
-  formal name for what's been informally called a "scope" in every
-  chapter so far. It bundles an <b>environment record</b> (the actual
-  variable bindings) with a reference to the outer context, and that
-  chain of outer references <em>is</em>
-  <a href="/notes/scope-functions">the scope chain</a> from two
-  chapters back. A closure, mechanically, is just a function holding
-  onto a reference to an execution context that would otherwise have
-  been popped off the stack and discarded.
+  Each function call gets its own <b>execution context</b> — the box
+  <a href="/notes/execution-context">the execution context chapter</a>
+  took apart at the beginner level. Seen from the engine, it bundles an
+  <b>environment record</b> (the actual variable bindings) with a
+  reference to the outer environment, and that chain of outer references
+  <em>is</em> <a href="/notes/scope-functions">the scope chain</a>. A
+  closure, mechanically, is just a function holding onto an environment
+  that would otherwise have been discarded when the call's stack frame
+  popped.
 </p>
 
 <h3>Garbage collection</h3>
@@ -119,7 +119,7 @@ console.log(makeCycle());
   <tr><td>A forgotten <code>setInterval</code></td><td>the timer itself holds a live reference to its callback and everything that callback closes over, forever, until <code>clearInterval</code></td></tr>
   <tr><td>A detached DOM node</td><td>removed from the page, but still referenced by a JS variable or an event listener you forgot to remove — the node itself, and everything it references, stays alive</td></tr>
   <tr><td>An unbounded cache</td><td>a plain <code>Map</code> used as a cache that only ever grows — every entry is reachable through it forever, since nothing ever calls <code>.delete()</code></td></tr>
-  <tr><td>A closure over something huge</td><td>a small, long-lived closure that happens to reference one variable from a scope containing something large — the ENTIRE execution context stays alive to keep that one binding around</td></tr>
+  <tr><td>A closure over something huge</td><td>a small, long-lived closure created in a scope that also holds something large — V8 keeps only the variables some closure in that scope uses, but every closure created there shares one context object, so if any sibling closure mentions the large value, it lives as long as the small closure does</td></tr>
 </table>
 <pre><code><span class="c">// The fix for the cache row above — cap it, or use a WeakMap when the</span>
 <span class="c">// key's natural lifetime should decide the entry's lifetime (I2 covered this)</span>
@@ -210,8 +210,12 @@ c.z = 7;                      <span class="c">// now c has a DIFFERENT shape —
 <p>
   V8 starts running everything through <b>Ignition</b>, a fast-starting
   interpreter — there's no compile pause before your code runs at all.
-  A function called enough times gets handed to <b>TurboFan</b>, the
-  optimizing compiler, which compiles it down to fast machine code
+  Code that keeps running climbs a ladder of compilers, each slower to
+  compile and faster to run: <b>Sparkplug</b> turns bytecode into machine
+  code almost instantly without optimising it, <b>Maglev</b> does a quick
+  optimising pass using the types it has seen, and the hottest functions
+  reach <b>TurboFan</b>, the top-tier optimizing compiler, which compiles
+  them down to fast machine code
   <em>under the assumptions it's observed so far</em> — including the
   hidden classes and argument types it's seen at every call site inside
   it.

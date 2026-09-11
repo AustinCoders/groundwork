@@ -99,12 +99,24 @@ requestIdleCallback(() =&gt; {
 
 <h3>Rendering less, later, or not yet</h3>
 <pre><code><span class="c">// Virtual list — render only the ~20 rows actually visible, not all 50,000</span>
-function VirtualList({ items, rowHeight, viewportHeight }) {
-  const [scrollTop, setScrollTop] = useState(0);
-  const start = Math.floor(scrollTop / rowHeight);
-  const visibleCount = Math.ceil(viewportHeight / rowHeight);
-  const visible = items.slice(start, start + visibleCount);
-  <span class="c">// render "visible" only, with top/bottom spacers sized to fill the scroll area</span>
+function mountVirtualList(viewport, items, rowHeight) {
+  const spacer = document.createElement("div");
+  spacer.style.height = items.length * rowHeight + "px";   <span class="c">// full scroll height, no rows yet</span>
+  spacer.style.position = "relative";
+  viewport.append(spacer);
+
+  function render() {
+    const start = Math.floor(viewport.scrollTop / rowHeight);
+    const count = Math.ceil(viewport.clientHeight / rowHeight) + 1;
+    spacer.replaceChildren(...items.slice(start, start + count).map((item, i) =&gt; {
+      const row = document.createElement("div");
+      row.textContent = item;
+      row.style.cssText = "position:absolute;left:0;right:0;height:" + rowHeight + "px;top:" + (start + i) * rowHeight + "px";
+      return row;
+    }));
+  }
+  viewport.addEventListener("scroll", () =&gt; requestAnimationFrame(render));
+  render();
 }</code></pre>
 <p>
   A virtual list keeps DOM node count roughly constant regardless of
@@ -115,7 +127,7 @@ function VirtualList({ items, rowHeight, viewportHeight }) {
   fold. <b>Prefetching</b> is the opposite bet — load something
   <em>before</em> it's needed, on a strong signal it's about to be
   (hovering a link, an <code>IntersectionObserver</code> from
-  <a href="/notes/regex-dates-apis">two chapters back</a> firing near
+  <a href="/notes/regex-dates-apis">Regex, dates &amp; browser APIs</a> firing near
   the bottom of the page) — trading a little wasted bandwidth on guesses
   that don't pan out for a page that already has the next thing ready.
 </p>

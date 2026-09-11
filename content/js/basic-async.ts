@@ -324,7 +324,7 @@ await new Promise((r) =&gt; setTimeout(r, 50));   <span class="c">// hang around
 <h3>Making one yourself</h3>
 <pre><code>const wait = (ms) =&gt;
   new Promise((resolve, reject) =&gt; {
-    if (ms &lt; 0) reject(new Error("negative delay"));
+    if (ms &lt; 0) return reject(new Error("negative delay"));
     setTimeout(() =&gt; resolve("waited " + ms + "ms"), ms);
   });
 

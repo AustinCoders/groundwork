@@ -8,7 +8,7 @@ export const ecosystemProfessional: Chapter = {
   levels: ["advanced"],
   practice: ["ex-flat-polyfill", "ex-ast-node-counter"],
   ready: true,
-  subtitle: "The close-out — how the tools around JS actually work, and where the language itself comes from.",
+  subtitle: "How the tools around JS actually work, and where the language itself comes from.",
   body: `<p>
   TypeScript and Node each have their own shelf on this site,
   reserved for exactly this kind of depth once they're written — this
@@ -119,7 +119,7 @@ console.log(JSON.stringify(ast.declarations[0].init, null, 2));</code></pre>
 <h3>Reading the spec, and where new syntax comes from</h3>
 <p>
   Every JS feature in every chapter on this site started as a TC39
-  proposal and moved through five fixed stages before landing in the
+  proposal and moved through a fixed series of stages before landing in the
   language:
 </p>
 <table>
@@ -130,6 +130,7 @@ console.log(JSON.stringify(ast.declarations[0].init, null, 2));</code></pre>
   <tr><td><b>0 — Strawperson</b></td><td>any committee member's idea, no formal backing yet</td></tr>
   <tr><td><b>1 — Proposal</b></td><td>the problem is real, worth solving, has a champion</td></tr>
   <tr><td><b>2 — Draft</b></td><td>real syntax and semantics written out</td></tr>
+  <tr><td><b>2.7 — Approved in principle</b></td><td>the spec text is agreed; it waits for conformance tests and prototype implementations before engines ship it (a stage added in 2024)</td></tr>
   <tr><td><b>3 — Candidate</b></td><td>spec-complete, feedback comes from real implementations, not just discussion</td></tr>
   <tr><td><b>4 — Finished</b></td><td>shipped in engines, included in the next yearly ECMAScript edition</td></tr>
 </table>

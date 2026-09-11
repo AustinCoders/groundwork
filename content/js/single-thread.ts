@@ -518,8 +518,8 @@ console.log("asked for 0ms, actually waited", await waited, "ms");</code></pre>
 <p>
   Because microtasks drain completely before anything else, a microtask
   that queues another microtask forever never gives the loop a chance to
-  reach rendering or events. The page locks up with an idle CPU-looking
-  stack, and no error is thrown:
+  reach rendering or events. The tab freezes with its CPU pinned at
+  100%, and no error is thrown:
 </p>
 <pre><code><span class="c">// Do not run this one. It freezes the tab.</span>
 function spin() { Promise.resolve().then(spin); }

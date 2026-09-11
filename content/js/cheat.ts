@@ -8,7 +8,7 @@ export const cheat: Chapter = {
   levels: ["beginner", "intermediate", "advanced"],
   practice: [],
   ready: true,
-  subtitle: "Not a 24th lesson — the night-before-the-interview skim of the other 23.",
+  subtitle: "Not another lesson — the night-before-the-interview skim of the other 34.",
   body: `<p>
   Nothing new gets taught here. Every row links back to the chapter
   that actually explains the <em>why</em> — this page exists purely so
@@ -69,9 +69,11 @@ console.log(0.1 + 0.2 === 0.3);    <span class="c">// what happens?</span></code
 </table>
 <p class="sub">
   Arrows never bind their own <code>this</code> — they read it from
-  where they're written. Full precedence proof (including
-  <code>new</code> beating <code>bind</code>) and all five real
-  closure uses: <a href="/notes/scope-functions">Scope &amp; functions, properly</a>.
+  where they're written. The four rules and how <code>this</code> gets
+  lost: <a href="/notes/this-keyword">The this keyword</a>. The proof that
+  <code>new</code> beats <code>bind</code>:
+  <a href="/notes/scope-functions">Scope &amp; functions, properly</a>. All
+  five real closure uses: <a href="/notes/closures">Closures</a>.
 </p>
 
 <h3>Array &amp; object methods — mutates, or doesn't?</h3>
@@ -121,9 +123,9 @@ class B extends A {
 <h3>"Implement X" — the classic from-scratch asks</h3>
 <table>
   <tr><th>Ask</th><th>Taught in</th></tr>
-  <tr><td>debounce / throttle</td><td><a href="/notes/scope-functions">Scope &amp; functions, properly</a></td></tr>
+  <tr><td>debounce / throttle</td><td><a href="/notes/closures">Closures</a></td></tr>
   <tr><td>curry / partial application / compose</td><td><a href="/notes/scope-functions">Scope &amp; functions, properly</a>, <a href="/notes/patterns-architecture">Patterns &amp; architecture</a></td></tr>
-  <tr><td>memoize / once</td><td><a href="/notes/scope-functions">Scope &amp; functions, properly</a></td></tr>
+  <tr><td>memoize / once</td><td><a href="/notes/closures">Closures</a></td></tr>
   <tr><td>your own EventEmitter / pub-sub</td><td><a href="/notes/patterns-architecture">Patterns &amp; architecture</a></td></tr>
   <tr><td>deep clone</td><td><code>structuredClone()</code> — <a href="/notes/objects-deep">Objects deeply</a></td></tr>
   <tr><td>a concurrency-limited task queue</td><td><a href="/notes/advanced-async">Advanced async</a></td></tr>

@@ -10,7 +10,7 @@ export const testingInJs: Chapter = {
   ready: true,
   subtitle: "Not optional at this level — and this whole site's own test suite is the example.",
   body: `<p>
-  Nothing below is a <code>.try</code> block — <code>describe</code>,
+  Nothing below is a runnable example — <code>describe</code>,
   <code>it</code>, and <code>expect</code> are test-runner globals, not
   part of the language, so they don't exist in the sandboxed worker
   this page's other examples run in. Every example here is real code,

@@ -211,7 +211,7 @@ console.log(sorted.map((i) =&gt; i.key));   <span class="c">// what happens?</sp
 JSON.parse(
   '{"createdAt":"2024-01-01T00:00:00.000Z"}',
   (key, value) =&gt; (key === "createdAt" ? new Date(value) : value)
-);   <span class="c">// { createdAt: <a real Date object> } — JSON has no date type, so this is how you get one back</span></code></pre>
+);   <span class="c">// { createdAt: &lt;a real Date object&gt; } — JSON has no date type, so this is how you get one back</span></code></pre>
 <p class="sub">
   The replacer can also be an array instead of a function — a plain
   allow-list of key names to keep, everything else dropped. Simpler

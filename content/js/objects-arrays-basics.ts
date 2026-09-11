@@ -28,7 +28,7 @@ export const objectsArraysBasics: Chapter = {
 user["name"];           <span class="c">// same thing, spelled differently</span>
 
 const key = "age";
-user[key];              <span class="c">// 26 — dot notation CAN'T do this; user.key would look for a property literally named "key"</span>
+user[key];              <span class="c">// 29 — dot notation CAN'T do this; user.key would look for a property literally named "key"</span>
 user["favorite color"]; <span class="c">// dot notation can't have a space in it at all</span></code></pre>
 <p class="sub">
   As a reminder from <a href="/notes/types-values">the types chapter</a>:
@@ -53,7 +53,7 @@ nums[10];          <span class="c">// undefined — out of range, not an error</
 <p class="sub">
   <code>typeof []</code> is <code>"object"</code> and
   <code>Array.isArray()</code> is the only reliable check — both covered
-  back in <a href="/notes/setup-mental-model">the mental model
+  back in <a href="/notes/types-values">the types
   chapter</a>. What actually makes an array useful is the ordered,
   numerically-indexed methods below.
 </p>

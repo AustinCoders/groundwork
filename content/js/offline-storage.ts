@@ -8,7 +8,7 @@ export const offlineStorage: Chapter = {
   levels: ["intermediate"],
   practice: ["ex-cache-first", "ex-storage-picker"],
   ready: true,
-  subtitle: "localStorage was the whole story two chapters ago. Past a few MB, it stops being enough.",
+  subtitle: "localStorage is fine for a theme or a small cache. Past a few MB, it stops being enough.",
   body: `<h3>Why localStorage runs out</h3>
 <p>
   <a href="/notes/regex-dates-apis">Already covered</a>: localStorage

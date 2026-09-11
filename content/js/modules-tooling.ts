@@ -10,8 +10,8 @@ export const modulesTooling: Chapter = {
   ready: true,
   subtitle: "Everything that turns files full of JS into one thing a browser can run.",
   body: `<p>
-  Nothing in this chapter runs in the sandbox above the way earlier
-  <code>.try</code> blocks did — <code>import</code>/<code>export</code>
+  Nothing in this chapter runs in the sandbox the way earlier
+  runnable examples did — <code>import</code>/<code>export</code>
   are only valid inside a real module, not inside an arbitrary function
   body, so every example here is read, not clicked.
 </p>

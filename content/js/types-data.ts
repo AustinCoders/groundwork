@@ -110,15 +110,34 @@ console.log(JSON.stringify(emoji[0])); <span class="c">// indexing still grabs o
   of a surrogate pair, not a valid character on its own.
   <code>emoji[0]</code> silently cuts an emoji in half; spreading a
   string (or <code>for...of</code>, or <code>Array.from</code>) walks
-  it by actual code point and never splits one. Slicing a string by
+  it by actual code point and never splits a surrogate pair. Slicing a string by
   raw index — a search-result excerpt, a truncated preview — risks
   exactly this cut, and it's an easy one to never notice until a
   specific emoji or script breaks in production.
 </p>
-<pre><code>"café".normalize("NFC").length === "café".normalize("NFC").length;
-<span class="c">// true — but two strings that VISUALLY look identical can be genuinely unequal:</span>
-<span class="c">// "é" can be one single code point, OR "e" + a separate combining accent mark.</span>
-<span class="c">// .normalize() converts both spellings to one canonical form before comparing.</span></code></pre>
+<p>
+  Code points still aren't what a reader calls a character. An emoji
+  like 👨‍👩‍👧 is five code points — three people glued together with
+  invisible zero-width joiners — so spreading it gives five pieces.
+  Counting what a person actually sees needs
+  <code>Intl.Segmenter</code>, which splits by <b>grapheme</b>:
+</p>
+<pre><code>const family = "👨‍👩‍👧";
+family.length;                <span class="c">// 8 — code units</span>
+[...family].length;           <span class="c">// 5 — code points</span>
+const graphemes = new Intl.Segmenter("en", { granularity: "grapheme" });
+[...graphemes.segment(family)].length;   <span class="c">// 1 — what the reader sees</span></code></pre>
+<p>
+  Two strings can also look identical and still be different code
+  points underneath: "é" can be one code point, or a plain "e" followed
+  by a separate combining accent mark.
+</p>
+<pre><code>const composed = "caf\\u00e9";      <span class="c">// é as ONE code point</span>
+const decomposed = "cafe\\u0301";   <span class="c">// e + a combining accent</span>
+
+composed === decomposed;                                    <span class="c">// false — yet both render as "café"</span>
+composed.length + " vs " + decomposed.length;               <span class="c">// "4 vs 5"</span>
+composed.normalize("NFC") === decomposed.normalize("NFC");  <span class="c">// true — one canonical spelling</span></code></pre>
 <div class="sticky mint">
   <span class="ttl">Rule</span> Comparing user-typed text for equality
   without <code>.normalize()</code> first is a real, if rare, bug — two
@@ -135,7 +154,7 @@ console.log(JSON.stringify(emoji[0])); <span class="c">// indexing still grabs o
 new Intl.RelativeTimeFormat("en").format(-1, "day");   <span class="c">// "1 day ago"</span>
 new Intl.RelativeTimeFormat("en").format(3, "hour");   <span class="c">// "in 3 hours"</span></code></pre>
 <p class="sub">
-  All three <code>Intl</code> constructors from this and earlier
+  All four <code>Intl</code> constructors from this and earlier
   chapters — <code>Collator</code>, <code>DateTimeFormat</code>,
   <code>NumberFormat</code>, and <code>RelativeTimeFormat</code> — take
   the same first argument, a locale string, and are the built-in answer

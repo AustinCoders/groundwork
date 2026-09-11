@@ -14,7 +14,7 @@ export const topics: TopicsData = {
         "<code>this</code>, closures and hoisting still feel like magic",
         "You want the foundation, in order, once",
       ],
-      checkpoint: "you can build a to-do list app with localStorage and an API call, without copying a tutorial.",
+      checkpoint: "you can build a to-do list app that survives a refresh, without copying a tutorial.",
       syllabus: [
         {
           title: "Setup & mental model",
@@ -172,14 +172,14 @@ export const topics: TopicsData = {
       mark: "2",
       tagline: "I understand why it works.",
       blurb:
-        "You know the syntax. Now learn the machinery: closures you can explain, objects and prototypes, and the event loop that decides what runs when.",
+        "You know the syntax. Now learn the machinery: objects and prototypes, async that holds up on a real network, modules, and the browser APIs every real app reaches for.",
       bullets: [
         "Comfortable with functions, arrays and objects",
         "Promises work, until they don't",
         "You want to stop memorising and start reasoning",
       ],
       checkpoint:
-        "you can explain closures and the event loop to someone else, and debug an async race condition without guessing.",
+        "you can explain prototypes and promise ordering to someone else, run independent requests in parallel, and cancel or retry one without guessing.",
       syllabus: [
         {
           title: "Scope & functions, properly",
@@ -294,7 +294,7 @@ export const topics: TopicsData = {
       mark: "3",
       tagline: "I can reason about the engine and the ecosystem.",
       blurb:
-        "Prototypes, microtasks, modules, memory and how V8 actually stores your objects. The layers almost nobody can explain out loud.",
+        "Memory, generators, Proxy, performance, security and testing — and how V8 actually stores your objects. The layers almost nobody can explain out loud.",
       bullets: [
         "You can already explain closures and <code>this</code>",
         "You debug performance and memory, not just bugs",

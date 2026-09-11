@@ -8,7 +8,8 @@ export const scopeFunctions: Chapter = {
   levels: ["intermediate"],
   practice: ["ex-loop-fix", "ex-curry-multiply"],
   ready: true,
-  subtitle: "Closures and this — the two ideas most interviews spend the most time on.",
+  subtitle:
+    "The scope chain, new versus bind, and what you build once functions are values: currying, composition, recursion.",
   body: `<h3>The scope chain</h3>
 <p>
   Every function remembers the scope it was <em>written</em> in, not the
@@ -127,7 +128,15 @@ console.log(created instanceof bound, created.tag);   <span class="c">// what ha
   only way to get a private scope of your own, with just the return
   value exposed. Modules made that automatic, so IIFEs are rare in new
   code — but the pattern (function scope as a privacy boundary) is
-  exactly what closures 1 and 2 above are still doing today.
+  exactly what the factory and privacy closures in
+  <a href="/notes/closures">Closures</a> are still doing today.
+</p>
+
+<h3>Two properties every function carries</h3>
+<p>
+  Functions are objects, and two of their properties matter below:
+  <code>length</code> is what <code>curry</code> reads to decide whether
+  it has enough arguments yet.
 </p>
 <pre><code>function labeled(a, b = 1, ...rest) {}
 labeled.length;   <span class="c">// 1 — counts params up to the FIRST one with a default or rest</span>
@@ -178,8 +187,8 @@ function compose(...fns) {
 }
 const double = (x) =&gt; x * 2;
 const inc = (x) =&gt; x + 1;
-const doubleThenShowOldValueIncremented = compose(double, inc);   <span class="c">// double(inc(x))</span>
-doubleThenShowOldValueIncremented(5);   <span class="c">// (5 + 1) * 2 = 12</span></code></pre>
+const incThenDouble = compose(double, inc);   <span class="c">// double(inc(x))</span>
+incThenDouble(5);   <span class="c">// (5 + 1) * 2 = 12</span></code></pre>
 <p class="sub">
   <code>compose</code> reads right to left because that's the order a
   nested call <code>double(inc(x))</code> actually runs in — the

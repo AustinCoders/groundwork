@@ -869,16 +869,21 @@ export const jsApplied: Exercise[] = [
     brief:
       "<p>Write <code>decodeJwtPayload(token)</code> — given a <code>header.payload.signature</code> JWT string, return the decoded payload as a real object.</p>",
     starter:
-      "function decodeJwtPayload(token) {\n  // TODO: split on \".\", the payload is segment 1 — atob + JSON.parse it\n}\n",
+      "function decodeJwtPayload(token) {\n  // TODO: split on \".\", take segment 1, turn base64url into base64, then atob + JSON.parse it\n}\n",
     hints: [
       'token.split(".") gives you [header, payload, signature] — index 1 is the one you want.',
+      "JWTs use base64url: swap - for + and _ for / first, or tokens containing those characters make atob throw.",
       "atob(part) base64-decodes to a JSON string; JSON.parse the result.",
     ],
-    solution: 'function decodeJwtPayload(token) {\n  const parts = token.split(".");\n  return JSON.parse(atob(parts[1]));\n}\n',
+    solution: 'function decodeJwtPayload(token) {\n  const payload = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");\n  return JSON.parse(atob(payload));\n}\n',
     tests: [
       {
         name: "decodes a real payload segment",
         body: 'const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMTIzIiwibmFtZSI6IkFuYSJ9.sig";\nassert.deepEqual(decodeJwtPayload(token), { sub: "user123", name: "Ana" });',
+      },
+      {
+        name: "handles base64url characters and missing padding",
+        body: 'const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMTIzIiwibm90ZSI6IkFuYT8-In0.sig";\nassert.deepEqual(decodeJwtPayload(token), { sub: "user123", note: "Ana?>" });',
       },
     ],
   },

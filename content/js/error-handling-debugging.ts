@@ -8,7 +8,7 @@ export const errorHandlingDebugging: Chapter = {
   levels: ["intermediate"],
   practice: ["ex-error-chain", "ex-immutable-update"],
   ready: true,
-  subtitle: "The Intermediate track's close-out — past what the beginner errors chapter covered.",
+  subtitle: "Past what the beginner errors chapter covered — error chains, lost rejections and real debugging tools.",
   body: `<p>
   <a href="/notes/errors-tools">The first pass at errors</a> covered
   <code>try/catch/finally</code>, custom <code>Error</code> subclasses,
