@@ -14,10 +14,16 @@ export const reactSuspense: Chapter = {
   &lt;Profile /&gt;      <span class="c">// if this suspends, the skeleton shows</span>
 &lt;/Suspense&gt;</code></pre>
 <p>
-  A component "suspends" by throwing a promise. React catches it, renders the
-  nearest boundary's fallback, and retries when the promise resolves. The
-  component itself contains no <code>isLoading</code> check &mdash; the loading
-  state moved out, to a place that can describe the whole region.
+  A component "suspends" when it needs something that is not ready yet. React
+  stops rendering that subtree, shows the nearest boundary's fallback, and
+  retries when the thing arrives. The component itself contains no
+  <code>isLoading</code> check &mdash; the loading state moved out, to a place
+  that can describe the whole region.
+</p>
+<p class="sub">
+  The mechanism is a thrown promise, which is why older articles describe it
+  that way. You never throw one yourself: you reach it through
+  <code>lazy</code>, <code>use</code>, or a library that supports Suspense.
 </p>
 
 <h3>Code splitting, the everyday use</h3>
@@ -30,6 +36,8 @@ export const reactSuspense: Chapter = {
   <code>lazy</code> returns a component that suspends until its chunk arrives.
   The natural split points are routes, heavy dialogs, and anything below the
   fold that most visitors never open &mdash; an editor, a chart library, a map.
+  The module must have a default export; for a named one, map it:
+  <code>lazy(() =&gt; import("./Chart").then((m) =&gt; ({ default: m.Chart })))</code>.
 </p>
 <p class="sub">
   Prefetch on intent, not on render: <code>onMouseEnter={() =&gt; import("./Settings")}</code>
@@ -65,6 +73,29 @@ export const reactSuspense: Chapter = {
   the content so nothing moves when it swaps.
 </p>
 
+<h3>Nested boundaries reveal outside in</h3>
+<pre><code>&lt;Suspense fallback={&lt;PageSkeleton /&gt;}&gt;
+  &lt;Article /&gt;
+  &lt;Suspense fallback={&lt;CommentsSkeleton /&gt;}&gt;
+    &lt;Comments /&gt;
+  &lt;/Suspense&gt;
+&lt;/Suspense&gt;</code></pre>
+<p>
+  While <code>Article</code> is loading, the page skeleton shows. When it is
+  ready the article appears, and if comments are still loading their own
+  skeleton takes their place. Nesting is how you say "this part may arrive
+  later, but that part must not". Whatever is inside the outer boundary and
+  outside the inner one appears together, as a unit.
+</p>
+<p class="sub">
+  React also paces the reveals: suspended content is revealed at most once
+  every 300ms, and boundaries that become ready inside that window appear
+  together instead of popping in one by one. Since React 19, when something
+  suspends, the fallback is committed straight away and the suspended siblings
+  are rendered afterwards to start their requests early, so the fallback appears
+  faster than it did in React 18.
+</p>
+
 <h3>Suspense and transitions together</h3>
 <pre><code>startTransition(() =&gt; setTab("analytics"));</code></pre>
 <p>
@@ -74,8 +105,23 @@ export const reactSuspense: Chapter = {
   one is ready, and <code>isPending</code> lets you dim it in the meantime.
 </p>
 <p>
-  This is the difference between a page that flashes on every navigation and one
-  that feels continuous, and it is why routers wrap navigation in a transition.
+  This is the rule precisely: once a boundary is showing content, suspending
+  again brings the fallback back <b>unless</b> the update came from
+  <code>startTransition</code> or <code>useDeferredValue</code>. It is the
+  difference between a page that flashes on every navigation and one that feels
+  continuous, and it is why routers wrap navigation in a transition. When
+  content is hidden again, React cleans up its layout effects and runs them
+  again once it reappears.
+</p>
+
+<h3>Resetting a boundary on navigation</h3>
+<pre><code>&lt;ProfilePage key={userId} /&gt;</code></pre>
+<p>
+  Going from one profile to another inside a transition keeps the old profile
+  visible while the new one loads, which is usually wrong: the user asked for a
+  different person. A <code>key</code> tells React this is different content, so
+  the boundary resets and shows its fallback. The key can sit on the boundary or
+  any component above it.
 </p>
 
 <h3>Streaming SSR</h3>
@@ -95,12 +141,19 @@ export const reactSuspense: Chapter = {
   user interacts with first, so a click on a ready section works even while
   another is still arriving.
 </p>
+<p>
+  Boundaries also contain server errors. If a component throws while rendering
+  on the server, React does not abort the page. It puts the nearest boundary's
+  fallback into the HTML and tries that component again on the client. One
+  failing widget costs you a spinner, not a 500 &mdash; and if the client render
+  fails too, the error boundary takes over.
+</p>
 
 <h3>What can suspend</h3>
 <div class="table-scroll"><table>
 <thead><tr><th>Suspends</th><th>Does not</th></tr></thead>
 <tbody>
-<tr><td><code>lazy()</code> components</td><td>A bare <code>fetch</code> in an effect</td></tr>
+<tr><td><code>lazy()</code> components</td><td>A bare <code>fetch</code> in an effect or event handler</td></tr>
 <tr><td>Framework data APIs, and Server Components</td><td><code>useState</code> loading flags</td></tr>
 <tr><td>Query libraries in suspense mode</td><td>Anything you have not opted in</td></tr>
 <tr><td><code>use(promise)</code> &mdash; see <a href="/react/react-use-hook">the use hook</a></td><td></td></tr>
@@ -110,6 +163,12 @@ export const reactSuspense: Chapter = {
   Suspense does not make ordinary fetching declarative on its own. The data
   source has to participate, which is why "just use Suspense for loading states"
   does not work in a plain Vite app without a library.
+</p>
+<p class="sub">
+  One more caveat: state is not kept for a render that suspended before it ever
+  mounted. When the data arrives React renders that tree from scratch, so a
+  component that suspends on first render cannot rely on state it set before
+  suspending.
 </p>
 
 <h3>Pair it with an error boundary</h3>
@@ -124,6 +183,14 @@ export const reactSuspense: Chapter = {
   mid-session, a flaky connection &mdash; throws, and without a boundary that is
   a blank page.
 </p>
+<p>
+  Recovering is not the same as catching. A lazy component remembers that its
+  import failed, so re-rendering it will not try again. After a deploy the old
+  chunk name may simply no longer exist. The dependable recovery for a failed
+  chunk is a fallback with a button that reloads the page; for failed data, the
+  boundary's reset should also trigger a fresh request, otherwise it retries
+  into the same rejected promise.
+</p>
 
 <div class="bx is-ref">
   <span class="ttl">Interview answer, one sentence</span>
@@ -132,7 +199,8 @@ export const reactSuspense: Chapter = {
     that owns a region, which is what makes streaming SSR and selective
     hydration possible. Its most important interaction is with transitions:
     inside one, React keeps the current content visible instead of replacing it
-    with the fallback."
+    with the fallback — and a key is how you opt back out when the content is
+    genuinely different."
   </p>
 </div>`,
 };

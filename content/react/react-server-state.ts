@@ -6,7 +6,7 @@ export const reactServerState: Chapter = {
   title: "Server state with TanStack Query",
   short: "TanStack Query",
   levels: ["intermediate"],
-  practice: [],
+  practice: ["ex-react-hash-query-key"],
   ready: true,
   subtitle: "Treat API data as a cache you do not own, and most of your state problems disappear.",
   body: `<h3>The distinction the library is built on</h3>

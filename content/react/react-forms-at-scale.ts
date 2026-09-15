@@ -6,7 +6,7 @@ export const reactFormsAtScale: Chapter = {
   title: "Forms at scale",
   short: "Forms at scale",
   levels: ["intermediate"],
-  practice: [],
+  practice: ["ex-react-field-errors"],
   ready: true,
   subtitle: "Where hand-rolled state stops paying, and what a form library actually buys you.",
   body: `<h3>The point where it stops working</h3>

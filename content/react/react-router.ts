@@ -6,11 +6,13 @@ export const reactRouter: Chapter = {
   title: "React Router",
   short: "Routing",
   levels: ["intermediate"],
-  practice: [],
+  practice: ["ex-react-read-search"],
   ready: true,
   subtitle: "The URL is state your users can bookmark, share and go back to.",
   body: `<h3>The shape</h3>
-<pre><code>const router = createBrowserRouter([
+<pre><code>import { createBrowserRouter, RouterProvider } from "react-router";
+
+const router = createBrowserRouter([
   {
     path: "/",
     element: &lt;Layout /&gt;,
@@ -34,9 +36,35 @@ export const reactRouter: Chapter = {
     &lt;div&gt;
       &lt;Sidebar /&gt;
       &lt;main&gt;&lt;Outlet /&gt;&lt;/main&gt;      <span class="c">// the matched child goes here</span>
-    &lt;/main&gt;
+    &lt;/div&gt;
   );
 }</code></pre>
+<p class="sub">
+  Imports come from <code>react-router</code>. Version 7 folded
+  <code>react-router-dom</code> into it, and version 8 (June 2026) removed the
+  old package entirely, so a tutorial importing from
+  <code>react-router-dom</code> is at least one major version old.
+</p>
+
+<h3>Three modes, one library</h3>
+<p>
+  Since version 7 React Router is really three products stacked on each other,
+  and the first thing to establish in any codebase is which one it uses.
+</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Mode</th><th>You enter it with</th><th>It adds</th></tr></thead>
+<tbody>
+<tr><td>Declarative</td><td><code>&lt;BrowserRouter&gt;</code></td><td>URL matching, <code>Link</code>, <code>useNavigate</code>, active states. Data is your problem.</td></tr>
+<tr><td>Data</td><td><code>createBrowserRouter</code> + <code>&lt;RouterProvider&gt;</code></td><td>Loaders, actions, pending states, <code>useFetcher</code> &mdash; most of this page</td></tr>
+<tr><td>Framework</td><td>The Vite plugin and a <code>routes.ts</code> file</td><td>Generated route types, SSR or static or SPA rendering, automatic code splitting</td></tr>
+</tbody>
+</table></div>
+<p>
+  The modes are a ladder, not rivals. Everything you learn in data mode &mdash;
+  loaders, actions, revalidation &mdash; is exactly what framework mode uses, with
+  the wiring and the types generated for you. Remix v2 became React Router 7's
+  framework mode, which is why the two share every idea.
+</p>
 
 <h3>Links, not anchors</h3>
 <pre><code>&lt;Link to="/topics/react"&gt;React&lt;/Link&gt;
@@ -72,6 +100,14 @@ const level = params.get("level") ?? "beginner";
 
 &lt;select value={level} onChange={(e) =&gt; setParams({ level: e.target.value })}&gt;</code></pre>
 </div>
+<p class="sub">
+  Two details bite. Everything in the query string is a string, so
+  <code>params.get("page")</code> is <code>"2"</code>, not <code>2</code>, and
+  can be <code>null</code> or garbage someone typed. And
+  <code>setParams({ level })</code> replaces the whole query string; to change
+  one key and keep the rest, use the function form:
+  <code>setParams((p) =&gt; { p.set("level", v); return p; })</code>.
+</p>
 
 <h3>Loaders: fetching before the render</h3>
 <pre><code>{
@@ -124,6 +160,59 @@ function NewTopic() {
   invalidation logic.
 </p>
 
+<h3>Mutations that should not navigate</h3>
+<pre><code>function LikeButton({ id, liked }) {
+  const fetcher = useFetcher();
+  const optimistic = fetcher.formData
+    ? fetcher.formData.get("liked") === "true"
+    : liked;
+
+  return (
+    &lt;fetcher.Form method="post" action={"/posts/" + id + "/like"}&gt;
+      &lt;button name="liked" value={String(!optimistic)}&gt;
+        {optimistic ? "♥" : "♡"}
+      &lt;/button&gt;
+    &lt;/fetcher.Form&gt;
+  );
+}</code></pre>
+<p>
+  A like button, a checkbox in a list, an inline rename: none of these should
+  change the URL or add a history entry. <code>useFetcher</code> calls the same
+  loaders and actions without navigating, and each fetcher has its own pending
+  state, so twenty rows can each be saving independently. Reading
+  <code>fetcher.formData</code> while it is in flight gives you optimistic UI
+  with no extra state.
+</p>
+
+<h3>Framework mode: routes as modules, types generated</h3>
+<pre><code><span class="c">// app/routes.ts</span>
+import { index, route } from "@react-router/dev/routes";
+
+export default [
+  index("./home.tsx"),
+  route("products/:pid", "./product.tsx"),
+];</code></pre>
+<pre><code><span class="c">// app/product.tsx</span>
+import type { Route } from "./+types/product";
+
+export async function loader({ params }: Route.LoaderArgs) {
+  return { product: await getProduct(params.pid) };   <span class="c">// params.pid is typed</span>
+}
+
+export default function Product({ loaderData }: Route.ComponentProps) {
+  return &lt;h1&gt;{loaderData.product.name}&lt;/h1&gt;;           <span class="c">// so is loaderData</span>
+}</code></pre>
+<p>
+  Each route file exports named pieces &mdash; <code>loader</code>,
+  <code>action</code>, a default component, <code>ErrorBoundary</code>,
+  <code>meta</code> &mdash; and the tooling writes a <code>+types</code> file
+  beside it. The payoff is that the loader's return type flows into the
+  component without a cast, and a typo in <code>params.pid</code> is a compile
+  error. In framework mode <code>loader</code> runs on the server;
+  <code>clientLoader</code> is its browser-side counterpart, for data that only
+  the client can reach.
+</p>
+
 <h3>Protecting routes</h3>
 <pre><code>function RequireAuth({ children }) {
   const { user } = useAuth();
@@ -140,7 +229,10 @@ function NewTopic() {
 </p>
 <p class="sub">
   A client-side guard is a UX affordance, not security. The API still has to
-  authorise every request; hiding a route hides a link, not the data.
+  authorise every request; hiding a route hides a link, not the data. In data
+  and framework modes, checking in a loader or middleware is better still: the
+  protected page's code and data never start loading. Middleware became a
+  default, stable feature in version 8.
 </p>
 
 <h3>Lazy routes</h3>
@@ -153,24 +245,50 @@ function NewTopic() {
 <p>
   Route boundaries are the natural place to split a bundle: a user who never
   opens Settings never downloads it. <a href="/react/react-suspense">Suspense
-  and code splitting</a> goes further.
+  and code splitting</a> goes further. Framework mode does this split for every
+  route automatically.
 </p>
 
 <h3>Scroll, and the thing everyone forgets</h3>
 <p>
   Client-side navigation does not reset scroll. Navigate from the bottom of a
   long list into a detail page and you land halfway down it. The data router
-  restores scroll automatically; with the older API you add it yourself:
+  restores scroll when you render <code>&lt;ScrollRestoration /&gt;</code>;
+  with the declarative router you add it yourself:
 </p>
 <pre><code>useEffect(() =&gt; { window.scrollTo(0, 0); }, [location.pathname]);</code></pre>
+
+<h3>The other router you will meet: TanStack Router</h3>
+<pre><code>const productSearch = z.object({
+  page: z.number().catch(1),
+  sort: z.enum(["newest", "price"]).catch("newest"),
+});
+
+export const Route = createFileRoute("/shop/products")({
+  validateSearch: productSearch,
+});
+
+function Products() {
+  const { page, sort } = Route.useSearch();        <span class="c">// page: number, not string</span>
+  const navigate = useNavigate({ from: Route.fullPath });
+  navigate({ search: (prev) =&gt; ({ ...prev, page: prev.page + 1 }) });
+}</code></pre>
+<p>
+  TanStack Router's pitch is type safety end to end, and its sharpest feature is
+  the search string. A schema validates and parses it once, at the route, so
+  every component reads a typed <code>number</code> rather than a string it has
+  to trust, and a bad value in a shared link falls back to a default instead of
+  crashing the page. It is common in Vite single-page apps that want that
+  guarantee without a server framework.
+</p>
 
 <h3>Which routing you are actually using</h3>
 <div class="table-scroll"><table>
 <thead><tr><th>Setup</th><th>Routing</th><th>Notes</th></tr></thead>
 <tbody>
-<tr><td>Vite + React</td><td>React Router</td><td>Everything on this page</td></tr>
+<tr><td>Vite + React</td><td>React Router data mode, or TanStack Router</td><td>Everything on this page</td></tr>
+<tr><td>React Router framework mode</td><td><code>routes.ts</code> and route modules</td><td>Where Remix went; loaders run on the server</td></tr>
 <tr><td>Next.js App Router</td><td>File-system routing</td><td>Folders are routes; <code>useRouter</code>, <code>usePathname</code>, <code>useSearchParams</code> from <code>next/navigation</code></td></tr>
-<tr><td>Remix</td><td>React Router, renamed</td><td>Loaders and actions are the same idea, server-side</td></tr>
 </tbody>
 </table></div>
 <p>
@@ -184,7 +302,9 @@ function NewTopic() {
     "The router keeps the URL and the UI in sync, and the URL should hold any
     state a user would expect to bookmark or go back to — filters, tabs,
     queries. Loaders matter because they fetch before rendering, which removes
-    the render-fetch waterfall and the race between two navigations."
+    the render-fetch waterfall and the race between two navigations, and
+    framework mode or TanStack Router adds generated types so params and loader
+    data are checked rather than trusted."
   </p>
 </div>`,
 };

@@ -561,4 +561,190 @@ export const react: Exercise[] = [
       { name: "removing a missing id just returns an equivalent object", body: 'const t = { a: { id: "a" } };\nassert.deepEqual(removeTask(t, "z"), { a: { id: "a" } });' },
     ],
   },
+  {
+    id: "ex-react-read-search",
+    chapter: "react-router",
+    level: "intermediate",
+    title: "Filters from the query string",
+    brief:
+      "<p>Write <code>readFilters(search)</code> for a query string like <code>\"?page=2&amp;sort=price&amp;tag=a&amp;tag=b\"</code>. Return <code>{ page, sort, tags }</code>: <code>page</code> is a whole number of at least 1, defaulting to 1 for anything else; <code>sort</code> is <code>\"price\"</code> or <code>\"newest\"</code>, defaulting to <code>\"newest\"</code>; <code>tags</code> is every <code>tag</code> value in order. A shared link can contain anything, so never throw.</p>",
+    starter:
+      'function readFilters(search) {\n  // TODO\n}\n\nconsole.log(readFilters("?page=2&sort=price&tag=a&tag=b"));\n// { page: 2, sort: "price", tags: ["a", "b"] }\nconsole.log(readFilters("?page=abc&sort=cheap"));\n// { page: 1, sort: "newest", tags: [] }\n',
+    hints: [
+      "new URLSearchParams(search) parses the string; get returns null for a missing key, getAll returns an array.",
+      "Every value is a string. Number(value) then Number.isInteger and a >= 1 check rejects \"abc\", \"0\" and \"2.5\".",
+      "Treat sort as an allow-list: only the exact string \"price\" is accepted.",
+    ],
+    solution:
+      'function readFilters(search) {\n  const params = new URLSearchParams(search);\n  const n = Number(params.get("page"));\n  const page = Number.isInteger(n) && n >= 1 ? n : 1;\n  const sort = params.get("sort") === "price" ? "price" : "newest";\n  return { page, sort, tags: params.getAll("tag") };\n}\n',
+    tests: [
+      { name: "reads valid values", body: 'assert.deepEqual(readFilters("?page=3&sort=price"), { page: 3, sort: "price", tags: [] });' },
+      { name: "defaults when the string is empty", body: 'assert.deepEqual(readFilters(""), { page: 1, sort: "newest", tags: [] });' },
+      { name: "rejects a page that is not a positive whole number", body: 'assert.equal(readFilters("?page=abc").page, 1);\nassert.equal(readFilters("?page=0").page, 1);\nassert.equal(readFilters("?page=2.5").page, 1);' },
+      { name: "rejects an unknown sort", body: 'assert.equal(readFilters("?sort=cheap").sort, "newest");' },
+      { name: "collects repeated tags in order", body: 'assert.deepEqual(readFilters("?tag=b&tag=a").tags, ["b", "a"]);' },
+    ],
+  },
+  {
+    id: "ex-react-create-store",
+    chapter: "react-state-libraries",
+    level: "intermediate",
+    title: "A store in twenty lines",
+    brief:
+      "<p>Write <code>createStore(initial)</code> returning <code>{ getState, setState, subscribe }</code>, the core every store library shares. <code>setState</code> takes an object to merge shallowly, or a function of the current state returning one. <code>subscribe(listener)</code> returns an unsubscribe function, and listeners receive the new state. If the update returns the current state object itself, change nothing and notify nobody.</p>",
+    starter:
+      'function createStore(initial) {\n  // TODO\n}\n\nconst store = createStore({ count: 0, user: null });\nstore.subscribe((s) => console.log("changed", s.count));\nstore.setState((s) => ({ count: s.count + 1 })); // changed 1\nconsole.log(store.getState()); // { count: 1, user: null }\n',
+    hints: [
+      "Keep the state in a variable inside the closure, and the listeners in a Set.",
+      "Resolve the update first: typeof update === \"function\" ? update(state) : update.",
+      "Compare with Object.is before merging. Merge into a new object, { ...state, ...next }, so the old state is never edited.",
+    ],
+    solution:
+      'function createStore(initial) {\n  let state = initial;\n  const listeners = new Set();\n  return {\n    getState: () => state,\n    setState(update) {\n      const next = typeof update === "function" ? update(state) : update;\n      if (Object.is(next, state)) return;\n      state = { ...state, ...next };\n      listeners.forEach((listener) => listener(state));\n    },\n    subscribe(listener) {\n      listeners.add(listener);\n      return () => listeners.delete(listener);\n    },\n  };\n}\n',
+    tests: [
+      { name: "merges an object update", body: 'const s = createStore({ a: 1, b: 2 });\ns.setState({ b: 3 });\nassert.deepEqual(s.getState(), { a: 1, b: 3 });' },
+      { name: "accepts an updater function", body: 'const s = createStore({ count: 1 });\ns.setState((st) => ({ count: st.count + 1 }));\nassert.equal(s.getState().count, 2);' },
+      { name: "never edits the previous state object", body: 'const s = createStore({ count: 1 });\nconst before = s.getState();\ns.setState({ count: 2 });\nassert.equal(before.count, 1);\nassert.notEqual(s.getState(), before);' },
+      { name: "notifies with the new state, and stops after unsubscribe", body: 'const s = createStore({ n: 0 });\nconst seen = [];\nconst off = s.subscribe((st) => seen.push(st.n));\ns.setState({ n: 1 });\noff();\ns.setState({ n: 2 });\nassert.deepEqual(seen, [1]);' },
+      { name: "returning the same state notifies nobody", body: 'const s = createStore({ n: 0 });\nlet calls = 0;\ns.subscribe(() => calls++);\ns.setState((st) => st);\nassert.equal(calls, 0);' },
+    ],
+  },
+  {
+    id: "ex-react-describe-state",
+    chapter: "react-typescript",
+    level: "intermediate",
+    title: "Handle every branch of a union",
+    brief:
+      "<p>Write <code>describeState(state)</code> for a request state shaped as a discriminated union: <code>{ status: \"idle\" }</code> gives <code>\"Not started\"</code>, <code>{ status: \"loading\" }</code> gives <code>\"Loading\"</code>, <code>{ status: \"error\", error }</code> gives <code>\"Failed: \"</code> plus the error's message, and <code>{ status: \"ready\", data }</code> gives the number of items followed by <code>\" items\"</code>. Any other status must throw an <code>Error</code> whose message includes it &mdash; the runtime half of an <code>assertNever</code> check.</p>",
+    starter:
+      'function describeState(state) {\n  // TODO\n}\n\nconsole.log(describeState({ status: "ready", data: [1, 2] })); // "2 items"\nconsole.log(describeState({ status: "error", error: new Error("timeout") })); // "Failed: timeout"\n',
+    hints: [
+      "Switch on state.status. Inside each case, read only the fields that branch has.",
+      "The default case is where assertNever would go in TypeScript: throw new Error(\"Unhandled status: \" + state.status).",
+    ],
+    solution:
+      'function describeState(state) {\n  switch (state.status) {\n    case "idle":\n      return "Not started";\n    case "loading":\n      return "Loading";\n    case "error":\n      return "Failed: " + state.error.message;\n    case "ready":\n      return state.data.length + " items";\n    default:\n      throw new Error("Unhandled status: " + state.status);\n  }\n}\n',
+    tests: [
+      { name: "idle and loading", body: 'assert.equal(describeState({ status: "idle" }), "Not started");\nassert.equal(describeState({ status: "loading" }), "Loading");' },
+      { name: "error reads the message", body: 'assert.equal(describeState({ status: "error", error: new Error("boom") }), "Failed: boom");' },
+      { name: "ready counts the data", body: 'assert.equal(describeState({ status: "ready", data: [] }), "0 items");\nassert.equal(describeState({ status: "ready", data: ["a", "b", "c"] }), "3 items");' },
+      { name: "an unknown status throws and names it", body: 'assert.throws(() => describeState({ status: "stale" }), /stale/);' },
+    ],
+  },
+  {
+    id: "ex-react-previous-value",
+    chapter: "react-useref",
+    level: "intermediate",
+    title: "The box behind usePrevious",
+    brief:
+      "<p>A ref is a box that survives renders without causing one. Write <code>createPreviousTracker()</code> returning a function <code>track(value)</code> that returns the value it was called with <b>last time</b> &mdash; <code>undefined</code> on the first call &mdash; and then remembers the new one. Each tracker keeps its own memory, the way each component instance gets its own ref.</p>",
+    starter:
+      "function createPreviousTracker() {\n  // TODO\n}\n\nconst track = createPreviousTracker();\nconsole.log(track(1)); // undefined\nconsole.log(track(2)); // 1\nconsole.log(track(5)); // 2\n",
+    hints: [
+      "Hold the last value in a variable inside createPreviousTracker; that variable is your ref.current.",
+      "Read the old value into a local before overwriting it, then return the local.",
+    ],
+    solution:
+      "function createPreviousTracker() {\n  let current;\n  return function track(value) {\n    const previous = current;\n    current = value;\n    return previous;\n  };\n}\n",
+    tests: [
+      { name: "the first call returns undefined", body: "const track = createPreviousTracker();\nassert.equal(track(\"a\"), undefined);" },
+      { name: "each call returns the value before it", body: "const track = createPreviousTracker();\ntrack(1);\nassert.equal(track(2), 1);\nassert.equal(track(3), 2);" },
+      { name: "the same value twice returns itself", body: "const track = createPreviousTracker();\ntrack(7);\nassert.equal(track(7), 7);" },
+      { name: "two trackers do not share memory", body: "const a = createPreviousTracker();\nconst b = createPreviousTracker();\na(1);\nassert.equal(b(2), undefined);\nassert.equal(a(3), 1);" },
+    ],
+  },
+  {
+    id: "ex-react-hash-query-key",
+    chapter: "react-server-state",
+    level: "intermediate",
+    title: "Hash a query key",
+    brief:
+      "<p>A query cache stores entries under a string made from the key array. Write <code>hashQueryKey(key)</code> so that keys differing only in the <b>order of object properties</b> hash the same, at any depth, while array order still matters. <code>[\"todos\", { status: \"done\", page: 1 }]</code> and <code>[\"todos\", { page: 1, status: \"done\" }]</code> must match.</p>",
+    starter:
+      'function hashQueryKey(key) {\n  // TODO\n}\n\nconsole.log(hashQueryKey(["todos", { status: "done", page: 1 }]) ===\n  hashQueryKey(["todos", { page: 1, status: "done" }])); // true\n',
+    hints: [
+      "JSON.stringify accepts a replacer function that is called for every value, nested ones included.",
+      "When the value is a plain object (not null, not an array), return a copy built from Object.keys(value).sort().",
+    ],
+    solution:
+      'function hashQueryKey(key) {\n  return JSON.stringify(key, (_, value) => {\n    if (value && typeof value === "object" && !Array.isArray(value)) {\n      const sorted = {};\n      for (const k of Object.keys(value).sort()) sorted[k] = value[k];\n      return sorted;\n    }\n    return value;\n  });\n}\n',
+    tests: [
+      { name: "property order does not matter", body: 'const h = hashQueryKey(["t", { b: 1, a: 2 }]);\nassert.equal(typeof h, "string");\nassert.equal(h, hashQueryKey(["t", { a: 2, b: 1 }]));' },
+      { name: "nested property order does not matter", body: 'const h = hashQueryKey([{ f: { y: 1, x: 2 } }]);\nassert.equal(typeof h, "string");\nassert.equal(h, hashQueryKey([{ f: { x: 2, y: 1 } }]));' },
+      { name: "array order still matters", body: 'assert.notEqual(hashQueryKey(["a", "b"]), hashQueryKey(["b", "a"]));' },
+      { name: "different values hash differently", body: 'assert.notEqual(hashQueryKey(["t", { page: 1 }]), hashQueryKey(["t", { page: 2 }]));' },
+      { name: "returns a string", body: 'assert.equal(typeof hashQueryKey(["todos"]), "string");' },
+    ],
+  },
+  {
+    id: "ex-react-request-guard",
+    chapter: "react-data-fetching",
+    level: "intermediate",
+    title: "Ignore the response that lost the race",
+    brief:
+      "<p>Type \"re\", then \"react\": if the first request answers last, a naive fetch shows results for \"re\". Write <code>createRequestGuard()</code> returning <code>{ start, isLatest, cancel }</code>. <code>start()</code> returns an id for a new request; <code>isLatest(id)</code> is true only for the most recently started request; <code>cancel()</code> makes every id started so far stale, for cleanup on unmount.</p>",
+    starter:
+      "function createRequestGuard() {\n  // TODO\n}\n\nconst guard = createRequestGuard();\nconst first = guard.start();\nconst second = guard.start();\nconsole.log(guard.isLatest(first));  // false — ignore its response\nconsole.log(guard.isLatest(second)); // true\n",
+    hints: [
+      "A single counter is enough. start increments it and returns the new value.",
+      "cancel can also just increment the counter: no id handed out so far will equal it.",
+    ],
+    solution:
+      "function createRequestGuard() {\n  let latest = 0;\n  return {\n    start() {\n      latest += 1;\n      return latest;\n    },\n    isLatest(id) {\n      return id === latest;\n    },\n    cancel() {\n      latest += 1;\n    },\n  };\n}\n",
+    tests: [
+      { name: "a lone request is the latest", body: "const g = createRequestGuard();\nconst id = g.start();\nassert.equal(g.isLatest(id), true);" },
+      { name: "an older request is not the latest", body: "const g = createRequestGuard();\nconst a = g.start();\nconst b = g.start();\nassert.equal(g.isLatest(a), false);\nassert.equal(g.isLatest(b), true);" },
+      { name: "cancel makes every started request stale", body: "const g = createRequestGuard();\nconst a = g.start();\ng.cancel();\nassert.equal(g.isLatest(a), false);" },
+      { name: "a request started after cancel is the latest again", body: "const g = createRequestGuard();\ng.start();\ng.cancel();\nconst c = g.start();\nassert.equal(g.isLatest(c), true);" },
+      { name: "two guards are independent", body: "const g1 = createRequestGuard();\nconst g2 = createRequestGuard();\nconst a = g1.start();\ng2.start();\ng2.start();\nassert.equal(g1.isLatest(a), true);" },
+    ],
+  },
+  {
+    id: "ex-react-field-errors",
+    chapter: "react-forms-at-scale",
+    level: "intermediate",
+    title: "Validation issues to field errors",
+    brief:
+      "<p>A schema validator returns a list of issues like <code>{ path: [\"address\", \"city\"], message: \"Required\" }</code>. Write <code>toFieldErrors(issues)</code> returning an object mapping each field to its <b>first</b> message. Join a nested path with dots (<code>\"address.city\"</code>), and put issues with an empty path under <code>\"_form\"</code>.</p>",
+    starter:
+      'function toFieldErrors(issues) {\n  // TODO\n}\n\nconsole.log(toFieldErrors([\n  { path: ["email"], message: "Invalid email" },\n  { path: ["email"], message: "Too long" },\n  { path: [], message: "Passwords do not match" },\n]));\n// { email: "Invalid email", _form: "Passwords do not match" }\n',
+    hints: [
+      "path.join(\".\") handles nested paths, and an empty join gives \"\" which you can swap for \"_form\".",
+      "Only assign when the field has no message yet, so the first issue wins.",
+      "Array indexes in a path are numbers; join turns them into strings for you.",
+    ],
+    solution:
+      'function toFieldErrors(issues) {\n  const errors = {};\n  for (const issue of issues) {\n    const field = issue.path.join(".") || "_form";\n    if (!(field in errors)) errors[field] = issue.message;\n  }\n  return errors;\n}\n',
+    tests: [
+      { name: "maps a field to its message", body: 'assert.deepEqual(toFieldErrors([{ path: ["name"], message: "Required" }]), { name: "Required" });' },
+      { name: "keeps the first message per field", body: 'const e = toFieldErrors([{ path: ["email"], message: "first" }, { path: ["email"], message: "second" }]);\nassert.equal(e.email, "first");' },
+      { name: "joins nested paths, including array indexes", body: 'const e = toFieldErrors([{ path: ["items", 0, "qty"], message: "Too low" }]);\nassert.deepEqual(e, { "items.0.qty": "Too low" });' },
+      { name: "an empty path is a form-level error", body: 'assert.deepEqual(toFieldErrors([{ path: [], message: "Mismatch" }]), { _form: "Mismatch" });' },
+      { name: "no issues gives an empty object", body: "assert.deepEqual(toFieldErrors([]), {});" },
+    ],
+  },
+  {
+    id: "ex-react-token-expired",
+    chapter: "react-auth",
+    level: "intermediate",
+    title: "Is the token about to expire?",
+    brief:
+      "<p>A JWT's <code>exp</code> claim is in <b>seconds</b> since the epoch; <code>Date.now()</code> is in milliseconds. Write <code>isTokenExpired(exp, nowMs, skewSeconds)</code> that returns true when the token is expired or will expire within <code>skewSeconds</code> (default 30), so the client refreshes before a request fails. A missing or non-numeric <code>exp</code> counts as expired.</p>",
+    starter:
+      "function isTokenExpired(exp, nowMs, skewSeconds = 30) {\n  // TODO\n}\n\nconst now = 1_700_000_000_000;\nconsole.log(isTokenExpired(1_700_000_100, now)); // false — 100s left\nconsole.log(isTokenExpired(1_700_000_010, now)); // true — inside the 30s skew\n",
+    hints: [
+      "Convert once: nowMs / 1000 is the current time in seconds.",
+      "Expired means now >= exp - skewSeconds.",
+      "typeof exp !== \"number\" or Number.isNaN(exp) should return true before any maths.",
+    ],
+    solution:
+      'function isTokenExpired(exp, nowMs, skewSeconds = 30) {\n  if (typeof exp !== "number" || Number.isNaN(exp)) return true;\n  return nowMs / 1000 >= exp - skewSeconds;\n}\n',
+    tests: [
+      { name: "a token with plenty of time left is valid", body: "assert.equal(isTokenExpired(1000 + 3600, 1000 * 1000), false);" },
+      { name: "a token past its exp is expired", body: "assert.equal(isTokenExpired(900, 1000 * 1000), true);" },
+      { name: "a token inside the skew window counts as expired", body: "assert.equal(isTokenExpired(1010, 1000 * 1000), true);\nassert.equal(isTokenExpired(1010, 1000 * 1000, 5), false);" },
+      { name: "compares seconds with milliseconds correctly", body: "assert.equal(isTokenExpired(1_700_000_100, 1_700_000_000_000), false);" },
+      { name: "a missing exp is expired", body: "assert.equal(isTokenExpired(undefined, 0), true);\nassert.equal(isTokenExpired(\"soon\", 0), true);" },
+    ],
+  },
 ];

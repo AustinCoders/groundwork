@@ -27,6 +27,12 @@ dispatch({ type: "increment" });</code></pre>
   it must not fetch, log, or set timers &mdash; React may call it more than once
   for a single dispatch.
 </p>
+<p class="sub">
+  Like a state setter, <code>dispatch</code> does not change
+  <code>state</code> in the code that is already running. Log
+  <code>state</code> right after dispatching and you see the old value; the new
+  one arrives in the next render.
+</p>
 
 <h3>Why bother, when useState exists</h3>
 <p>
@@ -39,6 +45,17 @@ dispatch({ type: "increment" });</code></pre>
   <li><b>The same transition happens from several places.</b> The logic lives in one function instead of being duplicated in four handlers.</li>
   <li><b>You want to test the logic.</b> A reducer is a plain function &mdash; call it with a state and an action and assert on the result. No component, no render.</li>
 </ul>
+
+<div class="table-scroll"><table>
+<thead><tr><th>Situation</th><th>Choose</th></tr></thead>
+<tbody>
+<tr><td>A toggle, an input's text, one counter</td><td><code>useState</code></td></tr>
+<tr><td>Two or three unrelated values</td><td>Separate <code>useState</code> calls</td></tr>
+<tr><td>A request's status, data and error</td><td><code>useReducer</code></td></tr>
+<tr><td>A multi-step form or wizard</td><td><code>useReducer</code></td></tr>
+<tr><td>Logic a teammate must be able to unit test</td><td><code>useReducer</code></td></tr>
+</tbody>
+</table></div>
 
 <h3>The example that makes the case</h3>
 <pre><code><span class="c">// with useState: four setters, and every caller must remember all of them</span>
@@ -84,6 +101,48 @@ dispatch({ type: "quantityChanged", id, qty });   <span class="c">// ✓</span><
   behaviour.
 </p>
 
+<h3>Why purity is enforced, not suggested</h3>
+<pre><code>case "added":
+  state.items.push(action.item);    <span class="c">// ✗ mutates the current state</span>
+  return { ...state };</code></pre>
+<p>
+  In development, Strict Mode calls your reducer twice for each dispatch to
+  flush out exactly this. The first call pushes the item into the existing
+  array, the second pushes it again, and the list shows it twice. It looks like
+  a React bug; it is a mutation that production would have hidden until
+  something compared old and new state. Build the new array instead:
+  <code>items: [...state.items, action.item]</code>.
+</p>
+
+<h3>Where the side effects go</h3>
+<pre><code>async function handleSave() {
+  dispatch({ type: "save/start" });
+  try {
+    const saved = await api.save(state.draft);
+    dispatch({ type: "save/success", saved });
+  } catch (error) {
+    dispatch({ type: "save/failure", error });
+  }
+}</code></pre>
+<p>
+  A reducer cannot await, so the async work happens in the event handler and
+  the reducer only records what happened at each step. The reducer stays pure
+  and testable; the handler owns the request. That split is the same one Redux
+  thunks formalise.
+</p>
+
+<h3>Testing it</h3>
+<pre><code>test("start clears a previous error", () =&gt; {
+  const before = { status: "error", data: null, error: "timeout" };
+  const after = reducer(before, { type: "fetch/start" });
+  expect(after).toEqual({ status: "loading", data: null, error: null });
+});</code></pre>
+<p>
+  No render, no mocks, no waiting. Each transition is one line of input and one
+  of expected output, which makes it cheap to cover the awkward cases &mdash; a
+  success arriving after a reset, a removal of an id that is not there.
+</p>
+
 <h3>Lazy initialisation</h3>
 <pre><code>function init(items) {
   return { items, selected: null, filter: "" };
@@ -104,6 +163,22 @@ const [state, dispatch] = useReducer(reducer, initialItems, init);</code></pre>
   <code>useCallback</code> &mdash; which is why the state-and-dispatch context
   split in the <a href="/react/react-context">previous chapter</a> works so
   cleanly.
+</p>
+
+<h3>Seeing every action while debugging</h3>
+<pre><code>function withLogging(reducer) {
+  return (state, action) =&gt; {
+    const next = reducer(state, action);
+    console.log(action.type, { state, next });
+    return next;
+  };
+}
+
+const [state, dispatch] = useReducer(withLogging(reducer), initial);</code></pre>
+<p>
+  Because a reducer is just a function, wrapping one gives you middleware for
+  free. Remove it before shipping: logging is a side effect, and Strict Mode's
+  double call will print every action twice in development.
 </p>
 
 <h3>Reducer plus context: the poor man's store</h3>
@@ -136,7 +211,13 @@ const [state, dispatch] = useReducer(reducer, initialItems, init);</code></pre>
   The same rules as <code>useState</code>: return a new object, spread at every
   level you change. If the nesting makes this painful, either flatten the state
   or use Immer's <code>produce</code>, which lets you write mutations and
-  produces an immutable result.
+  produces an immutable result. Returning the <b>same</b> state object is also
+  meaningful: React sees nothing changed and can skip re-rendering.
+</p>
+<p class="sub">
+  With TypeScript, type the reducer's parameters and let React infer the rest:
+  <code>useReducer(reducer, initial)</code>, no type arguments. See
+  <a href="/react/react-typescript">TypeScript with React</a>.
 </p>
 
 <div class="bx is-ref">
@@ -145,7 +226,8 @@ const [state, dispatch] = useReducer(reducer, initialItems, init);</code></pre>
     "A reducer moves state transitions out of the handlers and into one pure
     function, so related fields always change together and impossible
     combinations stop being reachable. It is also testable without rendering,
-    and <code>dispatch</code> is stable, which makes it ideal to put in context."
+    and <code>dispatch</code> is stable, which makes it ideal to put in context;
+    the async work stays in the handler, which dispatches what happened."
   </p>
 </div>`,
 };

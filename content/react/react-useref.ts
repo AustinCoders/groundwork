@@ -6,7 +6,7 @@ export const reactUseref: Chapter = {
   title: "useRef",
   short: "useRef",
   levels: ["intermediate"],
-  practice: [],
+  practice: ["ex-react-previous-value"],
   ready: true,
   subtitle: "A box that survives renders and does not cause them.",
   body: `<h3>Two jobs, one hook</h3>

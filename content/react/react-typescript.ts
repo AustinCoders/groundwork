@@ -6,7 +6,7 @@ export const reactTypescript: Chapter = {
   title: "TypeScript with React",
   short: "TypeScript",
   levels: ["intermediate"],
-  practice: [],
+  practice: ["ex-react-describe-state"],
   ready: true,
   subtitle: "Props are a function's parameters, so typing a component is typing a function.",
   body: `<h3>Start here</h3>
@@ -23,6 +23,11 @@ function Button({ label, onClick, variant = "primary" }: ButtonProps) { ... }</c
   historically implied a <code>children</code> prop the component may not
   accept. Annotate the parameter &mdash; that is the whole pattern.
 </p>
+<p class="sub">
+  <code>type</code> or <code>interface</code> for props? Either works. Pick one
+  for the codebase; <code>type</code> is the more common choice because unions
+  and intersections, which props need constantly, only work with it.
+</p>
 
 <h3>The types you will use daily</h3>
 <div class="table-scroll"><table>
@@ -33,7 +38,9 @@ function Button({ label, onClick, variant = "primary" }: ButtonProps) { ... }</c
 <tr><td><code>React.ComponentProps&lt;"button"&gt;</code></td><td>Every prop a real <code>&lt;button&gt;</code> takes</td></tr>
 <tr><td><code>React.ChangeEvent&lt;HTMLInputElement&gt;</code></td><td>An input's change event</td></tr>
 <tr><td><code>React.FormEvent&lt;HTMLFormElement&gt;</code></td><td>A form submit</td></tr>
+<tr><td><code>React.MouseEvent&lt;HTMLButtonElement&gt;</code>, <code>React.KeyboardEvent</code></td><td>Clicks and key presses</td></tr>
 <tr><td><code>React.CSSProperties</code></td><td>A <code>style</code> object</td></tr>
+<tr><td><code>React.JSX.Element</code></td><td>What a component returns, when you annotate it</td></tr>
 </tbody>
 </table></div>
 
@@ -50,6 +57,47 @@ function Button({ variant = "primary", ...rest }: ButtonProps) {
   <code>onClick</code> and every other button attribute are typed correctly and
   autocompleted, without listing one of them. This is the single most useful
   React-specific TypeScript pattern.
+</p>
+
+<h3>Refs are props now</h3>
+<pre><code>function TextInput(props: React.ComponentProps&lt;"input"&gt;) {
+  return &lt;input className="field" {...props} /&gt;;   <span class="c">// ref arrives inside props</span>
+}
+
+const ref = useRef&lt;HTMLInputElement&gt;(null);
+&lt;TextInput ref={ref} /&gt;                             <span class="c">// ✓ no forwardRef</span></code></pre>
+<p>
+  Since React 19 a function component receives <code>ref</code> as an ordinary
+  prop, and <code>ComponentProps&lt;"input"&gt;</code> already includes it. If
+  you need to be explicit, <code>ComponentPropsWithRef</code> and
+  <code>ComponentPropsWithoutRef</code> say which one you mean &mdash; the
+  second is right for a wrapper that must not pass a ref through.
+</p>
+
+<h3>When your prop clashes with the element's</h3>
+<pre><code>type InputProps = Omit&lt;React.ComponentProps&lt;"input"&gt;, "size"&gt; &amp; {
+  size?: "sm" | "md" | "lg";         <span class="c">// the DOM's size is a number of characters</span>
+};
+
+function Input({ size = "md", ...rest }: InputProps) {
+  return &lt;input className={"input input--" + size} {...rest} /&gt;;
+}</code></pre>
+<p>
+  Intersecting two types that both define <code>size</code> does not replace
+  one with the other; it demands a value that is a number and a string at once,
+  which nothing is. <code>Omit</code> removes the element's version first.
+  <code>size</code>, <code>color</code>, <code>type</code> and
+  <code>onChange</code> are the usual collisions.
+</p>
+
+<h3>Defaults make optional props required inside</h3>
+<p>
+  <code>variant?: "primary" | "ghost"</code> means the caller may leave it out.
+  Inside the component, after <code>variant = "primary"</code> in the parameter
+  list, TypeScript knows it is always defined, so there is no
+  <code>undefined</code> check to write. That is why defaults belong in the
+  destructuring rather than in an <code>if</code> further down: the type and the
+  behaviour are declared in the same place.
 </p>
 
 <h3>useState needs help only sometimes</h3>
@@ -69,8 +117,22 @@ input.current?.focus();                       <span class="c">// null until moun
 const timer = useRef&lt;number | undefined&gt;(undefined);   <span class="c">// a mutable box</span></code></pre>
 <p class="sub">
   The optional chaining is not defensive noise &mdash; a DOM ref genuinely is
-  <code>null</code> during the first render, and the type says so.
+  <code>null</code> during the first render, and the type says so. Since React
+  19, <code>useRef</code> requires an argument, and every ref object is mutable.
 </p>
+
+<h3>What changed in React 19's types</h3>
+<div class="table-scroll"><table>
+<thead><tr><th>Before</th><th>Now</th></tr></thead>
+<tbody>
+<tr><td><code>useRef()</code> with no argument</td><td>Compile error &mdash; pass <code>undefined</code> or <code>null</code></td></tr>
+<tr><td><code>ref={(el) =&gt; (node = el)}</code></td><td>Error: a ref callback may now return a cleanup function, so an implicit return is rejected. Use braces.</td></tr>
+<tr><td>Global <code>JSX</code> namespace</td><td><code>React.JSX</code></td></tr>
+<tr><td><code>ReactElement["props"]</code> was <code>any</code></td><td>Now <code>unknown</code> unless you pass a type argument</td></tr>
+<tr><td><code>useReducer&lt;React.Reducer&lt;S, A&gt;&gt;(reducer)</code></td><td><code>useReducer(reducer)</code> &mdash; let it infer</td></tr>
+</tbody>
+</table></div>
+<pre><code>npx types-react-codemod@latest preset-19 ./src     <span class="c">// fixes most of these mechanically</span></code></pre>
 
 <h3>Discriminated unions make impossible states impossible</h3>
 <pre><code>type State =
@@ -107,7 +169,8 @@ function reducer(state: State, action: Action): State {
   With no <code>default</code> case, adding a fourth action type makes the
   function fail to return on one path &mdash; a compile error pointing exactly at
   the reducer you forgot to update. That exhaustiveness check is free and
-  genuinely prevents bugs.
+  genuinely prevents bugs. Inside each <code>case</code>, <code>action</code> is
+  narrowed, so <code>action.id</code> only exists where the type has one.
 </p>
 
 <h3>Generic components</h3>
@@ -124,6 +187,20 @@ function List&lt;T&gt;({ items, renderItem, keyOf }: ListProps&lt;T&gt;) {
 &lt;List items={users} keyOf={(u) =&gt; u.id} renderItem={(u) =&gt; u.name} /&gt;
 <span class="c">// u is inferred as User — no annotation needed at the call site</span></code></pre>
 
+<h3>What children can and cannot promise</h3>
+<pre><code>children: React.ReactNode;                          <span class="c">// anything renderable</span>
+children: React.ReactElement;                       <span class="c">// exactly one element, not text</span>
+children: (state: { open: boolean }) =&gt; React.ReactNode;   <span class="c">// a render function</span></code></pre>
+<p>
+  One limit surprises people: you cannot type <code>children</code> as "only
+  <code>&lt;Tab&gt;</code> elements". Every JSX expression has the same type,
+  <code>React.JSX.Element</code>, whatever component produced it, so
+  <code>&lt;Tabs&gt;&lt;div /&gt;&lt;/Tabs&gt;</code> compiles even when the prop
+  looks strict. If the structure matters, enforce it with an API instead
+  &mdash; an <code>items</code> array prop, or compound components that read
+  shared context.
+</p>
+
 <h3>Events</h3>
 <pre><code>function handleChange(e: React.ChangeEvent&lt;HTMLInputElement&gt;) {
   setValue(e.target.value);           <span class="c">// typed as string</span>
@@ -135,6 +212,12 @@ function List&lt;T&gt;({ items, renderItem, keyOf }: ListProps&lt;T&gt;) {
   Inline handlers are inferred from context. You only annotate when the function
   is defined separately, which is worth knowing before you decorate every arrow
   with a type.
+</p>
+<p>
+  For your own components, type callback props by what they mean, not by the
+  DOM event that triggered them: <code>onSelect: (id: string) =&gt; void</code>
+  rather than <code>onSelect: (e: React.MouseEvent) =&gt; void</code>. The parent
+  wants the id; making it dig through an event couples it to your markup.
 </p>
 
 <h3>Context without the null dance</h3>
@@ -149,6 +232,20 @@ export function useAuth(): Auth {
   One runtime check in one place, and every consumer gets a non-null type. The
   alternative &mdash; optional chaining at forty call sites &mdash; is worse in
   every way.
+</p>
+
+<h3>Data from outside is unknown</h3>
+<pre><code>const res = await fetch("/api/user");
+const user = (await res.json()) as User;    <span class="c">// ✗ a promise to the compiler, not a check</span>
+
+const UserSchema = z.object({ id: z.string(), name: z.string() });
+type User = z.infer&lt;typeof UserSchema&gt;;
+const user = UserSchema.parse(await res.json());   <span class="c">// ✓ checked at runtime, typed after</span></code></pre>
+<p>
+  TypeScript types vanish when the code runs, so an API that returns a
+  different shape passes an <code>as</code> cast silently and fails later, far
+  from the cause. Parsing at the boundary turns that into one clear error where
+  the data enters, and the schema doubles as the type.
 </p>
 
 <h3>Two habits worth forming</h3>
@@ -172,8 +269,9 @@ export function useAuth(): Auth {
     "Typing a component is typing a function's parameter, so I annotate props
     and skip <code>React.FC</code>, and I extend
     <code>ComponentProps&lt;'button'&gt;</code> rather than restating DOM
-    attributes. The real payoff is discriminated unions for state — narrowing
-    means the compiler stops you reading <code>data</code> in the error branch."
+    attributes — which since React 19 includes <code>ref</code>. The real
+    payoff is discriminated unions for state — narrowing means the compiler
+    stops you reading <code>data</code> in the error branch."
   </p>
 </div>`,
 };
