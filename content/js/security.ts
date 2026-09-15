@@ -142,6 +142,26 @@ unsafeMerge({}, attackerPayload);
   was generated doesn't get silently pulled in on the next install.
 </p>
 
+<h3>crypto.subtle — hashing and randomness, done correctly</h3>
+<pre><code>const bytes = crypto.getRandomValues(new Uint8Array(16));   <span class="c">// cryptographically secure — unlike Math.random()</span>
+
+const data = new TextEncoder().encode("hello");
+const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+const hashHex = [...new Uint8Array(hashBuffer)]
+  .map((b) =&gt; b.toString(16).padStart(2, "0"))
+  .join("");
+console.log(hashHex);   <span class="c">// a real SHA-256 hash, no library needed</span></code></pre>
+<div class="warn">
+  <span class="ttl">⚠ Math.random() is not safe for anything security-related</span>
+  <code>Math.random()</code> is fast and fine for a game or a shuffle,
+  but it isn't cryptographically secure — its output can, in principle,
+  be predicted from enough samples. A session token, a password-reset
+  code, or anything else where guessing matters belongs behind
+  <code>crypto.getRandomValues()</code> (or
+  <code>crypto.randomUUID()</code> for a quick unique id), never
+  <code>Math.random()</code>.
+</div>
+
 <h3>innerHTML and postMessage, safely</h3>
 <pre><code><span class="c">// postMessage — always check the origin, on both ends</span>
 window.addEventListener("message", (event) =&gt; {
@@ -159,6 +179,42 @@ otherWindow.postMessage(payload, "https://trusted-partner.example");   <span cla
   the same problem in the other direction — the payload gets delivered
   to whatever page is currently there, trusted or not.
 </div>
+
+<h3>Subresource Integrity — trusting a third-party script</h3>
+<pre><code>&lt;script
+  src="https://cdn.example.com/lib.js"
+  integrity="sha384-oqVuAf...=="
+  crossorigin="anonymous"&gt;
+&lt;/script&gt;</code></pre>
+<p class="sub">
+  <code>integrity</code> is a hash of the exact file the page expects —
+  the browser downloads the script, hashes it, and refuses to execute
+  it at all if the hash doesn't match. Without it, a compromised CDN (or
+  one tricked into serving a different file at the same URL) can
+  silently swap in malicious code that runs with full access to the
+  page, and nothing about the <code>&lt;script&gt;</code> tag itself
+  would look any different.
+</p>
+
+<h3>Trusted Types — closing the innerHTML hole at the platform level</h3>
+<pre><code>Content-Security-Policy: require-trusted-types-for 'script'
+
+const policy = trustedTypes.createPolicy("app-html", {
+  createHTML: (input) =&gt; DOMPurify.sanitize(input),
+});
+
+el.innerHTML = policy.createHTML(userInput);   <span class="c">// allowed — went through the policy</span>
+el.innerHTML = userInput;                       <span class="c">// throws — a raw string, no policy involved</span></code></pre>
+<p class="sub">
+  With <code>require-trusted-types-for 'script'</code> set, the browser
+  itself refuses to assign a plain string to <code>innerHTML</code>
+  (and a handful of other injection sinks) anywhere on the page — it
+  has to be a special <code>TrustedHTML</code> object that only a
+  registered policy can produce. This doesn't replace sanitizing; it
+  turns <em>forgetting</em> to sanitize into a hard build/runtime error
+  instead of a silent vulnerability, closing off the entire bug class at
+  the platform level rather than trusting every call site to remember.
+</p>
 
 <h3>Auth in practice: where does the token actually live?</h3>
 <p>

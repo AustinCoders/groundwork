@@ -36,6 +36,34 @@ user["favorite color"]; <span class="c">// dot notation can't have a space in it
   copying the variable copies the pointer, not the object.
 </p>
 
+<h3>Assignment copies the reference, not the object</h3>
+<div class="try">
+  <pre><code>const original = { count: 1 };
+const alias = original;        <span class="c">// alias points at the SAME object — nothing was copied</span>
+
+alias.count = 99;
+console.log(original.count);   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>99</code> — <code>original</code> and <code>alias</code> are two
+  names for the exact same object in memory, so mutating one mutates
+  the other; there was only ever one object. This is true for arrays
+  too, and it's the single most common source of "I only changed one
+  variable, why did this other one change too" bugs. Comparing them
+  tells the same story:
+</p>
+<pre><code>const a = { x: 1 };
+const b = { x: 1 };
+console.log(a === b);   <span class="c">// false — same shape, DIFFERENT objects</span>
+console.log(a === a);   <span class="c">// true — same object, obviously</span></code></pre>
+<div class="warn">
+  <span class="ttl">⚠ A real copy needs an explicit copy</span>
+  <code>const copy = original;</code> is not a copy — it's a second name
+  for the same thing. Actually copying means spread
+  (<code>{ ...original }</code>) or <code>Object.assign({}, original)</code>,
+  covered a few sections down — and even those only copy one level deep.
+</div>
+
 <h3>Shorthand and computed keys</h3>
 <pre><code>const name = "Ana", age = 29;
 const user2 = { name, age };            <span class="c">// shorthand — same as { name: name, age: age }</span>

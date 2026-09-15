@@ -42,6 +42,76 @@ export const errorsTools: Chapter = {
   showFallbackUI();
 }</code></pre>
 
+<h3>The built-in error types</h3>
+<table>
+  <tr><th>Type</th><th>Thrown when</th></tr>
+  <tr><td><code>TypeError</code></td><td>an operation on the wrong type — calling a non-function, reading a property of <code>undefined</code></td></tr>
+  <tr><td><code>RangeError</code></td><td>a number outside what's allowed — an invalid array length, <code>(1).toFixed(101)</code>, recursion too deep ("Maximum call stack size exceeded")</td></tr>
+  <tr><td><code>ReferenceError</code></td><td>a name that doesn't exist in scope, or one still in the TDZ</td></tr>
+  <tr><td><code>SyntaxError</code></td><td>malformed code — <code>JSON.parse</code> of invalid JSON, or a broken <code>eval</code> string</td></tr>
+  <tr><td><code>AggregateError</code></td><td>more than one error at once — what <code>Promise.any</code> rejects with when every promise fails</td></tr>
+</table>
+<pre><code>try {
+  null.name;
+} catch (e) {
+  console.log(e instanceof TypeError, e.constructor.name);   <span class="c">// true "TypeError"</span>
+}
+
+try {
+  new Array(-1);
+} catch (e) {
+  console.log(e instanceof RangeError);   <span class="c">// true</span>
+}</code></pre>
+<p class="sub">
+  Every one of these extends <code>Error</code> — same
+  <code>.message</code>/<code>.stack</code> shape — so a
+  <code>catch (e)</code> can always fall back to treating it generically.
+  But checking <code>e instanceof TypeError</code> specifically lets
+  code react differently to "you passed the wrong shape of data" versus
+  "the network is down" versus "you wrote invalid JSON," instead of
+  pattern-matching the message string, which can change between engine
+  versions.
+</p>
+
+<h3>finally can override the return value — the trap</h3>
+<div class="try">
+  <pre><code>function attempt() {
+  try {
+    return "try";
+  } finally {
+    return "finally";   <span class="c">// ← this WINS, silently discarding "try"</span>
+  }
+}
+console.log(attempt());   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>"finally"</code> — a <code>return</code> (or <code>throw</code>,
+  or <code>break</code>/<code>continue</code>) inside
+  <code>finally</code> doesn't run alongside the <code>try</code>'s
+  outcome, it <b>replaces</b> it completely, even swallowing an error
+  that was already thrown. This is almost always a bug rather than a
+  choice — a real <code>finally</code> block should stick to cleanup
+  (closing a connection, clearing a timer) and never contain its own
+  <code>return</code>.
+</p>
+
+<h3>debugger — a breakpoint you can commit</h3>
+<pre><code>function processOrder(order) {
+  debugger;                 <span class="c">// execution pauses HERE the instant DevTools is open</span>
+  const total = order.items.reduce((sum, i) =&gt; sum + i.price, 0);
+  return total;
+}</code></pre>
+<p class="sub">
+  With DevTools closed, <code>debugger;</code> does nothing at all —
+  not an error, not even a warning. With DevTools open, it pauses
+  exactly like clicking a line number in the Sources panel, every local
+  variable inspectable in the scope pane. It's useful specifically
+  because it travels with the code: a click-added breakpoint disappears
+  on refresh, but a <code>debugger;</code> statement fires every time
+  that line runs until it's deleted — handy for a rare, hard-to-reproduce
+  path, and worth grepping for before shipping.
+</p>
+
 <h3>Custom errors</h3>
 <p>
   <code>Error</code> is a class like any other — extend it to attach

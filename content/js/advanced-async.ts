@@ -109,6 +109,81 @@ console.log(calc.next(10).value);    <span class="c">// what happens?</span></co
   two-way communication, not just "give me the next thing."
 </p>
 
+<h3>Generators can be told to stop or fail — .return() and .throw()</h3>
+<div class="try">
+  <pre><code>function* worker() {
+  try {
+    yield 1;
+    yield 2;
+    yield 3;
+  } finally {
+    console.log("cleanup ran");   <span class="c">// runs no matter HOW the generator stops</span>
+  }
+}
+
+const g = worker();
+console.log(g.next());      <span class="c">// { value: 1, done: false }</span>
+console.log(g.return(99));  <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>{ value: 99, done: true }</code> — but only after
+  <code>"cleanup ran"</code> logs first. <code>.return(value)</code>
+  acts as if a <code>return value</code> statement executed right at the
+  paused <code>yield</code>, which means any <code>finally</code> block
+  wrapped around it still runs. <code>.throw(error)</code> is the
+  matching move for failure: it makes the paused <code>yield</code>
+  behave as if it had thrown, letting a <code>try/catch</code>
+  <em>inside</em> the generator handle it, or propagating out if there
+  isn't one. <code>for...of</code> calls <code>.return()</code>
+  automatically on a <code>break</code>, so cleanup runs there too,
+  without anyone writing it explicitly.
+</p>
+
+<h3>Iterator helpers — array methods, without building an array first</h3>
+<div class="try">
+  <pre><code>function* naturals() {
+  let n = 1;
+  while (true) yield n++;      <span class="c">// an infinite sequence — could never become a real array</span>
+}
+
+const firstFiveSquares = naturals()
+  .map((n) =&gt; n * n)
+  .filter((n) =&gt; n % 2 === 0)
+  .take(5);
+
+console.log([...firstFiveSquares]);   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>[4, 16, 36, 64, 100]</code> — <code>.map</code>,
+  <code>.filter</code>, <code>.take</code>, <code>.drop</code> and a
+  handful more now exist directly on any iterator, lazily: nothing runs
+  until something actually consumes the result (here, the spread), and
+  each value flows through the whole chain one at a time instead of
+  building an intermediate array at every step. That laziness is the
+  whole point — the infinite <code>naturals()</code> generator above
+  would never finish if <code>.map()</code> ran eagerly across it first,
+  but <code>.take(5)</code> only ever pulls five values through the
+  chain before stopping.
+</p>
+
+<h3>Array.fromAsync — collecting an async iterable into a real array</h3>
+<pre><code>async function* pageThrough() {
+  yield 1;
+  yield 2;
+  yield 3;
+}
+
+const all = await Array.fromAsync(pageThrough());
+console.log(all);   <span class="c">// [1, 2, 3] — a real array, not an async generator anymore</span></code></pre>
+<p class="sub">
+  Before this existed, collecting an async generator's output meant a
+  manual <code>for await...of</code> loop pushing into an array by
+  hand. <code>Array.fromAsync</code> is that loop, built in — useful
+  once you've decided you <em>do</em> want everything in memory at once
+  (a small, known-bounded result set), rather than streaming it the way
+  the paging example below does.
+</p>
+
 <h3>Async generators and for await...of</h3>
 <pre><code>async function* pageThrough(url) {
   let next = url;
@@ -150,6 +225,30 @@ while (true) {
   signals it's ready for one, rather than the producer blasting data in
   as fast as it can regardless of whether anything downstream can keep
   up.
+</p>
+
+<h3>TransformStream — reshaping a stream mid-pipeline</h3>
+<pre><code>const upperCaseStream = new TransformStream({
+  transform(chunk, controller) {
+    controller.enqueue(chunk.toUpperCase());
+  },
+});
+
+const response = await fetch("/api/text-stream");
+const upper = response.body
+  .pipeThrough(new TextDecoderStream())   <span class="c">// bytes -&gt; text</span>
+  .pipeThrough(upperCaseStream);           <span class="c">// text -&gt; upper-cased text</span>
+
+for await (const chunk of upper) {
+  console.log(chunk);
+}</code></pre>
+<p class="sub">
+  A <code>TransformStream</code> sits between a readable and a writable
+  side, letting a pipeline reshape data chunk by chunk without ever
+  buffering the whole thing — the same backpressure guarantee from
+  earlier applies across every stage: a slow consumer at the end of the
+  chain naturally slows down every stage before it, instead of one
+  stage racing ahead and burying the next in memory.
 </p>
 
 <h3>Web Workers, SharedArrayBuffer, Atomics</h3>

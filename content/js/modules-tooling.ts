@@ -44,6 +44,46 @@ import * as math from "./math.js";              <span class="c">// everything, u
 
 </p>
 
+<h3>Circular imports — what actually happens</h3>
+<pre><code><span class="c">// a.js</span>
+import { b } from "./b.js";
+export const a = "a";
+console.log("a.js sees b as:", b);
+
+<span class="c">// b.js</span>
+import { a } from "./a.js";
+export const b = "b";
+console.log("b.js sees a as:", a);</code></pre>
+<p class="sub">
+  Whichever module starts loading first sees the other's exports as
+  they existed <em>at that moment</em> — not necessarily finished yet.
+  If <code>a.js</code> is entered first, <code>b.js</code> gets pulled
+  in to satisfy its import, and by the time <code>b.js</code> reads
+  <code>a</code>, <code>a.js</code> hasn't reached its own
+  <code>export const a</code> line yet: <code>a</code> is
+  <code>undefined</code> there, not an error. This is exactly why the
+  live-binding rule above matters — the value updates once
+  <code>a.js</code> finishes running, so code that reads <code>a</code>
+  <em>later</em> (inside a function, not at the top level) sees the
+  real value. A circular import isn't automatically a bug, but reading
+  one's value at the top level, immediately, usually is.
+</p>
+
+<h3>import.meta and import attributes</h3>
+<pre><code>console.log(import.meta.url);   <span class="c">// this module's own URL — the ESM replacement for CommonJS's __filename</span>
+
+import data from "./config.json" with { type: "json" };   <span class="c">// import attributes — required for non-JS imports</span></code></pre>
+<p class="sub">
+  <code>import.meta</code> is only valid inside a module, and only ever
+  describes the module it appears in — there's no equivalent of
+  Node's old global <code>__dirname</code>/<code>__filename</code>,
+  because ESM has no implicit scope shared across files. The
+  <code>with { type: "json" }</code> clause exists because the browser
+  otherwise has no way to know a <code>.json</code> file should be
+  parsed as data rather than executed as a script — a security
+  requirement, not decoration, and mandatory for JSON imports.
+</p>
+
 <h3>CommonJS vs ESM</h3>
 <table>
   <tr>
@@ -80,6 +120,29 @@ import * as math from "./math.js";              <span class="c">// everything, u
   visitors may never trigger.
 </p>
 
+<h3>Import maps — bare specifiers, without a bundler</h3>
+<pre><code>&lt;script type="importmap"&gt;
+{
+  "imports": {
+    "lodash": "/vendor/lodash.js",
+    "chart/": "/vendor/chart/"
+  }
+}
+&lt;/script&gt;
+&lt;script type="module"&gt;
+  import debounce from "lodash";        <span class="c">// resolves to /vendor/lodash.js</span>
+  import { Line } from "chart/line.js"; <span class="c">// resolves to /vendor/chart/line.js</span>
+&lt;/script&gt;</code></pre>
+<p class="sub">
+  Plain ESM in a browser only understands relative or full URLs —
+  <code>import x from "lodash"</code> with no map fails outright,
+  because there's no <code>node_modules</code> resolution algorithm
+  running in the browser itself. An import map is the browser-native
+  answer: a small table the page declares up front, letting bare
+  specifiers work without a bundling step — useful for a quick
+  prototype or a CDN-based setup that deliberately skips build tooling.
+</p>
+
 <h3>npm, package.json, semver</h3>
 <pre><code>{
   "name": "my-app",
@@ -111,6 +174,27 @@ import * as math from "./math.js";              <span class="c">// everything, u
   which is why it's committed to the repo and why "works on my
   machine" so often traces back to a missing or ignored lockfile.
 </div>
+
+<h3>What package.json's exports field controls</h3>
+<pre><code>{
+  "name": "my-lib",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./utils": "./src/utils.js"
+  }
+}</code></pre>
+<p class="sub">
+  Without <code>exports</code>, anything inside a published package is
+  reachable by path — <code>import "my-lib/src/internal/helper.js"</code>
+  works whether or not the author intended it to. The
+  <code>exports</code> field is an explicit allow-list: only the listed
+  paths are importable from outside, everything else throws
+  "not exported," even though the file is still physically there. It's
+  the module-system equivalent of a private field — a real, enforced
+  boundary between a package's public API and its implementation
+  details.
+</p>
 
 <h3>A bundler, briefly</h3>
 <p>

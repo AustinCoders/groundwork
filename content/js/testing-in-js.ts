@@ -105,6 +105,33 @@ it("calls the save callback exactly once", () =&gt; {
   injectable in the first place.
 </p>
 
+<h3>Mocking the network</h3>
+<pre><code>import { vi, expect, it, beforeEach } from "vitest";
+
+beforeEach(() =&gt; {
+  global.fetch = vi.fn(() =&gt;
+    Promise.resolve({
+      ok: true,
+      json: () =&gt; Promise.resolve({ id: 1, name: "Ana" }),
+    })
+  );
+});
+
+it("renders the fetched user's name", async () =&gt; {
+  const user = await loadUser(1);
+  expect(fetch).toHaveBeenCalledWith("/api/users/1");
+  expect(user.name).toBe("Ana");
+});</code></pre>
+<p class="sub">
+  Replacing <code>global.fetch</code> directly works, but gets brittle
+  the moment more than one test needs different responses for different
+  URLs. A library like <b>MSW</b> (Mock Service Worker) intercepts
+  requests at the network layer instead — the code under test calls a
+  completely real <code>fetch</code>, unaware anything is mocked, while
+  MSW answers based on the URL and method. That's what lets the exact
+  same mock handlers run in tests <em>and</em> in local development.
+</p>
+
 <h3>Fake timers</h3>
 <p>
   A real <code>setTimeout(fn, 5000)</code> in a test means the test
@@ -162,6 +189,30 @@ it("debounce only calls the function once after the delay", () =&gt; {
   isn't protecting anything.
 </div>
 
+<h3>Property-based testing — describing the rule, not the example</h3>
+<pre><code>import fc from "fast-check";
+
+it("reversing an array twice returns the original", () =&gt; {
+  fc.assert(
+    fc.property(fc.array(fc.integer()), (arr) =&gt; {
+      const twiceReversed = [...arr].reverse().reverse();
+      expect(twiceReversed).toEqual(arr);
+    })
+  );
+});</code></pre>
+<p class="sub">
+  An example-based test picks specific inputs (<code>[1, 2, 3]</code>)
+  and checks a specific output. A property-based test instead states a
+  rule that must hold for <em>any</em> input matching a description
+  ("any array of integers"), and the library generates hundreds of
+  random cases — including edge cases a person would rarely think to
+  write by hand: an empty array, a single element, deeply nested
+  duplicates. When one fails, most property-testing libraries
+  automatically <b>shrink</b> the failing input down to the smallest
+  case that still reproduces it, instead of leaving a 200-element array
+  to debug by eye.
+</p>
+
 <h3>Testing the DOM: query by role, not by class</h3>
 <pre><code><span class="c">// fragile — breaks the moment a class name changes for purely visual reasons</span>
 container.querySelector(".btn-primary-lg");
@@ -180,6 +231,25 @@ screen.getByText("Welcome back");</code></pre>
   <em>is</em> to a user — which also means a test written this way
   incidentally checks that the markup is accessible enough to query
   that way at all.
+</p>
+
+<h3>End-to-end, briefly: Playwright</h3>
+<pre><code>import { test, expect } from "@playwright/test";
+
+test("a visitor can add an item to the cart", async ({ page }) =&gt; {
+  await page.goto("/shop");
+  await page.getByRole("button", { name: "Add to cart" }).first().click();
+  await expect(page.getByText("1 item in cart")).toBeVisible();
+});</code></pre>
+<p class="sub">
+  The same <code>getByRole</code>/<code>getByText</code> querying style
+  from just above, now driving a real, actual browser instead of a
+  simulated DOM — Playwright launches Chromium, Firefox, or WebKit,
+  clicks for real, and waits automatically for elements to appear
+  rather than needing a manual sleep. It's the slowest, most expensive
+  layer of the testing pyramid from the top of this chapter, reserved
+  for the handful of flows (checkout, sign-up) where "does this
+  actually work in a real browser" is worth the cost.
 </p>
 
 <h3>What coverage % actually tells you</h3>

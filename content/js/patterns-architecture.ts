@@ -106,6 +106,42 @@ bus.emit("greet", "Ravi");   <span class="c">// what happens?</span></code></pre
   or a much larger implementation.
 </p>
 
+<h3>Middleware — a chain of functions, each deciding to continue or stop</h3>
+<div class="try">
+  <pre><code>function compose(middlewares) {
+  return function (context) {
+    let index = -1;
+    function dispatch(i) {
+      if (i &lt;= index) throw new Error("next() called multiple times");
+      index = i;
+      const fn = middlewares[i];
+      if (!fn) return;
+      return fn(context, () =&gt; dispatch(i + 1));   <span class="c">// "next" — hands control to the next middleware</span>
+    }
+    return dispatch(0);
+  };
+}
+
+const logger = (ctx, next) =&gt; { console.log("-&gt;", ctx.path); next(); console.log("&lt;-", ctx.path); };
+const auth = (ctx, next) =&gt; { if (!ctx.user) return console.log("blocked"); next(); };
+const handler = (ctx) =&gt; console.log("handled", ctx.path);
+
+const app = compose([logger, auth, handler]);
+app({ path: "/orders", user: { id: 1 } });</code></pre>
+</div>
+<p class="sub">
+  This exact shape — an ordered list of functions, each one receiving a
+  <code>next</code> it chooses whether and when to call — is what
+  Express, Koa, and Redux middleware all are underneath, whether it's
+  handling an HTTP request or an action dispatched to a store. Skipping
+  <code>next()</code> (as <code>auth</code> does when there's no user)
+  short-circuits everything after it in the chain; calling it lets
+  execution continue, and code written <em>after</em> the
+  <code>next()</code> call runs on the way back out — which is why
+  <code>logger</code> can log both entry and exit around everything
+  nested inside it.
+</p>
+
 <h3>Dependency injection</h3>
 <p>
   A function or class that <b>receives</b> what it depends on instead
@@ -154,6 +190,48 @@ console.log(light.next(), light.next(), light.next());   <span class="c">// what
   all mutable independently) is that an <b>impossible combination</b>
   — loading AND error AND success all true at once — simply can't be
   represented at all, instead of being a bug waiting to happen.
+</p>
+
+<h3>Signals — reactivity without a virtual DOM diff</h3>
+<div class="try">
+  <pre><code>function createSignal(initial) {
+  let value = initial;
+  const subscribers = new Set();
+  return {
+    get() { return value; },
+    set(next) {
+      value = next;
+      subscribers.forEach((fn) =&gt; fn(value));
+    },
+    subscribe(fn) { subscribers.add(fn); return () =&gt; subscribers.delete(fn); },
+  };
+}
+
+const count = createSignal(0);
+count.subscribe((v) =&gt; console.log("count is now", v));
+
+count.set(1);
+count.set(2);</code></pre>
+</div>
+<p class="sub">
+  A signal is a value plus its own list of subscribers, bundled
+  together — reading it is a normal function call, writing it directly
+  notifies whoever's listening, with no framework re-render or
+  virtual-DOM diff involved at all. This is the primitive underneath
+  Solid, Preact Signals, Angular's newer reactivity model, and Vue's
+  <code>ref()</code> — the pitch over React's re-render-the-whole-component
+  model is <b>fine-grained</b> updates: a signal changing can update
+  exactly the one DOM node that reads it, skipping every component in
+  between that never actually used that value.
+</p>
+<p class="sub">
+  A real implementation adds one piece this sketch leaves out:
+  <b>automatic dependency tracking</b> — a computed value that reads
+  <code>count.get()</code> inside its own function body subscribes
+  itself automatically, with no explicit <code>.subscribe()</code> call
+  written anywhere. That's the part that makes signals feel declarative
+  rather than manually wired — this hand-rolled version is the mental
+  model, not the full implementation.
 </p>
 
 <h3>Error boundaries and resilience</h3>

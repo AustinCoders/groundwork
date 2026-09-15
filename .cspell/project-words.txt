@@ -148,6 +148,7 @@ Fastly
 finishable
 finops
 flexbox
+footgun
 forgeeksskeegfor
 gcell
 geohash
@@ -343,6 +344,7 @@ strstr
 stuckness
 subarrays
 Subgrid
+Subresource
 submasks
 subproblems
 Supabase
@@ -389,6 +391,7 @@ vnode
 vnodes
 vvvlo
 Warshall
+WASD
 webdev
 wertf
 worklets
