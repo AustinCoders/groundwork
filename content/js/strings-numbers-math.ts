@@ -30,6 +30,29 @@ export const stringsNumbersMath: Chapter = {
   <code>if (x &lt; 10)</code> check.
 </p>
 
+<h3>Case, and the string methods everyone assumes you know</h3>
+<pre><code>"Hello".toUpperCase();      <span class="c">// "HELLO"</span>
+"Hello".toLowerCase();      <span class="c">// "hello"</span>
+
+"Hello".at(-1);              <span class="c">// "o" — negative indices count from the end, same idea as array .at()</span>
+"Hello"[-1];                  <span class="c">// undefined — plain bracket access does NOT support negative indices</span></code></pre>
+<p class="sub">
+  <code>.at()</code> exists on strings for exactly the reason it exists
+  on arrays: <code>str[str.length - 1]</code> for "the last character"
+  works, but it's a mouthful next to <code>str.at(-1)</code>, and plain
+  bracket indexing has no concept of counting from the end at all — it
+  just returns <code>undefined</code> for any negative index.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ toUpperCase/toLowerCase are not always safe for comparison</span>
+  A handful of characters change <em>length</em> when case-folded — the
+  German <code>ß</code> becomes <code>"SS"</code> under
+  <code>.toUpperCase()</code>. Comparing user input case-insensitively
+  is usually safer with
+  <code>a.localeCompare(b, undefined, { sensitivity: "base" })</code>,
+  covered next, than with a manual <code>.toLowerCase() === .toLowerCase()</code>.
+</div>
+
 <h3>Comparing text properly</h3>
 <div class="try">
   <pre><code>console.log(["résumé", "resume", "zebra"].sort());
@@ -82,6 +105,43 @@ randomInt(1, 6);   <span class="c">// a dice roll — 1 through 6, inclusive</sp
   shifts the whole range to start at the right place instead of at 0.
   This exact formula is worth memorizing — it gets asked for cold often
   enough that deriving it live, under pressure, is its own small trap.
+</p>
+
+<h3>Math.sign, Math.hypot, and checking a number is actually safe</h3>
+<pre><code>Math.sign(-5);    <span class="c">// -1</span>
+Math.sign(0);     <span class="c">// 0</span>
+Math.sign(7);     <span class="c">// 1</span>
+
+Math.hypot(3, 4);   <span class="c">// 5 — the hypotenuse: sqrt(3**2 + 4**2), without writing the formula out</span></code></pre>
+<p class="sub">
+  <code>Math.sign</code> is the direct answer to "is this positive,
+  negative, or zero" without a chain of <code>&gt; 0</code> /
+  <code>&lt; 0</code> comparisons. <code>Math.hypot</code> shows up
+  constantly in anything involving distance — two points on a canvas,
+  a drag gesture's total movement — as the built-in alternative to
+  <code>Math.sqrt(a ** 2 + b ** 2)</code>.
+</p>
+<div class="try">
+  <pre><code>console.log(Number.isInteger(5), Number.isInteger(5.5), Number.isInteger("5"));
+console.log(isFinite("123"), Number.isFinite("123"));</code></pre>
+</div>
+<p class="sub">
+  <code>true false false</code>, then <code>true false</code>. The
+  global <code>isFinite</code>/<code>isNaN</code> coerce their argument
+  to a number first — <code>"123"</code> passes. The <code>Number.</code>
+  versions refuse to coerce at all: a string is never a number to
+  <code>Number.isInteger</code> or <code>Number.isFinite</code>, full
+  stop, no matter what it contains. The <code>Number.</code> versions
+  are the safer default for exactly that reason — they answer "is this
+  actually a number with this property," not "would this convert into
+  one."
+</p>
+<p class="sub">
+  <code>Number.isSafeInteger(n)</code> goes one step further, checking
+  against <a href="/notes/types-data">the exact-representable limit
+  covered in Types &amp; data</a> — useful the moment a value might have
+  come from parsing JSON that originated outside JavaScript, where a
+  huge integer id can silently lose precision on the way in.
 </p>
 
 <h3>Formatting numbers for display</h3>

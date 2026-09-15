@@ -95,6 +95,59 @@ self.addEventListener("fetch", (event) =&gt; {
   receive.
 </p>
 
+<h3>Registering a service worker — and handling its updates</h3>
+<pre><code>if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").then((registration) =&gt; {
+    registration.addEventListener("updatefound", () =&gt; {
+      const newWorker = registration.installing;
+      newWorker.addEventListener("statechange", () =&gt; {
+        if (newWorker.state === "installed" &amp;&amp; navigator.serviceWorker.controller) {
+          showUpdateBanner();   <span class="c">// a new version is ready, but the OLD one still controls this page</span>
+        }
+      });
+    });
+  });
+}</code></pre>
+<p class="sub">
+  Feature-detecting <code>"serviceWorker" in navigator</code> first
+  matters because older browsers and some in-app webviews still don't
+  have it at all — the site should work without offline support there,
+  not throw. Registration itself just points the browser at the worker
+  script; everything from <code>install</code> onward runs on the
+  browser's own schedule, not the moment <code>register()</code> is
+  called.
+</p>
+<h4>The update trap: a new version installs, but doesn't take over</h4>
+<p>
+  A service worker update installs silently in the background the next
+  time the page loads, but an <b>already-open</b> tab keeps running the
+  <em>old</em> worker until every tab using it is closed — by design,
+  so a page never has its logic swapped out from underneath it
+  mid-session. A new worker sits in a <code>waiting</code> state until
+  then.
+</p>
+<pre><code><span class="c">// inside the NEW worker's own script (sw.js):</span>
+self.addEventListener("message", (event) =&gt; {
+  if (event.data === "SKIP_WAITING") self.skipWaiting();
+});
+self.addEventListener("activate", (event) =&gt; {
+  event.waitUntil(self.clients.claim());   <span class="c">// take control of already-open tabs immediately</span>
+});
+
+<span class="c">// back on the page, after showUpdateBanner() above — on a button click:</span>
+registration.waiting?.postMessage("SKIP_WAITING");
+window.location.reload();</code></pre>
+<p class="sub">
+  <code>skipWaiting()</code> moves the new worker straight from
+  <code>waiting</code> to <code>activating</code> instead of waiting for
+  every tab to close on its own; <code>clients.claim()</code> does the
+  equivalent for the page side, taking control of already-open tabs
+  rather than only new ones from here on. Calling both unconditionally
+  on every install is a common shortcut — an update takes effect the
+  moment it's ready, at the cost of a page occasionally reloading itself
+  mid-session if the user isn't asked first.
+</p>
+
 <h3>PWA basics</h3>
 <pre><code>{
   "name": "My App",

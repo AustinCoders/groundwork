@@ -163,7 +163,10 @@ console.log([...firstFiveSquares]);   <span class="c">// what happens?</span></c
   whole point — the infinite <code>naturals()</code> generator above
   would never finish if <code>.map()</code> ran eagerly across it first,
   but <code>.take(5)</code> only ever pulls five values through the
-  chain before stopping.
+  chain before stopping. Unlike <code>Temporal</code> (covered in
+  <a href="/notes/regex-dates-apis">Regex &amp; dates</a>), iterator
+  helpers landed across every major engine well before this site's own
+  timeline — safe to reach for directly, no feature check needed.
 </p>
 
 <h3>Array.fromAsync — collecting an async iterable into a real array</h3>
@@ -181,7 +184,8 @@ console.log(all);   <span class="c">// [1, 2, 3] — a real array, not an async 
   hand. <code>Array.fromAsync</code> is that loop, built in — useful
   once you've decided you <em>do</em> want everything in memory at once
   (a small, known-bounded result set), rather than streaming it the way
-  the paging example below does.
+  the paging example below does. Same as the iterator helpers above:
+  broadly supported today, nothing to feature-detect first.
 </p>
 
 <h3>Async generators and for await...of</h3>
