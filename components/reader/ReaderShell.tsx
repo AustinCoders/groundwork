@@ -55,10 +55,6 @@ export function ReaderShell({ topicId, levels, chapters, basePath, activeId, chi
 
   const activeChapter = useMemo(() => chapters.find((c) => c.id === activeId) || null, [chapters, activeId]);
 
-  // Which group opens is knowable on the server for a chapter page — the
-  // chapter's own level — so open it in the first render. Deciding it after
-  // mount grew the sidebar under the reader and was most of this page's
-  // layout shift.
   const defaultLevel = activeChapter?.levels?.[0] || (levels.length ? levels[0].id : null);
   const [openLevel, setOpenLevel] = useState<string | null>(defaultLevel);
 
@@ -108,11 +104,9 @@ export function ReaderShell({ topicId, levels, chapters, basePath, activeId, chi
     const q = query.trim().toLowerCase();
     if (!q) return null;
     const terms = q.split(/\s+/);
-    const hits = new Map<string, number>();
+    const hits = new Set<string>();
     searchIndex.forEach((entry) => {
-      if (terms.every((t) => entry.text.indexOf(t) !== -1)) {
-        hits.set(entry.id, entry.text.split(terms[0]).length - 1);
-      }
+      if (terms.every((t) => entry.text.indexOf(t) !== -1)) hits.add(entry.id);
     });
     return hits;
   }, [query, searchIndex]);

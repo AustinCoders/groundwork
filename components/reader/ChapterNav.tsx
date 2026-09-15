@@ -11,7 +11,7 @@ export interface ChapterNavProps {
   openLevel: string | null;
   onOpenLevel: (levelId: string) => void;
   searching?: boolean;
-  matchInfo?: Map<string, number> | null;
+  matchInfo?: Set<string> | null;
 }
 
 export function ChapterNav({
@@ -50,8 +50,8 @@ export function ChapterNav({
             <div className="nav-group__body">
               {chaptersInLevel.map((ch) => {
                 const isActive = !searching && ch.id === activeId;
-                const hits = matchInfo?.get(ch.id);
-                const isHidden = searching && hits === undefined;
+                const matched = matchInfo?.has(ch.id) ?? false;
+                const isHidden = searching && !matched;
                 return (
                   <Link
                     key={ch.id}
@@ -64,7 +64,7 @@ export function ChapterNav({
                       {ch.num}
                     </span>
                     <span className="site-navlink__name">{ch.short}</span>
-                    {hits !== undefined && <span className="site-navlink__hits">{hits}</span>}
+                    {matched && <span className="site-navlink__match" aria-hidden="true" />}
                   </Link>
                 );
               })}

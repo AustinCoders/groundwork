@@ -24,6 +24,8 @@
     --done-bg: #e8f4ee;
     --open: #9a7c18;
     --open-bg: #f8f1d8;
+    --hot: #a8412f;
+    --hot-bg: #f8e6e1;
     --idle: #d8d2bd;
 
     --tape: rgba(214, 199, 145, 0.5);
@@ -51,6 +53,8 @@
       --done-bg: #16302a;
       --open: #d6b458;
       --open-bg: #302a16;
+      --hot: #f08a76;
+      --hot-bg: #3a1f1a;
       --idle: #333c4a;
 
       --tape: rgba(120, 106, 62, 0.35);
@@ -74,6 +78,8 @@
     --done-bg: #16302a;
     --open: #d6b458;
     --open-bg: #302a16;
+    --hot: #f08a76;
+    --hot-bg: #3a1f1a;
     --idle: #333c4a;
 
     --tape: rgba(120, 106, 62, 0.35);
@@ -226,7 +232,7 @@
 
   .row {
     display: grid;
-    grid-template-columns: minmax(120px, 1.25fr) minmax(90px, 2fr) 92px;
+    grid-template-columns: minmax(120px, 1.25fr) minmax(90px, 2fr) 132px;
     align-items: center;
     gap: 14px;
     padding: 9px 17px;
@@ -266,10 +272,6 @@
     background: var(--idle);
   }
 
-  .ledger--gaps .row {
-    grid-template-columns: minmax(120px, 1.25fr) minmax(90px, 2fr) 118px;
-  }
-
   .count {
     font-family: var(--mono);
     font-size: 13px;
@@ -281,6 +283,54 @@
   .count b {
     color: var(--ink);
     font-weight: 600;
+  }
+
+  /* ---------- priority ledger ---------- */
+
+  .prio .row {
+    grid-template-columns: 44px minmax(120px, 1fr) minmax(0, 2fr) 104px;
+    align-items: start;
+  }
+
+  .prio .why {
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--pencil);
+  }
+
+  .p {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-align: center;
+    padding: 2px 0;
+    border-radius: 3px;
+    margin-top: 2px;
+  }
+
+  .p0 {
+    background: var(--hot-bg);
+    color: var(--hot);
+    border: 1px solid color-mix(in srgb, var(--hot) 35%, transparent);
+  }
+
+  .p1 {
+    background: var(--open-bg);
+    color: var(--open);
+    border: 1px solid color-mix(in srgb, var(--open) 35%, transparent);
+  }
+
+  .p2 {
+    background: var(--done-bg);
+    color: var(--done);
+    border: 1px solid color-mix(in srgb, var(--done) 35%, transparent);
+  }
+
+  .p3 {
+    background: var(--sheet-2);
+    color: var(--pencil);
+    border: 1px solid var(--line);
   }
 
   /* ---------- headline meter ---------- */
@@ -374,6 +424,10 @@
     gap: 5px;
   }
 
+  .item.is-signal {
+    border-left-color: var(--ink-soft);
+  }
+
   .item-head {
     display: flex;
     flex-wrap: wrap;
@@ -411,6 +465,30 @@
   .item p b {
     color: var(--ink);
     font-weight: 400;
+  }
+
+  .item p.so {
+    color: var(--ink);
+  }
+
+  .item p.so::before {
+    content: "For Groundwork → ";
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--done);
+  }
+
+  .src {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--pencil);
+  }
+
+  .src a {
+    color: var(--ink-soft);
+    text-underline-offset: 3px;
   }
 
   /* ---------- effort chart ---------- */
@@ -475,10 +553,6 @@
     background: var(--ink);
     border-radius: 3px;
     opacity: 0.85;
-  }
-
-  .band-fill.tiny {
-    background: var(--ink-soft);
   }
 
   .est {
@@ -556,12 +630,24 @@
     border-top: 1px solid var(--line);
     font-size: 14px;
     color: var(--pencil);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
 
   footer a {
     color: var(--ink);
     text-decoration-color: var(--line-hard);
     text-underline-offset: 3px;
+  }
+
+  footer ul {
+    margin: 0;
+    padding-left: 18px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
   }
 
   footer a:focus-visible,
@@ -582,9 +668,17 @@
 
   @media (max-width: 620px) {
     .row {
-      grid-template-columns: minmax(96px, 1.1fr) minmax(60px, 1.4fr) 82px;
+      grid-template-columns: minmax(96px, 1.1fr) minmax(60px, 1.4fr) 96px;
       gap: 10px;
       padding-inline: 13px;
+    }
+
+    .prio .row {
+      grid-template-columns: 40px minmax(0, 1fr) 84px;
+    }
+
+    .prio .why {
+      grid-column: 1 / -1;
     }
 
     .figure {
@@ -598,73 +692,78 @@
   <header class="masthead">
     <h1>Groundwork Roadmap</h1>
     <p>
-      What is written, what is shipped, and what is left — every figure measured against the site rather than estimated.
+      What is written, what is shipped, what the job market is asking for right now, and what that means should be
+      written next. Site figures are measured against the build; market figures are cited, with the weak ones marked.
     </p>
-    <span class="stamp">Measured September 2026</span>
+    <span class="stamp">Measured 15 September 2026</span>
   </header>
 
   <section>
     <div class="figures">
-      <div class="figure"><b>624</b><span>prerendered pages</span></div>
-      <div class="figure"><b>191</b><span>chapters written</span></div>
-      <div class="figure"><b>327</b><span>exercises with tests</span></div>
-      <div class="figure"><b>405</b><span>interview questions</span></div>
+      <div class="figure"><b>602</b><span>prerendered pages</span></div>
+      <div class="figure"><b>194</b><span>chapters written, plus Git's 16 sections</span></div>
+      <div class="figure"><b>351</b><span>exercises with tests</span></div>
+      <div class="figure"><b>230</b><span>interview questions, 27 rounds</span></div>
     </div>
+    <p class="meter-note">
+      The interview figure was 405 on the last version of this page. Counted properly, one question object at a time, it
+      is 230. Every other figure here was re-measured the same way.
+    </p>
   </section>
 
   <section>
     <span class="eyebrow">The gap that matters most</span>
     <h2>Content</h2>
     <p class="lede">
-      The engineering is ahead of the writing. Four topics are written; the other sixteen render as honest outlines.
-      Nothing here is blocked by code — a chapter is a file under
-      <code>content/&lt;topic&gt;/</code>, and routes, search, sitemap and progress follow from it.
+      The engineering is still ahead of the writing. Seven topics are written; fourteen render as outlines. Nothing is
+      blocked by code: a chapter is a file under <code>content/&lt;topic&gt;/</code>, and routes, search, sitemap and
+      progress follow from it.
     </p>
 
     <div class="meter">
       <div class="meter-head">
-        <strong>6 of 21 topics written</strong>
-        <em>191 chapters written · 358 still outlines</em>
+        <strong>7 of 21 topics written</strong>
+        <em>194 chapters written · 358 still outlines</em>
       </div>
-      <div class="meter-track"><i style="width: 29%"></i></div>
-      <p class="meter-note">By chapter rather than by topic it is 191 of 549, or 35%.</p>
+      <div class="meter-track"><i style="width: 33%"></i></div>
+      <p class="meter-note">By chapter rather than by topic it is 194 of 552, or 35%.</p>
     </div>
 
     <div class="ledger">
       <div class="row">
+        <span class="name">JavaScript</span>
+        <span class="measure"><i style="width: 100%"></i></span>
+        <span class="count"><b>40</b> · 82 ex · 54k words</span>
+      </div>
+      <div class="row">
         <span class="name">React</span>
         <span class="measure"><i style="width: 100%"></i></span>
-        <span class="count"><b>51</b> · 24 ex</span>
+        <span class="count"><b>51</b> · 24 ex · 42k words</span>
       </div>
       <div class="row">
         <span class="name">DSA in JS</span>
         <span class="measure"><i style="width: 100%"></i></span>
-        <span class="count"><b>34</b> · 245 ex</span>
-      </div>
-      <div class="row">
-        <span class="name">JavaScript</span>
-        <span class="measure"><i style="width: 100%"></i></span>
-        <span class="count"><b>37</b> · 69 ex</span>
-      </div>
-      <div class="row">
-        <span class="name">Interview book</span>
-        <span class="measure"><i style="width: 100%"></i></span>
-        <span class="count"><b>27</b> rounds</span>
+        <span class="count"><b>34</b> · 245 ex · 48k words</span>
       </div>
       <div class="row">
         <span class="name">System Design</span>
         <span class="measure"><i style="width: 100%"></i></span>
-        <span class="count"><b>24</b> · 0 ex</span>
+        <span class="count"><b>24</b> · 0 ex · 61k words</span>
+      </div>
+      <div class="row">
+        <span class="name">Interview book</span>
+        <span class="measure"><i style="width: 100%"></i></span>
+        <span class="count"><b>27</b> rounds · 230 q</span>
       </div>
       <div class="row">
         <span class="name">How this is built</span>
         <span class="measure"><i style="width: 100%"></i></span>
-        <span class="count"><b>18</b> chapters</span>
+        <span class="count"><b>18</b> · 7k words</span>
       </div>
       <div class="row">
         <span class="name">Git</span>
         <span class="measure"><i style="width: 100%"></i></span>
-        <span class="count"><b>16</b> · 0 ex</span>
+        <span class="count"><b>16</b> sections · 0 ex</span>
       </div>
       <div class="row is-idle">
         <span class="name">Node.js</span>
@@ -672,12 +771,12 @@
         <span class="count">41 planned</span>
       </div>
       <div class="row is-idle">
-        <span class="name">Next.js</span>
+        <span class="name">TypeScript</span>
         <span class="measure"><i class="none" style="width: 0"></i></span>
         <span class="count">29 planned</span>
       </div>
       <div class="row is-idle">
-        <span class="name">TypeScript</span>
+        <span class="name">Next.js</span>
         <span class="measure"><i class="none" style="width: 0"></i></span>
         <span class="count">29 planned</span>
       </div>
@@ -736,18 +835,422 @@
         <span class="measure"><i class="none" style="width: 0"></i></span>
         <span class="count">21 planned</span>
       </div>
-      <div class="row is-idle">
-        <span class="name">Git</span>
-        <span class="measure"><i class="none" style="width: 0"></i></span>
-        <span class="count">own page</span>
-      </div>
     </div>
 
     <p class="lede">
-      System Design and the Interview book are the two tracks most tied to getting hired, and the two where a reader can
-      only read. Their exercises do not look like the DSA ones — a design exercise is a prompt and a rubric, an
-      interview one a question with a model answer to compare against. That is a content format decision before it is a
-      code one.
+      The fourteen outlines were planned before anyone asked which of them readers are hired for. The next two sections
+      answer that from the market, then turn the answer into an order.
+    </p>
+  </section>
+
+  <section>
+    <span class="eyebrow">September 2026</span>
+    <h2>What the job market is asking for</h2>
+    <p class="lede">
+      Twelve findings, each with what it means for this site. Primary sources — GitHub, Stack Overflow, State of JS,
+      Naukri, the frameworks' own release notes — carry the weight. Figures from vendor blogs and job-board write-ups
+      are marked <b>directional</b>: useful for which way things are moving, not for the exact number.
+    </p>
+
+    <div class="items">
+      <div class="item is-signal">
+        <div class="item-head">
+          <h3>TypeScript is the default, not the upgrade</h3>
+          <span class="tag">Primary</span>
+        </div>
+        <p>
+          TypeScript became the most-used language on GitHub by monthly contributors in August 2025, passing Python and
+          JavaScript — 2.6 million contributors, up 66% in a year. Frontend hiring guides report candidates without
+          TypeScript being screened out earlier than a year ago.
+        </p>
+        <p class="so">
+          TypeScript is the single largest gap on the shelf. Every JavaScript, React and Node chapter already assumes it
+          exists; the topic behind that assumption is an outline.
+        </p>
+        <span class="src">
+          <a
+            href="https://github.blog/news-insights/octoverse/octoverse-a-new-developer-joins-github-every-second-as-ai-leads-typescript-to-1/"
+            >GitHub Octoverse 2025</a
+          >
+          ·
+          <a href="https://www.frontendinterviewhandbook.com/front-end-system-design">Front End Interview Handbook</a>
+        </span>
+      </div>
+
+      <div class="item is-signal">
+        <div class="item-head">
+          <h3>React is settled; Next.js is where the questions are</h3>
+          <span class="tag">Primary</span>
+        </div>
+        <p>
+          React is used by 83.6% of State of JS 2025 respondents, and the "framework wars" are described as over.
+          Next.js is used by 59% of the same respondents and leads meta-frameworks while losing satisfaction. Next.js 16
+          made caching opt-in with <code>use cache</code> and Cache Components; React Compiler 1.0 shipped in October
+          2025 and is on by default in new Next.js and Vite apps; Server Component security advisories landed in
+          December 2025.
+        </p>
+        <p class="so">
+          Next.js is P0. React needs three sections it does not have: the Compiler, the RSC security advisories, and
+          Actions in depth. Anything written about Next.js caching before 16 is now wrong by default.
+        </p>
+        <span class="src">
+          <a href="https://2025.stateofjs.com/en-US/libraries/front-end-frameworks/">State of JS 2025</a> ·
+          <a href="https://nextjs.org/blog/next-16">Next.js 16</a> ·
+          <a href="https://www.infoq.com/news/2026/03/state-of-js-survey-2025">InfoQ</a>
+        </span>
+      </div>
+
+      <div class="item is-signal">
+        <div class="item-head">
+          <h3>Node and Postgres are the backend half of nearly every JD</h3>
+          <span class="tag">Primary</span>
+        </div>
+        <p>
+          Node.js is the most-used web technology in the 2025 Stack Overflow survey at 49.1%, ahead of React. PostgreSQL
+          has been the most admired and most wanted database three years running. Redis appears wherever caching, rate
+          limits or queues do. On the ORM layer, Prisma and Drizzle are the two names in 2026 job-adjacent writing.
+        </p>
+        <p class="so">
+          Node.js is P0 and SQL &amp; Databases is P1, written Postgres-first with Drizzle or Prisma rather than a
+          generic "databases" survey. Redis shrinks to the parts a product engineer uses.
+        </p>
+        <span class="src">
+          <a href="https://survey.stackoverflow.co/2025/technology">Stack Overflow 2025 · Technology</a> ·
+          <a href="https://www.hirenodejs.com/blog/drizzle-vs-prisma-nodejs-2026">Drizzle vs Prisma</a> (directional)
+        </span>
+      </div>
+
+      <div class="item is-signal">
+        <div class="item-head">
+          <h3>AI engineering is now a web-developer skill</h3>
+          <span class="tag">Primary + directional</span>
+        </div>
+        <p>
+          In India, Naukri recorded AI/ML hiring up 33% year on year in July 2026 while overall IT hiring stayed modest.
+          84% of developers use or plan to use AI tools, 51% of professionals daily. Every major agent framework now
+          ships a first-class TypeScript path — the Vercel AI SDK, Mastra (1.0 in January 2026), LangGraph.js — and MCP
+          has become the interoperability standard.
+        </p>
+        <p class="so">
+          This is the one topic that is not on the shelf at all, and it is the fastest-growing line in the Indian data.
+          A new topic — <b>AI engineering for JavaScript developers</b> — is P0: calling an LLM, streaming UI, tool
+          calling, structured output, RAG, evals, MCP, cost and safety.
+        </p>
+        <span class="src">
+          <a href="https://www.ownyourcareer.in/blog/naukri-jobspeak-july-2026-it-hiring-ai-jobs-rebound"
+            >Naukri JobSpeak July 2026</a
+          >
+          · <a href="https://survey.stackoverflow.co/2025/ai">Stack Overflow 2025 · AI</a> ·
+          <a href="https://www.arcade.dev/blog/typescript-ai-agent-frameworks/">TypeScript agent frameworks</a>
+          (directional)
+        </span>
+      </div>
+
+      <div class="item is-signal">
+        <div class="item-head">
+          <h3>Interviews now include an AI round — and a code-reading one</h3>
+          <span class="tag">Directional, consistent</span>
+        </div>
+        <p>
+          Meta replaced one of two onsite coding rounds with an AI-enabled one from October 2025: sixty minutes in a
+          multi-file codebase, fixing a bug, implementing, then optimising, with a model in a side panel. Google is
+          piloting a code-comprehension round — read, debug and optimise existing code with Gemini available — and
+          grades "AI fluency": prompting, validating output, debugging it.
+        </p>
+        <p class="so">
+          The interview book has no round for either. Add <b>AI-assisted coding</b> and <b>code comprehension</b> as
+          rounds, and a practice format built on reading and fixing an existing multi-file project rather than writing
+          from blank.
+        </p>
+        <span class="src">
+          <a href="https://www.hellointerview.com/blog/meta-ai-enabled-coding">Hello Interview · Meta</a> ·
+          <a href="https://www.tryexponent.com/blog/google-ai-coding-interview">Exponent · Google</a>
+        </span>
+      </div>
+
+      <div class="item is-signal">
+        <div class="item-head">
+          <h3>DSA still gates FAANG, but it is not the whole loop</h3>
+          <span class="tag">Directional</span>
+        </div>
+        <p>
+          A review of 74 recent loops found at least two dedicated coding rounds at every FAANG company, while Stripe,
+          OpenAI and Anthropic leaned towards multi-part implementation and debugging. India's product companies keep
+          the machine-coding round — Flipkart's frontend version is a two-hour build in plain HTML, CSS and JavaScript.
+        </p>
+        <p class="so">
+          The DSA track's 245 exercises stay worth it. What is missing is practice for the other formats: a
+          machine-coding exercise type (build a small UI to a spec, graded on structure) and multi-part implementation
+          problems.
+        </p>
+        <span class="src">
+          <a href="https://leetcode.com/discuss/post/8446005/">LeetCode discuss · 74 loops</a> ·
+          <a href="https://roundz.substack.com/p/flipkart-interview-experience-frontend-engineer-sde2"
+            >Flipkart frontend SDE2</a
+          >
+        </span>
+      </div>
+
+      <div class="item is-signal">
+        <div class="item-head">
+          <h3>Frontend system design is its own round now</h3>
+          <span class="tag">Directional, consistent</span>
+        </div>
+        <p>
+          The 2026 frontend loop is described the same way across guides: recruiter screen, technical screen, coding,
+          <b>a frontend system design round</b>, behavioural. The prompts repeat — news feed with infinite scroll,
+          autocomplete, chat, a collaborative editor, an email client. Separately, AI-product design prompts — design a
+          chatbot, a RAG document assistant, a coding agent — have become standard for AI-adjacent roles.
+        </p>
+        <p class="so">
+          System Design is 61k words of backend design and has no frontend track and no GenAI track. Add both: roughly
+          eight frontend walkthroughs and four GenAI ones, plus an exercise format of a prompt and a rubric.
+        </p>
+        <span class="src">
+          <a href="https://www.frontendinterviewhandbook.com/front-end-system-design">Front End Interview Handbook</a> ·
+          <a href="https://www.systemdesignhandbook.com/guides/generative-ai-system-design-interview/"
+            >GenAI system design guide</a
+          >
+        </span>
+      </div>
+
+      <div class="item is-signal">
+        <div class="item-head">
+          <h3>Docker is expected; Kubernetes mostly is not</h3>
+          <span class="tag">Primary + directional</span>
+        </div>
+        <p>
+          Docker usage jumped 17 points to 71% in the 2025 Stack Overflow survey, the largest move of any tool.
+          Job-market writing for JavaScript roles places Docker and CI/CD under required skills at the senior band, and
+          treats Kubernetes as needed only where the job says so — most full-stack work ships to managed platforms.
+        </p>
+        <p class="so">
+          Docker with CI/CD (GitHub Actions) is P1. Kubernetes drops to P3 and should shrink from 24 planned chapters to
+          the eight a product engineer needs to read a manifest and talk to a platform team.
+        </p>
+        <span class="src">
+          <a href="https://stackoverflow.co/company/press/archive/stack-overflow-2025-developer-survey/"
+            >Stack Overflow 2025 press release</a
+          >
+          ·
+          <a
+            href="https://jsgurujobs.com/blog/docker-for-javascript-developers-in-2026-and-the-infrastructure-skill-missing-from-your-resume-that-s-costing-you-the-senior-role"
+            >Docker for JS developers</a
+          >
+          (directional)
+        </span>
+      </div>
+
+      <div class="item is-signal">
+        <div class="item-head">
+          <h3>Playwright won end-to-end testing</h3>
+          <span class="tag">Directional</span>
+        </div>
+        <p>
+          Playwright is described as the default recommendation for new projects in 2026, with roughly half of surveyed
+          QA professionals on it against Cypress at around 14%, and several times Cypress's weekly downloads.
+        </p>
+        <p class="so">
+          Testing is P1 and should be written Playwright-first for end-to-end and Vitest for units. This site already
+          runs both in CI, which makes it the worked example.
+        </p>
+        <span class="src">
+          <a href="https://bugbug.io/blog/test-automation-tools/cypress-vs-playwright/">BugBug</a> ·
+          <a href="https://tech-insider.org/playwright-vs-cypress-vs-selenium-2026/">Tech Insider</a>
+        </span>
+      </div>
+
+      <div class="item is-signal">
+        <div class="item-head">
+          <h3>OWASP rewrote its Top 10, and accessibility became law</h3>
+          <span class="tag">Primary</span>
+        </div>
+        <p>
+          The OWASP Top 10:2025 adds <b>Software Supply Chain Failures</b> and
+          <b>Mishandling of Exceptional Conditions</b>, moves Security Misconfiguration to second, and folds SSRF into
+          Broken Access Control. The European Accessibility Act has been enforceable since 28 June 2025 against WCAG 2.1
+          AA, and senior frontend interviews ask for an accessible combobox and the difference between the ARIA
+          labelling attributes.
+        </p>
+        <p class="so">
+          Web Security should be structured on the 2025 list, not the 2021 one. HTML is worth writing mainly for its
+          accessibility half — move that up to P2, and make accessibility a required section in every frontend system
+          design walkthrough.
+        </p>
+        <span class="src">
+          <a href="https://about.gitlab.com/blog/2025-owasp-top-10-whats-changed-and-why-it-matters/"
+            >GitLab · OWASP 2025</a
+          >
+          ·
+          <a href="https://www.chromatic.com/blog/developers-guide-to-european-accessibility-act-2025/"
+            >Chromatic · EAA</a
+          >
+        </span>
+      </div>
+
+      <div class="item is-signal">
+        <div class="item-head">
+          <h3>GraphQL plateaued; tRPC and REST cover most TypeScript teams</h3>
+          <span class="tag">Directional</span>
+        </div>
+        <p>
+          GraphQL is reported settled at around a quarter of enterprise applications after its 2021–22 peak, with REST
+          still near-universal and tRPC showing up in TypeScript-and-Next.js listings.
+        </p>
+        <p class="so">
+          Do not write 22 GraphQL chapters. Fold it into one API-design unit — REST, GraphQL, tRPC, when each wins — of
+          about six chapters, and move the rest of the budget to Node.
+        </p>
+        <span class="src">
+          <a href="https://pockit.tools/blog/rest-graphql-trpc-grpc-api-comparison-2026/">Pockit · API layers 2026</a>
+        </span>
+      </div>
+
+      <div class="item is-signal">
+        <div class="item-head">
+          <h3>Juniors are hired on judgement, not boilerplate</h3>
+          <span class="tag">Split signal</span>
+        </div>
+        <p>
+          US write-ups put entry-level developer hiring down by around two-thirds since 2022, the tasks it used to
+          consist of now done by AI. India's data points the other way: Naukri recorded fresher (0–3 years) hiring up
+          15–17% year on year through 2026. Both sides agree on what is screened for — reading unfamiliar code,
+          reviewing AI output, debugging.
+        </p>
+        <p class="so">
+          The audience this site is built for — Indian candidates — is in the better half of that split. The practice
+          should match the screen: debugging and code-review exercises, not only write-from-scratch ones.
+        </p>
+        <span class="src">
+          <a
+            href="https://www.naukri.com/blog/naukri-jobspeak-white-collar-hiring-grows-6-in-june-2026-ai-ml-and-fresher-hiring-lead-the-charge/"
+            >Naukri JobSpeak June 2026</a
+          >
+          ·
+          <a href="https://www.dice.com/career-advice/the-new-junior-developer-harder-to-land-harder-to-replace"
+            >Dice</a
+          >
+          (directional)
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">The research, turned into an order</span>
+    <h2>What to write next</h2>
+    <p class="lede">
+      Priority is market signal against what already exists here. Planned counts come from the current outlines;
+      proposed counts are where the research says the outline is the wrong size.
+    </p>
+
+    <div class="ledger prio">
+      <div class="row">
+        <span class="p p0">P0</span>
+        <span class="name">TypeScript</span>
+        <span class="why">#1 on GitHub; screened for early; assumed by every written topic.</span>
+        <span class="count">29 planned</span>
+      </div>
+      <div class="row">
+        <span class="p p0">P0</span>
+        <span class="name">Next.js</span>
+        <span class="why"
+          >The meta-framework most JDs name. Write against 16: <code>use cache</code>, Cache Components, the
+          server/client boundary.</span
+        >
+        <span class="count">29 planned</span>
+      </div>
+      <div class="row">
+        <span class="p p0">P0</span>
+        <span class="name">Node.js</span>
+        <span class="why">Most-used web technology. Absorb the API-design unit from GraphQL.</span>
+        <span class="count">41 planned</span>
+      </div>
+      <div class="row">
+        <span class="p p0">P0</span>
+        <span class="name">AI engineering for JS devs</span>
+        <span class="why"
+          >New topic. LLM calls, streaming UI, tools, structured output, RAG, evals, MCP, cost, safety.</span
+        >
+        <span class="count"><b>~16</b> proposed</span>
+      </div>
+      <div class="row">
+        <span class="p p1">P1</span>
+        <span class="name">SQL &amp; Databases</span>
+        <span class="why">Postgres-first: schema, indexes, transactions, an ORM, migrations.</span>
+        <span class="count">25 planned</span>
+      </div>
+      <div class="row">
+        <span class="p p1">P1</span>
+        <span class="name">Testing</span>
+        <span class="why">Playwright and Vitest, with this repo's own CI as the worked example.</span>
+        <span class="count">24 planned</span>
+      </div>
+      <div class="row">
+        <span class="p p1">P1</span>
+        <span class="name">Docker + CI/CD</span>
+        <span class="why">Merge Docker with the CI half of Cloud &amp; DevOps; GitHub Actions throughout.</span>
+        <span class="count">22 + part of 24</span>
+      </div>
+      <div class="row">
+        <span class="p p1">P1</span>
+        <span class="name">System Design: frontend + GenAI</span>
+        <span class="why">Two missing tracks inside a written topic; prompt-and-rubric exercises.</span>
+        <span class="count"><b>~12</b> proposed</span>
+      </div>
+      <div class="row">
+        <span class="p p1">P1</span>
+        <span class="name">Interview book: new rounds</span>
+        <span class="why">AI-assisted coding, code comprehension, frontend system design.</span>
+        <span class="count"><b>3</b> rounds</span>
+      </div>
+      <div class="row">
+        <span class="p p2">P2</span>
+        <span class="name">Nest.js</span>
+        <span class="why">Strong in Indian listings alongside Node, TypeScript and Postgres; write after Node.</span>
+        <span class="count">26 planned</span>
+      </div>
+      <div class="row">
+        <span class="p p2">P2</span>
+        <span class="name">Web Security</span>
+        <span class="why">Restructure on OWASP Top 10:2025.</span>
+        <span class="count">24 planned</span>
+      </div>
+      <div class="row">
+        <span class="p p2">P2</span>
+        <span class="name">HTML &amp; accessibility</span>
+        <span class="why">Accessibility-led; the EAA made it a requirement, not a nicety.</span>
+        <span class="count">22 planned</span>
+      </div>
+      <div class="row">
+        <span class="p p2">P2</span>
+        <span class="name">CSS</span>
+        <span class="why">Layout, container queries, and Tailwind as it is actually used.</span>
+        <span class="count">25 planned</span>
+      </div>
+      <div class="row">
+        <span class="p p2">P2</span>
+        <span class="name">Redis</span>
+        <span class="why">Caching, rate limiting, queues, sessions — the product-engineer subset.</span>
+        <span class="count">21 → <b>~12</b></span>
+      </div>
+      <div class="row">
+        <span class="p p3">P3</span>
+        <span class="name">Kubernetes</span>
+        <span class="why">Enough to read a manifest and work with a platform team.</span>
+        <span class="count">24 → <b>~8</b></span>
+      </div>
+      <div class="row">
+        <span class="p p3">P3</span>
+        <span class="name">GraphQL</span>
+        <span class="why">Folded into Node's API-design unit.</span>
+        <span class="count">22 → <b>~6</b></span>
+      </div>
+    </div>
+
+    <p class="meter-note">
+      P0 comes to about 115 chapters. At the length the JavaScript track settled on — around 1,350 words a chapter —
+      that is roughly the size of everything written on the site today, so it is a quarter of work, not a sprint.
     </p>
   </section>
 
@@ -755,121 +1258,108 @@
     <span class="eyebrow">The second axis</span>
     <h2>Depth inside what is written</h2>
     <p class="lede">
-      A topic being written is not the same as a topic being finished. A chapter-level audit of the six written topics
-      found 121 specific missing chapters, plus 16 patterns that repeat across all of them. Graded P0 &mdash; blocks a
-      reader now &mdash; through P2. Green bars are the two topics that have been worked.
+      A topic being written is not the same as a topic being finished. JavaScript has now been audited three times and
+      closed each time; the rest carry what is known about them.
     </p>
 
-    <div class="ledger ledger--gaps">
-      <div class="row">
-        <span class="name">System Design</span>
-        <span class="measure"><i style="width: 100%; background: var(--open)"></i></span>
-        <span class="count">35 listed &middot; unchecked</span>
-      </div>
+    <div class="ledger">
       <div class="row">
         <span class="name">JavaScript</span>
-        <span class="measure"><i style="width: 100%; background: var(--done)"></i></span>
-        <span class="count"><b>0</b> left &middot; 3 of 28 were real</span>
+        <span class="measure"><i style="width: 100%"></i></span>
+        <span class="count"><b>0</b> open · 3 audits</span>
       </div>
       <div class="row">
         <span class="name">React</span>
-        <span class="measure"><i style="width: 60%; background: var(--done)"></i></span>
-        <span class="count"><b>~6</b> left &middot; 4 written</span>
+        <span class="measure"><i style="width: 60%"></i></span>
+        <span class="count"><b>~9</b> open</span>
+      </div>
+      <div class="row">
+        <span class="name">System Design</span>
+        <span class="measure"><i style="width: 30%; background: var(--open)"></i></span>
+        <span class="count">2 tracks · 0 ex</span>
+      </div>
+      <div class="row">
+        <span class="name">Interview book</span>
+        <span class="measure"><i style="width: 40%; background: var(--open)"></i></span>
+        <span class="count">3 rounds · 0 ex</span>
       </div>
       <div class="row">
         <span class="name">DSA in JS</span>
         <span class="measure"><i style="width: 43%; background: var(--open)"></i></span>
-        <span class="count">15 listed &middot; unchecked</span>
-      </div>
-      <div class="row">
-        <span class="name">Interview book</span>
-        <span class="measure"><i style="width: 34%; background: var(--open)"></i></span>
-        <span class="count">12 listed &middot; unchecked</span>
+        <span class="count">15 listed · unchecked</span>
       </div>
       <div class="row">
         <span class="name">Git</span>
         <span class="measure"><i style="width: 23%; background: var(--open)"></i></span>
-        <span class="count">8 listed &middot; unchecked</span>
+        <span class="count">8 listed · 0 ex</span>
       </div>
     </div>
-
-    <p class="meter-note">
-      Two topics have been checked item by item against the content, and both have since been worked: JavaScript's three
-      real gaps are closed, and React is down to depth on subjects it already mentions. The other four carry the audit's
-      own count and are still unchecked &mdash; checking is worth doing before writing, since it took JavaScript from 28
-      gaps to 3.
-    </p>
 
     <div class="items">
       <div class="item">
         <div class="item-head">
-          <h3>Four things Git has and nothing else does</h3>
+          <h3>React: three new gaps from the market, six old ones</h3>
+          <span class="tag">Depth</span>
+        </div>
+        <p>
+          New since the last pass: the <b>React Compiler</b> (1.0, default in new apps), the
+          <b>Server Components security advisories</b> of December 2025, and <b>Actions</b> in depth. Still open from
+          before: streaming SSR, file upload, micro-frontends and React Native each deserve a section; i18n, state
+          machines and feature flags are named but not taught. And 27 of 51 chapters still open into no exercise.
+        </p>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <h3>System Design: no frontend track, no GenAI track, no practice</h3>
+          <span class="tag">Largest in-topic gap</span>
+        </div>
+        <p>
+          The market now runs a frontend system design round and, for AI-adjacent roles, a GenAI one. This topic has
+          neither, no cheat page, and zero exercises across 61k words. The exercise format is a prompt and a rubric, not
+          a test runner — a content decision before it is a code one.
+        </p>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <h3>Interview book: rounds the site cannot teach, and rounds it does not have</h3>
+          <span class="tag">Two problems</span>
+        </div>
+        <p>
+          TypeScript, Next.js, Node/Nest, Databases/Redis and AWS/Docker/CI-CD each have a round and no written topic
+          behind them — the P0 and P1 list above closes most of that. Separately, the book has no round for the
+          <b>AI-assisted coding</b> or <b>code-comprehension</b> formats Meta and Google now run, and no frontend system
+          design round.
+        </p>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <h3>Three things only some topics have</h3>
           <span class="tag">The pattern</span>
         </div>
         <p>
-          Runnable exercises exist in JavaScript and DSA. Cheat pages, inline interview banks and guided projects now
-          exist in JavaScript and React too &mdash; that was the gap this pass closed. Git remains the only topic where
-          all four have always been there.
-        </p>
-        <p>
-          Git's shape &mdash; model, internals, commands, workflow, danger zone, interview bank, cheat sheet &mdash; is
-          the template. DSA, System Design, TypeScript, testing and the interview book are still missing pieces of it;
-          writing the shape down once is cheaper than deciding each topic's structure again.
+          Runnable exercises exist in JavaScript, DSA and React. Cheat pages exist for JavaScript, Git and React —
+          <b>DSA and System Design, two of the three largest topics, still have none</b>. Guided projects exist in
+          JavaScript and React. Git's shape — model, internals, commands, workflow, danger zone, interview bank, cheat
+          sheet — is still the template worth writing down once and applying to every new topic from the start.
         </p>
       </div>
 
       <div class="item">
         <div class="item-head">
-          <h3>React's first batch of exercises: 24, across 12 chapters</h3>
-          <span class="tag">Closed, partly</span>
+          <h3>Practice formats the market now tests</h3>
+          <span class="tag">New format</span>
         </div>
         <p>
-          Extracted as pure functions &mdash; reducers, selectors, immutable updates &mdash; so they run in the same
-          DOM-free sandbox as everything else. 27 of React's 51 chapters are still without one, and System Design's 24
-          and the interview book's 27 rounds have none at all.
-          <b>The site's own copy says reading trains recognition and practice trains recall</b> &mdash; three of six
-          written topics still do only the first.
-        </p>
-      </div>
-
-      <div class="item">
-        <div class="item-head">
-          <h3>Two of the audit's headline findings did not survive a check</h3>
-          <span class="tag">Corrected</span>
-        </div>
-        <p>
-          The chapters titled <code>(first half)</code> do have a second half &mdash; it is
-          <code>scope-functions</code> and <code>objects-deep</code> at the intermediate level, and the latter has a
-          section named "Array methods B5 didn't cover". The two <code>(surface)</code> System Design chapters run 2,444
-          and 2,538 words against a topic median of 2,581, and already contain the inverted index, BM25, Elasticsearch
-          sharding, Raft elections and log replication the audit asks for.
-        </p>
-        <p>
-          What is left is a <b>naming</b> problem, not a writing one, plus one fair point: both
-          <code>(surface)</code> chapters have zero code blocks.
-        </p>
-      </div>
-
-      <div class="item">
-        <div class="item-head">
-          <h3>The interview book points at five topics that do not exist</h3>
-        </div>
-        <p>
-          TypeScript, Next.js, Node/Nest, Databases/Redis and AWS/Docker/CI-CD each have a round in the book and no
-          topic behind them. It is also missing the AI round, which became standard in the last two years, and a
-          frontend system design round &mdash; on a site whose readers are frontend candidates.
+          Every exercise on the site is "write a function from blank until the tests pass". The loops above also test
+          <b>machine coding</b> (build a small UI to a spec), <b>code comprehension</b> (read and fix an existing
+          multi-file project), and <b>design</b> (a prompt answered against a rubric). The sandbox already runs
+          multi-file code; the missing piece is the exercise shape.
         </p>
       </div>
     </div>
-
-    <p class="lede">
-      Every item was checked rather than taken on trust. JavaScript listed 28 gaps and had <b>3</b> &mdash; browser
-      observability, an interview bank and a guided project &mdash; and all three are now written. React listed 23 and
-      had roughly 10; four of those shipped as chapters (Thinking in React, a guided project, animation, end-to-end
-      testing) and what remains is depth on subjects already mentioned, not absence. Search is already cross-topic, and
-      the home page count was corrected separately. The lesson for the next audit: a keyword missing from a chapter
-      <em>title</em> is not the same as the subject missing from the site.
-    </p>
   </section>
 
   <section>
@@ -886,14 +1376,21 @@
       <span class="chip">CLS 0.116 → 0.030</span>
       <span class="chip">axe over 12 pages</span>
       <span class="chip">Fonts 16 → 6 families</span>
-      <span class="chip">CI: format, spelling, 28 e2e, Lighthouse</span>
+      <span class="chip">CI: format, spelling, 33 e2e, Lighthouse</span>
       <span class="chip">Sidebar data off every page bundle</span>
       <span class="chip">Four content files split for editing</span>
       <span class="chip">Home page JS 1,986 KB → 647 KB</span>
       <span class="chip">Edge rate limit on /api/</span>
-      <span class="chip">JavaScript's three real gaps closed</span>
-      <span class="chip">React 41 &rarr; 51 chapters</span>
-      <span class="chip">React's first 24 exercises, 12 chapters</span>
+      <span class="chip">React 41 → 51 chapters</span>
+      <span class="chip">React's first 24 exercises</span>
+      <span class="chip">JavaScript 37 → 40 chapters</span>
+      <span class="chip">JavaScript 69 → 82 exercises</span>
+      <span class="chip">Three JavaScript audits closed</span>
+      <span class="chip">Build it yourself chapter</span>
+      <span class="chip">Strings, numbers &amp; Math chapter</span>
+      <span class="chip">20 output-prediction drills</span>
+      <span class="chip">Weekly Vercel deployment cleanup · 121 → 15</span>
+      <span class="chip">Search indexes 148 KB → 70 KB gzip, same results</span>
     </div>
   </section>
 
@@ -904,39 +1401,39 @@
     <div class="items">
       <div class="item">
         <div class="item-head">
+          <h3>Deploy size is now a limit, not a preference</h3>
+          <span class="tag">Hit the ceiling</span>
+        </div>
+        <p>
+          The Hobby plan's deployment storage reached <b>11.21 GB of 10 GB</b>. A weekly cleanup now keeps the count at
+          about fifteen deployments, which fixes the total. It does not fix the size of each one: every deploy still
+          copies <b>18 MB of wasm</b> — Pyodide, sql.js, TypeScript's lib files — that loads only when a reader picks
+          Python or SQL in the playground. Serving Pyodide from its CDN removes most of it.
+        </p>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <h3>Three pages still render nothing for a crawler</h3>
+          <span class="tag">Measured again</span>
+        </div>
+        <p>
+          On the current build <code>/git</code> emits 42 characters of visible text, <code>/review</code> 38 and
+          <code>/progress</code> 23. The Git guide is still invisible to search engines. <code>/problems</code>, by
+          contrast, emits over 20,000. The fix is the shape <code>/architecture</code> uses: server-render the body,
+          keep only the interactive shell on the client.
+        </p>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
           <h3>Progress that survives the browser</h3>
-          <span class="tag">Biggest gap</span>
+          <span class="tag">Biggest product gap</span>
         </div>
         <p>
-          Chapters read, exercises solved, streaks and review schedule all live in
-          <code>localStorage</code> on one device. Clear the browser and it is gone; open the site on a phone and it
-          starts from zero. <b>The storage layer is one seam</b> — every progress-aware component reads through
+          Chapters read, exercises solved, streaks and review schedule all live in <code>localStorage</code> on one
+          device. <b>The storage layer is one seam</b> — every progress-aware component reads through
           <code>useSyncExternalStore</code>, so a synced implementation touches no components.
-        </p>
-      </div>
-
-      <div class="item">
-        <div class="item-head">
-          <h3>Search index size</h3>
-          <span class="tag">Measured</span>
-        </div>
-        <p>
-          Fetched lazily on the first keystroke, so it costs nothing to a reader who never searches — but
-          <b>the interview index is 134 KB gzip and DSA is 115 KB</b>, and those are the two people search most.
-          Trimming HTML out of the indexed text roughly halves it.
-        </p>
-      </div>
-
-      <div class="item">
-        <div class="item-head">
-          <h3>Turn the rate limit rule from Log to 429</h3>
-          <span class="tag">One toggle</span>
-        </div>
-        <p>
-          The Firewall rule is published and counting — <code>Request Path starts with /api/</code>, 100 requests a
-          minute keyed on IP — but its action is <b>Log</b>, so it does not block yet. After a day, read the
-          <b>Rate Limited</b> figure on the Firewall overview: at or near zero, switch the action to 429; higher than
-          that, the narrator's TTS requests are the likely cause, so raise the limit to 200 first.
         </p>
       </div>
 
@@ -946,8 +1443,21 @@
           <span class="tag">Seam exists</span>
         </div>
         <p>
-          Client errors post to <code>/api/client-error</code> and land in the function log: no grouping, no alerting,
-          and the log expires. <code>ErrorReporter.tsx</code> is already the swap point.
+          Client errors still post to <code>/api/client-error</code> and land in the function log: no grouping, no
+          alerting, and the log expires. <code>ErrorReporter.tsx</code> is the swap point; no error service is installed
+          yet.
+        </p>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <h3>A schema over chapters</h3>
+          <span class="tag">Grows with content</span>
+        </div>
+        <p>
+          Chapter bodies are HTML strings with no schema, so a malformed chapter renders oddly instead of failing the
+          build. With 115 P0 chapters to write, a Zod check over the chapter shape pays for itself on the first mistake
+          it catches.
         </p>
       </div>
 
@@ -957,21 +1467,8 @@
           <span class="tag">Decision first</span>
         </div>
         <p>
-          <code>app/manifest.ts</code> exists; the service worker does not. The fiddly part is that the App Router
-          serves RSC payloads as well as HTML, so caching has to cover both — and
-          <b>the playground needs 18 MB of wasm</b>, which should not be precached by default.
-        </p>
-      </div>
-
-      <div class="item">
-        <div class="item-head">
-          <h3>Content pipeline</h3>
-          <span class="tag">Half done</span>
-        </div>
-        <p>
-          The size problem is solved — the four files that had grown past editing are now barrels over per-chapter
-          files. What remains is that chapter bodies are HTML strings with no schema, so a malformed chapter renders
-          oddly instead of failing the build.
+          <code>app/manifest.ts</code> exists; the service worker does not. The App Router serves RSC payloads as well
+          as HTML, so caching has to cover both — and the playground's wasm should never be precached by default.
         </p>
       </div>
 
@@ -981,8 +1478,21 @@
           <span class="tag">Blocked</span>
         </div>
         <p>
-          27 rounds and 405 questions is the most obvious thing here to charge for. It needs accounts, then payments,
-          then a gate — <b>and nothing in it starts before accounts do</b>.
+          27 rounds and 230 questions, with three market-driven rounds to add, is still the most obvious thing here to
+          charge for. It needs accounts, then payments, then a gate —
+          <b>and nothing in it starts before accounts do</b>.
+        </p>
+      </div>
+
+      <div class="item">
+        <div class="item-head">
+          <h3>Smaller: the rate-limit action and a light font weight</h3>
+          <span class="tag">Housekeeping</span>
+        </div>
+        <p>
+          The edge rate-limit rule's action is a dashboard setting and is deliberately not recorded in a public
+          repository — check it there. Separately, Kalam is still loaded at weight 300 for a handful of elements,
+          costing its own font file.
         </p>
       </div>
     </div>
@@ -990,32 +1500,57 @@
 
   <section>
     <span class="eyebrow">In the order worth picking them up</span>
-    <h2>What to do next</h2>
+    <h2>Engineering to do next</h2>
     <p class="lede">
-      Focused working days for one person who already knows this codebase — building, testing and shipping, not learning
-      a service from scratch. The bar shows the range, not a single guess.
+      Focused working days for one person who already knows this codebase — building, testing and shipping. The bar
+      shows the range, not a single guess. The content order is the P0 list above; this is the engineering that should
+      run alongside it.
     </p>
 
     <div class="plan">
       <div class="plan-scroll">
         <div class="plan-grid">
           <span class="step">1</span>
-          <span class="task">Search index trim</span>
-          <span class="band">
-            <span class="band-track"></span>
-            <span class="band-fill" style="left: 0; width: 6.25%"></span>
-          </span>
-          <span class="est">0.5 day</span>
-
-          <span class="step">2</span>
-          <span class="task">Sentry</span>
+          <span class="task">Wasm off every deploy</span>
           <span class="band">
             <span class="band-track"></span>
             <span class="band-fill" style="left: 6.25%; width: 6.25%"></span>
           </span>
           <span class="est">0.5–1 day</span>
 
+          <span class="step">2</span>
+          <span class="task">Chapter schema</span>
+          <span class="band">
+            <span class="band-track"></span>
+            <span class="band-fill" style="left: 0; width: 6.25%"></span>
+          </span>
+          <span class="est">0.5 day</span>
+
           <span class="step">3</span>
+          <span class="task">Server-render /git</span>
+          <span class="band">
+            <span class="band-track"></span>
+            <span class="band-fill" style="left: 6.25%; width: 6.25%"></span>
+          </span>
+          <span class="est">0.5–1 day</span>
+
+          <span class="step">4</span>
+          <span class="task">Error service</span>
+          <span class="band">
+            <span class="band-track"></span>
+            <span class="band-fill" style="left: 6.25%; width: 6.25%"></span>
+          </span>
+          <span class="est">0.5–1 day</span>
+
+          <span class="step">5</span>
+          <span class="task">New exercise formats</span>
+          <span class="band">
+            <span class="band-track"></span>
+            <span class="band-fill" style="left: 25%; width: 12.5%"></span>
+          </span>
+          <span class="est">2–3 days</span>
+
+          <span class="step">6</span>
           <span class="task">Offline reading</span>
           <span class="band">
             <span class="band-track"></span>
@@ -1023,7 +1558,7 @@
           </span>
           <span class="est">2–3 days</span>
 
-          <span class="step">4</span>
+          <span class="step">7</span>
           <span class="task">Accounts and sync</span>
           <span class="band">
             <span class="band-track"></span>
@@ -1047,29 +1582,97 @@
       </div>
 
       <div class="total">
-        <strong>8 to 13 days for all four</strong>
-        <span>The first two come to about a day together and neither depends on the other.</span>
+        <strong>11 to 17.5 days for all seven</strong>
+        <span
+          >The first four come to about two and a half days together and none depends on another. The search index trim
+          that led this list has shipped.</span
+        >
       </div>
     </div>
 
     <div class="items">
       <div class="item">
         <div class="item-head">
-          <h3>Why accounts go last</h3>
+          <h3>Why accounts still go last</h3>
         </div>
         <p>
-          It is the only item on the list that <b>adds ongoing work rather than removing it</b>: a database to keep
-          alive, auth email deliverability, and an account-deletion path. The build is 5 to 8 days — provider and schema
-          1–2, the synced storage layer 2, migration and signed-out behaviour 1–2, tests 1 — but the commitment outlasts
-          the build. Worth deciding you want that before starting.
+          It is the only item that <b>adds ongoing work rather than removing it</b>: a database to keep alive, auth
+          email deliverability, and an account-deletion path. The commitment outlasts the build. Worth deciding you want
+          that before starting.
         </p>
       </div>
     </div>
   </section>
 
   <footer>
-    The written version of this, with the reasoning behind each item, is
-    <a href="ROADMAP.md">ROADMAP.md</a>. The August audit that preceded it is kept as a snapshot at
-    <a href="2026-08-audit.html">2026-08-audit.html</a>.
+    <span>
+      The written version, with the reasoning behind each item, is <a href="ROADMAP.md">ROADMAP.md</a>. The August audit
+      that preceded it is kept as a snapshot at <a href="2026-08-audit.html">2026-08-audit.html</a>.
+    </span>
+    <span>Sources for the market section:</span>
+    <ul>
+      <li>
+        <a
+          href="https://github.blog/news-insights/octoverse/octoverse-a-new-developer-joins-github-every-second-as-ai-leads-typescript-to-1/"
+          >GitHub Octoverse 2025</a
+        >
+      </li>
+      <li><a href="https://survey.stackoverflow.co/2025/">Stack Overflow Developer Survey 2025</a></li>
+      <li><a href="https://2025.stateofjs.com/en-US/libraries/front-end-frameworks/">State of JavaScript 2025</a></li>
+      <li><a href="https://nextjs.org/blog/next-16">Next.js 16 release notes</a></li>
+      <li>
+        <a
+          href="https://www.naukri.com/blog/naukri-jobspeak-white-collar-hiring-grows-6-in-june-2026-ai-ml-and-fresher-hiring-lead-the-charge/"
+          >Naukri JobSpeak, June 2026</a
+        >
+      </li>
+      <li>
+        <a href="https://www.ownyourcareer.in/blog/naukri-jobspeak-july-2026-it-hiring-ai-jobs-rebound"
+          >Naukri JobSpeak, July 2026 (summary)</a
+        >
+      </li>
+      <li>
+        <a href="https://www.hellointerview.com/blog/meta-ai-enabled-coding">Meta's AI-enabled coding interview</a>
+      </li>
+      <li>
+        <a href="https://www.tryexponent.com/blog/google-ai-coding-interview">Google's AI-assisted coding interview</a>
+      </li>
+      <li><a href="https://leetcode.com/discuss/post/8446005/">Where LeetCode still matters: 74 interviews</a></li>
+      <li>
+        <a href="https://www.frontendinterviewhandbook.com/front-end-system-design">Front End Interview Handbook</a>
+      </li>
+      <li>
+        <a href="https://www.systemdesignhandbook.com/guides/generative-ai-system-design-interview/"
+          >Generative AI system design interview</a
+        >
+      </li>
+      <li><a href="https://www.arcade.dev/blog/typescript-ai-agent-frameworks/">TypeScript AI agent frameworks</a></li>
+      <li>
+        <a href="https://about.gitlab.com/blog/2025-owasp-top-10-whats-changed-and-why-it-matters/"
+          >OWASP Top 10:2025, what changed</a
+        >
+      </li>
+      <li>
+        <a href="https://www.chromatic.com/blog/developers-guide-to-european-accessibility-act-2025/"
+          >European Accessibility Act for developers</a
+        >
+      </li>
+      <li>
+        <a href="https://bugbug.io/blog/test-automation-tools/cypress-vs-playwright/">Cypress vs Playwright 2026</a>
+      </li>
+      <li>
+        <a href="https://pockit.tools/blog/rest-graphql-trpc-grpc-api-comparison-2026/">REST, GraphQL, tRPC 2026</a>
+      </li>
+      <li>
+        <a href="https://www.dice.com/career-advice/the-new-junior-developer-harder-to-land-harder-to-replace"
+          >Dice: the new junior developer</a
+        >
+      </li>
+      <li>
+        <a href="https://roundz.substack.com/p/flipkart-interview-experience-frontend-engineer-sde2"
+          >Flipkart frontend SDE2 interview</a
+        >
+      </li>
+    </ul>
   </footer>
 </div>

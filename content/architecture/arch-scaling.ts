@@ -15,8 +15,8 @@ export const archScaling: Chapter = {
 <tbody>
 <tr>
   <td>Readers on phones, searching</td>
-  <td>The search index. Fetched on the first keystroke; the interview index is 134 KB gzipped, DSA 115 KB. Two topics already cost more than a whole page.</td>
-  <td>Strip more out of the indexed text first; an inverted index after that</td>
+  <td>The search index. Fetched on the first keystroke; after trimming, the largest is 70 KB gzipped, and every chapter written adds to it.</td>
+  <td>An inverted index, once a topic crosses the 75 KB budget the tests enforce</td>
 </tr>
 <tr>
   <td>A burst on the narrator</td>

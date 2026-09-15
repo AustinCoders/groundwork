@@ -1457,6 +1457,15 @@ li::marker {
   padding: 0 7px;
 }
 
+.site-navlink__match {
+  flex: none;
+  margin-left: auto;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
 .site-navlink.is-active {
   background: var(--hl-mint);
   font-weight: 700;
@@ -6644,6 +6653,11 @@ a.step__title:hover {
     min-width: 16px;
     padding: 0 4px;
     font-size: 10px;
+  }
+
+  .site-sidenav.is-collapsed .site-navlink__match {
+    position: absolute;
+    transform: translate(16px, -10px);
   }
 
   .site-sidenav.is-collapsed .site-navlink {

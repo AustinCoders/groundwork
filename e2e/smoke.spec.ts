@@ -72,6 +72,19 @@ test("a chapter can be marked read and the count follows", async ({ page }) => {
   await expect(page.locator(".covermap__score-num")).toContainText("1");
 });
 
+test("search finds chapter text, marks matches, and ignores demo scripts", async ({ page }) => {
+  await page.goto("/notes/setup-mental-model");
+  const search = page.locator("#search");
+
+  await search.fill("microtask");
+  await expect(page.locator("#search-count")).toContainText(/chapters? match/);
+  await expect(page.locator("#nav-list .site-navlink__match").first()).toBeVisible();
+  await expect(page.locator("#nav-list .site-navlink__hits")).toHaveCount(0);
+
+  await search.fill("demoinit");
+  await expect(page.getByText(/Nothing matches/)).toBeVisible();
+});
+
 test("old /level?topic= links still land", async ({ page }) => {
   await page.goto("/level?topic=system-design");
   await page.waitForURL("**/level/system-design");
