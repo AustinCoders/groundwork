@@ -157,6 +157,48 @@ const report = await withTimeout(
   <code>signal</code> option.
 </p>
 
+<h3>The stale-response race — "latest request wins"</h3>
+<p>
+  A search box that fires a request on every keystroke has a race
+  built in: nothing guarantees responses arrive in the same order the
+  requests left. Type "re", then "rea" a moment later — if the "re"
+  request happens to take longer, its (now-stale) results can land
+  <em>after</em> "rea"'s and overwrite the correct ones on screen.
+</p>
+<div class="try">
+  <pre><code>let latestId = 0;
+
+async function search(query, render) {
+  const id = ++latestId;                     <span class="c">// this request's own ticket number</span>
+  const results = await fetchResults(query);
+  if (id !== latestId) return;                <span class="c">// a newer search started while this was in flight — drop it</span>
+  render(results);
+}
+
+function fetchResults(query) {
+  const delay = query.length === 2 ? 300 : 30;   <span class="c">// simulate "re" being the slow one</span>
+  return new Promise((resolve) =&gt; setTimeout(() =&gt; resolve("results for " + query), delay));
+}
+
+const rendered = [];
+search("re", (r) =&gt; rendered.push(r));
+search("rea", (r) =&gt; rendered.push(r));
+await new Promise((r) =&gt; setTimeout(r, 400));
+console.log(rendered);   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>["results for rea"]</code> — only one result ever renders, even
+  though both requests actually completed. Each call captures its own
+  <code>id</code> before awaiting; by the time the slow "re" response
+  comes back, <code>latestId</code> has already moved on to "rea"'s
+  ticket, so the stale one silently drops itself instead of overwriting
+  the screen. <code>AbortController</code> solves the same problem a
+  different way — cancel the previous request outright instead of
+  letting it finish and checking afterward — and is the better choice
+  whenever the request itself is expensive enough that abandoning it
+  early actually saves real work, not just a render.
+</p>
+
 <h3>Promise.withResolvers — resolve/reject without smuggling them out</h3>
 <pre><code>function createDeferred() {                                        <span class="c">// the old way</span>
   let resolve, reject;

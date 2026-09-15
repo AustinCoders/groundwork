@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const objectsArraysBasics: Chapter = {
   id: "objects-arrays-basics",
-  num: "B10",
+  num: "B11",
   title: "Objects & arrays",
   short: "Objects & arrays",
   levels: ["beginner"],
@@ -197,6 +197,39 @@ cart.reduce((total, item) =&gt; total + item.price * item.qty, 0); <span class="
   case underneath map and filter — either one could be written with
   reduce, but reduce for a simple transform reads worse, not better."
 </div>
+
+<h3>some, every, and findIndex — checking, not collecting</h3>
+<p>
+  Three more array walkers, and none of them build a new array — they
+  answer a yes/no or "where" question instead.
+</p>
+<table>
+  <tr><th>Method</th><th>Returns</th><th>Stops early?</th></tr>
+  <tr><td><code>.some(fn)</code></td><td><code>true</code> the moment any element passes</td><td class="tone-yes">yes — as soon as one match is found</td></tr>
+  <tr><td><code>.every(fn)</code></td><td><code>true</code> only if every element passes</td><td class="tone-yes">yes — as soon as one fails</td></tr>
+  <tr><td><code>.findIndex(fn)</code></td><td>the index of the first match, or <code>-1</code></td><td class="tone-yes">yes</td></tr>
+</table>
+<pre><code>cart.some(item =&gt; item.qty === 0);     <span class="c">// true — the Eraser is out of stock</span>
+cart.every(item =&gt; item.price &gt; 0);    <span class="c">// true — nothing is free</span>
+cart.findIndex(item =&gt; item.name === "Book");   <span class="c">// 1 — position, not the item itself</span></code></pre>
+<div class="warn">
+  <span class="ttl">⚠ every() on an empty array is true</span>
+  <code>[].every(x =&gt; x &gt; 100)</code> is <code>true</code> — there's no
+  element to fail the check, a case called "vacuous truth." The
+  opposite empty-array case is the safer one to remember:
+  <code>[].some(...)</code> is always <code>false</code>, since nothing
+  can pass either.
+</div>
+<p class="sub">
+  <code>.find()</code> and <code>.findIndex()</code> are the same walk,
+  different return value — reach for <code>.find()</code> when you need
+  the element, <code>.findIndex()</code> when you need its position (to
+  <code>splice</code> it out, say). Their mirror images,
+  <code>.findLast()</code> and <code>.findLastIndex()</code> — covered
+  with the rest of the newer array methods in
+  <a href="/notes/objects-deep">Objects deeply</a> — walk from the end
+  instead.
+</p>
 
 <h3>Destructuring</h3>
 <p>

@@ -1151,4 +1151,108 @@ export const jsApplied: Exercise[] = [
       },
     ],
   },
+{
+    id: "ex-cleanup-registry",
+    chapter: "engine-memory",
+    level: "advanced",
+    title: "Build a cleanup registry",
+    brief:
+      "<p>Write <code>createCleanupRegistry()</code> returning <code>{ register, disposeAll }</code>.</p><ul><li><code>register(fn)</code> adds a cleanup function to the list</li><li><code>disposeAll()</code> calls every registered function exactly once, then clears the list</li><li>Calling <code>disposeAll()</code> again (nothing newly registered) calls nothing — this is exactly the shape a component's unmount/cleanup step needs, so a leftover timer or listener is never released twice</li></ul>",
+    starter:
+      "function createCleanupRegistry() {\n  // TODO: track registered functions, and let disposeAll run + clear them\n}\n",
+    hints: [
+      "Swap the array for a new empty one BEFORE calling anything in it — that's what makes a second disposeAll() a no-op even if a cleanup function itself tries to register something new.",
+      "forEach over the captured old array, not the (now empty) live one.",
+    ],
+    solution:
+      "function createCleanupRegistry() {\n  let fns = [];\n  return {\n    register(fn) {\n      fns.push(fn);\n    },\n    disposeAll() {\n      const toRun = fns;\n      fns = [];\n      toRun.forEach((fn) => fn());\n    },\n  };\n}\n",
+    tests: [
+      {
+        name: "disposeAll calls every registered function once",
+        body: 'const r = createCleanupRegistry();\nconst calls = [];\nr.register(() => calls.push("a"));\nr.register(() => calls.push("b"));\nr.disposeAll();\nassert.deepEqual(calls, ["a", "b"]);',
+      },
+      {
+        name: "a second disposeAll with nothing new registered calls nothing",
+        body: 'const r = createCleanupRegistry();\nlet count = 0;\nr.register(() => count++);\nr.disposeAll();\nr.disposeAll();\nassert.equal(count, 1);',
+      },
+      {
+        name: "registering after disposeAll works for a fresh round",
+        body: 'const r = createCleanupRegistry();\nconst calls = [];\nr.register(() => calls.push("first"));\nr.disposeAll();\nr.register(() => calls.push("second"));\nr.disposeAll();\nassert.deepEqual(calls, ["first", "second"]);',
+      },
+    ],
+  },
+{
+    id: "ex-rate-limited-reporter",
+    chapter: "browser-observability",
+    level: "advanced",
+    title: "A rate-limited error reporter",
+    brief:
+      "<p>Write <code>createReporter(maxPerWindow)</code> returning <code>{ report, resetWindow, sent }</code>.</p><ul><li><code>report(message)</code> records the message and returns <code>true</code> &mdash; up to <code>maxPerWindow</code> times</li><li>Once the limit is hit, further calls return <code>false</code> and record nothing, until <code>resetWindow()</code> runs</li><li><code>sent</code> is the full list recorded so far, across every window</li></ul>",
+    starter:
+      "function createReporter(maxPerWindow) {\n  // TODO\n}\n",
+    hints: [
+      "A counter that only resets inside resetWindow() is enough — no real timers needed for this exercise.",
+      "sent should keep growing across resets; only the per-window counter goes back to zero.",
+    ],
+    solution:
+      "function createReporter(maxPerWindow) {\n  let count = 0;\n  const sent = [];\n  return {\n    report(message) {\n      if (count >= maxPerWindow) return false;\n      count++;\n      sent.push(message);\n      return true;\n    },\n    resetWindow() {\n      count = 0;\n    },\n    sent,\n  };\n}\n",
+    tests: [
+      {
+        name: "allows up to the limit, then blocks",
+        body: 'const r = createReporter(2);\nassert.equal(r.report("a"), true);\nassert.equal(r.report("b"), true);\nassert.equal(r.report("c"), false);\nassert.deepEqual(r.sent, ["a", "b"]);',
+      },
+      {
+        name: "resetWindow allows reporting again",
+        body: 'const r = createReporter(1);\nr.report("a");\nassert.equal(r.report("b"), false);\nr.resetWindow();\nassert.equal(r.report("b"), true);',
+      },
+      {
+        name: "sent accumulates across windows",
+        body: 'const r = createReporter(1);\nr.report("a");\nr.resetWindow();\nr.report("b");\nassert.deepEqual(r.sent, ["a", "b"]);',
+      },
+    ],
+  },
+{
+    id: "ex-mask-card-number",
+    chapter: "regex-dates-apis",
+    level: "intermediate",
+    title: "Mask a card number down to the last 4 digits",
+    brief:
+      "<p>Write <code>maskCardNumber(digits)</code> that replaces every digit <b>except the last 4</b> with <code>\"*\"</code>. The input is always a plain string of digits, no spaces.</p><ul><li><code>maskCardNumber(\"4111111111111234\")</code> &rarr; <code>\"************1234\"</code></li><li>Use a lookahead &mdash; don't count characters by hand</li></ul>",
+    starter: "function maskCardNumber(digits) {\n  // TODO: replace with a regex using a lookahead\n}\n",
+    hints: [
+      '/\\d(?=\\d{4})/g matches a digit only when at least 4 more digits follow it — exactly the ones that should become "*".',
+      "The lookahead itself never gets consumed, so it correctly re-checks overlapping positions as the match moves along.",
+    ],
+    solution: 'function maskCardNumber(digits) {\n  return digits.replace(/\\d(?=\\d{4})/g, "*");\n}\n',
+    tests: [
+      { name: "masks all but the last 4 digits", body: 'assert.equal(maskCardNumber("4111111111111234"), "************1234");' },
+      { name: "4 or fewer digits are left untouched", body: 'assert.equal(maskCardNumber("1234"), "1234");' },
+      { name: "exactly one digit needs masking", body: 'assert.equal(maskCardNumber("12345"), "*2345");' },
+      { name: "a 12-digit number", body: 'assert.equal(maskCardNumber("123456789012"), "********9012");' },
+    ],
+  },
+{
+    id: "ex-build-query-string",
+    chapter: "browser-apis-deep",
+    level: "intermediate",
+    title: "Build a query string from an object",
+    brief:
+      '<p>Write <code>buildQueryString(params)</code> returning a <code>"?"</code>-prefixed query string built from a plain object.</p><ul><li><code>buildQueryString({ q: "js", page: 2 })</code> &rarr; <code>"?q=js&amp;page=2"</code></li><li>Skip any key whose value is <code>undefined</code> or <code>null</code></li><li>An empty result (no usable keys) returns <code>""</code>, not just <code>"?"</code></li></ul>',
+    starter: "function buildQueryString(params) {\n  // TODO: use URLSearchParams\n}\n",
+    hints: [
+      "new URLSearchParams() starts empty — .set(key, value) adds one pair, and .toString() gives the encoded string with no leading '?'.",
+      'Object.entries(params) lets you loop key/value pairs together and skip the null/undefined ones before calling .set.',
+    ],
+    solution:
+      'function buildQueryString(params) {\n  const usp = new URLSearchParams();\n  for (const [key, value] of Object.entries(params)) {\n    if (value === undefined || value === null) continue;\n    usp.set(key, value);\n  }\n  const str = usp.toString();\n  return str ? "?" + str : "";\n}\n',
+    tests: [
+      { name: "builds a simple query string", body: 'assert.equal(buildQueryString({ q: "js", page: 2 }), "?q=js&page=2");' },
+      {
+        name: "skips undefined and null values",
+        body: 'assert.equal(buildQueryString({ q: "js", tag: undefined, sort: null }), "?q=js");',
+      },
+      { name: "an empty object returns an empty string", body: 'assert.equal(buildQueryString({}), "");' },
+      { name: "keeps a falsy-but-present value like 0", body: 'assert.equal(buildQueryString({ page: 0 }), "?page=0");' },
+    ],
+  },
 ];

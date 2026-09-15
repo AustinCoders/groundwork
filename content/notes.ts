@@ -6,6 +6,7 @@ import { scope } from "./js/scope";
 import { singleThread } from "./js/single-thread";
 import { inTheBrowser } from "./js/in-the-browser";
 import { typesValues } from "./js/types-values";
+import { stringsNumbersMath } from "./js/strings-numbers-math";
 import { operatorsFlow } from "./js/operators-flow";
 import { functionsBasics } from "./js/functions-basics";
 import { objectsArraysBasics } from "./js/objects-arrays-basics";
@@ -43,7 +44,7 @@ export const jsNotes: NotesFile = {
   meta: {
     title: "JavaScript — the whole map",
     subtitle:
-      "39 sections across three levels, all written — from how the engine runs your code to security and testing.",
+      "40 sections across three levels, all written — from how the engine runs your code to security and testing.",
     lead: "Pick a level and you'll get these sections in the order that makes sense — from what the engine does before line 1 runs, through the event loop, to testing and security.",
     author: "Akshat",
     updated: "September 2026",
@@ -61,6 +62,7 @@ export const jsNotes: NotesFile = {
     singleThread,
     inTheBrowser,
     typesValues,
+    stringsNumbersMath,
     operatorsFlow,
     functionsBasics,
     objectsArraysBasics,

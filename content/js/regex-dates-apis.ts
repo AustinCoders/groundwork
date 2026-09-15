@@ -6,7 +6,7 @@ export const regexDatesApis: Chapter = {
   title: "Regex & dates",
   short: "Regex & dates",
   levels: ["intermediate"],
-  practice: ["ex-extract-hashtags"],
+  practice: ["ex-extract-hashtags", "ex-mask-card-number"],
   ready: true,
   subtitle: "Two toolboxes every real app ends up reaching for, and the traps that come with each.",
   body: `<h3>Regex — the essentials</h3>

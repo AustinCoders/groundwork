@@ -1096,4 +1096,71 @@ export const jsFundamentals: Exercise[] = [
       },
     ],
   },
+{
+    id: "ex-pad-time",
+    chapter: "strings-numbers-math",
+    level: "beginner",
+    title: "Format seconds as MM:SS",
+    brief:
+      '<p>Write <code>formatTime(totalSeconds)</code> returning a <code>"MM:SS"</code> string, each part padded to 2 digits.</p><ul><li><code>formatTime(65)</code> &rarr; <code>"01:05"</code></li><li>Minutes can go past 59 if the input is large enough &mdash; don\'t convert to hours</li></ul>',
+    starter:
+      "function formatTime(totalSeconds) {\n  // TODO: split into minutes and seconds, pad each to 2 digits\n}\n",
+    hints: [
+      "Math.floor(totalSeconds / 60) gives the minutes; totalSeconds % 60 gives the leftover seconds.",
+      "String(n).padStart(2, \"0\") turns 5 into \"05\" — do this to both parts.",
+    ],
+    solution:
+      'function formatTime(totalSeconds) {\n  const minutes = Math.floor(totalSeconds / 60);\n  const seconds = totalSeconds % 60;\n  return String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");\n}\n',
+    tests: [
+      { name: "one minute five seconds", body: 'assert.equal(formatTime(65), "01:05");' },
+      { name: "under a minute still gets the leading zero", body: 'assert.equal(formatTime(5), "00:05");' },
+      { name: "an exact number of minutes", body: 'assert.equal(formatTime(600), "10:00");' },
+      { name: "minutes past 59 are not converted to hours", body: 'assert.equal(formatTime(3661), "61:01");' },
+    ],
+  },
+{
+    id: "ex-random-int",
+    chapter: "strings-numbers-math",
+    level: "beginner",
+    title: "A random integer, inclusive on both ends",
+    brief:
+      '<p>Write <code>randomInt(min, max)</code> returning a random <b>integer</b> between <code>min</code> and <code>max</code>, with <b>both ends included</b>.</p><ul><li><code>randomInt(1, 6)</code> should be able to return <code>1</code> or <code>6</code>, never <code>0</code> or <code>7</code></li></ul>',
+    starter: "function randomInt(min, max) {\n  // TODO\n}\n",
+    hints: [
+      "Math.random() alone gives a float from 0 up to (never including) 1 — multiply it by the size of the range first.",
+      "Math.floor(Math.random() * (max - min + 1)) + min is the standard formula. Work out why the + 1 has to be there.",
+    ],
+    solution: "function randomInt(min, max) {\n  return Math.floor(Math.random() * (max - min + 1)) + min;\n}\n",
+    tests: [
+      {
+        name: "always returns an integer inside the range",
+        body: "for (let i = 0; i < 500; i++) {\n  const n = randomInt(1, 6);\n  assert.ok(Number.isInteger(n), \"expected an integer, got \" + n);\n  assert.ok(n >= 1 && n <= 6, n + \" is outside 1-6\");\n}",
+      },
+      {
+        name: "min === max always returns that exact value",
+        body: "for (let i = 0; i < 20; i++) assert.equal(randomInt(4, 4), 4);",
+      },
+      {
+        name: "eventually hits both ends of a small range",
+        body: "const seen = new Set();\nfor (let i = 0; i < 500; i++) seen.add(randomInt(1, 2));\nassert.equal(seen.size, 2, \"500 rolls of randomInt(1,2) never produced both values\");",
+      },
+    ],
+  },
+{
+    id: "ex-format-price",
+    chapter: "strings-numbers-math",
+    level: "beginner",
+    title: "Format a price for display",
+    brief:
+      '<p>Write <code>formatPrice(amount)</code> returning a <code>"$"</code>-prefixed string with exactly 2 decimal places.</p><ul><li><code>formatPrice(9)</code> &rarr; <code>"$9.00"</code></li><li><code>formatPrice(19.5)</code> &rarr; <code>"$19.50"</code></li></ul>',
+    starter: "function formatPrice(amount) {\n  // TODO\n}\n",
+    hints: ['amount.toFixed(2) already gives a fixed-2-decimal STRING — just prepend the "$".'],
+    solution: 'function formatPrice(amount) {\n  return "$" + amount.toFixed(2);\n}\n',
+    tests: [
+      { name: "a whole number gets .00", body: 'assert.equal(formatPrice(9), "$9.00");' },
+      { name: "one decimal place gets padded to two", body: 'assert.equal(formatPrice(19.5), "$19.50");' },
+      { name: "zero", body: 'assert.equal(formatPrice(0), "$0.00");' },
+      { name: "rounds rather than truncates", body: 'assert.equal(formatPrice(19.999), "$20.00");' },
+    ],
+  },
 ];

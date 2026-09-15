@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const operatorsFlow: Chapter = {
   id: "operators-flow",
-  num: "B8",
+  num: "B9",
   title: "Operators & flow",
   short: "Operators & flow",
   levels: ["beginner"],
@@ -171,6 +171,49 @@ console.log(config.retries); <span class="c">// 3</span></code></pre>
   deliberately catches both <code>null</code> and <code>undefined</code>
   in one check.
 </div>
+
+<h3>in and delete — checking and removing a property</h3>
+<pre><code>const user = { name: "Ana", age: 29 };
+
+"name" in user;         <span class="c">// true — checks the KEY, not the value</span>
+"toString" in user;     <span class="c">// true too — in walks the prototype chain</span>
+user.hasOwnProperty("toString");   <span class="c">// false — this one doesn't</span>
+
+delete user.age;
+console.log(user);      <span class="c">// { name: "Ana" } — age is gone entirely, not just undefined</span></code></pre>
+<div class="warn">
+  <span class="ttl">⚠ in isn't the same check as a truthy value</span>
+  <code>"key" in obj</code> is <code>true</code> even when
+  <code>obj.key</code> is <code>0</code>, <code>""</code>, or
+  <code>undefined</code> — as long as the key was actually set.
+  <code>if (obj.key)</code> and <code>if ("key" in obj)</code> answer
+  two different questions: "is the value truthy" versus "does this key
+  exist at all."
+</div>
+
+<h3>Bitwise operators — rare, but they show up</h3>
+<table>
+  <tr><th>Operator</th><th>Does</th></tr>
+  <tr><td><code>&amp;</code></td><td>AND, bit by bit</td></tr>
+  <tr><td><code>|</code></td><td>OR, bit by bit</td></tr>
+  <tr><td><code>^</code></td><td>XOR, bit by bit</td></tr>
+  <tr><td><code>~</code></td><td>NOT — flips every bit</td></tr>
+  <tr><td><code>&lt;&lt;</code>, <code>&gt;&gt;</code></td><td>shift left/right, sign-preserving</td></tr>
+  <tr><td><code>&gt;&gt;&gt;</code></td><td>shift right, zero-fill — the sign bit doesn't survive</td></tr>
+</table>
+<pre><code>6 &amp; 3;    <span class="c">// 2 — 110 &amp; 011 = 010</span>
+6 | 3;    <span class="c">// 7 — 110 | 011 = 111</span>
+5 &lt;&lt; 1;   <span class="c">// 10 — shift left one bit = multiply by 2</span>
+~5;       <span class="c">// -6 — NOT is always -(x + 1)</span></code></pre>
+<p class="sub">
+  Every bitwise operator first converts its operands to a 32-bit signed
+  integer, does the math there, then converts back — which is also why
+  they quietly break past <code>Number.MAX_SAFE_INTEGER</code>. Real
+  code almost never touches these directly; the two survivors in
+  everyday use are <code>~arr.indexOf(x)</code> as an old-school truthy
+  "found it" check (rare now that <code>.includes()</code> exists) and
+  <code>flags | newFlag</code> for building a bitmask.
+</p>
 
 <h3>Logical operators — short-circuit, not just booleans</h3>
 <p>
@@ -344,8 +387,10 @@ for (const k in arr)  console.log(k);    <span class="c">// "0" "1" "2" — STRI
   <tr><td><code>**</code></td><td>right → left</td></tr>
   <tr><td><code>* / %</code></td><td>left → right</td></tr>
   <tr><td><code>+ -</code></td><td>left → right</td></tr>
-  <tr><td><code>&lt; &lt;= &gt; &gt;=</code></td><td>left → right</td></tr>
+  <tr><td><code>&lt;&lt; &gt;&gt; &gt;&gt;&gt;</code> bit shift</td><td>left → right</td></tr>
+  <tr><td><code>&lt; &lt;= &gt; &gt;= in</code></td><td>left → right</td></tr>
   <tr><td><code>== != === !==</code></td><td>left → right</td></tr>
+  <tr><td><code>&amp;</code>, <code>^</code>, <code>|</code> bitwise</td><td>left → right</td></tr>
   <tr><td><code>&amp;&amp;</code></td><td>left → right</td></tr>
   <tr><td><code>||</code>, <code>??</code></td><td>left → right</td></tr>
   <tr><td><code>?:</code> ternary</td><td>right → left</td></tr>

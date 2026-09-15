@@ -105,11 +105,23 @@ export const topics: TopicsData = {
           ],
         },
         {
+          title: "Strings, numbers & Math",
+          chapter: "strings-numbers-math",
+          items: [
+            "startsWith/endsWith, padStart/padEnd, repeat",
+            "localeCompare, sorting text properly",
+            "Math.round/floor/ceil/trunc/abs, min/max",
+            "A random integer in a range",
+            "toFixed vs toLocaleString",
+          ],
+        },
+        {
           title: "Operators & flow",
           chapter: "operators-flow",
           items: [
             "Arithmetic, assignment, comparison, logical",
             "&& / || short-circuit, ??, ?., ternary",
+            "in, delete, bitwise operators",
             "if/else, switch",
             "Loops: for, while, for...of, for...in, break/continue",
           ],
@@ -483,7 +495,7 @@ export const topics: TopicsData = {
       name: "JavaScript",
       mark: "JS",
       accent: "yellow",
-      tagline: "The whole map, 39 sections deep",
+      tagline: "The whole map, 40 sections deep",
       status: "ready",
       notes: "notes.html",
       blurb:

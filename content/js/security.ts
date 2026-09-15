@@ -87,6 +87,59 @@ el.innerHTML = DOMPurify.sanitize(someValueThatCameFromOutsideThisFile);</code><
   CORS closes a different one.
 </p>
 
+<h3>The CORS preflight — the request browsers send before yours</h3>
+<pre><code><span class="c">// your JS calls:</span>
+fetch("https://api.example.com/users", {
+  method: "DELETE",
+  headers: { "X-Custom-Header": "yes" },
+});
+
+<span class="c">// the browser actually sends THIS first, automatically, before your request:</span>
+OPTIONS /users HTTP/1.1
+Origin: https://your-app.com
+Access-Control-Request-Method: DELETE
+Access-Control-Request-Headers: X-Custom-Header</code></pre>
+<p>
+  A "simple" request (a plain <code>GET</code>, or a <code>POST</code>
+  with only the handful of headers a plain HTML form could already
+  send) skips this step. Anything else — a custom header, JSON with
+  <code>Content-Type: application/json</code>, a
+  <code>PUT</code>/<code>DELETE</code> — triggers a
+  <b>preflight</b>: the browser asks first, via <code>OPTIONS</code>,
+  whether the actual request is even allowed, and only sends the real
+  one if the server's preflight response says yes.
+</p>
+<pre><code><span class="c">// the server's preflight RESPONSE has to explicitly allow all of it:</span>
+Access-Control-Allow-Origin: https://your-app.com
+Access-Control-Allow-Methods: DELETE
+Access-Control-Allow-Headers: X-Custom-Header</code></pre>
+<div class="warn">
+  <span class="ttl">⚠ A missing preflight response looks like a network failure</span>
+  If the server doesn't answer the <code>OPTIONS</code> request
+  correctly — a common miss when someone hand-rolls CORS headers only
+  on the "real" route — the browser never even attempts the actual
+  request. The error shows up as a vague CORS failure on the original
+  call, and the fix is almost always making sure the server responds to
+  <code>OPTIONS</code> too, not just <code>DELETE</code>.
+</div>
+
+<h3>Clickjacking — hijacking a click the user thinks landed elsewhere</h3>
+<pre><code>Content-Security-Policy: frame-ancestors 'self'
+<span class="c">// or the older, single-purpose header:</span>
+X-Frame-Options: DENY</code></pre>
+<p>
+  Clickjacking loads a real, legitimate page inside an invisible
+  <code>&lt;iframe&gt;</code>, layered under a decoy the attacker
+  controls — a "claim your prize" button sitting exactly on top of the
+  real page's "transfer funds" button. The victim thinks they clicked
+  the decoy; the click actually landed on the hidden, real page
+  underneath, fully authenticated with their own session.
+  <code>frame-ancestors</code> is the fix: it tells the browser which
+  origins are allowed to embed this page in a frame at all, and
+  <code>'self'</code> (or omitting other origins entirely) makes the
+  invisible-iframe version of the attack impossible outright.
+</p>
+
 <h3>Prototype pollution</h3>
 <p>
   A "deep merge" utility that copies keys with a plain
@@ -300,6 +353,41 @@ console.log(decode(payloadPart));   <span class="c">// what happens — with zer
   is only dangerous for minutes; a stolen refresh token is the actually
   serious leak, which is exactly why it's the one worth putting behind
   <code>httpOnly</code> and tighter handling.
+</p>
+
+<h3>OAuth and PKCE — delegating login without ever seeing a password</h3>
+<p>
+  "Sign in with Google" is <b>OAuth</b>: your app never sees the
+  user's Google password at all. It redirects to Google, the user
+  authenticates there, and Google redirects back with proof — an
+  authorization code — that your app exchanges for tokens.
+</p>
+<pre><code><span class="c">// 1. the app generates a random secret and its hash, BEFORE redirecting</span>
+const verifier = generateRandomString();
+const challenge = await sha256Base64Url(verifier);
+
+<span class="c">// 2. redirect to the provider, sending only the hash</span>
+location.href = "https://provider.example/authorize?" + new URLSearchParams({
+  response_type: "code",
+  client_id: "...",
+  code_challenge: challenge,
+  code_challenge_method: "S256",
+});
+
+<span class="c">// 3. provider redirects back with a code; exchange it, proving you hold the original secret</span>
+await fetch("/token", {
+  method: "POST",
+  body: new URLSearchParams({ grant_type: "authorization_code", code, code_verifier: verifier }),
+});</code></pre>
+<p class="sub">
+  <b>PKCE</b> (Proof Key for Code Exchange) exists because a public
+  client — a single-page app or a mobile app, with no server-side
+  secret it can actually keep secret — can't safely hold a fixed
+  client secret the way a traditional server-side app could. Sending
+  only the <em>hash</em> up front and the real <code>verifier</code>
+  only at the final, direct exchange step means an attacker who
+  intercepts the authorization code in transit still can't redeem it
+  without also having the original, never-transmitted verifier.
 </p>
 
 <h3>What logout actually does</h3>

@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const guidedProjectTodo: Chapter = {
   id: "guided-project-todo",
-  num: "B16",
+  num: "B17",
   title: "Guided project: build a to-do app",
   short: "Guided project",
   levels: ["beginner"],
@@ -175,6 +175,58 @@ render();</code></pre>
   written by an older version of your own code, so validate its shape before
   trusting it. The <code>:v1</code> in the key is how you change that shape later
   without breaking existing users.
+</p>
+
+<h3>Step 8 &mdash; what changes with a real server</h3>
+<p>
+  Extension 5 below asks you to replace <code>localStorage</code> with
+  a server. The shape of <code>save</code>/<code>load</code> stays the
+  same &mdash; two functions the rest of the app already calls &mdash;
+  but both become <code>async</code>, and both can now fail for reasons
+  that have nothing to do with your code.
+</p>
+<pre><code>async function load() {
+  try {
+    const response = await fetch("/api/tasks");
+    if (!response.ok) throw new Error("server said " + response.status);
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];                                <span class="c">// offline, server down, bad response — same fallback either way</span>
+  }
+}
+
+async function save(tasksToSave) {
+  try {
+    await fetch("/api/tasks", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(tasksToSave),
+    });
+  } catch {
+    <span class="c">// a real app queues this and retries — silently losing a save is worse than a slow one</span>
+  }
+}
+
+<span class="c">// the call site barely changes:</span>
+tasks = await load();          <span class="c">// was: tasks = load();</span>
+render();</code></pre>
+<p class="sub">
+  Three things that were invisible with <code>localStorage</code>
+  become unavoidable the moment a network sits in between: a
+  <b>loading state</b> (the list is empty for a moment while
+  <code>load()</code> is still in flight — worth a "Loading…" row
+  instead of an empty list that looks broken), an <b>error state</b>
+  (the request can fail in ways a synchronous <code>localStorage</code>
+  call never could &mdash; offline, a 500, a timeout), and the exact
+  <b>out-of-order-save race</b> extension 5 mentions: two
+  <code>save()</code> calls fired close together can have their
+  responses arrive in the reverse order they were sent, so the
+  <em>older</em> save can silently overwrite the newer one on the
+  server. <a href="/notes/async-properly">The stale-response
+  pattern</a> &mdash; give every save its own ticket number, ignore the
+  response if a newer save has already started &mdash; is the fix, and
+  it's the same shape either way.
 </p>
 
 <h3>You are done. Now break it on purpose</h3>

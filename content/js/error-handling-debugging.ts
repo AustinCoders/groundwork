@@ -71,6 +71,56 @@ try {
   it; it becomes its own separate unhandled rejection.
 </div>
 
+<h3>window.onerror — the other global handler</h3>
+<pre><code>window.addEventListener("error", (event) =&gt; {
+  console.error("Uncaught:", event.message, "at", event.filename + ":" + event.lineno);
+  event.preventDefault();
+});</code></pre>
+<p class="sub">
+  <code>unhandledrejection</code> above only catches promise rejections
+  nobody caught. This sibling event catches everything else that
+  escapes uncaught — a thrown error inside a plain synchronous
+  function, a syntax error in a dynamically loaded script, an error
+  thrown inside a <code>setTimeout</code> callback. Between the two,
+  nothing that goes wrong in the page is ever completely invisible —
+  which is exactly the mechanism
+  <a href="/notes/browser-observability">error-reporting services</a>
+  build on to know a production user hit a crash at all.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ It won't catch everything equally well</span>
+  A script loaded from a different origin with no
+  <code>crossorigin</code> attribute reports its errors as a generic,
+  useless <code>"Script error."</code> with no file, line, or message —
+  a deliberate cross-origin privacy restriction, not a bug. Fix it by
+  adding <code>crossorigin="anonymous"</code> to the
+  <code>&lt;script&gt;</code> tag and serving the file with the matching
+  CORS header.
+</div>
+
+<h3>AggregateError — when there's more than one error to report</h3>
+<pre><code>try {
+  await Promise.any([
+    fetch("/mirror-1/health"),
+    fetch("/mirror-2/health"),
+  ]);
+} catch (err) {
+  console.log(err instanceof AggregateError);   <span class="c">// true — every candidate failed</span>
+  console.log(err.errors.length);                <span class="c">// one entry per rejected promise, in order</span>
+  err.errors.forEach((e) =&gt; console.log(" -", e.message));
+}</code></pre>
+<p class="sub">
+  A normal <code>catch</code> only ever gets one error, because a
+  normal <code>throw</code> only ever carries one.
+  <code>AggregateError</code> — what <code>Promise.any</code> rejects
+  with when every candidate fails — is the built-in shape for "several
+  independent things went wrong at once": it's a real
+  <code>Error</code> (has <code>.message</code> and <code>.stack</code>)
+  that additionally carries the full list in <code>.errors</code>,
+  instead of forcing you to pick just one to report and silently drop
+  the rest.
+</p>
+
 <h3>Immutability — why frameworks care so much</h3>
 <p>
   React, Redux, and similar tools decide "did this change?" with a

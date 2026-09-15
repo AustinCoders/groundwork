@@ -6,7 +6,7 @@ export const browserApisDeep: Chapter = {
   title: "Browser APIs, in depth",
   short: "Browser APIs",
   levels: ["intermediate"],
-  practice: ["ex-query-param"],
+  practice: ["ex-query-param", "ex-build-query-string"],
   ready: true,
   subtitle: "Storage, the URL bar, and the event system — past what the beginner DOM chapter reached.",
   body: `<h3>Browser storage</h3>
@@ -187,5 +187,76 @@ cartElement.addEventListener("cart:updated", (e) =&gt; {
   browser event — the standard way for one part of a page to announce
   something happened without being directly wired to whoever might
   care.
+</p>
+
+<h3>Clipboard — reading and writing outside the page</h3>
+<pre><code>await navigator.clipboard.writeText("copied!");        <span class="c">// should run from a real user gesture (a click), not on page load</span>
+
+button.addEventListener("click", async () =&gt; {
+  const text = await navigator.clipboard.readText();   <span class="c">// asks permission the first time</span>
+  console.log("clipboard had:", text);
+});</code></pre>
+<p class="sub">
+  Both methods are <code>async</code> and both are gated behind a
+  <b>secure context</b> (HTTPS or localhost) and, for anything beyond a
+  same-origin write, a permission prompt. Reading the clipboard
+  specifically is the more restricted half — a page silently reading
+  whatever's on a user's clipboard on load would be a real privacy
+  problem, so the browser insists on both a secure context and, in most
+  browsers, the read happening inside a direct response to user input.
+</p>
+
+<h3>Page Visibility — knowing when nobody's looking</h3>
+<pre><code>document.addEventListener("visibilitychange", () =&gt; {
+  if (document.visibilityState === "hidden") {
+    pauseVideo();
+    stopPolling();
+  } else {
+    resumePolling();
+  }
+});</code></pre>
+<p class="sub">
+  A tab that's minimized, in the background, or on a phone whose screen
+  just locked doesn't stop running JavaScript — timers keep firing —
+  but the user isn't watching. <code>visibilitychange</code> is the
+  standard hook for pausing expensive work (video, polling, animation)
+  exactly then, and resuming it the moment the tab becomes visible
+  again, rather than burning battery and bandwidth on a tab nobody's
+  looking at.
+</p>
+
+<h3>BroadcastChannel — talking to your own other tabs</h3>
+<pre><code>const channel = new BroadcastChannel("cart-updates");
+
+channel.postMessage({ itemCount: 3 });                 <span class="c">// every OTHER tab/window on the same origin hears this</span>
+
+channel.addEventListener("message", (event) =&gt; {
+  console.log("another tab said:", event.data);
+});</code></pre>
+<p class="sub">
+  Same-origin tabs can already coordinate through the
+  <code>storage</code> event (which fires when another tab writes to
+  <code>localStorage</code>), but that only works as a side effect of
+  actually storing something. <code>BroadcastChannel</code> is built
+  for exactly this job directly — send a message to every other open
+  tab of the same site, with no storage write required at all. Closing
+  every tab connected to a channel is the only cleanup needed; there's
+  no server, no polling, just same-origin tabs talking directly.
+</p>
+
+<h3>Web Share and Geolocation, briefly</h3>
+<pre><code>await navigator.share({ title: "Check this out", url: location.href });   <span class="c">// hands off to the OS's native share sheet</span>
+
+navigator.geolocation.getCurrentPosition(
+  (pos) =&gt; console.log(pos.coords.latitude, pos.coords.longitude),
+  (err) =&gt; console.log("denied or unavailable:", err.message)
+);</code></pre>
+<p class="sub">
+  Both need a real user gesture and a secure context, and both are
+  permission-gated the same way clipboard reads are.
+  <code>navigator.share</code> only exists where the OS has a native
+  share sheet to hand off to — always feature-detect
+  (<code>if (navigator.share)</code>) and fall back to your own share
+  buttons where it's missing.
 </p>`,
 };

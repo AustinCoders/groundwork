@@ -132,6 +132,48 @@ export const interviewBank: Chapter = {
 <div class="qa"><p class="q">What actually happens between typing a URL and seeing the page?</p>
 <p>DNS, TCP, TLS, the HTML response, then parsing &mdash; which blocks on synchronous scripts unless they are <code>defer</code> or <code>type="module"</code> &mdash; then the CSSOM, layout, paint, and finally your JavaScript running. The point of the question is whether you know where your code sits in that order.</p></div>
 
+<h3>Output-prediction drills</h3>
+<p>
+  Twenty short "what does this log?" snippets, mixed across topics on
+  purpose — a real interview never asks one at a time. Cover the answer
+  column and say the output out loud before checking; that's the whole
+  exercise.
+</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Snippet</th><th>Logs</th></tr></thead>
+<tbody>
+<tr><td><code>console.log(1); setTimeout(() =&gt; console.log(2)); Promise.resolve().then(() =&gt; console.log(3)); console.log(4);</code></td><td><code>1, 4, 3, 2</code></td></tr>
+<tr><td><code>console.log(typeof typeof 1);</code></td><td><code>"string"</code> — <code>typeof 1</code> is <code>"number"</code>, and <code>typeof</code> of any string is <code>"string"</code></td></tr>
+<tr><td><code>var x = 1; function f() { console.log(x); var x = 2; } f();</code></td><td><code>undefined</code> — <code>var x</code> is hoisted inside <code>f</code>, shadowing the outer <code>x</code> before it's assigned</td></tr>
+<tr><td><code>console.log([1, 2] + [3, 4]);</code></td><td><code>"1,23,4"</code> — both arrays become strings first, then concatenate</td></tr>
+<tr><td><code>const fns = []; for (var i = 0; i &lt; 3; i++) fns.push(() =&gt; i); console.log(fns.map(f =&gt; f()));</code></td><td><code>[3, 3, 3]</code> — one shared <code>var</code> binding; swap to <code>let</code> for <code>[0, 1, 2]</code></td></tr>
+<tr><td><code>console.log(0.1 + 0.2 === 0.3);</code></td><td><code>false</code> — neither side is exactly representable in binary floating point</td></tr>
+<tr><td><code>function f() { console.log(this); } f();</code></td><td><code>undefined</code> in strict mode/modules, the global object otherwise — a plain call, no object in front of the dot</td></tr>
+<tr><td><code>console.log([] == false);</code></td><td><code>true</code> — <code>[]</code> → <code>""</code> → <code>0</code>, and <code>false</code> → <code>0</code></td></tr>
+<tr><td><code>let obj = { a: 1 }; const clone = obj; clone.a = 2; console.log(obj.a);</code></td><td><code>2</code> — <code>clone</code> is the same object, not a copy</td></tr>
+<tr><td><code>console.log(NaN === NaN);</code></td><td><code>false</code> — the one value that's never equal to itself; use <code>Object.is</code> or <code>Number.isNaN</code></td></tr>
+<tr><td><code>async function f() { return 1; } console.log(f());</code></td><td><code>Promise {&lt;fulfilled&gt;: 1}</code> — an <code>async</code> function always returns a promise, even for a plain value</td></tr>
+<tr><td><code>console.log("5" - 1, "5" + 1);</code></td><td><code>4 "51"</code> — <code>-</code> always coerces to numbers, <code>+</code> concatenates the moment either side is a string</td></tr>
+<tr><td><code>function outer() { let count = 0; return () =&gt; ++count; } const inc = outer(); inc(); console.log(inc());</code></td><td><code>2</code> — one closure, one <code>count</code>, shared across both calls to <code>inc</code></td></tr>
+<tr><td><code>console.log(typeof NaN);</code></td><td><code>"number"</code> — NaN is a special value of the number type, not its own type</td></tr>
+<tr><td><code>const p = new Promise((res) =&gt; res(1)); p.then((v) =&gt; console.log(v)); console.log("sync");</code></td><td><code>"sync"</code>, then <code>1</code> — the <code>.then</code> callback is a microtask, queued after all synchronous code finishes</td></tr>
+<tr><td><code>console.log([1, [2, [3, [4]]]].flat(Infinity));</code></td><td><code>[1, 2, 3, 4]</code> — <code>Infinity</code> flattens every level, however deep</td></tr>
+<tr><td><code>class A { static x = 1; } class B extends A {} console.log(B.x);</code></td><td><code>1</code> — static members are inherited too, not just instance members</td></tr>
+<tr><td><code>console.log(1 + "1" - 1);</code></td><td><code>10</code> — <code>1 + "1"</code> is <code>"11"</code> (left to right), then <code>"11" - 1</code> forces both back to numbers</td></tr>
+<tr><td><code>let a; console.log(a ?? "default", a || "default");</code></td><td><code>"default" "default"</code> — same result here only because <code>undefined</code> is both nullish and falsy; they'd disagree if <code>a</code> were <code>0</code></td></tr>
+<tr><td><code>console.log(Object.keys({ 2: "b", 1: "a", x: "c" }));</code></td><td><code>["1", "2", "x"]</code> — integer-like keys are always visited first, in ascending numeric order, before insertion-order string keys</td></tr>
+</tbody>
+</table></div>
+<p class="sub">
+  Every one of these is explained in full somewhere else on this
+  track — the event loop in <a href="/notes/single-thread">One thread,
+  one stack</a>, closures in <a href="/notes/closures">Closures</a>,
+  coercion in <a href="/notes/operators-flow">Operators &amp; flow</a>.
+  This table exists because an interview mixes them without warning;
+  reading each chapter once teaches recognition, drilling them mixed
+  like this is what builds recall under pressure.
+</p>
+
 <div class="bx is-ref">
   <span class="ttl">The three that decide most interviews</span>
   <p>

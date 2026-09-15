@@ -78,6 +78,48 @@ requestIdleCallback(() =&gt; {
   the render pipeline.
 </p>
 
+<h3>Yielding on purpose: scheduler.yield and postTask</h3>
+<pre><code>async function processLargeList(items) {
+  for (const item of items) {
+    doWork(item);
+    if (needsToYield()) {
+      await scheduler.yield();   <span class="c">// give the browser a turn, then resume right where you left off</span>
+    }
+  }
+}
+
+scheduler.postTask(() =&gt; renderChart(), { priority: "user-visible" });
+scheduler.postTask(() =&gt; sendAnalytics(), { priority: "background" });</code></pre>
+<p class="sub">
+  <code>scheduler.yield()</code> is the modern replacement for the old
+  <code>setTimeout(fn, 0)</code> trick people used to hand control back
+  to the browser mid-loop — it returns a promise that resolves on the
+  next turn, and unlike a plain <code>setTimeout</code>, the resumed
+  work keeps its place in the priority queue rather than dropping to
+  the back of it. <code>scheduler.postTask</code> is the explicit
+  version of what <code>requestIdleCallback</code> only approximated: a
+  real priority (<code>"user-blocking"</code>, <code>"user-visible"</code>,
+  <code>"background"</code>) instead of just "whenever there's spare
+  time," so a chart the user is looking at can jump ahead of an
+  analytics call that can wait.
+</p>
+
+<h3>Long Animation Frames — what actually blocked the frame</h3>
+<pre><code>new PerformanceObserver((list) =&gt; {
+  for (const entry of list.getEntries()) {
+    console.log(entry.duration, "ms frame, blocked by:", entry.scripts.map((s) =&gt; s.sourceURL));
+  }
+}).observe({ type: "long-animation-frame", buffered: true });</code></pre>
+<p class="sub">
+  A long task (below) only knows <em>that</em> the main thread was busy
+  past 50ms. A Long Animation Frame (LoAF) entry knows <em>why</em>:
+  which specific script, which function, and how much of the frame went
+  to style/layout versus the script itself. It's the metric that
+  finally answers "which of my 40 third-party scripts is actually
+  causing the janky scroll," instead of a long-task list with no names
+  attached.
+</p>
+
 <h3>The metrics that actually get measured</h3>
 <table>
   <tr>
@@ -131,6 +173,35 @@ function mountVirtualList(viewport, items, rowHeight) {
   the bottom of the page) — trading a little wasted bandwidth on guesses
   that don't pan out for a page that already has the next thing ready.
 </p>
+
+<h3>Resource hints — telling the browser what's coming</h3>
+<pre><code>&lt;link rel="preconnect" href="https://api.example.com"&gt;
+&lt;link rel="preload" href="/fonts/main.woff2" as="font" crossorigin&gt;
+&lt;img src="hero.jpg" fetchpriority="high"&gt;
+&lt;img src="footer-logo.png" fetchpriority="low" loading="lazy"&gt;</code></pre>
+<table>
+  <tr><th>Hint</th><th>Tells the browser</th></tr>
+  <tr><td><code>preconnect</code></td><td>open the connection (DNS, TCP, TLS) to this origin now, before anything actually needs it</td></tr>
+  <tr><td><code>preload</code></td><td>fetch this exact resource now — it will be needed soon, don't wait to discover it</td></tr>
+  <tr><td><code>fetchpriority</code></td><td>override the browser's own guess at how urgent this particular resource is</td></tr>
+</table>
+<p class="sub">
+  <code>preload</code> is for something the browser wouldn't otherwise
+  find early — a font referenced only inside CSS, or an image set by
+  JavaScript rather than a plain <code>&lt;img&gt;</code> tag the parser
+  can see immediately. <code>fetchpriority="high"</code> is the direct
+  fix for the classic LCP problem: the actual hero image is often not
+  the highest-priority request the browser guesses on its own, and
+  telling it explicitly can shave real time off the largest paint.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ Preloading too much is its own performance bug</span>
+  Every <code>preload</code> competes for the same limited bandwidth at
+  the start of a page load. Preloading everything "just in case" can
+  push back the request that actually mattered — reserve it for the one
+  or two resources profiling has shown to be on the critical path, not
+  as a default habit.
+</div>
 
 <h3>WebAssembly, and when it is worth it</h3>
 <p>

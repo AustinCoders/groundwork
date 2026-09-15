@@ -6,7 +6,7 @@ export const engineMemory: Chapter = {
   title: "Engine & memory",
   short: "Engine & memory",
   levels: ["advanced"],
-  practice: ["ex-weakmap-cache"],
+  practice: ["ex-weakmap-cache", "ex-cleanup-registry"],
   ready: true,
   subtitle: "What V8 is actually doing while your code just runs.",
   body: `<p>
