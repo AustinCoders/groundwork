@@ -44,6 +44,8 @@ yarn-error.log*
 AGENTS.md
 CLAUDE.md
 
+.claude/settings.local.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

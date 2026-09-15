@@ -16,6 +16,8 @@
     "spell": "cspell --no-progress --gitignore --dot .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "vercel:cleanup": "node scripts/vercel-cleanup.mjs",
+    "vercel:cleanup:execute": "node scripts/vercel-cleanup.mjs --execute",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run spell && npm test",
     "prepare": "husky",
     "test:e2e": "playwright test",
