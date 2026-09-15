@@ -393,6 +393,41 @@ console.log(s.slice(2, 7));</code></pre>
   </tr>
 </table>
 
+<h3>Tagged templates — a function that intercepts a template literal</h3>
+<div class="try">
+  <pre><code>function highlight(strings, ...values) {
+  return strings.reduce(
+    (out, str, i) =&gt; out + str + (values[i] !== undefined ? "**" + values[i] + "**" : ""),
+    ""
+  );
+}
+
+const name = "Ana", score = 97;
+console.log(highlight\`Player \${name} scored \${score}\`);   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>"Player **Ana** scored **97**"</code> — putting a function name
+  directly before a template literal, with no parentheses, doesn't
+  interpolate the string first and hand you the result: it calls
+  <code>highlight</code> with the literal pieces split apart —
+  <code>["Player ", " scored ", ""]</code> as <code>strings</code>, and
+  <code>[name, score]</code> as the individual values — so the function
+  decides how to combine them. This is exactly how CSS-in-JS libraries
+  (<code>styled-components</code>' <code>styled.div\`...\`</code>) and
+  SQL-templating libraries intercept a query to escape each
+  interpolated value before it ever touches a real query string.
+</p>
+<pre><code>console.log(String.raw\`Line 1\\nLine 2\`);   <span class="c">// what happens?</span></code></pre>
+<p class="sub">
+  <code>"Line 1\\nLine 2"</code>, printed literally with the backslash
+  and the "n" still visible — not an actual line break.
+  <code>String.raw</code> is the one built-in tag, and it receives the
+  <b>raw</b>, unescaped source text (<code>strings.raw</code> instead of
+  <code>strings</code>), which is exactly why a Windows file path like
+  <code>String.raw\`C:\\Users\\ana\`</code> can be written without
+  doubling every backslash.
+</p>
+
 <h3>Truthy / falsy — the eight</h3>
 <p>
   The falsy list is short and <b>closed</b>. Memorise these eight —

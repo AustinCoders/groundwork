@@ -6,7 +6,7 @@ export const objectsDeep: Chapter = {
   title: "Objects deeply",
   short: "Objects deeply",
   levels: ["intermediate"],
-  practice: ["ex-group-by", "ex-no-mutation", "ex-dedupe-map"],
+  practice: ["ex-group-by", "ex-no-mutation", "ex-dedupe-map", "ex-group-and-overlap"],
   ready: true,
   subtitle: "The rest of the object/array toolbox — past what the beginner chapter covered.",
   body: `<p>
@@ -173,6 +173,103 @@ Array.from("abc");                             <span class="c">// ["a", "b", "c"
 [1, [2, [3, [4]]]].flat(2);                    <span class="c">// [1, 2, 3, [4]] — only 2 levels deep</span>
 [1, 2, 3].flatMap(x =&gt; [x, x * 10]);           <span class="c">// [1, 10, 2, 20, 3, 30]</span>
 [1, 2, 3].at(-1);                              <span class="c">// 3</span></code></pre>
+
+<h3>The immutable array twins — toSorted, toReversed, toSpliced, with</h3>
+<p>
+  Four methods added specifically because their mutating originals are
+  a common accidental-mutation bug: <code>.sort()</code>,
+  <code>.reverse()</code>, <code>.splice()</code>, and index assignment
+  each now have a non-mutating sibling that returns a brand-new array
+  and leaves the original untouched.
+</p>
+<pre><code>const original = [3, 1, 2];
+
+original.toSorted();       <span class="c">// [1, 2, 3] — original is untouched</span>
+original.toReversed();     <span class="c">// [2, 1, 3]</span>
+original.toSpliced(1, 1);  <span class="c">// [3, 2] — removes index 1, returns the result, doesn't touch original</span>
+original.with(0, 99);      <span class="c">// [99, 1, 2] — like original[0] = 99, but as a copy</span>
+
+console.log(original);     <span class="c">// [3, 1, 2] — every one of the four left it exactly as it was</span></code></pre>
+<p class="sub">
+  Before these existed, the standard workaround was
+  <code>[...original].sort()</code> — copy first, then mutate the copy.
+  The <code>to*</code>/<code>with</code> methods do the same thing in
+  one call, and read as intent rather than a defensive habit: "give me a
+  sorted copy," not "copy this so it's safe to sort."
+</p>
+
+<h3>findLast and findLastIndex</h3>
+<pre><code>const orders = [
+  { id: 1, status: "shipped" },
+  { id: 2, status: "pending" },
+  { id: 3, status: "shipped" },
+];
+
+orders.find((o) =&gt; o.status === "shipped");       <span class="c">// order 1 — first match</span>
+orders.findLast((o) =&gt; o.status === "shipped");   <span class="c">// order 3 — last match, still one pass, just walked from the end</span></code></pre>
+<p class="sub">
+  Before <code>findLast</code>, "the most recent matching item" meant
+  reversing the array first (an allocation) or writing the loop
+  backward by hand. It's the same relationship <code>.find</code> and
+  <code>.findLast</code> now have that <code>.indexOf</code> and
+  <code>.lastIndexOf</code> already had for plain values.
+</p>
+
+<h3>Object.groupBy — grouping without a reduce</h3>
+<pre><code>const people = [
+  { name: "Ana", team: "core" },
+  { name: "Ravi", team: "core" },
+  { name: "Mei", team: "infra" },
+];
+
+const byTeam = Object.groupBy(people, (p) =&gt; p.team);
+console.log(byTeam);
+<span class="c">// { core: [{name:"Ana",...}, {name:"Ravi",...}], infra: [{name:"Mei",...}] }</span></code></pre>
+<p class="sub">
+  This used to be a <code>reduce</code> everyone wrote slightly
+  differently — start an accumulator object, check whether the key
+  exists yet, push or initialize. <code>Object.groupBy</code> is exactly
+  that pattern, standardized and readable at the call site.
+  <code>Map.groupBy</code> is the same idea with a real
+  <code>Map</code> as the result, useful the moment a group key isn't a
+  plain string.
+</p>
+
+<h3>Set gets algebra: union, intersection, difference</h3>
+<pre><code>const a = new Set([1, 2, 3]);
+const b = new Set([2, 3, 4]);
+
+a.union(b);                 <span class="c">// Set(4) {1, 2, 3, 4}</span>
+a.intersection(b);          <span class="c">// Set(2) {2, 3}</span>
+a.difference(b);            <span class="c">// Set(1) {1} — in a, not in b</span>
+a.symmetricDifference(b);   <span class="c">// Set(2) {1, 4} — in exactly one of the two</span>
+a.isSubsetOf(new Set([1, 2, 3, 4]));   <span class="c">// true</span></code></pre>
+<p class="sub">
+  Before these, a set operation meant dropping to
+  <code>[...a].filter((x) =&gt; b.has(x))</code> and back into a
+  <code>new Set(...)</code> — correct, but re-derived by hand every
+  time. These five are the textbook set-theory operations, built in,
+  and every one returns a brand-new <code>Set</code> without touching
+  either input.
+</p>
+
+<h3>Locking an object down: seal, freeze, preventExtensions</h3>
+<table>
+  <tr><th>Call</th><th>Add new keys?</th><th>Delete keys?</th><th>Change existing values?</th></tr>
+  <tr><td><code>Object.preventExtensions(o)</code></td><td>no</td><td>yes</td><td>yes</td></tr>
+  <tr><td><code>Object.seal(o)</code></td><td>no</td><td>no</td><td>yes</td></tr>
+  <tr><td><code>Object.freeze(o)</code></td><td>no</td><td>no</td><td>no</td></tr>
+</table>
+<pre><code>const config = Object.freeze({ retries: 3 });
+config.retries = 99;          <span class="c">// silently does nothing in sloppy mode, throws a TypeError in strict mode/modules</span>
+console.log(config.retries);  <span class="c">// 3 — unchanged either way</span></code></pre>
+<div class="warn">
+  <span class="ttl">⚠ freeze is shallow, exactly like spread</span>
+  <code>Object.freeze({ nested: { count: 1 } })</code> only locks the
+  top level — <code>frozen.nested.count = 99</code> works fine, because
+  <code>nested</code> itself was never frozen. A genuinely deep freeze
+  means walking every nested object and freezing each one individually.
+</div>
 
 <h3>Sort stability</h3>
 <p>

@@ -6,7 +6,7 @@ export const prototypesOop: Chapter = {
   title: "Prototypes & OOP",
   short: "Prototypes & OOP",
   levels: ["intermediate"],
-  practice: ["ex-class-extends"],
+  practice: ["ex-class-extends", "ex-brand-check"],
   ready: true,
   subtitle: "class is real syntax now — but it's still prototypes underneath, every time.",
   body: `<h3>The prototype chain</h3>
@@ -269,6 +269,152 @@ c1.describe();   <span class="c">// "Circle #1 (r=5)"</span></code></pre>
   underscore-means-private convention, which was never actually
   enforced by anything.
 </div>
+
+<h3>Private methods, and checking for a private field</h3>
+<p>
+  <code>#</code> isn't only for fields — a method name can start with
+  <code>#</code> too, and the same parser-enforced privacy applies: it's
+  callable only from inside the class body, on any instance of that
+  class, not just <code>this</code>.
+</p>
+<pre><code>class Counter {
+  #count = 0;
+  #validate(n) {                      <span class="c">// private method — never visible outside</span>
+    if (n &lt; 0) throw new RangeError("count can't go negative");
+  }
+  add(n) {
+    this.#validate(n);
+    this.#count += n;
+    return this.#count;
+  }
+  static isCounter(obj) {
+    return #count in obj;             <span class="c">// "ergonomic brand check" — true only for real instances</span>
+  }
+}
+
+const c = new Counter();
+c.add(5);                              <span class="c">// 5</span>
+Counter.isCounter(c);                  <span class="c">// true</span>
+Counter.isCounter({ count: 5 });       <span class="c">// false — a look-alike object, not a real instance</span></code></pre>
+<p class="sub">
+  <code>#count in obj</code> is the blessed way to ask "does this
+  object actually have this private field" without triggering the
+  <code>TypeError</code> that <code>obj.#count</code> throws on a
+  non-instance. It's the closest JS gets to a true nominal type check —
+  duck typing can't fake it, because a plain object can never gain a
+  real <code>#count</code> slot from outside the class that declared it.
+</p>
+
+<h3>Static blocks — setup that runs once, per class</h3>
+<pre><code>class Config {
+  static #data;
+  static {                                      <span class="c">// runs exactly once, when the class is defined</span>
+    try {
+      Config.#data = JSON.parse(readConfigFile());
+    } catch {
+      Config.#data = {};
+    }
+  }
+  static get(key) { return Config.#data[key]; }
+}</code></pre>
+<p class="sub">
+  Before static blocks, involved static setup meant either one static
+  field with an ugly inline expression, or an <code>init()</code>
+  static method every caller had to remember to invoke. A static block
+  runs automatically, can span multiple statements, and — because it
+  executes inside the class body — can read and write private static
+  fields that code outside the class never could.
+</p>
+
+<h3>new.target — knowing whether new was actually used</h3>
+<pre><code>function Widget(name) {
+  if (!new.target) {
+    throw new TypeError("Widget() must be called with new");
+  }
+  this.name = name;
+}
+
+new Widget("ok");         <span class="c">// fine — new.target is Widget</span>
+Widget("oops");            <span class="c">// throws immediately instead of silently polluting the global this</span></code></pre>
+<p class="sub">
+  <code>new.target</code> is <code>undefined</code> when a function is
+  called plainly, and holds the constructor actually invoked with
+  <code>new</code> otherwise — including inside a subclass's
+  <code>super()</code> call, where it's set to the subclass, not the
+  base. <code>class</code> constructors reject a missing
+  <code>new</code> automatically; <code>new.target</code> is the
+  mechanism that makes that possible, and it's occasionally useful
+  directly — an abstract-base-class pattern can throw specifically when
+  <code>new.target === Shape</code> itself, while still allowing
+  <code>new Circle()</code> to run <code>Shape</code>'s constructor.
+</p>
+
+<h3>Extending a built-in, safely</h3>
+<pre><code>class TrackedArray extends Array {
+  push(...items) {
+    console.log("pushing", items.length, "item(s)");
+    return super.push(...items);
+  }
+}
+
+const t = new TrackedArray(1, 2, 3);
+t.push(4);                                        <span class="c">// logs, then behaves exactly like a real array</span>
+t.map((n) =&gt; n * 2) instanceof TrackedArray;        <span class="c">// true — array methods return the subclass</span></code></pre>
+<div class="warn">
+  <span class="ttl">⚠ this only works because of real class semantics</span>
+  Extending <code>Array</code> (or <code>Error</code>, <code>Map</code>)
+  with old-style <code>function</code>/<code>prototype</code> code never
+  fully worked — the internal exotic behavior (an array's live
+  <code>.length</code>, an error's <code>.stack</code>) can't be faked
+  by manually wiring up a prototype chain the way the earlier
+  <code>myNew</code> demo did. Real <code>class ... extends</code>
+  delegates object creation to the built-in constructor itself, which is
+  the only thing that can produce a genuinely exotic object — one of the
+  few things <code>class</code> can do that the older syntax structurally
+  could not.
+</div>
+
+<h3>Object.create(null) — an object with no prototype at all</h3>
+<pre><code>const dict = Object.create(null);
+dict.toString;                 <span class="c">// undefined — no Object.prototype to inherit it from</span>
+dict.hasOwnProperty;           <span class="c">// undefined too</span>
+
+const normal = {};
+normal.toString;               <span class="c">// ƒ () — inherited from Object.prototype, as always</span></code></pre>
+<p class="sub">
+  Every object literal implicitly inherits from
+  <code>Object.prototype</code> — that's where <code>toString</code>,
+  <code>hasOwnProperty</code> and <code>valueOf</code> actually come
+  from. <code>Object.create(null)</code> skips that, producing a truly
+  bare object: no inherited methods, and no risk of a data key
+  colliding with one — a user-controlled key literally named
+  <code>"toString"</code> or <code>"__proto__"</code> is completely
+  inert here. That's why a hand-rolled lookup table sometimes reaches
+  for this instead of <code>{}</code> — though a real <code>Map</code>
+  (from the next chapter) is usually the safer default for keys you
+  don't fully control.
+</p>
+
+<h3>Symbol.hasInstance — instanceof is not magic either</h3>
+<pre><code>class Even {
+  static [Symbol.hasInstance](value) {
+    return typeof value === "number" &amp;&amp; value % 2 === 0;
+  }
+}
+
+console.log(4 instanceof Even);    <span class="c">// what happens?</span>
+console.log(5 instanceof Even);    <span class="c">// what happens?</span></code></pre>
+<p class="sub">
+  <code>true</code>, then <code>false</code> — <code>instanceof</code>
+  doesn't hard-code "walk the prototype chain"; it calls
+  <code>Symbol.hasInstance</code> on the right-hand side when one
+  exists, and only falls back to the ordinary prototype-chain walk
+  otherwise. This is the same well-known-symbol mechanism the
+  metaprogramming chapter covers for iteration and coercion —
+  <code>instanceof</code>, <code>for...of</code>, and
+  template-literal-to-string are all operators with a symbol-shaped
+  escape hatch, not fixed language rules.
+</p>
 
 <h3>Composition vs inheritance, and mixins</h3>
 <p>

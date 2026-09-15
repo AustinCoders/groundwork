@@ -6,7 +6,7 @@ export const asyncProperly: Chapter = {
   title: "Async, properly",
   short: "Async, properly",
   levels: ["intermediate"],
-  practice: ["ex-order-predict", "ex-parallel-load", "ex-retry"],
+  practice: ["ex-order-predict", "ex-parallel-load", "ex-retry", "ex-sequential-save"],
   ready: true,
   subtitle: "Promises, done right — and the sequential-vs-parallel mistake almost everyone makes once.",
   body: `<p>
@@ -59,6 +59,32 @@ console.log("parallel ~", await parallel(), "ms");</code></pre>
   awaiting either), and only then await. This exact mistake — awaiting
   three independent API calls one by one instead of together — is
   a very common, very real source of a slow page.
+</p>
+
+<h3>forEach doesn't wait — the async loop trap</h3>
+<div class="try">
+  <pre><code>function save(item) {
+  return new Promise((resolve) =&gt; setTimeout(resolve, 50));
+}
+
+async function processAll(items) {
+  items.forEach(async (item) =&gt; {
+    await save(item);          <span class="c">// forEach has ALREADY moved to the next item by the time this resolves</span>
+  });
+  console.log("done!");         <span class="c">// what happens?</span>
+}
+processAll([1, 2, 3]);</code></pre>
+</div>
+<p class="sub">
+  <code>"done!"</code> logs almost immediately — before any of the
+  three saves finish. <code>forEach</code> calls its callback three
+  times and never looks at what any of them return; an
+  <code>async</code> callback still returns a promise,
+  <code>forEach</code> just throws every one of those promises away
+  unread. The fix is a plain <code>for...of</code> loop (sequential,
+  each <code>await</code> genuinely pauses the outer function) or
+  <code>await Promise.all(items.map((i) =&gt; save(i)))</code> (parallel,
+  and the outer function actually waits for all three before logging).
 </p>
 
 <h3>The four combinators</h3>
@@ -129,6 +155,62 @@ const report = await withTimeout(
   <code>AbortSignal.timeout(5000)</code> returns a signal that aborts
   itself on schedule — pass it straight to <code>fetch</code>'s
   <code>signal</code> option.
+</p>
+
+<h3>Promise.withResolvers — resolve/reject without smuggling them out</h3>
+<pre><code>function createDeferred() {                                        <span class="c">// the old way</span>
+  let resolve, reject;
+  const promise = new Promise((res, rej) =&gt; { resolve = res; reject = rej; });
+  return { promise, resolve, reject };
+}
+
+<span class="c">// the same thing, built in:</span>
+const { promise, resolve, reject } = Promise.withResolvers();</code></pre>
+<p class="sub">
+  A "deferred" — a promise whose <code>resolve</code>/<code>reject</code>
+  are usable from <em>outside</em> its own executor — used to require
+  the slightly awkward pattern on the left, capturing the callbacks into
+  outer variables. <code>Promise.withResolvers()</code> is exactly that
+  pattern, standardized. It's useful anywhere a promise needs to be
+  settled by something other than its own executor — bridging an
+  event-based API, or a queue where one function enqueues work and a
+  separate callback resolves it later.
+</p>
+
+<h3>Anything with a .then is a thenable — await doesn't require a real Promise</h3>
+<pre><code>const thenable = {
+  then(resolve) {
+    setTimeout(() =&gt; resolve(42), 10);
+  },
+};
+
+console.log(await thenable);   <span class="c">// what happens?</span></code></pre>
+<p class="sub">
+  <code>42</code> — <code>await</code> (and <code>Promise.resolve</code>,
+  and <code>.then</code> chaining) don't check for
+  <code>instanceof Promise</code>; they check for a callable
+  <code>.then</code> method, full stop. That's how libraries which
+  predate native promises interoperate with <code>await</code> with no
+  adapter needed — and it's also a real gotcha: an object that merely
+  happens to have a property named <code>then</code>, for entirely
+  unrelated reasons, gets treated as a promise by anything that awaits
+  it.
+</p>
+
+<h3>Linking multiple abort reasons</h3>
+<pre><code>const userCancel = new AbortController();
+const timeout = AbortSignal.timeout(5000);
+
+const signal = AbortSignal.any([userCancel.signal, timeout]);   <span class="c">// fires when EITHER does</span>
+fetch("/api/report", { signal });
+
+cancelButton.addEventListener("click", () =&gt; userCancel.abort());</code></pre>
+<p class="sub">
+  <code>AbortSignal.any(signals)</code> returns one combined signal that
+  aborts the moment any of its inputs does, carrying whichever reason
+  fired first — the standard way to give one request both a timeout and
+  a user-triggered cancel button without wiring two separate
+  <code>abort</code> listeners by hand.
 </p>
 
 <h3>Retries</h3>

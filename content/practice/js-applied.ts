@@ -170,6 +170,74 @@ export const jsApplied: Exercise[] = [
     ],
   },
 {
+    id: "ex-find-closest",
+    chapter: "dom-events",
+    level: "beginner",
+    title: "Walk up to the nearest matching ancestor",
+    brief:
+      "<p>Real DOM nodes aren't available in this sandbox, but <code>el.closest(selector)</code> is really just \"walk <code>.parent</code> links upward until something matches, or run out of tree.\" Write <code>findClosest(node, predicate)</code> against a plain <code>{ tag, parent }</code> tree.</p><ul><li>Check <code>node</code> itself first — <code>closest()</code> includes the starting element</li><li>Then check <code>node.parent</code>, then <code>node.parent.parent</code>, and so on</li><li>Return <code>null</code> if nothing all the way up matches</li></ul>",
+    starter:
+      "function findClosest(node, predicate) {\n  // TODO: check node, then walk node.parent upward, returning the first match or null\n}\n",
+    hints: [
+      "A simple while loop works: start at node, test it, then reassign to current.parent each time it fails.",
+      "The loop ends when current becomes null/undefined — the root's parent — without ever matching.",
+    ],
+    solution:
+      "function findClosest(node, predicate) {\n  let current = node;\n  while (current) {\n    if (predicate(current)) return current;\n    current = current.parent;\n  }\n  return null;\n}\n",
+    tests: [
+      {
+        name: "returns the starting node when it already matches",
+        body: 'const row = { tag: "tr" };\nassert.equal(findClosest(row, (n) => n.tag === "tr"), row);',
+      },
+      {
+        name: "walks upward past several non-matching ancestors",
+        body: 'const row = { tag: "tr" };\nconst cell = { tag: "td", parent: row };\nconst icon = { tag: "span", parent: cell };\nassert.equal(findClosest(icon, (n) => n.tag === "tr"), row);',
+      },
+      {
+        name: "returns null when nothing in the chain matches",
+        body: 'const root = { tag: "body" };\nconst cell = { tag: "td", parent: root };\nassert.equal(findClosest(cell, (n) => n.tag === "tr"), null);',
+      },
+      {
+        name: "a lone node with no parent and no match returns null",
+        body: 'assert.equal(findClosest({ tag: "div" }, (n) => n.tag === "tr"), null);',
+      },
+    ],
+  },
+{
+    id: "ex-brand-check",
+    chapter: "prototypes-oop",
+    level: "intermediate",
+    title: "Brand a class with a private field check",
+    brief:
+      "<p>Give <code>Stack</code> a private field <code>#items</code> and a <code>static isStack(obj)</code> that returns <code>true</code> only for a real <code>Stack</code> instance — never for a look-alike plain object, even one with an <code>items</code> array on it.</p><ul><li>Use <code>#items in obj</code> inside <code>isStack</code>, not <code>instanceof</code></li><li><code>push(x)</code> adds to the top, <code>pop()</code> removes and returns the top item</li></ul>",
+    starter:
+      "class Stack {\n  #items = [];\n  push(x) {\n    // TODO\n  }\n  pop() {\n    // TODO\n  }\n  static isStack(obj) {\n    // TODO: true only for a real Stack instance\n  }\n}\n",
+    hints: [
+      "#items in obj throws if obj isn't an object at all — but for a plain {} it safely returns false rather than throwing.",
+      "push/pop are just Array.prototype.push/pop on the private field.",
+    ],
+    solution:
+      "class Stack {\n  #items = [];\n  push(x) {\n    this.#items.push(x);\n    return this.#items.length;\n  }\n  pop() {\n    return this.#items.pop();\n  }\n  static isStack(obj) {\n    return typeof obj === \"object\" && obj !== null && #items in obj;\n  }\n}\n",
+    tests: [
+      {
+        name: "push then pop returns the last pushed item",
+        body: "const s = new Stack();\ns.push(1);\ns.push(2);\nassert.equal(s.pop(), 2);\nassert.equal(s.pop(), 1);",
+      },
+      {
+        name: "isStack is true for a real instance",
+        body: "assert.equal(Stack.isStack(new Stack()), true);",
+      },
+      {
+        name: "isStack is false for a look-alike plain object",
+        body: "assert.equal(Stack.isStack({ items: [1, 2] }), false);",
+      },
+      {
+        name: "isStack is false for null and primitives, without throwing",
+        body: "assert.equal(Stack.isStack(null), false);\nassert.equal(Stack.isStack(5), false);",
+      },
+    ],
+  },
+{
     id: "ex-delayed-double",
     chapter: "basic-async",
     level: "beginner",

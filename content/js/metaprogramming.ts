@@ -187,6 +187,109 @@ user.age = "nope";   <span class="c">// throws immediately — invalid data can'
   quietly undermine.
 </p>
 
+<h3>WeakRef and FinalizationRegistry — watching garbage collection happen</h3>
+<pre><code>let obj = { data: "large payload" };
+const ref = new WeakRef(obj);
+
+console.log(ref.deref());   <span class="c">// { data: "large payload" } — still alive, obj still references it</span>
+
+obj = null;                  <span class="c">// the only strong reference is gone</span>
+<span class="c">// at some LATER point, once GC actually runs:</span>
+console.log(ref.deref());   <span class="c">// undefined — the object is gone, and deref says so</span></code></pre>
+<p>
+  <code>WeakRef</code> holds a reference that doesn't itself keep an
+  object alive — a step further than
+  <a href="/notes/objects-deep">WeakMap</a>, which at least ties the
+  weak reference to a key you still hold.
+  <code>FinalizationRegistry</code> goes one step further still:
+  register a callback that runs, at some unpredictable point on the
+  engine's own schedule, after an object has actually been collected.
+</p>
+<pre><code>const registry = new FinalizationRegistry((heldValue) =&gt; {
+  console.log("cleaned up:", heldValue);
+});
+registry.register(obj, "obj's id or label");</code></pre>
+<div class="warn">
+  <span class="ttl">⚠ Never build correctness on either of these</span>
+  Both exist for <em>optimization and diagnostics</em> only — freeing an
+  external resource (a file handle, a WASM buffer) as a best-effort
+  backstop, or a memory profiler watching what actually gets collected.
+  The specification explicitly does not guarantee a finalizer ever runs
+  at all, let alone promptly — an engine can delay it indefinitely, or
+  skip it entirely at page-unload. Real cleanup that has to happen
+  belongs in an explicit method call, or the <code>using</code>
+  declaration below — never a finalizer.
+</div>
+
+<h3>using — deterministic cleanup, without a manual try/finally</h3>
+<pre><code>class FileHandle {
+  constructor(name) {
+    this.name = name;
+    console.log("opened", name);
+  }
+  [Symbol.dispose]() {
+    console.log("closed", this.name);
+  }
+}
+
+function readConfig() {
+  using file = new FileHandle("config.json");   <span class="c">// disposed automatically at the end of THIS block</span>
+  console.log("reading", file.name);
+}                                                  <span class="c">// [Symbol.dispose]() runs HERE, even if an error was thrown above</span>
+
+readConfig();
+<span class="c">// opened config.json</span>
+<span class="c">// reading config.json</span>
+<span class="c">// closed config.json</span></code></pre>
+<p class="sub">
+  <code>using</code> is a declaration, like <code>const</code>, that
+  additionally calls <code>[Symbol.dispose]()</code> on the value the
+  instant its scope ends — normal exit, an early <code>return</code>, or
+  an exception, all equally. It's the same guarantee
+  <code>try/finally</code> gives, without the indentation and without
+  anyone forgetting to write the <code>finally</code> block. An
+  <code>await using</code> variant exists for resources that need an
+  asynchronous close (<code>[Symbol.asyncDispose]()</code>) — a database
+  connection, a browser lock.
+</p>
+
+<h3>Decorators — declarative behavior on a class or its members</h3>
+<pre><code>function logged(originalMethod, context) {
+  const name = String(context.name);
+  return function (...args) {
+    console.log("calling", name, "with", args);
+    return originalMethod.call(this, ...args);
+  };
+}
+
+class Api {
+  @logged
+  fetchUser(id) {
+    return { id, name: "Ana" };
+  }
+}
+
+new Api().fetchUser(1);   <span class="c">// what happens?</span></code></pre>
+<p class="sub">
+  Logs <code>"calling fetchUser with [1]"</code>, then returns the user
+  as normal — the decorator wraps the original method without its own
+  body ever changing. A decorator is a function that receives the thing
+  it's decorating (a method, a field, or a whole class) plus a
+  <code>context</code> object describing it, and returns a replacement.
+  It's the same idea Angular and NestJS have used for years —
+  <code>@Component</code>, <code>@Injectable</code> — now standardized
+  into the language itself rather than requiring a compiler transform to
+  approximate it.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ Check the target before reaching for a decorator</span>
+  Decorators reached Stage 3 and shipped in real engines only recently —
+  confirm the runtime and bundler target actually support the current
+  proposal before using them. TypeScript's older
+  <code>experimentalDecorators</code> flag implements a different,
+  earlier, incompatible version of the same idea.
+</div>
+
 <h3>eval and new Function — and why almost never</h3>
 <pre><code>eval("console.log(1 + 1)");           <span class="c">// runs in the CALLING scope — can read/write local variables</span>
 new Function("a", "b", "return a + b");  <span class="c">// runs in GLOBAL scope only — can't see any local variable</span></code></pre>

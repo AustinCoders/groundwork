@@ -387,6 +387,40 @@ export const jsFundamentals: Exercise[] = [
     ],
   },
 {
+    id: "ex-group-and-overlap",
+    chapter: "objects-deep",
+    level: "intermediate",
+    title: "Group with Object.groupBy, compare with Set",
+    brief:
+      "<p>Two small pieces using the newer collection helpers from this chapter:</p><ul><li><code>groupByStatus(orders)</code> &rarr; groups an array of <code>{ id, status }</code> objects by <code>status</code>, using <code>Object.groupBy</code></li><li><code>commonIds(a, b)</code> &rarr; the ids present in <b>both</b> arrays, using <code>Set.prototype.intersection</code>, returned as a sorted array</li></ul>",
+    starter:
+      "function groupByStatus(orders) {\n  // TODO: use Object.groupBy\n}\n\nfunction commonIds(a, b) {\n  // TODO: use Set intersection, return a sorted array\n}\n",
+    hints: [
+      "Object.groupBy(orders, (o) => o.status) does the whole job in one call.",
+      "new Set(a).intersection(new Set(b)) returns a Set — spread it into an array, then .sort().",
+    ],
+    solution:
+      "function groupByStatus(orders) {\n  return Object.groupBy(orders, (o) => o.status);\n}\n\nfunction commonIds(a, b) {\n  return [...new Set(a).intersection(new Set(b))].sort((x, y) => x - y);\n}\n",
+    tests: [
+      {
+        name: "groups orders by status",
+        body: 'const orders = [{ id: 1, status: "shipped" }, { id: 2, status: "pending" }, { id: 3, status: "shipped" }];\nconst grouped = groupByStatus(orders);\nassert.equal(grouped.shipped.length, 2);\nassert.equal(grouped.pending.length, 1);\nassert.equal(grouped.shipped[0].id, 1);',
+      },
+      {
+        name: "a status with no matching orders is simply absent",
+        body: 'const grouped = groupByStatus([{ id: 1, status: "shipped" }]);\nassert.equal(grouped.pending, undefined);',
+      },
+      {
+        name: "commonIds returns ids present in both, sorted",
+        body: "assert.deepEqual(commonIds([3, 1, 2], [2, 3, 4]), [2, 3]);",
+      },
+      {
+        name: "commonIds is empty when nothing overlaps",
+        body: "assert.deepEqual(commonIds([1, 2], [3, 4]), []);",
+      },
+    ],
+  },
+{
     id: "ex-class-extends",
     chapter: "prototypes-oop",
     level: "advanced",
@@ -515,6 +549,40 @@ export const jsFundamentals: Exercise[] = [
       {
         name: "rejects with the last error",
         body: 'let n = 0;\nconst bad = function () { n++; return Promise.reject(new Error("fail " + n)); };\nlet message = "";\ntry { await retry(bad, 2); } catch (err) { message = err.message; }\nassert.equal(message, "fail 2");',
+      },
+    ],
+  },
+{
+    id: "ex-sequential-save",
+    chapter: "async-properly",
+    level: "intermediate",
+    title: "Fix the forEach that doesn't actually wait",
+    brief:
+      "<p><code>saveAll(items, save)</code> should resolve once every item has been saved, with an array of each result, in the same order as <code>items</code>. Right now it resolves almost immediately with the wrong value entirely — the async loop trap from this chapter.</p><ul><li>Every item's <code>save(item)</code> must actually run, and <code>saveAll</code> must not resolve until all of them have</li><li>Run the saves in parallel — don't wait for one before starting the next</li><li>Results come back in the same order as <code>items</code>, even if the saves themselves finish in a different order</li></ul>",
+    starter:
+      'async function saveAll(items, save) {\n  items.forEach(async (item) => {\n    await save(item);\n  });\n  return "done";\n}\n',
+    hints: [
+      "forEach never looks at what its callback returns — an async callback's promise is thrown away unread, so saveAll never actually waits for anything.",
+      "Promise.all(items.map((item) => save(item))) starts every save immediately and resolves with all the results, in order, once every one has finished.",
+    ],
+    solution:
+      "async function saveAll(items, save) {\n  return Promise.all(items.map((item) => save(item)));\n}\n",
+    tests: [
+      {
+        name: "waits for every save before resolving",
+        body: 'let finished = 0;\nconst save = (x) => new Promise((r) => setTimeout(() => { finished++; r(x * 2); }, 10));\nconst result = await saveAll([1, 2, 3], save);\nassert.equal(finished, 3);\nassert.deepEqual(result, [2, 4, 6]);',
+      },
+      {
+        name: "keeps results in item order, even when saves finish out of order",
+        body: 'const save = (x) => new Promise((r) => setTimeout(() => r(x), x === 1 ? 30 : 5));\nconst result = await saveAll([1, 2], save);\nassert.deepEqual(result, [1, 2]);',
+      },
+      {
+        name: "runs the saves in parallel, not one after another",
+        body: 'const log = [];\nconst save = (x) => { log.push("start " + x); return new Promise((r) => setTimeout(() => { log.push("end " + x); r(x); }, 10)); };\nawait saveAll([1, 2], save);\nassert.deepEqual(log, ["start 1", "start 2", "end 1", "end 2"]);',
+      },
+      {
+        name: "propagates a rejection",
+        body: 'const save = (x) => (x === 2 ? Promise.reject(new Error("bad")) : Promise.resolve(x));\nlet threw = false;\ntry { await saveAll([1, 2, 3], save); } catch (e) { threw = e.message === "bad"; }\nassert.ok(threw);',
       },
     ],
   },

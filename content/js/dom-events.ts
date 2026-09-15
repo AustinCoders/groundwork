@@ -6,7 +6,7 @@ export const domEvents: Chapter = {
   title: "DOM & events",
   short: "DOM & events",
   levels: ["beginner"],
-  practice: ["ex-mini-emitter"],
+  practice: ["ex-mini-emitter", "ex-find-closest"],
   ready: true,
   subtitle: "The DOM is a live tree of objects — and JS can poke every branch of it.",
   body: `<p>
@@ -179,6 +179,73 @@ li.remove();                                <span class="c">// modern shorthand 
   clone, children included") and append the clone.
 </div>
 
+<h3>Walking the tree — traversal properties</h3>
+<table>
+  <tr>
+    <th>Property</th>
+    <th>Gives you</th>
+  </tr>
+  <tr><td><code>el.parentElement</code></td><td>the parent, or <code>null</code> at the top</td></tr>
+  <tr><td><code>el.children</code></td><td>element children only — text nodes excluded, unlike <code>el.childNodes</code></td></tr>
+  <tr><td><code>el.nextElementSibling</code> / <code>previousElementSibling</code></td><td>the next/previous element at the same level, skipping whitespace text nodes</td></tr>
+  <tr><td><code>el.closest(selector)</code></td><td>the nearest ancestor (including <code>el</code> itself) matching a CSS selector, or <code>null</code></td></tr>
+</table>
+<pre><code>function handleClick(event) {
+  const row = event.target.closest("tr");   <span class="c">// works whether they clicked text, an icon, or the row</span>
+  if (!row) return;                          <span class="c">// clicked something outside any row</span>
+  console.log("row id:", row.dataset.id);
+}
+table.addEventListener("click", handleClick);</code></pre>
+<p class="sub">
+  <code>closest()</code> is what makes delegation practical for
+  anything nested — the click target is rarely the element you actually
+  care about (more often an icon or a span inside it), and
+  <code>closest()</code> walks upward from wherever the click landed
+  until it finds the ancestor that matters.
+</p>
+
+<h3>HTMLCollection vs NodeList — one of them is alive</h3>
+<div class="try">
+  <pre><code>const live = document.getElementsByClassName("item");    <span class="c">// HTMLCollection — LIVE</span>
+const frozen = document.querySelectorAll(".item");         <span class="c">// NodeList — static</span>
+
+console.log(live.length, frozen.length);   <span class="c">// 2 2</span>
+
+listEl.appendChild(document.createElement("li"));
+
+console.log(live.length, frozen.length);   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>3 2</code> — <code>live</code> is a live view: it re-counts the
+  DOM every time you touch <code>.length</code> or index into it,
+  because <code>getElementsByClassName</code>/<code>getElementsByTagName</code>
+  return an <code>HTMLCollection</code>. <code>querySelectorAll</code>
+  always returns a static <code>NodeList</code> — a snapshot taken the
+  moment it ran, unaffected by later DOM changes. A live collection is a
+  classic footgun inside a loop: removing an element while iterating a
+  live <code>HTMLCollection</code> shifts every later index down by one
+  and silently skips an element. Convert one to a real array first
+  (<code>Array.from(live)</code>) before mutating while iterating.
+</p>
+
+<h3>Batch inserts with DocumentFragment</h3>
+<pre><code>const fragment = document.createDocumentFragment();
+for (const item of items) {
+  const li = document.createElement("li");
+  li.textContent = item;
+  fragment.appendChild(li);                <span class="c">// appending to the fragment, not the live page yet</span>
+}
+listEl.appendChild(fragment);               <span class="c">// ONE reflow, however many items were added</span></code></pre>
+<div class="sticky mint">
+  <span class="ttl">Rule</span> <code>listEl.appendChild(li)</code>
+  inside a loop of 200 items makes the browser consider a layout
+  recalculation up to 200 times. A <code>DocumentFragment</code> is an
+  invisible, parent-less container — building the whole subtree inside
+  it first and appending it once costs exactly one reflow, no matter how
+  many children it holds. It's also emptied automatically once appended,
+  so there's nothing left to clean up afterward.
+</div>
+
 <h3>Events — addEventListener and the event object</h3>
 <pre><code>button.addEventListener("click", function (event) {
   console.log(event.type);          <span class="c">// "click"</span>
@@ -215,6 +282,67 @@ li.remove();                                <span class="c">// modern shorthand 
   event from bubbling further up the tree. They solve two different
   problems and it's common to need only one of them.
 </div>
+
+<h3>Keyboard events — key vs code</h3>
+<pre><code>input.addEventListener("keydown", function (event) {
+  console.log(event.key);    <span class="c">// "a", "A", "Enter", "Shift" — what the key actually produced</span>
+  console.log(event.code);   <span class="c">// "KeyA", "KeyA", "Enter", "ShiftLeft" — the physical key, layout-independent</span>
+  if (event.key === "Enter" &amp;&amp; !event.shiftKey) {
+    event.preventDefault();
+    submitForm();
+  }
+});</code></pre>
+<p class="sub">
+  Use <code>.key</code> for anything about what the user meant to type
+  — checking for "Enter", "Escape", or a specific letter — it already
+  accounts for Shift and the user's keyboard layout. Use
+  <code>.code</code> only for physical-position logic, like WASD game
+  controls, where you want the same key regardless of what character it
+  produces on a different layout.
+</p>
+
+<h3>removeEventListener — and the function-identity trap</h3>
+<div class="try">
+  <pre><code>function onClick() { console.log("clicked"); }
+
+button.addEventListener("click", onClick);
+button.removeEventListener("click", onClick);   <span class="c">// works — same function reference</span>
+
+button.addEventListener("click", () =&gt; console.log("clicked"));
+button.removeEventListener("click", () =&gt; console.log("clicked"));  <span class="c">// does NOTHING</span></code></pre>
+</div>
+<div class="warn">
+  <span class="ttl">⚠ removeEventListener needs the exact same function reference</span>
+  Two arrow functions with identical bodies are still two different
+  function <em>objects</em> — <code>removeEventListener</code> compares
+  by reference, not by what the code says, so the second call above
+  removes nothing and the original listener keeps firing forever. Store
+  the handler in a named variable (or a class field) whenever it will
+  need to be removed later.
+</div>
+
+<h3>Listener options: once, passive, and signal</h3>
+<pre><code>button.addEventListener("click", handler, { once: true });   <span class="c">// auto-removes itself after firing once</span>
+
+list.addEventListener("touchstart", handler, { passive: true });  <span class="c">// promises never to call preventDefault — lets the browser scroll immediately</span>
+
+const controller = new AbortController();
+button.addEventListener("click", handler, { signal: controller.signal });
+input.addEventListener("input", handler, { signal: controller.signal });
+<span class="c">// ... later, remove BOTH listeners in one call:</span>
+controller.abort();</code></pre>
+<p class="sub">
+  <code>signal</code> is the newest of the three, and often the best
+  answer to "clean up every listener a component added" — one shared
+  <code>AbortController</code> across every <code>addEventListener</code>
+  call removes all of them the moment <code>.abort()</code> runs, no
+  manual bookkeeping of which handler needs which element.
+  <code>passive: true</code> matters specifically for scroll-blocking
+  events (<code>touchstart</code>, <code>wheel</code>) — without it, the
+  browser has to wait and see whether the handler calls
+  <code>preventDefault()</code> before it can start scrolling, a
+  measurable jank source on mobile.
+</p>
 
 <h3>Forms and input values</h3>
 <pre><code>input.value;                 <span class="c">// the current text — always a string, even for type="number"</span>

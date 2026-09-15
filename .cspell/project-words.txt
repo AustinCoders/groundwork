@@ -148,6 +148,7 @@ Fastly
 finishable
 finops
 flexbox
+footgun
 forgeeksskeegfor
 gcell
 geohash
@@ -389,6 +390,7 @@ vnode
 vnodes
 vvvlo
 Warshall
+WASD
 webdev
 wertf
 worklets
