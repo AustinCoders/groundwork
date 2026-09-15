@@ -275,12 +275,20 @@ export const topics: TopicsData = {
           ],
         },
         {
-          title: "Regex, dates & browser APIs",
+          title: "Regex & dates",
           chapter: "regex-dates-apis",
           items: [
             "Regex — literals, groups, flags, match/replace/matchAll",
-            "Dates — Date, timezones, why everyone uses a library, Intl",
-            "Browser APIs — localStorage/sessionStorage, URL/URLSearchParams, History API, IntersectionObserver",
+            "Lookahead/lookbehind, the ReDoS trap, the sticky flag",
+            "Dates — Date, timezones, Temporal, Intl",
+          ],
+        },
+        {
+          title: "Browser APIs, in depth",
+          chapter: "browser-apis-deep",
+          items: [
+            "localStorage/sessionStorage, URL/URLSearchParams",
+            "History API, IntersectionObserver",
             "Events in depth — bubbling, capturing, delegation, stopPropagation, custom events",
           ],
         },
@@ -463,7 +471,7 @@ export const topics: TopicsData = {
       name: "JavaScript",
       mark: "JS",
       accent: "yellow",
-      tagline: "The whole map, 38 sections deep",
+      tagline: "The whole map, 39 sections deep",
       status: "ready",
       notes: "notes.html",
       blurb:

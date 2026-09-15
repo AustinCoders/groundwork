@@ -43,6 +43,28 @@ export const ecosystemProfessional: Chapter = {
   coverage does and doesn't actually tell you.
 </p>
 
+<h3>Beyond Node: Deno and Bun</h3>
+<table>
+  <tr><th></th><th>Node</th><th>Deno</th><th>Bun</th></tr>
+  <tr><td>Module system</td><td>CommonJS + ESM, needs config to choose</td><td>ESM by default, URL imports work directly</td><td>ESM + CommonJS, both work with no config</td></tr>
+  <tr><td>TypeScript</td><td>needs a transpile step</td><td>runs <code>.ts</code> files directly, no build step</td><td>runs <code>.ts</code> files directly, no build step</td></tr>
+  <tr><td>Security default</td><td>full access, no sandboxing</td><td>no file/network/env access unless explicitly granted with a flag</td><td>full access, same as Node</td></tr>
+  <tr><td>Built-in tooling</td><td>needs separate packages for testing, bundling, linting</td><td>test runner, formatter, linter, and bundler all built in</td><td>test runner, bundler, and a much faster package manager all built in</td></tr>
+</table>
+<p class="sub">
+  Both were built specifically to fix things about Node its original
+  design got locked into early. Deno's permission flags exist because
+  Node grants a script full filesystem and network access by default,
+  something a browser tab never would. Bun's headline pitch is raw
+  speed: it's written in Zig on top of JavaScriptCore instead of V8, and
+  its package installer resolves and links dependencies dramatically
+  faster than npm across a large <code>node_modules</code> tree.
+  Neither has displaced Node as the default choice for most production
+  backends — the ecosystem of battle-tested libraries and hosting
+  support still overwhelmingly assumes Node — but both are genuinely
+  production-ready today, not experiments.
+</p>
+
 <h3>What a bundler is actually doing: ASTs</h3>
 <p>
   Every tool in this chapter — a bundler, a linter, a formatter, a

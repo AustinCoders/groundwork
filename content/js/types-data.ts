@@ -68,6 +68,35 @@ console.log(dv.getInt32(0, true));        <span class="c">// second argument: li
   that specifies its own byte order.
 </p>
 
+<h3>TextEncoder, TextDecoder, and base64 the built-in way</h3>
+<div class="try">
+  <pre><code>const bytes = new TextEncoder().encode("café");   <span class="c">// a Uint8Array — always UTF-8, no other option</span>
+console.log(bytes.length);                          <span class="c">// what happens?</span>
+
+const text = new TextDecoder().decode(bytes);
+console.log(text);                                   <span class="c">// what happens?</span></code></pre>
+</div>
+<p class="sub">
+  <code>5</code>, then <code>"café"</code> — <code>bytes.length</code>
+  is <b>5</b>, not 4, because "é" takes two bytes once it's UTF-8
+  encoded, a different count entirely from either the code-unit or
+  code-point counts covered next in this chapter.
+  <code>TextEncoder</code>/<code>TextDecoder</code> are the bridge every
+  binary API in this chapter eventually needs — <code>fetch</code>
+  bodies, WebSocket frames, and <code>crypto.subtle</code> all work in
+  bytes, not strings.
+</p>
+<pre><code>bytes.toBase64();                       <span class="c">// "Y2Fmw6k=" — no more manual btoa/Uint8Array dance</span>
+Uint8Array.fromBase64("Y2Fmw6k=");      <span class="c">// back to real bytes</span></code></pre>
+<p class="sub">
+  Before these existed, converting bytes to base64 text meant a clumsy
+  detour through <code>btoa</code> and a manually-built string of
+  character codes — <code>btoa</code> only ever accepted text, not raw
+  bytes, and broke outright on anything outside Latin-1.
+  <code>toBase64()</code>/<code>fromBase64()</code> work directly on the
+  bytes themselves; encoding is no longer a text operation in disguise.
+</p>
+
 <h3>Blob, File, FileReader</h3>
 <pre><code>const blob = new Blob(["hello world"], { type: "text/plain" });
 blob.size;    <span class="c">// 11 — bytes, not characters (matters once text isn't plain ASCII)</span>

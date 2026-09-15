@@ -11,7 +11,7 @@ export const offlineStorage: Chapter = {
   subtitle: "localStorage is fine for a theme or a small cache. Past a few MB, it stops being enough.",
   body: `<h3>Why localStorage runs out</h3>
 <p>
-  <a href="/notes/regex-dates-apis">Already covered</a>: localStorage
+  <a href="/notes/browser-apis-deep">Already covered</a>: localStorage
   and sessionStorage hold roughly 5-10MB, strings only, and every
   operation is <b>synchronous</b> — a big read or write briefly blocks
   the main thread. Fine for a theme preference or a small cache; the

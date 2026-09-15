@@ -396,7 +396,7 @@ export const jsApplied: Exercise[] = [
   },
 {
     id: "ex-query-param",
-    chapter: "regex-dates-apis",
+    chapter: "browser-apis-deep",
     level: "intermediate",
     title: "Read one query parameter from a URL",
     brief:

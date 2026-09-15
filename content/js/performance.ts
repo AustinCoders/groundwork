@@ -127,7 +127,7 @@ function mountVirtualList(viewport, items, rowHeight) {
   fold. <b>Prefetching</b> is the opposite bet — load something
   <em>before</em> it's needed, on a strong signal it's about to be
   (hovering a link, an <code>IntersectionObserver</code> from
-  <a href="/notes/regex-dates-apis">Regex, dates &amp; browser APIs</a> firing near
+  <a href="/notes/browser-apis-deep">Browser APIs, in depth</a> firing near
   the bottom of the page) — trading a little wasted bandwidth on guesses
   that don't pan out for a page that already has the next thing ready.
 </p>
