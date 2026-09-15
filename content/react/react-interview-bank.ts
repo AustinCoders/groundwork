@@ -8,7 +8,7 @@ export const reactInterviewBank: Chapter = {
   levels: ["advanced"],
   practice: [],
   ready: true,
-  subtitle: "Thirty-five questions, split by the level they are asked at.",
+  subtitle: "Thirty-six questions, split by the level they are asked at.",
   body: `<h3>How to use this</h3>
 <p>
   Answer out loud before reading. The React round is mostly follow-ups &mdash;
@@ -114,6 +114,15 @@ export const reactInterviewBank: Chapter = {
 
 <div class="qa"><p class="q">You inherit a 200,000-line class-based app on React 17. What do you do?</p>
 <p>Not a rewrite. Get onto a supported version first, then move server state out of Redux into a query cache &mdash; usually the biggest single deletion. TypeScript file by file. Convert classes only when you are already in the file. Put the progress numbers in CI, and name the code you will deliberately never touch.</p></div>
+
+<div class="qa"><p class="q">What does the React Compiler do, and should you delete your <code>useMemo</code> calls?</p>
+<p>It memoises at build time by analysing which values depend on which, including after an early return where a hook could never go. For new code, rely on it and keep <code>useMemo</code>/<code>useCallback</code> as escape hatches for exact control. For existing code, leave the memoisation in place or remove it only with testing, because removing it can change the compiled output. Adopt it with the <code>eslint-plugin-react-hooks</code> rules first, then <code>annotation</code> mode and <code>"use memo"</code>. See <a href="/react/react-memoisation">Memoisation</a>.</p></div>
+
+<div class="qa"><p class="q">What was React2Shell, and what did it change about how you ship Server Components?</p>
+<p>CVE-2025-55182, CVSS 10.0, disclosed December 2025: a crafted request to any Server Function endpoint could run code on the server, with no authentication, and it was exploited within days. Pure client apps were unaffected. The lessons are that every Server Function is a public endpoint that must validate and authorise its input, that the framework has to be upgraded as well as React, and that tracking advisories is part of the job. See <a href="/react/react-server-components">Server Components</a>.</p></div>
+
+<div class="qa"><p class="q">How would you animate a route change in React today?</p>
+<p>With <code>&lt;ViewTransition&gt;</code>, stable since React 19.3. Wrap the page, trigger the navigation inside <code>startTransition</code> &mdash; a plain <code>setState</code> does not animate &mdash; and use <code>addTransitionType</code> to pick a different animation for back and forward. Put the boundary before any DOM node, name matching boundaries for a shared-element morph, and respect <code>prefers-reduced-motion</code>. See <a href="/react/react-animation">Animation</a>.</p></div>
 
 <div class="qa"><p class="q">What would you look for reviewing someone's React?</p>
 <p>State that should not exist &mdash; derived values stored, or the same truth twice. Effects that are not synchronisation. Missing loading, empty and error states. Index keys. Icon buttons with no accessible name. And the question that catches most of it: <b>what happens the second time?</b></p></div>

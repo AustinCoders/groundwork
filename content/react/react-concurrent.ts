@@ -170,6 +170,22 @@ fetch(url).then(() =&gt; { setA(1); setB(2); }); <span class="c">// one render s
   nowhere else.
 </p>
 
+<h3>Separate transitions stay separate, since React 19.3</h3>
+<p>
+  Until 19.3, React entangled concurrent transitions into a single render. Start a
+  slow one &mdash; a filter over a large list &mdash; and then a quick one &mdash;
+  switching a tab &mdash; and the tab switch could not commit until the filter was
+  finished too.
+</p>
+<pre><code>startTransition(() =&gt; setFilter(q));        <span class="c">// slow: re-renders 10,000 rows</span>
+startTransition(() =&gt; setTab("settings"));  <span class="c">// fast: no longer waits for the filter</span></code></pre>
+<p>
+  React 19.3 renders transitions independently, so a slow transition no longer
+  holds up unrelated ones. Nothing in your code changes. What changes is the
+  debugging: if you profiled an app on 19.2 and saw a quick update stuck behind a
+  slow one, that was the entanglement, and upgrading is the fix.
+</p>
+
 <h3>The catch worth knowing</h3>
 <p>
   A transition can be interrupted and restarted, so anything inside it may run

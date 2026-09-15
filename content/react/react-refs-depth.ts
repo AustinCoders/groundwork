@@ -127,6 +127,46 @@ editorRef.current.focus();      <span class="c">// the parent gets two methods, 
   document. It is three lines and it is skipped constantly.
 </p>
 
+<h3>Fragment refs: one ref for a group of nodes</h3>
+<p>
+  Before React 19.3, a ref could only point at one element, so observing or
+  listening to a group of siblings meant adding a wrapper <code>&lt;div&gt;</code>
+  &mdash; which changes layout, breaks CSS grid and flex, and adds a node the
+  accessibility tree has to explain. Since 19.3 a <code>&lt;Fragment&gt;</code>
+  takes a ref, and you get a <code>FragmentInstance</code>.
+</p>
+<pre><code>import { Fragment, useEffect, useRef } from "react";
+
+function SeenTracker({ children, onSeen }) {
+  const ref = useRef(null);
+
+  useEffect(() =&gt; {
+    const observer = new IntersectionObserver((entries) =&gt; {
+      if (entries.some((e) =&gt; e.isIntersecting)) onSeen();
+    });
+    ref.current.observeUsing(observer);          <span class="c">// every first-level DOM child</span>
+    return () =&gt; ref.current?.unobserveUsing(observer);
+  }, [onSeen]);
+
+  return &lt;Fragment ref={ref}&gt;{children}&lt;/Fragment&gt;;   <span class="c">// no wrapper div</span>
+}</code></pre>
+<div class="table-scroll"><table>
+<thead><tr><th>Method</th><th>What it touches</th></tr></thead>
+<tbody>
+<tr><td><code>addEventListener</code>, <code>removeEventListener</code>, <code>dispatchEvent</code></td><td>First-level DOM children</td></tr>
+<tr><td><code>observeUsing</code>, <code>unobserveUsing</code></td><td>First-level DOM children, with an <code>IntersectionObserver</code> or <code>ResizeObserver</code></td></tr>
+<tr><td><code>getClientRects</code></td><td>Rects of the first-level DOM children</td></tr>
+<tr><td><code>focus</code>, <code>focusLast</code>, <code>blur</code></td><td>The first or last focusable node, searched <b>deeply</b></td></tr>
+<tr><td><code>scrollIntoView</code>, <code>compareDocumentPosition</code>, <code>getRootNode</code></td><td>The fragment's position in the document</td></tr>
+</tbody>
+</table></div>
+<ul>
+  <li><b>The shorthand cannot take it.</b> <code>&lt;&gt;...&lt;/&gt;</code> accepts neither <code>key</code> nor <code>ref</code>; write <code>&lt;Fragment ref={ref}&gt;</code>.</li>
+  <li><b>First-level means first-level.</b> Listeners and observers attach to the fragment's direct DOM children, not to elements nested inside them. Focus is the exception and searches all the way down.</li>
+  <li><b>Hidden Activity trees are skipped.</b> Listeners are added when an <code>&lt;Activity&gt;</code> becomes visible, not before.</li>
+  <li><b><code>focus()</code> is the practical win.</b> A modal or a list can focus its first focusable child without knowing what it is &mdash; which is the focus-management problem above, solved without a wrapper.</li>
+</ul>
+
 <h3>The rules that keep refs safe</h3>
 <ul>
   <li><b>Never read or write <code>ref.current</code> during render.</b> Rendering must be pure and may run twice.</li>

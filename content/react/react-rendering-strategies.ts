@@ -88,6 +88,33 @@ export const reactRenderingStrategies: Chapter = {
 useEffect(() =&gt; setMounted(true), []);
 return &lt;p&gt;{mounted ? localValue : fallback}&lt;/p&gt;;</code></pre>
 </div>
+
+<h4>Browser-only components, since React 19.3</h4>
+<pre><code>"use client";
+import { use } from "react";
+import { browser } from "react-dom";
+
+function SavedName() {
+  use(browser());                                  <span class="c">// server: stop here. browser: carry on.</span>
+  return &lt;p&gt;{localStorage.getItem("name")}&lt;/p&gt;;
+}
+
+&lt;Suspense fallback={&lt;p&gt;Loading…&lt;/p&gt;}&gt;
+  &lt;SavedName /&gt;
+&lt;/Suspense&gt;</code></pre>
+<p>
+  During server rendering, <code>use(browser())</code> stops the component and
+  leaves the nearest <code>&lt;Suspense&gt;</code> fallback in the HTML. In the
+  browser it returns <code>undefined</code> and the component renders normally.
+  It replaces the <code>mounted</code> flag above, the
+  <code>typeof window</code> check, and a framework's "disable SSR" option &mdash;
+  and because the server never produced a value, there is nothing to mismatch.
+</p>
+<ul>
+  <li><b>It needs a <code>&lt;Suspense&gt;</code> boundary above it.</b> Without one, the server render fails.</li>
+  <li><b>Client Components only.</b> A Server Component always runs on the server, so the question never arises there.</li>
+  <li><b>Pass it to <code>use</code>.</b> Calling <code>browser()</code> alone does nothing, and throwing it is wrong.</li>
+</ul>
 <p>
   The second cost is simply that hydration is work: React walks the whole tree
   attaching handlers before the page is interactive. A page can look ready and

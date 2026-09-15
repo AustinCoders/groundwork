@@ -88,6 +88,38 @@ export const reactReviewJudgement: Chapter = {
   them.
 </p>
 
+<h4>Trusted Types now work with React</h4>
+<pre><code>Content-Security-Policy: require-trusted-types-for 'script'</code></pre>
+<p>
+  With that header, the browser refuses raw strings at injection sinks such as
+  <code>innerHTML</code> and only accepts <code>TrustedHTML</code>,
+  <code>TrustedScript</code> or <code>TrustedScriptURL</code> objects created by a
+  policy you control. Before React 19.3, React turned every value into a string
+  with <code>'' + value</code> before touching the DOM, so a trusted object became
+  a plain string the browser rejected &mdash; and teams gave up on the policy.
+  Since 19.3 React passes these objects through unchanged.
+</p>
+<pre><code>const policy = trustedTypes.createPolicy("sanitise", {
+  createHTML: (dirty) =&gt; DOMPurify.sanitize(dirty),
+});
+
+&lt;div dangerouslySetInnerHTML={{ __html: policy.createHTML(comment) }} /&gt;</code></pre>
+<p class="sub">
+  The review question becomes: is every <code>dangerouslySetInnerHTML</code> fed by
+  a policy? Once the header is on, a raw string there fails loudly in the browser
+  instead of shipping.
+</p>
+
+<h4>Dependencies are part of the review</h4>
+<p>
+  <a href="/react/react-server-components">React2Shell</a> (CVE-2025-55182, CVSS
+  10.0) let an unauthenticated request run code on any server using React Server
+  Components, and it was exploited within two days of disclosure. For any app with
+  a server boundary, a reviewer should check the React and framework versions
+  against current advisories &mdash; 19.0.4, 19.1.5 or 19.2.4 and later for that
+  family of flaws &mdash; not only the diff in front of them.
+</p>
+
 <h3>When not to use React</h3>
 <p>
   Being able to argue against your own default is most of what "senior" means in

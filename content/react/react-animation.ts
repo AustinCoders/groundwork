@@ -130,11 +130,85 @@ return mounted ? &lt;div className={"panel " + (open ? "is-open" : "")}&gt;…&l
 </p>
 <pre><code>document.startViewTransition(() =&gt; { <span class="c">/* mutate the DOM */</span> });</code></pre>
 <p>
-  React's experimental <code>&lt;ViewTransition&gt;</code> wires this to updates
-  marked with <code>startTransition</code>, so a route change animates without you
-  measuring anything. It is behind the experimental channel &mdash; know it exists,
-  do not put it in production code yet. In Next's App Router the same idea shows
-  up as the view-transitions flag.
+  Since <b>React 19.3</b> (9 September 2026), <code>&lt;ViewTransition&gt;</code>
+  is stable. React calls <code>document.startViewTransition()</code> for you, at
+  the right moment in the commit, so you describe <em>what</em> should animate and
+  never time it by hand.
+</p>
+<pre><code>import { ViewTransition, startTransition } from "react";
+
+function Gallery({ photo }) {
+  return (
+    &lt;ViewTransition enter="slide-in" exit="fade-out"&gt;
+      &lt;img src={photo.src} alt={photo.alt} /&gt;
+    &lt;/ViewTransition&gt;
+  );
+}
+
+startTransition(() =&gt; setPhoto(next));   <span class="c">// ✓ animates</span>
+setPhoto(next);                          <span class="c">// ✗ a plain update does not</span></code></pre>
+
+<h4>What makes it animate</h4>
+<p>
+  Only updates React treats as transitions: <code>startTransition</code>,
+  <code>useTransition</code>, <code>useDeferredValue</code>, and content
+  resolving inside <code>&lt;Suspense&gt;</code>. An ordinary
+  <code>setState</code> does not, and <code>flushSync</code> skips it on purpose.
+  This is a feature &mdash; a keystroke should not cross-fade.
+</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Prop</th><th>Runs when</th></tr></thead>
+<tbody>
+<tr><td><code>enter</code></td><td>The boundary is inserted in a transition</td></tr>
+<tr><td><code>exit</code></td><td>The boundary is removed in a transition</td></tr>
+<tr><td><code>update</code></td><td>Something inside changes, or it moves or resizes</td></tr>
+<tr><td><code>share</code></td><td>A named boundary leaves in one place and appears in another</td></tr>
+<tr><td><code>default</code></td><td>The fallback &mdash; <code>"none"</code> turns everything off unless listed</td></tr>
+</tbody>
+</table></div>
+<p class="sub">
+  Each takes <code>"auto"</code> (the browser's cross-fade), <code>"none"</code>, or
+  a class name you style with <code>::view-transition-old(.slide-in)</code> and
+  <code>::view-transition-new(.slide-in)</code>. There are matching
+  <code>onEnter</code>, <code>onExit</code>, <code>onUpdate</code> and
+  <code>onShare</code> callbacks for Web Animations; each must return a cleanup
+  that cancels the animation.
+</p>
+
+<h4>The placement rule that causes most bugs</h4>
+<pre><code><span class="c">// ✓ ViewTransition comes before any DOM node</span>
+&lt;ViewTransition enter="auto"&gt;&lt;div&gt;...&lt;/div&gt;&lt;/ViewTransition&gt;
+
+<span class="c">// ✗ a &lt;div&gt; above it means enter and exit never fire</span>
+&lt;div&gt;&lt;ViewTransition enter="auto"&gt;&lt;div&gt;...&lt;/div&gt;&lt;/ViewTransition&gt;&lt;/div&gt;</code></pre>
+
+<h4>Different animations for different transitions</h4>
+<pre><code>import { addTransitionType } from "react";
+
+startTransition(() =&gt; {
+  addTransitionType(direction === "back" ? "nav-back" : "nav-forward");
+  navigate(to);
+});
+
+&lt;ViewTransition default={{ "nav-back": "slide-right", "nav-forward": "slide-left" }}&gt;
+  {page}
+&lt;/ViewTransition&gt;</code></pre>
+
+<h4>Shared element transitions</h4>
+<pre><code>&lt;ViewTransition name={\`photo-\${id}\`}&gt;&lt;Thumbnail /&gt;&lt;/ViewTransition&gt;
+<span class="c">// ...and in the detail view, rendered in the same transition:</span>
+&lt;ViewTransition name={\`photo-\${id}\`}&gt;&lt;FullImage /&gt;&lt;/ViewTransition&gt;</code></pre>
+<p>
+  Two boundaries with the same <code>name</code>, one unmounting and one mounting
+  in the same transition, morph into each other &mdash; the thumbnail grows into
+  the full image. Only one boundary with a given name may be mounted at a time,
+  and if either side is off-screen the pair does not form, so it falls back to a
+  plain enter and exit.
+</p>
+<p class="sub">
+  It works on the DOM only, not React Native. Effects wait until the animation
+  finishes, and updates that arrive mid-animation are batched into one: A to B,
+  then C, then D animates as B to D.
 </p>
 
 <h3>The accessibility line</h3>

@@ -125,12 +125,97 @@ const total = useMemo(() =&gt; a + b, [a, b]);   <span class="c">// ✗ the memo
 
 <h3>The React Compiler changes the advice</h3>
 <p>
-  The React Compiler memoises automatically at build time, by understanding what
-  actually depends on what. Where it is enabled, hand-written
-  <code>useMemo</code> and <code>useCallback</code> largely stop being necessary.
-  It is opt-in today, so both worlds exist &mdash; but it is worth knowing that
-  the long-term direction is fewer of these by hand, not more.
+  React Compiler 1.0 shipped on 7 October 2025. It is a build-time plugin that
+  reads your components and hooks, works out which values depend on which, and
+  inserts the memoisation for you. Everything above still explains <em>why</em> a
+  re-render happens; the compiler changes <em>who</em> writes the cache.
 </p>
+<pre><code>npm install --save-dev --save-exact babel-plugin-react-compiler@latest</code></pre>
+<div class="table-scroll"><table>
+<thead><tr><th>Where</th><th>Is it on?</th></tr></thead>
+<tbody>
+<tr><td>Expo SDK 54 and later</td><td>On by default in new apps</td></tr>
+<tr><td><code>create-vite</code>, <code>create-next-app</code></td><td>Offered as a compiler-enabled template &mdash; you choose it</td></tr>
+<tr><td>An existing app</td><td>Off until you add the plugin</td></tr>
+<tr><td>React 17 or 18</td><td>Works, with <code>react-compiler-runtime</code> added as a dependency</td></tr>
+</tbody>
+</table></div>
+
+<h4>What it does better than hand-written memo</h4>
+<pre><code>function Row({ item, onSelect }) {
+  if (!item.visible) return null;
+  const label = formatLabel(item);          <span class="c">// the compiler can cache this</span>
+  return &lt;li onClick={() =&gt; onSelect(item.id)}&gt;{label}&lt;/li&gt;;
+}</code></pre>
+<p>
+  You cannot call <code>useMemo</code> after an early return &mdash; it would
+  break the rules of hooks. The compiler is not a hook, so it can memoise
+  <em>conditionally</em>, after the <code>return null</code>, and it caches the
+  inline arrow too. That is the category of optimisation manual memoisation could
+  never reach.
+</p>
+
+<h4>What to do with the useMemo you already wrote</h4>
+<p>
+  The React team's own guidance is to <b>leave existing memoisation in place</b>,
+  or remove it only with testing, because deleting a <code>useMemo</code> can
+  change what the compiler outputs. For new code, rely on the compiler and keep
+  <code>useMemo</code>/<code>useCallback</code> as an escape hatch for the few
+  places you need exact control &mdash; a value that must stay referentially
+  stable for an effect dependency, for example.
+</p>
+
+<h4>Opting in and out, one function at a time</h4>
+<pre><code>function LegacyChart() {
+  "use no memo";                            <span class="c">// skip this one until it is fixed</span>
+  ...
+}
+
+function Checkout() {
+  "use memo";                               <span class="c">// compile this one in annotation mode</span>
+  ...
+}</code></pre>
+<div class="table-scroll"><table>
+<thead><tr><th><code>compilationMode</code></th><th>What gets compiled</th></tr></thead>
+<tbody>
+<tr><td><code>annotation</code></td><td>Only functions marked <code>"use memo"</code> &mdash; the safe way to start on a large app</td></tr>
+<tr><td><code>infer</code></td><td>What the compiler decides looks like a component or hook; directives override it</td></tr>
+<tr><td><code>all</code></td><td>Everything, except functions marked <code>"use no memo"</code></td></tr>
+</tbody>
+</table></div>
+<p class="sub">
+  Either directive can also sit at the top of a module to cover every function in
+  the file. Treat <code>"use no memo"</code> as a temporary marker with a ticket
+  behind it, not a permanent setting.
+</p>
+
+<h4>The compiler needs code that follows the rules</h4>
+<p>
+  It assumes components are pure and props and state are not mutated. Code that
+  breaks those rules either gets skipped or behaves differently once cached. The
+  recommended config of <code>eslint-plugin-react-hooks</code> now carries
+  compiler-powered rules that catch exactly those patterns:
+</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Rule</th><th>Catches</th></tr></thead>
+<tbody>
+<tr><td><code>set-state-in-render</code></td><td>A <code>setState</code> during render that loops</td></tr>
+<tr><td><code>set-state-in-effect</code></td><td>State set synchronously inside an effect &mdash; usually a derived value that should be computed during render</td></tr>
+<tr><td><code>refs</code></td><td>Reading or writing <code>ref.current</code> during render</td></tr>
+</tbody>
+</table></div>
+<pre><code><span class="c">// eslint.config.js</span>
+import reactHooks from "eslint-plugin-react-hooks";
+export default [reactHooks.configs.flat.recommended];</code></pre>
+<div class="bx is-prim">
+  <span class="ttl">Adopting it on an existing app</span>
+  <ol>
+    <li>Turn on the lint rules first and fix what they report. That is most of the work, and it is worth doing even without the compiler.</li>
+    <li>Add the plugin in <code>annotation</code> mode and mark a few stable, well-tested components with <code>"use memo"</code>.</li>
+    <li>Profile before and after with the React DevTools Profiler &mdash; measure, the same way the rest of this chapter says to.</li>
+    <li>Move to <code>infer</code>, and mark anything that misbehaves <code>"use no memo"</code> until it is fixed.</li>
+  </ol>
+</div>
 
 <div class="bx is-ref">
   <span class="ttl">Interview answer, one sentence</span>

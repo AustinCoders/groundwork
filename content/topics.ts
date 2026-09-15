@@ -1215,7 +1215,7 @@ export const topics: TopicsData = {
             {
               title: "Interview bank",
               chapter: "react-interview-bank",
-              items: ["35 questions, split by the level they are asked at"],
+              items: ["36 questions, split by the level they are asked at"],
             },
           ],
         },

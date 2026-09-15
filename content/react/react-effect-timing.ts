@@ -109,6 +109,13 @@ Parent effect runs</code></pre>
   bug, and the same failure would appear in production the first time a user
   navigated away and back.
 </p>
+<p class="sub">
+  Until React 19.3, a root that was <b>hydrated</b> from server HTML skipped this
+  double run, while a client-rendered root did it &mdash; so an effect bug could
+  hide in an SSR app and show in a client-only one. Since 19.3 Strict Mode double
+  invokes effects during hydration too. An upgrade can therefore surface a doubled
+  socket or analytics call that was always there.
+</p>
 
 <h3>Escaping the timing entirely</h3>
 <p>

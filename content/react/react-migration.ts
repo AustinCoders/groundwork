@@ -45,6 +45,8 @@ export const reactMigration: Chapter = {
 <tr><td>16 → 17</td><td>Almost nothing. Event delegation moved from <code>document</code> to the root container, which breaks code mixing React and native listeners.</td></tr>
 <tr><td>17 → 18</td><td><code>ReactDOM.render</code> → <code>createRoot</code>. Automatic batching now applies in timeouts and promises, so code relying on separate renders changes behaviour. Strict Mode double-invokes effects.</td></tr>
 <tr><td>18 → 19</td><td><code>propTypes</code> and <code>defaultProps</code> removed for function components. String refs gone. <code>forwardRef</code> no longer needed. New JSX transform required.</td></tr>
+<tr><td>19.x → 19.2.4+</td><td>Nothing breaks &mdash; it is a security floor. Any app using Server Components or Server Functions must be at 19.0.4, 19.1.5 or 19.2.4 or later for <a href="/react/react-server-components">React2Shell and the follow-up CVEs</a>, and on a framework release that bundles those fixes.</td></tr>
+<tr><td>19.2 → 19.3</td><td>No breaking changes listed, but two behaviour changes can surface old bugs: Strict Mode now double invokes effects during hydration, so a non-idempotent effect in an SSR app shows up; and transitions render independently, so code that assumed two transitions commit together may not.</td></tr>
 </tbody>
 </table></div>
 <pre><code>npx codemod@latest react/19/migration-recipe     <span class="c">// does most of the mechanical work</span></code></pre>

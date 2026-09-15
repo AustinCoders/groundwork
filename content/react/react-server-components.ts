@@ -93,6 +93,36 @@ export default function LikeButton({ postId }) {
   Actions</a>, which are passed as a reference the client can call.
 </p>
 
+<h3>Sharing data with the client tree through Context</h3>
+<p>
+  A Server Component cannot <em>create</em> Context &mdash; <code>createContext</code>
+  needs the client. It can <em>render</em> one, as long as the Context is defined in
+  a <code>"use client"</code> module.
+</p>
+<pre><code><span class="c">// user-context.js</span>
+"use client";
+import { createContext } from "react";
+export const UserContext = createContext(null);
+
+<span class="c">// layout.js — a Server Component, React 19.3 and later</span>
+import { UserContext } from "./user-context";
+
+export default async function Layout({ children }) {
+  const user = await getCurrentUser();
+  return &lt;UserContext value={user}&gt;{children}&lt;/UserContext&gt;;
+}</code></pre>
+<p>
+  Before React 19.3 the client module also had to export a wrapper &mdash; usually
+  called <code>UserProvider</code> &mdash; whose only job was to take a prop and
+  hand it straight to the Context. That file is gone now. It matters most for
+  Contexts that exist only so server-fetched data, such as the current user or a
+  feature-flag set, reaches the interactive components below.
+</p>
+<p class="sub">
+  The value still has to serialise, like any prop crossing the boundary. Pass the
+  user object, not a class instance or a function.
+</p>
+
 <h3>What actually changes</h3>
 <ul>
   <li><b>Data fetching moves next to the data.</b> No API layer built solely so the browser can reach the database.</li>
@@ -168,6 +198,48 @@ export default function LikeButton({ postId }) {
   <li><b>Fetching the same thing in three components.</b> React dedupes identical requests within one render pass, but only if the calls are actually identical.</li>
   <li><b>Expecting <code>useState</code> to work</b> in a file with no directive. The error message is clear once you have seen it once.</li>
 </ul>
+
+<h3>The server boundary is an attack surface: React2Shell</h3>
+<p>
+  On 3 December 2025 the React team disclosed <b>CVE-2025-55182</b>, rated CVSS
+  10.0 and widely called <b>React2Shell</b>. An unauthenticated attacker could send
+  a crafted HTTP request to any Server Function endpoint and, when React
+  deserialised it, run code on the server. Google's threat intelligence group saw
+  widespread exploitation almost immediately, with cryptominers deployed from
+  5 December &mdash; two days after disclosure.
+</p>
+<p>
+  Follow-up disclosures on 11 December 2025 and in January 2026 added more, and
+  one original fix turned out to be incomplete:
+</p>
+<div class="table-scroll"><table>
+<thead><tr><th>CVE</th><th>Severity</th><th>What it allowed</th></tr></thead>
+<tbody>
+<tr><td>CVE-2025-55182</td><td>Critical, 10.0</td><td>Remote code execution through a Server Function request</td></tr>
+<tr><td>CVE-2025-55184</td><td>High, 7.5</td><td>Denial of service &mdash; an infinite loop that hangs the server process</td></tr>
+<tr><td>CVE-2025-67779</td><td>High, 7.5</td><td>Denial of service</td></tr>
+<tr><td>CVE-2026-23864</td><td>High, 7.5</td><td>Denial of service &mdash; crashes, out-of-memory, runaway CPU</td></tr>
+<tr><td>CVE-2025-55183</td><td>Medium, 5.3</td><td>Source code exposure from a Server Function that stringifies its arguments</td></tr>
+</tbody>
+</table></div>
+<p>
+  The flaws were in <code>react-server-dom-webpack</code>,
+  <code>react-server-dom-parcel</code> and
+  <code>react-server-dom-turbopack</code> &mdash; the packages every RSC framework
+  sits on, including Next.js, React Router, Waku, Parcel and the Vite RSC plugin.
+  <b>Safe versions are 19.0.4, 19.1.5 and 19.2.4 or later.</b> Anyone who stopped
+  at 19.0.3, 19.1.4 or 19.2.3 still had the incomplete DoS fix.
+</p>
+<div class="bx is-prim">
+  <span class="ttl">What to take from it</span>
+  <ul>
+    <li><b>An app with no server is not affected.</b> A pure client-side React app never deserialises a Server Function request. The risk arrived with the server boundary.</li>
+    <li><b>Every Server Function is a public endpoint.</b> The attack needed no login and no knowledge of your code. Validate and authorise inside each one, as you would a REST handler.</li>
+    <li><b>Upgrade the framework, not only React.</b> Frameworks bundle their own copy of the RSC runtime. Follow the framework's advisory, and do not rely on a hosting provider's firewall rule instead of patching.</li>
+    <li><b>Keep secrets out of source.</b> CVE-2025-55183 leaked hardcoded strings, not <code>process.env</code> values. A key that lives only in an environment variable was not exposed by it.</li>
+    <li><b>Version hygiene is a skill.</b> Knowing which version you run, reading advisories, and patching within days is part of shipping Server Components.</li>
+  </ul>
+</div>
 
 <h3>The mental model</h3>
 <p>
