@@ -59,6 +59,49 @@ console.log(stateful.test("a1"));   <span class="c">// what happens?</span></cod
   <code>g</code> flag for a one-shot <code>.test()</code>, avoids it.
 </p>
 
+<h3>Lookahead, lookbehind, and the ReDoS trap</h3>
+<pre><code>/\\d+(?=px)/.exec("width: 240px")[0];      <span class="c">// "240" — lookahead: match digits, but only if "px" follows (not consumed)</span>
+/(?&lt;=\\$)\\d+/.exec("Price: $99")[0];       <span class="c">// "99" — lookbehind: only if "$" precedes, also not consumed</span></code></pre>
+<p class="sub">
+  Neither assertion becomes part of the match itself — that's the whole
+  point of calling them <em>assertions</em> rather than groups. They let
+  a pattern check context ("only if followed/preceded by X") without
+  including that context in what gets extracted or replaced.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ Some patterns can take exponential time — ReDoS</span>
+  A pattern with <b>nested, overlapping repetition</b> —
+  <code>/(a+)+b/</code> against a long string of just <code>a</code>s
+  with no trailing <code>b</code> — forces the engine to try an
+  exponential number of ways to split the string among the repeated
+  groups before giving up. Run against user-supplied input (a "validate
+  this email" regex is the classic real-world case), this is a genuine
+  denial-of-service vector — <b>Regular expression Denial of Service</b>,
+  ReDoS — that has taken down real production servers with a single
+  crafted string. The fix is rewriting the pattern to remove the nested
+  ambiguity, or running untrusted-input matching behind a timeout.
+</div>
+
+<h3>The sticky flag — y vs g</h3>
+<pre><code>const g = /\\d+/g;
+const y = /\\d+/y;
+const str = "12 34";
+
+g.exec(str)[0];    <span class="c">// "12" — g can skip ahead to find the next match anywhere</span>
+y.lastIndex = 0;
+y.exec(str)[0];    <span class="c">// "12" — same result here...</span>
+y.lastIndex = 1;
+y.exec(str);       <span class="c">// what happens?</span></code></pre>
+<p class="sub">
+  <code>null</code> — <code>y</code> demands a match starting
+  <b>exactly</b> at <code>lastIndex</code>, nowhere later in the string;
+  <code>g</code> is happy to scan forward and find the next match
+  wherever it is. This matters for a hand-written tokenizer or parser,
+  where "match right here or fail" is the entire point — scanning ahead
+  silently would mean accepting a token that isn't actually adjacent to
+  where the parser currently sits.
+</p>
+
 <h3>Dates</h3>
 <div class="try">
   <pre><code>const d = new Date(2024, 0, 15);   <span class="c">// year, MONTH (0-indexed!), day</span>
