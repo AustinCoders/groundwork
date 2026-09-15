@@ -8,7 +8,7 @@ export const cheat: Chapter = {
   levels: ["beginner", "intermediate", "advanced"],
   practice: [],
   ready: true,
-  subtitle: "Not another lesson — the night-before-the-interview skim of the other 34.",
+  subtitle: "Not another lesson — the night-before-the-interview skim of the other 38.",
   body: `<p>
   Nothing new gets taught here. Every row links back to the chapter
   that actually explains the <em>why</em> — this page exists purely so

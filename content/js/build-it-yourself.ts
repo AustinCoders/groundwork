@@ -136,6 +136,22 @@ console.log(greet.myBind({ name: "Ravi" })("Hello"));    <span class="c">// what
   always calls through <code>myCall</code> with a <code>this</code>
   that was locked in ahead of time.
 </p>
+<div class="warn">
+  <span class="ttl">⚠ What this leaves out</span>
+  Four gaps, exactly the ones a follow-up question would probe: a
+  primitive <code>thisArg</code> (a string, a number) throws, because
+  you can't set a property on one — real <code>call</code> autoboxes it
+  into an object first. A frozen or sealed target throws for the same
+  reason real <code>call</code> never does: it doesn't need to write a
+  temporary property onto anything. If the called function throws, the
+  temporary <code>Symbol</code> key is never cleaned up, because there's
+  no <code>finally</code> around the call — a real, if obscure, leak.
+  And <code>myBind</code>'s result ignores <code>new</code> entirely:
+  <code>new (fn.myBind(obj))()</code> still runs with <code>this</code>
+  forced to <code>obj</code>, where real <code>bind</code> detects
+  construction and lets <code>new</code> win, building a genuine
+  instance instead.
+</div>
 
 <h3>debounce and throttle, from scratch</h3>
 <div class="try">
@@ -235,6 +251,19 @@ console.log(deepEqual([1, 2], [1, 2]));                                  <span c
   returns <code>["0", "1"]</code>, so an array is just an object whose
   keys happen to be indices.
 </p>
+<div class="warn">
+  <span class="ttl">⚠ What this leaves out</span>
+  Comparing by own enumerable keys alone misses type entirely: two
+  different <code>Date</code>s at the same instant, two
+  <code>Map</code>s or <code>Set</code>s with identical contents, and
+  <code>[1, 2]</code> against <code>{ 0: 1, 1: 2 }</code> all come back
+  <code>true</code> here, because none of those types expose their real
+  data as an own enumerable key <code>Object.keys</code> can see. A
+  complete version checks the constructor first, then compares
+  <code>.getTime()</code> for dates and iterates entries for
+  <code>Map</code>/<code>Set</code> — a real library (lodash's
+  <code>isEqual</code>) is where that full case list actually lives.
+</div>
 
 <h3>An LRU cache with O(1) get and put</h3>
 <div class="try">

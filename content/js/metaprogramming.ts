@@ -252,6 +252,14 @@ readConfig();
   asynchronous close (<code>[Symbol.asyncDispose]()</code>) — a database
   connection, a browser lock.
 </p>
+<div class="warn">
+  <span class="ttl">⚠ Check the target here too</span>
+  <code>using</code> is newer than most of the language features in
+  this chapter — it landed later than <code>Proxy</code> or well-known
+  symbols, and older browsers and Node versions don't parse it at all.
+  Confirm the actual runtime and bundler target before reaching for it,
+  the same check the decorators section below asks for.
+</div>
 
 <h3>Decorators — declarative behavior on a class or its members</h3>
 <pre><code>function logged(originalMethod, context) {

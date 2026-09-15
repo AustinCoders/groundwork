@@ -119,6 +119,21 @@ console.log(d.getDate());    <span class="c">// what happens?</span></code></pre
 const end = new Date("2024-02-15");
 (end - start) / 86_400_000;   <span class="c">// 31 — subtracting Dates gives milliseconds; divide to get days</span></code></pre>
 <div class="warn">
+  <span class="ttl">⚠ The two constructors don't parse in the same time zone</span>
+  <code>new Date(2024, 0, 15)</code> (year, month, day as separate
+  numbers) builds midnight in the <b>local</b> time zone.
+  <code>new Date("2024-01-15")</code> (a plain ISO date string, no time)
+  is parsed as midnight <b>UTC</b>. In UTC+5:30, that ISO string's
+  local clock time is <code>05:30</code>, not midnight — a different
+  instant from the numeric-args version, even though both print "15
+  January" if you only look at the date part. The subtraction above
+  only comes out to a clean 31 because <em>both</em> operands went
+  through the same UTC-parsing string form — mix a numeric-args
+  <code>Date</code> with a string-parsed one and the day count can be
+  off by one, depending on which side of midnight UTC the reader's
+  time zone happens to sit.
+</div>
+<div class="warn">
   <span class="ttl">⚠ Why almost nobody hand-rolls date math</span>
   Time zones, daylight saving transitions, leap years, and leap
   seconds all make "add one day" genuinely harder than
