@@ -1,0 +1,40 @@
+name: Vercel deployment cleanup
+
+# Vercel keeps every deployment's build output on disk indefinitely — there's
+# no automatic expiry on the Hobby plan — so a project that deploys on every
+# push accumulates storage without bound. This runs weekly and prunes
+# everything except the live production deployment, the 5 most recent
+# production deployments, the 5 most recent previews, and anything under 24h
+# old. See scripts/vercel-cleanup.mjs for the exact rule.
+
+on:
+  schedule:
+    - cron: "17 3 * * 1" # every Monday, 03:17 UTC — off the hour to avoid GitHub's cron pile-up
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Preview only, don't actually delete"
+        type: boolean
+        default: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Prune old deployments
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_CLEANUP_TOKEN }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            node scripts/vercel-cleanup.mjs
+          else
+            node scripts/vercel-cleanup.mjs --execute
+          fi
