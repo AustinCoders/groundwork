@@ -463,7 +463,7 @@ export const topics: TopicsData = {
       name: "JavaScript",
       mark: "JS",
       accent: "yellow",
-      tagline: "The whole map, 33 sections deep",
+      tagline: "The whole map, 38 sections deep",
       status: "ready",
       notes: "notes.html",
       blurb:

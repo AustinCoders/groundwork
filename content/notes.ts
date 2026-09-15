@@ -36,12 +36,13 @@ import { cheat } from "./js/cheat";
 import { browserObservability } from "./js/browser-observability";
 import { interviewBank } from "./js/interview-bank";
 import { guidedProjectTodo } from "./js/guided-project-todo";
+import { buildItYourself } from "./js/build-it-yourself";
 
 export const jsNotes: NotesFile = {
   meta: {
     title: "JavaScript — the whole map",
     subtitle:
-      "37 sections across three levels, all written — from how the engine runs your code to security and testing.",
+      "38 sections across three levels, all written — from how the engine runs your code to security and testing.",
     lead: "Pick a level and you'll get these sections in the order that makes sense — from what the engine does before line 1 runs, through the event loop, to testing and security.",
     author: "Akshat",
     updated: "September 2026",
@@ -88,6 +89,7 @@ export const jsNotes: NotesFile = {
     testingInJs,
     browserObservability,
     interviewBank,
+    buildItYourself,
     cheat,
   ],
 };

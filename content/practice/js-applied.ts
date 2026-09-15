@@ -1088,4 +1088,67 @@ export const jsApplied: Exercise[] = [
       },
     ],
   },
+{
+    id: "ex-debounce-fn",
+    chapter: "build-it-yourself",
+    level: "advanced",
+    title: "Write debounce from scratch",
+    brief:
+      "<p>Write <code>debounce(fn, wait)</code> returning a new function that only actually calls <code>fn</code> once calls stop arriving for <code>wait</code> ms — and every new call resets that wait.</p><ul><li>Calling the debounced function several times quickly should only run <code>fn</code> once, with the <b>last</b> call's arguments</li><li>Preserve <code>this</code> and pass every argument through</li></ul>",
+    starter: "function debounce(fn, wait) {\n  // TODO\n}\n",
+    hints: [
+      "clearTimeout the previous timer on every call, before scheduling a new one.",
+      "fn.apply(this, args) inside the returned function keeps both this and the arguments intact.",
+    ],
+    solution:
+      "function debounce(fn, wait) {\n  let timer;\n  return function (...args) {\n    clearTimeout(timer);\n    const context = this;\n    timer = setTimeout(() => fn.apply(context, args), wait);\n  };\n}\n",
+    tests: [
+      {
+        name: "only the last call in a burst actually runs",
+        body: 'const calls = [];\nconst debounced = debounce((x) => calls.push(x), 20);\ndebounced(1);\ndebounced(2);\ndebounced(3);\nawait new Promise((r) => setTimeout(r, 60));\nassert.deepEqual(calls, [3]);',
+      },
+      {
+        name: "runs again after the wait period fully passes",
+        body: 'const calls = [];\nconst debounced = debounce((x) => calls.push(x), 15);\ndebounced("a");\nawait new Promise((r) => setTimeout(r, 45));\ndebounced("b");\nawait new Promise((r) => setTimeout(r, 45));\nassert.deepEqual(calls, ["a", "b"]);',
+      },
+      {
+        name: "preserves this",
+        body: 'const obj = { value: 42, calls: [] };\nobj.record = debounce(function () { this.calls.push(this.value); }, 10);\nobj.record();\nawait new Promise((r) => setTimeout(r, 30));\nassert.deepEqual(obj.calls, [42]);',
+      },
+    ],
+  },
+{
+    id: "ex-build-lru-cache",
+    chapter: "build-it-yourself",
+    level: "advanced",
+    title: "Build an LRU cache",
+    brief:
+      "<p>Implement <code>LRUCache</code> with a fixed <code>capacity</code>:</p><ul><li><code>get(key)</code> returns the stored value, or <code>undefined</code>, and marks the key as most recently used</li><li><code>put(key, value)</code> stores it, marking it most recently used; if this pushes the cache over capacity, evict the <b>least</b> recently used key</li></ul>",
+    starter:
+      "class LRUCache {\n  constructor(capacity) {\n    // TODO\n  }\n  get(key) {\n    // TODO\n  }\n  put(key, value) {\n    // TODO\n  }\n}\n",
+    hints: [
+      "A Map remembers insertion order — delete then re-set a key to move it to the 'most recent' end.",
+      "map.keys().next().value is the map's current oldest key — the one to evict at capacity.",
+    ],
+    solution:
+      "class LRUCache {\n  #capacity;\n  #map = new Map();\n  constructor(capacity) {\n    this.#capacity = capacity;\n  }\n  get(key) {\n    if (!this.#map.has(key)) return undefined;\n    const value = this.#map.get(key);\n    this.#map.delete(key);\n    this.#map.set(key, value);\n    return value;\n  }\n  put(key, value) {\n    this.#map.delete(key);\n    this.#map.set(key, value);\n    if (this.#map.size > this.#capacity) {\n      this.#map.delete(this.#map.keys().next().value);\n    }\n  }\n}\n",
+    tests: [
+      {
+        name: "returns undefined for a missing key",
+        body: 'const c = new LRUCache(2);\nassert.equal(c.get("x"), undefined);',
+      },
+      {
+        name: "stores and retrieves values",
+        body: 'const c = new LRUCache(2);\nc.put("a", 1);\nassert.equal(c.get("a"), 1);',
+      },
+      {
+        name: "evicts the least recently used key once over capacity",
+        body: 'const c = new LRUCache(2);\nc.put("a", 1);\nc.put("b", 2);\nc.put("c", 3);\nassert.equal(c.get("a"), undefined);\nassert.equal(c.get("b"), 2);\nassert.equal(c.get("c"), 3);',
+      },
+      {
+        name: "a get() refreshes recency, saving a key from eviction",
+        body: 'const c = new LRUCache(2);\nc.put("a", 1);\nc.put("b", 2);\nc.get("a");\nc.put("c", 3);\nassert.equal(c.get("b"), undefined);\nassert.equal(c.get("a"), 1);\nassert.equal(c.get("c"), 3);',
+      },
+    ],
+  },
 ];
