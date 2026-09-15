@@ -453,7 +453,19 @@ export const topics: TopicsData = {
         {
           title: "Interview bank",
           chapter: "interview-bank",
-          items: ["40 questions, split by the level they are asked at"],
+          items: ["34 questions, split by the level they are asked at"],
+        },
+        {
+          title: "Build it yourself",
+          chapter: "build-it-yourself",
+          items: [
+            "A minimal spec-shaped Promise, from scratch",
+            "call/apply/bind, hand-rolled — and where they diverge from the real thing",
+            "debounce and throttle",
+            "A deep clone that survives circular references",
+            "A deep equal, and where a naive one lies",
+            "An O(1) LRU cache built on Map's insertion order",
+          ],
         },
       ],
     },
