@@ -13,6 +13,7 @@ const PAGES = [
   { path: "/practice?id=free", heading: /Playground/i },
   { path: "/problems", heading: /problem/i },
   { path: "/review", heading: /read again/i },
+  { path: "/mock", heading: /mock interview/i },
   { path: "/progress", heading: /progress/i },
   { path: "/git", heading: /Git/i },
   { path: "/architecture", heading: /How this site is built/i },
@@ -115,4 +116,23 @@ test("narration plays a chapter", async ({ page }) => {
 
   await expect(page.locator(".listenbtn").first()).toHaveText(/Pause/);
   await expect(page.locator(".is-narrating").first()).toBeVisible();
+});
+
+test("a mock interview runs from setup to summary", async ({ page }) => {
+  await page.goto("/mock");
+
+  await page.getByLabel("Questions").selectOption("5");
+  await page.getByRole("button", { name: "Start" }).click();
+
+  for (let i = 1; i <= 5; i++) {
+    await expect(page.getByText(`Question ${i} of 5`)).toBeVisible();
+    await page.getByRole("button", { name: "Reveal the answer" }).click();
+    await expect(page.getByText("The answer")).toBeVisible();
+    await page.getByRole("button", { name: i % 2 ? "Nailed it" : "Missed it" }).click();
+  }
+
+  await expect(page.getByText(/3 nailed, 0 partly, 2 missed, out of 5/)).toBeVisible();
+  await expect(page.getByText("Go back to these")).toBeVisible();
+  await page.getByRole("button", { name: "Another round" }).click();
+  await expect(page.getByRole("button", { name: "Start" })).toBeVisible();
 });

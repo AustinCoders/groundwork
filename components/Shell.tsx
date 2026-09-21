@@ -274,6 +274,12 @@ export function Shell({
                   <span className="site-navlink__name">Interview book</span>
                 </Link>
               )}
+              <Link className="site-navlink" href="/mock" title="Mock interview — timed questions" prefetch={false}>
+                <span className="site-navlink__icon" aria-hidden="true">
+                  ⏱
+                </span>
+                <span className="site-navlink__name">Mock interview</span>
+              </Link>
               <Link className="site-navlink" href="/review" title="Review — spaced repetition" prefetch={false}>
                 <span className="site-navlink__icon" aria-hidden="true">
                   ↻
