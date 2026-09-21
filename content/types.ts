@@ -98,4 +98,6 @@ export interface Exercise {
   hints: string[];
   solution: string;
   tests: ExerciseTest[];
+  // "component" exercises render React in the sandbox and test it through the DOM.
+  kind?: "function" | "component";
 }

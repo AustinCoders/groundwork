@@ -6,7 +6,12 @@ export const reactUseeffectBasics: Chapter = {
   title: "useEffect basics",
   short: "useEffect",
   levels: ["beginner"],
-  practice: ["ex-react-deps-changed", "ex-react-which-deps-changed"],
+  practice: [
+    "ex-react-deps-changed",
+    "ex-react-which-deps-changed",
+    "ex-comp-window-listener",
+    "ex-comp-document-title",
+  ],
   ready: true,
   subtitle: "For synchronising with something outside React — and most of the time you do not need it.",
   body: `<h3>What an effect is for</h3>

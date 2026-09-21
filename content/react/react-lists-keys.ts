@@ -6,7 +6,7 @@ export const reactListsKeys: Chapter = {
   title: "Lists with .map() and keys",
   short: "Lists & keys",
   levels: ["beginner"],
-  practice: ["ex-react-duplicate-keys", "ex-react-reorder-list"],
+  practice: ["ex-react-duplicate-keys", "ex-react-reorder-list", "ex-comp-index-keys"],
   ready: true,
   subtitle: "A key is not for you and it is not for performance — it tells React which item is which.",
   body: `<h3>Rendering a list</h3>

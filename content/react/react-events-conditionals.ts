@@ -6,7 +6,13 @@ export const reactEventsConditionals: Chapter = {
   title: "Events & conditional rendering",
   short: "Events & conditionals",
   levels: ["beginner"],
-  practice: ["ex-react-classnames", "ex-react-render-state"],
+  practice: [
+    "ex-react-classnames",
+    "ex-react-render-state",
+    "ex-comp-zero-bug",
+    "ex-comp-disclosure",
+    "ex-comp-star-rating",
+  ],
   ready: true,
   subtitle: "Pass the function, do not call it — and know why && puts a zero on your page.",
   body: `<h3>Handlers are props holding functions</h3>

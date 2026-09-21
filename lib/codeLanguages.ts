@@ -17,7 +17,7 @@ export const LANG_ORDER = ["javascript", "typescript", "python", "sql"] as const
 export type LanguageKey = (typeof LANG_ORDER)[number];
 
 export const LANGUAGES: Record<LanguageKey, LanguageMeta> = {
-  javascript: { label: "JavaScript", ext: "js", runnable: "js", support: () => javascript() },
+  javascript: { label: "JavaScript", ext: "js", runnable: "js", support: () => javascript({ jsx: true }) },
   typescript: { label: "TypeScript", ext: "ts", runnable: "ts", support: () => javascript({ typescript: true }) },
   python: { label: "Python", ext: "py", runnable: "python", support: () => python() },
   sql: { label: "SQL", ext: "sql", runnable: "sql", support: () => sql() },

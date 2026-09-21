@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test, type ConsoleMessage, type Page } from "@playwright/test";
+import { practice } from "../content/practice";
 
 const PAGES = [
   { path: "/", heading: /Everything I know/i },
@@ -164,6 +165,30 @@ test("the step-through demos advance and finish", async ({ page }) => {
   await page.locator("#gt-mode").selectOption("dfs");
   while (await page.locator("#gt-next").isEnabled()) await page.locator("#gt-next").click();
   await expect(page.locator("#gt-order .loop-frame")).toHaveCount(7);
+
+  expect(problems).toEqual([]);
+});
+
+test("a component exercise renders a preview and runs its tests in the sandbox", async ({ page }) => {
+  const problems = collectProblems(page);
+  const exercise = practice.find((e) => e.id === "ex-comp-counter-step")!;
+
+  // The starter: the preview appears, and Submit fails with a reason.
+  await page.goto("/practice?id=" + exercise.id);
+  await expect(page.locator(".preview-panel")).toBeVisible();
+  await page.getByRole("button", { name: "Run the code" }).click();
+  await expect(page.frameLocator("iframe.preview-frame").getByText("Count: 0")).toBeVisible();
+  await page.getByRole("button", { name: "Submit" }).click();
+  await expect(page.locator(".verdict--fail")).toBeVisible();
+
+  // The working solution, stored the way the editor stores it, passes every test.
+  await page.evaluate(
+    ([key, code]) => localStorage.setItem(key, JSON.stringify(code)),
+    ["jsnotes:code:" + exercise.id, exercise.solution]
+  );
+  await page.reload();
+  await page.getByRole("button", { name: "Submit" }).click();
+  await expect(page.locator(".verdict--pass")).toContainText(`All ${exercise.tests.length} tests pass`);
 
   expect(problems).toEqual([]);
 });

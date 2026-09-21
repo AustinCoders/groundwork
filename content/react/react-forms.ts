@@ -6,7 +6,7 @@ export const reactForms: Chapter = {
   title: "Controlled forms",
   short: "Forms",
   levels: ["beginner"],
-  practice: ["ex-react-validate-form", "ex-react-controlled-change"],
+  practice: ["ex-react-validate-form", "ex-react-controlled-change", "ex-comp-signup-form"],
   ready: true,
   subtitle: "The input shows what state says, and typing asks state to change.",
   body: `<h3>Controlled: state is the source of truth</h3>

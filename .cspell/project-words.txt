@@ -409,6 +409,7 @@ uncacheable
 unevictable
 unfinalized
 unflushed
+unhover
 univers
 unmakeable
 unmemoised

@@ -6,7 +6,7 @@ export const reactRefsDepth: Chapter = {
   title: "Refs in depth",
   short: "Refs in depth",
   levels: ["advanced"],
-  practice: [],
+  practice: ["ex-comp-scroll-bottom"],
   ready: true,
   subtitle: "Forwarding, imperative handles, and integrating libraries that own their own DOM.",
   body: `<h3>ref is a prop again</h3>

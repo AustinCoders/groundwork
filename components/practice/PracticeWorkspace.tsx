@@ -11,6 +11,7 @@ import type { LanguageKey } from "@/lib/codeLanguages";
 import { useClientValue, useMounted } from "@/lib/hooks";
 import type { PracticeExercise } from "@/lib/practiceFree";
 import { runPython } from "@/lib/pythonRunner";
+import { runReact } from "@/lib/reactRunner";
 import { run as runnerRun, transpileTS, type RunnerOutputEntry, type RunnerTestResult } from "@/lib/runner";
 import { runSQL } from "@/lib/sqlRunner";
 import { isSoundEnabled, playSolvedDing, setSoundEnabled } from "@/lib/sound";
@@ -118,6 +119,8 @@ export function PracticeWorkspace({
 }) {
   const editorRef = useRef<CodeEditorHandle | null>(null);
   const runningRef = useRef<{ stop: () => void } | null>(null);
+  const previewRef = useRef<HTMLDivElement | null>(null);
+  const isComponent = exercise.kind === "component";
   const currentLangRef = useRef<LanguageKey>("javascript");
 
   const mounted = useMounted();
@@ -223,6 +226,33 @@ export function PracticeWorkspace({
           }
         },
       });
+    }
+
+    if (meta.runnable === "js" && isComponent) {
+      const host = previewRef.current;
+      if (!host) return;
+      runningRef.current = runReact({
+        code: editor.getValue(),
+        tests: withTests ? exercise.tests : [],
+        mountApp: !withTests,
+        container: host,
+        timeout: 8000,
+        onConsole: (entry) => setConsoleLines((prev) => [...prev, entry]),
+        onDone: (payload) => {
+          runningRef.current = null;
+          setConsolePhase("ran");
+          if (withTests) {
+            const results = payload.results || [];
+            setTestResults(results);
+            if (results.length && results.every((r) => r.ok) && !isFree) {
+              progress.setExerciseSolved(exercise.id, true);
+              setJustSolved(true);
+              playSolvedDing();
+            }
+          }
+        },
+      });
+      return;
     }
 
     if (meta.runnable === "js") {
@@ -499,6 +529,15 @@ export function PracticeWorkspace({
                 store.set(EDITOR_HEIGHT_KEY, next);
               }}
             />
+          )}
+
+          {isComponent && (
+            <section className="panel preview-panel" aria-label="Preview">
+              <div className="preview-panel__bar">Preview</div>
+              <div className="preview-panel__host" ref={previewRef}>
+                <p className="panel__empty">Run to see your component here.</p>
+              </div>
+            </section>
           )}
 
           <section className="panel">
