@@ -6,7 +6,7 @@ export const reactBoundariesPortals: Chapter = {
   title: "Error boundaries, portals & keys in depth",
   short: "Boundaries & portals",
   levels: ["intermediate"],
-  practice: [],
+  practice: ["ex-react-reset-keys-changed"],
   ready: true,
   subtitle: "Containing a crash, escaping the DOM tree, and using keys on purpose.",
   body: `<h3>Why one broken component blanks the page</h3>

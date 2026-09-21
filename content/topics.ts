@@ -1088,6 +1088,26 @@ export const topics: TopicsData = {
                 "What belongs in E2E and what belongs one layer down",
               ],
             },
+            {
+              title: "Internationalisation",
+              chapter: "react-i18n",
+              items: ["i18n: whole messages, plurals, Intl formatting, react-i18next and next-intl, right-to-left"],
+            },
+            {
+              title: "File uploads",
+              chapter: "react-file-uploads",
+              items: ["Progress, drag and drop with a keyboard fallback, presigned URLs, server-side checks"],
+            },
+            {
+              title: "Real-time UI",
+              chapter: "react-realtime",
+              items: ["Polling, Server-Sent Events and WebSockets, reconnecting with backoff, the query cache"],
+            },
+            {
+              title: "shadcn/ui",
+              chapter: "react-shadcn",
+              items: ["Copied, owned components on Base UI or Radix, Tailwind, cva, registries"],
+            },
           ],
         },
         {
@@ -1211,6 +1231,16 @@ export const topics: TopicsData = {
               title: "Review and judgement",
               chapter: "react-review-judgement",
               items: ["What to look for, and when not to use React"],
+            },
+            {
+              title: "State machines and XState",
+              chapter: "react-state-machines",
+              items: ["States and transitions instead of booleans, XState v5, guards, delays, actors"],
+            },
+            {
+              title: "Feature flags",
+              chapter: "react-feature-flags",
+              items: ["Deploy versus release, sticky percentage rollouts, server evaluation, OpenFeature"],
             },
             {
               title: "Interview bank",

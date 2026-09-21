@@ -6,7 +6,7 @@ export const reactE2e: Chapter = {
   title: "End-to-end testing",
   short: "E2E testing",
   levels: ["intermediate"],
-  practice: [],
+  practice: ["ex-react-classify-runs"],
   ready: true,
   subtitle: "The tests that run the real app in a real browser — and why you want few of them.",
   body: `<h3>What this layer is for</h3>

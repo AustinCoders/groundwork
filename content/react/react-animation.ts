@@ -6,7 +6,7 @@ export const reactAnimation: Chapter = {
   title: "Animation and transitions",
   short: "Animation",
   levels: ["intermediate"],
-  practice: [],
+  practice: ["ex-react-presence-phase"],
   ready: true,
   subtitle: "CSS first, a library when you need interruption, and the one case React makes hard.",
   body: `<h3>The hard part is unmounting</h3>

@@ -48,6 +48,12 @@ import { reactMigration } from "./react/react-migration";
 import { reactDebuggingProduction } from "./react/react-debugging-production";
 import { reactReviewJudgement } from "./react/react-review-judgement";
 import { reactAuth } from "./react/react-auth";
+import { reactI18n } from "./react/react-i18n";
+import { reactFileUploads } from "./react/react-file-uploads";
+import { reactRealtime } from "./react/react-realtime";
+import { reactShadcn } from "./react/react-shadcn";
+import { reactStateMachines } from "./react/react-state-machines";
+import { reactFeatureFlags } from "./react/react-feature-flags";
 import { reactInterviewBank } from "./react/react-interview-bank";
 import { reactCheat } from "./react/react-cheat";
 
@@ -55,7 +61,7 @@ export const reactNotes: NotesFile = {
   meta: {
     title: "React — the whole map",
     subtitle:
-      "51 sections across three levels, all written — JSX through migration, production debugging and judgement.",
+      "57 sections across three levels, all written — JSX through migration, from internationalisation and real-time UI to state machines and feature flags.",
     lead: "Pick a level and you'll get these sections in the order that makes sense — from what JSX compiles to, through why it re-rendered, to the reconciler underneath and the server boundary above it.",
     author: "Akshat",
     updated: "September 2026",
@@ -93,6 +99,10 @@ export const reactNotes: NotesFile = {
     reactTypescript,
     reactAnimation,
     reactE2e,
+    reactI18n,
+    reactFileUploads,
+    reactRealtime,
+    reactShadcn,
     reactFiber,
     reactConcurrent,
     reactSuspense,
@@ -113,6 +123,8 @@ export const reactNotes: NotesFile = {
     reactMigration,
     reactDebuggingProduction,
     reactReviewJudgement,
+    reactStateMachines,
+    reactFeatureFlags,
     reactInterviewBank,
     reactCheat,
   ],

@@ -92,6 +92,7 @@ cccaaa
 Chargebee
 cheatsheet
 chipbtn
+CLDR
 coalescable
 codefirst
 codegen
