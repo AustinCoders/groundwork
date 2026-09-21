@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const reactFeatureFlags: Chapter = {
   id: "react-feature-flags",
-  num: "A23",
+  num: "A22",
   title: "Feature flags",
   short: "Feature flags",
   levels: ["advanced"],

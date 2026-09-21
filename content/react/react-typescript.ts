@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const reactTypescript: Chapter = {
   id: "react-typescript",
-  num: "I15",
+  num: "I16",
   title: "TypeScript with React",
   short: "TypeScript",
   levels: ["intermediate"],

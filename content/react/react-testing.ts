@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const reactTesting: Chapter = {
   id: "react-testing",
-  num: "I14",
+  num: "I15",
   title: "Testing React",
   short: "Testing",
   levels: ["intermediate"],

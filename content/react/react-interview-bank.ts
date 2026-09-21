@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const reactInterviewBank: Chapter = {
   id: "react-interview-bank",
-  num: "A21",
+  num: "A23",
   title: "React interview bank",
   short: "Interview bank",
   levels: ["advanced"],

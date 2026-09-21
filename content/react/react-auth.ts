@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const reactAuth: Chapter = {
   id: "react-auth",
-  num: "I16",
+  num: "I13",
   title: "Auth in React",
   short: "Auth",
   levels: ["intermediate"],

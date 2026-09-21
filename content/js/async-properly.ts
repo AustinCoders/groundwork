@@ -306,12 +306,48 @@ response.headers.get("content-type");   <span class="c">// header access is case
   <code>a.com</code> from reading a response from <code>b.com</code>
   unless <code>b.com</code>'s server explicitly opts in with an
   <code>Access-Control-Allow-Origin</code> response header. This is
-  enforced by the <em>browser</em>, not the server — the request
-  usually still reaches the server and can still have side effects; the
-  browser just refuses to hand the <em>response</em> back to your
-  JavaScript. It's a client-side protection for the person visiting the
-  page, not a way for a server to protect itself from being called.
+  enforced by the <em>browser</em>, not the server. Whether the request
+  itself reaches the server depends on what kind of request it is, which
+  is the next box. Either way it's a client-side protection for the
+  person visiting the page, not a way for a server to protect itself from
+  being called.
 </p>
+<div class="bx is-prim">
+  <span class="ttl">Simple requests and preflighted requests</span>
+  <p>
+    A <b>simple</b> request is a <code>GET</code>, <code>HEAD</code> or
+    <code>POST</code> with only browser-safe headers and a
+    <code>Content-Type</code> of <code>application/x-www-form-urlencoded</code>,
+    <code>multipart/form-data</code> or <code>text/plain</code>. The browser
+    sends it straight away with an <code>Origin</code> header. The server
+    processes it, side effects included, and the browser then withholds the
+    <em>response</em> unless <code>Access-Control-Allow-Origin</code> permits it.
+  </p>
+  <p>
+    Anything else is <b>preflighted</b>: <code>PUT</code>, <code>PATCH</code>,
+    <code>DELETE</code>, a custom header such as <code>Authorization</code>, or
+    <code>Content-Type: application/json</code> &mdash; which is the
+    <code>POST</code> above. The browser first sends an <code>OPTIONS</code>
+    request asking permission, and only sends the real one if the answer is yes.
+  </p>
+  <pre><code>OPTIONS /users            <span class="c">// the preflight</span>
+Origin: https://a.com
+Access-Control-Request-Method: POST
+Access-Control-Request-Headers: content-type
+
+204 No Content            <span class="c">// the server's answer</span>
+Access-Control-Allow-Origin: https://a.com
+Access-Control-Allow-Methods: POST
+Access-Control-Allow-Headers: content-type
+
+POST /users               <span class="c">// sent only now</span></code></pre>
+  <p>
+    So a blocked JSON <code>POST</code> usually never reaches the server at all,
+    while a blocked form-style <code>POST</code> usually does. See
+    <a href="/notes/security">the security chapter</a> for the preflight from the
+    server's side.
+  </p>
+</div>
 <div class="warn">
   <span class="ttl">⚠ A CORS error is almost never a JS bug</span>
   If a request works fine in Postman/curl but fails only from the

@@ -280,6 +280,7 @@ precached
 precaching
 precomputes
 predev
+preflighted
 preorder
 prerendered
 prereq

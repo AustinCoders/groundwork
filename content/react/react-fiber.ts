@@ -31,11 +31,11 @@ export const reactFiber: Chapter = {
 <p>
   A fiber is a plain object representing one unit of work &mdash; one component
   instance, one DOM element. It holds the type, the pending props, the state
-  hooks, the effect list, and pointers to its <code>child</code>,
+  hooks, the flags describing work it needs, and pointers to its <code>child</code>,
   <code>sibling</code> and <code>return</code> (parent).
 </p>
 <pre><code>{ type: Button, stateNode, memoizedProps, memoizedState,
-  child, sibling, return, flags, alternate }</code></pre>
+  child, sibling, return, flags, subtreeFlags, alternate }</code></pre>
 <p>
   Those pointers are the important part. Before Fiber, React reconciled with
   recursion &mdash; and a recursive call stack cannot be paused. A linked list
@@ -102,7 +102,7 @@ startTransition(() =&gt; setResults(list));  <span class="c">// can be interrupt
 
 <h3>Walking the tree, concretely</h3>
 <pre><code>beginWork(fiber)      <span class="c">// going down: run the component, create child fibers</span>
-completeWork(fiber)   <span class="c">// coming back up: build the effect list</span></code></pre>
+completeWork(fiber)   <span class="c">// coming back up: finish the node, bubble its flags to the parent</span></code></pre>
 <p>
   React descends through <code>child</code> pointers calling
   <code>beginWork</code>, and when a fiber has no child it calls
@@ -134,14 +134,30 @@ completeWork(fiber)   <span class="c">// coming back up: build the effect list</
   tree is often structural rather than a cache.
 </p>
 
-<h3>The effect list</h3>
+<h3>Flags, and how commit finds the work</h3>
 <p>
-  During <code>completeWork</code>, React tags each fiber with flags &mdash;
-  placement, update, deletion, has-layout-effect &mdash; and links the tagged
-  ones together. Commit then walks that short list rather than the whole tree,
-  in three passes: <b>before mutation</b> (snapshots), <b>mutation</b> (DOM
-  changes, refs detached), <b>layout</b> (refs attached,
-  <code>useLayoutEffect</code>).
+  During render React records what each fiber needs as <code>flags</code>
+  &mdash; placement, update, ref, snapshot, has-layout-effect &mdash; and deletions
+  are noted on the parent. As <code>completeWork</code> climbs back up, it
+  <b>bubbles</b> those flags upward: each fiber's <code>subtreeFlags</code> is the
+  combination of everything beneath it. So the root knows, without looking, whether
+  any work exists anywhere in the tree, and each parent knows whether it is worth
+  descending into a child.
+</p>
+<p>
+  Commit then walks the finished tree in three passes &mdash; <b>before
+  mutation</b> (snapshots), <b>mutation</b> (DOM changes, refs detached),
+  <b>layout</b> (refs attached, <code>useLayoutEffect</code>) &mdash; and in each
+  pass skips any subtree whose <code>subtreeFlags</code> show nothing to do. A
+  change in one leaf costs a walk down one path, not a scan of every component.
+</p>
+<p class="sub">
+  Older write-ups, and React 16 and 17, describe an <em>effect list</em>: a
+  linked chain of only the fibers with effects, threaded together during render.
+  React 18 replaced it with <code>flags</code> and <code>subtreeFlags</code>, so
+  if you read "commit walks the effect list", you are reading about an
+  implementation that no longer exists. The three passes and their guarantees are
+  unchanged.
 </p>
 <p>
   That three-pass structure is why <a href="/react/react-effect-timing">effect

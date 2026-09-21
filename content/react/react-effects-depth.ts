@@ -41,7 +41,14 @@ useEffect(() =&gt; {
 
 <span class="c">// 4. the ref workaround this replaces — still everywhere in existing code</span>
 const latest = useRef(count);
-useEffect(() =&gt; { latest.current = count; });</code></pre>
+useEffect(() =&gt; { latest.current = count; });     <span class="c">// keep it current after every render</span>
+
+useEffect(() =&gt; {
+  const id = setInterval(() =&gt; {
+    setCount(latest.current + 1);                  <span class="c">// the interval reads the ref, not the closure</span>
+  }, 1000);
+  return () =&gt; clearInterval(id);
+}, []);                                            <span class="c">// still no dependencies, and no stale value</span></code></pre>
 
 <h3>useEffectEvent, properly</h3>
 <p>

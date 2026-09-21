@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const reactStateMachines: Chapter = {
   id: "react-state-machines",
-  num: "A22",
+  num: "A21",
   title: "State machines and XState",
   short: "State machines",
   levels: ["advanced"],

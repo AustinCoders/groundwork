@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const reactServerState: Chapter = {
   id: "react-server-state",
-  num: "I13",
+  num: "I14",
   title: "Server state with TanStack Query",
   short: "TanStack Query",
   levels: ["intermediate"],
