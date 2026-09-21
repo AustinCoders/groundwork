@@ -73,6 +73,23 @@ export const reactSuspense: Chapter = {
   the content so nothing moves when it swaps.
 </p>
 
+<figure class="viz-figure">
+  <svg viewBox="0 0 560 210" role="img" aria-label="A page with a Suspense boundary around Feed. Header renders at once; while Feed is loading the boundary shows its skeleton.">
+    <rect class="viz-rect" x="10" y="10" width="540" height="190" rx="10"></rect>
+    <text class="viz-label" x="24" y="32">Page</text>
+    <rect class="viz-rect viz-rect--client" x="30" y="48" width="150" height="40" rx="6"></rect>
+    <text class="viz-label" x="44" y="72">Header  (ready)</text>
+    <rect class="viz-rect viz-rect--wait viz-rect--server" x="30" y="108" width="500" height="80" rx="8"></rect>
+    <text class="viz-label" x="44" y="128">&lt;Suspense fallback={&lt;FeedSkeleton /&gt;}&gt;</text>
+    <rect class="viz-rect viz-rect--wait" x="44" y="138" width="200" height="38" rx="6"></rect>
+    <text class="viz-label" x="58" y="161">Feed  (still loading)</text>
+    <rect class="viz-rect" x="300" y="138" width="216" height="38" rx="6"></rect>
+    <text class="viz-label" x="314" y="161">FeedSkeleton  (shown now)</text>
+    <path class="viz-line" d="M244 157 L300 157"></path>
+  </svg>
+  <figcaption>The boundary owns the loading state for its region. Header is outside it, so it appears at once.</figcaption>
+</figure>
+
 <h3>Nested boundaries reveal outside in</h3>
 <pre><code>&lt;Suspense fallback={&lt;PageSkeleton /&gt;}&gt;
   &lt;Article /&gt;

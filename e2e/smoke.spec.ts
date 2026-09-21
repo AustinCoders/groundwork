@@ -136,3 +136,34 @@ test("a mock interview runs from setup to summary", async ({ page }) => {
   await page.getByRole("button", { name: "Another round" }).click();
   await expect(page.getByRole("button", { name: "Start" })).toBeVisible();
 });
+
+test("the step-through demos advance and finish", async ({ page }) => {
+  const problems = collectProblems(page);
+
+  await page.goto("/react/react-fiber");
+  const next = page.locator("#fw-next");
+  await next.scrollIntoViewIfNeeded();
+  await next.click();
+  await expect(page.locator("#fw-note")).toContainText("beginWork(App)");
+  while (await next.isEnabled()) await next.click();
+  await expect(page.locator("#fw-note")).toContainText("never visited in the commit");
+
+  await page.goto("/react/react-memoisation");
+  await page.locator("#rr-click").click();
+  await expect(page.locator("#rr-note")).toContainText("Without memo");
+  await page.locator("#rr-memo").check();
+  await page.locator("#rr-click").click();
+  await expect(page.locator("#rr-note")).toContainText("skips it");
+
+  await page.goto("/react/react-effect-timing");
+  await page.locator("#et-kind").selectOption("passive");
+  while (await page.locator("#et-next").isEnabled()) await page.locator("#et-next").click();
+  await expect(page.locator("#et-note")).toContainText("after paint");
+
+  await page.goto("/dsa/dsa-graphs-representation-traversal");
+  await page.locator("#gt-mode").selectOption("dfs");
+  while (await page.locator("#gt-next").isEnabled()) await page.locator("#gt-next").click();
+  await expect(page.locator("#gt-order .loop-frame")).toHaveCount(7);
+
+  expect(problems).toEqual([]);
+});

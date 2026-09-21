@@ -7164,3 +7164,200 @@ a.step__title:hover {
     transition: none;
   }
 }
+
+/* Visualisers: trees, lanes and graphs used by the step-through demos */
+.viz-tree,
+.viz-tree ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.viz-tree ul {
+  margin-left: 12px;
+  padding-left: 14px;
+  border-left: 1.5px dashed var(--line-soft);
+}
+
+.viz-node {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 3px 0;
+  padding: 3px 9px;
+  border: 1.5px solid var(--line-soft);
+  border-radius: 6px;
+  background: var(--sheet);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.viz-node.is-current {
+  background: var(--hl-yellow);
+  border-color: var(--ink-soft);
+  font-weight: 700;
+}
+
+.viz-node.is-done {
+  border-color: var(--green);
+}
+
+.viz-node.is-skip {
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.viz-node.is-rendered {
+  animation: viz-flash 0.9s ease;
+}
+
+@keyframes viz-flash {
+  from {
+    background: var(--hl-yellow);
+  }
+  to {
+    background: var(--sheet);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viz-node.is-rendered {
+    animation: none;
+    background: var(--hl-yellow);
+  }
+}
+
+.viz-badge {
+  font-size: 11px;
+  font-weight: 400;
+  padding: 0 7px;
+  border-radius: 99px;
+  border: 1px solid var(--green);
+  background: var(--dg-box-green);
+  color: var(--green);
+}
+
+.viz-badge--work {
+  border-color: var(--red);
+  background: var(--dg-box-red);
+  color: var(--red);
+}
+
+.viz-lane {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 10px;
+}
+
+.viz-phase {
+  flex: 1 1 130px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1.5px solid var(--line-soft);
+  border-radius: 8px;
+  background: var(--sheet);
+  font-size: 13px;
+  opacity: 0.55;
+}
+
+.viz-phase b {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 15px;
+}
+
+.viz-phase.is-reached {
+  opacity: 1;
+}
+
+.viz-phase.is-current {
+  background: var(--hl-yellow);
+  border-color: var(--ink-soft);
+}
+
+.viz-phase.is-yours::after {
+  content: "your effect runs here";
+  display: block;
+  margin-top: 4px;
+  color: var(--red);
+  font-weight: 700;
+}
+
+.viz-figure {
+  margin: 16px 0;
+}
+
+.viz-figure svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.viz-figure figcaption {
+  font-size: 13.5px;
+  color: var(--pencil);
+  margin-top: 6px;
+}
+
+.viz-rect {
+  fill: var(--sheet);
+  stroke: var(--ink-soft);
+  stroke-width: 1.5;
+}
+
+.viz-rect--server {
+  fill: var(--dg-box-yellow);
+  stroke: var(--dg-yellow-stroke);
+}
+
+.viz-rect--client {
+  fill: var(--dg-box-green);
+  stroke: var(--green);
+}
+
+.viz-rect--wait {
+  stroke-dasharray: 5 4;
+}
+
+.viz-label {
+  fill: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.viz-line {
+  stroke: var(--ink-soft);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.viz-edge {
+  stroke: var(--line-soft);
+  stroke-width: 2.5;
+}
+
+.viz-vertex circle {
+  fill: var(--sheet);
+  stroke: var(--ink-soft);
+  stroke-width: 2;
+}
+
+.viz-vertex text {
+  fill: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.viz-vertex.is-visited circle {
+  fill: var(--dg-box-green);
+  stroke: var(--green);
+}
+
+.viz-vertex.is-current circle {
+  fill: var(--hl-yellow);
+  stroke: var(--ink);
+}

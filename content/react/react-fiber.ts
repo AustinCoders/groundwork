@@ -166,6 +166,125 @@ completeWork(fiber)   <span class="c">// coming back up: finish the node, bubble
   render.
 </p>
 
+<h3>Watch it happen: render, then commit</h3>
+<div class="demo" id="fw">
+  <div class="demo__bar">Walking the fiber tree</div>
+  <div class="demo__body">
+    <div class="loop-grid">
+      <div>
+        <div class="viz-tree" id="fw-tree"></div>
+        <div class="demo__ctl">
+          <button class="btn" id="fw-prev" type="button">← Back</button>
+          <button class="btn" id="fw-next" type="button">Next step →</button>
+          <button class="btn btn--ghost" id="fw-reset" type="button">Reset</button>
+        </div>
+      </div>
+      <div class="loop-queues">
+        <div class="loop-box">
+          <div class="loop-box__label">Work order so far</div>
+          <div id="fw-log"></div>
+        </div>
+      </div>
+    </div>
+    <p class="demo__note" id="fw-note" aria-live="polite"></p>
+  </div>
+</div>
+<p class="sub">
+  Only <code>ItemB</code> has changed. Step through: the render phase walks
+  down and back up, bubbling that one flag toward the root; then commit walks
+  the finished tree and skips every clean subtree.
+</p>
+<script>
+(function () {
+  var root = { id: "App", kids: [
+    { id: "Header", kids: [] },
+    { id: "Main", kids: [
+      { id: "List", kids: [
+        { id: "ItemA", kids: [] },
+        { id: "ItemB", kids: [], work: "Update" }
+      ] },
+      { id: "Sidebar", kids: [] }
+    ] },
+    { id: "Footer", kids: [] }
+  ] };
+  function hasWork(n) { return !!n.work || n.kids.some(hasWork); }
+  var steps = [];
+  function walk(n) {
+    steps.push({ t: "begin", n: n });
+    n.kids.forEach(walk);
+    steps.push({ t: "complete", n: n });
+  }
+  function commit(n) {
+    if (!hasWork(n)) { steps.push({ t: "skip", n: n }); return; }
+    steps.push({ t: n.work ? "apply" : "descend", n: n });
+    n.kids.forEach(commit);
+  }
+  walk(root);
+  commit(root);
+
+  var i = 0;
+  var tree = document.getElementById("fw-tree");
+  var log = document.getElementById("fw-log");
+  var note = document.getElementById("fw-note");
+  var next = document.getElementById("fw-next");
+  var prev = document.getElementById("fw-prev");
+
+  function noteFor(s) {
+    var id = s.n.id;
+    if (s.t === "begin") return "beginWork(" + id + "): React runs the component and reconciles its children. Going down.";
+    if (s.t === "complete") {
+      if (s.n.kids.length === 0) return "completeWork(" + id + "): nothing below it. " + (s.n.work ? "It has a pending update, so it is flagged." : "No flags: nothing to do here.");
+      return "completeWork(" + id + "): every child is finished. subtreeFlags now says " + (hasWork(s.n) ? "there is work somewhere beneath." : "the subtree is clean.");
+    }
+    if (s.t === "skip") return "Commit: " + id + " has no flags and a clean subtree, so the whole subtree is skipped without visiting it.";
+    if (s.t === "descend") return "Commit: " + id + " has work somewhere beneath it, so commit descends.";
+    return "Commit: " + id + " carries the Update flag. The DOM change is applied here.";
+  }
+
+  function render() {
+    var began = {}, done = {}, decision = {}, current = i > 0 ? steps[i - 1] : null;
+    for (var k = 0; k < i; k++) {
+      var s = steps[k];
+      if (s.t === "begin") began[s.n.id] = true;
+      else if (s.t === "complete") done[s.n.id] = true;
+      else decision[s.n.id] = s.t;
+    }
+    function draw(n) {
+      var cls = "viz-node";
+      if (current && current.n === n) cls += " is-current";
+      if (done[n.id]) cls += " is-done";
+      if (decision[n.id] === "skip") cls += " is-skip";
+      var badges = "";
+      if (began[n.id] && n.work) badges += ' <span class="viz-badge viz-badge--work">flag: ' + n.work + "</span>";
+      if (done[n.id] && hasWork(n)) badges += ' <span class="viz-badge viz-badge--work">subtreeFlags</span>';
+      if (decision[n.id]) badges += ' <span class="viz-badge">' + decision[n.id] + "</span>";
+      var html = '<span class="' + cls + '">' + n.id + badges + "</span>";
+      if (n.kids.length) html += "<ul>" + n.kids.map(function (c) { return "<li>" + draw(c) + "</li>"; }).join("") + "</ul>";
+      return html;
+    }
+    tree.innerHTML = draw(root);
+    var lines = [];
+    for (var j = Math.max(0, i - 8); j < i; j++) {
+      var st = steps[j];
+      var label = st.t === "begin" ? "beginWork(" : st.t === "complete" ? "completeWork(" : "commit " + st.t + "(";
+      lines.push('<span class="loop-frame loop-frame--stack">' + label + st.n.id + ")</span>");
+    }
+    log.innerHTML = lines.join("");
+    note.textContent = i === 0
+      ? "Press Next. The render phase walks down with beginWork and back up with completeWork; then commit walks the finished tree."
+      : i === steps.length
+        ? "Done. One changed leaf cost a walk down a single path: Header, ItemA, Sidebar and Footer were never visited in the commit."
+        : noteFor(steps[i - 1]);
+    prev.disabled = i === 0;
+    next.disabled = i === steps.length;
+  }
+  next.addEventListener("click", function () { if (i < steps.length) { i++; render(); } });
+  prev.addEventListener("click", function () { if (i > 0) { i--; render(); } });
+  document.getElementById("fw-reset").addEventListener("click", function () { i = 0; render(); });
+  render();
+})();
+</script>
+
 <h3>Where the time actually goes</h3>
 <p>
   A common misreading is that the virtual DOM is fast. It is not &mdash; it is

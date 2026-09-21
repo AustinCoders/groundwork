@@ -187,6 +187,107 @@ function dfsIterative(graph, start) {
   can blow up badly. Mark it the instant it's added to the queue.
 </div>
 
+<h3>Watch both traversals</h3>
+<div class="demo" id="gt">
+  <div class="demo__bar">BFS and DFS on the same graph, starting from A</div>
+  <div class="demo__body">
+    <div class="loop-grid">
+      <div>
+        <svg viewBox="0 0 360 170" role="img" aria-label="A graph of seven nodes, A to G" id="gt-svg" style="max-width:100%;height:auto"></svg>
+        <p>
+          <label>Traversal
+            <select id="gt-mode">
+              <option value="bfs">BFS: queue, first in first out</option>
+              <option value="dfs">DFS: stack, last in first out</option>
+            </select>
+          </label>
+        </p>
+        <div class="demo__ctl">
+          <button class="btn" id="gt-prev" type="button">← Back</button>
+          <button class="btn" id="gt-next" type="button">Next step →</button>
+          <button class="btn btn--ghost" id="gt-reset" type="button">Reset</button>
+        </div>
+      </div>
+      <div class="loop-queues">
+        <div class="loop-box"><div class="loop-box__label" id="gt-frontier-label">Queue</div><div id="gt-frontier"></div></div>
+        <div class="loop-box"><div class="loop-box__label">Visit order</div><div id="gt-order"></div></div>
+      </div>
+    </div>
+    <p class="demo__note" id="gt-note" aria-live="polite"></p>
+  </div>
+</div>
+<script>
+(function () {
+  var POS = { A: [40, 85], B: [120, 35], C: [120, 135], D: [210, 35], E: [210, 135], F: [290, 85], G: [335, 150] };
+  var EDGES = [["A","B"],["A","C"],["B","D"],["C","E"],["D","F"],["E","F"],["E","G"]];
+  var ADJ = {};
+  Object.keys(POS).forEach(function (n) { ADJ[n] = []; });
+  EDGES.forEach(function (e) { ADJ[e[0]].push(e[1]); ADJ[e[1]].push(e[0]); });
+  Object.keys(ADJ).forEach(function (n) { ADJ[n].sort(); });
+
+  function bfs() {
+    var out = [{ cur: null, frontier: ["A"], visited: ["A"], order: [], note: "Start: put A in the queue and mark it seen." }];
+    var queue = ["A"], seen = { A: true }, visited = ["A"], order = [];
+    while (queue.length) {
+      var n = queue.shift();
+      order.push(n);
+      var added = [];
+      ADJ[n].forEach(function (m) { if (!seen[m]) { seen[m] = true; visited.push(m); queue.push(m); added.push(m); } });
+      out.push({ cur: n, frontier: queue.slice(), visited: visited.slice(), order: order.slice(),
+        note: "Take " + n + " from the front. " + (added.length ? "Its unseen neighbours " + added.join(", ") + " join the back, marked seen now so nothing is queued twice." : "No unseen neighbours.") });
+    }
+    return out;
+  }
+  function dfs() {
+    var out = [{ cur: null, frontier: ["A"], visited: [], order: [], note: "Start: push A on the stack." }];
+    var stack = ["A"], visited = [], order = [];
+    while (stack.length) {
+      var n = stack.pop();
+      if (visited.indexOf(n) !== -1) {
+        out.push({ cur: null, frontier: stack.slice(), visited: visited.slice(), order: order.slice(), note: "Pop " + n + ": already visited, so skip it. The stack can hold duplicates; visited is checked on the way out." });
+        continue;
+      }
+      visited.push(n);
+      order.push(n);
+      var pushed = [];
+      ADJ[n].slice().reverse().forEach(function (m) { if (visited.indexOf(m) === -1) { stack.push(m); pushed.push(m); } });
+      out.push({ cur: n, frontier: stack.slice(), visited: visited.slice(), order: order.slice(),
+        note: "Pop " + n + " from the top and visit it. " + (pushed.length ? "Push its neighbours (" + pushed.slice().reverse().join(", ") + "), smallest on top, so the search goes deep first." : "Nothing new to push: backtrack.") });
+    }
+    return out;
+  }
+  var mode = document.getElementById("gt-mode");
+  var steps = bfs(), i = 0;
+  var svg = document.getElementById("gt-svg");
+  var next = document.getElementById("gt-next"), prev = document.getElementById("gt-prev");
+
+  function render() {
+    var s = steps[i];
+    var html = EDGES.map(function (e) {
+      return '<line class="viz-edge" x1="' + POS[e[0]][0] + '" y1="' + POS[e[0]][1] + '" x2="' + POS[e[1]][0] + '" y2="' + POS[e[1]][1] + '"></line>';
+    }).join("");
+    Object.keys(POS).forEach(function (n) {
+      var cls = "viz-vertex";
+      if (s.visited.indexOf(n) !== -1) cls += " is-visited";
+      if (s.cur === n) cls += " is-current";
+      html += '<g class="' + cls + '"><circle cx="' + POS[n][0] + '" cy="' + POS[n][1] + '" r="16"></circle><text x="' + POS[n][0] + '" y="' + POS[n][1] + '">' + n + "</text></g>";
+    });
+    svg.innerHTML = html;
+    document.getElementById("gt-frontier-label").textContent = mode.value === "bfs" ? "Queue (front on the left)" : "Stack (top on the right)";
+    document.getElementById("gt-frontier").innerHTML = s.frontier.map(function (n) { return '<span class="loop-frame loop-frame--stack">' + n + "</span>"; }).join("") || "<em>empty</em>";
+    document.getElementById("gt-order").innerHTML = s.order.map(function (n) { return '<span class="loop-frame loop-frame--out">' + n + "</span>"; }).join("") || "<em>nothing yet</em>";
+    document.getElementById("gt-note").textContent = s.note + (i === steps.length - 1 ? " Done. Every node reached, in the order " + s.order.join(", ") + "." : "");
+    prev.disabled = i === 0;
+    next.disabled = i === steps.length - 1;
+  }
+  next.addEventListener("click", function () { if (i < steps.length - 1) { i++; render(); } });
+  prev.addEventListener("click", function () { if (i > 0) { i--; render(); } });
+  document.getElementById("gt-reset").addEventListener("click", function () { i = 0; render(); });
+  mode.addEventListener("change", function () { steps = mode.value === "bfs" ? bfs() : dfs(); i = 0; render(); });
+  render();
+})();
+</script>
+
 <h3>DFS vs BFS — the complexity is identical, the use case isn't</h3>
 <table>
   <tr><th></th><th>DFS</th><th>BFS</th></tr>

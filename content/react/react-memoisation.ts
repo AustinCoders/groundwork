@@ -72,6 +72,72 @@ function Page() {
   </p>
 </div>
 
+<h3>Watch what re-renders</h3>
+<div class="demo" id="rr">
+  <div class="demo__bar">Which components run when App's state changes?</div>
+  <div class="demo__body">
+    <p>
+      <label><input type="checkbox" id="rr-memo" /> wrap Panel in <code>memo</code></label><br />
+      <label><input type="checkbox" id="rr-inline" /> pass Panel an inline object, <code>style={{ gap: 8 }}</code></label><br />
+      <label><input type="checkbox" id="rr-children" /> pass Panel in as <code>children</code> from above</label>
+    </p>
+    <div class="viz-tree" id="rr-tree"></div>
+    <div class="demo__ctl">
+      <button class="btn btn--primary" id="rr-click" type="button">setCount(count + 1) in App</button>
+      <button class="btn btn--ghost" id="rr-reset" type="button">Reset counts</button>
+    </div>
+    <p class="demo__note" id="rr-note" aria-live="polite"></p>
+  </div>
+</div>
+<script>
+(function () {
+  var counts, flashed, count, note;
+  var memo = document.getElementById("rr-memo");
+  var inline = document.getElementById("rr-inline");
+  var kids = document.getElementById("rr-children");
+  var tree = document.getElementById("rr-tree");
+  var noteEl = document.getElementById("rr-note");
+
+  function fresh() {
+    counts = { App: 1, Header: 1, Counter: 1, Panel: 1, Chart: 1 };
+    flashed = {};
+    count = 0;
+    note = "Every component rendered once, on mount. Click to change App's state.";
+  }
+  function panelRuns() {
+    if (kids.checked) return false;
+    if (memo.checked) return inline.checked;
+    return true;
+  }
+  function explain(runs) {
+    if (kids.checked) return "Panel is an element created above App, so its identity did not change. React bails out and never calls Panel or Chart.";
+    if (!memo.checked) return "Without memo, a parent render re-renders every child, needed or not.";
+    if (inline.checked) return "Panel is memoised, but the inline object is a new reference every render, so the shallow prop comparison fails and memo does nothing.";
+    return "Panel is memoised and every prop is the same reference, so React skips it and everything below it. (The React Compiler adds this automatically where it can.)";
+  }
+  function step() {
+    var runs = { App: true, Header: true, Counter: true, Panel: panelRuns() };
+    runs.Chart = runs.Panel;
+    count++;
+    flashed = {};
+    Object.keys(runs).forEach(function (n) { if (runs[n]) { counts[n]++; flashed[n] = true; } });
+    note = "count is now " + count + ". " + explain(runs);
+  }
+  function node(name, extra) {
+    return '<span class="viz-node' + (flashed[name] ? " is-rendered" : "") + '">' + name + ' <span class="viz-badge">rendered ' + counts[name] + "x</span>" + (extra || "") + "</span>";
+  }
+  function render() {
+    tree.innerHTML = "<ul><li>" + node("App") + "<ul><li>" + node("Header") + "</li><li>" + node("Counter") + "</li><li>" + node("Panel") + "<ul><li>" + node("Chart") + "</li></ul></li></ul></li></ul>";
+    noteEl.textContent = note;
+  }
+  document.getElementById("rr-click").addEventListener("click", function () { step(); render(); });
+  document.getElementById("rr-reset").addEventListener("click", function () { fresh(); render(); });
+  [memo, inline, kids].forEach(function (c) { c.addEventListener("change", function () { fresh(); render(); }); });
+  fresh();
+  render();
+})();
+</script>
+
 <h3>useMemo: when it is worth it</h3>
 <pre><code>const sorted = useMemo(
   () =&gt; [...rows].sort(compare),

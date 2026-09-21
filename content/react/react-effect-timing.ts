@@ -33,6 +33,64 @@ export const reactEffectTiming: Chapter = {
 </tbody>
 </table></div>
 
+<h3>See where your code lands</h3>
+<div class="demo" id="et">
+  <div class="demo__bar">One update, five phases</div>
+  <div class="demo__body">
+    <p>
+      <label>Which hook are you using?
+        <select id="et-kind">
+          <option value="layout">useLayoutEffect</option>
+          <option value="passive">useEffect</option>
+        </select>
+      </label>
+    </p>
+    <div class="viz-lane" id="et-lane"></div>
+    <div class="demo__ctl">
+      <button class="btn" id="et-next" type="button">Next phase →</button>
+      <button class="btn btn--ghost" id="et-reset" type="button">Reset</button>
+    </div>
+    <p class="demo__note" id="et-note" aria-live="polite"></p>
+  </div>
+</div>
+<script>
+(function () {
+  var PHASES = [
+    { k: "render", label: "1. Render", text: "React calls your component. It is pure: nothing on screen has changed yet." },
+    { k: "commit", label: "2. Commit", text: "React updates the DOM. The new markup exists, but the browser has not drawn it." },
+    { k: "layout", label: "3. Layout effects", text: "useLayoutEffect runs now, synchronously, and the browser is blocked until it returns." },
+    { k: "paint", label: "4. Paint", text: "The browser draws the frame. This is the first moment the user can see the new DOM." },
+    { k: "passive", label: "5. Passive effects", text: "useEffect runs now, normally after paint, so it never delays the frame." }
+  ];
+  var at = 0;
+  var kind = document.getElementById("et-kind");
+  var lane = document.getElementById("et-lane");
+  var note = document.getElementById("et-note");
+  var next = document.getElementById("et-next");
+
+  function outcome() {
+    return kind.value === "layout"
+      ? "Your effect ran before paint. If it measured the DOM and moved something, the user never saw the wrong position. The cost: the frame waited for you."
+      : "Your effect ran after paint. The user may have seen one frame of the old layout before your change landed. That is fine for fetching, subscriptions and logging, and wrong for measure-and-reposition.";
+  }
+  function render() {
+    lane.innerHTML = PHASES.map(function (p, idx) {
+      var cls = "viz-phase";
+      if (idx <= at) cls += " is-reached";
+      if (idx === at) cls += " is-current";
+      if (p.k === kind.value) cls += " is-yours";
+      return '<div class="' + cls + '"><b>' + p.label + "</b></div>";
+    }).join("");
+    note.textContent = PHASES[at].text + (at === PHASES.length - 1 ? " " + outcome() : "");
+    next.disabled = at === PHASES.length - 1;
+  }
+  next.addEventListener("click", function () { if (at < PHASES.length - 1) { at++; render(); } });
+  document.getElementById("et-reset").addEventListener("click", function () { at = 0; render(); });
+  kind.addEventListener("change", function () { at = 0; render(); });
+  render();
+})();
+</script>
+
 <h3>When useLayoutEffect is the right answer</h3>
 <pre><code>useLayoutEffect(() =&gt; {
   const { height } = ref.current.getBoundingClientRect();

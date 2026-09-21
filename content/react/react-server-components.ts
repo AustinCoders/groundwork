@@ -83,6 +83,28 @@ export default function LikeButton({ postId }) {
   </p>
 </div>
 
+<figure class="viz-figure">
+  <svg viewBox="0 0 560 230" role="img" aria-label="A server component tree passing serialisable props to a client component island marked use client.">
+    <rect class="viz-rect viz-rect--server" x="10" y="10" width="330" height="210" rx="10"></rect>
+    <text class="viz-label" x="24" y="32">Server: runs once, never ships</text>
+    <rect class="viz-rect" x="30" y="46" width="120" height="34" rx="6"></rect>
+    <text class="viz-label" x="44" y="68">Page</text>
+    <rect class="viz-rect" x="30" y="100" width="150" height="34" rx="6"></rect>
+    <text class="viz-label" x="44" y="122">ProductList</text>
+    <rect class="viz-rect" x="30" y="154" width="150" height="34" rx="6"></rect>
+    <text class="viz-label" x="44" y="176">db.query(...)</text>
+    <path class="viz-line" d="M90 80 L90 100 M90 134 L90 154"></path>
+    <rect class="viz-rect viz-rect--client" x="380" y="80" width="170" height="70" rx="10"></rect>
+    <text class="viz-label" x="394" y="104">Client island</text>
+    <text class="viz-label" x="394" y="126">"use client"</text>
+    <text class="viz-label" x="394" y="142">AddToCart</text>
+    <path class="viz-line" d="M180 117 L380 117"></path>
+    <text class="viz-label" x="192" y="108">props</text>
+    <text class="viz-label" x="192" y="138">must serialise</text>
+  </svg>
+  <figcaption>Everything above the line stays on the server. Only what crosses it, as serialisable props, and the client code itself, reaches the browser.</figcaption>
+</figure>
+
 <h3>What crosses the boundary must serialise</h3>
 <pre><code>&lt;Client date={new Date()} /&gt;         <span class="c">// ✓ Dates, Maps, Sets are supported</span>
 &lt;Client onSave={() =&gt; save()} /&gt;    <span class="c">// ✗ functions cannot cross</span>
