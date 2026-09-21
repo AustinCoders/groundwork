@@ -6,7 +6,14 @@ export const reactCustomHooks: Chapter = {
   title: "Custom hooks",
   short: "Custom hooks",
   levels: ["intermediate"],
-  practice: ["ex-react-safe-parse", "ex-react-paginate"],
+  practice: [
+    "ex-react-safe-parse",
+    "ex-react-paginate",
+    "ex-comp-use-debounce",
+    "ex-comp-use-toggle",
+    "ex-comp-use-click-outside",
+    "ex-comp-persistent-state",
+  ],
   ready: true,
   subtitle: "Sharing stateful logic between components — not sharing the state itself.",
   body: `<h3>A custom hook is just a function</h3>

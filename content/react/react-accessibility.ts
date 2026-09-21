@@ -6,7 +6,7 @@ export const reactAccessibility: Chapter = {
   title: "Accessibility",
   short: "Accessibility",
   levels: ["advanced"],
-  practice: [],
+  practice: ["ex-comp-tabs-a11y", "ex-comp-autocomplete"],
   ready: true,
   subtitle: "Semantics first, keyboard second, ARIA last — and focus management is the part React makes harder.",
   body: `<h3>The order that matters</h3>

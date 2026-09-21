@@ -6,7 +6,7 @@ export const reactServerActions: Chapter = {
   title: "Server Actions",
   short: "Server Actions",
   levels: ["advanced"],
-  practice: [],
+  practice: ["ex-comp-action-state-form", "ex-comp-optimistic-messages"],
   ready: true,
   subtitle: "A function that runs on the server, called from the client, with no API route in between.",
   body: `<h3>The shape</h3>

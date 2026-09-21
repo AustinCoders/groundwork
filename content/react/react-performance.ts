@@ -6,7 +6,7 @@ export const reactPerformance: Chapter = {
   title: "Performance work",
   short: "Performance",
   levels: ["advanced"],
-  practice: [],
+  practice: ["ex-comp-state-down"],
   ready: true,
   subtitle: "Measure, find the actual cost, fix the structure. Memoisation is the last step, not the first.",
   body: `<h3>Decide what is slow first</h3>

@@ -6,7 +6,7 @@ export const reactAdvancedPatterns: Chapter = {
   title: "Advanced component patterns",
   short: "Component patterns",
   levels: ["advanced"],
-  practice: [],
+  practice: ["ex-comp-accordion-compound", "ex-comp-switch-controlled", "ex-comp-polymorphic-as"],
   ready: true,
   subtitle: "The four shapes behind every component library you have imported.",
   body: `<h3>Compound components</h3>
