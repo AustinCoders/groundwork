@@ -258,5 +258,12 @@ navigator.geolocation.getCurrentPosition(
   share sheet to hand off to — always feature-detect
   (<code>if (navigator.share)</code>) and fall back to your own share
   buttons where it's missing.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "The browser hands you storage, URLs, observers, the clipboard, cross-tab messaging and visibility as APIs, and the skill is picking the smallest one that fits — <code>URLSearchParams</code> over string slicing, <code>IntersectionObserver</code> over scroll listeners, delegation over a listener per element — while remembering many are asynchronous or permission-gated."
+  </p>
+</div>`,
 };

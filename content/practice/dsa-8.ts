@@ -81,7 +81,7 @@ export const dsa8: Exercise[] = [
 {
     id: "ex-four-sum",
     chapter: "dsa-two-pointers",
-    level: "advanced",
+    level: "intermediate",
     title: "4Sum",
     brief:
       "<p>Given an integer array <code>nums</code> and an integer <code>target</code>, return every <b>unique</b> quadruplet <code>[a, b, c, d]</code> drawn from four distinct positions whose sum equals <code>target</code>.</p><ul><li>Two quadruplets are the same if they hold the same multiset of values — report each only once</li><li>The order of the quadruplets, and the order inside each one, does not matter</li><li>Return <code>[]</code> when none exist</li><li>Target complexity: O(n^3). Beware of the four-nested-loop trap</li></ul>",
@@ -120,7 +120,7 @@ export const dsa8: Exercise[] = [
 {
     id: "ex-longest-repeating-char-replacement",
     chapter: "dsa-sliding-window",
-    level: "advanced",
+    level: "intermediate",
     title: "Longest Repeating Character Replacement",
     brief:
       '<p>You are given a string <code>s</code> of uppercase letters and an integer <code>k</code>. You may pick at most <code>k</code> positions and change each to any letter you like. Return the length of the longest substring that can be made of a single repeated character afterwards.</p><ul><li>You do not have to use all <code>k</code> changes</li><li><code>s</code> may be empty, in which case the answer is <code>0</code></li><li>Aim for a single O(n) pass — no re-scanning the window</li></ul><p>Example: with <code>s = "AABABBA"</code> and <code>k = 1</code> the answer is <code>4</code> (change one character to turn <code>"ABBA"</code> into <code>"BBBB"</code>).</p>',
@@ -275,7 +275,7 @@ export const dsa8: Exercise[] = [
 {
     id: "ex-subarray-product-less-than-k",
     chapter: "dsa-sliding-window",
-    level: "advanced",
+    level: "intermediate",
     title: "Subarray Product Less Than K",
     brief:
       "<p>Given an array <code>nums</code> of positive integers and an integer <code>k</code>, count how many contiguous subarrays have a product <b>strictly less than</b> <code>k</code>.</p><ul><li>Subarrays are counted by position, so <code>[1,1]</code> contributes three subarrays: <code>[1]</code>, <code>[1]</code>, and <code>[1,1]</code></li><li>Watch the edge case: when <code>k &lt;= 1</code> nothing qualifies, because every product of positive integers is at least <code>1</code>. The answer is <code>0</code></li><li>Target complexity: O(n)</li></ul><p>Example: <code>nums = [10,5,2,6]</code>, <code>k = 100</code> gives <code>8</code>.</p>",
@@ -352,7 +352,7 @@ export const dsa8: Exercise[] = [
 {
     id: "ex-longest-subarray-abs-diff-limit",
     chapter: "dsa-sliding-window",
-    level: "advanced",
+    level: "intermediate",
     title: "Longest Continuous Subarray With Absolute Diff <= Limit",
     brief:
       "<p>Given an integer array <code>nums</code> and an integer <code>limit</code>, return the length of the longest contiguous subarray in which the absolute difference between <b>any two</b> elements is <code>&lt;= limit</code>.</p><ul><li>Checking every pair is unnecessary: the condition is equivalent to <code>max(window) - min(window) &lt;= limit</code></li><li>An empty array yields <code>0</code>; a single element always qualifies</li><li><b>Target complexity: O(n).</b> A sorted structure or repeated re-scanning of the window gives O(n log n) or O(n^2) — the intended answer keeps both the running max and the running min in amortised O(1) per step</li></ul>",
@@ -430,7 +430,7 @@ export const dsa8: Exercise[] = [
 {
     id: "ex-backspace-string-compare",
     chapter: "dsa-two-pointers",
-    level: "intermediate",
+    level: "beginner",
     title: "Backspace String Compare",
     brief:
       '<p>Two strings <code>s</code> and <code>t</code> are typed into an editor where <code>\'#\'</code> means backspace. Return <code>true</code> if they produce the same final text.</p><ul><li>A backspace on empty text does nothing — it does not error, and it does not carry over. For example <code>"a##c"</code> and <code>"#a#c"</code> both end up as <code>"c"</code></li><li>Two empty results are equal, so <code>"###"</code> and <code>""</code> match</li><li>Building both strings with a stack is O(n) time but O(n) space. Aim for <b>O(1) extra space</b> by walking both strings from the BACK</li><li>Return an actual boolean</li></ul>',

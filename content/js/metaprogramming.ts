@@ -108,6 +108,35 @@ console.log([...new Range(1, 5)]);   <span class="c">// what happens?</span></co
   knows how to unwrap.
 </p>
 
+<h3>Property descriptors — what a property really is</h3>
+<pre><code>const user = {};
+Object.defineProperty(user, "id", { value: 7, enumerable: true });
+
+Object.getOwnPropertyDescriptor(user, "id");
+<span class="c">// { value: 7, writable: false, enumerable: true, configurable: false }</span>
+
+user.id = 8;                 <span class="c">// silently ignored — throws in strict mode</span>
+delete user.id;              <span class="c">// false — not configurable</span></code></pre>
+<p>
+  Every property carries four attributes. <b>value</b> is the data;
+  <b>writable</b> says whether it can be reassigned; <b>enumerable</b> says
+  whether <code>Object.keys</code>, <code>for...in</code> and spread see it;
+  <b>configurable</b> says whether it can be deleted or redefined. An accessor
+  property replaces <code>value</code> and <code>writable</code> with a
+  <code>get</code> and a <code>set</code>. The trap is the defaults:
+  <code>obj.x = 1</code> creates a property with all three flags <code>true</code>,
+  but <code>defineProperty</code> leaves any flag you omit <code>false</code>.
+</p>
+<ul>
+  <li><code>Object.freeze</code> is simply "set every own property to non-writable and non-configurable, and stop adding new ones".</li>
+  <li>Class methods are non-enumerable, which is why they do not show up when you log or spread an instance.</li>
+  <li><b>Copying loses descriptors.</b> Spread and <code>Object.assign</code> <em>call</em> getters and copy the resulting value. To copy the property itself, getter included: <code>Object.defineProperties({}, Object.getOwnPropertyDescriptors(source))</code>.</li>
+</ul>
+<p class="sub">
+  These flags are what Proxy's invariants (below) protect: a trap may not lie
+  about a property that is non-configurable and non-writable.
+</p>
+
 <h3>Proxy and Reflect</h3>
 <p>
   A <code>Proxy</code> wraps an object and lets you intercept the
@@ -319,5 +348,12 @@ new Function("a", "b", "return a + b");  <span class="c">// runs in GLOBAL scope
   case: a sandboxed worker with no DOM access, running code the reader
   explicitly chose to execute, not untrusted input silently reaching
   <code>eval</code> in a real production app.
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Symbols are collision-free keys, the iteration protocols make anything usable with <code>for...of</code> and spread, property descriptors control what a property may do, and Proxy with Reflect intercepts operations — bound by invariants that stop a trap lying about a non-configurable property."
+  </p>
 </div>`,
 };

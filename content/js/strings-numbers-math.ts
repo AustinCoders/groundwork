@@ -172,5 +172,12 @@ console.log(isFinite("123"), Number.isFinite("123"));</code></pre>
   formatting engine <code>toLocaleString</code> calls internally —
   worth reaching for directly when formatting many values with the
   same options at once.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Strings are immutable UTF-16 sequences, so their methods return new strings; numbers are IEEE 754 doubles, so <code>0.1 + 0.2</code> is not <code>0.3</code> and money belongs in integers; and <code>Intl</code> formats numbers, dates and currency for the user's locale without hand-rolled code."
+  </p>
+</div>`,
 };

@@ -186,5 +186,12 @@ console.log(frozen.a);    <span class="c">// 1 either way — the object never a
   <code>.stack</code> string gives you after the fact, except you can
   now inspect every live variable at every level of it, not just read a
   frozen snapshot of what the values were.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Wrap errors with <code>cause</code> so the original is never lost, remember an async failure only surfaces if something awaits or catches it, and treat <code>window.onerror</code> and <code>unhandledrejection</code> handlers as the last line that reports what slipped through, not as the main strategy."
+  </p>
+</div>`,
 };

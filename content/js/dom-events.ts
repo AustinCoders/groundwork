@@ -358,5 +358,12 @@ input.addEventListener("change", e =&gt; console.log(e.target.value)); <span cla
   <code>input</code> is for "react live, as they type" (a character
   counter, live search); <code>change</code> is for "react once they're
   done" (a select dropdown, a checkbox, a field that loses focus).
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "The DOM is a live tree you query and change; events travel down in the capture phase and back up in the bubble phase, which is what lets one listener on a parent handle every child (delegation), and <code>removeEventListener</code> only works with the same function reference you added."
+  </p>
+</div>`,
 };

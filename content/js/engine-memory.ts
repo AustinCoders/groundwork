@@ -236,5 +236,12 @@ c.z = 7;                      <span class="c">// now c has a DIFFERENT shape —
   let TurboFan's assumptions hold, which is what keeps a hot function
   compiled instead of bouncing back to the interpreter every time
   something unexpected shows up at one of its call sites."
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "V8 keeps primitives and call frames on the stack and objects on the heap, and its garbage collector frees anything unreachable, so a JavaScript leak is almost always something still reachable that you forgot — a listener, a timer, a detached DOM node — and you find it by comparing heap snapshots."
+  </p>
 </div>`,
 };

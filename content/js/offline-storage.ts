@@ -215,5 +215,12 @@ window.addEventListener("offline", () =&gt; console.log("connection lost"));</co
   is about cookies specifically and not localStorage: only a cookie
   rides along on a request automatically, whether your own JavaScript
   asked for that or not.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "<code>localStorage</code> is synchronous and small, so anything larger belongs in IndexedDB; the Cache API stores responses and a service worker sits between the page and the network to serve them, with an install, waiting and activate lifecycle that decides when a new version takes over."
+  </p>
+</div>`,
 };

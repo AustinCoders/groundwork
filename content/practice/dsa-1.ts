@@ -721,7 +721,7 @@ export const dsa1: Exercise[] = [
 {
     id: "ex-merge-sorted-array",
     chapter: "dsa-arrays-strings",
-    level: "intermediate",
+    level: "beginner",
     title: "Merge Sorted Array In Place",
     brief:
       "<p><code>nums1</code> has <code>m</code> real values followed by <code>n</code> zeroes used as padding. <code>nums2</code> has <code>n</code> values. Both are sorted ascending. Merge <code>nums2</code> into <code>nums1</code> so that <code>nums1</code> ends up fully sorted.</p><ul><li>Mutate <code>nums1</code> directly — the return value is ignored</li><li>Use O(1) extra space; do not build a new array and copy it back</li><li>Either input may contribute zero elements</li></ul>",
@@ -875,7 +875,7 @@ export const dsa1: Exercise[] = [
 {
     id: "ex-majority-element",
     chapter: "dsa-arrays-strings",
-    level: "intermediate",
+    level: "beginner",
     title: "Majority Element",
     brief:
       "<p>An array <code>nums</code> of length <code>n</code> contains one value that appears <b>more than</b> <code>n / 2</code> times. Return that value.</p><ul><li>The majority element always exists</li><li>A hash map works, but O(1) extra space is possible</li><li>Think about what happens if you cancel each majority vote against a different value</li></ul>",
@@ -1027,7 +1027,7 @@ export const dsa1: Exercise[] = [
 {
     id: "ex-find-disappeared-numbers",
     chapter: "dsa-arrays-strings",
-    level: "intermediate",
+    level: "beginner",
     title: "Find All Numbers Disappeared in an Array",
     brief:
       "<p><code>nums</code> has length <code>n</code> and every value lies in <code>1..n</code>, but some values repeat and others are missing. Return every value in <code>1..n</code> that does not appear, in ascending order.</p><ul><li>Return an empty array when nothing is missing</li><li>Duplicates in the input are expected</li><li>Bonus: solve it without a Set, using the array itself as the bookkeeping</li></ul>",
@@ -1104,7 +1104,7 @@ export const dsa1: Exercise[] = [
 {
     id: "ex-next-permutation",
     chapter: "dsa-two-pointers",
-    level: "advanced",
+    level: "intermediate",
     title: "Next Permutation",
     brief:
       "<p>Rearrange <code>nums</code> <b>in place</b> into the next lexicographically larger permutation of the same values. If the array is already the largest possible arrangement, rearrange it into the smallest (fully ascending) one.</p><ul><li>Mutate the array; the return value is ignored</li><li>Use O(1) extra space — no generating all permutations</li><li>Duplicate values must be handled correctly</li></ul>",

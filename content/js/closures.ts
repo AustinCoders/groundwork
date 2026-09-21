@@ -658,5 +658,12 @@ setInterval(() =&gt; update(detachedNode), 1000);</code></pre>
   still there, still live, and still shared with anything else created
   in the same call."
 </div>
-`,
+
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "A closure is a function plus a live link to the scope where it was created, so it keeps those variables alive after the outer function returns; it captures the variable, not a copy of its value, which is why counters and private state work and why a <code>var</code> in a loop gives every callback the same value."
+  </p>
+</div>`,
 };

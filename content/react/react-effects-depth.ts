@@ -225,7 +225,10 @@ useEffect(() =&gt; {
     captured a render it never re-ran for, or a dependency someone deleted to
     stop it looping. The array is a statement about what the effect stays in
     sync with — and the deeper skill is recognising that derived values, event
-    reactions and prop-driven resets are not effects at all."
+    reactions and prop-driven resets are not effects at all. The React Compiler
+    does not change this: it memoises values, but it will not tell you an
+    effect was unnecessary, and its lint rules flag setting state in an effect
+    for exactly that reason."
   </p>
 </div>`,
 };

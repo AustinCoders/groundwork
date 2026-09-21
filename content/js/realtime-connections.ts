@@ -160,5 +160,12 @@ function connect() {
     attempt++;
   };
 }
-connect();</code></pre>`,
+connect();</code></pre>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Polling asks repeatedly, Server-Sent Events push text one way and reconnect on their own, and WebSockets are two-way but need their own reconnection with backoff and jitter — pick the simplest that fits, and always plan for the connection dropping."
+  </p>
+</div>`,
 };

@@ -619,5 +619,12 @@ x = 5;   <span class="c">// no var, no let — what happens?</span></code></pre>
   render();
 })();
 </script>
-`,
+
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "JavaScript is single-threaded and runs inside a host, the browser or Node, that supplies the event loop and APIs such as timers and <code>fetch</code>, so the language does one thing at a time while the host handles the waiting."
+  </p>
+</div>`,
 };

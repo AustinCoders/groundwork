@@ -190,5 +190,12 @@ expect(results.violations).toEqual([]);</code></pre>
     with a saved storage state, use web-first assertions instead of waits, and
     turn on traces so a CI-only failure is debuggable."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "End-to-end tests cover a few critical user journeys in a real browser; the skill is web-first waiting, with assertions that retry instead of fixed sleeps, authenticating once and reusing the state, and leaving everything a lower layer can check to unit and component tests."
+  </p>
 </div>`,
 };

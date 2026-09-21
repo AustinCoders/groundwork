@@ -298,5 +298,12 @@ console.log(original.nested.count);   <span class="c">// 99 — same nested obje
   copying, <code>Map</code> and <code>Set</code> and their weak versions, sort
   stability, <code>JSON</code> with a replacer and reviver, and the array methods
   this chapter did not reach. It is written to follow directly from here.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Objects and arrays are reference types, so assignment copies the reference rather than the data — the reason changing a "copy" changes the original — and knowing which array methods mutate (<code>push</code>, <code>sort</code>, <code>splice</code>) and which return a new array (<code>map</code>, <code>filter</code>, <code>slice</code>) prevents most state bugs."
+  </p>
+</div>`,
 };

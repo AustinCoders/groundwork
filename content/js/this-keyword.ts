@@ -412,5 +412,12 @@ button.addEventListener("click", () =&gt; {
   dot, and if none of those apply it is <code>undefined</code>. Arrows
   have no <code>this</code> at all — they borrow the one around them."
 </div>
-`,
+
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "<code>this</code> is not where a function was written but how it was called: <code>new</code>, explicit <code>bind</code>/<code>call</code>/<code>apply</code>, a method call and a plain call decide it in that order of precedence, while arrow functions have no <code>this</code> of their own and inherit it."
+  </p>
+</div>`,
 };

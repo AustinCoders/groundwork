@@ -274,5 +274,12 @@ test("a visitor can add an item to the cart", async ({ page }) =&gt; {
   untested, not what's correct. I use it to find gaps, not as a quality
   score — a suite that hits every line with assertions that would pass
   no matter what the code did isn't actually testing anything."
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Test behaviour rather than implementation, query the DOM by role the way a user finds things, mock only at the boundary such as the network, use fake timers to keep async tests fast and deterministic, and treat coverage as a way to find untested code, not as proof of quality."
+  </p>
 </div>`,
 };

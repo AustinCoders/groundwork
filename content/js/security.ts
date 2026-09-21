@@ -55,6 +55,24 @@ el.innerHTML = DOMPurify.sanitize(someValueThatCameFromOutsideThisFile);</code><
   get refused at the browser level, entirely independent of whether the
   injection itself was ever caught.
 </p>
+<p>
+  A host allowlist like that is also its weakness: every domain you allow, and
+  every endpoint on it, can now serve script. Modern guidance is a
+  <b>nonce-based</b> policy with <code>'strict-dynamic'</code>:
+</p>
+<pre><code>Content-Security-Policy: script-src 'nonce-8fJ2kQ9x...' 'strict-dynamic'; object-src 'none'; base-uri 'none'
+
+&lt;script nonce="8fJ2kQ9x..." src="/app.js"&gt;&lt;/script&gt;    <span class="c">// runs: carries the nonce</span>
+&lt;script&gt;stolen()&lt;/script&gt;                            <span class="c">// blocked: no nonce</span></code></pre>
+<p class="sub">
+  The server generates a fresh, unguessable nonce <b>for every response</b> and
+  stamps it on its own script tags; an attacker who injects markup cannot know
+  it. <code>'strict-dynamic'</code> then trusts scripts that a script that carries a nonce
+  loads, so you no longer maintain a list of CDNs, and browsers that support it
+  ignore <code>'self'</code> and host allowlists. Because the nonce changes on
+  every request, a fully cached static page cannot carry one; use hash-based
+  sources for those.
+</p>
 
 <h3>CSRF, SameSite, and CORS — three names for "who's actually making this request"</h3>
 <p>
@@ -194,6 +212,12 @@ unsafeMerge({}, attackerPayload);
   new version of a transitive dependency published after the lockfile
   was generated doesn't get silently pulled in on the next install.
 </p>
+<ul>
+  <li><b><code>npm ci</code> in CI, not <code>npm install</code>.</b> It installs exactly what the lockfile says and fails if <code>package.json</code> disagrees, so the build cannot drift.</li>
+  <li><b><code>npm audit</code> finds known-vulnerable versions,</b> not newly published malicious ones. It answers "is this old problem in my tree", not "is this release safe".</li>
+  <li><b>Provenance.</b> A package published from CI with <code>npm publish --provenance</code> carries a signed statement linking it to a source repository and build. <code>npm audit signatures</code> verifies those statements and the registry signatures for what you installed.</li>
+  <li><b>Install scripts run as you.</b> A dependency's <code>postinstall</code> executes on your machine and in your CI. <code>--ignore-scripts</code> disables them, and some package managers, such as pnpm 10, no longer run them for dependencies by default.</li>
+</ul>
 
 <h3>crypto.subtle — hashing and randomness, done correctly</h3>
 <pre><code>const bytes = crypto.getRandomValues(new Uint8Array(16));   <span class="c">// cryptographically secure — unlike Math.random()</span>
@@ -411,5 +435,12 @@ await fetch("/token", {
   a short-lived JWT for the access token but fall back to a genuine
   server-side session (or a stored, revocable refresh token) for
   anything that needs a hard, immediate logout.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Most incidents come from a few root causes — untrusted input rendered as code (XSS), a request made on the user's behalf (CSRF), and trust in third-party code — and the defence is layered: escape or sanitise at output, SameSite cookies and CSRF tokens, a nonce-based CSP, and locked, audited dependencies."
+  </p>
+</div>`,
 };

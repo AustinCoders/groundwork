@@ -43,7 +43,7 @@ export const dsa6: Exercise[] = [
 {
     id: "ex-next-greater-element-i",
     chapter: "dsa-monotonic-stack-queue",
-    level: "intermediate",
+    level: "beginner",
     title: "Next Greater Element I",
     brief:
       "<p><code>nums1</code> is a subset of <code>nums2</code>, and both contain distinct values. For each value in <code>nums1</code>, find it inside <code>nums2</code> and return the first value to its <b>right</b> in <code>nums2</code> that is greater than it.</p><ul><li>If there is no such value, use <code>-1</code></li><li>The result lines up positionally with <code>nums1</code></li><li>Aim for <b>O(n + m)</b> rather than searching <code>nums2</code> once per query</li></ul>",
@@ -237,7 +237,7 @@ export const dsa6: Exercise[] = [
 {
     id: "ex-evaluate-rpn",
     chapter: "dsa-stacks-queues",
-    level: "beginner",
+    level: "intermediate",
     title: "Evaluate Reverse Polish Notation",
     brief:
       "<p>Evaluate an arithmetic expression given in reverse Polish (postfix) notation. <code>tokens</code> is an array of strings: either an integer, or one of <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>.</p><ul><li>An operator applies to the two values immediately before it, in order — so <code>['3','4','-']</code> is <code>3 - 4</code></li><li>Division is integer division that <b>truncates toward zero</b>: <code>7 / -3</code> is <code>-2</code></li><li>The expression is always valid and never divides by zero</li></ul>",
@@ -509,7 +509,7 @@ export const dsa6: Exercise[] = [
 {
     id: "ex-task-scheduler",
     chapter: "dsa-heaps-priority-queues",
-    level: "advanced",
+    level: "intermediate",
     title: "Task Scheduler",
     brief:
       "<p><code>tasks</code> lists CPU tasks by name; each takes exactly one time unit. Two runs of the <b>same</b> task must be separated by at least <code>n</code> time units, during which the CPU may run a different task or sit idle. Return the shortest total time needed to finish every task.</p><ul><li>Tasks may be run in any order</li><li>When there is enough variety the answer is simply <code>tasks.length</code> — no idling is ever required</li><li><code>n = 0</code> means no cooldown at all</li><li>A <code>MinHeap</code> class is <b>already written for you</b> in the starter — you only need the algorithm</li></ul>",
@@ -587,7 +587,7 @@ export const dsa6: Exercise[] = [
 {
     id: "ex-reorganize-string",
     chapter: "dsa-heaps-priority-queues",
-    level: "advanced",
+    level: "intermediate",
     title: "Reorganize String",
     brief:
       "<p>Rearrange the characters of <code>s</code> so that no two adjacent characters are the same, and return the result.</p><ul><li>If no such arrangement exists, return the empty string <code>''</code></li><li><b>Any</b> valid arrangement is accepted — the tests check the property, not one specific string</li><li>An arrangement is impossible exactly when some character occurs more than <code>ceil(s.length / 2)</code> times</li><li>A <code>MinHeap</code> class is <b>already written for you</b> in the starter — you only need the algorithm</li></ul>",
@@ -704,7 +704,7 @@ export const dsa6: Exercise[] = [
 {
     id: "ex-k-pairs-smallest-sums",
     chapter: "dsa-heaps-priority-queues",
-    level: "advanced",
+    level: "intermediate",
     title: "Find K Pairs with Smallest Sums",
     brief:
       "<p>Given two integer arrays <code>nums1</code> and <code>nums2</code>, both sorted in non-decreasing order, and an integer <code>k</code>, return the <code>k</code> pairs <code>[u, v]</code> — one value from each array — with the smallest sums.</p><ul><li>If fewer than <code>k</code> pairs exist, return all of them</li><li>Building every pair is <code>O(n * m)</code> and far too slow for large inputs</li><li>Pairs with equal sums may appear in any order</li><li>A <code>MinHeap</code> class is <b>already written for you</b> in the starter — you only need the algorithm</li></ul>",
@@ -860,7 +860,7 @@ export const dsa6: Exercise[] = [
 {
     id: "ex-furthest-building-you-can-reach",
     chapter: "dsa-heaps-priority-queues",
-    level: "advanced",
+    level: "intermediate",
     title: "Furthest Building You Can Reach",
     brief:
       "<p>You walk along a row of buildings with the given <code>heights</code>, starting at index <code>0</code> and always moving to the next building. You carry <code>bricks</code> bricks and <code>ladders</code> ladders.</p><ul><li>Stepping down or onto an equal height is free</li><li>Stepping up by <code>d</code> costs either <code>d</code> bricks or one ladder</li><li>A ladder covers any height difference; bricks are consumed permanently</li><li>Return the index of the furthest building you can reach</li><li>A <code>MinHeap</code> class is <b>already written for you</b> in the starter — you only need the algorithm</li></ul>",
@@ -1084,7 +1084,7 @@ export const dsa6: Exercise[] = [
 {
     id: "ex-implement-strstr",
     chapter: "dsa-string-algorithms",
-    level: "intermediate",
+    level: "beginner",
     title: "Implement indexOf (strStr)",
     brief:
       "<p>Write <code>strStr(haystack, needle)</code> returning the index of the first occurrence of <code>needle</code> inside <code>haystack</code>, or <code>-1</code> when it does not occur.</p><ul><li>An empty <code>needle</code> matches at index <code>0</code></li><li>Matches may overlap earlier partial matches, so a failed comparison must not skip characters blindly</li><li>Do not call the built-in <code>indexOf</code>, <code>includes</code> or <code>search</code></li></ul>",
@@ -1120,10 +1120,110 @@ export const dsa6: Exercise[] = [
       },
     ],
   },
+  {
+    id: "ex-prefix-function",
+    chapter: "dsa-string-algorithms",
+    level: "intermediate",
+    title: "The KMP prefix function",
+    brief: "<p>Write <code>prefixFunction(s)</code> returning an array <code>pi</code> where <code>pi[i]</code> is the length of the <b>longest proper prefix</b> of <code>s[0..i]</code> that is also a suffix of it. \"Proper\" means shorter than the whole substring. It is the table that makes Knuth–Morris–Pratt linear, and it must run in O(n).</p>",
+    starter: "function prefixFunction(s) {\n  // TODO\n}\n\nconsole.log(prefixFunction(\"aabaaab\")); // [0, 1, 0, 1, 2, 2, 3]\n",
+    hints: [
+      "Keep k, the current matched prefix length, and try to extend it with s[i].",
+      "On a mismatch, do not restart: fall back with k = pi[k - 1] and try again.",
+      "Only when k reaches 0 and the characters still differ does pi[i] become 0.",
+    ],
+    solution: "function prefixFunction(s) {\n  const pi = new Array(s.length).fill(0);\n  let k = 0;\n  for (let i = 1; i < s.length; i++) {\n    while (k > 0 && s[i] !== s[k]) k = pi[k - 1];\n    if (s[i] === s[k]) k++;\n    pi[i] = k;\n  }\n  return pi;\n}\n",
+    tests: [
+      { name: "a classic table", body: "assert.deepEqual(prefixFunction(\"aabaaab\"), [0, 1, 0, 1, 2, 2, 3]);" },
+      { name: "a repeating pattern", body: "assert.deepEqual(prefixFunction(\"abcabcd\"), [0, 0, 0, 1, 2, 3, 0]);" },
+      { name: "all the same letter", body: "assert.deepEqual(prefixFunction(\"aaaa\"), [0, 1, 2, 3]);" },
+      { name: "no repeats at all", body: "assert.deepEqual(prefixFunction(\"abcd\"), [0, 0, 0, 0]);" },
+      { name: "the empty string", body: "assert.deepEqual(prefixFunction(\"\"), []);" },
+      { name: "one character", body: "assert.deepEqual(prefixFunction(\"z\"), [0]);" },
+      { name: "falling back more than once", body: "assert.deepEqual(prefixFunction(\"abababcabababab\"), [0, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 5, 6, 5, 6]);" },
+      { name: "a border that is shorter than the previous one", body: "assert.deepEqual(prefixFunction(\"aabaabaaa\"), [0, 1, 0, 1, 2, 3, 4, 5, 2]);" },
+      { name: "linear time on 200,000 characters", body: "const big = \"a\".repeat(200000) + \"b\";\nconst pi = prefixFunction(big);\nassert.equal(pi[199999], 199999);\nassert.equal(pi[200000], 0);" },
+    ],
+  },
+  {
+    id: "ex-repeated-substring",
+    chapter: "dsa-string-algorithms",
+    level: "beginner",
+    title: "Repeated Substring Pattern",
+    brief: "<p>Write <code>repeatedSubstringPattern(s)</code>: can <code>s</code> be built by repeating some shorter substring two or more times? <code>\"abab\"</code> is <code>\"ab\"</code> twice; <code>\"aba\"</code> is not a repetition of anything.</p>",
+    starter: "function repeatedSubstringPattern(s) {\n  // TODO\n}\n\nconsole.log(repeatedSubstringPattern(\"abab\")); // true\nconsole.log(repeatedSubstringPattern(\"aba\")); // false\n",
+    hints: [
+      "Only lengths that divide s.length can be the unit, and the unit is at most half the string.",
+      "There is a one-line trick: s occurs inside (s + s).slice(1, -1) exactly when it is a repetition.",
+      "Or use the prefix function: n - pi[n-1] is the shortest period, and it must divide n.",
+    ],
+    solution: "function repeatedSubstringPattern(s) {\n  return s.length > 1 && (s + s).slice(1, -1).includes(s);\n}\n",
+    tests: [
+      { name: "two copies", body: "assert.equal(repeatedSubstringPattern(\"abab\"), true);" },
+      { name: "not a repetition", body: "assert.equal(repeatedSubstringPattern(\"aba\"), false);" },
+      { name: "three copies", body: "assert.equal(repeatedSubstringPattern(\"abcabcabc\"), true);" },
+      { name: "a single letter is not a repetition", body: "assert.equal(repeatedSubstringPattern(\"a\"), false);" },
+      { name: "a letter twice", body: "assert.equal(repeatedSubstringPattern(\"aa\"), true);" },
+      { name: "two different letters", body: "assert.equal(repeatedSubstringPattern(\"ab\"), false);" },
+      { name: "a period that does not divide the length", body: "assert.equal(repeatedSubstringPattern(\"abaababaab\"), true);\nassert.equal(repeatedSubstringPattern(\"abcabcab\"), false);" },
+      { name: "empty string", body: "assert.equal(repeatedSubstringPattern(\"\"), false);" },
+      { name: "a long repetition", body: "assert.equal(repeatedSubstringPattern(\"xyz\".repeat(50000)), true);\nassert.equal(repeatedSubstringPattern(\"a\".repeat(99999) + \"b\"), false);" },
+    ],
+  },
+  {
+    id: "ex-longest-happy-prefix",
+    chapter: "dsa-string-algorithms",
+    level: "advanced",
+    title: "Longest Happy Prefix",
+    brief: "<p>A <b>happy prefix</b> is a non-empty prefix of <code>s</code> that is also a suffix of it, other than <code>s</code> itself. Write <code>longestPrefix(s)</code>: the longest happy prefix, or <code>\"\"</code> if there is none. It must run in O(n): comparing every prefix with every suffix will time out.</p>",
+    starter: "function longestPrefix(s) {\n  // TODO\n}\n\nconsole.log(longestPrefix(\"level\")); // \"l\"\nconsole.log(longestPrefix(\"ababab\")); // \"abab\"\n",
+    hints: [
+      "This is exactly the last value of the prefix function.",
+      "Compute the prefix function in O(n), then take s.slice(0, pi[n - 1]).",
+      "Overlaps are allowed: in \"ababab\" the prefix \"abab\" and the suffix \"abab\" overlap.",
+    ],
+    solution: "function longestPrefix(s) {\n  const pi = new Array(s.length).fill(0);\n  let k = 0;\n  for (let i = 1; i < s.length; i++) {\n    while (k > 0 && s[i] !== s[k]) k = pi[k - 1];\n    if (s[i] === s[k]) k++;\n    pi[i] = k;\n  }\n  return s.slice(0, s.length ? pi[s.length - 1] : 0);\n}\n",
+    tests: [
+      { name: "a single-letter border", body: "assert.equal(longestPrefix(\"level\"), \"l\");" },
+      { name: "overlapping prefix and suffix", body: "assert.equal(longestPrefix(\"ababab\"), \"abab\");" },
+      { name: "no border", body: "assert.equal(longestPrefix(\"abc\"), \"\");" },
+      { name: "one character", body: "assert.equal(longestPrefix(\"a\"), \"\");" },
+      { name: "the whole string is not allowed", body: "assert.equal(longestPrefix(\"aa\"), \"a\");" },
+      { name: "a longer border", body: "assert.equal(longestPrefix(\"abcxxabc\"), \"abc\");" },
+      { name: "empty string", body: "assert.equal(longestPrefix(\"\"), \"\");" },
+      { name: "all one letter", body: "assert.equal(longestPrefix(\"aaaa\"), \"aaa\");" },
+      { name: "100,000 letters, linear time", body: "const s = \"a\".repeat(100000);\nassert.equal(longestPrefix(s).length, 99999);\nassert.equal(longestPrefix(\"a\".repeat(99999) + \"b\"), \"\");" },
+    ],
+  },
+  {
+    id: "ex-repeated-dna",
+    chapter: "dsa-string-algorithms",
+    level: "intermediate",
+    title: "Repeated DNA Sequences (rolling hash)",
+    brief: "<p>Write <code>findRepeatedDnaSequences(s)</code> where <code>s</code> is made of <code>A</code>, <code>C</code>, <code>G</code> and <code>T</code>. Return every 10-letter substring that occurs <b>more than once</b>, each listed once, in sorted order. With 100,000 characters it must not build a fresh 10-character string for every position more than necessary.</p>",
+    starter: "function findRepeatedDnaSequences(s) {\n  // TODO\n}\n\nconsole.log(findRepeatedDnaSequences(\"AAAAACCCCCAAAAACCCCCCAAAAAGGGTTT\"));\n// [\"AAAAACCCCC\", \"CCCCCAAAAA\"]\n",
+    hints: [
+      "Slide a window of length 10 over the string.",
+      "Encode each window as a number (2 bits per letter, 20 bits in all), updated in O(1) per step: that is the rolling hash.",
+      "Remember windows you have seen once, and collect one the second time you meet it.",
+    ],
+    solution: "function findRepeatedDnaSequences(s) {\n  const L = 10;\n  if (s.length < L) return [];\n  const code = { A: 0, C: 1, G: 2, T: 3 };\n  const mask = (1 << (2 * L)) - 1;\n  const seen = new Set();\n  const added = new Set();\n  const result = [];\n  let hash = 0;\n  for (let i = 0; i < s.length; i++) {\n    hash = ((hash << 2) | code[s[i]]) & mask;\n    if (i >= L - 1) {\n      if (seen.has(hash)) {\n        if (!added.has(hash)) {\n          added.add(hash);\n          result.push(s.slice(i - L + 1, i + 1));\n        }\n      } else {\n        seen.add(hash);\n      }\n    }\n  }\n  return result.sort();\n}\n",
+    tests: [
+      { name: "two repeated sequences", body: "assert.deepEqual(findRepeatedDnaSequences(\"AAAAACCCCCAAAAACCCCCCAAAAAGGGTTT\"), [\"AAAAACCCCC\", \"CCCCCAAAAA\"]);" },
+      { name: "a run of one letter", body: "assert.deepEqual(findRepeatedDnaSequences(\"AAAAAAAAAAAAA\"), [\"AAAAAAAAAA\"]);" },
+      { name: "shorter than ten letters", body: "assert.deepEqual(findRepeatedDnaSequences(\"ACGT\"), []);" },
+      { name: "exactly ten letters", body: "assert.deepEqual(findRepeatedDnaSequences(\"ACGTACGTAC\"), []);" },
+      { name: "no repeats", body: "assert.deepEqual(findRepeatedDnaSequences(\"ACGTACGTACGTTGCATGCAAA\"), []);" },
+      { name: "a sequence seen three times is listed once", body: "assert.deepEqual(findRepeatedDnaSequences(\"CCCCCCCCCCCCCCCCCCCC\"), [\"CCCCCCCCCC\"]);" },
+      { name: "overlapping occurrences count", body: "assert.deepEqual(findRepeatedDnaSequences(\"ACACACACACACACACAC\"), [\"ACACACACAC\", \"CACACACACA\"]);" },
+      { name: "empty string", body: "assert.deepEqual(findRepeatedDnaSequences(\"\"), []);" },
+      { name: "100,000 letters", body: "let s = \"\";\nconst letters = \"ACGT\";\nlet x = 1;\nfor (let i = 0; i < 100000; i++) {\n  x = (x * 1103515245 + 12345) & 0x7fffffff;\n  s += letters[x % 4];\n}\nconst out = findRepeatedDnaSequences(s);\nassert.ok(Array.isArray(out));\nfor (const seq of out) assert.equal(seq.length, 10);" },
+    ],
+  },
 {
     id: "ex-longest-palindromic-substring",
     chapter: "dsa-two-pointers",
-    level: "advanced",
+    level: "intermediate",
     title: "Longest Palindromic Substring",
     brief:
       "<p>Write <code>longestPalindrome(s)</code> returning the longest contiguous slice of <code>s</code> that reads the same in both directions.</p><ul><li>If several slices tie for longest, returning any one of them is correct</li><li>Palindromes can have odd length (a centre character) or even length (a centre gap)</li><li>The empty string yields the empty string; a single character is its own answer</li><li>Checking every substring is O(n^3) — aim for O(n^2) time and O(1) space</li></ul>",

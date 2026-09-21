@@ -189,5 +189,12 @@ new Intl.RelativeTimeFormat("en").format(3, "hour");   <span class="c">// "in 3 
   the same first argument, a locale string, and are the built-in answer
   to "format this correctly for the reader's language and region"
   without hand-writing rules that differ by country.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "<code>BigInt</code> gives exact integers beyond 2^53, typed arrays over an <code>ArrayBuffer</code> give raw binary data, and strings are UTF-16 code units, so <code>length</code> and indexing can split a character that takes more than one unit."
+  </p>
+</div>`,
 };

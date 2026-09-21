@@ -22,6 +22,7 @@ import { asyncProperly } from "./js/async-properly";
 import { modulesTooling } from "./js/modules-tooling";
 import { regexDatesApis } from "./js/regex-dates-apis";
 import { browserApisDeep } from "./js/browser-apis-deep";
+import { modernJs } from "./js/modern-js";
 import { errorHandlingDebugging } from "./js/error-handling-debugging";
 import { realtimeConnections } from "./js/realtime-connections";
 import { offlineStorage } from "./js/offline-storage";
@@ -44,7 +45,7 @@ export const jsNotes: NotesFile = {
   meta: {
     title: "JavaScript — the whole map",
     subtitle:
-      "40 sections across three levels, all written — from how the engine runs your code to security and testing.",
+      "41 sections across three levels, all written — from how the engine runs your code to security and testing.",
     lead: "Pick a level and you'll get these sections in the order that makes sense — from what the engine does before line 1 runs, through the event loop, to testing and security.",
     author: "Akshat",
     updated: "September 2026",
@@ -82,6 +83,7 @@ export const jsNotes: NotesFile = {
     realtimeConnections,
     offlineStorage,
     browserApisDeep,
+    modernJs,
     engineMemory,
     advancedAsync,
     metaprogramming,

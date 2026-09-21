@@ -81,7 +81,7 @@ export const dsa7: Exercise[] = [
 {
     id: "ex-string-to-integer-atoi",
     chapter: "dsa-arrays-strings",
-    level: "advanced",
+    level: "intermediate",
     title: "String to Integer (atoi)",
     brief:
       "<p>Write <code>myAtoi(s)</code>, a hand-rolled string-to-number conversion following these rules exactly, in order.</p><ul><li>Skip any leading spaces</li><li>Accept one optional <code>+</code> or <code>-</code></li><li>Read digits until a non-digit or the end of the string; stop there and ignore the rest</li><li>If no digits were read, the answer is <code>0</code></li><li>Clamp the result to the signed 32-bit range: below <code>-2147483648</code> becomes <code>-2147483648</code>, above <code>2147483647</code> becomes <code>2147483647</code></li><li>Do not use <code>parseInt</code>, <code>Number</code> or <code>+s</code></li></ul>",
@@ -187,7 +187,7 @@ export const dsa7: Exercise[] = [
 {
     id: "ex-zigzag-conversion",
     chapter: "dsa-arrays-strings",
-    level: "advanced",
+    level: "intermediate",
     title: "Zigzag Conversion",
     brief:
       "<p>Imagine writing a string downward across <code>numRows</code> rows, and when you hit the bottom row, writing diagonally back up to the top, then down again — a zigzag. Write <code>convert(s, numRows)</code> returning the characters read off row by row, top row first.</p><ul><li>With <code>numRows = 3</code>, <code>PAYPALISHIRING</code> lays out as rows <code>PAHN</code>, <code>APLSIIG</code>, <code>YIR</code> and returns <code>PAHNAPLSIIGYIR</code></li><li>When <code>numRows</code> is 1 there is no zigzag, so the string comes back unchanged</li><li>The same holds when <code>numRows</code> is at least the length of the string</li></ul>",
@@ -303,7 +303,7 @@ export const dsa7: Exercise[] = [
 {
     id: "ex-isomorphic-strings",
     chapter: "dsa-hashing",
-    level: "intermediate",
+    level: "beginner",
     title: "Isomorphic Strings",
     brief:
       "<p>Two strings are isomorphic when you can rename the characters of the first to get the second: each character always maps to the same character, and no two characters map to the same one. Write <code>isIsomorphic(s, t)</code>.</p><ul><li><code>egg</code> and <code>add</code> are isomorphic: e to a, g to d</li><li><code>foo</code> and <code>bar</code> are not: o would have to be both a and r</li><li><code>badc</code> and <code>baba</code> are not: two different letters would both map to a</li><li>Different lengths are never isomorphic; a character may map to itself</li></ul>",
@@ -342,7 +342,7 @@ export const dsa7: Exercise[] = [
 {
     id: "ex-word-pattern",
     chapter: "dsa-hashing",
-    level: "intermediate",
+    level: "beginner",
     title: "Word Pattern",
     brief:
       "<p>Given a pattern of single letters and a sentence of space-separated words, decide whether the sentence follows the pattern. Write <code>wordPattern(pattern, s)</code>.</p><ul><li>Each letter must stand for one word throughout, and each word for one letter</li><li><code>abba</code> with <code>dog cat cat dog</code> holds; with <code>dog cat cat fish</code> it does not</li><li><code>abba</code> with <code>dog dog dog dog</code> also fails — a and b cannot both mean dog</li><li>If the counts of letters and words differ, the answer is false</li></ul>",
@@ -613,7 +613,7 @@ export const dsa7: Exercise[] = [
 {
     id: "ex-tree-level-order",
     chapter: "dsa-trees",
-    level: "beginner",
+    level: "intermediate",
     title: "Binary Tree Level Order Traversal",
     brief:
       "<p>Return the values of a binary tree grouped by depth: one inner array per level, each read left to right, starting at the root.</p><ul><li>For <code>[3,9,20,null,null,15,7]</code> the answer is <code>[[3],[9,20],[15,7]]</code></li><li>An empty tree gives <code>[]</code></li><li>Levels with missing children simply contain fewer values</li></ul>",
@@ -808,7 +808,7 @@ export const dsa7: Exercise[] = [
 {
     id: "ex-tree-lowest-common-ancestor",
     chapter: "dsa-tree-problems",
-    level: "advanced",
+    level: "intermediate",
     title: "Lowest Common Ancestor of a Binary Tree",
     brief:
       "<p>Given the root of a binary tree and two nodes <code>p</code> and <code>q</code> from it, return their lowest common ancestor: the deepest node that has both of them somewhere below it.</p><ul><li>A node counts as an ancestor of itself, so the answer may be <code>p</code> or <code>q</code></li><li><code>p</code> and <code>q</code> are node objects, not values, and both are present in the tree</li><li>This is an ordinary binary tree — no ordering to exploit</li><li><code>find(root, val)</code> is provided so you can fetch a node by value</li></ul>",
@@ -847,7 +847,7 @@ export const dsa7: Exercise[] = [
 {
     id: "ex-tree-validate-bst",
     chapter: "dsa-tree-problems",
-    level: "advanced",
+    level: "intermediate",
     title: "Validate Binary Search Tree",
     brief:
       "<p>Decide whether a binary tree is a valid binary search tree. In a valid BST, for every node, <em>every</em> value in its left subtree is strictly smaller than it and every value in its right subtree is strictly larger.</p><ul><li>The rule covers whole subtrees, not just the immediate children</li><li>Duplicate values make a tree invalid</li><li>An empty tree and a single node are valid</li></ul>",
@@ -1003,7 +1003,7 @@ export const dsa7: Exercise[] = [
 {
     id: "ex-tree-build-from-preorder-inorder",
     chapter: "dsa-tree-problems",
-    level: "advanced",
+    level: "intermediate",
     title: "Construct Binary Tree from Preorder and Inorder Traversal",
     brief:
       "<p>You are given the preorder traversal and the inorder traversal of the same binary tree, with all values distinct. Rebuild the tree and return its root.</p><ul><li>Preorder visits node, left, right; inorder visits left, node, right</li><li>Together the two orders pin down exactly one tree</li><li>Two empty arrays produce <code>null</code></li><li>Use <code>toArray(root)</code> to inspect what you built</li></ul>",
@@ -1198,7 +1198,7 @@ export const dsa7: Exercise[] = [
 {
     id: "ex-tree-next-right-pointers",
     chapter: "dsa-tree-problems",
-    level: "advanced",
+    level: "intermediate",
     title: "Populating Next Right Pointers in Each Node",
     brief:
       "<p>Every node in this <b>perfect</b> binary tree (all leaves at the same depth, every other node has two children) carries an extra <code>next</code> pointer, initially <code>null</code>. Set each <code>next</code> to the node immediately to its right on the same level, and return the root.</p><ul><li>The last node of every level keeps <code>next = null</code></li><li>Annotate the given tree in place and return the same root</li><li>The <code>next</code> pointers you have already set can be used to walk a level — that is how you avoid a queue</li><li><code>nextChain(node)</code> follows <code>next</code> from a node and collects the values</li></ul>",

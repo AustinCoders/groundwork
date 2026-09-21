@@ -220,5 +220,12 @@ import data from "./config.json" with { type: "json" };   <span class="c">// imp
   so a diff shows what actually changed instead of a formatting
   argument. Running both: Prettier decides how the code looks, ESLint
   decides whether the code is right.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "ES modules are static and evaluated once with live bindings, so imports can be analysed and tree-shaken and circular imports work but may see uninitialised values; CommonJS is dynamic and hands you whatever was exported at the moment you read it, which is where most interop bugs come from."
+  </p>
+</div>`,
 };

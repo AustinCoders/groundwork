@@ -6,7 +6,7 @@ export const browserObservability: Chapter = {
   title: "Browser observability",
   short: "Observability",
   levels: ["advanced"],
-  practice: ["ex-rate-limited-reporter"],
+  practice: ["ex-rate-limited-reporter", "ex-error-reporter"],
   ready: true,
   subtitle: "The bug is on somebody else's device, on a network you cannot reproduce.",
   body: `<h3>Why local debugging runs out</h3>

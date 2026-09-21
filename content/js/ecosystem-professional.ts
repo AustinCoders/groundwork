@@ -171,5 +171,12 @@ console.log(JSON.stringify(ast.declarations[0].init, null, 2));</code></pre>
   I check the spec or a quick <code>node -p</code>/console test rather
   than trust either post. This whole site was built the same way: every
   runnable claim in it was verified against a real engine first."
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "A bundler parses code into an AST to follow imports and drop what is unused, a transpiler rewrites new syntax for older engines, and a polyfill supplies a missing runtime API — three different problems that are constantly confused, and knowing which one you have decides the fix."
+  </p>
 </div>`,
 };

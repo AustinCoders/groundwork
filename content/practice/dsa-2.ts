@@ -4,7 +4,7 @@ export const dsa2: Exercise[] = [
 {
     id: "ex-gas-station",
     chapter: "dsa-greedy",
-    level: "advanced",
+    level: "intermediate",
     title: "Gas Station",
     brief:
       "<p>There are <code>n</code> gas stations in a circle. Station <code>i</code> gives you <code>gas[i]</code> fuel, and driving from station <code>i</code> to the next one costs <code>cost[i]</code> fuel. You start with an empty tank.</p><ul><li>Return the index you must start from to complete the full loop</li><li>Return <code>-1</code> if no starting point works</li><li>When a solution exists it is unique. Aim for one pass</li></ul>",
@@ -81,7 +81,7 @@ export const dsa2: Exercise[] = [
 {
     id: "ex-jump-game-ii",
     chapter: "dsa-greedy",
-    level: "advanced",
+    level: "intermediate",
     title: "Jump Game II",
     brief:
       "<p>Same rules as Jump Game — from index <code>i</code> you may jump up to <code>nums[i]</code> steps forward — but now the end is guaranteed reachable. Return the <b>minimum number of jumps</b> needed to get from index 0 to the last index.</p><ul><li>Zero jumps are needed if the array has one element</li><li>Target O(n) time — no BFS queue, no DP table needed</li><li>Think in terms of levels: everything reachable in exactly k jumps</li></ul>",
@@ -345,7 +345,7 @@ export const dsa2: Exercise[] = [
 {
     id: "ex-search-rotated-sorted-array-ii",
     chapter: "dsa-binary-search",
-    level: "advanced",
+    level: "intermediate",
     title: "Search in Rotated Sorted Array II",
     brief:
       "<p>Same setup as the rotated-array search, except values may now <b>repeat</b>. Given the rotated array and a <code>target</code>, return <code>true</code> if the target is present and <code>false</code> otherwise.</p><ul><li>Duplicates break the trick that told you which half was sorted: in <code>[1,1,1,1,1,2,1,1]</code> the left, middle and right values are all <code>1</code></li><li>When you cannot tell the halves apart, shrink the window by one and continue</li><li>Because of that, the worst case degrades to <code>O(n)</code> — that is expected, and understanding <em>why</em> is the point of this exercise</li></ul>",
@@ -453,7 +453,7 @@ export const dsa2: Exercise[] = [
 {
     id: "ex-koko-eating-bananas",
     chapter: "dsa-binary-search",
-    level: "advanced",
+    level: "intermediate",
     title: "Koko Eating Bananas",
     brief:
       "<p>There are <code>piles.length</code> piles of bananas and a guard who will be away for <code>h</code> hours. Koko picks an eating speed <code>k</code> bananas per hour. Each hour she picks one pile and eats up to <code>k</code> from it; if the pile has fewer than <code>k</code> left she eats it and still spends the whole hour on it. Return the smallest integer <code>k</code> that lets her finish every pile within <code>h</code> hours.</p><ul><li>This is <b>binary search on the answer</b>: you are not searching the input array, you are searching the range of candidate speeds <code>1 .. max(piles)</code></li><li>The key property is monotonicity — if speed <code>k</code> works, every faster speed works too, so 'does k work?' splits the range into a false block then a true block</li><li>Hours needed at speed <code>k</code> is the sum of <code>ceil(pile / k)</code></li><li><code>h</code> is always at least <code>piles.length</code></li></ul>",
@@ -492,7 +492,7 @@ export const dsa2: Exercise[] = [
 {
     id: "ex-ship-packages-in-days",
     chapter: "dsa-binary-search",
-    level: "advanced",
+    level: "intermediate",
     title: "Capacity to Ship Packages Within D Days",
     brief:
       "<p>Packages with the given <code>weights</code> must be loaded onto a boat <b>in the order listed</b>. Each day the boat carries a prefix of what is left, never exceeding its weight capacity. Return the smallest capacity that gets every package shipped within <code>days</code> days.</p><ul><li>This is <b>binary search on the answer</b>: the search space is the range of candidate capacities, not the input array</li><li>The low end is <code>max(weights)</code> — anything smaller can never carry that one package. The high end is <code>sum(weights)</code> — ship everything in one day</li><li>Feasibility is monotone: if a capacity works, every larger capacity works</li><li>Order is fixed; you may not reorder packages</li></ul>",
@@ -677,7 +677,7 @@ export const dsa2: Exercise[] = [
 {
     id: "ex-find-duplicate-number",
     chapter: "dsa-binary-search",
-    level: "advanced",
+    level: "intermediate",
     title: "Find the Duplicate Number",
     brief:
       "<p>An array <code>nums</code> holds <code>n + 1</code> integers, every one of them in the range <code>1 .. n</code>. By the pigeonhole principle at least one value repeats; you are told exactly one value is duplicated, though it may appear many times. Return that value.</p><ul><li>You must <b>not modify</b> the array — no sorting, no marking entries negative</li><li>You may use only <code>O(1)</code> extra space — no Set, no frequency array</li><li>Read <code>i -&gt; nums[i]</code> as a linked list: since every value is in <code>1 .. n</code>, no jump ever leaves the array, and the duplicate creates a cycle whose entrance is the answer</li><li>Floyd's tortoise-and-hare finds that entrance in <code>O(n)</code> time and <code>O(1)</code> space</li></ul>",
@@ -749,7 +749,7 @@ export const dsa2: Exercise[] = [
 {
     id: "ex-single-number-three-times",
     chapter: "dsa-bit-manipulation",
-    level: "advanced",
+    level: "intermediate",
     title: "Single Number II",
     brief:
       "<p>Every value in <code>nums</code> appears exactly <b>three</b> times except for one value, which appears once. Return that value.</p><ul><li>Plain XOR no longer works — <code>x ^ x ^ x</code> is <code>x</code>, not 0</li><li>Aim for <b>O(n)</b> time and <b>O(1)</b> extra space</li><li>Values may be negative, so any solution must stay correct across all 32 bits including the sign bit</li></ul>",
@@ -1005,7 +1005,7 @@ export const dsa2: Exercise[] = [
 {
     id: "ex-bitwise-and-of-range",
     chapter: "dsa-bit-manipulation",
-    level: "advanced",
+    level: "intermediate",
     title: "Bitwise AND of Numbers Range",
     brief:
       "<p>Given <code>left</code> and <code>right</code> with <code>0 &lt;= left &lt;= right &lt;= 2147483647</code>, return the bitwise AND of every integer in the inclusive range <code>[left, right]</code>.</p><ul><li>Looping over the range is far too slow — it can hold billions of values</li><li>The answer must come out in <b>O(number of bits)</b> time</li><li><code>left === right</code> is allowed and simply returns that value</li></ul>",
@@ -1044,7 +1044,7 @@ export const dsa2: Exercise[] = [
 {
     id: "ex-sum-of-two-integers",
     chapter: "dsa-bit-manipulation",
-    level: "advanced",
+    level: "intermediate",
     title: "Sum of Two Integers",
     brief:
       "<p>Return <code>a + b</code> without using the <code>+</code> or <code>-</code> operators anywhere in your solution (that rules out <code>++</code>, <code>--</code>, <code>+=</code> and unary minus too).</p><ul><li>Both inputs fit in a signed 32-bit integer, and so does the result</li><li>Either input may be negative — negatives are stored in two's complement, and the same add-with-carry loop handles them with no special casing</li><li><b>Why it terminates:</b> JS bitwise operators wrap to 32 bits, so the carry keeps marching left and eventually falls off the top edge, reaching 0. Without that wrap a negative operand would loop forever.</li></ul>",
@@ -1082,7 +1082,7 @@ export const dsa2: Exercise[] = [
 {
     id: "ex-divide-two-integers",
     chapter: "dsa-bit-manipulation",
-    level: "advanced",
+    level: "intermediate",
     title: "Divide Two Integers",
     brief:
       "<p>Divide <code>dividend</code> by <code>divisor</code> without using the <code>*</code>, <code>/</code> or <code>%</code> operators, and return the quotient.</p><ul><li>The quotient is <b>truncated toward zero</b>: <code>-7 / 2</code> is <code>-3</code>, not <code>-4</code></li><li>Both operands fit in the signed 32-bit range <code>[-2147483648, 2147483647]</code>, and the answer must be <b>clamped</b> to that range</li><li>Only one case can overflow: <code>divide(-2147483648, -1)</code> is mathematically 2147483648, so it must return <code>2147483647</code></li><li><code>divisor</code> is never 0</li></ul>",

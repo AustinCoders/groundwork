@@ -122,6 +122,44 @@ function SavedName() {
   exist to shrink that window.
 </p>
 
+<h3>Hydration mismatches: the usual causes, and the fix for each</h3>
+<p>
+  Hydration reuses the server's HTML instead of rebuilding it, so the client's
+  first render must produce <em>exactly</em> the markup the server sent. When it
+  does not, React logs a mismatch and, in the worst case, throws the server HTML
+  away and renders from scratch. React 19 prints a diff showing which text or
+  attribute differed, so read the message before guessing.
+</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Cause</th><th>Why it differs</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td><code>new Date()</code>, <code>Date.now()</code></td><td>The server and the browser render at different moments</td><td>Render the time in an effect, or pass the value from the server as a prop</td></tr>
+<tr><td>Locale or timezone formatting</td><td>The server runs in UTC with one locale, the user has another</td><td>Format with an explicit <code>locale</code> and <code>timeZone</code></td></tr>
+<tr><td><code>Math.random()</code>, generated ids</td><td>A different value each render</td><td><code>useId</code> for ids; move randomness into an effect</td></tr>
+<tr><td><code>typeof window !== "undefined"</code> in render</td><td>The branch is false on the server and true in the browser</td><td>Read browser-only values in an effect, or with <code>useSyncExternalStore</code> and a server snapshot</td></tr>
+<tr><td><code>localStorage</code> or <code>matchMedia</code> read during render</td><td>Does not exist on the server</td><td>The same: an effect, or a store with <code>getServerSnapshot</code></td></tr>
+<tr><td>Invalid HTML nesting (<code>&lt;div&gt;</code> inside <code>&lt;p&gt;</code>)</td><td>The browser's parser repairs it before React looks</td><td>Fix the markup</td></tr>
+<tr><td>Browser extensions and translators</td><td>They edit the DOM before hydration</td><td>Nothing in your code is wrong; <code>suppressHydrationWarning</code> on the affected element if it is noisy</td></tr>
+</tbody>
+</table></div>
+<pre><code><span class="c">// a value that is legitimately different on the client</span>
+function Clock() {
+  const [now, setNow] = useState(null);                  <span class="c">// null on the server and on the first client render</span>
+  useEffect(() =&gt; setNow(new Date()), []);
+  return &lt;time&gt;{now ? now.toLocaleTimeString("en-GB") : ""}&lt;/time&gt;;
+}
+
+<span class="c">// a single text node you accept will differ</span>
+&lt;time suppressHydrationWarning&gt;{new Date().toISOString()}&lt;/time&gt;</code></pre>
+<p>
+  <code>suppressHydrationWarning</code> is an escape hatch, not a fix. It works
+  one level deep, on that element's own text and attributes, and it only silences
+  the warning: the mismatched text stays until something re-renders it. Use it
+  for a genuine, harmless difference such as a timestamp, never to hide a bug.
+  The effect version renders the same thing on the server and the first client
+  pass, then updates &mdash; which is the pattern that is always correct.
+</p>
+
 <h3>Metadata and resources, hoisted</h3>
 <pre><code>function Post({ post }) {
   return (

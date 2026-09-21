@@ -326,5 +326,12 @@ console.log("order:", order.join(", "));</code></pre>
   moment it's free. This exact shape — sometimes called a
   <b>semaphore</b> when the limit is explicit — is what a real batch
   job (upload 500 files, 6 at a time) is built on.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Microtasks drain completely before the next task, so a chain of microtasks can starve rendering; generators and async iterators are pausable functions that make streams and backpressure possible, and anything CPU-heavy belongs in a worker instead of on the main thread."
+  </p>
+</div>`,
 };

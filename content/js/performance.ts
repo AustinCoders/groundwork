@@ -271,5 +271,12 @@ instance.exports.sumAll(ptr, numbers.length);</code></pre>
   guess — it routinely surfaces one unexpectedly heavy dependency, or
   an entire library imported for one small utility function that could
   have been hand-written in ten lines instead.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Perceived speed comes from the critical rendering path and the main thread: ship less, defer what is not needed yet, break up long tasks so input stays responsive, and measure with field metrics such as LCP, INP and CLS instead of guessing."
+  </p>
+</div>`,
 };

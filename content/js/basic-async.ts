@@ -530,5 +530,12 @@ JSON.parse('{"a":1,"b":[1,2,3]}');    <span class="c">// back to a real object â
     <code>response.ok</code> yourself.
   </li>
 </ul>
-`,
+
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "A callback hands work to something else to call back later; a promise is an object for a value that is not here yet, and async/await is the same promises with synchronous-looking syntax â€” the rule to remember is that every <code>.then</code> returns a new promise, so a chain flows through it and an error skips ahead to the nearest <code>catch</code>."
+  </p>
+</div>`,
 };

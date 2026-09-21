@@ -6,7 +6,17 @@ export const buildItYourself: Chapter = {
   title: "Build it yourself",
   short: "Build it yourself",
   levels: ["advanced"],
-  practice: ["ex-debounce-fn", "ex-build-lru-cache"],
+  practice: [
+    "ex-debounce-fn",
+    "ex-build-lru-cache",
+    "ex-deep-clone",
+    "ex-deep-equal",
+    "ex-my-bind",
+    "ex-throttle",
+    "ex-memoize",
+    "ex-array-polyfills",
+    "ex-curry-placeholder",
+  ],
   ready: true,
   subtitle:
     "The six things a senior loop asks you to build from scratch — because you can, not because you should ship them.",
@@ -311,5 +321,12 @@ console.log(cache.get("a"), cache.get("b"), cache.get("c"));   <span class="c">/
   get/set/delete, each O(1), which is the entire reason an LRU cache is
   built on a <code>Map</code> instead of an array: no method here ever
   has to scan or shift anything.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "These are the from-scratch asks interviews use to check you understand the mechanism: a promise is a state machine plus a callback queue, <code>bind</code> is a closure over <code>this</code>, debounce and throttle are closures over a timer, a deep clone needs a seen-map for cycles, and an LRU cache gets O(1) from a hash map plus a linked list."
+  </p>
+</div>`,
 };

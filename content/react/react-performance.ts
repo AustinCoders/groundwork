@@ -128,7 +128,9 @@ function Page({ children }) {
     large tree re-rendering on every keystroke — fixed by moving state down
     rather than by memoising — or too many DOM nodes, which needs
     virtualisation. Memoisation is the last step and only where the profiler
-    pointed."
+    pointed — and where the React Compiler is enabled it inserts most of that
+    memoisation itself, so hand-written <code>useMemo</code> becomes the
+    exception rather than the habit."
   </p>
 </div>`,
 };

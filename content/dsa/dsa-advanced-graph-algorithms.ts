@@ -6,7 +6,13 @@ export const dsaAdvancedGraphAlgorithms: Chapter = {
   title: "Advanced graph algorithms",
   short: "Advanced graph algorithms",
   levels: ["advanced"],
-  practice: ["ex-network-delay-time", "ex-cheapest-flights-within-k-stops"],
+  practice: [
+    "ex-network-delay-time",
+    "ex-cheapest-flights-within-k-stops",
+    "ex-min-effort-path",
+    "ex-find-the-city",
+    "ex-bellman-ford",
+  ],
   ready: true,
   subtitle: "BFS is shortest path when every edge costs 1 — here is what to do when they don't.",
   body: `<h3>Weights break BFS, and knowing why tells you which algorithm to reach for</h3>

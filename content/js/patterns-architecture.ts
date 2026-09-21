@@ -280,5 +280,12 @@ const safeLoad = withFallback(loadUserProfile, { name: "Guest" });</code></pre>
   <a href="/notes/closures">memoize</a> pattern from the closures
   chapter are all the identical idea at different layers of the
   stack — don't redo work whose answer hasn't changed.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Patterns are named shapes for recurring problems — middleware as a chain of functions, dependency injection to keep code testable, state machines for modes, signals for fine-grained reactivity — and each is worth reaching for only once the plainer version has started to hurt."
+  </p>
+</div>`,
 };

@@ -511,5 +511,12 @@ outer();</code></pre>
   undefined, <code>let</code> and <code>const</code> get created but
   left empty until their line runs — and that empty gap is the TDZ."
 </div>
-`,
+
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Before running, the engine makes a pass that creates a binding for every declaration in a new execution context — <code>var</code> starts as <code>undefined</code>, function declarations are fully usable, and <code>let</code>, <code>const</code> and <code>class</code> stay in the temporal dead zone until their line runs — which is all hoisting means; nothing actually moves."
+  </p>
+</div>`,
 };

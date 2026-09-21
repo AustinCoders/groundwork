@@ -224,5 +224,12 @@ try {
   <span class="ttl">Say it like this →</span> "console.log tells you
   what you thought to ask for. A breakpoint lets you stop time and
   inspect everything — including the things you didn't think to log."
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "<code>try/catch</code> handles synchronous throws and awaited rejections, <code>finally</code> always runs and can even override a return value, and a good custom error extends <code>Error</code>, sets its name and keeps its <code>cause</code> — while a stack trace lists the throw site first, with the callers beneath it."
+  </p>
 </div>`,
 };

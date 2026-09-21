@@ -294,5 +294,12 @@ try {
   toward it. If I'm not sure the depth is bounded, I either convert it
   to a loop or add an explicit depth guard — I don't rely on TCO,
   because V8 doesn't have it."
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Scope is fixed by where code is written, a closure keeps that scope alive, <code>this</code> is decided by how a function is called, and higher-order functions — currying, partial application, composition — build new functions out of old ones."
+  </p>
 </div>`,
 };

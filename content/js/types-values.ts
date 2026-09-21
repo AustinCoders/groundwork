@@ -640,5 +640,12 @@ console.log([NaN].includes(NaN), [NaN].indexOf(NaN));</code></pre>
   resetBtn.addEventListener("click", reset);
 })();
 </script>
-`,
+
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "JavaScript has seven primitives plus object; <code>typeof null</code> lies, coercion makes <code>==</code> unpredictable so use <code>===</code>, and exactly eight values are falsy: <code>false</code>, <code>0</code>, <code>-0</code>, <code>0n</code>, the empty string, <code>null</code>, <code>undefined</code> and <code>NaN</code>."
+  </p>
+</div>`,
 };

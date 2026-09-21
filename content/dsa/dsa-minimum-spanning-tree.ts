@@ -6,7 +6,7 @@ export const dsaMinimumSpanningTree: Chapter = {
   title: "Minimum Spanning Tree",
   short: "Minimum Spanning Tree",
   levels: ["advanced"],
-  practice: ["ex-min-cost-connect-all-points"],
+  practice: ["ex-min-cost-connect-all-points", "ex-connect-cities"],
   ready: true,
   subtitle:
     "The cheapest wiring that reaches every node — greedy is provably optimal here, and there are exactly two ways to be greedy.",

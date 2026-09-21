@@ -347,5 +347,12 @@ config.client?.host ?? "localhost";  <span class="c">// "localhost" — client i
   <code>config.server &amp;&amp; config.server.retries || 5000</code>
   gets wrong, because <code>||</code> would treat that real
   <code>0</code> as missing too.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Copies are shallow unless you make them deep — spread and <code>Object.assign</code> copy one level, <code>structuredClone</code> copies deeply but not functions — <code>Map</code> and <code>Set</code> beat plain objects for arbitrary keys and uniqueness, and <code>toSorted</code> and its family give non-mutating versions of the array methods."
+  </p>
+</div>`,
 };

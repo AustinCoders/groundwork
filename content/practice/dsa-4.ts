@@ -4,7 +4,7 @@ export const dsa4: Exercise[] = [
 {
     id: "ex-unique-paths",
     chapter: "dsa-dp-2d",
-    level: "beginner",
+    level: "intermediate",
     title: "Unique Paths",
     brief:
       "<p>A robot starts in the top-left cell of an <code>m x n</code> grid and wants to reach the bottom-right cell. It may only move <b>right</b> or <b>down</b>. Return how many distinct paths there are.</p><ul><li><code>uniquePaths(3, 7)</code> is <code>28</code></li><li>A single row or a single column has exactly <code>1</code> path</li><li><code>m</code> is the number of rows and <code>n</code> the number of columns</li></ul>",
@@ -195,6 +195,131 @@ export const dsa4: Exercise[] = [
       },
     ],
   },
+  {
+    id: "ex-target-sum",
+    chapter: "dsa-dp-2d",
+    level: "intermediate",
+    title: "Target Sum",
+    brief: "<p>Write <code>findTargetSumWays(nums, target)</code>: put a <code>+</code> or a <code>-</code> in front of every number in <code>nums</code> and count how many of the resulting expressions equal <code>target</code>. Every number must get exactly one sign.</p>",
+    starter: "function findTargetSumWays(nums, target) {\n  // TODO\n}\n\nconsole.log(findTargetSumWays([1, 1, 1, 1, 1], 3)); // 5\n",
+    hints: [
+      "Let P be the sum of the numbers marked +. Then P - (total - P) = target, so P = (total + target) / 2.",
+      "That turns the problem into: how many subsets of nums sum to P? A 0/1 knapsack count.",
+      "If (total + target) is odd, or |target| exceeds the total, the answer is 0. Zeros double the count, which the DP handles naturally.",
+    ],
+    solution: "function findTargetSumWays(nums, target) {\n  const total = nums.reduce((a, b) => a + b, 0);\n  if (Math.abs(target) > total || (total + target) % 2 !== 0) return 0;\n  const goal = (total + target) / 2;\n  const ways = new Array(goal + 1).fill(0);\n  ways[0] = 1;\n  for (const n of nums) {\n    for (let s = goal; s >= n; s--) ways[s] += ways[s - n];\n  }\n  return ways[goal];\n}\n",
+    tests: [
+      { name: "five ones", body: "assert.equal(findTargetSumWays([1, 1, 1, 1, 1], 3), 5);" },
+      { name: "one number, reachable", body: "assert.equal(findTargetSumWays([1], 1), 1);" },
+      { name: "one number, not reachable", body: "assert.equal(findTargetSumWays([1], 2), 0);" },
+      { name: "a negative target mirrors a positive one", body: "assert.equal(findTargetSumWays([1, 1, 1, 1, 1], -3), 5);" },
+      { name: "zeros double the answer each", body: "assert.equal(findTargetSumWays([0, 0, 0, 0, 0, 0, 0, 0, 1], 1), 256);" },
+      { name: "the parity rules it out", body: "assert.equal(findTargetSumWays([1, 2], 2), 0);" },
+      { name: "a target beyond the total", body: "assert.equal(findTargetSumWays([1, 2, 3], 100), 0);" },
+      { name: "an empty list reaches only zero", body: "assert.equal(findTargetSumWays([], 0), 1);\nassert.equal(findTargetSumWays([], 1), 0);" },
+      { name: "twenty numbers", body: "assert.equal(findTargetSumWays(new Array(20).fill(1), 0), 184756);" },
+    ],
+  },
+  {
+    id: "ex-interleaving-string",
+    chapter: "dsa-dp-2d",
+    level: "intermediate",
+    title: "Interleaving String",
+    brief: "<p>Write <code>isInterleave(s1, s2, s3)</code>: can <code>s3</code> be formed by interleaving <code>s1</code> and <code>s2</code>? That means merging the two strings while keeping each one's own characters in their original order (so <code>\"aabcc\"</code> and <code>\"dbbca\"</code> interleave into <code>\"aadbbcbcac\"</code>).</p>",
+    starter: "function isInterleave(s1, s2, s3) {\n  // TODO\n}\n\nconsole.log(isInterleave(\"aabcc\", \"dbbca\", \"aadbbcbcac\")); // true\n",
+    hints: [
+      "dp[i][j] means: the first i characters of s1 and the first j of s2 can make the first i + j of s3.",
+      "dp[i][j] is true if dp[i-1][j] and s1[i-1] === s3[i+j-1], or dp[i][j-1] and s2[j-1] === s3[i+j-1].",
+      "If the lengths do not add up, return false at once. One row of dp is enough.",
+    ],
+    solution: "function isInterleave(s1, s2, s3) {\n  if (s1.length + s2.length !== s3.length) return false;\n  const dp = new Array(s2.length + 1).fill(false);\n  for (let i = 0; i <= s1.length; i++) {\n    for (let j = 0; j <= s2.length; j++) {\n      if (i === 0 && j === 0) dp[j] = true;\n      else {\n        const fromS1 = i > 0 && dp[j] && s1[i - 1] === s3[i + j - 1];\n        const fromS2 = j > 0 && dp[j - 1] && s2[j - 1] === s3[i + j - 1];\n        dp[j] = fromS1 || fromS2;\n      }\n    }\n  }\n  return dp[s2.length];\n}\n",
+    tests: [
+      { name: "a valid interleaving", body: "assert.equal(isInterleave(\"aabcc\", \"dbbca\", \"aadbbcbcac\"), true);" },
+      { name: "an invalid one", body: "assert.equal(isInterleave(\"aabcc\", \"dbbca\", \"aadbbbaccc\"), false);" },
+      { name: "all empty", body: "assert.equal(isInterleave(\"\", \"\", \"\"), true);" },
+      { name: "one string empty", body: "assert.equal(isInterleave(\"\", \"abc\", \"abc\"), true);\nassert.equal(isInterleave(\"abc\", \"\", \"abd\"), false);" },
+      { name: "lengths do not add up", body: "assert.equal(isInterleave(\"a\", \"b\", \"abc\"), false);" },
+      { name: "the same letters in the wrong order", body: "assert.equal(isInterleave(\"ab\", \"cd\", \"acbd\"), true);\nassert.equal(isInterleave(\"ab\", \"cd\", \"adbc\"), false);" },
+      { name: "repeated letters need a real search", body: "assert.equal(isInterleave(\"aaaa\", \"aaab\", \"aaaaaaab\"), true);\nassert.equal(isInterleave(\"aaaa\", \"aaab\", \"baaaaaaa\"), false);" },
+      { name: "300 by 300 characters", body: "const a = \"a\".repeat(300);\nconst b = \"a\".repeat(299) + \"b\";\nassert.equal(isInterleave(a, b, \"a\".repeat(599) + \"b\"), true);\nassert.equal(isInterleave(a, b, \"b\" + \"a\".repeat(599)), false);" },
+    ],
+  },
+  {
+    id: "ex-distinct-subsequences",
+    chapter: "dsa-dp-2d",
+    level: "advanced",
+    title: "Distinct Subsequences",
+    brief: "<p>Write <code>numDistinct(s, t)</code>: the number of <b>distinct subsequences</b> of <code>s</code> that equal <code>t</code>. Two subsequences are different when they use different index positions, even if they spell the same word. The answer fits in a 53-bit integer for the tests here.</p>",
+    starter: "function numDistinct(s, t) {\n  // TODO\n}\n\nconsole.log(numDistinct(\"rabbbit\", \"rabbit\")); // 3\n",
+    hints: [
+      "dp[i][j] = ways to make the first j letters of t from the first i letters of s.",
+      "If s[i-1] === t[j-1] you may either use it (dp[i-1][j-1]) or skip it (dp[i-1][j]); otherwise only skip.",
+      "dp[i][0] = 1 for every i: the empty string can always be made in one way. Iterate j downwards to use a single row.",
+    ],
+    solution: "function numDistinct(s, t) {\n  if (t.length > s.length) return 0;\n  const dp = new Array(t.length + 1).fill(0);\n  dp[0] = 1;\n  for (let i = 0; i < s.length; i++) {\n    for (let j = Math.min(i + 1, t.length); j >= 1; j--) {\n      if (s[i] === t[j - 1]) dp[j] += dp[j - 1];\n    }\n  }\n  return dp[t.length];\n}\n",
+    tests: [
+      { name: "three ways", body: "assert.equal(numDistinct(\"rabbbit\", \"rabbit\"), 3);" },
+      { name: "five ways", body: "assert.equal(numDistinct(\"babgbag\", \"bag\"), 5);" },
+      { name: "t longer than s", body: "assert.equal(numDistinct(\"ab\", \"abc\"), 0);" },
+      { name: "empty t", body: "assert.equal(numDistinct(\"abc\", \"\"), 1);" },
+      { name: "both empty", body: "assert.equal(numDistinct(\"\", \"\"), 1);" },
+      { name: "empty s", body: "assert.equal(numDistinct(\"\", \"a\"), 0);" },
+      { name: "identical strings", body: "assert.equal(numDistinct(\"abc\", \"abc\"), 1);" },
+      { name: "repeated letters multiply", body: "assert.equal(numDistinct(\"aaaa\", \"aa\"), 6);" },
+      { name: "no match at all", body: "assert.equal(numDistinct(\"abc\", \"d\"), 0);" },
+      { name: "a long input in linear-ish space", body: "assert.equal(numDistinct(\"a\".repeat(30), \"a\".repeat(15)), 155117520);" },
+    ],
+  },
+  {
+    id: "ex-maximal-square",
+    chapter: "dsa-dp-2d",
+    level: "intermediate",
+    title: "Maximal Square",
+    brief: "<p><code>matrix</code> is a grid of the characters <code>\"0\"</code> and <code>\"1\"</code>. Write <code>maximalSquare(matrix)</code>: the <b>area</b> of the largest square that contains only <code>\"1\"</code>s.</p>",
+    starter: "function maximalSquare(matrix) {\n  // TODO\n}\n\nconsole.log(maximalSquare([[\"1\", \"1\"], [\"1\", \"1\"]])); // 4\n",
+    hints: [
+      "Let dp[r][c] be the side of the largest all-1 square whose bottom-right corner is (r, c).",
+      "When the cell is \"1\", dp[r][c] = 1 + min(dp[r-1][c], dp[r][c-1], dp[r-1][c-1]).",
+      "The answer is the largest side, squared. The border rows and columns are just the cell itself.",
+    ],
+    solution: "function maximalSquare(matrix) {\n  if (matrix.length === 0) return 0;\n  const cols = matrix[0].length;\n  let prev = new Array(cols + 1).fill(0);\n  let best = 0;\n  for (let r = 0; r < matrix.length; r++) {\n    const curr = new Array(cols + 1).fill(0);\n    for (let c = 1; c <= cols; c++) {\n      if (matrix[r][c - 1] === \"1\") {\n        curr[c] = 1 + Math.min(prev[c], curr[c - 1], prev[c - 1]);\n        if (curr[c] > best) best = curr[c];\n      }\n    }\n    prev = curr;\n  }\n  return best * best;\n}\n",
+    tests: [
+      { name: "a 2 by 2 square inside a larger grid", body: "assert.equal(maximalSquare([[\"1\",\"0\",\"1\",\"0\",\"0\"],[\"1\",\"0\",\"1\",\"1\",\"1\"],[\"1\",\"1\",\"1\",\"1\",\"1\"],[\"1\",\"0\",\"0\",\"1\",\"0\"]]), 4);" },
+      { name: "only diagonal ones", body: "assert.equal(maximalSquare([[\"0\",\"1\"],[\"1\",\"0\"]]), 1);" },
+      { name: "a single zero", body: "assert.equal(maximalSquare([[\"0\"]]), 0);" },
+      { name: "a single one", body: "assert.equal(maximalSquare([[\"1\"]]), 1);" },
+      { name: "all ones", body: "assert.equal(maximalSquare([[\"1\",\"1\",\"1\"],[\"1\",\"1\",\"1\"],[\"1\",\"1\",\"1\"]]), 9);" },
+      { name: "a wide rectangle of ones gives a square of its short side", body: "assert.equal(maximalSquare([[\"1\",\"1\",\"1\",\"1\"],[\"1\",\"1\",\"1\",\"1\"]]), 4);" },
+      { name: "an empty grid", body: "assert.equal(maximalSquare([]), 0);" },
+      { name: "a hole in the middle", body: "assert.equal(maximalSquare([[\"1\",\"1\",\"1\"],[\"1\",\"0\",\"1\"],[\"1\",\"1\",\"1\"]]), 1);" },
+      { name: "a 500 by 500 grid of ones", body: "const n = 500;\nconst g = Array.from({ length: n }, () => new Array(n).fill(\"1\"));\nassert.equal(maximalSquare(g), n * n);" },
+    ],
+  },
+  {
+    id: "ex-knapsack-01",
+    chapter: "dsa-dp-2d",
+    level: "intermediate",
+    title: "0/1 Knapsack",
+    brief: "<p>Write <code>knapsack(weights, values, capacity)</code>: the largest total value you can carry when each item may be taken <b>at most once</b> and the total weight may not exceed <code>capacity</code>. Weights and values are non-negative integers.</p>",
+    starter: "function knapsack(weights, values, capacity) {\n  // TODO\n}\n\nconsole.log(knapsack([1, 3, 4, 5], [1, 4, 5, 7], 7)); // 9\n",
+    hints: [
+      "dp[w] = best value using capacity w. For each item, update dp from high w to low w.",
+      "Going downwards is what stops one item being used twice; going upwards would give the unbounded knapsack.",
+      "dp[capacity] is the answer, because dp is non-decreasing in w.",
+    ],
+    solution: "function knapsack(weights, values, capacity) {\n  const dp = new Array(capacity + 1).fill(0);\n  for (let i = 0; i < weights.length; i++) {\n    for (let w = capacity; w >= weights[i]; w--) {\n      dp[w] = Math.max(dp[w], dp[w - weights[i]] + values[i]);\n    }\n  }\n  return dp[capacity];\n}\n",
+    tests: [
+      { name: "a small instance", body: "assert.equal(knapsack([1, 3, 4, 5], [1, 4, 5, 7], 7), 9);" },
+      { name: "nothing fits", body: "assert.equal(knapsack([5, 6], [10, 20], 4), 0);" },
+      { name: "everything fits", body: "assert.equal(knapsack([1, 2, 3], [6, 10, 12], 10), 28);" },
+      { name: "no items", body: "assert.equal(knapsack([], [], 10), 0);" },
+      { name: "zero capacity", body: "assert.equal(knapsack([1, 2], [5, 6], 0), 0);" },
+      { name: "an item may be used only once", body: "assert.equal(knapsack([2], [10], 100), 10);" },
+      { name: "greedy by value per weight is wrong here", body: "assert.equal(knapsack([10, 20, 30], [60, 100, 120], 50), 220);" },
+      { name: "an item that weighs nothing is free", body: "assert.equal(knapsack([0, 5], [7, 3], 5), 10);" },
+      { name: "200 items, capacity 5,000", body: "const w = Array.from({ length: 200 }, (_, i) => (i % 17) + 1);\nconst v = Array.from({ length: 200 }, (_, i) => (i % 13) + 5);\nconst result = knapsack(w, v, 5000);\nassert.equal(result, v.reduce((a, b) => a + b, 0));" },
+    ],
+  },
 {
     id: "ex-top-k-frequent",
     chapter: "dsa-hashing",
@@ -237,7 +362,7 @@ export const dsa4: Exercise[] = [
 {
     id: "ex-longest-consecutive-sequence",
     chapter: "dsa-hashing",
-    level: "advanced",
+    level: "intermediate",
     title: "Longest Consecutive Sequence",
     brief:
       "<p>Given an unsorted integer array <code>nums</code>, return the length of the longest run of consecutive integers you can form from its values. The values do not have to be adjacent in the array.</p><ul><li>Your algorithm must run in <b>O(n)</b> time — <em>sorting is not allowed</em></li><li>Duplicates count only once: <code>[1,2,2,3]</code> has a run of length 3</li><li>Negative numbers are allowed</li><li>An empty array returns <code>0</code></li></ul>",
@@ -314,7 +439,7 @@ export const dsa4: Exercise[] = [
 {
     id: "ex-subarray-sum-equals-k",
     chapter: "dsa-arrays-strings",
-    level: "advanced",
+    level: "intermediate",
     title: "Subarray Sum Equals K",
     brief:
       "<p>Given an integer array <code>nums</code> and an integer <code>k</code>, return the total number of <b>contiguous</b> subarrays whose elements sum to exactly <code>k</code>.</p><ul><li>Values may be negative, so you cannot use a sliding window</li><li>Different index ranges count separately even if they contain the same values</li><li>Target <b>O(n)</b> time using a running prefix sum and a hash map</li></ul>",
@@ -353,7 +478,7 @@ export const dsa4: Exercise[] = [
 {
     id: "ex-continuous-subarray-sum",
     chapter: "dsa-arrays-strings",
-    level: "advanced",
+    level: "intermediate",
     title: "Continuous Subarray Sum",
     brief:
       "<p>Given an array <code>nums</code> of non-negative integers and a positive integer <code>k</code>, return <code>true</code> if there is a contiguous subarray whose sum is a multiple of <code>k</code>.</p><ul><li>The subarray must have <b>length at least 2</b> — this is the whole trap</li><li><code>0</code> counts as a multiple of every <code>k</code>, so <code>[0,0]</code> with <code>k = 7</code> is <code>true</code></li><li>But <code>[1,0]</code> with <code>k = 2</code> is <code>false</code>: the only multiple of 2 in there is the single element <code>0</code>, and length 1 does not qualify</li><li>Target <b>O(n)</b> using prefix-sum remainders</li></ul>",
@@ -392,7 +517,7 @@ export const dsa4: Exercise[] = [
 {
     id: "ex-max-size-subarray-sum-equals-k",
     chapter: "dsa-arrays-strings",
-    level: "advanced",
+    level: "intermediate",
     title: "Maximum Size Subarray Sum Equals K",
     brief:
       "<p>Given an integer array <code>nums</code> and an integer <code>k</code>, return the length of the <b>longest</b> contiguous subarray that sums to exactly <code>k</code>.</p><ul><li>If no such subarray exists, return <code>0</code></li><li>Values may be negative and may be zero</li><li>Target <b>O(n)</b> time with a prefix sum and a hash map</li></ul>",
@@ -507,7 +632,7 @@ export const dsa4: Exercise[] = [
 {
     id: "ex-range-sum-query-immutable",
     chapter: "dsa-arrays-strings",
-    level: "intermediate",
+    level: "beginner",
     title: "Range Sum Query — Immutable",
     brief:
       "<p>Build a class <code>NumArray</code> that answers repeated range-sum queries over a fixed array.</p><ul><li><code>new NumArray(nums)</code> — the constructor may do <b>O(n)</b> work</li><li><code>sumRange(i, j)</code> — returns the sum of <code>nums[i]</code> through <code>nums[j]</code> <b>inclusive</b>, and must run in <b>O(1)</b></li><li>The array never changes after construction, so all the work belongs in the constructor</li><li><code>sumRange(i, i)</code> returns a single element</li></ul>",
@@ -621,7 +746,7 @@ export const dsa4: Exercise[] = [
 {
     id: "ex-intersection-of-two-arrays-ii",
     chapter: "dsa-hashing",
-    level: "intermediate",
+    level: "beginner",
     title: "Intersection of Two Arrays II",
     brief:
       "<p>Given two integer arrays <code>nums1</code> and <code>nums2</code>, return the values they share <b>including multiplicity</b>.</p><ul><li>A value must appear in the result as many times as it appears in <em>both</em> arrays — that is, the smaller of its two counts</li><li>So <code>[1,2,2,1]</code> and <code>[2,2]</code> give <code>[2,2]</code></li><li>The result may be returned in <b>any order</b></li></ul>",
@@ -971,7 +1096,7 @@ export const dsa4: Exercise[] = [
 {
     id: "ex-palindrome-linked-list",
     chapter: "dsa-linked-lists",
-    level: "advanced",
+    level: "beginner",
     title: "Palindrome Linked List",
     brief:
       "<p>Decide whether the values in a singly linked list read the same forwards and backwards. Return <code>true</code> or <code>false</code>.</p><ul><li>Use <b>O(1) extra space</b> — copying the values into an array is the answer we are not looking for</li><li>Runs in O(n) time</li><li>The empty list and any single node list are palindromes</li></ul>",
@@ -1010,7 +1135,7 @@ export const dsa4: Exercise[] = [
 {
     id: "ex-intersection-of-two-lists",
     chapter: "dsa-linked-lists",
-    level: "intermediate",
+    level: "beginner",
     title: "Intersection of Two Linked Lists",
     brief:
       "<p>Two singly linked lists may merge and share a common tail. Return the first node they share, or <code>null</code> if they never meet.</p><ul><li>Sharing means the <b>same node object</b>, not merely equal values</li><li>The lists may have different lengths</li><li>Do not modify either list; aim for O(1) extra space</li></ul>",
@@ -1127,7 +1252,7 @@ export const dsa4: Exercise[] = [
 {
     id: "ex-copy-list-with-random-pointer",
     chapter: "dsa-linked-lists",
-    level: "advanced",
+    level: "intermediate",
     title: "Copy List with Random Pointer",
     brief:
       "<p>Every node here has a <code>next</code> pointer and an extra <code>random</code> pointer that may aim at any node in the list or at <code>null</code>. Produce a <b>deep copy</b>: a brand new set of nodes whose pointers mirror the original's shape.</p><ul><li>No node in the returned list may be a node from the input list</li><li>If the original's random points at the 3rd node, the copy's random must point at the copy's 3rd node</li><li><code>serialize(head)</code> is provided for the tests: it renders a list as pairs of <code>[val, randomIndex]</code></li></ul>",
@@ -1439,7 +1564,7 @@ export const dsa4: Exercise[] = [
 {
     id: "ex-sort-linked-list",
     chapter: "dsa-linked-lists",
-    level: "advanced",
+    level: "intermediate",
     title: "Sort List",
     brief:
       "<p>Sort a linked list into non-decreasing order and return the new head.</p><ul><li>Must run in <b>O(n log n)</b> time — merge sort is the natural fit for linked lists</li><li>Relink the existing nodes; do not dump the values into an array and sort that</li><li>Values may be negative and may repeat</li></ul>",
@@ -1478,7 +1603,7 @@ export const dsa4: Exercise[] = [
 {
     id: "ex-flatten-multilevel-doubly-list",
     chapter: "dsa-linked-lists",
-    level: "advanced",
+    level: "intermediate",
     title: "Flatten a Multilevel Doubly Linked List",
     brief:
       "<p>Each node in this doubly linked list has <code>prev</code>, <code>next</code> and an optional <code>child</code> pointer to another doubly linked list, which may itself have children. Flatten everything into a single level, then return the head.</p><ul><li>A child list is spliced in immediately after its parent node and before whatever followed it</li><li>Afterwards every <code>child</code> must be <code>null</code> and every <code>prev</code> must point at the real predecessor</li><li><code>serialize(head)</code> is provided for the tests: per node it reports <code>[val, prevIsCorrect, childIsNull]</code></li></ul>",

@@ -6,7 +6,13 @@ export const dsaGraphProblems: Chapter = {
   title: "Graph problems",
   short: "Graph problems",
   levels: ["intermediate"],
-  practice: ["ex-pacific-atlantic-water-flow", "ex-word-ladder"],
+  practice: [
+    "ex-pacific-atlantic-water-flow",
+    "ex-word-ladder",
+    "ex-is-bipartite",
+    "ex-shortest-binary-matrix",
+    "ex-keys-rooms",
+  ],
   ready: true,
   subtitle: "Three questions that reuse the exact same BFS/DFS you just learned, with one twist each.",
   body: `<h3>Connected components — how many separate "islands" exist</h3>

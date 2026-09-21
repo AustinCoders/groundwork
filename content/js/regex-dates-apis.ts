@@ -159,5 +159,12 @@ new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(15
   <a href="/notes/browser-apis-deep">The next chapter</a> picks up
   where this one leaves off — storage, the URL bar, and the event
   system in depth.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Regex is for patterns, not for parsing nested structure, and nested quantifiers can backtrack catastrophically (ReDoS); store dates as UTC timestamps and format them for display, because arithmetic on local time breaks across daylight-saving changes."
+  </p>
+</div>`,
 };

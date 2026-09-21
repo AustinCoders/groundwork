@@ -758,5 +758,12 @@ count = 0;                <span class="c">// no keyword: a plain property, and d
   not the value. And redeclaring a <code>let</code> is a parse-time
   error, so the whole script never starts."
 </div>
-`,
+
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "<code>var</code> is function-scoped and hoisted as <code>undefined</code>, <code>let</code> and <code>const</code> are block-scoped and sit in the temporal dead zone until declared, and <code>const</code> prevents rebinding, not mutation — so default to <code>const</code>, use <code>let</code> when you must reassign, and avoid <code>var</code>."
+  </p>
+</div>`,
 };

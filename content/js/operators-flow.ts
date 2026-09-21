@@ -415,5 +415,12 @@ console.log(3 &gt; 2 &gt; 1);    <span class="c">// what happens?</span></code><
   a thing in JS — every relational and equality operator only ever sees
   two operands, and the result of one comparison becomes a boolean
   operand in the next."
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Use <code>===</code> to avoid coercion, <code>??</code> rather than <code>||</code> when <code>0</code> or an empty string is a valid value, and optional chaining to stop at <code>null</code> or <code>undefined</code> — and remember <code>&amp;&amp;</code> and <code>||</code> return one of their operands, not a boolean."
+  </p>
 </div>`,
 };

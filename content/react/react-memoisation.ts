@@ -224,7 +224,9 @@ export default [reactHooks.configs.flat.recommended];</code></pre>
     a default. <code>memo</code> only helps if every prop is referentially
     stable, which is why an inline arrow silently defeats it — and moving state
     down or passing children solves the same problem without a cache to keep in
-    sync."
+    sync. With the React Compiler enabled, it applies that memoisation
+    automatically, so manual <code>memo</code> and <code>useMemo</code> are
+    kept for the cases it cannot see."
   </p>
 </div>`,
 };

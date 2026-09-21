@@ -305,6 +305,14 @@ export const topics: TopicsData = {
           ],
         },
         {
+          title: "Modern JavaScript, ES2023 to ES2026",
+          chapter: "modern-js",
+          items: [
+            "Iterator helpers, Promise.try, RegExp.escape, Error.isError, Set methods, Temporal",
+            "Spec year versus Baseline support, feature detection, polyfills versus transpiling",
+          ],
+        },
+        {
           title: "Error handling & debugging",
           chapter: "error-handling-debugging",
           items: [

@@ -603,5 +603,12 @@ onmessage = (e) =&gt; postMessage(crunch(e.data));</code></pre>
   </li>
   <li>Real parallelism for real work means a Worker.</li>
 </ul>
-`,
+
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "One thread means one call stack, so a long synchronous task blocks everything, rendering included; asynchronous APIs hand the waiting to the host and the event loop feeds their callbacks back once the stack is empty, and CPU-heavy work belongs in a Web Worker."
+  </p>
+</div>`,
 };

@@ -277,5 +277,12 @@ function nested(x) {
   currying, composition and recursion in
   <a href="/notes/scope-functions">Scope &amp; functions, properly</a>. Nothing
   here is superseded there; it is the same subject, one layer down.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Functions are first-class values you can store and pass, declarations are hoisted whole while expressions and arrows are not, arrows have no <code>this</code> or <code>arguments</code> of their own, and default and rest parameters replace most uses of the old <code>arguments</code> object."
+  </p>
+</div>`,
 };

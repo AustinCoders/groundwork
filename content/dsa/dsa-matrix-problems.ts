@@ -6,7 +6,16 @@ export const dsaMatrixProblems: Chapter = {
   title: "Matrix problems",
   short: "Matrix problems",
   levels: ["intermediate"],
-  practice: ["ex-spiral-matrix", "ex-rotate-image", "ex-set-matrix-zeroes", "ex-search-2d-matrix-ii"],
+  practice: [
+    "ex-spiral-matrix",
+    "ex-rotate-image",
+    "ex-set-matrix-zeroes",
+    "ex-search-2d-matrix-ii",
+    "ex-game-of-life",
+    "ex-valid-sudoku",
+    "ex-diagonal-traverse",
+    "ex-spiral-matrix-ii",
+  ],
   ready: true,
   subtitle: "A grid is an array of arrays — every trick here is index bookkeeping, done carefully.",
   body: `<h3>Traversal direction — the pattern behind spiral order</h3>

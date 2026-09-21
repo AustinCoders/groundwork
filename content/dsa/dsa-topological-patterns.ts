@@ -6,7 +6,14 @@ export const dsaTopologicalPatterns: Chapter = {
   title: "Topological patterns",
   short: "Topological patterns",
   levels: ["advanced"],
-  practice: ["ex-course-schedule", "ex-course-schedule-ii", "ex-alien-dictionary"],
+  practice: [
+    "ex-course-schedule",
+    "ex-course-schedule-ii",
+    "ex-alien-dictionary",
+    "ex-parallel-courses",
+    "ex-min-height-trees",
+    "ex-sequence-reconstruction",
+  ],
   ready: true,
   subtitle: 'Any problem phrased as "X must come before Y" is a DAG asking to be linearized.',
   body: `<h3>The shape: dependencies want to be a line</h3>

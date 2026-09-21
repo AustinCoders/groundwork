@@ -12,25 +12,38 @@
 # VS Code's "Add word to dictionary" quick fix appends here.
 # Words the notes coin or use as adjectives
 # Words this project uses that a dictionary does not know.
+aaaaaaab
 aaaaab
+AAAAACCCCC
+AAAAACCCCCAAAAACCCCCCAAAAAGGGTTT
 aaab
 aaabbb
 aaabbc
 aaabc
 aaabcbc
 aaaccc
+aabaaab
+aabaabaaa
 AABABBA
 aabb
 aabbc
+aabcc
 aacc
+aadbbbaccc
+aadbbcbcac
 Aadhaar
+abaababaab
 ABAABBB
 ababab
+abababcabababab
 ababaca
 ababcbacadefegdehijhklij
 Abadi's
+abcabcab
+abcabcabc
 abcabcbb
 abcabccdcdcdef
+abcabcd
 ABCB
 ABCBDAB
 abcccdabcccd
@@ -38,13 +51,21 @@ ABCCED
 ABCDEFFFFFG
 ABCESEEEFS
 ABCESEEEFSZ
+abcxxabc
 ABDE
+ACACACACAC
+ACACACACACACACACAC
 acbbaca
+acbd
 accaccacc
 ACEBD
+ACGT
+ACGTACGTAC
+ACGTACGTACGTTGCATGCAAA
 acked
 acking
 acks
+adbc
 ADOBECODEBANC
 Akshat
 alertable
@@ -68,7 +89,9 @@ autoboxes
 autorun
 autoscales
 axe
+baaaaaaa
 babad
+babgbag
 baca
 badc
 bbaa
@@ -81,6 +104,7 @@ boxr
 bsbininm
 buildx
 Bulkheading
+CACACACACA
 caedbdedda
 catsandog
 Caveat
@@ -89,6 +113,7 @@ cbaxxx
 cbbd
 ccac
 cccaaa
+CCCCCAAAAA
 Chargebee
 cheatsheet
 chipbtn
@@ -111,6 +136,7 @@ Cutshort
 datacentre
 dataloaders
 dbaeumer
+dbbca
 dcda
 Debezium
 dedup
@@ -219,6 +245,7 @@ LVIII
 macrotask
 macrotasks
 Maglev
+makesquare
 Manacher
 Manacher's
 maxage
@@ -296,6 +323,7 @@ QPS
 qtop
 quickselect
 quicksorts
+rabbbit
 rarr
 Ravi
 reconvergence
@@ -326,6 +354,7 @@ Roorkee
 sadbutsad
 schemafirst
 segmentable
+seqs
 serialiser
 serializability
 Serwist

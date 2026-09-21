@@ -6,7 +6,7 @@ export const prototypesOop: Chapter = {
   title: "Prototypes & OOP",
   short: "Prototypes & OOP",
   levels: ["intermediate"],
-  practice: ["ex-class-extends", "ex-brand-check"],
+  practice: ["ex-class-extends", "ex-brand-check", "ex-my-new", "ex-my-instanceof"],
   ready: true,
   subtitle: "class is real syntax now — but it's still prototypes underneath, every time.",
   body: `<h3>The prototype chain</h3>
@@ -451,5 +451,12 @@ console.log(p.serialize());   <span class="c">// what happens?</span></code></pr
   <code>SerializablePoint</code> gets both its own fields and the
   mixed-in method, and the same <code>Serializable</code> mixin could
   wrap any other base class exactly the same way.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Every object delegates missing properties to its prototype, forming a chain the lookup walks; <code>new</code> creates an object linked to the constructor's prototype, runs the constructor with <code>this</code> bound to it and returns it, and <code>class</code> is syntax over exactly that, plus genuinely private fields."
+  </p>
+</div>`,
 };

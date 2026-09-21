@@ -6,7 +6,13 @@ export const dsaStringAlgorithms: Chapter = {
   title: "String algorithms",
   short: "String algorithms",
   levels: ["advanced"],
-  practice: ["ex-implement-strstr"],
+  practice: [
+    "ex-implement-strstr",
+    "ex-prefix-function",
+    "ex-repeated-substring",
+    "ex-longest-happy-prefix",
+    "ex-repeated-dna",
+  ],
   ready: true,
   subtitle: "Preprocess the pattern once, and you never have to look backward in the text again.",
   body: `<h3>The insight: a mismatch still tells you something</h3>

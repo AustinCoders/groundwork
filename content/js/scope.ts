@@ -714,5 +714,12 @@ read();                       <span class="c">// "kept" — ...and secret is sti
   walk the same chain, and if they find nothing, sloppy mode makes a
   global and strict mode throws."
 </div>
-`,
+
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "JavaScript scope is lexical, decided by where you write the code rather than where you call it, and a name lookup walks outward through the enclosing scopes until it finds a match — which is why an inner variable shadows an outer one, and why assigning to an undeclared name in sloppy mode quietly creates a global."
+  </p>
+</div>`,
 };

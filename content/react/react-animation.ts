@@ -269,5 +269,12 @@ const reduced = useSyncExternalStore(
     small delayed-unmount hook, and reach for a motion library only when the
     animation has to be interruptible."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "CSS covers most animation if you stick to <code>transform</code> and <code>opacity</code>; the hard part in React is animating out, because the node is removed the moment state flips, so keep it mounted until the transition ends — by hand or with a library — and honour <code>prefers-reduced-motion</code>."
+  </p>
 </div>`,
 };

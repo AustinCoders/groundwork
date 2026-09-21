@@ -6,7 +6,13 @@ export const dsaUnionFind: Chapter = {
   title: "Union-Find (Disjoint Set)",
   short: "Union-Find",
   levels: ["advanced"],
-  practice: ["ex-number-of-connected-components", "ex-redundant-connection"],
+  practice: [
+    "ex-number-of-connected-components",
+    "ex-redundant-connection",
+    "ex-find-circle-num",
+    "ex-accounts-merge",
+    "ex-equations-possible",
+  ],
   ready: true,
   subtitle: 'Twenty lines that answer "are these two connected?" in effectively constant time — forever.',
   body: `<h3>The one question it answers, and why BFS isn't good enough</h3>

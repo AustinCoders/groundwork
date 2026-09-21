@@ -17,6 +17,8 @@ export interface HomeViewProps {
   interviewStats: { rounds: number; questions: number };
 }
 
+const NUMBER_WORDS = ["None", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+
 function raw(html: string) {
   return { __html: html };
 }
@@ -190,6 +192,8 @@ export function HomeView({ topicsList, stats: site, perTopic, interviewStats }: 
     () => topicsList.filter((t) => onShelf(t.id) && (perTopic[t.id]?.written ?? 0) > 0),
     [topicsList, perTopic]
   );
+  const readyLabel =
+    readyTopics.length < NUMBER_WORDS.length ? NUMBER_WORDS[readyTopics.length] : String(readyTopics.length);
   const soonTopics = useMemo(
     () => topicsList.filter((t) => onShelf(t.id) && (perTopic[t.id]?.written ?? 0) === 0),
     [topicsList, perTopic]
@@ -251,7 +255,9 @@ export function HomeView({ topicsList, stats: site, perTopic, interviewStats }: 
           <span className="howto-strip__num">1</span>
           <div>
             <h3>Pick a topic</h3>
-            <p>One is finished — the rest show what&apos;s planned.</p>
+            <p>
+              {readyLabel} {readyTopics.length === 1 ? "is" : "are"} ready — the rest show what&apos;s planned.
+            </p>
           </div>
         </li>
         <li>

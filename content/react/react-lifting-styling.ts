@@ -199,5 +199,12 @@ import styles from "./Card.module.css";
   intermediate tier &mdash; refs, context, memoisation, and the fetching
   patterns that do not race themselves &mdash; and it starts with
   <a href="/react/react-useref">useRef</a>.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "When two components need the same state, lift it to their closest common parent and pass it down with callbacks to change it, keeping a single source of truth; style with plain CSS, modules or utility classes, and reserve inline style objects for values that genuinely change at runtime."
+  </p>
+</div>`,
 };

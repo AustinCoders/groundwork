@@ -535,5 +535,12 @@ boxes.forEach((b, i) =&gt; { b.style.height = heights[i] + 10 + "px"; });</code>
     Batch DOM reads and writes instead of alternating them.
   </li>
 </ul>
-`,
+
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "The parser stops for a synchronous script, so <code>defer</code>, <code>async</code> or a module keeps it from blocking; after that the event loop has roughly 16 ms a frame for JavaScript, style, layout and paint, and long tasks on the main thread are what make a page feel slow."
+  </p>
+</div>`,
 };

@@ -6,7 +6,15 @@ export const dsaSortingAlgorithms: Chapter = {
   title: "Sorting algorithms",
   short: "Sorting algorithms",
   levels: ["beginner"],
-  practice: ["ex-merge-sort", "ex-quickselect-kth-largest", "ex-sort-an-array", "ex-largest-number"],
+  practice: [
+    "ex-merge-sort",
+    "ex-quickselect-kth-largest",
+    "ex-sort-an-array",
+    "ex-largest-number",
+    "ex-count-inversions",
+    "ex-maximum-gap",
+    "ex-sort-by-frequency",
+  ],
   ready: true,
   subtitle: "You'll rarely hand-write one, but you'll constantly need to reason about them.",
   body: `<h3>The cheat sheet interviewers expect you to know cold</h3>

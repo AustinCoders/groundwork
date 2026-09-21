@@ -6,7 +6,17 @@ export const asyncProperly: Chapter = {
   title: "Async, properly",
   short: "Async, properly",
   levels: ["intermediate"],
-  practice: ["ex-order-predict", "ex-parallel-load", "ex-retry", "ex-sequential-save"],
+  practice: [
+    "ex-order-predict",
+    "ex-parallel-load",
+    "ex-retry",
+    "ex-sequential-save",
+    "ex-promise-all",
+    "ex-promise-all-settled",
+    "ex-promise-any",
+    "ex-promise-race",
+    "ex-map-limit",
+  ],
   ready: true,
   subtitle: "Promises, done right — and the sequential-vs-parallel mistake almost everyone makes once.",
   body: `<p>
@@ -128,6 +138,76 @@ console.log(winner);   <span class="c">// what happens?</span></code></pre>
   which would have surfaced that first rejection immediately.
 </p>
 
+<h3>Promise.all does not cancel the others</h3>
+<pre><code>const [report, user] = await Promise.all([
+  fetch("/slow-report"),                 <span class="c">// keeps running after the line below rejects</span>
+  Promise.reject(new Error("nope")),
+]);</code></pre>
+<p>
+  <code>Promise.all</code> rejects the moment any input rejects, but it cannot
+  stop the rest. Their requests carry on, their side effects still happen, and
+  their results are quietly discarded. Nothing in the language can cancel a
+  promise; cancellation is something you build with a signal. Give every task the
+  same <code>AbortSignal</code> and abort on failure:
+</p>
+<pre><code>const controller = new AbortController();
+try {
+  return await Promise.all(urls.map((u) =&gt; fetch(u, { signal: controller.signal })));
+} catch (err) {
+  controller.abort();                    <span class="c">// stop the siblings, don't just ignore them</span>
+  throw err;
+}</code></pre>
+<p class="sub">
+  <code>Promise.all</code> does attach a handler to every input, so a rejection
+  that arrives <em>after</em> the first one is not reported as unhandled. That
+  keeps the console quiet, and it is also why a failure can vanish without a
+  trace.
+</p>
+
+<h3>Unhandled rejections</h3>
+<pre><code>async function save() { throw new Error("disk full"); }
+
+save();                                  <span class="c">// no await, no .catch — nobody handles it</span></code></pre>
+<p>
+  A promise that rejects with no handler attached becomes an
+  <b>unhandled rejection</b>, and the platform decides what that means. In a
+  browser it fires an <code>unhandledrejection</code> event on
+  <code>window</code> and logs an error; the page keeps running. In Node.js
+  since version 15 the default is to treat it as an uncaught exception, which
+  <b>crashes the process</b>. The usual source is a fire-and-forget async call.
+</p>
+<pre><code>window.addEventListener("unhandledrejection", (e) =&gt; {
+  report(e.reason);                      <span class="c">// last-resort logging, not error handling</span>
+});
+
+process.on("unhandledRejection", (reason) =&gt; {   <span class="c">// Node</span>
+  report(reason);
+});
+
+save().catch(report);                    <span class="c">// the real fix: every promise ends in a handler</span></code></pre>
+
+<h3>Predict the order</h3>
+<pre><code>console.log("1");
+setTimeout(() =&gt; console.log("2"), 0);
+Promise.resolve().then(() =&gt; console.log("3"));
+(async () =&gt; {
+  console.log("4");
+  await null;
+  console.log("5");
+})();
+queueMicrotask(() =&gt; console.log("6"));
+console.log("7");</code></pre>
+<p>
+  The output is <b>1, 4, 7, 3, 5, 6, 2</b>. Step by step: the synchronous code
+  runs first and prints 1; <code>setTimeout</code> only schedules a task; the
+  <code>.then</code> callback is queued as a microtask; the async function runs
+  synchronously up to its first <code>await</code>, printing 4, and its
+  continuation is queued as a second microtask; <code>queueMicrotask</code>
+  queues a third; then 7 prints and the call stack empties. Now the microtask
+  queue drains in order &mdash; 3, 5, 6 &mdash; and only after it is empty does the
+  event loop take the timer's task and print 2.
+</p>
+
 <h3>AbortController — cancelling something already in flight</h3>
 <p>
   Promises can't be cancelled directly once started — there's no
@@ -211,7 +291,7 @@ const { promise, resolve, reject } = Promise.withResolvers();</code></pre>
 <p class="sub">
   A "deferred" — a promise whose <code>resolve</code>/<code>reject</code>
   are usable from <em>outside</em> its own executor — used to require
-  the slightly awkward pattern on the left, capturing the callbacks into
+  the slightly awkward pattern shown above, capturing the callbacks into
   outer variables. <code>Promise.withResolvers()</code> is exactly that
   pattern, standardized. It's useful anywhere a promise needs to be
   settled by something other than its own executor — bridging an
@@ -298,9 +378,13 @@ console.log(await retry(flaky, 5, 10));   <span class="c">// what happens?</span
   body: JSON.stringify({ name: "Ana" }),
 });
 
-response.ok;              <span class="c">// true for 200-299 — <a href="/notes/basic-async">already covered</a>, still the #1 fetch mistake to forget</span>
+response.ok;              <span class="c">// true for 200-299 — still the #1 fetch mistake to forget</span>
 response.status;          <span class="c">// 201, 404, 500, …</span>
 response.headers.get("content-type");   <span class="c">// header access is case-insensitive</span></code></pre>
+<p class="sub">
+  The <code>response.ok</code> check is <a href="/notes/basic-async">already
+  covered</a>; forgetting it is still the most common fetch mistake.
+</p>
 <p>
   <b>CORS</b>, briefly: a browser blocks a script on
   <code>a.com</code> from reading a response from <code>b.com</code>
@@ -354,5 +438,12 @@ POST /users               <span class="c">// sent only now</span></code></pre>
   browser with a CORS message in the console, the fix is server-side
   (adding the right header) — there is no client-side JavaScript
   workaround for a server that hasn't opted in.
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Interview answer, one sentence</span>
+  <p>
+    "Independent awaits should run in parallel with <code>Promise.all</code>, but <code>Promise.all</code> cannot cancel its siblings — real cancellation needs an <code>AbortSignal</code> — and every promise must end in a handler, because an unhandled rejection crashes Node and is only logged in a browser."
+  </p>
 </div>`,
 };
