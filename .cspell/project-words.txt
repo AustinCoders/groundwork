@@ -70,6 +70,7 @@ ADOBECODEBANC
 Akshat
 alertable
 Alnum
+alsogarbage
 Aman
 ampm
 apos
@@ -114,6 +115,7 @@ cbbd
 ccac
 cccaaa
 CCCCCAAAAA
+CDXLIV
 Chargebee
 cheatsheet
 chipbtn
@@ -137,6 +139,7 @@ datacentre
 dataloaders
 dbaeumer
 dbbca
+DCCC
 dcda
 Debezium
 dedup
@@ -210,6 +213,7 @@ inspectable
 Insta
 IOCP
 issip
+IVXLCDM
 jank
 janks
 Janky
@@ -250,6 +254,7 @@ Manacher
 Manacher's
 maxage
 MCMXCIV
+MDCLXVI
 megamorphic
 Meilisearch
 memoises
@@ -262,6 +267,7 @@ Mindbell
 Mindtree
 mispredict
 MMMCMXCIX
+MMMDCCCLXXXVIII
 MMMDCCXLIX
 Mphasis
 multiarch
@@ -382,6 +388,7 @@ subproblems
 Supabase
 superlinear
 Swiggy
+syms
 sysdes
 Tbps
 thumbnailer

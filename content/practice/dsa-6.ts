@@ -1041,6 +1041,12 @@ export const dsa6: Exercise[] = [
         name: "single element and empty array",
         body: "const one = ['x'];\nreverseString(one);\nassert.deepEqual(one, ['x']);\nconst none = [];\nreverseString(none);\nassert.deepEqual(none, []);",
       },
+      { name: "an odd length keeps the middle in place", body: "const arr = [\"a\", \"b\", \"c\", \"d\", \"e\"];\nreverseString(arr);\nassert.deepEqual(arr, [\"e\", \"d\", \"c\", \"b\", \"a\"]);" },
+      { name: "a palindrome is unchanged", body: "const arr = [\"r\", \"a\", \"c\", \"e\", \"c\", \"a\", \"r\"];\nreverseString(arr);\nassert.deepEqual(arr, [\"r\", \"a\", \"c\", \"e\", \"c\", \"a\", \"r\"]);" },
+      { name: "two elements swap", body: "const arr = [\"x\", \"y\"];\nreverseString(arr);\nassert.deepEqual(arr, [\"y\", \"x\"]);" },
+      { name: "the same array object is kept", body: "const arr = [\"1\", \"2\", \"3\"];\nconst same = arr;\nreverseString(arr);\nassert.equal(same, arr);\nassert.equal(same[0], \"3\");" },
+      { name: "repeated characters", body: "const arr = [\"a\", \"a\", \"b\", \"b\"];\nreverseString(arr);\nassert.deepEqual(arr, [\"b\", \"b\", \"a\", \"a\"]);" },
+      { name: "a hundred thousand characters", body: "const arr = Array.from({ length: 100000 }, (_, i) => String(i % 10));\nconst first = arr[0], last = arr[99999];\nreverseString(arr);\nassert.equal(arr[0], last);\nassert.equal(arr[99999], first);\nassert.equal(arr.length, 100000);" },
     ],
   },
 {

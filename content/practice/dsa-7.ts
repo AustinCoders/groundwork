@@ -148,6 +148,11 @@ export const dsa7: Exercise[] = [
         name: "upper bound",
         body: "assert.equal(intToRoman(3999), 'MMMCMXCIX');\nassert.equal(intToRoman(1000), 'M');",
       },
+      { name: "the first twenty numbers", body: "const expected = [\"I\",\"II\",\"III\",\"IV\",\"V\",\"VI\",\"VII\",\"VIII\",\"IX\",\"X\",\"XI\",\"XII\",\"XIII\",\"XIV\",\"XV\",\"XVI\",\"XVII\",\"XVIII\",\"XIX\",\"XX\"];\nfor (let n = 1; n <= 20; n++) assert.equal(intToRoman(n), expected[n - 1], String(n));" },
+      { name: "round hundreds and thousands", body: "assert.equal(intToRoman(500), \"D\");\nassert.equal(intToRoman(1500), \"MD\");\nassert.equal(intToRoman(2000), \"MM\");\nassert.equal(intToRoman(3888), \"MMMDCCCLXXXVIII\");" },
+      { name: "no symbol repeats four times in a row for any number", body: "for (let n = 1; n <= 3999; n++) assert.ok(!/(.)\\1{3}/.test(intToRoman(n).replace(/^M+/, \"\")), String(n));" },
+      { name: "every result is only valid symbols", body: "for (let n = 1; n <= 3999; n += 13) assert.ok(/^[IVXLCDM]+$/.test(intToRoman(n)), String(n));" },
+      { name: "the numeral converts back to the same number", body: "const val = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 };\nconst back = (s) => { let t = 0; for (let i = 0; i < s.length; i++) { const a = val[s[i]], b = val[s[i + 1]] || 0; t += b > a ? -a : a; } return t; };\nfor (let n = 1; n <= 3999; n++) assert.equal(back(intToRoman(n)), n, String(n));" },
     ],
   },
 {
@@ -182,6 +187,11 @@ export const dsa7: Exercise[] = [
         name: "single symbol",
         body: "assert.equal(romanToInt('I'), 1);\nassert.equal(romanToInt('D'), 500);",
       },
+      { name: "the first twenty numerals", body: "const list = [\"I\",\"II\",\"III\",\"IV\",\"V\",\"VI\",\"VII\",\"VIII\",\"IX\",\"X\",\"XI\",\"XII\",\"XIII\",\"XIV\",\"XV\",\"XVI\",\"XVII\",\"XVIII\",\"XIX\",\"XX\"];\nlist.forEach((s, i) => assert.equal(romanToInt(s), i + 1, s));" },
+      { name: "a numeral with every symbol", body: "assert.equal(romanToInt(\"MDCLXVI\"), 1666);\nassert.equal(romanToInt(\"MMMDCCCLXXXVIII\"), 3888);" },
+      { name: "round hundreds", body: "assert.equal(romanToInt(\"CD\"), 400);\nassert.equal(romanToInt(\"CDXLIV\"), 444);\nassert.equal(romanToInt(\"DCCC\"), 800);" },
+      { name: "agrees with a reference converter for every number", body: "const vals = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];\nconst syms = [\"M\",\"CM\",\"D\",\"CD\",\"C\",\"XC\",\"L\",\"XL\",\"X\",\"IX\",\"V\",\"IV\",\"I\"];\nconst to = (n) => { let out = \"\"; vals.forEach((v, i) => { while (n >= v) { out += syms[i]; n -= v; } }); return out; };\nfor (let n = 1; n <= 3999; n++) assert.equal(romanToInt(to(n)), n, String(n));" },
+      { name: "the answer is a number", body: "assert.type(romanToInt(\"XIV\"), \"number\");" },
     ],
   },
 {
