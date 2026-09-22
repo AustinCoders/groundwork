@@ -6,7 +6,7 @@ export const reactComponents: Chapter = {
   title: "Components & composition",
   short: "Components",
   levels: ["beginner"],
-  practice: [],
+  practice: ["ex-comp-card-composition", "ex-comp-prop-spreading", "ex-comp-view-switch"],
   ready: true,
   subtitle: "A component is a function that takes data and returns a description of a screen.",
   body: `<h3>The whole idea</h3>

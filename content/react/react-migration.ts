@@ -6,7 +6,7 @@ export const reactMigration: Chapter = {
   title: "Migrating and upgrading",
   short: "Migrating & upgrading",
   levels: ["advanced"],
-  practice: [],
+  practice: ["ex-comp-class-timer-cleanup"],
   ready: true,
   subtitle: "Nobody rewrites a working application. The skill is moving it while it keeps shipping.",
   body: `<h3>The question you will actually be asked</h3>

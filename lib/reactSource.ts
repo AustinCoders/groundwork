@@ -3,12 +3,16 @@ import type { ExerciseTest } from "@/content/types";
 // Composes the source the sandbox runs: the learner's code, then each test in
 // its own try/catch, the same shape lib/runner.ts uses for plain functions.
 export function composeReactSource(code: string, tests: ExerciseTest[], options: { mountApp?: boolean } = {}): string {
+  const warmUp =
+    "render(React.createElement('button', { onMouseEnter: function () {}, onMouseLeave: function () {}, onMouseOver: function () {}, onMouseOut: function () {}, onMouseMove: function () {} }, 'x'));\n" +
+    "    cleanup();\n";
   const testSource = tests
     .map(
       (test, index) =>
         "__results.push(await (async function () {\n" +
         "  __resetLoopGuard();\n" +
         "  try {\n" +
+        warmUp +
         test.body +
         "\n    cleanup();\n    return { index: " +
         index +

@@ -6,7 +6,7 @@ export const reactDesignSystems: Chapter = {
   title: "Design systems",
   short: "Design systems",
   levels: ["advanced"],
-  practice: [],
+  practice: ["ex-comp-polymorphic-as-prop"],
   ready: true,
   subtitle: "Constraints that make the common thing easy and the inconsistent thing hard.",
   body: `<h3>Tokens are the foundation</h3>

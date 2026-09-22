@@ -6,7 +6,13 @@ export const reactDataFetching: Chapter = {
   title: "Data fetching patterns",
   short: "Data fetching",
   levels: ["intermediate"],
-  practice: ["ex-react-request-guard", "ex-comp-fetch-race", "ex-comp-use-fetch", "ex-comp-paginated-list"],
+  practice: [
+    "ex-react-request-guard",
+    "ex-comp-fetch-race",
+    "ex-comp-use-fetch",
+    "ex-comp-paginated-list",
+    "ex-comp-fetch-retry",
+  ],
   ready: true,
   subtitle: "Every bug in hand-rolled fetching is one of five, and they are all solved problems.",
   body: `<h3>The naive version, and what is wrong with it</h3>

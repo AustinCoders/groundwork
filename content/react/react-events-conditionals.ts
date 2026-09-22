@@ -12,6 +12,7 @@ export const reactEventsConditionals: Chapter = {
     "ex-comp-zero-bug",
     "ex-comp-disclosure",
     "ex-comp-star-rating",
+    "ex-comp-escape-closes-modal",
   ],
   ready: true,
   subtitle: "Pass the function, do not call it — and know why && puts a zero on your page.",

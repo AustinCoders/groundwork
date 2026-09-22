@@ -6,7 +6,7 @@ export const reactI18n: Chapter = {
   title: "Internationalisation",
   short: "i18n",
   levels: ["intermediate"],
-  practice: ["ex-react-pick-plural"],
+  practice: ["ex-react-pick-plural", "ex-comp-locale-provider"],
   ready: true,
   subtitle: "Translating strings is the easy third. Plurals, formats and layout direction are the rest.",
   body: `<h3>What the word covers</h3>

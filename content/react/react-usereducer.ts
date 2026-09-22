@@ -6,7 +6,7 @@ export const reactUsereducer: Chapter = {
   title: "useReducer",
   short: "useReducer",
   levels: ["intermediate"],
-  practice: ["ex-react-todos-reducer", "ex-react-counter-reducer", "ex-comp-cart-reducer"],
+  practice: ["ex-react-todos-reducer", "ex-react-counter-reducer", "ex-comp-cart-reducer", "ex-comp-undo-redo-reducer"],
   ready: true,
   subtitle: "When the next state depends on the current state and on which thing happened.",
   body: `<h3>The shape</h3>

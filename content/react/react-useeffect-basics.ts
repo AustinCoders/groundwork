@@ -11,6 +11,7 @@ export const reactUseeffectBasics: Chapter = {
     "ex-react-which-deps-changed",
     "ex-comp-window-listener",
     "ex-comp-document-title",
+    "ex-comp-document-title-effect",
   ],
   ready: true,
   subtitle: "For synchronising with something outside React — and most of the time you do not need it.",

@@ -6,7 +6,7 @@ export const reactMemoisation: Chapter = {
   title: "Memoisation",
   short: "Memoisation",
   levels: ["intermediate"],
-  practice: ["ex-react-shallow-equal", "ex-react-memoize", "ex-comp-memo-row"],
+  practice: ["ex-react-shallow-equal", "ex-react-memoize", "ex-comp-memo-row", "ex-comp-memo-inline-object"],
   ready: true,
   subtitle: "memo, useMemo and useCallback are a cache — and a cache you did not measure is a cost.",
   body: `<h3>What actually happens on a re-render</h3>

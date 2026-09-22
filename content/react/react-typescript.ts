@@ -6,7 +6,7 @@ export const reactTypescript: Chapter = {
   title: "TypeScript with React",
   short: "TypeScript",
   levels: ["intermediate"],
-  practice: ["ex-react-describe-state"],
+  practice: ["ex-react-describe-state", "ex-comp-status-union-props"],
   ready: true,
   subtitle: "Props are a function's parameters, so typing a component is typing a function.",
   body: `<h3>Start here</h3>

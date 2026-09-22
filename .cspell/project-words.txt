@@ -270,6 +270,7 @@ MMMCMXCIX
 MMMDCCCLXXXVIII
 MMMDCCXLIX
 Mphasis
+mql
 multiarch
 multicluster
 multiregion
@@ -284,6 +285,7 @@ navlink
 Neerja
 networkidle
 Neucha
+nmql
 Noida
 nosniff
 NUMA
@@ -341,6 +343,7 @@ refetches
 reflog
 reindexing
 renderable
+renderitem
 replayable
 requestfailed
 rerank
@@ -422,9 +425,11 @@ unrecoverably
 unreplicated
 unservable
 unstarted
+unsub
 unsubmitted
 urql
 useeffect
+usememo
 usereducer
 useref
 usestate

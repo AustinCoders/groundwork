@@ -6,7 +6,12 @@ export const reactEffectsDepth: Chapter = {
   title: "Effects in depth",
   short: "Effects in depth",
   levels: ["intermediate"],
-  practice: ["ex-react-effect-runner", "ex-comp-effect-loop", "ex-comp-stale-interval"],
+  practice: [
+    "ex-react-effect-runner",
+    "ex-comp-effect-loop",
+    "ex-comp-stale-interval",
+    "ex-comp-resubscribe-on-change",
+  ],
   ready: true,
   subtitle: "Stale closures, the dependency array as a contract, and the effects that should not exist.",
   body: `<h3>The stale closure</h3>

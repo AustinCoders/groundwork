@@ -6,7 +6,7 @@ export const reactUseHook: Chapter = {
   title: "The use() hook",
   short: "use()",
   levels: ["advanced"],
-  practice: ["ex-comp-use-cache-promise"],
+  practice: ["ex-comp-use-cache-promise", "ex-comp-use-conditional-context"],
   ready: true,
   subtitle: "Reading a promise or a context during render — and the only hook that breaks the rules.",
   body: `<h3>Reading a promise</h3>

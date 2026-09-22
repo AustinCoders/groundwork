@@ -6,7 +6,7 @@ export const reactAuth: Chapter = {
   title: "Auth in React",
   short: "Auth",
   levels: ["intermediate"],
-  practice: ["ex-react-token-expired"],
+  practice: ["ex-react-token-expired", "ex-comp-auth-gate"],
   ready: true,
   subtitle: "Protected routes, token refresh, and the redirect that sends people back where they were.",
   body: `<h3>Where the token should live</h3>

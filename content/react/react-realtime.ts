@@ -6,7 +6,7 @@ export const reactRealtime: Chapter = {
   title: "Real-time UI",
   short: "Real-time UI",
   levels: ["intermediate"],
-  practice: ["ex-react-parse-sse"],
+  practice: ["ex-react-parse-sse", "ex-comp-realtime-feed"],
   ready: true,
   subtitle:
     "Polling, Server-Sent Events or a WebSocket: choose the smallest thing that works, then handle the connection dropping.",

@@ -6,7 +6,7 @@ export const reactConcurrent: Chapter = {
   title: "Concurrent features",
   short: "Concurrent",
   levels: ["advanced"],
-  practice: [],
+  practice: ["ex-comp-transition-pending-search", "ex-comp-deferred-value-list"],
   ready: true,
   subtitle: "Telling React which updates can wait — so the urgent one never queues behind them.",
   body: `<h3>The problem</h3>

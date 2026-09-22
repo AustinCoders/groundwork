@@ -6,7 +6,7 @@ export const reactSyncExternalStore: Chapter = {
   title: "useSyncExternalStore",
   short: "External stores",
   levels: ["advanced"],
-  practice: [],
+  practice: ["ex-comp-media-query-hook"],
   ready: true,
   subtitle: "The correct way to read state that lives outside React.",
   body: `<h3>The problem it exists for</h3>

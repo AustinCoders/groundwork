@@ -6,7 +6,7 @@ export const reactFeatureFlags: Chapter = {
   title: "Feature flags",
   short: "Feature flags",
   levels: ["advanced"],
-  practice: ["ex-react-rollout-bucket"],
+  practice: ["ex-react-rollout-bucket", "ex-comp-feature-flag-gate"],
   ready: true,
   subtitle: "Deploying code and releasing it are different decisions, and a flag is what separates them.",
   body: `<h3>What a flag is for</h3>

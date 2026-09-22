@@ -6,7 +6,7 @@ export const reactLiftingStyling: Chapter = {
   title: "Lifting state up & basic styling",
   short: "Lifting state & styling",
   levels: ["beginner"],
-  practice: ["ex-comp-synced-inputs"],
+  practice: ["ex-comp-synced-inputs", "ex-comp-master-detail"],
   ready: true,
   subtitle: "When two components need the same value, it belongs to the one above both of them.",
   body: `<h3>The problem</h3>

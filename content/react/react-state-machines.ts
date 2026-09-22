@@ -6,7 +6,7 @@ export const reactStateMachines: Chapter = {
   title: "State machines and XState",
   short: "State machines",
   levels: ["advanced"],
-  practice: ["ex-react-machine-transition"],
+  practice: ["ex-react-machine-transition", "ex-comp-traffic-light-machine"],
   ready: true,
   subtitle:
     "When a screen has modes, list the modes and the events each one accepts, instead of guessing from booleans.",

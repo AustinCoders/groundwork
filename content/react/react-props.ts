@@ -6,7 +6,7 @@ export const reactProps: Chapter = {
   title: "Props",
   short: "Props",
   levels: ["beginner"],
-  practice: ["ex-comp-props-badge"],
+  practice: ["ex-comp-props-badge", "ex-comp-default-parameter-props", "ex-comp-object-prop-shape"],
   ready: true,
   subtitle: "Data flows down. A component can read its props and must never write to them.",
   body: `<h3>Props are the function's arguments</h3>

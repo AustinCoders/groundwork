@@ -6,7 +6,7 @@ export const reactSetupJsx: Chapter = {
   title: "Project setup & JSX",
   short: "Setup & JSX",
   levels: ["beginner"],
-  practice: [],
+  practice: ["ex-comp-jsx-expression-bug", "ex-comp-fragment-list"],
   ready: true,
   subtitle: "JSX is not HTML and it is not a template language — it is a function call wearing a costume.",
   body: `<h3>Starting a project</h3>

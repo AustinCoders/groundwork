@@ -6,7 +6,7 @@ export const reactStateLibraries: Chapter = {
   title: "State management libraries",
   short: "State libraries",
   levels: ["intermediate"],
-  practice: ["ex-react-create-store"],
+  practice: ["ex-react-create-store", "ex-comp-tiny-external-store"],
   ready: true,
   subtitle: "What a store gives you that context cannot: selectors.",
   body: `<h3>The one thing context cannot do</h3>
