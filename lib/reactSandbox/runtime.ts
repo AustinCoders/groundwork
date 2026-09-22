@@ -122,6 +122,25 @@ const jsonResponse = (data: unknown, status = 200) =>
 
 const delay = <T>(ms: number, value?: T) => new Promise<T>((resolve) => setTimeout(() => resolve(value as T), ms));
 
+// Every loop in the learner's code and each test calls this once per
+// iteration (injected by lib/reactSource.ts). A tight synchronous infinite
+// loop — while (true) {} — would otherwise block this frame's only thread
+// forever; this turns it into a thrown error after a few seconds instead.
+const LOOP_GUARD_LIMIT_MS = 3000;
+const LOOP_GUARD_CHECK_EVERY = 2000;
+let loopGuardCount = 0;
+let loopGuardStart = 0;
+function __resetLoopGuard() {
+  loopGuardCount = 0;
+  loopGuardStart = performance.now();
+}
+function __loopGuard() {
+  loopGuardCount++;
+  if (loopGuardCount % LOOP_GUARD_CHECK_EVERY === 0 && performance.now() - loopGuardStart > LOOP_GUARD_LIMIT_MS) {
+    throw new Error("Stopped: a loop ran for more than 3s without finishing (an infinite loop?).");
+  }
+}
+
 const screen = dom.makeQueries(
   () => container,
   (fn) => dom.waitFor(fn)
@@ -186,12 +205,15 @@ const env: Record<string, unknown> = {
   delay,
   mockFetch,
   jsonResponse,
+  __loopGuard,
+  __resetLoopGuard,
 };
 
 window.addEventListener("message", async (event: MessageEvent) => {
   const data = event.data;
   if (!data || data.type !== "run" || typeof data.source !== "string") return;
   cleanup();
+  __resetLoopGuard();
   const names = Object.keys(env);
   try {
     const fn = new Function(...names, "return (async function () {\n" + data.source + "\n})();") as (
