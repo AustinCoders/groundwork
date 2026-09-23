@@ -126,6 +126,23 @@ function solveNQueens(n) {
   place(0, 0, 0, 0);
   return results;
 }</code></pre>
+<h4>Dry run: solveNQueens(4) — free masks along the path to its first solution</h4>
+<table>
+  <tr><th>Call</th><th>free = full &amp; ~(cols|diag1|diag2)</th><th>col chosen (free &amp; -free)</th><th>placement</th></tr>
+  <tr><td>place(0, cols=0000, diag1=0000, diag2=0000)</td><td>1111</td><td>1</td><td>[1]</td></tr>
+  <tr><td>place(1, cols=0010, diag1=0100, diag2=0001)</td><td>1000</td><td>3</td><td>[1, 3]</td></tr>
+  <tr><td>place(2, cols=1010, diag1=1000, diag2=0100)</td><td>0001</td><td>0</td><td>[1, 3, 0]</td></tr>
+  <tr><td>place(3, cols=1011, diag1=0010, diag2=0010)</td><td>0100</td><td>2</td><td>[1, 3, 0, 2]</td></tr>
+  <tr><td>place(4, cols=1111, diag1=1100, diag2=0011)</td><td>0000</td><td>row === n → push</td><td><b>[1, 3, 0, 2]</b> ✓</td></tr>
+</table>
+<p class="sub">
+  Row three is the tell: <code>free</code> collapses to <code>0001</code>, a
+  single legal column, before any comparison against a stored candidate list
+  — the row-2 queen is a forced move, not a choice among several. Every one
+  of these <code>free</code> values costs one AND, one OR, one NOT, and one
+  shift, regardless of how many columns are actually occupied — that constant
+  cost per node is exactly what three <code>Set</code>s could not offer.
+</p>
 <p class="sub">
   If the question only asks <em>how many</em> solutions exist (N-Queens II),
   delete <code>placement</code> and <code>Math.clz32</code> entirely and return
@@ -543,5 +560,16 @@ function knapsack(items, capacity) {
     and the future depends only on that state, memoize and it becomes bitmask
     DP. Backtracking is the right tool when states are mostly distinct or you
     must enumerate rather than count.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Rewrite N-Queens using three integer bitmasks instead of three sets, and explain why passing masks by value removes the un-choose step from all but the placement array.</li>
+    <li>Explain why <code>free &amp; -free</code> followed by <code>free ^= bit</code> visits only the legal columns, without ever building a list of them.</li>
+    <li>Explain Sudoku's MRV heuristic and why branching on the most-constrained cell first makes failure surface at a shallower depth, not just cheaper per node.</li>
+    <li>Give one example each of a feasibility prune and a bound-based prune from this chapter, and explain what question each one answers.</li>
+    <li>Given a new backtracking problem that times out, decide whether the fix is a bitmask, a Trie, a sort-then-<code>break</code>, or a bound function — and justify the choice from the shape of the state space.</li>
+  </ul>
+</div>`,
 };

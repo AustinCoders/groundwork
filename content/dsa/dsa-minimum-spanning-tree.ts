@@ -279,6 +279,23 @@ function primMST(n, adj) {
 
   return tree.length === n - 1 ? { total, tree } : null;
 }</code></pre>
+<h4>Dry run: primMST(5, adj) on the same A–B–C–D–E graph, starting at A</h4>
+<table>
+  <tr><th>Pop</th><th>w, u, v</th><th>Stale?</th><th>Action</th><th>total</th></tr>
+  <tr><td>1</td><td>1, A, B</td><td>no</td><td>accept B; push B–C(5), B–D(2), B–E(3)</td><td>1</td></tr>
+  <tr><td>2</td><td>2, B, D</td><td>no</td><td>accept D; push D–E(7)</td><td>3</td></tr>
+  <tr><td>3</td><td>3, B, E</td><td>no</td><td>accept E; push E–C(6)</td><td>6</td></tr>
+  <tr><td>4</td><td>4, A, D</td><td><b>yes</b></td><td>skip — D already in tree</td><td>6</td></tr>
+  <tr><td>5</td><td>5, B, C</td><td>no</td><td>accept C — 4 edges reached, stop</td><td>11</td></tr>
+</table>
+<p class="sub">
+  Prim lands on the identical total (11) and even the identical edge set as
+  Kruskal's table above, just discovered in a different order — Kruskal sorts
+  globally first, Prim only ever looks at the cheapest edge leaving its current
+  tree. The stale pop at step 4 (A–D, weight 4) is exactly why the heap can hold
+  more entries than vertices: D found a cheaper route through B before its
+  direct edge from A was ever popped.
+</p>
 <div class="warn">
   <span class="ttl">⚠ The stale-entry check is not optional</span>
   This is the "lazy" heap variant: instead of decreasing a key in place (which
@@ -409,5 +426,16 @@ function minCostConnectPoints(points) {
   <li>Distinguish from plain union-find connectivity: if weights are ignored and the question is just "are these connected / how many components," you need the DSU but not the sort</li>
   <li>Per-node costs alongside per-edge costs → add a virtual node and turn the node cost into an edge cost</li>
   <li>Complete/implicit graph on ≥ ~1000 points → O(V²) Prim; explicit sparse edge list → Kruskal</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>State the cut property from memory and use it to explain why both Kruskal and Prim are provably optimal, not just heuristically reasonable.</li>
+    <li>Write Kruskal with union-find, and explain why the sort — not the union-find work — dominates its O(E log E) cost.</li>
+    <li>Write Prim with a lazy min-heap, and explain what the stale-entry check (<code>inTree[v]</code>) prevents.</li>
+    <li>Explain why an MST is not a shortest-path tree, with a concrete case where the MST route between two nodes isn't the cheapest path between them.</li>
+    <li>Given a new problem, decide whether it's MST (minimize total wiring cost) or Dijkstra (minimize one source's route) — and separately, whether the graph is sparse (Kruskal) or dense/implicit (O(V²) Prim).</li>
+  </ul>
+</div>`,
 };

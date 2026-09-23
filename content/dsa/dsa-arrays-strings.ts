@@ -267,7 +267,7 @@ function rangeSum(prefix, left, right) {
   }
   return bestSoFar;
 }</code></pre>
-<p><code>nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4]</code>:</p>
+<h4>Dry run: maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4])</h4>
 <table>
   <tr><th>i</th><th>nums[i]</th><th>bestEndingHere</th><th>bestSoFar</th></tr>
   <tr><td>0</td><td>-2</td><td>-2</td><td>-2</td></tr>
@@ -281,9 +281,11 @@ function rangeSum(prefix, left, right) {
   <tr><td>8</td><td>4</td><td>max(4, 1+4)=5</td><td>6</td></tr>
 </table>
 <p class="sub">
-  Answer: 6, from subarray <code>[4, -1, 2, 1]</code>. This is O(n) time,
-  O(1) space — and it's the template for a whole family of "best
-  contiguous X" problems (max product subarray, circular array variants).
+  The interesting row is i=3: <code>bestEndingHere</code> resets to
+  <code>nums[3]</code> alone (4) instead of extending the still-negative
+  running sum (-2 + 4 = 2). Dropping a negative prefix entirely, rather
+  than dragging it forward, is exactly what lets one O(n) pass replace
+  checking every possible subarray.
 </p>
 
 <h3>Rotating an array in O(1) space — the triple-reversal trick</h3>
@@ -381,5 +383,16 @@ function traverse2D(grid) {
     chapter's amortized-analysis section — the short version:
     <code>push()</code> is amortized O(1) because the underlying buffer
     doubles instead of growing by one each time.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why <code>arr.unshift(x)</code> is O(n) even though it's one method call, and name the interview trap it causes when used inside a loop.</li>
+    <li>Build a prefix-sum array and answer a range-sum query in O(1), then say why it beats rescanning per query.</li>
+    <li>Trace Kadane's algorithm on a new array by hand, including at least one point where it resets instead of extending.</li>
+    <li>Explain the shared-row bug in <code>Array(n).fill(Array(m).fill(0))</code> and how <code>Array.from</code> avoids it.</li>
+    <li>Given a new problem, decide whether it needs O(1) index access (array) or O(n²)-avoiding batched string building — before writing any code.</li>
+  </ul>
+</div>`,
 };

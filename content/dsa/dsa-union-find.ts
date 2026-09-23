@@ -176,6 +176,23 @@ find(x) {
   connected(a, b) { return this.find(a) === this.find(b); }
   setSize(x) { return this.size[this.find(x)]; }        <span class="c">// size is only meaningful at a root</span>
 }</code></pre>
+<h4>Dry run: union(0,1), union(1,2), union(3,4), union(2,3), then find(4) — the demo above</h4>
+<table>
+  <tr><th>Step</th><th>Call</th><th>ra, rb</th><th>parent[0..6] after</th><th>components</th></tr>
+  <tr><td>1</td><td>union(0, 1)</td><td>ra=0, rb=1</td><td>[0, 0, 2, 3, 4, 5, 6]</td><td>6</td></tr>
+  <tr><td>2</td><td>union(1, 2)</td><td>ra=0, rb=2</td><td>[0, 0, 0, 3, 4, 5, 6]</td><td>5</td></tr>
+  <tr><td>3</td><td>union(3, 4)</td><td>ra=3, rb=4</td><td>[0, 0, 0, 3, 3, 5, 6]</td><td>4</td></tr>
+  <tr><td>4</td><td>union(2, 3)</td><td>ra=0, rb=3</td><td>[0, 0, 0, 0, 3, 5, 6]</td><td>3</td></tr>
+  <tr><td>5</td><td>find(4)</td><td>root=0</td><td>[0, 0, 0, 0, 0, 5, 6]</td><td>3</td></tr>
+</table>
+<p class="sub">
+  Step 4's internal find(2) and find(3) calls rewrite nothing — 2 already points
+  straight at root 0 from step 2's compression, and 3 is still its own root — so
+  union by size alone is doing the shrinking there. Step 5 is the only line that
+  triggers path compression: find(4) walks 4 → 3 → 0 to locate the root, then its
+  second pass re-points parent[4] straight at 0, exactly the flattening the demo
+  above shows.
+</p>
 <p class="sub">
   Three details earn their keep in interviews: <code>union</code> returning a
   boolean (that single value solves cycle detection and Redundant Connection),
@@ -539,5 +556,16 @@ function accountsMerge(accounts) {
   <li><b>Distinguish from BFS/DFS:</b> if the graph is static <em>and</em> you also need paths, distances, or an ordering, use traversal — DSU knows nothing about distance, path, or direction. It only answers "same set?"</li>
   <li><b>Distinguish from topological sort:</b> DSU is undirected only. Directed dependencies, cycle detection in a DAG, ordering → topological sort.</li>
   <li><b>Pitfalls:</b> forgetting <code>find</code> before reading <code>size</code>; sizing the array wrong on 1-indexed inputs; and comparing roots with <code>parent[a] === parent[b]</code> instead of <code>find(a) === find(b)</code> — the second is the only correct test.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Write find() and union() with both path compression and union by size from memory, and say what the boolean return value of union() is used for.</li>
+    <li>Trace path compression on a chain by hand and explain why combining it with union by size gives O(α(n)) instead of O(log n).</li>
+    <li>Explain why union-find cannot detect a cycle in a directed graph, and name the algorithm you'd reach for instead.</li>
+    <li>Explain why Accounts Merge unions on email and never on name, and what silently breaks if you get that backwards.</li>
+    <li>Given a new problem, recognize when it wants union-find — edges arriving over time, or a connectivity query repeated many times — versus a single BFS/DFS pass.</li>
+  </ul>
+</div>`,
 };

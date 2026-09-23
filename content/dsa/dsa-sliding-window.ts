@@ -98,8 +98,7 @@ function longestUniqueSubstring(s) {
   loop conceptually.
 </p>
 
-<h3>Watch the window grow and jump, step by step</h3>
-<p><code>s = "abcabcbb"</code>:</p>
+<h4>Dry run: longestUniqueSubstring("abcabcbb")</h4>
 <table>
   <tr><th>right</th><th>char</th><th>repeat in window?</th><th>left jumps to</th><th>window</th><th>best</th></tr>
   <tr><td>0</td><td>a</td><td>no</td><td>0</td><td>"a"</td><td>1</td></tr>
@@ -293,5 +292,16 @@ function longestUniqueSubstring(s) {
   <li>"Longest," "shortest," "maximum," or "minimum" over a contiguous range</li>
   <li>A brute force would check every <code>[i, j]</code> pair — O(n²) or worse</li>
   <li>The condition can be checked/updated incrementally as the window changes</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why sliding window is O(n) even though the shrink step looks like a loop inside a loop — the amortized argument, not just "it's fast."</li>
+    <li>Trace <code>longestUniqueSubstring</code> on a new string by hand, including at least one point where <code>left</code> jumps more than one position.</li>
+    <li>Write the general variable-window template (expand, shrink while invalid, update answer) from memory.</li>
+    <li>Say why <code>left</code> jumping straight past the repeat, instead of stepping one at a time, still keeps the total work O(n).</li>
+    <li>Given a new problem, recognize a fixed-size window versus a variable-size window, and state which condition would trigger the shrink step.</li>
+  </ul>
+</div>`,
 };

@@ -229,6 +229,7 @@ indegree
 inorder
 inspectable
 Insta
+invertibility
 IOCP
 issip
 IVXLCDM

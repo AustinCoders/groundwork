@@ -102,8 +102,7 @@ function isValid(s) {
   return stack.length === 0;
 }</code></pre>
 
-<h3>Watch the stack fill and drain, step by step</h3>
-<p><code>s = "{[()]}"</code>:</p>
+<h4>Dry run: isValid("{[()]}")</h4>
 <table>
   <tr><th>char</th><th>type</th><th>action</th><th>stack after</th></tr>
   <tr><td>{</td><td>open</td><td>push</td><td>[ { ]</td></tr>
@@ -292,5 +291,16 @@ function bfsShape(start, getNeighbors) {
   <li><b>Circular queue</b>: fixed-capacity buffering — rate limiters, streaming windows, producer/consumer queues</li>
   <li><b>Min-stack (or max-stack)</b>: "track the running min/max as things get pushed/popped"</li>
   <li>If a problem says "next greater/smaller element," that's usually a <em>monotonic</em> stack — covered in the advanced tier</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Write <code>isValid</code> from memory, and name all three ways it can fail (wrong match, pop from empty, leftover opens).</li>
+    <li>Trace <code>isValid</code> on a new bracket string by hand, showing the stack's contents after every character.</li>
+    <li>Explain why building a queue with <code>array.shift()</code> silently degrades a simulation from O(n) to O(n²).</li>
+    <li>Explain how the shadow <code>minStack</code> stays in sync with the main stack across both push and pop.</li>
+    <li>Given a new problem, recognize whether it needs "most recent unmatched thing" (stack) or "arrival order" (queue) before writing any code.</li>
+  </ul>
+</div>`,
 };

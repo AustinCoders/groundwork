@@ -226,8 +226,7 @@ function partition(arr, lo, hi) {
   return i; <span class="c">// pivot's final sorted position</span>
 }</code></pre>
 
-<h3>Watch one partition pass, step by step</h3>
-<p><code>arr = [8, 2, 9, 1, 5]</code>, pivot = last element = <code>5</code>:</p>
+<h4>Dry run: partition([8, 2, 9, 1, 5], 0, 4) — pivot = last element = 5</h4>
 <table>
   <tr><th>j</th><th>arr[j]</th><th>&lt; pivot (5)?</th><th>action</th><th>array after</th></tr>
   <tr><td>0</td><td>8</td><td>no</td><td>nothing</td><td>[8, 2, 9, 1, 5] (i=0)</td></tr>
@@ -373,5 +372,16 @@ people.sort((a, b) => a.age - b.age); <span class="c">// by a field</span></code
   <li>You need the k-th smallest/largest, or a top-K — sorting is O(n log n), often beaten by a heap (see the heaps chapter)</li>
   <li>Grouping by "same after sorting" (anagrams) — sort each item as a normalizing key</li>
   <li>Interval problems almost always start with "sort by start time"</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Recite the time/space/stability cheat sheet for bubble, insertion, merge, quicksort, and heapsort without looking it up.</li>
+    <li>Trace one <code>partition</code> pass on a new small array by hand, tracking <code>i</code> and <code>j</code> at each step.</li>
+    <li>Explain why quicksort's worst case is O(n²) and what a random pivot does to fix it in practice.</li>
+    <li>Explain why insertion sort is O(n) on nearly-sorted data even though it's O(n²) worst case, and why TimSort exploits that.</li>
+    <li>Given a new problem, decide whether counting sort, bucket sort, or a comparison sort fits — based on the value range, not habit.</li>
+  </ul>
+</div>`,
 };

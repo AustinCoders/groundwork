@@ -112,6 +112,25 @@ class Trie {
     return this._walk(prefix) !== null; <span class="c">// here reaching the node IS enough</span>
   }
 }</code></pre>
+<h4>Dry run: inserting "car", "cat", "do", "dog" — the diagram above</h4>
+<table>
+  <tr><th>Call</th><th>Nodes walked</th><th>New nodes created</th><th>Result</th></tr>
+  <tr><td>insert("car")</td><td>root→c→a→r</td><td>c, a, r (all new)</td><td>isEnd(r) = true</td></tr>
+  <tr><td>insert("cat")</td><td>root→c→a→t</td><td>t only (c, a reused)</td><td>isEnd(t) = true</td></tr>
+  <tr><td>insert("do")</td><td>root→d→o</td><td>d, o (all new)</td><td>isEnd(o) = true</td></tr>
+  <tr><td>insert("dog")</td><td>root→d→o→g</td><td>g only (d, o reused)</td><td>isEnd(g) = true</td></tr>
+  <tr><td>search("do")</td><td>root→d→o</td><td>—</td><td>node found, isEnd(o)=true → true</td></tr>
+  <tr><td>search("d")</td><td>root→d</td><td>—</td><td>node found, isEnd(d)=false → false</td></tr>
+  <tr><td>startsWith("do")</td><td>root→d→o</td><td>—</td><td>node found, isEnd not checked → true</td></tr>
+</table>
+<p class="sub">
+  "car" and "cat" only ever create one new node (t) because <code>insert</code>'s
+  <code>children.has(ch)</code> check reuses the existing c→a path — that sharing
+  is the whole point of a trie. <code>search("d")</code> and <code>startsWith("do")</code>
+  both walk to a real node; the only reason they'd disagree on the same input is
+  the <code>isEnd</code> check, which is exactly the line <code>search</code> has
+  and <code>startsWith</code> doesn't.
+</p>
 <div class="warn">
   <span class="ttl">⚠ isEnd is not "has no children," and a leaf is not "is a word"</span>
   Both directions of this confusion produce wrong answers. In the diagram,
@@ -389,5 +408,16 @@ function findMaximumXOR(nums) {
   <li>Distinguish from suffix structures: "any substring" questions (repeated substrings, longest common substring) want a suffix trie/automaton or hashing, not a plain prefix trie</li>
   <li>Bitwise pair problems — maximum XOR, XOR under a threshold — are a binary trie over 32-bit strings in disguise</li>
   <li>Watch the flag: <code>isEnd</code> is separate from "leaf," and <code>search</code> vs <code>startsWith</code> must differ by exactly that check</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Write insert, search, and startsWith from memory, and say in one sentence exactly what isEnd changes between the last two.</li>
+    <li>Explain why "car" and "cat" share nodes in the trie but "do" still needs isEnd as a flag separate from "has children," using the "dog" example.</li>
+    <li>Explain why Word Search II builds one trie for all words instead of running Word Search once per word, and what the prefix-miss check prunes.</li>
+    <li>Trace the greedy bit-by-bit choice in maximum XOR and explain why taking the opposite bit is never a mistake, even made greedily from the top bit down.</li>
+    <li>Given a new problem, recognize when it needs a trie — incremental prefix checks while a candidate string is still being built — versus a plain hash set, which only answers exact membership.</li>
+  </ul>
+</div>`,
 };

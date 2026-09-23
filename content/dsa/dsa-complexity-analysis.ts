@@ -330,6 +330,21 @@ function hasDuplicateFast(arr) {
   }
   return false;
 }</code></pre>
+<h4>Dry run: hasDuplicate([3, 1, 4, 1]) — counting the hidden work</h4>
+<table>
+  <tr><th>x</th><th>seen before</th><th>seen.includes(x) comparisons</th><th>Match?</th></tr>
+  <tr><td>3</td><td>[]</td><td>0</td><td>no</td></tr>
+  <tr><td>1</td><td>[3]</td><td>1 (vs 3)</td><td>no</td></tr>
+  <tr><td>4</td><td>[3, 1]</td><td>2 (vs 3, 1)</td><td>no</td></tr>
+  <tr><td>1</td><td>[3, 1, 4]</td><td>2 (vs 3, then 1 — match)</td><td>yes → return true</td></tr>
+</table>
+<p class="sub">
+  0 + 1 + 2 + 2 = 5 comparisons to check an array of only 4 elements — the
+  cost of each <code>includes</code> call grows with how much of
+  <code>seen</code> exists so far, not a fixed amount. That growing-per-
+  iteration cost is the O(n²) signature hiding behind what reads like a
+  single, innocent <code>for...of</code> loop.
+</p>
 
 <h3>Dropping constants and lower-order terms</h3>
 <p>
@@ -512,5 +527,16 @@ console.log(countPairs([1, 9, 2, 8, 3, 7]));</code></pre>
   O(n²) time, O(1) space. Notice it doesn't matter that the inner loop
   "only" checks a sum — the shape is decided by the loop structure, not
   what's inside it.
-</p>`,
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Read the time and space complexity off a function by counting loops and allocations, not lines of code.</li>
+    <li>Spot a hidden O(n) call (includes, indexOf, spreading a Set) sitting inside a loop, and explain why that makes the whole function O(n²).</li>
+    <li>Explain the difference between O, Ω and Θ, and why interviews almost always mean "worst case" when they say Big-O.</li>
+    <li>Derive O(n log n) from a recurrence like T(n) = 2T(n/2) + O(n), at least at the level of "why the log n shows up."</li>
+    <li>State a solution's complexity out loud before writing it, as a plan rather than an afterthought.</li>
+  </ul>
+</div>`,
 };

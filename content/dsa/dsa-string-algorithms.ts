@@ -172,6 +172,7 @@ function buildFailure(pattern) {
 }
 
 buildFailure("ababaca"); <span class="c">// [0, 0, 1, 2, 3, 0, 1]</span></code></pre>
+<h4>Dry run: buildFailure("ababaca")</h4>
 <table>
   <tr><th>i</th><th>p[i]</th><th>len before</th><th>fallback chain</th><th>fail[i]</th></tr>
   <tr><td>1</td><td>b</td><td>0</td><td>—</td><td>0</td></tr>
@@ -479,5 +480,16 @@ function repeatedUnit(s) {
   <li>"Longest palindromic substring/prefix," "count all palindromic substrings" — expand-around-center first (O(n²), always acceptable), Manacher if pressed for linear</li>
   <li>Distinguish from DP: "longest palindromic <em>subsequence</em>" (non-contiguous) is 2D DP, not Manacher; "edit distance" and "longest common subsequence" are DP too. These algorithms are all about <em>contiguous</em> matches</li>
   <li>Pitfall: hash equality is never proof of string equality — an implementation that skips the verification step is a bug, not an optimization</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Build the KMP failure table for a pattern by hand, and explain why a mismatch falls back to <code>fail[len - 1]</code> instead of resetting <code>len</code> to 0.</li>
+    <li>Write <code>kmpSearch</code> from memory and explain why the text pointer <code>i</code> never moves backward, even on a mismatch.</li>
+    <li>Explain Rabin-Karp's two classic bugs — negative modulo and silent overflow — and what specifically in the code prevents each one.</li>
+    <li>Trace the Z-function's mirror-copy step on a short string and explain why it keeps the algorithm O(n) instead of degrading to O(n²).</li>
+    <li>Given a new problem, decide whether it needs occurrence search (KMP/Rabin-Karp/Z-function), palindrome structure (Manacher), or just the failure table's <code>n - fail[n-1]</code> identity (periodicity) — and justify the choice.</li>
+  </ul>
+</div>`,
 };

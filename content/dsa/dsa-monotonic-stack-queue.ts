@@ -190,6 +190,7 @@ function largestRectangleArea(heights) {
 }
 
 largestRectangleArea([2, 1, 5, 6, 2, 3]); <span class="c">// 10 — the 5 and 6 bars, width 2</span></code></pre>
+<h4>Dry run: largestRectangleArea([2, 1, 5, 6, 2, 3]) — the same array as the figure above</h4>
 <table>
   <tr><th>i</th><th>h</th><th>popped (height)</th><th>left</th><th>width</th><th>area</th><th>best</th></tr>
   <tr><td>1</td><td>1</td><td>2</td><td>0</td><td>1</td><td>2</td><td>2</td></tr>
@@ -199,6 +200,14 @@ largestRectangleArea([2, 1, 5, 6, 2, 3]); <span class="c">// 10 — the 5 and 6 
   <tr><td>6</td><td>0 (sentinel)</td><td>2</td><td>2</td><td>4</td><td>8</td><td>10</td></tr>
   <tr><td>6</td><td>0 (sentinel)</td><td>1</td><td>0</td><td>6</td><td>6</td><td>10</td></tr>
 </table>
+<p class="sub">
+  Row three is the whole problem: popping the 6 first (width 1, area 6) looks
+  smaller, but the very next pop of the 5 reaches back to <code>left = 2</code>
+  because the 6 is already gone from the stack — the rectangle of height 5
+  spans both index 2 and index 3. That's the payoff of storing indices, not
+  values: the width of a popped bar's rectangle depends on what's left
+  standing, which changes after every pop.
+</p>
 <div class="warn">
   <span class="ttl">⚠ Two off-by-one traps live in the width calculation</span>
   <b>(1)</b> When the stack empties after a pop, the left boundary is
@@ -469,5 +478,16 @@ maxSlidingWindow([1,3,-1,-3,5,3,6,7], 3); <span class="c">// [3, 3, 5, 5, 6, 7]<
   <li>Distinguish from a plain sliding window: sliding window maintains an aggregate (sum, count, set) that updates in O(1); monotonic structures maintain an <em>ordered candidate set</em> because the aggregate (max, min) can't be undone incrementally when an element leaves</li>
   <li>Distinguish from a heap: use a heap when you need the kth or the median, or when elements arrive without a scan order. Use a monotonic deque when a newer-and-better element makes an older one permanently irrelevant</li>
   <li>Pitfalls: pushing values instead of indices (you'll need positions for widths), the wrong strictness on ties, forgetting the sentinel so the stack never drains, and assuming <code>shift()</code> is free</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Derive, don't recall, whether a stack should be increasing or decreasing for "next greater" versus "next smaller" — say the one-sentence reasoning out loud.</li>
+    <li>Write <code>largestRectangleArea</code> from memory, including the sentinel bar, and explain both off-by-one traps in the width calculation.</li>
+    <li>Explain why one decreasing-stack pass resolves both "next greater" (at pop time) and "previous greater" (at push time) without a second pass.</li>
+    <li>Explain why <code>Array.prototype.shift()</code> silently breaks the promised O(n) bound for a monotonic deque, and what the head-pointer fix looks like.</li>
+    <li>Given a new problem, decide between a monotonic stack/deque, a plain sliding window, and a heap — based on whether the aggregate can be "undone" when an element leaves.</li>
+  </ul>
+</div>`,
 };

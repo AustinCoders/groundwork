@@ -125,6 +125,26 @@ export const dsaInterviewStrategy: Chapter = {
   will almost always let you skip implementing it. What they will not forgive
   is twenty minutes of silence hunting for the clever answer.
 </p>
+
+<h4>Dry run: the seven steps applied to one concrete problem</h4>
+<p class="sub">"Given a list of daily prices, find the maximum profit from buying once and selling once later. n ≤ 10⁵."</p>
+<table>
+  <tr><th>Step</th><th>Applied here</th><th>Conclusion</th></tr>
+  <tr><td>1. Restate</td><td>"Find the largest prices[j] - prices[i] with j &gt; i."</td><td>matches the problem</td></tr>
+  <tr><td>2. Hand-run the example</td><td>[7, 1, 5, 3, 6, 4]: buy at 1, sell at 6</td><td>expected answer: 5</td></tr>
+  <tr><td>3. Brute force</td><td>check every pair (i, j) with j &gt; i</td><td>O(n²), stated as the baseline</td></tr>
+  <tr><td>4. Name the bottleneck</td><td>for each i, re-scanning every later j for its price</td><td>the re-scan is the wasted work</td></tr>
+  <tr><td>5. Read the constraints</td><td>n ≤ 10⁵ → O(n²) is 10¹⁰, too slow</td><td>need O(n log n) or O(n)</td></tr>
+  <tr><td>6. Structure that removes it</td><td>track the minimum price seen so far in one pass</td><td>no data structure needed — one running value</td></tr>
+  <tr><td>7. Confirm, then code</td><td>"one pass, O(n) time, O(1) space"</td><td>ready to code</td></tr>
+</table>
+<p class="sub">
+  The problem changes every time; the seven-step shape doesn't. That's the
+  actual claim this framework makes — not that you'll recognize this specific
+  problem, but that running the same seven questions on an unfamiliar one
+  gets you from "no idea" to "one pass, O(n)" without needing to have seen it
+  before.
+</p>
 <figure>
   <svg viewBox="0 0 640 190" class="dg" role="img" aria-label="A three step flow from brute force through naming the repeated work to replacing it with a data structure that answers the same question faster">
     <g class="rough">
@@ -353,5 +373,16 @@ export const dsaInterviewStrategy: Chapter = {
     is O(n log n) amortized but I'd want to double-check the resize cost" beats
     a confident wrong claim every time, and it is the difference between an
     engineer you can trust and one you have to verify.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Run the seven-step framework out loud on a problem you have never seen, including stating a brute force first.</li>
+    <li>Read a constraint like n ≤ 10⁵ and say, before designing anything, which complexity class it's steering you toward.</li>
+    <li>Name the bottleneck in a brute-force solution in one sentence, before naming the data structure that fixes it.</li>
+    <li>Describe your procedure for being stuck, rather than going silent, and rehearse saying it out loud.</li>
+    <li>Test your own solution against the original example plus one edge case before declaring it done.</li>
+  </ul>
+</div>`,
 };

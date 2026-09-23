@@ -82,8 +82,7 @@ export const dsaBinarySearch: Chapter = {
   </ul>
 </div>
 
-<h3>Watch the search space halve, step by step</h3>
-<p><code>sorted = [1, 3, 6, 9, 12, 15, 20]</code>, <code>target = 15</code>:</p>
+<h4>Dry run: binarySearch([1, 3, 6, 9, 12, 15, 20], 15)</h4>
 <table>
   <tr><th>step</th><th>lo</th><th>hi</th><th>mid (value)</th><th>compare</th><th>action</th></tr>
   <tr><td>1</td><td>0</td><td>6</td><td>3 (9)</td><td>9 &lt; 15</td><td>lo = 4</td></tr>
@@ -286,5 +285,16 @@ function lowerBound(nums, target) {
   <li>A brute force would try every candidate linearly — O(n) or O(n·check)</li>
   <li>You can write a fast "does this candidate work?" check — that check
     becomes the comparison inside the binary search</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Write the <code>lo &lt;= hi</code> template from memory, including the overflow-safe mid calculation.</li>
+    <li>Trace <code>binarySearch</code> on a new sorted array by hand, stating <code>lo</code>, <code>hi</code>, and <code>mid</code> at each step.</li>
+    <li>Explain "binary search on the answer" — what property of the answer space it actually needs (monotonic, not necessarily sorted input).</li>
+    <li>Write <code>lowerBound</code> and explain why its loop uses <code>hi = nums.length</code> instead of <code>nums.length - 1</code>.</li>
+    <li>Given a new problem, recognize whether "does X work?" is monotonic in X — before assuming the input itself needs to be sorted.</li>
+  </ul>
+</div>`,
 };

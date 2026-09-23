@@ -113,6 +113,7 @@ function topoSortKahn(n, edges) {
 <p>
   Walking the diagram's graph, with edges 0→1, 0→2, 1→3, 2→3, 3→4:
 </p>
+<h4>Dry run: topoSortKahn(5, edges) on the graph from the figure</h4>
 <table>
   <tr><th>Step</th><th>Pop</th><th>Emit so far</th><th>In-degrees after decrement</th><th>Newly freed</th></tr>
   <tr><td>init</td><td>—</td><td>[]</td><td>0:<b>0</b> 1:1 2:1 3:2 4:1</td><td>queue = [0]</td></tr>
@@ -458,5 +459,16 @@ function longestPath(n, edges) {
   <li>Distinguish from Union-Find: undirected connectivity and cycle detection
     in an undirected graph is Union-Find's job; direction and ordering is this
     chapter's.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Implement Kahn's algorithm with a moving <code>head</code> index instead of <code>shift()</code>, and explain why <code>shift()</code> would degrade it to O(V²).</li>
+    <li>Explain why a node must wait until its in-degree reaches exactly 0, not merely decreases, before it's pushed onto the queue.</li>
+    <li>Implement the DFS version's three-state (white/gray/black) cycle check, and explain why a single <code>visited</code> boolean reports cycles that don't exist.</li>
+    <li>Explain why longest and shortest path are both O(V + E) on a DAG, even with negative edge weights, once you have a topological order.</li>
+    <li>Given a new problem, recognize when it's really a topological sort in disguise (an implicit DAG hiding inside a DP recurrence) rather than plain BFS/DFS.</li>
+  </ul>
+</div>`,
 };

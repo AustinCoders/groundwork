@@ -95,8 +95,7 @@ function twoSumFast(nums, target) {
   }
 }</code></pre>
 
-<h3>Watch the map build up, step by step</h3>
-<p><code>nums = [2, 7, 11, 15]</code>, <code>target = 9</code> — trace every iteration:</p>
+<h4>Dry run: twoSumFast([2, 7, 11, 15], 9)</h4>
 <table>
   <tr><th>i</th><th>nums[i]</th><th>need = target − nums[i]</th><th>seen.has(need)?</th><th>action</th></tr>
   <tr><td>0</td><td>2</td><td>7</td><td>no — map is empty</td><td>store {2 → 0}</td></tr>
@@ -167,5 +166,16 @@ function groupAnagrams(words) {
     binary search on a sorted structure.</li>
   <li><b>Memory is the actual constraint</b> — if the problem explicitly
     asks for O(1) space, a hash map is disqualified by definition.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why a hash map lookup is O(1) average case, in terms of what the hash function actually does.</li>
+    <li>Trace <code>twoSumFast</code> on a new array by hand, tracking exactly what's in <code>seen</code> at each step.</li>
+    <li>Write a frequency counter and an anagram check from memory, using the same "count then compare" shape.</li>
+    <li>Say out loud why "average case, not worst case" is the correct caveat on hash map complexity.</li>
+    <li>Given a new problem, recognize when hashing is the wrong tool — because it needs order or a closest match, not an exact key.</li>
+  </ul>
+</div>`,
 };

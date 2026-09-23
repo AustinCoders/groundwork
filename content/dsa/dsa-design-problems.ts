@@ -153,6 +153,22 @@ class LRUCache {
     this.map.set(key, node);
   }
 }</code></pre>
+<h4>Dry run: LRUCache(3) — the same keys as the figure above</h4>
+<table>
+  <tr><th>Call</th><th>list, front → back (most → least recent)</th><th>map keys</th><th>evicted</th></tr>
+  <tr><td>put("C", 3)</td><td>C</td><td>C</td><td>—</td></tr>
+  <tr><td>put("B", 2)</td><td>B, C</td><td>C, B</td><td>—</td></tr>
+  <tr><td>put("A", 1)</td><td>A, B, C</td><td>C, B, A</td><td>— (matches the figure: A newest, C next to evict)</td></tr>
+  <tr><td>get("C") → 3</td><td>C, A, B</td><td>C, B, A</td><td>— (C refreshed to the front; B is now the LRU)</td></tr>
+  <tr><td>put("D", 4)</td><td>D, C, A</td><td>C, A, D</td><td><b>B</b></td></tr>
+</table>
+<p class="sub">
+  The <code>get("C")</code> call is the pivot: before it, B was the
+  <em>newer</em> entry and C was next in line for eviction. One read moves C
+  to the front and leaves B stranded at the tail — B is evicted not because
+  it's old in absolute terms, but because it's the entry nobody touched since
+  it was written. That's the entire meaning of "least recently used."
+</p>
 <div class="warn">
   <span class="ttl">⚠ Three bugs that turn an O(1) LRU into a wrong one</span>
   <b>(1)</b> Not refreshing on <code>get</code> — a read is a use, and
@@ -467,5 +483,16 @@ class SlidingWindowRateLimiter {
   <li>"Streaming," "in the last N seconds," "timestamps arrive in order" → the window is fixed, so memory should be O(window), not O(events); bucket and expire lazily</li>
   <li>Distinguish from an algorithms question: there's no clever traversal or recurrence here. If you're searching for an <em>algorithm</em>, you've misread it — you're searching for a <em>combination</em></li>
   <li>Pitfalls: forgetting that a read counts as a use, not storing the key inside the node so eviction can clean up the map, using <code>&lt;</code> where <code>&lt;=</code> is needed on duplicate minimums, and letting the per-key map grow without bound</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Write the LRU cache's <code>get</code> and <code>put</code> from memory, and explain why each node must store its own key.</li>
+    <li>Explain why the LFU cache's <code>minFreq</code> never needs to search for the new minimum after a promotion or an insert.</li>
+    <li>Construct the two-element input that exposes the <code>x &lt; min</code> vs <code>x &lt;= min</code> bug in the optimized Min Stack.</li>
+    <li>Explain why the auxiliary-stack trick for O(1) min breaks the moment <code>popMax()</code> (arbitrary removal) is required.</li>
+    <li>Given a new "design X" prompt, write the operation/complexity table first and name which two structures you'd compose before writing any code.</li>
+  </ul>
+</div>`,
 };

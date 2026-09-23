@@ -125,6 +125,23 @@ function tsp(dist) {
   }
   return best;
 }</code></pre>
+<h4>Dry run: tsp([[0,10,15],[10,0,20],[15,20,0]])</h4>
+<table>
+  <tr><th>mask</th><th>last</th><th>action</th><th>result</th></tr>
+  <tr><td>001 (city 0 visited)</td><td>0</td><td>base case</td><td>dp[001][0] = 0</td></tr>
+  <tr><td>001</td><td>0</td><td>try next=1: cost 0+10</td><td>dp[011][1] = 10</td></tr>
+  <tr><td>001</td><td>0</td><td>try next=2: cost 0+15</td><td>dp[101][2] = 15</td></tr>
+  <tr><td>011 (0,1 visited)</td><td>1</td><td>try next=2: cost 10+20</td><td>dp[111][2] = 30</td></tr>
+  <tr><td>101 (0,2 visited)</td><td>2</td><td>try next=1: cost 15+20</td><td>dp[111][1] = 35</td></tr>
+  <tr><td>111 (full)</td><td>1, 2</td><td>every next already visited</td><td>nothing new relaxed</td></tr>
+</table>
+<p class="sub">
+  Closing the loop: dp[111][1] + dist[1][0] = 35 + 10 = 45, and dp[111][2] + dist[2][0]
+  = 30 + 15 = 45 — the two candidate tours tie because a 3-city graph has only one
+  cycle, walked in either direction. Notice mask only ever grows across the run
+  (001 → 011/101 → 111): that's the "no dependency sort needed" property from the
+  sticky note above, made concrete.
+</p>
 <p class="sub">
   Two variants come up constantly. Drop the final <code>+ dist[last][0]</code>
   and you get the shortest Hamiltonian <em>path</em> ("Shortest Path Visiting
@@ -467,5 +484,16 @@ function minCut(s) {
   <li><b>Distinguish from plain 2D DP:</b> 2D DP indexes two independent sequences; interval DP indexes two ends of the <em>same</em> sequence and must be filled by length, not row by row.</li>
   <li><b>Distinguish from greedy:</b> if a locally best choice can be invalidated by a later one (bursting the biggest balloon first is not optimal), greedy is out — the fact that "obvious greedy" fails on a small counterexample is the strongest signal you're in advanced-DP territory.</li>
   <li>Common pitfall across all four: propagating <code>Infinity</code> from unreachable states into arithmetic. Always <code>continue</code> on unreachable before relaxing.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Write the bitmask DP recurrence for TSP from memory, and explain why iterating mask upward from 0 is already a valid dependency order.</li>
+    <li>Explain why the state (subset, current worker) collapses to a single array dimension when the k-th decision is always "assign worker k," and what popcount buys you there.</li>
+    <li>Write the two-value tree DP for House Robber III, and say why <code>skipHere</code> must take max(leftRob, leftSkip) per child independently rather than summing leftSkip + rightSkip.</li>
+    <li>Explain why a digit-DP tight state must never be memoized, with a concrete (pos, prev) example where reusing a cached tight answer would undercount.</li>
+    <li>Given a new problem, decide in one sentence which of the four state shapes — subset, subtree, digit prefix, or interval — it needs, and why the other three don't fit.</li>
+  </ul>
+</div>`,
 };

@@ -139,8 +139,7 @@ function traverse(head) {
   return prev; <span class="c">// prev is the new head</span>
 }</code></pre>
 
-<h3>Watch the pointers move, step by step</h3>
-<p>List: <code>1 → 2 → 3 → null</code></p>
+<h4>Dry run: reverseList(1 → 2 → 3 → null)</h4>
 <table>
   <tr><th>step</th><th>prev</th><th>curr</th><th>next (saved)</th><th>after curr.next = prev</th></tr>
   <tr><td>start</td><td>null</td><td>1</td><td>—</td><td>1 → 2 → 3 → null (unchanged)</td></tr>
@@ -330,5 +329,16 @@ function removeElements(head, val) {
   <li>Fast/slow pointers solve it if the ask involves "middle," "cycle," or "nth from the end"</li>
   <li>Need O(1) removal of an arbitrary known node, or backward traversal — reach for doubly linked</li>
   <li>A dummy node removes a special case anytime the head itself might change</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Write <code>reverseList</code> from memory, and explain why <code>next</code> must be saved before <code>curr.next</code> is overwritten.</li>
+    <li>Trace <code>reverseList</code> on a new short list by hand, tracking <code>prev</code>, <code>curr</code>, and <code>next</code> each step.</li>
+    <li>Explain why the fast pointer moving 2 steps per 1 of the slow pointer guarantees a meeting inside a cycle.</li>
+    <li>Explain what problem the dummy-node trick solves, with a concrete edge case (removing the actual head) it sidesteps.</li>
+    <li>Given a new problem, recognize whether it needs fast/slow pointers ("middle," "cycle," "nth from the end") before writing any code.</li>
+  </ul>
+</div>`,
 };

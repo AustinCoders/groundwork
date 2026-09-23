@@ -73,8 +73,7 @@ function twoSumSorted(nums, target) {
   already ruled out — every skipped pair genuinely can't work.
 </p>
 
-<h3>Watch it converge, step by step</h3>
-<p><code>nums = [2, 7, 11, 15, 18, 24]</code>, <code>target = 22</code>:</p>
+<h4>Dry run: twoSumSorted([2, 7, 11, 15, 18, 24], 22)</h4>
 <table>
   <tr><th>step</th><th>left</th><th>right</th><th>nums[left]+nums[right]</th><th>compare to 22</th><th>move</th></tr>
   <tr><td>1</td><td>0 (2)</td><td>5 (24)</td><td>26</td><td>too big</td><td>right−−</td></tr>
@@ -275,5 +274,16 @@ function removeDuplicates(nums) {
   render();
 })();
 </script>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why the opposite-ends variant requires a sorted (or sortable) input, with an example of it silently giving a wrong answer on unsorted data.</li>
+    <li>Trace <code>twoSumSorted</code> on a new sorted array by hand, stating which pointer moves and why at each step.</li>
+    <li>Write the fast/slow "read pointer scans, write pointer only advances on a keep" shape from memory for removing duplicates in place.</li>
+    <li>Say why each two-pointer comparison eliminates an entire end of the range, not just one element — and how that gets you from O(n²) to O(n).</li>
+    <li>Given a new problem, recognize whether it needs opposite-ends closing inward or same-direction fast/slow — before writing any code.</li>
+  </ul>
+</div>
 `,
 };

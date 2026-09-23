@@ -21,6 +21,24 @@ export const dsaBasicRecursion: Chapter = {
   if (n <= 1) return 1;           <span class="c">// base case — the floor</span>
   return n * factorial(n - 1);    <span class="c">// recursive case — smaller problem</span>
 }</code></pre>
+<h4>Dry run: factorial(4)</h4>
+<table>
+  <tr><th>Call</th><th>n</th><th>n &lt;= 1?</th><th>Returns</th></tr>
+  <tr><td>factorial(4)</td><td>4</td><td>no</td><td>waits on 4 × factorial(3)</td></tr>
+  <tr><td>factorial(3)</td><td>3</td><td>no</td><td>waits on 3 × factorial(2)</td></tr>
+  <tr><td>factorial(2)</td><td>2</td><td>no</td><td>waits on 2 × factorial(1)</td></tr>
+  <tr><td>factorial(1)</td><td>1</td><td>yes</td><td>1 (base case — no further call)</td></tr>
+  <tr><td>factorial(2) resumes</td><td>—</td><td>—</td><td>2 × 1 = 2</td></tr>
+  <tr><td>factorial(3) resumes</td><td>—</td><td>—</td><td>3 × 2 = 6</td></tr>
+  <tr><td>factorial(4) resumes</td><td>—</td><td>—</td><td>4 × 6 = 24</td></tr>
+</table>
+<p class="sub">
+  Nothing multiplies until <code>factorial(1)</code> hits the base case —
+  every call above it is suspended mid-expression, waiting on its own
+  recursive call to resolve. That's exactly the four simultaneously-alive
+  stack frames the space warning below is about: the actual arithmetic
+  only happens on the way back up, never on the way down.
+</p>
 
 <h3>The call stack is a real stack — draw it</h3>
 <figure>
@@ -151,5 +169,16 @@ function factorialIter(n) {
   <li>The problem can be restated as "solve it for a smaller version, then combine"</li>
   <li>Words like "all combinations," "all paths," "every way to" — usually backtracking, built on this same base/recursive-case shape</li>
   <li>If the same sub-inputs repeat across branches, that's your cue to add memoization rather than leaving it as plain recursion</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>State the base case and recursive case for a new problem before writing any code, and explain why the recursive case must shrink the input every call.</li>
+    <li>Trace <code>factorial(4)</code> (or a similar small call) by hand, showing which calls are still "waiting" when the base case is hit.</li>
+    <li>Explain why n nested recursive calls cost O(n) space, even with no array ever allocated.</li>
+    <li>Explain why <code>fibSlow(n)</code> is O(2ⁿ) by naming a subproblem it computes more than once.</li>
+    <li>Given a new problem, recognize when it's "restate on a smaller input, then combine" (recursion) versus needing memoization because subproblems repeat.</li>
+  </ul>
+</div>`,
 };

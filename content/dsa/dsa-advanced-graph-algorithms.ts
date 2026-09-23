@@ -138,6 +138,22 @@ function dijkstra(n, adj, src) {
   }
   return dist;
 }</code></pre>
+<h4>Dry run: dijkstra(4, adj, 0) on the S–A–B–T graph above (S=0, A=1, B=2, T=3)</h4>
+<table>
+  <tr><th>Pop</th><th>d, u</th><th>Stale?</th><th>Relaxations</th><th>dist [S,A,B,T] after</th></tr>
+  <tr><td>1</td><td>0, S</td><td>no</td><td>T: 0+100=100; A: 0+1=1</td><td>[0, 1, ∞, 100]</td></tr>
+  <tr><td>2</td><td>1, A</td><td>no</td><td>S: 1+1=2, no improvement; B: 1+1=2</td><td>[0, 1, 2, 100]</td></tr>
+  <tr><td>3</td><td>2, B</td><td>no</td><td>A: 2+1=3, no improvement; T: 2+1=3</td><td>[0, 1, 2, 3]</td></tr>
+  <tr><td>4</td><td>3, T</td><td>no</td><td>S: 3+100=103, no improvement; B: 3+1=4, no improvement</td><td>[0, 1, 2, 3]</td></tr>
+  <tr><td>5</td><td>100, T</td><td><b>yes</b></td><td>skipped — 100 &gt; dist[T]=3</td><td>unchanged</td></tr>
+</table>
+<p class="sub">
+  T is pushed twice — once at cost 100 straight off S, once at cost 3 through A
+  then B — and the heap pops the cheap entry first purely because it's smaller.
+  The expensive entry is still sitting in the heap; the <code>d &gt; dist[u]</code>
+  guard on pop 5 is what discards it instead of re-relaxing from a node whose
+  distance is already final.
+</p>
 <p class="sub">
   A textbook Dijkstra uses <em>decrease-key</em> to update a node's priority in
   place. A binary heap can't do that in O(log n) without an index map, so the
@@ -431,5 +447,16 @@ function updateMatrix(mat) {
   <li><b>V is small (≤ 400) and the question asks about every pair</b>, or you need to answer many source-target queries → Floyd-Warshall, and mention the O(V³)/O(V²) trade explicitly.</li>
   <li><b>"Nearest X for every cell"</b> → multi-source BFS, seeded with all X. If you find yourself writing a loop that runs BFS once per source, stop and seed instead.</li>
   <li><b>Pitfalls:</b> Dijkstra with negative edges (wrong, and quietly so); sorting an array as a fake priority queue (TLE); Floyd-Warshall with k not outermost (wrong); adding to <code>Infinity</code> from an unreachable node (poisons the table); and using <code>Array#shift()</code> as a queue on 10<sup>5</sup> nodes (O(n²) hidden inside an O(V+E) algorithm).</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Write Dijkstra with a binary heap from memory, including the stale-entry check, and explain what goes wrong if you delete it.</li>
+    <li>Explain why Dijkstra gives wrong answers on a graph with a negative edge, and why Bellman-Ford doesn't.</li>
+    <li>Trace why Floyd-Warshall requires k as the outermost loop, using a path that needs two intermediate nodes to see it break under i, j, k ordering.</li>
+    <li>Explain when a 0-1 BFS deque replaces a heap, and why a 0-weight edge goes to the front (not the back) to keep the deque sorted by distance.</li>
+    <li>Given a new shortest-path problem, answer "uniform, non-negative, or negative weights — one source or all pairs?" and name the algorithm that answer forces.</li>
+  </ul>
+</div>`,
 };

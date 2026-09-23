@@ -137,6 +137,31 @@ export const dsaSegmentFenwickTrees: Chapter = {
     this.t[node] = this.t[2 * node] + this.t[2 * node + 1]; <span class="c">// re-merge on the way back up</span>
   }
 }</code></pre>
+<h4>Dry run: query(2,5), then update(4,10), then query(2,5) again — on [3,1,4,1,5,9,2,6]</h4>
+<table>
+  <tr><th>Call</th><th>node [lo,hi]</th><th>Overlap with [2,5]</th><th>Returns</th></tr>
+  <tr><td>query(2,5)</td><td>1 [0,7]</td><td>partial — split</td><td>node 2's answer + node 3's answer</td></tr>
+  <tr><td></td><td>2 [0,3]</td><td>partial — split</td><td>node 4's answer + node 5's answer</td></tr>
+  <tr><td></td><td>4 [0,1]</td><td>none</td><td>0</td></tr>
+  <tr><td></td><td>5 [2,3]</td><td>full</td><td>t[5] = 5</td></tr>
+  <tr><td></td><td>3 [4,7]</td><td>partial — split</td><td>node 6's answer + node 7's answer</td></tr>
+  <tr><td></td><td>6 [4,5]</td><td>full</td><td>t[6] = 14</td></tr>
+  <tr><td></td><td>7 [6,7]</td><td>none</td><td>0</td></tr>
+  <tr><td colspan="3">query(2,5) total</td><td><b>0 + 5 + 0 + 14 = 19</b></td></tr>
+  <tr><td>update(4, 10)</td><td>leaf 12 [4,4]</td><td>—</td><td>t[12] = 10</td></tr>
+  <tr><td></td><td>re-merge 6 [4,5]</td><td>—</td><td>t[6] = t[12] + t[13] = 10 + 9 = 19</td></tr>
+  <tr><td></td><td>re-merge 3 [4,7]</td><td>—</td><td>t[3] = t[6] + t[7] = 19 + 8 = 27</td></tr>
+  <tr><td></td><td>re-merge 1 [0,7]</td><td>—</td><td>t[1] = t[2] + t[3] = 9 + 27 = 36</td></tr>
+  <tr><td>query(2,5) again</td><td>same path</td><td>—</td><td>t[5]=5, t[6]=19 → <b>24</b></td></tr>
+</table>
+<p class="sub">
+  Only the nodes on the root-to-leaf chain for index 4 ever change — 12, then 6,
+  then 3, then 1 — which is exactly why <code>update</code> is O(log n) instead
+  of O(n). The first <code>query(2,5)</code> never even visits node 12; it reads
+  the already-cached <code>t[6] = 14</code>, which is exactly why bumping index 4
+  from 5 to 10 is enough to shift the range answer from 19 to 24 without re-summing
+  anything by hand.
+</p>
 <div class="warn">
   <span class="ttl">⚠ Two sizing/identity traps</span>
   <b>4n, not 2n.</b> When n isn't a power of two the tree is unbalanced in the
@@ -414,5 +439,16 @@ function countSmaller(nums) {
   <li>"How many earlier/later elements are smaller/larger" or "count inversions" → sweep in one direction with a Fenwick over compressed value ranks, not over positions</li>
   <li>Distinguish from a heap: a heap gives you the global min/max with updates, but cannot answer <em>a specific range</em>. Distinguish from a sorted structure: if you need order statistics <em>plus</em> ranges, that's a Fenwick over ranks</li>
   <li>If the array never changes after construction, stop — prefix sums or a sparse table, and say why you didn't build a tree</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Write a segment tree's build/query/update from memory, and explain why the no-overlap return must be the operation's identity element.</li>
+    <li>Explain why a Fenwick tree can answer range sum but not range minimum, in terms of invertibility.</li>
+    <li>Write a Fenwick tree's update and prefix loops, and explain why 1-indexing (not 0-indexing) is required for <code>k &amp; -k</code> to terminate.</li>
+    <li>State the two lazy-propagation rules — push before you look, stop at total coverage — and say what breaks if you skip either one.</li>
+    <li>Given a new problem, decide whether it needs a prefix-sum array, a Fenwick tree, or a segment tree (with or without lazy propagation), based on whether updates and non-invertible queries are both present.</li>
+  </ul>
+</div>`,
 };
