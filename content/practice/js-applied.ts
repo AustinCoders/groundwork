@@ -418,6 +418,9 @@ export const jsApplied: Exercise[] = [
       { name: "a lower minor does not", body: 'assert.equal(satisfiesCaret("^1.2.0", "1.1.9"), false);' },
       { name: "a different major does not", body: 'assert.equal(satisfiesCaret("^1.2.0", "2.0.0"), false);' },
       { name: "a lower patch on the same minor does not", body: 'assert.equal(satisfiesCaret("^1.2.5", "1.2.4"), false);' },
+      { name: "a higher patch on the same minor satisfies", body: "assert.equal(satisfiesCaret(\"^1.2.5\", \"1.2.6\"), true);" },
+      { name: "a much higher major fails even with matching minor and patch", body: "assert.equal(satisfiesCaret(\"^2.0.0\", \"3.2.0\"), false);\nassert.equal(satisfiesCaret(\"^0.5.0\", \"0.6.0\"), true);" },
+      { name: "an exact zero version matches, a lower patch does not", body: "assert.equal(satisfiesCaret(\"^1.0.0\", \"1.0.0\"), true);\nassert.equal(satisfiesCaret(\"^1.0.1\", \"1.0.0\"), false);" },
     ],
   },
 {
@@ -1048,6 +1051,9 @@ export const jsApplied: Exercise[] = [
       { name: "caps at max for a large attempt", body: "assert.equal(backoffDelay(10), 30000);" },
       { name: "respects a custom base", body: "assert.equal(backoffDelay(0, 1000), 1000);" },
       { name: "respects a custom max", body: "assert.equal(backoffDelay(3, 1000, 5000), 5000);" },
+      { name: "doubling continues correctly before the cap", body: "assert.equal(backoffDelay(5), 16000);" },
+      { name: "the first attempt that would exceed max gets capped", body: "assert.equal(backoffDelay(6), 30000);" },
+      { name: "custom base and max together", body: "assert.equal(backoffDelay(2, 100, 300), 300);\nassert.equal(backoffDelay(1, 100, 1000), 200);" },
     ],
   },
 {
@@ -1176,6 +1182,7 @@ export const jsApplied: Exercise[] = [
       { name: "every padding length works", body: "const b64 = (o) => btoa(JSON.stringify(o)).replace(/\\+/g, \"-\").replace(/\\//g, \"_\").replace(/=+$/, \"\");\nfor (const v of [\"a\", \"ab\", \"abc\", \"abcd\", \"abcde\"]) {\n  const p = { v };\n  assert.deepEqual(decodeJwtPayload(\"h.\" + b64(p) + \".s\"), p, v);\n}" },
       { name: "the header and signature are ignored", body: "const b64 = (o) => btoa(JSON.stringify(o)).replace(/\\+/g, \"-\").replace(/\\//g, \"_\").replace(/=+$/, \"\");\nassert.deepEqual(decodeJwtPayload(\"garbage.\" + b64({ a: 1 }) + \".alsogarbage\"), { a: 1 });" },
       { name: "many random ASCII payloads round trip", body: "const b64 = (o) => btoa(JSON.stringify(o)).replace(/\\+/g, \"-\").replace(/\\//g, \"_\").replace(/=+$/, \"\");\nlet x = 3;\nfor (let i = 0; i < 100; i++) {\n  let s = \"\";\n  for (let k = 0; k < 1 + (i % 17); k++) { x = (x * 1103515245 + 12345) & 0x7fffffff; s += String.fromCharCode(32 + (x % 95)); }\n  const p = { s, i };\n  assert.deepEqual(decodeJwtPayload(\"h.\" + b64(p) + \".s\"), p);\n}" },
+      { name: "negative numbers and floats survive", body: "const b64 = (o) => btoa(JSON.stringify(o)).replace(/\\+/g, \"-\").replace(/\\//g, \"_\").replace(/=+$/, \"\");\nconst payload = { temp: -12.5, count: -1 };\nassert.deepEqual(decodeJwtPayload(\"h.\" + b64(payload) + \".s\"), payload);" },
     ],
   },
 {
@@ -1237,6 +1244,9 @@ export const jsApplied: Exercise[] = [
         name: "an unknown id changes nothing",
         body: 'const todos = [{ id: 1, text: "a", done: false }];\nassert.deepEqual(toggleTodo(todos, 99), todos);',
       },
+      { name: "toggling twice restores the original done value on a new object", body: "const todos = [{ id: 1, text: \"a\", done: false }];\nconst once = toggleTodo(todos, 1);\nconst twice = toggleTodo(once, 1);\nassert.equal(twice[0].done, false);\nassert.ok(twice[0] !== todos[0]);" },
+      { name: "extra fields on a to-do are preserved", body: "const todos = [{ id: 1, text: \"a\", done: false, priority: \"high\" }];\nconst next = toggleTodo(todos, 1);\nassert.equal(next[0].priority, \"high\");\nassert.equal(next[0].text, \"a\");" },
+      { name: "toggles the right item among several, keeping order", body: "const todos = [{ id: 1, done: false }, { id: 2, done: false }, { id: 3, done: false }];\nconst next = toggleTodo(todos, 2);\nassert.deepEqual(next.map((t) => t.done), [false, true, false]);\nassert.equal(next.length, 3);" },
     ],
   },
   {
@@ -1276,6 +1286,9 @@ export const jsApplied: Exercise[] = [
         name: "an empty list is an empty list",
         body: 'assert.deepEqual(summarise([], "all"), { visible: [], remaining: 0 });',
       },
+      { name: "everything is done: active is empty and remaining is zero", body: "const todos = [{ id: 1, done: true }, { id: 2, done: true }];\nassert.deepEqual(summarise(todos, \"active\").visible, []);\nassert.equal(summarise(todos, \"active\").remaining, 0);" },
+      { name: "nothing is done: completed is empty but remaining counts them all", body: "const todos = [{ id: 1, done: false }, { id: 2, done: false }];\nassert.deepEqual(summarise(todos, \"completed\").visible, []);\nassert.equal(summarise(todos, \"completed\").remaining, 2);" },
+      { name: "an unrecognised filter behaves like all", body: "const todos = [{ id: 1, done: false }, { id: 2, done: true }];\nassert.deepEqual(summarise(todos, \"bogus\").visible, todos);" },
     ],
   },
   {
@@ -1315,6 +1328,9 @@ export const jsApplied: Exercise[] = [
         name: "it returns a promise rather than an array",
         body: 'const out = sequence([() => Promise.resolve(1)]);\nassert.type(out.then, "function", "sequence must return a promise");\nassert.deepEqual(await out, [1]);',
       },
+      { name: "a single task resolves to a one-element array", body: "assert.deepEqual(await sequence([() => Promise.resolve(42)]), [42]);" },
+      { name: "an early rejection stops any later task from starting", body: "let secondStarted = false;\nconst bad = () => Promise.reject(new Error(\"fail first\"));\nconst later = () => { secondStarted = true; return Promise.resolve(\"x\"); };\nlet threw = false;\ntry {\n  await sequence([bad, later]);\n} catch (e) {\n  threw = true;\n}\nassert.ok(threw);\nassert.equal(secondStarted, false, \"a later task ran after an earlier one rejected\");" },
+      { name: "synchronously-resolving tasks still run strictly in order", body: "const order = [];\nconst make = (n) => () => { order.push(n); return Promise.resolve(n); };\nconst out = await sequence([make(1), make(2), make(3)]);\nassert.deepEqual(order, [1, 2, 3]);\nassert.deepEqual(out, [1, 2, 3]);" },
     ],
   },
 {
@@ -1591,6 +1607,7 @@ export const jsApplied: Exercise[] = [
       { name: "works as a method extracted from its object", body: "const counter = { n: 0, inc() { this.n++; return this.n; } };\nconst inc = myBind(counter.inc, counter);\ninc();\ninc();\nassert.equal(counter.n, 2);" },
       { name: "does not change the original function", body: "function f() { return this && this.tag; }\nconst bound = myBind(f, { tag: \"x\" });\nassert.equal(bound(), \"x\");\nassert.equal(f.call({ tag: \"y\" }), \"y\");" },
       { name: "works with new and keeps the prototype", body: "function Point(x, y) { this.x = x; this.y = y; }\nPoint.prototype.sum = function () { return this.x + this.y; };\nconst P = myBind(Point, { ignored: true }, 1);\nconst p = new P(2);\nassert.equal(p.x, 1);\nassert.equal(p.y, 2);\nassert.ok(p instanceof Point);\nassert.equal(p.sum(), 3);" },
+      { name: "works with zero preset arguments, like a plain this-bind", body: "function add(a, b) { return a + b; }\nconst bound = myBind(add, null);\nassert.equal(bound(2, 3), 5);" },
     ],
   },
   {
@@ -1614,6 +1631,7 @@ export const jsApplied: Exercise[] = [
       { name: "a single call does not fire twice", body: "const calls = [];\nconst t = throttle((n) => calls.push(n), 40);\nt(\"only\");\nawait new Promise((r) => setTimeout(r, 100));\nassert.deepEqual(calls, [\"only\"]);" },
       { name: "forwards this and all arguments", body: "const seen = [];\nconst obj = { t: throttle(function (a, b) { seen.push([this === obj, a, b]); }, 30) };\nobj.t(1, 2);\nassert.deepEqual(seen, [[true, 1, 2]]);" },
       { name: "keeps throttling across several windows", body: "const calls = [];\nconst t = throttle((n) => calls.push(n), 40);\nfor (let i = 0; i < 8; i++) {\n  t(i);\n  await new Promise((r) => setTimeout(r, 15));\n}\nawait new Promise((r) => setTimeout(r, 100));\nassert.ok(calls.length >= 2 && calls.length < 8, \"ran \" + calls.length + \" times\");\nassert.equal(calls[0], 0);\nassert.equal(calls[calls.length - 1], 7);" },
+      { name: "the trailing call forwards its own this, not the leading call's", body: "const seen = [];\nconst objA = { t: null };\nconst fn = function () { seen.push(this); };\nconst shared = throttle(fn, 30);\nobjA.t = shared;\nconst objB = { t: shared };\nobjA.t();\nobjB.t();\nawait new Promise((r) => setTimeout(r, 60));\nassert.equal(seen[0], objA);\nassert.equal(seen[1], objB);" },
     ],
   },
   {
@@ -1811,6 +1829,7 @@ export const jsApplied: Exercise[] = [
       { name: "the errors are in input order, not settle order", body: "const slow = new Promise((_, rej) => setTimeout(() => rej(\"first-input\"), 30));\nconst fast = new Promise((_, rej) => setTimeout(() => rej(\"second-input\"), 5));\nlet err;\ntry { await promiseAny([slow, fast]); } catch (e) { err = e; }\nassert.deepEqual(err.errors, [\"first-input\", \"second-input\"]);" },
       { name: "an empty input rejects", body: "let err;\ntry { await promiseAny([]); } catch (e) { err = e; }\nassert.ok(err instanceof AggregateError);\nassert.deepEqual(err.errors, []);" },
       { name: "it does not wait for slower inputs once one succeeds", body: "const never = new Promise(() => {});\nconst outcome = await Promise.race([\n  promiseAny([never, Promise.resolve(\"done\")]),\n  new Promise((r) => setTimeout(() => r(\"hung\"), 100)),\n]);\nassert.equal(outcome, \"done\");" },
+      { name: "a single fulfilled input resolves with it", body: "assert.equal(await promiseAny([Promise.resolve(\"solo\")]), \"solo\");" },
     ],
   },
   {
@@ -1834,6 +1853,7 @@ export const jsApplied: Exercise[] = [
       { name: "later settlements are ignored", body: "const wait = (ms, v) => new Promise((r) => setTimeout(() => r(v), ms));\nconst p = promiseRace([wait(5, \"a\"), wait(10, \"b\")]);\nawait new Promise((r) => setTimeout(r, 40));\nassert.equal(await p, \"a\");" },
       { name: "an empty input never settles", body: "const outcome = await Promise.race([\n  promiseRace([]).then(() => \"settled\", () => \"settled\"),\n  new Promise((r) => setTimeout(() => r(\"pending\"), 30)),\n]);\nassert.equal(outcome, \"pending\");" },
       { name: "works with any iterable", body: "assert.equal(await promiseRace(new Set([Promise.resolve(\"s\")])), \"s\");" },
+      { name: "a single-item input settles with that one item", body: "assert.equal(await promiseRace([\"only\"]), \"only\");" },
     ],
   },
   {

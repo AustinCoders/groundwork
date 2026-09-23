@@ -37,6 +37,9 @@ export const dsa1: Exercise[] = [
         name: "five cities",
         body: "const cost = [\n  [0, 2, 9, 10, 7],\n  [1, 0, 6, 4, 3],\n  [15, 7, 0, 8, 3],\n  [6, 3, 12, 0, 11],\n  [9, 5, 2, 8, 0],\n];\nassert.equal(tsp(cost), 21);",
       },
+      { name: "an all-zero cost matrix always costs 0", body: "const cost = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];\nassert.equal(tsp(cost), 0);" },
+      { name: "a symmetric triangle costs the same going either direction", body: "const cost = [[0,1,2],[1,0,3],[2,3,0]];\nassert.equal(tsp(cost), 6);" },
+      { name: "matches a brute-force permutation search on a six-city graph", body: "const n = 6;\nconst cost = [];\nfor (let i = 0; i < n; i++) cost.push(new Array(n).fill(0));\nlet seed = 7;\nconst rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return (seed % 20) + 1; };\nfor (let i = 0; i < n; i++) for (let j = 0; j < n; j++) if (i !== j) cost[i][j] = rnd();\nconst permute = (arr) => { const res = []; const helper = (a, k) => { if (k === a.length) { res.push(a.slice()); return; } for (let i = k; i < a.length; i++) { [a[k], a[i]] = [a[i], a[k]]; helper(a, k + 1); [a[k], a[i]] = [a[i], a[k]]; } }; helper(arr.slice(), 0); return res; };\nlet best = Infinity;\nfor (const p of permute([1,2,3,4,5])) {\n  let total = cost[0][p[0]];\n  for (let i = 0; i < p.length - 1; i++) total += cost[p[i]][p[i+1]];\n  total += cost[p[p.length - 1]][0];\n  if (total < best) best = total;\n}\nassert.equal(tsp(cost), best);" },
     ],
   },
 {
@@ -76,6 +79,9 @@ export const dsa1: Exercise[] = [
         name: "needs the non-greedy pairing",
         body: "assert.equal(canPartitionKSubsets([10, 10, 10, 7, 7, 7, 7, 7, 7, 6, 6, 6], 3), true);\nassert.equal(canPartitionKSubsets([1, 1, 1, 1, 2, 2, 2, 2], 5), false);",
       },
+      { name: "total not divisible by k is rejected immediately", body: "assert.equal(canPartitionKSubsets([1,1,1,1], 3), false);\nassert.equal(canPartitionKSubsets([2,3,4], 2), false);" },
+      { name: "every element already equals the target", body: "assert.equal(canPartitionKSubsets([5,5,5,5], 4), true);\nassert.equal(canPartitionKSubsets([5,5,5,5], 2), true);" },
+      { name: "a larger set that partitions into five groups", body: "assert.equal(canPartitionKSubsets([1,2,3,4,5,6,7,8,9,10], 5), true);" },
     ],
   },
 {
@@ -154,6 +160,9 @@ export const dsa1: Exercise[] = [
         name: "zeros in the row",
         body: "assert.equal(maxCoins([0, 0]), 0);\nassert.equal(maxCoins([3, 0, 4]), 16);",
       },
+      { name: "matches a brute-force order search for six balloons", body: "const nums = [3,7,2,5,4,9];\nconst permute = (arr) => { const res = []; const rec = (a, k) => { if (k === a.length) { res.push(a.slice()); return; } for (let i = k; i < a.length; i++) { [a[k], a[i]] = [a[i], a[k]]; rec(a, k + 1); [a[k], a[i]] = [a[i], a[k]]; } }; rec(arr.slice(), 0); return res; };\nconst simulate = (order) => {\n  const row = nums.slice();\n  const alive = row.map((_, i) => i);\n  let total = 0;\n  for (const idx of order) {\n    const pos = alive.indexOf(idx);\n    const left = pos > 0 ? row[alive[pos - 1]] : 1;\n    const right = pos < alive.length - 1 ? row[alive[pos + 1]] : 1;\n    total += left * row[idx] * right;\n    alive.splice(pos, 1);\n  }\n  return total;\n};\nlet best = -Infinity;\nfor (const order of permute([0,1,2,3,4,5])) {\n  const t = simulate(order);\n  if (t > best) best = t;\n}\nassert.equal(maxCoins(nums), best);" },
+      { name: "matches a brute-force order search with duplicate values", body: "const nums = [4,4,4,4];\nconst permute = (arr) => { const res = []; const rec = (a, k) => { if (k === a.length) { res.push(a.slice()); return; } for (let i = k; i < a.length; i++) { [a[k], a[i]] = [a[i], a[k]]; rec(a, k + 1); [a[k], a[i]] = [a[i], a[k]]; } }; rec(arr.slice(), 0); return res; };\nconst simulate = (order) => {\n  const row = nums.slice();\n  const alive = row.map((_, i) => i);\n  let total = 0;\n  for (const idx of order) {\n    const pos = alive.indexOf(idx);\n    const left = pos > 0 ? row[alive[pos - 1]] : 1;\n    const right = pos < alive.length - 1 ? row[alive[pos + 1]] : 1;\n    total += left * row[idx] * right;\n    alive.splice(pos, 1);\n  }\n  return total;\n};\nlet best = -Infinity;\nfor (const order of permute([0,1,2,3])) {\n  const t = simulate(order);\n  if (t > best) best = t;\n}\nassert.equal(maxCoins(nums), best);" },
+      { name: "matches a brute-force order search with a zero among the balloons", body: "const nums = [5,0,3,7,2];\nconst permute = (arr) => { const res = []; const rec = (a, k) => { if (k === a.length) { res.push(a.slice()); return; } for (let i = k; i < a.length; i++) { [a[k], a[i]] = [a[i], a[k]]; rec(a, k + 1); [a[k], a[i]] = [a[i], a[k]]; } }; rec(arr.slice(), 0); return res; };\nconst simulate = (order) => {\n  const row = nums.slice();\n  const alive = row.map((_, i) => i);\n  let total = 0;\n  for (const idx of order) {\n    const pos = alive.indexOf(idx);\n    const left = pos > 0 ? row[alive[pos - 1]] : 1;\n    const right = pos < alive.length - 1 ? row[alive[pos + 1]] : 1;\n    total += left * row[idx] * right;\n    alive.splice(pos, 1);\n  }\n  return total;\n};\nlet best = -Infinity;\nfor (const order of permute([0,1,2,3,4])) {\n  const t = simulate(order);\n  if (t > best) best = t;\n}\nassert.equal(maxCoins(nums), best);" },
     ],
   },
 {
@@ -232,6 +241,9 @@ export const dsa1: Exercise[] = [
         name: "zeros do not confuse the choice",
         body: "assert.equal(rob(buildTree([0, 0, 0])), 0);\nassert.equal(rob(buildTree([2, 1, 3, null, 4])), 7);",
       },
+      { name: "taking the root can still be right even while skipping a middle node", body: "assert.equal(rob(buildTree([10, 5, 1, 100, 100])), 210);" },
+      { name: "a balanced tree of all ones takes every other level", body: "assert.equal(rob(buildTree([1, 1, 1, 1, 1, 1, 1])), 5);" },
+      { name: "an asymmetric tree with only a right subtree", body: "assert.equal(rob(buildTree([1, null, 2, 3, 4])), 8);" },
     ],
   },
 {
@@ -271,6 +283,9 @@ export const dsa1: Exercise[] = [
         name: "stays fast on a large array",
         body: "const n = 50000;\nconst base = new Array(n).fill(1);\nconst mirror = base.slice();\nconst na = new NumArray(base);\nlet total = n;\nlet seed = 99;\nconst rnd = (m) => { seed = (seed * 48271) % 2147483647; return seed % m; };\nfor (let step = 0; step < 20000; step++) {\n  const i = rnd(n);\n  const v = rnd(21) - 10;\n  total += v - mirror[i];\n  mirror[i] = v;\n  na.update(i, v);\n  assert.equal(na.sumRange(0, n - 1), total, 'full total at step ' + step);\n}\nlet expected = 0;\nfor (let i = 100; i <= 140; i++) expected += mirror[i];\nassert.equal(na.sumRange(100, 140), expected);",
       },
+      { name: "sumRange with l equal to r returns that single value", body: "const base = [4, -2, 7, 0, 3];\nconst na = new NumArray(base);\nfor (let i = 0; i < base.length; i++) assert.equal(na.sumRange(i, i), base[i]);" },
+      { name: "updating every index rebuilds the total from scratch", body: "const na = new NumArray([0, 0, 0, 0]);\nna.update(0, 5);\nna.update(1, -3);\nna.update(2, 10);\nna.update(3, 2);\nassert.equal(na.sumRange(0, 3), 14);\nassert.equal(na.sumRange(1, 2), 7);" },
+      { name: "an all-zero array traps no sum until it is updated", body: "const na = new NumArray(new Array(10).fill(0));\nassert.equal(na.sumRange(0, 9), 0);\nna.update(9, 100);\nassert.equal(na.sumRange(0, 9), 100);\nassert.equal(na.sumRange(0, 8), 0);" },
     ],
   },
 {
@@ -310,6 +325,9 @@ export const dsa1: Exercise[] = [
         name: "interleaved updates and prefixes match a brute-force mirror",
         body: "const n = 50;\nconst ft = new FenwickTree(n);\nconst mirror = new Array(n).fill(0);\nlet seed = 2024;\nconst rnd = (m) => { seed = (seed * 48271) % 2147483647; return seed % m; };\nfor (let step = 0; step < 400; step++) {\n  const i = rnd(n);\n  const delta = rnd(21) - 10;\n  ft.update(i, delta);\n  mirror[i] += delta;\n  const q = rnd(n);\n  let expected = 0;\n  for (let j = 0; j <= q; j++) expected += mirror[j];\n  assert.equal(ft.prefixSum(q), expected, 'prefixSum(' + q + ') at step ' + step);\n}",
       },
+      { name: "negative deltas can drive a prefix negative", body: "const ft = new FenwickTree(5);\nft.update(0, -3);\nft.update(4, -7);\nassert.equal(ft.prefixSum(0), -3);\nassert.equal(ft.prefixSum(4), -10);\nassert.equal(ft.prefixSum(2), -3);" },
+      { name: "power-of-two size boundaries", body: "const ft = new FenwickTree(16);\nft.update(15, 9);\nft.update(0, 1);\nassert.equal(ft.prefixSum(14), 1);\nassert.equal(ft.prefixSum(15), 10);" },
+      { name: "many updates to the same index accumulate correctly", body: "const ft = new FenwickTree(3);\nfor (let i = 0; i < 100; i++) ft.update(1, 1);\nassert.equal(ft.prefixSum(1), 100);\nassert.equal(ft.prefixSum(0), 0);\nassert.equal(ft.prefixSum(2), 100);" },
     ],
   },
 {
@@ -349,6 +367,9 @@ export const dsa1: Exercise[] = [
         name: "interleaved updates and queries match a brute-force mirror",
         body: "const n = 47;\nconst base = [];\nfor (let i = 0; i < n; i++) base.push(((i * 29) % 53) - 26);\nconst st = new SegmentTreeMin(base);\nconst mirror = base.slice();\nlet seed = 555;\nconst rnd = (m) => { seed = (seed * 48271) % 2147483647; return seed % m; };\nfor (let step = 0; step < 500; step++) {\n  if (step % 4 === 0) {\n    const i = rnd(n);\n    const v = rnd(120) - 60;\n    st.update(i, v);\n    mirror[i] = v;\n  }\n  let l = rnd(n);\n  let r = rnd(n);\n  if (l > r) { const t = l; l = r; r = t; }\n  let expected = Infinity;\n  for (let i = l; i <= r; i++) if (mirror[i] < expected) expected = mirror[i];\n  assert.equal(st.rangeMin(l, r), expected, 'rangeMin(' + l + ', ' + r + ') at step ' + step);\n}",
       },
+      { name: "repeated updates to the same index only the last one sticks", body: "const st = new SegmentTreeMin([10, 20, 30]);\nst.update(0, 5);\nst.update(0, 1);\nst.update(0, 50);\nassert.equal(st.rangeMin(0, 2), 20, 'the last update replaces, not accumulates');" },
+      { name: "a query narrowed to a single index returns exactly that value", body: "const st = new SegmentTreeMin([7, -3, 9, 2]);\nassert.equal(st.rangeMin(1, 1), -3);\nassert.equal(st.rangeMin(3, 3), 2);" },
+      { name: "all negative values", body: "const st = new SegmentTreeMin([-5, -1, -9, -3]);\nassert.equal(st.rangeMin(0, 3), -9);\nst.update(2, -100);\nassert.equal(st.rangeMin(0, 3), -100);\nassert.equal(st.rangeMin(0, 1), -5);" },
     ],
   },
 {
@@ -388,6 +409,9 @@ export const dsa1: Exercise[] = [
         name: "matches a brute force on a larger array",
         body: "const n = 300;\nconst nums = [];\nfor (let i = 0; i < n; i++) nums.push(((i * 137) % 91) - 45);\nconst brute = [];\nfor (let i = 0; i < n; i++) {\n  let c = 0;\n  for (let j = i + 1; j < n; j++) if (nums[j] < nums[i]) c++;\n  brute.push(c);\n}\nassert.deepEqual(countSmaller(nums), brute);",
       },
+      { name: "one large value followed by ties and a smaller tail", body: "assert.deepEqual(countSmaller([2, 1, 1, 1, 1, 0]), [5, 1, 1, 1, 1, 0]);" },
+      { name: "does not mutate the input array", body: "const nums = [5, 2, 6, 1];\ncountSmaller(nums);\nassert.deepEqual(nums, [5, 2, 6, 1]);" },
+      { name: "agrees with brute force on an array with heavy duplication", body: "const n = 200;\nconst nums = [];\nfor (let i = 0; i < n; i++) nums.push(i % 7);\nconst brute = [];\nfor (let i = 0; i < n; i++) {\n  let c = 0;\n  for (let j = i + 1; j < n; j++) if (nums[j] < nums[i]) c++;\n  brute.push(c);\n}\nassert.deepEqual(countSmaller(nums), brute);" },
     ],
   },
 {
@@ -427,6 +451,9 @@ export const dsa1: Exercise[] = [
         name: "interleaved updates and queries match a brute-force mirror",
         body: "const rows = 12;\nconst cols = 9;\nconst grid = [];\nfor (let i = 0; i < rows; i++) {\n  const row = [];\n  for (let j = 0; j < cols; j++) row.push(((i * 7 + j * 13) % 31) - 15);\n  grid.push(row);\n}\nconst nm = new NumMatrix(grid);\nconst mirror = [];\nfor (let i = 0; i < rows; i++) mirror.push(grid[i].slice());\nlet seed = 31337;\nconst rnd = (m) => { seed = (seed * 48271) % 2147483647; return seed % m; };\nfor (let step = 0; step < 400; step++) {\n  if (step % 3 === 0) {\n    const r = rnd(rows);\n    const c = rnd(cols);\n    const v = rnd(100) - 50;\n    nm.update(r, c, v);\n    mirror[r][c] = v;\n  }\n  let r1 = rnd(rows);\n  let r2 = rnd(rows);\n  if (r1 > r2) { const t = r1; r1 = r2; r2 = t; }\n  let c1 = rnd(cols);\n  let c2 = rnd(cols);\n  if (c1 > c2) { const t = c1; c1 = c2; c2 = t; }\n  let expected = 0;\n  for (let i = r1; i <= r2; i++) for (let j = c1; j <= c2; j++) expected += mirror[i][j];\n  assert.equal(nm.sumRegion(r1, c1, r2, c2), expected, 'step ' + step);\n}",
       },
+      { name: "a single-row grid", body: "const nm = new NumMatrix([[1, 2, 3, 4, 5]]);\nassert.equal(nm.sumRegion(0, 0, 0, 4), 15);\nassert.equal(nm.sumRegion(0, 1, 0, 3), 9);\nnm.update(0, 2, 100);\nassert.equal(nm.sumRegion(0, 0, 0, 4), 112);" },
+      { name: "a single-column grid", body: "const nm = new NumMatrix([[1], [2], [3], [4]]);\nassert.equal(nm.sumRegion(0, 0, 3, 0), 10);\nnm.update(1, 0, -2);\nassert.equal(nm.sumRegion(0, 0, 3, 0), 6);\nassert.equal(nm.sumRegion(1, 0, 1, 0), -2);" },
+      { name: "a single interior cell within a larger grid", body: "const nm = new NumMatrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);\nassert.equal(nm.sumRegion(1, 1, 1, 1), 5);\nnm.update(1, 1, 50);\nassert.equal(nm.sumRegion(1, 1, 1, 1), 50);\nassert.equal(nm.sumRegion(0, 0, 2, 2), 90);" },
     ],
   },
 {
@@ -466,6 +493,9 @@ export const dsa1: Exercise[] = [
         name: "quadratic work",
         body: "assert.equal(classify([[10, 200], [20, 800], [40, 3200], [80, 12800]]), 'O(n^2)');\nassert.equal(classify([[100, 4950], [200, 19900], [400, 79800]]), 'O(n^2)', 'n(n-1)/2 is quadratic');",
       },
+      { name: "very large n values for linear and quadratic classes", body: "assert.equal(classify([[1000000, 1000000], [2000000, 2000000]]), 'O(n)');\nassert.equal(classify([[1000, 1000000], [2000, 4000000]]), 'O(n^2)');" },
+      { name: "n log n distinguished from n at a much larger scale", body: "assert.equal(classify([[1000, 1000 * Math.log2(1000)], [1000000, 1000000 * Math.log2(1000000)]]), 'O(n log n)');" },
+      { name: "noisy quadratic samples still classify correctly within tolerance", body: "assert.equal(classify([[10, 100], [20, 405], [40, 1590]]), 'O(n^2)');" },
     ],
   },
 {
@@ -505,6 +535,9 @@ export const dsa1: Exercise[] = [
         name: "150,000 elements with no answer — quadratic will not finish",
         body: "const n = 150000;\nconst nums = [];\nfor (let i = 0; i < n; i++) nums.push(i * 2);\nassert.equal(hasPairSum(nums, 3), false, 'every value is even, so an odd target is impossible');\nassert.equal(hasPairSum(nums, 2 * n - 4), true, 'the last two values do add up');",
       },
+      { name: "target achieved only via the extreme values", body: "const nums = [100, 5, 5, 5, 5, 5, -50];\nassert.equal(hasPairSum(nums, 50), true, '100 + -50 = 50');" },
+      { name: "a large array where the answer is true, and a large array where it is not", body: "const n = 100000;\nconst nums = [];\nfor (let i = 0; i < n; i++) nums.push(i);\nassert.equal(hasPairSum(nums, 199997), true, 'the last two elements 99998 + 99999');\nassert.equal(hasPairSum(nums, -5), false);" },
+      { name: "a zero target found only via two zeros far apart", body: "const nums = new Array(50000).fill(1);\nnums[0] = 0;\nnums[49999] = 0;\nassert.equal(hasPairSum(nums, 0), true);\nnums[49999] = 5;\nassert.equal(hasPairSum(nums, 0), false);" },
     ],
   },
 {
@@ -621,6 +654,9 @@ export const dsa1: Exercise[] = [
         name: "landing exactly on a budget counts as fitting",
         body: "const approaches = [\n  { name: 'exact time', timeComplexity: 'O(n^2)', spaceComplexity: 'O(1)' },\n  { name: 'exact memory', timeComplexity: 'O(n)', spaceComplexity: 'O(n)' },\n];\nassert.deepEqual(feasibleApproaches(approaches, { n: 10000, memoryMB: 0.08 }), ['exact time', 'exact memory'], '1e8 ops and 80000 bytes are both exactly on budget');",
       },
+      { name: "logarithmic time and space always fit comfortably", body: "const approaches = [{ name: 'binary search', timeComplexity: 'O(log n)', spaceComplexity: 'O(1)' }];\nassert.deepEqual(feasibleApproaches(approaches, { n: 1000000000, memoryMB: 1 }), ['binary search']);" },
+      { name: "only the middle approach fits both budgets", body: "const approaches = [\n  { name: 'too slow', timeComplexity: 'O(n^3)', spaceComplexity: 'O(1)' },\n  { name: 'just right', timeComplexity: 'O(n log n)', spaceComplexity: 'O(n)' },\n  { name: 'too much memory', timeComplexity: 'O(1)', spaceComplexity: 'O(n^2)' },\n];\nassert.deepEqual(feasibleApproaches(approaches, { n: 100000, memoryMB: 2 }), ['just right']);" },
+      { name: "factorial time only survives a tiny n", body: "const approaches = [{ name: 'perm', timeComplexity: 'O(n!)', spaceComplexity: 'O(1)' }];\nassert.deepEqual(feasibleApproaches(approaches, { n: 1000, memoryMB: 1 }), [], 'factorial of 1000 overflows past the budget');\nassert.deepEqual(feasibleApproaches(approaches, { n: 1, memoryMB: 1 }), ['perm']);" },
     ],
   },
 {
@@ -659,6 +695,9 @@ export const dsa1: Exercise[] = [
         name: "uses the far ends of a long array",
         body: "assert.deepEqual(twoSum([1,2,3,4,5,6,7,8], 15), [6,7]);",
       },
+      { name: "two elements only", body: "assert.deepEqual(twoSum([5, -2], 3), [0, 1]);" },
+      { name: "the pair sits at the very end of a large array", body: "const n = 10000;\nconst nums = [];\nfor (let i = 0; i < n; i++) nums.push(i);\nassert.deepEqual(twoSum(nums, 19997), [9998, 9999]);" },
+      { name: "negative duplicate values", body: "assert.deepEqual(twoSum([-3, -3, 5], -6), [0, 1]);" },
     ],
   },
 {
@@ -697,6 +736,9 @@ export const dsa1: Exercise[] = [
         name: "finds the best profit late in the array",
         body: "assert.equal(maxProfit([3,2,6,5,0,3]), 4);",
       },
+      { name: "the best buy is on the very first day", body: "assert.equal(maxProfit([1, 10, 2, 1]), 9);" },
+      { name: "two days, ascending and descending", body: "assert.equal(maxProfit([1, 5]), 4);\nassert.equal(maxProfit([5, 1]), 0);" },
+      { name: "flat prices yield no profit", body: "assert.equal(maxProfit([3, 3, 3, 3]), 0);" },
     ],
   },
 {
@@ -735,6 +777,9 @@ export const dsa1: Exercise[] = [
         name: "does not mistake a negative dip for a reset",
         body: "assert.equal(maxSubArray([8,-1,9]), 16);",
       },
+      { name: "two elements", body: "assert.equal(maxSubArray([-1, -2]), -1);\nassert.equal(maxSubArray([5, -1]), 5);" },
+      { name: "zero is the best subarray among negatives and zero", body: "assert.equal(maxSubArray([-3, 0, -2]), 0);" },
+      { name: "a long alternating array finds the best run", body: "assert.equal(maxSubArray([1, -2, 3, -1, 2, -4, 5, -1]), 5);" },
     ],
   },
 {
@@ -774,6 +819,9 @@ export const dsa1: Exercise[] = [
         name: "handles duplicates across both arrays",
         body: "const a = [2,2,0,0];\nmerge(a, 2, [2,2], 2);\nassert.deepEqual(a, [2,2,2,2]);",
       },
+      { name: "nums1 entirely smaller than nums2", body: "const a = [1, 2, 0, 0, 0];\nmerge(a, 2, [3, 4, 5], 3);\nassert.deepEqual(a, [1, 2, 3, 4, 5]);" },
+      { name: "negative numbers merge correctly", body: "const a = [-5, -1, 0, 0, 0];\nmerge(a, 2, [-3, -2, 4], 3);\nassert.deepEqual(a, [-5, -3, -2, -1, 4]);" },
+      { name: "single-element arrays on both sides", body: "const a = [5, 0];\nmerge(a, 1, [3], 1);\nassert.deepEqual(a, [3, 5]);\nconst b = [3, 0];\nmerge(b, 1, [8], 1);\nassert.deepEqual(b, [3, 8]);" },
     ],
   },
 {
@@ -813,6 +861,9 @@ export const dsa1: Exercise[] = [
         name: "handles an empty array",
         body: "assert.equal(removeDuplicates([]), 0);",
       },
+      { name: "single element array", body: "const a = [9];\nconst k = removeDuplicates(a);\nassert.equal(k, 1);\nassert.deepEqual(a.slice(0, k), [9]);" },
+      { name: "negative numbers with duplicates", body: "const a = [-5, -5, -3, -3, -1, 0, 0];\nconst k = removeDuplicates(a);\nassert.equal(k, 4);\nassert.deepEqual(a.slice(0, k), [-5, -3, -1, 0]);" },
+      { name: "duplicates only at the very end", body: "const a = [1, 2, 3, 4, 4, 4, 4];\nconst k = removeDuplicates(a);\nassert.equal(k, 4);\nassert.deepEqual(a.slice(0, k), [1, 2, 3, 4]);" },
     ],
   },
 {
@@ -851,6 +902,9 @@ export const dsa1: Exercise[] = [
         name: "single element survives any k",
         body: "const a = [9];\nrotate(a, 7);\nassert.deepEqual(a, [9]);",
       },
+      { name: "k = 0 leaves the array unchanged", body: "const a = [1, 2, 3, 4];\nrotate(a, 0);\nassert.deepEqual(a, [1, 2, 3, 4]);" },
+      { name: "two element array", body: "const a = [1, 2];\nrotate(a, 3);\nassert.deepEqual(a, [2, 1]);" },
+      { name: "rotating by n - 1 moves everything but the last element by one", body: "const a = [1, 2, 3, 4, 5];\nrotate(a, 4);\nassert.deepEqual(a, [2, 3, 4, 5, 1]);" },
     ],
   },
 {
@@ -889,6 +943,9 @@ export const dsa1: Exercise[] = [
         name: "handles a two element array",
         body: "assert.deepEqual(productExceptSelf([5,7]), [7,5]);",
       },
+      { name: "all elements share the same value", body: "assert.deepEqual(productExceptSelf([2, 2, 2, 2]), [8, 8, 8, 8]);" },
+      { name: "does not mutate the input array", body: "const nums = [1, 2, 3];\nproductExceptSelf(nums);\nassert.deepEqual(nums, [1, 2, 3]);" },
+      { name: "handles a large array without overflowing on simple values", body: "const n = 100000;\nconst nums = new Array(n).fill(1);\nnums[0] = 5;\nnums[n - 1] = 7;\nconst out = productExceptSelf(nums);\nassert.equal(out[0], 7);\nassert.equal(out[n - 1], 5);\nassert.equal(out[50000], 35);" },
     ],
   },
 {
@@ -927,6 +984,9 @@ export const dsa1: Exercise[] = [
         name: "candidate gets reset mid-scan",
         body: "assert.equal(majorityElement([1,2,2,3,2,2,2]), 2);",
       },
+      { name: "clustered occurrences that only just cross the threshold", body: "const nums = [1, 1, 1, 1, 2, 2, 2, 2, 2];\nassert.equal(majorityElement(nums), 2);" },
+      { name: "majority element is zero", body: "assert.equal(majorityElement([0, 0, 0, 1, 1]), 0);" },
+      { name: "interleaved pattern that cancels evenly before recovering", body: "assert.equal(majorityElement([1, 2, 1, 2, 1, 2, 1]), 1);" },
     ],
   },
 {
@@ -965,6 +1025,9 @@ export const dsa1: Exercise[] = [
         name: "all zeroes",
         body: "const a = [0,0,0];\nmoveZeroes(a);\nassert.deepEqual(a, [0,0,0]);",
       },
+      { name: "zeroes scattered throughout preserve the order of non-zero values", body: "const a = [0, 7, 0, 0, 9, 0, 3];\nmoveZeroes(a);\nassert.deepEqual(a, [7, 9, 3, 0, 0, 0, 0]);" },
+      { name: "negative numbers are treated as non-zero", body: "const a = [-1, 0, -2, 0, -3];\nmoveZeroes(a);\nassert.deepEqual(a, [-1, -2, -3, 0, 0]);" },
+      { name: "empty array stays empty", body: "const a = [];\nmoveZeroes(a);\nassert.deepEqual(a, []);" },
     ],
   },
 {
@@ -1003,6 +1066,9 @@ export const dsa1: Exercise[] = [
         name: "duplicate negatives far apart",
         body: "assert.equal(containsDuplicate([-3,5,7,8,-3]), true);",
       },
+      { name: "detects a duplicate at the very end", body: "assert.equal(containsDuplicate([1, 2, 3, 4, 5, 1]), true);" },
+      { name: "zero is treated like any other value", body: "assert.equal(containsDuplicate([0, 0]), true);\nassert.equal(containsDuplicate([0, 1, 2]), false);" },
+      { name: "a large array with no duplicates runs quickly", body: "const n = 100000;\nconst nums = [];\nfor (let i = 0; i < n; i++) nums.push(i);\nassert.equal(containsDuplicate(nums), false);" },
     ],
   },
 {
@@ -1041,6 +1107,9 @@ export const dsa1: Exercise[] = [
         name: "unsorted longer array",
         body: "assert.equal(missingNumber([9,6,4,2,3,5,7,0,1]), 8);",
       },
+      { name: "a two-element array missing the middle value", body: "assert.equal(missingNumber([0, 2]), 1);" },
+      { name: "a larger array missing a value near the end", body: "const n = 1000;\nconst nums = [];\nfor (let i = 0; i <= n; i++) if (i !== n - 1) nums.push(i);\nassert.equal(missingNumber(nums), n - 1);" },
+      { name: "values given in reverse order", body: "assert.equal(missingNumber([4, 3, 2, 1, 0]), 5);" },
     ],
   },
 {
@@ -1080,6 +1149,9 @@ export const dsa1: Exercise[] = [
         name: "all the same value",
         body: "assert.deepEqual(findDisappearedNumbers([3,3,3]), [1,2]);",
       },
+      { name: "a large array with several missing values", body: "assert.deepEqual(findDisappearedNumbers([1, 1, 1, 1, 1, 1, 1, 1]), [2, 3, 4, 5, 6, 7, 8]);" },
+      { name: "values given in reverse sorted order with nothing missing", body: "assert.deepEqual(findDisappearedNumbers([5, 4, 3, 2, 1]), []);" },
+      { name: "duplicates at both ends leave a gap in the middle", body: "assert.deepEqual(findDisappearedNumbers([1, 1, 6, 6, 3, 3]), [2, 4, 5]);" },
     ],
   },
 {
@@ -1118,6 +1190,9 @@ export const dsa1: Exercise[] = [
         name: "single element",
         body: "const a = [1];\nsortColors(a);\nassert.deepEqual(a, [1]);",
       },
+      { name: "all the same colour", body: "const a = [1, 1, 1, 1];\nsortColors(a);\nassert.deepEqual(a, [1, 1, 1, 1]);" },
+      { name: "only two colours present, no ones at all", body: "const a = [2, 0, 2, 0, 2, 0];\nsortColors(a);\nassert.deepEqual(a, [0, 0, 0, 2, 2, 2]);" },
+      { name: "a long randomised array ends up sorted", body: "const n = 3000;\nconst a = [];\nlet seed = 42;\nfor (let i = 0; i < n; i++) { seed = (seed * 1103515245 + 12345) & 0x7fffffff; a.push(seed % 3); }\nsortColors(a);\nfor (let i = 1; i < n; i++) assert.ok(a[i] >= a[i - 1], 'must be sorted at index ' + i);\nassert.equal(a.length, n);" },
     ],
   },
 {
@@ -1157,6 +1232,9 @@ export const dsa1: Exercise[] = [
         name: "single element is unchanged",
         body: "const a = [7];\nnextPermutation(a);\nassert.deepEqual(a, [7]);",
       },
+      { name: "two elements swap", body: "const a = [1, 2];\nnextPermutation(a);\nassert.deepEqual(a, [2, 1]);" },
+      { name: "all duplicate values wrap to themselves", body: "const a = [2, 2, 2];\nnextPermutation(a);\nassert.deepEqual(a, [2, 2, 2]);" },
+      { name: "the pivot sits near the end of the array", body: "const a = [1, 5, 1];\nnextPermutation(a);\nassert.deepEqual(a, [5, 1, 1]);" },
     ],
   },
 {
@@ -1195,6 +1273,9 @@ export const dsa1: Exercise[] = [
         name: "empty input",
         body: "assert.equal(trap([]), 0);",
       },
+      { name: "a single bar traps nothing", body: "assert.equal(trap([5]), 0);" },
+      { name: "a symmetric basin between equal walls", body: "assert.equal(trap([3, 0, 3]), 3);" },
+      { name: "a wide flat dip between two tall walls", body: "assert.equal(trap([5, 0, 0, 0, 5]), 15);" },
     ],
   },
 {
@@ -1233,6 +1314,9 @@ export const dsa1: Exercise[] = [
         name: "a single line holds nothing",
         body: "assert.equal(maxArea([5]), 0);",
       },
+      { name: "increasing heights favour width over height", body: "assert.equal(maxArea([1, 2, 3, 4, 5, 6]), 9);" },
+      { name: "zero-height lines do not break the scan", body: "assert.equal(maxArea([0, 2, 0, 4, 0]), 4);" },
+      { name: "the best pair sits away from either end", body: "assert.equal(maxArea([3, 9, 3, 4, 7, 2, 12, 15]), 54);" },
     ],
   },
 ];

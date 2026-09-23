@@ -38,6 +38,9 @@ export const dsa7: Exercise[] = [
         name: "empty input",
         body: "assert.deepEqual(groupAnagrams([]), []);",
       },
+      { name: "everything is one big group", body: "const norm = (gs) =>\n  gs.map((g) => g.slice().sort()).sort((a, b) => (a.join(',') < b.join(',') ? -1 : 1));\nconst got = groupAnagrams(['abc', 'bca', 'cab']);\nassert.equal(got.length, 1);\nassert.deepEqual(norm(got), norm([['abc', 'bca', 'cab']]));" },
+      { name: "single-character words group only with themselves", body: "const norm = (gs) =>\n  gs.map((g) => g.slice().sort()).sort((a, b) => (a.join(',') < b.join(',') ? -1 : 1));\nconst got = groupAnagrams(['a', 'b', 'a']);\nassert.deepEqual(norm(got), norm([['a', 'a'], ['b']]));" },
+      { name: "case matters — 'Eat' and 'eat' are not anagrams here", body: "const got = groupAnagrams(['eat', 'Eat']);\nassert.equal(got.length, 2);" },
     ],
   },
 {
@@ -76,6 +79,9 @@ export const dsa7: Exercise[] = [
         name: "empty string is balanced",
         body: "assert.equal(isValid(''), true);",
       },
+      { name: "many separate pairs in a row", body: "assert.equal(isValid('()()()()'), true);" },
+      { name: "only closing brackets is never valid", body: "assert.equal(isValid(')))'), false);\nassert.equal(isValid('}{'), false);" },
+      { name: "deep nesting of one bracket type", body: "assert.equal(isValid('((((()))))'), true);\nassert.equal(isValid('(((()))'), false);" },
     ],
   },
 {
@@ -114,6 +120,9 @@ export const dsa7: Exercise[] = [
         name: "the boundaries themselves survive",
         body: "assert.equal(myAtoi('2147483647'), 2147483647);\nassert.equal(myAtoi('-2147483648'), -2147483648);",
       },
+      { name: "leading zeros do not affect the value", body: "assert.equal(myAtoi('0000123abc'), 123);\nassert.equal(myAtoi('-000045'), -45);" },
+      { name: "a plus sign at the very boundary is accepted", body: "assert.equal(myAtoi('+2147483647'), 2147483647);" },
+      { name: "a tab is not whitespace here — only the space character is skipped", body: "assert.equal(myAtoi('\\t42'), 0);" },
     ],
   },
 {
@@ -231,6 +240,9 @@ export const dsa7: Exercise[] = [
         name: "two rows alternate",
         body: "assert.equal(convert('ABCDE', 2), 'ACEBD');\nassert.equal(convert('', 3), '');",
       },
+      { name: "numRows exactly equal to the string length is the identity", body: "assert.equal(convert('ABCD', 4), 'ABCD');" },
+      { name: "five rows on a longer string", body: "assert.equal(convert('ABCDEFGHIJKLMNOPQRST', 5), 'AIQBHJPRCGKOSDFLNTEM');" },
+      { name: "a single character never zigzags", body: "assert.equal(convert('X', 3), 'X');\nassert.equal(convert('X', 1), 'X');" },
     ],
   },
 {
@@ -269,6 +281,9 @@ export const dsa7: Exercise[] = [
         name: "shortest window wins, not the first one",
         body: "assert.equal(minWindow('acbbaca', 'aba'), 'baca');",
       },
+      { name: "t equal to s (as a multiset) returns the whole string", body: "assert.equal(minWindow('abc', 'cba'), 'abc');" },
+      { name: "case sensitivity — uppercase and lowercase are different characters", body: "assert.equal(minWindow('aA', 'A'), 'A');\nassert.equal(minWindow('Aa', 'a'), 'a');" },
+      { name: "the window can be found right at the start of s", body: "assert.equal(minWindow('abcXYZ', 'abc'), 'abc');" },
     ],
   },
 {
@@ -308,6 +323,9 @@ export const dsa7: Exercise[] = [
         name: "repeats inside the pattern",
         body: "assert.deepEqual(findAnagrams('baa', 'aab'), [0]);\nassert.deepEqual(findAnagrams('aaaa', 'aa'), [0, 1, 2]);",
       },
+      { name: "a single-character pattern", body: "assert.deepEqual(findAnagrams('abc', 'b'), [1]);" },
+      { name: "p exactly as long as s: matches only when the whole thing is an anagram", body: "assert.deepEqual(findAnagrams('abc', 'bca'), [0]);\nassert.deepEqual(findAnagrams('abc', 'abd'), []);" },
+      { name: "an anagram at the very end of s", body: "assert.deepEqual(findAnagrams('xyzba', 'ab'), [3]);" },
     ],
   },
 {
@@ -347,6 +365,9 @@ export const dsa7: Exercise[] = [
         name: "different lengths",
         body: "assert.equal(isIsomorphic('ab', 'abc'), false);",
       },
+      { name: "a character may map to itself", body: "assert.equal(isIsomorphic('aa', 'aa'), true);\nassert.equal(isIsomorphic('ab', 'ab'), true);" },
+      { name: "single characters are always isomorphic", body: "assert.equal(isIsomorphic('a', 'z'), true);" },
+      { name: "a longer consistent pattern", body: "assert.equal(isIsomorphic('abcabc', 'xyzxyz'), true);\nassert.equal(isIsomorphic('abcabc', 'xyzxyw'), false);" },
     ],
   },
 {
@@ -386,6 +407,9 @@ export const dsa7: Exercise[] = [
         name: "single letter, single word",
         body: "assert.equal(wordPattern('a', 'dog'), true);\nassert.equal(wordPattern('a', 'dog cat'), false);",
       },
+      { name: "double spaces in the sentence are still handled", body: "assert.equal(wordPattern('aa', 'dog  dog'), true);" },
+      { name: "alternating pattern with alternating words", body: "assert.equal(wordPattern('abab', 'dog cat dog cat'), true);" },
+      { name: "all distinct letters need all distinct words", body: "assert.equal(wordPattern('abcd', 'dog cat fish dog'), false);" },
     ],
   },
 {
@@ -424,6 +448,9 @@ export const dsa7: Exercise[] = [
         name: "prefix before a nested group is preserved",
         body: "assert.equal(decodeString('2[ab3[c]d]'), 'abcccdabcccd');",
       },
+      { name: "a count of exactly 1", body: "assert.equal(decodeString('1[a]'), 'a');\nassert.equal(decodeString('1[xyz]'), 'xyz');" },
+      { name: "letters interleaved between multiple groups", body: "assert.equal(decodeString('a2[b]c3[d]e'), 'abbcddde');" },
+      { name: "nested group with letters both before and after it", body: "assert.equal(decodeString('2[a3[b]c]'), 'abbbcabbbc');" },
     ],
   },
 {
@@ -463,6 +490,9 @@ export const dsa7: Exercise[] = [
         name: "round-trips separators and whitespace",
         body: "const list = [' ', ',', 'a,b', 'x y z', '[]{}'];\nassert.deepEqual(decode(encode(list)), list);",
       },
+      { name: "round-trips strings containing newlines, tabs, and unicode", body: "const list = ['line1\\nline2', 'emoji: \\ud83d\\ude80', 'tab\\ttab'];\nassert.deepEqual(decode(encode(list)), list);" },
+      { name: "round-trips a single very short entry", body: "assert.deepEqual(decode(encode(['x'])), ['x']);" },
+      { name: "encoding the empty list gives the empty string, and encoding is deterministic", body: "assert.equal(encode([]), '');\nassert.equal(encode(['ab']), encode(['ab']));" },
     ],
   },
 {
@@ -502,6 +532,9 @@ export const dsa7: Exercise[] = [
         name: "measures the deeper side",
         body: "assert.equal(maxDepth(build([1,null,2,null,3])), 3);",
       },
+      { name: "a perfect tree of seven nodes has depth 3", body: "assert.equal(maxDepth(build([1,2,3,4,5,6,7])), 3);" },
+      { name: "a node with only a right child still counts", body: "assert.equal(maxDepth(build([1,null,2])), 2);" },
+      { name: "a five-level chain", body: "assert.equal(maxDepth(build([1,2,null,3,null,4,null,5])), 5);" },
     ],
   },
 {
@@ -540,6 +573,9 @@ export const dsa7: Exercise[] = [
         name: "an empty tree never matches a node",
         body: "assert.equal(isSameTree(build([1]), null), false);",
       },
+      { name: "larger identical trees built separately still match", body: "assert.equal(isSameTree(build([5,3,8,1,4,7,9]), build([5,3,8,1,4,7,9])), true);" },
+      { name: "a difference in a single deep leaf breaks equality", body: "assert.equal(isSameTree(build([5,3,8,1,4,7,9]), build([5,3,8,1,4,7,10])), false);" },
+      { name: "one tree has a node the other is missing, several levels down", body: "assert.equal(isSameTree(build([1,2,3,4]), build([1,2,3])), false);" },
     ],
   },
 {
@@ -579,6 +615,9 @@ export const dsa7: Exercise[] = [
         name: "single node and empty tree",
         body: "assert.equal(isSymmetric(build([1])), true);\nassert.equal(isSymmetric(null), true);",
       },
+      { name: "one side has an extra node the other lacks — not symmetric", body: "assert.equal(isSymmetric(build([1,2,2,3,null,null,null])), false);" },
+      { name: "symmetric with negative values", body: "assert.equal(isSymmetric(build([0,-1,-1,-2,-3,-3,-2])), true);" },
+      { name: "same value everywhere does not save it from an asymmetric shape", body: "assert.equal(isSymmetric(build([1,1,1,null,1,null,1])), false);" },
     ],
   },
 {
@@ -618,6 +657,9 @@ export const dsa7: Exercise[] = [
         name: "an empty tree returns null",
         body: "assert.equal(invertTree(null), null);",
       },
+      { name: "inverting twice gives back the original shape", body: "const root = build([1,2,3,4,5,6,7]);\ninvertTree(root);\nassert.deepEqual(toArray(invertTree(root)), [1,2,3,4,5,6,7]);" },
+      { name: "a right-leaning chain becomes left-leaning", body: "assert.deepEqual(toArray(invertTree(build([1,null,2,null,3]))), [1,2,null,3]);" },
+      { name: "a node with only a left child ends up with only a right child", body: "assert.deepEqual(toArray(invertTree(build([1,2]))), [1,null,2]);" },
     ],
   },
 {
@@ -657,6 +699,9 @@ export const dsa7: Exercise[] = [
         name: "an empty tree gives no levels",
         body: "assert.deepEqual(levelOrder(null), []);",
       },
+      { name: "a perfect tree of seven nodes", body: "assert.deepEqual(levelOrder(build([1,2,3,4,5,6,7])), [[1],[2,3],[4,5,6,7]]);" },
+      { name: "right children only, level by level", body: "assert.deepEqual(levelOrder(build([1,null,2,null,3])), [[1],[2],[3]]);" },
+      { name: "a level with a gap in the middle", body: "assert.deepEqual(levelOrder(build([1,2,3,null,4,5,null])), [[1],[2,3],[4,5]]);" },
     ],
   },
 {
@@ -696,6 +741,9 @@ export const dsa7: Exercise[] = [
         name: "an empty tree",
         body: "assert.deepEqual(zigzagLevelOrder(null), []);",
       },
+      { name: "a two-level tree just reverses the second level", body: "assert.deepEqual(zigzagLevelOrder(build([1,2,3])), [[1],[3,2]]);" },
+      { name: "the third level goes left-to-right again", body: "assert.deepEqual(zigzagLevelOrder(build([1,2,3,4])), [[1],[3,2],[4]]);" },
+      { name: "an unbalanced tree still alternates correctly", body: "assert.deepEqual(zigzagLevelOrder(build([1,2,null,3,4])), [[1],[2],[3,4]]);" },
     ],
   },
 {
@@ -735,6 +783,9 @@ export const dsa7: Exercise[] = [
         name: "an empty tree",
         body: "assert.deepEqual(rightSideView(null), []);",
       },
+      { name: "a right-only chain is entirely visible", body: "assert.deepEqual(rightSideView(build([1,null,2,null,3])), [1,2,3]);" },
+      { name: "the last node of a level can be a left child", body: "assert.deepEqual(rightSideView(build([1,2,3,null,null,4])), [1,3,4]);" },
+      { name: "a four-level right side view", body: "assert.deepEqual(rightSideView(build([1,2,3,4,5,6,7,8])), [1,3,7,8]);" },
     ],
   },
 {
@@ -774,6 +825,9 @@ export const dsa7: Exercise[] = [
         name: "an empty tree has diameter 0",
         body: "assert.equal(diameterOfBinaryTree(null), 0);",
       },
+      { name: "a perfect tree of seven nodes", body: "assert.equal(diameterOfBinaryTree(build([1,2,3,4,5,6,7])), 4);" },
+      { name: "a straight chain of five nodes has diameter 4", body: "assert.equal(diameterOfBinaryTree(build([1,2,null,3,null,4,null,5])), 4);" },
+      { name: "the longest path bends at the root but not at the deepest node", body: "assert.equal(diameterOfBinaryTree(build([1,2,3,4,null,null,null,5])), 4);" },
     ],
   },
 {
@@ -813,6 +867,9 @@ export const dsa7: Exercise[] = [
         name: "single node and empty tree are balanced",
         body: "assert.equal(isBalanced(build([1])), true);\nassert.equal(isBalanced(null), true);",
       },
+      { name: "a perfect tree is balanced", body: "assert.equal(isBalanced(build([1,2,3,4,5,6,7])), true);" },
+      { name: "a depth difference of exactly one is still balanced", body: "assert.equal(isBalanced(build([1,2,3,4])), true);" },
+      { name: "a depth difference of two, several levels down, makes the whole tree unbalanced", body: "assert.equal(isBalanced(build([1,2,3,4,null,null,null,5])), false);" },
     ],
   },
 {
@@ -852,6 +909,9 @@ export const dsa7: Exercise[] = [
         name: "a single node tree",
         body: "const root = build([1]);\nassert.equal(lowestCommonAncestor(root, root, root).val, 1);",
       },
+      { name: "two nodes split beneath a node other than the root", body: "const root = build([3,5,1,6,2,0,8,null,null,7,4]);\nassert.equal(lowestCommonAncestor(root, find(root, 0), find(root, 8)).val, 1);" },
+      { name: "the root is its own ancestor of any node", body: "const root = build([3,5,1,6,2,0,8,null,null,7,4]);\nassert.equal(lowestCommonAncestor(root, find(root, 3), find(root, 4)).val, 3);" },
+      { name: "siblings sharing a direct parent", body: "const root = build([3,5,1,6,2,0,8,null,null,7,4]);\nassert.equal(lowestCommonAncestor(root, find(root, 6), find(root, 2)).val, 5);" },
     ],
   },
 {
@@ -891,6 +951,9 @@ export const dsa7: Exercise[] = [
         name: "single node and empty tree are valid",
         body: "assert.equal(isValidBST(build([1])), true);\nassert.equal(isValidBST(null), true);",
       },
+      { name: "a grandchild violates an ancestor further up, not just its parent", body: "assert.equal(isValidBST(build([10,5,15,null,null,6,20])), false);" },
+      { name: "a larger valid BST", body: "assert.equal(isValidBST(build([50,30,70,20,40,60,80])), true);" },
+      { name: "negative and boundary-adjacent values", body: "assert.equal(isValidBST(build([0,-5,5])), true);\nassert.equal(isValidBST(build([0,-5,-1])), false);" },
     ],
   },
 {
@@ -930,6 +993,9 @@ export const dsa7: Exercise[] = [
         name: "a single node",
         body: "assert.equal(kthSmallest(build([42]), 1), 42);",
       },
+      { name: "kth = 4 in the main tree", body: "assert.equal(kthSmallest(build([5,3,6,2,4,null,null,1]), 4), 4);" },
+      { name: "kth = 5 in the main tree", body: "assert.equal(kthSmallest(build([5,3,6,2,4,null,null,1]), 5), 5);" },
+      { name: "a right-skewed BST", body: "assert.equal(kthSmallest(build([1,null,2,null,3,null,4]), 3), 3);" },
     ],
   },
 {
@@ -969,6 +1035,9 @@ export const dsa7: Exercise[] = [
         name: "a single node tree",
         body: "const root = build([1]);\nassert.equal(lowestCommonAncestor(root, root, root).val, 1);",
       },
+      { name: "two nodes split beneath a node other than the root", body: "const root = build([6,2,8,0,4,7,9,null,null,3,5]);\nassert.equal(lowestCommonAncestor(root, find(root, 0), find(root, 4)).val, 2);" },
+      { name: "the root is returned when it sits exactly between the two values", body: "const root = build([6,2,8,0,4,7,9,null,null,3,5]);\nassert.equal(lowestCommonAncestor(root, find(root, 6), find(root, 9)).val, 6);" },
+      { name: "one node is a distant descendant on the other's side", body: "const root = build([6,2,8,0,4,7,9,null,null,3,5]);\nassert.equal(lowestCommonAncestor(root, find(root, 0), find(root, 3)).val, 2);" },
     ],
   },
 {
@@ -1008,6 +1077,9 @@ export const dsa7: Exercise[] = [
         name: "an empty array gives null",
         body: "assert.equal(sortedArrayToBST([]), null);",
       },
+      { name: "two values still produce a balanced BST", body: "const nums = [1, 2];\nconst root = sortedArrayToBST(nums);\nassert.deepEqual(inorder(root), nums);\nassert.ok(isHeightBalanced(root));" },
+      { name: "three values produce a valid, balanced BST", body: "const nums = [1, 2, 3];\nconst root = sortedArrayToBST(nums);\nassert.deepEqual(inorder(root), nums);\nassert.ok(isHeightBalanced(root));\nassert.equal(root.val, 2);" },
+      { name: "a negative-to-positive range balances correctly", body: "const nums = [-100, -50, 0, 50, 100, 150, 200];\nconst root = sortedArrayToBST(nums);\nassert.deepEqual(inorder(root), nums);\nassert.ok(isHeightBalanced(root));" },
     ],
   },
 {
@@ -1047,6 +1119,9 @@ export const dsa7: Exercise[] = [
         name: "empty traversals give null",
         body: "assert.equal(buildTree([], []), null);",
       },
+      { name: "rebuilds a balanced seven-node tree", body: "assert.deepEqual(toArray(buildTree([4,2,1,3,6,5,7], [1,2,3,4,5,6,7])), [4,2,6,1,3,5,7]);" },
+      { name: "negative values reconstruct correctly", body: "assert.deepEqual(toArray(buildTree([-1,-2,-3], [-2,-1,-3])), [-1,-2,-3]);" },
+      { name: "one branch is one level deeper than the other", body: "assert.deepEqual(toArray(buildTree([1,2,3,4], [2,1,4,3])), [1,2,3,null,null,4]);" },
     ],
   },
 {
@@ -1086,6 +1161,9 @@ export const dsa7: Exercise[] = [
         name: "serialize produces a string",
         body: "assert.type(serialize(build([1,2,3])), 'string');",
       },
+      { name: "round trips a larger balanced tree", body: "const arr = [1,2,3,4,5,6,7];\nassert.deepEqual(toArray(deserialize(serialize(build(arr)))), arr);" },
+      { name: "round trips a tree where every value repeats", body: "const arr = [7,7,7,7,7];\nassert.deepEqual(toArray(deserialize(serialize(build(arr)))), arr);" },
+      { name: "serializing twice gives the same string back", body: "const root = build([1,2,3,null,4]);\nconst once = serialize(root);\nassert.type(once, 'string');\nassert.ok(once.length > 0);\nconst twice = serialize(deserialize(once));\nassert.equal(twice, once);" },
     ],
   },
 {
@@ -1125,6 +1203,9 @@ export const dsa7: Exercise[] = [
         name: "an empty tree has no path",
         body: "assert.equal(hasPathSum(null, 0), false);",
       },
+      { name: "negative values along the path", body: "assert.equal(hasPathSum(build([1,-2,-3,1,3,-2,null,-1]), -1), true);" },
+      { name: "a left-skewed tree that reaches the target only via the single branch", body: "assert.equal(hasPathSum(build([1,2,null,3,null,4]), 10), true);\nassert.equal(hasPathSum(build([1,2,null,3,null,4]), 9), false);" },
+      { name: "positive and negative values cancel to zero", body: "assert.equal(hasPathSum(build([0,1,-1]), 1), true);\nassert.equal(hasPathSum(build([0,1,-1]), -1), true);" },
     ],
   },
 {
@@ -1164,6 +1245,9 @@ export const dsa7: Exercise[] = [
         name: "an empty tree",
         body: "assert.deepEqual(pathSum(null, 0), []);",
       },
+      { name: "an internal node hitting the target early is not a match — only leaves count", body: "assert.deepEqual(pathSum(build([5,4,null,3]), 9), []);" },
+      { name: "two separate leaves both reach the target, in left-to-right order", body: "assert.deepEqual(pathSum(build([2,1,1]), 3), [[2,1],[2,1]]);" },
+      { name: "negative and positive branches can both reach the target", body: "assert.deepEqual(pathSum(build([1,-2,3,4,5]), 4), [[1,-2,5],[1,3]]);" },
     ],
   },
 {
@@ -1203,6 +1287,9 @@ export const dsa7: Exercise[] = [
         name: "a single negative node",
         body: "assert.equal(maxPathSum(build([-3])), -3);",
       },
+      { name: "children with negative contributions are excluded, not subtracted", body: "assert.equal(maxPathSum(build([2,-1,-2])), 2);" },
+      { name: "the best path is just two connected nodes", body: "assert.equal(maxPathSum(build([1,2])), 3);" },
+      { name: "a single positive node", body: "assert.equal(maxPathSum(build([5])), 5);" },
     ],
   },
 {
@@ -1242,6 +1329,9 @@ export const dsa7: Exercise[] = [
         name: "an empty tree returns null",
         body: "assert.equal(connect(null), null);",
       },
+      { name: "a deeper perfect tree links its deepest level fully", body: "const root = connect(build([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]));\nassert.deepEqual(nextChain(root.left.left.left), [8,9,10,11,12,13,14,15]);" },
+      { name: "the root's own next pointer stays null", body: "const root = connect(build([1,2,3,4,5,6,7]));\nassert.equal(root.next, null);" },
+      { name: "the last node of the deepest level has null next", body: "const root = connect(build([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]));\nassert.equal(root.right.right.right.next, null);" },
     ],
   },
 ];

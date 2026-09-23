@@ -155,6 +155,9 @@ export const jsFundamentals: Exercise[] = [
         name: "survives no argument at all",
         body: 'assert.deepEqual(settingsFor(), { theme: "paper", fontSize: 16, city: "Unknown" });\nassert.equal(settingsFor(null).city, "Unknown");',
       },
+      { name: "null values fall back to defaults, not just missing keys", body: "assert.deepEqual(settingsFor({ theme: null, fontSize: null }), { theme: \"paper\", fontSize: 16, city: \"Unknown\" });" },
+      { name: "a negative fontSize is still a real value", body: "assert.equal(settingsFor({ fontSize: -5 }).fontSize, -5);" },
+      { name: "address present but without a city falls back, and a null address does too", body: "assert.equal(settingsFor({ address: {} }).city, \"Unknown\");\nassert.equal(settingsFor({ address: null }).city, \"Unknown\");" },
     ],
   },
 {
@@ -225,6 +228,9 @@ export const jsFundamentals: Exercise[] = [
         name: "two counters are independent",
         body: "const a = makeCounter();\nconst b = makeCounter();\na.inc();\na.inc();\nb.inc();\nassert.equal(a.get(), 2);\nassert.equal(b.get(), 1);",
       },
+      { name: "dec returns the new value, and count can go negative", body: "const c = makeCounter();\nassert.equal(c.dec(), -1);\nassert.equal(c.dec(), -2);" },
+      { name: "get() does not change the count", body: "const c = makeCounter();\nc.inc();\nc.get();\nc.get();\nassert.equal(c.get(), 1);" },
+      { name: "inc still works when pulled off the object (no this needed)", body: "const c = makeCounter();\nconst inc = c.inc;\ninc();\ninc();\nassert.equal(c.get(), 2);" },
     ],
   },
 {
@@ -263,6 +269,9 @@ export const jsFundamentals: Exercise[] = [
         name: "each wrapper is independent",
         body: "let n = 0;\nconst make = function () { return once(function () { return ++n; }); };\nconst a = make();\nconst b = make();\nassert.equal(a(), 1);\nassert.equal(b(), 2);",
       },
+      { name: "if the wrapped function throws, later calls do not run it again", body: "let n = 0;\nconst f = once(function () { n++; throw new Error(\"boom\"); });\nlet threw = false;\ntry { f(); } catch (e) { threw = true; }\nassert.ok(threw);\nf();\nf();\nassert.equal(n, 1);" },
+      { name: "returns the cached result even when called with different arguments", body: "const f = once(function (a, b) { return a + b; });\nassert.equal(f(2, 3), 5);\nassert.equal(f(100, 200), 5);" },
+      { name: "the wrapped function receives no arguments if none are passed", body: "let received;\nconst f = once(function () { received = arguments.length; });\nf();\nassert.equal(received, 0);" },
     ],
   },
 {
@@ -301,6 +310,9 @@ export const jsFundamentals: Exercise[] = [
         name: "it drops straight into map()",
         body: "assert.deepEqual([1, 2, 3].map(double), [2, 4, 6]);",
       },
+      { name: "works with negative and fractional factors", body: "assert.equal(multiplyBy(-2)(5), -10);\nassert.equal(multiplyBy(0.5)(10), 5);" },
+      { name: "the returned function is stateless — repeated calls don't accumulate", body: "const triple = multiplyBy(3);\nassert.equal(triple(2), 6);\nassert.equal(triple(2), 6);\nassert.equal(triple(10), 30);" },
+      { name: "negative times negative is positive", body: "assert.equal(multiplyBy(-3)(-4), 12);" },
     ],
   },
 {
@@ -339,6 +351,9 @@ export const jsFundamentals: Exercise[] = [
         name: "works with any key",
         body: 'const out = groupBy([{ city: "Indore" }, { city: "Pune" }], "city");\nassert.equal(Object.keys(out).length, 2);',
       },
+      { name: "everything with the same key lands in one bucket", body: "const out = groupBy([{ r: \"a\", n: 1 }, { r: \"a\", n: 2 }, { r: \"a\", n: 3 }], \"r\");\nassert.equal(Object.keys(out).length, 1);\nassert.equal(out.a.length, 3);" },
+      { name: "numeric key values become object keys too", body: "const out = groupBy([{ score: 1 }, { score: 2 }, { score: 1 }], \"score\");\nassert.equal(out[1].length, 2);\nassert.equal(out[2].length, 1);" },
+      { name: "does not mutate the input list", body: "const list = [{ r: \"a\" }, { r: \"b\" }];\ngroupBy(list, \"r\");\nassert.deepEqual(list, [{ r: \"a\" }, { r: \"b\" }]);" },
     ],
   },
 {
@@ -499,6 +514,9 @@ export const jsFundamentals: Exercise[] = [
         name: "speak lives on the prototype, not the instance",
         body: 'const d = new Dog("Rex", "lab");\nassert.ok(!Object.prototype.hasOwnProperty.call(d, "speak"));',
       },
+      { name: "an Animal is not a Dog", body: "const a = new Animal(\"Rex\");\nassert.ok(!(a instanceof Dog));" },
+      { name: "two Dog instances keep separate fields", body: "const a = new Dog(\"Rex\", \"lab\");\nconst b = new Dog(\"Fido\", \"pug\");\nassert.equal(a.name, \"Rex\");\nassert.equal(b.name, \"Fido\");\nassert.equal(a.breed, \"lab\");\nassert.equal(b.breed, \"pug\");" },
+      { name: "Dog.prototype.speak is a different function from Animal.prototype.speak", body: "assert.notEqual(Dog.prototype.speak, Animal.prototype.speak);" },
     ],
   },
 {
@@ -688,6 +706,9 @@ export const jsFundamentals: Exercise[] = [
         name: "it really is a WeakMap (objects only)",
         body: 'const m = makeMetaStore();\nlet threw = false;\ntry { m.set("a string", 1); } catch (e) { threw = true; }\nassert.ok(threw, "a WeakMap refuses primitive keys — a plain object would have accepted this");',
       },
+      { name: "set overwrites a previous value for the same object", body: "const m = makeMetaStore();\nconst o = {};\nm.set(o, \"first\");\nm.set(o, \"second\");\nassert.equal(m.get(o), \"second\");" },
+      { name: "set returns the object it was given", body: "const m = makeMetaStore();\nconst o = {};\nassert.equal(m.set(o, 1), o);" },
+      { name: "functions are valid keys too", body: "const m = makeMetaStore();\nconst fn = function () {};\nm.set(fn, \"meta\");\nassert.equal(m.get(fn), \"meta\");" },
     ],
   },
   {
@@ -727,6 +748,9 @@ export const jsFundamentals: Exercise[] = [
         name: "a mixed scope, all four kinds at once",
         body: 'assert.deepEqual(\n  creationPhase([\n    { kind: "var", name: "a" },\n    { kind: "let", name: "b" },\n    { kind: "function", name: "f" },\n    { kind: "const", name: "c" },\n  ]),\n  { a: "undefined", b: "TDZ", f: "function", c: "TDZ" }\n);',
       },
+      { name: "declarations that look like special property names still work", body: "assert.deepEqual(creationPhase([{ kind: \"var\", name: \"toString\" }, { kind: \"let\", name: \"constructor\" }]), { toString: \"undefined\", constructor: \"TDZ\" });" },
+      { name: "multiple vars and multiple lets, still all present", body: "assert.deepEqual(\n  creationPhase([\n    { kind: \"var\", name: \"a\" },\n    { kind: \"var\", name: \"b\" },\n    { kind: \"let\", name: \"c\" },\n    { kind: \"let\", name: \"d\" },\n  ]),\n  { a: \"undefined\", b: \"undefined\", c: \"TDZ\", d: \"TDZ\" }\n);" },
+      { name: "a scope with only function declarations", body: "assert.deepEqual(creationPhase([{ kind: \"function\", name: \"f\" }, { kind: \"function\", name: \"g\" }]), { f: \"function\", g: \"function\" });" },
     ],
   },
   {
@@ -766,6 +790,9 @@ export const jsFundamentals: Exercise[] = [
         name: "throws when no scope declares it",
         body: 'assert.throws(() => lookup([{ a: 1 }, { b: 2 }], "nope"));',
       },
+      { name: "an empty chain always throws", body: "assert.throws(() => lookup([], \"x\"));" },
+      { name: "found only in the outermost scope of a long chain", body: "assert.equal(lookup([{ a: 1 }, { b: 2 }, { c: 3 }, { d: 4 }], \"d\"), 4);" },
+      { name: "the error thrown is a real ReferenceError with the name in its message", body: "let err;\ntry { lookup([{}], \"missing\"); } catch (e) { err = e; }\nassert.ok(err instanceof ReferenceError);\nassert.ok(err.message.includes(\"missing\"));" },
     ],
   },
   {
@@ -813,6 +840,7 @@ export const jsFundamentals: Exercise[] = [
         name: "reports the FIRST clash in order",
         body: 'assert.equal(\n  firstRedeclaration([\n    { kind: "var", name: "p" },\n    { kind: "let", name: "q" },\n    { kind: "var", name: "p" },\n    { kind: "const", name: "q" },\n    { kind: "let", name: "p" },\n  ]),\n  "q"\n);',
       },
+      { name: "an empty scope has nothing to clash", body: "assert.equal(firstRedeclaration([]), null);" },
     ],
   },
   {
@@ -856,6 +884,8 @@ export const jsFundamentals: Exercise[] = [
         name: "survives an object that contains itself",
         body: "const loop = { name: \"loop\" };\nloop.self = loop;\nassert.equal(deepFreeze(loop), loop);\nassert.ok(Object.isFrozen(loop));",
       },
+      { name: "freezing twice is a no-op, not infinite recursion", body: "const obj = deepFreeze({ a: { b: 1 } });\nassert.equal(deepFreeze(obj), obj);\nassert.ok(Object.isFrozen(obj.a));" },
+      { name: "an already-frozen nested object is not re-descended into incorrectly", body: "const inner = Object.freeze({ x: 1 });\nconst obj = deepFreeze({ inner, other: { y: 2 } });\nassert.ok(Object.isFrozen(obj.inner));\nassert.ok(Object.isFrozen(obj.other));" },
     ],
   },
   {
@@ -899,6 +929,8 @@ export const jsFundamentals: Exercise[] = [
         name: "returns null when nothing declares it",
         body: 'const tree = { name: "global", declares: ["a"], children: [] };\nassert.equal(whereDeclared(tree, ["global"], "zip"), null);',
       },
+      { name: "resolves at the root when nothing closer declares it", body: "const tree = { name: \"global\", declares: [\"root\"], children: [{ name: \"f\", declares: [], children: [] }] };\nassert.equal(whereDeclared(tree, [\"global\", \"f\"], \"root\"), \"global\");" },
+      { name: "walks correctly through a four-level-deep path", body: "const tree = { name: \"global\", declares: [\"root\"], children: [{ name: \"a\", declares: [], children: [{ name: \"b\", declares: [], children: [{ name: \"c\", declares: [], children: [] }] }] }] };\nassert.equal(whereDeclared(tree, [\"global\", \"a\", \"b\", \"c\"], \"root\"), \"global\");" },
     ],
   },
   {
@@ -938,6 +970,9 @@ export const jsFundamentals: Exercise[] = [
         name: "strict mode: an undeclared name throws ReferenceError",
         body: 'const g = {};\nconst f = {};\nassert.throws(() => assign([f, g], "totl", 10, true), ReferenceError);\nassert.equal("totl" in g, false);',
       },
+      { name: "in a single-scope chain that scope is also the global", body: "const g = {};\nassign([g], \"x\", 5, false);\nassert.equal(g.x, 5);" },
+      { name: "three levels deep: only the declaring scope, not global, is touched", body: "const g = { x: \"g\" };\nconst mid = { x: \"mid\" };\nconst inner = { y: 1 };\nassign([inner, mid, g], \"x\", \"new\", false);\nassert.equal(mid.x, \"new\");\nassert.equal(g.x, \"g\");\nassert.equal(\"x\" in inner, false);" },
+      { name: "strict mode still writes normally when the name is declared", body: "const g = { count: 0 };\nassign([g], \"count\", 9, true);\nassert.equal(g.count, 9);" },
     ],
   },
   {
@@ -977,6 +1012,9 @@ export const jsFundamentals: Exercise[] = [
         name: "indentation depth does not matter",
         body: 'assert.deepEqual(framesFrom("Error: e\\nat one (a.js:1:1)\\n        at two (a.js:2:1)"), ["one", "two"]);',
       },
+      { name: "a constructor frame's name is read literally, including the word 'new'", body: "assert.deepEqual(framesFrom(\"Error: e\\n    at new Foo (file.js:1:1)\"), [\"new\"]);" },
+      { name: "dotted names like Object.method come through whole", body: "assert.deepEqual(framesFrom(\"Error: e\\n    at Object.handler (app.js:9:1)\"), [\"Object.handler\"]);" },
+      { name: "blank lines between frames are ignored", body: "assert.deepEqual(framesFrom(\"Error: e\\n\\n    at one (a.js:1:1)\\n\\n    at two (a.js:2:1)\"), [\"one\", \"two\"]);" },
     ],
   },
   {
@@ -1004,6 +1042,9 @@ export const jsFundamentals: Exercise[] = [
         name: "it really yields between chunks instead of running straight through",
         body: 'const pending = sumInChunks([1, 2, 3, 4], 2);\nconst winner = await Promise.race([pending, Promise.resolve("yielded")]);\nassert.equal(winner, "yielded", "a synchronous loop would have won this race — yours must hand the thread back");\nassert.equal(await pending, 10);',
       },
+      { name: "handles negative numbers", body: "assert.equal(await sumInChunks([-1, -2, 3, 10], 3), 10);" },
+      { name: "chunkSize of 1 still works", body: "assert.equal(await sumInChunks([1, 2, 3], 1), 6);" },
+      { name: "matches a reference sum for a longer list", body: "const nums = Array.from({ length: 37 }, (_, i) => i + 1);\nconst expected = nums.reduce((a, b) => a + b, 0);\nassert.equal(await sumInChunks(nums, 5), expected);" },
     ],
   },
   {
@@ -1043,6 +1084,9 @@ export const jsFundamentals: Exercise[] = [
         name: "a realistic page with all three",
         body: 'assert.deepEqual(\n  executionOrder([\n    { src: "app.js", mode: "defer", downloadMs: 40 },\n    { src: "analytics.js", mode: "async", downloadMs: 80 },\n    { src: "polyfill.js", mode: "plain", downloadMs: 120 },\n    { src: "ads.js", mode: "async", downloadMs: 10 },\n  ]),\n  ["polyfill.js", "ads.js", "analytics.js", "app.js"]\n);',
       },
+      { name: "only defer scripts keep document order", body: "assert.deepEqual(\n  executionOrder([\n    { src: \"b.js\", mode: \"defer\", downloadMs: 5 },\n    { src: \"a.js\", mode: \"defer\", downloadMs: 500 },\n  ]),\n  [\"b.js\", \"a.js\"]\n);" },
+      { name: "an empty script list gives an empty order", body: "assert.deepEqual(executionOrder([]), []);" },
+      { name: "three async scripts sort purely by downloadMs", body: "assert.deepEqual(\n  executionOrder([\n    { src: \"c.js\", mode: \"async\", downloadMs: 30 },\n    { src: \"a.js\", mode: \"async\", downloadMs: 5 },\n    { src: \"b.js\", mode: \"async\", downloadMs: 15 },\n  ]),\n  [\"a.js\", \"b.js\", \"c.js\"]\n);" },
     ],
   },
   {
@@ -1082,6 +1126,9 @@ export const jsFundamentals: Exercise[] = [
         name: "several tasks add up",
         body: "assert.deepEqual(budgetReport([20, 51, 200]), { longTasks: 2, framesDropped: 16 });",
       },
+      { name: "a task under 16ms drops no frames, one at exactly 16ms drops one", body: "assert.deepEqual(budgetReport([15]), { longTasks: 0, framesDropped: 0 });\nassert.deepEqual(budgetReport([16]), { longTasks: 0, framesDropped: 1 });" },
+      { name: "a zero-length task changes nothing", body: "assert.deepEqual(budgetReport([0]), { longTasks: 0, framesDropped: 0 });" },
+      { name: "a very long task", body: "assert.deepEqual(budgetReport([1000]), { longTasks: 1, framesDropped: 62 });" },
     ],
   },
   {
@@ -1121,6 +1168,9 @@ export const jsFundamentals: Exercise[] = [
         name: "works twice in a row on the same object",
         body: 'const target = { name: "ana" };\nfunction whoAmI() { return this.name; }\nassert.equal(callWith(whoAmI, target), "ana");\nassert.equal(callWith(whoAmI, target), "ana");',
       },
+      { name: "works with no extra arguments", body: "function justThis() { return this.x; }\nassert.equal(callWith(justThis, { x: 42 }), 42);" },
+      { name: "works on an object with no prototype", body: "const target = Object.create(null);\ntarget.name = \"ghost\";\nfunction whoAmI() { return this.name; }\nassert.equal(callWith(whoAmI, target), \"ghost\");" },
+      { name: "an existing property on the object survives untouched", body: "const target = { name: \"ana\", role: \"admin\" };\nfunction whoAmI() { return this.name; }\ncallWith(whoAmI, target);\nassert.equal(target.role, \"admin\");\nassert.equal(target.name, \"ana\");" },
     ],
   },
   {
@@ -1160,6 +1210,9 @@ export const jsFundamentals: Exercise[] = [
         name: "two counters do not share a count",
         body: "const a = makeCounter();\nconst b = makeCounter();\na.increment();\nassert.equal(a.count, 1);\nassert.equal(b.count, 0, \"the two counters are sharing state\");",
       },
+      { name: "increment returns the new count", body: "const c = makeCounter();\nassert.equal(c.increment(), 1);\nassert.equal(c.increment(), 2);" },
+      { name: "calling it with .call and an unrelated this makes no difference", body: "const c = makeCounter();\nc.increment.call({ count: 999 });\nassert.equal(c.count, 1);" },
+      { name: "storing the method elsewhere and calling it repeatedly still works", body: "const c = makeCounter();\nconst fns = [c.increment, c.increment, c.increment];\nfns.forEach((fn) => fn());\nassert.equal(c.count, 3);" },
     ],
   },
 {

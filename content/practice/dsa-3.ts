@@ -37,6 +37,9 @@ export const dsa3: Exercise[] = [
         name: "n = 8 still satisfies every rule",
         body: "const out = grayCode(8);\nassert.equal(out.length, 256);\nassert.equal(out[0], 0);\nassert.equal(new Set(out).size, 256);\nfor (let i = 0; i < out.length; i++) {\n  const d = out[i] ^ out[(i + 1) % out.length];\n  assert.ok(d !== 0 && (d & (d - 1)) === 0, 'one-bit rule broken at index ' + i);\n}",
       },
+      { name: "n = 2 covers all four values", body: "const out = grayCode(2);\nassert.equal(out.length, 4);\nassert.equal(out[0], 0);\nassert.equal(new Set(out).size, 4);\nfor (let i = 0; i < out.length; i++) {\n  const d = out[i] ^ out[(i + 1) % out.length];\n  assert.ok(d !== 0 && (d & (d - 1)) === 0, 'one-bit rule broken at index ' + i);\n}" },
+      { name: "n = 5 satisfies every rule", body: "const out = grayCode(5);\nassert.equal(out.length, 32);\nassert.equal(out[0], 0);\nassert.equal(new Set(out).size, 32);\nfor (let i = 0; i < out.length; i++) {\n  const d = out[i] ^ out[(i + 1) % out.length];\n  assert.ok(d !== 0 && (d & (d - 1)) === 0, 'one-bit rule broken at index ' + i);\n}" },
+      { name: "n = 10 stays correct at 1024 entries", body: "const out = grayCode(10);\nassert.equal(out.length, 1024);\nassert.equal(out[0], 0);\nassert.equal(new Set(out).size, 1024);\nfor (let i = 0; i < out.length; i++) {\n  const d = out[i] ^ out[(i + 1) % out.length];\n  assert.ok(d !== 0 && (d & (d - 1)) === 0, 'one-bit rule broken at index ' + i);\n}" },
     ],
   },
 {
@@ -75,6 +78,9 @@ export const dsa3: Exercise[] = [
         name: "large input must not use the O(n^2) loop",
         body: "const nums = [];\nfor (let i = 0; i < 60000; i++) nums.push((i * 2654435761) % 2147483647);\nnums.push(0);\nnums.push(2147483647);\nassert.equal(findMaximumXOR(nums), 2147483647);",
       },
+      { name: "all equal values give zero", body: "assert.equal(findMaximumXOR([5, 5, 5, 5]), 0);" },
+      { name: "brute-force cross-check on a mixed array", body: "const nums = [15, 175, 3, 90, 200];\nlet expect = 0;\nfor (const a of nums) for (const b of nums) if ((a ^ b) > expect) expect = a ^ b;\nassert.equal(findMaximumXOR(nums), expect);" },
+      { name: "values spanning near the 31-bit boundary", body: "assert.equal(findMaximumXOR([0, 2147483647]), 2147483647);" },
     ],
   },
 {
@@ -114,6 +120,9 @@ export const dsa3: Exercise[] = [
         name: "empty array, plain ASCII, and truncated characters",
         body: "assert.equal(validUtf8([]), true);\nassert.equal(validUtf8([0, 65, 127]), true);\nassert.equal(validUtf8([237]), false);\nassert.equal(validUtf8([240, 162, 138]), false);",
       },
+      { name: "masks off bits above the lowest 8", body: "assert.equal(validUtf8([200 + 256 * 3, 130 + 256 * 5]), true);\nassert.equal(validUtf8([700]), false);" },
+      { name: "multiple characters concatenated back to back", body: "assert.equal(validUtf8([197, 130, 228, 184, 173, 65]), true);" },
+      { name: "boundary continuation byte values", body: "assert.equal(validUtf8([197, 191]), true);\nassert.equal(validUtf8([197, 192]), false);" },
     ],
   },
 {
@@ -153,6 +162,9 @@ export const dsa3: Exercise[] = [
         name: "longer mixed array",
         body: "assert.equal(countTriplets([7, 11, 12, 9, 5, 2, 7, 17, 22]), 8);",
       },
+      { name: "adjacent equal values trigger short triplets", body: "assert.equal(countTriplets([1, 1]), 1);\nassert.equal(countTriplets([3, 3, 3]), 2);" },
+      { name: "brute-force cross-check on a mixed array with duplicates and zeros", body: "const arr = [4, 2, 2, 6, 4, 1, 6];\nlet expect = 0;\nfor (let i = 0; i < arr.length; i++) {\n  for (let j = i + 1; j < arr.length; j++) {\n    for (let k = j; k < arr.length; k++) {\n      let a = 0, b = 0;\n      for (let x = i; x < j; x++) a ^= arr[x];\n      for (let x = j; x <= k; x++) b ^= arr[x];\n      if (a === b) expect++;\n    }\n  }\n}\nassert.equal(countTriplets(arr), expect);" },
+      { name: "does not mutate the input array", body: "const arr = [2, 3, 1, 6, 7];\nconst copy = arr.slice();\ncountTriplets(arr);\nassert.deepEqual(arr, copy);" },
     ],
   },
 {
@@ -191,6 +203,9 @@ export const dsa3: Exercise[] = [
         name: "high bit positions still counted",
         body: "assert.equal(minFlips(1073741824, 0, 0), 1);\nassert.equal(minFlips(0, 0, 1073741824), 1);\nassert.equal(minFlips(1073741824, 1073741824, 0), 2);",
       },
+      { name: "clearing bits that are set in both a and b", body: "assert.equal(minFlips(3, 3, 0), 4);" },
+      { name: "setting bits that are off in both a and b", body: "assert.equal(minFlips(0, 0, 7), 3);" },
+      { name: "mixed clears and sets across several bit positions", body: "assert.equal(minFlips(5, 10, 12), 2);" },
     ],
   },
 {
@@ -229,6 +244,9 @@ export const dsa3: Exercise[] = [
         name: "large inputs must not enumerate the pairs",
         body: "const a = [];\nconst b = [];\nfor (let i = 0; i < 100000; i++) a.push(i & 1023);\nfor (let i = 0; i < 100000; i++) b.push((i * 3) & 1023);\nlet x = 0;\nlet y = 0;\nfor (const v of a) x ^= v;\nfor (const v of b) y ^= v;\nassert.equal(getXORSum(a, b), x & y);",
       },
+      { name: "identical arrays", body: "assert.equal(getXORSum([3, 5, 9], [3, 5, 9]), 15);" },
+      { name: "an arbitrary small case", body: "assert.equal(getXORSum([12, 10], [5]), 4);" },
+      { name: "does not mutate either input array", body: "const a = [1, 2, 3];\nconst b = [6, 5];\nconst ac = a.slice();\nconst bc = b.slice();\ngetXORSum(a, b);\nassert.deepEqual(a, ac);\nassert.deepEqual(b, bc);" },
     ],
   },
 {
@@ -267,6 +285,9 @@ export const dsa3: Exercise[] = [
         name: "round-trips against a freshly built encoding",
         body: "const original = [11, 4, 27, 3, 0, 64, 1000];\nconst encoded = [];\nfor (let i = 0; i + 1 < original.length; i++) encoded.push(original[i] ^ original[i + 1]);\nassert.deepEqual(decode(encoded, original[0]), original);",
       },
+      { name: "single encoded value", body: "assert.deepEqual(decode([5], 3), [3, 6]);" },
+      { name: "does not mutate the encoded array", body: "const encoded = [1, 2, 3];\nconst copy = encoded.slice();\ndecode(encoded, 1);\nassert.deepEqual(encoded, copy);" },
+      { name: "large first value with zeros mixed in", body: "assert.deepEqual(decode([0, 0, 7], 100), [100, 100, 100, 99]);" },
     ],
   },
 {
@@ -306,6 +327,9 @@ export const dsa3: Exercise[] = [
         name: "many queries against a linear reference",
         body: "const arr = [];\nfor (let i = 0; i < 2000; i++) arr.push((i * 37) & 1023);\nconst queries = [];\nfor (let i = 0; i < 500; i++) queries.push([i, 1999 - i]);\nconst out = xorQueries(arr, queries);\nassert.equal(out.length, 500);\nfor (let q = 0; q < queries.length; q++) {\n  let expect = 0;\n  for (let i = queries[q][0]; i <= queries[q][1]; i++) expect ^= arr[i];\n  assert.equal(out[q], expect);\n}",
       },
+      { name: "does not mutate the input array", body: "const arr = [1, 3, 4, 8];\nconst copy = arr.slice();\nxorQueries(arr, [[0, 1]]);\nassert.deepEqual(arr, copy);" },
+      { name: "a query covering the whole array", body: "assert.deepEqual(xorQueries([2, 5, 9, 13], [[0, 3]]), [3]);" },
+      { name: "repeated identical ranges alongside a single-index query", body: "assert.deepEqual(xorQueries([1, 2, 3], [[0, 2], [0, 2], [1, 1]]), [0, 0, 2]);" },
     ],
   },
 {
@@ -344,6 +368,9 @@ export const dsa3: Exercise[] = [
         name: "single land cell",
         body: "assert.equal(numIslands([['1']]), 1);",
       },
+      { name: "empty grid", body: "assert.equal(numIslands([]), 0);" },
+      { name: "a single row with two separate islands", body: "assert.equal(numIslands([['1', '0', '1', '1']]), 2);" },
+      { name: "a large fully-land grid is one island", body: "const n = 40;\nconst grid = Array.from({ length: n }, () => new Array(n).fill('1'));\nassert.equal(numIslands(grid), 1);" },
     ],
   },
 {
@@ -382,6 +409,9 @@ export const dsa3: Exercise[] = [
         name: "long snaking island",
         body: "const grid = [\n  [1,1,1,1],\n  [0,0,0,1],\n  [1,1,1,1],\n];\nassert.equal(maxAreaOfIsland(grid), 9);",
       },
+      { name: "single cell grids", body: "assert.equal(maxAreaOfIsland([[1]]), 1);\nassert.equal(maxAreaOfIsland([[0]]), 0);" },
+      { name: "the largest island is not the first one found", body: "const grid = [\n  [1, 1, 0, 0],\n  [0, 0, 0, 1],\n  [0, 1, 1, 1],\n];\nassert.equal(maxAreaOfIsland(grid), 4);" },
+      { name: "a single row island stops at a water gap", body: "assert.equal(maxAreaOfIsland([[1, 1, 1, 0, 1]]), 3);" },
     ],
   },
 {
@@ -421,6 +451,9 @@ export const dsa3: Exercise[] = [
         name: "null graph",
         body: "assert.equal(cloneGraph(null), null);",
       },
+      { name: "a self-referencing node clones its own self-loop, not the original's", body: "const original = buildGraph([[1]]);\nconst copy = cloneGraph(original);\nassert.equal(copy.neighbors.length, 1);\nassert.equal(copy.neighbors[0], copy);\nassert.notEqual(copy.neighbors[0], original);" },
+      { name: "a five-node cycle clones with the same shape", body: "const adj = [[2, 5], [1, 3], [2, 4], [3, 5], [1, 4]];\nconst copy = cloneGraph(buildGraph(adj));\nassert.deepEqual(serialize(copy), adj);\nassert.equal(collectNodes(copy).length, 5);" },
+      { name: "neighbour arrays are fresh, not shared, objects", body: "const original = buildGraph([[2, 4], [1, 3], [2, 4], [1, 3]]);\nconst copy = cloneGraph(original);\nassert.notEqual(copy.neighbors, original.neighbors);\ncopy.neighbors.push('x');\nassert.equal(original.neighbors.length, 2);" },
     ],
   },
 {
@@ -459,6 +492,9 @@ export const dsa3: Exercise[] = [
         name: "two sources meet in the middle",
         body: "const grid = [[2,1,1,1,2]];\nassert.equal(orangesRotting(grid), 2);",
       },
+      { name: "a single fresh orange with no rotten source never rots", body: "assert.equal(orangesRotting([[1]]), -1);" },
+      { name: "a single rotten orange with no fresh oranges", body: "assert.equal(orangesRotting([[2]]), 0);" },
+      { name: "a larger grid spreads from one corner", body: "const grid = [\n  [2, 1, 1, 1, 1],\n  [1, 1, 1, 1, 1],\n  [1, 1, 1, 1, 1],\n  [1, 1, 1, 1, 1],\n  [1, 1, 1, 1, 1],\n];\nassert.equal(orangesRotting(grid), 8);" },
     ],
   },
 {
@@ -497,6 +533,9 @@ export const dsa3: Exercise[] = [
         name: "empty grid",
         body: "assert.deepEqual(pacificAtlantic([]), []);",
       },
+      { name: "brute-force cross-check against a forward flow simulation", body: "const heights = [\n  [3, 3, 3, 3],\n  [3, 1, 2, 3],\n  [3, 2, 1, 3],\n  [3, 3, 3, 3],\n];\nconst rows = heights.length;\nconst cols = heights[0].length;\nconst canReach = (sr, sc) => {\n  const seen = Array.from({ length: rows }, () => new Array(cols).fill(false));\n  const stack = [[sr, sc]];\n  seen[sr][sc] = true;\n  let touchesPacific = sr === 0 || sc === 0;\n  let touchesAtlantic = sr === rows - 1 || sc === cols - 1;\n  while (stack.length) {\n    const [r, c] = stack.pop();\n    for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {\n      const nr = r + dr;\n      const nc = c + dc;\n      if (nr < 0 || nc < 0 || nr >= rows || nc >= cols || seen[nr][nc]) continue;\n      if (heights[nr][nc] > heights[r][c]) continue;\n      seen[nr][nc] = true;\n      if (nr === 0 || nc === 0) touchesPacific = true;\n      if (nr === rows - 1 || nc === cols - 1) touchesAtlantic = true;\n      stack.push([nr, nc]);\n    }\n  }\n  return touchesPacific && touchesAtlantic;\n};\nconst expected = [];\nfor (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) if (canReach(r, c)) expected.push([r, c]);\nconst got = pacificAtlantic(heights).slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);\nconst exp = expected.sort((a, b) => a[0] - b[0] || a[1] - b[1]);\nassert.deepEqual(got, exp);" },
+      { name: "a single column touches both oceans everywhere", body: "const out = pacificAtlantic([[5], [1], [9]]).slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);\nassert.deepEqual(out, [[0, 0], [1, 0], [2, 0]]);" },
+      { name: "does not mutate the input heights grid", body: "const heights = [[1, 2], [4, 3]];\nconst copy = heights.map((row) => row.slice());\npacificAtlantic(heights);\nassert.deepEqual(heights, copy);" },
     ],
   },
 {
@@ -536,6 +575,9 @@ export const dsa3: Exercise[] = [
         name: "two regions, only one enclosed",
         body: "const board = [\n  ['X','X','X','X','X'],\n  ['X','O','X','O','X'],\n  ['X','X','X','O','O'],\n];\nsolve(board);\nassert.deepEqual(board, [\n  ['X','X','X','X','X'],\n  ['X','X','X','O','X'],\n  ['X','X','X','O','O'],\n]);",
       },
+      { name: "multiple separate enclosed regions are all captured", body: "const board = [\n  ['X', 'X', 'X', 'X', 'X'],\n  ['X', 'O', 'X', 'O', 'X'],\n  ['X', 'X', 'X', 'O', 'X'],\n  ['X', 'X', 'X', 'X', 'X'],\n];\nsolve(board);\nassert.deepEqual(board, [\n  ['X', 'X', 'X', 'X', 'X'],\n  ['X', 'X', 'X', 'X', 'X'],\n  ['X', 'X', 'X', 'X', 'X'],\n  ['X', 'X', 'X', 'X', 'X'],\n]);" },
+      { name: "a region touching a corner survives", body: "const board = [['O', 'X'], ['X', 'X']];\nsolve(board);\nassert.deepEqual(board, [['O', 'X'], ['X', 'X']]);" },
+      { name: "empty board does not throw", body: "const board = [];\nsolve(board);\nassert.deepEqual(board, []);" },
     ],
   },
 {
@@ -575,6 +617,9 @@ export const dsa3: Exercise[] = [
         name: "takes the shorter of two routes",
         body: "assert.equal(\n  ladderLength('red', 'tax', ['ted','tex','red','tax','tad','den','rex','pee']),\n  4\n);",
       },
+      { name: "beginWord equal to endWord", body: "assert.equal(ladderLength('hot', 'hot', ['hot']), 1);" },
+      { name: "a dead-end branch in the word list does not confuse the search", body: "assert.equal(ladderLength('cat', 'dog', ['cot', 'cog', 'dot', 'dog', 'bat', 'cap']), 4);" },
+      { name: "a single-step transformation", body: "assert.equal(ladderLength('hot', 'dot', ['dot']), 2);" },
     ],
   },
   {
@@ -688,6 +733,9 @@ export const dsa3: Exercise[] = [
         name: "a diamond is fine, a longer cycle is not",
         body: "assert.equal(canFinish(4, [[1,0],[2,0],[3,1],[3,2]]), true);\nassert.equal(canFinish(4, [[1,0],[2,1],[0,2],[3,0]]), false);",
       },
+      { name: "duplicate prerequisites do not cause problems", body: "assert.equal(canFinish(2, [[1, 0], [1, 0]]), true);" },
+      { name: "a larger DAG with multiple independent chains", body: "assert.equal(canFinish(6, [[1, 0], [2, 1], [4, 3], [5, 4]]), true);" },
+      { name: "a cycle hidden among otherwise valid prerequisites, with isolated nodes", body: "assert.equal(canFinish(5, [[1, 0], [2, 1], [3, 2], [1, 3]]), false);" },
     ],
   },
 {
@@ -727,6 +775,9 @@ export const dsa3: Exercise[] = [
         name: "one course, no prerequisites",
         body: "assert.deepEqual(findOrder(1, []), [0]);",
       },
+      { name: "duplicate prerequisites still produce a valid order", body: "const prereqs = [[1, 0], [1, 0], [2, 1]];\nconst order = findOrder(3, prereqs);\nassert.equal(order.length, 3);\nconst at = new Map();\norder.forEach((c, i) => at.set(c, i));\nfor (const p of prereqs) assert.ok(at.get(p[1]) < at.get(p[0]));" },
+      { name: "disconnected components each get ordered correctly", body: "const prereqs = [[1, 0], [3, 2]];\nconst order = findOrder(6, prereqs);\nassert.equal(order.length, 6);\nassert.deepEqual(order.slice().sort((a, b) => a - b), [0, 1, 2, 3, 4, 5]);\nconst at = new Map();\norder.forEach((c, i) => at.set(c, i));\nfor (const p of prereqs) assert.ok(at.get(p[1]) < at.get(p[0]));" },
+      { name: "a cycle among only some courses still returns empty", body: "assert.deepEqual(findOrder(4, [[1, 0], [0, 1], [3, 2]]), []);" },
     ],
   },
 {
@@ -766,6 +817,9 @@ export const dsa3: Exercise[] = [
         name: "a single word constrains nothing",
         body: "const order = alienOrder(['abc']);\nassert.equal(order.length, 3);\nfor (const ch of 'abc') assert.ok(order.indexOf(ch) !== -1);\nassert.equal(alienOrder(['z','z']), 'z');",
       },
+      { name: "two words with disjoint letter sets", body: "const order = alienOrder(['ab', 'cd']);\nassert.equal(order.length, 4);\nfor (const ch of 'abcd') assert.ok(order.indexOf(ch) !== -1);\nassert.ok(order.indexOf('a') < order.indexOf('c'));" },
+      { name: "a duplicate adjacent word adds no contradictory edge", body: "const order = alienOrder(['abc', 'abc', 'abd']);\nassert.equal(order.length, 4);\nfor (const ch of 'abcd') assert.ok(order.indexOf(ch) !== -1);\nassert.ok(order.indexOf('c') < order.indexOf('d'));" },
+      { name: "a chain of prefixes with no other constraints still includes every letter", body: "const order = alienOrder(['a', 'ab', 'abc']);\nassert.equal(order.length, 3);\nfor (const ch of 'abc') assert.ok(order.indexOf(ch) !== -1);" },
     ],
   },
   {
@@ -880,6 +934,9 @@ export const dsa3: Exercise[] = [
         name: "single edge from the source",
         body: "assert.equal(networkDelayTime([[1,2,1]], 2, 1), 1);",
       },
+      { name: "multiple routes of equal cost, the farthest node still decides", body: "assert.equal(networkDelayTime([[1, 2, 2], [1, 3, 2], [2, 4, 1], [3, 4, 1]], 4, 1), 3);" },
+      { name: "a self-loop edge is harmless", body: "assert.equal(networkDelayTime([[1, 1, 5], [1, 2, 1]], 2, 1), 1);" },
+      { name: "a star graph of many nodes", body: "const n = 50;\nconst times = [];\nfor (let i = 2; i <= n; i++) times.push([1, i, i]);\nassert.equal(networkDelayTime(times, n, 1), n);" },
     ],
   },
 {
@@ -919,6 +976,9 @@ export const dsa3: Exercise[] = [
         name: "source is the destination",
         body: "assert.equal(findCheapestPrice(3, [[0,1,50]], 2, 2, 0), 0);",
       },
+      { name: "more stops than needed still finds the cheapest route", body: "const flights = [[0, 1, 100], [1, 2, 100], [2, 0, 100], [1, 3, 600], [2, 3, 200]];\nassert.equal(findCheapestPrice(4, flights, 0, 3, 10), 400);" },
+      { name: "exactly enough stops versus one too few", body: "const flights = [[0, 1, 1], [1, 2, 1], [2, 3, 1]];\nassert.equal(findCheapestPrice(4, flights, 0, 3, 2), 3);\nassert.equal(findCheapestPrice(4, flights, 0, 3, 1), -1);" },
+      { name: "a cheaper parallel edge is preferred", body: "const flights = [[0, 1, 5], [0, 1, 1], [1, 2, 1]];\nassert.equal(findCheapestPrice(3, flights, 0, 2, 5), 2);" },
     ],
   },
   {
@@ -1031,6 +1091,9 @@ export const dsa3: Exercise[] = [
         name: "no nodes at all",
         body: "assert.equal(countComponents(0, []), 0);",
       },
+      { name: "a single self-contained triangle", body: "assert.equal(countComponents(3, [[0, 1], [1, 2], [0, 2]]), 1);" },
+      { name: "many isolated pairs", body: "assert.equal(countComponents(6, [[0, 1], [2, 3], [4, 5]]), 3);" },
+      { name: "a chain of a thousand nodes stays one component", body: "const n = 1000;\nconst edges = [];\nfor (let i = 0; i + 1 < n; i++) edges.push([i, i + 1]);\nassert.equal(countComponents(n, edges), 1);" },
     ],
   },
 {
@@ -1070,6 +1133,9 @@ export const dsa3: Exercise[] = [
         name: "long chain closed at the very end",
         body: "assert.deepEqual(\n  findRedundantConnection([[1,2],[2,3],[3,4],[4,5],[5,6],[1,6]]),\n  [1,6]\n);",
       },
+      { name: "a two-node graph cannot have a redundant edge from a single pair", body: "assert.deepEqual(findRedundantConnection([[1, 2], [1, 2]]), [1, 2]);" },
+      { name: "a larger cycle closed early in the input", body: "assert.deepEqual(findRedundantConnection([[1, 2], [2, 3], [1, 3], [3, 4], [4, 5]]), [1, 3]);" },
+      { name: "does not mutate the input edge list", body: "const edges = [[1, 2], [1, 3], [2, 3]];\nconst copy = edges.map((e) => e.slice());\nfindRedundantConnection(edges);\nassert.deepEqual(edges, copy);" },
     ],
   },
   {
@@ -1184,6 +1250,9 @@ export const dsa3: Exercise[] = [
         name: "a unit square needs three edges",
         body: "assert.equal(minCostConnectPoints([[0,0],[0,1],[1,0],[1,1]]), 3);",
       },
+      { name: "points already forming a straight line", body: "assert.equal(minCostConnectPoints([[0, 0], [1, 0], [2, 0], [3, 0]]), 3);" },
+      { name: "duplicate points cost zero to connect", body: "assert.equal(minCostConnectPoints([[1, 1], [1, 1], [1, 1]]), 0);" },
+      { name: "does not mutate the input points array", body: "const points = [[0, 0], [2, 2], [3, 10]];\nconst copy = points.map((p) => p.slice());\nminCostConnectPoints(points);\nassert.deepEqual(points, copy);" },
     ],
   },
   {
@@ -1248,6 +1317,9 @@ export const dsa3: Exercise[] = [
         name: "large n stays fast",
         body: "assert.equal(climbStairs(45), 1836311903);",
       },
+      { name: "intermediate values", body: "assert.equal(climbStairs(4), 5);\nassert.equal(climbStairs(5), 8);" },
+      { name: "the recurrence relation holds across a range", body: "for (let n = 3; n <= 20; n++) {\n  assert.equal(climbStairs(n), climbStairs(n - 1) + climbStairs(n - 2));\n}" },
+      { name: "n = 20", body: "assert.equal(climbStairs(20), 10946);" },
     ],
   },
 {
@@ -1286,6 +1358,9 @@ export const dsa3: Exercise[] = [
         name: "the greedy pick is wrong here",
         body: "assert.equal(rob([2,1,1,2]), 4);\nassert.equal(rob([2,3,2]), 4);",
       },
+      { name: "two houses, take the larger", body: "assert.equal(rob([3, 7]), 7);\nassert.equal(rob([9, 1]), 9);" },
+      { name: "all zeros", body: "assert.equal(rob([0, 0, 0, 0]), 0);" },
+      { name: "longer mixed array", body: "assert.equal(rob([5, 1, 1, 5]), 10);\nassert.equal(rob([2, 1, 4, 5, 3, 1, 1, 3]), 12);" },
     ],
   },
 {
@@ -1324,6 +1399,9 @@ export const dsa3: Exercise[] = [
         name: "longer circle",
         body: "assert.equal(rob([200,3,140,20,10]), 340);\nassert.equal(rob([2,7,9,3,1]), 11);",
       },
+      { name: "four houses in a circle", body: "assert.equal(rob([1, 2, 3, 4]), 6);" },
+      { name: "all the same value in a circle", body: "assert.equal(rob([4, 4, 4, 4, 4]), 8);" },
+      { name: "alternating values around the circle", body: "assert.equal(rob([1, 3, 1, 3, 1]), 6);" },
     ],
   },
 {
@@ -1363,6 +1441,9 @@ export const dsa3: Exercise[] = [
         name: "larger amount",
         body: "assert.equal(coinChange([186,419,83,408], 6249), 20);",
       },
+      { name: "amount smaller than every coin", body: "assert.equal(coinChange([5, 10], 3), -1);" },
+      { name: "a single coin that exactly divides the amount, or does not", body: "assert.equal(coinChange([3], 9), 3);\nassert.equal(coinChange([3], 10), -1);" },
+      { name: "mixed denominations pick the fewest coins", body: "assert.equal(coinChange([1, 5, 10, 25], 63), 6);" },
     ],
   },
 {
@@ -1401,6 +1482,9 @@ export const dsa3: Exercise[] = [
         name: "one coin that fits exactly once",
         body: "assert.equal(change(10, [10]), 1);\nassert.equal(change(10, [1]), 1);",
       },
+      { name: "no coins at all with a nonzero amount", body: "assert.equal(change(5, []), 0);" },
+      { name: "two coin types over a small target", body: "assert.equal(change(4, [1, 2]), 3);" },
+      { name: "coins that can only reach even totals", body: "assert.equal(change(7, [2, 4]), 0);\nassert.equal(change(8, [2, 4]), 3);" },
     ],
   },
 {
@@ -1439,6 +1523,9 @@ export const dsa3: Exercise[] = [
         name: "one thousand values in descending blocks of five",
         body: "const nums = [];\nfor (let block = 0; block < 200; block++) {\n  for (let j = 4; j >= 0; j--) nums.push(block * 5 + j);\n}\nassert.equal(nums.length, 1000);\nassert.equal(lengthOfLIS(nums), 200);",
       },
+      { name: "a strictly increasing array uses its whole length", body: "assert.equal(lengthOfLIS([1, 2, 3, 4, 5]), 5);" },
+      { name: "negative numbers mixed with positives", body: "assert.equal(lengthOfLIS([-3, -1, -2, 0, 4, 3, 5]), 5);" },
+      { name: "two interleaved increasing runs", body: "assert.equal(lengthOfLIS([1, 3, 5, 2, 4, 6]), 4);" },
     ],
   },
 {
@@ -1477,6 +1564,9 @@ export const dsa3: Exercise[] = [
         name: "the adversarial all-a string stays fast",
         body: "let s = '';\nfor (let i = 0; i < 40; i++) s += 'a';\ns += 'b';\nassert.equal(wordBreak(s, ['a','aa','aaa','aaaa','aaaaa']), false);",
       },
+      { name: "the dictionary splits the string in more than one way", body: "assert.equal(wordBreak('apple', ['apple']), true);\nassert.equal(wordBreak('apple', ['app', 'le']), true);" },
+      { name: "a dictionary word longer than the string", body: "assert.equal(wordBreak('cat', ['category']), false);" },
+      { name: "multiple overlapping ways to split, only some of which work out", body: "assert.equal(wordBreak('pineapplepenapple', ['apple', 'pen', 'applepen', 'pine', 'pineapple']), true);" },
     ],
   },
 {
@@ -1515,6 +1605,9 @@ export const dsa3: Exercise[] = [
         name: "longer string and the empty string",
         body: "assert.equal(numDecodings('11106'), 2);\nassert.equal(numDecodings(''), 0);",
       },
+      { name: "a single valid digit", body: "assert.equal(numDecodings('5'), 1);\nassert.equal(numDecodings('9'), 1);" },
+      { name: "a run of ones grows like Fibonacci", body: "assert.equal(numDecodings('111'), 3);" },
+      { name: "a two-digit value above 26 only splits one way", body: "assert.equal(numDecodings('27'), 1);\nassert.equal(numDecodings('30'), 0);" },
     ],
   },
 {
@@ -1553,6 +1646,9 @@ export const dsa3: Exercise[] = [
         name: "leading zero",
         body: "assert.equal(maxProduct([0,2]), 2);\nassert.equal(maxProduct([-2,0]), 0);",
       },
+      { name: "a single element array", body: "assert.equal(maxProduct([5]), 5);\nassert.equal(maxProduct([-7]), -7);" },
+      { name: "scattered zeros still leave a positive best", body: "assert.equal(maxProduct([0, 0, -3, 0, 2, 0]), 2);" },
+      { name: "an alternating-sign array where the whole thing wins", body: "assert.equal(maxProduct([-1, 2, -3, 4, -5]), 120);" },
     ],
   },
 {
@@ -1591,6 +1687,9 @@ export const dsa3: Exercise[] = [
         name: "many equal values",
         body: "assert.equal(canPartition([100,100,100,100,100,100,100,100]), true);\nassert.equal(canPartition([3,3,3,4,5]), true);",
       },
+      { name: "small even and odd multiples of a repeated value", body: "assert.equal(canPartition([2, 2]), true);\nassert.equal(canPartition([2, 2, 2]), false);" },
+      { name: "an even total with no subset that works, versus one that does", body: "assert.equal(canPartition([1, 2, 5]), false);\nassert.equal(canPartition([1, 2, 3, 4, 5, 6, 7]), true);" },
+      { name: "does not mutate the input array", body: "const nums = [1, 5, 11, 5];\nconst copy = nums.slice();\ncanPartition(nums);\nassert.deepEqual(nums, copy);" },
     ],
   },
 ];

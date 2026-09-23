@@ -329,6 +329,9 @@ export const react: Exercise[] = [
       { name: "a different value means changed", body: "assert.equal(depsChanged([1], [2]), true);" },
       { name: "NaN compares equal to itself, like React's real check", body: "assert.equal(depsChanged([NaN], [NaN]), false);" },
       { name: "a new object reference counts as changed even with the same shape", body: "assert.equal(depsChanged([{ a: 1 }], [{ a: 1 }]), true);" },
+      { name: "two empty arrays are unchanged", body: "assert.equal(depsChanged([], []), false);" },
+      { name: "a longer next array is a change", body: "assert.equal(depsChanged([1], [1, 2]), true);" },
+      { name: "only one of several entries changing is still a change", body: "assert.equal(depsChanged([1, 2, 3], [1, 9, 3]), true);" },
     ],
   },
   {
@@ -726,6 +729,9 @@ export const react: Exercise[] = [
       { name: "rejects a page that is not a positive whole number", body: 'assert.equal(readFilters("?page=abc").page, 1);\nassert.equal(readFilters("?page=0").page, 1);\nassert.equal(readFilters("?page=2.5").page, 1);' },
       { name: "rejects an unknown sort", body: 'assert.equal(readFilters("?sort=cheap").sort, "newest");' },
       { name: "collects repeated tags in order", body: 'assert.deepEqual(readFilters("?tag=b&tag=a").tags, ["b", "a"]);' },
+      { name: "rejects a negative page", body: "assert.equal(readFilters(\"?page=-1\").page, 1);" },
+      { name: "accepts large page numbers", body: "assert.equal(readFilters(\"?page=100\").page, 100);" },
+      { name: "tags alone still get defaults for page and sort", body: "assert.deepEqual(readFilters(\"?tag=x\"), { page: 1, sort: \"newest\", tags: [\"x\"] });" },
     ],
   },
   {
@@ -750,6 +756,9 @@ export const react: Exercise[] = [
       { name: "never edits the previous state object", body: 'const s = createStore({ count: 1 });\nconst before = s.getState();\ns.setState({ count: 2 });\nassert.equal(before.count, 1);\nassert.notEqual(s.getState(), before);' },
       { name: "notifies with the new state, and stops after unsubscribe", body: 'const s = createStore({ n: 0 });\nconst seen = [];\nconst off = s.subscribe((st) => seen.push(st.n));\ns.setState({ n: 1 });\noff();\ns.setState({ n: 2 });\nassert.deepEqual(seen, [1]);' },
       { name: "returning the same state notifies nobody", body: 'const s = createStore({ n: 0 });\nlet calls = 0;\ns.subscribe(() => calls++);\ns.setState((st) => st);\nassert.equal(calls, 0);' },
+      { name: "multiple listeners are all notified in order", body: "const s = createStore({ n: 0 });\nconst calls = [];\ns.subscribe(() => calls.push(\"a\"));\ns.subscribe(() => calls.push(\"b\"));\ns.setState({ n: 1 });\nassert.deepEqual(calls, [\"a\", \"b\"]);" },
+      { name: "getState reflects the initial state before any update", body: "assert.deepEqual(createStore({ a: 1, b: 2 }).getState(), { a: 1, b: 2 });" },
+      { name: "unsubscribing one listener leaves the other active", body: "const s = createStore({ n: 0 });\nconst calls = [];\nconst offA = s.subscribe(() => calls.push(\"a\"));\ns.subscribe(() => calls.push(\"b\"));\noffA();\ns.setState({ n: 1 });\nassert.deepEqual(calls, [\"b\"]);" },
     ],
   },
   {
@@ -829,6 +838,9 @@ export const react: Exercise[] = [
       { name: "array order still matters", body: 'assert.notEqual(hashQueryKey(["a", "b"]), hashQueryKey(["b", "a"]));' },
       { name: "different values hash differently", body: 'assert.notEqual(hashQueryKey(["t", { page: 1 }]), hashQueryKey(["t", { page: 2 }]));' },
       { name: "returns a string", body: 'assert.equal(typeof hashQueryKey(["todos"]), "string");' },
+      { name: "arrays nested inside objects keep their own order", body: "assert.notEqual(hashQueryKey([{ list: [1, 2] }]), hashQueryKey([{ list: [2, 1] }]));" },
+      { name: "identical calls hash the same, including null entries", body: "const h = hashQueryKey([\"t\", null]);\nassert.equal(typeof h, \"string\");\nassert.equal(h, hashQueryKey([\"t\", null]));" },
+      { name: "an empty object and an empty array hash differently", body: "assert.notEqual(hashQueryKey([{}]), hashQueryKey([[]]));" },
     ],
   },
   {
@@ -852,6 +864,9 @@ export const react: Exercise[] = [
       { name: "cancel makes every started request stale", body: "const g = createRequestGuard();\nconst a = g.start();\ng.cancel();\nassert.equal(g.isLatest(a), false);" },
       { name: "a request started after cancel is the latest again", body: "const g = createRequestGuard();\ng.start();\ng.cancel();\nconst c = g.start();\nassert.equal(g.isLatest(c), true);" },
       { name: "two guards are independent", body: "const g1 = createRequestGuard();\nconst g2 = createRequestGuard();\nconst a = g1.start();\ng2.start();\ng2.start();\nassert.equal(g1.isLatest(a), true);" },
+      { name: "only the most recent of many requests is latest", body: "const g = createRequestGuard();\nconst ids = [g.start(), g.start(), g.start(), g.start()];\nfor (let i = 0; i < ids.length - 1; i++) assert.equal(g.isLatest(ids[i]), false);\nassert.equal(g.isLatest(ids[ids.length - 1]), true);" },
+      { name: "an id that was never issued is never latest", body: "const g = createRequestGuard();\ng.start();\nassert.equal(g.isLatest(0), false);" },
+      { name: "cancelling twice in a row still allows a fresh start to be latest", body: "const g = createRequestGuard();\ng.start();\ng.cancel();\ng.cancel();\nconst id = g.start();\nassert.equal(g.isLatest(id), true);" },
     ],
   },
   {
@@ -876,6 +891,9 @@ export const react: Exercise[] = [
       { name: "joins nested paths, including array indexes", body: 'const e = toFieldErrors([{ path: ["items", 0, "qty"], message: "Too low" }]);\nassert.deepEqual(e, { "items.0.qty": "Too low" });' },
       { name: "an empty path is a form-level error", body: 'assert.deepEqual(toFieldErrors([{ path: [], message: "Mismatch" }]), { _form: "Mismatch" });' },
       { name: "no issues gives an empty object", body: "assert.deepEqual(toFieldErrors([]), {});" },
+      { name: "multiple distinct fields each keep their own message", body: "assert.deepEqual(toFieldErrors([{ path: [\"a\"], message: \"A\" }, { path: [\"b\"], message: \"B\" }]), { a: \"A\", b: \"B\" });" },
+      { name: "multiple form-level errors keep only the first", body: "assert.deepEqual(toFieldErrors([{ path: [], message: \"first\" }, { path: [], message: \"second\" }]), { _form: \"first\" });" },
+      { name: "mixed field-level and form-level errors in one call", body: "assert.deepEqual(toFieldErrors([{ path: [\"x\"], message: \"X\" }, { path: [], message: \"F\" }]), { x: \"X\", _form: \"F\" });" },
     ],
   },
   {
@@ -900,6 +918,9 @@ export const react: Exercise[] = [
       { name: "a token inside the skew window counts as expired", body: "assert.equal(isTokenExpired(1010, 1000 * 1000), true);\nassert.equal(isTokenExpired(1010, 1000 * 1000, 5), false);" },
       { name: "compares seconds with milliseconds correctly", body: "assert.equal(isTokenExpired(1_700_000_100, 1_700_000_000_000), false);" },
       { name: "a missing exp is expired", body: "assert.equal(isTokenExpired(undefined, 0), true);\nassert.equal(isTokenExpired(\"soon\", 0), true);" },
+      { name: "exactly at the skew boundary counts as expired", body: "assert.equal(isTokenExpired(1030, 1000 * 1000, 30), true);" },
+      { name: "a skew of zero only checks the raw expiry", body: "assert.equal(isTokenExpired(1001, 1000 * 1000, 0), false);\nassert.equal(isTokenExpired(999, 1000 * 1000, 0), true);" },
+      { name: "an explicit NaN exp is expired", body: "assert.equal(isTokenExpired(NaN, 0), true);" },
     ],
   },
   {
@@ -920,6 +941,9 @@ export const react: Exercise[] = [
       { name: "Arabic has zero and two", body: "const f = { zero: \"zero\", one: \"one\", two: \"two\", few: \"few\", many: \"many\", other: \"other\" };\nassert.equal(pickPlural(0, f, \"ar\"), \"zero\");\nassert.equal(pickPlural(2, f, \"ar\"), \"two\");" },
       { name: "a missing category falls back to other", body: "const f = { one: \"one\", other: \"other\" };\nassert.equal(pickPlural(3, f, \"ru\"), \"other\");" },
       { name: "fractions use the locale rules too", body: "const f = { one: \"one\", other: \"other\" };\nassert.equal(pickPlural(1.5, f), \"other\");" },
+      { name: "negative counts follow the same category as their positive form", body: "assert.equal(pickPlural(-1, { one: \"file\", other: \"files\" }), \"file\");\nassert.equal(pickPlural(-2, { one: \"file\", other: \"files\" }), \"files\");" },
+      { name: "large counts fall back to other in English", body: "assert.equal(pickPlural(1000000, { one: \"file\", other: \"files\" }), \"files\");" },
+      { name: "Arabic's singular category for exactly one", body: "assert.equal(pickPlural(1, { zero: \"z\", one: \"o\", two: \"t\", few: \"f\", many: \"m\", other: \"ot\" }, \"ar\"), \"o\");" },
     ],
   },
   {
@@ -943,6 +967,7 @@ export const react: Exercise[] = [
       { name: "rejects files over the size limit", body: "const big = { name: \"big.png\", size: 1001, type: \"image/png\" };\nconst ok = { name: \"ok.png\", size: 1000, type: \"image/png\" };\nconst r = validateFiles([big, ok], { maxBytes: 1000 });\nassert.deepEqual(r.rejected, [{ name: \"big.png\", reason: \"too large\" }]);\nassert.deepEqual(r.accepted, [ok]);" },
       { name: "maxCount counts only accepted files", body: "const mk = (n, size) => ({ name: n, size, type: \"image/png\" });\nconst r = validateFiles([mk(\"a\", 9999), mk(\"b\", 1), mk(\"c\", 1), mk(\"d\", 1)], { maxBytes: 100, maxCount: 2 });\nassert.deepEqual(r.accepted.map((f) => f.name), [\"b\", \"c\"]);\nassert.deepEqual(r.rejected, [{ name: \"a\", reason: \"too large\" }, { name: \"d\", reason: \"too many files\" }]);" },
       { name: "the type check wins over size", body: "const f = { name: \"x.exe\", size: 9999, type: \"\" };\nconst r = validateFiles([f], { accept: [\"image/*\"], maxBytes: 10 });\nassert.equal(r.rejected[0].reason, \"wrong type\");" },
+      { name: "extra whitespace around a rule is trimmed before matching", body: "const f = { name: \"a.png\", size: 1, type: \"image/png\" };\nassert.equal(validateFiles([f], { accept: [\"  image/*  \"] }).accepted.length, 1);" },
     ],
   },
   {
@@ -989,6 +1014,8 @@ export const react: Exercise[] = [
       { name: "an unknown value adds nothing", body: "const c = { base: \"b\", variants: { size: { sm: \"h-8\" } }, defaultVariants: {} };\nassert.equal(variantClasses(c, { size: \"huge\" }), \"b\");" },
       { name: "null falls back to the default", body: "const c = { base: \"b\", variants: { size: { sm: \"h-8\" } }, defaultVariants: { size: \"sm\" } };\nassert.equal(variantClasses(c, { size: null }), \"b h-8\");" },
       { name: "no variants and no base", body: "assert.equal(variantClasses({ variants: { s: { a: \"x\" } }, defaultVariants: { s: \"a\" } }), \"x\");\nassert.equal(variantClasses({}), \"\");" },
+      { name: "a variant with neither a prop nor a default is skipped silently", body: "const c = { base: \"b\", variants: { size: { sm: \"h-8\" }, color: { red: \"bg-red\" } }, defaultVariants: { size: \"sm\" } };\nassert.equal(variantClasses(c, {}), \"b h-8\");" },
+      { name: "no variants at all still returns the base", body: "assert.equal(variantClasses({ base: \"b\", variants: {}, defaultVariants: {} }), \"b\");" },
     ],
   },
   {
@@ -1011,6 +1038,8 @@ export const react: Exercise[] = [
       { name: "a failing guard blocks it", body: "const m = { states: { a: { on: { GO: { target: \"b\", guard: (c) => c.ok } } }, b: {} } };\nassert.equal(transition(m, \"a\", \"GO\", { ok: false }), \"a\");" },
       { name: "availableEvents lists only what would work", body: "const m = { states: { a: { on: { X: \"b\", Y: { target: \"b\", guard: (c) => c.ok } } }, b: {} } };\nassert.deepEqual(availableEvents(m, \"a\", { ok: false }), [\"X\"]);\nassert.deepEqual(availableEvents(m, \"a\", { ok: true }), [\"X\", \"Y\"]);\nassert.deepEqual(availableEvents(m, \"b\", {}), []);" },
       { name: "an unknown state throws", body: "const m = { states: { a: {} } };\nassert.throws(() => transition(m, \"zzz\", \"GO\"), /Unknown state: zzz/);\nassert.throws(() => availableEvents(m, \"zzz\"), /Unknown state: zzz/);" },
+      { name: "the guard receives the exact context object passed to transition", body: "let seen;\nconst m = { states: { a: { on: { GO: { target: \"b\", guard: (c) => { seen = c; return true; } } } }, b: {} } };\nconst ctx = { ok: true };\ntransition(m, \"a\", \"GO\", ctx);\nassert.equal(seen, ctx);" },
+      { name: "availableEvents on a state with no \"on\" property is empty", body: "const m = { states: { a: {}, b: {} } };\nassert.deepEqual(availableEvents(m, \"a\", {}), []);" },
     ],
   },
   {
@@ -1032,6 +1061,9 @@ export const react: Exercise[] = [
       { name: "raising the percentage only adds users", body: "let inAt20 = 0;\nfor (let i = 0; i < 500; i++) {\n  if (isInRollout(\"f\", \"u\" + i, 20)) { inAt20++; assert.equal(isInRollout(\"f\", \"u\" + i, 50), true); }\n}\nassert.ok(inAt20 > 0);" },
       { name: "30 percent lands on roughly 30 percent of users", body: "let on = 0;\nfor (let i = 0; i < 2000; i++) if (isInRollout(\"new-checkout\", \"user-\" + i, 30)) on++;\nassert.ok(on > 500 && on < 700, \"got \" + on + \" of 2000\");" },
       { name: "two flags do not pick the same users", body: "let differ = 0;\nfor (let i = 0; i < 200; i++) {\n  if (isInRollout(\"flag-a\", \"u\" + i, 50) !== isInRollout(\"flag-b\", \"u\" + i, 50)) differ++;\n}\nassert.ok(differ > 40, \"only \" + differ + \" differed\");" },
+      { name: "a 1 percent rollout only lets in a small share of users", body: "let on = 0;\nfor (let i = 0; i < 3000; i++) if (isInRollout(\"edge-flag\", \"user-\" + i, 1)) on++;\nassert.ok(on > 5 && on < 150, \"got \" + on + \" of 3000\");" },
+      { name: "a 99 percent rollout only excludes a small share of users", body: "let off = 0;\nfor (let i = 0; i < 3000; i++) if (!isInRollout(\"edge-flag\", \"user-\" + i, 99)) off++;\nassert.ok(off < 150, \"got \" + off + \" of 3000\");" },
+      { name: "many different flags split roughly evenly for a fixed user at 50 percent", body: "let on = 0;\nfor (let i = 0; i < 300; i++) if (isInRollout(\"flag-\" + i, \"same-user\", 50)) on++;\nassert.ok(on > 90 && on < 210, \"got \" + on + \" of 300\");" },
     ],
   },
   {
@@ -1055,6 +1087,7 @@ export const react: Exercise[] = [
       { name: "a stale entered event during leaving is ignored", body: "assert.equal(presenceReducer(\"leaving\", \"entered\"), \"leaving\");" },
       { name: "open and close are no-ops when already there", body: "assert.equal(presenceReducer(\"shown\", \"open\"), \"shown\");\nassert.equal(presenceReducer(\"hidden\", \"close\"), \"hidden\");" },
       { name: "the element stays mounted until it has left", body: "assert.equal(isMounted(\"hidden\"), false);\nassert.equal(isMounted(\"entering\"), true);\nassert.equal(isMounted(\"shown\"), true);\nassert.equal(isMounted(\"leaving\"), true);" },
+      { name: "open has no effect while already entering", body: "assert.equal(presenceReducer(\"entering\", \"open\"), \"entering\");" },
     ],
   },
   {
@@ -1076,6 +1109,9 @@ export const react: Exercise[] = [
       { name: "a different length is a change", body: "assert.equal(resetKeysChanged([1], [1, 2]), true);\nassert.equal(resetKeysChanged([1, 2], [1]), true);" },
       { name: "missing arrays count as empty", body: "assert.equal(resetKeysChanged(), false);\nassert.equal(resetKeysChanged(undefined, []), false);\nassert.equal(resetKeysChanged(undefined, [1]), true);" },
       { name: "NaN equals NaN, and objects compare by reference", body: "assert.equal(resetKeysChanged([NaN], [NaN]), false);\nconst o = {};\nassert.equal(resetKeysChanged([o], [o]), false);\nassert.equal(resetKeysChanged([{}], [{}]), true);" },
+      { name: "two empty arrays are unchanged", body: "assert.equal(resetKeysChanged([], []), false);" },
+      { name: "one array empty and the other not", body: "assert.equal(resetKeysChanged([], [1]), true);" },
+      { name: "only the last of several values changing is still a change", body: "assert.equal(resetKeysChanged([1, 2, 3], [1, 2, 9]), true);" },
     ],
   },
   {
@@ -1099,6 +1135,7 @@ export const react: Exercise[] = [
       { name: "an empty array runs once", body: "const r = createEffectRunner();\nlet n = 0;\nr.run(() => { n++; }, []);\nr.run(() => { n++; }, []);\nassert.equal(n, 1);" },
       { name: "unmount runs the last cleanup exactly once", body: "const r = createEffectRunner();\nlet cleaned = 0;\nr.run(() => () => { cleaned++; }, []);\nr.unmount();\nr.unmount();\nassert.equal(cleaned, 1);" },
       { name: "an effect that returns nothing is fine", body: "const r = createEffectRunner();\nr.run(() => {}, [1]);\nr.run(() => {}, [2]);\nr.unmount();\nassert.ok(true);" },
+      { name: "switching from a defined deps array to no deps array always re-runs", body: "const r = createEffectRunner();\nlet n = 0;\nr.run(() => { n++; }, [1]);\nr.run(() => { n++; });\nassert.equal(n, 2);" },
     ],
   },
   {
@@ -1122,6 +1159,8 @@ export const react: Exercise[] = [
       { name: "mockReturnValue can return undefined on purpose", body: "const s = createSpy(() => \"real\").mockReturnValue(undefined);\nassert.equal(s(), undefined);" },
       { name: "reset clears calls and the mock but keeps the implementation", body: "const s = createSpy(() => \"real\").mockReturnValue(\"fake\");\ns();\ns.reset();\nassert.equal(s.callCount(), 0);\nassert.deepEqual(s.calls, []);\nassert.equal(s(), \"real\");" },
       { name: "a bare spy returns undefined", body: "assert.equal(createSpy()(1), undefined);" },
+      { name: "two spies keep independent call state", body: "const a = createSpy();\nconst b = createSpy();\na(1);\na(2);\nb(9);\nassert.equal(a.callCount(), 2);\nassert.equal(b.callCount(), 1);" },
+      { name: "callCount only reflects calls made after a reset", body: "const s = createSpy();\ns(1);\ns(2);\ns.reset();\ns(3);\nassert.equal(s.callCount(), 1);\nassert.deepEqual(s.calls, [[3]]);" },
     ],
   },
   {
@@ -1144,6 +1183,8 @@ export const react: Exercise[] = [
       { name: "still failing on the last attempt is failed", body: "const r = classifyRuns([{ title: \"a\", attempts: [\"failed\", \"failed\"] }, { title: \"b\", attempts: [\"passed\", \"timedOut\"] }]);\nassert.deepEqual(r.failed, [\"a\", \"b\"]);" },
       { name: "skipped and empty runs appear nowhere", body: "const r = classifyRuns([{ title: \"a\", attempts: [\"skipped\"] }, { title: \"b\", attempts: [] }]);\nassert.deepEqual(r, { passed: [], flaky: [], failed: [] });" },
       { name: "input order is kept within each group", body: "const r = classifyRuns([{ title: \"z\", attempts: [\"passed\"] }, { title: \"y\", attempts: [\"failed\", \"passed\"] }, { title: \"x\", attempts: [\"passed\"] }, { title: \"w\", attempts: [\"failed\", \"passed\"] }]);\nassert.deepEqual(r.passed, [\"z\", \"x\"]);\nassert.deepEqual(r.flaky, [\"y\", \"w\"]);" },
+      { name: "a single failed attempt with nothing after it is failed, not flaky", body: "const r = classifyRuns([{ title: \"a\", attempts: [\"failed\"] }]);\nassert.deepEqual(r, { passed: [], flaky: [], failed: [\"a\"] });" },
+      { name: "leading skipped attempts are dropped before judging", body: "const r = classifyRuns([{ title: \"a\", attempts: [\"skipped\", \"failed\", \"passed\"] }]);\nassert.deepEqual(r.flaky, [\"a\"]);" },
     ],
   },
 ];

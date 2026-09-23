@@ -38,6 +38,9 @@ export const dsa5: Exercise[] = [
         name: "four values give 24 distinct orderings",
         body: "const rows = permute([1, 2, 3, 4]);\nassert.equal(rows.length, 24);\nassert.equal(new Set(rows.map((r) => r.join(','))).size, 24);\nassert.ok(rows.every((r) => r.length === 4));",
       },
+      { name: "no permutation repeats any value twice", body: "const rows=permute([9,8,7]);\nfor(const r of rows) assert.equal(new Set(r).size, 3);" },
+      { name: "every permutation is a rearrangement of the same multiset", body: "const nums=[1,2,3,4];\nconst rows=permute(nums);\nconst sortedInput=nums.slice().sort().join(',');\nfor(const r of rows) assert.equal(r.slice().sort().join(','), sortedInput);" },
+      { name: "handles negative numbers", body: "const norm=(rows) => rows.map((r) => r.join(',')).sort();\nassert.deepEqual(norm(permute([-1, 0, 1])), norm([[-1,0,1],[-1,1,0],[0,-1,1],[0,1,-1],[1,-1,0],[1,0,-1]]));" },
     ],
   },
 {
@@ -77,6 +80,9 @@ export const dsa5: Exercise[] = [
         name: "a single candidate used many times",
         body: "const norm = (rows) => rows.map((r) => r.slice().sort((a, b) => a - b).join(',')).sort();\nassert.deepEqual(norm(combinationSum([3], 9)), norm([[3,3,3]]));",
       },
+      { name: "target equal to the smallest candidate", body: "const norm = (rows) => rows.map((r) => r.slice().sort((a, b) => a - b).join(',')).sort();\nassert.deepEqual(norm(combinationSum([2, 3, 5], 2)), norm([[2]]));" },
+      { name: "candidates too large or too even-valued to reach an odd target", body: "assert.deepEqual(combinationSum([2, 4, 9], 5), []);" },
+      { name: "multiple combination lengths reach the same target", body: "const norm = (rows) => rows.map((r) => r.slice().sort((a, b) => a - b).join(',')).sort();\nassert.deepEqual(norm(combinationSum([2, 3, 4], 9)), norm([[2,2,2,3],[2,3,4],[3,3,3]]));" },
     ],
   },
 {
@@ -116,6 +122,9 @@ export const dsa5: Exercise[] = [
         name: "every value is too large",
         body: "assert.deepEqual(combinationSum2([5, 5, 5], 1), []);",
       },
+      { name: "target larger than the sum of all candidates", body: "assert.deepEqual(combinationSum2([1, 2, 3], 100), []);" },
+      { name: "three identical values but only two are needed, reported once", body: "const norm = (rows) => rows.map((r) => r.slice().sort((a, b) => a - b).join(',')).sort();\nassert.deepEqual(norm(combinationSum2([4, 4, 4], 8)), norm([[4,4]]));" },
+      { name: "only the largest single candidate reaches the target", body: "assert.deepEqual(combinationSum2([2, 5, 10], 10), [[10]]);" },
     ],
   },
 {
@@ -155,6 +164,9 @@ export const dsa5: Exercise[] = [
         name: "long winding path exists",
         body: "const board = [['A','B','C','E'],['S','F','E','S'],['A','D','E','E']];\nassert.equal(exist(board, 'ABCESEEEFS'), true);\nassert.equal(exist(board, 'ABCESEEEFSZ'), false);",
       },
+      { name: "a word longer than the total number of cells cannot fit", body: "assert.equal(exist([['A','B'],['C','D']], 'ABCDE'), false);" },
+      { name: "no matching letter anywhere in the board", body: "const board=[['C','A','A'],['A','A','A'],['A','A','A']];\nassert.equal(exist(board,'AAB'), false);\nassert.equal(exist(board,'AAA'), true);" },
+      { name: "an empty word is always found", body: "assert.equal(exist([['A']], ''), true);" },
     ],
   },
 {
@@ -194,6 +206,9 @@ export const dsa5: Exercise[] = [
         name: "no multi-character palindromes",
         body: "const norm = (rows) => rows.map((r) => r.join('|')).sort();\nassert.deepEqual(norm(partition('abc')), norm([['a','b','c']]));",
       },
+      { name: "a run of identical characters has 2^(n-1) partitions", body: "const rows = partition('aaa');\nassert.equal(rows.length, 4);" },
+      { name: "a four-character palindrome-heavy string", body: "const norm = (rows) => rows.map((r) => r.join('|')).sort();\nassert.deepEqual(norm(partition('abba')), norm([['a','b','b','a'],['a','bb','a'],['abba']]));" },
+      { name: "a simple two-character palindrome", body: "const norm = (rows) => rows.map((r) => r.join('|')).sort();\nassert.deepEqual(norm(partition('aa')), norm([['a','a'],['aa']]));" },
     ],
   },
 {
@@ -233,6 +248,9 @@ export const dsa5: Exercise[] = [
         name: "the full chessboard has 92",
         body: "assert.equal(totalNQueens(8), 92);",
       },
+      { name: "a 5x5 board has ten solutions", body: "assert.equal(totalNQueens(5), 10);" },
+      { name: "a 7x7 board has forty solutions", body: "assert.equal(totalNQueens(7), 40);" },
+      { name: "zero queens on a zero-sized board is one trivial arrangement", body: "assert.equal(totalNQueens(0), 1);" },
     ],
   },
   {
@@ -304,6 +322,9 @@ export const dsa5: Exercise[] = [
       { name: "the result is a valid grid", body: "const puzzle = [\n  [\".\",\".\",\"9\",\"7\",\"4\",\"8\",\".\",\".\",\".\"],\n  [\"7\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],\n  [\".\",\"2\",\".\",\"1\",\".\",\"9\",\".\",\".\",\".\"],\n  [\".\",\".\",\"7\",\".\",\".\",\".\",\"2\",\"4\",\".\"],\n  [\".\",\"6\",\"4\",\".\",\"1\",\".\",\"5\",\"9\",\".\"],\n  [\".\",\"9\",\"8\",\".\",\".\",\".\",\"3\",\".\",\".\"],\n  [\".\",\".\",\".\",\"8\",\".\",\"3\",\".\",\"2\",\".\"],\n  [\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\"6\"],\n  [\".\",\".\",\".\",\"2\",\"7\",\"5\",\"9\",\".\",\".\"],\n];\nconst g = solveSudoku(puzzle.map((r) => [...r]));\nconst ok = (cells) => [...cells].sort().join(\"\") === \"123456789\";\nfor (let i = 0; i < 9; i++) {\n  assert.ok(ok(g[i]), \"row \" + i);\n  assert.ok(ok(g.map((r) => r[i])), \"col \" + i);\n  const br = 3 * Math.floor(i / 3), bc = 3 * (i % 3);\n  assert.ok(ok(g.slice(br, br + 3).flatMap((r) => r.slice(bc, bc + 3))), \"box \" + i);\n}" },
       { name: "given digits are never changed", body: "const puzzle = [\n  [\".\",\".\",\"9\",\"7\",\"4\",\"8\",\".\",\".\",\".\"],\n  [\"7\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],\n  [\".\",\"2\",\".\",\"1\",\".\",\"9\",\".\",\".\",\".\"],\n  [\".\",\".\",\"7\",\".\",\".\",\".\",\"2\",\"4\",\".\"],\n  [\".\",\"6\",\"4\",\".\",\"1\",\".\",\"5\",\"9\",\".\"],\n  [\".\",\"9\",\"8\",\".\",\".\",\".\",\"3\",\".\",\".\"],\n  [\".\",\".\",\".\",\"8\",\".\",\"3\",\".\",\"2\",\".\"],\n  [\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\"6\"],\n  [\".\",\".\",\".\",\"2\",\"7\",\"5\",\"9\",\".\",\".\"],\n];\nconst g = solveSudoku(puzzle.map((r) => [...r]));\nfor (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) if (puzzle[r][c] !== \".\") assert.equal(g[r][c], puzzle[r][c]);\nassert.ok(g.every((row) => row.every((v) => v !== \".\")));" },
       { name: "returns the board", body: "const full = [\n  [\"5\",\"3\",\"4\",\"6\",\"7\",\"8\",\"9\",\"1\",\"2\"],\n  [\"6\",\"7\",\"2\",\"1\",\"9\",\"5\",\"3\",\"4\",\"8\"],\n  [\"1\",\"9\",\"8\",\"3\",\"4\",\"2\",\"5\",\"6\",\"7\"],\n  [\"8\",\"5\",\"9\",\"7\",\"6\",\"1\",\"4\",\"2\",\"3\"],\n  [\"4\",\"2\",\"6\",\"8\",\"5\",\"3\",\"7\",\"9\",\"1\"],\n  [\"7\",\"1\",\"3\",\"9\",\"2\",\"4\",\"8\",\"5\",\"6\"],\n  [\"9\",\"6\",\"1\",\"5\",\"3\",\"7\",\"2\",\"8\",\"4\"],\n  [\"2\",\"8\",\"7\",\"4\",\"1\",\"9\",\"6\",\"3\",\"5\"],\n  [\"3\",\"4\",\"5\",\"2\",\"8\",\"6\",\"1\",\"7\",\"9\"],\n];\nconst board = full.map((r) => [...r]);\nboard[0][0] = \".\";\nboard[8][8] = \".\";\nconst out = solveSudoku(board);\nassert.ok(Array.isArray(out));\nassert.equal(out[0][0], \"5\");\nassert.equal(out[8][8], \"9\");" },
+      { name: "clearing two cells that are each the only blank in their row", body: "const full = [\n  [\"5\",\"3\",\"4\",\"6\",\"7\",\"8\",\"9\",\"1\",\"2\"],\n  [\"6\",\"7\",\"2\",\"1\",\"9\",\"5\",\"3\",\"4\",\"8\"],\n  [\"1\",\"9\",\"8\",\"3\",\"4\",\"2\",\"5\",\"6\",\"7\"],\n  [\"8\",\"5\",\"9\",\"7\",\"6\",\"1\",\"4\",\"2\",\"3\"],\n  [\"4\",\"2\",\"6\",\"8\",\"5\",\"3\",\"7\",\"9\",\"1\"],\n  [\"7\",\"1\",\"3\",\"9\",\"2\",\"4\",\"8\",\"5\",\"6\"],\n  [\"9\",\"6\",\"1\",\"5\",\"3\",\"7\",\"2\",\"8\",\"4\"],\n  [\"2\",\"8\",\"7\",\"4\",\"1\",\"9\",\"6\",\"3\",\"5\"],\n  [\"3\",\"4\",\"5\",\"2\",\"8\",\"6\",\"1\",\"7\",\"9\"],\n];\nconst holed = full.map((r) => [...r]);\nholed[0][1] = \".\";\nholed[7][7] = \".\";\nassert.deepEqual(solveSudoku(holed), full);" },
+      { name: "mutates and returns the very same array reference", body: "const full = [\n  [\"5\",\"3\",\"4\",\"6\",\"7\",\"8\",\"9\",\"1\",\"2\"],\n  [\"6\",\"7\",\"2\",\"1\",\"9\",\"5\",\"3\",\"4\",\"8\"],\n  [\"1\",\"9\",\"8\",\"3\",\"4\",\"2\",\"5\",\"6\",\"7\"],\n  [\"8\",\"5\",\"9\",\"7\",\"6\",\"1\",\"4\",\"2\",\"3\"],\n  [\"4\",\"2\",\"6\",\"8\",\"5\",\"3\",\"7\",\"9\",\"1\"],\n  [\"7\",\"1\",\"3\",\"9\",\"2\",\"4\",\"8\",\"5\",\"6\"],\n  [\"9\",\"6\",\"1\",\"5\",\"3\",\"7\",\"2\",\"8\",\"4\"],\n  [\"2\",\"8\",\"7\",\"4\",\"1\",\"9\",\"6\",\"3\",\"5\"],\n  [\"3\",\"4\",\"5\",\"2\",\"8\",\"6\",\"1\",\"7\",\"9\"],\n];\nconst board = full.map((r) => [...r]);\nboard[3][3] = \".\";\nconst out = solveSudoku(board);\nassert.equal(out, board);" },
+      { name: "clearing an entire row is still forced uniquely by the columns", body: "const full = [\n  [\"5\",\"3\",\"4\",\"6\",\"7\",\"8\",\"9\",\"1\",\"2\"],\n  [\"6\",\"7\",\"2\",\"1\",\"9\",\"5\",\"3\",\"4\",\"8\"],\n  [\"1\",\"9\",\"8\",\"3\",\"4\",\"2\",\"5\",\"6\",\"7\"],\n  [\"8\",\"5\",\"9\",\"7\",\"6\",\"1\",\"4\",\"2\",\"3\"],\n  [\"4\",\"2\",\"6\",\"8\",\"5\",\"3\",\"7\",\"9\",\"1\"],\n  [\"7\",\"1\",\"3\",\"9\",\"2\",\"4\",\"8\",\"5\",\"6\"],\n  [\"9\",\"6\",\"1\",\"5\",\"3\",\"7\",\"2\",\"8\",\"4\"],\n  [\"2\",\"8\",\"7\",\"4\",\"1\",\"9\",\"6\",\"3\",\"5\"],\n  [\"3\",\"4\",\"5\",\"2\",\"8\",\"6\",\"1\",\"7\",\"9\"],\n];\nconst board = full.map((r) => [...r]);\nboard[5] = new Array(9).fill(\".\");\nassert.deepEqual(solveSudoku(board), full);" },
     ],
   },
 {
@@ -343,6 +364,9 @@ export const dsa5: Exercise[] = [
         name: "three digits keep the digit order",
         body: "const out = letterCombinations('234');\nassert.equal(out.length, 27);\nassert.equal(new Set(out).size, 27);\nassert.ok(out.indexOf('adg') !== -1);\nassert.ok(out.indexOf('gda') === -1);",
       },
+      { name: "two digits combine in the expected nested order", body: "assert.deepEqual(letterCombinations('29'), ['aw','ax','ay','az','bw','bx','by','bz','cw','cx','cy','cz']);" },
+      { name: "a single three-letter digit", body: "assert.deepEqual(letterCombinations('6').slice().sort(), ['m','n','o']);" },
+      { name: "four digits of three letters each give 81 combinations", body: "const out = letterCombinations('2222');\nassert.equal(out.length, 81);\nassert.ok(out.every((s) => s.length === 4));\nassert.equal(new Set(out).size, 81);" },
     ],
   },
 {
@@ -381,6 +405,9 @@ export const dsa5: Exercise[] = [
         name: "empty input and a lone interval",
         body: "assert.deepEqual(merge([]), []);\nassert.deepEqual(merge([[7,7]]), [[7,7]]);",
       },
+      { name: "a chain of touching intervals collapses to one", body: "assert.deepEqual(merge([[1,2],[2,3],[3,4],[4,5]]), [[1,5]]);" },
+      { name: "several separate overlapping clusters", body: "assert.deepEqual(merge([[1,4],[0,2],[3,5],[7,8],[9,10]]), [[0,5],[7,8],[9,10]]);" },
+      { name: "negative interval bounds", body: "assert.deepEqual(merge([[-5,-2],[-3,0],[1,2]]), [[-5,0],[1,2]]);" },
     ],
   },
 {
@@ -420,6 +447,9 @@ export const dsa5: Exercise[] = [
         name: "no overlap, before and after",
         body: "assert.deepEqual(insert([[3,5]], [6,8]), [[3,5],[6,8]]);\nassert.deepEqual(insert([[3,5]], [1,2]), [[1,2],[3,5]]);\nassert.deepEqual(insert([[3,5]], [5,8]), [[3,8]]);",
       },
+      { name: "new interval slots in before the first with a gap", body: "assert.deepEqual(insert([[5,7],[10,12]], [1,3]), [[1,3],[5,7],[10,12]]);" },
+      { name: "new interval swallows every existing interval", body: "assert.deepEqual(insert([[1,2],[3,4],[5,6]], [0,10]), [[0,10]]);" },
+      { name: "new interval touches neighbours on both sides", body: "assert.deepEqual(insert([[1,3],[6,9]], [3,6]), [[1,9]]);" },
     ],
   },
 {
@@ -459,6 +489,9 @@ export const dsa5: Exercise[] = [
         name: "a long interval must be dropped, not the short ones",
         body: "assert.equal(eraseOverlapIntervals([[1,100],[11,22],[1,11],[2,12]]), 2);",
       },
+      { name: "no overlaps at all needs zero removals", body: "assert.equal(eraseOverlapIntervals([[1,2],[3,4],[5,6]]), 0);" },
+      { name: "every interval pairwise overlaps a shared centre", body: "assert.equal(eraseOverlapIntervals([[1,10],[2,9],[3,8],[4,7]]), 3);" },
+      { name: "negative interval bounds", body: "assert.equal(eraseOverlapIntervals([[-5,-2],[-3,0],[-1,1]]), 1);" },
     ],
   },
 {
@@ -496,6 +529,9 @@ export const dsa5: Exercise[] = [
         name: "empty and single-meeting schedules",
         body: "assert.equal(canAttendMeetings([]), true);\nassert.equal(canAttendMeetings([[3,8]]), true);",
       },
+      { name: "three meetings where only the middle one clashes", body: "assert.equal(canAttendMeetings([[1,3],[3,7],[5,6]]), false);" },
+      { name: "a sorted schedule with no gaps or overlaps", body: "assert.equal(canAttendMeetings([[0,1],[1,2],[2,3],[3,4]]), true);" },
+      { name: "two identical meetings clash", body: "assert.equal(canAttendMeetings([[2,5],[2,5]]), false);" },
     ],
   },
 {
@@ -534,6 +570,9 @@ export const dsa5: Exercise[] = [
         name: "4x4 reaches the centre",
         body: "assert.deepEqual(\n  spiralOrder([[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]]),\n  [1,2,3,4,8,12,16,15,14,13,9,5,6,7,11,10]\n);",
       },
+      { name: "a 1x1 matrix", body: "assert.deepEqual(spiralOrder([[42]]), [42]);" },
+      { name: "a 2x2 matrix", body: "assert.deepEqual(spiralOrder([[1,2],[3,4]]), [1,2,4,3]);" },
+      { name: "a tall 5x2 rectangle", body: "assert.deepEqual(spiralOrder([[1,2],[3,4],[5,6],[7,8],[9,10]]), [1,2,4,6,8,10,9,7,5,3]);" },
     ],
   },
 {
@@ -572,6 +611,9 @@ export const dsa5: Exercise[] = [
         name: "four rotations return to the original",
         body: "const m = [[1,2,3],[4,5,6],[7,8,9]];\nrotate(m);\nrotate(m);\nrotate(m);\nrotate(m);\nassert.deepEqual(m, [[1,2,3],[4,5,6],[7,8,9]]);",
       },
+      { name: "5x5 rotates in place", body: "const m=[[1,2,3,4,5],[6,7,8,9,10],[11,12,13,14,15],[16,17,18,19,20],[21,22,23,24,25]];\nrotate(m);\nassert.deepEqual(m, [[21,16,11,6,1],[22,17,12,7,2],[23,18,13,8,3],[24,19,14,9,4],[25,20,15,10,5]]);" },
+      { name: "two rotations equal a 180 degree turn", body: "const m=[[1,2],[3,4]];\nrotate(m);\nrotate(m);\nassert.deepEqual(m, [[4,3],[2,1]]);" },
+      { name: "negative and repeated values", body: "const m=[[-1,-2],[-3,-1]];\nrotate(m);\nassert.deepEqual(m, [[-3,-1],[-1,-2]]);" },
     ],
   },
 {
@@ -611,6 +653,9 @@ export const dsa5: Exercise[] = [
         name: "single cell and a single row",
         body: "const a = [[0]];\nsetZeroes(a);\nassert.deepEqual(a, [[0]]);\nconst b = [[1,0,3]];\nsetZeroes(b);\nassert.deepEqual(b, [[0,0,0]]);",
       },
+      { name: "zero in the last row and last column", body: "const m=[[1,2,3],[4,5,6],[7,8,0]];\nsetZeroes(m);\nassert.deepEqual(m, [[1,2,0],[4,5,0],[0,0,0]]);" },
+      { name: "multiple zeros sharing a row", body: "const m=[[1,0,3,0],[4,5,6,7],[8,9,10,11]];\nsetZeroes(m);\nassert.deepEqual(m, [[0,0,0,0],[4,0,6,0],[8,0,10,0]]);" },
+      { name: "a matrix that is entirely zero stays entirely zero", body: "const m=[[0,0],[0,0]];\nsetZeroes(m);\nassert.deepEqual(m, [[0,0],[0,0]]);" },
     ],
   },
 {
@@ -650,6 +695,9 @@ export const dsa5: Exercise[] = [
         name: "empty matrix",
         body: "assert.equal(searchMatrix([], 1), false);\nassert.equal(searchMatrix([[]], 1), false);",
       },
+      { name: "values just below the smallest and just above the largest", body: "const m=[[1,4,7],[2,5,8],[3,6,9]];\nassert.equal(searchMatrix(m,0), false);\nassert.equal(searchMatrix(m,10), false);" },
+      { name: "a value present in the last row", body: "const m=[[1,4,7],[2,5,8],[3,6,9]];\nassert.equal(searchMatrix(m,3), true);\nassert.equal(searchMatrix(m,9), true);" },
+      { name: "a matrix with duplicate values still finds them", body: "const m=[[1,3,3],[3,3,5],[5,5,7]];\nassert.equal(searchMatrix(m,3), true);\nassert.equal(searchMatrix(m,7), true);\nassert.equal(searchMatrix(m,4), false);" },
     ],
   },
   {
@@ -698,6 +746,7 @@ export const dsa5: Exercise[] = [
       { name: "a repeated digit in a column", body: "const board = Array.from({ length: 9 }, () => new Array(9).fill(\".\"));\nboard[0][5] = \"9\";\nboard[8][5] = \"9\";\nassert.equal(isValidSudoku(board), false);" },
       { name: "the same digit in different boxes, rows and columns is fine", body: "const board = Array.from({ length: 9 }, () => new Array(9).fill(\".\"));\nboard[0][0] = \"1\";\nboard[1][3] = \"1\";\nboard[2][6] = \"1\";\nboard[3][1] = \"1\";\nassert.equal(isValidSudoku(board), true);" },
       { name: "a completely solved board is valid", body: "const full = [\n  [\"5\",\"3\",\"4\",\"6\",\"7\",\"8\",\"9\",\"1\",\"2\"],\n  [\"6\",\"7\",\"2\",\"1\",\"9\",\"5\",\"3\",\"4\",\"8\"],\n  [\"1\",\"9\",\"8\",\"3\",\"4\",\"2\",\"5\",\"6\",\"7\"],\n  [\"8\",\"5\",\"9\",\"7\",\"6\",\"1\",\"4\",\"2\",\"3\"],\n  [\"4\",\"2\",\"6\",\"8\",\"5\",\"3\",\"7\",\"9\",\"1\"],\n  [\"7\",\"1\",\"3\",\"9\",\"2\",\"4\",\"8\",\"5\",\"6\"],\n  [\"9\",\"6\",\"1\",\"5\",\"3\",\"7\",\"2\",\"8\",\"4\"],\n  [\"2\",\"8\",\"7\",\"4\",\"1\",\"9\",\"6\",\"3\",\"5\"],\n  [\"3\",\"4\",\"5\",\"2\",\"8\",\"6\",\"1\",\"7\",\"9\"],\n];\nassert.equal(isValidSudoku(full), true);\nfull[8][8] = \"1\";\nassert.equal(isValidSudoku(full), false);" },
+      { name: "a repeat inside one box that shares neither row nor column", body: "const board = Array.from({ length: 9 }, () => new Array(9).fill(\".\"));\nboard[3][3] = \"5\";\nboard[5][5] = \"5\";\nassert.equal(isValidSudoku(board), false);" },
     ],
   },
   {
@@ -786,6 +835,9 @@ export const dsa5: Exercise[] = [
         name: "two tries do not share state",
         body: "const a = new Trie();\nconst b = new Trie();\na.insert('hello');\nassert.equal(a.search('hello'), true);\nassert.equal(b.search('hello'), false);\nassert.equal(b.startsWith('h'), false);",
       },
+      { name: "the empty string as both a prefix and a stored word", body: "const t=new Trie();\nassert.equal(t.startsWith(''), true);\nassert.equal(t.search(''), false);\nt.insert('');\nassert.equal(t.search(''), true);" },
+      { name: "one word is a prefix of two others inserted later", body: "const t=new Trie();\nt.insert('application');\nt.insert('apply');\nt.insert('app');\nassert.equal(t.search('app'), true);\nassert.equal(t.search('appl'), false);\nassert.equal(t.startsWith('appl'), true);\nassert.equal(t.search('apply'), true);" },
+      { name: "two words diverge after sharing a long prefix", body: "const t=new Trie();\nt.insert('interest');\nt.insert('internet');\nassert.equal(t.search('inter'), false);\nassert.equal(t.startsWith('inter'), true);\nassert.equal(t.search('internet'), true);\nassert.equal(t.search('interne'), false);" },
     ],
   },
 {
@@ -825,6 +877,9 @@ export const dsa5: Exercise[] = [
         name: "backtracks past a dead branch",
         body: "const d = new WordDictionary();\nd.addWord('at');\nd.addWord('and');\nd.addWord('an');\nd.addWord('add');\nassert.equal(d.search('a'), false);\nassert.equal(d.search('.at'), false);\nassert.equal(d.search('an.'), true);\nassert.equal(d.search('a.d.'), false);\nassert.equal(d.search('a.d'), true);\nassert.equal(d.search('.'), false);",
       },
+      { name: "a wildcard at the very start", body: "const d=new WordDictionary();\nd.addWord('cat');\nd.addWord('car');\nassert.equal(d.search('.at'), true);\nassert.equal(d.search('.ar'), true);\nassert.equal(d.search('.oo'), false);" },
+      { name: "an all-dots query matches any word of that length", body: "const d=new WordDictionary();\nd.addWord('ab');\nd.addWord('cd');\nassert.equal(d.search('..'), true);\nd.addWord('efg');\nassert.equal(d.search('...'), true);\nassert.equal(d.search('..'), true);" },
+      { name: "no match when every stored word has a different length", body: "const d=new WordDictionary();\nd.addWord('a');\nd.addWord('abc');\nd.addWord('abcde');\nassert.equal(d.search('ab'), false);\nassert.equal(d.search('a..'), true);\nassert.equal(d.search('.....'), true);" },
     ],
   },
 {
@@ -864,6 +919,9 @@ export const dsa5: Exercise[] = [
         name: "overlapping words and empty inputs",
         body: "const board = [['a','b'],['c','d']];\nconst out = findWords(board, ['ab','abc','abcd','cd','ac','ba','x']).slice().sort();\nassert.deepEqual(out, ['ab', 'ac', 'ba', 'cd']);\nassert.deepEqual(findWords([['a']], []), []);",
       },
+      { name: "single-letter words are found", body: "const board=[['a','b'],['c','d']];\nconst out=findWords(board, ['a','d','z']).slice().sort();\nassert.deepEqual(out, ['a','d']);" },
+      { name: "a word requiring a path through the whole small grid", body: "const board=[['a','b'],['c','d']];\nconst out=findWords(board, ['abdc']).slice().sort();\nassert.deepEqual(out, ['abdc']);" },
+      { name: "words sharing a common trie prefix but diverging", body: "const board=[['o','a'],['e','t']];\nconst out=findWords(board, ['oa','oe','ot']).slice().sort();\nassert.deepEqual(out, ['oa','oe']);" },
     ],
   },
 {
@@ -903,6 +961,9 @@ export const dsa5: Exercise[] = [
         name: "misses do not disturb the ordering",
         body: "const c = new LRUCache(2);\nc.put(1, 1);\nc.put(2, 2);\nassert.equal(c.get(9), -1);\nc.put(3, 3);\nassert.equal(c.get(1), -1);\nassert.equal(c.get(2), 2);\nassert.equal(c.get(3), 3);",
       },
+      { name: "putting an existing key at capacity does not evict", body: "const c=new LRUCache(3);\nc.put(1,1); c.put(2,2); c.put(3,3);\nc.put(2,20);\nassert.equal(c.get(1),1);\nassert.equal(c.get(2),20);\nassert.equal(c.get(3),3);" },
+      { name: "repeated gets on the same key never evict it", body: "const c=new LRUCache(2);\nc.put(1,1); c.put(2,2);\nc.get(1); c.get(1); c.get(1);\nc.put(3,3);\nassert.equal(c.get(2), -1);\nassert.equal(c.get(1), 1);\nassert.equal(c.get(3), 3);" },
+      { name: "eviction order follows least-recent use across many operations", body: "const c=new LRUCache(3);\nc.put(1,'a'); c.put(2,'b'); c.put(3,'c');\nc.get(1);\nc.put(4,'d');\nassert.equal(c.get(2), -1);\nassert.equal(c.get(1), 'a');\nassert.equal(c.get(3), 'c');\nassert.equal(c.get(4), 'd');" },
     ],
   },
 {
@@ -942,6 +1003,9 @@ export const dsa5: Exercise[] = [
         name: "holds many keys at once",
         body: "const m = new MyHashMap(8);\nfor (let k = 0; k < 200; k++) m.put(k, k * 3);\nfor (let k = 0; k < 200; k++) assert.equal(m.get(k), k * 3);\nfor (let k = 0; k < 200; k += 2) m.remove(k);\nassert.equal(m.get(50), -1);\nassert.equal(m.get(51), 153);",
       },
+      { name: "bucketCount of 1 forces every key into the same bucket", body: "const m=new MyHashMap(1);\nm.put(0,'a'); m.put(1,'b'); m.put(2,'c');\nassert.equal(m.get(0),'a');\nassert.equal(m.get(1),'b');\nassert.equal(m.get(2),'c');\nm.remove(1);\nassert.equal(m.get(1), -1);\nassert.equal(m.get(0),'a');\nassert.equal(m.get(2),'c');" },
+      { name: "overwriting a value multiple times keeps only the latest", body: "const m=new MyHashMap();\nm.put(5, 'x'); m.put(5, 'y'); m.put(5, 'z');\nassert.equal(m.get(5), 'z');" },
+      { name: "many puts and removes on a small bucket count stay correct", body: "const m=new MyHashMap(3);\nfor (let k=0;k<30;k++) m.put(k, k*k);\nfor (let k=0;k<30;k+=3) m.remove(k);\nfor (let k=0;k<30;k++) { if (k%3===0) assert.equal(m.get(k), -1); else assert.equal(m.get(k), k*k); }" },
     ],
   },
 {
@@ -981,6 +1045,9 @@ export const dsa5: Exercise[] = [
         name: "handles a long history",
         body: "const t = new TimeMap();\nfor (let i = 0; i < 2000; i++) t.set('k', 'v' + i, i * 2);\nassert.equal(t.get('k', 0), 'v0');\nassert.equal(t.get('k', 1), 'v0');\nassert.equal(t.get('k', 1999), 'v999');\nassert.equal(t.get('k', 3998), 'v1999');\nassert.equal(t.get('k', 999999), 'v1999');",
       },
+      { name: "a timestamp exactly matching a later write picks that write", body: "const t=new TimeMap();\nt.set('x','v1',5); t.set('x','v2',10); t.set('x','v3',15);\nassert.equal(t.get('x',10), 'v2');\nassert.equal(t.get('x',14), 'v2');\nassert.equal(t.get('x',15), 'v3');" },
+      { name: "a key with a single write answers every query at or after it the same way", body: "const t=new TimeMap();\nt.set('solo','only',7);\nassert.equal(t.get('solo',7),'only');\nassert.equal(t.get('solo',1000),'only');\nassert.equal(t.get('solo',6),'');" },
+      { name: "a key that was never set always returns the empty string", body: "const t=new TimeMap();\nassert.equal(t.get('ghost', 0), '');\nassert.equal(t.get('ghost', 999999), '');" },
     ],
   },
 {
@@ -1020,6 +1087,9 @@ export const dsa5: Exercise[] = [
         name: "re-inserting after a removal works",
         body: "const s = new RandomizedSet((n) => n - 1);\ns.insert(1);\nassert.equal(s.remove(1), true);\nassert.equal(s.insert(1), true);\nassert.equal(s.getRandom(), 1);\ns.insert(7);\nassert.equal(s.getRandom(), 7);\nassert.equal(s.remove(7), true);\nassert.equal(s.getRandom(), 1);",
       },
+      { name: "re-inserting after a removal reports newly added", body: "const s=new RandomizedSet((n)=>0);\ns.insert(5);\ns.remove(5);\nassert.equal(s.insert(5), true);\nassert.equal(s.getRandom(), 5);" },
+      { name: "getRandom only ever returns a member currently present", body: "const s=new RandomizedSet((n)=>n-1);\ns.insert(1); s.insert(2); s.insert(3);\ns.remove(3);\nconst r=s.getRandom();\nassert.ok(r===1||r===2);" },
+      { name: "many inserts and removals stay consistent with a plain set", body: "const s=new RandomizedSet((n)=>0);\nconst ref=new Set();\nconst ops=[[1,'i'],[2,'i'],[3,'i'],[2,'r'],[4,'i'],[1,'r'],[5,'i']];\nfor(const [v,op] of ops){\n  if(op==='i'){ const changed=s.insert(v); assert.equal(changed, !ref.has(v)); ref.add(v); }\n  else { const changed=s.remove(v); assert.equal(changed, ref.has(v)); ref.delete(v); }\n}\nassert.equal(ref.has(s.getRandom()), true);" },
     ],
   },
 {
@@ -1059,6 +1129,9 @@ export const dsa5: Exercise[] = [
         name: "a large array, sorted and complete",
         body: "let seed = 7;\nconst next = () => {\n  seed = (seed * 48271) % 2147483647;\n  return seed % 1000;\n};\nconst input = [];\nfor (let i = 0; i < 600; i++) input.push(next() - 500);\nconst before = input.reduce((a, b) => a + b, 0);\nconst out = mergeSort(input);\nassert.equal(out.length, 600);\nassert.equal(out.reduce((a, b) => a + b, 0), before);\nfor (let i = 1; i < out.length; i++) assert.ok(out[i - 1] <= out[i]);",
       },
+      { name: "an array of all identical values", body: "assert.deepEqual(mergeSort([4,4,4,4]), [4,4,4,4]);" },
+      { name: "two elements out of order", body: "assert.deepEqual(mergeSort([2,1]), [1,2]);" },
+      { name: "the full multiset is preserved with many duplicates", body: "assert.deepEqual(mergeSort([5,3,5,1,3,5,1,1]), [1,1,1,3,3,5,5,5]);" },
     ],
   },
 {
@@ -1098,6 +1171,9 @@ export const dsa5: Exercise[] = [
         name: "agrees with sorting on a large array",
         body: "let seed = 11;\nconst next = () => {\n  seed = (seed * 48271) % 2147483647;\n  return seed % 5000;\n};\nconst input = [];\nfor (let i = 0; i < 1000; i++) input.push(next() - 2500);\nconst sorted = input.slice().sort((x, y) => x - y);\nfor (const k of [1, 2, 17, 500, 999, 1000]) {\n  assert.equal(findKthLargest(input, k), sorted[1000 - k], 'k = ' + k);\n}\nconst sortedInput = [];\nfor (let i = 0; i < 400; i++) sortedInput.push(i);\nassert.equal(findKthLargest(sortedInput, 1), 399);\nassert.equal(findKthLargest(sortedInput, 400), 0);",
       },
+      { name: "k of 1 returns the maximum", body: "assert.equal(findKthLargest([9,1,7,3,8], 1), 9);" },
+      { name: "k equal to the length returns the minimum", body: "assert.equal(findKthLargest([9,1,7,3,8], 5), 1);" },
+      { name: "two elements, both positions", body: "assert.equal(findKthLargest([2,1], 1), 2);\nassert.equal(findKthLargest([2,1], 2), 1);" },
     ],
   },
 {
@@ -1137,6 +1213,9 @@ export const dsa5: Exercise[] = [
         name: "a big already-sorted array does not blow up",
         body: "const input = [];\nfor (let i = 0; i < 5000; i++) input.push(i);\nconst out = sortArray(input);\nassert.equal(out[0], 0);\nassert.equal(out[4999], 4999);\nfor (let i = 1; i < out.length; i++) assert.ok(out[i - 1] <= out[i]);",
       },
+      { name: "all negative values", body: "assert.deepEqual(sortArray([-5,-1,-10,-3]), [-10,-5,-3,-1]);" },
+      { name: "two elements swap", body: "assert.deepEqual(sortArray([2,1]), [1,2]);" },
+      { name: "zero and both signs of duplicates", body: "assert.deepEqual(sortArray([0,-1,1,0,-1,1]), [-1,-1,0,0,1,1]);" },
     ],
   },
 {
@@ -1176,6 +1255,9 @@ export const dsa5: Exercise[] = [
         name: "single value, a leading zero case, and an empty array",
         body: "assert.equal(largestNumber([1]), '1');\nassert.equal(largestNumber([10, 0]), '100');\nassert.equal(largestNumber([0, 1]), '10');\nassert.equal(largestNumber([]), '');",
       },
+      { name: "digit repetition tests the concatenation comparator", body: "assert.equal(largestNumber([34, 3]), '343');" },
+      { name: "identical numbers", body: "assert.equal(largestNumber([5, 5, 5]), '555');" },
+      { name: "a mix of single and multi-digit numbers", body: "assert.equal(largestNumber([1, 20, 23, 4, 8]), '8423201');" },
     ],
   },
   {
@@ -1291,6 +1373,9 @@ export const dsa5: Exercise[] = [
         name: "repeated calls stay correct",
         body: "assert.equal(fib(40), 102334155);\nassert.equal(fib(40), 102334155);\nassert.equal(fib(10), 55);\nassert.equal(fib(70), 190392490709135);",
       },
+      { name: "small terms match hand calculation", body: "assert.equal(fib(3), 2);\nassert.equal(fib(4), 3);\nassert.equal(fib(5), 5);\nassert.equal(fib(6), 8);" },
+      { name: "large terms still satisfy the recurrence", body: "const a = fib(55);\nconst b = fib(56);\nconst c = fib(57);\nassert.equal(a + b, c);\nassert.equal(fib(78), fib(77) + fib(76));" },
+      { name: "well known mid-range terms", body: "assert.equal(fib(20), 6765);\nassert.equal(fib(30), 832040);" },
     ],
   },
 {
@@ -1329,6 +1414,9 @@ export const dsa5: Exercise[] = [
         name: "huge exponents finish instantly",
         body: "assert.equal(myPow(1, 2147483647), 1);\nassert.equal(myPow(1, -2147483648), 1);\nassert.equal(myPow(-1, -2147483648), 1);\nassert.equal(myPow(2, -2147483648), 0);\nassert.equal(myPow(2, 30), 1073741824);",
       },
+      { name: "an exponent of one returns the base itself", body: "assert.equal(myPow(7, 1), 7);\nassert.equal(myPow(-7, 1), -7);\nassert.equal(myPow(0.5, 1), 0.5);" },
+      { name: "a large negative exponent shrinks toward zero", body: "assert.ok(Math.abs(myPow(2, -20) - 1/1048576) < 1e-15);" },
+      { name: "squaring chains correctly for a power-of-two exponent", body: "assert.equal(myPow(3, 16), 43046721);" },
     ],
   },
 {
@@ -1367,6 +1455,9 @@ export const dsa5: Exercise[] = [
         name: "2^n subsets, all distinct",
         body: "const rows = subsets([1, 2, 3, 4, 5]);\nassert.equal(rows.length, 32);\nconst keys = rows.map((r) => r.slice().sort((a, b) => a - b).join(','));\nassert.equal(new Set(keys).size, 32);\nassert.ok(keys.indexOf('') !== -1);\nassert.ok(keys.indexOf('1,2,3,4,5') !== -1);",
       },
+      { name: "no duplicate subsets even with a larger input", body: "const rows=subsets([10,20,30,40]);\nconst keys=rows.map((r)=>r.slice().sort((a,b)=>a-b).join(','));\nassert.equal(new Set(keys).size, 16);" },
+      { name: "the input array is not mutated", body: "const nums=[1,2,3];\nsubsets(nums);\nassert.deepEqual(nums, [1,2,3]);" },
+      { name: "two-element input produces exactly four subsets", body: "const norm=(rows)=>rows.map((r)=>r.slice().sort((a,b)=>a-b).join(',')).sort();\nassert.deepEqual(norm(subsets([7,9])), norm([[],[7],[9],[7,9]]));" },
     ],
   },
 {
@@ -1406,6 +1497,9 @@ export const dsa5: Exercise[] = [
         name: "order is preserved",
         body: "const out = flattenDeep([[1, [2]], 3, [[4, [5, 6]], 7], [[[8]]]]);\nassert.deepEqual(out, [1, 2, 3, 4, 5, 6, 7, 8]);",
       },
+      { name: "objects and strings survive as leaves", body: "const obj = {a:1};\nassert.deepEqual(flattenDeep([obj, [1, ['x']]]), [obj, 1, 'x']);" },
+      { name: "values interspersed at every nesting level", body: "assert.deepEqual(flattenDeep([1,[2,3],[[4],5,[6,[7]]]]), [1,2,3,4,5,6,7]);" },
+      { name: "undefined and NaN are preserved as leaves", body: "const out = flattenDeep([undefined, [NaN, [1]]]);\nassert.equal(out.length, 3);\nassert.equal(out[0], undefined);\nassert.ok(Number.isNaN(out[1]));\nassert.equal(out[2], 1);" },
     ],
   },
 {

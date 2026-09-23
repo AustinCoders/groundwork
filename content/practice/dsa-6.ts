@@ -38,6 +38,9 @@ export const dsa6: Exercise[] = [
         name: "single day",
         body: "assert.deepEqual(dailyTemperatures([42]), [0]);",
       },
+      { name: "empty array", body: "assert.deepEqual(dailyTemperatures([]), []);" },
+      { name: "a plateau followed by a single warm day", body: "assert.deepEqual(dailyTemperatures([70, 70, 70, 75]), [3, 2, 1, 0]);" },
+      { name: "a zigzag pattern", body: "assert.deepEqual(dailyTemperatures([50, 60, 50, 60, 50]), [1, 0, 1, 0, 0]);" },
     ],
   },
 {
@@ -77,6 +80,9 @@ export const dsa6: Exercise[] = [
         name: "query order is preserved",
         body: "assert.deepEqual(nextGreaterElement([3,1,2], [1,2,3,10]), [10,2,3]);",
       },
+      { name: "nums1 equals nums2 entirely", body: "assert.deepEqual(nextGreaterElement([1, 2, 3, 4], [1, 2, 3, 4]), [2, 3, 4, -1]);" },
+      { name: "a single-element query that never has an answer", body: "assert.deepEqual(nextGreaterElement([5], [3, 1, 5]), [-1]);" },
+      { name: "values include negative numbers", body: "assert.deepEqual(nextGreaterElement([-1, -3], [-3, -1, -2]), [-1, -1]);" },
     ],
   },
 {
@@ -115,6 +121,9 @@ export const dsa6: Exercise[] = [
         name: "single element",
         body: "assert.deepEqual(nextGreaterElements([7]), [-1]);",
       },
+      { name: "two elements, mutual wraparound", body: "assert.deepEqual(nextGreaterElements([1, 2]), [2, -1]);" },
+      { name: "duplicate maximum values across the circle", body: "assert.deepEqual(nextGreaterElements([3, 3, 1, 3]), [-1, -1, 3, -1]);" },
+      { name: "all elements equal except one larger", body: "assert.deepEqual(nextGreaterElements([2, 2, 2, 5]), [5, 5, 5, -1]);" },
     ],
   },
 {
@@ -154,6 +163,9 @@ export const dsa6: Exercise[] = [
         name: "empty and single bar",
         body: "assert.equal(largestRectangleArea([]), 0);\nassert.equal(largestRectangleArea([5]), 5);\nassert.equal(largestRectangleArea([0]), 0);",
       },
+      { name: "a strictly increasing histogram", body: "assert.equal(largestRectangleArea([1, 2, 3, 4, 5, 6]), 12);" },
+      { name: "a valley between two tall bars", body: "assert.equal(largestRectangleArea([5, 1, 5]), 5);" },
+      { name: "equal-height bars with one dip in the middle", body: "assert.equal(largestRectangleArea([4, 4, 4, 1, 4, 4, 4]), 12);" },
     ],
   },
 {
@@ -193,6 +205,9 @@ export const dsa6: Exercise[] = [
         name: "empty matrix",
         body: "assert.equal(maximalRectangle([]), 0);\nassert.equal(maximalRectangle([[0,0],[0,0]]), 0);",
       },
+      { name: "a single row of all ones", body: "assert.equal(maximalRectangle([[1, 1, 1, 1]]), 4);" },
+      { name: "a single column of all ones", body: "assert.equal(maximalRectangle([[1], [1], [1]]), 3);" },
+      { name: "a checkerboard pattern maxes out at one cell", body: "assert.equal(maximalRectangle([[1, 0, 1], [0, 1, 0], [1, 0, 1]]), 1);" },
     ],
   },
 {
@@ -232,6 +247,9 @@ export const dsa6: Exercise[] = [
         name: "a survivor keeps travelling left",
         body: "assert.deepEqual(asteroidCollision([1,-1,-2]), [-2]);\nassert.deepEqual(asteroidCollision([]), []);",
       },
+      { name: "a chain of same-direction asteroids meets one big survivor", body: "assert.deepEqual(asteroidCollision([1, 2, 3, -10]), [-10]);" },
+      { name: "two separate collision groups", body: "assert.deepEqual(asteroidCollision([5, -3, 4, -6]), [-6]);" },
+      { name: "all positive, no collisions ever happen", body: "assert.deepEqual(asteroidCollision([1, 2, 3, 4, 5]), [1, 2, 3, 4, 5]);" },
     ],
   },
 {
@@ -271,6 +289,9 @@ export const dsa6: Exercise[] = [
         name: "long nested expression and a lone number",
         body: "assert.equal(evalRPN(['10','6','9','3','+','-11','*','/','*','17','+','5','+']), 22);\nassert.equal(evalRPN(['42']), 42);",
       },
+      { name: "a subtraction chain is order sensitive", body: "assert.equal(evalRPN(['10', '2', '3', '-', '-']), 11);" },
+      { name: "multiplication with a negative operand", body: "assert.equal(evalRPN(['4', '-2', '*']), -8);" },
+      { name: "a single negative number token", body: "assert.equal(evalRPN(['-5']), -5);" },
     ],
   },
 {
@@ -310,6 +331,9 @@ export const dsa6: Exercise[] = [
         name: "multi-digit numbers and deep nesting",
         body: "assert.equal(calculate('(100)'), 100);\nassert.equal(calculate('1-(2-(3-(4-5)))'), 3);",
       },
+      { name: "a unary minus directly after an opening paren, nested", body: "assert.equal(calculate('1-(-(2-3))'), 0);" },
+      { name: "multiple sequential parens at the same level", body: "assert.equal(calculate('(1)+(2)+(3)'), 6);" },
+      { name: "just a number with surrounding spaces", body: "assert.equal(calculate('   42   '), 42);" },
     ],
   },
 {
@@ -348,6 +372,9 @@ export const dsa6: Exercise[] = [
         name: "single number and a negative result",
         body: "assert.equal(calculate('42'), 42);\nassert.equal(calculate('1-2*3'), -5);",
       },
+      { name: "addition and subtraction chained with multiplication in the middle", body: "assert.equal(calculate('2+3*4-5'), 9);" },
+      { name: "chained division truncation with larger numbers", body: "assert.equal(calculate('7/2/2'), 1);" },
+      { name: "spaces scattered throughout a multi-operator expression", body: "assert.equal(calculate(' 2 * 3 + 4 * 5 '), 26);" },
     ],
   },
 {
@@ -387,6 +414,9 @@ export const dsa6: Exercise[] = [
         name: "negatives and a single element",
         body: "assert.equal(findKthLargest([-1,-5,-3], 2), -3);\nassert.equal(findKthLargest([1], 1), 1);",
       },
+      { name: "two element array, both positions", body: "assert.equal(findKthLargest([1, 2], 1), 2);\nassert.equal(findKthLargest([1, 2], 2), 1);" },
+      { name: "already sorted descending input", body: "assert.equal(findKthLargest([9, 7, 5, 3, 1], 3), 5);" },
+      { name: "a large array stays correct at both extremes", body: "const n = 20000;\nconst nums = [];\nfor (let i = 0; i < n; i++) nums.push(i);\nassert.equal(findKthLargest(nums, 1), n - 1);\nassert.equal(findKthLargest(nums, n), 0);" },
     ],
   },
 {
@@ -426,6 +456,9 @@ export const dsa6: Exercise[] = [
         name: "single value",
         body: "const m = new MedianFinder();\nm.addNum(42);\nassert.equal(m.findMedian(), 42);",
       },
+      { name: "two values give the average", body: "const m = new MedianFinder();\nm.addNum(3);\nm.addNum(7);\nassert.equal(m.findMedian(), 5);" },
+      { name: "all identical values", body: "const m = new MedianFinder();\n[4, 4, 4, 4].forEach((n) => m.addNum(n));\nassert.equal(m.findMedian(), 4);" },
+      { name: "a longer stream stays correct at every step", body: "const m = new MedianFinder();\nconst vals = [5, 15, 1, 3, 9, 8, 7, 2, 20, 11];\nconst seen = [];\nfor (const v of vals) {\n  m.addNum(v);\n  seen.push(v);\n  const sorted = seen.slice().sort((a, b) => a - b);\n  const mid = sorted.length >> 1;\n  const expected = sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;\n  assert.equal(m.findMedian(), expected, 'after adding ' + v);\n}" },
     ],
   },
 {
@@ -465,6 +498,9 @@ export const dsa6: Exercise[] = [
         name: "negative coordinates are handled by squared distance",
         body: "const out = kClosest([[-1,-1],[8,-9],[-7,0]], 2)\n  .sort((a, b) => a[0] - b[0]);\nassert.deepEqual(out, [[-7,0],[-1,-1]]);",
       },
+      { name: "collinear points along an axis", body: "const out = kClosest([[0, 1], [0, 2], [0, 3]], 2).sort((a, b) => a[1] - b[1]);\nassert.deepEqual(out, [[0, 1], [0, 2]]);" },
+      { name: "a tied pair of equal distance is fully included", body: "const out = kClosest([[3, 0], [0, 3], [5, 5]], 2).sort((a, b) => a[0] - b[0]);\nassert.deepEqual(out, [[0, 3], [3, 0]]);" },
+      { name: "a single point with k = 1", body: "const out = kClosest([[4, 4]], 1);\nassert.deepEqual(out, [[4, 4]]);" },
     ],
   },
 {
@@ -504,6 +540,9 @@ export const dsa6: Exercise[] = [
         name: "one giant stone survives",
         body: "assert.equal(lastStoneWeight([1,1,1,100]), 97);",
       },
+      { name: "two stones of different weight", body: "assert.equal(lastStoneWeight([10, 3]), 7);" },
+      { name: "three stones where the two largest combine first", body: "assert.equal(lastStoneWeight([2, 3, 7]), 2);" },
+      { name: "many equal stones leave one over on an odd count", body: "assert.equal(lastStoneWeight([1, 1, 1, 1, 1]), 1);" },
     ],
   },
 {
@@ -543,6 +582,9 @@ export const dsa6: Exercise[] = [
         name: "single task repeated, and an empty list",
         body: "assert.equal(leastInterval(['A','A','A'], 2), 7);\nassert.equal(leastInterval([], 3), 0);",
       },
+      { name: "two tasks that just barely need one idle slot", body: "assert.equal(leastInterval(['A', 'A', 'B'], 2), 4);" },
+      { name: "a cooldown much larger than the available filler tasks", body: "assert.equal(leastInterval(['A', 'A', 'B'], 5), 7);" },
+      { name: "one dominant task among several fillers with a moderate cooldown", body: "assert.equal(leastInterval(['A', 'A', 'A', 'B', 'C', 'D'], 2), 7);" },
     ],
   },
 {
@@ -582,6 +624,9 @@ export const dsa6: Exercise[] = [
         name: "a clear frequency ordering",
         body: "assert.equal(frequencySort('aaabbc'), 'aaabbc');",
       },
+      { name: "three clearly distinct frequencies", body: "assert.equal(frequencySort('aabbbcccc'), 'ccccbbbaa');" },
+      { name: "digit characters are treated as ordinary characters", body: "assert.equal(frequencySort('112223'), '222113');" },
+      { name: "every character is unique so any order is valid", body: "const s = 'abcdef';\nconst out = frequencySort(s);\nassert.equal(out.length, 6);\nconst sortedIn = s.split('').sort().join('');\nconst sortedOut = out.split('').sort().join('');\nassert.equal(sortedOut, sortedIn);" },
     ],
   },
 {
@@ -621,6 +666,9 @@ export const dsa6: Exercise[] = [
         name: "single character and empty string",
         body: "assert.equal(reorganizeString('a'), 'a');\nassert.equal(reorganizeString(''), '');",
       },
+      { name: "two characters alternate perfectly", body: "const out = reorganizeString('aabb');\nassert.equal(out.length, 4);\nfor (let i = 1; i < out.length; i++) assert.notEqual(out[i], out[i - 1]);" },
+      { name: "four distinct characters with one heavily repeated but still feasible", body: "const out = reorganizeString('aaaabbccdd');\nassert.equal(out.length, 10);\nfor (let i = 1; i < out.length; i++) assert.notEqual(out[i], out[i - 1]);\nconst counts = {};\nfor (const ch of out) counts[ch] = (counts[ch] || 0) + 1;\nassert.deepEqual(counts, { a: 4, b: 2, c: 2, d: 2 });" },
+      { name: "just past the feasibility limit returns empty", body: "assert.equal(reorganizeString('aaaabc'), '');" },
     ],
   },
 {
@@ -660,6 +708,9 @@ export const dsa6: Exercise[] = [
         name: "input is not sorted",
         body: "assert.equal(minMeetingRooms([[13,15],[1,13],[6,9]]), 2);",
       },
+      { name: "back-to-back meetings reuse the same room", body: "assert.equal(minMeetingRooms([[1, 5], [5, 10], [10, 15]]), 1);" },
+      { name: "two meetings overlapping by one minute need two rooms", body: "assert.equal(minMeetingRooms([[1, 10], [9, 12]]), 2);" },
+      { name: "clustered meetings at the start need more rooms than later ones", body: "assert.equal(minMeetingRooms([[0, 5], [0, 5], [0, 5], [6, 7]]), 3);" },
     ],
   },
 {
@@ -699,6 +750,9 @@ export const dsa6: Exercise[] = [
         name: "one list only",
         body: "assert.deepEqual(smallestRange([[7]]), [7,7]);\nassert.deepEqual(smallestRange([[10,20],[15],[12,25]]), [10,15]);",
       },
+      { name: "two lists with a large gap between windows", body: "assert.deepEqual(smallestRange([[1, 100], [2, 101]]), [1, 2]);" },
+      { name: "a list that runs out stops the search early", body: "assert.deepEqual(smallestRange([[1, 2, 3], [10]]), [3, 10]);" },
+      { name: "values interleave tightly across two lists", body: "assert.deepEqual(smallestRange([[1, 3, 5, 7], [2, 4, 6, 8]]), [1, 2]);" },
     ],
   },
 {
@@ -738,6 +792,9 @@ export const dsa6: Exercise[] = [
         name: "negatives sort correctly",
         body: "const out = kSmallestPairs([-10,-4,0], [3,5,6], 2)\n  .sort((a, b) => (a[0] + a[1]) - (b[0] + b[1]));\nassert.deepEqual(out, [[-10,3],[-10,5]]);",
       },
+      { name: "k equal to exactly every available pair", body: "const out = kSmallestPairs([1, 2], [3, 4], 4).sort((a, b) => (a[0] + a[1]) - (b[0] + b[1]) || a[0] - b[0] || a[1] - b[1]);\nassert.deepEqual(out, [[1, 3], [1, 4], [2, 3], [2, 4]]);" },
+      { name: "single-element arrays", body: "assert.deepEqual(kSmallestPairs([5], [10], 1), [[5, 10]]);" },
+      { name: "k = 1 always returns the single cheapest pair", body: "const out = kSmallestPairs([3, 5, 7], [1, 2, 9], 1);\nassert.deepEqual(out, [[3, 1]]);" },
     ],
   },
 {
@@ -777,6 +834,9 @@ export const dsa6: Exercise[] = [
         name: "k of zero and an empty project list",
         body: "assert.equal(findMaximizedCapital(0, 5, [1,2], [0,0]), 5);\nassert.equal(findMaximizedCapital(3, 5, [], []), 5);",
       },
+      { name: "capital grows enough to unlock the most profitable project last", body: "assert.equal(findMaximizedCapital(3, 1, [2, 5, 8], [1, 3, 6]), 16);" },
+      { name: "k larger than the number of projects stops after using them all", body: "assert.equal(findMaximizedCapital(10, 0, [1, 2], [0, 0]), 3);" },
+      { name: "starting capital already covers the most profitable project", body: "assert.equal(findMaximizedCapital(1, 10, [1, 2, 3], [0, 1, 2]), 13);" },
     ],
   },
 {
@@ -816,6 +876,9 @@ export const dsa6: Exercise[] = [
         name: "a single engineer, and fewer than k is sometimes better",
         body: "assert.equal(maxPerformance(1, [5], [4], 1), 20);\nassert.equal(maxPerformance(2, [10,1], [10,1], 2), 100);",
       },
+      { name: "two engineers, the more efficient one is processed first", body: "assert.equal(maxPerformance(2, [3, 5], [10, 4], 2), 32);" },
+      { name: "efficiency ties are broken correctly by speed sum", body: "assert.equal(maxPerformance(3, [4, 4, 4], [5, 5, 5], 2), 40);" },
+      { name: "k larger than n behaves like k = n", body: "assert.equal(maxPerformance(2, [5, 3], [3, 7], 5), 24);" },
     ],
   },
 {
@@ -855,6 +918,9 @@ export const dsa6: Exercise[] = [
         name: "one long stick among short ones",
         body: "assert.equal(connectSticks([1,2,3,4,5]), 33);",
       },
+      { name: "many equal-length sticks", body: "assert.equal(connectSticks([2, 2, 2, 2]), 16);" },
+      { name: "two sticks of very different lengths", body: "assert.equal(connectSticks([1, 100]), 101);" },
+      { name: "five equal sticks, an odd count", body: "assert.equal(connectSticks([3, 3, 3, 3, 3]), 36);" },
     ],
   },
 {
@@ -894,6 +960,9 @@ export const dsa6: Exercise[] = [
         name: "flat and downhill walks are always free",
         body: "assert.equal(furthestBuilding([1,1,1], 0, 0), 2);\nassert.equal(furthestBuilding([9,5,2], 0, 0), 2);\nassert.equal(furthestBuilding([7], 0, 0), 0);",
       },
+      { name: "enough ladders for every climb reaches the end regardless of bricks", body: "assert.equal(furthestBuilding([1, 10, 2, 20, 3, 30], 0, 3), 5);" },
+      { name: "one climb larger than total bricks with no ladders gets stuck there", body: "assert.equal(furthestBuilding([1, 2, 100], 5, 0), 1);" },
+      { name: "descending then ascending with exactly enough bricks", body: "assert.equal(furthestBuilding([10, 1, 10], 9, 0), 2);" },
     ],
   },
 {
@@ -932,6 +1001,9 @@ export const dsa6: Exercise[] = [
         name: "two empty strings are anagrams",
         body: "assert.equal(isAnagram('', ''), true);",
       },
+      { name: "single character match and mismatch", body: "assert.equal(isAnagram('a', 'a'), true);\nassert.equal(isAnagram('a', 'b'), false);" },
+      { name: "the same multiset of letters in a longer string", body: "assert.equal(isAnagram('aaabbbccc', 'cbaabcabc'), true);" },
+      { name: "numbers and symbols embedded in the strings", body: "assert.equal(isAnagram('a1b2', '2b1a'), true);\nassert.equal(isAnagram('a1b2', '2b1b'), false);" },
     ],
   },
 {
@@ -970,6 +1042,9 @@ export const dsa6: Exercise[] = [
         name: "single character",
         body: "assert.equal(isPalindrome('z'), true);",
       },
+      { name: "mixed digits and letters forming a palindrome", body: "assert.equal(isPalindrome('12321'), true);\nassert.equal(isPalindrome('12345'), false);" },
+      { name: "only non-alphanumeric characters at the edges", body: "assert.equal(isPalindrome('...racecar...'), true);" },
+      { name: "case differences throughout a longer phrase", body: "assert.equal(isPalindrome('Was it a car or a cat I saw?'), true);" },
     ],
   },
 {
@@ -1008,6 +1083,9 @@ export const dsa6: Exercise[] = [
         name: "empty array",
         body: "assert.equal(longestCommonPrefix([]), '');",
       },
+      { name: "all strings identical", body: "assert.equal(longestCommonPrefix(['test', 'test', 'test']), 'test');" },
+      { name: "the prefix is limited by the shortest string", body: "assert.equal(longestCommonPrefix(['flowering', 'flow', 'flower']), 'flow');" },
+      { name: "two strings where one is a prefix of the other", body: "assert.equal(longestCommonPrefix(['ab', 'abc']), 'ab');" },
     ],
   },
 {
@@ -1085,6 +1163,9 @@ export const dsa6: Exercise[] = [
         name: "letters inside words are untouched",
         body: "assert.equal(reverseWords('  abc  def '), 'def abc');",
       },
+      { name: "a single space between exactly two words", body: "assert.equal(reverseWords('one two'), 'two one');" },
+      { name: "many words with irregular spacing throughout", body: "assert.equal(reverseWords('  this   is    a test  '), 'test a is this');" },
+      { name: "numbers and punctuation act as ordinary words", body: "assert.equal(reverseWords('1 22 333'), '333 22 1');" },
     ],
   },
 {
@@ -1124,6 +1205,9 @@ export const dsa6: Exercise[] = [
         name: "needle longer than haystack",
         body: "assert.equal(strStr('a', 'aa'), -1);",
       },
+      { name: "needle equals the haystack exactly", body: "assert.equal(strStr('abc', 'abc'), 0);" },
+      { name: "needle occurs only at the very end", body: "assert.equal(strStr('hello world', 'world'), 6);" },
+      { name: "both empty, and an empty haystack with a non-empty needle", body: "assert.equal(strStr('', ''), 0);\nassert.equal(strStr('', 'a'), -1);" },
     ],
   },
   {
@@ -1262,6 +1346,9 @@ export const dsa6: Exercise[] = [
         name: "empty and single-character input",
         body: "assert.equal(longestPalindrome(''), '');\nassert.equal(longestPalindrome('q'), 'q');",
       },
+      { name: "two identical characters form the answer", body: "assert.equal(longestPalindrome('aa'), 'aa');" },
+      { name: "a short palindrome centred inside a longer non-palindromic string", body: "const s = 'xyzaabyx';\nconst r = longestPalindrome(s);\nassert.equal(r, 'aa');\nassert.ok(s.indexOf(r) !== -1);" },
+      { name: "an even-length palindrome hiding at the very end", body: "const s = 'zxabba';\nconst r = longestPalindrome(s);\nassert.equal(r, 'abba');" },
     ],
   },
 {
@@ -1301,6 +1388,9 @@ export const dsa6: Exercise[] = [
         name: "spaces and symbols count",
         body: "assert.equal(lengthOfLongestSubstring('a b!a b'), 4);",
       },
+      { name: "two characters alternating forces a window of two", body: "assert.equal(lengthOfLongestSubstring('abababab'), 2);" },
+      { name: "the longest window sits at the very end", body: "assert.equal(lengthOfLongestSubstring('aaabcdef'), 6);" },
+      { name: "repeated characters bookend a unique middle", body: "assert.equal(lengthOfLongestSubstring('xyzzyx'), 3);" },
     ],
   },
 ];

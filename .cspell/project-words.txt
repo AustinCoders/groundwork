@@ -16,17 +16,23 @@ aaaaaaab
 aaaaab
 AAAAACCCCC
 AAAAACCCCCAAAAACCCCCCAAAAAGGGTTT
+aaaabbccdd
+aaaabc
 aaab
 aaabbb
+aaabbbccc
 aaabbc
 aaabc
 aaabcbc
+aaabcdef
 aaaccc
 aabaaab
 aabaabaaa
 AABABBA
 aabb
+aabbbcccc
 aabbc
+aabbcc
 aabcc
 aacc
 aadbbbaccc
@@ -35,10 +41,15 @@ Aadhaar
 abaababaab
 ABAABBB
 ababab
+abababab
+ABABABAB
 abababcabababab
 ababaca
 ababcbacadefegdehijhklij
 Abadi's
+abbbcabbbc
+abbcddde
+abcabc
 abcabcab
 abcabcabc
 abcabcbb
@@ -52,6 +63,7 @@ ABCDEFFFFFG
 ABCESEEEFS
 ABCESEEEFSZ
 abcxxabc
+abdc
 ABDE
 ACACACACAC
 ACACACACACACACACAC
@@ -67,6 +79,7 @@ acking
 acks
 adbc
 ADOBECODEBANC
+AIQBHJPRCGKOSDFLNTEM
 Akshat
 alertable
 Alnum
@@ -75,6 +88,7 @@ Aman
 ampm
 apos
 appl
+applepen
 applepenapple
 artition
 astexplorer
@@ -109,11 +123,13 @@ CACACACACA
 caedbdedda
 catsandog
 Caveat
+cbaabcabc
 cbaebabacd
 cbaxxx
 cbbd
 ccac
 cccaaa
+ccccbbbaa
 CCCCCAAAAA
 CDXLIV
 Chargebee
@@ -139,6 +155,7 @@ datacentre
 dataloaders
 dbaeumer
 dbbca
+dcba
 DCCC
 dcda
 Debezium
@@ -194,6 +211,7 @@ hasn
 HATEOAS
 HEALTHCHECK
 healthchecks
+heapify
 Heapsort
 heartbeating
 hklv
@@ -285,6 +303,7 @@ navlink
 Neerja
 networkidle
 Neucha
+nfns
 nmql
 Noida
 nosniff
@@ -305,6 +324,7 @@ partitionable
 PAYPALISHIRING
 pgvector
 PINALSIGYAHRPI
+pineapplepenapple
 PKCE
 popcount
 popcounts
@@ -424,6 +444,7 @@ unpushed
 unrecoverably
 unreplicated
 unservable
+unsplittable
 unstarted
 unsub
 unsubmitted
@@ -447,6 +468,12 @@ worktree
 wxyz
 xored
 xxxcba
+xyzaabyx
+xyzabc
+xyzba
+xyzxyw
+xyzxyz
+xyzzyx
 Yugabyte
 Zipf
 Zipfian
@@ -462,3 +489,5 @@ demoinit
 deserialised
 deserialises
 Waku
+zxabba
+zzzzzzzzzzzzzzzzzzzzzcab

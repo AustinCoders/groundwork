@@ -38,6 +38,9 @@ export const dsa2: Exercise[] = [
         name: "start at index 0 when it already works",
         body: "assert.equal(canCompleteCircuit([4,1,1], [1,2,2]), 0);",
       },
+      { name: "all stations break even, start is index 0", body: "assert.equal(canCompleteCircuit([0,0,0,0],[0,0,0,0]), 0);" },
+      { name: "the deficit sits near the end of the array", body: "const gas=[4,3,1,1,5];\nconst cost=[1,2,7,3,1];\nfunction ref(g,c){const n=g.length; for(let s=0;s<n;s++){let tank=0; let ok=true; for(let k=0;k<n;k++){const i=(s+k)%n; tank+=g[i]-c[i]; if(tank<0){ok=false;break;}} if(ok) return s;} return -1;}\nassert.equal(canCompleteCircuit(gas,cost), ref(gas,cost));" },
+      { name: "agrees with a brute-force simulation on a mixed array", body: "const gas=[3,4,1,6,2,0,5];\nconst cost=[2,5,3,1,1,4,3];\nfunction ref(g,c){const n=g.length; for(let s=0;s<n;s++){let tank=0; let ok=true; for(let k=0;k<n;k++){const i=(s+k)%n; tank+=g[i]-c[i]; if(tank<0){ok=false;break;}} if(ok) return s;} return -1;}\nassert.equal(canCompleteCircuit(gas,cost), ref(gas,cost));" },
     ],
   },
 {
@@ -76,6 +79,9 @@ export const dsa2: Exercise[] = [
         name: "first index is already a wall",
         body: "assert.equal(canJump([0,1,2]), false);",
       },
+      { name: "one big jump from the start covers a run of zeros to the last index", body: "assert.equal(canJump([5,0,0,0,0,0]), true);" },
+      { name: "gets stuck one step short of the end", body: "assert.equal(canJump([1,1,0,1]), false);" },
+      { name: "does not mutate the input", body: "const nums=[2,3,1,1,4];\ncanJump(nums);\nassert.deepEqual(nums,[2,3,1,1,4]);" },
     ],
   },
 {
@@ -114,6 +120,9 @@ export const dsa2: Exercise[] = [
         name: "step by step when every value is 1",
         body: "assert.equal(jump([1,1,1,1]), 3);",
       },
+      { name: "reaches the end optimally with an early large jump", body: "const nums=[3,1,1,1,2,1];\nfunction ref(a){const n=a.length; if(n<=1) return 0; const dist=new Array(n).fill(Infinity); dist[0]=0; for(let i=0;i<n;i++){ if(dist[i]===Infinity) continue; for(let s=1;s<=a[i]&&i+s<n;s++){ if(dist[i]+1<dist[i+s]) dist[i+s]=dist[i]+1; } } return dist[n-1];}\nassert.equal(jump(nums), ref(nums));" },
+      { name: "agrees with a BFS reference on a longer array", body: "const nums=[2,3,1,1,4,2,1,1,1,4];\nfunction ref(a){const n=a.length; if(n<=1) return 0; const dist=new Array(n).fill(Infinity); dist[0]=0; for(let i=0;i<n;i++){ if(dist[i]===Infinity) continue; for(let s=1;s<=a[i]&&i+s<n;s++){ if(dist[i]+1<dist[i+s]) dist[i+s]=dist[i]+1; } } return dist[n-1];}\nassert.equal(jump(nums), ref(nums));" },
+      { name: "does not mutate the input", body: "const nums=[2,3,1,1,4];\njump(nums);\nassert.deepEqual(nums,[2,3,1,1,4]);" },
     ],
   },
 {
@@ -153,6 +162,9 @@ export const dsa2: Exercise[] = [
         name: "long descending run needs the backward pass",
         body: "assert.equal(candy([1,3,4,5,2]), 11);",
       },
+      { name: "strictly descending ratings need the classic staircase", body: "assert.equal(candy([5,4,3,2,1]), 15);" },
+      { name: "a valley shape needs both passes", body: "assert.equal(candy([1,2,3,2,1]), 9);" },
+      { name: "two children tied at the peak", body: "assert.equal(candy([1,2,2,1]), 6);" },
     ],
   },
 {
@@ -192,6 +204,9 @@ export const dsa2: Exercise[] = [
         name: "stays fast on a large array",
         body: "const big = [];\nfor (let i = 0; i < 200000; i++) big.push(i * 2);\nassert.equal(binarySearch(big, 399998), 199999);\nassert.equal(binarySearch(big, 399999), -1);",
       },
+      { name: "two element array, both positions", body: "assert.equal(binarySearch([2,5],2), 0);\nassert.equal(binarySearch([2,5],5), 1);\nassert.equal(binarySearch([2,5],3), -1);" },
+      { name: "negative numbers", body: "assert.equal(binarySearch([-20,-10,-5,0,5],-10), 1);\nassert.equal(binarySearch([-20,-10,-5,0,5],-21), -1);" },
+      { name: "target just below and above the range", body: "assert.equal(binarySearch([1,3,5,7,9], 0), -1);\nassert.equal(binarySearch([1,3,5,7,9], 10), -1);" },
     ],
   },
 {
@@ -231,6 +246,9 @@ export const dsa2: Exercise[] = [
         name: "works with negatives",
         body: "assert.equal(searchInsert([-9, -4, -1, 0], -5), 1);\nassert.equal(searchInsert([-9, -4, -1, 0], -10), 0);",
       },
+      { name: "inserts between two existing values", body: "assert.equal(searchInsert([2,4,6,8],5), 2);" },
+      { name: "negative and positive values mixed", body: "assert.equal(searchInsert([-5,-2,0,3,7], 1), 3);" },
+      { name: "finds every existing value in a longer array", body: "const nums=[2,5,8,11,14,17,20];\nfor(let i=0;i<nums.length;i++) assert.equal(searchInsert(nums, nums[i]), i);" },
     ],
   },
 {
@@ -310,6 +328,9 @@ export const dsa2: Exercise[] = [
         name: "stays logarithmic on a long run of duplicates",
         body: "const big = [];\nfor (let i = 0; i < 300000; i++) big.push(4);\nbig.push(9);\nassert.deepEqual(searchRange(big, 4), [0, 299999]);\nassert.deepEqual(searchRange(big, 9), [300000, 300000]);",
       },
+      { name: "target outside the array's value range entirely", body: "assert.deepEqual(searchRange([2,4,4,6],1), [-1,-1]);\nassert.deepEqual(searchRange([2,4,4,6],9), [-1,-1]);" },
+      { name: "two adjacent equal values only", body: "assert.deepEqual(searchRange([1,2,2,3],2), [1,2]);" },
+      { name: "single-element array present and absent", body: "assert.deepEqual(searchRange([5],3), [-1,-1]);\nassert.deepEqual(searchRange([5,5],5), [0,1]);" },
     ],
   },
 {
@@ -468,6 +489,9 @@ export const dsa2: Exercise[] = [
         name: "any of several peaks is accepted",
         body: "const nums = [1, 5, 1, 5, 1, 5, 1];\nconst at = function (k) { return k >= 0 && k < nums.length ? nums[k] : -Infinity; };\nconst i = findPeakElement(nums);\nassert.ok(at(i) > at(i - 1) && at(i) > at(i + 1), 'index ' + i + ' is not a peak');\nassert.ok(i === 1 || i === 3 || i === 5, 'unexpected index ' + i);",
       },
+      { name: "a valley-shaped array has peaks at both ends", body: "const nums=[5,4,3,4,5];\nconst at=(k)=>k>=0&&k<nums.length?nums[k]:-Infinity;\nconst i=findPeakElement(nums);\nassert.ok(at(i)>at(i-1)&&at(i)>at(i+1));\nassert.ok(i===0||i===4);" },
+      { name: "finds a genuine peak in a long bumpy array", body: "const nums=[1,2,3,4,5,6,7,8,50,7,6,5,4,3,2,1];\nconst at=(k)=>k>=0&&k<nums.length?nums[k]:-Infinity;\nconst i=findPeakElement(nums);\nassert.ok(at(i)>at(i-1)&&at(i)>at(i+1));" },
+      { name: "three elements with the peak in the middle", body: "assert.equal(findPeakElement([1,3,1]), 1);" },
     ],
   },
 {
@@ -507,6 +531,9 @@ export const dsa2: Exercise[] = [
         name: "handles equal piles",
         body: "assert.equal(minEatingSpeed([5, 5, 5, 5], 4), 5);\nassert.equal(minEatingSpeed([5, 5, 5, 5], 8), 3);",
       },
+      { name: "a single pile forces the smallest speed that still finishes", body: "assert.equal(minEatingSpeed([10], 5), 2);" },
+      { name: "many tiny piles need only speed 1", body: "assert.equal(minEatingSpeed([1,1,1,1,1], 5), 1);" },
+      { name: "agrees with a brute-force feasibility scan", body: "const piles=[9,12,15,22,7];\nconst h=7;\nfunction hours(k){let t=0; for(const p of piles) t+=Math.ceil(p/k); return t;}\nlet expected=1;\nwhile(hours(expected)>h) expected++;\nassert.equal(minEatingSpeed(piles,h), expected);" },
     ],
   },
 {
@@ -546,6 +573,9 @@ export const dsa2: Exercise[] = [
         name: "stays fast on a long list",
         body: "const w = [];\nfor (let i = 0; i < 50000; i++) w.push((i % 400) + 1);\nconst cap = shipWithinDays(w, 100);\nlet used = 1;\nlet load = 0;\nfor (const x of w) { if (load + x > cap) { used++; load = 0; } load += x; }\nassert.ok(used <= 100, 'capacity ' + cap + ' needs ' + used + ' days');\nlet used2 = 1;\nlet load2 = 0;\nfor (const x of w) { if (load2 + x > cap - 1) { used2++; load2 = 0; } load2 += x; }\nassert.ok(used2 > 100, 'capacity ' + cap + ' was not minimal');",
       },
+      { name: "a single package needs exactly its own weight as capacity", body: "assert.equal(shipWithinDays([5],1), 5);" },
+      { name: "plenty of slack still respects the heaviest package as the floor", body: "assert.equal(shipWithinDays([1,1,1,1], 10), 1);" },
+      { name: "agrees with a greedy feasibility check", body: "const weights=[4,8,5,1,4,4,2,6,7];\nconst days=5;\nfunction daysNeeded(cap){let used=1,load=0; for(const w of weights){ if(load+w>cap){used++;load=0;} load+=w;} return used;}\nconst cap=shipWithinDays(weights,days);\nassert.ok(daysNeeded(cap)<=days);\nassert.ok(daysNeeded(cap-1)>days);" },
     ],
   },
 {
@@ -585,6 +615,9 @@ export const dsa2: Exercise[] = [
         name: "stays fast on a long array",
         body: "const nums = [];\nfor (let i = 0; i < 60000; i++) nums.push((i % 100) + 1);\nconst best = splitArray(nums, 50);\nconst count = function (limit) {\n  let pieces = 1;\n  let sum = 0;\n  for (const n of nums) { if (sum + n > limit) { pieces++; sum = 0; } sum += n; }\n  return pieces;\n};\nassert.ok(count(best) <= 50, 'answer ' + best + ' is not feasible');\nassert.ok(count(best - 1) > 50, 'answer ' + best + ' is not minimal');",
       },
+      { name: "a single element forces that element as the cost", body: "assert.equal(splitArray([7], 1), 7);" },
+      { name: "all zeros split for free", body: "assert.equal(splitArray([0,0,0], 1), 0);" },
+      { name: "agrees with a greedy feasibility check", body: "const nums=[5,3,8,1,9,2,7,4];\nconst k=3;\nfunction pieces(limit){let p=1,sum=0; for(const n of nums){ if(sum+n>limit){p++;sum=0;} sum+=n;} return p;}\nconst best=splitArray(nums,k);\nassert.ok(pieces(best)<=k);\nassert.ok(pieces(best-1)>k);" },
     ],
   },
 {
@@ -624,6 +657,9 @@ export const dsa2: Exercise[] = [
         name: "very lopsided sizes and duplicates",
         body: "const b = [];\nfor (let i = 1; i <= 100000; i++) b.push(i);\nassert.equal(findMedianSortedArrays([50000], b), 50000);\nassert.equal(findMedianSortedArrays([2, 2, 2], [2, 2, 2]), 2);",
       },
+      { name: "both arrays hold a single element", body: "assert.equal(findMedianSortedArrays([1],[2]), 1.5);" },
+      { name: "both arrays are the same repeated value", body: "assert.equal(findMedianSortedArrays([1,1,1],[1,1,1]), 1);" },
+      { name: "very lopsided sizes with an odd total", body: "assert.equal(findMedianSortedArrays([100],[1,2,3,4,5,6,7,8,9]), 5.5);" },
     ],
   },
 {
@@ -741,6 +777,9 @@ export const dsa2: Exercise[] = [
         name: "stays linear and allocation-free on a large array",
         body: "const nums = [];\nfor (let i = 1; i <= 200000; i++) nums.push(i);\nnums.push(137);\nconst before = nums.slice();\nassert.equal(findDuplicate(nums), 137);\nassert.deepEqual(nums, before, 'the input array must not be modified');",
       },
+      { name: "duplicate is the smallest possible value", body: "assert.equal(findDuplicate([1,1,2,3,4]), 1);" },
+      { name: "duplicate is the largest possible value", body: "assert.equal(findDuplicate([1,2,3,4,4]), 4);" },
+      { name: "duplicate sits at the two extreme ends of the array", body: "assert.equal(findDuplicate([5,3,1,2,4,5]), 5);" },
     ],
   },
 {
@@ -818,6 +857,9 @@ export const dsa2: Exercise[] = [
         name: "the answer itself is negative",
         body: "assert.equal(singleNumber([5, 5, 5, -100]), -100);",
       },
+      { name: "many triples plus a lone zero", body: "assert.equal(singleNumber([1,1,1,2,2,2,0]), 0);" },
+      { name: "mixed positive and negative triples with a positive loner", body: "assert.equal(singleNumber([7,7,7,-50,-50,-50,123]), 123);" },
+      { name: "the lone value is the most negative 32-bit integer", body: "assert.equal(singleNumber([100,100,100,-2147483648]), -2147483648);" },
     ],
   },
 {
@@ -856,6 +898,9 @@ export const dsa2: Exercise[] = [
         name: "longer shuffled range",
         body: "assert.equal(missingNumber([9, 6, 4, 2, 3, 5, 7, 0, 1]), 8);",
       },
+      { name: "missing the second-to-last value in the range", body: "assert.equal(missingNumber([0,1,2,4]), 3);" },
+      { name: "single element array missing 1", body: "assert.equal(missingNumber([0]), 1);" },
+      { name: "finds the missing value in a longer reversed range", body: "const n=500;\nconst nums=[];\nfor(let i=0;i<=n;i++) if(i!==237) nums.push(i);\nnums.reverse();\nassert.equal(missingNumber(nums), 237);" },
     ],
   },
 {
@@ -894,6 +939,9 @@ export const dsa2: Exercise[] = [
         name: "all 32 bits set",
         body: "assert.equal(hammingWeight(4294967295), 32);",
       },
+      { name: "alternating bit pattern", body: "assert.equal(hammingWeight(170), 4);" },
+      { name: "a full byte of ones", body: "assert.equal(hammingWeight(255), 8);" },
+      { name: "a single bit set near, but not at, the top", body: "assert.equal(hammingWeight(536870912), 1);" },
     ],
   },
 {
@@ -932,6 +980,9 @@ export const dsa2: Exercise[] = [
         name: "large n stays consistent with a reference count",
         body: "const ans = countBits(5000);\nassert.equal(ans.length, 5001);\nconst ref = (x) => { let c = 0; while (x) { c += x & 1; x >>>= 1; } return c; };\nfor (let i = 0; i <= 5000; i += 7) assert.equal(ans[i], ref(i));",
       },
+      { name: "n is 1", body: "assert.deepEqual(countBits(1), [0, 1]);" },
+      { name: "counts up to 7 exactly", body: "assert.deepEqual(countBits(7), [0, 1, 1, 2, 1, 2, 2, 3]);" },
+      { name: "spot-checks the three values just below 16", body: "const ans=countBits(15);\nassert.deepEqual(ans.slice(13), [3, 3, 4]);" },
     ],
   },
 {
@@ -970,6 +1021,9 @@ export const dsa2: Exercise[] = [
         name: "all zeros and all ones",
         body: "assert.equal(reverseBits(0), 0);\nassert.equal(reverseBits(4294967295), 4294967295);",
       },
+      { name: "a lone bit near the bottom lands near the top", body: "assert.equal(reverseBits(2), 1073741824);" },
+      { name: "reversing twice restores the original value", body: "const n = 123456789;\nassert.equal(reverseBits(reverseBits(n)), n);" },
+      { name: "a small power of two maps predictably", body: "assert.equal(reverseBits(4), 536870912);" },
     ],
   },
 {
@@ -1085,6 +1139,9 @@ export const dsa2: Exercise[] = [
         name: "adjacent values near the 32-bit ceiling",
         body: "assert.equal(rangeBitwiseAnd(2147483646, 2147483647), 2147483646);",
       },
+      { name: "left equals right at a nonzero value", body: "assert.equal(rangeBitwiseAnd(1, 1), 1);" },
+      { name: "range spanning exactly one power-of-two boundary", body: "assert.equal(rangeBitwiseAnd(4, 5), 4);" },
+      { name: "a wide range within a single power-of-two block collapses to its floor", body: "assert.equal(rangeBitwiseAnd(8, 15), 8);" },
     ],
   },
 {
@@ -1123,6 +1180,9 @@ export const dsa2: Exercise[] = [
         name: "at the edges of the 32-bit range",
         body: "assert.equal(getSum(2147483647, -1), 2147483646);\nassert.equal(getSum(-2147483648, 2147483647), -1);",
       },
+      { name: "opposite magnitudes cancel to zero", body: "assert.equal(getSum(100, -100), 0);" },
+      { name: "large positives stay exact", body: "assert.equal(getSum(1000000, 2000000), 3000000);" },
+      { name: "the minimum 32-bit integer plus a small positive", body: "assert.equal(getSum(-2147483648, 5), -2147483643);" },
     ],
   },
 {
@@ -1162,6 +1222,9 @@ export const dsa2: Exercise[] = [
         name: "large quotient must not be found by repeated subtraction",
         body: "assert.equal(divide(2147483647, 1), 2147483647);\nassert.equal(divide(-2147483648, 2), -1073741824);",
       },
+      { name: "divisor of 1 and -1", body: "assert.equal(divide(17, 1), 17);\nassert.equal(divide(17, -1), -17);" },
+      { name: "dividend smaller in magnitude than the divisor", body: "assert.equal(divide(-3, 10), 0);" },
+      { name: "a large divisor barely fits into a large dividend once", body: "assert.equal(divide(2147483647, 2147483647), 1);\nassert.equal(divide(-2147483648, -2147483648), 1);" },
     ],
   },
 {
@@ -1201,6 +1264,9 @@ export const dsa2: Exercise[] = [
         name: "count and distinctness for a larger set",
         body: "const out = subsets([1, 2, 3, 4, 5]);\nassert.equal(out.length, 32);\nconst keys = new Set(out.map((s) => JSON.stringify(s.slice().sort((a, b) => a - b))));\nassert.equal(keys.size, 32);",
       },
+      { name: "each subset's elements keep their original relative order", body: "const nums=[2,4,6,8];\nconst out=subsets(nums);\nassert.equal(out.length, 16);\nfor(const s of out){ for(let k=1;k<s.length;k++){ assert.ok(nums.indexOf(s[k-1])<nums.indexOf(s[k])); } }" },
+      { name: "the full set and the empty set are both present", body: "const nums=[1,2,3];\nconst out=subsets(nums).map((s)=>JSON.stringify(s));\nassert.ok(out.indexOf('[]')!==-1);\nassert.ok(out.indexOf(JSON.stringify(nums))!==-1);" },
+      { name: "no two subsets are identical", body: "const out=subsets([5,10,15,20]);\nconst keys=out.map((s)=>s.slice().sort((a,b)=>a-b).join(','));\nassert.equal(new Set(keys).size, 16);" },
     ],
   },
 ];

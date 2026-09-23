@@ -38,6 +38,9 @@ export const dsa8: Exercise[] = [
         name: "returns [] when there is no pair",
         body: "assert.deepEqual(twoSumSorted([1, 2, 3], 100), []);\nassert.deepEqual(twoSumSorted([], 0), []);\nassert.deepEqual(twoSumSorted([5], 5), []);",
       },
+      { name: "pair at the very end", body: "assert.deepEqual(twoSumSorted([1, 2, 3, 4, 6], 10), [4, 5]);" },
+      { name: "two identical values sum to the target", body: "assert.deepEqual(twoSumSorted([3, 3], 6), [1, 2]);" },
+      { name: "a large sorted array stays correct", body: "const n = 2000;\nconst numbers = Array.from({ length: n }, (_, i) => i + 1);\nassert.deepEqual(twoSumSorted(numbers, n * 2 - 1), [n - 1, n]);" },
     ],
   },
 {
@@ -76,6 +79,9 @@ export const dsa8: Exercise[] = [
         name: "heavy duplicates do not produce repeats",
         body: "const norm = (rows) => rows.map((t) => t.slice().sort((p, q) => p - q))\n  .sort((x, y) => x[0] - y[0] || x[1] - y[1] || x[2] - y[2]);\nconst got = threeSum([-2, 0, 1, 1, 2, -2, 2, 0, -1]);\nassert.deepEqual(norm(got), norm([[-2, 0, 2], [-2, 1, 1], [-1, 0, 1]]));\nconst withZeros = threeSum([0, 0, 0, 1, -1, 0]);\nassert.deepEqual(norm(withZeros), norm([[-1, 0, 1], [0, 0, 0]]));",
       },
+      { name: "brute-force cross-check on a mixed array", body: "const nums = [-4, -2, -2, 0, 1, 2, 3];\nconst norm = (rows) => rows.map((t) => t.slice().sort((p, q) => p - q))\n  .sort((x, y) => x[0] - y[0] || x[1] - y[1] || x[2] - y[2]);\nconst brute = [];\nconst seen = new Set();\nfor (let i = 0; i < nums.length; i++)\n  for (let j = i + 1; j < nums.length; j++)\n    for (let k = j + 1; k < nums.length; k++)\n      if (nums[i] + nums[j] + nums[k] === 0) {\n        const key = [nums[i], nums[j], nums[k]].sort((a, b) => a - b).join(',');\n        if (!seen.has(key)) { seen.add(key); brute.push([nums[i], nums[j], nums[k]]); }\n      }\nassert.deepEqual(norm(threeSum(nums)), norm(brute));" },
+      { name: "does not mutate the input array", body: "const nums = [-1, 0, 1, 2, -1, -4];\nconst copy = nums.slice();\nthreeSum(nums);\nassert.deepEqual(nums, copy);" },
+      { name: "only three zeros can sum to zero without any negatives", body: "assert.deepEqual(threeSum([0, 1, 2, 3]), []);\nassert.deepEqual(threeSum([0, 0, 0, 1, 2]), [[0, 0, 0]]);" },
     ],
   },
 {
@@ -115,6 +121,9 @@ export const dsa8: Exercise[] = [
         name: "large-magnitude values still add up",
         body: "const norm = (rows) => rows.map((t) => t.slice().sort((p, q) => p - q))\n  .sort((x, y) => x[0] - y[0] || x[1] - y[1] || x[2] - y[2] || x[3] - y[3]);\nconst got = fourSum([1000000000, 1000000000, 1000000000, 1000000000], 4000000000);\nassert.deepEqual(norm(got), norm([[1000000000, 1000000000, 1000000000, 1000000000]]));",
       },
+      { name: "does not mutate the input array", body: "const nums = [1, 0, -1, 0, -2, 2];\nconst copy = nums.slice();\nfourSum(nums, 0);\nassert.deepEqual(nums, copy);" },
+      { name: "brute-force cross-check on a duplicate-heavy array", body: "const norm = (rows) => rows.map((t) => t.slice().sort((p, q) => p - q))\n  .sort((x, y) => x[0] - y[0] || x[1] - y[1] || x[2] - y[2] || x[3] - y[3]);\nconst nums = [1, -1, 0, 2, -2, 3, -3, 0];\nconst target = 0;\nconst seen = new Set();\nconst brute = [];\nfor (let i = 0; i < nums.length; i++)\n  for (let j = i + 1; j < nums.length; j++)\n    for (let k = j + 1; k < nums.length; k++)\n      for (let l = k + 1; l < nums.length; l++)\n        if (nums[i] + nums[j] + nums[k] + nums[l] === target) {\n          const key = [nums[i], nums[j], nums[k], nums[l]].sort((a, b) => a - b).join(',');\n          if (!seen.has(key)) { seen.add(key); brute.push([nums[i], nums[j], nums[k], nums[l]]); }\n        }\nassert.deepEqual(norm(fourSum(nums, target)), norm(brute));" },
+      { name: "exactly four elements that do not sum to the target", body: "assert.deepEqual(fourSum([1, 2, 3, 4], 5), []);" },
     ],
   },
 {
@@ -154,6 +163,9 @@ export const dsa8: Exercise[] = [
         name: "the best window is not at the start",
         body: "assert.equal(characterReplacement('ABCDEFFFFFG', 1), 6);\nassert.equal(characterReplacement('ABCDE', 1), 2);",
       },
+      { name: "all identical characters, k never matters", body: "assert.equal(characterReplacement('AAAA', 3), 4);\nassert.equal(characterReplacement('AAAAAAA', 0), 7);" },
+      { name: "brute-force cross-check on an alternating string across several k values", body: "const bruteBest = (s, k) => {\n  let best = 0;\n  for (let i = 0; i < s.length; i++) {\n    const counts = {};\n    let maxCount = 0;\n    for (let j = i; j < s.length; j++) {\n      counts[s[j]] = (counts[s[j]] || 0) + 1;\n      if (counts[s[j]] > maxCount) maxCount = counts[s[j]];\n      const len = j - i + 1;\n      if (len - maxCount <= k) best = Math.max(best, len);\n    }\n  }\n  return best;\n};\nconst s = 'ABABABAB';\nfor (const k of [0, 1, 2, 3, 8]) {\n  assert.equal(characterReplacement(s, k), bruteBest(s, k));\n}" },
+      { name: "three distinct characters with a small k", body: "assert.equal(characterReplacement('AABCC', 1), 3);" },
     ],
   },
 {
@@ -193,6 +205,9 @@ export const dsa8: Exercise[] = [
         name: "returns a boolean",
         body: "assert.type(checkInclusion('ab', 'eidbaooo'), 'boolean');\nassert.type(checkInclusion('zz', 'abc'), 'boolean');",
       },
+      { name: "the whole of s2 is exactly a permutation of s1", body: "assert.equal(checkInclusion('abcd', 'dcba'), true);" },
+      { name: "same letters but the wrong counts", body: "assert.equal(checkInclusion('aaa', 'aab'), false);" },
+      { name: "a permutation found far into a long string", body: "assert.equal(checkInclusion('abc', 'zzzzzzzzzzzzzzzzzzzzzcab'), true);" },
     ],
   },
 {
@@ -232,6 +247,9 @@ export const dsa8: Exercise[] = [
         name: "sum must reach the target, equality counts",
         body: "assert.equal(minSubArrayLen(8, [2, 2, 2, 2]), 4);\nassert.equal(minSubArrayLen(9, [2, 2, 2, 2]), 0);",
       },
+      { name: "a large uniform array", body: "const n = 10000;\nconst nums = new Array(n).fill(1);\nassert.equal(minSubArrayLen(500, nums), 500);" },
+      { name: "a late spike shrinks the window to one", body: "assert.equal(minSubArrayLen(15, [1, 1, 1, 1, 1, 1, 15]), 1);" },
+      { name: "a target of 1 is always satisfied by one element", body: "assert.equal(minSubArrayLen(1, [5, 4, 3]), 1);" },
     ],
   },
 {
@@ -270,6 +288,9 @@ export const dsa8: Exercise[] = [
         name: "alternating types never break the window",
         body: "assert.equal(totalFruit([1, 2, 1, 2, 1, 2]), 6);\nassert.equal(totalFruit([1, 2, 3, 1, 2, 3]), 2);",
       },
+      { name: "the best window sits at the very end", body: "assert.equal(totalFruit([1, 2, 3, 3, 3]), 4);" },
+      { name: "a middle type surrounded by two different types", body: "assert.equal(totalFruit([1, 2, 2, 2, 3]), 4);" },
+      { name: "a large two-type array is collected whole", body: "const n = 5000;\nconst fruits = Array.from({ length: n }, (_, i) => i % 2);\nassert.equal(totalFruit(fruits), n);" },
     ],
   },
 {
@@ -309,6 +330,9 @@ export const dsa8: Exercise[] = [
         name: "a huge element resets the window",
         body: "assert.equal(numSubarrayProductLessThanK([1, 2, 100, 3], 50), 4);\nassert.equal(numSubarrayProductLessThanK([100, 100, 100], 10), 0);",
       },
+      { name: "a small array right at the boundary of k", body: "assert.equal(numSubarrayProductLessThanK([2, 3], 7), 3);\nassert.equal(numSubarrayProductLessThanK([2, 3], 6), 2);" },
+      { name: "a large all-ones array matches the triangular-number formula", body: "const n = 3000;\nconst nums = new Array(n).fill(1);\nassert.equal(numSubarrayProductLessThanK(nums, 2), (n * (n + 1)) / 2);" },
+      { name: "does not mutate the input array", body: "const nums = [10, 5, 2, 6];\nconst copy = nums.slice();\nnumSubarrayProductLessThanK(nums, 100);\nassert.deepEqual(nums, copy);" },
     ],
   },
 {
@@ -347,6 +371,9 @@ export const dsa8: Exercise[] = [
         name: "the best window ends at the last index",
         body: "assert.equal(longestOnes([0, 0, 1, 1, 1, 0, 1], 1), 5);\nassert.equal(longestOnes([1, 1, 0, 0, 1, 1, 1, 0, 1], 1), 5);",
       },
+      { name: "all zeros with an insufficient k", body: "assert.equal(longestOnes([0, 0, 0, 0, 0], 2), 2);" },
+      { name: "all ones regardless of k", body: "assert.equal(longestOnes([1, 1, 1, 1], 0), 4);\nassert.equal(longestOnes([1, 1, 1, 1], 5), 4);" },
+      { name: "a repeating pattern where one flip bridges two runs", body: "const n = 6000;\nconst nums = Array.from({ length: n }, (_, i) => (i % 3 === 0 ? 0 : 1));\nassert.equal(longestOnes(nums, 1), 5);" },
     ],
   },
 {
@@ -386,6 +413,9 @@ export const dsa8: Exercise[] = [
         name: "holds up on a 4000-element drifting series",
         body: "let x = 42;\nconst nums = [];\nlet v = 500;\nfor (let i = 0; i < 4000; i++) {\n  x = (x * 48271) % 2147483647;\n  v += (x % 7) - 3;\n  nums.push(v);\n}\nassert.equal(nums.length, 4000);\nassert.equal(longestSubarray(nums, 10), 73);\nassert.equal(longestSubarray(nums, 15), 170);\nassert.equal(longestSubarray(nums, 20), 219);",
       },
+      { name: "a strictly increasing array", body: "assert.equal(longestSubarray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 3), 4);" },
+      { name: "a single outlier breaks the array into two equal runs", body: "assert.equal(longestSubarray([1, 1, 1, 100, 1, 1, 1], 0), 3);" },
+      { name: "does not mutate the input array", body: "const nums = [8, 2, 4, 7];\nconst copy = nums.slice();\nlongestSubarray(nums, 4);\nassert.deepEqual(nums, copy);" },
     ],
   },
 {
@@ -425,6 +455,9 @@ export const dsa8: Exercise[] = [
         name: "does not mutate the input",
         body: "const input = [-4, -1, 0, 3, 10];\nconst out = sortedSquares(input);\nassert.deepEqual(input, [-4, -1, 0, 3, 10]);\nassert.notEqual(out, input);",
       },
+      { name: "all zeros", body: "assert.deepEqual(sortedSquares([0, 0, 0]), [0, 0, 0]);" },
+      { name: "a large negative value dominates small positives", body: "assert.deepEqual(sortedSquares([-100, -1, 2, 3]), [1, 4, 9, 10000]);" },
+      { name: "brute-force cross-check on a wide range", body: "const nums = [];\nfor (let i = -50; i <= 50; i++) nums.push(i);\nconst expected = nums.map((x) => x * x).sort((a, b) => a - b);\nassert.deepEqual(sortedSquares(nums), expected);" },
     ],
   },
 {
@@ -464,6 +497,9 @@ export const dsa8: Exercise[] = [
         name: "returns a boolean",
         body: "assert.type(backspaceCompare('ab#c', 'ad#c'), 'boolean');\nassert.type(backspaceCompare('x', 'y'), 'boolean');",
       },
+      { name: "consecutive backspaces cancel a whole run", body: "assert.equal(backspaceCompare('abc###', ''), true);" },
+      { name: "everything cancels out on both sides", body: "assert.equal(backspaceCompare('a#', 'b#'), true);" },
+      { name: "similar-looking strings that actually differ once backspaces resolve", body: "assert.equal(backspaceCompare('xy#z', 'xyz#'), false);\nassert.equal(backspaceCompare('ab#c#', 'a'), true);" },
     ],
   },
 {
@@ -502,6 +538,9 @@ export const dsa8: Exercise[] = [
         name: "does not mutate the inputs",
         body: "const a = [1, 3, 5];\nconst b = [2, 4];\nconst out = mergeSorted(a, b);\nassert.deepEqual(a, [1, 3, 5]);\nassert.deepEqual(b, [2, 4]);\nassert.equal(out.length, 5);\nassert.notEqual(out, a);\nassert.notEqual(out, b);",
       },
+      { name: "one array entirely precedes the other", body: "assert.deepEqual(mergeSorted([1, 2, 3], [10, 11]), [1, 2, 3, 10, 11]);\nassert.deepEqual(mergeSorted([10, 11], [1, 2, 3]), [1, 2, 3, 10, 11]);" },
+      { name: "single-element arrays", body: "assert.deepEqual(mergeSorted([5], [3]), [3, 5]);\nassert.deepEqual(mergeSorted([1], [1]), [1, 1]);" },
+      { name: "large arrays merge correctly", body: "const a = Array.from({ length: 2000 }, (_, i) => i * 2);\nconst b = Array.from({ length: 2000 }, (_, i) => i * 2 + 1);\nconst out = mergeSorted(a, b);\nassert.equal(out.length, 4000);\nfor (let i = 0; i < 4000; i++) assert.equal(out[i], i);" },
     ],
   },
 {
@@ -541,6 +580,9 @@ export const dsa8: Exercise[] = [
         name: "parts sum back to the original length",
         body: "const inputs = ['ababcbacadefegdehijhklij', 'eccbbbbdec', 'qiejxqfnqceocmy', 'caedbdedda'];\nfor (const s of inputs) {\n  const parts = partitionLabels(s);\n  let total = 0;\n  for (const p of parts) total += p;\n  assert.equal(total, s.length, 'parts must cover ' + s);\n}\nassert.deepEqual(partitionLabels('qiejxqfnqceocmy'), [13, 1, 1]);\nassert.deepEqual(partitionLabels('caedbdedda'), [1, 9]);",
       },
+      { name: "two entirely separate letter groups", body: "assert.deepEqual(partitionLabels('aabbcc'), [2, 2, 2]);" },
+      { name: "a single repeated letter across the whole string", body: "assert.deepEqual(partitionLabels('aaaa'), [4]);" },
+      { name: "letters that interleave into one unsplittable chain", body: "assert.deepEqual(partitionLabels('abcabc'), [6]);" },
     ],
   },
 ];

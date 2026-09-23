@@ -38,6 +38,9 @@ export const dsa4: Exercise[] = [
         name: "a square grid",
         body: "assert.equal(uniquePaths(10, 10), 48620);",
       },
+      { name: "a two by two grid", body: "assert.equal(uniquePaths(2, 2), 2);" },
+      { name: "swapping rows and columns gives the same answer", body: "assert.equal(uniquePaths(7, 3), 28);" },
+      { name: "a four by four grid", body: "assert.equal(uniquePaths(4, 4), 20);" },
     ],
   },
 {
@@ -77,6 +80,9 @@ export const dsa4: Exercise[] = [
         name: "no obstacles behaves like Unique Paths",
         body: "const grid = [\n  [0,0,0],\n  [0,0,0],\n  [0,0,0],\n];\nassert.equal(uniquePathsWithObstacles(grid), 6);\nassert.equal(uniquePathsWithObstacles([[0]]), 1);",
       },
+      { name: "single row with an obstacle blocks everything past it", body: "assert.equal(uniquePathsWithObstacles([[0,1,0]]), 0);" },
+      { name: "single column with an obstacle blocks everything below it", body: "assert.equal(uniquePathsWithObstacles([[0],[1],[0]]), 0);" },
+      { name: "an obstacle blocks the down-first route but not right-first", body: "assert.equal(uniquePathsWithObstacles([[0,0],[1,0]]), 1);" },
     ],
   },
 {
@@ -115,6 +121,9 @@ export const dsa4: Exercise[] = [
         name: "the greedy first step is the wrong one",
         body: "const grid = [\n  [1,2,100],\n  [1,100,100],\n  [1,1,1],\n];\nassert.equal(minPathSum(grid), 5);",
       },
+      { name: "several equally cheap paths still give the true minimum", body: "assert.equal(minPathSum([[1,1],[1,1]]), 3);" },
+      { name: "an all-zero grid costs nothing", body: "assert.equal(minPathSum([[0,0],[0,0]]), 0);" },
+      { name: "a larger grid with a non-obvious cheap route", body: "assert.equal(minPathSum([[1,2,3],[4,8,2],[1,5,3]]), 11);" },
     ],
   },
 {
@@ -154,6 +163,9 @@ export const dsa4: Exercise[] = [
         name: "a single shared letter, far apart",
         body: "assert.equal(longestCommonSubsequence('bsbininm', 'jmjkbkjkv'), 1);\nassert.equal(longestCommonSubsequence('bl', 'yby'), 1);",
       },
+      { name: "one string is fully contained in order inside the other", body: "assert.equal(longestCommonSubsequence('abcdef', 'acf'), 3);" },
+      { name: "repeated characters cap the match at the shorter run", body: "assert.equal(longestCommonSubsequence('aaaa', 'aa'), 2);" },
+      { name: "single character strings", body: "assert.equal(longestCommonSubsequence('a', 'a'), 1);\nassert.equal(longestCommonSubsequence('a', 'b'), 0);" },
     ],
   },
 {
@@ -193,6 +205,9 @@ export const dsa4: Exercise[] = [
         name: "pure insertions and a single replace",
         body: "assert.equal(minDistance('ab', 'abcd'), 2);\nassert.equal(minDistance('cat', 'cut'), 1);",
       },
+      { name: "kitten to sitting, the classic example", body: "assert.equal(minDistance('kitten', 'sitting'), 3);" },
+      { name: "pure deletions", body: "assert.equal(minDistance('abc', 'a'), 2);" },
+      { name: "a single differing character needs one replace", body: "assert.equal(minDistance('a', 'b'), 1);" },
     ],
   },
   {
@@ -357,6 +372,9 @@ export const dsa4: Exercise[] = [
         name: "handles negative numbers",
         body: "const out = topKFrequent([-1,-1,-1,-2,-2,7], 2).sort((a, b) => a - b);\nassert.deepEqual(out, [-2, -1]);",
       },
+      { name: "k of one returns only the single most frequent value", body: "assert.deepEqual(topKFrequent([1,1,2,2,2,3], 1), [2]);" },
+      { name: "four distinct frequency tiers", body: "const out = topKFrequent([5,5,5,5,6,6,6,7,7,8], 2).sort((a, b) => a - b);\nassert.deepEqual(out, [5, 6]);" },
+      { name: "zero is a valid frequent value", body: "const out = topKFrequent([0,0,0,1,1,2], 2).sort((a, b) => a - b);\nassert.deepEqual(out, [0, 1]);" },
     ],
   },
 {
@@ -396,6 +414,9 @@ export const dsa4: Exercise[] = [
         name: "long interleaved run",
         body: "assert.equal(longestConsecutive([0,3,7,2,5,8,4,6,0,1]), 9);",
       },
+      { name: "single element array", body: "assert.equal(longestConsecutive([5]), 1);" },
+      { name: "two separate runs picks the longer one", body: "assert.equal(longestConsecutive([1,2,3,10,11]), 3);" },
+      { name: "all identical duplicates form a run of one", body: "assert.equal(longestConsecutive([7,7,7,7]), 1);" },
     ],
   },
 {
@@ -434,6 +455,9 @@ export const dsa4: Exercise[] = [
         name: "116 is not happy",
         body: "assert.equal(isHappy(116), false);",
       },
+      { name: "a three digit happy number", body: "assert.equal(isHappy(100), true);" },
+      { name: "4 falls into the standard unhappy cycle", body: "assert.equal(isHappy(4), false);" },
+      { name: "a two digit happy number", body: "assert.equal(isHappy(23), true);" },
     ],
   },
 {
@@ -473,6 +497,9 @@ export const dsa4: Exercise[] = [
         name: "single element equal to k",
         body: "assert.equal(subarraySum([5], 5), 1);",
       },
+      { name: "empty array has no subarrays", body: "assert.equal(subarraySum([], 5), 0);" },
+      { name: "target zero with no zero-sum subarray", body: "assert.equal(subarraySum([1,2,3], 0), 0);" },
+      { name: "negative numbers summing to a negative target", body: "assert.equal(subarraySum([-1,-1,-1], -2), 2);" },
     ],
   },
 {
@@ -512,6 +539,9 @@ export const dsa4: Exercise[] = [
         name: "two zeros do count",
         body: "assert.equal(checkSubarraySum([0,0], 7), true);\nassert.equal(checkSubarraySum([5,0,0], 3), true);",
       },
+      { name: "a single element cannot satisfy the length requirement even if divisible", body: "assert.equal(checkSubarraySum([5], 5), false);" },
+      { name: "zeros further apart still form a qualifying subarray", body: "assert.equal(checkSubarraySum([5,0,0,0], 3), true);" },
+      { name: "k of 1 makes any subarray of length 2 or more qualify", body: "assert.equal(checkSubarraySum([1,1], 1), true);" },
     ],
   },
 {
@@ -551,6 +581,9 @@ export const dsa4: Exercise[] = [
         name: "empty array",
         body: "assert.equal(maxSubArrayLen([], 0), 0);",
       },
+      { name: "negative k with negative numbers", body: "assert.equal(maxSubArrayLen([-1,-1,-1], -2), 2);" },
+      { name: "single element equal to k", body: "assert.equal(maxSubArrayLen([5], 5), 1);" },
+      { name: "no subarray reaches a negative target", body: "assert.equal(maxSubArrayLen([1,2,3], -5), 0);" },
     ],
   },
 {
@@ -589,6 +622,9 @@ export const dsa4: Exercise[] = [
         name: "empty array",
         body: "assert.equal(findMaxLength([]), 0);",
       },
+      { name: "the whole array balances at the end", body: "assert.equal(findMaxLength([1,1,0,0]), 4);" },
+      { name: "a single element cannot balance", body: "assert.equal(findMaxLength([1]), 0);" },
+      { name: "a fully alternating array balances entirely", body: "assert.equal(findMaxLength([0,1,0,1,0,1]), 6);" },
     ],
   },
 {
@@ -627,6 +663,9 @@ export const dsa4: Exercise[] = [
         name: "empty array has no pivot",
         body: "assert.equal(pivotIndex([]), -1);",
       },
+      { name: "pivot with an empty right side", body: "assert.equal(pivotIndex([0,0,0,0,1]), 4);" },
+      { name: "negative numbers still balance", body: "assert.equal(pivotIndex([-1,1,0]), 2);" },
+      { name: "a mixed-sign array with the pivot in the middle", body: "assert.equal(pivotIndex([-7,1,5,2,-4,3,0]), 3);" },
     ],
   },
 {
@@ -666,6 +705,9 @@ export const dsa4: Exercise[] = [
         name: "two instances do not share state",
         body: "const a = new NumArray([1,1,1]);\nconst b = new NumArray([10,10,10]);\nassert.equal(a.sumRange(0, 2), 3);\nassert.equal(b.sumRange(0, 2), 30);",
       },
+      { name: "handles an array of all negative numbers", body: "const na = new NumArray([-1,-2,-3,-4]);\nassert.equal(na.sumRange(0, 3), -10);\nassert.equal(na.sumRange(1, 2), -5);" },
+      { name: "single element at the last index plus the full range", body: "const na = new NumArray([1,2,3,4,5]);\nassert.equal(na.sumRange(4, 4), 5);\nassert.equal(na.sumRange(0, 4), 15);" },
+      { name: "an all-zero array sums to zero everywhere", body: "const na = new NumArray([0,0,0]);\nassert.equal(na.sumRange(0, 2), 0);\nassert.equal(na.sumRange(1, 1), 0);" },
     ],
   },
 {
@@ -704,6 +746,9 @@ export const dsa4: Exercise[] = [
         name: "empty magazine cannot build a note",
         body: "assert.equal(canConstruct('a', ''), false);",
       },
+      { name: "identical strings can always be built", body: "assert.equal(canConstruct('abc', 'abc'), true);" },
+      { name: "extra unused letters in the magazine are fine", body: "assert.equal(canConstruct('a', 'xyzabc'), true);" },
+      { name: "missing enough copies of a repeated letter", body: "assert.equal(canConstruct('aabbcc', 'aabbc'), false);" },
     ],
   },
 {
@@ -741,6 +786,9 @@ export const dsa4: Exercise[] = [
         name: "handles negatives and zero",
         body: "const out = intersection([0,-1,-1,3], [-1,0,0]).sort((a, b) => a - b);\nassert.deepEqual(out, [-1, 0]);",
       },
+      { name: "identical arrays", body: "const out = intersection([1,2,3], [1,2,3]).sort((a, b) => a - b);\nassert.deepEqual(out, [1, 2, 3]);" },
+      { name: "both empty", body: "assert.deepEqual(intersection([], []), []);" },
+      { name: "one array is entirely repeats of a value in the other", body: "assert.deepEqual(intersection([1,1,1], [1]), [1]);" },
     ],
   },
 {
@@ -780,6 +828,9 @@ export const dsa4: Exercise[] = [
         name: "empty input",
         body: "assert.deepEqual(intersect([], [1,2,3]), []);",
       },
+      { name: "identical arrays with duplicates", body: "const out = intersect([1,1,2], [1,1,2]).sort((a, b) => a - b);\nassert.deepEqual(out, [1, 1, 2]);" },
+      { name: "output order follows the second array, not sorted order", body: "assert.deepEqual(intersect([2,2,1], [1,2,2]), [1, 2, 2]);" },
+      { name: "both empty", body: "assert.deepEqual(intersect([], []), []);" },
     ],
   },
 {
@@ -818,6 +869,9 @@ export const dsa4: Exercise[] = [
         name: "only the last character is unique",
         body: "assert.equal(firstUniqChar('aabbc'), 4);",
       },
+      { name: "a single character string", body: "assert.equal(firstUniqChar('z'), 0);" },
+      { name: "every character is already unique", body: "assert.equal(firstUniqChar('abcdef'), 0);" },
+      { name: "the only unique character sits in the middle", body: "assert.equal(firstUniqChar('aabcc'), 2);" },
     ],
   },
 {
@@ -857,6 +911,9 @@ export const dsa4: Exercise[] = [
         name: "empty text",
         body: "assert.deepEqual(topKWords('', 3), []);",
       },
+      { name: "k of one returns the single top word", body: "assert.deepEqual(topKWords('apple apple banana', 1), ['apple']);" },
+      { name: "digits act as separators like punctuation", body: "assert.deepEqual(topKWords('a1b2a3b', 5), ['a', 'b']);" },
+      { name: "newlines and tabs separate words too", body: "assert.deepEqual(topKWords('cat\\ncat\\ndog', 2), ['cat', 'dog']);" },
     ],
   },
 {
@@ -896,6 +953,9 @@ export const dsa4: Exercise[] = [
         name: "reuses the original nodes",
         body: "const head = build([1,2,3]);\nconst tail = head.next.next;\nconst out = reverseList(head);\nassert.ok(out === tail, 'new head should be the original tail node');\nassert.equal(head.next, null);",
       },
+      { name: "reverses a four node list", body: "assert.deepEqual(toArray(reverseList(build([10,20,30,40]))), [40,30,20,10]);" },
+      { name: "reversing twice restores the original order", body: "const head = build([1,2,3,4]);\nconst twice = reverseList(reverseList(head));\nassert.deepEqual(toArray(twice), [1,2,3,4]);" },
+      { name: "negative and duplicate values", body: "assert.deepEqual(toArray(reverseList(build([-1,-1,2]))), [2,-1,-1]);" },
     ],
   },
 {
@@ -935,6 +995,9 @@ export const dsa4: Exercise[] = [
         name: "both empty gives null",
         body: "assert.equal(mergeTwoLists(null, null), null);",
       },
+      { name: "all values tie", body: "assert.deepEqual(toArray(mergeTwoLists(build([1,1]), build([1,1]))), [1,1,1,1]);" },
+      { name: "negative numbers interleave correctly", body: "assert.deepEqual(toArray(mergeTwoLists(build([-5,-3,-1]), build([-4,-2,0]))), [-5,-4,-3,-2,-1,0]);" },
+      { name: "single node in each list", body: "assert.deepEqual(toArray(mergeTwoLists(build([2]), build([1]))), [1,2]);" },
     ],
   },
 {
@@ -974,6 +1037,9 @@ export const dsa4: Exercise[] = [
         name: "empty list has no cycle",
         body: "assert.equal(hasCycle(null), false);",
       },
+      { name: "a two node cycle", body: "const head = build([1,2]);\nhead.next.next = head;\nassert.equal(hasCycle(head), true);" },
+      { name: "cycle back to the head in a longer list", body: "const head = build([1,2,3,4,5,6,7]);\nlet tail = head;\nwhile (tail.next) tail = tail.next;\ntail.next = head;\nassert.equal(hasCycle(head), true);" },
+      { name: "a two node list without a cycle", body: "assert.equal(hasCycle(build([1,2])), false);" },
     ],
   },
 {
@@ -1013,6 +1079,9 @@ export const dsa4: Exercise[] = [
         name: "empty list returns null",
         body: "assert.equal(detectCycle(null), null);",
       },
+      { name: "entry near the end of a longer list", body: "const head = build([1,2,3,4,5,6]);\nconst entry = head.next.next.next.next;\nlet tail = head;\nwhile (tail.next) tail = tail.next;\ntail.next = entry;\nconst got = detectCycle(head);\nassert.equal(got.val, 5);\nassert.ok(got === entry);" },
+      { name: "the last node of a longer list cycles onto itself", body: "const head = build([10,20,30]);\nconst last = head.next.next;\nlast.next = last;\nconst got = detectCycle(head);\nassert.equal(got.val, 30);\nassert.ok(got === last);" },
+      { name: "a single node list with no cycle returns null", body: "assert.equal(detectCycle(build([1])), null);" },
     ],
   },
 {
@@ -1052,6 +1121,9 @@ export const dsa4: Exercise[] = [
         name: "returns a node from the original list",
         body: "const head = build([1,2,3]);\nassert.ok(middleNode(head) === head.next);",
       },
+      { name: "a three node list", body: "assert.equal(middleNode(build([1,2,3])).val, 2);" },
+      { name: "a four node list", body: "assert.equal(middleNode(build([1,2,3,4])).val, 3);" },
+      { name: "a seven node list", body: "assert.equal(middleNode(build([1,2,3,4,5,6,7])).val, 4);" },
     ],
   },
 {
@@ -1091,6 +1163,9 @@ export const dsa4: Exercise[] = [
         name: "two node list, drop the first",
         body: "assert.deepEqual(toArray(removeNthFromEnd(build([1,2]), 2)), [2]);",
       },
+      { name: "n further from the end in a five node list", body: "assert.deepEqual(toArray(removeNthFromEnd(build([1,2,3,4,5]), 4)), [1,3,4,5]);" },
+      { name: "n equal to the length removes the head", body: "assert.deepEqual(toArray(removeNthFromEnd(build([1,2,3,4,5]), 5)), [2,3,4,5]);" },
+      { name: "removes the last node of a two node list", body: "assert.deepEqual(toArray(removeNthFromEnd(build([1,2]), 1)), [1]);" },
     ],
   },
 {
@@ -1130,6 +1205,9 @@ export const dsa4: Exercise[] = [
         name: "single node and empty list",
         body: "assert.equal(isPalindrome(build([7])), true);\nassert.equal(isPalindrome(null), true);",
       },
+      { name: "two identical elements", body: "assert.equal(isPalindrome(build([3,3])), true);" },
+      { name: "an even length list that is not a palindrome", body: "assert.equal(isPalindrome(build([1,2,3,4])), false);" },
+      { name: "a longer palindrome with repeated values", body: "assert.equal(isPalindrome(build([1,1,2,1,1])), true);" },
     ],
   },
 {
@@ -1169,6 +1247,9 @@ export const dsa4: Exercise[] = [
         name: "an empty list never intersects",
         body: "assert.equal(getIntersectionNode(null, build([1,2])), null);",
       },
+      { name: "a list intersects with itself at its own head", body: "const a = build([1,2,3]);\nassert.ok(getIntersectionNode(a, a) === a);" },
+      { name: "both lists empty", body: "assert.equal(getIntersectionNode(null, null), null);" },
+      { name: "two equal length lists sharing a short tail", body: "const shared = build([5]);\nconst a = build([1,2]);\nconst b = build([9,9]);\ntailOf(a).next = shared;\ntailOf(b).next = shared;\nassert.ok(getIntersectionNode(a, b) === shared);" },
     ],
   },
 {
@@ -1208,6 +1289,9 @@ export const dsa4: Exercise[] = [
         name: "single digits with no carry",
         body: "assert.deepEqual(toArray(addTwoNumbers(build([5]), build([4]))), [9]);",
       },
+      { name: "two single digit numbers that carry into a new node", body: "assert.deepEqual(toArray(addTwoNumbers(build([9]), build([9]))), [8,1]);" },
+      { name: "same length numbers with no carries", body: "assert.deepEqual(toArray(addTwoNumbers(build([1,2,3]), build([4,5,6]))), [5,7,9]);" },
+      { name: "the second list is longer than the first", body: "assert.deepEqual(toArray(addTwoNumbers(build([5]), build([5,5]))), [0,6]);" },
     ],
   },
 {
@@ -1247,6 +1331,9 @@ export const dsa4: Exercise[] = [
         name: "odd count with gaps and negatives",
         body: "const out = mergeKLists([build([-5,0]), null, build([-9,-1,3]), build([]), build([7])]);\nassert.deepEqual(toArray(out), [-9,-5,-1,0,3,7]);",
       },
+      { name: "two lists only", body: "assert.deepEqual(toArray(mergeKLists([build([1,3]), build([2,4])])), [1,2,3,4]);" },
+      { name: "duplicate values across lists", body: "assert.deepEqual(toArray(mergeKLists([build([1,1]), build([1,1])])), [1,1,1,1]);" },
+      { name: "four single-node lists", body: "assert.deepEqual(toArray(mergeKLists([build([1]), build([2]), build([3]), build([4])])), [1,2,3,4]);" },
     ],
   },
 {
@@ -1286,6 +1373,9 @@ export const dsa4: Exercise[] = [
         name: "empty list copies to null",
         body: "assert.equal(copyRandomList(null), null);",
       },
+      { name: "a longer chain with backward-pointing randoms", body: "const head = build([[1,null],[2,0],[3,1]]);\nconst copy = copyRandomList(head);\nassert.deepEqual(serialize(copy), [[1,null],[2,0],[3,1]]);" },
+      { name: "two nodes whose randoms point at each other", body: "const head = build([[1,1],[2,0]]);\nconst copy = copyRandomList(head);\nassert.deepEqual(serialize(copy), [[1,1],[2,0]]);\nassert.ok(copy.random !== head.next);" },
+      { name: "a single node with a null random", body: "const copy = copyRandomList(build([[5,null]]));\nassert.deepEqual(serialize(copy), [[5,null]]);" },
     ],
   },
 {
@@ -1325,6 +1415,9 @@ export const dsa4: Exercise[] = [
         name: "six nodes and an empty list",
         body: "const head = build([1,2,3,4,5,6]);\nreorderList(head);\nassert.deepEqual(toArray(head), [1,6,2,5,3,4]);\nreorderList(null);",
       },
+      { name: "a three node list", body: "const head = build([1,2,3]);\nreorderList(head);\nassert.deepEqual(toArray(head), [1,3,2]);" },
+      { name: "a seven node list", body: "const head = build([1,2,3,4,5,6,7]);\nreorderList(head);\nassert.deepEqual(toArray(head), [1,7,2,6,3,5,4]);" },
+      { name: "negative values", body: "const head = build([-1,-2,-3,-4]);\nreorderList(head);\nassert.deepEqual(toArray(head), [-1,-4,-2,-3]);" },
     ],
   },
 {
@@ -1364,6 +1457,9 @@ export const dsa4: Exercise[] = [
         name: "moves nodes rather than values",
         body: "const head = build([1,2]);\nconst first = head;\nconst second = head.next;\nconst out = swapPairs(head);\nassert.ok(out === second, 'the second node should now be the head');\nassert.ok(out.next === first);",
       },
+      { name: "three full pairs", body: "assert.deepEqual(toArray(swapPairs(build([1,2,3,4,5,6]))), [2,1,4,3,6,5]);" },
+      { name: "two pairs and a leftover node", body: "assert.deepEqual(toArray(swapPairs(build([1,2,3,4,5]))), [2,1,4,3,5]);" },
+      { name: "negative values", body: "assert.deepEqual(toArray(swapPairs(build([0,-1,-2,-3]))), [-1,0,-3,-2]);" },
     ],
   },
 {
@@ -1403,6 +1499,9 @@ export const dsa4: Exercise[] = [
         name: "empty list and exact multiple",
         body: "assert.equal(reverseKGroup(null, 3), null);\nassert.deepEqual(toArray(reverseKGroup(build([1,2,3,4,5,6]), 3)), [3,2,1,6,5,4]);",
       },
+      { name: "k equal to the full list length reverses everything", body: "assert.deepEqual(toArray(reverseKGroup(build([1,2,3,4]), 4)), [4,3,2,1]);" },
+      { name: "k of 2 with a leftover node", body: "assert.deepEqual(toArray(reverseKGroup(build([1,2,3,4,5,6,7]), 2)), [2,1,4,3,6,5,7]);" },
+      { name: "a single node with k greater than the length", body: "assert.deepEqual(toArray(reverseKGroup(build([1]), 2)), [1]);" },
     ],
   },
 {
@@ -1442,6 +1541,9 @@ export const dsa4: Exercise[] = [
         name: "empty and single node lists",
         body: "assert.equal(rotateRight(null, 7), null);\nassert.deepEqual(toArray(rotateRight(build([9]), 5)), [9]);",
       },
+      { name: "rotate by one", body: "assert.deepEqual(toArray(rotateRight(build([1,2,3,4]), 1)), [4,1,2,3]);" },
+      { name: "k far larger than the length wraps around several times", body: "assert.deepEqual(toArray(rotateRight(build([1,2,3]), 100)), [3,1,2]);" },
+      { name: "a two node list rotated by one", body: "assert.deepEqual(toArray(rotateRight(build([1,2]), 1)), [2,1]);" },
     ],
   },
 {
@@ -1481,6 +1583,9 @@ export const dsa4: Exercise[] = [
         name: "empty list returns null",
         body: "assert.equal(partition(null, 3), null);",
       },
+      { name: "x equal to the smallest value moves nothing new out", body: "assert.deepEqual(toArray(partition(build([3,1,2]), 1)), [3,1,2]);" },
+      { name: "several values equal to x land in the second group in order", body: "assert.deepEqual(toArray(partition(build([1,4,3,0,2,5,2]), 3)), [1,0,2,2,4,3,5]);" },
+      { name: "x below every value", body: "assert.deepEqual(toArray(partition(build([-5,-3,-1]), -10)), [-5,-3,-1]);" },
     ],
   },
 {
@@ -1520,6 +1625,9 @@ export const dsa4: Exercise[] = [
         name: "single node and empty list",
         body: "assert.deepEqual(toArray(deleteDuplicates(build([7]))), [7]);\nassert.equal(deleteDuplicates(null), null);",
       },
+      { name: "negative duplicate values", body: "assert.deepEqual(toArray(deleteDuplicates(build([-3,-3,-2,-1,-1]))), [-3,-2,-1]);" },
+      { name: "two identical values", body: "assert.deepEqual(toArray(deleteDuplicates(build([5,5]))), [5]);" },
+      { name: "several short runs in a row", body: "assert.deepEqual(toArray(deleteDuplicates(build([1,1,2,2,3,3,4]))), [1,2,3,4]);" },
     ],
   },
 {
@@ -1559,6 +1667,9 @@ export const dsa4: Exercise[] = [
         name: "the list shortens by exactly one",
         body: "const head = build([10,20,30,40,50]);\ndeleteNode(nodeAt(head, 3));\nassert.deepEqual(toArray(head), [10,20,30,50]);",
       },
+      { name: "removes the head from a list of negative values", body: "const head = build([-1,-2,-3,-4]);\ndeleteNode(head);\nassert.deepEqual(toArray(head), [-2,-3,-4]);" },
+      { name: "removes a node from a six node list", body: "const head = build([1,2,3,4,5,6]);\ndeleteNode(nodeAt(head, 1));\nassert.deepEqual(toArray(head), [1,3,4,5,6]);" },
+      { name: "deletion is by position, not by value", body: "const head = build([7,7,7,7]);\ndeleteNode(nodeAt(head, 1));\nassert.deepEqual(toArray(head), [7,7,7]);" },
     ],
   },
 {
@@ -1598,6 +1709,9 @@ export const dsa4: Exercise[] = [
         name: "reversed list of a thousand values",
         body: "const values = [];\nfor (let i = 1000; i >= 1; i--) values.push(i);\nconst sorted = toArray(sortList(build(values)));\nassert.equal(sorted.length, 1000);\nassert.equal(sorted[0], 1);\nassert.equal(sorted[999], 1000);\nlet ordered = true;\nfor (let i = 1; i < sorted.length; i++) if (sorted[i - 1] > sorted[i]) ordered = false;\nassert.ok(ordered);",
       },
+      { name: "a two element unordered list", body: "assert.deepEqual(toArray(sortList(build([2,1]))), [1,2]);" },
+      { name: "a fully reversed list", body: "assert.deepEqual(toArray(sortList(build([5,4,3,2,1]))), [1,2,3,4,5]);" },
+      { name: "every value identical", body: "assert.deepEqual(toArray(sortList(build([3,3,3]))), [3,3,3]);" },
     ],
   },
 {
@@ -1637,6 +1751,9 @@ export const dsa4: Exercise[] = [
         name: "single node with a child, and the empty list",
         body: "const head = build([1]);\nhead.child = build([2]);\nassert.deepEqual(toArray(flatten(head)), [1,2]);\nassert.equal(flatten(null), null);",
       },
+      { name: "a child list attached to a middle node, not the first or last", body: "const head = build([1,2,3]);\nnodeAt(head, 1).child = build([9,8]);\nassert.deepEqual(toArray(flatten(head)), [1,2,9,8,3]);" },
+      { name: "two separate children get spliced into their own places", body: "const head = build([1,2,3,4]);\nnodeAt(head, 0).child = build([10]);\nnodeAt(head, 3).child = build([20]);\nassert.deepEqual(toArray(flatten(head)), [1,10,2,3,4,20]);" },
+      { name: "three levels of nested children unwind depth first", body: "const head = build([1,2]);\nconst c1 = build([3,4]);\nconst c2 = build([5,6]);\nconst c3 = build([7]);\nnodeAt(head, 0).child = c1;\nnodeAt(c1, 0).child = c2;\nnodeAt(c2, 0).child = c3;\nassert.deepEqual(toArray(flatten(head)), [1,3,5,7,6,4,2]);" },
     ],
   },
 ];
