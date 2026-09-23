@@ -6,7 +6,7 @@ export const reactRenderingStrategies: Chapter = {
   title: "Rendering strategies",
   short: "Rendering strategies",
   levels: ["advanced"],
-  practice: [],
+  practice: ["ex-react-choose-rendering-strategy"],
   ready: true,
   subtitle: "Where the HTML is produced, and when — the decision that shapes everything downstream.",
   body: `<h3>The four, and what actually differs</h3>

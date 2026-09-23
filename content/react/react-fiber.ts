@@ -6,7 +6,7 @@ export const reactFiber: Chapter = {
   title: "Reconciliation & Fiber",
   short: "Fiber",
   levels: ["advanced"],
-  practice: [],
+  practice: ["ex-react-fiber-reconcile"],
   ready: true,
   subtitle:
     "Render is a pure, interruptible calculation. Commit is a synchronous mutation. Everything follows from that split.",
