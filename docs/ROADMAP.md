@@ -18,9 +18,9 @@ Git's 16 standalone sections.
 
 | Topic             | Written   | Exercises | Words | Cheat page |
 | ----------------- | --------- | --------- | ----- | ---------- |
-| JavaScript        | 40        | 82        | 54k   | yes        |
-| React             | 51        | 24        | 42k   | yes        |
-| DSA in JS         | 34        | 245       | 48k   | **no**     |
+| JavaScript        | 41        | 99        | 54k   | yes        |
+| React             | 57        | 135       | 42k   | yes        |
+| DSA in JS         | 34        | 277       | 48k   | **no**     |
 | System Design     | 24        | **0**     | 61k   | **no**     |
 | Interview book    | 27 rounds | **0**     | 61k   | —          |
 | How this is built | 18        | —         | 7k    | —          |
@@ -91,7 +91,7 @@ two dedicated coding rounds at every FAANG company, while Stripe, OpenAI and Ant
 multi-part implementation and debugging ([LeetCode discuss][leetcode]). India's product companies
 keep the machine-coding round — Flipkart's frontend version is a two-hour build in plain HTML, CSS and
 JavaScript ([Flipkart SDE2][flipkart]).
-_For Groundwork:_ the 245 DSA exercises stay worth it. Missing is practice for the other formats — a
+_For Groundwork:_ the 277 DSA exercises stay worth it. Missing is practice for the other formats — a
 machine-coding exercise type and multi-part implementation problems.
 
 **7. Frontend system design is its own round now.** Guides describe the 2026 frontend loop the same way:
@@ -169,14 +169,19 @@ not a sprint, which is the reason to write the chapter template (section 0.4) be
 ### 0.3 The gaps inside what is already written
 
 **JavaScript is closed.** It has been audited three times and every verified finding fixed each time:
-40 chapters, 82 exercises, a Build-it-yourself chapter, a Strings, numbers & Math chapter, and 20
+41 chapters, 99 exercises, a Build-it-yourself chapter, a Strings, numbers & Math chapter, and 20
 output-prediction drills in the interview bank. Each audit over-counted — the first listed 28 gaps
 and had 3 — so the rule stands: check an audit's claims against the content before writing anything.
 
-**React: nine open.** Three are new from the market — the React Compiler, the December 2025 Server
-Components security advisories, and Actions in depth. Six carry over: streaming SSR, file upload,
-micro-frontends and React Native each deserve a section; i18n, state machines and feature flags are
-named but not taught. Separately, 27 of 51 chapters still open into no exercise.
+**React: down to a handful open.** i18n, state machines and feature flags — once named but not
+taught — are now written, and a component sandbox (an in-browser JSX bundler, tested through a real
+DOM) added 92 hands-on component exercises across 42 of the 57 chapters. What remains from the
+market: the React Compiler, the December 2025 Server Components security advisories, and Actions in
+depth are new; streaming SSR, file upload, micro-frontends and React Native each still deserve a
+section. Separately, 9 of 57 chapters still open into no exercise — mostly the ones that fit a
+different format instead (fiber and effect timing have step-through visualisers; server components
+and rendering strategies are server-only; the interview bank, cheat sheet and judgement-practice
+chapters are reference, not practice).
 
 **System Design: the largest gap inside a written topic.** No frontend track, no GenAI track, no cheat
 page, zero exercises across 61k words. The exercise format is a prompt and a rubric, not a test
