@@ -6,7 +6,7 @@ export const reactAdvancedTypescript: Chapter = {
   title: "Advanced TypeScript with React",
   short: "Advanced TypeScript",
   levels: ["advanced"],
-  practice: ["ex-comp-generic-renderitem-list"],
+  practice: ["ex-comp-generic-renderitem-list", "ex-react-exhaustive-switch"],
   ready: true,
   subtitle: "Making the wrong call fail to compile, rather than fail in review.",
   body: `<h3>Polymorphic components</h3>

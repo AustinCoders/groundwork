@@ -6,7 +6,7 @@ export const reactDebuggingProduction: Chapter = {
   title: "Debugging in production",
   short: "Production debugging",
   levels: ["advanced"],
-  practice: ["ex-comp-error-report-boundary"],
+  practice: ["ex-comp-error-report-boundary", "ex-react-build-error-report"],
   ready: true,
   subtitle: "The bug is on someone else's device, on a network you cannot reproduce.",
   body: `<h3>Why local debugging stops working</h3>

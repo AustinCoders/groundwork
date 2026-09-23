@@ -6,7 +6,7 @@ export const reactArchitectureScale: Chapter = {
   title: "Architecture at scale",
   short: "Architecture at scale",
   levels: ["advanced"],
-  practice: [],
+  practice: ["ex-react-validate-import-boundaries", "ex-react-monorepo-worth-it"],
   ready: true,
   subtitle: "Organising by feature, drawing boundaries, and the decisions that are hard to reverse.",
   body: `<h3>Organise by feature, not by kind</h3>

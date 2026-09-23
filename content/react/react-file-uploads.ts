@@ -6,7 +6,7 @@ export const reactFileUploads: Chapter = {
   title: "File uploads",
   short: "File uploads",
   levels: ["intermediate"],
-  practice: ["ex-react-validate-files"],
+  practice: ["ex-react-validate-files", "ex-comp-file-list-picker"],
   ready: true,
   subtitle: "A file input works without any of your code. Progress, drag and drop and large files are what you add.",
   body: `<h3>Start with the input that already works</h3>

@@ -6,7 +6,7 @@ export const reactReviewJudgement: Chapter = {
   title: "Reviewing React, and knowing when not to use it",
   short: "Review & judgement",
   levels: ["advanced"],
-  practice: [],
+  practice: ["ex-react-triage-review-findings", "ex-react-is-blocking-comment"],
   ready: true,
   subtitle: "At this level you are judged on what you notice in someone else's code, and on what you argue against.",
   body: `<h3>What to look for, in order</h3>

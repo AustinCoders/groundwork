@@ -6,7 +6,7 @@ export const reactCheat: Chapter = {
   title: "The React cheat page",
   short: "Cheat page",
   levels: ["beginner", "intermediate", "advanced"],
-  practice: [],
+  practice: ["ex-react-diagnose-symptom", "ex-react-where-state-lives"],
   ready: true,
   subtitle: "Everything worth having in front of you, on one page.",
   body: `<h3>Hooks, at a glance</h3>

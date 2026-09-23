@@ -6,7 +6,7 @@ export const reactServerComponents: Chapter = {
   title: "Server Components",
   short: "Server Components",
   levels: ["advanced"],
-  practice: ["ex-react-serializable-props"],
+  practice: ["ex-react-serializable-props", "ex-react-request-cache"],
   ready: true,
   subtitle: "Components that run once, on the server, and ship no JavaScript at all.",
   body: `<h3>What they are</h3>

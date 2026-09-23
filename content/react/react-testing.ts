@@ -6,7 +6,7 @@ export const reactTesting: Chapter = {
   title: "Testing React",
   short: "Testing",
   levels: ["intermediate"],
-  practice: ["ex-react-create-spy"],
+  practice: ["ex-react-create-spy", "ex-comp-toggle-password-visibility"],
   ready: true,
   subtitle: "Test what a user can do. A test that breaks on a refactor was protecting the wrong thing.",
   body: `<h3>The principle</h3>

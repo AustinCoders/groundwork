@@ -6,7 +6,7 @@ export const reactEffectTiming: Chapter = {
   title: "Effect timing",
   short: "Effect timing",
   levels: ["advanced"],
-  practice: ["ex-react-effect-order"],
+  practice: ["ex-react-effect-order", "ex-comp-verify-effect-order"],
   ready: true,
   subtitle: "Four hooks that all run 'after render', at four different moments.",
   body: `<h3>The order, precisely</h3>

@@ -6,7 +6,7 @@ export const reactCustomRenderers: Chapter = {
   title: "Custom renderers",
   short: "Custom renderers",
   levels: ["advanced"],
-  practice: [],
+  practice: ["ex-react-mini-host-config", "ex-react-renderer-mode"],
   ready: true,
   subtitle: "React is not a DOM library. The DOM is one target among several.",
   body: `<h3>The split nobody notices</h3>

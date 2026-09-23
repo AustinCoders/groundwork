@@ -6,7 +6,7 @@ export const reactSuspense: Chapter = {
   title: "Suspense & code splitting",
   short: "Suspense",
   levels: ["advanced"],
-  practice: ["ex-comp-suspense-boundary-swap"],
+  practice: ["ex-comp-suspense-boundary-swap", "ex-comp-independent-suspense-boundaries"],
   ready: true,
   subtitle: "Declaring where a loading state lives, instead of threading one through every component.",
   body: `<h3>The idea</h3>

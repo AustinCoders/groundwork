@@ -6,7 +6,7 @@ export const reactShadcn: Chapter = {
   title: "shadcn/ui",
   short: "shadcn/ui",
   levels: ["intermediate"],
-  practice: ["ex-react-variants"],
+  practice: ["ex-react-variants", "ex-react-cn-helper"],
   ready: true,
   subtitle: "Not a component library you install, but components whose source you copy into your project and own.",
   body: `<h3>What it actually is</h3>

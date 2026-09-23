@@ -6,7 +6,7 @@ export const reactInterviewBank: Chapter = {
   title: "React interview bank",
   short: "Interview bank",
   levels: ["advanced"],
-  practice: [],
+  practice: ["ex-react-batched-updates-sim", "ex-react-conditional-slot-preserves-state"],
   ready: true,
   subtitle: "Forty-six questions split by level, and twenty output drills.",
   body: `<h3>How to use this</h3>
