@@ -63,6 +63,23 @@ export const dsaTreeProblems: Chapter = {
 
   return root;
 }</code></pre>
+<h4>Dry run: rebuilding the tree in the diagram above</h4>
+<table>
+  <tr><th>Call</th><th>preorder in</th><th>inorder in</th><th>rootVal</th><th>splitIndex</th><th>leftInorder</th><th>rightInorder</th></tr>
+  <tr><td>1 — root</td><td>[3, 9, 20, 15, 7]</td><td>[9, 3, 15, 20, 7]</td><td>3</td><td>1</td><td>[9]</td><td>[15, 20, 7]</td></tr>
+  <tr><td>2 — 3's left</td><td>[9]</td><td>[9]</td><td>9</td><td>0</td><td>[]</td><td>[]</td></tr>
+  <tr><td>3 — 3's right</td><td>[20, 15, 7]</td><td>[15, 20, 7]</td><td>20</td><td>1</td><td>[15]</td><td>[7]</td></tr>
+  <tr><td>4 — 20's left</td><td>[15]</td><td>[15]</td><td>15</td><td>0</td><td>[]</td><td>[]</td></tr>
+  <tr><td>5 — 20's right</td><td>[7]</td><td>[7]</td><td>7</td><td>0</td><td>[]</td><td>[]</td></tr>
+</table>
+<p class="sub">
+  Calls 2, 4 and 5 get an empty <code>leftInorder</code> and
+  <code>rightInorder</code>, so both their recursive calls hit
+  <code>preorder.length === 0</code> and return <code>null</code> — that's
+  the base case doing its job, turning each of those calls into a leaf.
+  The result is exactly the tree in the figure: 3 with left child 9, and
+  right child 20 whose own children are 15 and 7.
+</p>
 <div class="warn">
   <span class="ttl">⚠ Post-order + pre-order alone isn't enough</span>
   Pre-order and post-order together can't always uniquely reconstruct a
@@ -274,5 +291,16 @@ function deserialize(data) {
   <li>"Find the common ancestor" → LCA (BST property prunes it to O(log n) if it's a BST)</li>
   <li>"Is this tree balanced/valid?" → compute the property bottom-up in one pass, short-circuit on failure</li>
   <li>"Save this tree to a file / send over a network" → serialize with pre-order + null markers</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Rebuild a tree from preorder + inorder by hand for a 5-node example, tracking splitIndex at each call.</li>
+    <li>Explain why pre-order + post-order alone can't always uniquely reconstruct a tree, but in-order + either one can.</li>
+    <li>Write isBalanced and diameterOfBinaryTree, and name the shared template: return one value up the stack, track a separate running best as a side effect.</li>
+    <li>Explain why checking only "left &lt; node &lt; right" at each node is not enough to validate a BST — and what a (min, max) range check fixes.</li>
+    <li>Say why null markers are what let pre-order serialization rebuild a tree from one traversal alone.</li>
+  </ul>
+</div>`,
 };

@@ -204,6 +204,25 @@ function postOrder(node, out = []) {
   keeps growing as you go.
 </p>
 
+<h3>Dry run: level order on the tree from the first diagram</h3>
+<p>
+  One row per pass through the outer <code>while</code> loop — that's what
+  <code>levelSize</code> buys you: a clean boundary between levels instead
+  of one row per node.
+</p>
+<table>
+  <tr><th>Iteration</th><th>levelSize</th><th>Queue at start</th><th>Dequeued, in order</th><th>Enqueued (children)</th><th>result so far</th></tr>
+  <tr><td>1</td><td>1</td><td>[8]</td><td>8</td><td>3, 10</td><td>[[8]]</td></tr>
+  <tr><td>2</td><td>2</td><td>[3, 10]</td><td>3, 10</td><td>1, 6, 14</td><td>[[8], [3, 10]]</td></tr>
+  <tr><td>3</td><td>3</td><td>[1, 6, 14]</td><td>1, 6, 14</td><td>(none — all leaves)</td><td>[[8], [3, 10], [1, 6, 14]]</td></tr>
+</table>
+<p class="sub">
+  Queue is empty after iteration 3, so the <code>while</code> loop stops.
+  Notice 10 enqueues only <code>14</code> — it has no left child, and the
+  code's <code>if (node.left)</code> guard is what keeps a missing child
+  from becoming a queued <code>null</code>.
+</p>
+
 <h3>Doing it without recursion — a near-guaranteed follow-up</h3>
 <p>
   "Can you do that iteratively?" is one of the most common tree follow-up
@@ -271,5 +290,16 @@ function inOrderIterative(root) {
   <li>"Sorted order" out of a BST → in-order is almost always the answer</li>
   <li>"Level by level" or "shortest path in an unweighted tree" → level order (BFS)</li>
   <li>"Build/copy/serialize" → pre-order; "safely delete/free" → post-order</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Write all three DFS traversals from memory, and say in one sentence what actually changes between them.</li>
+    <li>Write level order with a queue, using the <code>levelSize</code> snapshot to separate levels correctly.</li>
+    <li>Explain why an unbalanced BST degrades every operation to O(n), with an example insertion order that causes it.</li>
+    <li>Convert pre-order from recursive to iterative using an explicit stack, and say why right gets pushed before left.</li>
+    <li>Given a new problem, name which traversal it needs and why — before writing a single line of code.</li>
+  </ul>
+</div>`,
 };

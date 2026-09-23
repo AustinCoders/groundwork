@@ -96,6 +96,21 @@ export const dsaBacktracking: Chapter = {
   backtrack(0, []);
   return results;
 }</code></pre>
+<h4>Dry run: subsets([1, 2]) — the same tree as the figure above</h4>
+<table>
+  <tr><th>Call, in order</th><th>path</th><th>results after this call's push</th></tr>
+  <tr><td>backtrack(0, [])</td><td>[]</td><td>[[]]</td></tr>
+  <tr><td>backtrack(1, [1])</td><td>[1]</td><td>[[], [1]]</td></tr>
+  <tr><td>backtrack(2, [1, 2])</td><td>[1, 2]</td><td>[[], [1], [1, 2]]</td></tr>
+  <tr><td>backtrack(2, [2])</td><td>[2]</td><td>[[], [1], [1, 2], [2]]</td></tr>
+</table>
+<p class="sub">
+  Between the third and fourth rows, <code>path.pop()</code> runs twice on
+  the way back out of the recursion — once undoing the 2, once undoing the
+  1 — before <code>backtrack(2, [2])</code> ever starts. That's the
+  un-choose step doing its job: <code>[2]</code> starts from a clean empty
+  path, not from <code>[1]</code> left over from the branch before it.
+</p>
 
 <h3>Permutations — order matters, every element used exactly once</h3>
 <pre><code>function permute(nums) {
@@ -274,5 +289,16 @@ export const dsaBacktracking: Chapter = {
   <li>Grid-based "does a path exist" → Word Search shape; mark-and-restore in place instead of a separate visited set</li>
   <li>"Elements can be reused" → recurse with the same index, not the next one</li>
   <li>If it instead asks for the <em>best</em> single answer rather than <em>all</em> answers, check whether greedy or DP applies first — those are usually faster than exploring the whole tree</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Write the choose/explore/un-choose template from memory, and say why results.push needs a copy of path, not path itself.</li>
+    <li>Write subsets, permutations and combinations, and explain what changes between them (when you push into results, and how the loop's start index moves).</li>
+    <li>Explain the one-character difference between combine() and combinationSum() (i vs i + 1), and what it means about reusing a choice.</li>
+    <li>Trace N-Queens' pruning on a 4×4 board and say why checking columns and diagonals in O(1) matters.</li>
+    <li>In Word Search, explain why forgetting to restore a visited cell produces silently wrong answers rather than a crash.</li>
+  </ul>
+</div>`,
 };

@@ -73,6 +73,20 @@ export const dsaMatrixProblems: Chapter = {
   }
   return result;
 }</code></pre>
+<h4>Dry run: spiralOrder on the 3×4 grid in the figure above</h4>
+<table>
+  <tr><th>Loop pass</th><th>top, bottom, left, right (start)</th><th>Cells appended, in order</th><th>Result so far</th></tr>
+  <tr><td>1</td><td>0, 2, 0, 3</td><td>1, 2, 3, 4 (top row) → 5, 6 (right col) → 7, 8, 9 (bottom row) → 10 (left col)</td><td>[1..10]</td></tr>
+  <tr><td>2</td><td>1, 1, 1, 2</td><td>11, 12 (top row) → right col, bottom row and left col all skip: the guards catch that this single row is already fully consumed</td><td>[1..12]</td></tr>
+</table>
+<p class="sub">
+  After pass 2, <code>top</code> becomes 2 while <code>bottom</code> is
+  still 1 — the <code>while</code> loop's own condition
+  (<code>top &lt;= bottom</code>) catches that and stops, on top of the two
+  guards inside the loop body already having skipped the redundant
+  passes. Both checks are protecting against the same non-square edge
+  case from two different angles.
+</p>
 <div class="warn">
   <span class="ttl">⚠ The two guards aren't optional</span>
   On a non-square matrix (e.g. a single row, or a single column), skipping
@@ -172,5 +186,16 @@ export const dsaMatrixProblems: Chapter = {
   <li>"Islands," "regions," "flood fill," "shortest path in a grid" → it's a graph problem wearing a grid costume</li>
   <li>In-place mutation requested → look for a decomposition into two or more simpler, already-known transformations (like rotate = transpose + reverse)</li>
   <li>Always double-check boundary conditions on non-square grids — single row/column inputs break naive boundary logic first</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Write spiral order with four shrinking boundaries, and explain what the two inner guards protect against.</li>
+    <li>Decompose 90° in-place rotation into transpose + reverse-each-row, and say why the transpose loop starts c at r + 1.</li>
+    <li>Recognize a grid "islands/regions/flood fill" problem as the graph chapter's connected components, with cells as nodes.</li>
+    <li>Trace spiral order or rotation by hand on a non-square (e.g. 1-row or 1-column) grid to confirm the boundary logic holds.</li>
+    <li>Given a new matrix problem, decide whether it's index bookkeeping (spiral/rotate/transpose) or a graph problem in disguise.</li>
+  </ul>
+</div>`,
 };

@@ -75,6 +75,22 @@ function uniquePaths(rows, cols) {
   }
   return dp[rows - 1][cols - 1];
 }</code></pre>
+<h4>Dry run: uniquePaths(3, 4) — the grid in the figure above</h4>
+<table>
+  <tr><th>Cell</th><th>Computation</th><th>Value</th></tr>
+  <tr><td>dp[1][1]</td><td>dp[0][1] + dp[1][0] = 1 + 1</td><td>2</td></tr>
+  <tr><td>dp[1][2]</td><td>dp[0][2] + dp[1][1] = 1 + 2</td><td>3</td></tr>
+  <tr><td>dp[1][3]</td><td>dp[0][3] + dp[1][2] = 1 + 3</td><td>4</td></tr>
+  <tr><td>dp[2][1]</td><td>dp[1][1] + dp[2][0] = 2 + 1</td><td>3</td></tr>
+  <tr><td>dp[2][2]</td><td>dp[1][2] + dp[2][1] = 3 + 3</td><td>6</td></tr>
+  <tr><td>dp[2][3]</td><td>dp[1][3] + dp[2][2] = 4 + 6</td><td>10</td></tr>
+</table>
+<p class="sub">
+  Row 0 and column 0 never get computed — they start (and stay) at 1,
+  because there's only one way to reach any cell along the top or left
+  edge: keep going the one direction that stays on the grid. The answer,
+  dp[2][3] = 10, matches the bottom-right cell in the figure.
+</p>
 
 <h3>Comparing two strings — the other common shape</h3>
 <p>
@@ -273,6 +289,18 @@ function longestPalindromicSubstring(s) {
   <li>"Is this substring/subsequence a palindrome" → fill by increasing length, not row by row</li>
   <li>If the state needs a third piece of information, you're not stuck — extend to a 3D table (or a map keyed by a tuple) using the exact same recipe</li>
 </ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>State dp[i][j]'s meaning in one sentence for a grid problem, a two-string problem, and a knapsack problem — three different shapes, one recipe.</li>
+    <li>Explain why the padding row/column of zeros in LCS and Edit Distance removes the need to special-case i=0 or j=0.</li>
+    <li>Write Edit Distance and say why a mismatch checks three neighbors, not two like LCS.</li>
+    <li>Explain why palindrome DP must fill by increasing substring length rather than row by row.</li>
+    <li>Given a new problem, decide whether it needs the whole grid in memory or can be space-optimized to one or two rows.</li>
+  </ul>
+</div>
+
 <h3>See the table fill</h3>
 <p>Watch which cells each new cell reads. On a match it reaches diagonally; otherwise it takes the better of above and left. That dependency pattern is the whole recurrence.</p>
 

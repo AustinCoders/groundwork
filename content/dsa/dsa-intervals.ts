@@ -122,6 +122,21 @@ export const dsaIntervals: Chapter = {
   }
   return maxRooms;
 }</code></pre>
+<h4>Dry run: minMeetingRooms([[0, 30], [5, 10], [15, 20]])</h4>
+<p class="sub">starts = [0, 5, 15], ends = [10, 20, 30]</p>
+<table>
+  <tr><th>Step</th><th>Compare</th><th>Action</th><th>rooms</th><th>maxRooms</th></tr>
+  <tr><td>1</td><td>starts[0]=0 &lt; ends[0]=10</td><td>a meeting started — rooms++</td><td>1</td><td>1</td></tr>
+  <tr><td>2</td><td>starts[1]=5 &lt; ends[0]=10</td><td>another started before the first ended — rooms++</td><td>2</td><td>2</td></tr>
+  <tr><td>3</td><td>starts[2]=15 &lt; ends[0]=10? no</td><td>a meeting ended first — rooms--</td><td>1</td><td>2</td></tr>
+  <tr><td>4</td><td>starts[2]=15 &lt; ends[1]=20</td><td>the third meeting started — rooms++</td><td>2</td><td>2</td></tr>
+</table>
+<p class="sub">
+  <code>rooms</code> peaks at 2, while [0,30] and [5,10] overlap. By the
+  time the third meeting, [15,20], starts, [5,10] has already ended and
+  freed its room — so [15,20] reuses that one instead of needing a third.
+  Two rooms cover all three meetings.
+</p>
 <p class="sub">
   This is the same idea as the sliding-window pattern from the beginner
   tier, applied to time instead of an array — "how many things are active
@@ -149,5 +164,16 @@ export const dsaIntervals: Chapter = {
   <li>"Merge," "overlap," "how many at the same time," "minimum rooms/resources"</li>
   <li>Almost always starts with sorting by start (or end, for the greedy scheduling case in the previous chapter) — decide which based on what the question actually asks</li>
   <li>If it also involves inserting one new interval into an existing sorted set, think in three phases: before, overlapping, after</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Say why sorting by start time first turns an all-pairs comparison into a single linear pass.</li>
+    <li>Write merge(), and explain the touching-vs-overlapping boundary case (&lt;= vs &lt;) and why it needs clarifying up front.</li>
+    <li>Write insert() as three phases — before, overlapping, after — and say why that beats one tangled loop.</li>
+    <li>Trace minMeetingRooms on a small example using the two-sorted-streams sweep, and connect it to the sliding-window pattern.</li>
+    <li>Given a new interval problem, decide whether to sort by start or by end before writing any code.</li>
+  </ul>
+</div>`,
 };

@@ -113,6 +113,21 @@ function hasCycleDirected(graph, n) {
   "in-progress" means "currently on the stack of things depending on each
   other," and looping back to one of those is the cycle.
 </p>
+<h4>Dry run: hasCycleDirected on the 3-node cycle 0→1→2→0</h4>
+<table>
+  <tr><th>Call</th><th>state[] before</th><th>Neighbor checked</th><th>Neighbor's state</th><th>Result</th></tr>
+  <tr><td>dfs(0)</td><td>[0, 0, 0] → mark 0 in-progress: [1, 0, 0]</td><td>1</td><td>0 (unvisited) → recurse into dfs(1)</td><td>—</td></tr>
+  <tr><td>dfs(1)</td><td>[1, 0, 0] → mark 1 in-progress: [1, 1, 0]</td><td>2</td><td>0 (unvisited) → recurse into dfs(2)</td><td>—</td></tr>
+  <tr><td>dfs(2)</td><td>[1, 1, 0] → mark 2 in-progress: [1, 1, 1]</td><td>0</td><td>1 (in-progress!)</td><td>return <code>true</code> — cycle found</td></tr>
+</table>
+<p class="sub">
+  Node 0 never reaches state 2 ("done") — the call stack is still three
+  deep inside it when the back-edge to it is found. That's exactly what
+  "in-progress" is for: if 0 had already finished (state 2) before 2 ever
+  looked at it, seeing it again would mean a second, unrelated path merged
+  back in — not a cycle. Only a back-edge to something <em>still open on
+  the current path</em> counts.
+</p>
 
 <h3>Bipartite check — can you 2-color it with no clashes?</h3>
 <figure>
@@ -167,5 +182,16 @@ function hasCycleDirected(graph, n) {
   <li>"Can these all be completed" / "is there a circular dependency" → cycle detection (directed, usually — think course prerequisites)</li>
   <li>"Can you split into two groups with no conflicts" / "is this graph 2-colorable" → bipartite check</li>
   <li>All three reuse the exact same BFS/DFS skeleton from the previous chapter — the only new part is what you track while visiting</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Count connected components with a loop over every node plus a flood-fill, and connect that shape to "number of islands" on a grid.</li>
+    <li>Explain why undirected cycle detection needs to exclude the parent, but directed cycle detection needs a third "in-progress" state instead.</li>
+    <li>Trace the three-state cycle check on a graph with no cycle, and confirm every node reaches state 2 without a false positive.</li>
+    <li>Write isBipartite with BFS colouring, and say in one sentence what a same-colored edge proves.</li>
+    <li>Given a new problem, decide which of the three (components, cycle, bipartite) it is before writing any code.</li>
+  </ul>
+</div>`,
 };

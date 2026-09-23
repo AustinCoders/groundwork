@@ -220,6 +220,23 @@ function lengthOfLIS(nums) {
   }
   return dp[amount] === Infinity ? -1 : dp[amount];
 }</code></pre>
+<h4>Dry run: coinChange([1, 3, 4], 6) — the example above</h4>
+<table>
+  <tr><th>a</th><th>dp[a]</th><th>Why</th></tr>
+  <tr><td>0</td><td>0</td><td>base case</td></tr>
+  <tr><td>1</td><td>1</td><td>dp[0] + one 1-coin</td></tr>
+  <tr><td>2</td><td>2</td><td>dp[1] + one 1-coin</td></tr>
+  <tr><td>3</td><td>1</td><td>dp[0] + one 3-coin — beats dp[2] + one 1-coin (2)</td></tr>
+  <tr><td>4</td><td>1</td><td>dp[0] + one 4-coin — beats dp[3] + one 1-coin (2)</td></tr>
+  <tr><td>5</td><td>2</td><td>dp[4] + one 1-coin, ties dp[1] + one 4-coin</td></tr>
+  <tr><td>6</td><td>2</td><td>dp[3] + one 3-coin — beats dp[2] + one 4-coin (3)</td></tr>
+</table>
+<p class="sub">
+  dp[6] = 2, matching 3 + 3. The loop tries every coin at every amount and
+  keeps the minimum — dp[3] getting to 1 (via the 3-coin, not two 1-coins)
+  is what later lets dp[6] reuse that cheap subproblem instead of building
+  up from dp[2].
+</p>
 <div class="warn">
   <span class="ttl">⚠ Why greedy fails here (and DP doesn't)</span>
   Greedy commits to the biggest coin first and never reconsiders — but
@@ -250,5 +267,16 @@ function lengthOfLIS(nums) {
   <li>The answer at position i can be expressed using answers at earlier positions</li>
   <li>"Fewest/minimum number of coins/steps/jumps to reach X" with reusable choices → unbounded DP, same shape as Coin Change</li>
   <li>If choices interact in only two dimensions (not "a sequence" but "a sequence + a budget," or two sequences compared against each other), that's the cue for 2D DP, next</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>State the four questions (meaning of dp[i], recurrence, base case, fill order) for a new 1D problem before writing any code.</li>
+    <li>Convert a memoized recursive solution into a bottom-up table, and then space-optimize it when only a fixed window of earlier states is needed.</li>
+    <li>Explain, with a concrete counterexample, why greedy fails on Coin Change but DP doesn't.</li>
+    <li>Recognize "unbounded" DP (a choice can repeat) versus "0/1" DP (each choice used at most once), and say what changes in the loop.</li>
+    <li>Given a new problem, decide in one sentence whether it's 1D DP, 2D DP, or not DP at all.</li>
+  </ul>
+</div>`,
 };

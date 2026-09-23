@@ -112,6 +112,21 @@ export const dsaGreedy: Chapter = {
   }
   return total >= 0 ? start : -1; <span class="c">// total < 0 means no valid start exists anywhere</span>
 }</code></pre>
+<h4>Dry run: gas = [1, 2, 3, 4, 5], cost = [3, 4, 5, 1, 2]</h4>
+<table>
+  <tr><th>i</th><th>gas[i]</th><th>cost[i]</th><th>diff</th><th>total</th><th>tank</th><th>tank &lt; 0?</th></tr>
+  <tr><td>0</td><td>1</td><td>3</td><td>-2</td><td>-2</td><td>-2</td><td>yes → start = 1, tank = 0</td></tr>
+  <tr><td>1</td><td>2</td><td>4</td><td>-2</td><td>-4</td><td>-2</td><td>yes → start = 2, tank = 0</td></tr>
+  <tr><td>2</td><td>3</td><td>5</td><td>-2</td><td>-6</td><td>-2</td><td>yes → start = 3, tank = 0</td></tr>
+  <tr><td>3</td><td>4</td><td>1</td><td>3</td><td>-3</td><td>3</td><td>no</td></tr>
+  <tr><td>4</td><td>5</td><td>2</td><td>3</td><td>0</td><td>6</td><td>no</td></tr>
+</table>
+<p class="sub">
+  total ends at 0 (≥ 0, so a valid start exists) and the last reset left
+  <code>start = 3</code> — station 3 is the answer. Every candidate start
+  before index 3 failed somewhere on the way to it, so none of them could
+  ever have worked either, which is exactly the argument below.
+</p>
 <p class="sub">
   This one's greedy argument is subtler: if the tank goes negative
   arriving at station <code>i</code>, starting from <em>any</em> station
@@ -143,5 +158,16 @@ export const dsaGreedy: Chapter = {
   <li>You can articulate <em>why</em> the greedy choice never eliminates the optimal answer — if you can't, don't trust it</li>
   <li>Scheduling, interval, and "assign resources" problems are greedy's home turf</li>
   <li>When in doubt in an interview: try to prove greedy for a minute; if you can't, say so and switch to DP rather than silently guessing</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>State the greedy-choice property in your own words, and say what "fails silently" means for an unproven greedy approach.</li>
+    <li>Explain why sorting interval scheduling by finish time (not start time, not duration) is the part that makes it correct.</li>
+    <li>Write Jump Game and say why tracking a single "farthest reachable" number is enough, without exploring every path.</li>
+    <li>Trace Gas Station on a small example and explain why a failed start can jump straight past every station up to the failure point.</li>
+    <li>Given a new problem, try to argue why the greedy choice is safe for a minute — and say out loud when you can't, rather than guessing.</li>
+  </ul>
+</div>`,
 };

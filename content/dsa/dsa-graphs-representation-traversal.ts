@@ -187,6 +187,21 @@ function dfsIterative(graph, start) {
   can blow up badly. Mark it the instant it's added to the queue.
 </div>
 
+<h4>Dry run: bfs(graph, "A") on the five-node graph above</h4>
+<table>
+  <tr><th>Step</th><th>Dequeue</th><th>Neighbors checked</th><th>Newly enqueued</th><th>Queue after</th></tr>
+  <tr><td>1</td><td>A</td><td>B, D</td><td>B, D</td><td>[B, D]</td></tr>
+  <tr><td>2</td><td>B</td><td>A, C, E</td><td>C, E</td><td>[D, C, E]</td></tr>
+  <tr><td>3</td><td>D</td><td>A, E</td><td>(none — both already seen)</td><td>[C, E]</td></tr>
+  <tr><td>4</td><td>C</td><td>B, E</td><td>(none — both already seen)</td><td>[E]</td></tr>
+  <tr><td>5</td><td>E</td><td>B, C, D</td><td>(none — all already seen)</td><td>[]</td></tr>
+</table>
+<p class="sub">
+  Visit order: A, B, D, C, E. D gets enqueued at step 1 even though it's
+  processed after B and before C — that's the queue's FIFO order at work,
+  not the order neighbors were listed in.
+</p>
+
 <h3>Watch both traversals</h3>
 <div class="demo" id="gt">
   <div class="demo__bar">BFS and DFS on the same graph, starting from A</div>
@@ -310,5 +325,16 @@ function dfsIterative(graph, start) {
   <li>"Shortest path," "fewest steps," "minimum number of moves" on an unweighted graph → BFS</li>
   <li>"Does a path exist," "all paths," "explore every option" → DFS</li>
   <li>A 2D grid where you move up/down/left/right is a graph in disguise — each cell is a node, each valid move is an edge</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Build an adjacency list from an edge list, and say when you'd reach for a matrix instead.</li>
+    <li>Write both recursive and iterative DFS, and explain what the call stack was doing that the explicit stack now does.</li>
+    <li>Write BFS, and explain out loud why marking a node visited on enqueue (not dequeue) matters.</li>
+    <li>State which of DFS or BFS guarantees the shortest path on an unweighted graph, and why the other one doesn't.</li>
+    <li>Recognize a 2D grid as a graph in disguise, and say what a "node" and an "edge" are in that disguise.</li>
+  </ul>
+</div>`,
 };

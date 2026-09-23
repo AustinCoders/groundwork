@@ -164,6 +164,23 @@ function kLargest(nums, k) {
   shows up. The heap's root is always "the next one to kick out," which is
   the smallest of the keepers.
 </p>
+<h4>Dry run: kLargest([3, 1, 5, 9, 2, 7], 3)</h4>
+<table>
+  <tr><th>Push</th><th>Heap after push</th><th>Size vs k</th><th>Action</th><th>Heap keeps</th></tr>
+  <tr><td>3</td><td>{3}</td><td>1 ≤ 3</td><td>—</td><td>{3}</td></tr>
+  <tr><td>1</td><td>{1, 3}</td><td>2 ≤ 3</td><td>—</td><td>{1, 3}</td></tr>
+  <tr><td>5</td><td>{1, 3, 5}</td><td>3 ≤ 3</td><td>—</td><td>{1, 3, 5}</td></tr>
+  <tr><td>9</td><td>{1, 3, 5, 9}</td><td>4 &gt; 3</td><td>pop() removes the root, 1</td><td>{3, 5, 9}</td></tr>
+  <tr><td>2</td><td>{2, 3, 5, 9}</td><td>4 &gt; 3</td><td>pop() removes the root, 2</td><td>{3, 5, 9}</td></tr>
+  <tr><td>7</td><td>{3, 5, 7, 9}</td><td>4 &gt; 3</td><td>pop() removes the root, 3</td><td>{5, 7, 9}</td></tr>
+</table>
+<p class="sub">
+  Every time the heap tips over size <code>k</code>, whatever just became
+  the new minimum is exactly what leaves — so the heap only ever holds
+  candidates for the answer, never a value that's already been beaten by
+  <code>k</code> bigger ones. It ends holding {5, 7, 9}: the three largest
+  values, unsorted among themselves.
+</p>
 
 <div class="say">
   <span class="ttl">Say it like this →</span> "I only need the k largest,
@@ -382,5 +399,16 @@ function kLargest(nums, k) {
   <li>You need repeated access to a min/max while the data set keeps changing (a scheduler, a running median)</li>
   <li>"Running median," "median of a stream" → the two-heap pattern specifically</li>
   <li>A brute force would re-sort after every update — that's the tell a heap should replace it</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Implement push and pop on a MinHeap from scratch, including sift-up and sift-down.</li>
+    <li>Explain why "k largest" uses a min-heap, not a max-heap — say it in one sentence about what gets evicted.</li>
+    <li>Explain why heapify is O(n) rather than O(n log n), even at a high level (most nodes are near the bottom, with little distance left to sift).</li>
+    <li>Build the two-heap median finder and say why the sizes must stay balanced within one of each other.</li>
+    <li>Given a new problem, recognize the "keep asking for the extreme value while data changes" shape that calls for a heap in the first place.</li>
+  </ul>
+</div>`,
 };

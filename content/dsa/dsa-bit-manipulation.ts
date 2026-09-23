@@ -70,6 +70,20 @@ function singleNumber(nums) {
   for (const num of nums) result ^= num; <span class="c">// every pair cancels to 0</span>
   return result; <span class="c">// whatever's left is the unpaired one</span>
 }</code></pre>
+<h4>Dry run: singleNumber([4, 1, 2, 1, 2])</h4>
+<table>
+  <tr><th>num</th><th>result before</th><th>XOR</th><th>result after</th></tr>
+  <tr><td>4</td><td>000</td><td>^ 100</td><td>100 (4)</td></tr>
+  <tr><td>1</td><td>100</td><td>^ 001</td><td>101 (5)</td></tr>
+  <tr><td>2</td><td>101</td><td>^ 010</td><td>111 (7)</td></tr>
+  <tr><td>1</td><td>111</td><td>^ 001</td><td>110 (6)</td></tr>
+  <tr><td>2</td><td>110</td><td>^ 010</td><td>100 (4)</td></tr>
+</table>
+<p class="sub">
+  Every value that appears twice (1 and 2) XORs itself away over the
+  course of the loop — the last two rows undo exactly what rows 2 and 3
+  did. Only 4, the unpaired value, survives to the end.
+</p>
 <p class="sub">
   This is a genuinely elegant O(1)-space answer to a problem that looks
   like it needs a hash set (O(n) space) — worth recognizing "appears an
@@ -138,5 +152,16 @@ mask &= ~(1 << 3);        <span class="c">// remove item 3</span></code></pre>
   <li>"Count sallow bits," "power of two," "single bit differs" → the set-bit tricks above</li>
   <li>A small fixed number of items/states (≤ ~20) where you need to represent "which subset" compactly → bitmask</li>
   <li>Multiplying/dividing by exact powers of 2 in a performance-sensitive inner loop → shifts, though modern engines often optimize this automatically</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>State what AND, OR, XOR and NOT each do, and which one you'd reach for to check, set, clear or toggle a bit.</li>
+    <li>Explain why XOR-ing an array together finds the one value that appears an odd number of times, and trace it on a 5-element example.</li>
+    <li>Explain what n &amp; (n - 1) does, and use it to both count set bits and check for a power of two.</li>
+    <li>Explain why JS's bitwise operators silently truncate to 32-bit signed integers, and what that breaks on large numbers.</li>
+    <li>Represent a small set of items as a single integer bitmask, and add, remove and test membership of one item in it.</li>
+  </ul>
+</div>`,
 };
