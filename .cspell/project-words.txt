@@ -147,8 +147,10 @@ colocating
 contravariantly
 Corasick
 covermap
+Cpath
 crds
 CRDT
+Csvg
 ctes
 Cutshort
 datacentre
@@ -223,6 +225,7 @@ HSTS
 htmx
 humblebrag
 hypergrowth
+Hyperlegible
 Hyre
 IDOR
 indeg
@@ -238,6 +241,7 @@ jank
 janks
 Janky
 Jepsen
+jitterer
 jmjkbkjkv
 jsnotes
 Kadane
@@ -249,6 +253,7 @@ keymap
 koko
 kubelet
 labelledby
+lastchanged
 lede
 leetcode
 leeto
@@ -259,6 +264,7 @@ lighthouserc
 Linearithmic
 linearizability
 linearizable
+linkish
 listenbtn
 Literata
 livelock
@@ -381,11 +387,15 @@ Riak
 rintro
 Riya
 rmeta
+rmeter
+rname
 rollups
 Roorkee
 sadbutsad
+savestate
 schemafirst
 segmentable
+segs
 seqs
 serialiser
 serializability
@@ -394,6 +404,7 @@ setgroup
 SETNX
 setrow
 Shopyvilla
+signups
 singleflight
 skimmable
 Skynox
@@ -432,6 +443,8 @@ typedarrays
 Typesense
 unawaited
 uncacheable
+unest
+unestimated
 unevictable
 unfinalized
 unflushed
