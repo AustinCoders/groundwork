@@ -464,3 +464,23 @@ test("the playground renders a web page from its html, css and js files", async 
   await page.getByRole("tab", { name: /Console/ }).click();
   await expect(page.locator("#view-console")).toContainText("clicked 1");
 });
+
+test("a share link opens the playground's files in another browser as new tabs", async ({ page, context, browser }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/practice?id=free");
+  const editor = page.locator(".cm-content");
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.insertText("console.log('from a friend')\n");
+  await page.getByRole("button", { name: /Share/ }).click();
+  await expect(page.getByRole("button", { name: /Link copied/ })).toBeVisible();
+  const url = await page.evaluate(() => navigator.clipboard.readText());
+  expect(url).toContain("#share=");
+
+  const other = await browser.newContext();
+  const friend = await other.newPage();
+  await friend.goto(url);
+  await expect(friend.locator(".cm-content")).toContainText("from a friend");
+  await expect(friend.locator("#view-console")).toContainText("Opened 1 shared file");
+  await other.close();
+});

@@ -16,6 +16,7 @@ import type { EditorProblem } from "@/lib/editor/tools";
 import { groupByLine } from "@/lib/editor/inline";
 import { PAGE_SCRIPT, templatesFor } from "@/lib/playgroundTemplates";
 import { buildPage, pageFor, PREVIEW_MESSAGE } from "@/lib/webPreview";
+import { hasShare, readShare, shareUrl } from "@/lib/shareLink";
 import {
   langForName,
   loadProject,
@@ -313,6 +314,45 @@ export function PracticeWorkspace({
   }
 
   const hasPage = Boolean(project?.files.some((f) => f.lang === "html"));
+  const [shareState, setShareState] = useState<"idle" | "copied" | "failed" | "too-big">("idle");
+
+  async function share() {
+    const p = projectRef.current;
+    if (!p) return;
+    const url = await shareUrl(p.files.map(({ name, lang, code }) => ({ name, lang, code })));
+    const state = url.length > 60_000 ? "too-big" : (await copyText(url)) ? "copied" : "failed";
+    setShareState(state);
+    setTimeout(() => setShareState("idle"), 2500);
+  }
+
+  useEffect(() => {
+    if (!projectRef.current) return;
+    async function openShared() {
+      if (!hasShare(location.hash)) return;
+      const shared = await readShare(location.hash);
+      history.replaceState(null, "", location.pathname + location.search);
+      const p = projectRef.current;
+      if (!shared || !p) return;
+      const files = [...p.files];
+      const added = shared.map((f) => {
+        const base = f.name.replace(/\.[^.]+$/, "") || "shared";
+        const file = { ...makeFile(files, f.lang, f.code, base) };
+        files.push(file);
+        return file;
+      });
+      activate({ ...p, files }, added[0]);
+      setConsoleLines([
+        {
+          kind: "system",
+          text: `Opened ${added.length} shared ${added.length === 1 ? "file" : "files"} as new tabs — your own files are untouched.`,
+        },
+      ]);
+    }
+    void openShared();
+    window.addEventListener("hashchange", openShared);
+    return () => window.removeEventListener("hashchange", openShared);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function webPage(): PgFile | null {
     const p = projectRef.current;
@@ -686,6 +726,23 @@ export function PracticeWorkspace({
               onClick={toggleLive}
             >
               <span aria-hidden="true">⚡</span> Live
+            </button>
+          )}
+          {playground && (
+            <button
+              type="button"
+              className="btn"
+              title="Copy a link that opens these files in anyone's playground"
+              onClick={() => void share()}
+            >
+              <span aria-hidden="true">🔗</span>{" "}
+              {shareState === "copied"
+                ? "Link copied"
+                : shareState === "failed"
+                  ? "Could not copy"
+                  : shareState === "too-big"
+                    ? "Too big for a link"
+                    : "Share"}
             </button>
           )}
           {playground && templates.length > 1 && (
