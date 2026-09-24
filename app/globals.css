@@ -72,6 +72,14 @@
   --ide-cursor: var(--ink);
 
   --font-code: var(--font-mono);
+
+  /* Editor syntax colours, stepped until they clear 4.5:1 against the
+     active line — the palette reds and yellows did not, in any theme. */
+  --ide-keyword: #ae2e26;
+  --ide-string: #1b6a4a;
+  --ide-number: #6f5b1a;
+  --ide-op: #4a5f8c;
+  --ide-comment: #585e6b;
 }
 
 html[data-font="marker"] {
@@ -157,6 +165,14 @@ html[data-theme="dark"] {
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
   --shadow-md: 0 10px 24px -16px rgba(0, 0, 0, 0.8);
   --shadow-lg: 0 22px 48px -24px rgba(0, 0, 0, 0.9);
+
+  /* Editor syntax colours, stepped until they clear 4.5:1 against the
+     active line — the palette reds and yellows did not, in any theme. */
+  --ide-keyword: #ff9184;
+  --ide-string: #64dfa6;
+  --ide-number: #c9a94a;
+  --ide-op: #a8bcdd;
+  --ide-comment: #a2adbe;
 }
 
 html[data-theme="kraft"] {
@@ -206,6 +222,14 @@ html[data-theme="kraft"] {
   --shadow-sm: 0 1px 2px rgba(74, 50, 20, 0.14);
   --shadow-md: 0 10px 24px -16px rgba(74, 50, 20, 0.55);
   --shadow-lg: 0 22px 48px -24px rgba(74, 50, 20, 0.6);
+
+  /* Editor syntax colours, stepped until they clear 4.5:1 against the
+     active line — the palette reds and yellows did not, in any theme. */
+  --ide-keyword: #792e22;
+  --ide-string: #224e36;
+  --ide-number: #54431d;
+  --ide-op: #564324;
+  --ide-comment: #514430;
 }
 
 html[data-theme="blueprint"] {
@@ -255,6 +279,14 @@ html[data-theme="blueprint"] {
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
   --shadow-md: 0 10px 24px -16px rgba(0, 0, 0, 0.8);
   --shadow-lg: 0 22px 48px -24px rgba(0, 0, 0, 0.9);
+
+  /* Editor syntax colours, stepped until they clear 4.5:1 against the
+     active line — the palette reds and yellows did not, in any theme. */
+  --ide-keyword: #ffd1c8;
+  --ide-string: #a5e9cd;
+  --ide-number: #e8dbb3;
+  --ide-op: #c8def3;
+  --ide-comment: #cedded;
 }
 
 html[data-theme="sepia"] {
@@ -304,6 +336,14 @@ html[data-theme="sepia"] {
   --shadow-sm: 0 1px 2px rgba(90, 62, 30, 0.12);
   --shadow-md: 0 10px 24px -16px rgba(90, 62, 30, 0.5);
   --shadow-lg: 0 22px 48px -24px rgba(90, 62, 30, 0.55);
+
+  /* Editor syntax colours, stepped until they clear 4.5:1 against the
+     active line — the palette reds and yellows did not, in any theme. */
+  --ide-keyword: #8e402f;
+  --ide-string: #3b5f40;
+  --ide-number: #6a5525;
+  --ide-op: #6d5138;
+  --ide-comment: #625642;
 }
 
 html[data-theme="forest"] {
@@ -353,6 +393,14 @@ html[data-theme="forest"] {
   --shadow-sm: 0 1px 2px rgba(45, 74, 38, 0.1);
   --shadow-md: 0 10px 24px -16px rgba(45, 74, 38, 0.5);
   --shadow-lg: 0 22px 48px -24px rgba(45, 74, 38, 0.55);
+
+  /* Editor syntax colours, stepped until they clear 4.5:1 against the
+     active line — the palette reds and yellows did not, in any theme. */
+  --ide-keyword: #9d3c29;
+  --ide-string: #276842;
+  --ide-number: #6c5a1d;
+  --ide-op: #48643b;
+  --ide-comment: #536047;
 }
 
 html[data-theme="rose"] {
@@ -402,6 +450,14 @@ html[data-theme="rose"] {
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
   --shadow-md: 0 10px 24px -16px rgba(0, 0, 0, 0.8);
   --shadow-lg: 0 22px 48px -24px rgba(0, 0, 0, 0.9);
+
+  /* Editor syntax colours, stepped until they clear 4.5:1 against the
+     active line — the palette reds and yellows did not, in any theme. */
+  --ide-keyword: #ff8fa3;
+  --ide-string: #7fe0b8;
+  --ide-number: #c9a94a;
+  --ide-op: #dbb3c8;
+  --ide-comment: #c2a5b3;
 }
 
 html[data-theme="mono"] {
@@ -451,6 +507,14 @@ html[data-theme="mono"] {
   --shadow-sm: 0 1px 2px rgba(20, 20, 20, 0.1);
   --shadow-md: 0 10px 24px -16px rgba(20, 20, 20, 0.5);
   --shadow-lg: 0 22px 48px -24px rgba(20, 20, 20, 0.55);
+
+  /* Editor syntax colours, stepped until they clear 4.5:1 against the
+     active line — the palette reds and yellows did not, in any theme. */
+  --ide-keyword: #ac241d;
+  --ide-string: #256635;
+  --ide-number: #635932;
+  --ide-op: #3a3a3a;
+  --ide-comment: #5a5a5a;
 }
 
 html[data-theme="lavender"] {
@@ -500,6 +564,14 @@ html[data-theme="lavender"] {
   --shadow-sm: 0 1px 2px rgba(74, 45, 115, 0.1);
   --shadow-md: 0 10px 24px -16px rgba(74, 45, 115, 0.5);
   --shadow-lg: 0 22px 48px -24px rgba(74, 45, 115, 0.55);
+
+  /* Editor syntax colours, stepped until they clear 4.5:1 against the
+     active line — the palette reds and yellows did not, in any theme. */
+  --ide-keyword: #953952;
+  --ide-string: #226350;
+  --ide-number: #69571c;
+  --ide-op: #61508a;
+  --ide-comment: #5c5473;
 }
 
 * {
@@ -5894,22 +5966,24 @@ a.step__title:hover {
   opacity: 1;
 }
 
+/* These read against the active line as well as the editor background, which
+   the palette colours they replaced did not. See --ide-keyword and friends. */
 .tok-com {
-  color: var(--ide-fg-faint);
+  color: var(--ide-comment);
   font-style: italic;
 }
 .tok-str {
-  color: var(--ide-green);
+  color: var(--ide-string);
 }
 .tok-num {
-  color: var(--ide-yellow);
+  color: var(--ide-number);
 }
 .tok-key {
-  color: var(--ide-red);
+  color: var(--ide-keyword);
   font-weight: 700;
 }
 .tok-lit {
-  color: var(--ide-accent);
+  color: var(--ide-string);
   font-weight: 700;
 }
 .tok-fn {
@@ -5917,10 +5991,10 @@ a.step__title:hover {
   font-weight: 700;
 }
 .tok-op {
-  color: var(--ide-fg-dim);
+  color: var(--ide-op);
 }
 .tok-cls {
-  color: var(--ide-yellow);
+  color: var(--ide-number);
   font-weight: 700;
 }
 
