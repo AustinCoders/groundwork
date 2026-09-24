@@ -2566,6 +2566,17 @@
           saveTimer = setTimeout(flush, ms);
         }
 
+        // Closing tags are assembled here, never written out literally, and no
+        // closing tag may appear literally anywhere in this script — comments
+        // included. One written out here would sit earlier in the document than the
+        // real one at the end of the file, and any tool that injects into a page by
+        // replacing the first closing body tag it finds (VS Code's Live Preview does
+        // exactly this) would splice its own script block into the middle of this
+        // one, ending it early and spilling the rest of the source onto the page.
+        function endTag(name) {
+          return "<" + "/" + name + ">";
+        }
+
         function buildDocument(s) {
           const json = JSON.stringify(s, null, 1)
             .replace(/</g, "\\u003c")
@@ -2576,19 +2587,31 @@
             '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
             "<title>" +
             esc(s.title) +
-            "</title>\n" +
+            endTag("title") +
+            "\n" +
             FONT_LINKS +
             "\n" +
             '<style id="styles">' +
             sourceCss +
-            "</style>\n</head>\n<body>\n" +
-            '<div id="root" class="wrap"></div>\n' +
+            endTag("style") +
+            "\n" +
+            endTag("head") +
+            "\n<body>\n" +
+            '<div id="root" class="wrap">' +
+            endTag("div") +
+            "\n" +
             '<script type="application/json" id="roadmap-data">' +
             json +
-            "<\/script>\n" +
+            endTag("script") +
+            "\n" +
             '<script id="app">' +
             sourceApp +
-            "<\/script>\n</body>\n</html>\n"
+            endTag("script") +
+            "\n" +
+            endTag("body") +
+            "\n" +
+            endTag("html") +
+            "\n"
           );
         }
 
