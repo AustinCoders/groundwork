@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Crumbs } from "@/components/Crumbs";
+import { BackButton } from "@/components/practice/BackButton";
 import { CodeEditor, type CodeEditorHandle } from "@/components/practice/CodeEditor";
 import { Confetti } from "@/components/practice/Confetti";
 import { EditorSkeleton } from "@/components/practice/EditorSkeleton";
@@ -448,6 +449,7 @@ export function PracticeWorkspace({
       <div className={`lc-topbar${playground ? " lc-topbar--playground" : ""}`}>
         {playground ? (
           <div className="pg-head">
+            <BackButton variant="bar" fallbackHref="/" fallbackLabel="Home" />
             <h1 className="pg-head__title">
               <span aria-hidden="true">✎</span> Playground
             </h1>
@@ -472,6 +474,12 @@ export function PracticeWorkspace({
           <div />
         ) : (
           <div className="lc-topbar__nav">
+            <BackButton
+              variant="bar"
+              fallbackHref={chapter ? chapter.href : "/problems"}
+              fallbackLabel={chapter ? `Back to ${chapter.short}` : "All problems"}
+            />
+            <span className="lc-topbar__divider" aria-hidden="true" />
             <Link className="lc-icon-btn" href="/problems" title="Problem list" aria-label="Problem list">
               ☰
             </Link>

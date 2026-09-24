@@ -17,6 +17,7 @@ import { SITE_NAME } from "@/lib/site";
 import type { TopicNav } from "@/content/types";
 
 const SIDEBAR_KEY = "jsnotes:sidebar-collapsed";
+const WORKSPACE_SIDEBAR_KEY = "jsnotes:sidebar-collapsed:workspace";
 import { useClientValue, useLastLevel, useMounted, useProgressValue } from "@/lib/hooks";
 
 const FocusScope = dynamic(() => import("@radix-ui/react-focus-scope").then((m) => m.FocusScope));
@@ -83,6 +84,8 @@ export interface ShellProps {
   topicId?: string;
 
   progressChapters?: { id: string; short: string }[];
+
+  workspace?: boolean;
 }
 
 export function Shell({
@@ -98,15 +101,17 @@ export function Shell({
   variant = "full",
   topicId,
   progressChapters,
+  workspace = false,
 }: ShellProps) {
   const focused = variant === "focused" || Boolean(topicId);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const savedCollapsed = useClientValue(() => store.get<boolean>(SIDEBAR_KEY, false), false);
+  const sidebarKey = workspace ? WORKSPACE_SIDEBAR_KEY : SIDEBAR_KEY;
+  const savedCollapsed = useClientValue(() => store.get<boolean>(sidebarKey, workspace), workspace);
   const [collapsedOverride, setCollapsedOverride] = useState<boolean | null>(null);
   const collapsed = collapsedOverride ?? savedCollapsed;
   function toggleCollapsed() {
     const next = !collapsed;
-    store.set(SIDEBAR_KEY, next);
+    store.set(sidebarKey, next);
     setCollapsedOverride(next);
   }
   const asideRef = useRef<HTMLElement>(null);
@@ -220,7 +225,7 @@ export function Shell({
               {collapsed ? "»" : "«"}
             </button>
 
-            <Link className="brand site-sidenav__brand" href="/" prefetch={false}>
+            <Link className="brand site-sidenav__brand" href="/" aria-label={`${SITE_NAME} home`} prefetch={false}>
               <span className="brand__mark" aria-hidden="true">
                 JS
               </span>

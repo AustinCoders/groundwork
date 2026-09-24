@@ -6675,6 +6675,39 @@ a.step__title:hover {
   min-width: 0;
 }
 
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 220px;
+  padding: 5px 10px;
+  font-size: 13.5px;
+  color: var(--ide-fg-dim);
+  text-decoration: none;
+  border: 1px solid var(--ide-border);
+  border-radius: 8px;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.back-btn:hover {
+  color: var(--ide-fg);
+  background: rgba(205, 214, 244, 0.08);
+}
+
+.back-btn__label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 720px) {
+  .back-btn__label {
+    display: none;
+  }
+}
+
 .pg-head__title {
   margin: 0;
   font-family: var(--font-heading);

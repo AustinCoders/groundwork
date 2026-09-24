@@ -386,3 +386,15 @@ test("the editor lints as you type, formats on save and has a command palette", 
   await expect(page.locator(".ed__problems")).toHaveText("✕ 1 ⚠ 0", { timeout: 20_000 });
   expect(problems).toEqual([]);
 });
+
+test("the playground folds the sidebar away and goes back where you came from", async ({ page }) => {
+  await page.goto("/notes/basic-async");
+  await page.locator("a.site-navlink", { hasText: "Playground" }).first().click();
+  await page.waitForURL("**/practice?id=free");
+
+  await expect(page.locator(".site-sidenav")).toHaveClass(/is-collapsed/);
+  const back = page.locator(".back-btn");
+  await expect(back).toContainText("Back to");
+  await back.click();
+  await page.waitForURL("**/notes/basic-async");
+});

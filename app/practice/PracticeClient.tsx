@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import { Shell } from "@/components/Shell";
+import { BackButton } from "@/components/practice/BackButton";
 import { PracticeWorkspace } from "@/components/practice/PracticeWorkspace";
 import { practice as allExercisesData } from "@/content/practice";
 import { FREE_EXERCISE, type PracticeExercise } from "@/lib/practiceFree";
@@ -91,14 +92,14 @@ function PracticeBody({
       skipLabel="Skip to the editor"
       skipHref="#editor"
       variant="focused"
+      workspace
       contextNav={
         <nav className="site-sidenav__section" aria-label="This exercise">
-          <Link className="site-navlink" id="back-chapter" href={chapter ? chapter.href : "/"}>
-            <span className="site-navlink__icon" aria-hidden="true">
-              ←
-            </span>
-            <span className="site-navlink__name btn__label">{chapter ? `Back to ${chapter.short}` : "Home"}</span>
-          </Link>
+          <BackButton
+            variant="rail"
+            fallbackHref={chapter ? chapter.href : "/"}
+            fallbackLabel={chapter ? `Back to ${chapter.short}` : "Home"}
+          />
         </nav>
       }
     >

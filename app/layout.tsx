@@ -9,6 +9,7 @@ import { THEME_INIT_SCRIPT } from "@/lib/themeInitScript";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { TopicsReadyProvider } from "@/lib/topicReadiness";
 import { TopicsNavProvider } from "@/lib/topicNav";
+import { NavTrail } from "@/components/NavTrail";
 import { topicsNavWithStats, topicStats } from "@/lib/topicStats";
 import "./globals.css";
 
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </TopicsReadyProvider>
         </TopicsNavProvider>
         <ErrorReporter />
+        <NavTrail />
         <Analytics />
         <SpeedInsights />
       </body>
