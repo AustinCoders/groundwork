@@ -125,7 +125,7 @@ test("a mock interview round runs from the lobby to the debrief", async ({ page 
 
   await page.getByRole("tab", { name: "Single round" }).click();
   await page.getByRole("button", { name: /^Behavioural/ }).click();
-  await page.getByRole("button", { name: "3", exact: true }).click();
+  await page.getByLabel("How many questions").selectOption("3");
   await page.getByRole("button", { name: "Start Behavioural" }).click();
 
   await page.getByRole("button", { name: "Walk in" }).click();
@@ -154,14 +154,14 @@ test("the loop plan follows the role and the level", async ({ page }) => {
   await page.goto("/mock");
   const map = page.getByRole("list", { name: "The loop, in order" });
 
-  await page.getByRole("button", { name: /^Backend/ }).click();
-  await page.getByRole("button", { name: /^10\+ years/ }).click();
+  await page.getByLabel("Role").selectOption("backend");
+  await page.getByLabel("Experience").selectOption("senior");
   await expect(map.getByText("Node & databases")).toBeVisible();
   await expect(map.getByText("System design")).toBeVisible();
   await expect(map.getByText("React & the frontend")).toHaveCount(0);
 
-  await page.getByRole("button", { name: /^Frontend/ }).click();
-  await page.getByRole("button", { name: /^2–3 years/ }).click();
+  await page.getByLabel("Role").selectOption("frontend");
+  await page.getByLabel("Experience").selectOption("junior");
   await expect(map.getByText("React & the frontend")).toBeVisible();
   await expect(map.getByText("System design")).toHaveCount(0);
 });
@@ -235,8 +235,10 @@ test("the mock lobby hydrates cleanly with saved choices", async ({ page }) => {
   const problems = collectProblems(page);
 
   await page.goto("/mock", { waitUntil: "networkidle" });
-  await expect(page.getByRole("button", { name: /^Frontend/ })).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByRole("button", { name: /^10\+ years/ })).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByRole("button", { name: /^Agency/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByLabel("Role")).toHaveValue("frontend");
+  await expect(page.getByLabel("Experience")).toHaveValue("senior");
+  await expect(page.getByLabel("Company")).toHaveValue("agency");
+  // the sentence agrees with the pickers, article included
+  await expect(page.getByText(/walking into an\s+agency/)).toBeVisible();
   expect(problems, "the lobby logged problems").toEqual([]);
 });

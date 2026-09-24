@@ -57,7 +57,7 @@ test("the mock interview room and debrief have no accessibility violations", asy
   await page.goto("/mock", { waitUntil: "networkidle" });
   await page.getByRole("tab", { name: "Single round" }).click();
   await page.getByRole("button", { name: /^System design/ }).click();
-  await page.getByRole("button", { name: "3", exact: true }).click();
+  await page.getByLabel("How many questions").selectOption("3");
   await page.getByRole("button", { name: "Start System design" }).click();
 
   await page.getByRole("button", { name: "Walk in" }).waitFor();

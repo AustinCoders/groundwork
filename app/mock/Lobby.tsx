@@ -113,37 +113,70 @@ function hours(min: number): string {
   return m ? `${h} h ${m} min` : `${h} h`;
 }
 
-function Choices<T extends string>({
-  label,
-  options,
+/** How each choice reads inside the sentence, lower-case and ready for "a"/"an". */
+const ROLE_WORD: Record<Role, string> = { frontend: "frontend", fullstack: "full-stack", backend: "backend" };
+const COMPANY_WORD: Record<CompanyType, string> = {
+  service: "service company",
+  product: "product startup",
+  saas: "SaaS company",
+  agency: "agency",
+};
+
+const VOWELS = new Set(["a", "e", "i", "o", "u"]);
+
+/** "a service company", "an agency". Good enough for these four words. */
+function article(word: string): string {
+  return VOWELS.has(word.charAt(0).toLowerCase()) ? "an" : "a";
+}
+
+interface BlankOption<T extends string> {
+  value: T;
+  /** What the sentence shows. */
+  word: string;
+  /** What the picker lists — the word with its detail. */
+  label: string;
+}
+
+/**
+ * One blank in the sentence. The word you see is plain text; a native <select>
+ * sits invisibly on top of it, so the blank is exactly as wide as its word and
+ * still opens the platform's own picker, takes the keyboard, and has a name a
+ * screen reader can announce.
+ */
+function Blank<T extends string>({
+  id,
+  name,
   value,
+  options,
   onChange,
 }: {
-  label: string;
-  options: [T, string, string?][];
+  id: string;
+  name: string;
   value: T;
+  options: BlankOption<T>[];
   onChange: (v: T) => void;
 }) {
+  const current = options.find((o) => o.value === value) ?? options[0];
   return (
-    <>
-      <span className={styles.configLabel} id={`cfg-${label}`}>
-        {label}
+    <span className={styles.blank}>
+      <span aria-hidden="true">{current.word}</span>
+      <span className={styles.blankCaret} aria-hidden="true">
+        ▾
       </span>
-      <div className={styles.choices} role="group" aria-labelledby={`cfg-${label}`}>
-        {options.map(([v, name, sub]) => (
-          <button
-            key={v}
-            type="button"
-            className={styles.choice}
-            aria-pressed={value === v}
-            onClick={() => onChange(v)}
-          >
-            {name}
-            {sub && <span className={styles.choiceSub}>{sub}</span>}
-          </button>
+      <select
+        id={id}
+        aria-label={name}
+        className={styles.blankSelect}
+        value={value}
+        onChange={(e) => onChange(e.target.value as T)}
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
         ))}
-      </div>
-    </>
+      </select>
+    </span>
   );
 }
 
@@ -309,12 +342,21 @@ export function Lobby({
   const totalMinutes = loopMinutes(plan);
   const totalQuestions = plan.reduce((n, p) => n + p.questions, 0);
 
+  // A count chosen for a coding round (1–3) is not one a talk round offers
+  // (3, 5, 8), so switching rooms snaps it to the nearest the new room has.
+  const drillIsCoding = STAGE_RULES[drillStage].kind === "coding";
+  const drillQuestions = drillIsCoding
+    ? Math.min(Math.max(drillCount, 1), 3)
+    : [3, 5, 8].includes(drillCount)
+      ? drillCount
+      : 3;
+
   const drillPlan: PlannedStage[] = useMemo(() => {
     const rule = STAGE_RULES[drillStage];
-    const count = rule.kind === "coding" ? Math.min(drillCount, 3) : drillCount;
+    const count = drillQuestions;
     const per = rule.kind === "coding" ? (drillStage === "machine" ? 20 : 15) : 4;
     return [{ stage: drillStage, questions: count, minutes: count * per, core: true, reason: "" }];
-  }, [drillStage, drillCount]);
+  }, [drillStage, drillQuestions]);
 
   usePrefetchStages(mode === "loop" ? plan.map((p) => p.stage) : mode === "drill" ? [drillStage] : []);
 
@@ -412,31 +454,57 @@ export function Lobby({
         <section className="sheet" aria-labelledby="mock-loop">
           <p className={styles.eyebrow}>plan the loop</p>
           <h2 id="mock-loop">Which job are you walking into?</h2>
-          <div className={styles.configGrid}>
-            <Choices label="Role" options={ROLES} value={config.role} onChange={(role) => setConfig({ role })} />
-            <Choices
-              label="Experience"
-              options={LEVELS}
+          <p className={styles.sentence}>
+            I&apos;m a{" "}
+            <Blank
+              id="mock-role"
+              name="Role"
+              value={config.role}
+              options={ROLES.map(([value, name, detail]) => ({
+                value,
+                word: ROLE_WORD[value],
+                label: `${name} — ${detail}`,
+              }))}
+              onChange={(role) => setConfig({ role })}
+            />{" "}
+            engineer with{" "}
+            <Blank
+              id="mock-experience"
+              name="Experience"
               value={config.seniority}
+              options={LEVELS.map(([value, name, detail]) => ({ value, word: name, label: `${name} — ${detail}` }))}
               onChange={(seniority) => setConfig({ seniority })}
-            />
-            <Choices
-              label="Company"
-              options={COMPANIES}
+            />{" "}
+            behind me, walking into {article(COMPANY_WORD[config.company])}{" "}
+            <Blank
+              id="mock-company"
+              name="Company"
               value={config.company}
+              options={COMPANIES.map(([value, name, detail]) => ({
+                value,
+                word: COMPANY_WORD[value],
+                label: `${name} — ${detail}`,
+              }))}
               onChange={(company) => setConfig({ company })}
             />
-            <Choices
-              label="Length"
-              options={INTENSITIES.map(([v, name]) => [
-                v,
-                name,
-                hours(loopMinutes(planLoop({ ...config, intensity: v }, catalog.hotFor))),
-              ])}
+            . Run me the{" "}
+            <Blank
+              id="mock-length"
+              name="Length"
               value={config.intensity}
+              options={INTENSITIES.map(([value, name]) => ({
+                value,
+                word: name.toLowerCase(),
+                label: `${name} — about ${hours(loopMinutes(planLoop({ ...config, intensity: value }, catalog.hotFor)))}`,
+              }))}
               onChange={(intensity) => setConfig({ intensity })}
-            />
-          </div>
+            />{" "}
+            loop.
+          </p>
+          <p className={styles.sentenceDetail}>
+            {ROLES.find(([r]) => r === config.role)?.[2]} · {LEVELS.find(([l]) => l === config.seniority)?.[2]} ·{" "}
+            {COMPANIES.find(([c]) => c === config.company)?.[2]}
+          </p>
 
           <div className={styles.mapHead}>
             <h3>The loop</h3>
@@ -491,25 +559,28 @@ export function Lobby({
               </button>
             ))}
           </div>
-          <div className={styles.configGrid}>
-            <Choices
-              label="Experience"
-              options={LEVELS}
-              value={config.seniority}
-              onChange={(seniority) => setConfig({ seniority })}
-            />
-            <Choices
-              label="Questions"
-              options={
-                (STAGE_RULES[drillStage].kind === "coding" ? [1, 2, 3] : [3, 5, 8]).map((n) => [
-                  String(n),
-                  String(n),
-                ]) as [string, string][]
-              }
-              value={String(STAGE_RULES[drillStage].kind === "coding" ? Math.min(drillCount, 3) : drillCount)}
+          <p className={styles.sentence}>
+            Ask me{" "}
+            <Blank
+              id="mock-count"
+              name="How many questions"
+              value={String(drillQuestions)}
+              options={(drillIsCoding ? [1, 2, 3] : [3, 5, 8]).map((n) => {
+                const word = `${n} ${drillIsCoding ? (n === 1 ? "problem" : "problems") : "questions"}`;
+                return { value: String(n), word, label: word };
+              })}
               onChange={(v) => setDrillCount(Number(v))}
             />
-          </div>
+            , pitched at someone with{" "}
+            <Blank
+              id="mock-drill-experience"
+              name="Experience"
+              value={config.seniority}
+              options={LEVELS.map(([value, name, detail]) => ({ value, word: name, label: `${name} — ${detail}` }))}
+              onChange={(seniority) => setConfig({ seniority })}
+            />{" "}
+            behind them.
+          </p>
           <div className={styles.startBar}>
             <button type="button" className="btn btn--primary" disabled={busy} onClick={() => start("drill")}>
               {busy ? "Setting up the room…" : `Start ${stages[drillStage].title}`}
