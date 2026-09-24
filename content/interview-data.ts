@@ -6,7 +6,7 @@ id:'scout', code:'00', navTitle:'Scouting report',
 title:'The scouting report',
 meta:[['Written by','The interviewer, not you'],['Read it','Before anything else'],['Purpose','Know your resume better than they do']],
 tiers:[['read this first',1]],
-intro:'This is how your resume reads from the other side of the table, in the ninety seconds before your name gets called. Every one of the eight attacks below will surface somewhere across your loop, and each has a good answer — if you prepare it now instead of inventing it in the room.',
+intro:'This is how your resume reads from the other side of the table, in the ninety seconds before your name gets called. It is worked through on one example profile — six years full-stack, TypeScript on both ends, four production applications at a client studio — because an attack only makes sense against a specific page. Read each one against your own resume: the eight hold, and only the details change. Every one of them will surface somewhere across your loop, and each has a good answer — if you prepare it now instead of inventing it in the room.',
 pre:`<div class="cards">
 <div class="card g"><h4>You own things end to end</h4><p>"Technical owner of 4 client applications in production" is the line that gets you the interview. Most six-year candidates have owned features; you have owned releases. Lead with it.</p></div>
 <div class="card g"><h4>Your stack is the hiring sweet spot</h4><p>TypeScript on both ends, Next.js App Router, NestJS, Redis, Docker, GitHub Actions — in production, not in tutorials. That combination is in demand right now.</p></div>
@@ -111,7 +111,7 @@ qs:[
 {
 q:'Tell me about yourself.',
 test:'Whether you can compress six years into a pitch, and whether you sound senior when you do it.',
-say:`<p>I am a full-stack engineer, six years, all of it in TypeScript. For the last three at Skynox I have been the technical owner of four production client applications — Next.js on the front, NestJS services behind, deployed on AWS. That means I own architecture, release and reliability, not just features. The work I am proudest of is GetDandy, an AI front-office platform where I designed the service layer across five environments and cut infrastructure cost by a quarter. I have just moved to Bangalore and I am looking for a product role where I own a system for years instead of handing it over.</p>`,
+say:`<p>I am a full-stack engineer, six years, all of it in TypeScript. For the last three at a client studio I have been the technical owner of four production applications — Next.js on the front, NestJS services behind, deployed on AWS. That means I own architecture, release and reliability, not just features. The work I am proudest of is a front-office platform where I designed the service layer across five environments and cut infrastructure cost by a quarter. I am looking for a product role where I own a system for years instead of handing it over.</p>`,
 a:`<p>Four beats: <b>what you are</b>, <b>what you own</b>, <b>one concrete proof</b>, <b>what you want next</b>. Sixty seconds, not four minutes.</p>
 <p>Do not walk your career chronologically. Starting at 2020 and working forward is the single most common way this answer dies — by the time you reach the interesting part they have stopped listening.</p>`,
 fu:['Which of those four applications was hardest and why?','You said you own reliability — what does that mean day to day?','Why full-stack rather than specialising?'],
@@ -148,8 +148,8 @@ fu:['Did you raise this with your manager? What happened?','What would have made
 {
 q:'What is your current CTC and what are you expecting?',
 test:'Budget fit. This is the actual purpose of the call — everything before it was small talk.',
-a:`<p>Give the number <em>with its structure attached</em>, because for you the structure is the leverage. Your package has no PF and no deductions, so your take-home and your cost-to-company are effectively the same figure. Almost no Bangalore offer works that way, and the recruiter does not know it yet.</p>`,
-say:`<p>My current fixed is ₹12.2 lakh, and the important part is that it is entirely fixed and entirely in hand — no variable, no PF deduction, so I actually take home ₹1,02,000 every month. That is why I compare offers on monthly in-hand rather than CTC. For this role I am looking at ₹26 lakh, and I am flexible on how it is structured.</p>`,
+a:`<p>Give the number <em>with its structure attached</em>, because the structure is where the leverage is. If your package has no PF and no deductions, your take-home and your cost-to-company are effectively the same figure — almost no Bangalore offer works that way, and the recruiter does not know it yet. The script below uses the worked example from <a href="#r12">R12</a>: ₹12 lakh fixed, ₹1,00,000 a month in hand. Put your own two numbers in it.</p>`,
+say:`<p>My current fixed is ₹12 lakh, and the important part is that it is entirely fixed and entirely in hand — no variable, no PF deduction, so I actually take home ₹1,00,000 every month. That is why I compare offers on monthly in-hand rather than CTC. For this role I am looking at ₹26 lakh, and I am flexible on how it is structured.</p>`,
 after:`<p>That paragraph does four jobs at once: it is truthful, it is verifiable against your payslip, it teaches the recruiter that your effective rate is higher than your CTC looks, and it anchors before they anchor you. The full arithmetic is in <a href="#r12">R12</a>.</p>`,
 trap:`<p>Inflating the current number. It is checked against your payslip and Form 16 at offer stage, and a discrepancy withdraws the offer at the last moment, when you have already resigned. Never do it.</p>`,
 fu:['Is that fixed or does it include a variable?','Can you share a payslip?','That is on the higher side — what is the minimum you would consider?']
@@ -199,7 +199,7 @@ q:'This role is mostly backend. Your resume looks frontend-leaning.',
 test:'Whether you argue with the framing or reframe it. The recruiter is reading a checklist and yours has a gap on it.',
 a:`<p>Never dispute the observation — it is correct, and your resume does read frontend-first. Concede it in four words, then move the conversation to the part of your backend work that is hardest to fake: production ownership.</p>
 <p>The shape is <b>concede, quantify, prove, redirect</b>. The proof has to be a system you ran, not a framework you touched.</p>`,
-say:`<p>That is a fair read of the resume. What it does not show is that at Skynox the services are mine too — NestJS behind all four applications, and I own the deploy. On GetDandy I designed the service layer across five environments and took infrastructure cost down twenty-five percent, which is not a thing you get to do from the frontend. So the split is genuinely closer to sixty-forty than the resume suggests, and if the role is eighty percent backend I would want that, not fight it.</p>`,
+say:`<p>That is a fair read of the resume. What it does not show is that the services are mine too — NestJS behind all four applications, and I own the deploy. On the front-office platform I designed the service layer across five environments and took infrastructure cost down twenty-five percent, which is not a thing you get to do from the frontend. So the split is genuinely closer to sixty-forty than the resume suggests, and if the role is eighty percent backend I would want that, not fight it.</p>`,
 trap:`<p>"No no, I am equally strong in both." You are not, and R5 will prove it inside ten minutes. Overclaiming here does not get you past the screen — it gets you a backend deep dive you were not ready for, with an interviewer who was told you were equally strong.</p>`,
 fu:['How much of your week is backend today?','Have you owned a database schema end to end?','Would you be happy if this role never touched React again?']
 },
@@ -454,7 +454,7 @@ note:`<p>If the repository is private and they ask you to zip it, include the <c
 },
 {
 q:'The five things that get scored and almost nobody ships.',
-test:'Production instinct — exactly the thing your Skynox work should make automatic.',
+test:'Production instinct — exactly the thing production work should make automatic.',
 a:`<ul>
 <li><b>Input validation at the boundary</b> with unknown properties stripped. Say why in the README: malformed input and mass assignment both stop at the edge.</li>
 <li><b>Error responses with a shape.</b> A consistent <code>{ error, message }</code> and correct status codes. Not a stack trace, not a 200 with <code>{ success: false }</code>.</li>
@@ -494,7 +494,7 @@ q:'Walk me through your last project — the engineer\'s version.',
 test:'Depth. The recruiter wanted a story; this person wants a system, and they can tell within two sentences which one you are giving.',
 a:`<p>Same project as <a href="#r1">R1</a>, completely different answer. The recruiter version was four beats and no jargon. This version has architecture, a number, and a problem you solved that was genuinely hard.</p>
 <p>Shape it as <b>what it does → how it is put together → the hardest part → what it cost or saved</b>, and stop at ninety seconds so they can steer.</p>`,
-say:`<p>GetDandy is an AI front-office platform — it answers inbound calls and hands off to a human when it should. Next.js on the front, NestJS services behind it, Postgres and Redis, all on AWS. I designed the service layer and the deploy across five environments, which was the hard part: five sets of data, secrets and provider keys, with a real-time dashboard over agent performance on top. Rationalising how those environments were provisioned took infrastructure cost down about twenty-five percent. Happy to go deeper on the environment split or on the real-time piece — whichever is more useful.</p>`,
+say:`<p>The front-office platform answers inbound calls and hands off to a human when it should. Next.js on the front, NestJS services behind it, Postgres and Redis, all on AWS. I designed the service layer and the deploy across five environments, which was the hard part: five sets of data, secrets and provider keys, with a real-time dashboard over agent performance on top. Rationalising how those environments were provisioned took infrastructure cost down about twenty-five percent. Happy to go deeper on the environment split or on the real-time piece — whichever is more useful.</p>`,
 trap:`<p>"I worked on the frontend and also did some backend work." That sentence contains no system, no decision and no number, and it is the most common opening in this round. Every sentence should be something only a person who built it could say.</p>`,
 fu:['Why NestJS and not plain Express?','What was in the five environments that differed?','Where did the twenty-five percent come from?']
 },
@@ -2593,7 +2593,7 @@ fu:['What if the payment succeeds but your webhook handler crashes?','How do you
 },
 {
 q:'Design a real-time dashboard for AI agent performance metrics.',
-test:'Straight from your GetDandy line. Know it cold.',
+test:'Straight from your front-office platform line. Know it cold.',
 a:`<p>Three parts: ingest, aggregate, deliver.</p>
 <p><b>Ingest.</b> Agents emit events (call started, handed off, resolved, latency, sentiment). Buffer and batch on the client side — one HTTP request per event does not survive volume. Write to an append-only events table or a stream.</p>
 <p><b>Aggregate.</b> This is the key decision: <b>pre-aggregate into time buckets on write</b> rather than computing over raw events on read. Dashboards are read-heavy with a known query pattern, so paying once per event beats paying per viewer. Keep raw events for a short retention window for drill-down, and roll up into minute, hour and day tables beyond that.</p>`,
@@ -2671,7 +2671,7 @@ test:'Breadth. Any of these can appear; none needs more than a working sketch.',
 a:`<ul>
 <li><b>A rate limiter as a shared service.</b> The R5 answer, plus: where does it live — sidecar, gateway, or a library in each service, and what does the network hop cost you?</li>
 <li><b>A file upload and processing pipeline.</b> Presigned URL → S3 event → worker → status the client subscribes to. The state machine matters more than the boxes.</li>
-<li><b>An online learning platform</b> with course search and progress tracking. Your Mindbell work. The interesting part is progress: an append-only event log of "completed lesson X" beats a mutable percentage field, because it survives a course being restructured.</li>
+<li><b>An online learning platform</b> with course search and progress tracking. Your learning-platform work. The interesting part is progress: an append-only event log of "completed lesson X" beats a mutable percentage field, because it survives a course being restructured.</li>
 <li><b>An authentication service</b> with refresh token rotation. R5.7 as a system.</li>
 <li><b>A comment thread or activity feed.</b> Cursor pagination, not offset — with new items arriving, offset pagination shows duplicates and skips rows.</li>
 <li><b>A job scheduler.</b> Cron-like triggers, at-least-once delivery, and the question they always ask: what stops two instances running the same job? (A lock, or a leader.)</li>
@@ -2756,7 +2756,7 @@ fu:['Why is the image still 400MB and how would you shrink it? (distroless, or a
 },
 {
 q:'How do you manage secrets and configuration across five environments?',
-test:'A GetDandy question — you claimed five environments, so this is the audit.',
+test:'A front-office platform question — you claimed five environments, so this is the audit.',
 a:`<p>Nothing in the repository, ever. Then a layered answer:</p>
 <ul>
 <li><b>Pipeline secrets</b> — GitHub Actions encrypted secrets or environments with required reviewers for production.</li>
@@ -2806,7 +2806,7 @@ a:`<ol>
 <li><b>25% infrastructure cost cut</b> — from what monthly figure to what?</li>
 <li><b>40% lower initial load across 15 commerce pages</b> — what were they before?</li>
 <li><b>10,000 unique monthly mobile visitors</b> — was that attributable to the PWA work or to marketing? <em>(If you do not know, say you do not know — that is the honest and correct answer.)</em></li>
-<li><b>75% user adoption on the Mindbell dashboard</b> — adoption of what, by whom, over what window?</li>
+<li><b>75% user adoption on the learning dashboard</b> — adoption of what, by whom, over what window?</li>
 <li><b>30% lower sync latency from batching 15 APIs</b> — what was the batching strategy?</li>
 <li><b>5,000 registered users</b> — how many were active daily or monthly? <em>(Registered is a vanity number and a good interviewer knows it.)</em></li>
 </ol>`,
@@ -2815,7 +2815,7 @@ after:`<p>Prepare each one in the four-beat form from R4.13: <b>measured → dia
 {
 q:'Draw the architecture of one of your four applications.',
 test:'Whether you can produce the diagram of a system you claim to have architected. Fumbling this is the fastest way to lose a room.',
-a:`<p>Pick GetDandy and practise drawing it in ninety seconds, on paper, three times tonight. What has to be on the board:</p>
+a:`<p>Pick the one you know best and practise drawing it in ninety seconds, on paper, three times tonight. What has to be on the board:</p>
 <ul>
 <li>Client (Next.js) and how it is served.</li>
 <li>The reverse proxy or load balancer in front.</li>
@@ -3043,11 +3043,11 @@ a:`<p>You do not need sixteen stories. You need six real events, told at enough 
 after:`<div class="table-scroll"><table>
 <thead><tr><th>Event</th><th>Cuts for</th></tr></thead>
 <tbody>
-<tr><td><b>The five environments on GetDandy</b> — different data, secrets and provider keys, rationalised into one provisioning path, infrastructure cost down twenty-five percent</td><td>Ownership · Dive Deep · Frugality · Deliver Results</td></tr>
+<tr><td><b>The five environments on the front-office platform</b> — different data, secrets and provider keys, rationalised into one provisioning path, infrastructure cost down twenty-five percent</td><td>Ownership · Dive Deep · Frugality · Deliver Results</td></tr>
 <tr><td><b>The real-time dashboard</b> over agent performance and reliability metrics — you built the thing that told everyone whether the platform was actually working</td><td>Customer Obsession · Insist on the Highest Standards · Invent and Simplify</td></tr>
 <tr><td><b>A technical decision you pushed back on</b> and lost, then implemented properly anyway</td><td>Have Backbone; Disagree and Commit · Earn Trust</td></tr>
 <tr><td><b>A decision of yours that turned out wrong</b>, and what it cost before you caught it</td><td>Are Right, A Lot · Learn and Be Curious</td></tr>
-<tr><td><b>A client handover at Skynox</b> — a codebase someone else had to run after you left</td><td>Earn Trust · Insist on the Highest Standards · Hire and Develop</td></tr>
+<tr><td><b>A client handover at the studio</b> — a codebase someone else had to run after you left</td><td>Earn Trust · Insist on the Highest Standards · Hire and Develop</td></tr>
 <tr><td><b>Something you shipped under a deadline that was not negotiable</b>, and what you cut to make it</td><td>Bias for Action · Deliver Results · Think Big</td></tr>
 </tbody>
 </table></div>
@@ -3064,7 +3064,7 @@ a:`<p>Situation, Task, Action, Result. The mistake is the proportions: most cand
 <li><b>Action</b> — sixty to ninety seconds, and every verb is "I". This is the answer.</li>
 <li><b>Result</b> — a number, and how you know it.</li>
 </ul>`,
-say:`<p><em>Situation.</em> GetDandy ran across five environments and each one had drifted — different data, different secrets, different provider keys. Deploys were taking most of a day and breaking in ways that only showed up in one of them. <em>Task.</em> I owned the service layer and the deploy, so it was mine to fix. <em>Action.</em> I mapped what actually differed between the five, moved every difference into configuration rather than code, rebuilt provisioning so an environment came up the same way every time, and cut the ones nobody was using. <em>Result.</em> Infrastructure cost dropped about twenty-five percent, and a deploy went from most of a day to something we did without thinking about it.</p>`,
+say:`<p><em>Situation.</em> The front-office platform ran across five environments and each one had drifted — different data, different secrets, different provider keys. Deploys were taking most of a day and breaking in ways that only showed up in one of them. <em>Task.</em> I owned the service layer and the deploy, so it was mine to fix. <em>Action.</em> I mapped what actually differed between the five, moved every difference into configuration rather than code, rebuilt provisioning so an environment came up the same way every time, and cut the ones nobody was using. <em>Result.</em> Infrastructure cost dropped about twenty-five percent, and a deploy went from most of a day to something we did without thinking about it.</p>`,
 trap:`<p>"We migrated the environments." The interviewer cannot write that down as your action. If the team did it, say what <em>you</em> did inside it — the honest version is always more specific than the "we" version, not less.</p>`,
 fu:['What did you personally build versus what did someone else build?','How did you measure the twenty-five percent?','What would you do differently?','Who disagreed with you, and what did they say?']
 },
@@ -3134,28 +3134,29 @@ title:'HR & the number',
 meta:[['Length','15–30 min'],['Who','HR business partner'],['Decides','What is actually on your offer letter'],['Fail mode','Accepting in the room']],
 tiers:[['service',1],['product',1],['saas',1],['agency',1]],
 intro:'The technical rounds decide whether you get an offer. This round decides what is in it. Treat it with the same seriousness, because an hour here is worth more per minute than any other hour in the process.',
-pre:`<div class="trap"><span class="lbl">The thing to understand before you say any number</span><p>You earn ₹1,02,000 a month in hand with <b>no PF and no deductions</b> — so your take-home and your cost-to-company are effectively the same figure, ₹12.24 lakh a year of real cash. Almost no Bangalore offer works that way. A typical package hides ten to twenty percent of the headline in variable pay, employer PF, gratuity accrual, and then income tax on top. <b>A "₹16 lakh" offer at a normal product company pays you roughly ₹1,00,100 a month — a thirty percent hike on paper and a pay cut in practice.</b></p></div>`,
+pre:`<div class="trap"><span class="lbl">The thing to work out before you say any number</span><p>Find your real monthly in-hand and compare every offer against <em>that</em>, never against your CTC. <b>The worked example running through this round is a candidate on ₹12 lakh fixed, paid entirely in hand with no variable and no PF — ₹1,00,000 a month of real cash.</b> Put your own monthly figure in its place and every line below still holds; only the percentages move.</p><p>Almost no Bangalore offer is structured that cleanly. A typical package hides ten to twenty percent of the headline in variable pay, employer PF and gratuity accrual, and income tax comes off what is left. <b>For the example candidate a "₹16 lakh" offer pays roughly ₹1,00,100 a month — a thirty percent hike on paper and no change at all in practice.</b></p></div>`,
 qs:[
 {
 q:'What each headline number actually pays you',
 test:'Nothing — this is the table to memorise before you walk in.',
 a:`<div class="table-scroll"><table>
-<thead><tr><th>Offered CTC</th><th>Monthly in hand</th><th>Real change</th><th>Verdict</th></tr></thead>
+<thead><tr><th>Offered CTC</th><th>Monthly in hand</th><th>vs ₹1,00,000</th><th>Verdict for the example</th></tr></thead>
 <tbody>
-<tr><td class="n">₹16 LPA</td><td class="n">≈ ₹1,00,100</td><td class="n">−2%</td><td><span class="pill r">reject</span> a pay cut wearing a hike's clothes</td></tr>
-<tr><td class="n">₹18 LPA</td><td class="n">≈ ₹1,11,200</td><td class="n">+9%</td><td><span class="pill r">reject</span> less than staying put and taking an appraisal</td></tr>
-<tr><td class="n">₹20 LPA</td><td class="n">≈ ₹1,22,200</td><td class="n">+20%</td><td><span class="pill y">floor</span> only for a company you badly want</td></tr>
-<tr class="hi"><td class="n">₹22 LPA</td><td class="n">≈ ₹1,32,600</td><td class="n">+30%</td><td><span class="pill m">accept</span> a real move</td></tr>
-<tr class="hi"><td class="n">₹24 LPA</td><td class="n">≈ ₹1,43,000</td><td class="n">+40%</td><td><span class="pill m">target</span> say this number out loud</td></tr>
-<tr><td class="n">₹26 LPA</td><td class="n">≈ ₹1,52,900</td><td class="n">+50%</td><td><span class="pill m">anchor</span> where you open</td></tr>
-<tr><td class="n">₹28 LPA</td><td class="n">≈ ₹1,61,300</td><td class="n">+58%</td><td><span class="pill m">stretch</span> reachable if two offers compete</td></tr>
+<tr><td class="n">₹16 LPA</td><td class="n">≈ ₹1,00,100</td><td class="n">0%</td><td><span class="pill r">reject</span> a thirty percent hike on paper that pays the same</td></tr>
+<tr><td class="n">₹18 LPA</td><td class="n">≈ ₹1,11,200</td><td class="n">+11%</td><td><span class="pill r">reject</span> less than staying put and taking an appraisal</td></tr>
+<tr><td class="n">₹20 LPA</td><td class="n">≈ ₹1,22,200</td><td class="n">+22%</td><td><span class="pill y">floor</span> only for a company you badly want</td></tr>
+<tr class="hi"><td class="n">₹22 LPA</td><td class="n">≈ ₹1,32,600</td><td class="n">+33%</td><td><span class="pill m">accept</span> a real move</td></tr>
+<tr class="hi"><td class="n">₹24 LPA</td><td class="n">≈ ₹1,43,000</td><td class="n">+43%</td><td><span class="pill m">target</span> say this number out loud</td></tr>
+<tr><td class="n">₹26 LPA</td><td class="n">≈ ₹1,52,900</td><td class="n">+53%</td><td><span class="pill m">anchor</span> where you open</td></tr>
+<tr><td class="n">₹28 LPA</td><td class="n">≈ ₹1,61,300</td><td class="n">+61%</td><td><span class="pill m">stretch</span> reachable if two offers compete</td></tr>
 </tbody></table></div>
-<p style="font-size:.88rem;color:var(--pencil)">Modelled on a standard Bangalore structure: 10% variable, basic at 40% of fixed, employer and employee PF at 12% of basic, gratuity accrual, new tax regime with the ₹75,000 standard deduction. <b>If an offer is fully fixed with no variable, treat it as roughly one band higher</b> — a fully fixed ₹22 lakh behaves like ₹24 lakh here. Indicative, not exact; your real number depends on the specific structure.</p>`,
+<p style="font-size:.88rem;color:var(--pencil)">Modelled on a standard Bangalore structure: 10% variable, basic at 40% of fixed, employer and employee PF at 12% of basic, gratuity accrual, new tax regime with the ₹75,000 standard deduction. <b>If an offer is fully fixed with no variable, treat it as roughly one band higher</b> — a fully fixed ₹22 lakh behaves like ₹24 lakh here. The middle column is the one to reuse: it does not depend on the example at all. Divide it by your own monthly in-hand and you have your version of the third column. Indicative, not exact; your real number depends on the specific structure.</p>`,
 after:`<div class="cards">
-<div class="card g"><h4>Anchor · ₹26 lakh</h4><p>The first number you say. Never open at what you would accept.</p></div>
-<div class="card"><h4>Target · ₹24 lakh</h4><p>A forty percent real increase. Defensible for six years with production architecture ownership.</p></div>
-<div class="card r"><h4>Walk away · ₹20 lakh</h4><p>Below this you work harder in a more expensive city for the same money. Bangalore rent eats the difference.</p></div>
-</div>`
+<div class="card g"><h4>Anchor · ₹26 lakh</h4><p>The first number you say — about half again on the example's monthly in-hand. Never open at what you would accept.</p></div>
+<div class="card"><h4>Target · ₹24 lakh</h4><p>Around forty percent more in hand. At six years with production architecture ownership that is defensible without flinching.</p></div>
+<div class="card r"><h4>Walk away · ₹20 lakh</h4><p>Around twenty percent. Below this you work harder in a more expensive city for the same money; Bangalore rent eats the difference.</p></div>
+</div>
+<p>Those three are the example's numbers, not yours. Derive your own the same way and you will not have to think about it in the room: <b>walk away at about twenty percent more monthly in-hand, target forty, open at fifty.</b> The percentages are the part that travels.</p>`
 },
 {
 q:'What band should you expect from each type of company?',
@@ -3163,7 +3164,7 @@ test:'Where to spend your week.',
 a:`<div class="table-scroll"><table>
 <thead><tr><th>Type</th><th>Realistic for you</th><th>Read</th></tr></thead>
 <tbody>
-<tr><td><b>Service &amp; consulting</b><br><span style="font-size:.85rem;color:var(--pencil)">TCS, Infosys, Cognizant, LTIMindtree, Mphasis, Nagarro</span></td><td class="n">₹15–19 LPA</td><td><span class="pill r">mostly below your floor</span> The easiest walk-ins and the worst economics for you specifically, because your zero-deduction package is already worth more than their structure. Practice and safety net, not a plan. Nagarro and Mphasis at the top of their band are the only realistic ones.</td></tr>
+<tr><td><b>Service &amp; consulting</b><br><span style="font-size:.85rem;color:var(--pencil)">TCS, Infosys, Cognizant, LTIMindtree, Mphasis, Nagarro</span></td><td class="n">₹15–19 LPA</td><td><span class="pill r">mostly below your floor</span> The easiest walk-ins and the worst economics for anyone already on a clean fixed package, because a zero-deduction salary is worth more than their structure at the same headline. Practice and safety net, not a plan. Nagarro and Mphasis at the top of their band are the only realistic ones.</td></tr>
 <tr><td><b>Agencies &amp; studios</b></td><td class="n">₹16–21 LPA</td><td><span class="pill y">borderline</span> Fast to close, two rounds, and your client-ownership story is their exact problem. Push hard for fully fixed here — many can do it, and that is worth a whole band.</td></tr>
 <tr class="hi"><td><b>Series A–C product startups</b></td><td class="n">₹20–28 LPA</td><td><span class="pill m">your best market</span> They pay for exactly what you have: someone who takes an empty repo to production and stays for the reliability. Harder loop, better money.</td></tr>
 <tr class="hi"><td><b>Mid-size product &amp; SaaS</b><br><span style="font-size:.85rem;color:var(--pencil)">Freshworks, Zoho, Chargebee, Postman tier</span></td><td class="n">₹22–30 LPA</td><td><span class="pill m">highest ceiling</span> Hardest loop — real DSA and a design round with a bar. Worth the seven-day prep. Do not walk into these cold on day one.</td></tr>
@@ -3172,8 +3173,8 @@ a:`<div class="table-scroll"><table>
 {
 q:'What are your salary expectations?',
 test:'Whether you anchor or get anchored.',
-say:`<p>My current fixed is ₹12.2 lakh, and the important part is that it is entirely fixed and entirely in hand — no variable, no PF deduction, so I take home ₹1,02,000 every month. That is why I compare offers on monthly in-hand rather than CTC. For this role I am looking at ₹26 lakh, and I am flexible on how it is structured.</p>`,
-a:`<p>Then <b>stop talking.</b> The silence after a number is uncomfortable and the person who fills it loses. Practise this literally: say the number, close your mouth, and count to ten if you have to.</p>`,
+say:`<p>My current fixed is ₹12 lakh, and the important part is that it is entirely fixed and entirely in hand — no variable, no PF deduction, so I take home ₹1,00,000 every month. That is why I compare offers on monthly in-hand rather than CTC. For this role I am looking at ₹26 lakh, and I am flexible on how it is structured.</p>`,
+a:`<p>Swap in your own two numbers — what you actually take home, and the target you derived from the table above — and then <b>stop talking.</b> The silence after a number is uncomfortable and the person who fills it loses. Practise this literally: say the number, close your mouth, and count to ten if you have to.</p>`,
 trap:`<p>Softening the number in the same breath — "₹26 lakh, but I'm negotiable, obviously it depends." You have just told them the real number is lower and invited them to find it. Be flexible on <em>structure</em>, out loud; be silent about flexibility on the total.</p>`,
 fu:['Is that fixed or total?','What is driving that number?','Can you share your current payslip?'],
 after:`<div class="ladder">
@@ -3187,7 +3188,7 @@ after:`<div class="ladder">
 <div class="rung">
 <span class="lv">5–7 years</span>
 <p class="bar"><b>The bar:</b> ask their band first, then a specific number with its structure attached.</p>
-<p class="script">&ldquo;Before I give you a number — what is the band you have budgeted for this role? … Right. I am at ₹12.2 lakh fixed today and I am looking for ₹26 lakh fixed, with whatever variable sits on top of that. That is based on what full-stack roles at this scope are paying in Bangalore now, rather than on a percentage of my current number, and I am firm on the fixed component because that is what my planning actually runs on.&rdquo;</p>
+<p class="script">&ldquo;Before I give you a number — what is the band you have budgeted for this role? … Right. I am at ₹12 lakh fixed today and I am looking for ₹26 lakh fixed, with whatever variable sits on top of that. That is based on what full-stack roles at this scope are paying in Bangalore now, rather than on a percentage of my current number, and I am firm on the fixed component because that is what my planning actually runs on.&rdquo;</p>
 <p class="why"><b>Why it lands:</b> Asking their band first is the whole play — if their range starts above your number, speaking first costs you the difference permanently. Saying &ldquo;fixed&rdquo; out loud stops the offer coming back as a headline CTC padded with variable, a joining bonus and a retention component.</p>
 </div>
 <div class="rung">
@@ -3209,7 +3210,7 @@ fu:['We cannot share bands.','Would you consider ₹X?']
 {
 q:'They push back: "that is a very high expectation for your experience."',
 test:'Whether you can justify a number with reasoning rather than defend it with feeling.',
-say:`<p>I understand, and I would rather explain the reasoning than just hold a number. Because I have no deductions today, an ₹18 lakh offer with a variable component and PF actually lands me around ₹1.11 lakh a month — that is a nine percent increase for relocating to a more expensive city, which does not work. At ₹24 lakh the move makes sense for both of us. If the band caps below that, I would genuinely rather know now.</p>`,
+say:`<p>I understand, and I would rather explain the reasoning than just hold a number. Because I have no deductions today, an ₹18 lakh offer with a variable component and PF actually lands me around ₹1.11 lakh a month — that is an eleven percent increase for relocating to a more expensive city, which does not work. At ₹24 lakh the move makes sense for both of us. If the band caps below that, I would genuinely rather know now.</p>`,
 a:`<p>This works because it moves the conversation from "what you want" to "arithmetic we can both check". It is very hard to argue with, and it does not require them to agree you are worth more — only that the maths is the maths.</p>`,
 fu:['Where did you get those numbers?','We could look at a joining bonus instead.']
 },
@@ -3238,7 +3239,7 @@ note:`<p><b>The tactic worth more than every script on this page:</b> get two of
 q:'Does the number change if the job is in Pune, Hyderabad or NCR?',
 test:'Whether you know what you are anchoring to. Every figure in this round is a Bangalore figure.',
 a:`<p>Yes, and less than people think. The band follows the company, not the city — a Series B product company pays close to its own band wherever its office is. What moves is the <em>floor</em>: the same title at the same size of company sits a little lower outside Bangalore, and the number of companies bidding for you drops a lot.</p>
-<p>Rough multipliers on the ₹26 lakh you are asking in Bangalore, for the same kind of company:</p>`,
+<p>Rough multipliers on a ₹26 lakh ask in Bangalore, for the same kind of company:</p>`,
 after:`<div class="table-scroll"><table>
 <thead><tr><th>City</th><th>Same role, roughly</th><th>What actually differs</th></tr></thead>
 <tbody>
@@ -3260,7 +3261,7 @@ test:'Nothing — they are not interviewing you any more. But this is where a re
 a:`<p>It usually arrives within a day of your resignation, it is usually 20–40% up, and it usually comes with a sentence about how much they value you. Take it seriously enough to think for a night, and then know what you are looking at.</p>
 <ul>
 <li><b>Ask why the number was available yesterday and was not offered.</b> Not out loud, necessarily. But if they could pay it all along and did not, that is the answer to your original question about whether to leave.</li>
-<li><b>The structural reason you are leaving does not change.</b> Yours is that a client studio ends in handover and you want to own a product for years. A raise does not turn a studio into a product company.</li>
+<li><b>The structural reason you are leaving does not change.</b> If it is that a client studio ends in handover and you want to own a product for years, a raise does not turn a studio into a product company. Write your own version of that sentence down before the counter arrives, because it is much harder to find under pressure.</li>
 <li><b>You are now a flight risk on record.</b> In a lot of places the counter buys them the time to plan around you, and the next cycle is quieter than it should be.</li>
 <li><b>Consider it seriously only if what changes is the work</b> — a different team, a product they are actually keeping, a scope they will put in writing. Money alone puts you here again in eight months, and you will have burned a process to get it.</li>
 </ul>`,
@@ -3384,7 +3385,7 @@ a:`<p>Put both on the same footing before you feel anything about them. Four num
 <li><b>Year-one cash</b> — base plus sign-on plus whatever vests in year one, after the perquisite tax.</li>
 <li><b>Year-four run rate</b> — base plus a full year of vesting, assuming the price does nothing.</li>
 <li><b>Guaranteed</b> — the part that arrives even if the stock halves and you leave in eighteen months.</li>
-<li><b>Monthly in-hand</b> — the number your life runs on. Yours is currently ₹1,02,000 with no deductions, which is the comparison you keep making in <a href="#r12">R12</a>, and it stays the right one.</li>
+<li><b>Monthly in-hand</b> — the number your life runs on, and the comparison <a href="#r12">R12</a> keeps making. It stays the right one at this level too, even when most of the package is paper.</li>
 </ul>
 <p>A ₹32 lakh fully-fixed startup offer and a ₹45 lakh big-company package can be the same money in year one and very different money in year four. Neither is automatically better; they are different bets, and the deciding factor is usually not the money at all — it is whether you want the scope of a small company or the levelling ladder of a large one.</p>`,
 trap:`<p>Negotiating the base at a big company as if it were a startup. Bands are narrow and enforced, and base has the least room in it. If you are pushing on something, push in this order: <b>level</b> first, then <b>sign-on</b>, then <b>equity</b>, and base last. The first one is worth more than the other three together.</p>`,
@@ -4211,7 +4212,7 @@ test:'Sequence. Most people revise what they already know and skip what they wil
 a:`<div class="table-scroll"><table>
 <thead><tr><th>Day</th><th>Focus</th><th>The actual work</th></tr></thead>
 <tbody>
-<tr><td class="n">1</td><td>Your own story</td><td>Write real answers to all ten metric questions in R10. Practise the two-minute GetDandy walkthrough out loud five times. Draw its architecture on paper three times from memory. Fix the two resume lines in the scouting report.</td></tr>
+<tr><td class="n">1</td><td>Your own story</td><td>Write real answers to all ten metric questions in R10. Practise the two-minute front-office platform walkthrough out loud five times. Draw its architecture on paper three times from memory. Fix the two resume lines in the scouting report.</td></tr>
 <tr><td class="n">2</td><td>JavaScript &amp; TypeScript</td><td>R3 and R3·TS end to end, out loud. Write debounce, throttle, <code>Promise.all</code> and the promise pool from scratch without looking. Make the event-loop ordering automatic.</td></tr>
 <tr><td class="n">3</td><td>React &amp; Next.js</td><td>R4. Prepare the Redux→Zustand defence properly — it is the most likely deep question in your loop. Re-read the Next 15/16 caching change until you can explain why the default flipped.</td></tr>
 <tr><td class="n">4</td><td>Backend &amp; data</td><td>R5 and R6. Rehearse the no-message-broker answer until it sounds like judgement rather than apology. Write the five SQL queries by hand.</td></tr>
