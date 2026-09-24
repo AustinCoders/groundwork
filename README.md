@@ -35,6 +35,12 @@ in `package.json`, which keeps 16.5 MB out of every deployment; `node scripts/co
 --all` writes them into `public/wasm/` instead, for self-hosting with `NEXT_PUBLIC_PYODIDE_BASE` and
 `NEXT_PUBLIC_SQL_JS_BASE`.
 
+## Error tracking
+
+Client and server errors go to Sentry when `NEXT_PUBLIC_SENTRY_DSN` is set, which also opens the
+Content-Security-Policy to that host. Without it the SDK is never imported — it compiles into a chunk
+no page loads — and errors fall back to `/api/client-error`, which writes them to the server log.
+
 ## Checks
 
 ```bash

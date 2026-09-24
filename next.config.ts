@@ -1,12 +1,17 @@
 import type { NextConfig } from "next";
 import { CANONICAL_ORIGIN, LEGACY_HOSTS } from "./lib/site";
 import { wasmOrigins } from "./lib/wasmAssets";
+import { sentryOrigin } from "./lib/errorTracking";
 
 // Pyodide and sql.js are fetched from a CDN rather than shipped in the
 // deployment, so their origin has to be allowed for both the module scripts and
 // the .wasm and data files those scripts then fetch. Self-hosting them again
 // (NEXT_PUBLIC_PYODIDE_BASE) narrows this back to 'self' on its own.
 const runtimeOrigins = wasmOrigins().join(" ");
+
+// Empty unless NEXT_PUBLIC_SENTRY_DSN is set, so a deployment without error
+// tracking does not advertise a host it never talks to.
+const reportingOrigin = sentryOrigin() || "";
 
 const csp = [
   "default-src 'self'",
@@ -15,7 +20,7 @@ const csp = [
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob:",
   "media-src 'self' blob:",
-  `connect-src 'self' ${runtimeOrigins}`.trim(),
+  `connect-src 'self' ${runtimeOrigins} ${reportingOrigin}`.trim().replace(/\s+/g, " "),
   "frame-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",

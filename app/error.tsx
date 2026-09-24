@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { reportError } from "@/lib/errorTracking";
 import { Shell } from "@/components/Shell";
 import { Crumbs } from "@/components/Crumbs";
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
     console.error("Reader crashed:", error);
+    reportError(error, { boundary: "reader", digest: error.digest || "" });
   }, [error]);
 
   return (
