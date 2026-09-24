@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { COMPETENCY_LABEL } from "@/app/mock/Lobby";
 import {
   competencyProfile,
@@ -11,6 +12,7 @@ import {
   verdictFor,
   type Mark,
 } from "@/lib/mock/scoring";
+import { answerSeconds, debriefText, isRushed, pacing } from "@/lib/mock/pacing";
 import { stageResults, type Session } from "@/lib/mock/session";
 import type { Competency, StageId, StageInfo, TalkItem } from "@/lib/mock/types";
 import { formatClock } from "@/lib/mockSession";
@@ -83,6 +85,18 @@ export function Scorecard({
   const timedOut = session.questions.filter((q) => q.timedOut).length;
   const skipped = session.questions.filter((q) => q.skipped).length;
   const kind = session.mode === "loop" ? "Loop" : session.mode === "retry" ? "Retry round" : "Round";
+  const pace = pacing(session);
+  const [copied, setCopied] = useState<"idle" | "done" | "failed">("idle");
+
+  async function copyDebrief() {
+    try {
+      await navigator.clipboard.writeText(debriefText(session, title));
+      setCopied("done");
+    } catch {
+      setCopied("failed");
+    }
+    window.setTimeout(() => setCopied("idle"), 2400);
+  }
 
   return (
     <>
@@ -104,9 +118,12 @@ export function Scorecard({
               {timedOut > 0 && <span>{timedOut} over time</span>}
               {skipped > 0 && <span>{skipped} skipped</span>}
             </div>
-            {decision.reasons.length > 0 && (
+            {decision.reasons.length + pace.notes.length > 0 && (
               <ul className={styles.reasons}>
                 {decision.reasons.map((r) => (
+                  <li key={r}>{r}</li>
+                ))}
+                {pace.notes.map((r) => (
                   <li key={r}>{r}</li>
                 ))}
               </ul>
@@ -223,7 +240,9 @@ export function Scorecard({
                   <div className={styles.qBody}>
                     <span className={styles.hint}>
                       {title(q.stage)}
+                      {answerSeconds(q) !== null ? ` · answered in ${formatClock(answerSeconds(q)!)}` : ""}
                       {q.timedOut ? " · over time" : ""}
+                      {isRushed(q, session) ? " · too quick to be a full answer" : ""}
                     </span>
                     {q.notes.trim() && <div className={styles.yours}>{q.notes.trim()}</div>}
                     {talk && score !== null && !q.skipped && (
@@ -267,6 +286,13 @@ export function Scorecard({
           <button type="button" className="btn btn--ghost" onClick={onNew}>
             Plan something else
           </button>
+          <span className={styles.spacer} />
+          <button type="button" className="btn" onClick={copyDebrief}>
+            {copied === "done" ? "Copied ✓" : copied === "failed" ? "Could not copy" : "Copy the debrief"}
+          </button>
+          <span className="visually-hidden" aria-live="polite">
+            {copied === "done" ? "Debrief copied to the clipboard" : ""}
+          </span>
         </div>
       </section>
     </>

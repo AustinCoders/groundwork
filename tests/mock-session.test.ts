@@ -11,6 +11,7 @@ import {
   type Session,
 } from "@/lib/mock/session";
 import type { LoopConfig, MockItem, StageId } from "@/lib/mock/types";
+import { debriefText, pacing } from "@/lib/mock/pacing";
 
 const config: LoopConfig = { role: "fullstack", seniority: "mid", company: "product", intensity: "quick" };
 const plan = planLoop(config, stageHotFor());
@@ -166,5 +167,48 @@ describe("resuming", () => {
   it("does nothing on a brief, where no clock is running", () => {
     const s = start();
     expect(reduce(s, { type: "resume", at: 5 })).toBe(s);
+  });
+});
+
+describe("pacing and the text debrief", () => {
+  function answeredIn(seconds: number): Session {
+    const fixed = stageBank("behaviour").slice(0, 3);
+    let s = buildSession({ id: "p", mode: "drill", config, plan, banks, seed: 1, now: 0, fixed });
+    let t = 1_000;
+    for (let i = 0; i < 3; i++) {
+      if (s.step === "brief") s = reduce(s, { type: "enter", at: t });
+      const opened = s.questions[s.cursor].startedAt ?? t;
+      s = reduce(s, { type: "answered", at: opened + seconds * 1000, timedOut: false });
+      if (s.step === "followup") s = reduce(s, { type: "followup-answered" });
+      for (const c of ["testing", "substance", "trap", "followup", "delivery"] as const) {
+        s = reduce(s, { type: "mark", criterion: c, mark: 0 });
+      }
+      t = opened + seconds * 1000 + 10;
+      s = reduce(s, { type: "next", at: t });
+    }
+    return s;
+  }
+
+  it("flags answers that were too quick to be real", () => {
+    const p = pacing(answeredIn(15));
+    expect(p.timed).toBe(3);
+    expect(p.medianSeconds).toBe(15);
+    expect(p.rushed).toBe(3);
+    expect(p.notes.join(" ")).toMatch(/under 45 seconds/);
+  });
+
+  it("leaves a paced answer alone", () => {
+    const p = pacing(answeredIn(150));
+    expect(p.rushed).toBe(0);
+    expect(p.notes.join(" ")).not.toMatch(/under 45 seconds/);
+  });
+
+  it("writes a debrief that names the verdict, every round and what to work on", () => {
+    const text = debriefText(answeredIn(90), (id) => id);
+    expect(text).toMatch(/^Groundwork mock interview/);
+    expect(text).toMatch(/Verdict: No hire/);
+    expect(text).toMatch(/behaviour/);
+    expect(text).toMatch(/Work on these/);
+    expect(text).not.toMatch(/<[a-z]/);
   });
 });
