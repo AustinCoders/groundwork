@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import { ReviewView, type ReviewChapter } from "@/app/review/ReviewView";
 import { chapterMetas, notesHref, topics } from "@/lib/content";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "Review — spaced repetition — notes",
+// Which chapters come up depends on what you have read, which only your browser
+// knows.
+export const metadata: Metadata = pageMetadata({
+  title: "Review",
   description: "Chapters you read a while ago, resurfaced before you forget them.",
-};
+  path: "/review",
+  index: false,
+});
 
 export default function ReviewPage() {
   const chapters: ReviewChapter[] = topics()

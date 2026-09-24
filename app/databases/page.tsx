@@ -1,5 +1,12 @@
-import { TopicCoverPage } from "@/components/reader/topicPages";
+import type { Metadata } from "next";
+import { TopicCoverPage, topicCoverMetadata } from "@/components/reader/topicPages";
+
+const TOPIC = "databases";
+
+export function generateMetadata(): Metadata {
+  return topicCoverMetadata(TOPIC);
+}
 
 export default function Page() {
-  return <TopicCoverPage topicId="databases" />;
+  return <TopicCoverPage topicId={TOPIC} />;
 }

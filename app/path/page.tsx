@@ -2,12 +2,18 @@ import type { Metadata } from "next";
 import PathClient, { type ExerciseLink } from "@/app/path/PathClient";
 import { chapterMetas, chapter as findChapter, exercises, levels as levelsFor, topics } from "@/lib/content";
 import { byChapterId } from "@/lib/levelRows";
+import { pageMetadata } from "@/lib/metadata";
 import type { ChapterMeta } from "@/content/types";
 
-export const metadata: Metadata = {
-  title: "Your reading path — notes",
-  description: "The order to read a topic in, with progress you can tick off.",
-};
+// The path itself comes from ?topic= and ?level= on the client, so there is one
+// page here and nothing for a search result to land on usefully.
+export const metadata: Metadata = pageMetadata({
+  title: "Your reading path",
+  description:
+    "The order to read a topic in, at your level, with the practice for each chapter and progress you can tick off.",
+  path: "/path",
+  index: false,
+});
 
 export default function PathPage() {
   const chapterById: Record<string, ChapterMeta> = {};

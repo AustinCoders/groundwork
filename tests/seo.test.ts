@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import sitemap from "@/app/sitemap";
-import { topicChapterMetadata } from "@/components/reader/topicPages";
+import { topicChapterMetadata, topicCoverMetadata } from "@/components/reader/topicPages";
 import { chapters, chapterHref, notesHref, topics } from "@/lib/content";
 import { CANONICAL_ORIGIN, SITE_URL } from "@/lib/site";
 import { navHref } from "@/lib/topicNav";
@@ -73,6 +73,37 @@ describe("chapter metadata", () => {
         const canonical = topicChapterMetadata(t.id, ch.id).alternates?.canonical;
         expect(canonical, `${t.id}/${ch.id} has no canonical`).toBe(`${notesHref(t.id)}/${ch.id}`);
       }
+    }
+  });
+});
+
+describe("topic cover metadata", () => {
+  it("points every cover at its own canonical", () => {
+    for (const t of readyTopics) {
+      expect(topicCoverMetadata(t.id).alternates?.canonical, `${t.id} cover has the wrong canonical`).toBe(
+        notesHref(t.id)
+      );
+    }
+  });
+
+  it("gives every cover its own Open Graph title and url", () => {
+    const seen = new Set<string>();
+    for (const t of readyTopics) {
+      const og = topicCoverMetadata(t.id).openGraph as { title?: string; url?: string } | undefined;
+      expect(og?.url, `${t.id} cover has no og:url of its own`).toBe(notesHref(t.id));
+      expect(og?.title, `${t.id} cover has no og:title`).toBeTruthy();
+      expect(seen.has(String(og?.title)), `${t.id} shares an og:title with another topic`).toBe(false);
+      seen.add(String(og?.title));
+    }
+  });
+
+  it("asks crawlers to skip a topic that is still an outline", () => {
+    for (const t of readyTopics) {
+      const robots = topicCoverMetadata(t.id).robots as { index?: boolean } | undefined;
+      const written = chapters(t.id).filter((ch) => ch.ready).length;
+      expect(robots?.index === false, `${t.id} cover robots do not match its ${written} written chapters`).toBe(
+        written === 0
+      );
     }
   });
 });

@@ -16,7 +16,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: `${SITE_NAME} — the whole map`,
-    template: "%s",
+    // Every page supplies its own short name; the site name is appended here so
+    // a search result says which site it came from without each page repeating it.
+    template: `%s · ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,

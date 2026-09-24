@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { ProblemsView, type ProblemRow, type CategoryGroup } from "@/app/problems/ProblemsView";
 import { chapterMetas, exercises, notesHref, topics } from "@/lib/content";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "All problems — practice",
-  description: "Every runnable interview problem on the site, grouped by the pattern it teaches.",
-};
+export function generateMetadata(): Metadata {
+  return pageMetadata({
+    title: "All problems",
+    description: `${exercises().length} runnable interview problems, grouped by the pattern each one teaches. Write the solution in the browser and check it against real tests.`,
+    path: "/problems",
+  });
+}
 
 export default function ProblemsPage() {
   const all = exercises();

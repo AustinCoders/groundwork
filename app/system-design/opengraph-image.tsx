@@ -1,8 +1,8 @@
 import { OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og";
 import { topicOgAlt, topicOgImage } from "@/lib/topicOg";
 
-const TOPIC = "dsa";
-const HEADLINE = "Every classic interview pattern, two pointers to segment trees";
+const TOPIC = "system-design";
+const HEADLINE = "How the pieces fit once one box is not enough";
 
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;

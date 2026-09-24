@@ -1,5 +1,12 @@
-import { TopicCoverPage } from "@/components/reader/topicPages";
+import type { Metadata } from "next";
+import { TopicCoverPage, topicCoverMetadata } from "@/components/reader/topicPages";
+
+const TOPIC = "cloud-devops";
+
+export function generateMetadata(): Metadata {
+  return topicCoverMetadata(TOPIC);
+}
 
 export default function Page() {
-  return <TopicCoverPage topicId="cloud-devops" />;
+  return <TopicCoverPage topicId={TOPIC} />;
 }

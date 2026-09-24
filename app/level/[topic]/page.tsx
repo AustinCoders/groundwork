@@ -13,6 +13,7 @@ import {
   totalTime,
 } from "@/lib/content";
 import { byChapterId } from "@/lib/levelRows";
+import { pageMetadata } from "@/lib/metadata";
 
 // One prerendered page per topic, so choosing a level is a CDN hit rather than
 // a server render on every visit.
@@ -26,10 +27,13 @@ export async function generateMetadata({ params }: { params: Promise<{ topic: st
   const { topic: topicId } = await params;
   const topic = findTopic(topicId);
   if (!topic) return {};
-  return {
+  const written = chapterMetas(topic.id).filter((ch) => ch.ready).length;
+  return pageMetadata({
     title: `${topic.name} — pick your level`,
-    alternates: { canonical: `/level/${topic.id}` },
-  };
+    description: `Beginner, intermediate or advanced? Pick where you are with ${topic.name} and get a reading path through the ${written} chapters that matter at that level.`,
+    path: `/level/${topic.id}`,
+    index: written > 0,
+  });
 }
 
 export default async function LevelPage({ params }: { params: Promise<{ topic: string }> }) {
