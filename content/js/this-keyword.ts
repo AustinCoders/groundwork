@@ -174,6 +174,24 @@ whoAmI();          <span class="c">// this is undefined (strict) — nobody to b
 })();
 </script>
 
+<h4>Dry run: the same describe() function, six call sites</h4>
+<table>
+  <tr><th>Call</th><th>Rule that fires</th><th><code>this</code> becomes</th><th>Result</th></tr>
+  <tr><td><code>user.describe()</code></td><td>3 — implicit binding</td><td><code>user</code></td><td><code>"ana"</code></td></tr>
+  <tr><td><code>bare()</code> (describe pulled off user first)</td><td>4 — default binding</td><td><code>undefined</code></td><td><code>TypeError</code>: cannot read <code>name</code> of undefined</td></tr>
+  <tr><td><code>describe.call({ name: "called" })</code></td><td>2 — explicit binding</td><td><code>{ name: "called" }</code></td><td><code>"called"</code></td></tr>
+  <tr><td><code>describe.bind(user)()</code></td><td>2 — explicit binding</td><td><code>user</code>, permanently</td><td><code>"ana"</code></td></tr>
+  <tr><td><code>new Tag()</code></td><td>1 — new binding (wins)</td><td>the brand-new object</td><td><code>"new"</code></td></tr>
+  <tr><td><code>setTimeout(user.describe, 0)</code></td><td>4 — default binding</td><td><code>undefined</code></td><td><code>TypeError</code> again</td></tr>
+</table>
+<p class="sub">
+  Same function, five different outcomes — nothing about
+  <code>describe</code>'s own code ever changes. The two default-binding
+  rows are the same bug wearing two different outfits: both strip the dot
+  off before the call happens, one by assignment, one by passing the
+  method as a callback.
+</p>
+
 <h3>The four rules, ranked</h3>
 <p>
   Four rules can set <code>this</code>, and when more than one could
@@ -419,5 +437,16 @@ button.addEventListener("click", () =&gt; {
   <p>
     "<code>this</code> is not where a function was written but how it was called: <code>new</code>, explicit <code>bind</code>/<code>call</code>/<code>apply</code>, a method call and a plain call decide it in that order of precedence, while arrow functions have no <code>this</code> of their own and inherit it."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Rank the four binding rules from memory and say which one wins when more than one could apply.</li>
+    <li>Explain why <code>const fn = obj.method; fn();</code> loses <code>this</code>, and name the fix you'd reach for first.</li>
+    <li>Say why an arrow function should never be used as an object method, in terms of where it looks up <code>this</code>.</li>
+    <li>Trace <code>this</code> through <code>.call</code>, <code>.apply</code>, and <code>.bind</code> on the same function, and say what makes <code>.bind</code> different from the other two.</li>
+    <li>Explain why <code>event.currentTarget</code> is a safer choice than <code>this</code> inside an event handler.</li>
+  </ul>
 </div>`,
 };

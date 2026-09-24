@@ -192,6 +192,25 @@ async function callWithRetry(fn, { attempts = 3, budget } = {}) {
   user, you have built a faster failure, not a fault-tolerant system.
 </div>
 
+<h4>Dry run: a circuit breaker tripping, cooling down, and probing back open</h4>
+<p class="sub">Trip threshold &gt;50% errors over a rolling 10s window, minimum 20 calls; 5s cooldown; 1 probe in half-open.</p>
+<table>
+  <tr><th>Time</th><th>Event</th><th>Rolling window (calls, errors)</th><th>Error rate</th><th>Breaker state</th></tr>
+  <tr><td>t = 0-10s</td><td>Dependency healthy</td><td>20 calls, 3 errors</td><td>15%</td><td>Closed — calls pass through</td></tr>
+  <tr><td>t = 10-20s</td><td>Dependency starts degrading</td><td>20 calls, 14 errors</td><td>70%</td><td>Exceeds the 50% threshold on a window of ≥20 calls → trips <b>Open</b> at t=20s</td></tr>
+  <tr><td>t = 20-25s</td><td>5 calls arrive during cooldown</td><td>n/a — not sent</td><td>n/a</td><td>Open: all 5 fail instantly, no thread held, no network call made</td></tr>
+  <tr><td>t = 25s</td><td>Cooldown elapses</td><td>n/a</td><td>n/a</td><td>Transitions to <b>Half-open</b>, admits exactly 1 probe call</td></tr>
+  <tr><td>t = 25.1s</td><td>Probe succeeds</td><td>reset</td><td>0%</td><td>Closes — normal traffic resumes</td></tr>
+  <tr><td>t = 25.1s (alternate)</td><td>Probe fails instead</td><td>reset</td><td>100% of 1</td><td>Straight back to <b>Open</b>, cooldown restarts at 5s</td></tr>
+</table>
+<p class="sub">
+  The load-bearing detail is in the two rows at t=20-25s: the breaker frees
+  every caller's thread in microseconds instead of letting five more calls
+  each burn a full timeout against a dependency that was already failing 70%
+  of the time — that gap is the entire value of "fail instantly" over "fail
+  slowly."
+</p>
+
 <h3>Bulkheads and resource isolation</h3>
 <p>
   Named after ship compartments: partition your resources so one flooded
@@ -343,5 +362,16 @@ async function callWithRetry(fn, { attempts = 3, budget } = {}) {
   <li>Distinguish from replication and failover: those give you redundancy for <em>component</em> failure. This chapter is about <em>overload and correlated</em> failure, where redundancy alone makes things worse because every replica is failing for the same reason.</li>
   <li>Whenever you propose a retry, immediately say how the operation is made idempotent. Retries without idempotency are duplicate charges, and interviewers notice both when you say it and when you don't.</li>
   <li>Close by naming the degraded mode. "If the whole recommendation tier is gone, here is exactly what the user sees" is the answer that demonstrates you have run something in production.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Compute, for a service with 10 dependencies each at 99.9% availability, the resulting availability — and say what breaks that multiplication.</li>
+    <li>Walk through the circuit breaker dry run above and explain why the two calls during cooldown fail instantly instead of timing out.</li>
+    <li>Explain metastable failure in your own words, and name the two ways out of it.</li>
+    <li>Say why a readiness check that pings a downstream dependency can take down an entire healthy fleet, and how splitting liveness from readiness fixes it.</li>
+    <li>For any retry you propose, state in the same breath how the operation is made idempotent.</li>
+  </ul>
+</div>`,
 };

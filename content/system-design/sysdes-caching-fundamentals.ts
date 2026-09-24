@@ -185,6 +185,24 @@ export const sysdesCachingFundamentals: Chapter = {
   time-based decay — you cannot store a true frequency for a billion keys, so
   you store something that ranks them correctly and costs one byte.
 </p>
+
+<h4>Dry run: an LRU cache, capacity 3, through five operations</h4>
+<table>
+  <tr><th>#</th><th>Operation</th><th>Result</th><th>Cache after (MRU → LRU)</th></tr>
+  <tr><td>1</td><td>GET a</td><td>miss — load, insert</td><td>[a]</td></tr>
+  <tr><td>2</td><td>GET b</td><td>miss — load, insert</td><td>[b, a]</td></tr>
+  <tr><td>3</td><td>GET c</td><td>miss — load, insert (cache now full)</td><td>[c, b, a]</td></tr>
+  <tr><td>4</td><td>GET a</td><td>hit — <code>a</code> is promoted to most-recently-used</td><td>[a, c, b]</td></tr>
+  <tr><td>5</td><td>GET d</td><td>miss — cache full, evict the LRU entry (<code>b</code>), insert <code>d</code></td><td>[d, a, c]</td></tr>
+</table>
+<p class="sub">
+  Step 5 is the whole policy in one row: <code>b</code> was the least
+  recently touched, not the oldest — <code>a</code> was inserted before it
+  but survives because a hit re-promotes it. LRU tracks recency of access,
+  not age, which is exactly why it breaks on a single cold scan: a query that
+  touches a million rows once each promotes all of them ahead of your
+  actually-hot keys.
+</p>
 <div class="warn">
   <span class="ttl">⚠ Running a datastore under an eviction policy</span>
   Sessions, idempotency keys, rate-limit state and distributed locks are
@@ -416,5 +434,16 @@ function coalesce(key, loader) {
   <li>Distinguish it from a <b>CDN</b> question: if the payload is large, static and geographically distributed, the win is bandwidth and RTT at the edge, not query offload. Different layer, different invalidation story, same bet.</li>
   <li>Hot-key language ("a celebrity posts", "a flash sale", "one video goes viral") is the interviewer explicitly asking for stampede handling and hot-key mitigation — coalescing, a per-instance L1 in front of the shared tier, or key splitting.</li>
   <li>Pitfall: caching writes. If the prompt is write-heavy or the data is read once and never again, a cache adds latency and memory cost for nothing. Say "I would not cache this, and here's why" at least once during a loop — knowing where a cache does not belong reads as strongly as knowing where it does.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Can you explain why <code>if (hit)</code> instead of <code>if (hit !== null)</code> is a real bug in cache-aside code?</li>
+    <li>Can you compute how database load changes when hit rate drops from 99% to 90%, and explain why you should reason in miss rate, not hit rate?</li>
+    <li>Can you name which invalidation pattern — TTL, delete-not-update, versioned keys — fits a given scenario, and why the others don't?</li>
+    <li>Can you compute what happens to your database when one node in a 5-node, 99%-hit-rate Redis cluster dies?</li>
+    <li>Can you trace an LRU cache's contents through a short sequence of gets on a small, fixed-capacity cache?</li>
+  </ul>
+</div>`,
 };

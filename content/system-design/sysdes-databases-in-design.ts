@@ -47,6 +47,23 @@ export const sysdesDatabasesInDesign: Chapter = {
   system."
 </div>
 
+<h4>Dry run: the six questions applied to a chat app's message history</h4>
+<table>
+  <tr><th>Question</th><th>Applied to "last 50 messages in a conversation"</th><th>Conclusion</th></tr>
+  <tr><td>Do I know every query up front?</td><td>Yes — essentially one: fetch the most recent messages for one conversation id, always in the same order</td><td>Pushes non-relational</td></tr>
+  <tr><td>Do I need to combine entities at read time?</td><td>No — a message row is self-contained; the read never joins across conversations</td><td>Pushes non-relational</td></tr>
+  <tr><td>Do I need multi-row atomicity?</td><td>No — each message insert is independent; nothing needs two messages written together</td><td>Pushes non-relational</td></tr>
+  <tr><td>What is the write rate to one logical key?</td><td>A single busy group chat can exceed what one node comfortably absorbs, but the keyspace splits cleanly by conversation id</td><td>Pushes non-relational</td></tr>
+  <tr><td>Does the shape of the data vary per record?</td><td>No — sender, text, timestamp is a stable shape</td><td>Neutral — doesn't argue against either</td></tr>
+  <tr><td>How bad is stale or lost data?</td><td>A few seconds of replication lag is invisible; losing an acknowledged message is not, so writes still need a durable per-key acknowledgement</td><td>Rules out pure best-effort, but not non-relational — just requires a real write concern</td></tr>
+</table>
+<p class="sub">
+  Five of six questions point the same way, which is the signal: a
+  wide-column store keyed by <code>(conversation_id, bucket)</code>,
+  clustered by message id descending, matches every access pattern here
+  without paying for joins or multi-row transactions the workload never uses.
+</p>
+
 <h3>The families, and what each is genuinely good at</h3>
 <table>
   <tr><th>Family</th><th>Data model</th><th>Genuine strength</th><th>Reach for this when…</th></tr>
@@ -314,5 +331,16 @@ CREATE INDEX ON posts (author_id, created_at DESC);
   <li>If the prompt implies free-text search or analytics, propose a derived index fed from the source of truth, and be ready to explain how it stays in sync (change data capture, dual writes plus reconciliation, or a periodic rebuild)</li>
   <li>Any time you propose denormalization, name the write amplification and the repair path in the same breath — proposing it without them is the most common way to lose the data-modelling signal</li>
   <li>Distinguish "this table is a bottleneck" from "this database is a bottleneck": the first is solved with an index, a cache, or moving one table, and the first is far more often the truth</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Can you run the six access-pattern questions against a new data type before naming a store?</li>
+    <li>Can you explain why "NoSQL for scale" is a false dichotomy, with a concrete counterexample?</li>
+    <li>Can you name the three costs of denormalization (write amplification, update anomalies, growth) whenever you propose it?</li>
+    <li>Can you explain why composite index column order matters, using the (author_id, created_at) example?</li>
+    <li>Can you say what happens to a database facing 1,000 connections from a 50-server fleet, and how a pooler fixes it?</li>
+  </ul>
+</div>`,
 };

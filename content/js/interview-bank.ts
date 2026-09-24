@@ -174,6 +174,23 @@ export const interviewBank: Chapter = {
   like this is what builds recall under pressure.
 </p>
 
+<h4>Dry run: the first drill, traced line by line</h4>
+<table>
+  <tr><th>Line</th><th>What happens</th><th>Queue it lands in</th></tr>
+  <tr><td>console.log(1)</td><td>runs immediately — synchronous code always runs first</td><td>none — logs "1" right now</td></tr>
+  <tr><td>setTimeout(() =&gt; console.log(2))</td><td>callback is registered, execution continues past it</td><td>macrotask queue</td></tr>
+  <tr><td>Promise.resolve().then(() =&gt; console.log(3))</td><td>callback is registered, execution continues past it</td><td>microtask queue</td></tr>
+  <tr><td>console.log(4)</td><td>runs immediately — still the same synchronous pass</td><td>none — logs "4" right now</td></tr>
+  <tr><td>call stack empties</td><td>the entire microtask queue drains before anything else runs</td><td>console.log(3) fires — logs "3"</td></tr>
+  <tr><td>microtask queue empty</td><td>only now does a macrotask get a turn</td><td>console.log(2) fires — logs "2"</td></tr>
+</table>
+<p class="sub">
+  Final order: <code>1, 4, 3, 2</code> — matching the drills table above.
+  The rule that produces it is exactly the one the mid-level event-loop
+  answer already names: all synchronous code first, then the whole
+  microtask queue, then one macrotask.
+</p>
+
 <div class="bx is-ref">
   <span class="ttl">The three that decide most interviews</span>
   <p>
@@ -182,5 +199,16 @@ export const interviewBank: Chapter = {
     you credit for the rest of the hour. Rehearse those out loud even if you skip
     everything else here.
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Answer the <code>this</code> keyword question out loud, using the four-rule order from the fresher section.</li>
+    <li>Trace the first output-prediction drill's queue order yourself, without looking at the answer.</li>
+    <li>Explain the difference between <code>call</code>, <code>apply</code>, and <code>bind</code> without looking at the mid-level answer.</li>
+    <li>Say why <code>typeof null</code> is <code>"object"</code>, referencing where the bug actually comes from.</li>
+    <li>Name the three questions that "decide most interviews," and rehearse each one out loud.</li>
+  </ul>
 </div>`,
 };

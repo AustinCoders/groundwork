@@ -85,6 +85,23 @@ export const sysdesSearchSystems: Chapter = {
   document.
 </p>
 
+<h4>Dry run: scoring the query "red running" with TF-IDF over the three documents above</h4>
+<table>
+  <tr><th>Document</th><th>Terms (after analysis)</th><th>tf-idf(red)</th><th>tf-idf(run)</th><th>Score</th></tr>
+  <tr><td>D1 — "red running shoes"</td><td>red, run, shoe</td><td>0.405</td><td>0.405</td><td>0.811 — ranks first</td></tr>
+  <tr><td>D2 — "red shoes for kids"</td><td>red, shoe, kid</td><td>0.405</td><td>0 (absent)</td><td>0.405</td></tr>
+  <tr><td>D3 — "running shoes review"</td><td>run, shoe, review</td><td>0 (absent)</td><td>0.405</td><td>0.405</td></tr>
+</table>
+<p class="sub">
+  idf(red) = idf(run) = ln(3/2) ≈ 0.405, since each appears in 2 of the 3
+  documents. idf(shoe) = ln(3/3) = 0 — "shoe" appears in every document, so
+  it contributes exactly nothing to any score, which is the arithmetic
+  behind the figure's claim that it "carries almost no signal." Boolean
+  intersection returns only D1; TF-IDF instead ranks D1 highest but still
+  surfaces D2 and D3 as partial matches, which is the entire reason a
+  ranking stage exists on top of retrieval.
+</p>
+
 <h3>Analysis: the pipeline that decides what a term even is</h3>
 <p>
   Notice that "running" became "run" and "for" disappeared. That transform is
@@ -300,5 +317,16 @@ export const sysdesSearchSystems: Chapter = {
   <li>Distinguish it from a <b>recommendation</b> question: search has an explicit query string, recommendations do not. They share the two-stage retrieve-then-rank architecture, which is a good connection to draw.</li>
   <li>Any time you introduce a search cluster, immediately say how it gets fed and what the staleness window means for the user — the async secondary-index point is worth more than any detail about BM25.</li>
   <li>Pitfall: forgetting permissions and filters belong in the index. Post-filtering ranked results silently returns empty pages to exactly the users with the narrowest access.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why a leading-wildcard <code>LIKE</code> query can't use a B-tree index, and why an inverted index sidesteps that problem.</li>
+    <li>Compute a TF-IDF score by hand for a small corpus, and explain why a term appearing in every document gets an IDF of zero.</li>
+    <li>Name the two defects BM25 fixes relative to raw TF-IDF, and why both matter for a real corpus.</li>
+    <li>Explain why hard filters (permissions, in-stock) must be applied during retrieval rather than after ranking, and what goes wrong if they aren't.</li>
+    <li>Describe the write path from a database commit to a document becoming searchable, including where staleness enters and how you'd handle read-your-writes.</li>
+  </ul>
+</div>`,
 };

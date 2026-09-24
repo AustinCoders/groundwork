@@ -171,6 +171,16 @@ logged.age = 30;</code></pre>
   mechanism behind validation libraries, ORMs that track which fields
   changed, and framework reactivity.
 </p>
+
+<h4>Dry run: which trap fires, with what arguments</h4>
+<table>
+  <tr><th>Step</th><th>Code</th><th>Trap fired</th><th>Arguments</th><th>Returns</th></tr>
+  <tr><td>1</td><td><code>logged.name</code></td><td><code>get</code></td><td><code>obj = target</code>, <code>prop = "name"</code></td><td>logs "GET name", then <code>Reflect.get(obj, "name")</code> → <code>"Ana"</code></td></tr>
+  <tr><td>2</td><td><code>logged.age = 30</code></td><td><code>set</code></td><td><code>obj = target</code>, <code>prop = "age"</code>, <code>value = 30</code></td><td>logs "SET age = 30", then <code>Reflect.set(obj, "age", 30)</code> → <code>true</code>; <code>target.age</code> is now <code>30</code></td></tr>
+</table>
+<p class="sub">
+  Neither trap invents new behavior — each one observes the operation, then hands it straight to the matching <code>Reflect</code> function to actually perform it. Skip that call, or return the wrong value from a trap, and the proxy stops behaving like a normal object: a <code>get</code> trap that forgets to <code>return</code> makes every property read come back <code>undefined</code>.
+</p>
 <pre><code>function createValidated(schema) {
   return new Proxy({}, {
     set(obj, prop, value) {
@@ -355,5 +365,16 @@ new Function("a", "b", "return a + b");  <span class="c">// runs in GLOBAL scope
   <p>
     "Symbols are collision-free keys, the iteration protocols make anything usable with <code>for...of</code> and spread, property descriptors control what a property may do, and Proxy with Reflect intercepts operations — bound by invariants that stop a trap lying about a non-configurable property."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why <code>obj[Symbol("id")]</code> returns <code>undefined</code> even when the new symbol has the same description as an existing key.</li>
+    <li>Explain the iteration protocol (<code>Symbol.iterator</code> → an iterator whose <code>.next()</code> returns <code>{ value, done }</code>), and why it gets a class <code>for...of</code>, spread, and destructuring for free.</li>
+    <li>Trace which trap fires, with what arguments, for a read versus a write on a logging Proxy, and say why the trap delegates to <code>Reflect</code> instead of skipping it.</li>
+    <li>Explain the invariant that stops a <code>get</code> trap from lying about a frozen, non-configurable, non-writable property.</li>
+    <li>Explain why <code>WeakRef</code> and <code>FinalizationRegistry</code> are unsuitable for real cleanup, and what guarantee <code>using</code> and <code>[Symbol.dispose]</code> give you instead.</li>
+  </ul>
 </div>`,
 };

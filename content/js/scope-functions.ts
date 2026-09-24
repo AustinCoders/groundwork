@@ -213,6 +213,20 @@ console.log(curried(2, 3, 4));      <span class="c">// what happens?</span></cod
   (<code>fn.length</code>, from just above); if not, it returns another
   function waiting for the rest.
 </p>
+<h4>Dry run: curried(2)(3)(4), call by call</h4>
+<table>
+  <tr><th>Call</th><th>args accumulated so far</th><th>args.length vs fn.length (3)</th><th>What happens</th></tr>
+  <tr><td><code>curried(2)</code></td><td><code>[2]</code></td><td>1 &lt; 3 — not enough</td><td>returns a new function closing over <code>[2]</code></td></tr>
+  <tr><td><code>(3)</code></td><td><code>[2, 3]</code></td><td>2 &lt; 3 — not enough</td><td>returns another function closing over <code>[2, 3]</code></td></tr>
+  <tr><td><code>(4)</code></td><td><code>[2, 3, 4]</code></td><td>3 &gt;= 3 — enough</td><td><code>fn.apply(this, [2, 3, 4])</code> — <code>volume(2, 3, 4)</code> runs, returns 24</td></tr>
+</table>
+<p class="sub">
+  Each intermediate call's <code>args</code> is a closure the next call
+  reads and extends with <code>.concat(more)</code> — this is the exact
+  same "environment survives the call that made it" mechanism from the
+  closures chapter, just used to accumulate arguments instead of a
+  counter.
+</p>
 <pre><code><span class="c">// Partial application — curry's simpler cousin: some args now, the rest later, ONE split</span>
 function partial(fn, ...preset) {
   return (...rest) =&gt; fn(...preset, ...rest);
@@ -301,5 +315,16 @@ try {
   <p>
     "Scope is fixed by where code is written, a closure keeps that scope alive, <code>this</code> is decided by how a function is called, and higher-order functions — currying, partial application, composition — build new functions out of old ones."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why a <code>function</code> declared inside a block is callable outside it in sloppy mode but not in strict mode or a module.</li>
+    <li>Say why a default parameter can't see a <code>var</code> declared later in the function body, in terms of the parameter scope.</li>
+    <li>Trace <code>curry(volume)</code> through <code>curried(2)(3)(4)</code>, writing down the accumulated <code>args</code> at each call.</li>
+    <li>Explain why <code>new bound()</code> overrides a <code>this</code> already welded on by <code>bind</code>, and what that says about the binding rule ranking.</li>
+    <li>Say why unbounded recursion is a real risk in JS specifically, given that most engines don't implement tail-call optimization.</li>
+  </ul>
 </div>`,
 };

@@ -42,6 +42,33 @@ export const errorsTools: Chapter = {
   showFallbackUI();
 }</code></pre>
 
+<pre><code>function run() {
+  try {
+    try {
+      throw new Error("inner");
+    } finally {
+      console.log("inner finally");
+    }
+  } catch (e) {
+    console.log("outer catch:", e.message);
+  } finally {
+    console.log("outer finally");
+  }
+}
+run();</code></pre>
+<h4>Dry run: which block runs, in what order</h4>
+<table>
+  <tr><th>Order</th><th>What runs</th><th>Why</th></tr>
+  <tr><td>1st</td><td><code>"inner finally"</code></td><td>the inner <code>try</code> has no <code>catch</code>, so the error isn't handled here — but <code>finally</code> still runs on the way out, before the error keeps propagating</td></tr>
+  <tr><td>2nd</td><td><code>"outer catch: inner"</code></td><td>the error, still unhandled, reaches the outer <code>try</code>'s <code>catch</code> — this is the first block that actually stops it</td></tr>
+  <tr><td>3rd</td><td><code>"outer finally"</code></td><td>runs last, after the outer <code>catch</code> has already handled the error — <code>finally</code> always runs, caught or not</td></tr>
+</table>
+<p class="sub">
+  A <code>finally</code> without a matching <code>catch</code> doesn't
+  stop an error — it only guarantees its own cleanup code runs before the
+  error keeps climbing to look for a <code>catch</code> further out.
+</p>
+
 <h3>The built-in error types</h3>
 <table>
   <tr><th>Type</th><th>Thrown when</th></tr>
@@ -231,5 +258,16 @@ try {
   <p>
     "<code>try/catch</code> handles synchronous throws and awaited rejections, <code>finally</code> always runs and can even override a return value, and a good custom error extends <code>Error</code>, sets its name and keeps its <code>cause</code> — while a stack trace lists the throw site first, with the callers beneath it."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Trace a nested <code>try</code>/<code>finally</code> inside a <code>try</code>/<code>catch</code>/<code>finally</code>, in the exact order each block actually runs.</li>
+    <li>Explain why a <code>return</code> inside <code>finally</code> silently discards the value from <code>try</code>, and why that's usually a bug.</li>
+    <li>Write a custom error class that extends <code>Error</code> and passes both <code>instanceof Error</code> and <code>instanceof</code> its own class.</li>
+    <li>Read a stack trace and say which line is the actual bug versus which lines are just "how we got here."</li>
+    <li>Name at least three <code>console</code> methods besides <code>.log</code> and what each is for.</li>
+  </ul>
 </div>`,
 };

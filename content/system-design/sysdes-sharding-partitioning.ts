@@ -225,6 +225,43 @@ function lookup(ring, key) {
   with all three replicas of a key on one machine.
 </p>
 
+<h4>Dry run: a 3-node ring with 4 vnodes each (positions 0–999, via MD5), then removing node B</h4>
+<table>
+  <tr><th>Vnode</th><th>Position</th><th>Arc it owns (previous position, this one]</th></tr>
+  <tr><td>A3</td><td>49</td><td>(931, 49] — wraps past 999</td></tr>
+  <tr><td>A2</td><td>100</td><td>(49, 100]</td></tr>
+  <tr><td>A0</td><td>134</td><td>(100, 134]</td></tr>
+  <tr><td>C1</td><td>283</td><td>(134, 283]</td></tr>
+  <tr><td>C2</td><td>331</td><td>(283, 331]</td></tr>
+  <tr><td>B2</td><td>434</td><td>(331, 434]</td></tr>
+  <tr><td>B1</td><td>659</td><td>(434, 659]</td></tr>
+  <tr><td>C3</td><td>724</td><td>(659, 724]</td></tr>
+  <tr><td>B0</td><td>738</td><td>(724, 738]</td></tr>
+  <tr><td>B3</td><td>832</td><td>(738, 832]</td></tr>
+  <tr><td>A1</td><td>927</td><td>(832, 927]</td></tr>
+  <tr><td>C0</td><td>931</td><td>(927, 931]</td></tr>
+</table>
+<p class="sub">
+  Two real keys pinned to that ring: <code>hash("user:7") = 806</code> falls
+  in B3's arc (738, 832], served by node B. <code>hash("order:1") = 975</code>
+  falls in A3's wraparound arc (931, 49], served by node A.
+</p>
+<table>
+  <tr><th>B's arc before removal</th><th>New owner after B leaves the ring</th></tr>
+  <tr><td>(331, 434] — was B2</td><td>C3 @ 724</td></tr>
+  <tr><td>(434, 659] — was B1</td><td>C3 @ 724</td></tr>
+  <tr><td>(724, 738] — was B0</td><td>A1 @ 927</td></tr>
+  <tr><td>(738, 832] — was B3</td><td>A1 @ 927</td></tr>
+</table>
+<p class="sub">
+  B's total arc — roughly a third of the ring — splits cleanly between C and
+  A instead of landing entirely on one neighbor, exactly the vnode benefit
+  the figure above claims. <code>user:7</code> (hash 806), previously on B,
+  now resolves to A1's expanded arc (724, 927] — it moved, but only one of
+  its four possible neighbors absorbed it, not the whole ring's worth of
+  B's traffic at once.
+</p>
+
 <h3>Hot shards and the celebrity problem</h3>
 <p>
   Real access distributions are Zipfian: the top 0.1% of keys often carry
@@ -326,5 +363,16 @@ function lookup(ring, key) {
   <li>Distinguish from replication: replication makes copies of the same data for availability and read scale; partitioning splits different data for write scale and capacity. Real systems do both, and every shard is itself a replica set.</li>
   <li>The moment you name a shard key, immediately name the query it breaks and how you'll serve that query anyway (global index, denormalized copy, or search engine). Volunteering the downside is the difference between L5 and L6.</li>
   <li>Never propose <code>hash(key) mod N</code> without saying what happens when N changes — consistent hashing with vnodes, or fixed logical shards, are the two acceptable answers.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Given a candidate shard key, check it against all five required properties — cardinality, access distribution, immutability, query coverage, transaction alignment — and say which ones it fails.</li>
+    <li>Explain why <code>hash(key) mod N</code> breaks under resizing, and how consistent hashing with virtual nodes fixes it, including why load variance shrinks as vnode count V grows.</li>
+    <li>Trace, by hand, which surviving nodes absorb a failed node's arcs on a small consistent-hashing ring — and explain why that split, not a single overloaded neighbor, is what vnodes buy you.</li>
+    <li>Name at least two mitigations for a hot shard caused by one celebrity key, and say which to reach for first and why.</li>
+    <li>Explain why choosing a large fixed number of logical shards up front means you never have to rehash a key again when the cluster grows.</li>
+  </ul>
+</div>`,
 };

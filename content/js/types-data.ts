@@ -175,6 +175,23 @@ composed.normalize("NFC") === decomposed.normalize("NFC");  <span class="c">// t
   differently.
 </div>
 
+<h4>Dry run: measuring the same string three different ways</h4>
+<table>
+  <tr><th>String</th><th>.length (UTF-16 code units)</th><th>[...str].length (code points)</th><th>Intl.Segmenter graphemes (what a reader sees)</th></tr>
+  <tr><td>"😀"</td><td>2</td><td>1</td><td>1</td></tr>
+  <tr><td>"👨‍👩‍👧" (family, joined by zero-width joiners)</td><td>8</td><td>5</td><td>1</td></tr>
+  <tr><td>"café" (one composed é)</td><td>4</td><td>4</td><td>4</td></tr>
+</table>
+<p class="sub">
+  Three different numbers for the same three strings, and each answers a
+  different question: <code>.length</code> counts UTF-16 storage units
+  (what a naive slice would split on), spreading counts actual Unicode
+  code points, and <code>Intl.Segmenter</code> counts what a person would
+  actually call "one character." Only the third number matches human
+  intuition — which is exactly why slicing user-facing text by
+  <code>.length</code> or raw index risks cutting a character in half.
+</p>
+
 <h3>Intl — past basic formatting</h3>
 <pre><code>["café", "cafe", "cafz"].sort(new Intl.Collator("en").compare);
 <span class="c">// ["cafe", "café", "cafz"] — locale-aware ordering; a plain .sort() compares raw code</span>
@@ -196,5 +213,16 @@ new Intl.RelativeTimeFormat("en").format(3, "hour");   <span class="c">// "in 3 
   <p>
     "<code>BigInt</code> gives exact integers beyond 2^53, typed arrays over an <code>ArrayBuffer</code> give raw binary data, and strings are UTF-16 code units, so <code>length</code> and indexing can split a character that takes more than one unit."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why BigInt and Number can't be mixed with <code>+</code>, and how to convert between them explicitly.</li>
+    <li>Say why a TypedArray view and a DataView can disagree on the same 4 bytes, and which argument fixes it.</li>
+    <li>Explain why <code>bytes.length</code> from a TextEncoder differs from a string's own <code>.length</code> for non-ASCII text.</li>
+    <li>Walk through why <code>"😀".length</code> is 2 but <code>[..."😀"].length</code> is 1, and what a surrogate pair is.</li>
+    <li>Explain why composed "café" and decomposed "cafe" + combining accent fail <code>===</code> but pass after <code>.normalize("NFC")</code>.</li>
+  </ul>
 </div>`,
 };

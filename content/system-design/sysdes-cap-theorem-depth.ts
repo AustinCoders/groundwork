@@ -101,6 +101,23 @@ export const sysdesCapTheoremDepth: Chapter = {
   kill switch.
 </p>
 
+<h4>Dry run: a 5-node CP cluster split 3 | 2, minute by minute</h4>
+<table>
+  <tr><th>Time</th><th>Event</th><th>Majority side (3 nodes)</th><th>Minority side (2 nodes)</th></tr>
+  <tr><td>t=0</td><td>Network partition occurs; the old leader happens to be on the majority side</td><td>Continues as leader, no interruption</td><td>Isolated, cannot reach the leader</td></tr>
+  <tr><td>t=0 to t=1000 ms</td><td>A client on the minority side sends a write</td><td>—</td><td>No quorum reachable — write fails with a timeout, not a wrong answer</td></tr>
+  <tr><td>t≈1000 ms</td><td>Minority nodes hit their election timeout (etcd default 1000 ms)</td><td>—</td><td>A node becomes a candidate but can win at most 2 of 5 votes — no majority, election stalls</td></tr>
+  <tr><td>t=1000 ms onward</td><td>Majority-side clients keep reading and writing</td><td>Fully available, fully consistent — commits proceed normally</td><td>Still returning errors or refusing to serve</td></tr>
+  <tr><td>partition heals</td><td>Minority nodes see a higher term from the majority leader</td><td>Unchanged — still leader</td><td>Steps down to follower, catches up on the log</td></tr>
+</table>
+<p class="sub">
+  Nothing in this timeline ever returns a stale or wrong value — that is the
+  entire CP guarantee. The cost is visible in row two: for roughly one
+  election timeout, any client pinned to the minority side gets hard errors
+  and nothing else, which is exactly the "never a wrong answer, sometimes no
+  answer" contract stated above.
+</p>
+
 <h3>What AP actually looks like from the client's seat</h3>
 <p>
   Now the same partition in Cassandra at consistency level ONE, or DynamoDB
@@ -256,5 +273,16 @@ export const sysdesCapTheoremDepth: Chapter = {
   <li>Distinguish from the plain replication chapter: replication is about <em>how</em> copies get updated; CAP is about what you do when they <em>can't</em>. Distinguish from PACELC's else-branch: if the network is healthy and you are still arguing about staleness, that is a latency-vs-consistency question, not a CAP question.</li>
   <li>If you choose AP, immediately state the merge function. If you choose CP, immediately state the blast radius: which clients get errors, for how long, and what the retry/queue story is so the user doesn't just see a 500.</li>
   <li>The strongest closing move is to make the choice per-operation and justify each one with the business cost of being wrong versus the business cost of being down.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Can you state precisely what C, A and P mean in CAP — not the versions most candidates get wrong?</li>
+    <li>Can you explain why PACELC matters even when there's no partition, and where it costs Spanner milliseconds?</li>
+    <li>Given a data type, can you say whether it should be CP or AP, and if AP, name the reconciliation strategy?</li>
+    <li>Can you explain what R + W &gt; N guarantees, and one thing it does NOT guarantee?</li>
+    <li>Can you classify one real system's PACELC behaviour and name where its tunable knob lives (e.g. DynamoDB's ConsistentRead)?</li>
+  </ul>
+</div>`,
 };

@@ -310,6 +310,27 @@ ROUTING TABLE (which gateway holds each live socket?)
   take it and stop negotiating; they are trying to save you time.
 </div>
 
+<h4>Dry run: the eight-step order applied to the photo-sharing numbers</h4>
+<table>
+  <tr><th>Step</th><th>Quantity</th><th>Computation</th><th>Result</th></tr>
+  <tr><td>1</td><td>DAU</td><td>given</td><td>200,000,000</td></tr>
+  <tr><td>2</td><td>Avg feed reads/sec</td><td>(200M × 10 opens) ÷ 100,000 s</td><td>20,000/s</td></tr>
+  <tr><td>3</td><td>Peak feed reads/sec</td><td>20,000 × 3</td><td>60,000/s — sizes the fleet</td></tr>
+  <tr><td>4</td><td>Blob storage/day</td><td>20M posters × 1.5 MB</td><td>30 TB/day</td></tr>
+  <tr><td>5</td><td>Blob storage / 5 yr</td><td>30 TB × 365 × 5, × 3 replicas, × 1.4 erasure coding</td><td>~77 PB — chooses object storage, not the DB</td></tr>
+  <tr><td>6</td><td>Peak bandwidth</td><td>2 MB/page × 60,000 pages/s × 8 bits/byte</td><td>~960 Gbps — makes a CDN non-negotiable</td></tr>
+  <tr><td>7</td><td>Cache RAM</td><td>7 days × 20M posts/day × 500 B</td><td>70 GB — trivial, fits a small Redis tier</td></tr>
+  <tr><td>8</td><td>Servers</td><td>60,000 peak rps ÷ 1,000 rps/box, × 2 headroom</td><td>~120 app servers</td></tr>
+</table>
+<p class="sub">
+  Each step is an input to the next: step 3 sizes the fleet used in step 8,
+  and step 6 is the number that rules out serving images from origin at all.
+  Notice the four-order-of-magnitude spread between the "easy" number (step
+  7's 70 GB, one small Redis cluster) and the "hard" one (step 6's 960 Gbps,
+  an entire CDN strategy) — that gap is the actual point of doing all eight
+  steps instead of stopping at storage.
+</p>
+
 <h3>Recognizing it in an unseen problem</h3>
 <ul>
   <li>Every design prompt needs this, whether or not it is asked for. Do it immediately after requirements and before the first box goes on the board — it is what makes the boxes defensible.</li>
@@ -318,5 +339,16 @@ ROUTING TABLE (which gateway holds each live socket?)
   <li>Distinguish "big number" from "hard problem": 18 TB of metadata is a big number and an easy problem; 100 M concurrent connections is a smaller number and a much harder one. Say which of your numbers are merely large.</li>
   <li>The pitfall: computing storage and never computing bandwidth or memory. Storage is the cheap one. Egress bandwidth and RAM are where the money and the architecture actually live.</li>
   <li>If a number comes back small, <em>say so and simplify the design</em>. "That's 100 writes a second, so one Postgres primary with a replica handles this for years" is a stronger answer than any distributed store.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Can you convert "N events per day" to "per second" in your head using the 100,000-seconds-a-day trick?</li>
+    <li>Can you compute peak QPS from a DAU figure and a stated peak multiplier, and explain why you size the fleet from peak, not average?</li>
+    <li>Can you explain why a "how would this scale" prompt needs both a storage AND a bandwidth calculation?</li>
+    <li>Can you name the three most common estimation mistakes — forgetting replication, confusing bits and bytes, sizing from average load — and catch them in your own numbers?</li>
+    <li>Can you say, for a given system, which computed number is merely large versus which one is genuinely hard (e.g. 18 TB of metadata versus 100M concurrent sockets)?</li>
+  </ul>
+</div>`,
 };

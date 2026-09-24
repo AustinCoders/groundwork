@@ -191,6 +191,24 @@ function allow(state, now, limit, windowMs) {
   endpoint that is 50x more expensive without inventing a second limiter.
 </p>
 
+<h4>Dry run: a token bucket (B = 10, r = 5/sec) under a burst of 12, then one more request</h4>
+<table>
+  <tr><th>#</th><th>Time</th><th>Tokens before</th><th>Tokens after</th><th>Result</th></tr>
+  <tr><td>1 – 10</td><td>t = 0 ms (burst)</td><td>10 down to 1</td><td>9 down to 0</td><td>all 10 allowed — this is B, the full burst spent at once</td></tr>
+  <tr><td>11</td><td>t = 0 ms</td><td>0</td><td>0</td><td>rejected — deficit 1, retryAfter = ceil(1 / 5) = 1s</td></tr>
+  <tr><td>12</td><td>t = 0 ms</td><td>0</td><td>0</td><td>rejected — same reason</td></tr>
+  <tr><td>13</td><td>t = 200 ms</td><td>0 + 0.2×5 = 1</td><td>0</td><td>allowed — exactly one refill interval (1/r = 200 ms) has passed</td></tr>
+</table>
+<p class="sub">
+  Two things fall out of this trace. First, B and r really are independent
+  knobs: the client spends its entire burst allowance in the same
+  millisecond, then is throttled to exactly one request every 200 ms
+  (1/r) after that. Second, the <code>retryAfter</code> formula rounds up
+  with <code>Math.ceil</code>, so it told the client to wait a full second
+  when only 200 ms of refill was actually needed — conservative by design,
+  since telling a client to retry too early just produces another rejection.
+</p>
+
 <h3>Picking one</h3>
 <table>
   <tr><th>Algorithm</th><th>Memory per key</th><th>Accuracy</th><th>Bursts</th><th>Reach for this when</th></tr>
@@ -357,5 +375,16 @@ async function callWithRetry(fn, maxAttempts = 6) {
   <li><b>Distinguishing it from load shedding and circuit breaking:</b> rate limiting is about <em>who</em> gets to use capacity (fairness, per-key, mostly static); load shedding is about <em>whether there is any capacity right now</em> (health-based, global, dynamic); a circuit breaker is a <em>client-side</em> decision to stop calling a failing dependency. Real systems have all three and an interviewer will be pleased if you separate them.</li>
   <li><b>Always state the distributed answer.</b> "Counters in Redis with a Lua script for atomicity, roughly half a millisecond added per request, fail open to a local bucket if Redis is unreachable" is the whole answer in one sentence.</li>
   <li><b>The pitfall to avoid:</b> returning a bare 429 with no <code>Retry-After</code>. You have told a thousand clients to retry immediately and simultaneously, which is how a rate limiter causes the outage it exists to prevent.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why a fixed window can let through up to 2x its limit at the boundary, and why the sliding window counter doesn't have that flaw.</li>
+    <li>Trace a token bucket by hand for a given capacity and refill rate, including computing <code>retryAfter</code> for a request that arrives with an empty bucket.</li>
+    <li>Match each algorithm to its use case: login attempts, general-purpose API quotas, an API where clients legitimately batch, and shaping traffic into a fragile downstream.</li>
+    <li>Describe the stale-previous-window bug in the sliding window counter and why the adjacency guard (checking the previous window is truly the one before) fixes it.</li>
+    <li>State, unprompted, whether your limiter fails open or fails closed when its datastore is unreachable, and why fail-open to a local backstop bucket is the usual answer.</li>
+  </ul>
+</div>`,
 };

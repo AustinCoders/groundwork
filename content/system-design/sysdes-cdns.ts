@@ -136,6 +136,28 @@ export const sysdesCdns: Chapter = {
   </ul>
 </div>
 
+<h4>Dry run: one URL's cache state through a stale-while-revalidate and stale-if-error cycle</h4>
+<p class="sub">
+  <code>/api/products/42</code> is served with <code>Cache-Control: public,
+  max-age=0, s-maxage=60, stale-while-revalidate=600, stale-if-error=86400</code>.
+</p>
+<table>
+  <tr><th>Time</th><th>Event</th><th>Edge cache state</th><th>Response served</th><th>Why</th></tr>
+  <tr><td>t = 0s</td><td>First request</td><td>MISS</td><td>Fetch origin, store, return 200 — origin RTT paid once</td><td>Nothing cached yet</td></tr>
+  <tr><td>t = 30s</td><td>Second request</td><td>Fresh (age 30s ≤ 60s)</td><td>200 straight from the edge, no origin call</td><td>Inside the s-maxage window</td></tr>
+  <tr><td>t = 65s</td><td>Third request</td><td>Stale (age 65s &gt; 60s, but ≤ 660s)</td><td>200 from the edge <em>immediately</em>, background revalidation fired</td><td>Inside the stale-while-revalidate window — the user never waits on origin</td></tr>
+  <tr><td>t = 66s</td><td>Background revalidation completes</td><td>Fresh again (age resets to 0)</td><td>No client-visible response — this refresh happened off the request path</td><td>The SWR fetch from t=65s just landed</td></tr>
+  <tr><td>t = 8,000s</td><td>Request arrives; origin is down for maintenance</td><td>Stale (age 7,934s since last good fetch), swr window long expired</td><td>200, serving the stale copy anyway</td><td>7,934s &lt; 86,400s — inside the stale-if-error window, so a failed origin still gets a stale-but-valid response</td></tr>
+  <tr><td>t = 90,000s</td><td>Request arrives; origin still down</td><td>Stale, 89,934s since last good fetch</td><td>5xx propagated to the client</td><td>89,934s &gt; 86,400s — the stale-if-error window has expired, so there is nothing left to fall back to</td></tr>
+</table>
+<p class="sub">
+  Three directives, three different jobs: s-maxage bounds normal staleness,
+  stale-while-revalidate hides a slow refresh behind a stale response instead
+  of making the user wait, and stale-if-error turns a dead origin into a
+  non-event for up to a full day before it finally becomes the client's
+  problem.
+</p>
+
 <h3>ETags and revalidation: paying for freshness in bytes, not seconds</h3>
 <p>
   When an object goes stale the edge does not have to re-download it. It
@@ -323,5 +345,16 @@ export const sysdesCdns: Chapter = {
   <li><b>Estimate before you commit.</b> 10 M daily users × 2 MB of assets ≈ 20 TB/day. At cloud egress that's roughly $1,800/day; at 95% CDN offload with cheaper per-GB pricing it's a small fraction of that. Cost is a legitimate reason to reach for a CDN and it scores well.</li>
   <li><b>The pitfall to name unprompted:</b> personalised content in a shared cache. Say the words "I'd default authenticated routes to <code>private, no-store</code> and make the CDN opt-in rather than opt-out" and you have pre-empted the follow-up question.</li>
   <li><b>The second pitfall:</b> full purges and cold-start stampedes. If the design has a global purge in it, pair it with a shield tier or staggered TTLs, or say out loud that the origin must be sized for the miss storm.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain the difference between <code>no-cache</code> and <code>no-store</code> from memory, without looking it up.</li>
+    <li>Trace how <code>stale-while-revalidate</code> and <code>stale-if-error</code> handle a slow or down origin for one URL, the way the dry run above does.</li>
+    <li>Explain why an over-precise cache key (keyed on the raw Cookie header, or an unstripped query string) destroys hit rate, and how you'd fix it.</li>
+    <li>Describe the cache-key bug that leaks one user's personalised response to another, and the two-layer defence against it.</li>
+    <li>Explain why versioned or hashed URLs are the default invalidation strategy, with purge as the fallback rather than the plan.</li>
+  </ul>
+</div>`,
 };

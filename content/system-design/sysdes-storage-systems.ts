@@ -183,6 +183,25 @@ export const sysdesStorageSystems: Chapter = {
   days is not optional, and mentioning it reads as operational experience.
 </p>
 
+<h4>Dry run: one 2.3 GB upload through the presigned-URL flow above</h4>
+<table>
+  <tr><th>Step</th><th>Who</th><th>What happens</th><th>State after</th></tr>
+  <tr><td>1. init</td><td>Client</td><td>POST /uploads {filename: "vacation.mp4", size: 2.3 GB}</td><td>App server generates the object key server-side: uploads/8f2e1c.../vacation.mp4</td></tr>
+  <tr><td>2. pending row</td><td>App server</td><td>Insert metadata row {id, key, size: 2.3 GB, status: "pending"}</td><td>A row exists; no bytes exist anywhere yet</td></tr>
+  <tr><td>3. signed URL(s)</td><td>App server</td><td>2.3 GB is past the single-PUT comfort zone, so sign a multipart upload at 100 MB/part: ⌈2,300 MB / 100 MB⌉ = 23 presigned part URLs, 10-minute expiry each</td><td>Client holds 23 URLs; app server has still never seen a byte</td></tr>
+  <tr><td>4. PUT bytes</td><td>Client</td><td>Uploads parts 1-23 directly to the bucket, 6 in parallel; part 14 drops mid-transfer and is retried alone</td><td>Bytes land in the bucket; metadata row is still "pending"</td></tr>
+  <tr><td>5. event</td><td>Object storage</td><td>CompleteMultipartUpload assembles the 23 parts into one object and emits an object-created event</td><td>Event lands on the queue; the object exists but nothing has confirmed it yet</td></tr>
+  <tr><td>6. ready</td><td>Worker</td><td>Consumes the event, verifies the checksum and scans the file, flips the row to "ready"</td><td>Only now is the video visible to any reader</td></tr>
+</table>
+<p class="sub">
+  Track which actor touches the file's bytes: the app server never does — it
+  only ever handles the two small JSON calls in steps 1 and 3, regardless of
+  whether the upload is 200 KB or 200 GB. And the pending → ready transition
+  is driven entirely by the storage layer's own event in steps 5-6, never by
+  the client's word that it finished — exactly the trust boundary the
+  warning box above is about.
+</p>
+
 <h3>Transcoding: the pipeline behind every video product</h3>
 <p>
   Raw uploads are unservable. A 4K phone recording is the wrong codec,
@@ -316,5 +335,16 @@ export const sysdesStorageSystems: Chapter = {
   <li>Distinguish durability from availability the moment anyone says "we can't lose the data" — and add that neither one protects against a bad deploy, which is what versioning and object lock are for.</li>
   <li>Files over ~100 MB, or mobile clients, means multipart and resumable uploads; anything with video means an async transcoding pipeline with idempotent, segment-level jobs.</li>
   <li>Pitfall: designing the write path beautifully and forgetting the read path. Say how the bytes get back out — signed CDN URLs, cache TTLs, and who pays the egress.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why the app server should never see upload bytes, and name the two small JSON calls it handles instead, whatever the file size.</li>
+    <li>Given a file size and a part size, compute how many parts a multipart upload needs, and state the two limits (minimum part size, maximum part count) that bound the choice.</li>
+    <li>Explain the difference between durability and availability using S3's own numbers, and say what neither one protects against.</li>
+    <li>Name at least two of the five reasons storing blobs in a relational database breaks down at scale.</li>
+    <li>Given an access-frequency split, compute the monthly cost difference between all-hot storage and a hot/cold tiering split, and say what you trade away for the savings.</li>
+  </ul>
+</div>`,
 };

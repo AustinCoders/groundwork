@@ -181,6 +181,19 @@ cart.filter(item =&gt; item.qty &gt; 0);         <span class="c">// Pen and Book
 cart.find(item =&gt; item.price &gt; 100);      <span class="c">// the Book object itself</span>
 cart.forEach(item =&gt; console.log(item.name)); <span class="c">// logs 3 times, returns undefined</span>
 cart.reduce((total, item) =&gt; total + item.price * item.qty, 0); <span class="c">// 210</span></code></pre>
+<h4>Dry run: cart.reduce building up the total</h4>
+<table>
+  <tr><th>Item</th><th>price * qty</th><th>total before</th><th>total after</th></tr>
+  <tr><td>Pen</td><td>20 * 3 = 60</td><td>0 (the initial value)</td><td>60</td></tr>
+  <tr><td>Book</td><td>150 * 1 = 150</td><td>60</td><td>210</td></tr>
+  <tr><td>Eraser</td><td>5 * 0 = 0</td><td>210</td><td>210</td></tr>
+</table>
+<p class="sub">
+  <code>total</code> is the one value that survives from call to call —
+  <code>reduce</code> hands back whatever the callback returned last time
+  as the next call's <code>total</code>. The final <code>210</code> is
+  just the last row's "total after," nothing more mysterious than that.
+</p>
 <div class="warn">
   <span class="ttl">⚠ forEach can't be stopped, and its return is
   thrown away</span>
@@ -305,5 +318,16 @@ console.log(original.nested.count);   <span class="c">// 99 — same nested obje
   <p>
     "Objects and arrays are reference types, so assignment copies the reference rather than the data — the reason changing a "copy" changes the original — and knowing which array methods mutate (<code>push</code>, <code>sort</code>, <code>splice</code>) and which return a new array (<code>map</code>, <code>filter</code>, <code>slice</code>) prevents most state bugs."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why <code>alias.count = 99</code> changes <code>original.count</code> too, and how spread or <code>Object.assign</code> avoids it.</li>
+    <li>Name which array methods mutate in place and which return a new array, without looking at the tables.</li>
+    <li>Trace a <code>.reduce()</code> call by hand, one element at a time, writing down the accumulator after each step.</li>
+    <li>Explain why <code>[NaN].indexOf(NaN)</code> is <code>-1</code> but <code>[NaN].includes(NaN)</code> is <code>true</code>.</li>
+    <li>Destructure a nested object with a default at every level, and say what happens if a middle level is missing.</li>
+  </ul>
 </div>`,
 };

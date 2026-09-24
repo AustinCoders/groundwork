@@ -197,6 +197,23 @@ Promise.resolve().then(() =&gt; console.log("3"));
 })();
 queueMicrotask(() =&gt; console.log("6"));
 console.log("7");</code></pre>
+<h4>Dry run: the order example above, one row per print</h4>
+<table>
+  <tr><th>Prints</th><th>Comes from</th><th>Why it runs when it does</th></tr>
+  <tr><td>"1"</td><td>synchronous <code>console.log</code></td><td>runs immediately, top of the script</td></tr>
+  <tr><td>"4"</td><td>synchronous, inside the async IIFE</td><td>an async function's body runs synchronously up to its first <code>await</code></td></tr>
+  <tr><td>"7"</td><td>synchronous <code>console.log</code></td><td>last line of the script — the call stack is now empty</td></tr>
+  <tr><td>"3"</td><td>microtask — <code>.then()</code> on an already-resolved promise</td><td>queued 1st, before the async IIFE even ran</td></tr>
+  <tr><td>"5"</td><td>microtask — the async function's continuation after <code>await null</code></td><td>queued 2nd</td></tr>
+  <tr><td>"6"</td><td>microtask — <code>queueMicrotask</code></td><td>queued 3rd — the microtask queue is FIFO, so it still runs after 3 and 5</td></tr>
+  <tr><td>"2"</td><td>macrotask — the <code>setTimeout</code> callback</td><td>runs only once the entire microtask queue is empty, even though it was scheduled first</td></tr>
+</table>
+<p class="sub">
+  Two rules do all the work here: every synchronous line — including an async
+  function's body up to its first <code>await</code> — finishes before any
+  microtask runs, and every microtask already queued drains before the event
+  loop even looks at the next macrotask, regardless of scheduling order.
+</p>
 <p>
   The output is <b>1, 4, 7, 3, 5, 6, 2</b>. Step by step: the synchronous code
   runs first and prints 1; <code>setTimeout</code> only schedules a task; the
@@ -445,5 +462,16 @@ POST /users               <span class="c">// sent only now</span></code></pre>
   <p>
     "Independent awaits should run in parallel with <code>Promise.all</code>, but <code>Promise.all</code> cannot cancel its siblings — real cancellation needs an <code>AbortSignal</code> — and every promise must end in a handler, because an unhandled rejection crashes Node and is only logged in a browser."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why two sequential <code>await</code>s take twice as long as <code>Promise.all</code> on independent work, and rewrite a sequential-await function to run in parallel.</li>
+    <li>Explain why <code>items.forEach(async ...)</code> doesn't actually wait for anything, and name two ways to fix it.</li>
+    <li>State what each of <code>Promise.all</code>, <code>allSettled</code>, <code>race</code>, and <code>any</code> does differently the moment one input rejects.</li>
+    <li>Explain why <code>Promise.all</code> can't cancel its sibling requests, and how <code>AbortController</code> fixes that.</li>
+    <li>Trace the "predict the order" snippet's output from memory: sync code, then microtasks, then the timer.</li>
+  </ul>
 </div>`,
 };

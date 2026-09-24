@@ -61,6 +61,23 @@ console.log([1, 2, 3, 4, 5].reduce(transform(push), []));   <span class="c">// w
   without paying for an intermediate array at every step.
 </p>
 
+<h4>Dry run: the transducer pipeline over [1, 2, 3, 4, 5]</h4>
+<table>
+  <tr><th>x</th><th>doubled (mapping step)</th><th>doubled &gt; 5? (filtering step)</th><th>pushed to acc?</th></tr>
+  <tr><td>1</td><td>2</td><td>no</td><td>no</td></tr>
+  <tr><td>2</td><td>4</td><td>no</td><td>no</td></tr>
+  <tr><td>3</td><td>6</td><td>yes</td><td>yes</td></tr>
+  <tr><td>4</td><td>8</td><td>yes</td><td>yes</td></tr>
+  <tr><td>5</td><td>10</td><td>yes</td><td>yes</td></tr>
+</table>
+<p class="sub">
+  Final <code>acc</code>: <code>[6, 8, 10]</code> — and the whole point
+  of a transducer is visible in this table: every element goes through
+  the mapping step, then straight into the filtering step, in a single
+  combined pass, with no intermediate array of doubled values ever built
+  between the two steps.
+</p>
+
 <h3>Design patterns, in JS terms</h3>
 <table>
   <tr>
@@ -287,5 +304,16 @@ const safeLoad = withFallback(loadUserProfile, { name: "Guest" });</code></pre>
   <p>
     "Patterns are named shapes for recurring problems — middleware as a chain of functions, dependency injection to keep code testable, state machines for modes, signals for fine-grained reactivity — and each is worth reaching for only once the plainer version has started to hurt."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain what makes a function "pure" and why that makes it trivially testable and safely memoizable.</li>
+    <li>Trace why <code>bus.emit("greet", "Ravi")</code> after <code>unsubscribe()</code> logs nothing, using the EventBus's own <code>#listeners</code> map.</li>
+    <li>Explain what <code>next()</code> does in the middleware chain, and why code written after <code>next()</code> runs on the way back out.</li>
+    <li>Say why an ES module behaves like a Singleton with no extra code, purely from how imports are cached.</li>
+    <li>Explain why <code>PUT</code> is idempotent and <code>POST</code> usually isn't, and how that decides whether a retry after a timeout is safe.</li>
+  </ul>
 </div>`,
 };

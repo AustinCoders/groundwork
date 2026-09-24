@@ -370,6 +370,23 @@ export const sysdesWalkthroughSimple: Chapter = {
   <li><b>What breaks first?</b> Be specific: the Redis cluster. At 95% hit rate the store sees 579 reads/sec; lose one of three cache nodes and the miss rate goes to roughly 0.33 + 0.67 × 0.05 = 0.365, sending 11,574 × 0.365 ≈ <b>4,200 reads/sec</b> at the store — a 7× spike. Consistent hashing keeps a node loss from reshuffling the other two, and the store must be sized for the degraded number, not the healthy one.</li>
 </ul>
 
+<h4>Dry run: the six phases of this exact interview, with the numbers each one produced</h4>
+<table>
+  <tr><th>Phase</th><th>Time</th><th>What got decided</th><th>Number that drove it</th></tr>
+  <tr><td>Clarify</td><td>0-5 min</td><td>10M creates/day, 100:1 read:write, links live indefinitely, per-click analytics required, keys unguessable</td><td>The analytics answer alone turns 116 writes/sec into 11,574 writes/sec — the single fact that shapes everything after it</td></tr>
+  <tr><td>Estimate</td><td>5-10 min</td><td>Separate the read and write paths; size storage, bandwidth, and cache</td><td>350 peak creates/sec vs 35,000 peak redirects/sec — three orders of magnitude apart; ~27 TB replicated storage; 20 GB cache at 95% hit</td></tr>
+  <tr><td>API + model</td><td>10-16 min</td><td>Six endpoints; the redirect handler takes no auth and does no write; 302 chosen over 301</td><td>301 would cache the mapping in every browser and CDN, making a phishing link irrevocable — the correctness requirement rules it out</td></tr>
+  <tr><td>Core design</td><td>16-30 min</td><td>Counter + base62 for key generation; buffer click counts in memory instead of writing on every redirect</td><td>6-char keys need zero collision handling; buffering cuts click writes from 694,440/min to 144/min, a 4,800× reduction</td></tr>
+  <tr><td>Deep dive</td><td>(within core design + architecture)</td><td>Redirect service is stateless, read-only, one Redis GET and a 302; create service is entirely separate</td><td>At a 95% hit rate the primary datastore sees only 579 reads/sec — the cache, not the database, is what absorbs 35,000/sec</td></tr>
+  <tr><td>Scale + wrap</td><td>30-45 min</td><td>Six-stage scaling path, each gated by a named trigger, not a fixed timeline</td><td>Losing one of three Redis nodes sends store traffic from 579 to ~4,200 reads/sec — the store must be sized for that, not for the healthy case</td></tr>
+</table>
+<p class="sub">
+  Every number in the right-hand column was computed earlier in this same
+  walkthrough — nothing here is new arithmetic. That is the point of the
+  exercise: a senior answer is not six separate good ideas, it is one chain
+  where each phase's output is the next phase's input.
+</p>
+
 <h3>What the interviewer was actually scoring</h3>
 <p>
   The rubric is never "did you produce the reference architecture." Almost
@@ -385,5 +402,16 @@ export const sysdesWalkthroughSimple: Chapter = {
   <li><b>Did you know your correctness boundaries?</b> That the mapping is immutable (so replica lag and stale caches are harmless), that click counts are eventually consistent and may lose ten seconds (fine), but that key uniqueness must be enforced by a conditional write (not fine to hand-wave, because the failure is a link resolving to the wrong site).</li>
   <li><b>Did the follow-up land?</b> "Now make it 100×" or "now it's multi-region" is a test of whether your design had joints. A design where the answer is "add more redirect instances and a regional cache" was built by someone who has scaled something; a design where the answer is "I'd rebuild it" was not.</li>
   <li><b>Level tell:</b> a mid-level answer produces a design that works. A senior/staff answer additionally names the tradeoff it is accepting, quantifies the cost of that trade, states what it is deliberately <em>not</em> building, and identifies the metric that would change its mind.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>State the peak writes/sec and peak reads/sec for this exact scenario from memory, and explain why the three-order-of-magnitude gap between them drives the whole architecture.</li>
+    <li>Compute the base62 key length needed for 18.25 billion keys under random generation versus a counter, and explain why the two strategies need different lengths.</li>
+    <li>Spot the planted click-counter trap and quantify why writing on every redirect turns a read-heavy system into a write-heavy one.</li>
+    <li>Justify 302 over 301 for the redirect using both the analytics requirement and the revocability requirement, not just one.</li>
+    <li>Walk the six-stage scaling path and name the trigger metric that gates each stage, not just the stage's name.</li>
+  </ul>
+</div>`,
 };

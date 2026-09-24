@@ -320,6 +320,26 @@ await kafka.send("order.created", e); <span class="c">// 2. broker unreachable �
   effect.
 </p>
 
+<h4>Dry run: one event surviving a consumer crash and a redelivery, exactly once in effect</h4>
+<table>
+  <tr><th>Time</th><th>Event</th><th>Outbox row (event E77)</th><th><code>processed_events</code> table</th><th>Fulfillment record</th></tr>
+  <tr><td>t0</td><td>Order service commits: <code>orders</code> row + outbox row, one transaction</td><td>status = pending</td><td>empty</td><td>none yet</td></tr>
+  <tr><td>t1</td><td>Relay polls the outbox, publishes E77 to Kafka, marks it sent</td><td>status = sent</td><td>empty</td><td>none yet</td></tr>
+  <tr><td>t2</td><td>Consumer reads E77 at offset 42, begins processing</td><td>sent</td><td>empty</td><td>in progress</td></tr>
+  <tr><td>t3</td><td>Consumer crashes before committing the offset or writing <code>processed_events</code></td><td>sent</td><td>empty</td><td>lost — never committed</td></tr>
+  <tr><td>t4</td><td>Consumer restarts, resumes from the last committed offset (41) — E77 is redelivered</td><td>sent</td><td>empty</td><td>reprocessing starts</td></tr>
+  <tr><td>t5</td><td>Consumer inserts into <code>processed_events(event_id)</code> and writes the fulfillment row, same transaction</td><td>sent</td><td>{E77} — first successful insert</td><td>created, exactly once</td></tr>
+  <tr><td>t6</td><td>Offset committed to 42</td><td>sent</td><td>{E77}</td><td>created</td></tr>
+  <tr><td>t7 (later)</td><td>A consumer-group rebalance redelivers E77 a third time</td><td>sent</td><td>insert hits the unique constraint — conflict, no-op</td><td>unchanged — effect already applied</td></tr>
+</table>
+<p class="sub">
+  The crash at t3 is exactly the case at-least-once delivery is built to
+  survive, and it's also exactly the case a naive consumer gets wrong: the
+  guarantee isn't that E77 arrives once, it's that redelivery at t4 and t7
+  both land on the same <code>processed_events</code> row and produce the
+  same state either way — a duplicate delivery, not a duplicate effect.
+</p>
+
 <h3>Recognizing it in an unseen problem</h3>
 <ul>
   <li><b>Signals:</b> "send a notification", "generate a report", "process the video", "update the search index", "handle Black Friday traffic", or any single request that fans out to three or more downstream systems. If work can finish after the response, it should.</li>
@@ -328,5 +348,16 @@ await kafka.send("order.created", e); <span class="c">// 2. broker unreachable �
   <li><b>Distinguishing it from a request/response cache:</b> both remove latency, but a cache makes reads cheap while a queue makes <em>writes</em> deferrable. If the expensive thing is a read, you want the caching or CDN chapter, not this one.</li>
   <li><b>The pitfall to name unprompted:</b> the dual-write. If your design says "save to the DB, then publish an event", say "…via an outbox table, so I'm not doing a dual write" in the same breath. It is one clause and it reliably reads as senior.</li>
   <li><b>The follow-up you will get:</b> "what if the consumer processes the same message twice?" The answer is never "it won't." It's an idempotency key plus a processed-events table, written in the same transaction as the effect.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain the dual-write problem and why the outbox pattern fixes it by making two writes into one.</li>
+    <li>Trace the crash-and-redelivery dry run above and say exactly which row makes the third delivery at t7 a no-op.</li>
+    <li>Explain why "exactly-once delivery" is impossible but "exactly-once effect" is achievable, in your own words.</li>
+    <li>Decide, for a concrete workload, whether you want a queue or a log — and justify it with the "does anyone need to replay this" test.</li>
+    <li>Explain why partitioning by entity key gives you ordering where it matters without sacrificing parallelism across keys.</li>
+  </ul>
+</div>`,
 };

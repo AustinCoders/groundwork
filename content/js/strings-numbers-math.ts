@@ -107,6 +107,23 @@ randomInt(1, 6);   <span class="c">// a dice roll — 1 through 6, inclusive</sp
   enough that deriving it live, under pressure, is its own small trap.
 </p>
 
+<h4>Dry run: randomInt(1, 6) for four sample Math.random() values</h4>
+<table>
+  <tr><th>Math.random() returns</th><th>× (max − min + 1) = × 6</th><th>Math.floor(...)</th><th>+ min (1)</th><th>Result</th></tr>
+  <tr><td>0</td><td>0</td><td>0</td><td>+1</td><td>1</td></tr>
+  <tr><td>0.166...</td><td>0.996...</td><td>0</td><td>+1</td><td>1</td></tr>
+  <tr><td>0.5</td><td>3.0</td><td>3</td><td>+1</td><td>4</td></tr>
+  <tr><td>0.999999</td><td>5.999994</td><td>5</td><td>+1</td><td>6</td></tr>
+</table>
+<p class="sub">
+  <code>Math.random()</code> gets arbitrarily close to 1 but never
+  reaches it, so <code>Math.floor(random * 6)</code> only ever lands on
+  0 through 5 — six whole numbers — and <code>+ min</code> shifts that
+  range to land on 1 through 6. Drop the <code>+ 1</code> inside the
+  multiply and 6 becomes unreachable; drop the <code>Math.floor</code>
+  and almost every roll is a decimal.
+</p>
+
 <h3>Math.sign, Math.hypot, and checking a number is actually safe</h3>
 <pre><code>Math.sign(-5);    <span class="c">// -1</span>
 Math.sign(0);     <span class="c">// 0</span>
@@ -179,5 +196,16 @@ console.log(isFinite("123"), Number.isFinite("123"));</code></pre>
   <p>
     "Strings are immutable UTF-16 sequences, so their methods return new strings; numbers are IEEE 754 doubles, so <code>0.1 + 0.2</code> is not <code>0.3</code> and money belongs in integers; and <code>Intl</code> formats numbers, dates and currency for the user's locale without hand-rolled code."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Write <code>String(minutes).padStart(2, "0")</code> from memory, and explain what problem it solves.</li>
+    <li>Explain why <code>Math.floor(-4.5)</code> and <code>Math.trunc(-4.5)</code> give different answers, and state the rule each one follows.</li>
+    <li>Derive the <code>randomInt(min, max)</code> formula from scratch, and say what breaks if you drop the <code>+ 1</code> or the <code>Math.floor</code>.</li>
+    <li>Explain why <code>Number.isInteger("5")</code> is <code>false</code> while the global <code>isFinite("123")</code> is <code>true</code> — what's different about how each one treats a string.</li>
+    <li>Explain why <code>(1.005).toFixed(2)</code> is <code>"1.00"</code>, and why the return value is always a string.</li>
+  </ul>
 </div>`,
 };

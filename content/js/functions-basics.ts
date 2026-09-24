@@ -131,6 +131,21 @@ console.log(outer(10, 20));   <span class="c">// what happens?</span></code></pr
   arrows borrow it rather than own it.
 </p>
 
+<h4>Dry run: the call stack, and whose <code>arguments</code> gets read</h4>
+<table>
+  <tr><th>Step</th><th>Call</th><th>Call stack</th><th><code>arguments</code> refers to</th><th><code>arguments.length</code></th></tr>
+  <tr><td>1</td><td><code>outer(10, 20)</code></td><td>[outer]</td><td>outer's own — created fresh for this call</td><td>2</td></tr>
+  <tr><td>2</td><td><code>arrow(1, 2, 3)</code>, called inside outer</td><td>[outer, arrow]</td><td>arrow has none of its own — the lookup reads outer's, through the same lexical link scope uses</td><td>still 2, not 3</td></tr>
+  <tr><td>3</td><td>arrow returns <code>arguments.length</code></td><td>[outer]</td><td>—</td><td>2</td></tr>
+  <tr><td>4</td><td>outer returns that value</td><td>[]</td><td>—</td><td>2</td></tr>
+</table>
+<p class="sub">
+  The three arguments passed to <code>arrow</code> are never read at
+  all — an arrow function doesn't get its own <code>arguments</code>
+  object to shadow the outer one, so the lookup walks straight past it
+  to the nearest function that does: <code>outer</code>.
+</p>
+
 <h3>Parameters, arguments, defaults</h3>
 <p>
   A <b>parameter</b> is the name in the function's own definition. An
@@ -284,5 +299,16 @@ function nested(x) {
   <p>
     "Functions are first-class values you can store and pass, declarations are hoisted whole while expressions and arrows are not, arrows have no <code>this</code> or <code>arguments</code> of their own, and default and rest parameters replace most uses of the old <code>arguments</code> object."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why a <code>function</code> declaration can be called above its own line but a <code>const</code> function expression cannot.</li>
+    <li>Trace why <code>arrow(1, 2, 3)</code> reports <code>arguments.length</code> as 2, not 3, when called from inside <code>outer(10, 20)</code>.</li>
+    <li>Predict what <code>makeUser()</code> returns when <code>return</code> and the object literal are on separate lines, and name the mechanism responsible.</li>
+    <li>Explain why <code>function f(a = b, b = 1) {}</code> throws, in terms of parameter initialisation order and the TDZ.</li>
+    <li>Say what a rest parameter gives you that the old <code>arguments</code> object doesn't, and why arrow functions need it more than regular functions do.</li>
+  </ul>
 </div>`,
 };

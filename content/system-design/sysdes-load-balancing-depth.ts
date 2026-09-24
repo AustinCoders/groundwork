@@ -122,6 +122,25 @@ export const sysdesLoadBalancingDepth: Chapter = {
   a deploy nobody notices and a deploy that pages someone.
 </div>
 
+<h4>Dry run: round robin versus least connections, with one slow request in the mix</h4>
+<p class="sub">Three backends, all idle at t=0. R1 takes 10s; every other request takes 1s. Requests are routed the instant they arrive.</p>
+<table>
+  <tr><th>Request</th><th>Duration</th><th>Arrives</th><th>Round robin target</th><th>RR wait before starting</th><th>Least-connections target</th><th>LC wait before starting</th></tr>
+  <tr><td>R1</td><td>10s</td><td>t=0</td><td>S1</td><td>0 — S1 idle</td><td>S1</td><td>0 — all idle, tie-break to S1</td></tr>
+  <tr><td>R2</td><td>1s</td><td>t=0</td><td>S2</td><td>0 — S2 idle</td><td>S2</td><td>0 — S2 has fewest connections (0)</td></tr>
+  <tr><td>R3</td><td>1s</td><td>t=0</td><td>S3</td><td>0 — S3 idle</td><td>S3</td><td>0 — S3 has fewest connections (0)</td></tr>
+  <tr><td>R4</td><td>1s</td><td>t=1 (R2, R3 just finished)</td><td>S1 — next in the cycle</td><td><b>~9s</b> — S1 is still 9s into R1</td><td>S2 or S3 — both idle, S1 has 1 active</td><td>0 — routed away from the busy server</td></tr>
+  <tr><td>R5</td><td>1s</td><td>t=2</td><td>S2 — next in the cycle, idle</td><td>0</td><td>whichever of S2/S3 is idle</td><td>0</td></tr>
+  <tr><td>R6</td><td>1s</td><td>t=3</td><td>S3 — next in the cycle, idle</td><td>0</td><td>whichever of S2/S3 is idle</td><td>0</td></tr>
+</table>
+<p class="sub">
+  R4 is the entire lesson: round robin's turn-taking is blind to what's
+  in flight, so it sends a fast, cheap request to the one server already
+  occupied by a slow one and makes it queue for 9 seconds behind work it has
+  nothing to do with. Least connections looks at actual load before
+  deciding and routes R4 to an idle backend for free.
+</p>
+
 <h3>Consistent hashing, properly</h3>
 <p>
   Suppose you route cache keys with <code>hash(key) mod N</code>. With four
@@ -370,5 +389,16 @@ export const sysdesLoadBalancingDepth: Chapter = {
   <li>Distinguish this from <b>sharding</b>: load balancing spreads <em>stateless</em> work across interchangeable workers; sharding partitions <em>state</em> across non-interchangeable owners. Consistent hashing shows up in both, which is exactly why people confuse them — name which one you're doing.</li>
   <li>"Users must stay connected to the same server" is a prompt to push back. Ask what state lives there and whether it can be externalised, and only accept affinity for genuinely connection-scoped things.</li>
   <li>Pitfall: treating health checks as a checkbox. If you can describe the detection interval, what the probe does <em>not</em> check, the panic threshold, and what happens to in-flight requests during a deploy, you are answering at a level most candidates never reach.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why round robin can pin a fast request behind a slow one, using the R4 trace above.</li>
+    <li>Compute how many keys move when a consistent-hashing ring grows from 4 to 5 nodes, versus mod-N, and say why the gap matters for a cache's hit rate.</li>
+    <li>Explain why an L4 balancer produces permanent hotspots in front of gRPC or HTTP/2, while an L7 balancer doesn't.</li>
+    <li>Walk through the health-check cascade in the warning box — ten backends down to six — and say what a panic threshold does to stop it.</li>
+    <li>Explain why sticky sessions are "affinity you depend on for correctness" while consistent hashing is "affinity you exploit for performance," and what breaks differently in each when a node dies.</li>
+  </ul>
+</div>`,
 };

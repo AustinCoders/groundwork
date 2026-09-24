@@ -165,6 +165,22 @@ console.log(config.retries); <span class="c">// 3</span></code></pre>
   is the strongest argument against <code>==</code> that exists.
 </p>
 
+<h4>Dry run: evaluating <code>"" == 0 == "0"</code> left to right</h4>
+<table>
+  <tr><th>Step</th><th>Sub-expression</th><th>Coercion applied</th><th>Result</th></tr>
+  <tr><td>1</td><td><code>"" == 0</code></td><td>string vs number → <code>ToNumber("")</code> is <code>0</code></td><td><code>0 == 0</code> → <code>true</code></td></tr>
+  <tr><td>2</td><td><code>true == "0"</code></td><td>boolean vs string → both convert to numbers: <code>ToNumber(true)</code> is <code>1</code>, <code>ToNumber("0")</code> is <code>0</code></td><td><code>1 == 0</code> → <code>false</code></td></tr>
+  <tr><td>final</td><td><code>"" == 0 == "0"</code></td><td>—</td><td><code>false</code></td></tr>
+</table>
+<p class="sub">
+  <code>==</code> is left-associative like every other binary operator
+  here — it never chains three operands the way a math teacher's
+  <code>a &lt; b &lt; c</code> would. The result of step 1 becomes a
+  plain boolean, and that boolean gets coerced all over again for step
+  2 — which is exactly how a chain of individually-true comparisons
+  ends up false.
+</p>
+
 <div class="sticky mint">
   <span class="ttl">Rule</span> Use <code>===</code> and <code>!==</code>
   by default. The one accepted exception is <code>x == null</code>, which
@@ -422,5 +438,16 @@ console.log(3 &gt; 2 &gt; 1);    <span class="c">// what happens?</span></code><
   <p>
     "Use <code>===</code> to avoid coercion, <code>??</code> rather than <code>||</code> when <code>0</code> or an empty string is a valid value, and optional chaining to stop at <code>null</code> or <code>undefined</code> — and remember <code>&amp;&amp;</code> and <code>||</code> return one of their operands, not a boolean."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why <code>5 + "2"</code> and <code>5 - "2"</code> give different-typed results, in terms of what <code>+</code> does that the other operators don't.</li>
+    <li>Walk <code>"" == 0 == "0"</code> through its two comparisons by hand, and explain why <code>==</code> not being transitive is the result.</li>
+    <li>Say what <code>value || fallback</code> gets wrong that <code>value ?? fallback</code> fixes, with <code>0</code> or <code>""</code> as the example.</li>
+    <li>Explain why <code>&amp;&amp;</code> and <code>||</code> return one of their operands instead of a boolean, and predict what <code>log(false) &amp;&amp; log("x")</code> actually evaluates to.</li>
+    <li>Predict what a <code>switch</code> does when a case is missing its <code>break</code>, and why <code>switch</code> uses <code>===</code> semantics while <code>if</code> uses truthy/falsy.</li>
+  </ul>
 </div>`,
 };

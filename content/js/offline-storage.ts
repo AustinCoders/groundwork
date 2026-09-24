@@ -47,6 +47,21 @@ request.onsuccess = (event) =&gt; {
   than hand-rolling callback plumbing for every query.
 </div>
 
+<h4>Dry run: opening "my-app-db" for the very first time</h4>
+<table>
+  <tr><th>Step</th><th>Code / event</th><th>"notes" object store</th><th>What happens</th></tr>
+  <tr><td>1</td><td><code>indexedDB.open("my-app-db", 1)</code></td><td>doesn't exist</td><td>returns a pending request; the browser looks for an existing database of this name</td></tr>
+  <tr><td>2</td><td>none found → <code>onupgradeneeded</code> fires</td><td>doesn't exist yet</td><td><code>event.target.result</code> is the new db, version bumped 0 → 1</td></tr>
+  <tr><td>3</td><td><code>db.createObjectStore("notes", { keyPath: "id" })</code></td><td>created, empty</td><td>only legal inside the <code>versionchange</code> transaction that <code>onupgradeneeded</code> runs in</td></tr>
+  <tr><td>4</td><td>upgrade transaction commits → <code>onsuccess</code> fires</td><td>empty</td><td><code>request.result</code> is now the open db</td></tr>
+  <tr><td>5</td><td><code>db.transaction("notes", "readwrite")</code></td><td>empty</td><td>a new read-write transaction opens on "notes"</td></tr>
+  <tr><td>6</td><td><code>tx.objectStore("notes").put({ id: 1, text: "buy milk" })</code></td><td>write queued, not yet committed</td><td>the put is queued inside the transaction</td></tr>
+  <tr><td>7</td><td>queued work finishes → transaction auto-commits → <code>tx.oncomplete</code> fires</td><td>{ id: 1, text: "buy milk" }</td><td>"saved" is logged</td></tr>
+</table>
+<p class="sub">
+  <code>createObjectStore</code> can only run inside <code>onupgradeneeded</code>'s special versioned transaction — that's why schema changes are gated behind bumping the version number passed to <code>indexedDB.open</code>, not something you can do from an ordinary transaction.
+</p>
+
 <h3>The Cache API</h3>
 <pre><code>const cache = await caches.open("v1");
 await cache.put("/api/products", new Response(JSON.stringify(products)));
@@ -222,5 +237,16 @@ window.addEventListener("offline", () =&gt; console.log("connection lost"));</co
   <p>
     "<code>localStorage</code> is synchronous and small, so anything larger belongs in IndexedDB; the Cache API stores responses and a service worker sits between the page and the network to serve them, with an install, waiting and activate lifecycle that decides when a new version takes over."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why <code>createObjectStore</code> can only be called inside <code>onupgradeneeded</code>, and what triggers that event.</li>
+    <li>Say what the Cache API stores (and what it doesn't), and how that differs from what IndexedDB stores.</li>
+    <li>Walk through a service worker's <code>install</code> → <code>activate</code> → <code>fetch</code> lifecycle, and say what each event is the right place to do.</li>
+    <li>Explain why an already-open tab keeps running the old service worker after an update installs, and what <code>skipWaiting()</code> and <code>clients.claim()</code> do about it.</li>
+    <li>Pick the right storage mechanism (localStorage, IndexedDB, Cache API, or cookies) for a given size and access pattern, and justify it against the comparison table.</li>
+  </ul>
 </div>`,
 };

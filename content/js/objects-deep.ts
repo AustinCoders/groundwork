@@ -114,6 +114,20 @@ console.log(cache.size);</code></pre>
   looks. This is exactly why an object can be used to key a private,
   un-guessable cache entry.
 </p>
+<h4>Dry run: which lookups actually hit</h4>
+<table>
+  <tr><th>Call</th><th>Key compared against</th><th>Same reference as <code>objKey</code>?</th><th>Result</th></tr>
+  <tr><td><code>cache.set(objKey, "cached result")</code></td><td>—</td><td>—</td><td>entry stored under <code>objKey</code> itself</td></tr>
+  <tr><td><code>cache.set("plain-string-key", "also fine")</code></td><td>—</td><td>—</td><td>a second, unrelated entry — size is now 2</td></tr>
+  <tr><td><code>cache.get(objKey)</code></td><td><code>objKey</code></td><td>yes — literally the same object</td><td><code>"cached result"</code></td></tr>
+  <tr><td><code>cache.get({ id: 1 })</code></td><td>a brand-new object, same shape</td><td>no — different object in memory</td><td><code>undefined</code></td></tr>
+</table>
+<p class="sub">
+  Nothing about the <em>shape</em> of the key matters to a
+  <code>Map</code> — only whether it's the exact same reference (or an
+  identical primitive). Rebuilding an object with the same fields never
+  gets you back the entry it was stored under.
+</p>
 <table>
   <tr>
     <th></th>
@@ -354,5 +368,16 @@ config.client?.host ?? "localhost";  <span class="c">// "localhost" — client i
   <p>
     "Copies are shallow unless you make them deep — spread and <code>Object.assign</code> copy one level, <code>structuredClone</code> copies deeply but not functions — <code>Map</code> and <code>Set</code> beat plain objects for arbitrary keys and uniqueness, and <code>toSorted</code> and its family give non-mutating versions of the array methods."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why <code>{ ...base }</code> and <code>structuredClone(base)</code> behave differently on an object with a nested field.</li>
+    <li>Say why <code>cache.get({ id: 1 })</code> misses an identical-looking stored object, in terms of how <code>Map</code> compares keys.</li>
+    <li>Pick <code>Map</code> over a plain object for a specific reason (key type, iteration order, or no inherited baggage) instead of by habit.</li>
+    <li>Explain why <code>Object.freeze</code> doesn't stop a nested object's fields from changing.</li>
+    <li>Use a JSON replacer or reviver to solve a concrete problem — dropping a field on the way out, reviving a <code>Date</code> on the way in.</li>
+  </ul>
 </div>`,
 };

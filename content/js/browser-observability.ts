@@ -94,6 +94,25 @@ function report(payload) {
   navigates away is cancelled &mdash; which is exactly when errors happen.
 </p>
 
+<h4>Dry run: report() across seven calls in one session</h4>
+<table>
+  <tr><th>Call #</th><th>sent before this call</th><th>sent++ &gt;= 5?</th><th>sent after</th><th>fetch sent?</th></tr>
+  <tr><td>1</td><td>0</td><td>false</td><td>1</td><td>yes</td></tr>
+  <tr><td>2</td><td>1</td><td>false</td><td>2</td><td>yes</td></tr>
+  <tr><td>3</td><td>2</td><td>false</td><td>3</td><td>yes</td></tr>
+  <tr><td>4</td><td>3</td><td>false</td><td>4</td><td>yes</td></tr>
+  <tr><td>5</td><td>4</td><td>false</td><td>5</td><td>yes</td></tr>
+  <tr><td>6</td><td>5</td><td>true</td><td>6</td><td>no &mdash; capped</td></tr>
+  <tr><td>7</td><td>6</td><td>true</td><td>7</td><td>no &mdash; capped</td></tr>
+</table>
+<p class="sub">
+  <code>sent++</code> reads the value before incrementing, so the fifth
+  call still gets through &mdash; <code>5 &gt;= 5</code> only turns true
+  starting on the sixth. Five real reports per session, then silence,
+  which is exactly what stops a throwing render loop from taking the
+  logging endpoint down with it.
+</p>
+
 <h3>Field data beats lab data</h3>
 <div class="table-scroll"><table>
 <thead><tr><th>Lab &mdash; Lighthouse, your machine</th><th>Field &mdash; real users</th></tr></thead>
@@ -159,5 +178,16 @@ onINP((m) =&gt; send({ name: m.name, value: m.value, rating: m.rating, route }))
     'when did this start' is answerable. Then field vitals at p75 rather than lab
     numbers, because the mean hides the users who are actually suffering."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why <code>unhandledrejection</code> needs its own listener separate from the <code>error</code> event.</li>
+    <li>Say why source maps should be uploaded to an error tracker but never served to the browser.</li>
+    <li>Walk through the <code>report()</code> rate-limiter dry run and say why the fifth call still gets through but the sixth doesn't.</li>
+    <li>Explain why p75 is the number to read on a metrics dashboard, not the mean.</li>
+    <li>Name the checks to run before opening any code when a new bug report comes in.</li>
+  </ul>
 </div>`,
 };

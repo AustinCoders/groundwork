@@ -44,6 +44,35 @@ import * as math from "./math.js";              <span class="c">// everything, u
 
 </p>
 
+<pre><code><span class="c">// config.js — no imports of its own</span>
+export const env = "prod";
+
+<span class="c">// math.js</span>
+import { env } from "./config.js";
+export const PI = 3.14159;
+console.log("math.js loaded, env =", env);
+
+<span class="c">// app.js — the entry point</span>
+import { PI } from "./math.js";
+console.log("app.js running, PI =", PI);</code></pre>
+<h4>Dry run: evaluation order for app.js → math.js → config.js</h4>
+<table>
+  <tr><th>Step</th><th>What the engine does</th><th>Console output</th></tr>
+  <tr><td>1</td><td><code>app.js</code> starts; hits <code>import { PI } from "./math.js"</code> before any of its own code runs — pauses</td><td>(nothing yet)</td></tr>
+  <tr><td>2</td><td><code>math.js</code> starts; hits <code>import { env } from "./config.js"</code> before its own code — pauses</td><td>(nothing yet)</td></tr>
+  <tr><td>3</td><td><code>config.js</code> has no imports, so it runs to completion immediately</td><td>(no output — it has no <code>console.log</code>)</td></tr>
+  <tr><td>4</td><td><code>math.js</code> resumes, now that <code>config.js</code> has finished, and runs its own top-level code</td><td>"math.js loaded, env = prod"</td></tr>
+  <tr><td>5</td><td><code>app.js</code> resumes, now that <code>math.js</code> has finished, and runs its own top-level code</td><td>"app.js running, PI = 3.14159"</td></tr>
+</table>
+<p class="sub">
+  The order is always leaves-first: a module's own top-level code only runs
+  after every module it statically imports has finished evaluating — the
+  reverse of the order the <code>import</code> lines appear in. It's also why
+  a module imported by several others still only evaluates once: once
+  <code>config.js</code> has run, anything else that imports it later just
+  gets the already-evaluated module, not a second run.
+</p>
+
 <h3>Circular imports — what actually happens</h3>
 <pre><code><span class="c">// a.js</span>
 import { b } from "./b.js";
@@ -227,5 +256,16 @@ import data from "./config.json" with { type: "json" };   <span class="c">// imp
   <p>
     "ES modules are static and evaluated once with live bindings, so imports can be analysed and tree-shaken and circular imports work but may see uninitialised values; CommonJS is dynamic and hands you whatever was exported at the moment you read it, which is where most interop bugs come from."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why an ES module's import binding is "live" rather than a copied value, and how that differs from CommonJS's <code>require()</code>.</li>
+    <li>State the evaluation order for a small import graph — which module's top-level code runs first, and why — before running any code.</li>
+    <li>Explain what problem <code>package.json</code>'s <code>exports</code> field solves, and how it differs from every file being reachable by path.</li>
+    <li>Explain the difference between <code>^</code> and <code>~</code> in a semver range, and why a lockfile is committed even though <code>package.json</code> already lists versions.</li>
+    <li>Name a bundler's three jobs (graph, transpile, pack) and say what a source map is actually for.</li>
+  </ul>
 </div>`,
 };

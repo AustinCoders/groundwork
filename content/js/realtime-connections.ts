@@ -53,6 +53,20 @@ socket.send(JSON.stringify({ type: "message", text: "hi" }));</code></pre>
   open a fresh <code>new WebSocket(url)</code>.
 </div>
 
+<h4>Dry run: readyState through the socket's lifecycle</h4>
+<table>
+  <tr><th>Step</th><th>Event / call</th><th>readyState before</th><th>readyState after</th><th>What happens</th></tr>
+  <tr><td>1</td><td><code>new WebSocket("wss://example.com/chat")</code></td><td>—</td><td>0 (<code>CONNECTING</code>)</td><td>handshake starts; nothing has been sent yet</td></tr>
+  <tr><td>2</td><td>handshake completes</td><td>0</td><td>1 (<code>OPEN</code>)</td><td><code>onopen</code> fires and sends the "join" message</td></tr>
+  <tr><td>3</td><td><code>socket.send(JSON.stringify({ type: "message", text: "hi" }))</code></td><td>1</td><td>1</td><td>succeeds — <code>.send()</code> only works while <code>OPEN</code></td></tr>
+  <tr><td>4</td><td>server pushes a message</td><td>1</td><td>1</td><td><code>onmessage</code> fires with the parsed payload</td></tr>
+  <tr><td>5</td><td>either side starts closing</td><td>1</td><td>2 (<code>CLOSING</code>)</td><td>closing handshake in progress; a <code>.send()</code> now throws</td></tr>
+  <tr><td>6</td><td>closing handshake finishes</td><td>2</td><td>3 (<code>CLOSED</code>)</td><td><code>onclose</code> fires with a code and reason — nothing reconnects on its own</td></tr>
+</table>
+<p class="sub">
+  <code>readyState</code> only ever moves forward through these four numbers, never backward — once a socket reaches <code>CLOSED</code> there is no "reopen," only constructing a brand-new <code>WebSocket</code>.
+</p>
+
 <h3>Server-Sent Events (EventSource)</h3>
 <p>
   The one-directional version — server to client only, over a plain
@@ -167,5 +181,16 @@ connect();</code></pre>
   <p>
     "Polling asks repeatedly, Server-Sent Events push text one way and reconnect on their own, and WebSockets are two-way but need their own reconnection with backoff and jitter — pick the simplest that fits, and always plan for the connection dropping."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>List the four <code>readyState</code> values in order, and say why a socket can never go backward through them.</li>
+    <li>Explain why <code>EventSource</code> reconnects automatically but a plain <code>WebSocket</code> does not.</li>
+    <li>Explain how long polling differs from ordinary interval polling, and why it's a fallback rather than a first choice.</li>
+    <li>Implement exponential backoff with jitter, and explain why the jitter matters as much as the doubling.</li>
+    <li>Given a feature — chat, a live notification feed, a fallback for a restrictive proxy — pick the right one of the three and justify it.</li>
+  </ul>
 </div>`,
 };

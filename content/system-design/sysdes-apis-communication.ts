@@ -329,6 +329,24 @@ COMMIT;</code></pre>
   <li><b>Handle the concurrent duplicate.</b> The retry may arrive while the original is still running. The unique constraint rejects it, and the correct response is <code>409 in progress</code> so the client backs off — not a wait, which converts one slow request into two held connections.</li>
   <li><b>Give keys a lifetime and say what it is.</b> 24 hours to 7 days is typical. After that the record is reaped and a replayed request would execute again — which is fine, because no sane client retries a day later, but you should be the one to point that out.</li>
 </ul>
+
+<h4>Dry run: an idempotency key across a timeout, a retry, and a concurrent duplicate</h4>
+<table>
+  <tr><th>Time</th><th>Event</th><th>Idempotency row (key K)</th><th>Payment charged?</th><th>Client sees</th></tr>
+  <tr><td>t0</td><td>Request A arrives, key K, body hash H1</td><td>INSERT succeeds: (K, H1, in_progress)</td><td>not yet</td><td>waiting</td></tr>
+  <tr><td>t0 + 5 ms</td><td>Request A executes the charge, same transaction</td><td>in_progress</td><td>yes — one charge</td><td>waiting</td></tr>
+  <tr><td>t0 + 8 ms</td><td>Row updated to done with the response</td><td>state = done</td><td>yes (unchanged)</td><td>waiting</td></tr>
+  <tr><td>t0 + 4 s</td><td>Network drops the response before it reaches the client</td><td>state = done</td><td>yes (unchanged)</td><td>client sees a timeout, not the response</td></tr>
+  <tr><td>t0 + 6 s</td><td>Client retries: request B arrives, same key K, same hash H1</td><td>row already exists, state = done</td><td>no new charge</td><td>server returns the <em>stored</em> response — success</td></tr>
+  <tr><td>(alternate) t0 + 2 ms</td><td>Request C races in with key K while A is still in_progress</td><td>INSERT fails — unique constraint on (account_id, key)</td><td>no new charge</td><td>server returns <code>409 in progress</code>, client backs off</td></tr>
+</table>
+<p class="sub">
+  Notice what makes this safe: the insert of the idempotency row and the
+  charge happen in the <em>same transaction</em>, so a charge can never exist
+  without its key recorded, or vice versa. The client cannot tell a lost
+  response from a lost request, but the server never has to guess — it just
+  answers "what did I already decide for key K?"
+</p>
 <p class="sub">
   Retry hygiene is the other half. Retry only on timeouts, connection errors,
   <code>429</code> and <code>5xx</code> — never on <code>4xx</code>, which
@@ -411,5 +429,16 @@ COMMIT;</code></pre>
   <li>Any mutating endpoint involving money, inventory or messages is an idempotency question in disguise. Volunteer the key before you're asked.</li>
   <li>"Show the user their history / feed / all their orders" with a large dataset is a cursor-pagination prompt. Offset in an interview reads as never having operated a table past a few million rows.</li>
   <li>Distinguish this from the <b>message queue</b> topic: this chapter is about the shape of a call between two parties; queues are about durability, ordering and buffering once you've decided the call should be asynchronous. Name the boundary and move on rather than re-deriving both.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Can you explain why the choice between REST, gRPC and GraphQL is a coupling decision, not a format preference?</li>
+    <li>Can you name the three symptoms that mean a synchronous call should have been an event?</li>
+    <li>Can you trace an idempotency key through a timeout, a client retry, and a concurrent duplicate request?</li>
+    <li>Can you explain why offset pagination breaks under concurrent writes while cursor pagination doesn't?</li>
+    <li>Can you say what belongs at an API gateway and what doesn't, and why authorization decisions can't stop there?</li>
+  </ul>
+</div>`,
 };

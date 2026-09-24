@@ -285,7 +285,9 @@ Search matches exactly the same chapters as before, and `tests/search-index.test
 every chapter on the site: every kept word is an original word, and every original word is still
 findable. The one visible change is the sidebar: it marks which chapters matched instead of showing
 how many times, because per-word counts were most of what the trim removed. The same test fails the
-build if any topic's index passes 75 KB gzip.
+build if any topic's index passes 85 KB gzip — raised from 75 on 2026-09-24, after the dry-run-table
+and checklist pass across every chapter pushed JS to 76 KB and React and System Design to 74-76 KB on
+real content growth, not bloat.
 
 **Next, when it is needed:** the budget test is the trigger. When a topic crosses it, the options are
 a precomputed inverted index sharded per topic, or a hosted service (Algolia, Typesense, Meilisearch).

@@ -394,5 +394,32 @@ export const sysdesInterviewMentalModel: Chapter = {
   <li>When they say "let's say traffic grows 100x", they have moved to the bottlenecks phase; stop adding features and start naming what breaks first</li>
   <li>If you have drawn a box you cannot open to three levels of detail, either open it now or declare it out of scope before they ask</li>
   <li>If you find yourself saying "it depends" without immediately naming the variable and your default, you have handed back the question — finish the sentence</li>
-</ul>`,
+</ul>
+
+<h4>Dry run: the five-phase arc applied to "design a service that shows a user their order history"</h4>
+<table>
+  <tr><th>Phase</th><th>Applied here</th><th>Conclusion</th></tr>
+  <tr><td>1. Clarify (0-8 min)</td><td>Ask DAU, read/write ratio, and whether a user must see an order they just placed immediately. Answers: 50M DAU, mostly reads, and yes — read-your-writes matters right after checkout.</td><td>Scope written down: read-heavy, one hard consistency requirement tied to a specific moment (just after write)</td></tr>
+  <tr><td>2. Estimate (8-13 min)</td><td>50M DAU × 5 order-history reads/day = 250M reads/day. Using the "1M requests/day ≈ 12 QPS" anchor: 250 × 12 = 3,000 QPS average, ~7,500 at a 2.5x peak.</td><td>3,000 QPS average will not come off a single relational primary for reads — caching or replicas are now justified, not assumed</td></tr>
+  <tr><td>3. High-level design (13-23 min)</td><td>API + orders table (sharded by user id) + read replicas + cache in front of the replicas. Data model: <code>orders(user_id, order_id, created_at, status, ...)</code>, primary key <code>(user_id, order_id)</code>.</td><td>6-10 boxes, one critical read path and one critical write path, both traceable on the diagram</td></tr>
+  <tr><td>4. Deep dive (23-38 min)</td><td>Interviewer points at "how do you page through years of orders?" — cursor pagination on <code>(created_at, order_id)</code>, not offset, because the set is unbounded and grows forever.</td><td>Taken to implementation detail: the exact query shape, not just the word "pagination"</td></tr>
+  <tr><td>5. Failure (38-45 min)</td><td>"What if the user refreshes right after placing an order and hits a lagging read replica?" — pin that user's reads to the primary for a short window after their own write.</td><td>Read-your-writes violation named and fixed, using exactly the consistency requirement surfaced back in phase 1</td></tr>
+</table>
+<p class="sub">
+  Notice phase 5 answers a question that phase 1 asked and phase 2's numbers
+  never touched — that's the arc doing its job. The prompt changes every
+  time; running clarify → estimate → design → deep-dive → failure in order,
+  and using each phase's output in the next one, is the part that doesn't.
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>State the five phases of the interview arc and roughly how many minutes each gets, without looking at the table.</li>
+    <li>Turn a stated DAU number into a QPS estimate using the "1M requests/day ≈ 12 QPS" anchor, out loud, in under 15 seconds.</li>
+    <li>Explain why "it depends" alone reads as junior, and give the three-part version that reads as senior.</li>
+    <li>Say what changes in your design when an interviewer says "let's say traffic grows 100x" — and why adding features is the wrong reaction.</li>
+    <li>Walk the five-phase dry run above with a different prompt of your own choosing, keeping each phase's conclusion tied to what the previous phase established.</li>
+  </ul>
+</div>`,
 };

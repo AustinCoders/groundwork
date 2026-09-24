@@ -186,6 +186,21 @@ rex.hasOwnProperty("speak");                          <span class="c">// false �
 })();
 </script>
 
+<h4>Dry run: looking up dog.speak()</h4>
+<table>
+  <tr><th>Step</th><th>Object checked</th><th>What it owns</th><th>Has "speak"?</th></tr>
+  <tr><td>1</td><td><code>dog</code></td><td><code>name</code>, <code>breed</code></td><td>no — follow <code>[[Prototype]]</code></td></tr>
+  <tr><td>2</td><td><code>Dog.prototype</code></td><td><code>fetch</code></td><td>no — follow <code>[[Prototype]]</code> again</td></tr>
+  <tr><td>3</td><td><code>Animal.prototype</code></td><td><code>speak</code></td><td>yes — lookup stops here, <code>this</code> stays bound to <code>dog</code></td></tr>
+</table>
+<p class="sub">
+  Three separate objects, one method call — <code>speak</code> is never
+  copied onto <code>dog</code> or onto <code>Dog.prototype</code>. Had
+  <code>Animal.prototype</code> not had it either, the walk would
+  continue to <code>Object.prototype</code>, then to <code>null</code>,
+  and only then return <code>undefined</code> instead of throwing.
+</p>
+
 <h3>What new actually does</h3>
 <p>
   <code>new Fn(...)</code> is four steps, always, whether
@@ -458,5 +473,16 @@ console.log(p.serialize());   <span class="c">// what happens?</span></code></pr
   <p>
     "Every object delegates missing properties to its prototype, forming a chain the lookup walks; <code>new</code> creates an object linked to the constructor's prototype, runs the constructor with <code>this</code> bound to it and returns it, and <code>class</code> is syntax over exactly that, plus genuinely private fields."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Trace a property lookup up a three-level prototype chain, naming exactly which object the search stops at and why.</li>
+    <li>Write the four steps <code>new</code> performs from memory, without looking at <code>myNew</code>.</li>
+    <li>Explain why <code>Dog.prototype</code> and an instance's <code>__proto__</code> are related but not interchangeable.</li>
+    <li>Say why extending <code>Array</code> only works correctly with real <code>class ... extends</code>, not hand-wired prototypes.</li>
+    <li>Decide, for a concrete pair of types, whether composition or inheritance models their relationship better — and why.</li>
+  </ul>
 </div>`,
 };

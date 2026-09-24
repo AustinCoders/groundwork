@@ -166,6 +166,7 @@ deoptimise
 deoptimised
 deoptimising
 deoptimization
+deoptimize
 deoptimized
 deoptimizes
 deque

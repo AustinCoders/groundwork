@@ -348,5 +348,34 @@ export const sysdesCaseStudies: Chapter = {
   <li><b>Never argue from authority.</b> "Netflix does it" is not a reason. "Our demand is predictable in the same way theirs is, which is what makes precomputed placement work here" is a reason.</li>
   <li><b>Scale-check the analogy out loud.</b> Most of these solve problems that appear above roughly 10 million users. If the prompt is a 100k-user product, the correct use of the case study is to explain why you are <em>not</em> doing it yet — which sets up the tradeoff-thinking chapter's central point.</li>
   <li><b>The pitfall:</b> importing a whole architecture instead of one idea. These companies each had a specific constraint that justified a specific cost. Steal the reasoning; leave the org chart.</li>
-</ul>`,
+</ul>
+
+<h4>Dry run: using the Twitter case study inside a live interview answer</h4>
+<p class="sub">Prompt: "Design a social feed where a handful of accounts have 10M+ followers." Applying the six moves above to that one case study, in order.</p>
+<table>
+  <tr><th>Move</th><th>What you'd actually say</th><th>Why it scores</th></tr>
+  <tr><td>1. Lead with the problem, not the company</td><td>"This has the celebrity fan-out shape — a power-law follower distribution, so write amplification blows up for a tiny minority of accounts."</td><td>Analysis of the problem shape, not a name-drop</td></tr>
+  <tr><td>2. Date it and hedge it</td><td>"As Twitter's engineering team described it around 2013 — this may well have changed since."</td><td>Four words of hedging protects you if the interviewer knows it changed</td></tr>
+  <tr><td>3. Always state the cost</td><td>"The fix was fan-out on write, but it cost real write amplification at the tail — a 30M-follower account means 30M list insertions per tweet."</td><td>Shows you understood the decision, not just the punchline</td></tr>
+  <tr><td>4. Never argue from authority</td><td>"Our load isn't Twitter's, but if our follower distribution is similarly power-law, the same split should hold for the same reason — it's write cost that explodes, not read cost."</td><td>Reasons from the property, not from "Twitter does it"</td></tr>
+  <tr><td>5. Scale-check the analogy</td><td>"This only pays off once the account tail is large enough for 30M-insert fan-outs to happen regularly. At a few hundred thousand users I'd skip the hybrid and fan out on write for everyone."</td><td>Matches the chapter's own point that most of these solve problems above ~10M users</td></tr>
+  <tr><td>6. The pitfall, avoided</td><td>"I'm borrowing the specific idea — split head and tail, make the threshold a tunable — not the rest of Twitter's stack."</td><td>Steals the reasoning, leaves the org chart</td></tr>
+</table>
+<p class="sub">
+  Every row is doing the same test: does this sentence teach the interviewer
+  something about <em>this</em> design, or does it just prove you read a blog
+  post? A case study only earns its place in the answer when the answer would
+  be weaker without it.
+</p>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Name the "what to steal" one-line takeaway for at least three of the six case studies, without re-telling the whole story.</li>
+    <li>Explain why Twitter's fan-out threshold is a tunable rather than a fixed number, and say what it depends on.</li>
+    <li>For any case study you cite, state what it cost — not only what it solved.</li>
+    <li>Say why you'd hesitate to propose Netflix's Open Connect model for a service serving 200 KB images.</li>
+    <li>Walk a case study through all four framing moves (problem-first, dated and hedged, cost-stated, scale-checked) in one interview answer without lapsing into name-dropping.</li>
+  </ul>
+</div>`,
 };

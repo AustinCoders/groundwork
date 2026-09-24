@@ -349,6 +349,22 @@ console.log(caller());   <span class="c">// what happens?</span></code></pre>
 })();
 </script>
 
+<h4>Dry run: resolving four names from inside <code>inner()</code></h4>
+<p>Same snippet as the demo above, laid out as a static trace — one row per name, per scope checked.</p>
+<table>
+  <tr><th>Name</th><th>Checked in <code>inner()</code></th><th>Checked in <code>outer()</code></th><th>Checked at top level</th><th>Found in</th><th>Result</th></tr>
+  <tr><td><code>age</code></td><td>✓ found</td><td>—</td><td>—</td><td><code>inner()</code></td><td>29</td></tr>
+  <tr><td><code>name</code></td><td>✗</td><td>✓ found</td><td>—</td><td><code>outer()</code>, one hop out</td><td>"Ana"</td></tr>
+  <tr><td><code>city</code></td><td>✗</td><td>✗</td><td>✓ found</td><td>top level, two hops out</td><td>"Pune"</td></tr>
+  <tr><td><code>zip</code></td><td>✗</td><td>✗</td><td>✗</td><td>nowhere — top level has no outer reference</td><td><code>ReferenceError: zip is not defined</code></td></tr>
+</table>
+<p class="sub">
+  Every lookup starts over from the innermost scope, <code>inner()</code>
+  — there is no shortcut from "found <code>name</code> one hop out last
+  time" to the next name's search. And the search always stops at the
+  <em>first</em> match, which is exactly the mechanism behind shadowing.
+</p>
+
 <p>Three rules fall out of that walk:</p>
 <ul>
   <li>
@@ -721,5 +737,16 @@ read();                       <span class="c">// "kept" — ...and secret is sti
   <p>
     "JavaScript scope is lexical, decided by where you write the code rather than where you call it, and a name lookup walks outward through the enclosing scopes until it finds a match — which is why an inner variable shadows an outer one, and why assigning to an undeclared name in sloppy mode quietly creates a global."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Name every kind of scope JavaScript has, from global down to a bare block, and say what triggers each one being created.</li>
+    <li>Walk a name lookup outward, scope by scope, for a nested function, and explain why the search never looks inward or sideways.</li>
+    <li>Explain why <code>report()</code> returns <code>"global"</code> even when called from inside <code>caller()</code>, which has its own <code>who</code>.</li>
+    <li>Predict what a typo'd assignment does in sloppy mode versus strict mode, and say which one you actually want.</li>
+    <li>Explain the difference between "out of scope" and "does not exist," using a closure as the example where the two come apart.</li>
+  </ul>
 </div>`,
 };

@@ -122,6 +122,24 @@ export const sysdesDistributedConsensus: Chapter = {
   Randomization is not a tuning detail; it is the liveness mechanism.
 </p>
 
+<h4>Dry run: a five-node election where randomized timeouts avoid a split vote</h4>
+<table>
+  <tr><th>Time (ms)</th><th>Event</th><th>Votes for n1</th><th>Votes for n5</th><th>Cluster state</th></tr>
+  <tr><td>0</td><td>Leader's heartbeats stop arriving</td><td>0</td><td>0</td><td>Term 4, all five nodes idle followers</td></tr>
+  <tr><td>147</td><td>n1's randomized timeout fires first; it becomes a candidate, votes for itself, increments to term 5</td><td>1 (self)</td><td>0</td><td>n1 sends RequestVote(term 5) to n2, n3, n4, n5</td></tr>
+  <tr><td>150</td><td>n2, n3, n4 receive the request; none has voted in term 5 yet, so all grant it</td><td>4</td><td>0</td><td>n1 reaches 4/5 — majority of 3 already cleared — <b>n1 becomes leader</b></td></tr>
+  <tr><td>155</td><td>n5's own (later) timeout fires; it had not yet heard from n1. It becomes a candidate, increments to term 5, votes for itself</td><td>4</td><td>1 (self)</td><td>n5 sends RequestVote(term 5) to the others</td></tr>
+  <tr><td>156</td><td>n1, n2, n3, n4 each already voted in term 5 (for n1) — a node grants at most one vote per term, so all reject n5</td><td>4</td><td>1</td><td>n5 cannot reach a majority; remains candidate</td></tr>
+  <tr><td>160</td><td>n1's first heartbeat (AppendEntries, term 5) reaches n5</td><td>4</td><td>1</td><td>n5 sees term 5 ≥ its own current term, steps down to follower — no second election needed</td></tr>
+</table>
+<p class="sub">
+  The whole outcome turns on n1's timer firing 8 ms before n5's. Because the
+  timeouts were drawn from a random range instead of a fixed value, that head
+  start was likely rather than coincidental — which is exactly why
+  randomization is described above as the liveness mechanism, not a tuning
+  knob: it is what keeps this scenario from repeating every single term.
+</p>
+
 <h3>Log replication and the commit rule</h3>
 <p>
   Every state change is an entry appended to a replicated log. Clients send
@@ -300,5 +318,16 @@ export const sysdesDistributedConsensus: Chapter = {
   <li>Distinguish from quorum replication: quorums give you consistency for a <em>single key</em>; consensus gives you an agreed <em>ordered log</em>, which is what you need for leadership, membership, and atomic commit.</li>
   <li>Distinguish from CAP: consensus systems are the CP corner made concrete — during a partition the minority stops. If the prompt cannot tolerate stopping, you need to move that data out of the consensus path entirely.</li>
   <li>Scope it explicitly. A good answer keeps consensus on a small amount of metadata (leases, shard maps, config) and keeps the bulk data out of it, because a consensus group's throughput is bounded by a majority round trip.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why a majority guarantees at most one leader per term, using the set-overlap argument.</li>
+    <li>Walk through the five-node election dry run above and say what would change if n1 and n5 had timed out at the exact same millisecond.</li>
+    <li>Explain why randomized election timeouts are a liveness mechanism, not a tuning detail.</li>
+    <li>Describe what a fencing token fixes that a lock service alone cannot, and trace it through the client-A / client-B scenario in this chapter.</li>
+    <li>Say, for a design you're sketching, exactly which piece of state needs consensus and which pieces don't — and why reaching for etcd or ZooKeeper is usually right instead of writing Raft yourself.</li>
+  </ul>
+</div>`,
 };

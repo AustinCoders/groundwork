@@ -296,6 +296,26 @@ function allowRequest(userId) {
   the numbers we estimated."
 </div>
 
+<h4>Dry run: applying "when not to scale out" to one incident before reaching for a shard</h4>
+<p class="sub">Scenario: p99 latency on checkout climbs from 120 ms to 800 ms during a flash sale, and the team's first instinct is to shard the primary database.</p>
+<table>
+  <tr><th>Step</th><th>Applied to this incident</th><th>Conclusion</th></tr>
+  <tr><td>1. Measure</td><td>App-tier CPU is 40%; database CPU is 95%, but disk IOPS is low and the connection pool sits at 198/200</td><td>Connections are the saturated resource, not raw CPU or disk — sharding wouldn't even be aimed at the actual bottleneck</td></tr>
+  <tr><td>2. The missing index</td><td>The slow query log shows a full scan over 40M rows on <code>orders.customer_id</code>, no index present</td><td>Add the index first — the chapter's own claim is that one index has fixed more dying databases than every scaling technique combined</td></tr>
+  <tr><td>3. N+1 queries</td><td>Checkout issues one query per line item — about 12 round trips per request</td><td>Batch into one query — an application bug, not a capacity problem, and it generates load even on a well-sized database</td></tr>
+  <tr><td>4. Connection pool configuration</td><td>20 app instances × a 50-connection pool each = up to 1,000 connections against a 200-connection database limit</td><td>The pool, not the box, is exhausted — fix the pool sizing (or add a pooler) before resizing anything else</td></tr>
+  <tr><td>5. Caching the hot 1%</td><td>90% of reads during the sale hit the same ~500 discounted SKUs</td><td>A small Redis cache in front absorbs nearly all of that traffic — a textbook power-law read distribution</td></tr>
+  <tr><td>6. Move work off the request path</td><td>Order-confirmation emails and analytics events are sent synchronously inside the checkout request</td><td>Move both to a queue — neither belongs in the user's 200 ms budget</td></tr>
+  <tr><td>7. Then buy the bigger box</td><td>If the primary is still CPU-bound after steps 1–6</td><td>Resize vertically — "a one-line change that buys months" — before sharding, which is a one-way door</td></tr>
+</table>
+<p class="sub">
+  Six of the seven fixes never touch the database's shape at all — the
+  incident that looked like "we need to shard" turned out, on closer
+  measurement, to be an index, a query pattern, a pool setting, a cache,
+  and a queue. Sharding stays the last resort precisely because the
+  chapter orders the checklist that way.
+</p>
+
 <h3>Recognizing it in an unseen problem</h3>
 <ul>
   <li>Do the scale math first: below roughly 10,000 writes/sec or a few terabytes, one primary plus replicas is a defensible design and reaching past it needs justification</li>
@@ -304,5 +324,16 @@ function allowRequest(userId) {
   <li>If the design keeps anything per-user in process memory — sessions, WebSocket maps, rate limit counters, upload buffers — that component is stateful and cannot simply be autoscaled; decide where the state goes before you add the second instance</li>
   <li>Distinguish scaling out from sharding: adding stateless app servers is nearly free, and partitioning a database is a one-way door involving hot keys, cross-shard queries, and resharding pain</li>
   <li>The trap is symmetric — under-designing for a stated billion-user scale reads as naive, and over-designing for a stated thousand-user scale reads as undisciplined; the number they gave you is the tiebreaker</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Walk the "when not to scale out" checklist against a real incident, in order, before proposing sharding or adding nodes.</li>
+    <li>Explain how a missing index or N+1 queries can masquerade as "we need more capacity," and how measuring the saturated resource tells them apart.</li>
+    <li>State the two triggers that actually justify sharding a database, and explain why "traffic went up" on its own is not one of them.</li>
+    <li>Explain why adding a read replica adds write work rather than absorbing it, and name a fix for the read-your-own-writes staleness trap.</li>
+    <li>Given a design, point to the component holding per-user state in process memory and explain why it can't simply be autoscaled like the rest of the app tier.</li>
+  </ul>
+</div>`,
 };

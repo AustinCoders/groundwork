@@ -132,6 +132,25 @@ function render() {
   anything up.
 </p>
 
+<h4>Dry run: tasks through add, toggle, delete</h4>
+<table>
+  <tr><th>Step</th><th>Call</th><th><code>tasks</code> after</th></tr>
+  <tr><td>1</td><td>start</td><td><code>[]</code></td></tr>
+  <tr><td>2</td><td>submit "Buy milk"</td><td><code>[{id:"t1", title:"Buy milk", done:false}]</code></td></tr>
+  <tr><td>3</td><td>submit "Walk dog"</td><td><code>[{id:"t1",...done:false}, {id:"t2", title:"Walk dog", done:false}]</code></td></tr>
+  <tr><td>4</td><td>check the box for t1</td><td><code>[{id:"t1",...done:<b>true</b>}, {id:"t2",...done:false}]</code></td></tr>
+  <tr><td>5</td><td>click Delete on t2</td><td><code>[{id:"t1", title:"Buy milk", done:true}]</code></td></tr>
+</table>
+<p class="sub">
+  Every step replaces <code>tasks</code> with a whole new array —
+  <code>[...tasks, makeTask(title)]</code>,
+  <code>tasks.map(...)</code>, <code>tasks.filter(...)</code> — never
+  mutates the old one in place. That's what "the array is the truth"
+  means in practice: <code>render()</code> can always trust that a
+  changed reference means changed data, because nothing ever edits the
+  old array behind its back.
+</p>
+
 <h3>Step 6 &mdash; filters</h3>
 <pre><code>document.querySelector("#filters").addEventListener("click", (e) =&gt; {
   const next = e.target.dataset.filter;
@@ -259,5 +278,16 @@ render();</code></pre>
     to those same four &mdash; and you will understand the answers better for
     having written the manual version once.
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain the one rule ("the array is the truth") and point to the exact line in <code>render()</code> that depends on it.</li>
+    <li>Say why <code>tasks = [...tasks, makeTask(title)]</code> is written that way instead of <code>tasks.push(makeTask(title))</code>.</li>
+    <li>Trace the task array through an add, a toggle, and a delete, writing down its shape after each one.</li>
+    <li>Explain why <code>save</code>/<code>load</code> stay the same two function names when swapped for a server, and what becomes <code>async</code> as a result.</li>
+    <li>Name the three things a network-backed <code>save</code>/<code>load</code> has to handle that <code>localStorage</code> never did.</li>
+  </ul>
 </div>`,
 };

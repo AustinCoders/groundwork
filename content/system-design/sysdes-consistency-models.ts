@@ -172,6 +172,25 @@ export const sysdesConsistencyModels: Chapter = {
   Raising W or R moves you further into the tail of the slowest responder —
   which is why quorum systems tune these per-query rather than globally.
 </p>
+
+<h4>Dry run: N=3, W=2, R=2 — and what breaks it</h4>
+<table>
+  <tr><th>Time</th><th>Operation</th><th>Nodes contacted</th><th>Resulting state</th><th>Read/write sets overlap?</th><th>Result</th></tr>
+  <tr><td>t0</td><td>write v1</td><td>acks from R1, R2 (W=2)</td><td>R1=v1, R2=v1, R3=v0</td><td>—</td><td>Write succeeds</td></tr>
+  <tr><td>t1</td><td>read</td><td>contacts R2, R3 (R=2)</td><td>sees v1 (R2), v0 (R3)</td><td>Yes — R2 is in both the write set {R1,R2} and the read set {R2,R3}</td><td>Returns v1 — correct</td></tr>
+  <tr><td>t2</td><td>write v2</td><td>acks from R1, R3 (W=2)</td><td>R1=v2, R2=v1, R3=v2</td><td>—</td><td>Write succeeds</td></tr>
+  <tr><td>t3</td><td>read</td><td>contacts R1, R2 (R=2)</td><td>sees v2 (R1), v1 (R2)</td><td>Yes — R1 is in both {R1,R3} and {R1,R2}</td><td>Returns v2 — correct</td></tr>
+  <tr><td>t4</td><td>write v3, during a partition — R1 and R2 unreachable</td><td><b>sloppy quorum</b> acks from R3 (real member) + R4 (hinted handoff, not in the preference list)</td><td>R3=v3; hint queued on R4</td><td>The acking set {R3,R4} is no longer a subset of {R1,R2,R3}</td><td>Write "succeeds" (W=2 met)</td></tr>
+  <tr><td>t5</td><td>read, partition healed, hint not yet delivered</td><td>contacts R1, R2 (R=2)</td><td>sees v2 (R1), v1 (R2)</td><td><b>No</b> — write set was {R3,R4}, read set is {R1,R2}: disjoint</td><td>Returns v2 — <b>v3 is silently missed</b></td></tr>
+</table>
+<p class="sub">
+  The pigeonhole argument only holds while every acking node is a genuine
+  member of the key's preference list. The moment a sloppy quorum lets an
+  outsider count toward W, the read set and write set can miss each other
+  entirely — which is exactly why R + W &gt; N is a normal-operation
+  guarantee, not a partition-tolerant one.
+</p>
+
 <div class="warn">
   <span class="ttl">⚠ R + W &gt; N does not give you linearizability</span>
   It guarantees the newest <em>committed</em> value is in the read set. It
@@ -281,5 +300,16 @@ export const sysdesConsistencyModels: Chapter = {
   <li><b>Uniqueness and inventory are not consistency-tunable.</b> If two concurrent operations must not both succeed, no choice of R and W saves you — you need a single point of serialisation. Say that explicitly; it's a common trap.</li>
   <li><b>Quantify.</b> "Cross-region lag is ~100 ms, so a European read of a US write can be stale for a tenth of a second — fine for a like count, not for a payment confirmation" is worth more than three paragraphs of theory.</li>
   <li><b>The pitfall to avoid:</b> using "strongly consistent" and "serializable" interchangeably. If you only remember one thing: linearizability = recency of one key; serializability = transactions appear one-at-a-time.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain, using the pigeonhole argument, why R + W &gt; N guarantees a reader sees the newest write during normal operation.</li>
+    <li>Trace what happens to that guarantee when a sloppy quorum with hinted handoff is in play during a partition, as in the dry run above.</li>
+    <li>State the difference between linearizability and serializability in one sentence each.</li>
+    <li>Pick a consistency model per operation for a concrete feature (a like count versus a username reservation, say) and justify each choice.</li>
+    <li>Explain why "we'll use eventual consistency" is an incomplete answer without also naming which specific operations need read-your-writes or strong consistency.</li>
+  </ul>
+</div>`,
 };

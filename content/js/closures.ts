@@ -317,6 +317,22 @@ console.log("a:", a(), " b:", b());   <span class="c">// what happens?</span></c
   scene was showing.
 </p>
 
+<h4>Dry run: what each call actually incremented</h4>
+<table>
+  <tr><th>Call</th><th>Which environment</th><th>count before</th><th>count after</th></tr>
+  <tr><td><code>a()</code> — 1st</td><td><code>a</code>'s (from the first <code>makeCounter()</code>)</td><td>0</td><td>1</td></tr>
+  <tr><td><code>a()</code> — 2nd</td><td><code>a</code>'s</td><td>1</td><td>2</td></tr>
+  <tr><td><code>a()</code> — 3rd</td><td><code>a</code>'s</td><td>2</td><td>3</td></tr>
+  <tr><td><code>b()</code> — 1st</td><td><code>b</code>'s (from the second <code>makeCounter()</code>)</td><td>0</td><td>1</td></tr>
+  <tr><td><code>a()</code> in the final log</td><td><code>a</code>'s</td><td>3</td><td>4</td></tr>
+  <tr><td><code>b()</code> in the final log</td><td><code>b</code>'s</td><td>1</td><td>2</td></tr>
+</table>
+<p class="sub">
+  <code>a</code> and <code>b</code> never touch the same <code>count</code>
+  — each call to <code>makeCounter()</code> built a fresh environment, so
+  there were always two separate boxes, not one shared between them.
+</p>
+
 <h3>Five real jobs closures do</h3>
 <p>
   Interviews rarely ask "what is a closure". They ask you to build one
@@ -665,5 +681,16 @@ setInterval(() =&gt; update(detachedNode), 1000);</code></pre>
   <p>
     "A closure is a function plus a live link to the scope where it was created, so it keeps those variables alive after the outer function returns; it captures the variable, not a copy of its value, which is why counters and private state work and why a <code>var</code> in a loop gives every callback the same value."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why <code>count</code> in <code>makeCounter</code> survives after the function returns, in terms of what the garbage collector can and can't touch.</li>
+    <li>Say why two calls to the same factory function produce two independent closures, not one shared one.</li>
+    <li>Build a private counter or cache using a closure, with no property anyone outside can reach directly.</li>
+    <li>Explain why the <code>var</code> loop prints <code>3 3 3</code> and the <code>let</code> loop prints <code>0 1 2</code>, in terms of how many bindings each one creates.</li>
+    <li>Name two ways a closure can leak memory in production, and the fix for each.</li>
+  </ul>
 </div>`,
 };

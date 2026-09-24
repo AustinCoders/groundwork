@@ -486,6 +486,30 @@ console.log("after");
   <a href="/notes/async-properly">Async, properly</a>.
 </p>
 
+<pre><code>console.log('start');
+setTimeout(() =&gt; console.log('timeout done'), 0);
+Promise.resolve().then(() =&gt; console.log('promise done'));
+console.log('end');</code></pre>
+<h4>Dry run: sync code, a timer, and a promise racing for the thread</h4>
+<table>
+  <tr><th>Step</th><th>What runs</th><th>Call stack</th><th>Microtask queue</th><th>Task queue</th><th>Console</th></tr>
+  <tr><td>1</td><td><code>console.log('start')</code></td><td>main</td><td>empty</td><td>empty</td><td>start</td></tr>
+  <tr><td>2</td><td><code>setTimeout(...)</code> called</td><td>main</td><td>empty</td><td>empty</td><td>start</td></tr>
+  <tr><td>3</td><td>timer handed to the host; returns immediately</td><td>main</td><td>empty</td><td>timer counting, off-thread</td><td>start</td></tr>
+  <tr><td>4</td><td><code>Promise.resolve().then(...)</code> called — already resolved, reaction queued now</td><td>main</td><td>[log 'promise done']</td><td>timer counting</td><td>start</td></tr>
+  <tr><td>5</td><td><code>console.log('end')</code></td><td>main</td><td>[log 'promise done']</td><td>timer counting</td><td>start, end</td></tr>
+  <tr><td>6</td><td>script finishes — stack empty</td><td>empty</td><td>[log 'promise done']</td><td>timer counting</td><td>start, end</td></tr>
+  <tr><td>7</td><td>event loop drains the microtask queue</td><td>empty</td><td>empty</td><td>timer counting</td><td>start, end, promise done</td></tr>
+  <tr><td>8</td><td>timer expires, callback moved from task queue to stack</td><td>empty</td><td>empty</td><td>empty</td><td>start, end, promise done, timeout done</td></tr>
+</table>
+<p class="sub">
+  <code>setTimeout(..., 0)</code> does not mean "run next" — it means
+  "queue this once the stack is empty," and the microtask queue always
+  drains completely before the loop even looks at the task queue. That
+  ordering is why the promise callback wins even though it was queued
+  <em>after</em> the timer was started.
+</p>
+
 <h3>Two consequences that will bite you</h3>
 <h4>setTimeout's delay is a minimum, not a promise</h4>
 <p>
@@ -610,5 +634,16 @@ onmessage = (e) =&gt; postMessage(crunch(e.data));</code></pre>
   <p>
     "One thread means one call stack, so a long synchronous task blocks everything, rendering included; asynchronous APIs hand the waiting to the host and the event loop feeds their callbacks back once the stack is empty, and CPU-heavy work belongs in a Web Worker."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Read a stack trace as a printed call stack, and say which frame was running when the error was thrown.</li>
+    <li>Explain why one thread lets you write DOM code with no locks — what specifically would break with two.</li>
+    <li>Trace the console output order for a snippet mixing a synchronous log, a <code>setTimeout(fn, 0)</code>, and a <code>Promise.then</code>.</li>
+    <li>Explain why <code>setTimeout(fn, 0)</code> does not mean "run immediately," in terms of the call stack and the task queue.</li>
+    <li>Say when async is the wrong tool and a Web Worker is the right one — and why wrapping a slow loop in a promise does not fix it.</li>
+  </ul>
 </div>`,
 };

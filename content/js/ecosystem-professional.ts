@@ -65,6 +65,22 @@ export const ecosystemProfessional: Chapter = {
   production-ready today, not experiments.
 </p>
 
+<h4>Dry run: picking a runtime for one concrete project</h4>
+<table>
+  <tr><th>Question from the table above</th><th>Answer for this project</th><th>What it rules in or out</th></tr>
+  <tr><td colspan="3">Scenario: a CLI tool that runs untrusted plugin scripts and should start fast, written in TypeScript.</td></tr>
+  <tr><td>Needs to sandbox untrusted code?</td><td>Yes</td><td>rules out Node and Bun — both grant full filesystem/network access by default</td></tr>
+  <tr><td>Needs to run <code>.ts</code> directly, no build step?</td><td>Yes</td><td>rules out Node — needs a transpile step first; Deno and Bun both qualify</td></tr>
+  <tr><td>Depends on a large existing npm/CommonJS ecosystem?</td><td>No — few dependencies, all modern</td><td>removes the strongest reason to default to Node anyway</td></tr>
+  <tr><td colspan="3">Conclusion: <b>Deno</b> — the only one of the three that satisfies the sandboxing requirement</td></tr>
+</table>
+<p class="sub">
+  Same three rows the table above already gives — this is just running
+  one real scenario through them in order, instead of reading each row
+  in isolation. Change one fact (say, a large existing npm dependency
+  tree the team can't rewrite) and the same walk lands on Node instead.
+</p>
+
 <h3>What a bundler is actually doing: ASTs</h3>
 <p>
   Every tool in this chapter — a bundler, a linter, a formatter, a
@@ -178,5 +194,16 @@ console.log(JSON.stringify(ast.declarations[0].init, null, 2));</code></pre>
   <p>
     "A bundler parses code into an AST to follow imports and drop what is unused, a transpiler rewrites new syntax for older engines, and a polyfill supplies a missing runtime API — three different problems that are constantly confused, and knowing which one you have decides the fix."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain what "structural" typing means for TypeScript, in one sentence.</li>
+    <li>Walk the Node/Deno/Bun decision table against a project with different constraints than the dry run above, and land on a different runtime.</li>
+    <li>Explain why a bundler or codemod has to work on an AST instead of regex-replacing the source text directly.</li>
+    <li>Say the difference between what a transpiler fixes and what a polyfill fixes, and why one can't substitute for the other.</li>
+    <li>Name which TC39 stage a proposal needs to reach before it's safe to rely on without a transpiler.</li>
+  </ul>
 </div>`,
 };

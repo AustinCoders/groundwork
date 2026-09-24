@@ -91,6 +91,23 @@ console.log(makeCycle());
   free: once <code>makeCycle</code> returns, nothing reachable from a
   root points at either object, cycle or not, so both are simply gone.
 </p>
+
+<h4>Dry run: what's reachable, step by step</h4>
+<table>
+  <tr><th>Step</th><th>Code</th><th><code>a</code> reachable?</th><th><code>b</code> reachable?</th></tr>
+  <tr><td>1</td><td><code>const a = {};</code></td><td>yes — local var on <code>makeCycle</code>'s stack frame</td><td>doesn't exist yet</td></tr>
+  <tr><td>2</td><td><code>const b = {};</code></td><td>yes</td><td>yes — local var on the same stack frame</td></tr>
+  <tr><td>3</td><td><code>a.friend = b;</code></td><td>yes</td><td>yes — now also pointed to by <code>a.friend</code></td></tr>
+  <tr><td>4</td><td><code>b.friend = a;</code></td><td>yes — now also pointed to by <code>b.friend</code></td><td>yes</td></tr>
+  <tr><td>5</td><td><code>makeCycle()</code> returns, its stack frame pops</td><td>no — no root points to <code>a</code> anymore; only <code>b.friend</code> does</td><td>no — only <code>a.friend</code> points to it</td></tr>
+  <tr><td>6</td><td>next GC pass</td><td>collected</td><td>collected</td></tr>
+</table>
+<p class="sub">
+  Reachability, not reference count, decides this — <code>a</code> and <code>b</code>
+  still reference each other right up through step 6, but neither is reachable
+  from a root once the frame that held them pops, so the collector reclaims the
+  whole two-object cycle in one pass.
+</p>
 <p>
   V8 specifically runs a <b>generational</b> collector, built on one
   observation: most objects die young. New objects go into a small
@@ -243,5 +260,16 @@ c.z = 7;                      <span class="c">// now c has a DIFFERENT shape —
   <p>
     "V8 keeps primitives and call frames on the stack and objects on the heap, and its garbage collector frees anything unreachable, so a JavaScript leak is almost always something still reachable that you forgot — a listener, a timer, a detached DOM node — and you find it by comparing heap snapshots."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why <code>a</code> and <code>b</code> in <code>makeCycle</code> become eligible for collection even though they still reference each other, in terms of reachability from a root.</li>
+    <li>Explain the generational hypothesis behind V8's young/old generation split, and why it makes the Scavenger fast.</li>
+    <li>Explain what makes a call site monomorphic, polymorphic, or megamorphic, and why building objects with properties in a consistent order matters for it.</li>
+    <li>Explain what causes V8 to deoptimize a function, and why a function called with alternating argument types might never settle into TurboFan's fast path.</li>
+    <li>Given a suspected leak — a forgotten interval, a detached DOM node, an unbounded cache — name the fix, and how a heap snapshot comparison would confirm it.</li>
+  </ul>
 </div>`,
 };

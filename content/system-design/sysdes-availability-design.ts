@@ -54,6 +54,26 @@ export const sysdesAvailabilityDesign: Chapter = {
   </svg>
   <figcaption>Serial dependencies multiply. Adding a sixth 99.9% service costs you another 8.8 hours a year before you have written a line of your own code.</figcaption>
 </figure>
+
+<h4>Dry run: adding one 99.9% dependency at a time</h4>
+<table>
+  <tr><th>Step</th><th>Dependency added</th><th>Running product</th><th>Availability</th><th>Downtime / year</th></tr>
+  <tr><td>0</td><td>Your own tier alone</td><td>0.999</td><td>99.90%</td><td>8.8 h</td></tr>
+  <tr><td>1</td><td>+ auth (99.9%)</td><td>0.999 × 0.999 = 0.998001</td><td>99.80%</td><td>17.5 h</td></tr>
+  <tr><td>2</td><td>+ profiles (99.9%)</td><td>× 0.999 = 0.997003</td><td>99.70%</td><td>26.3 h</td></tr>
+  <tr><td>3</td><td>+ social graph (99.9%)</td><td>× 0.999 = 0.996006</td><td>99.60%</td><td>35.0 h</td></tr>
+  <tr><td>4</td><td>+ media meta (99.9%)</td><td>× 0.999 = 0.995010</td><td>99.50%</td><td>43.7 h</td></tr>
+  <tr><td>5</td><td>+ payments (99.9%)</td><td>× 0.999 = 0.994015</td><td>99.40%</td><td>52.4 h</td></tr>
+  <tr><td>6</td><td>Make payments optional (degrade instead of hard-fail)</td><td>back to step 4's product</td><td>99.50%</td><td>43.7 h</td></tr>
+</table>
+<p class="sub">
+  Each additional hard dependency costs roughly another 8-9 hours a year at
+  three nines, regardless of which one it is — the multiplication doesn't
+  care about names. Step 6 is the only row that recovers availability, and it
+  does it without touching a single server: converting payments from a hard
+  dependency to an optional one (queue the order, confirm asynchronously)
+  simply removes its factor from the product.
+</p>
 <p>
   Include your own tier in that product and five hard dependencies at three
   nines put you at 99.40% — about 52 hours a year. Notice what that means:
@@ -330,5 +350,16 @@ export const sysdesAvailabilityDesign: Chapter = {
   <li>Distinguish from <b>consistency</b>: if the prompt stresses "users must never see stale data", you are being asked a CAP question, not an availability question — and the two pull in opposite directions during a partition.</li>
   <li>Anything with a hard dependency on a third party you don't control (payments, mapping, SMS) should trigger the degradation conversation: what does the product do when that vendor is down for 20 minutes?</li>
   <li>Pitfall: treating redundancy as sufficient. Redundancy without automated, tested, ramped failover raises your cost and leaves your availability roughly where it was.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Can you compute the end-to-end availability of a chain of five 99.9% dependencies, and state it in hours of downtime per year?</li>
+    <li>Can you explain why a two-node cluster is often worse than one for split-brain purposes, and what fixes it?</li>
+    <li>Can you distinguish liveness, readiness and deep health checks, and say what each must never check?</li>
+    <li>Can you name three single points of failure that aren't the database, and where they hide?</li>
+    <li>Can you explain what an error budget is and what happens to feature work once it's exhausted?</li>
+  </ul>
+</div>`,
 };

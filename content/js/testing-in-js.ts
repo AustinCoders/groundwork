@@ -164,6 +164,23 @@ it("debounce only calls the function once after the delay", () =&gt; {
   fake clock, it doesn't actually wait.
 </p>
 
+<h4>Dry run: the debounce fake-timer test, assertion by assertion</h4>
+<table>
+  <tr><th>Line</th><th>What happens</th><th>fn call count</th></tr>
+  <tr><td>debounced() — 1st call</td><td>schedules a timer 200ms out</td><td>0</td></tr>
+  <tr><td>debounced() — 2nd call</td><td>cancels the 1st call's timer, schedules a new one</td><td>0</td></tr>
+  <tr><td>debounced() — 3rd call</td><td>cancels the 2nd call's timer, schedules a new one</td><td>0</td></tr>
+  <tr><td>expect(fn).not.toHaveBeenCalled()</td><td>passes — no real or fake time has advanced yet</td><td>0</td></tr>
+  <tr><td>vi.advanceTimersByTime(200)</td><td>fake clock jumps forward; only the 3rd call's timer is still alive, so it fires</td><td>1</td></tr>
+  <tr><td>expect(fn).toHaveBeenCalledTimes(1)</td><td>passes</td><td>1</td></tr>
+</table>
+<p class="sub">
+  Three calls, one real invocation — the same debounce behavior verified
+  in the closures chapter, now checked with real assertions instead of a
+  <code>console.log</code>, and in milliseconds instead of an actual
+  200ms wait.
+</p>
+
 <h3>Testing async code, and what makes a test flaky</h3>
 <pre><code>it("resolves with the fetched user", async () =&gt; {
   const user = await loadUser(1);        <span class="c">// await works inside a test exactly like anywhere else</span>
@@ -281,5 +298,16 @@ test("a visitor can add an item to the cart", async ({ page }) =&gt; {
   <p>
     "Test behaviour rather than implementation, query the DOM by role the way a user finds things, mock only at the boundary such as the network, use fake timers to keep async tests fast and deterministic, and treat coverage as a way to find untested code, not as proof of quality."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain the difference between a unit, integration, and E2E test, and why the pyramid shape exists.</li>
+    <li>Say why <code>submitForm(data, onSave)</code> is easier to test than a version that imports its own save function.</li>
+    <li>Walk through the debounce fake-timer dry run and say why only one call ever reaches <code>fn</code>.</li>
+    <li>Name the usual causes of a flaky test, and explain why a flaky test is worse than no test at all.</li>
+    <li>Explain why 100% coverage doesn't guarantee correct behavior, using the <code>divide(a, b)</code> example.</li>
+  </ul>
 </div>`,
 };

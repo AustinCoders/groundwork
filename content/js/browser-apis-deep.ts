@@ -44,6 +44,19 @@ console.log(url.toString());   <span class="c">// what happens?</span></code></p
   concatenation required.
 </p>
 
+<h4>Dry run: parsing and mutating the URL step by step</h4>
+<table>
+  <tr><th>Step</th><th>Code</th><th>Result</th></tr>
+  <tr><td>1</td><td><code>new URL("https://shop.example.com/search?q=js&amp;page=2")</code></td><td>parses into pieces — pathname is <code>"/search"</code>, <code>searchParams</code> holds <code>q=js</code> and <code>page=2</code></td></tr>
+  <tr><td>2</td><td><code>url.pathname</code></td><td><code>"/search"</code> — just the path, no query string</td></tr>
+  <tr><td>3</td><td><code>url.searchParams.get("q")</code></td><td><code>"js"</code></td></tr>
+  <tr><td>4</td><td><code>url.searchParams.set("page", "3")</code></td><td>mutates the live <code>searchParams</code> view in place — <code>page</code> goes from 2 to 3</td></tr>
+  <tr><td>5</td><td><code>url.toString()</code></td><td><code>"https://shop.example.com/search?q=js&amp;page=3"</code> — the change shows up automatically</td></tr>
+</table>
+<p class="sub">
+  Step 4 never touches <code>url.href</code> or <code>url.search</code> directly — <code>searchParams</code> is a live view onto the same <code>URL</code> object, so mutating it is enough for step 5's <code>toString()</code> to reflect the change.
+</p>
+
 <h3>History and IntersectionObserver, briefly</h3>
 <pre><code>history.pushState({ page: 2 }, "", "/products?page=2");  <span class="c">// changes the URL bar, no page reload</span>
 window.addEventListener("popstate", (e) =&gt; {
@@ -265,5 +278,16 @@ navigator.geolocation.getCurrentPosition(
   <p>
     "The browser hands you storage, URLs, observers, the clipboard, cross-tab messaging and visibility as APIs, and the skill is picking the smallest one that fits — <code>URLSearchParams</code> over string slicing, <code>IntersectionObserver</code> over scroll listeners, delegation over a listener per element — while remembering many are asynchronous or permission-gated."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why editing <code>url.searchParams</code> and calling <code>url.toString()</code> reflects the change immediately, with no manual string concatenation.</li>
+    <li>Predict the click log order in the bubbling demo with the capture checkbox on versus off, and say why capture-phase listeners fire first.</li>
+    <li>Explain what <code>event.stopPropagation()</code> actually stops, and why event delegation depends on propagation still working elsewhere.</li>
+    <li>Explain why <code>visibilitychange</code>, not a periodic check, is the right hook for pausing video or polling when a tab isn't visible.</li>
+    <li>Name two APIs from this chapter that require both a secure context and a real user gesture, and explain why that restriction exists.</li>
+  </ul>
 </div>`,
 };

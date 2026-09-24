@@ -347,6 +347,24 @@ console.log(typeof foo);  <span class="c">// "number" — but an assignment stil
   <code>var foo</code> there is no contest — it is a SyntaxError.)
 </p>
 
+<h4>Dry run: creation phase first, then three lines of execution</h4>
+<table>
+  <tr><th>Step</th><th>Line</th><th><code>foo</code> holds</th><th><code>typeof foo</code></th></tr>
+  <tr><td>1</td><td>creation phase</td><td>the function <code>foo(){}</code> — declarations are stored whole, and <code>var foo</code> finds the name already taken and does nothing</td><td>—</td></tr>
+  <tr><td>2</td><td><code>console.log(typeof foo)</code></td><td>still the function</td><td>"function"</td></tr>
+  <tr><td>3</td><td><code>var foo;</code></td><td>unchanged — a bare <code>var</code> with no <code>=</code> assigns nothing</td><td>—</td></tr>
+  <tr><td>4</td><td><code>function foo() {}</code></td><td>unchanged — already stored in creation</td><td>—</td></tr>
+  <tr><td>5</td><td><code>console.log(typeof foo)</code></td><td>still the function</td><td>"function"</td></tr>
+  <tr><td>6</td><td><code>var foo = 1;</code></td><td>1 — this is an assignment, and assignments run in the execution phase</td><td>—</td></tr>
+  <tr><td>7</td><td><code>console.log(typeof foo)</code></td><td>1</td><td>"number"</td></tr>
+</table>
+<p class="sub">
+  Only line 6 changes anything. Everything before it is either the
+  creation-phase tie-break (function beats <code>var</code>) or a
+  no-op <code>var</code> declaration with nothing to assign — proof
+  that "declared twice" and "assigned twice" are different questions.
+</p>
+
 <h3>The Temporal Dead Zone, precisely</h3>
 <p>
   The TDZ is not "before the declaration line" in the file. It is the
@@ -518,5 +536,16 @@ outer();</code></pre>
   <p>
     "Before running, the engine makes a pass that creates a binding for every declaration in a new execution context — <code>var</code> starts as <code>undefined</code>, function declarations are fully usable, and <code>let</code>, <code>const</code> and <code>class</code> stay in the temporal dead zone until their line runs — which is all hoisting means; nothing actually moves."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Fill in the creation-phase table from memory for <code>var</code>, <code>let</code>, <code>const</code>, a function declaration, and a function expression assigned to a <code>var</code>.</li>
+    <li>Explain why calling a function expression too early throws <code>TypeError</code> while calling an undeclared <code>let</code> throws <code>ReferenceError</code> — and why those are different bugs with different fixes.</li>
+    <li>Predict the tie-break when a <code>var</code> and a <code>function</code> share a name in one scope, and say what changes once an <code>=</code> runs.</li>
+    <li>Say precisely what the Temporal Dead Zone spans — not "above the line in the file," but the gap between a name being created and being initialised.</li>
+    <li>Explain why <code>counter()</code> called three times returns <code>1 1 1</code> instead of <code>1 2 3</code>, in terms of execution contexts.</li>
+  </ul>
 </div>`,
 };

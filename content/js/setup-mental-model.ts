@@ -227,6 +227,22 @@ let b = 2;</code></pre>
   chance: <code>b</code> is still in the Temporal Dead Zone, so the whole
   script throws a real <code>ReferenceError</code> right there.
 </p>
+
+<h4>Dry run: the creation phase, then execution, for that snippet</h4>
+<table>
+  <tr><th>Step</th><th>Line</th><th>a</th><th>b</th><th>What happens</th></tr>
+  <tr><td>1</td><td>creation phase</td><td>undefined</td><td>uninitialised — TDZ</td><td>the whole scope is scanned before line 1 runs</td></tr>
+  <tr><td>2</td><td><code>console.log(a)</code></td><td>undefined</td><td>TDZ</td><td>prints <code>undefined</code> — a was pre-filled</td></tr>
+  <tr><td>3</td><td><code>console.log(b)</code></td><td>undefined</td><td>TDZ</td><td>throws <code>ReferenceError: Cannot access 'b' before initialization</code> — script stops here</td></tr>
+  <tr><td>—</td><td><code>var a = 1;</code></td><td>—</td><td>—</td><td>never runs</td></tr>
+  <tr><td>—</td><td><code>let b = 2;</code></td><td>—</td><td>—</td><td>never runs</td></tr>
+</table>
+<p class="sub">
+  Both lines fail for the same underlying reason — the names already
+  existed before line 1 — but the creation phase left them in different
+  states, so one fails silently and the other stops the whole script.
+</p>
+
 <p>
   That is the whole of it you need today. The next two chapters take it
   apart. <a href="/notes/execution-context">Execution context</a> is
@@ -626,5 +642,16 @@ x = 5;   <span class="c">// no var, no let — what happens?</span></code></pre>
   <p>
     "JavaScript is single-threaded and runs inside a host, the browser or Node, that supplies the event loop and APIs such as timers and <code>fetch</code>, so the language does one thing at a time while the host handles the waiting."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain the difference between the engine and the runtime, and name two APIs that exist only because the runtime provides them.</li>
+    <li>State the five words that describe JS, and explain why "dynamic" and "weak" are answering two different questions, not the same one.</li>
+    <li>Walk through why <code>C</code> prints before <code>B</code> in the event loop demo, even though the timer's delay was <code>0</code>ms.</li>
+    <li>Predict, and explain, why <code>console.log(a)</code> prints <code>undefined</code> while <code>console.log(b)</code> throws, for the same <code>var</code>/<code>let</code> snippet.</li>
+    <li>List the concrete differences between a classic script and an ES module — strict mode, top-level scope, <code>this</code>, and loading order.</li>
+  </ul>
 </div>`,
 };

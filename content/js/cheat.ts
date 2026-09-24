@@ -146,11 +146,39 @@ class B extends A {
 </div>
 <p class="sub">Every one of these is explained, not just listed, in <a href="/notes/operators-flow">Operators &amp; flow</a>, <a href="/notes/scope-functions">Scope &amp; functions, properly</a>, and <a href="/notes/objects-arrays-basics">Objects &amp; arrays</a>.</p>
 
+<h4>Dry run: two gotchas from the grid above, traced</h4>
+<table>
+  <tr><th>Expression</th><th>How the parser reads it</th><th>Result</th></tr>
+  <tr><td>{} + []  (as its own statement)</td><td>{} opens as an empty block statement, not an object literal; +[] is then a unary plus on an array, which coerces to 0</td><td>0</td></tr>
+  <tr><td>({} + [])  or  console.log({} + [])  (expression position)</td><td>{} is now read as an object literal, so + is the binary operator; both sides stringify and concatenate</td><td>"[object Object]"</td></tr>
+  <tr><td>[] + {}</td><td>an array can never start a block, so this is always binary + regardless of position</td><td>"[object Object]"</td></tr>
+  <tr><td>1 &lt; 2 &lt; 3</td><td>left-to-right: (1 &lt; 2) is true, then true &lt; 3 coerces true to 1, and 1 &lt; 3</td><td>true</td></tr>
+  <tr><td>3 &gt; 2 &gt; 1</td><td>left-to-right: (3 &gt; 2) is true, then true &gt; 1 coerces true to 1, and 1 &gt; 1</td><td>false</td></tr>
+</table>
+<p class="sub">
+  Same <code>{} + []</code>, two different answers, purely from where it
+  sits in the code — the exact trap the "(statement position)" note on
+  the chip above is flagging. Chained comparisons resolve the same way:
+  pairwise, left to right, each result coerced to a number before
+  feeding the next comparison — never a genuine three-way check.
+</p>
+
 <h3>How to actually use this page</h3>
 <ol>
   <li>Don't start here. Every row above assumes the chapter behind its link has already been read once — this page is recall, not first exposure.</li>
   <li>Cover the "Result" column with your hand and predict it before checking. Being surprised by a row you've "read" before is the actual signal it needs another real pass, not just a re-skim.</li>
   <li>For the gotchas grid specifically: cover the chip past the arrow and say the <em>reason</em> out loud, not just the result — "why" is what an interviewer is actually asking for.</li>
   <li>If a whole section reads unfamiliar rather than "oh right" — go read that chapter properly. This page is a mirror, not a shortcut past the mirror.</li>
-</ol>`,
+</ol>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Predict a chip from the gotchas grid before checking the arrow, and explain the reason, not just the result.</li>
+    <li>Explain why <code>{} + []</code> can equal both <code>0</code> and <code>"[object Object]"</code> depending on where it sits in code.</li>
+    <li>Say which of <code>===</code> and <code>Object.is()</code> treats <code>NaN</code> as equal to itself, and which treats <code>0</code> and <code>-0</code> as different.</li>
+    <li>Name which array methods mutate their target, without checking the table.</li>
+    <li>Explain why <code>0.1 + 0.2 !== 0.3</code>, using IEEE 754 floats, without opening the Operators &amp; flow chapter.</li>
+  </ul>
+</div>`,
 };

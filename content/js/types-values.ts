@@ -468,6 +468,22 @@ console.log([] === false); <span class="c">// false — different types, no coer
   runs a coercion algorithm.
 </p>
 
+<h4>Dry run: coercing <code>[] == false</code> step by step</h4>
+<table>
+  <tr><th>Step</th><th>Comparison</th><th>Rule applied</th><th>Becomes</th></tr>
+  <tr><td>1</td><td><code>[] == false</code></td><td>one side is boolean → convert it with <code>ToNumber(false)</code></td><td><code>[] == 0</code></td></tr>
+  <tr><td>2</td><td><code>[] == 0</code></td><td>object vs number → convert the object with <code>ToPrimitive([])</code>, which calls <code>[].toString()</code></td><td><code>"" == 0</code></td></tr>
+  <tr><td>3</td><td><code>"" == 0</code></td><td>string vs number → convert the string with <code>ToNumber("")</code></td><td><code>0 == 0</code></td></tr>
+  <tr><td>4</td><td><code>0 == 0</code></td><td>same type, same value</td><td><code>true</code></td></tr>
+</table>
+<p class="sub">
+  Three separate conversions run before <code>==</code> ever compares
+  two values of the same type — <code>[]</code> never gets compared to
+  <code>false</code> directly. <code>===</code> skips every one of
+  these steps and returns <code>false</code> the instant it sees two
+  different types.
+</p>
+
 <h3>Explicit conversion</h3>
 <p>
   Three functions, always called <b>without</b> <code>new</code>.
@@ -647,5 +663,16 @@ console.log([NaN].includes(NaN), [NaN].indexOf(NaN));</code></pre>
   <p>
     "JavaScript has seven primitives plus object; <code>typeof null</code> lies, coercion makes <code>==</code> unpredictable so use <code>===</code>, and exactly eight values are falsy: <code>false</code>, <code>0</code>, <code>-0</code>, <code>0n</code>, the empty string, <code>null</code>, <code>undefined</code> and <code>NaN</code>."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>List the eight types, and explain what "copied by value" versus "copied by reference" actually means for a primitive versus an object.</li>
+    <li>Explain why <code>typeof null</code> is <code>"object"</code>, and what to check instead.</li>
+    <li>Walk <code>[] == false</code> through its coercion steps by hand, and say why <code>[] === false</code> skips all of them.</li>
+    <li>Recite the eight falsy values from memory, and name three commonly-mistaken truthy values.</li>
+    <li>Explain when <code>??</code> gives a different answer from <code>||</code>, with a concrete value where it matters.</li>
+  </ul>
 </div>`,
 };

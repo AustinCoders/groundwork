@@ -49,6 +49,21 @@ try {
   stack trace) all the way up, however many layers re-throw in between.
 </p>
 
+<h4>Dry run: tracing loadUser()'s catch and cause chain</h4>
+<table>
+  <tr><th>Step</th><th>Code</th><th>What happens</th></tr>
+  <tr><td>1</td><td><code>loadUser()</code> is called</td><td>enters the outer <code>try</code> block</td></tr>
+  <tr><td>2</td><td><code>JSON.parse("not valid json")</code></td><td>throws a <code>SyntaxError</code> — the string isn't valid JSON</td></tr>
+  <tr><td>3</td><td>inner <code>catch (dbError)</code></td><td><code>dbError</code> is bound to that <code>SyntaxError</code></td></tr>
+  <tr><td>4</td><td><code>throw new Error("failed to load user", { cause: dbError })</code></td><td>a brand-new <code>Error</code> is thrown, with <code>dbError</code> attached as its <code>.cause</code> — it propagates out of <code>loadUser()</code></td></tr>
+  <tr><td>5</td><td>outer <code>catch (e)</code></td><td><code>e</code> is the new "failed to load user" error; <code>e.cause</code> is still the original <code>SyntaxError</code></td></tr>
+  <tr><td>6</td><td><code>console.log(e.message)</code></td><td><code>"failed to load user"</code></td></tr>
+  <tr><td>7</td><td><code>console.log(e.cause.message)</code></td><td>the original <code>SyntaxError</code>'s message — never lost, never printed until now</td></tr>
+</table>
+<p class="sub">
+  Two separate <code>try/catch</code> pairs, two separate errors — <code>cause</code> is what lets the second error carry a live reference to the first instead of replacing it outright.
+</p>
+
 <h3>Unhandled promise rejections</h3>
 <p>
   A rejected promise with no <code>.catch()</code> anywhere in its
@@ -193,5 +208,16 @@ console.log(frozen.a);    <span class="c">// 1 either way — the object never a
   <p>
     "Wrap errors with <code>cause</code> so the original is never lost, remember an async failure only surfaces if something awaits or catches it, and treat <code>window.onerror</code> and <code>unhandledrejection</code> handlers as the last line that reports what slipped through, not as the main strategy."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain what happens to the original error if you throw a new one without the <code>cause</code> option, and how <code>e.cause</code> fixes it.</li>
+    <li>Explain why a promise rejection with no <code>.catch()</code> anywhere in its chain surfaces as an <code>unhandledrejection</code> event instead of failing silently.</li>
+    <li>Name the specific bug caused by forgetting to <code>return</code> inside a <code>.then()</code>, and why it detaches the inner promise from the outer chain's error handling.</li>
+    <li>Explain why frameworks like React decide "did this change" with a single <code>===</code> check, and why mutating state in place defeats it.</li>
+    <li>Set a conditional breakpoint that only pauses for one specific input, and say why that beats a plain line breakpoint for that case.</li>
+  </ul>
 </div>`,
 };

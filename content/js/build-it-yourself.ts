@@ -323,10 +323,38 @@ console.log(cache.get("a"), cache.get("b"), cache.get("c"));   <span class="c">/
   has to scan or shift anything.
 </p>
 
+<h4>Dry run: the LRU cache's internal order across the calls above</h4>
+<table>
+  <tr><th>Call</th><th>Map order after</th><th>Return value</th></tr>
+  <tr><td>put("a", 1)</td><td>[a]</td><td>—</td></tr>
+  <tr><td>put("b", 2)</td><td>[a, b]</td><td>—</td></tr>
+  <tr><td>get("a")</td><td>[b, a] — deleted and re-inserted, now most recent</td><td>1</td></tr>
+  <tr><td>put("c", 3)</td><td>[a, c] — size hit 3, evicted the first key ("b")</td><td>—</td></tr>
+  <tr><td>get("a"), get("b"), get("c")</td><td>—</td><td>1, undefined, 3</td></tr>
+</table>
+<p class="sub">
+  "b" is the one evicted, not "a", purely because <code>get("a")</code>
+  ran before <code>put("c")</code> and moved "a" to the end of the
+  Map's iteration order. The cache never inspects a timestamp or a
+  separate counter — insertion order in a plain <code>Map</code> is the
+  entire mechanism.
+</p>
+
 <div class="bx is-ref">
   <span class="ttl">Interview answer, one sentence</span>
   <p>
     "These are the from-scratch asks interviews use to check you understand the mechanism: a promise is a state machine plus a callback queue, <code>bind</code> is a closure over <code>this</code>, debounce and throttle are closures over a timer, a deep clone needs a seen-map for cycles, and an LRU cache gets O(1) from a hash map plus a linked list."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why <code>.then()</code> has to return a new <code>MiniPromise</code> instead of the same one, for chaining to work.</li>
+    <li>Trace why <code>myBind</code> ignores <code>new</code>, and what real <code>bind</code> does instead.</li>
+    <li>Explain the difference between what <code>debounce</code> and <code>throttle</code> each guarantee about a burst of calls.</li>
+    <li>Say why <code>deepClone</code> needs a <code>WeakMap</code> of seen objects, referencing the circular-reference example.</li>
+    <li>Walk through the LRU cache dry run and say why "b" gets evicted instead of "a".</li>
+  </ul>
 </div>`,
 };

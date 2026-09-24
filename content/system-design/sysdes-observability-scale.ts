@@ -340,10 +340,27 @@ now add one label: user_id, 20,000,000 values
   <tr><td>6×</td><td>5% in 6 hours</td><td>6 hours + 30 minutes</td><td>Page.</td></tr>
   <tr><td>1×</td><td>10% in 3 days</td><td>3 days + 6 hours</td><td>File a ticket. This is a slow leak, not an outage.</td></tr>
 </table>
+
+
+<h4>Dry run: a 20-minute incident through a multi-window burn-rate alert</h4>
+<p class="sub">SLO: 99.9% over 30 days → an allowed error rate of 0.1%. Page when <em>both</em> the 1-hour and the 5-minute burn rate exceed 14.4× (an error rate of 1.44%).</p>
+<table>
+  <tr><th>Time</th><th>What's happening</th><th>5-min error rate → burn rate</th><th>1-hr error rate → burn rate</th><th>Both exceed 14.4×?</th><th>Alert state</th></tr>
+  <tr><td>t = 10:00</td><td>Baseline, healthy</td><td>0.05% → 0.5×</td><td>0.05% → 0.5×</td><td>No</td><td>Quiet</td></tr>
+  <tr><td>t = 10:05</td><td>Incident starts; error rate jumps to 5%</td><td>5% → 50×</td><td>0.46% → 4.6× (only 5 of the last 60 min are bad)</td><td>No — long window hasn't caught up</td><td>Still quiet</td></tr>
+  <tr><td>t = 10:20</td><td>Incident continues, 20 minutes in</td><td>5% → 50×</td><td>1.7% → 17× (20 of 60 min bad)</td><td><b>Yes</b> — both windows now exceed 14.4×</td><td><b>Pages</b></td></tr>
+  <tr><td>t = 10:25</td><td>Incident ends at 10:20; 5 minutes of healthy traffic since</td><td>0.05% → 0.5×</td><td>1.7% → 17× (the bad 20 min are still inside the trailing hour)</td><td>No — short window recovered</td><td><b>Clears</b></td></tr>
+</table>
 <p class="sub">
-  The short window is the part people forget: it exists so that when the
-  incident ends, the alert clears within minutes instead of staying lit for
-  the remaining hour of the long window. And the error budget has a second,
+  The alert only fires once both windows agree, which is why it waits until
+  10:20 rather than paging on the first bad minute — and it clears at 10:25
+  even though the 1-hour window is still showing a 17× burn, because the
+  5-minute window is what tells the alert the incident is actually over.
+  Without that short window, this page would stay lit for most of the
+  remaining hour after the problem was already fixed.
+</p>
+<p class="sub">
+  The error budget also has a second,
   political job — when it is exhausted, feature launches stop until
   reliability work restores it. That is the only mechanism anyone has found
   that makes "we should invest in reliability" an automatic decision rather
@@ -365,5 +382,16 @@ now add one label: user_id, 20,000,000 values
   <li>If you propose adding a label to a metric, immediately state its cardinality bound. If it is unbounded, it is a log field, not a label.</li>
   <li>Distinguish it from the fault-tolerance chapter: fault tolerance is about the system <em>surviving</em> a failure; observability is about <em>humans finding out</em> and locating it. A system can be perfectly redundant and completely un-debuggable.</li>
   <li>The pitfall: proposing logging everything. At 100k rps that is a multi-hundred-thousand-dollar annual line item. Name the sampling policy (all errors, 1% of successes) before the interviewer has to ask what it costs.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Say, in order, which of metrics, traces or logs you'd reach for first during an incident, and why running that order backwards means grepping.</li>
+    <li>Walk through the burn-rate dry run above and explain why the page fires at 10:20 rather than 10:05, and clears at 10:25.</li>
+    <li>Compute the user-visible p99 of a request that fans out to 10 services each at 99% availability, and say what complexity that pushes onto each service.</li>
+    <li>Explain why a metric label needs a cardinality bound but a log field doesn't, using the <code>user_id</code> example.</li>
+    <li>Name two things you would alert on and two you would only dashboard, and justify the split using the symptom-vs-cause distinction.</li>
+  </ul>
+</div>`,
 };

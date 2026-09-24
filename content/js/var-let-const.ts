@@ -269,6 +269,21 @@ typeof inside;   <span class="c">// "undefined" — var escapes blocks, not func
   <code>let</code> the rules change again, which is the next problem.
 </p>
 
+<h4>Dry run: which binding <code>level</code> means, line by line</h4>
+<table>
+  <tr><th>Step</th><th>Line</th><th>outer <code>level</code></th><th>inner <code>level</code></th><th>Lookup finds</th></tr>
+  <tr><td>1</td><td><code>let level = "outer";</code></td><td>"outer"</td><td>does not exist yet</td><td>—</td></tr>
+  <tr><td>2</td><td><code>{</code> — block entered</td><td>"outer"</td><td>created, uninitialised — TDZ</td><td>—</td></tr>
+  <tr><td>3</td><td><code>console.log(level)</code></td><td>"outer"</td><td>TDZ</td><td>the inner one — nearest scope wins, even though it is still in its TDZ — so it throws</td></tr>
+  <tr><td>—</td><td><code>let level = "inner";</code></td><td>"outer"</td><td>—</td><td>never runs</td></tr>
+</table>
+<p class="sub">
+  The lookup never gets a chance to fall back to the outer
+  <code>"outer"</code> — it stops at the nearest declaration first,
+  exactly as shadowing always works, and only then notices that
+  binding is not ready to be read yet.
+</p>
+
 <h4>A var cannot hide inside a block</h4>
 <p>
   Because <code>var</code> climbs to the function, a <code>var</code>
@@ -765,5 +780,16 @@ count = 0;                <span class="c">// no keyword: a plain property, and d
   <p>
     "<code>var</code> is function-scoped and hoisted as <code>undefined</code>, <code>let</code> and <code>const</code> are block-scoped and sit in the temporal dead zone until declared, and <code>const</code> prevents rebinding, not mutation — so default to <code>const</code>, use <code>let</code> when you must reassign, and avoid <code>var</code>."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Fill in the created / initialised / assigned-again table for <code>var</code>, <code>let</code> and <code>const</code> from memory.</li>
+    <li>Explain why <code>console.log(level)</code> throws instead of printing the outer value, for a <code>let</code> shadowed later in the same block.</li>
+    <li>Predict, and explain, why a <code>var</code> loop's callbacks all read the final value while a <code>let</code> loop's callbacks each read their own.</li>
+    <li>Say why <code>const user = {}; user.name = "x";</code> is legal but <code>user = {}</code> is not — what exactly does <code>const</code> fix?</li>
+    <li>Explain why a top-level <code>var name</code> is a real trap in a classic script but a top-level <code>let name</code> is not.</li>
+  </ul>
 </div>`,
 };

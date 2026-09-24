@@ -284,6 +284,25 @@ export const sysdesTradeoffThinking: Chapter = {
   loud and the interview stops being an exam.
 </div>
 
+<h4>Dry run: the four-beat move, then pushback, on one concrete decision</h4>
+<p class="sub">Scenario: 200M DAU, 5 push notifications/user/day. Should the fan-out run on Kafka or a jobs table?</p>
+<table>
+  <tr><th>Step</th><th>Applied here</th><th>Conclusion</th></tr>
+  <tr><td>1. Assumption</td><td>200M × 5 / 100,000 s = 10,000/sec average, ~30,000/sec at peak (×3); today there is exactly one consumer, the push sender</td><td>"Thousands per second, one consumer" — none of Kafka's justifying properties are present yet</td></tr>
+  <tr><td>2. Choice</td><td>A Postgres jobs table with a status column and a worker pool polling it</td><td>Matches the chapter's own claim: a polled jobs table "handles thousands of jobs per second and can be operated by anyone"</td></tr>
+  <tr><td>3. Cost</td><td>No durable replay if a consumer ever needs to reprocess history; polling adds latency a broker's push model wouldn't</td><td>Naming the cost, not just the choice, is what beats 1-2 alone don't do</td></tr>
+  <tr><td>4. Trigger</td><td>"I'd move to Kafka the moment we need durable replay, a second independent consumer group on this stream, or throughput a polled table can't absorb"</td><td>Restates the chapter's exact three conditions for when Kafka earns its place</td></tr>
+  <tr><td>5. Pushback</td><td>Interviewer: "Email digests next quarter will need the same event stream." Restate: "So a second consumer is coming, not hypothetical."</td><td>Restating first, per the disagree-well move, confirms what was actually heard</td></tr>
+  <tr><td>6. Locate the axis</td><td>This isn't a new fact — it's beat 4's own trigger condition ("a second independent consumer group") arriving on a known timeline</td><td>The disagreement is about timing, not about whether the trigger is real</td></tr>
+  <tr><td>7. Update or hold</td><td>Update explicitly: switch the choice to Kafka now, before the fan-out ships, rather than migrating under load later</td><td>"Be conspicuous about it" — the chapter's own guidance for genuinely updating on new information</td></tr>
+</table>
+<p class="sub">
+  Nothing in row 7 contradicts row 2 — the jobs table was the right call
+  given what beat 1 assumed, and beat 4 already named exactly the condition
+  that would reverse it. The revision is the four-beat move working as
+  designed, not a mistake being corrected.
+</p>
+
 <h3>What separates a senior/staff performance from a mid-level one</h3>
 <ul>
   <li><b>Drives the clock.</b> Mid-level waits to be asked what's next. Senior says "I've got requirements and estimates, I'll spend ten minutes on the core data path, then come back to failure handling" — and then does that, watching the time.</li>
@@ -295,5 +314,16 @@ export const sysdesTradeoffThinking: Chapter = {
   <li><b>Talks about operating it.</b> Deploys, migrations, backfills, rollback, on-call load, what the dashboard shows, what pages a human. Mid-level designs a system that gets built. Senior designs one that gets run for five years.</li>
   <li><b>Handles pushback as information.</b> Restates the objection, locates the disagreement in an assumption, updates or holds with a reason — and asks which assumption to design against rather than guessing.</li>
   <li><b>Scopes to the ask.</b> Recognises that "design a URL shortener for an internal tool" and "design one for 100 M links a day" are different problems, and refuses to answer the second when asked the first.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Run the four-beat move — assumption, choice, cost, trigger — out loud on a decision you haven't prepared, in under twenty seconds.</li>
+    <li>Given a technology choice, name which of the six axes it's actually about, rather than defending the brand name.</li>
+    <li>Complete an "it depends" with both the branching condition and what you would do in each branch.</li>
+    <li>Apply the three-part disagree-well move to interviewer pushback: restate their point, locate the disagreement on an axis, then update explicitly or hold with a stated cost.</li>
+    <li>For a given DAU/QPS number, say whether the bigger risk is under-engineering or over-engineering, and name the specific component you'd cut or add.</li>
+  </ul>
+</div>`,
 };

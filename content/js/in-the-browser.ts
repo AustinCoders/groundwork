@@ -433,6 +433,27 @@ console.log("parse succeeded, so both lines print");</code></pre>
 })();
 </script>
 
+<h4>Dry run: counting the frames a 100ms handler actually costs</h4>
+<p>
+  Same numbers as the demo above, as a table. Each frame gets a
+  16.7ms budget; the click handler needs 100ms in one go, starting
+  partway through frame 3.
+</p>
+<table>
+  <tr><th>Frame</th><th>Main thread</th><th>Rendered on screen?</th></tr>
+  <tr><td>1</td><td>idle between frames — style, layout, paint, composite run in budget</td><td>yes</td></tr>
+  <tr><td>2</td><td>same as frame 1</td><td>yes</td></tr>
+  <tr><td>3</td><td>a click starts the 100ms handler — the thread is now busy</td><td>no — due, but the stack is not empty</td></tr>
+  <tr><td>4–8 (5 frames)</td><td>still inside the same 100ms handler</td><td>no — each one arrives, finds the thread busy, and is simply never built</td></tr>
+  <tr><td>9</td><td>handler returns partway through — thread frees up</td><td>yes — but jumps straight to the new state instead of animating through it</td></tr>
+</table>
+<p class="sub">
+  16.7ms × 6 ≈ 100ms — one blocking call is long enough to swallow six
+  consecutive frame budgets whole (frame 3 through frame 8). Nothing
+  queues those frames for later: a frame the browser could not build in
+  its window is simply skipped, not delayed.
+</p>
+
 <h3>Where the event loop fits in a frame</h3>
 <p>
   Put the last chapter and this one together and the browser's turn
@@ -542,5 +563,16 @@ boxes.forEach((b, i) =&gt; { b.style.height = heights[i] + 10 + "px"; });</code>
   <p>
     "The parser stops for a synchronous script, so <code>defer</code>, <code>async</code> or a module keeps it from blocking; after that the event loop has roughly 16 ms a frame for JavaScript, style, layout and paint, and long tasks on the main thread are what make a page feel slow."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why a plain <code>&lt;script&gt;</code> in <code>&lt;head&gt;</code> can make <code>document.querySelector</code> return <code>null</code>, and name two fixes.</li>
+    <li>Compare <code>defer</code> and <code>async</code> on whether they block parsing, when they run, and whether source order is kept.</li>
+    <li>Explain why a syntax error at the bottom of a file stops a <code>console.log</code> at the top from ever running.</li>
+    <li>Given a function that blocks the thread for 100ms, calculate roughly how many 16.7ms frames it costs — and say why "delayed" is the wrong word for what happens to them.</li>
+    <li>Say which two CSS properties can animate without triggering layout or paint, and why batching DOM reads before writes avoids layout thrash.</li>
+  </ul>
 </div>`,
 };

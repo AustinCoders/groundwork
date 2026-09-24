@@ -328,10 +328,39 @@ console.log("order:", order.join(", "));</code></pre>
   job (upload 500 files, 6 at a time) is built on.
 </p>
 
+<h4>Dry run: the start/end order for two workers, five tasks</h4>
+<table>
+  <tr><th>Order</th><th>Event</th><th>Why</th></tr>
+  <tr><td>1</td><td><code>start 1</code></td><td>worker A calls <code>tasks[0]()</code>, which pushes "start 1" immediately, then awaits <code>wait(10)</code></td></tr>
+  <tr><td>2</td><td><code>start 2</code></td><td>worker B calls <code>tasks[1]()</code> the same way — 2 tasks now in flight, the limit</td></tr>
+  <tr><td>3</td><td><code>end 1</code></td><td>worker A's timer (registered first) fires; task 1's <code>wait(10)</code> resolves and it pushes "end 1"</td></tr>
+  <tr><td>4</td><td><code>start 3</code></td><td>still inside that same resolution, worker A's <code>while</code> loop immediately pulls index 2 and calls <code>tasks[2]()</code></td></tr>
+  <tr><td>5</td><td><code>end 2</code></td><td>worker B's timer (registered second, same 10ms delay) fires next; task 2 pushes "end 2"</td></tr>
+  <tr><td>6</td><td><code>start 4</code></td><td>worker B immediately pulls index 3 and calls <code>tasks[3]()</code></td></tr>
+  <tr><td>7</td><td><code>end 3</code></td><td>worker A's second timer (started right after "start 3") fires</td></tr>
+  <tr><td>8</td><td><code>start 5</code></td><td>worker A pulls the last index, 4, and calls <code>tasks[4]()</code></td></tr>
+  <tr><td>9</td><td><code>end 4</code></td><td>worker B's second timer fires; <code>index</code> is now 5, so worker B's <code>while</code> loop exits</td></tr>
+  <tr><td>10</td><td><code>end 5</code></td><td>worker A's third timer fires; its <code>while</code> loop exits too, and <code>Promise.all</code> settles</td></tr>
+</table>
+<p class="sub">
+  Every "end" is immediately followed by that same worker's next "start," in the same microtask turn — which is exactly why the log never shows more than two "start"s without a matching "end" between them: the limit is enforced by there being only two <code>worker()</code> loops pulling from one shared <code>index</code>, not by any explicit counter check.
+</p>
+
 <div class="bx is-ref">
   <span class="ttl">Interview answer, one sentence</span>
   <p>
     "Microtasks drain completely before the next task, so a chain of microtasks can starve rendering; generators and async iterators are pausable functions that make streams and backpressure possible, and anything CPU-heavy belongs in a worker instead of on the main thread."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why <code>queueMicrotask(loopForever)</code> freezes the page permanently, while a same-shape <code>setTimeout</code> recursion would not.</li>
+    <li>Explain how Node's phased event loop differs from the browser's single macrotask queue, and what <code>setImmediate</code> guarantees over <code>setTimeout(fn, 0)</code>.</li>
+    <li>Explain what <code>.next(value)</code> does to a paused <code>yield</code> expression, and why the very first <code>.next()</code> call can't deliver a value into anything.</li>
+    <li>Explain how backpressure keeps a fast stream producer from burying a slow consumer in memory.</li>
+    <li>Trace the <code>runWithLimit</code> example's start/end order for a limit of 2, and explain why the log never shows more than two "start"s without a matching "end" between them.</li>
+  </ul>
 </div>`,
 };

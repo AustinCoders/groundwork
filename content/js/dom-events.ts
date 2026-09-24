@@ -263,6 +263,26 @@ listEl.appendChild(fragment);               <span class="c">// ONE reflow, howev
   item, and check <code>event.target</code> inside it to see which item
   was actually clicked.
 </p>
+<pre><code>outer.addEventListener("click", () =&gt; console.log("outer"));
+middle.addEventListener("click", () =&gt; console.log("middle"));
+inner.addEventListener("click", () =&gt; console.log("inner"));
+<span class="c">// inner is nested inside middle, which is nested inside outer</span>
+
+inner.click();   <span class="c">// simulates a real click landing on inner</span></code></pre>
+<h4>Dry run: the bubble path from a click on inner</h4>
+<table>
+  <tr><th>Order fired</th><th>Listener running</th><th>event.target</th><th>event.currentTarget</th></tr>
+  <tr><td>1st</td><td>inner</td><td>inner</td><td>inner</td></tr>
+  <tr><td>2nd</td><td>middle</td><td>inner</td><td>middle</td></tr>
+  <tr><td>3rd</td><td>outer</td><td>inner</td><td>outer</td></tr>
+</table>
+<p class="sub">
+  <code>target</code> never changes — it's fixed at the element the click
+  actually landed on. <code>currentTarget</code> changes on every row,
+  because bubbling calls each ancestor's listener in turn, innermost
+  first, and <code>currentTarget</code> is always whichever one is
+  running right now.
+</p>
 
 <h3>preventDefault — stopping the browser's own reaction</h3>
 <p>
@@ -365,5 +385,16 @@ input.addEventListener("change", e =&gt; console.log(e.target.value)); <span cla
   <p>
     "The DOM is a live tree you query and change; events travel down in the capture phase and back up in the bubble phase, which is what lets one listener on a parent handle every child (delegation), and <code>removeEventListener</code> only works with the same function reference you added."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Pick the right selector method (<code>getElementById</code>, <code>querySelector</code>, <code>querySelectorAll</code>) for a given task, and say what each returns when nothing matches.</li>
+    <li>Explain why <code>textContent</code> is the safe default and when <code>innerHTML</code> is genuinely needed.</li>
+    <li>Trace a click's bubble path through three nested listeners, saying what <code>target</code> and <code>currentTarget</code> are at each one.</li>
+    <li>Explain why removing a listener added as an anonymous arrow silently fails, and how to write it so it can actually be removed.</li>
+    <li>Say when to reach for <code>DocumentFragment</code> instead of appending in a loop, and why it changes the reflow count.</li>
+  </ul>
 </div>`,
 };

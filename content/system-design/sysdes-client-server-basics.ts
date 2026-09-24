@@ -323,6 +323,24 @@ export const sysdesClientServerBasics: Chapter = {
   between that and an opinion.
 </p>
 
+<h4>Dry run: a 200 ms page-load budget for a user 80 ms away</h4>
+<table>
+  <tr><th>Hop</th><th>Cost</th><th>Running total</th><th>Budget left of 200 ms</th></tr>
+  <tr><td>Cold TCP handshake (1 RTT)</td><td>80 ms</td><td>80 ms</td><td>120 ms</td></tr>
+  <tr><td>TLS 1.3 handshake (1 RTT)</td><td>80 ms</td><td>160 ms</td><td>40 ms</td></tr>
+  <tr><td>HTTP request + response (1 RTT)</td><td>80 ms</td><td>240 ms</td><td><b>-40 ms — budget already blown, before a line of server code ran</b></td></tr>
+  <tr><td><em>Same request, warm connection:</em> HTTP request + response only (1 RTT)</td><td>80 ms</td><td>80 ms</td><td>120 ms</td></tr>
+  <tr><td>Server does one cache hit (~0.5 ms) + one indexed DB query (~5 ms)</td><td>~5.5 ms</td><td>85.5 ms</td><td>~114.5 ms to spare</td></tr>
+</table>
+<p class="sub">
+  Three round trips for a cold connection cost more than the entire 200 ms
+  budget by themselves — the server never gets to run. The identical request
+  on a warm, reused connection has 120 ms of budget left before the server
+  does anything, which is why connection reuse and edge TLS termination are
+  not tuning knobs but the difference between meeting the budget and missing
+  it entirely.
+</p>
+
 <h3>Recognizing it in an unseen problem</h3>
 <ul>
   <li>Any prompt with a latency target ("under 200 ms p99") is asking you to build a budget out of the table above — say where the milliseconds go before proposing optimisations</li>
@@ -331,5 +349,16 @@ export const sysdesClientServerBasics: Chapter = {
   <li>"How would you do a zero-downtime deploy / autoscale this?" is a statelessness question wearing a costume</li>
   <li>DNS is the answer for coarse geographic routing and gradual migrations; it is never the answer for fast failover or per-request balancing — an interviewer probing failover wants anycast or a floating VIP</li>
   <li>Distinguish bandwidth problems from round-trip problems: large media is a bandwidth and CDN problem, chatty APIs are a round-trip problem, and they have completely different fixes</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Can you name each hop in "what happens when I hit enter" and roughly what it costs in milliseconds?</li>
+    <li>Can you explain why lowering the DNS TTL alone doesn't give you fast failover, and what actually does?</li>
+    <li>Can you compute how many round trips a cold TLS 1.3 connection costs before the first HTTP byte, and explain why connection reuse matters?</li>
+    <li>Can you distinguish an L4 from an L7 load balancer and say when you'd choose each?</li>
+    <li>Can you explain what "stateless" means for an app server and where you'd move the state instead?</li>
+  </ul>
+</div>`,
 };

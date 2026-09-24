@@ -257,6 +257,22 @@ otherWindow.postMessage(payload, "https://trusted-partner.example");   <span cla
   to whatever page is currently there, trusted or not.
 </div>
 
+<h4>Dry run: the origin check against four incoming messages</h4>
+<table>
+  <tr><th>event.origin</th><th>event.origin !== "https://trusted-partner.example"?</th><th>Result</th></tr>
+  <tr><td>https://trusted-partner.example</td><td>false</td><td>passes — <code>handleMessage(event.data)</code> runs</td></tr>
+  <tr><td>https://evil.example</td><td>true</td><td><code>return</code> — message ignored</td></tr>
+  <tr><td>http://trusted-partner.example (http, not https)</td><td>true</td><td><code>return</code> — ignored, scheme is part of the origin</td></tr>
+  <tr><td>https://trusted-partner.example.evil.com</td><td>true</td><td><code>return</code> — ignored, not an exact string match</td></tr>
+</table>
+<p class="sub">
+  The check is a plain string comparison, not a "starts with" or
+  "contains" check — which is exactly why it has to be. A looser check
+  like <code>.includes("trusted-partner.example")</code> would let the
+  fourth row through, since that hostname genuinely does contain the
+  trusted string as a substring.
+</p>
+
 <h3>Subresource Integrity — trusting a third-party script</h3>
 <pre><code>&lt;script
   src="https://cdn.example.com/lib.js"
@@ -442,5 +458,16 @@ await fetch("/token", {
   <p>
     "Most incidents come from a few root causes — untrusted input rendered as code (XSS), a request made on the user's behalf (CSRF), and trust in third-party code — and the defence is layered: escape or sanitise at output, SameSite cookies and CSRF tokens, a nonce-based CSP, and locked, audited dependencies."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Name the one root cause behind all three XSS flavors, and why <code>textContent</code> fixes it.</li>
+    <li>Say what <code>SameSite=Lax</code> vs <code>Strict</code> changes about a cookie on a cross-site request.</li>
+    <li>Explain why the <code>"__proto__"</code> merge bug pollutes every object, not just the one merged.</li>
+    <li>Say why an <code>event.origin</code> check rejects a spoofed message with a legitimate-looking payload.</li>
+    <li>Explain why deleting a JWT client-side doesn't revoke it, and what would.</li>
+  </ul>
 </div>`,
 };

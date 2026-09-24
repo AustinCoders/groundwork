@@ -47,6 +47,13 @@ console.log(stateful.test("a1"));   <span class="c">// what happens?</span>
 console.log(stateful.test("a1"));   <span class="c">// SAME regex, same string — what happens?</span>
 console.log(stateful.test("a1"));   <span class="c">// what happens?</span></code></pre>
 </div>
+<h4>Dry run: three .test() calls on the same /g regex object</h4>
+<table>
+  <tr><th>Call</th><th>lastIndex before</th><th>Search starts at</th><th>Result</th><th>lastIndex after</th></tr>
+  <tr><td>1st <code>stateful.test("a1")</code></td><td>0</td><td>index 0</td><td><code>true</code> — "1" found at index 1</td><td>2 (end of match)</td></tr>
+  <tr><td>2nd <code>stateful.test("a1")</code></td><td>2</td><td>index 2 — past the end of a 2-character string</td><td><code>false</code> — nothing left to search</td><td>reset to 0</td></tr>
+  <tr><td>3rd <code>stateful.test("a1")</code></td><td>0</td><td>index 0 again</td><td><code>true</code> — same match as the 1st call</td><td>2</td></tr>
+</table>
 <p class="sub">
   <code>true</code>, <code>false</code>, <code>true</code> — alternating,
   on the exact same input. First call finds the digit and leaves
@@ -166,5 +173,16 @@ new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(15
   <p>
     "Regex is for patterns, not for parsing nested structure, and nested quantifiers can backtrack catastrophically (ReDoS); store dates as UTC timestamps and format them for display, because arithmetic on local time breaks across daylight-saving changes."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Write a regex with a named capture group and pull a value out by that name, not by index.</li>
+    <li>Explain what makes a regex vulnerable to catastrophic backtracking, and rewrite one to avoid it.</li>
+    <li>Explain the difference between the sticky (y) and global (g) flags, and when a sticky match fails where a global one would keep going.</li>
+    <li>Store and do arithmetic on a date as a UTC timestamp, and explain why local-time arithmetic breaks across a DST change.</li>
+    <li>Format a date and a number for a specific locale using Intl, without hand-building the string.</li>
+  </ul>
 </div>`,
 };

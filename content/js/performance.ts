@@ -174,6 +174,21 @@ function mountVirtualList(viewport, items, rowHeight) {
   that don't pan out for a page that already has the next thing ready.
 </p>
 
+<h4>Dry run: what mountVirtualList actually renders at three scroll positions</h4>
+<table>
+  <tr><th>viewport.scrollTop</th><th>start = floor(scrollTop / rowHeight)</th><th>count = ceil(clientHeight / rowHeight) + 1</th><th>Rows actually mounted</th></tr>
+  <tr><td>0</td><td>0</td><td>7</td><td>rows 0–6</td></tr>
+  <tr><td>125</td><td>2</td><td>7</td><td>rows 2–8</td></tr>
+  <tr><td>1000</td><td>20</td><td>7</td><td>rows 20–26</td></tr>
+</table>
+<p class="sub">
+  rowHeight = 50px, clientHeight = 300px, 50,000 total items — and
+  <code>count</code> never moves off 7 no matter where <code>scrollTop</code>
+  lands or how many items exist in total. That's the entire performance
+  win in one column: mounted DOM node count tracks the viewport size, not
+  the size of the data.
+</p>
+
 <h3>Resource hints — telling the browser what's coming</h3>
 <pre><code>&lt;link rel="preconnect" href="https://api.example.com"&gt;
 &lt;link rel="preload" href="/fonts/main.woff2" as="font" crossorigin&gt;
@@ -278,5 +293,16 @@ instance.exports.sumAll(ptr, numbers.length);</code></pre>
   <p>
     "Perceived speed comes from the critical rendering path and the main thread: ship less, defer what is not needed yet, break up long tasks so input stays responsive, and measure with field metrics such as LCP, INP and CLS instead of guessing."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain the difference between reflow and repaint, and why <code>transform</code>/<code>opacity</code> can skip both.</li>
+    <li>Say what layout thrashing is and the batch-reads-then-writes fix for it.</li>
+    <li>Explain why a virtual list's DOM node count doesn't grow with the data, using the <code>mountVirtualList</code> dry run.</li>
+    <li>State what INP replaced FID for measuring, and why a long task hurts both LCP and INP at once.</li>
+    <li>Explain why crossing the WebAssembly/JS boundary rarely matters more than the computation itself.</li>
+  </ul>
 </div>`,
 };

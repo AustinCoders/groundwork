@@ -62,6 +62,29 @@ naturals()
   an iterator is consumed once, so a helper chain cannot be replayed.
 </p>
 
+<h4>Dry run: pulling values one at a time through the chain</h4>
+<table>
+  <tr><th><code>naturals()</code> yields</th><th>passes <code>filter(n % 2 === 0)</code>?</th><th><code>map(n =&gt; n * n)</code></th><th><code>take(5)</code> collects</th></tr>
+  <tr><td>1</td><td>no — dropped</td><td>—</td><td>—</td></tr>
+  <tr><td>2</td><td>yes</td><td>4</td><td>1 of 5</td></tr>
+  <tr><td>3</td><td>no — dropped</td><td>—</td><td>—</td></tr>
+  <tr><td>4</td><td>yes</td><td>16</td><td>2 of 5</td></tr>
+  <tr><td>5</td><td>no — dropped</td><td>—</td><td>—</td></tr>
+  <tr><td>6</td><td>yes</td><td>36</td><td>3 of 5</td></tr>
+  <tr><td>7</td><td>no — dropped</td><td>—</td><td>—</td></tr>
+  <tr><td>8</td><td>yes</td><td>64</td><td>4 of 5</td></tr>
+  <tr><td>9</td><td>no — dropped</td><td>—</td><td>—</td></tr>
+  <tr><td>10</td><td>yes</td><td>100</td><td>5 of 5 — satisfied</td></tr>
+</table>
+<p class="sub">
+  <code>naturals()</code> never generates 11 — once <code>take(5)</code> has its
+  fifth value it stops pulling, and that stop propagates all the way back through
+  <code>map</code> and <code>filter</code> to the generator itself. An array-based
+  chain has no such brake: <code>.filter().map()</code> on an array would
+  materialize a full intermediate array at every step, which is impossible on an
+  infinite source in the first place.
+</p>
+
 <h3>Promise.try: one rule for sync and async failures</h3>
 <pre><code>function load(input) {
   return Promise.try(() =&gt; JSON.parse(input))   <span class="c">// a sync throw becomes a rejection</span>
@@ -172,5 +195,16 @@ meeting.add({ days: 1 }).toString();
     <code>using</code>, and reach for Temporal instead of <code>Date</code> where
     time zones or daylight saving are involved."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Explain why the <code>naturals().filter().map().take(5)</code> chain never overflows, even though <code>naturals()</code> yields forever.</li>
+    <li>Explain the difference between a feature's spec year and its Baseline support date, and where you'd check the latter for a real audience.</li>
+    <li>Explain the specific bug <code>Promise.try</code> fixes that a plain <code>.catch()</code> on a sometimes-sync function doesn't.</li>
+    <li>Explain why <code>foreign instanceof Error</code> can be <code>false</code> for a genuine error, and why <code>Error.isError</code> doesn't have that problem.</li>
+    <li>Explain why Temporal splits a date/time into <code>PlainDate</code>, <code>Instant</code>, <code>ZonedDateTime</code>, and <code>Duration</code> instead of one mutable object like <code>Date</code>.</li>
+  </ul>
 </div>`,
 };

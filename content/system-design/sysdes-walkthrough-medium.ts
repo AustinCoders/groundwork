@@ -275,6 +275,22 @@ export const sysdesWalkthroughMedium: Chapter = {
   arithmetic that forces it.
 </div>
 
+<h4>Dry run: one normal post and one celebrity post through the hybrid design</h4>
+<table>
+  <tr><th>Step</th><th>Normal account (200 followers)</th><th>Celebrity account (150M followers)</th></tr>
+  <tr><td>Post time</td><td>Fan-out worker appends the post ID to 200 followers' materialized feeds — finishes in well under a second</td><td>Follower count is past the ~100k threshold, so no fan-out happens — the post is written once, to the posts table, and nothing else</td></tr>
+  <tr><td>What pure fan-out on write would have cost</td><td>(this is what actually happens) 200 appends</td><td>150,000,000 appends; even at a dedicated 100,000 appends/s that's 1,500s — 25 minutes before the last follower sees it</td></tr>
+  <tr><td>Read time — a follower opens their feed</td><td>One range scan of their materialized feed, which already contains this post's ID — O(1), p99 under 10 ms from cache</td><td>Not in the materialized feed. The read instead pulls the celebrity's cached "recent posts" list (~100% hit rate) and merges it in</td></tr>
+  <tr><td>How many celebrity lists does that one request pull?</td><td>0, if the reader follows no account above the threshold</td><td>Typically under 10 — the chapter's own claim that any one user follows very few accounts above 100k followers</td></tr>
+  <tr><td>Total read cost for this feed request</td><td>1 range scan</td><td>1 range scan + ~6 cached celebrity-list lookups, merged and re-sorted — bounded, unlike the 17.4M lookups/s of pure fan-out on read</td></tr>
+</table>
+<p class="sub">
+  Same mechanism, same merge code path — what changes is only which side of
+  the 100k-follower threshold an author falls on. That is why "push for the
+  many, pull for the few, merge at read" describes one system, not two
+  bolted together.
+</p>
+
 <h3>Ranking, cursors, and the caching stack</h3>
 <p>
   <b>Ranking.</b> Reverse-chronological is a legitimate v1 and you should say
@@ -449,5 +465,16 @@ export const sysdesWalkthroughMedium: Chapter = {
   <li><b>Did you separate the media path?</b> Candidates who route 200 GB/s of images through their API tier have quietly designed something that cannot exist. Object storage plus CDN, with the feed returning URLs, should be a throwaway sentence — but it has to be said.</li>
   <li><b>Did you handle the boring correctness details?</b> Cursor pagination instead of OFFSET, idempotent writes, IDs-not-bodies in the feed. These separate people who have shipped this from people who have read about it, and they cost one sentence each.</li>
   <li><b>Did you scope, and did you push back?</b> Saying "reverse-chronological for v1, and here's where ranking would slot in" is stronger than hand-waving an ML system you cannot describe. Interviewers are calibrating judgement about what to build now, not enthusiasm for building everything.</li>
-</ul>`,
+</ul>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>State the two numbers that rule out each pure strategy — 17.4M lookups/sec for fan-out on read, 25 minutes for the last follower under fan-out on write for a celebrity — and derive the hybrid from their failure.</li>
+    <li>Explain why the feed store holds post IDs rather than post bodies, and what breaks on an edit or delete if it stored bodies instead.</li>
+    <li>Explain why chat assigns a per-conversation monotonic sequence number instead of trusting client timestamps, and how a client-generated message UUID makes retried sends idempotent.</li>
+    <li>Explain why OFFSET-based pagination breaks on a feed with items constantly inserted at the head, and what a cursor encodes instead.</li>
+    <li>Describe a reconnect storm and name at least two mitigations that stop one gateway restart from cascading into the next.</li>
+  </ul>
+</div>`,
 };

@@ -321,6 +321,27 @@ await new Promise((r) =&gt; setTimeout(r, 50));   <span class="c">// hang around
 })();
 </script>
 
+<pre><code>console.log("1");
+setTimeout(() =&gt; console.log("2"), 0);
+Promise.resolve().then(() =&gt; console.log("3"));
+console.log("4");</code></pre>
+<h4>Dry run: sync code, a microtask, and a macrotask, in order</h4>
+<table>
+  <tr><th>Order printed</th><th>Line</th><th>Why it runs when it does</th></tr>
+  <tr><td>1st</td><td><code>console.log("1")</code></td><td>synchronous — runs immediately, in place</td></tr>
+  <tr><td>2nd</td><td><code>console.log("4")</code></td><td>also synchronous — the rest of the script keeps running before anything parked gets a turn</td></tr>
+  <tr><td>3rd</td><td><code>console.log("3")</code></td><td>a microtask (promise reaction) — runs the instant the call stack is empty, before any timer</td></tr>
+  <tr><td>4th</td><td><code>console.log("2")</code></td><td>a macrotask (timer callback) — the event loop only looks at the timer queue after the microtask queue is fully drained</td></tr>
+</table>
+<p class="sub">
+  Output is <code>1 4 3 2</code>, never <code>1 2 3 4</code> — the
+  <code>0</code>ms in <code>setTimeout(fn, 0)</code> never competes with
+  synchronous code or with microtasks, it only ever gets a turn after
+  both are completely empty. Every <code>.then</code> reaction is a
+  microtask, and the entire microtask queue always drains before the
+  next macrotask runs, even one queued with a 0ms delay.
+</p>
+
 <h3>Making one yourself</h3>
 <pre><code>const wait = (ms) =&gt;
   new Promise((resolve, reject) =&gt; {
@@ -537,5 +558,16 @@ JSON.parse('{"a":1,"b":[1,2,3]}');    <span class="c">// back to a real object �
   <p>
     "A callback hands work to something else to call back later; a promise is an object for a value that is not here yet, and async/await is the same promises with synchronous-looking syntax — the rule to remember is that every <code>.then</code> returns a new promise, so a chain flows through it and an error skips ahead to the nearest <code>catch</code>."
   </p>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Before you move on</span>
+  <ul>
+    <li>Order a mix of sync code, a <code>.then</code>, and <code>setTimeout(fn, 0)</code> — microtasks always drain before the next macrotask.</li>
+    <li>Explain why a <code>try/catch</code> around a parked callback never catches the error, and why <code>await</code> fixes that.</li>
+    <li>Trace a <code>.then</code> chain where one step forgets to <code>return</code>, and say exactly where <code>undefined</code> enters it.</li>
+    <li>Explain why a "successful" <code>fetch</code> to a 404 still resolves, and what <code>response.ok</code> is for.</li>
+    <li>Say what <code>JSON.stringify</code> does with <code>undefined</code> and functions as object values versus inside an array.</li>
+  </ul>
 </div>`,
 };
