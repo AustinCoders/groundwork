@@ -301,3 +301,30 @@ test("the mock lobby hydrates cleanly with saved choices", async ({ page }) => {
   ).toHaveAttribute("aria-pressed", "true");
   expect(problems, "the lobby logged problems").toEqual([]);
 });
+
+test("switching language gives that language's starter and keeps each language's code", async ({ page }) => {
+  const problems = collectProblems(page);
+  await page.goto("/problems/ex-two-sum");
+  const editor = page.locator(".cm-content");
+  const pick = async (name: string) => {
+    await page.getByRole("combobox", { name: "Language" }).click();
+    await page.getByRole("option", { name, exact: true }).click();
+  };
+
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.insertText("// mine, in JavaScript\n");
+
+  await pick("Java");
+  await expect(editor).toContainText("public int[] twoSum(int[] nums, int target)");
+  await page.getByRole("button", { name: "Run the code" }).click();
+  await expect(page.getByText(/No Java compiler runs in a browser/)).toBeVisible();
+
+  await pick("Python");
+  await expect(editor).toContainText("def twoSum(nums: list[int], target: int) -> list[int]:");
+  await expect(page.getByRole("button", { name: "Submit" })).toBeVisible();
+
+  await pick("JavaScript");
+  await expect(editor).toContainText("// mine, in JavaScript");
+  expect(problems).toEqual([]);
+});

@@ -7,7 +7,10 @@ import { CodeEditor, type CodeEditorHandle } from "@/components/practice/CodeEdi
 import { Confetti } from "@/components/practice/Confetti";
 import { EditorSkeleton } from "@/components/practice/EditorSkeleton";
 import { ShortcutHelp } from "@/components/practice/ShortcutHelp";
-import type { LanguageKey } from "@/lib/codeLanguages";
+import { isLanguage, LANGUAGES, type LanguageKey } from "@/lib/codeLanguages";
+import { gradeResults, isResultLine, parseResultLine, withHarness } from "@/lib/polyglot/grade";
+import { starterFor } from "@/lib/polyglot/starters";
+import type { Json, Polyglot } from "@/lib/polyglot/types";
 import { useClientValue, useMounted } from "@/lib/hooks";
 import type { PracticeExercise } from "@/lib/practiceFree";
 import { runPython } from "@/lib/pythonRunner";
@@ -18,6 +21,21 @@ import { isSoundEnabled, playSolvedDing, setSoundEnabled } from "@/lib/sound";
 import { code as codeStore, progress, store } from "@/lib/storage";
 import type { ChapterLink } from "@/app/practice/PracticeClient";
 import { problemHref } from "@/lib/practiceLinks";
+
+// One fetch per problem per visit: a problem's cases are the same in every
+// language, and they only matter once the reader leaves JavaScript.
+const polyglotCache = new Map<string, Promise<Polyglot>>();
+
+function loadPolyglot(id: string): Promise<Polyglot> {
+  let p = polyglotCache.get(id);
+  if (!p) {
+    p = fetch(`/problems/${id}/cases`)
+      .then((r) => (r.ok ? (r.json() as Promise<Polyglot>) : { ok: false as const, reason: "Could not load it." }))
+      .catch(() => ({ ok: false as const, reason: "Could not load it — are you offline?" }));
+    polyglotCache.set(id, p);
+  }
+  return p;
+}
 
 const MARKS: Record<string, string> = { log: "›", info: "i", warn: "!", error: "✕", system: "·" };
 
@@ -153,6 +171,8 @@ export function PracticeWorkspace({
   const solved = alreadySolved || justSolved;
   const [hintsShown, setHintsShown] = useState(0);
   const [sawSolution, setSawSolution] = useState(false);
+  // The problem as any language sees it: its signature and recorded cases.
+  const [polyglot, setPolyglot] = useState<Polyglot | null>(null);
 
   // Reports only when what is scored changes; a new onOutcome from the parent
   // on every render must not re-fire it.
@@ -161,7 +181,7 @@ export function PracticeWorkspace({
     const results = testResults || [];
     reportOutcome({
       passed: results.filter((r) => r.ok).length,
-      total: exercise.tests.length,
+      total: testResults?.length || exercise.tests.length,
       hintsUsed: hintsShown,
       sawSolution,
     });
@@ -214,20 +234,61 @@ export function PracticeWorkspace({
   const langKey = `jsnotes:lang:${exercise.id}`;
   // An interview starts clean: JavaScript, the starter code, nothing carried
   // over from practising the same problem last week.
-  const initialLanguage = mounted && !interview ? store.get<string>(langKey, "javascript") : "javascript";
+  const storedLanguage = mounted && !interview ? store.get<string>(langKey, "javascript") : "javascript";
+  const initialLanguage: LanguageKey = isLanguage(storedLanguage) ? storedLanguage : "javascript";
   const savedCode = mounted && !interview ? codeStore.load(exercise.id, initialLanguage) : null;
-  const initialValue = savedCode != null ? savedCode : initialLanguage === "javascript" ? exercise.starter : "";
+  // Opening straight into another language shows JavaScript's starter only
+  // until that language's starter has loaded (see handleLanguageChange).
+  const initialValue = savedCode != null ? savedCode : exercise.starter;
 
-  function handleLanguageChange(lang: LanguageKey) {
-    store.set(langKey, lang);
-    currentLangRef.current = lang;
-    setCurrentLang(lang);
-    const saved = codeStore.load(exercise.id, lang);
-    const next = saved != null ? saved : lang === "javascript" ? exercise.starter : "";
-    editorRef.current?.setValue(next);
+  /** Where a language starts: its own starter written from the problem's
+   *  signature, or a note saying why this problem only works in JavaScript. */
+  function starterIn(lang: LanguageKey, poly: Polyglot | null): string {
+    if (isFree)
+      return lang === "javascript" ? exercise.starter : `${LANGUAGES[lang].comment} Playground — write anything.\n`;
+    if (lang === "javascript" || lang === "sql") return lang === "sql" ? "" : exercise.starter;
+    if (poly?.ok) return starterFor(lang, poly.signature, exercise.title);
+    if (lang === "typescript") return exercise.starter;
+    const c = LANGUAGES[lang].comment;
+    return `${c} ${exercise.title}\n${c} ${poly ? poly.reason : "Loading…"}\n${c} Switch to JavaScript to solve it with its tests.\n`;
   }
 
-  const showsTestButton = !isFree && exercise.tests.length > 0 && currentLang === "javascript";
+  async function handleLanguageChange(lang: LanguageKey) {
+    if (!interview) store.set(langKey, lang);
+    currentLangRef.current = lang;
+    setCurrentLang(lang);
+    setTestResults(null);
+    // Each language keeps its own copy of your code for this problem.
+    const saved = interview ? null : codeStore.load(exercise.id, lang);
+    if (saved != null) editorRef.current?.setValue(saved);
+    const needsCases = !isFree && lang !== "javascript" && lang !== "sql";
+    if (!needsCases) {
+      if (saved == null) editorRef.current?.setValue(starterIn(lang, null));
+      return;
+    }
+    if (saved == null) editorRef.current?.setValue(starterIn(lang, polyglot));
+    const poly = await loadPolyglot(exercise.id);
+    setPolyglot(poly);
+    // The reader may have picked another language while this loaded.
+    if (currentLangRef.current === lang && saved == null) editorRef.current?.setValue(starterIn(lang, poly));
+  }
+
+  // Tests run in JavaScript and TypeScript as written, and in any language
+  // with a grader as the recorded cases.
+  const hasTests = !isFree && exercise.tests.length > 0;
+  const gradesInLanguage = currentLang === "python" && polyglot?.ok === true;
+  const showsTestButton =
+    hasTests && (currentLang === "javascript" || currentLang === "typescript" || gradesInLanguage);
+  const skippedHere = gradesInLanguage && polyglot?.ok ? polyglot.skipped : 0;
+
+  function finishTests(results: RunnerTestResult[]) {
+    setTestResults(results);
+    if (results.length && results.every((r) => r.ok) && !isFree) {
+      progress.setExerciseSolved(exercise.id, true);
+      setJustSolved(true);
+      playSolvedDing();
+    }
+  }
 
   function runCode(withTests: boolean) {
     const editor = editorRef.current;
@@ -250,17 +311,20 @@ export function PracticeWorkspace({
         onDone: (payload) => {
           runningRef.current = null;
           setConsolePhase("ran");
-          if (tests) {
-            const results = payload.results || [];
-            setTestResults(results);
-            if (results.length && results.every((r) => r.ok) && !isFree) {
-              progress.setExerciseSolved(exercise.id, true);
-              setJustSolved(true);
-              playSolvedDing();
-            }
-          }
+          if (tests) finishTests(payload.results || []);
         },
       });
+    }
+
+    if (!meta.runnable) {
+      setConsolePhase("ran");
+      setConsoleLines([
+        {
+          kind: "system",
+          text: `No ${meta.label} compiler runs in a browser, so this editor can write ${meta.label} but not run it. Run it in your own toolchain, or switch to a language marked “Runs here”.`,
+        },
+      ]);
+      return;
     }
 
     if (meta.runnable === "js" && isComponent) {
@@ -276,15 +340,7 @@ export function PracticeWorkspace({
         onDone: (payload) => {
           runningRef.current = null;
           setConsolePhase("ran");
-          if (withTests) {
-            const results = payload.results || [];
-            setTestResults(results);
-            if (results.length && results.every((r) => r.ok) && !isFree) {
-              progress.setExerciseSolved(exercise.id, true);
-              setJustSolved(true);
-              playSolvedDing();
-            }
-          }
+          if (withTests) finishTests(payload.results || []);
         },
       });
       return;
@@ -296,12 +352,27 @@ export function PracticeWorkspace({
     }
 
     if (meta.runnable === "python") {
+      const grading = withTests && polyglot?.ok ? polyglot : null;
+      const rows: [number, number, Json, string?][] = [];
       runningRef.current = runPython({
-        code: editor.getValue(),
-        onConsole: (entry) => setConsoleLines((prev) => [...prev, entry]),
+        code: grading ? withHarness("python", editor.getValue(), grading) : editor.getValue(),
+        onConsole: (entry) => {
+          // The grader's lines are results, not output the reader wrote.
+          if (grading && entry.kind === "log" && isResultLine(entry.text)) {
+            rows.push(...parseResultLine(entry.text));
+            const rest = entry.text
+              .split("\n")
+              .filter((l) => !isResultLine(l))
+              .join("\n");
+            if (!rest.trim()) return;
+            entry = { ...entry, text: rest };
+          }
+          setConsoleLines((prev) => [...prev, entry]);
+        },
         onDone: () => {
           runningRef.current = null;
           setConsolePhase("ran");
+          if (grading) finishTests(gradeResults(grading, rows));
         },
       });
       return;
@@ -323,7 +394,7 @@ export function PracticeWorkspace({
     transpileTS(editor.getValue())
       .then((jsCode) => {
         setConsoleLines([]);
-        startRunner(jsCode, false);
+        startRunner(jsCode, withTests);
       })
       .catch((err) => {
         setConsolePhase("ran");
@@ -553,7 +624,7 @@ export function PracticeWorkspace({
                       if (!window.confirm("Throw away your version and start again?")) return;
                       const lang = currentLangRef.current;
                       codeStore.clear(exercise.id, lang);
-                      editorRef.current?.setValue(lang === "javascript" ? exercise.starter : "");
+                      editorRef.current?.setValue(starterIn(lang, polyglot));
                       editorRef.current?.focus();
                     }}
                   >
@@ -708,6 +779,13 @@ export function PracticeWorkspace({
                         ? `All ${testResults.length} tests pass — nicely done.`
                         : `${testResults.filter((r) => r.ok).length} of ${testResults.length} passing. Keep going.`}
                     </div>
+                    {skippedHere > 0 && (
+                      <p className="test__note">
+                        {skippedHere} more {skippedHere === 1 ? "test checks" : "tests check"} a property of the answer
+                        (a range, a pattern, an input left alone) that only JavaScript can replay — switch to JavaScript
+                        to run {skippedHere === 1 ? "it" : "them"} too.
+                      </p>
+                    )}
                     {testResults.map((result, i) => (
                       <div className={`test test--${result.ok ? "pass" : "fail"}`} key={i}>
                         <span className="test__mark">{result.ok ? "✓" : "✕"}</span>

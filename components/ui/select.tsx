@@ -63,6 +63,8 @@ export interface DropdownItem {
   value: string;
   label: string;
   short?: string;
+  /** Items sharing a group are listed together under its name. */
+  group?: string;
 }
 
 export interface DropdownProps {
@@ -90,11 +92,24 @@ function Dropdown({ items, value, onChange, ariaLabel, openUp, compact, plain, c
           className={columns ? "dd__menu--grid" : undefined}
           {...(columns ? { style: { "--dd-cols": columns } as React.CSSProperties } : {})}
         >
-          {items.map((item) => (
-            <SelectItem key={item.value} value={item.value}>
-              {item.label}
-            </SelectItem>
-          ))}
+          {items.some((i) => i.group)
+            ? [...new Set(items.map((i) => i.group ?? ""))].map((group) => (
+                <SelectPrimitive.Group key={group} className="dd__group">
+                  {group && <SelectPrimitive.Label className="dd__group-label">{group}</SelectPrimitive.Label>}
+                  {items
+                    .filter((i) => (i.group ?? "") === group)
+                    .map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                </SelectPrimitive.Group>
+              ))
+            : items.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
         </SelectContent>
       </Select>
     </div>

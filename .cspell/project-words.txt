@@ -136,6 +136,7 @@ Chargebee
 cheatsheet
 chipbtn
 CLDR
+clike
 coalescable
 codefirst
 codegen
@@ -414,6 +415,8 @@ sparkline
 SPOF
 SSML
 statefulness
+stdbool
+stdc
 Strawperson
 streetsidesoftware
 strs

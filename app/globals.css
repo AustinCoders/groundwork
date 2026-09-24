@@ -1840,6 +1840,11 @@ kbd {
   color: var(--green);
 }
 
+/* a grid of options is short enough to show whole */
+.dd__menu--grid {
+  max-height: none;
+}
+
 .dd__menu--grid .dd__viewport {
   display: grid;
   grid-template-columns: repeat(var(--dd-cols, 3), max-content);
@@ -1848,6 +1853,27 @@ kbd {
 
 .dd__menu--grid .dd__opt {
   white-space: nowrap;
+}
+
+/* groups sit in the same grid, each under a label that spans the row */
+.dd__group {
+  display: contents;
+}
+
+.dd__group-label {
+  grid-column: 1 / -1;
+  padding: 8px 10px 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--pencil);
+}
+
+.dd__group + .dd__group .dd__group-label {
+  margin-top: 6px;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 10px;
 }
 
 .dd__menu--grid .dd__opt-check {
@@ -5842,6 +5868,11 @@ a.step__title:hover {
   color: var(--ide-accent);
 }
 
+.ed__bar .dd__group-label {
+  color: var(--ide-fg-faint);
+  border-color: var(--ide-border);
+}
+
 .ed__bar .dd__opt:focus-visible {
   outline: 2px solid var(--ide-accent);
   outline-offset: -2px;
@@ -6213,6 +6244,12 @@ a.step__title:hover {
 
 .test--fail .test__mark {
   color: var(--ide-red);
+}
+
+.test__note {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--ide-fg-faint);
 }
 
 .test__why {

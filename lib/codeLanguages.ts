@@ -1,27 +1,161 @@
 import type { Extension } from "@codemirror/state";
-import { javascript } from "@codemirror/lang-javascript";
-import { python } from "@codemirror/lang-python";
-import { sql } from "@codemirror/lang-sql";
+import type { StreamParser } from "@codemirror/language";
+
+/**
+ * Every language the editor offers. The ones with a runner run in the browser;
+ * the rest have no compiler that can, so they are written, highlighted and
+ * given a starter, but not run. Highlighting for each language is loaded the
+ * first time it is chosen, so a JavaScript reader never downloads Kotlin's.
+ */
 
 export type RunnableKind = "js" | "ts" | "python" | "sql";
 
 export interface LanguageMeta {
   label: string;
   ext: string;
-  runnable: RunnableKind;
-  support: () => Extension;
+  /** How it runs, or null when nothing in a browser can run it. */
+  runnable: RunnableKind | null;
+  /** What a line comment starts with, for notes the editor writes. */
+  comment: string;
+  support: () => Promise<Extension>;
 }
 
-export const LANG_ORDER = ["javascript", "typescript", "python", "sql"] as const;
+export const LANG_ORDER = [
+  "javascript",
+  "typescript",
+  "python",
+  "sql",
+  "cpp",
+  "c",
+  "java",
+  "go",
+  "rust",
+  "kotlin",
+  "swift",
+  "csharp",
+  "ruby",
+  "php",
+  "lua",
+] as const;
 
 export type LanguageKey = (typeof LANG_ORDER)[number];
 
+async function legacy(load: () => Promise<StreamParser<unknown>>): Promise<Extension> {
+  const [{ StreamLanguage }, parser] = await Promise.all([import("@codemirror/language"), load()]);
+  return StreamLanguage.define(parser);
+}
+
 export const LANGUAGES: Record<LanguageKey, LanguageMeta> = {
-  javascript: { label: "JavaScript", ext: "js", runnable: "js", support: () => javascript({ jsx: true }) },
-  typescript: { label: "TypeScript", ext: "ts", runnable: "ts", support: () => javascript({ typescript: true }) },
-  python: { label: "Python", ext: "py", runnable: "python", support: () => python() },
-  sql: { label: "SQL", ext: "sql", runnable: "sql", support: () => sql() },
+  javascript: {
+    label: "JavaScript",
+    ext: "js",
+    runnable: "js",
+    comment: "//",
+    support: async () => (await import("@codemirror/lang-javascript")).javascript({ jsx: true }),
+  },
+  typescript: {
+    label: "TypeScript",
+    ext: "ts",
+    runnable: "ts",
+    comment: "//",
+    support: async () => (await import("@codemirror/lang-javascript")).javascript({ typescript: true }),
+  },
+  python: {
+    label: "Python",
+    ext: "py",
+    runnable: "python",
+    comment: "#",
+    support: async () => (await import("@codemirror/lang-python")).python(),
+  },
+  sql: {
+    label: "SQL",
+    ext: "sql",
+    runnable: "sql",
+    comment: "--",
+    support: async () => (await import("@codemirror/lang-sql")).sql(),
+  },
+  cpp: {
+    label: "C++",
+    ext: "cpp",
+    runnable: null,
+    comment: "//",
+    support: async () => (await import("@codemirror/lang-cpp")).cpp(),
+  },
+  c: {
+    label: "C",
+    ext: "c",
+    runnable: null,
+    comment: "//",
+    support: async () => (await import("@codemirror/lang-cpp")).cpp(),
+  },
+  java: {
+    label: "Java",
+    ext: "java",
+    runnable: null,
+    comment: "//",
+    support: async () => (await import("@codemirror/lang-java")).java(),
+  },
+  go: {
+    label: "Go",
+    ext: "go",
+    runnable: null,
+    comment: "//",
+    support: async () => (await import("@codemirror/lang-go")).go(),
+  },
+  rust: {
+    label: "Rust",
+    ext: "rs",
+    runnable: null,
+    comment: "//",
+    support: async () => (await import("@codemirror/lang-rust")).rust(),
+  },
+  kotlin: {
+    label: "Kotlin",
+    ext: "kt",
+    runnable: null,
+    comment: "//",
+    support: () => legacy(async () => (await import("@codemirror/legacy-modes/mode/clike")).kotlin),
+  },
+  swift: {
+    label: "Swift",
+    ext: "swift",
+    runnable: null,
+    comment: "//",
+    support: () => legacy(async () => (await import("@codemirror/legacy-modes/mode/swift")).swift),
+  },
+  csharp: {
+    label: "C#",
+    ext: "cs",
+    runnable: null,
+    comment: "//",
+    support: () => legacy(async () => (await import("@codemirror/legacy-modes/mode/clike")).csharp),
+  },
+  ruby: {
+    label: "Ruby",
+    ext: "rb",
+    runnable: null,
+    comment: "#",
+    support: () => legacy(async () => (await import("@codemirror/legacy-modes/mode/ruby")).ruby),
+  },
+  php: {
+    label: "PHP",
+    ext: "php",
+    runnable: null,
+    comment: "//",
+    support: async () => (await import("@codemirror/lang-php")).php(),
+  },
+  lua: {
+    label: "Lua",
+    ext: "lua",
+    runnable: null,
+    comment: "--",
+    support: () => legacy(async () => (await import("@codemirror/legacy-modes/mode/lua")).lua),
+  },
 };
+
+export function isLanguage(key: string): key is LanguageKey {
+  return (LANG_ORDER as readonly string[]).includes(key);
+}
 
 export const HINTS: Record<RunnableKind, string> = {
   js: "⌘/Ctrl + Enter to run",
@@ -29,3 +163,6 @@ export const HINTS: Record<RunnableKind, string> = {
   python: "⌘/Ctrl + Enter to run — first run downloads the Python runtime (~13MB, cached after)",
   sql: "⌘/Ctrl + Enter to run against an in-memory SQLite database",
 };
+
+export const WRITE_ONLY_HINT =
+  "No compiler for this language runs in a browser — write it here, then run it in your own toolchain.";

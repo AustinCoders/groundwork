@@ -24,7 +24,15 @@ import { bracketMatching, indentOnInput, syntaxHighlighting, HighlightStyle } fr
 import { tags } from "@lezer/highlight";
 
 import { Dropdown } from "@/components/ui/select";
-import { HINTS, LANGUAGES, LANG_ORDER, type LanguageKey, type LanguageMeta } from "@/lib/codeLanguages";
+import {
+  HINTS,
+  isLanguage,
+  LANGUAGES,
+  LANG_ORDER,
+  WRITE_ONLY_HINT,
+  type LanguageKey,
+  type LanguageMeta,
+} from "@/lib/codeLanguages";
 
 export interface CodeEditorHandle {
   getValue(): string;
@@ -147,7 +155,7 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
   { filename, language, value, height = 420, onChange, onRun, onSave, onLanguageChange, toolbarStart },
   ref
 ) {
-  const initialLang: LanguageKey = (LANGUAGES[language as LanguageKey] ? language : "javascript") as LanguageKey;
+  const initialLang: LanguageKey = isLanguage(language) ? language : "javascript";
   const baseName = filename.replace(/\.[^./]+$/, "");
 
   const cmRef = useRef<ReactCodeMirrorRef>(null);
@@ -217,7 +225,8 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
         ...completionKeymap,
         indentWithTab,
       ]),
-      langCompartment.of(LANGUAGES[initialLang].support()),
+      // Filled in once the language's highlighting has loaded; see below.
+      langCompartment.of([]),
       lintCompartment.of(initialLang === "javascript" ? [lintGutter(), linter(jsLinter)] : []),
       wrapCompartment.of([]),
       cmTheme,
@@ -239,12 +248,21 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
     const view = cmRef.current?.view;
     if (!view) return;
     view.dispatch({
-      effects: [
-        langCompartment.reconfigure(LANGUAGES[currentLang].support()),
-        lintCompartment.reconfigure(currentLang === "javascript" ? [lintGutter(), linter(jsLinter)] : []),
-      ],
+      effects: lintCompartment.reconfigure(currentLang === "javascript" ? [lintGutter(), linter(jsLinter)] : []),
     });
+    // Each language's highlighting is its own chunk, loaded when first chosen.
+    // A slow load must not land on top of a language chosen after it.
+    let current = true;
+    LANGUAGES[currentLang]
+      .support()
+      .then((ext) => {
+        if (current) cmRef.current?.view?.dispatch({ effects: langCompartment.reconfigure(ext) });
+      })
+      .catch(() => {});
     onLanguageChangeRef.current?.(currentLang, LANGUAGES[currentLang]);
+    return () => {
+      current = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLang]);
 
@@ -341,12 +359,16 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
         </span>
         <span className="ed__spacer" />
         <Dropdown
-          items={LANG_ORDER.map((key) => ({ value: key, label: LANGUAGES[key].label }))}
+          items={LANG_ORDER.map((key) => ({
+            value: key,
+            label: LANGUAGES[key].label,
+            group: LANGUAGES[key].runnable ? "Runs here" : "Write only",
+          }))}
           value={currentLang}
           onChange={(key) => setCurrentLang(key as LanguageKey)}
           ariaLabel="Language"
           plain
-          columns={3}
+          columns={4}
           compact
         />
         <div className="ed__tools">
@@ -411,7 +433,7 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
         <span className="ed__len">{stats}</span>
         <span className="ed__spacer" />
         <span className={`ed__saved${savedFlash ? " is-on" : ""}`}>saved</span>
-        <span className="ed__hint">{HINTS[meta.runnable]}</span>
+        <span className="ed__hint">{meta.runnable ? HINTS[meta.runnable] : WRITE_ONLY_HINT}</span>
       </div>
     </div>
   );
