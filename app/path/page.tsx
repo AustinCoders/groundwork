@@ -5,8 +5,6 @@ import { byChapterId } from "@/lib/levelRows";
 import { pageMetadata } from "@/lib/metadata";
 import type { ChapterMeta } from "@/content/types";
 
-// The path itself comes from ?topic= and ?level= on the client, so there is one
-// page here and nothing for a search result to land on usefully.
 export const metadata: Metadata = pageMetadata({
   title: "Your reading path",
   description:

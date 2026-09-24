@@ -1,23 +1,3 @@
-// Prunes old Vercel deployments so build-output storage doesn't grow forever.
-// Vercel keeps every deployment's build output indefinitely on its own — there
-// is no automatic cleanup on the Hobby plan — so a project that deploys often
-// (a push to any branch makes a new deployment) accumulates storage without
-// bound. This script deletes everything except:
-//   - the deployment currently aliased to production (never touched, however old)
-//   - the KEEP_PRODUCTION most recent production deployments (rollback safety)
-//   - the KEEP_PREVIEW most recent preview deployments (in case one is still
-//     being reviewed)
-//   - anything newer than MIN_AGE_HOURS (a safety buffer against deleting a
-//     deployment still mid-build or just made)
-//
-// Defaults to a dry run — it only prints what it would delete. Pass --execute
-// to actually delete. Requires VERCEL_TOKEN, VERCEL_TEAM_ID, VERCEL_PROJECT_ID
-// in the environment.
-//
-// Usage:
-//   node scripts/vercel-cleanup.mjs                # dry run
-//   node scripts/vercel-cleanup.mjs --execute       # actually deletes
-
 const TOKEN = process.env.VERCEL_TOKEN;
 const TEAM_ID = process.env.VERCEL_TEAM_ID;
 const PROJECT_ID = process.env.VERCEL_PROJECT_ID;

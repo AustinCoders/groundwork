@@ -42,8 +42,6 @@ function plain(html: string): string {
     .trim();
 }
 
-/** A score bar with the hire and strong-hire lines drawn on it, so a bar is
- *  read against the bar rather than against an empty track. */
 function Bar({ value, marks = false }: { value: number; marks?: boolean }) {
   return (
     <div className={styles.bar}>

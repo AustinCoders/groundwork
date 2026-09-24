@@ -63,7 +63,6 @@ export interface DropdownItem {
   value: string;
   label: string;
   short?: string;
-  /** Items sharing a group are listed together under its name. */
   group?: string;
 }
 
@@ -76,8 +75,6 @@ export interface DropdownProps {
   compact?: boolean;
   plain?: boolean;
   columns?: number;
-  /** Shown on the trigger when the value matches no item — for a menu of
-   *  actions rather than a choice that stays chosen. */
   placeholder?: string;
 }
 
@@ -88,13 +85,10 @@ function Dropdown({ items, value, onChange, ariaLabel, openUp, compact, plain, c
     <div className={cn("dd", openUp && "dd--up", compact && "dd--compact", plain && "dd--plain", open && "is-open")}>
       <Select value={value} onValueChange={onChange} open={open} onOpenChange={setOpen}>
         <SelectTrigger aria-label={ariaLabel}>
-          {/* Radix shows the placeholder, not the children, while no item is chosen. */}
           <SelectValue placeholder={placeholder}>{items.find((i) => i.value === value)?.short}</SelectValue>
         </SelectTrigger>
         <SelectContent
           side={openUp ? "top" : "bottom"}
-          // A compact picker sits at the right of a toolbar, so its menu opens
-          // leftwards from the trigger's right edge and stays on screen.
           align={compact ? "end" : "start"}
           collisionPadding={12}
           className={columns ? "dd__menu--grid" : undefined}

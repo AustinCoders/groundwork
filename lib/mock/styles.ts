@@ -1,34 +1,18 @@
 import type { CompanyType, StageId, StyleId } from "@/lib/mock/types";
 
-/**
- * Loops shaped like particular kinds of company, each built from what the
- * interview book says about how that company runs its loop. A style fixes the
- * company type and then bends the plan: rounds it always runs or never does,
- * rounds that get more questions, rounds that are core, which of the book's
- * rounds to draw on first, and — for Amazon — a round that can veto the loop.
- */
 export interface LoopStyle {
   id: StyleId;
   name: string;
   detail: string;
-  /** Which of the book's rounds this is drawn from, for the card. */
   basedOn: string;
   company: CompanyType;
-  /** Always run, whatever the length or the company tiers say (role and level
-   *  rules still apply — a backend loop never gets machine coding). */
   include?: StageId[];
   exclude?: StageId[];
-  /** Extra questions on top of what the length gives. */
   boost?: Partial<Record<StageId, number>>;
-  /** Core as well as whatever the stage is core for anyway. */
   core?: StageId[];
-  /** A lean-no here is a no: the room has someone with a veto. */
   veto?: StageId[];
-  /** Book rounds to ask from first, stage by stage. */
   prefer?: Partial<Record<StageId, string[]>>;
-  /** Prefer the hardest exercises in the coding round. */
   hardCoding?: boolean;
-  /** How the book explains why this stage matters at this kind of company. */
   reasons?: Partial<Record<StageId, string>>;
 }
 

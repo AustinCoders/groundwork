@@ -14,13 +14,6 @@ import type {
 } from "@/lib/mock/types";
 import { styleOf } from "@/lib/mock/styles";
 
-/**
- * How a loop is put together. The rules follow the interview book: which
- * rounds a company type actually runs comes from the book's own tiers (see
- * STAGE_SOURCES in bank.ts, which reads them), and what a role and a level add
- * or drop is below. Nothing here touches content, so it runs in the browser.
- */
-
 export const STAGE_ORDER: StageId[] = [
   "screening",
   "phone",
@@ -39,13 +32,10 @@ export const STAGE_ORDER: StageId[] = [
 interface StageRule {
   kind: StageKind;
   competency: Competency;
-  /** quick loops keep only "essential"; standard adds "standard"; full adds the rest. */
   weight: "essential" | "standard" | "full";
   roles?: Role[];
   seniority?: Seniority[];
-  /** Included for these seniorities whatever the company type says. */
   alwaysFor?: Seniority[];
-  /** Ignore the company tiers: every company runs this round. */
   everywhere?: boolean;
   core: (c: LoopConfig) => boolean;
   reason: (c: LoopConfig) => string;
@@ -168,18 +158,11 @@ const INTENSITY_RANK: Record<Intensity, number> = { quick: 0, standard: 1, full:
 const TALK_PER_STAGE: Record<Intensity, number> = { quick: 2, standard: 3, full: 4 };
 const CODING_PER_STAGE: Record<Intensity, number> = { quick: 1, standard: 2, full: 2 };
 
-/** Minutes a candidate should give one question, before the interviewer moves on. */
 export const MINUTES_PER_TALK: Record<Seniority, number> = { junior: 3, mid: 4, senior: 5 };
 export const MINUTES_PER_CODING = { function: 15, component: 20 } as const;
 
-/**
- * The stages a loop runs, in order. `hotFor` is which company types run each
- * stage as a standard part of the loop, read from the book's tiers.
- */
 export function planLoop(config: LoopConfig, hotFor: Record<StageId, CompanyType[]>): PlannedStage[] {
   const planned: PlannedStage[] = [];
-  // A company style fixes the company type and then bends the plan; role and
-  // level rules still hold, so a backend loop never gets machine coding.
   const style = styleOf(config.style);
   if (style) config = { ...config, company: style.company };
 
@@ -216,8 +199,6 @@ export function planLoop(config: LoopConfig, hotFor: Record<StageId, CompanyType
     });
   }
 
-  // A loop with no coding at all is not a loop. An agency drops the DSA round,
-  // so its machine-coding round has to carry the coding signal instead.
   const hasCoding = planned.some((p) => STAGE_RULES[p.stage].kind === "coding");
   if (!hasCoding) {
     const stage: StageId = config.role === "backend" ? "coding" : "machine";
@@ -238,10 +219,6 @@ export function planLoop(config: LoopConfig, hotFor: Record<StageId, CompanyType
 export function loopMinutes(stages: readonly PlannedStage[]): number {
   return stages.reduce((sum, s) => sum + s.minutes, 0);
 }
-
-/* ------------------------------------------------------------------ */
-/* Choosing questions                                                   */
-/* ------------------------------------------------------------------ */
 
 export function seededRandom(seed: number): () => number {
   let x = seed >>> 0 || 1;
@@ -271,7 +248,6 @@ function talkFit(item: TalkItem, config: LoopConfig): number {
   const company = style?.company ?? config.company;
   if (item.onlyFor?.seniority && !item.onlyFor.seniority.includes(config.seniority)) return -1;
   if (item.onlyFor?.company && !item.onlyFor.company.includes(company)) return -1;
-  // A style's own rounds of the book come first, ahead of level fit.
   const preferred = style?.prefer?.[item.stage]?.includes(item.origin) ? 4 : 0;
   if (item.level === "any") return 2 + preferred;
   const gap = Math.abs(SENIORITY_ORDER.indexOf(item.level) - SENIORITY_ORDER.indexOf(config.seniority));
@@ -290,17 +266,11 @@ function codingFit(item: CodingItem, config: LoopConfig): number {
     : CODING_LEVELS[config.seniority];
   const levelScore = item.level === levels[0] ? 3 : item.level === levels[1] ? 2 : 0;
   if (item.stage === "machine") return levelScore;
-  // Data structures for anyone owning a backend; the language itself for a
-  // frontend loop, where the coding round is usually JavaScript utilities.
   const preferred = config.role === "frontend" ? ["js", "react"] : ["dsa"];
   const topicScore = preferred.includes(item.topic) ? 3 : 0;
   return levelScore + topicScore;
 }
 
-/**
- * The questions for one stage: the best-fitting ones for this config, in a
- * random order among equals, never repeating one already in `exclude`.
- */
 export function pickItems<T extends MockItem>(
   pool: readonly T[],
   config: LoopConfig,

@@ -1,6 +1,3 @@
-// The assert every exercise's tests use. It lives here so the JS worker and the
-// React sandbox report failures identically.
-
 export function fmt(value: unknown, depth = 0, seen: unknown[] = []): string {
   if (value === null) return "null";
   if (value === undefined) return "undefined";

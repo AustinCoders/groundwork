@@ -46,8 +46,6 @@ import { code as codeStore, progress, store } from "@/lib/storage";
 import type { ChapterLink } from "@/app/practice/PracticeClient";
 import { problemHref } from "@/lib/practiceLinks";
 
-// One fetch per problem per visit: a problem's cases are the same in every
-// language, and they only matter once the reader leaves JavaScript.
 const polyglotCache = new Map<string, Promise<Polyglot>>();
 
 function loadPolyglot(id: string): Promise<Polyglot> {
@@ -169,14 +167,7 @@ export function PracticeWorkspace({
   chapter: ChapterLink | null;
   prev: PracticeExercise | null;
   next: PracticeExercise | null;
-  /**
-   * Inside a mock interview: no way off to other problems, no "solved" badge
-   * from last time, and the editor starts from the starter code rather than
-   * whatever was saved from practising this one before.
-   */
   interview?: boolean;
-  /** Called whenever the tests run, a hint is opened or the solution is shown —
-   *  everything the mock interview scores a coding question on. */
   onOutcome?: (outcome: WorkspaceOutcome) => void;
 }) {
   const editorRef = useRef<CodeEditorHandle | null>(null);
@@ -193,7 +184,6 @@ export function PracticeWorkspace({
   const [previewDoc, setPreviewDoc] = useState<string | null>(null);
   const [previewRun, setPreviewRun] = useState(0);
   const pageFrameRef = useRef<HTMLIFrameElement | null>(null);
-  // What ESLint or the type checker found in the code, for the Problems tab.
   const [problems, setProblems] = useState<EditorProblem[]>([]);
   const [consoleLines, setConsoleLines] = useState<RunnerOutputEntry[]>([]);
   const [consolePhase, setConsolePhase] = useState<"idle" | "running" | "compiling" | "ran" | "cleared">("idle");
@@ -207,11 +197,8 @@ export function PracticeWorkspace({
   const solved = alreadySolved || justSolved;
   const [hintsShown, setHintsShown] = useState(0);
   const [sawSolution, setSawSolution] = useState(false);
-  // The problem as any language sees it: its signature and recorded cases.
   const [polyglot, setPolyglot] = useState<Polyglot | null>(null);
 
-  // Reports only when what is scored changes; a new onOutcome from the parent
-  // on every render must not re-fire it.
   const reportOutcome = useEffectEvent((outcome: WorkspaceOutcome) => onOutcome?.(outcome));
   useEffect(() => {
     const results = testResults || [];
@@ -268,8 +255,6 @@ export function PracticeWorkspace({
   }, []);
 
   const langKey = `jsnotes:lang:${exercise.id}`;
-  // An interview starts clean: JavaScript, the starter code, nothing carried
-  // over from practising the same problem last week.
   const [project, setProject] = useState<Project | null>(() =>
     isFree && !interview && typeof window !== "undefined" ? loadProject() : null
   );
@@ -442,8 +427,6 @@ export function PracticeWorkspace({
     return true;
   }
 
-  /** Where a language starts: its own starter written from the problem's
-   *  signature, or a note saying why this problem only works in JavaScript. */
   function starterIn(lang: LanguageKey, poly: Polyglot | null): string {
     if (isFree) return templatesFor(lang)[0]?.code ?? `${LANGUAGES[lang].comment} Playground — write anything.\n`;
     if (lang === "javascript" || lang === "sql") return lang === "sql" ? "" : exercise.starter;
@@ -460,7 +443,6 @@ export function PracticeWorkspace({
     currentLangRef.current = lang;
     setCurrentLang(lang);
     setTestResults(null);
-    // Each language keeps its own copy of your code for this problem.
     const saved = interview ? null : codeStore.load(exercise.id, lang);
     if (saved != null) editorRef.current?.setValue(saved);
     const needsCases = !isFree && lang !== "javascript" && lang !== "sql";
@@ -471,12 +453,9 @@ export function PracticeWorkspace({
     if (saved == null) editorRef.current?.setValue(starterIn(lang, polyglot));
     const poly = await loadPolyglot(exercise.id);
     setPolyglot(poly);
-    // The reader may have picked another language while this loaded.
     if (currentLangRef.current === lang && saved == null) editorRef.current?.setValue(starterIn(lang, poly));
   }
 
-  // Tests run in JavaScript and TypeScript as written, and in any language
-  // with a grader as the recorded cases.
   const hasTests = !isFree && exercise.tests.length > 0;
   const gradesInLanguage = currentLang === "python" && polyglot?.ok === true;
   const showsTestButton =
@@ -529,7 +508,6 @@ export function PracticeWorkspace({
     if (next) runCode(false);
   }
 
-  /** A run has finished: show that it did, and how long it took. */
   function markRan() {
     setConsolePhase("ran");
     setRunMs(Math.round(performance.now() - runStartRef.current));
@@ -606,7 +584,6 @@ export function PracticeWorkspace({
       runningRef.current = runPython({
         code: grading ? withHarness("python", editor.getValue(), grading) : editor.getValue(),
         onConsole: (entry) => {
-          // The grader's lines are results, not output the reader wrote.
           if (grading && entry.kind === "log" && isResultLine(entry.text)) {
             rows.push(...parseResultLine(entry.text));
             const rest = entry.text
@@ -653,8 +630,6 @@ export function PracticeWorkspace({
 
   const allExercisesLevelHref = `/path?topic=js&level=${exercise.level}`;
 
-  // The playground is a scratch space, not a problem: no statement beside it,
-  // the output next to the code, and languages one tap away.
   const playground = isFree && !interview;
   const runnable = Boolean(LANGUAGES[currentLang].runnable);
   const errored = consoleLines.some((l) => l.kind === "error");

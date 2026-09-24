@@ -21,7 +21,6 @@ function start(seed = 1): Session {
   return buildSession({ id: "t", mode: "loop", config, plan, banks, seed, now: 1_000 });
 }
 
-/** Answer and fully mark every question, or play through with nothing marked. */
 function playThrough(s: Session, mark: 0 | 0.5 | 1): Session {
   let t = 2_000;
   let guard = 0;

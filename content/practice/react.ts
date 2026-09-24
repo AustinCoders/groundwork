@@ -1,10 +1,5 @@
 import type { Exercise } from "../types";
 
-// React exercises stay inside the same sandbox as JavaScript's: a Web
-// Worker with no DOM. So every one of these pulls the *logic* out of a
-// component — a reducer, a selector, an immutable update, the rule a hook
-// follows — and tests that in isolation, the way you'd unit-test it in a
-// real codebase before ever mounting anything.
 export const react: Exercise[] = [
   {
     id: "ex-react-classify-value",

@@ -5,7 +5,6 @@ import type { ExerciseTest } from "@/content/types";
 export interface ReactRunOptions {
   code: string;
   tests: ExerciseTest[];
-  // Render `App` into the preview when the code defines one (the Run button).
   mountApp?: boolean;
   container: HTMLElement;
   timeout?: number;
@@ -25,8 +24,6 @@ function loadTypeScript() {
   return tsPromise;
 }
 
-// The learner's component runs in an iframe with an opaque origin: it cannot
-// reach this page's storage or cookies, and removing the frame stops it.
 export function runReact(options: ReactRunOptions): { stop: () => void } {
   const onConsole = options.onConsole || (() => {});
   const onDone = options.onDone || (() => {});

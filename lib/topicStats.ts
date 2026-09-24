@@ -46,8 +46,6 @@ export function topicStats(): Record<string, TopicStat> {
   return out;
 }
 
-/** The nav list with each topic's written count filled in, which is what decides
- *  whether a link into the topic goes to its reading path or to /soon. */
 export function topicsNavWithStats(): TopicNav[] {
   const stats = topicStats();
   return topicsNav().map((t) => ({ ...t, written: stats[t.id]?.written ?? 0 }));

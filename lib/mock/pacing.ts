@@ -4,27 +4,17 @@ import { stageResults, type Session, type SessionQuestion } from "@/lib/mock/ses
 import type { StageId } from "@/lib/mock/types";
 import { styleOf } from "@/lib/mock/styles";
 
-/**
- * How the time went. The score says whether the answers were right; this says
- * how they would have sounded — and an answer given in twenty seconds to a
- * question with a five-minute slot reads, in the room, as a memorised line or
- * as not knowing there was more to say.
- */
-
 export function budgetSeconds(q: SessionQuestion, s: Session): number {
   return q.item.kind === "coding"
     ? MINUTES_PER_CODING[q.item.exercise] * 60
     : MINUTES_PER_TALK[s.config.seniority] * 60;
 }
 
-/** Seconds from the question opening to the answer, or null if it was never answered. */
 export function answerSeconds(q: SessionQuestion): number | null {
   if (q.startedAt === null || q.answeredAt === null || q.skipped) return null;
   return Math.max(0, Math.round((q.answeredAt - q.startedAt) / 1000));
 }
 
-/** Too quick to have been a real answer: under a fifth of the slot, and under
- *  45 seconds whatever the slot. */
 export function isRushed(q: SessionQuestion, s: Session): boolean {
   if (q.item.kind !== "talk") return false;
   const t = answerSeconds(q);
@@ -96,7 +86,6 @@ function plain(html: string): string {
     .trim();
 }
 
-/** The debrief as plain text, for pasting to a mentor or into your own notes. */
 export function debriefText(s: Session, stageTitle: (id: StageId) => string): string {
   const results = stageResults(s);
   const decision = decideLoop(results, s.config, stageTitle);

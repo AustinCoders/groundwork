@@ -31,7 +31,6 @@ describe("recording a problem for every language", () => {
       const poly = recordPolyglot(ex);
       if (!poly.ok) continue;
       covered++;
-      // what the grader will compare against is what the reference returns
       const fn = new Function(`${ex.solution}\nreturn ${poly.signature.name};`)();
       for (const t of poly.tests)
         for (const c of t.cases) expect(fn(...structuredClone(c.args)), `${ex.id}: ${t.name}`).toEqual(c.expected);

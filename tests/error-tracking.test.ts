@@ -1,12 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { errorTrackingEnabled, SENTRY_DSN, SENTRY_OPTIONS, sentryOrigin } from "@/lib/errorTracking";
 
-/**
- * Error tracking has to be genuinely optional: the repo is public and builds
- * without any Sentry environment at all. These pin the two things that would
- * otherwise break quietly — a DSN that cannot be parsed into a CSP origin, and
- * sampling that turns the free quota into a bill.
- */
 describe("error tracking", () => {
   it("is off unless a DSN is configured", () => {
     expect(errorTrackingEnabled).toBe(Boolean(SENTRY_DSN));

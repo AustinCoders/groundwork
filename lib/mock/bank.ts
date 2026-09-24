@@ -15,23 +15,13 @@ import type {
   TalkItem,
 } from "@/lib/mock/types";
 
-/**
- * Everything the mock interview can ask, gathered from the three places it
- * lives: the interview book's rounds, the JavaScript and React chapter banks,
- * and the runnable exercises. Server-only — it reads the content modules —
- * and served per stage as static JSON so the browser only downloads the rounds
- * its loop actually runs.
- */
-
 const COMPANIES: CompanyType[] = ["service", "product", "saas", "agency"];
 
 interface TalkSource {
   round: string;
-  /** Only ask this round's questions at these levels or company types. */
   onlyFor?: TalkItem["onlyFor"];
 }
 
-/** Which book rounds and banks feed each talk stage. */
 const TALK_SOURCES: Partial<Record<StageId, (TalkSource | "js-bank" | "react-bank")[]>> = {
   screening: [{ round: "r1" }],
   phone: [{ round: "r1tp" }],
@@ -54,8 +44,6 @@ const TALK_SOURCES: Partial<Record<StageId, (TalkSource | "js-bank" | "react-ban
   hr: [{ round: "r12" }, { round: "r12lv", onlyFor: { seniority: ["mid", "senior"], company: ["product", "saas"] } }],
 };
 
-/** Which book rounds say whether a company type runs this stage, and supply
- *  its header — who asks, what it decides, how it is lost. */
 const TIER_SOURCES: Record<StageId, string[]> = {
   screening: ["r1"],
   phone: ["r1tp"],
@@ -90,7 +78,6 @@ export function stageTitle(stage: StageId): string {
   return STAGE_TITLE[stage];
 }
 
-// Reference lists rather than questions: "the rest of the rapid-fire round".
 const BULK = /rapid-fire|the rest of|the ten numbers|implementations they ask|say out loud/i;
 
 function round(id: string): InterviewRoundRaw | undefined {
@@ -120,12 +107,9 @@ function inner(html: string, cls: string): string {
   return m ? m[1].trim() : "";
 }
 
-/** The "same answer at three levels" block, parsed so the room can show only
- *  the bar for the level you are interviewing at. */
 export function parseLadder(after: string | undefined): { ladder?: LadderRung[]; rest: string } {
   if (!after || !after.includes('class="ladder"')) return { rest: after || "" };
   const start = after.indexOf('<div class="ladder">');
-  // The ladder is the last block in every question that has one.
   const block = after.slice(start);
   const rest = after.slice(0, start).trim();
   const rungs: LadderRung[] = [];
@@ -229,7 +213,6 @@ function codingItems(stage: "coding" | "machine"): CodingItem[] {
     }));
 }
 
-/** Every question the stage can draw on. */
 export function stageBank(stage: StageId): MockItem[] {
   if (STAGE_RULES[stage].kind === "coding") return codingItems(stage as "coding" | "machine");
   return (TALK_SOURCES[stage] || []).flatMap((src) =>
@@ -241,7 +224,6 @@ export function stageBank(stage: StageId): MockItem[] {
   );
 }
 
-/** Which company types run each stage as a normal part of their loop. */
 export function stageHotFor(): Record<StageId, CompanyType[]> {
   const out = {} as Record<StageId, CompanyType[]>;
   for (const stage of STAGE_ORDER) {
@@ -261,8 +243,6 @@ export interface MockCatalog {
   hotFor: Record<StageId, CompanyType[]>;
 }
 
-/** What the setup screen needs to plan a loop, and nothing more — the
- *  questions themselves are fetched per stage once a loop is chosen. */
 export function mockCatalog(): MockCatalog {
   const stages = STAGE_ORDER.map((stage): StageInfo => {
     const primary = round(TIER_SOURCES[stage][TIER_SOURCES[stage].length - 1]);

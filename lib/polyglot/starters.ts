@@ -1,11 +1,5 @@
 import type { Signature, ValueType } from "@/lib/polyglot/types";
 
-/**
- * A starter for one problem in one language, written from its recorded
- * signature: the function the grader will call, with the types it will be
- * called with, and an empty body.
- */
-
 export type StarterLanguage =
   | "typescript"
   | "python"
@@ -25,7 +19,6 @@ export function snake(name: string): string {
   return name.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase();
 }
 
-/** The name a language's grader calls, following that language's convention. */
 export function functionName(lang: StarterLanguage, sig: Signature): string {
   return lang === "ruby" || lang === "rust" ? snake(sig.name) : sig.name;
 }

@@ -17,12 +17,6 @@ export interface ChapterLink {
 
 export interface PracticeClientProps {
   chapterLinks: Record<string, ChapterLink>;
-  /**
-   * Fixes the exercise from the route instead of the query string. /practice
-   * reads ?id= on the client, so its prerendered HTML is the free playground
-   * whichever exercise the link asked for; /problems/<id> passes the id here and
-   * the whole workspace — statement included — prerenders per problem.
-   */
   exerciseId?: string;
 }
 
@@ -54,9 +48,6 @@ function PracticeBody({
     ? FREE_EXERCISE
     : allExercisesData.find((e) => e.id === id);
 
-  // /practice ships one static title so it can be prerendered, so the exercise
-  // name goes on the tab here. On /problems/<id> the route's own metadata has
-  // already set it, and overwriting it would undo the canonical title.
   useEffect(() => {
     if (!fromQuery) return;
     document.title = exercise && !isFree ? `${exercise.title} — practice` : "Playground — practice";

@@ -1,8 +1,3 @@
-/**
- * The main-thread side of the editor's tools worker: one worker, started on
- * first use, answering format / lint / fix requests by id.
- */
-
 export interface EditorProblem {
   from: number;
   to: number;
@@ -10,7 +5,6 @@ export interface EditorProblem {
   column: number;
   severity: "error" | "warning";
   message: string;
-  /** Which tool said so, VS Code style: "eslint(no-undef)", "ts(2322)". */
   source: string;
   fix?: { from: number; to: number; insert: string };
 }
@@ -27,7 +21,6 @@ export interface ToolResponse {
   error?: string;
 }
 
-/** Languages the tools understand. */
 export const FORMATS = new Set(["javascript", "typescript"]);
 export const LINTS = new Set(["javascript", "typescript"]);
 

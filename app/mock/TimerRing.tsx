@@ -8,12 +8,6 @@ import styles from "./mock.module.css";
 const R = 44;
 const CIRCUMFERENCE = 2 * Math.PI * R;
 
-/**
- * A countdown drawn as a ring that empties. Time is derived from when the
- * question started rather than counted down in state, so a resumed session or
- * a backgrounded tab still shows the truth. The clock lives in here so its
- * ticks re-render the ring and nothing else on the page.
- */
 export function TimerRing({
   startedAt,
   seconds,
@@ -63,8 +57,6 @@ export function TimerRing({
   );
 }
 
-/** The same countdown as a single line, for the coding bar where a ring would
- *  crowd the editor. Keeps counting past zero, in red, rather than stopping. */
 export function InlineTimer({ startedAt, seconds }: { startedAt: number; seconds: number }) {
   const now = useNow(true);
   const left = seconds - (now - startedAt) / 1000;
@@ -76,7 +68,6 @@ export function InlineTimer({ startedAt, seconds }: { startedAt: number; seconds
   );
 }
 
-/** Time since the loop started. */
 export function Elapsed({ since, until }: { since: number; until: number | null }) {
   const now = useNow(until === null);
   const s = Math.max(0, Math.floor(((until ?? now) - since) / 1000));

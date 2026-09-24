@@ -3,13 +3,6 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { PYODIDE_BASE, PYODIDE_VERSION, SQL_JS_BASE, SQL_JS_VERSION, wasmOrigins } from "@/lib/wasmAssets";
 
-/**
- * The CDN URLs carry version numbers that are written out by hand, because they
- * are read inside a web worker where there is no package resolution. A bump in
- * package.json that does not reach lib/wasmAssets.ts would serve the browser a
- * runtime from a different version than the one the code was built against —
- * silently, and only for the people who open the playground.
- */
 const pkg = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf8"));
 const installed = (name: string) =>
   JSON.parse(readFileSync(join(process.cwd(), "node_modules", name, "package.json"), "utf8")).version as string;

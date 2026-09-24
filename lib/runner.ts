@@ -1,7 +1,6 @@
 export interface RunnerConsoleEntry {
   kind: "log" | "info" | "warn" | "error" | "system";
   text: string;
-  /** The line of the reader's code that printed it, when known. */
   line?: number;
 }
 

@@ -78,8 +78,6 @@ export interface CodeEditorHandle {
   toggleWrap(on?: boolean): boolean;
   toggleFullscreen(on?: boolean): boolean;
   isFullscreen(): boolean;
-  /** Put the cursor at a position and scroll it into view, e.g. from the
-   *  Problems list. */
   reveal(from: number, to?: number): void;
   showInline(results: InlineResult[]): void;
 }
@@ -93,14 +91,9 @@ export interface CodeEditorProps {
   onRun?: () => void;
   onSave?: () => void;
   onLanguageChange?: (key: LanguageKey, meta: LanguageMeta) => void;
-  /** Every lint or type-check pass, with what it found. */
   onProblems?: (problems: EditorProblem[]) => void;
-  /** The status bar's problem counts were clicked. */
   onShowProblems?: () => void;
-  /** Several files, one per tab; without this the editor shows one file. */
   files?: FileTabsProps["files"];
-  /** The languages on offer; web page languages only where there is a
-   *  preview to render them in. */
   languages?: readonly LanguageKey[];
   fileActions?: Omit<FileTabsProps, "files">;
 
@@ -182,8 +175,6 @@ const cmTheme = EditorView.theme({
 
 type Ref<T> = { current: T };
 
-/** ESLint for JavaScript, the type checker for TypeScript — both in the tools
- *  worker. A result for text that has since changed is dropped. */
 function makeLintSource(refs: {
   lang: Ref<LanguageKey>;
   problems: Ref<((p: EditorProblem[]) => void) | undefined>;
@@ -191,8 +182,6 @@ function makeLintSource(refs: {
 }) {
   let warmed = false;
   return async function lintSource(view: EditorView): Promise<Diagnostic[]> {
-    // The first pass loads ESLint (~330 KB) into the worker; let the page
-    // finish loading what it needs first.
     if (!warmed) {
       await new Promise<void>((resolve) =>
         "requestIdleCallback" in window
@@ -241,8 +230,6 @@ interface EditorActions {
   palette: () => void;
 }
 
-/** Everything the editor is built from. Built once per editor; what can change
- *  later sits in a compartment. */
 function editorExtensions(ctx: {
   actions: Ref<EditorActions>;
   run: Ref<(() => void) | undefined>;
@@ -272,7 +259,6 @@ function editorExtensions(ctx: {
     highlightSelectionMatches(),
     search({ top: true }),
     inlineResults(),
-    // Vim goes first so its bindings win while it is on.
     c.vim.of([]),
     keymap.of([
       { key: "Mod-Shift-p", run: () => (actions.current.palette(), true), preventDefault: true },
@@ -294,7 +280,6 @@ function editorExtensions(ctx: {
       ...completionKeymap,
       indentWithTab,
     ]),
-    // Filled in once the language's highlighting has loaded.
     c.lang.of([]),
     c.lint.of(ctx.lint),
     c.wrap.of(settings.wrap ? EditorView.lineWrapping : []),
@@ -302,8 +287,6 @@ function editorExtensions(ctx: {
     c.guides.of(settings.indentGuides ? indentationMarkers() : []),
     c.minimap.of([]),
     cmTheme,
-    // The content element is a textbox; without this it reaches a screen
-    // reader unnamed.
     EditorView.contentAttributes.of({ "aria-label": "Code editor" }),
   ];
 }
@@ -409,8 +392,6 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
   const cmRef = useRef<ReactCodeMirrorRef>(null);
   const [currentLang, setCurrentLang] = useState<LanguageKey>(initialLang);
   const [fontSize, setFontSizeState] = useState(14.5);
-  // The editor only mounts on the client, so reading saved settings in the
-  // initialiser cannot disagree with a server render.
   const [settings, setSettings] = useState<EditorSettings>(loadSettings);
   const wrapped = settings.wrap;
   const [fullscreen, setFullscreen] = useState(false);
@@ -418,9 +399,6 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
   const [notice, setNotice] = useState<string | null>(null);
   const [counts, setCounts] = useState({ errors: 0, warnings: 0 });
   const [paletteOpen, setPaletteOpen] = useState(false);
-  // CodeMirror builds its view after this component's first effects have run,
-  // so the effects that configure the view run again once it exists. Without
-  // this, a page opened fresh never got its highlighting or saved settings.
   const [viewReady, setViewReady] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const noticeTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -430,8 +408,6 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
   const [stats, setStats] = useState("");
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  // The editor's extensions are built once, so they reach the latest props
-  // through refs, brought up to date after every render.
   const onChangeRef = useRef(onChange);
   const onRunRef = useRef(onRun);
   const onSaveRef = useRef(onSave);
@@ -460,8 +436,6 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
     noticeTimerRef.current = setTimeout(() => setNotice(null), 2200);
   }
 
-  // Both are handed refs, not their values: the refs are read inside
-  // CodeMirror's callbacks (a keypress, a lint pass), never while rendering.
   // eslint-disable-next-line react-hooks/refs -- read in callbacks only, see above
   const [lintSource] = useState(() => makeLintSource({ lang: currentLangRef, problems: onProblemsRef, setCounts }));
   // eslint-disable-next-line react-hooks/refs -- read in callbacks only, see above
@@ -483,7 +457,6 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
     })
   );
 
-  // The settings panel closes on a click anywhere outside it or its button.
   useEffect(() => {
     if (!settingsOpen) return;
     function onDown(e: MouseEvent) {
@@ -495,9 +468,6 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
     return () => document.removeEventListener("mousedown", onDown);
   }, [settingsOpen]);
 
-  // The language the parent was last told about. The effect below also runs
-  // when the view appears, which must not count as switching language: the
-  // parent answers a switch by loading that language's code into the editor.
   const announcedLangRef = useRef<LanguageKey | null>(null);
 
   useEffect(() => {
@@ -512,8 +482,6 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
     view.dispatch({
       effects: lintCompartment.reconfigure(lintExtension(currentLang, settingsRef.current.lint, lintSource)),
     });
-    // Each language's highlighting is its own chunk, loaded when first chosen.
-    // A slow load must not land on top of a language chosen after it.
     let current = true;
     LANGUAGES[currentLang]
       .support()
@@ -527,8 +495,6 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLang, viewReady]);
 
-  // Settings: stored, and pushed into the editor's compartments. Vim and the
-  // minimap are their own chunks, loaded only when switched on.
   useEffect(() => {
     settingsRef.current = settings;
     saveSettings(settings);
@@ -576,7 +542,6 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
     setSettings((s) => ({ ...s, [key]: value ?? !s[key] }));
   }
 
-  /** Prettier, with the cursor kept where it was in the code. */
   async function format(): Promise<boolean> {
     const view = cmRef.current?.view;
     const lang = currentLangRef.current;
@@ -598,13 +563,11 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
       }
       return true;
     } catch (err) {
-      // Prettier refuses code that does not parse; say where, briefly.
       flash(`Prettier: ${(err instanceof Error ? err.message : String(err)).split("\n")[0]}`);
       return false;
     }
   }
 
-  /** ⌘/Ctrl+S: format if that is on, save, then run if that is on. */
   async function save() {
     const s = settingsRef.current;
     const formatted = s.formatOnSave && FORMATS.has(currentLangRef.current) ? await format() : false;

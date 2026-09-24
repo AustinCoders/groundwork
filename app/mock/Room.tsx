@@ -13,8 +13,6 @@ import styles from "./mock.module.css";
 
 const FOLLOW_UP_SECONDS = 90;
 
-// CodeMirror and the test runner are most of the room's weight and only a
-// coding question uses them; talk rounds never download them.
 const PracticeWorkspace = dynamic(
   () => import("@/components/practice/PracticeWorkspace").then((m) => m.PracticeWorkspace),
   { loading: () => <p className="sub">Loading the editor…</p> }
@@ -29,10 +27,6 @@ const MARKS: [Mark, string][] = [
 ];
 
 type Dispatch = (a: Action) => void;
-
-/* ------------------------------------------------------------------ */
-/* the rail: where you are in the loop                                  */
-/* ------------------------------------------------------------------ */
 
 function Rail({ session, stages, onEnd }: { session: Session; stages: Record<StageId, StageInfo>; onEnd: () => void }) {
   const { stageIndex } = stagePosition(session);
@@ -71,10 +65,6 @@ function Rail({ session, stages, onEnd }: { session: Session; stages: Record<Sta
     </div>
   );
 }
-
-/* ------------------------------------------------------------------ */
-/* walking into a stage                                                 */
-/* ------------------------------------------------------------------ */
 
 function StageBrief({ session, info, dispatch }: { session: Session; info: StageInfo; dispatch: Dispatch }) {
   const { stageIndex } = stagePosition(session);
@@ -141,10 +131,6 @@ function StageBrief({ session, info, dispatch }: { session: Session; info: Stage
     </section>
   );
 }
-
-/* ------------------------------------------------------------------ */
-/* talk questions                                                       */
-/* ------------------------------------------------------------------ */
 
 function QuestionHead({ q, session, info }: { q: SessionQuestion; session: Session; info: StageInfo }) {
   const { inStage, ofStage } = stagePosition(session);
@@ -411,13 +397,8 @@ function TalkQuestion({
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* coding questions                                                     */
-/* ------------------------------------------------------------------ */
-
 let exercisesPromise: Promise<Map<string, PracticeExercise>> | null = null;
 
-/** The exercises are 1.7 MB, so they load only when a coding round starts. */
 function loadExercises(): Promise<Map<string, PracticeExercise>> {
   if (!exercisesPromise) {
     exercisesPromise = import("@/content/practice").then(
@@ -580,10 +561,6 @@ function CodingQuestion({
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* the room                                                             */
-/* ------------------------------------------------------------------ */
-
 export function Room({
   session,
   stages,
@@ -598,8 +575,6 @@ export function Room({
   const q = currentQuestion(session);
   const info = q ? stages[q.stage] : null;
 
-  // Keyboard: Enter walks in and moves on, Cmd/Ctrl+Enter finishes an answer,
-  // and 1/2/3 mark the next unmarked line of the rubric.
   const firstUnmarked = useMemo(() => {
     if (!q || q.item.kind !== "talk" || session.step !== "review") return null;
     return rubricFor(q.item, Boolean(q.followUp)).find((c) => q.marks[c.id] === undefined) ?? null;

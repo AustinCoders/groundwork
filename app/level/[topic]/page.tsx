@@ -15,8 +15,6 @@ import {
 import { byChapterId } from "@/lib/levelRows";
 import { pageMetadata } from "@/lib/metadata";
 
-// One prerendered page per topic, so choosing a level is a CDN hit rather than
-// a server render on every visit.
 export function generateStaticParams() {
   return topics()
     .filter((t) => t.status === "ready" && t.levels)

@@ -8,11 +8,6 @@ export interface GitSection {
   title: string;
 }
 
-/**
- * The contents list, with the section you are reading marked. Sections arrive as
- * a prop rather than an import so the 70 KB of guide HTML that sits beside them
- * in content/git-body.ts stays out of the client bundle.
- */
 export function GitContents({ sections }: { sections: GitSection[] }) {
   const [activeId, setActiveId] = useState<string | null>(null);
 

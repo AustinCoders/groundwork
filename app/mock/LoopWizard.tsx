@@ -27,7 +27,6 @@ const STEP_QUESTION: Record<StepId, string> = {
   review: "Your loop",
 };
 
-/** A company style decides the kind of company, so it has no company step. */
 function stepsFor(config: LoopConfig): StepId[] {
   return config.style
     ? ["style", "role", "level", "length", "review"]
@@ -94,14 +93,6 @@ export function LoopMap({
   );
 }
 
-/**
- * Planning a loop, one question at a time and in order: a step opens only once
- * every step before it has an answer, because what the later steps offer
- * depends on the earlier ones (a company style removes the company step; the
- * lengths are timed for the role and level chosen). Every visit starts at the
- * first step, even with choices saved from before; changing an earlier choice
- * goes on to the first step still waiting for an answer, or back to the loop.
- */
 export function LoopWizard({
   config,
   onChange,
@@ -128,25 +119,17 @@ export function LoopWizard({
   const steps = stepsFor(config);
   const REVIEW = steps.length - 1;
   const [stepOverride, setStepOverride] = useState<StepId | null>(null);
-  // Which steps have been answered in this visit: true once chosen, false when
-  // a change earlier on means the step has to be asked again.
   const [answers, setAnswers] = useState<Partial<Record<StepId, boolean>>>({});
   const isAnswered = (id: StepId, marks = answers) => marks[id] ?? false;
   const firstOpen = (list: StepId[], marks = answers) => {
     const i = list.findIndex((id) => id !== "review" && !isAnswered(id, marks));
     return i === -1 ? list.length - 1 : i;
   };
-  // The furthest step that can be opened: the first one still unanswered.
   const reached = firstOpen(steps);
-  // Held by id rather than position, since choosing a style removes a step.
   const wanted: StepId = stepOverride && steps.includes(stepOverride) ? stepOverride : "style";
   const step = Math.min(steps.indexOf(wanted), reached);
   const stepId = steps[step];
 
-  // Move focus with the step, so a keyboard or screen-reader user lands on the
-  // new question instead of on a button that has just disappeared. Only when
-  // the reader moved: not on load, and not when hydration reads saved choices
-  // and the wizard jumps to the finished loop by itself.
   const headingRef = useRef<HTMLHeadingElement>(null);
   const movedByReader = useRef(false);
   useEffect(() => {
@@ -173,17 +156,12 @@ export function LoopWizard({
     movedByReader.current = true;
     onChange(patch);
     const marks = { ...answers, [stepId]: true };
-    // Leaving a company style for your own loop brings the company step back,
-    // and the company the style picked was never the reader's answer.
     if (stepId === "style" && config.style && patch.style === null) marks.company = false;
     setAnswers(marks);
-    // The step list can change with the choice, so the next step is found in
-    // the list the choice produces: the first one still waiting for an answer.
     const nextSteps = stepsFor({ ...config, ...patch });
     setStepOverride(nextSteps[firstOpen(nextSteps, marks)]);
   }
 
-  // Where Next leads: the first step still waiting, or the loop once none is.
   const nextStep = firstOpen(steps);
 
   const style = styleOf(config.style);

@@ -27,9 +27,6 @@ for (const path of PAGES) {
 
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
-      // CodeMirror's scroller carries tabindex="-1" while the contenteditable
-      // inside it takes focus and scrolls with the arrow keys, so the region is
-      // reachable; axe cannot see that and flags the pattern generically.
       .disableRules(["scrollable-region-focusable"])
       .analyze();
 
@@ -40,8 +37,6 @@ for (const path of PAGES) {
   });
 }
 
-// The mock interview's room and debrief only exist after you start a round, so
-// they are walked to rather than visited.
 test("the mock interview room and debrief have no accessibility violations", async ({ page }) => {
   const check = async (where: string) => {
     const results = await new AxeBuilder({ page })

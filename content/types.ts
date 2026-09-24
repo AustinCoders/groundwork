@@ -42,8 +42,6 @@ export interface TopicNav {
   notes: string | null;
   blurb: string;
   levelIds: LevelId[] | null;
-  /** Chapters (or sections, for a single-page topic) with a body. Zero means the
-   *  topic is still an outline, and every link into it should land on /soon. */
   written: number;
 }
 
@@ -101,6 +99,5 @@ export interface Exercise {
   hints: string[];
   solution: string;
   tests: ExerciseTest[];
-  // "component" exercises render React in the sandbox and test it through the DOM.
   kind?: "function" | "component";
 }

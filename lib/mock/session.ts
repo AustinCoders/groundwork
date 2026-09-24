@@ -10,17 +10,8 @@ import {
 } from "@/lib/mock/scoring";
 import type { LoopConfig, MockItem, PlannedStage, StageId } from "@/lib/mock/types";
 
-/**
- * One interview, as a reducer. Every action carries its own timestamp so the
- * reducer stays pure — the room passes Date.now() in, the tests pass fixed
- * numbers — and the whole session is plain JSON, which is what lets a refresh
- * or a closed tab resume exactly where it stopped.
- */
-
 export type SessionMode = "loop" | "drill" | "retry";
 
-/** Where the current question is: the stage's briefing card, answering, the
- *  follow-up they push with, or marking yourself against the model answer. */
 export type Step = "brief" | "answer" | "followup" | "review";
 
 export interface SessionQuestion {
@@ -68,11 +59,6 @@ export function newQuestion(item: MockItem, followUp: string | null): SessionQue
   };
 }
 
-/**
- * Turn a plan and the stage banks into a session: pick each stage's questions,
- * never the same one twice, and choose which follow-up the interviewer will
- * push with. Stages the bank cannot fill are dropped rather than left empty.
- */
 export function buildSession(opts: {
   id: string;
   mode: SessionMode;
@@ -81,7 +67,6 @@ export function buildSession(opts: {
   banks: Partial<Record<StageId, MockItem[]>>;
   seed: number;
   now: number;
-  /** For a retry round: ask exactly these, in this order, and pick nothing. */
   fixed?: MockItem[];
 }): Session {
   const random = seededRandom(opts.seed);
@@ -153,7 +138,6 @@ export function currentQuestion(s: Session): SessionQuestion | null {
   return s.finishedAt === null ? (s.questions[s.cursor] ?? null) : null;
 }
 
-/** The score a question would get with the marks it has now. */
 export function scoreOf(q: SessionQuestion): number {
   if (q.skipped) return 0;
   if (q.item.kind === "coding") return q.coding ? codingScore(q.coding) : 0;
@@ -166,7 +150,6 @@ function patch(s: Session, change: Partial<SessionQuestion>): Session {
   return { ...s, questions };
 }
 
-/** Move past the current question, opening the next stage with its brief. */
 function advance(s: Session, at: number): Session {
   const nextIndex = s.cursor + 1;
   if (nextIndex >= s.questions.length) return { ...s, finishedAt: at };
@@ -189,8 +172,6 @@ export function reduce(s: Session, a: Action): Session {
       if (s.step !== "brief") return s;
       return { ...patch(s, { startedAt: a.at }), step: "answer" };
 
-    // Coming back to a half-finished loop restarts the current question's
-    // clock: a timer that kept running overnight would only mark it late.
     case "resume":
       return s.step === "answer" || s.step === "followup" ? patch(s, { startedAt: a.at }) : s;
 
@@ -235,10 +216,6 @@ export function reduce(s: Session, a: Action): Session {
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* Reading a session                                                    */
-/* ------------------------------------------------------------------ */
-
 export function stageResults(s: Session): StageResult[] {
   return s.plan.map((p) => ({
     stage: p.stage,
@@ -248,7 +225,6 @@ export function stageResults(s: Session): StageResult[] {
   }));
 }
 
-/** Where the cursor is in the loop, for the progress rail. */
 export function stagePosition(s: Session): { stageIndex: number; inStage: number; ofStage: number } {
   const q = s.questions[Math.min(s.cursor, s.questions.length - 1)];
   const stageIndex = Math.max(

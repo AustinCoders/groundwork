@@ -1,6 +1,3 @@
-// A small Testing Library: queries by role, text and label, plus user events.
-// It runs inside the sandbox iframe, against the real DOM React rendered.
-
 import { flushSync } from "react-dom";
 
 export type Matcher = string | RegExp | ((text: string, el: Element) => boolean);
@@ -337,7 +334,6 @@ export async function press(el: Element, key: string, init: KeyboardEventInit = 
   await settle();
 }
 
-// Tab moves focus along the document order, the way the keyboard would.
 export async function tab(options: { shift?: boolean } = {}) {
   const order = Array.from(document.querySelectorAll("*")).filter(
     (el) => isFocusable(el) && (el as HTMLElement).tabIndex >= 0

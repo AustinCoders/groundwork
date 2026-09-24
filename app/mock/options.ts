@@ -1,7 +1,5 @@
 import type { CompanyType, Intensity, Role, Seniority } from "@/lib/mock/types";
 
-/** The four things a loop is planned from, with the words the lobby shows. */
-
 export const ROLES: [Role, string, string][] = [
   ["frontend", "Frontend", "React, the browser"],
   ["fullstack", "Full-stack", "both ends"],

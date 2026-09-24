@@ -54,10 +54,6 @@ function readConfig(): LoopConfig {
   };
 }
 
-// The saved choices come out of this browser, which the server cannot see, so
-// the first render must use the defaults and switch after hydration — reading
-// localStorage in useState's initialiser made the server's buttons and the
-// client's disagree. The cache keeps useSyncExternalStore's snapshot stable.
 let cachedRaw: string | null | undefined;
 let cachedConfig: LoopConfig = DEFAULT_CONFIG;
 
@@ -220,8 +216,6 @@ export function Lobby({
 
   const plan = useMemo(() => planLoop(config, catalog.hotFor), [config, catalog.hotFor]);
 
-  // A count chosen for a coding round (1–3) is not one a talk round offers
-  // (3, 5, 8), so switching rooms snaps it to the nearest the new room has.
   const drillIsCoding = STAGE_RULES[drillStage].kind === "coding";
   const drillQuestions = drillIsCoding
     ? Math.min(Math.max(drillCount, 1), 3)
@@ -236,9 +230,6 @@ export function Lobby({
     return [{ stage: drillStage, questions: count, minutes: count * per, core: true, reason: "" }];
   }, [drillStage, drillQuestions]);
 
-  // Getting ready for Start without paying for it on every visit: the room's
-  // code once the reader is looking at a finished plan, the questions once
-  // they point at Start.
   const warmRoom = () => whenIdle(() => void loadRoom().catch(() => {}));
   const warmLoop = () => prefetchStages(plan.map((p) => p.stage));
   const warmDrill = () => prefetchStages([drillStage]);
@@ -264,7 +255,6 @@ export function Lobby({
       const session = buildSession({
         id: newId(),
         mode: which,
-        // A single round is not a company's loop, so it carries no style.
         config: which === "loop" ? config : { ...config, style: null },
         plan: thePlan,
         banks,

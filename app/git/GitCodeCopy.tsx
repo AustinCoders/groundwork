@@ -19,11 +19,6 @@ function legacyCopy(text: string): boolean {
   return ok;
 }
 
-/**
- * Wires the copy buttons that ship inside the server-rendered guide HTML.
- * Renders nothing itself, so the guide reads — and gets indexed — whether or
- * not this ever runs.
- */
 export function GitCodeCopy({ containerId }: { containerId: string }) {
   useEffect(() => {
     const container = document.getElementById(containerId);

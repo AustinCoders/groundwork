@@ -5,16 +5,6 @@ import { chapters, exercises, topics } from "@/lib/content";
 import { INTERVIEW_TOTAL_QUESTIONS, INTERVIEW_TOTAL_ROUNDS } from "@/lib/interviewContent";
 import { siteStats } from "@/lib/topicStats";
 
-/**
- * The "How this is built" chapters and the README describe this site, so every
- * figure in them is a claim that goes stale the moment the content moves. They
- * all had: 112 written chapters when there were 217, 299 exercises when there
- * were 538, 23 interview rounds when there were 27.
- *
- * Each case below rebuilds the sentence from the content and asserts the file
- * still says it, so the next figure that moves fails here with the string to
- * put in its place, rather than being read by someone months later.
- */
 const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 
 const stats = siteStats();
@@ -24,8 +14,6 @@ const written = topicChapters.filter((c) => c.ready).length;
 const outlines = topicChapters.length - written;
 const exerciseCount = exercises().length;
 
-// Git has sections rather than chapters, so it counts as written without
-// appearing in the chapter list above.
 const writtenIncludingGit = stats.writtenChapters;
 const totalIncludingGit = topicChapters.length + (writtenIncludingGit - written);
 

@@ -31,8 +31,6 @@ export function topicChapterParams(topicId: string) {
   return chapters(topicId).map((ch) => ({ chapter: ch.id }));
 }
 
-/** The cover of a topic: what it covers, how much of it exists, and whether a
- *  crawler should bother yet. */
 export function topicCoverMetadata(topicId: string): Metadata {
   const t = topic(topicId);
   const data = notesData(topicId);
@@ -48,8 +46,6 @@ export function topicCoverMetadata(topicId: string): Metadata {
     title: name,
     description: description.trim(),
     path: notesHref(topicId),
-    // An outline is a syllabus and nothing else. It stays readable and linked;
-    // it just stops competing in search with the topics that are written.
     index: written > 0,
   });
 }
@@ -69,9 +65,6 @@ export function topicChapterMetadata(topicId: string, chapterId: string): Metada
     description,
     path: `${notesHref(topicId)}/${ch.id}`,
     type: "article",
-    // A chapter that is still a syllabus stub has a heading and a bullet list.
-    // It is a real page for anyone following the map, and a thin one for a
-    // crawler, so it stays linked and asks not to be indexed.
     index: ch.ready,
     authors: data.meta.author ? [data.meta.author] : undefined,
   });

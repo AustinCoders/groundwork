@@ -6,15 +6,6 @@ import { errorTrackingEnabled } from "@/lib/errorTracking";
 const ENDPOINT = "/api/client-error";
 const MAX_REPORTS_PER_SESSION = 5;
 
-/**
- * A page that throws in the browser used to fail silently — the reader saw a
- * broken widget and we saw nothing. This sends the first few errors of a
- * session to the server log, and stops, so a render loop cannot flood it.
- *
- * It is the fallback for a deployment with no NEXT_PUBLIC_SENTRY_DSN. With one,
- * Sentry installs the same two listeners and groups what they catch, so this
- * one stands down rather than reporting everything twice.
- */
 export function ErrorReporter() {
   useEffect(() => {
     if (errorTrackingEnabled) return;
@@ -24,7 +15,6 @@ export function ErrorReporter() {
       if (sent >= MAX_REPORTS_PER_SESSION) return;
       sent += 1;
       const body = JSON.stringify({ message, stack, url: location.href });
-      // keepalive so a navigation away does not cancel the report
       fetch(ENDPOINT, { method: "POST", body, headers: { "Content-Type": "application/json" }, keepalive: true }).catch(
         () => {}
       );

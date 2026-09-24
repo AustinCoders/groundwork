@@ -34,7 +34,7 @@ describe("sitemap", () => {
 
   it("leaves out the cover of a topic that is still an outline", () => {
     for (const t of readyTopics) {
-      if (!t.levels) continue; // a single-page topic is its own cover
+      if (!t.levels) continue;
       if (chapters(t.id).some((ch) => ch.ready)) continue;
       expect(urls.has(`${SITE_URL}${notesHref(t.id)}`), `${t.id} has nothing written but its cover is listed`).toBe(
         false

@@ -3,8 +3,6 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 
-// Old shape: /level?topic=js. Kept as a client redirect so bookmarks and any
-// stale link still land, without making this a server render.
 function LevelRedirect() {
   const router = useRouter();
   const searchParams = useSearchParams();

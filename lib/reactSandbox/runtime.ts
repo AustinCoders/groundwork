@@ -1,8 +1,3 @@
-// Runs inside the sandbox iframe. The parent sends already-compiled code and
-// tests; this file gives them React, a DOM to render into, and a small
-// Testing Library, then reports results back. Bundled by
-// scripts/build-react-sandbox.mjs into public/wasm/react-sandbox.js.
-
 import * as React from "react";
 import { createPortal, flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
@@ -35,8 +30,6 @@ window.addEventListener("unhandledrejection", (event) => {
   });
 });
 
-// A form submit or a link click would navigate the iframe away; tests are
-// about what the component does with the event, so stop the navigation.
 document.addEventListener("submit", (event) => event.preventDefault());
 document.addEventListener("click", (event) => {
   const link = (event.target as Element | null)?.closest?.("a[href]");
@@ -122,10 +115,6 @@ const jsonResponse = (data: unknown, status = 200) =>
 
 const delay = <T>(ms: number, value?: T) => new Promise<T>((resolve) => setTimeout(() => resolve(value as T), ms));
 
-// Every loop in the learner's code and each test calls this once per
-// iteration (injected by lib/reactSource.ts). A tight synchronous infinite
-// loop — while (true) {} — would otherwise block this frame's only thread
-// forever; this turns it into a thrown error after a few seconds instead.
 const LOOP_GUARD_LIMIT_MS = 3000;
 const LOOP_GUARD_CHECK_EVERY = 2000;
 let loopGuardCount = 0;

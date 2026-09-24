@@ -17,8 +17,6 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: `${SITE_NAME} — the whole map`,
-    // Every page supplies its own short name; the site name is appended here so
-    // a search result says which site it came from without each page repeating it.
     template: `%s · ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -48,10 +46,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <meta name="color-scheme" content="light dark" />
       </head>
       <body>
-        {/* Where the Script docs put it. Next hoists a beforeInteractive script
-            into <head> whatever its position; rendered inside a hand-written
-            <head> instead, React meets a raw <script> while hydrating and warns
-            that it will never run on the client. */}
         <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <TopicsNavProvider topics={topicsNavWithStats()}>
           <TopicsReadyProvider ids={readyTopicIds}>

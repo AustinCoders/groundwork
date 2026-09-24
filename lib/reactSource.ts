@@ -1,7 +1,5 @@
 import type { ExerciseTest } from "@/content/types";
 
-// Composes the source the sandbox runs: the learner's code, then each test in
-// its own try/catch, the same shape lib/runner.ts uses for plain functions.
 export function composeReactSource(code: string, tests: ExerciseTest[], options: { mountApp?: boolean } = {}): string {
   const warmUp =
     "render(React.createElement('button', { onMouseEnter: function () {}, onMouseLeave: function () {}, onMouseOver: function () {}, onMouseOut: function () {}, onMouseMove: function () {} }, 'x'));\n" +
@@ -42,10 +40,6 @@ export function composeReactSource(code: string, tests: ExerciseTest[], options:
 
 type TypeScript = typeof import("typescript");
 
-// Injects a call to __loopGuard() at the top of every loop body, so a
-// synchronous infinite loop (while (true) {}) throws after a time budget
-// instead of freezing the tab. The sandbox provides __loopGuard/
-// __resetLoopGuard as globals; see lib/reactSandbox/runtime.ts.
 function loopGuardTransformer(ts: TypeScript) {
   return (context: import("typescript").TransformationContext) => {
     const { factory } = context;
@@ -95,8 +89,6 @@ function loopGuardTransformer(ts: TypeScript) {
   };
 }
 
-// JSX to React.createElement calls, without type-checking: React's types are
-// not loaded in the sandbox, and a runtime error tells the learner more.
 export function transpileJsx(ts: TypeScript, source: string): { output: string; error?: string } {
   const result = ts.transpileModule(source, {
     compilerOptions: {

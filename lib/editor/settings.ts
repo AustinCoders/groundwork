@@ -1,12 +1,8 @@
 import { store } from "@/lib/storage";
 
-/** What the editor does, as the reader has set it. Kept on this device. */
 export interface EditorSettings {
-  /** Run Prettier before saving (JavaScript and TypeScript). */
   formatOnSave: boolean;
-  /** Run the code after saving, so ⌘/Ctrl+S is "save and see". */
   runOnSave: boolean;
-  /** ESLint for JavaScript, type-checking for TypeScript, as you type. */
   lint: boolean;
   vim: boolean;
   minimap: boolean;

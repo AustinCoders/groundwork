@@ -38,8 +38,6 @@ function errorLine(message: string): number | undefined {
 async function getPyodide(): Promise<PyodideInterface> {
   if (!pyodidePromise) {
     pyodidePromise = (async () => {
-      // Fetched at runtime from the CDN, so there is no module for the bundler
-      // to resolve and no types to import.
       const mod = await import(/* webpackIgnore: true */ `${PYODIDE_BASE}pyodide.mjs`);
       const pyodide: PyodideInterface = await mod.loadPyodide({ indexURL: PYODIDE_BASE });
       pyodide.setStdout({

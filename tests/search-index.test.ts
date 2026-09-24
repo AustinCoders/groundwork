@@ -38,11 +38,6 @@ describe("search index", () => {
     }
   });
 
-  // Raised from 75 to 85 KB on 2026-09-24: the dry-run-table + checklist pass
-  // across every DSA/JS/React/System Design chapter pushed JS (and, close
-  // behind, React and System Design) past the old budget on legitimate
-  // content growth, not bloat — see docs/ROADMAP.md section 3 for the
-  // options (sharded index, hosted search) once a topic nears this one too.
   it("keeps every topic's index under 85 KB gzip", () => {
     for (const topicId of written) {
       const gzip = gzipSync(JSON.stringify(buildSearchIndex(topicId))).length;

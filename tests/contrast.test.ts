@@ -2,13 +2,6 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-/**
- * The editor draws syntax tokens on two backgrounds: the editor itself, and the
- * active line, which is the editor tinted with --line-soft. Every theme's
- * palette red and yellow failed WCAG AA against the second one, which is where
- * the cursor sits — so the keyword under the cursor was the least readable word
- * on screen. These are the ratios that stopped that coming back.
- */
 const CSS = readFileSync(join(process.cwd(), "app/globals.css"), "utf8");
 
 const TOKENS = ["--ide-keyword", "--ide-string", "--ide-number", "--ide-op", "--ide-comment"] as const;
@@ -45,7 +38,6 @@ function contrast(a: Rgb, b: Rgb): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-/** Every `selector { … }` block at the top level of the stylesheet. */
 function blocks(): { selector: string; body: string }[] {
   const out: { selector: string; body: string }[] = [];
   const opener = /^([^{\n][^{\n]*)\{/gm;

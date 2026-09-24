@@ -1,11 +1,5 @@
 import type { LanguageKey } from "@/lib/codeLanguages";
 
-/**
- * Small programs to start the playground from, per language. The first one is
- * what a language opens with; the rest are in the Examples menu. Each one
- * shows something the language does that is worth watching run.
- */
-
 export interface Template {
   name: string;
   code: string;

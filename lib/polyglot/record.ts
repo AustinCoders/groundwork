@@ -14,7 +14,6 @@ function isPlain(v: unknown): v is Json {
   return Array.isArray(v) && v.every(isPlain);
 }
 
-/** The narrowest type that holds every value seen, or null if none does. */
 export function unify(a: ValueType | null, b: ValueType | null): ValueType | null {
   if (!a || !b) return null;
   if (a.k === "unknown") return b;
@@ -48,12 +47,6 @@ function paramNames(solution: string, name: string): string[] | null {
   return names.every((n) => /^[A-Za-z_$][\w$]*$/.test(n)) ? names : null;
 }
 
-/**
- * Run the reference solution under its own tests with the function wrapped,
- * so every call the tests make is written down as arguments and a result.
- * Only problems whose calls take and return plain data qualify: numbers,
- * strings, booleans and (nested) lists of them.
- */
 export function recordPolyglot(ex: Recordable): Polyglot {
   if (ex.kind === "component") return { ok: false, reason: "A React component only runs as JavaScript." };
   const name = ex.solution.match(/^function\s+([A-Za-z_$][\w$]*)\s*\(/m)?.[1];
@@ -64,10 +57,6 @@ export function recordPolyglot(ex: Recordable): Polyglot {
     return { ok: false, reason: "It is about JavaScript's async model, so it stays in JavaScript." };
   }
 
-  // Only a test that compares what the function returns can be replayed in
-  // another language. A test that checks a property instead — a random number
-  // in range, a string matching a pattern, an argument left unchanged — would
-  // turn into whatever one run happened to return, so it stays JavaScript's.
   const direct = new RegExp(`^assert\\.(equal|deepEqual|strictEqual|deepStrictEqual)\\(\\s*${name}\\(`);
   const chained = new RegExp(`${name}\\([^;]*?\\)\\s*(\\.|\\[)`);
   const isDirect = (body: string) => {

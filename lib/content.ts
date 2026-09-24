@@ -112,8 +112,6 @@ export function exercisesForChapter(chapterId: string, topicId?: string | null):
 }
 
 export function exercisesForLevel(level: LevelId, topicId?: string | null): Exercise[] {
-  // Counted by the level of the chapter an exercise belongs to, not by its difficulty tag,
-  // so a level's figure matches the "Practice this layer" links inside its chapters.
   const levelChapterIds = chaptersForLevel(level, topicId).map((ch) => ch.id);
   return exercises().filter((ex) => levelChapterIds.indexOf(ex.chapter) !== -1);
 }

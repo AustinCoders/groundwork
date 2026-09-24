@@ -18,24 +18,14 @@ const ACCENTS: Record<string, string> = {
 };
 
 export interface OgCard {
-  /** One or two characters in the hand-drawn badge — a topic's mark. */
   mark: string;
-  /** Small line beside the badge: which part of the site this is. */
   kicker: string;
-  /** The small grey line under the kicker. */
   sub: string;
-  /** The big line. Keep it to about eight words or it wraps past the card. */
   headline: string;
-  /** Up to three short facts along the bottom. */
   chips?: string[];
   accent?: string;
 }
 
-/**
- * Every share card on the site, drawn once. Before this, the level pages,
- * /problems and the interview book all inherited the homepage's card, so a
- * link to any of them previewed as the homepage.
- */
 export function ogCard({ mark, kicker, sub, headline, chips = [], accent = "red" }: OgCard) {
   const rule = ACCENTS[accent] || ACCENTS.red;
   const markSize = mark.length > 2 ? 28 : mark.length > 1 ? 34 : 40;

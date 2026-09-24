@@ -26,8 +26,6 @@ function refersTo(html: string, name: string): boolean {
   return new RegExp(`(?:src|href)\\s*=\\s*["'](?:\\./)?${escaped}["']`).test(html);
 }
 
-/** The page a file belongs to: itself if it is HTML, or the HTML file that
- *  links it with a <link href> or <script src>. */
 export function pageFor(files: PgFile[], active: PgFile | null): PgFile | null {
   if (!active) return null;
   if (active.lang === "html") return active;
@@ -39,8 +37,6 @@ function safeInline(code: string, tag: "script" | "style"): string {
   return code.replace(new RegExp(`</${tag}`, "gi"), `<\\/${tag}`);
 }
 
-/** The HTML with every linked stylesheet and script from the project put
- *  inline, and a console bridge first in the head. */
 export function buildPage(files: PgFile[], page: PgFile): string {
   const byName = new Map(files.map((f) => [f.name.replace(/^\.\//, ""), f]));
   let html = page.code

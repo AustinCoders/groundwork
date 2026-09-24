@@ -2,13 +2,6 @@ import type { RunnerTestResult } from "@/lib/runner";
 import { functionName } from "@/lib/polyglot/starters";
 import type { Json, Polyglot } from "@/lib/polyglot/types";
 
-/**
- * Grading any language the same way: a harness appended to the reader's code
- * calls their function with every recorded case and prints each result as a
- * marked line of JSON; the marked lines are then compared here, in one place,
- * so "correct" means the same thing whichever language wrote the answer.
- */
-
 export const RESULT_MARK = "@@groundwork-case@@ ";
 
 type Ready = Extract<Polyglot, { ok: true }>;
@@ -25,7 +18,6 @@ function same(a: Json | undefined, b: Json): boolean {
   return a === b;
 }
 
-/** The reader's code with a grader after it. */
 export function withHarness(lang: HarnessLanguage, code: string, poly: Ready): string {
   const fn = functionName(lang, poly.signature);
   const cases = JSON.stringify(poly.tests.map((t) => t.cases.map((c) => c.args)));
@@ -35,16 +27,13 @@ export function withHarness(lang: HarnessLanguage, code: string, poly: Ready): s
   }
 }
 
-/** Pull the grader's lines out of the output; everything else is the reader's. */
 export function parseResultLine(text: string): [number, number, Json, string?][] {
   const out: [number, number, Json, string?][] = [];
   for (const line of text.split("\n")) {
     if (!line.startsWith(RESULT_MARK)) continue;
     try {
       out.push(JSON.parse(line.slice(RESULT_MARK.length)));
-    } catch {
-      /* a line cut short by a crash is simply a missing result */
-    }
+    } catch {}
   }
   return out;
 }

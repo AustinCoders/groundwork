@@ -1,12 +1,7 @@
 import { defineConfig } from "@playwright/test";
 
-// Port 3100 rather than 3000: another project of ours listens there, and
-// reusing whatever answers on the default port silently tests the wrong app.
 const PORT = 3100;
 
-// Runs against a production build, because the things this catches — hydration
-// mismatches, a CSP that blocks a script, a route that fails to prerender —
-// behave differently in dev.
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,

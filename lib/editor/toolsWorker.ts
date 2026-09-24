@@ -3,16 +3,6 @@ import type { CompilerHost, CompilerOptions } from "typescript";
 import tsLibFileNames from "@/lib/tsLibFiles.json";
 import type { EditorProblem, ToolRequest, ToolResponse } from "@/lib/editor/tools";
 
-/**
- * The editor's tools, off the main thread: Prettier formats, ESLint lints and
- * fixes, TypeScript type-checks. Each is loaded the first time it is asked
- * for, so a reader who never formats never downloads Prettier.
- */
-
-/* ------------------------------------------------------------------ */
-/* Offsets                                                              */
-/* ------------------------------------------------------------------ */
-
 function lineStarts(code: string): number[] {
   const starts = [0];
   for (let i = 0; i < code.length; i++) if (code[i] === "\n") starts.push(i + 1);
@@ -23,10 +13,6 @@ function offset(starts: number[], line: number, column: number, length: number):
   const base = starts[Math.min(Math.max(line, 1), starts.length) - 1] ?? 0;
   return Math.min(base + Math.max(column, 1) - 1, length);
 }
-
-/* ------------------------------------------------------------------ */
-/* Prettier                                                             */
-/* ------------------------------------------------------------------ */
 
 async function format(code: string, lang: string, cursor: number, tabWidth: number) {
   const [prettier, estree, parser] = await Promise.all([
@@ -44,14 +30,6 @@ async function format(code: string, lang: string, cursor: number, tabWidth: numb
   return { code: result.formatted, cursor: result.cursorOffset };
 }
 
-/* ------------------------------------------------------------------ */
-/* ESLint                                                               */
-/* ------------------------------------------------------------------ */
-
-// The rules a reader would want flagged in a scratch file or an exercise:
-// ESLint's recommended set for real bugs, plus a few style warnings VS Code
-// users are used to. Top-level declarations are left alone by no-unused-vars,
-// because an exercise's function is called by the tests, not by the file.
 const RULES: LinterType.RulesRecord = {
   "constructor-super": "error",
   "for-direction": "error",
@@ -120,7 +98,6 @@ function loadLinter() {
               ...globals.browser,
               ...globals.worker,
               ...globals.es2021,
-              // what the sandbox and the React exercises provide
               assert: "readonly",
               React: "readonly",
               __loopGuard: "readonly",
@@ -158,10 +135,6 @@ async function fixAll(code: string): Promise<string> {
   const { linter, config } = await loadLinter();
   return linter.verifyAndFix(code, config).output;
 }
-
-/* ------------------------------------------------------------------ */
-/* TypeScript                                                           */
-/* ------------------------------------------------------------------ */
 
 let tsPromise: Promise<{ ts: typeof import("typescript"); libs: Map<string, string> }> | null = null;
 
@@ -230,8 +203,6 @@ async function typeCheck(code: string): Promise<EditorProblem[]> {
     };
   });
 }
-
-/* ------------------------------------------------------------------ */
 
 self.onmessage = async (event: MessageEvent<ToolRequest>) => {
   const req = event.data;

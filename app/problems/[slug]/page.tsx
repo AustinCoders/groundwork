@@ -11,9 +11,6 @@ const LEVEL_NAME: Record<string, string> = {
   advanced: "Advanced",
 };
 
-/** One prerendered page per exercise. /practice?id= could never be one of these:
- *  it reads the id on the client, so its HTML is the same free playground for
- *  every problem on the site. */
 export function generateStaticParams() {
   return exercises().map((ex) => ({ slug: ex.id }));
 }

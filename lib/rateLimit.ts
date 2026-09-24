@@ -6,12 +6,6 @@ interface Bucket {
 const buckets = new Map<string, Bucket>();
 const MAX_TRACKED = 5000;
 
-/**
- * Per-instance limiter. Serverless spreads traffic over many instances, so this
- * is a floor rather than a guarantee — it stops one client hammering a single
- * instance, and it costs nothing. Vercel Firewall rate limiting is the
- * account-wide equivalent.
- */
 export function overRateLimit(req: Request, name: string, max: number, windowMs = 60_000): boolean {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
   const key = `${name}:${ip}`;

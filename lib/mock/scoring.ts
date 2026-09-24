@@ -1,13 +1,6 @@
 import type { Competency, LoopConfig, Seniority, StageId, TalkItem } from "@/lib/mock/types";
 import { styleOf } from "@/lib/mock/styles";
 
-/**
- * Scoring is a self-assessment, so it is only as honest as the questions it
- * asks. Instead of one "how did you do?", each answer is marked against the
- * things the book says the round is actually listening for — what they were
- * testing, the trap, the follow-up — and those carry the weight.
- */
-
 export type Mark = 0 | 0.5 | 1;
 
 export type CriterionId = "testing" | "substance" | "trap" | "followup" | "delivery";
@@ -15,7 +8,6 @@ export type CriterionId = "testing" | "substance" | "trap" | "followup" | "deliv
 export interface Criterion {
   id: CriterionId;
   label: string;
-  /** What to hold your answer up against, as HTML from the book. */
   against?: string;
   weight: number;
 }
@@ -46,7 +38,6 @@ export function rubricFor(item: TalkItem, followUpAsked: boolean): Criterion[] {
   return out;
 }
 
-/** 0–1. Unmarked criteria count as zero: skipping the rubric is not a pass. */
 export function talkScore(criteria: readonly Criterion[], marks: Partial<Record<CriterionId, Mark>>): number {
   const total = criteria.reduce((sum, c) => sum + c.weight, 0);
   if (total === 0) return 0;
@@ -61,21 +52,12 @@ export interface CodingOutcome {
   sawSolution: boolean;
 }
 
-/**
- * Tests passed, less a little for each hint — an interviewer nudging you is
- * normal, three nudges is a signal. Reading the solution caps the problem at
- * 0.3: you can finish it, but it no longer shows you could have.
- */
 export function codingScore(o: CodingOutcome): number {
   if (o.total <= 0) return 0;
   const base = Math.max(0, Math.min(1, o.passed / o.total));
   const afterHints = Math.max(0, base - Math.min(0.15, 0.05 * o.hintsUsed));
   return o.sawSolution ? Math.min(0.3, afterHints) : afterHints;
 }
-
-/* ------------------------------------------------------------------ */
-/* Verdicts                                                            */
-/* ------------------------------------------------------------------ */
 
 export type Verdict = "strong-hire" | "hire" | "lean-no" | "no-hire";
 
@@ -97,7 +79,6 @@ export interface StageResult {
   stage: StageId;
   competency: Competency;
   core: boolean;
-  /** One score per question, 0–1. */
   scores: number[];
 }
 
@@ -119,13 +100,6 @@ const LEVEL_WORD: Record<Seniority, string> = { junior: "junior", mid: "mid-leve
 const BELOW: Record<Seniority, Seniority | null> = { junior: null, mid: "junior", senior: "mid" };
 const ABOVE: Record<Seniority, Seniority | null> = { junior: "mid", mid: "senior", senior: null };
 
-/**
- * A hiring committee, roughly. A no-hire in a core round is almost never
- * overruled; two lean-nos read as a no; otherwise the rounds are averaged with
- * the core ones counting double. At mid and senior, the design round decides
- * the level as much as the verdict — a strong loop with a weak design round is
- * an offer one level down, which is the most common outcome nobody prepares for.
- */
 export function decideLoop(
   results: readonly StageResult[],
   config: LoopConfig,
@@ -149,7 +123,6 @@ export function decideLoop(
   const sunk = scored.filter((r) => r.core && verdictFor(stageScore(r)) === "no-hire");
   const leanNos = scored.filter((r) => verdictFor(stageScore(r)) === "lean-no");
 
-  // Amazon's Bar Raiser: in a round someone can veto, a lean-no is already a no.
   const vetoed = scored.filter(
     (r) => styleOf(config.style)?.veto?.includes(r.stage) && verdictFor(stageScore(r)) === "lean-no"
   );
@@ -212,8 +185,6 @@ export function decideLoop(
   return { verdict, score, level, headline, reasons };
 }
 
-/** The average score per competency, for the profile chart. Competencies the
- *  loop never tested are left out rather than shown as zero. */
 export function competencyProfile(results: readonly StageResult[]): Partial<Record<Competency, number>> {
   const acc: Partial<Record<Competency, { sum: number; n: number }>> = {};
   for (const r of results) {

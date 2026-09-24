@@ -3,8 +3,6 @@ import { ReviewView, type ReviewChapter } from "@/app/review/ReviewView";
 import { chapterMetas, notesHref, topics } from "@/lib/content";
 import { pageMetadata } from "@/lib/metadata";
 
-// Which chapters come up depends on what you have read, which only your browser
-// knows.
 export const metadata: Metadata = pageMetadata({
   title: "Review",
   description: "Chapters you read a while ago, resurfaced before you forget them.",

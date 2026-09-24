@@ -4,8 +4,6 @@ import { overRateLimit } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
-// A synthesis is a websocket to Microsoft; without a cap a hung upstream holds
-// the function for the platform maximum.
 export const maxDuration = 20;
 
 const ALLOWED_VOICES = new Set(EDGE_VOICES.map((v) => v.value));
@@ -31,7 +29,6 @@ interface WordEvent {
 
 const PITCH_PATTERN = /^[+-]\d{1,2}%$|^0%$/;
 
-/** [offset ms, duration ms, text] — a third the size of the object form. */
 type CompactWord = [number, number, string];
 
 async function synthesise(
@@ -96,21 +93,14 @@ async function synthesise(
     tts.close();
 
     const mp3 = Buffer.concat(audioChunks);
-    // Same text, voice, rate and pitch always synthesise to the same audio, so
-    // let the CDN answer every repeat of it. A chapter narrated by a thousand
-    // readers is one synthesis, not a thousand.
     const cacheControl = cacheable
       ? "public, max-age=3600, s-maxage=31536000, stale-while-revalidate=86400"
       : "no-store";
 
     if (!cacheable) {
-      // The POST shape older clients still expect.
       return Response.json({ audio: mp3.toString("base64"), words }, { headers: { "Cache-Control": cacheControl } });
     }
 
-    // Binary body rather than base64 in JSON: a 700-character chunk is 280 KB
-    // of mp3 and was leaving here as 373 KB of text. Timings ride along in a
-    // header, compacted to tuples — 3 KB rather than 7.
     const compact: CompactWord[] = words.map((w) => [
       Math.round(w.offset * 1000),
       Math.round(w.duration * 1000),

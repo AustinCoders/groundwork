@@ -22,8 +22,6 @@ const PAGES = [
   { path: "/architecture/arch-health", heading: /Current health/i },
 ];
 
-// The analytics scripts live on Vercel's edge, so a local production build
-// 404s them. Everything else is a real finding.
 const VERCEL_NOISE = /_vercel|vercel-scripts/i;
 
 function collectProblems(page: Page): string[] {
@@ -33,8 +31,6 @@ function collectProblems(page: Page): string[] {
     if (msg.type() !== "error") return;
     const text = msg.text();
     if (VERCEL_NOISE.test(text)) return;
-    // Bare "failed to load resource" lines name no URL; the response listener
-    // below reports those with the address attached.
     if (text.startsWith("Failed to load resource")) return;
     problems.push(`console: ${text.slice(0, 200)}`);
   });
@@ -62,8 +58,6 @@ for (const { path, heading } of PAGES) {
     expect(response?.status(), `${path} did not return 200`).toBe(200);
 
     await expect(page.locator("#main h1, #main h2").first()).toContainText(heading);
-    // Hydration mismatches surface as console errors, which is how the reader
-    // shipped broken for a week without anyone noticing.
     expect(problems, `${path} logged problems`).toEqual([]);
   });
 }
@@ -98,12 +92,7 @@ test("narration plays a chapter", async ({ page }) => {
   const audio = readFileSync(join(__dirname, "fixtures/tone.mp3"));
   const timings = readFileSync(join(__dirname, "fixtures/tone-timings.txt"), "utf8").trim();
 
-  // Serve the audio ourselves: the real endpoint calls out to Microsoft, and
-  // what broke here was the client — a media element handed a fresh blob URL
-  // without a load() to start it.
   await page.route("**/api/tts*", async (route) => {
-    // A real synthesis takes a second or two; fulfilling instantly hides races
-    // between resetting the media element and giving it the next source.
     await new Promise((resolve) => setTimeout(resolve, 400));
     await route.fulfill({
       status: 200,
@@ -134,7 +123,6 @@ test("a mock interview round runs from the lobby to the debrief", async ({ page 
     await page.getByLabel(/Say it out loud/).fill("Situation, task, action, result.");
     await page.getByRole("button", { name: "I've answered" }).click();
 
-    // Some questions come with a follow-up the interviewer pushes with.
     const push = page.getByRole("button", { name: "Answered — show me" });
     const rubric = page.getByText("Mark it honestly");
     await expect(push.or(rubric)).toBeVisible();
@@ -156,15 +144,12 @@ test("the loop wizard walks the choices and follows them", async ({ page }) => {
   const step = (name: RegExp) => page.getByRole("list", { name: "Steps" }).getByRole("button", { name });
   const map = page.getByRole("list", { name: "The loop, in order" });
 
-  // a first visit starts at the first question, with every later step locked
-  // and nothing chosen for the reader
   await expect(page.getByRole("heading", { name: "Whose loop?" })).toBeVisible();
   await expect(step(/^Role/)).toBeDisabled();
   await expect(step(/^Your loop/)).toBeDisabled();
   await expect(page.getByRole("button", { name: "Choose one to go on" })).toBeDisabled();
   await expect(page.getByRole("group", { name: "Loop style" }).locator("[aria-pressed=true]")).toHaveCount(0);
   await card("Loop style", /^Build my own/).click();
-  // answering opens the next step, and only that one
   await expect(step(/^Role/)).toBeEnabled();
   await expect(step(/^Experience/)).toBeDisabled();
   await expect(page.getByRole("heading", { name: "What's the role?" })).toBeVisible();
@@ -178,7 +163,6 @@ test("the loop wizard walks the choices and follows them", async ({ page }) => {
   await expect(map.getByText("System design")).toBeVisible();
   await expect(map.getByText("React & the frontend")).toHaveCount(0);
 
-  // changing one choice from the finished loop comes straight back to it
   await step(/^Role/).click();
   await card("Role", /^Frontend/).click();
   await expect(page.getByRole("heading", { name: "Your loop" })).toBeVisible();
@@ -198,7 +182,6 @@ test("a company-style loop takes over the company and shapes the rounds", async 
   const map = page.getByRole("list", { name: "The loop, in order" });
 
   await card("Loop style", /^Amazon-style/).click();
-  // the style decides the kind of company, so there is no company step
   await expect(steps.getByRole("button", { name: /^Company/ })).toHaveCount(0);
   await card("Role", /^Frontend/).click();
   await card("Experience", /^5–7 years/).click();
@@ -209,8 +192,6 @@ test("a company-style loop takes over the company and shapes the rounds", async 
   await expect(page.getByText(/Bar Raiser/).first()).toBeVisible();
   await expect(map.getByText("veto", { exact: true })).toBeVisible();
 
-  // going back to your own loop brings the company step back, and asks it
-  // before the loop opens again
   await steps.getByRole("button", { name: /^Style/ }).click();
   await card("Loop style", /^Build my own/).click();
   await expect(page.getByRole("heading", { name: "What kind of company?" })).toBeVisible();
@@ -255,7 +236,6 @@ test("a component exercise renders a preview and runs its tests in the sandbox",
   const problems = collectProblems(page);
   const exercise = practice.find((e) => e.id === "ex-comp-counter-step")!;
 
-  // The starter: the preview appears, and Submit fails with a reason.
   await page.goto("/practice?id=" + exercise.id);
   await expect(page.locator(".preview-panel")).toBeVisible();
   await page.getByRole("button", { name: "Run the code" }).click();
@@ -263,7 +243,6 @@ test("a component exercise renders a preview and runs its tests in the sandbox",
   await page.getByRole("button", { name: "Submit" }).click();
   await expect(page.locator(".verdict--fail")).toBeVisible();
 
-  // The working solution, stored the way the editor stores it, passes every test.
   await page.evaluate(
     ([key, code]) => localStorage.setItem(key, JSON.stringify(code)),
     ["jsnotes:code:" + exercise.id, exercise.solution]
@@ -275,9 +254,6 @@ test("a component exercise renders a preview and runs its tests in the sandbox",
   expect(problems).toEqual([]);
 });
 
-// The lobby remembers your last choices in this browser. Reading them during
-// the first render made the server's buttons and the client's disagree, which
-// only shows up for someone who has been here before.
 test("the mock lobby hydrates cleanly with saved choices", async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem(
@@ -289,12 +265,10 @@ test("the mock lobby hydrates cleanly with saved choices", async ({ page }) => {
   const problems = collectProblems(page);
 
   await page.goto("/mock", { waitUntil: "networkidle" });
-  // a returning reader still walks the steps in order, from the first
   await expect(page.getByRole("heading", { name: "Whose loop?" })).toBeVisible();
   const steps = page.getByRole("list", { name: "Steps" });
   await expect(steps.getByRole("button", { name: /^Role/ })).toBeDisabled();
   await expect(steps.getByRole("button", { name: /^Your loop/ })).toBeDisabled();
-  // the saved level still carries over to a single round
   await page.getByRole("tab", { name: "Single round" }).click();
   await expect(
     page.getByRole("group", { name: "Experience" }).getByRole("button", { name: /^10\+ years/ })
@@ -334,7 +308,6 @@ test("the playground runs examples to the end and switches language from its chi
   await page.goto("/practice?id=free");
   await expect(page.locator(".cm-content")).toBeVisible();
 
-  // everything a timer or a promise prints arrives, in the engine's order
   await page.getByRole("combobox", { name: "Load an example" }).click();
   await page.getByRole("option", { name: "Event loop order" }).click();
   await page.getByRole("button", { name: "Run the code" }).click();
@@ -358,24 +331,20 @@ test("the editor lints as you type, formats on save and has a command palette", 
   await page.keyboard.press("ControlOrMeta+a");
   await page.keyboard.insertText("var total = 0\nif (total == '1') console.log(totl)\n");
 
-  // ESLint, in a worker, underlines and lists what it finds
   await expect(page.locator(".ed__problems")).toHaveText("✕ 1 ⚠ 2", { timeout: 15_000 });
   await page.locator(".ed__problems").click();
   await expect(page.locator("#view-problems")).toContainText("eslint(no-undef)");
 
-  // ⌘/Ctrl+S runs Prettier before saving
   await editor.click();
   await page.keyboard.press("ControlOrMeta+s");
   await expect(editor).toContainText('if (total == "1") console.log(totl);', { timeout: 15_000 });
 
-  // every action is in the palette
   await page.keyboard.press("ControlOrMeta+Shift+p");
   await page.getByRole("combobox", { name: "Command" }).fill("run on save");
   await page.keyboard.press("Enter");
   await page.getByRole("button", { name: "Editor settings" }).click();
   await expect(page.getByRole("switch", { name: "Run the code" })).toBeChecked();
 
-  // TypeScript gets the type checker instead of ESLint
   await page
     .getByRole("group", { name: "Quick language" })
     .getByRole("button", { name: /TypeScript/ })
@@ -460,7 +429,6 @@ test("the playground renders a web page from its html, css and js files", async 
   await frame.getByRole("button", { name: "Click me" }).click();
   await expect(frame.locator("#count")).toHaveText("1");
 
-  // what the page logs reaches the console
   await page.getByRole("tab", { name: /Console/ }).click();
   await expect(page.locator("#view-console")).toContainText("clicked 1");
 });

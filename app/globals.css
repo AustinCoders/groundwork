@@ -73,8 +73,6 @@
 
   --font-code: var(--font-mono);
 
-  /* Editor syntax colours, stepped until they clear 4.5:1 against the
-     active line — the palette reds and yellows did not, in any theme. */
   --ide-keyword: #ae2e26;
   --ide-string: #1b6a4a;
   --ide-number: #6f5b1a;
@@ -166,8 +164,6 @@ html[data-theme="dark"] {
   --shadow-md: 0 10px 24px -16px rgba(0, 0, 0, 0.8);
   --shadow-lg: 0 22px 48px -24px rgba(0, 0, 0, 0.9);
 
-  /* Editor syntax colours, stepped until they clear 4.5:1 against the
-     active line — the palette reds and yellows did not, in any theme. */
   --ide-keyword: #ff9184;
   --ide-string: #64dfa6;
   --ide-number: #c9a94a;
@@ -223,8 +219,6 @@ html[data-theme="kraft"] {
   --shadow-md: 0 10px 24px -16px rgba(74, 50, 20, 0.55);
   --shadow-lg: 0 22px 48px -24px rgba(74, 50, 20, 0.6);
 
-  /* Editor syntax colours, stepped until they clear 4.5:1 against the
-     active line — the palette reds and yellows did not, in any theme. */
   --ide-keyword: #792e22;
   --ide-string: #224e36;
   --ide-number: #54431d;
@@ -280,8 +274,6 @@ html[data-theme="blueprint"] {
   --shadow-md: 0 10px 24px -16px rgba(0, 0, 0, 0.8);
   --shadow-lg: 0 22px 48px -24px rgba(0, 0, 0, 0.9);
 
-  /* Editor syntax colours, stepped until they clear 4.5:1 against the
-     active line — the palette reds and yellows did not, in any theme. */
   --ide-keyword: #ffd1c8;
   --ide-string: #a5e9cd;
   --ide-number: #e8dbb3;
@@ -337,8 +329,6 @@ html[data-theme="sepia"] {
   --shadow-md: 0 10px 24px -16px rgba(90, 62, 30, 0.5);
   --shadow-lg: 0 22px 48px -24px rgba(90, 62, 30, 0.55);
 
-  /* Editor syntax colours, stepped until they clear 4.5:1 against the
-     active line — the palette reds and yellows did not, in any theme. */
   --ide-keyword: #8e402f;
   --ide-string: #3b5f40;
   --ide-number: #6a5525;
@@ -394,8 +384,6 @@ html[data-theme="forest"] {
   --shadow-md: 0 10px 24px -16px rgba(45, 74, 38, 0.5);
   --shadow-lg: 0 22px 48px -24px rgba(45, 74, 38, 0.55);
 
-  /* Editor syntax colours, stepped until they clear 4.5:1 against the
-     active line — the palette reds and yellows did not, in any theme. */
   --ide-keyword: #9d3c29;
   --ide-string: #276842;
   --ide-number: #6c5a1d;
@@ -451,8 +439,6 @@ html[data-theme="rose"] {
   --shadow-md: 0 10px 24px -16px rgba(0, 0, 0, 0.8);
   --shadow-lg: 0 22px 48px -24px rgba(0, 0, 0, 0.9);
 
-  /* Editor syntax colours, stepped until they clear 4.5:1 against the
-     active line — the palette reds and yellows did not, in any theme. */
   --ide-keyword: #ff8fa3;
   --ide-string: #7fe0b8;
   --ide-number: #c9a94a;
@@ -508,8 +494,6 @@ html[data-theme="mono"] {
   --shadow-md: 0 10px 24px -16px rgba(20, 20, 20, 0.5);
   --shadow-lg: 0 22px 48px -24px rgba(20, 20, 20, 0.55);
 
-  /* Editor syntax colours, stepped until they clear 4.5:1 against the
-     active line — the palette reds and yellows did not, in any theme. */
   --ide-keyword: #ac241d;
   --ide-string: #256635;
   --ide-number: #635932;
@@ -565,8 +549,6 @@ html[data-theme="lavender"] {
   --shadow-md: 0 10px 24px -16px rgba(74, 45, 115, 0.5);
   --shadow-lg: 0 22px 48px -24px rgba(74, 45, 115, 0.55);
 
-  /* Editor syntax colours, stepped until they clear 4.5:1 against the
-     active line — the palette reds and yellows did not, in any theme. */
   --ide-keyword: #953952;
   --ide-string: #226350;
   --ide-number: #69571c;
@@ -1064,8 +1046,6 @@ li::marker {
   color: var(--ink);
 }
 
-/* Above the back-to-top button, not over the chapter header: at the top it sat
-   exactly on the Listen button and swallowed the click until dismissed. */
 .daily-recap {
   position: fixed;
   bottom: 80px;
@@ -1489,8 +1469,6 @@ li::marker {
   background: var(--sheet-2);
 }
 
-/* Codes like R1·OA and R3·TS are wider than a circle — let the badge grow
-   into a pill instead of spilling into the chapter name. */
 .site-navlink__num {
   font-size: 12.5px;
   letter-spacing: -0.01em;
@@ -1787,8 +1765,6 @@ kbd {
   display: none;
 }
 
-/* Radix places the menu itself; the offsets above are for the older,
-   hand-positioned menus and would push this one off its anchor. */
 .dd__menu[data-slot="select-content"] {
   position: relative;
   inset: auto;
@@ -1848,7 +1824,6 @@ kbd {
   color: var(--green);
 }
 
-/* a grid of options is short enough to show whole */
 .dd__menu--grid {
   max-height: none;
 }
@@ -1870,7 +1845,6 @@ kbd {
   }
 }
 
-/* groups sit in the same grid, each under a label that spans the row */
 .dd__group {
   display: contents;
 }
@@ -2388,8 +2362,6 @@ kbd {
   color: var(--pencil);
 }
 
-/* The dashed spine every station sits on — a route drawn through the topic
-   rather than a grid of equal-looking boxes. */
 .route__line {
   position: relative;
   list-style: none;
@@ -2537,8 +2509,6 @@ kbd {
   background: var(--dg-box-green);
 }
 
-/* Everything the chosen time budget reaches, starting at the next unread
-   chapter — the run you could actually finish tonight. */
 .station.is-reach {
   background: var(--dg-box-green);
   border-color: var(--line-soft);
@@ -2683,8 +2653,6 @@ kbd {
 
 pre {
   font-family: var(--font-mono);
-  /* JetBrains Mono ligates => into a single glyph. Fine in an editor, wrong in
-     teaching material where the reader has to type the characters. */
   font-variant-ligatures: none;
   font-size: 15px;
   line-height: 1.65;
@@ -4513,7 +4481,6 @@ span.tone-bad {
 
 .tag--intermediate {
   border-color: #b9982c;
-  /* #97781c measured 3.94:1 on --sheet-2, under the 4.5 AA needs. */
   color: #7d6408;
 }
 
@@ -6073,7 +6040,6 @@ a.step__title:hover {
   border-color: var(--ide-accent);
 }
 
-/* one line, like VS Code's: the run hint gives way first when space is short */
 .ed__status {
   display: flex;
   align-items: center;
@@ -6118,8 +6084,6 @@ a.step__title:hover {
 .ed__saved.is-on {
   opacity: 1;
 }
-
-/* ---- VS Code-style tooling: settings, palette, problems, lint marks ---- */
 
 .ed {
   position: relative;
@@ -6548,7 +6512,6 @@ a.step__title:hover {
   border-color: var(--ide-accent);
 }
 
-/* squiggles under what ESLint or the type checker flagged */
 .ed .cm-lintRange-error {
   background-image: none;
   text-decoration: underline wavy var(--ide-red);
@@ -6598,8 +6561,6 @@ a.step__title:hover {
   padding: 0 6px;
 }
 
-/* These read against the active line as well as the editor background, which
-   the palette colours they replaced did not. See --ide-keyword and friends. */
 .tok-com {
   color: var(--ide-comment);
   font-style: italic;
@@ -6638,8 +6599,6 @@ a.step__title:hover {
   overflow: hidden;
 }
 
-/* The tabs sit in their own element so role=tablist has only tabs inside it;
-   display:contents keeps the flex row identical. */
 .panel__tablist {
   display: contents;
 }
@@ -6880,8 +6839,6 @@ a.step__title:hover {
   color: var(--ide-red);
   border-left: 4px solid var(--ide-red);
 }
-
-/* ---- Playground: a scratch space, code and output side by side ---- */
 
 .lc-topbar--playground {
   flex-wrap: wrap;
@@ -7683,11 +7640,6 @@ a.step__title:hover {
   margin: 0 0 14px;
 }
 
-/* The book points at the tracks that teach each round in depth — the reader
-   should not have to guess that 34 DSA chapters exist. */
-/* The same question has a different right answer at two years and at ten. The
-   ladder shows the three, so a reader aims at their own level instead of
-   reciting the one in the script. */
 .interview-body .ladder {
   margin: 22px 0 0;
   padding: 15px 17px 6px;
@@ -7893,7 +7845,6 @@ a.step__title:hover {
   border: 1px solid var(--line);
 }
 
-/* 3D scope scene — closures chapter */
 .c3d {
   position: relative;
   height: 380px;
@@ -8056,7 +8007,6 @@ a.step__title:hover {
   }
 }
 
-/* Visualisers: trees, lanes and graphs used by the step-through demos */
 .viz-tree,
 .viz-tree ul {
   list-style: none;
@@ -8253,7 +8203,6 @@ a.step__title:hover {
   stroke: var(--ink);
 }
 
-/* The live preview for component exercises */
 .preview-panel {
   margin-bottom: 12px;
 }

@@ -1,11 +1,3 @@
-/*
- * The mock interview, drawn with the site's own tokens so it follows all nine
- * themes. One loud element — the verdict stamp on the scorecard — and
- * everything else stays quiet, because the room is where you think.
- */
-
-/* ---------- shared bits ---------- */
-
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -73,8 +65,6 @@
   color: var(--ink);
 }
 
-/* ---------- lobby ---------- */
-
 .modes {
   display: inline-flex;
   flex-wrap: wrap;
@@ -120,11 +110,6 @@
   color: var(--ink);
 }
 
-/* ---------- the loop wizard ---------- */
-
-/* A stepper across the top: where you are, what you chose at each step, and a
-   way back to any of them. */
-
 .stepper {
   list-style: none;
   margin: 6px 0 26px;
@@ -140,7 +125,6 @@
   min-width: 0;
 }
 
-/* the rail joining one step to the next */
 .stepperItem:not(:last-child)::after {
   content: "";
   position: absolute;
@@ -232,7 +216,6 @@
   border-color: var(--ink);
 }
 
-/* a step that opens only once the ones before it are answered */
 .stepperButton:disabled {
   cursor: not-allowed;
 }
@@ -246,7 +229,6 @@
   font-weight: 700;
 }
 
-/* each step arrives with a short slide, so the change reads as moving on */
 .stepBody {
   animation: stepIn 0.28s ease both;
 }
@@ -283,8 +265,6 @@
   padding-top: 16px;
   border-top: 1.5px dashed var(--line-soft);
 }
-
-/* the choices: one big card per option */
 
 .cards {
   display: grid;
@@ -398,7 +378,6 @@
   transform: none;
 }
 
-/* the smaller version, for a single round's settings */
 .cardsCompact {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr));
   gap: 8px;
@@ -443,11 +422,6 @@
   margin: 0 0 8px;
 }
 
-/* The loop as an agenda: the stages are a schedule, so they read top to bottom
-   like one — number, name and why on the left, the facts in a column on the
-   right that lines up from row to row. A grid of cards made ten stages into
-   ten uneven boxes that each wrapped differently. */
-
 .map {
   list-style: none;
   margin: 0 0 22px;
@@ -490,7 +464,6 @@
   background: var(--hl-mint);
 }
 
-/* the thread between the numbers */
 .mapStage:not(:last-child)::after {
   content: "";
   position: absolute;
@@ -562,8 +535,6 @@
   max-width: 56ch;
 }
 
-/* single round picker */
-
 .rounds {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -623,8 +594,6 @@
   color: var(--ink-soft);
 }
 
-/* retry list */
-
 .retryList {
   list-style: none;
   margin: 0 0 18px;
@@ -655,8 +624,6 @@
   color: var(--pencil);
   font-variant-numeric: tabular-nums;
 }
-
-/* your record */
 
 .record {
   display: grid;
@@ -765,8 +732,6 @@
   line-height: 1;
 }
 
-/* ---------- the room ---------- */
-
 .rail {
   position: sticky;
   top: calc(var(--bar-h) + 8px);
@@ -845,8 +810,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* stage brief: walking into the next room */
-
 .brief {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 300px);
@@ -889,8 +852,6 @@
   border-left-color: var(--red);
 }
 
-/* question */
-
 .qHead {
   display: flex;
   flex-wrap: wrap;
@@ -912,7 +873,6 @@
   font-size: 0.72em;
 }
 
-/* A question is a sentence, not a title: no highlighter stroke under it. */
 .prompt::after {
   display: none;
 }
@@ -978,8 +938,6 @@
   background: var(--sheet);
 }
 
-/* timer ring */
-
 .timer {
   position: relative;
   width: 108px;
@@ -1039,8 +997,6 @@
   margin-top: 3px;
 }
 
-/* follow-up: the interviewer pushes */
-
 .push {
   position: relative;
   margin: 0 0 18px;
@@ -1081,8 +1037,6 @@
   content: "No notes — you answered out loud.";
   color: var(--pencil);
 }
-
-/* review: hold it up against the book, then mark it */
 
 .review {
   display: grid;
@@ -1244,8 +1198,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* coding */
-
 .codingHead {
   display: flex;
   flex-wrap: wrap;
@@ -1297,8 +1249,6 @@
   gap: 10px;
   margin: 0 0 16px;
 }
-
-/* ---------- scorecard ---------- */
 
 .verdictSheet {
   display: grid;
@@ -1388,8 +1338,6 @@
   margin-top: 6px;
 }
 
-/* Two columns only when both fit: with the sidebar open the content column is
-   narrow enough that a fixed split cut the table's last column off. */
 .split {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 470px), 1fr));
@@ -1499,8 +1447,6 @@
   margin: 0;
 }
 
-/* the profile's threshold marks: where hire and strong hire start */
-
 .barTrack.withMarks {
   position: relative;
   overflow: visible;
@@ -1602,8 +1548,6 @@
   font-size: 15px;
 }
 
-/* ---------- small screens ---------- */
-
 @media (max-width: 900px) {
   .brief,
   .review,
@@ -1626,8 +1570,6 @@
 }
 
 @media (max-width: 640px) {
-  /* too narrow for five or six labels: the dots say where you are, the question
-     below says what it is */
   .stepperText {
     display: none;
   }

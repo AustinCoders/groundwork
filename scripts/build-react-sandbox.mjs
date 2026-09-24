@@ -7,7 +7,6 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const outfile = join(root, "public/wasm/react-sandbox.js");
 mkdirSync(dirname(outfile), { recursive: true });
 
-// React and ReactDOM for the sandbox iframe, plus its test helpers, as one classic script.
 await build({
   entryPoints: [join(root, "lib/reactSandbox/runtime.ts")],
   outfile,

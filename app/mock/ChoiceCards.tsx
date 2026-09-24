@@ -2,11 +2,6 @@
 
 import styles from "./mock.module.css";
 
-/**
- * Small line drawings for the lobby's choices. Each one says something about
- * the option rather than decorating it: experience is bars that fill, a loop's
- * length is a clock that fills, a service company is a grid of many teams.
- */
 export type IconName =
   | "frontend"
   | "fullstack"
@@ -125,7 +120,6 @@ function Icon({ name }: { name: IconName }) {
         </svg>
       );
     case "bar-raiser":
-      // a bar held up above the rest: the Bar Raiser's line
       return (
         <svg {...common}>
           <path d="M7 31h26" />
@@ -187,15 +181,10 @@ export interface ChoiceOption<T extends string> {
   value: T;
   name: string;
   detail?: string;
-  /** Where in the book the option comes from, set in small type under it. */
   source?: string;
   icon?: IconName;
 }
 
-/**
- * A set of large cards, one per option, for one choice. Pressing a card chooses it;
- * the wizard moves on by itself, so there is no separate confirm step.
- */
 export function ChoiceCards<T extends string>({
   label,
   options,
@@ -205,7 +194,6 @@ export function ChoiceCards<T extends string>({
 }: {
   label: string;
   options: ChoiceOption<T>[];
-  /** null while nothing has been chosen yet, so no card shows as pressed. */
   value: T | null;
   onChoose: (v: T) => void;
   compact?: boolean;

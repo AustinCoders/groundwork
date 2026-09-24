@@ -3,12 +3,6 @@ import { topics, notesHref, chapterHref, chapters, exercises } from "@/lib/conte
 import { problemHref } from "@/lib/practiceLinks";
 import { SITE_URL } from "@/lib/site";
 
-/**
- * Only pages with something on them. A topic that is still an outline has a
- * cover and a syllabus but no chapters, and its chapter routes render "not
- * written yet" — listing 358 of those alongside 201 real ones taught Google
- * that most of the site is empty. Both are left out here and carry a noindex.
- */
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
@@ -18,7 +12,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/practice`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
   ];
 
-  // One page per exercise, each with its statement and tests prerendered.
   const problemRoutes: MetadataRoute.Sitemap = exercises().map((ex) => ({
     url: `${SITE_URL}${problemHref(ex.id)}`,
     lastModified: now,
@@ -34,8 +27,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     .filter((t) => t.status === "ready")
     .forEach((t) => {
       const written = chapters(t.id).filter((c) => c.ready);
-      // A single-page topic such as Git has no chapter list of its own; its
-      // cover is the whole thing, so it belongs here on its own merits.
       const isSinglePage = !t.levels;
       if (!written.length && !isSinglePage) return;
 

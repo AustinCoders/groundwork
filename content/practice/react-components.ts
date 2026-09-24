@@ -1,7 +1,5 @@
 import type { Exercise } from "../types";
 
-// Component exercises: rendered in the sandbox iframe and tested through the DOM.
-// React and its hooks are in scope, and so are render, screen, click, type and friends.
 export const reactComponents: Exercise[] = [
   {
     id: "ex-comp-counter-step",

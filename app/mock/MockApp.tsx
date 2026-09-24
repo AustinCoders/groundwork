@@ -15,8 +15,6 @@ import type { StageId, StageInfo } from "@/lib/mock/types";
 
 type Screen = "lobby" | "room" | "scorecard";
 
-// The lobby is what most visits see, so the room (and the editor it can open)
-// and the debrief stay out of its bundle and arrive when they are reached.
 const Room = dynamic(() => loadRoom().then((m) => m.Room), {
   loading: () => <p className="sub">Setting up the room…</p>,
 });
@@ -32,11 +30,6 @@ function newSeed(): number {
   return Math.floor(Math.random() * 2 ** 31) || 1;
 }
 
-/**
- * The mock interview: a lobby to plan it, a room to sit it, and a debrief at
- * the end. The session lives in React state and is written to this browser as
- * it changes, so closing the tab half-way through loses nothing.
- */
 export function MockApp({ catalog }: { catalog: MockCatalog }) {
   const stages = useMemo(
     () => Object.fromEntries(catalog.stages.map((s) => [s.id, s])) as Record<StageId, StageInfo>,
@@ -51,8 +44,6 @@ export function MockApp({ catalog }: { catalog: MockCatalog }) {
 
   const dispatch = useCallback((a: Action) => setSession((s) => (s ? reduce(s, a) : s)), []);
 
-  // Write the session down as it changes — debounced, because typing notes
-  // changes it on every key.
   const saveTimer = useRef<number | null>(null);
   useEffect(() => {
     if (!session || session.finishedAt !== null || screen !== "room") return;
@@ -63,7 +54,6 @@ export function MockApp({ catalog }: { catalog: MockCatalog }) {
     };
   }, [session, screen]);
 
-  // The last question answered, or the End button: file it and open the debrief.
   const filed = useRef<string | null>(null);
   useEffect(() => {
     if (!session || session.finishedAt === null || screen !== "room" || filed.current === session.id) return;
@@ -72,7 +62,6 @@ export function MockApp({ catalog }: { catalog: MockCatalog }) {
     setScreen("scorecard");
   }, [session, screen, title]);
 
-  // Each new question, stage or screen starts at the top of the page.
   const place = `${screen}:${session?.cursor ?? -1}:${session?.step === "brief"}`;
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });

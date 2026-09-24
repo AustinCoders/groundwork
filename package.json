@@ -18,10 +18,12 @@
     "test:watch": "vitest",
     "vercel:cleanup": "node scripts/vercel-cleanup.mjs",
     "vercel:cleanup:execute": "node scripts/vercel-cleanup.mjs --execute",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm run spell && npm test",
+    "check": "npm run typecheck && npm run lint && npm run comments && npm run format:check && npm run spell && npm test",
     "prepare": "husky",
     "test:e2e": "playwright test",
-    "test:perf": "npx --yes @lhci/cli@0.15 autorun"
+    "test:perf": "npx --yes @lhci/cli@0.15 autorun",
+    "comments": "node scripts/comments.mjs",
+    "comments:fix": "node scripts/comments.mjs --fix"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.3",

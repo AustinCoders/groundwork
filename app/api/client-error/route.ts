@@ -10,13 +10,7 @@ function clip(value: unknown): string {
   return typeof value === "string" ? value.slice(0, MAX_FIELD) : "";
 }
 
-/**
- * Client-side errors land in the Vercel function logs, which is the cheapest
- * error visibility that does not need an account. Swap the console.error for a
- * Sentry capture when there is a DSN to send it to.
- */
 export async function POST(req: Request) {
-  // The client caps itself at five reports a session, which anyone can ignore.
   if (overRateLimit(req, "client-error", 20)) return new Response(null, { status: 429 });
 
   const declared = Number(req.headers.get("content-length") || 0);

@@ -34,7 +34,6 @@ console.debug = line("log");
 console.warn = line("warn");
 console.error = line("error");
 
-// The rest of the console, so examples copied from anywhere print something.
 const timers = new Map<string, number>();
 const counts = new Map<string, number>();
 console.time = (label = "default") => void timers.set(label, performance.now());
@@ -75,11 +74,6 @@ console.table = (data: unknown) => {
   });
 };
 
-// Timers are counted, so a run is over when its code has returned AND every
-// timeout it set has fired — not the moment the synchronous part ends, which
-// dropped everything a setTimeout or a promise chain printed afterwards.
-// In a worker, timer ids are plain numbers; the global typings here also know
-// Node's, so the wrappers go through an untyped view of the global.
 type Timer = (fn: () => void, ms?: number) => number;
 const scope = self as unknown as Record<"setTimeout" | "clearTimeout" | "setInterval" | "clearInterval", unknown>;
 const realSetTimeout = (scope.setTimeout as Timer).bind(self);
@@ -111,8 +105,6 @@ scope.clearInterval = (id?: number) => {
   realClearInterval(id);
 };
 
-/** Wait for queued microtasks and outstanding timers. An interval never
- *  settles on its own; the runner's time limit ends that run. */
 async function settle() {
   do {
     await new Promise<void>((resolve) => realSetTimeout(() => resolve(), 0));
@@ -147,7 +139,6 @@ self.assert = assert;
 self.onmessage = async (event: MessageEvent) => {
   const data = event.data;
   if (!data || data.type !== "run") return;
-  // A worker is reused between runs: nothing from the last one may print into this one.
   pending.forEach((id) => realClearTimeout(id));
   pending.clear();
   intervals.forEach((id) => realClearInterval(id));

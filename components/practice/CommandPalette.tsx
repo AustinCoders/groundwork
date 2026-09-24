@@ -5,15 +5,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 export interface Command {
   id: string;
   label: string;
-  /** Shown on the right, the way VS Code shows a binding. */
   keys?: string;
-  /** For grouping and matching: "Format", "View", "Run"… */
   group: string;
   run: () => void;
 }
 
-/** Matches when every typed character appears in order; earlier and
- *  tighter matches rank first. */
 function score(query: string, text: string): number {
   if (!query) return 1;
   const q = query.toLowerCase();
@@ -31,10 +27,6 @@ function score(query: string, text: string): number {
   return 500 - gaps;
 }
 
-/**
- * ⌘/Ctrl+Shift+P: every editor action by name. Type to filter, arrows to
- * move, Enter to run, Escape to close.
- */
 export function CommandPalette({
   open,
   commands,
@@ -79,7 +71,6 @@ export function CommandPalette({
   function choose(c: Command | undefined) {
     if (!c) return;
     close();
-    // after the palette has gone, so a command that focuses the editor keeps it
     requestAnimationFrame(() => c.run());
   }
 

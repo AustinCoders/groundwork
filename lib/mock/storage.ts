@@ -3,21 +3,12 @@ import { decideLoop, type LevelCall, type Verdict } from "@/lib/mock/scoring";
 import { stageResults, type Session, type SessionMode } from "@/lib/mock/session";
 import type { LoopConfig, StageId } from "@/lib/mock/types";
 
-/**
- * Everything the mock interview remembers lives in this browser: the session
- * in progress, so a refresh resumes it; the finished ones, for the trend; and
- * the questions you did badly on, for a retry round. None of it leaves the
- * device.
- */
-
 const KEY_CURRENT = "groundwork:mock:current";
 const KEY_HISTORY = "groundwork:mock:history";
 const KEY_RETRY = "groundwork:mock:retry";
 
 const MAX_HISTORY = 50;
 const MAX_RETRY = 60;
-/** Below this a question goes on the retry list; at or above RETIRE_AT on a
- *  retry, it comes off. */
 export const RETRY_BELOW = 0.6;
 export const RETIRE_AT = 0.8;
 
@@ -40,7 +31,6 @@ export interface HistoryEntry {
 export interface RetryEntry {
   id: string;
   stage: StageId;
-  /** Plain text, for the list — the full question is fetched with its stage. */
   title: string;
   score: number;
   at: number;
@@ -61,12 +51,6 @@ function isSession(v: unknown): v is Session {
   return Boolean(s && s.version === 1 && Array.isArray(s.questions) && Array.isArray(s.plan) && s.config);
 }
 
-/**
- * A cached read for useSyncExternalStore, which needs the same object back
- * until something actually changed. Saving the session in progress does not
- * invalidate it — that happens on every keystroke of your notes, and only the
- * lobby reads it.
- */
 export interface MockSnapshot {
   current: Session | null;
   history: HistoryEntry[];
@@ -110,7 +94,6 @@ export const mockStore = {
     changed();
   },
 
-  /** Re-read everything, e.g. on returning to the lobby after a session. */
   refresh(): void {
     changed();
   },
@@ -134,11 +117,6 @@ export const mockStore = {
     changed();
   },
 
-  /**
-   * File a finished session: its summary into the history, its weak answers
-   * onto the retry list, and anything it answered well off the retry list.
-   * Returns the summary so the scorecard and the history agree exactly.
-   */
   finish(s: Session, stageTitle: (s: StageId) => string): HistoryEntry {
     const results = stageResults(s);
     const decision = decideLoop(results, s.config, stageTitle);

@@ -4,10 +4,6 @@ import { fileURLToPath } from "node:url";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 
-// Pyodide (15 MB) and sql.js (1.5 MB) are loaded from jsDelivr at runtime, so
-// they are not copied here — that is 16.5 MB off every deployment, and Vercel
-// keeps every deployment. Pass --all to write them into public/wasm/ anyway,
-// which is what self-hosting with NEXT_PUBLIC_PYODIDE_BASE needs.
 const includeRuntimes = process.argv.includes("--all");
 
 function copy(from, to) {
@@ -15,8 +11,6 @@ function copy(from, to) {
   copyFileSync(from, to);
 }
 
-// TypeScript's lib files stay local: the editor asks for them one at a time
-// while you type, and they are 1.2 MB in total.
 const tsLibFiles = JSON.parse(readFileSync(join(root, "lib/tsLibFiles.json"), "utf8"));
 const tsLibSrc = join(root, "node_modules/typescript/lib");
 const tsLibDest = join(root, "public/wasm/typescript-lib");

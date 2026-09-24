@@ -49,8 +49,6 @@ function valid(p: unknown): p is Project {
   );
 }
 
-/** The saved project, or one built from the per-language code the playground
- *  kept before it had files, or a single JavaScript scratch file. */
 export function loadProject(): Project {
   const saved = store.get<unknown>(KEY, null);
   if (valid(saved)) {

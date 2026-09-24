@@ -1,21 +1,12 @@
 import type { Extension } from "@codemirror/state";
 import type { StreamParser } from "@codemirror/language";
 
-/**
- * Every language the editor offers. The ones with a runner run in the browser;
- * the rest have no compiler that can, so they are written, highlighted and
- * given a starter, but not run. Highlighting for each language is loaded the
- * first time it is chosen, so a JavaScript reader never downloads Kotlin's.
- */
-
 export type RunnableKind = "js" | "ts" | "python" | "sql" | "web";
 
 export interface LanguageMeta {
   label: string;
   ext: string;
-  /** How it runs, or null when nothing in a browser can run it. */
   runnable: RunnableKind | null;
-  /** What a line comment starts with, for notes the editor writes. */
   comment: string;
   support: () => Promise<Extension>;
 }
@@ -181,8 +172,6 @@ export const HINTS: Record<RunnableKind, string> = {
   web: "⌘/Ctrl + Enter to render the page in Preview",
 };
 
-/** Languages that only make sense as parts of a web page, offered in the
- *  playground but not for a problem. */
 export const WEB_LANGUAGES: readonly LanguageKey[] = ["html", "css"];
 
 export const WRITE_ONLY_HINT =
