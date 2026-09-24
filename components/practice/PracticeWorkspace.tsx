@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Crumbs } from "@/components/Crumbs";
 import { CodeEditor, type CodeEditorHandle } from "@/components/practice/CodeEditor";
 import { Confetti } from "@/components/practice/Confetti";
@@ -105,18 +105,36 @@ function CopyButton({ onCopy }: { onCopy: () => string }) {
   );
 }
 
+export interface WorkspaceOutcome {
+  passed: number;
+  total: number;
+  hintsUsed: number;
+  sawSolution: boolean;
+}
+
 export function PracticeWorkspace({
   exercise,
   isFree,
   chapter,
   prev,
   next,
+  interview = false,
+  onOutcome,
 }: {
   exercise: PracticeExercise;
   isFree: boolean;
   chapter: ChapterLink | null;
   prev: PracticeExercise | null;
   next: PracticeExercise | null;
+  /**
+   * Inside a mock interview: no way off to other problems, no "solved" badge
+   * from last time, and the editor starts from the starter code rather than
+   * whatever was saved from practising this one before.
+   */
+  interview?: boolean;
+  /** Called whenever the tests run, a hint is opened or the solution is shown —
+   *  everything the mock interview scores a coding question on. */
+  onOutcome?: (outcome: WorkspaceOutcome) => void;
 }) {
   const editorRef = useRef<CodeEditorHandle | null>(null);
   const runningRef = useRef<{ stop: () => void } | null>(null);
@@ -134,6 +152,20 @@ export function PracticeWorkspace({
   const [justSolved, setJustSolved] = useState(false);
   const solved = alreadySolved || justSolved;
   const [hintsShown, setHintsShown] = useState(0);
+  const [sawSolution, setSawSolution] = useState(false);
+
+  // Reports only when what is scored changes; a new onOutcome from the parent
+  // on every render must not re-fire it.
+  const reportOutcome = useEffectEvent((outcome: WorkspaceOutcome) => onOutcome?.(outcome));
+  useEffect(() => {
+    const results = testResults || [];
+    reportOutcome({
+      passed: results.filter((r) => r.ok).length,
+      total: exercise.tests.length,
+      hintsUsed: hintsShown,
+      sawSolution,
+    });
+  }, [testResults, hintsShown, sawSolution, exercise.tests.length]);
 
   const savedEditorHeight = useClientValue(() => store.get<number>(EDITOR_HEIGHT_KEY, 430), 430);
   const [editorHeightOverride, setEditorHeightOverride] = useState<number | null>(null);
@@ -180,8 +212,10 @@ export function PracticeWorkspace({
   }, []);
 
   const langKey = `jsnotes:lang:${exercise.id}`;
-  const initialLanguage = mounted ? store.get<string>(langKey, "javascript") : "javascript";
-  const savedCode = mounted ? codeStore.load(exercise.id, initialLanguage) : null;
+  // An interview starts clean: JavaScript, the starter code, nothing carried
+  // over from practising the same problem last week.
+  const initialLanguage = mounted && !interview ? store.get<string>(langKey, "javascript") : "javascript";
+  const savedCode = mounted && !interview ? codeStore.load(exercise.id, initialLanguage) : null;
   const initialValue = savedCode != null ? savedCode : initialLanguage === "javascript" ? exercise.starter : "";
 
   function handleLanguageChange(lang: LanguageKey) {
@@ -303,40 +337,44 @@ export function PracticeWorkspace({
     <>
       <Confetti fire={justSolved} />
       <div className="lc-topbar">
-        <div className="lc-topbar__nav">
-          <Link className="lc-icon-btn" href="/problems" title="Problem list" aria-label="Problem list">
-            ☰
-          </Link>
-          <span className="lc-topbar__divider" aria-hidden="true" />
-          {!isFree && prev ? (
-            <Link
-              className="lc-icon-btn"
-              href={problemHref(prev.id)}
-              title={`Previous: ${prev.title}`}
-              aria-label={`Previous problem: ${prev.title}`}
-            >
-              ‹
+        {interview ? (
+          <div />
+        ) : (
+          <div className="lc-topbar__nav">
+            <Link className="lc-icon-btn" href="/problems" title="Problem list" aria-label="Problem list">
+              ☰
             </Link>
-          ) : (
-            <span className="lc-icon-btn is-disabled" aria-hidden="true">
-              ‹
-            </span>
-          )}
-          {!isFree && next ? (
-            <Link
-              className="lc-icon-btn"
-              href={problemHref(next.id)}
-              title={`Next: ${next.title}`}
-              aria-label={`Next problem: ${next.title}`}
-            >
-              ›
-            </Link>
-          ) : (
-            <span className="lc-icon-btn is-disabled" aria-hidden="true">
-              ›
-            </span>
-          )}
-        </div>
+            <span className="lc-topbar__divider" aria-hidden="true" />
+            {!isFree && prev ? (
+              <Link
+                className="lc-icon-btn"
+                href={problemHref(prev.id)}
+                title={`Previous: ${prev.title}`}
+                aria-label={`Previous problem: ${prev.title}`}
+              >
+                ‹
+              </Link>
+            ) : (
+              <span className="lc-icon-btn is-disabled" aria-hidden="true">
+                ‹
+              </span>
+            )}
+            {!isFree && next ? (
+              <Link
+                className="lc-icon-btn"
+                href={problemHref(next.id)}
+                title={`Next: ${next.title}`}
+                aria-label={`Next problem: ${next.title}`}
+              >
+                ›
+              </Link>
+            ) : (
+              <span className="lc-icon-btn is-disabled" aria-hidden="true">
+                ›
+              </span>
+            )}
+          </div>
+        )}
         <div className="lc-topbar__actions">
           <button
             className="btn btn--run"
@@ -390,13 +428,15 @@ export function PracticeWorkspace({
             </span>
           </div>
           <div className="brief__scroll">
-            <Crumbs
-              items={[
-                { label: "All topics", href: "/" },
-                { label: "JavaScript", href: "/notes" },
-                { label: chapter ? chapter.short : "Playground" },
-              ]}
-            />
+            {!interview && (
+              <Crumbs
+                items={[
+                  { label: "All topics", href: "/" },
+                  { label: "JavaScript", href: "/notes" },
+                  { label: chapter ? chapter.short : "Playground" },
+                ]}
+              />
+            )}
             <h1 id="ex-title">{exercise.title}</h1>
             <div className="brief__meta" id="ex-meta">
               {isFree ? (
@@ -412,7 +452,7 @@ export function PracticeWorkspace({
                   <span className="tag">
                     {exercise.tests.length} {exercise.tests.length === 1 ? "test" : "tests"}
                   </span>
-                  {solved && <span className="tag tag--done">solved ✓</span>}
+                  {solved && !interview && <span className="tag tag--done">solved ✓</span>}
                 </>
               )}
             </div>
@@ -459,6 +499,7 @@ export function PracticeWorkspace({
                         return;
                       editorRef.current?.setValue(exercise.solution!);
                       editorRef.current?.focus();
+                      setSawSolution(true);
                     }}
                   >
                     Show the solution
@@ -467,16 +508,18 @@ export function PracticeWorkspace({
               </div>
             )}
 
-            <nav className="brief__nav" id="ex-nav" aria-label="Other exercises">
-              <Link className="btn" href={allExercisesLevelHref}>
-                All exercises
-              </Link>
-              {!isFree && (
-                <Link className="btn" href="/practice?id=free">
-                  Playground
+            {!interview && (
+              <nav className="brief__nav" id="ex-nav" aria-label="Other exercises">
+                <Link className="btn" href={allExercisesLevelHref}>
+                  All exercises
                 </Link>
-              )}
-            </nav>
+                {!isFree && (
+                  <Link className="btn" href="/practice?id=free">
+                    Playground
+                  </Link>
+                )}
+              </nav>
+            )}
           </div>
         </aside>
 
@@ -488,7 +531,9 @@ export function PracticeWorkspace({
               language={initialLanguage}
               value={initialValue}
               height={editorHeight}
-              onChange={(value) => codeStore.save(exercise.id, value, currentLangRef.current)}
+              onChange={(value) => {
+                if (!interview) codeStore.save(exercise.id, value, currentLangRef.current);
+              }}
               onRun={() => runCode(false)}
               onSave={() => {
                 const editor = editorRef.current;

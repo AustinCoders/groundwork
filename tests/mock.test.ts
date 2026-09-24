@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { formatClock, pickQuestions, shuffle, summarise } from "@/lib/mockSession";
+import { formatClock } from "@/lib/mockSession";
+import { shuffle } from "@/lib/mock/loops";
 import { mockQuestions, parseBank } from "@/lib/mockQuestions";
 
 describe("mock interview", () => {
@@ -32,17 +33,6 @@ describe("mock interview", () => {
     expect(out[1].answerHtml).toContain("<pre>code</pre>");
   });
 
-  it("filters by source and level, and never repeats a question", () => {
-    const picked = pickQuestions(all, { sources: ["react"], level: "senior", count: 5 });
-    expect(picked.length).toBe(5);
-    expect(new Set(picked.map((q) => q.id)).size).toBe(5);
-    expect(picked.every((q) => q.source === "react" && q.level === "senior")).toBe(true);
-    expect(pickQuestions(all, { sources: [], level: "any", count: 5 })).toEqual([]);
-    expect(pickQuestions(all, { sources: ["js"], level: "any", count: 100000 }).length).toBe(
-      all.filter((q) => q.source === "js").length
-    );
-  });
-
   it("shuffle keeps every item and does not change the input", () => {
     const input = [1, 2, 3, 4, 5, 6];
     const out = shuffle(input, () => 0.3);
@@ -50,15 +40,7 @@ describe("mock interview", () => {
     expect(input).toEqual([1, 2, 3, 4, 5, 6]);
   });
 
-  it("summarises a round and formats the clock", () => {
-    expect(summarise([])).toMatchObject({ total: 0, percent: 0 });
-    expect(summarise(["nailed", "partly", "missed", "nailed"])).toEqual({
-      total: 4,
-      nailed: 2,
-      partly: 1,
-      missed: 1,
-      percent: 63,
-    });
+  it("formats the clock", () => {
     expect(formatClock(125)).toBe("2:05");
     expect(formatClock(-3)).toBe("0:00");
   });

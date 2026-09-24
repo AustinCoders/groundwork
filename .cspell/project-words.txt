@@ -410,6 +410,7 @@ singleflight
 skimmable
 Skynox
 sourcer
+sparkline
 SPOF
 SSML
 statefulness

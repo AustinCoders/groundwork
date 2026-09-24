@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { MockView } from "@/app/mock/MockView";
-import { mockQuestions } from "@/lib/mockQuestions";
+import { MockApp } from "@/app/mock/MockApp";
+import { mockCatalog } from "@/lib/mock/bank";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata: Metadata = pageMetadata({
   title: "Mock interview",
   description:
-    "Random questions from the JavaScript and React interview banks, on a timer, with a self-scored summary at the end.",
+    "A full interview loop for your role, level and kind of company — screening, coding graded by real tests, the deep dives, system design, behaviour and the number — with follow-ups, a rubric and a hiring-committee debrief.",
   path: "/mock",
 });
 
 export default function MockPage() {
-  return <MockView questions={mockQuestions()} />;
+  return <MockApp catalog={mockCatalog()} />;
 }

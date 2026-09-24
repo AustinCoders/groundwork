@@ -120,23 +120,50 @@ test("narration plays a chapter", async ({ page }) => {
   await expect(page.locator(".is-narrating").first()).toBeVisible();
 });
 
-test("a mock interview runs from setup to summary", async ({ page }) => {
+test("a mock interview round runs from the lobby to the debrief", async ({ page }) => {
   await page.goto("/mock");
 
-  await page.getByLabel("Questions").selectOption("5");
-  await page.getByRole("button", { name: "Start" }).click();
+  await page.getByRole("tab", { name: "Single round" }).click();
+  await page.getByRole("button", { name: /^Behavioural/ }).click();
+  await page.getByRole("button", { name: "3", exact: true }).click();
+  await page.getByRole("button", { name: "Start Behavioural" }).click();
 
-  for (let i = 1; i <= 5; i++) {
-    await expect(page.getByText(`Question ${i} of 5`)).toBeVisible();
-    await page.getByRole("button", { name: "Reveal the answer" }).click();
-    await expect(page.getByText("The answer")).toBeVisible();
-    await page.getByRole("button", { name: i % 2 ? "Nailed it" : "Missed it" }).click();
+  await page.getByRole("button", { name: "Walk in" }).click();
+  for (let i = 1; i <= 3; i++) {
+    await expect(page.getByText(`Behavioural · ${i} of 3`)).toBeVisible();
+    await page.getByLabel(/Say it out loud/).fill("Situation, task, action, result.");
+    await page.getByRole("button", { name: "I've answered" }).click();
+
+    // Some questions come with a follow-up the interviewer pushes with.
+    const push = page.getByRole("button", { name: "Answered — show me" });
+    const rubric = page.getByText("Mark it honestly");
+    await expect(push.or(rubric)).toBeVisible();
+    if (await push.isVisible()) await push.click();
+
+    await expect(rubric).toBeVisible();
+    for (let k = 0; k < 5; k++) await page.keyboard.press("3");
+    await page.getByRole("button", { name: "Next question" }).click();
   }
 
-  await expect(page.getByText(/3 nailed, 0 partly, 2 missed, out of 5/)).toBeVisible();
-  await expect(page.getByText("Go back to these")).toBeVisible();
-  await page.getByRole("button", { name: "Another round" }).click();
-  await expect(page.getByRole("button", { name: "Start" })).toBeVisible();
+  await expect(page.getByText("Round debrief")).toBeVisible();
+  await expect(page.getByRole("img", { name: "Verdict: Strong hire" })).toBeVisible();
+  await expect(page.getByText("Every question")).toBeVisible();
+});
+
+test("the loop plan follows the role and the level", async ({ page }) => {
+  await page.goto("/mock");
+  const map = page.getByRole("list", { name: "The loop, in order" });
+
+  await page.getByRole("button", { name: /^Backend/ }).click();
+  await page.getByRole("button", { name: /^10\+ years/ }).click();
+  await expect(map.getByText("Node & databases")).toBeVisible();
+  await expect(map.getByText("System design")).toBeVisible();
+  await expect(map.getByText("React & the frontend")).toHaveCount(0);
+
+  await page.getByRole("button", { name: /^Frontend/ }).click();
+  await page.getByRole("button", { name: /^2–3 years/ }).click();
+  await expect(map.getByText("React & the frontend")).toBeVisible();
+  await expect(map.getByText("System design")).toHaveCount(0);
 });
 
 test("the step-through demos advance and finish", async ({ page }) => {
