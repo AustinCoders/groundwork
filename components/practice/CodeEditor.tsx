@@ -96,6 +96,9 @@ export interface CodeEditorProps {
   onProblems?: (problems: EditorProblem[]) => void;
   /** The status bar's problem counts were clicked. */
   onShowProblems?: () => void;
+  /** Several files, one per tab; without this the editor shows one file. */
+  files?: FileTabsProps["files"];
+  fileActions?: Omit<FileTabsProps, "files">;
 
   toolbarStart?: React.ReactNode;
 }
@@ -301,6 +304,72 @@ function editorExtensions(ctx: {
   ];
 }
 
+interface FileTabsProps {
+  files: { id: string; name: string; active: boolean }[];
+  onSelect: (id: string) => void;
+  onClose: (id: string) => void;
+  onNew: () => void;
+  onRename: (id: string, name: string) => void;
+}
+
+function FileTabs({ files, onSelect, onClose, onNew, onRename }: FileTabsProps) {
+  const [editing, setEditing] = useState<string | null>(null);
+  return (
+    <span className="ed__tabs ed__tabs--files" role="list" aria-label="Files">
+      {files.map((f) => (
+        <span key={f.id} role="listitem" className={`ed__tab${f.active ? " is-active" : ""}`}>
+          {editing === f.id ? (
+            <input
+              className="ed__tab-rename"
+              aria-label={`Rename ${f.name}`}
+              defaultValue={f.name}
+              autoFocus
+              onFocus={(e) => e.currentTarget.setSelectionRange(0, e.currentTarget.value.lastIndexOf(".") >>> 0)}
+              onBlur={(e) => {
+                onRename(f.id, e.currentTarget.value);
+                setEditing(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") e.currentTarget.blur();
+                if (e.key === "Escape") setEditing(null);
+              }}
+            />
+          ) : (
+            <button
+              type="button"
+              aria-current={f.active ? "true" : undefined}
+              className="ed__tab-btn"
+              title="Double-click to rename"
+              onClick={() => onSelect(f.id)}
+              onDoubleClick={() => setEditing(f.id)}
+            >
+              <span className="ed__tab-icon" aria-hidden="true">
+                ◆
+              </span>
+              <span className="ed__tab-name">{f.name}</span>
+            </button>
+          )}
+          {files.length > 1 && (
+            <button
+              type="button"
+              className="ed__tab-close"
+              aria-label={`Close ${f.name}`}
+              onClick={() => onClose(f.id)}
+            >
+              ×
+            </button>
+          )}
+        </span>
+      ))}
+      <span role="listitem" className="ed__tab-new-item">
+        <button type="button" className="ed__tab-new" aria-label="New file" title="New file" onClick={onNew}>
+          +
+        </button>
+      </span>
+    </span>
+  );
+}
+
 function Switch({ on, onChange, label }: { on: boolean; onChange: () => void; label: string }) {
   return (
     <label className="ed__switch">
@@ -323,6 +392,8 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
     onLanguageChange,
     onProblems,
     onShowProblems,
+    files,
+    fileActions,
     toolbarStart,
   },
   ref
@@ -776,19 +847,20 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
           <span className="ed__tl ed__tl--yellow" />
           <span className="ed__tl ed__tl--green" />
         </span>
-        <span className="ed__tabs">
-          <span className="ed__tab is-active">
-            <span className="ed__tab-icon" aria-hidden="true">
-              ◆
-            </span>
-            <span className="ed__tab-name">
-              {baseName}.{meta.ext}
-            </span>
-            <span className="ed__tab-close" aria-hidden="true">
-              ×
+        {files && fileActions ? (
+          <FileTabs files={files} {...fileActions} />
+        ) : (
+          <span className="ed__tabs">
+            <span className="ed__tab is-active">
+              <span className="ed__tab-icon" aria-hidden="true">
+                ◆
+              </span>
+              <span className="ed__tab-name">
+                {baseName}.{meta.ext}
+              </span>
             </span>
           </span>
-        </span>
+        )}
         <span className="ed__spacer" />
         <Dropdown
           items={LANG_ORDER.map((key) => ({

@@ -415,3 +415,33 @@ test("the playground shows each log's value beside its line, live as you type", 
   await page.keyboard.insertText("console.log(6 * 7);\n");
   await expect(page.locator(".cm-inline-result")).toHaveText(["// 42"]);
 });
+
+test("the playground keeps several files in tabs, each in its own language", async ({ page }) => {
+  await page.goto("/practice?id=free");
+  const editor = page.locator(".cm-content");
+  const files = page.getByRole("list", { name: "Files" });
+  const file = (name: string) => files.getByRole("button", { name, exact: true });
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.insertText("// kept in the js file\n");
+
+  await page
+    .getByRole("group", { name: "Quick language" })
+    .getByRole("button", { name: /Python/ })
+    .click();
+  await expect(file("scratch.js")).toBeVisible();
+  await expect(file("scratch.py")).toHaveAttribute("aria-current", "true");
+  await expect(editor).toContainText("Pyodide");
+
+  await file("scratch.js").click();
+  await expect(editor).toContainText("// kept in the js file");
+
+  await page.getByRole("button", { name: "New file" }).click();
+  await file("scratch-2.js").dblclick();
+  await page.getByRole("textbox", { name: /Rename/ }).fill("types.ts");
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".ed__ready")).toHaveText("TypeScript");
+
+  await page.reload();
+  for (const name of ["scratch.js", "scratch.py", "types.ts"]) await expect(file(name)).toBeVisible();
+});

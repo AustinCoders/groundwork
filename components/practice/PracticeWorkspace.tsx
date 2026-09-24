@@ -15,6 +15,15 @@ import { starterFor } from "@/lib/polyglot/starters";
 import type { EditorProblem } from "@/lib/editor/tools";
 import { groupByLine } from "@/lib/editor/inline";
 import { templatesFor } from "@/lib/playgroundTemplates";
+import {
+  langForName,
+  loadProject,
+  makeFile,
+  saveProject,
+  starterCode,
+  type PgFile,
+  type Project,
+} from "@/lib/playgroundProject";
 import type { Json, Polyglot } from "@/lib/polyglot/types";
 import { useClientValue, useMounted } from "@/lib/hooks";
 import type { PracticeExercise } from "@/lib/practiceFree";
@@ -246,12 +255,93 @@ export function PracticeWorkspace({
   const langKey = `jsnotes:lang:${exercise.id}`;
   // An interview starts clean: JavaScript, the starter code, nothing carried
   // over from practising the same problem last week.
+  const [project, setProject] = useState<Project | null>(() =>
+    isFree && !interview && typeof window !== "undefined" ? loadProject() : null
+  );
+  const projectRef = useRef(project);
+  const projectSaveRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const activeFile = project?.files.find((f) => f.id === project.active) ?? null;
+
   const storedLanguage = mounted && !interview ? store.get<string>(langKey, "javascript") : "javascript";
-  const initialLanguage: LanguageKey = isLanguage(storedLanguage) ? storedLanguage : "javascript";
-  const savedCode = mounted && !interview ? codeStore.load(exercise.id, initialLanguage) : null;
-  // Opening straight into another language shows JavaScript's starter only
-  // until that language's starter has loaded (see handleLanguageChange).
-  const initialValue = savedCode != null ? savedCode : exercise.starter;
+  const initialLanguage: LanguageKey = activeFile
+    ? activeFile.lang
+    : isLanguage(storedLanguage)
+      ? storedLanguage
+      : "javascript";
+  const savedCode = mounted && !interview && !activeFile ? codeStore.load(exercise.id, initialLanguage) : null;
+  const initialValue = activeFile ? activeFile.code : savedCode != null ? savedCode : exercise.starter;
+
+  function commitProject(next: Project) {
+    projectRef.current = next;
+    setProject(next);
+    clearTimeout(projectSaveRef.current);
+    saveProject(next);
+  }
+
+  function activate(next: Project, file: PgFile) {
+    commitProject({ ...next, active: file.id });
+    const editor = editorRef.current;
+    if (!editor) return;
+    editor.setValue(file.code);
+    if (editor.getLanguage() !== file.lang) editor.setLanguage(file.lang);
+    editor.focus();
+  }
+
+  function openLanguage(lang: LanguageKey) {
+    const p = projectRef.current!;
+    currentLangRef.current = lang;
+    setCurrentLang(lang);
+    const active = p.files.find((f) => f.id === p.active);
+    if (active?.lang === lang) return;
+    const existing = p.files.find((f) => f.lang === lang);
+    const file = existing ?? makeFile(p.files, lang);
+    activate({ ...p, files: existing ? p.files : [...p.files, file] }, file);
+  }
+
+  const fileActions = {
+    onSelect(id: string) {
+      const p = projectRef.current!;
+      const file = p.files.find((f) => f.id === id);
+      if (file && id !== p.active) activate(p, file);
+    },
+    onClose(id: string) {
+      const p = projectRef.current!;
+      const file = p.files.find((f) => f.id === id);
+      if (!file || p.files.length < 2) return;
+      const edited = file.code.trim() && file.code !== starterCode(file.lang);
+      if (edited && !window.confirm(`Close ${file.name}? What is in it is deleted.`)) return;
+      const index = p.files.indexOf(file);
+      const files = p.files.filter((f) => f.id !== id);
+      if (id !== p.active) return commitProject({ ...p, files });
+      activate({ ...p, files }, files[Math.min(index, files.length - 1)]);
+    },
+    onNew() {
+      const p = projectRef.current!;
+      const file = makeFile(p.files, currentLangRef.current);
+      activate({ ...p, files: [...p.files, file] }, file);
+    },
+    onRename(id: string, name: string) {
+      const p = projectRef.current!;
+      const file = p.files.find((f) => f.id === id);
+      const clean = name.trim().replace(/[\\/]/g, "");
+      if (!file || !clean || clean === file.name || p.files.some((f) => f.id !== id && f.name === clean)) return;
+      const lang = langForName(clean) ?? file.lang;
+      const renamed = { ...file, name: clean, lang };
+      const next = { ...p, files: p.files.map((f) => (f.id === id ? renamed : f)) };
+      commitProject(next);
+      if (id === p.active && lang !== file.lang) editorRef.current?.setLanguage(lang);
+    },
+  };
+
+  function rememberCode(value: string) {
+    const p = projectRef.current;
+    if (!p) return false;
+    const next = { ...p, files: p.files.map((f) => (f.id === p.active ? { ...f, code: value } : f)) };
+    projectRef.current = next;
+    clearTimeout(projectSaveRef.current);
+    projectSaveRef.current = setTimeout(() => saveProject(next), 300);
+    return true;
+  }
 
   /** Where a language starts: its own starter written from the problem's
    *  signature, or a note saying why this problem only works in JavaScript. */
@@ -265,6 +355,7 @@ export function PracticeWorkspace({
   }
 
   async function handleLanguageChange(lang: LanguageKey) {
+    if (projectRef.current) return openLanguage(lang);
     if (!interview) store.set(langKey, lang);
     currentLangRef.current = lang;
     setCurrentLang(lang);
@@ -716,7 +807,7 @@ export function PracticeWorkspace({
               value={initialValue}
               height={editorHeight}
               onChange={(value) => {
-                if (!interview) codeStore.save(exercise.id, value, currentLangRef.current);
+                if (!rememberCode(value) && !interview) codeStore.save(exercise.id, value, currentLangRef.current);
                 const lang = currentLangRef.current;
                 if (live && (lang === "javascript" || lang === "typescript")) {
                   clearTimeout(liveTimerRef.current);
@@ -727,12 +818,18 @@ export function PracticeWorkspace({
               onSave={() => {
                 const editor = editorRef.current;
                 if (!editor) return;
-                codeStore.save(exercise.id, editor.getValue(), currentLangRef.current);
+                if (projectRef.current) {
+                  rememberCode(editor.getValue());
+                  clearTimeout(projectSaveRef.current);
+                  saveProject(projectRef.current);
+                } else codeStore.save(exercise.id, editor.getValue(), currentLangRef.current);
                 editor.flashSaved();
               }}
               onLanguageChange={handleLanguageChange}
               onProblems={setProblems}
               onShowProblems={() => setActiveTab("problems")}
+              files={project?.files.map((f) => ({ id: f.id, name: f.name, active: f.id === project.active }))}
+              fileActions={project ? fileActions : undefined}
               toolbarStart={
                 <>
                   <button
@@ -743,7 +840,7 @@ export function PracticeWorkspace({
                     onClick={() => {
                       if (!window.confirm("Throw away your version and start again?")) return;
                       const lang = currentLangRef.current;
-                      codeStore.clear(exercise.id, lang);
+                      if (!projectRef.current) codeStore.clear(exercise.id, lang);
                       editorRef.current?.setValue(starterIn(lang, polyglot));
                       editorRef.current?.focus();
                     }}

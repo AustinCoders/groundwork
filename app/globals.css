@@ -5784,6 +5784,82 @@ a.step__title:hover {
   line-height: 1;
 }
 
+.ed__tabs--files {
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.ed__tabs--files .ed__tab {
+  padding: 0 4px 0 0;
+}
+
+.ed__tabs--files .ed__tab.is-active {
+  padding-top: 0;
+}
+
+.ed__tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 6px 8px 12px;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.ed__tabs--files .ed__tab-close {
+  padding: 2px 5px;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.ed__tabs--files .ed__tab-close:hover {
+  opacity: 1;
+  background: rgba(205, 214, 244, 0.12);
+}
+
+.ed__tab-rename {
+  width: 12ch;
+  margin: 4px 6px 4px 10px;
+  padding: 2px 5px;
+  font: inherit;
+  color: var(--ide-fg);
+  background: var(--ide-bg);
+  border: 1px solid var(--ide-accent);
+  border-radius: 4px;
+}
+
+.ed__tab-new-item {
+  display: flex;
+  align-items: center;
+}
+
+.ed__tab-new {
+  flex: none;
+  align-self: center;
+  width: 26px;
+  height: 26px;
+  margin-left: 4px;
+  font-size: 16px;
+  color: var(--ide-fg-dim);
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.ed__tab-new:hover {
+  color: var(--ide-fg);
+  background: rgba(205, 214, 244, 0.1);
+}
+
 .ed__spacer {
   flex: 1 1 auto;
   align-self: stretch;
