@@ -4,9 +4,27 @@ function send(type: string, payload: unknown) {
   postMessage({ type, payload });
 }
 
+let baseLine = 0;
+
+function frameLine(stack: string | undefined): number | undefined {
+  const m = stack?.match(/<anonymous>:(\d+):\d+/);
+  if (!m) return undefined;
+  const n = Number(m[1]) - baseLine;
+  return n > 0 ? n : undefined;
+}
+
+// @ts-expect-error -- called by the generated source on the line above the reader's code
+self.__base = () => {
+  const m = new Error().stack?.match(/<anonymous>:(\d+):\d+/);
+  baseLine = m ? Number(m[1]) + 1 : 0;
+};
+
+// @ts-expect-error -- read by the generated source
+self.__lineOf = (err: unknown) => frameLine(err instanceof Error ? err.stack : undefined);
+
 function line(kind: string) {
   return (...args: unknown[]) => {
-    send("console", { kind, text: args.map((a) => fmt(a, 0)).join(" ") });
+    send("console", { kind, text: args.map((a) => fmt(a, 0)).join(" "), line: frameLine(new Error().stack) });
   };
 }
 
@@ -105,13 +123,22 @@ async function settle() {
 self.__settle = settle;
 
 self.onerror = (event) => {
-  send("console", { kind: "error", text: String(event instanceof ErrorEvent ? event.message : event) });
+  const error = event instanceof ErrorEvent ? event.error : undefined;
+  send("console", {
+    kind: "error",
+    text: String(event instanceof ErrorEvent ? event.message : event),
+    line: frameLine(error instanceof Error ? error.stack : undefined),
+  });
   return true;
 };
 self.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
   const reason = event.reason;
   const text = reason && typeof reason === "object" && "message" in reason ? (reason as Error).message : reason;
-  send("console", { kind: "error", text: `Uncaught (in promise) ${fmt(text, 0)}` });
+  send("console", {
+    kind: "error",
+    text: `Uncaught (in promise) ${fmt(text, 0)}`,
+    line: frameLine(reason instanceof Error ? reason.stack : undefined),
+  });
 });
 
 // @ts-expect-error -- assert is a global exposed to the Function-constructed tests

@@ -1,6 +1,8 @@
 export interface RunnerConsoleEntry {
   kind: "log" | "info" | "warn" | "error" | "system";
   text: string;
+  /** The line of the reader's code that printed it, when known. */
+  line?: number;
 }
 
 export interface RunnerTableEntry {
@@ -114,12 +116,13 @@ export function run(options: RunOptions): { stop: () => void } {
   const source =
     "'use strict';\n" +
     "var __results = [];\n" +
+    "__base();\n" +
     "try {\n" +
     code +
     "\n" +
     buildTestSource(tests) +
     "\n} catch (err) {\n" +
-    "  __send('console', { kind: 'error', text: (err && err.stack ? String(err.message) : String(err)) });\n" +
+    "  __send('console', { kind: 'error', text: (err && err.stack ? String(err.message) : String(err)), line: __lineOf(err) });\n" +
     "  __send('done', { results: __results, crashed: true });\n" +
     "  return;\n" +
     "}\n" +

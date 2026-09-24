@@ -207,6 +207,7 @@ footgun
 forgeeksskeegfor
 gcell
 geohash
+getframe
 getrandom
 Gochi
 goroutines
@@ -215,6 +216,7 @@ GTID
 Gurgaon
 halvings
 Handlee
+hasattr
 hasn
 HATEOAS
 HEALTHCHECK

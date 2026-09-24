@@ -13,6 +13,7 @@ import { isLanguage, LANGUAGES, type LanguageKey } from "@/lib/codeLanguages";
 import { gradeResults, isResultLine, parseResultLine, withHarness } from "@/lib/polyglot/grade";
 import { starterFor } from "@/lib/polyglot/starters";
 import type { EditorProblem } from "@/lib/editor/tools";
+import { groupByLine } from "@/lib/editor/inline";
 import { templatesFor } from "@/lib/playgroundTemplates";
 import type { Json, Polyglot } from "@/lib/polyglot/types";
 import { useClientValue, useMounted } from "@/lib/hooks";
@@ -44,6 +45,7 @@ function loadPolyglot(id: string): Promise<Polyglot> {
 const MARKS: Record<string, string> = { log: "›", info: "i", warn: "!", error: "✕", system: "·" };
 
 const EDITOR_HEIGHT_KEY = "jsnotes:editor-height";
+const LIVE_KEY = "jsnotes:playground-live";
 const EDITOR_HEIGHT_MIN = 220;
 const EDITOR_HEIGHT_MAX = 900;
 
@@ -172,6 +174,8 @@ export function PracticeWorkspace({
   const [consoleLines, setConsoleLines] = useState<RunnerOutputEntry[]>([]);
   const [consolePhase, setConsolePhase] = useState<"idle" | "running" | "compiling" | "ran" | "cleared">("idle");
   const [runMs, setRunMs] = useState<number | null>(null);
+  const [live, setLive] = useState(() => isFree && !interview && store.get<boolean>(LIVE_KEY, false));
+  const liveTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const runStartRef = useRef(0);
   const [testResults, setTestResults] = useState<RunnerTestResult[] | null>(null);
   const alreadySolved = useClientValue(() => !isFree && progress.isExerciseSolved(exercise.id), false);
@@ -297,6 +301,21 @@ export function PracticeWorkspace({
     }
   }
 
+  useEffect(() => {
+    if (consolePhase !== "ran") return;
+    const lang = currentLangRef.current;
+    if (lang === "javascript" || lang === "python") editorRef.current?.showInline(groupByLine(consoleLines));
+  }, [consolePhase, consoleLines]);
+
+  useEffect(() => () => clearTimeout(liveTimerRef.current), []);
+
+  function toggleLive() {
+    const next = !live;
+    setLive(next);
+    store.set(LIVE_KEY, next);
+    if (next) runCode(false);
+  }
+
   /** A run has finished: show that it did, and how long it took. */
   function markRan() {
     setConsolePhase("ran");
@@ -310,6 +329,7 @@ export function PracticeWorkspace({
 
     const meta = editor.getLanguageMeta();
 
+    editor.showInline([]);
     setConsoleLines([]);
     setConsolePhase("running");
     setRunMs(null);
@@ -515,6 +535,17 @@ export function PracticeWorkspace({
           </div>
         )}
         <div className="lc-topbar__actions">
+          {playground && (currentLang === "javascript" || currentLang === "typescript") && (
+            <button
+              type="button"
+              className="btn live-btn"
+              aria-pressed={live}
+              title="Run as you type, with each console.log's value beside its line"
+              onClick={toggleLive}
+            >
+              <span aria-hidden="true">⚡</span> Live
+            </button>
+          )}
           {playground && templates.length > 1 && (
             <Dropdown
               items={templates.map((t) => ({ value: t.name, label: t.name }))}
@@ -686,6 +717,11 @@ export function PracticeWorkspace({
               height={editorHeight}
               onChange={(value) => {
                 if (!interview) codeStore.save(exercise.id, value, currentLangRef.current);
+                const lang = currentLangRef.current;
+                if (live && (lang === "javascript" || lang === "typescript")) {
+                  clearTimeout(liveTimerRef.current);
+                  liveTimerRef.current = setTimeout(() => runCode(false), 700);
+                }
               }}
               onRun={() => runCode(false)}
               onSave={() => {

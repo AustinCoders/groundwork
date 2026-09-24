@@ -398,3 +398,20 @@ test("the playground folds the sidebar away and goes back where you came from", 
   await back.click();
   await page.waitForURL("**/notes/basic-async");
 });
+
+test("the playground shows each log's value beside its line, live as you type", async ({ page }) => {
+  await page.goto("/practice?id=free");
+  const editor = page.locator(".cm-content");
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.insertText("for (let i = 1; i <= 3; i++) console.log(i * i);\nnull.x;\n");
+  await page.getByRole("button", { name: "Run the code" }).click();
+  await expect(page.locator(".cm-inline-result").first()).toHaveText("// 9  ×3");
+  await expect(page.locator(".cm-inline-result--error")).toContainText("Cannot read properties of null");
+
+  await page.getByRole("button", { name: /Live/ }).click();
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.insertText("console.log(6 * 7);\n");
+  await expect(page.locator(".cm-inline-result")).toHaveText(["// 42"]);
+});

@@ -6327,6 +6327,27 @@ a.step__title:hover {
   }
 }
 
+.ed .cm-inline-result {
+  margin-left: 2.5ch;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-style: italic;
+  color: var(--ide-comment);
+  background: var(--ide-selection);
+  white-space: pre;
+}
+
+.ed .cm-inline-result--error {
+  color: var(--ide-red);
+  font-style: normal;
+}
+
+.live-btn[aria-pressed="true"] {
+  color: var(--ide-bg);
+  background: var(--ide-accent);
+  border-color: var(--ide-accent);
+}
+
 /* squiggles under what ESLint or the type checker flagged */
 .ed .cm-lintRange-error {
   background-image: none;

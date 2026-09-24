@@ -53,6 +53,7 @@ import { CommandPalette, type Command } from "@/components/practice/CommandPalet
 import { Dropdown } from "@/components/ui/select";
 import { fixAll, formatCode, FORMATS, lintCode, LINTS, type EditorProblem } from "@/lib/editor/tools";
 import { loadSettings, saveSettings, type EditorSettings } from "@/lib/editor/settings";
+import { inlineResults, setInlineResults, type InlineResult } from "@/lib/editor/inline";
 import {
   HINTS,
   isLanguage,
@@ -79,6 +80,7 @@ export interface CodeEditorHandle {
   /** Put the cursor at a position and scroll it into view, e.g. from the
    *  Problems list. */
   reveal(from: number, to?: number): void;
+  showInline(results: InlineResult[]): void;
 }
 
 export interface CodeEditorProps {
@@ -262,6 +264,7 @@ function editorExtensions(ctx: {
     highlightActiveLine(),
     highlightSelectionMatches(),
     search({ top: true }),
+    inlineResults(),
     // Vim goes first so its bindings win while it is on.
     c.vim.of([]),
     keymap.of([
@@ -736,6 +739,9 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
         const next = on == null ? !wrapped : on;
         toggle("wrap", next);
         return next;
+      },
+      showInline: (results: InlineResult[]) => {
+        cmRef.current?.view?.dispatch({ effects: setInlineResults.of(results) });
       },
       reveal: (from: number, to?: number) => {
         const view = cmRef.current?.view;
