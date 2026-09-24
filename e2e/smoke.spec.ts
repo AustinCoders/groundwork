@@ -156,9 +156,17 @@ test("the loop wizard walks the choices and follows them", async ({ page }) => {
   const step = (name: RegExp) => page.getByRole("list", { name: "Steps" }).getByRole("button", { name });
   const map = page.getByRole("list", { name: "The loop, in order" });
 
-  // a first visit starts at the first question and moves on as each is answered
+  // a first visit starts at the first question, with every later step locked
+  // and nothing chosen for the reader
   await expect(page.getByRole("heading", { name: "Whose loop?" })).toBeVisible();
+  await expect(step(/^Role/)).toBeDisabled();
+  await expect(step(/^Your loop/)).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Choose one to go on" })).toBeDisabled();
+  await expect(page.getByRole("group", { name: "Loop style" }).locator("[aria-pressed=true]")).toHaveCount(0);
   await card("Loop style", /^Build my own/).click();
+  // answering opens the next step, and only that one
+  await expect(step(/^Role/)).toBeEnabled();
+  await expect(step(/^Experience/)).toBeDisabled();
   await expect(page.getByRole("heading", { name: "What's the role?" })).toBeVisible();
   await card("Role", /^Backend/).click();
   await card("Experience", /^10\+ years/).click();
@@ -201,10 +209,14 @@ test("a company-style loop takes over the company and shapes the rounds", async 
   await expect(page.getByText(/Bar Raiser/).first()).toBeVisible();
   await expect(map.getByText("veto", { exact: true })).toBeVisible();
 
-  // going back to your own loop brings the company step back
+  // going back to your own loop brings the company step back, and asks it
+  // before the loop opens again
   await steps.getByRole("button", { name: /^Style/ }).click();
   await card("Loop style", /^Build my own/).click();
-  await expect(steps.getByRole("button", { name: /^Company/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "What kind of company?" })).toBeVisible();
+  await expect(steps.getByRole("button", { name: /^Your loop/ })).toBeDisabled();
+  await card("Company", /^Product startup/).click();
+  await expect(page.getByRole("heading", { name: "Your loop" })).toBeVisible();
   await expect(map.getByText("veto", { exact: true })).toHaveCount(0);
 });
 

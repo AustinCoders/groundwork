@@ -205,7 +205,8 @@ export function ChoiceCards<T extends string>({
 }: {
   label: string;
   options: ChoiceOption<T>[];
-  value: T;
+  /** null while nothing has been chosen yet, so no card shows as pressed. */
+  value: T | null;
   onChoose: (v: T) => void;
   compact?: boolean;
 }) {

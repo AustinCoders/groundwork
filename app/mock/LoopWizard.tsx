@@ -95,11 +95,12 @@ export function LoopMap({
 }
 
 /**
- * Planning a loop, one question at a time. A first visit walks the four
- * choices; a returning reader, whose choices are already saved, lands on the
- * finished loop and can jump back to any one of them from the stepper — and
- * after changing it, comes straight back to the loop rather than walking the
- * remaining steps again.
+ * Planning a loop, one question at a time and in order: a step opens only once
+ * every step before it has an answer, because what the later steps offer
+ * depends on the earlier ones (a company style removes the company step; the
+ * lengths are timed for the role and level chosen). A returning reader, whose
+ * choices are already saved, lands on the finished loop; changing one choice
+ * goes on to the first step still waiting for an answer, or back to the loop.
  */
 export function LoopWizard({
   config,
@@ -129,17 +130,28 @@ export function LoopWizard({
   const steps = stepsFor(config);
   const REVIEW = steps.length - 1;
   const [stepOverride, setStepOverride] = useState<StepId | null>(null);
-  const [backToReview, setBackToReview] = useState(false);
-  // How far a first visit has got, so the steps not yet reached do not show a
-  // choice nobody has made.
-  const [furthest, setFurthest] = useState(0);
-  // Derived rather than stored, so the server (which cannot see saved choices)
-  // and the first client render agree, and a returning reader still opens on
-  // the finished loop once hydration has read their choices.
+  // Which steps have an answer: true once chosen here, false when a change
+  // earlier on means the step has to be asked again. Anything not marked is
+  // answered only if the choices were saved from an earlier visit — derived
+  // rather than stored, so the server (which cannot see saved choices) and the
+  // first client render agree.
+  const [answers, setAnswers] = useState<Partial<Record<StepId, boolean>>>({});
+  // The first choice saves the config, which would make every step look
+  // answered from then on; what counts is whether choices were saved before
+  // this visit began.
+  const [savedBefore, setSavedBefore] = useState<boolean | null>(null);
+  const cameBack = savedBefore ?? hasSaved;
+  const isAnswered = (id: StepId, marks = answers) => marks[id] ?? cameBack;
+  const firstOpen = (list: StepId[], marks = answers) => {
+    const i = list.findIndex((id) => id !== "review" && !isAnswered(id, marks));
+    return i === -1 ? list.length - 1 : i;
+  };
+  // The furthest step that can be opened: the first one still unanswered.
+  const reached = firstOpen(steps);
   // Held by id rather than position, since choosing a style removes a step.
-  const stepId: StepId = stepOverride && steps.includes(stepOverride) ? stepOverride : hasSaved ? "review" : "style";
-  const step = steps.indexOf(stepId);
-  const reached = hasSaved ? REVIEW : Math.max(furthest, step);
+  const wanted: StepId = stepOverride && steps.includes(stepOverride) ? stepOverride : cameBack ? "review" : "style";
+  const step = Math.min(steps.indexOf(wanted), reached);
+  const stepId = steps[step];
 
   // Move focus with the step, so a keyboard or screen-reader user lands on the
   // new question instead of on a button that has just disappeared. Only when
@@ -162,24 +174,28 @@ export function LoopWizard({
   }, [stepId]);
 
   function goTo(i: number) {
+    if (i > reached) return;
     movedByReader.current = true;
-    setBackToReview(step === REVIEW && i !== REVIEW);
-    setFurthest((f) => Math.max(f, i));
     setStepOverride(steps[i]);
   }
 
   function choose(patch: Partial<LoopConfig>) {
     movedByReader.current = true;
+    if (savedBefore === null) setSavedBefore(hasSaved);
     onChange(patch);
-    // The step list can change with the choice (a style drops the company
-    // step), so the next step is found in the list the choice produces.
+    const marks = { ...answers, [stepId]: true };
+    // Leaving a company style for your own loop brings the company step back,
+    // and the company the style picked was never the reader's answer.
+    if (stepId === "style" && config.style && patch.style === null) marks.company = false;
+    setAnswers(marks);
+    // The step list can change with the choice, so the next step is found in
+    // the list the choice produces: the first one still waiting for an answer.
     const nextSteps = stepsFor({ ...config, ...patch });
-    const here = nextSteps.indexOf(stepId);
-    const next = backToReview ? nextSteps.length - 1 : Math.min(here + 1, nextSteps.length - 1);
-    setFurthest((f) => Math.max(f, next));
-    setStepOverride(nextSteps[next]);
-    setBackToReview(false);
+    setStepOverride(nextSteps[firstOpen(nextSteps, marks)]);
   }
+
+  // Where Next leads: the first step still waiting, or the loop once none is.
+  const nextStep = firstOpen(steps);
 
   const style = styleOf(config.style);
   const values: Record<StepId, string | undefined> = {
@@ -201,13 +217,16 @@ export function LoopWizard({
       <ol className={styles.stepper} aria-label="Steps">
         {steps.map((id, i) => {
           const label = STEP_LABEL[id];
-          const state = i === step ? "current" : i <= reached ? "done" : "next";
+          const locked = i > reached;
+          const state = i === step ? "current" : !locked && (i === REVIEW || isAnswered(id)) ? "done" : "next";
           return (
             <li key={id} className={styles.stepperItem} data-state={state}>
               <button
                 type="button"
                 className={styles.stepperButton}
                 aria-current={i === step ? "step" : undefined}
+                disabled={locked}
+                title={locked ? "Answer the steps before this one first" : undefined}
                 onClick={() => goTo(i)}
               >
                 <span className={styles.stepperDot} aria-hidden="true">
@@ -221,7 +240,7 @@ export function LoopWizard({
                 </span>
                 <span className={styles.stepperText}>
                   <span className={styles.stepperLabel}>{label}</span>
-                  {i < REVIEW && state !== "next" && <span className={styles.stepperValue}>{values[id]}</span>}
+                  {i < REVIEW && isAnswered(id) && <span className={styles.stepperValue}>{values[id]}</span>}
                 </span>
               </button>
             </li>
@@ -237,7 +256,7 @@ export function LoopWizard({
         {stepId === "style" && (
           <ChoiceCards<StyleChoice>
             label="Loop style"
-            value={config.style ?? "custom"}
+            value={isAnswered("style") ? (config.style ?? "custom") : null}
             onChoose={(choice) =>
               choose(choice === "custom" ? { style: null } : { style: choice, company: STYLES[choice].company })
             }
@@ -261,7 +280,7 @@ export function LoopWizard({
         {stepId === "role" && (
           <ChoiceCards
             label="Role"
-            value={config.role}
+            value={isAnswered("role") ? config.role : null}
             onChoose={(role) => choose({ role })}
             options={ROLES.map(([value, name, detail]) => ({ value, name, detail, icon: ROLE_ICON[value] }))}
           />
@@ -269,7 +288,7 @@ export function LoopWizard({
         {stepId === "level" && (
           <ChoiceCards
             label="Experience"
-            value={config.seniority}
+            value={isAnswered("level") ? config.seniority : null}
             onChoose={(seniority) => choose({ seniority })}
             options={LEVELS.map(([value, name, detail]) => ({ value, name, detail, icon: LEVEL_ICON[value] }))}
           />
@@ -277,7 +296,7 @@ export function LoopWizard({
         {stepId === "company" && (
           <ChoiceCards
             label="Company"
-            value={config.company}
+            value={isAnswered("company") ? config.company : null}
             onChoose={(company) => choose({ company })}
             options={COMPANIES.map(([value, name, detail]) => ({ value, name, detail, icon: COMPANY_ICON[value] }))}
           />
@@ -285,7 +304,7 @@ export function LoopWizard({
         {stepId === "length" && (
           <ChoiceCards
             label="Length"
-            value={config.intensity}
+            value={isAnswered("length") ? config.intensity : null}
             onChoose={(intensity) => choose({ intensity })}
             options={INTENSITIES.map(([value, name]) => {
               const p = planLoop({ ...config, intensity: value }, hotFor);
@@ -305,9 +324,15 @@ export function LoopWizard({
               ← Back
             </button>
             <span className={styles.spacer} />
-            <button type="button" className="btn" onClick={() => goTo(backToReview ? REVIEW : step + 1)}>
-              {backToReview || step === REVIEW - 1 ? "See the loop →" : `Next: ${STEP_LABEL[steps[step + 1]]} →`}
-            </button>
+            {isAnswered(stepId) ? (
+              <button type="button" className="btn" onClick={() => goTo(nextStep)}>
+                {nextStep === REVIEW ? "See the loop →" : `Next: ${STEP_LABEL[steps[nextStep]]} →`}
+              </button>
+            ) : (
+              <button type="button" className="btn" disabled>
+                Choose one to go on
+              </button>
+            )}
           </div>
         )}
 

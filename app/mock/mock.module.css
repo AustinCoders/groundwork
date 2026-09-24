@@ -228,8 +228,17 @@
   text-overflow: ellipsis;
 }
 
-.stepperButton:hover .stepperDot {
+.stepperButton:hover:not(:disabled) .stepperDot {
   border-color: var(--ink);
+}
+
+/* a step that opens only once the ones before it are answered */
+.stepperButton:disabled {
+  cursor: not-allowed;
+}
+
+.stepperButton:disabled .stepperDot {
+  border-style: dashed;
 }
 
 .stepperItem[data-state="current"] .stepperLabel {
