@@ -504,7 +504,7 @@ export const dsa1: Exercise[] = [
     level: "beginner",
     title: "Rewrite a Nested Loop as a Linear Scan",
     brief:
-      "<p>The starter contains a working <code>hasPairSum(nums, target)</code>: it returns <code>true</code> when two <b>different</b> positions in <code>nums</code> hold values adding up to <code>target</code>. It is correct and it is <code>O(n^2)</code>. Rewrite it so it runs in <code>O(n)</code>, keeping the exact same behaviour.</p><ul><li>The two values must come from two different indices, but they may be equal values — <code>[3, 3]</code> with target <code>6</code> is <code>true</code></li><li>A single element can never pair with itself: <code>[4]</code> with target <code>8</code> is <code>false</code></li><li>Negative numbers and zero are allowed</li><li>One test runs 150,000 elements with no answer present. The quadratic version needs billions of comparisons there and will not finish — the linear one takes milliseconds</li></ul>",
+      "<p>The starter contains a working <code>hasPairSum(nums, target)</code>: it returns <code>true</code> when two <b>different</b> positions in <code>nums</code> hold values adding up to <code>target</code>. It is correct and it is <code>O(n^2)</code>. Rewrite it so it runs in <code>O(n)</code>, keeping the exact same behaviour.</p><ul><li>The two values must come from two different indices, but they may be equal values — <code>[3, 3]</code> with target <code>6</code> is <code>true</code></li><li>A single element can never pair with itself: <code>[4]</code> with target <code>8</code> is <code>false</code></li><li>Negative numbers and zero are allowed</li><li>One test runs 400,000 elements with no answer present. The quadratic version needs 80 billion comparisons there and blows the 5-second budget many times over — the linear one takes about 30 milliseconds</li></ul>",
     starter:
       "function hasPairSum(nums, target) {\n  // TODO: this is the O(n^2) version — make it O(n) without changing what it returns\n  for (let i = 0; i < nums.length; i++) {\n    for (let j = i + 1; j < nums.length; j++) {\n      if (nums[i] + nums[j] === target) return true;\n    }\n  }\n  return false;\n}\n",
     hints: [
@@ -532,8 +532,8 @@ export const dsa1: Exercise[] = [
         body: "assert.equal(hasPairSum([-3, 8, 4], 1), true);\nassert.equal(hasPairSum([-5, -2, -9], -7), true);\nassert.equal(hasPairSum([-1, -2, -3], 5), false);",
       },
       {
-        name: "150,000 elements with no answer — quadratic will not finish",
-        body: "const n = 150000;\nconst nums = [];\nfor (let i = 0; i < n; i++) nums.push(i * 2);\nassert.equal(hasPairSum(nums, 3), false, 'every value is even, so an odd target is impossible');\nassert.equal(hasPairSum(nums, 2 * n - 4), true, 'the last two values do add up');",
+        name: "400,000 elements with no answer — quadratic blows the time budget",
+        body: "const n = 400000;\nconst nums = [];\nfor (let i = 0; i < n; i++) nums.push(i * 2);\nassert.equal(hasPairSum(nums, 3), false, 'every value is even, so an odd target is impossible');\nassert.equal(hasPairSum(nums, 2 * n - 4), true, 'the last two values do add up');",
       },
       { name: "target achieved only via the extreme values", body: "const nums = [100, 5, 5, 5, 5, 5, -50];\nassert.equal(hasPairSum(nums, 50), true, '100 + -50 = 50');" },
       { name: "a large array where the answer is true, and a large array where it is not", body: "const n = 100000;\nconst nums = [];\nfor (let i = 0; i < n; i++) nums.push(i);\nassert.equal(hasPairSum(nums, 199997), true, 'the last two elements 99998 + 99999');\nassert.equal(hasPairSum(nums, -5), false);" },
