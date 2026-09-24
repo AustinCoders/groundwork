@@ -13,6 +13,7 @@ const PAGES = [
   { path: "/path?topic=js&level=beginner", heading: /Beginner/i },
   { path: "/practice?id=free", heading: /Playground/i },
   { path: "/problems", heading: /problem/i },
+  { path: "/problems/ex-accounts-merge", heading: /Accounts Merge/i },
   { path: "/review", heading: /read again/i },
   { path: "/mock", heading: /mock interview/i },
   { path: "/progress", heading: /progress/i },

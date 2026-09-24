@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { topics, notesHref, chapterHref, chapters } from "@/lib/content";
+import { topics, notesHref, chapterHref, chapters, exercises } from "@/lib/content";
+import { problemHref } from "@/lib/practiceLinks";
 import { SITE_URL } from "@/lib/site";
 
 /**
@@ -16,6 +17,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/problems`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/practice`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
   ];
+
+  // One page per exercise, each with its statement and tests prerendered.
+  const problemRoutes: MetadataRoute.Sitemap = exercises().map((ex) => ({
+    url: `${SITE_URL}${problemHref(ex.id)}`,
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
 
   const topicRoutes: MetadataRoute.Sitemap = [];
   const levelRoutes: MetadataRoute.Sitemap = [];
@@ -56,5 +65,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
       });
     });
 
-  return [...staticRoutes, ...topicRoutes, ...levelRoutes, ...chapterRoutes];
+  return [...staticRoutes, ...topicRoutes, ...levelRoutes, ...chapterRoutes, ...problemRoutes];
 }

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import sitemap from "@/app/sitemap";
 import { topicChapterMetadata, topicCoverMetadata } from "@/components/reader/topicPages";
-import { chapters, chapterHref, notesHref, topics } from "@/lib/content";
+import { chapters, chapterHref, exercises, notesHref, topics } from "@/lib/content";
+import { problemHref } from "@/lib/practiceLinks";
 import { CANONICAL_ORIGIN, SITE_URL } from "@/lib/site";
 import { navHref } from "@/lib/topicNav";
 import { topicsNavWithStats } from "@/lib/topicStats";
@@ -48,6 +49,20 @@ describe("sitemap", () => {
   it("builds every url on one origin", () => {
     for (const e of entries) {
       expect(e.url.startsWith(SITE_URL), `${e.url} is not on ${SITE_URL}`).toBe(true);
+    }
+  });
+});
+
+describe("problem pages", () => {
+  it("gives every exercise its own url in the sitemap", () => {
+    for (const ex of exercises()) {
+      expect(urls.has(`${SITE_URL}${problemHref(ex.id)}`), `${ex.id} has no page in the sitemap`).toBe(true);
+    }
+  });
+
+  it("keeps every exercise id usable as a url segment", () => {
+    for (const ex of exercises()) {
+      expect(ex.id, `"${ex.id}" is not a clean URL segment`).toMatch(/^[a-z0-9][a-z0-9-]*$/);
     }
   });
 });

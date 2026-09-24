@@ -16,29 +16,50 @@ export interface ChapterLink {
 
 export interface PracticeClientProps {
   chapterLinks: Record<string, ChapterLink>;
+  /**
+   * Fixes the exercise from the route instead of the query string. /practice
+   * reads ?id= on the client, so its prerendered HTML is the free playground
+   * whichever exercise the link asked for; /problems/<id> passes the id here and
+   * the whole workspace — statement included — prerenders per problem.
+   */
+  exerciseId?: string;
 }
 
-export default function PracticeClient(props: PracticeClientProps) {
+export default function PracticeClient({ exerciseId, ...rest }: PracticeClientProps) {
+  if (exerciseId) return <PracticeBody id={exerciseId} fromQuery={false} {...rest} />;
   return (
     <Suspense fallback={null}>
-      <PracticePageInner {...props} />
+      <PracticeFromQuery {...rest} />
     </Suspense>
   );
 }
 
-function PracticePageInner({ chapterLinks }: PracticeClientProps) {
+function PracticeFromQuery(props: Omit<PracticeClientProps, "exerciseId">) {
   const searchParams = useSearchParams();
-  const id = searchParams.get("id");
+  return <PracticeBody id={searchParams.get("id")} fromQuery {...props} />;
+}
+
+function PracticeBody({
+  id,
+  fromQuery,
+  chapterLinks,
+}: {
+  id: string | null;
+  fromQuery: boolean;
+  chapterLinks: Record<string, ChapterLink>;
+}) {
   const isFree = !id || id === "free";
   const exercise: PracticeExercise | null | undefined = isFree
     ? FREE_EXERCISE
     : allExercisesData.find((e) => e.id === id);
 
-  // The page ships one static title so it can be prerendered; the exercise name
-  // goes on the tab here.
+  // /practice ships one static title so it can be prerendered, so the exercise
+  // name goes on the tab here. On /problems/<id> the route's own metadata has
+  // already set it, and overwriting it would undo the canonical title.
   useEffect(() => {
+    if (!fromQuery) return;
     document.title = exercise && !isFree ? `${exercise.title} — practice` : "Playground — practice";
-  }, [exercise, isFree]);
+  }, [exercise, isFree, fromQuery]);
 
   if (!exercise) {
     return (

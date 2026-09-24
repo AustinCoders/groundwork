@@ -7,6 +7,7 @@ import { Crumbs } from "@/components/Crumbs";
 import { progress } from "@/lib/storage";
 import { useMounted, useProgressValue } from "@/lib/hooks";
 import { plural } from "@/lib/format";
+import { problemHref } from "@/lib/practiceLinks";
 
 export interface ProblemRow {
   id: string;
@@ -155,7 +156,7 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
             <ul className="prob-list">
               {g.problems.map((p) => (
                 <li className={`prob${solved.has(p.id) ? " is-solved" : ""}`} key={p.id}>
-                  <Link className="prob__title" href={`/practice?id=${p.id}`}>
+                  <Link className="prob__title" href={problemHref(p.id)}>
                     {p.title}
                   </Link>
                   <span className={`tag tag--${p.level}`}>{p.level}</span>

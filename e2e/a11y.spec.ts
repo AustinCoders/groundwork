@@ -12,6 +12,7 @@ const PAGES = [
   "/path?topic=js&level=beginner",
   "/practice?id=free",
   "/problems",
+  "/problems/ex-accounts-merge",
   "/review",
   "/progress",
   "/git",

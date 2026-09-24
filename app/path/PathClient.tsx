@@ -11,6 +11,7 @@ import { lastLevel, progress, rememberLevel } from "@/lib/storage";
 import { levelRows } from "@/lib/levelRows";
 import type { ChapterMeta } from "@/content/types";
 import { useMounted } from "@/lib/hooks";
+import { problemHref } from "@/lib/practiceLinks";
 
 function LevelTag({ level }: { level: string }) {
   return <span className={`tag tag--${level}`}>{level}</span>;
@@ -238,7 +239,7 @@ function PathPageInner({ chapterById, chapterExercises, levelExercises }: PathCl
                     {chapterExerciseList.map((ex) => {
                       const solved = progress.isExerciseSolved(ex.id);
                       return (
-                        <Link className="practice" href={`/practice?id=${ex.id}`} key={ex.id}>
+                        <Link className="practice" href={problemHref(ex.id)} key={ex.id}>
                           <span className="practice__top">
                             <span className="practice__title">{ex.title}</span>
                             {solved && <span className="practice__tick">✓</span>}
@@ -268,7 +269,7 @@ function PathPageInner({ chapterById, chapterExercises, levelExercises }: PathCl
         {levelExerciseList.map((ex) => {
           const solved = progress.isExerciseSolved(ex.id);
           return (
-            <Link className="practice" href={`/practice?id=${ex.id}`} key={ex.id}>
+            <Link className="practice" href={problemHref(ex.id)} key={ex.id}>
               <span className="practice__top">
                 <span className="practice__title">{ex.title}</span>
                 {solved && <span className="practice__tick">✓</span>}

@@ -17,6 +17,7 @@ import { runSQL } from "@/lib/sqlRunner";
 import { isSoundEnabled, playSolvedDing, setSoundEnabled } from "@/lib/sound";
 import { code as codeStore, progress, store } from "@/lib/storage";
 import type { ChapterLink } from "@/app/practice/PracticeClient";
+import { problemHref } from "@/lib/practiceLinks";
 
 const MARKS: Record<string, string> = { log: "›", info: "i", warn: "!", error: "✕", system: "·" };
 
@@ -310,7 +311,7 @@ export function PracticeWorkspace({
           {!isFree && prev ? (
             <Link
               className="lc-icon-btn"
-              href={`/practice?id=${prev.id}`}
+              href={problemHref(prev.id)}
               title={`Previous: ${prev.title}`}
               aria-label={`Previous problem: ${prev.title}`}
             >
@@ -324,7 +325,7 @@ export function PracticeWorkspace({
           {!isFree && next ? (
             <Link
               className="lc-icon-btn"
-              href={`/practice?id=${next.id}`}
+              href={problemHref(next.id)}
               title={`Next: ${next.title}`}
               aria-label={`Next problem: ${next.title}`}
             >

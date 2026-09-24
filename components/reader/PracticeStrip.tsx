@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { progress } from "@/lib/storage";
 import { useProgressValue } from "@/lib/hooks";
+import { problemHref } from "@/lib/practiceLinks";
 
 export interface PracticeLink {
   id: string;
@@ -30,7 +31,7 @@ export function PracticeStrip({ exercises }: { exercises: PracticeLink[] }) {
       <p className="practice-strip__note">Opens in the editor — write it, run it, and check it against real tests.</p>
       <div className="practice-list">
         {exercises.map((ex) => (
-          <Link className="practice" href={`/practice?id=${ex.id}`} key={ex.id}>
+          <Link className="practice" href={problemHref(ex.id)} key={ex.id}>
             <span className="practice__top">
               <span className="practice__title">{ex.title}</span>
               {solved.indexOf(ex.id) !== -1 && <span className="practice__tick">✓</span>}
