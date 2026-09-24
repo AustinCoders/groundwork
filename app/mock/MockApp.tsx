@@ -4,8 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import { Crumbs } from "@/components/Crumbs";
 import { Shell } from "@/components/Shell";
 import { Lobby } from "@/app/mock/Lobby";
-import { Room } from "@/app/mock/Room";
-import { Scorecard } from "@/app/mock/Scorecard";
+import dynamic from "next/dynamic";
+import { loadRoom, loadScorecard } from "@/app/mock/preload";
 import { fetchStages } from "@/app/mock/useStageBanks";
 import type { MockCatalog } from "@/lib/mock/bank";
 import { planLoop } from "@/lib/mock/loops";
@@ -14,6 +14,15 @@ import { mockSnapshot, mockStore, serverMockSnapshot, subscribeMock } from "@/li
 import type { StageId, StageInfo } from "@/lib/mock/types";
 
 type Screen = "lobby" | "room" | "scorecard";
+
+// The lobby is what most visits see, so the room (and the editor it can open)
+// and the debrief stay out of its bundle and arrive when they are reached.
+const Room = dynamic(() => loadRoom().then((m) => m.Room), {
+  loading: () => <p className="sub">Setting up the room…</p>,
+});
+const Scorecard = dynamic(() => loadScorecard().then((m) => m.Scorecard), {
+  loading: () => <p className="sub">Writing up the debrief…</p>,
+});
 
 function newId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;

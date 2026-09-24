@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { PracticeWorkspace } from "@/components/practice/PracticeWorkspace";
+import dynamic from "next/dynamic";
 import { Elapsed, InlineTimer, TimerRing } from "@/app/mock/TimerRing";
 import { MINUTES_PER_CODING, MINUTES_PER_TALK } from "@/lib/mock/loops";
 import { codingScore, rubricFor, talkScore, type CriterionId, type Mark } from "@/lib/mock/scoring";
@@ -12,6 +12,13 @@ import type { PracticeExercise } from "@/lib/practiceFree";
 import styles from "./mock.module.css";
 
 const FOLLOW_UP_SECONDS = 90;
+
+// CodeMirror and the test runner are most of the room's weight and only a
+// coding question uses them; talk rounds never download them.
+const PracticeWorkspace = dynamic(
+  () => import("@/components/practice/PracticeWorkspace").then((m) => m.PracticeWorkspace),
+  { loading: () => <p className="sub">Loading the editor…</p> }
+);
 
 const LEVEL_LABEL: Record<Seniority, string> = { junior: "2–3 years", mid: "5–7 years", senior: "10+ years" };
 

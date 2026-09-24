@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState, useSyncExternalStore } from "react";
-import { fetchStages, usePrefetchStages } from "@/app/mock/useStageBanks";
+import { fetchStages, prefetchStages, whenIdle } from "@/app/mock/useStageBanks";
+import { loadRoom } from "@/app/mock/preload";
 import { planLoop, STAGE_RULES } from "@/lib/mock/loops";
 import { buildSession, stagePosition, type Session, type SessionMode } from "@/lib/mock/session";
 import { competencyProfile, VERDICT_LABEL } from "@/lib/mock/scoring";
@@ -243,7 +244,12 @@ export function Lobby({
     return [{ stage: drillStage, questions: count, minutes: count * per, core: true, reason: "" }];
   }, [drillStage, drillQuestions]);
 
-  usePrefetchStages(mode === "loop" ? plan.map((p) => p.stage) : mode === "drill" ? [drillStage] : []);
+  // Getting ready for Start without paying for it on every visit: the room's
+  // code once the reader is looking at a finished plan, the questions once
+  // they point at Start.
+  const warmRoom = () => whenIdle(() => void loadRoom().catch(() => {}));
+  const warmLoop = () => prefetchStages(plan.map((p) => p.stage));
+  const warmDrill = () => prefetchStages([drillStage]);
 
   async function start(which: SessionMode) {
     setBusy(true);
@@ -346,6 +352,8 @@ export function Lobby({
           busy={busy}
           error={error}
           onStart={() => start("loop")}
+          onReview={warmRoom}
+          onStartIntent={warmLoop}
         />
       )}
 
@@ -413,7 +421,20 @@ export function Lobby({
             </div>
           </div>
           <div className={styles.startBar}>
-            <button type="button" className="btn btn--primary" disabled={busy} onClick={() => start("drill")}>
+            <button
+              type="button"
+              className="btn btn--primary"
+              disabled={busy}
+              onPointerEnter={() => {
+                warmRoom();
+                warmDrill();
+              }}
+              onFocus={() => {
+                warmRoom();
+                warmDrill();
+              }}
+              onClick={() => start("drill")}
+            >
               {busy ? "Setting up the room…" : `Start ${stages[drillStage].title}`}
             </button>
             <p className={styles.startNote}>

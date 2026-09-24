@@ -27,14 +27,21 @@ export async function fetchStages(stages: readonly StageId[]): Promise<Partial<R
   return Object.fromEntries(unique.map((s, i) => [s, lists[i]]));
 }
 
-/** Warm the cache for the stages a loop would run, while the reader is still
- *  choosing — so pressing Start does not wait on the network. */
-export function usePrefetchStages(stages: readonly StageId[]): void {
-  const key = stages.join(",");
-  useEffect(() => {
-    if (!key) return;
-    for (const s of key.split(",") as StageId[]) fetchStage(s).catch(() => {});
-  }, [key]);
+/** Run something when the browser has nothing better to do. */
+export function whenIdle(fn: () => void): void {
+  if (typeof window === "undefined") return;
+  const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
+  if (w.requestIdleCallback) w.requestIdleCallback(fn, { timeout: 2000 });
+  else window.setTimeout(fn, 300);
+}
+
+/**
+ * Warm the cache for a loop's stages. Called when the reader shows they mean
+ * to start — hovering or focusing Start — rather than when the lobby opens:
+ * fetching every stage up front cost 460 KB for someone only looking.
+ */
+export function prefetchStages(stages: readonly StageId[]): void {
+  for (const s of new Set(stages)) fetchStage(s).catch(() => {});
 }
 
 /** Tick once a second while `running`, for clocks that have to re-render. */

@@ -69,6 +69,8 @@ export function LoopWizard({
   busy,
   error,
   onStart,
+  onReview,
+  onStartIntent,
 }: {
   config: LoopConfig;
   onChange: (patch: Partial<LoopConfig>) => void;
@@ -79,6 +81,8 @@ export function LoopWizard({
   busy: boolean;
   error: string | null;
   onStart: () => void;
+  onReview?: () => void;
+  onStartIntent?: () => void;
 }) {
   const [stepOverride, setStepOverride] = useState<number | null>(null);
   const [backToReview, setBackToReview] = useState(false);
@@ -101,6 +105,14 @@ export function LoopWizard({
     if (!movedByReader.current) return;
     movedByReader.current = false;
     headingRef.current?.focus({ preventScroll: true });
+  }, [step]);
+
+  const reviewRef = useRef(onReview);
+  useEffect(() => {
+    reviewRef.current = onReview;
+  });
+  useEffect(() => {
+    if (step === REVIEW) reviewRef.current?.();
   }, [step]);
 
   function goTo(i: number) {
@@ -229,7 +241,14 @@ export function LoopWizard({
             </p>
             <LoopMap plan={plan} stages={stages} />
             <div className={styles.startBar}>
-              <button type="button" className="btn btn--primary" disabled={busy} onClick={onStart}>
+              <button
+                type="button"
+                className="btn btn--primary"
+                disabled={busy}
+                onPointerEnter={onStartIntent}
+                onFocus={onStartIntent}
+                onClick={onStart}
+              >
                 {busy ? "Setting up the room…" : "Start the loop"}
               </button>
               <p className={styles.startNote}>
