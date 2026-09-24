@@ -9,12 +9,13 @@ import { Confetti } from "@/components/practice/Confetti";
 import { EditorSkeleton } from "@/components/practice/EditorSkeleton";
 import { ShortcutHelp } from "@/components/practice/ShortcutHelp";
 import { Dropdown } from "@/components/ui/select";
-import { isLanguage, LANGUAGES, type LanguageKey } from "@/lib/codeLanguages";
+import { isLanguage, LANG_ORDER, LANGUAGES, type LanguageKey } from "@/lib/codeLanguages";
 import { gradeResults, isResultLine, parseResultLine, withHarness } from "@/lib/polyglot/grade";
 import { starterFor } from "@/lib/polyglot/starters";
 import type { EditorProblem } from "@/lib/editor/tools";
 import { groupByLine } from "@/lib/editor/inline";
-import { templatesFor } from "@/lib/playgroundTemplates";
+import { PAGE_SCRIPT, templatesFor } from "@/lib/playgroundTemplates";
+import { buildPage, pageFor, PREVIEW_MESSAGE } from "@/lib/webPreview";
 import {
   langForName,
   loadProject,
@@ -177,7 +178,10 @@ export function PracticeWorkspace({
 
   const mounted = useMounted();
   const [currentLang, setCurrentLang] = useState<LanguageKey>("javascript");
-  const [activeTab, setActiveTab] = useState<"console" | "tests" | "problems">("console");
+  const [activeTab, setActiveTab] = useState<"console" | "tests" | "problems" | "preview">("console");
+  const [previewDoc, setPreviewDoc] = useState<string | null>(null);
+  const [previewRun, setPreviewRun] = useState(0);
+  const pageFrameRef = useRef<HTMLIFrameElement | null>(null);
   // What ESLint or the type checker found in the code, for the Problems tab.
   const [problems, setProblems] = useState<EditorProblem[]>([]);
   const [consoleLines, setConsoleLines] = useState<RunnerOutputEntry[]>([]);
@@ -294,9 +298,54 @@ export function PracticeWorkspace({
     const active = p.files.find((f) => f.id === p.active);
     if (active?.lang === lang) return;
     const existing = p.files.find((f) => f.lang === lang);
-    const file = existing ?? makeFile(p.files, lang);
-    activate({ ...p, files: existing ? p.files : [...p.files, file] }, file);
+    if (existing) return activate(p, existing);
+    if (lang === "html") return activate(...newPage(p.files));
+    const file = makeFile(p.files, lang, undefined, lang === "css" ? "style" : "scratch");
+    activate({ ...p, files: [...p.files, file] }, file);
   }
+
+  function newPage(files: PgFile[]): [Project, PgFile] {
+    const page = makeFile(files, "html", undefined, "index");
+    const next = [...files, page];
+    if (!next.some((f) => f.name === "style.css")) next.push(makeFile(next, "css", undefined, "style"));
+    if (!next.some((f) => f.name === "script.js")) next.push(makeFile(next, "javascript", PAGE_SCRIPT, "script"));
+    return [{ files: next, active: page.id }, page];
+  }
+
+  const hasPage = Boolean(project?.files.some((f) => f.lang === "html"));
+
+  function webPage(): PgFile | null {
+    const p = projectRef.current;
+    if (!p) return null;
+    return pageFor(p.files, p.files.find((f) => f.id === p.active) ?? null);
+  }
+
+  function renderPreview() {
+    const p = projectRef.current;
+    const page = webPage();
+    if (!p || !page) return false;
+    runningRef.current?.stop();
+    setConsoleLines([]);
+    setConsolePhase("running");
+    setRunMs(null);
+    runStartRef.current = performance.now();
+    setPreviewDoc(buildPage(p.files, page));
+    setPreviewRun((n) => n + 1);
+    setActiveTab("preview");
+    return true;
+  }
+
+  useEffect(() => {
+    function onMessage(event: MessageEvent) {
+      const data = event.data as { source?: string; kind?: string; text?: string } | null;
+      if (!data || data.source !== PREVIEW_MESSAGE || event.source !== pageFrameRef.current?.contentWindow) return;
+      if (data.kind === "ready") return markRan();
+      const kind = data.kind === "warn" || data.kind === "error" || data.kind === "info" ? data.kind : "log";
+      setConsoleLines((prev) => [...prev, { kind, text: String(data.text ?? "") }]);
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  });
 
   const fileActions = {
     onSelect(id: string) {
@@ -348,6 +397,7 @@ export function PracticeWorkspace({
   function starterIn(lang: LanguageKey, poly: Polyglot | null): string {
     if (isFree) return templatesFor(lang)[0]?.code ?? `${LANGUAGES[lang].comment} Playground — write anything.\n`;
     if (lang === "javascript" || lang === "sql") return lang === "sql" ? "" : exercise.starter;
+    if (lang === "html" || lang === "css") return "";
     if (poly?.ok) return starterFor(lang, poly.signature, exercise.title);
     if (lang === "typescript") return exercise.starter;
     const c = LANGUAGES[lang].comment;
@@ -416,6 +466,7 @@ export function PracticeWorkspace({
   function runCode(withTests: boolean) {
     const editor = editorRef.current;
     if (!editor) return;
+    if (!withTests && renderPreview()) return;
     runningRef.current?.stop();
 
     const meta = editor.getLanguageMeta();
@@ -565,7 +616,7 @@ export function PracticeWorkspace({
               <span aria-hidden="true">✎</span> Playground
             </h1>
             <div className="pg-langs" role="group" aria-label="Quick language">
-              {(["javascript", "typescript", "python", "sql"] as const).map((key) => (
+              {(["javascript", "typescript", "python", "sql", "html", "css"] as const).map((key) => (
                 <button
                   key={key}
                   type="button"
@@ -626,7 +677,7 @@ export function PracticeWorkspace({
           </div>
         )}
         <div className="lc-topbar__actions">
-          {playground && (currentLang === "javascript" || currentLang === "typescript") && (
+          {playground && ["javascript", "typescript", "html", "css"].includes(currentLang) && (
             <button
               type="button"
               className="btn live-btn"
@@ -809,7 +860,7 @@ export function PracticeWorkspace({
               onChange={(value) => {
                 if (!rememberCode(value) && !interview) codeStore.save(exercise.id, value, currentLangRef.current);
                 const lang = currentLangRef.current;
-                if (live && (lang === "javascript" || lang === "typescript")) {
+                if (live && (lang === "javascript" || lang === "typescript" || lang === "html" || lang === "css")) {
                   clearTimeout(liveTimerRef.current);
                   liveTimerRef.current = setTimeout(() => runCode(false), 700);
                 }
@@ -830,6 +881,7 @@ export function PracticeWorkspace({
               onShowProblems={() => setActiveTab("problems")}
               files={project?.files.map((f) => ({ id: f.id, name: f.name, active: f.id === project.active }))}
               fileActions={project ? fileActions : undefined}
+              languages={project ? LANG_ORDER : undefined}
               toolbarStart={
                 <>
                   <button
@@ -908,6 +960,19 @@ export function PracticeWorkspace({
                     {problems.length}
                   </span>
                 </button>
+                {playground && hasPage && (
+                  <button
+                    className={`tab${activeTab === "preview" ? " is-active" : ""}`}
+                    id="tab-preview"
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === "preview"}
+                    aria-controls="view-preview"
+                    onClick={() => (previewDoc ? setActiveTab("preview") : renderPreview() || setActiveTab("preview"))}
+                  >
+                    Preview
+                  </button>
+                )}
                 {!playground && (
                   <button
                     className={`tab${activeTab === "tests" ? " is-active" : ""}`}
@@ -1013,6 +1078,28 @@ export function PracticeWorkspace({
                   )
                 )}
               </div>
+              {playground && hasPage && (
+                <div
+                  className={`panel__view panel__view--preview${activeTab === "preview" ? " is-active" : ""}`}
+                  id="view-preview"
+                  role="tabpanel"
+                >
+                  {previewDoc ? (
+                    <iframe
+                      key={previewRun}
+                      ref={pageFrameRef}
+                      className="page-preview"
+                      title="Preview of your page"
+                      sandbox="allow-scripts allow-modals allow-forms"
+                      srcDoc={previewDoc}
+                    />
+                  ) : (
+                    <p className="panel__empty">
+                      Run an HTML file, or a stylesheet or script it links, to see the page here.
+                    </p>
+                  )}
+                </div>
+              )}
               <div
                 className={`panel__view${activeTab === "problems" ? " is-active" : ""}`}
                 id="view-problems"

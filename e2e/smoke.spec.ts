@@ -445,3 +445,22 @@ test("the playground keeps several files in tabs, each in its own language", asy
   await page.reload();
   for (const name of ["scratch.js", "scratch.py", "types.ts"]) await expect(file(name)).toBeVisible();
 });
+
+test("the playground renders a web page from its html, css and js files", async ({ page }) => {
+  await page.goto("/practice?id=free");
+  await expect(page.locator(".cm-content")).toBeVisible();
+  await page.getByRole("group", { name: "Quick language" }).getByRole("button", { name: /HTML/ }).click();
+  const files = page.getByRole("list", { name: "Files" });
+  for (const name of ["index.html", "style.css", "script.js"])
+    await expect(files.getByRole("button", { name, exact: true })).toBeVisible();
+
+  await page.getByRole("button", { name: "Run the code" }).click();
+  const frame = page.frameLocator("iframe.page-preview");
+  await expect(frame.locator("h1")).toHaveText("Hello, page");
+  await frame.getByRole("button", { name: "Click me" }).click();
+  await expect(frame.locator("#count")).toHaveText("1");
+
+  // what the page logs reaches the console
+  await page.getByRole("tab", { name: /Console/ }).click();
+  await expect(page.locator("#view-console")).toContainText("clicked 1");
+});

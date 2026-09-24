@@ -8,7 +8,7 @@ import type { StreamParser } from "@codemirror/language";
  * first time it is chosen, so a JavaScript reader never downloads Kotlin's.
  */
 
-export type RunnableKind = "js" | "ts" | "python" | "sql";
+export type RunnableKind = "js" | "ts" | "python" | "sql" | "web";
 
 export interface LanguageMeta {
   label: string;
@@ -25,6 +25,8 @@ export const LANG_ORDER = [
   "typescript",
   "python",
   "sql",
+  "html",
+  "css",
   "cpp",
   "c",
   "java",
@@ -73,6 +75,20 @@ export const LANGUAGES: Record<LanguageKey, LanguageMeta> = {
     runnable: "sql",
     comment: "--",
     support: async () => (await import("@codemirror/lang-sql")).sql(),
+  },
+  html: {
+    label: "HTML",
+    ext: "html",
+    runnable: "web",
+    comment: "<!--",
+    support: async () => (await import("@codemirror/lang-html")).html(),
+  },
+  css: {
+    label: "CSS",
+    ext: "css",
+    runnable: "web",
+    comment: "/*",
+    support: async () => (await import("@codemirror/lang-css")).css(),
   },
   cpp: {
     label: "C++",
@@ -162,7 +178,12 @@ export const HINTS: Record<RunnableKind, string> = {
   ts: "⌘/Ctrl + Enter to compile & run",
   python: "⌘/Ctrl + Enter to run — first run downloads the Python runtime (~13MB, cached after)",
   sql: "⌘/Ctrl + Enter to run against an in-memory SQLite database",
+  web: "⌘/Ctrl + Enter to render the page in Preview",
 };
+
+/** Languages that only make sense as parts of a web page, offered in the
+ *  playground but not for a problem. */
+export const WEB_LANGUAGES: readonly LanguageKey[] = ["html", "css"];
 
 export const WRITE_ONLY_HINT =
   "No compiler for this language runs in a browser — write it here, then run it in your own toolchain.";

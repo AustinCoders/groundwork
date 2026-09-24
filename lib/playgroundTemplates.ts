@@ -226,6 +226,73 @@ FROM sales;
   },
 ];
 
+const HTML: Template[] = [
+  {
+    name: "A page",
+    code: `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>My page</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="card">
+      <h1>Hello, page</h1>
+      <p>Clicked <strong id="count">0</strong> times.</p>
+      <button id="btn">Click me</button>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>
+`,
+  },
+];
+
+const CSS: Template[] = [
+  {
+    name: "Card",
+    code: `body {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #f4f1ea;
+}
+
+.card {
+  padding: 28px 32px;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.12);
+  text-align: center;
+}
+
+button {
+  padding: 10px 18px;
+  font: inherit;
+  border: 0;
+  border-radius: 999px;
+  background: #2f6f4e;
+  color: white;
+  cursor: pointer;
+}
+`,
+  },
+];
+
+export const PAGE_SCRIPT = `const btn = document.getElementById("btn");
+const count = document.getElementById("count");
+let clicks = 0;
+
+btn.addEventListener("click", () => {
+  clicks += 1;
+  count.textContent = clicks;
+  console.log("clicked", clicks);
+});
+`;
+
 const HELLO: Partial<Record<LanguageKey, string>> = {
   cpp: `#include <iostream>\n#include <vector>\nusing namespace std;\n\nint main() {\n    vector<string> topics = {"pointers", "templates", "the STL"};\n    for (size_t i = 0; i < topics.size(); i++) {\n        cout << i + 1 << " " << topics[i] << "\\n";\n    }\n    return 0;\n}\n`,
   c: `#include <stdio.h>\n\nint main(void) {\n    const char *topics[] = {"pointers", "structs", "memory"};\n    for (int i = 0; i < 3; i++) {\n        printf("%d %s\\n", i + 1, topics[i]);\n    }\n    return 0;\n}\n`,
@@ -250,6 +317,10 @@ export function templatesFor(lang: LanguageKey): Template[] {
       return PY;
     case "sql":
       return SQL;
+    case "html":
+      return HTML;
+    case "css":
+      return CSS;
     default:
       return HELLO[lang] ? [{ name: "Hello, world", code: HELLO[lang]! }] : [];
   }

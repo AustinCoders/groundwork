@@ -5784,9 +5784,37 @@ a.step__title:hover {
   line-height: 1;
 }
 
+.ed__bar:has(.ed__tabs--files) {
+  flex-wrap: nowrap;
+}
+
+.ed__bar:has(.ed__tabs--files) .ed__spacer {
+  flex: 0 0 8px;
+}
+
+@media (max-width: 720px) {
+  .ed__bar:has(.ed__tabs--files) {
+    flex-wrap: wrap;
+  }
+
+  .ed__bar:has(.ed__tabs--files) .ed__traffic,
+  .ed__bar:has(.ed__tabs--files) .ed__spacer {
+    display: none;
+  }
+
+  .ed__bar .ed__tabs--files {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .ed__bar:has(.ed__tabs--files) .dd {
+    margin-right: auto;
+  }
+}
+
 .ed__tabs--files {
   min-width: 0;
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -6258,6 +6286,22 @@ a.step__title:hover {
   font-weight: 700;
 }
 
+.ed__seg-value {
+  align-self: center;
+  padding: 0 6px;
+  font-family: var(--font-code);
+  font-size: 12px;
+}
+
+.ed__bar .ed__tools {
+  display: flex;
+  flex: none;
+  align-items: center;
+  align-self: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
 .ed__settings-link {
   display: flex;
   justify-content: space-between;
@@ -6416,6 +6460,20 @@ a.step__title:hover {
 .ed .cm-inline-result--error {
   color: var(--ide-red);
   font-style: normal;
+}
+
+.practice-layout--playground .panel__view--preview.is-active {
+  display: flex;
+  height: 100%;
+  margin: -10px -12px;
+}
+
+.page-preview {
+  flex: 1;
+  width: 100%;
+  min-height: 320px;
+  border: 0;
+  background: white;
 }
 
 .live-btn[aria-pressed="true"] {

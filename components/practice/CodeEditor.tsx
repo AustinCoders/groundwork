@@ -59,6 +59,7 @@ import {
   isLanguage,
   LANGUAGES,
   LANG_ORDER,
+  WEB_LANGUAGES,
   WRITE_ONLY_HINT,
   type LanguageKey,
   type LanguageMeta,
@@ -98,6 +99,9 @@ export interface CodeEditorProps {
   onShowProblems?: () => void;
   /** Several files, one per tab; without this the editor shows one file. */
   files?: FileTabsProps["files"];
+  /** The languages on offer; web page languages only where there is a
+   *  preview to render them in. */
+  languages?: readonly LanguageKey[];
   fileActions?: Omit<FileTabsProps, "files">;
 
   toolbarStart?: React.ReactNode;
@@ -394,6 +398,7 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
     onShowProblems,
     files,
     fileActions,
+    languages = LANG_ORDER.filter((k) => !WEB_LANGUAGES.includes(k)),
     toolbarStart,
   },
   ref
@@ -754,7 +759,7 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
       label: fullscreen ? "Leave fullscreen" : "Fullscreen",
       run: () => setFullscreen((f) => !f),
     },
-    ...LANG_ORDER.map((key) => ({
+    ...languages.map((key) => ({
       id: `lang-${key}`,
       group: "Language",
       label: LANGUAGES[key].label,
@@ -863,7 +868,7 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
         )}
         <span className="ed__spacer" />
         <Dropdown
-          items={LANG_ORDER.map((key) => ({
+          items={languages.map((key) => ({
             value: key,
             label: LANGUAGES[key].label,
             group: LANGUAGES[key].runnable ? "Runs here" : "Write only",
@@ -877,35 +882,6 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
         />
         <div className="ed__tools">
           {toolbarStart}
-          <button
-            className="btn btn--icon"
-            type="button"
-            title="Smaller text"
-            aria-label="Smaller text"
-            onClick={() => setFontSizeState((s) => Math.max(11, s - 1))}
-          >
-            A−
-          </button>
-          <button
-            className="btn btn--icon"
-            type="button"
-            title="Bigger text"
-            aria-label="Bigger text"
-            onClick={() => setFontSizeState((s) => Math.min(24, s + 1))}
-          >
-            A+
-          </button>
-          <button
-            className="btn btn--icon"
-            type="button"
-            title="Wrap long lines"
-            aria-label="Wrap long lines"
-            aria-pressed={wrapped}
-            style={{ borderColor: wrapped ? "var(--ink)" : undefined }}
-            onClick={() => toggle("wrap")}
-          >
-            ↵
-          </button>
           <button
             className="btn btn--icon"
             type="button"
@@ -954,6 +930,26 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
           <Switch on={settings.minimap} onChange={() => toggle("minimap")} label="Minimap" />
           <Switch on={settings.indentGuides} onChange={() => toggle("indentGuides")} label="Indent guides" />
           <Switch on={settings.wrap} onChange={() => toggle("wrap")} label="Word wrap" />
+          <div className="ed__settings-row">
+            <span>Text size</span>
+            <span className="ed__seg" role="group" aria-label="Text size">
+              <button
+                type="button"
+                aria-label="Smaller text"
+                onClick={() => setFontSizeState((v) => Math.max(11, v - 1))}
+              >
+                A−
+              </button>
+              <span className="ed__seg-value">{fontSize}px</span>
+              <button
+                type="button"
+                aria-label="Bigger text"
+                onClick={() => setFontSizeState((v) => Math.min(24, v + 1))}
+              >
+                A+
+              </button>
+            </span>
+          </div>
           <div className="ed__settings-row">
             <span>Indent</span>
             <span className="ed__seg" role="group" aria-label="Indent size">
