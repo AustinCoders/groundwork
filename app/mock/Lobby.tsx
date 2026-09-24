@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { fetchStages, usePrefetchStages } from "@/app/mock/useStageBanks";
-import { loopMinutes, planLoop, STAGE_RULES } from "@/lib/mock/loops";
+import { planLoop, STAGE_RULES } from "@/lib/mock/loops";
 import { buildSession, stagePosition, type Session, type SessionMode } from "@/lib/mock/session";
 import { competencyProfile, VERDICT_LABEL } from "@/lib/mock/scoring";
 import { RETIRE_AT, RETRY_BELOW, type HistoryEntry, type RetryEntry } from "@/lib/mock/storage";
@@ -20,34 +20,12 @@ import type {
 import type { MockCatalog } from "@/lib/mock/bank";
 import { store } from "@/lib/storage";
 import { subscribeNever } from "@/lib/hooks";
+import { ChoiceCards } from "@/app/mock/ChoiceCards";
+import { LoopWizard } from "@/app/mock/LoopWizard";
+import { COMPANIES, INTENSITIES, LEVELS, ROLES } from "@/app/mock/options";
 import styles from "./mock.module.css";
 
 const CONFIG_KEY = "groundwork:mock:config";
-
-const ROLES: [Role, string, string][] = [
-  ["frontend", "Frontend", "React, the browser"],
-  ["fullstack", "Full-stack", "both ends"],
-  ["backend", "Backend", "Node, databases"],
-];
-
-const LEVELS: [Seniority, string, string][] = [
-  ["junior", "2–3 years", "junior"],
-  ["mid", "5–7 years", "mid-level"],
-  ["senior", "10+ years", "senior"],
-];
-
-const COMPANIES: [CompanyType, string, string][] = [
-  ["service", "Service", "consulting, TCS tier"],
-  ["product", "Product startup", "Series A–C"],
-  ["saas", "Product & SaaS", "Freshworks tier"],
-  ["agency", "Agency", "studios, client work"],
-];
-
-const INTENSITIES: [Intensity, string][] = [
-  ["quick", "Quick"],
-  ["standard", "Standard"],
-  ["full", "Full"],
-];
 
 export const COMPETENCY_LABEL: Record<Competency, string> = {
   coding: "Coding",
@@ -98,6 +76,15 @@ function serverConfig(): LoopConfig {
   return DEFAULT_CONFIG;
 }
 
+function hasSavedConfig(): boolean {
+  savedConfig();
+  return cachedRaw !== null && cachedRaw !== undefined;
+}
+
+function serverHasSaved(): boolean {
+  return false;
+}
+
 function newId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
@@ -106,107 +93,6 @@ function newSeed(): number {
   return Math.floor(Math.random() * 2 ** 31) || 1;
 }
 
-function hours(min: number): string {
-  if (min < 60) return `${min} min`;
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return m ? `${h} h ${m} min` : `${h} h`;
-}
-
-/** How each choice reads inside the sentence, lower-case and ready for "a"/"an". */
-const ROLE_WORD: Record<Role, string> = { frontend: "frontend", fullstack: "full-stack", backend: "backend" };
-const COMPANY_WORD: Record<CompanyType, string> = {
-  service: "service company",
-  product: "product startup",
-  saas: "SaaS company",
-  agency: "agency",
-};
-
-const VOWELS = new Set(["a", "e", "i", "o", "u"]);
-
-/** "a service company", "an agency". Good enough for these four words. */
-function article(word: string): string {
-  return VOWELS.has(word.charAt(0).toLowerCase()) ? "an" : "a";
-}
-
-interface BlankOption<T extends string> {
-  value: T;
-  /** What the sentence shows. */
-  word: string;
-  /** What the picker lists — the word with its detail. */
-  label: string;
-}
-
-/**
- * One blank in the sentence. The word you see is plain text; a native <select>
- * sits invisibly on top of it, so the blank is exactly as wide as its word and
- * still opens the platform's own picker, takes the keyboard, and has a name a
- * screen reader can announce.
- */
-function Blank<T extends string>({
-  id,
-  name,
-  value,
-  options,
-  onChange,
-}: {
-  id: string;
-  name: string;
-  value: T;
-  options: BlankOption<T>[];
-  onChange: (v: T) => void;
-}) {
-  const current = options.find((o) => o.value === value) ?? options[0];
-  return (
-    <span className={styles.blank}>
-      <span aria-hidden="true">{current.word}</span>
-      <span className={styles.blankCaret} aria-hidden="true">
-        ▾
-      </span>
-      <select
-        id={id}
-        aria-label={name}
-        className={styles.blankSelect}
-        value={value}
-        onChange={(e) => onChange(e.target.value as T)}
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </span>
-  );
-}
-
-function LoopMap({ plan, stages }: { plan: PlannedStage[]; stages: Record<StageId, StageInfo> }) {
-  return (
-    <ol className={styles.map} aria-label="The loop, in order">
-      {plan.map((p) => {
-        const info = stages[p.stage];
-        return (
-          <li key={p.stage} className={styles.mapStage} data-core={p.core}>
-            <span className={styles.mapTitle}>{info.title}</span>
-            <span className={styles.mapMeta}>
-              <span className={styles.kindTag} data-kind={info.kind}>
-                {info.kind === "coding" ? "code" : "talk"}
-              </span>
-              <span className={styles.nowrap}>
-                {p.questions} {p.questions === 1 ? "question" : "questions"} · {p.minutes} min
-              </span>
-              {p.core ? <span className={styles.coreBadge}>core</span> : <span aria-hidden="true" />}
-            </span>
-            <p className={styles.mapReason}>{p.reason}</p>
-          </li>
-        );
-      })}
-    </ol>
-  );
-}
-
-/** Loop scores over time: a line with a faint area, and a dashed rule at the
- *  hire line so the trend reads against the bar rather than against zero. */
 function Sparkline({ values }: { values: number[] }) {
   if (values.length < 2) return null;
   const w = 200;
@@ -327,6 +213,7 @@ export function Lobby({
   const stored = useSyncExternalStore(subscribeNever, savedConfig, serverConfig);
   const [picked, setPicked] = useState<LoopConfig | null>(null);
   const config = picked ?? stored;
+  const hasSaved = useSyncExternalStore(subscribeNever, hasSavedConfig, serverHasSaved);
   const [drillStage, setDrillStage] = useState<StageId>("javascript");
   const [drillCount, setDrillCount] = useState(5);
   const [busy, setBusy] = useState(false);
@@ -339,8 +226,6 @@ export function Lobby({
   }
 
   const plan = useMemo(() => planLoop(config, catalog.hotFor), [config, catalog.hotFor]);
-  const totalMinutes = loopMinutes(plan);
-  const totalQuestions = plan.reduce((n, p) => n + p.questions, 0);
 
   // A count chosen for a coding round (1–3) is not one a talk round offers
   // (3, 5, 8), so switching rooms snaps it to the nearest the new room has.
@@ -451,80 +336,17 @@ export function Lobby({
       </div>
 
       {mode === "loop" && (
-        <section className="sheet" aria-labelledby="mock-loop">
-          <p className={styles.eyebrow}>plan the loop</p>
-          <h2 id="mock-loop">Which job are you walking into?</h2>
-          <p className={styles.sentence}>
-            I&apos;m a{" "}
-            <Blank
-              id="mock-role"
-              name="Role"
-              value={config.role}
-              options={ROLES.map(([value, name, detail]) => ({
-                value,
-                word: ROLE_WORD[value],
-                label: `${name} — ${detail}`,
-              }))}
-              onChange={(role) => setConfig({ role })}
-            />{" "}
-            engineer with{" "}
-            <Blank
-              id="mock-experience"
-              name="Experience"
-              value={config.seniority}
-              options={LEVELS.map(([value, name, detail]) => ({ value, word: name, label: `${name} — ${detail}` }))}
-              onChange={(seniority) => setConfig({ seniority })}
-            />{" "}
-            behind me, walking into {article(COMPANY_WORD[config.company])}{" "}
-            <Blank
-              id="mock-company"
-              name="Company"
-              value={config.company}
-              options={COMPANIES.map(([value, name, detail]) => ({
-                value,
-                word: COMPANY_WORD[value],
-                label: `${name} — ${detail}`,
-              }))}
-              onChange={(company) => setConfig({ company })}
-            />
-            . Run me the{" "}
-            <Blank
-              id="mock-length"
-              name="Length"
-              value={config.intensity}
-              options={INTENSITIES.map(([value, name]) => ({
-                value,
-                word: name.toLowerCase(),
-                label: `${name} — about ${hours(loopMinutes(planLoop({ ...config, intensity: value }, catalog.hotFor)))}`,
-              }))}
-              onChange={(intensity) => setConfig({ intensity })}
-            />{" "}
-            loop.
-          </p>
-          <p className={styles.sentenceDetail}>
-            {ROLES.find(([r]) => r === config.role)?.[2]} · {LEVELS.find(([l]) => l === config.seniority)?.[2]} ·{" "}
-            {COMPANIES.find(([c]) => c === config.company)?.[2]}
-          </p>
-
-          <div className={styles.mapHead}>
-            <h3>The loop</h3>
-            <span className={styles.mapTotals}>
-              {plan.length} rounds · {totalQuestions} questions · about {hours(totalMinutes)}
-            </span>
-          </div>
-          <LoopMap plan={plan} stages={stages} />
-
-          <div className={styles.startBar}>
-            <button type="button" className="btn btn--primary" disabled={busy} onClick={() => start("loop")}>
-              {busy ? "Setting up the room…" : "Start the loop"}
-            </button>
-            <p className={styles.startNote}>
-              Answer out loud before you look. Each question has a clock, the interviewer will push with a follow-up,
-              and <b>core</b> rounds can sink the loop on their own — the way a real debrief works.
-            </p>
-          </div>
-          {error && <p className="warn">{error}</p>}
-        </section>
+        <LoopWizard
+          config={config}
+          onChange={setConfig}
+          hasSaved={hasSaved}
+          plan={plan}
+          stages={stages}
+          hotFor={catalog.hotFor}
+          busy={busy}
+          error={error}
+          onStart={() => start("loop")}
+        />
       )}
 
       {mode === "drill" && (
@@ -559,28 +381,37 @@ export function Lobby({
               </button>
             ))}
           </div>
-          <p className={styles.sentence}>
-            Ask me{" "}
-            <Blank
-              id="mock-count"
-              name="How many questions"
-              value={String(drillQuestions)}
-              options={(drillIsCoding ? [1, 2, 3] : [3, 5, 8]).map((n) => {
-                const word = `${n} ${drillIsCoding ? (n === 1 ? "problem" : "problems") : "questions"}`;
-                return { value: String(n), word, label: word };
-              })}
-              onChange={(v) => setDrillCount(Number(v))}
-            />
-            , pitched at someone with{" "}
-            <Blank
-              id="mock-drill-experience"
-              name="Experience"
-              value={config.seniority}
-              options={LEVELS.map(([value, name, detail]) => ({ value, word: name, label: `${name} — ${detail}` }))}
-              onChange={(seniority) => setConfig({ seniority })}
-            />{" "}
-            behind them.
-          </p>
+          <div className={styles.drillSettings}>
+            <div>
+              <p className={styles.eyebrow}>how many</p>
+              <ChoiceCards
+                compact
+                label="How many questions"
+                value={String(drillQuestions)}
+                onChoose={(v) => setDrillCount(Number(v))}
+                options={(drillIsCoding ? [1, 2, 3] : [3, 5, 8]).map((n) => ({
+                  value: String(n),
+                  name: String(n),
+                  detail: drillIsCoding ? (n === 1 ? "problem" : "problems") : "questions",
+                }))}
+              />
+            </div>
+            <div>
+              <p className={styles.eyebrow}>pitched at</p>
+              <ChoiceCards
+                compact
+                label="Experience"
+                value={config.seniority}
+                onChoose={(seniority) => setConfig({ seniority })}
+                options={LEVELS.map(([value, name, detail]) => ({
+                  value,
+                  name,
+                  detail,
+                  icon: value === "junior" ? "level-1" : value === "mid" ? "level-2" : "level-3",
+                }))}
+              />
+            </div>
+          </div>
           <div className={styles.startBar}>
             <button type="button" className="btn btn--primary" disabled={busy} onClick={() => start("drill")}>
               {busy ? "Setting up the room…" : `Start ${stages[drillStage].title}`}

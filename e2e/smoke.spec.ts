@@ -125,7 +125,7 @@ test("a mock interview round runs from the lobby to the debrief", async ({ page 
 
   await page.getByRole("tab", { name: "Single round" }).click();
   await page.getByRole("button", { name: /^Behavioural/ }).click();
-  await page.getByLabel("How many questions").selectOption("3");
+  await page.getByRole("group", { name: "How many questions" }).getByRole("button", { name: /^3/ }).click();
   await page.getByRole("button", { name: "Start Behavioural" }).click();
 
   await page.getByRole("button", { name: "Walk in" }).click();
@@ -150,20 +150,35 @@ test("a mock interview round runs from the lobby to the debrief", async ({ page 
   await expect(page.getByText("Every question")).toBeVisible();
 });
 
-test("the loop plan follows the role and the level", async ({ page }) => {
+test("the loop wizard walks the four choices and follows them", async ({ page }) => {
   await page.goto("/mock");
+  const card = (group: string, name: RegExp) => page.getByRole("group", { name: group }).getByRole("button", { name });
+  const step = (name: RegExp) => page.getByRole("list", { name: "Steps" }).getByRole("button", { name });
   const map = page.getByRole("list", { name: "The loop, in order" });
 
-  await page.getByLabel("Role").selectOption("backend");
-  await page.getByLabel("Experience").selectOption("senior");
+  // a first visit starts at the first question and moves on as each is answered
+  await expect(page.getByRole("heading", { name: "What's the role?" })).toBeVisible();
+  await card("Role", /^Backend/).click();
+  await card("Experience", /^10\+ years/).click();
+  await card("Company", /^Product startup/).click();
+  await card("Length", /^Standard/).click();
+
+  await expect(page.getByRole("heading", { name: "Your loop" })).toBeVisible();
   await expect(map.getByText("Node & databases")).toBeVisible();
   await expect(map.getByText("System design")).toBeVisible();
   await expect(map.getByText("React & the frontend")).toHaveCount(0);
 
-  await page.getByLabel("Role").selectOption("frontend");
-  await page.getByLabel("Experience").selectOption("junior");
+  // changing one choice from the finished loop comes straight back to it
+  await step(/^Role/).click();
+  await card("Role", /^Frontend/).click();
+  await expect(page.getByRole("heading", { name: "Your loop" })).toBeVisible();
+  await step(/^Experience/).click();
+  await card("Experience", /^2–3 years/).click();
+  await expect(page.getByRole("heading", { name: "Your loop" })).toBeVisible();
+
   await expect(map.getByText("React & the frontend")).toBeVisible();
   await expect(map.getByText("System design")).toHaveCount(0);
+  await expect(step(/^Role/)).toContainText("Frontend");
 });
 
 test("the step-through demos advance and finish", async ({ page }) => {
@@ -235,10 +250,11 @@ test("the mock lobby hydrates cleanly with saved choices", async ({ page }) => {
   const problems = collectProblems(page);
 
   await page.goto("/mock", { waitUntil: "networkidle" });
-  await expect(page.getByLabel("Role")).toHaveValue("frontend");
-  await expect(page.getByLabel("Experience")).toHaveValue("senior");
-  await expect(page.getByLabel("Company")).toHaveValue("agency");
-  // the sentence agrees with the pickers, article included
-  await expect(page.getByText(/walking into an\s+agency/)).toBeVisible();
+  // a returning reader lands on the finished loop, with their choices on the steps
+  await expect(page.getByRole("heading", { name: "Your loop" })).toBeVisible();
+  const steps = page.getByRole("list", { name: "Steps" });
+  await expect(steps.getByRole("button", { name: /^Role/ })).toContainText("Frontend");
+  await expect(steps.getByRole("button", { name: /^Experience/ })).toContainText("10+ years");
+  await expect(steps.getByRole("button", { name: /^Company/ })).toContainText("Agency");
   expect(problems, "the lobby logged problems").toEqual([]);
 });

@@ -105,74 +105,304 @@
   color: var(--ink);
 }
 
-/* The loop is chosen by finishing a sentence rather than filling a form.
-   Each blank is its word, underlined, with a native select laid invisibly
-   over it — so it is as wide as the word and still behaves like a picker. */
+/* ---------- the loop wizard ---------- */
 
-.sentence {
-  max-width: 34em;
-  margin: 16px 0 10px;
-  font-family: var(--font-heading);
-  font-size: clamp(24px, 3.1vw, 34px);
-  line-height: 1.95;
-  color: var(--ink-soft);
-  text-wrap: pretty;
-}
+/* A stepper across the top: where you are, what you chose at each step, and a
+   way back to any of them. */
 
-.blank {
-  position: relative;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.2em;
-  padding: 0.04em 0.28em 0.04em 0.32em;
-  line-height: 1.25;
-  color: var(--ink);
-  font-weight: 700;
-  white-space: nowrap;
-  border-radius: 8px;
-  background: var(--sheet-2);
-  box-shadow: inset 0 -2.5px 0 var(--ink);
-  transition:
-    background 0.14s ease,
-    box-shadow 0.14s ease;
-}
-
-.blank:hover {
-  background: var(--hl-mint);
-}
-
-.blank:focus-within {
-  outline: 2px solid var(--ink);
-  outline-offset: 3px;
-}
-
-.blankCaret {
-  font-size: 0.5em;
-  color: var(--pencil);
-  transform: translateY(-0.2em);
-}
-
-.blankSelect {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
+.stepper {
+  list-style: none;
+  margin: 6px 0 26px;
   padding: 0;
-  opacity: 0;
-  cursor: pointer;
-  /* 16px keeps iOS from zooming the page when the picker opens */
-  font-size: 16px;
-  appearance: none;
-  border: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
 }
 
-.sentenceDetail {
-  margin: 0 0 26px;
+.stepperItem {
+  position: relative;
+  min-width: 0;
+}
+
+/* the rail joining one step to the next */
+.stepperItem:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 17px;
+  left: calc(34px + 6px);
+  right: -2px;
+  border-top: 1.5px dashed var(--line-soft);
+}
+
+.stepperItem[data-state="done"]:not(:last-child)::after {
+  border-top-style: solid;
+  border-top-color: var(--ink-soft);
+}
+
+.stepperButton {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  width: 100%;
+  padding: 0;
+  font: inherit;
+  color: var(--pencil);
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.stepperDot {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
   font-family: var(--font-mono);
   font-size: 13px;
-  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
   color: var(--pencil);
+  border: 1.5px solid var(--line-soft);
+  border-radius: 50%;
+  background: var(--sheet);
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.stepperItem[data-state="done"] .stepperDot {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+  background: var(--sheet-2);
+}
+
+.stepperItem[data-state="current"] .stepperDot {
+  color: var(--ink);
+  border-color: var(--ink);
+  background: var(--hl-mint);
+  box-shadow:
+    0 0 0 4px var(--sheet),
+    0 0 0 5.5px var(--ink);
+}
+
+.stepperText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1px 8px 0 10px;
+  background: var(--sheet);
+}
+
+.stepperLabel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.stepperValue {
+  overflow: hidden;
+  font-size: 15px;
+  color: var(--ink);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.stepperButton:hover .stepperDot {
+  border-color: var(--ink);
+}
+
+.stepperItem[data-state="current"] .stepperLabel {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* each step arrives with a short slide, so the change reads as moving on */
+.stepBody {
+  animation: stepIn 0.28s ease both;
+}
+
+@keyframes stepIn {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.stepQuestion {
+  margin: 0 0 18px;
+}
+
+.stepQuestion:focus {
+  outline: none;
+}
+
+.stepQuestion:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 6px;
+}
+
+.stepNav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1.5px dashed var(--line-soft);
+}
+
+/* the choices: one big card per option */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 12px;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 150px;
+  padding: 18px 18px 16px;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.card:hover {
+  border-color: var(--ink-soft);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.card:active {
+  transform: translateY(0);
+}
+
+.card[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--hl-mint);
+  box-shadow: var(--shadow-sm);
+}
+
+.cardIcon {
+  display: block;
+  margin-bottom: auto;
+  padding-bottom: 12px;
+  color: var(--ink-soft);
+}
+
+.card[aria-pressed="true"] .cardIcon {
+  color: var(--ink);
+}
+
+.cardIcon svg {
+  display: block;
+}
+
+.cardName {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  line-height: 1.05;
+}
+
+.cardDetail {
+  font-size: 14px;
+  color: var(--pencil);
+}
+
+.card[aria-pressed="true"] .cardDetail {
+  color: var(--ink-soft);
+}
+
+.cardCheck {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sheet);
+  background: var(--ink);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.card[aria-pressed="true"] .cardCheck {
+  opacity: 1;
+  transform: none;
+}
+
+/* the smaller version, for a single round's settings */
+.cardsCompact {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr));
+  gap: 8px;
+}
+
+.cardsCompact .card {
+  min-height: 0;
+  padding: 12px 14px;
+  border-radius: 11px;
+}
+
+.cardsCompact .cardIcon {
+  padding-bottom: 6px;
+}
+
+.cardsCompact .cardIcon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.cardsCompact .cardName {
+  font-size: 22px;
+}
+
+.cardsCompact .cardCheck {
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+}
+
+.drillSettings {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 18px 28px;
+  margin: 0 0 22px;
+}
+
+.drillSettings .eyebrow,
+.drillSettings > div > p {
+  margin: 0 0 8px;
 }
 
 /* The loop as an agenda: the stages are a schedule, so they read top to bottom
@@ -1358,6 +1588,24 @@
 }
 
 @media (max-width: 640px) {
+  /* too narrow for five labels: the dots say where you are, the question
+     below says what it is */
+  .stepperText {
+    display: none;
+  }
+
+  .stepper {
+    margin-bottom: 22px;
+  }
+
+  .drillSettings {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .card {
+    min-height: 0;
+  }
+
   .mapStage {
     grid-template-columns: 34px minmax(0, 1fr);
   }
@@ -1401,8 +1649,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stamp {
+  .stamp,
+  .stepBody {
     animation: none;
+  }
+
+  .card,
+  .cardCheck {
+    transition: none;
   }
 
   .railFill,
