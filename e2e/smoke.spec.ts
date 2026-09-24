@@ -484,3 +484,29 @@ test("a share link opens the playground's files in another browser as new tabs",
   await expect(friend.locator("#view-console")).toContainText("Opened 1 shared file");
   await other.close();
 });
+
+test("the playground keeps a history of runs and can reopen an earlier run's code", async ({ page }) => {
+  await page.goto("/practice?id=free");
+  const editor = page.locator(".cm-content");
+  const run = page.getByRole("button", { name: "Run the code" });
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.insertText("console.log('first version')\n");
+  await run.click();
+  await expect(page.locator(".run-status")).toContainText("✓ ran");
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.insertText("throw new Error('second version')\n");
+  await run.click();
+  await expect(page.locator(".run-status")).toContainText("✕ error");
+
+  await page.getByRole("tab", { name: /History/ }).click();
+  const rows = page.locator(".run");
+  await expect(rows).toHaveCount(2);
+  await expect(rows.last()).toContainText("first version");
+  await rows.last().getByRole("button", { name: "Open this code" }).click();
+  await expect(editor).toContainText("console.log('first version')");
+  await expect(
+    page.getByRole("list", { name: "Files" }).getByRole("button", { name: "scratch-earlier.js", exact: true })
+  ).toBeVisible();
+});

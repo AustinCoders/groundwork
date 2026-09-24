@@ -6394,6 +6394,72 @@ a.step__title:hover {
   color: var(--ide-fg-dim);
 }
 
+.runs {
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.run {
+  display: grid;
+  grid-template-columns: 18px auto minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: baseline;
+  padding: 6px 4px;
+  border-bottom: 1px dashed var(--ide-border);
+}
+
+.run[data-ok="true"] .run__mark {
+  color: var(--ide-green);
+}
+
+.run[data-ok="false"] .run__mark {
+  color: var(--ide-red);
+}
+
+.run__file {
+  font-weight: 700;
+}
+
+.run__summary {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--ide-fg-dim);
+}
+
+.run__meta {
+  color: var(--ide-fg-faint);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.run__open {
+  padding: 2px 8px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--ide-fg);
+  background: none;
+  border: 1px solid var(--ide-border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.run__open:hover {
+  background: rgba(205, 214, 244, 0.08);
+}
+
+@media (max-width: 720px) {
+  .run {
+    grid-template-columns: 18px minmax(0, 1fr) auto;
+  }
+
+  .run__summary,
+  .run__meta {
+    grid-column: 2 / -1;
+  }
+}
+
 .problems {
   margin: 0;
   padding: 0;

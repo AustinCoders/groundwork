@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
 import { Crumbs } from "@/components/Crumbs";
 import { BackButton } from "@/components/practice/BackButton";
 import { CodeEditor, type CodeEditorHandle } from "@/components/practice/CodeEditor";
@@ -17,6 +17,14 @@ import { groupByLine } from "@/lib/editor/inline";
 import { PAGE_SCRIPT, templatesFor } from "@/lib/playgroundTemplates";
 import { buildPage, pageFor, PREVIEW_MESSAGE } from "@/lib/webPreview";
 import { hasShare, readShare, shareUrl } from "@/lib/shareLink";
+import {
+  clearRuns,
+  recordRun,
+  runsSnapshot,
+  serverRunsSnapshot,
+  subscribeRuns,
+  type RunRecord,
+} from "@/lib/runHistory";
 import {
   langForName,
   loadProject,
@@ -179,7 +187,9 @@ export function PracticeWorkspace({
 
   const mounted = useMounted();
   const [currentLang, setCurrentLang] = useState<LanguageKey>("javascript");
-  const [activeTab, setActiveTab] = useState<"console" | "tests" | "problems" | "preview">("console");
+  const [activeTab, setActiveTab] = useState<"console" | "tests" | "problems" | "preview" | "history">("console");
+  const runs = useSyncExternalStore(subscribeRuns, runsSnapshot, serverRunsSnapshot);
+  const recordedRunRef = useRef(0);
   const [previewDoc, setPreviewDoc] = useState<string | null>(null);
   const [previewRun, setPreviewRun] = useState(0);
   const pageFrameRef = useRef<HTMLIFrameElement | null>(null);
@@ -486,7 +496,29 @@ export function PracticeWorkspace({
     if (consolePhase !== "ran") return;
     const lang = currentLangRef.current;
     if (lang === "javascript" || lang === "python") editorRef.current?.showInline(groupByLine(consoleLines));
-  }, [consolePhase, consoleLines]);
+    const p = projectRef.current;
+    const file = p?.files.find((f) => f.id === p.active);
+    if (!file || !LANGUAGES[file.lang].runnable || recordedRunRef.current === runStartRef.current) return;
+    recordedRunRef.current = runStartRef.current;
+    const first = consoleLines.find((l) => l.kind !== "table" && l.kind !== "system");
+    recordRun({
+      at: Date.now(),
+      file: file.name,
+      lang: file.lang,
+      code: file.code,
+      ms: runMs,
+      ok: !consoleLines.some((l) => l.kind === "error"),
+      summary: first && first.kind !== "table" ? first.text.split("\n")[0].slice(0, 80) : "no output",
+    });
+  }, [consolePhase, consoleLines, runMs]);
+
+  function reopenRun(run: RunRecord) {
+    const p = projectRef.current;
+    if (!p) return;
+    const base = `${run.file.replace(/\.[^.]+$/, "")}-earlier`;
+    const file = makeFile(p.files, run.lang, run.code, base);
+    activate({ ...p, files: [...p.files, file] }, file);
+  }
 
   useEffect(() => () => clearTimeout(liveTimerRef.current), []);
 
@@ -1017,6 +1049,22 @@ export function PracticeWorkspace({
                     {problems.length}
                   </span>
                 </button>
+                {playground && (
+                  <button
+                    className={`tab${activeTab === "history" ? " is-active" : ""}`}
+                    id="tab-history"
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === "history"}
+                    aria-controls="view-history"
+                    onClick={() => setActiveTab("history")}
+                  >
+                    History{" "}
+                    <span className="tab__count" id="history-count">
+                      {runs.length}
+                    </span>
+                  </button>
+                )}
                 {playground && hasPage && (
                   <button
                     className={`tab${activeTab === "preview" ? " is-active" : ""}`}
@@ -1154,6 +1202,41 @@ export function PracticeWorkspace({
                     <p className="panel__empty">
                       Run an HTML file, or a stylesheet or script it links, to see the page here.
                     </p>
+                  )}
+                </div>
+              )}
+              {playground && (
+                <div
+                  className={`panel__view${activeTab === "history" ? " is-active" : ""}`}
+                  id="view-history"
+                  role="tabpanel"
+                >
+                  {runs.length === 0 ? (
+                    <p className="panel__empty">Every run is kept here: what ran, how long it took, and its code.</p>
+                  ) : (
+                    <>
+                      <ol className="runs">
+                        {runs.map((run) => (
+                          <li key={run.at} className="run" data-ok={run.ok}>
+                            <span className="run__mark" aria-label={run.ok ? "ran" : "error"}>
+                              {run.ok ? "✓" : "✕"}
+                            </span>
+                            <span className="run__file">{run.file}</span>
+                            <span className="run__summary">{run.summary}</span>
+                            <span className="run__meta">
+                              {new Date(run.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                              {run.ms !== null ? ` · ${run.ms} ms` : ""}
+                            </span>
+                            <button type="button" className="run__open" onClick={() => reopenRun(run)}>
+                              Open this code
+                            </button>
+                          </li>
+                        ))}
+                      </ol>
+                      <button type="button" className="btn btn--ghost" onClick={clearRuns}>
+                        Clear history
+                      </button>
+                    </>
                   )}
                 </div>
               )}
