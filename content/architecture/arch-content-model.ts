@@ -23,20 +23,20 @@ export const archContentModel: Chapter = {
 <path class="ln" d="M586 130 H646" marker-end="url(#arrow)" />
 </g>
 <text class="lbl" x="94" y="126" text-anchor="middle">Topic</text>
-<text class="sm" x="94" y="148" text-anchor="middle">20 of them</text>
+<text class="sm" x="94" y="148" text-anchor="middle">21 of them</text>
 <text class="lbl" x="300" y="126" text-anchor="middle">Level</text>
 <text class="sm" x="300" y="148" text-anchor="middle">3 per topic</text>
 <text class="lbl" x="511" y="126" text-anchor="middle">Chapter</text>
-<text class="sm" x="511" y="148" text-anchor="middle">112 written</text>
+<text class="sm" x="511" y="148" text-anchor="middle">217 written</text>
 <text class="lbl" x="732" y="126" text-anchor="middle">Exercise</text>
-<text class="sm" x="732" y="148" text-anchor="middle">299 with tests</text>
+<text class="sm" x="732" y="148" text-anchor="middle">538 with tests</text>
 <text class="sm" x="194" y="114" text-anchor="middle">1..3</text>
 <text class="sm" x="400" y="114" text-anchor="middle">syllabus</text>
 <text class="sm" x="616" y="114" text-anchor="middle">practice[]</text>
 <text class="sm" x="94" y="196" text-anchor="middle">/css</text>
 <text class="sm" x="300" y="196" text-anchor="middle">/level/css</text>
 <text class="sm" x="511" y="196" text-anchor="middle">/css/css-box-model</text>
-<text class="sm" x="732" y="196" text-anchor="middle">/practice?id=</text>
+<text class="sm" x="732" y="196" text-anchor="middle">/problems/</text>
 <text class="sm" x="24" y="234">Every arrow above is also a URL. The model is the routing.</text>
 </svg>
 <figcaption>
@@ -61,7 +61,7 @@ export const archContentModel: Chapter = {
   A chapter carries <code>ready: boolean</code>. That single field is the difference between a
   written chapter and an outline, and it decides four things at once: whether the chapter gets a
   route, whether it appears in the search index, whether it goes in the sitemap, and how it renders
-  in the syllabus. It is why the site can show 511 chapters while honestly claiming 112.
+  in the syllabus. It is why the site can show 575 chapters while honestly claiming 217.
 </p>
 
 <h3>One interface in the middle</h3>

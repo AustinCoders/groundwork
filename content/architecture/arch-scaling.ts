@@ -34,7 +34,7 @@ export const archScaling: Chapter = {
   <td>An error tracker; the reporting component is already the seam</td>
 </tr>
 <tr>
-  <td>Writing the 399 outlined chapters</td>
+  <td>Writing the 358 outlined chapters</td>
   <td>Build time and deploy size, linearly. Nothing sharp.</td>
   <td>Nothing urgent &mdash; 12.5 seconds has a lot of room above it</td>
 </tr>

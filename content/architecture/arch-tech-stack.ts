@@ -51,9 +51,9 @@ export const archTechStack: Chapter = {
 <tbody>
 <tr><td><b>ESLint</b> + <code>eslint-config-next</code></td><td>The usual, plus Next-specific mistakes</td></tr>
 <tr><td><b>Prettier</b></td><td>Formatting, with the hand-authored data files ignored on purpose</td></tr>
-<tr><td><b>cspell</b></td><td>Spelling across 354 files, including all the prose</td></tr>
-<tr><td><b>Vitest</b></td><td>15 tests, and they check the <em>content</em> rather than the code</td></tr>
-<tr><td><b>Playwright</b> + <b>axe</b></td><td>30 end-to-end tests, including accessibility on 14 pages</td></tr>
+<tr><td><b>cspell</b></td><td>Spelling across every file, including all the prose</td></tr>
+<tr><td><b>Vitest</b></td><td>The suite checks the <em>content</em> rather than the code</td></tr>
+<tr><td><b>Playwright</b> + <b>axe</b></td><td>End-to-end tests against a production build, with accessibility checked on a page of each kind</td></tr>
 <tr><td><b>Lighthouse CI</b></td><td>Performance budgets set just under what the site measures</td></tr>
 <tr><td><b>husky</b> + <b>lint-staged</b></td><td>Runs the fast half of that on every commit</td></tr>
 </tbody>

@@ -33,14 +33,14 @@ export const archOverview: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Measured today</th><th></th></tr></thead>
 <tbody>
-<tr><td>Prerendered pages</td><td>559</td></tr>
+<tr><td>Prerendered pages</td><td>1,187</td></tr>
 <tr><td>Server functions</td><td>4, all under <code>/api/</code></td></tr>
 <tr><td>Databases</td><td>0</td></tr>
-<tr><td>Topics</td><td>20 — 4 written, 15 outlined, 1 standalone</td></tr>
-<tr><td>Written chapters</td><td>112, plus 399 outlines</td></tr>
-<tr><td>Exercises with tests</td><td>299</td></tr>
+<tr><td>Topics</td><td>21 — 5 written, 14 outlined, 2 standalone</td></tr>
+<tr><td>Written chapters</td><td>217, plus 358 outlines</td></tr>
+<tr><td>Exercises with tests</td><td>538</td></tr>
 <tr><td>Interview questions</td><td>405 across 27 rounds</td></tr>
-<tr><td>Build time</td><td>about 12.5 seconds</td></tr>
+<tr><td>Build time</td><td>about twenty seconds</td></tr>
 </tbody>
 </table></div>
 
@@ -61,7 +61,7 @@ export const archOverview: Chapter = {
 <text class="lbl" x="46" y="70">Browser &middot; HTML, one JS bundle, localStorage</text>
 <text class="sm" x="46" y="158">VERCEL EDGE</text>
 <text class="lbl" x="46" y="190">CDN cache + firewall</text>
-<text class="sm" x="560" y="183" text-anchor="middle">559 static pages</text>
+<text class="sm" x="560" y="183" text-anchor="middle">1,187 static pages</text>
 <text class="sm" x="761" y="183" text-anchor="middle">4 API functions</text>
 <text class="sm" x="46" y="290">BUILT AHEAD OF TIME</text>
 <text class="lbl" x="46" y="316">TypeScript content files &rarr; HTML, search indexes, sitemap</text>

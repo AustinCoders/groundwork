@@ -20,11 +20,11 @@ export const archTesting: Chapter = {
 <tr><td>1</td><td>Typecheck</td><td>Everything the compiler can see, including malformed content</td></tr>
 <tr><td>2</td><td>Lint</td><td>The usual, plus Next-specific mistakes</td></tr>
 <tr><td>3</td><td>Formatting</td><td>Diff noise, before it lands</td></tr>
-<tr><td>4</td><td>Spelling</td><td>354 files, prose included</td></tr>
-<tr><td>5</td><td>Content integrity</td><td>15 tests over the data &mdash; see below</td></tr>
-<tr><td>6</td><td>Build</td><td>Anything that only appears when 559 pages render</td></tr>
-<tr><td>7</td><td>End-to-end</td><td>30 Playwright tests against a production build</td></tr>
-<tr><td>8</td><td>Accessibility</td><td>axe over 14 pages, inside the same run</td></tr>
+<tr><td>4</td><td>Spelling</td><td>Every file, prose included</td></tr>
+<tr><td>5</td><td>Content integrity</td><td>Vitest, over the data rather than the code &mdash; see below</td></tr>
+<tr><td>6</td><td>Build</td><td>Anything that only appears when every page renders</td></tr>
+<tr><td>7</td><td>End-to-end</td><td>Playwright against a production build</td></tr>
+<tr><td>8</td><td>Accessibility</td><td>axe over a page of each kind, inside the same run</td></tr>
 <tr><td>9</td><td>Lighthouse budgets</td><td>Performance regressions, with budgets set just under today's numbers</td></tr>
 </tbody>
 </table></div>

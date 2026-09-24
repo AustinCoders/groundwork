@@ -80,9 +80,10 @@ export const archPlayground: Chapter = {
 <div class="bx is-prim">
 <span class="ttl">The cost that is paid instead</span>
 <p>
-  18 MB of WebAssembly in the deploy, and a playground page that downloads roughly 2.1 MB of
-  JavaScript when the editor opens. Both are real, and both are paid by people who chose to open the
-  playground rather than by every reader.
+  A playground page that downloads roughly 2.1 MB of JavaScript when the editor opens, and another
+  16.5 MB from a CDN the first time somebody picks Python or SQL. Both are real, and both are paid by
+  people who chose to open the playground rather than by every reader — the runtimes used to sit in
+  the deployment instead, where everyone paid for them and nobody used them.
 </p>
 </div>`,
 };

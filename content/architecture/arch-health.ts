@@ -21,11 +21,11 @@ export const archHealth: Chapter = {
 <tr><td>TypeScript</td><td><span class="chip tone-yes">0 errors</span></td></tr>
 <tr><td>ESLint</td><td><span class="chip tone-yes">0 problems</span></td></tr>
 <tr><td>Prettier</td><td><span class="chip tone-yes">clean</span></td></tr>
-<tr><td>cspell, 354 files</td><td><span class="chip tone-yes">0 issues</span></td></tr>
-<tr><td>Content integrity, 15 tests</td><td><span class="chip tone-yes">pass</span></td></tr>
-<tr><td>Playwright, 30 tests</td><td><span class="chip tone-yes">pass</span></td></tr>
+<tr><td>cspell, every file including prose</td><td><span class="chip tone-yes">0 issues</span></td></tr>
+<tr><td>Content integrity, Vitest</td><td><span class="chip tone-yes">pass</span></td></tr>
+<tr><td>Playwright, smoke and accessibility</td><td><span class="chip tone-yes">pass</span></td></tr>
 <tr><td><code>npm audit</code>, production deps</td><td><span class="chip tone-yes">0 vulnerabilities</span></td></tr>
-<tr><td>Browser console on 8 production routes</td><td><span class="chip tone-yes">0 errors, 0 failed requests</span></td></tr>
+<tr><td>Browser console on every smoke route</td><td><span class="chip tone-yes">0 errors, 0 failed requests</span></td></tr>
 </tbody>
 </table></div>
 

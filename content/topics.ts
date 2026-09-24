@@ -894,7 +894,7 @@ export const topics: TopicsData = {
       status: "ready",
       notes: "react.html",
       blurb:
-        "What actually triggers a re-render, hooks and their rules, state that lives in the right place, and effects you can reason about. Beginner through advanced, laid out the same way the JavaScript curriculum is — the shelf is up, each section opens the moment it's written.",
+        "What actually triggers a re-render, hooks and their rules, state that lives in the right place, and effects you can reason about. Beginner through advanced, laid out the same way the JavaScript curriculum is — all of it written, with an exercise in almost every chapter.",
       curriculumNotes: [
         "Hooks rules and stale closures are where most intermediate bugs actually live — they sit right after custom hooks, not off in a footnote.",
         "Server Components, Server Actions and the use() hook are 2024+ React — they only make sense once rendering strategies (SSR/SSG/streaming) already do.",

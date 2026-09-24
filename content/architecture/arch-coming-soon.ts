@@ -38,7 +38,7 @@ export const archComingSoon: Chapter = {
 </table></div>
 
 <p class="sub">
-  112 chapters written, 399 outlined. By chapter that is 22% of the plan; by topic it is 4 of 20.
+  217 chapters written, 358 outlined. By chapter that is 38% of the plan; by topic it is 7 of 21.
 </p>
 
 <h3>What "coming soon" actually means here</h3>

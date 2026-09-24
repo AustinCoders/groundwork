@@ -49,23 +49,29 @@ export const archRoadmap: Chapter = {
   navigation breaks offline while a full page load works.
 </p>
 <p>
-  The other decision is the playground. It needs 18 MB of WebAssembly, which should not be precached
-  by default; either it stays online-only or "download for offline" becomes an explicit action.
+  The other decision is the playground. Its Python and SQL runtimes are 16.5 MB and now come from a
+  CDN, which a service worker should not precache by default; either the playground stays online-only
+  or "download for offline" becomes an explicit action.
 </p>
 
-<h3>The WebAssembly, and why it moved up</h3>
+<h3>The WebAssembly, and where it went</h3>
 <p>
-  The playground's Python and SQL runtimes are 18 MB, copied into every deploy even though they load
-  only when a reader picks one of those languages. That used to be a deploy-size curiosity. The plan's
-  deployment storage then passed its limit; a weekly cleanup now keeps old deploys from piling up, but
-  each new one still carries the full 18 MB. Serving Pyodide from its own CDN removes most of it, at
-  the cost of a third-party origin in the security policy and a dependency on somebody else's uptime.
+  The playground's Python and SQL runtimes are 16.5 MB and were copied into every deploy, even though
+  they load only when a reader picks one of those languages. That used to be a deploy-size curiosity.
+  The plan's deployment storage then passed its limit; a weekly cleanup keeps old deploys from piling
+  up, but each new one still carried the full amount.
+</p>
+<p>
+  Both now come from jsDelivr at the versions pinned in <code>package.json</code>, which takes
+  <code>public/wasm/</code> from 18 MB to 1.3 MB — just the TypeScript lib files, which the editor
+  asks for one at a time while you type. The price is a third-party origin in the security policy and
+  a dependency on somebody else's uptime; setting <code>NEXT_PUBLIC_PYODIDE_BASE</code> takes it back.
 </p>
 
 <h3>Further out, and less certain</h3>
 <ul>
 <li><b>Product analytics.</b> Pageviews cannot answer the questions that would change the writing &mdash; which chapter people leave from, which exercise gets abandoned, and above all which searches return nothing, since that is a list of chapters that should exist.</li>
-<li><b>The interview book as a paid product.</b> 27 rounds and 230 questions is the most obvious thing here to charge for. It needs accounts first, then payments, then a gate.</li>
+<li><b>The interview book as a paid product.</b> 27 rounds and 405 questions is the most obvious thing here to charge for. It needs accounts first, then payments, then a gate.</li>
 </ul>
 
 <div class="bx is-ref">

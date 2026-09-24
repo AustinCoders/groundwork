@@ -3,7 +3,7 @@ import type { Chapter } from "../types";
 export const archBuild: Chapter = {
   id: "arch-build",
   num: "I2",
-  title: "How 559 pages get made",
+  title: "How 1,187 pages get made",
   short: "The build",
   levels: ["intermediate"],
   practice: [],
@@ -12,7 +12,7 @@ export const archBuild: Chapter = {
   body: `<h3>The pipeline</h3>
 
 <figure>
-<svg viewBox="0 0 900 300" class="dg" role="img" aria-label="Content TypeScript files feed lib/content.ts, which feeds the static generation step, producing 559 HTML pages, twenty search indexes, and the sitemap.">
+<svg viewBox="0 0 900 300" class="dg" role="img" aria-label="Content TypeScript files feed lib/content.ts, which feeds the static generation step, producing 1,187 HTML pages, twenty search indexes, and the sitemap.">
 <g class="rough">
 <rect x="24" y="106" width="176" height="88" rx="10" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 2" />
 <rect x="272" y="112" width="170" height="76" rx="10" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 2" />
@@ -29,7 +29,7 @@ export const archBuild: Chapter = {
 <text class="sm" x="112" y="180" text-anchor="middle">barrels per topic</text>
 <text class="lbl gr" x="357" y="144" text-anchor="middle">lib/content.ts</text>
 <text class="sm" x="357" y="166" text-anchor="middle">the only reader</text>
-<text class="lbl" x="616" y="50" text-anchor="middle">559 HTML pages</text>
+<text class="lbl" x="616" y="50" text-anchor="middle">1,187 HTML pages</text>
 <text class="sm" x="616" y="70" text-anchor="middle">generateStaticParams</text>
 <text class="lbl" x="616" y="144" text-anchor="middle">20 search indexes</text>
 <text class="sm" x="616" y="164" text-anchor="middle">one JSON per topic</text>
@@ -57,7 +57,7 @@ export const archBuild: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Output</th><th>Count</th><th>Served how</th></tr></thead>
 <tbody>
-<tr><td>Static pages</td><td>559</td><td>From the CDN, cached by path</td></tr>
+<tr><td>Static pages</td><td>1,187</td><td>From the CDN, cached by path</td></tr>
 <tr><td>Search indexes</td><td>20 JSON files</td><td>Static, fetched lazily on the first keystroke</td></tr>
 <tr><td>API routes</td><td>4</td><td>Functions, invoked per request</td></tr>
 <tr><td>Sitemap and robots</td><td>2</td><td>Static</td></tr>
@@ -74,9 +74,10 @@ export const archBuild: Chapter = {
 <div class="bx is-prim">
 <span class="ttl">Twelve seconds is the budget, not the ceiling</span>
 <p>
-  Rendering 559 pages from 3 MB of content takes about 12.5 seconds. Writing the 399 outlined
-  chapters would roughly quadruple the corpus and the build would still be well under a minute.
-  Build time is not what limits this site.
+  Rendering 1,187 pages from 3 MB of content takes about twenty seconds — and 538 of those pages
+  appeared at once when every exercise got its own. Writing the 358 outlined chapters would roughly
+  quadruple the corpus and the build would still be well under a minute. Build time is not what
+  limits this site.
 </p>
 </div>`,
 };
