@@ -20,7 +20,11 @@ export type IconName =
   | "agency"
   | "clock-1"
   | "clock-2"
-  | "clock-4";
+  | "clock-4"
+  | "bar-raiser"
+  | "towers"
+  | "startup"
+  | "custom";
 
 function Icon({ name }: { name: IconName }) {
   const common = {
@@ -120,6 +124,43 @@ function Icon({ name }: { name: IconName }) {
           <path d="M6 21h28" />
         </svg>
       );
+    case "bar-raiser":
+      // a bar held up above the rest: the Bar Raiser's line
+      return (
+        <svg {...common}>
+          <path d="M7 31h26" />
+          <path d="M11 31v-6M20 31v-6M29 31v-6" />
+          <path d="M8 12h24" strokeWidth="2.6" />
+          <path d="M20 12v8M17 17l3 3 3-3" />
+        </svg>
+      );
+    case "towers":
+      return (
+        <svg {...common}>
+          <path d="M6 34h28" />
+          <rect x="9" y="14" width="9" height="20" rx="1" />
+          <rect x="20" y="6" width="11" height="28" rx="1" />
+          <path d="M23 11h5M23 16h5M23 21h5M12 19h3M12 24h3" />
+        </svg>
+      );
+    case "startup":
+      return (
+        <svg {...common}>
+          <path d="M20 5c5 4 7 10 6 18h-12c-1-8 1-14 6-18z" />
+          <circle cx="20" cy="15" r="2.4" />
+          <path d="M14 23l-4 5h5M26 23l4 5h-5" />
+          <path d="M17.5 27v6M22.5 27v4" />
+        </svg>
+      );
+    case "custom":
+      return (
+        <svg {...common}>
+          <path d="M8 11h24M8 20h24M8 29h24" />
+          <circle cx="14" cy="11" r="2.6" fill="currentColor" />
+          <circle cx="26" cy="20" r="2.6" fill="currentColor" />
+          <circle cx="18" cy="29" r="2.6" fill="currentColor" />
+        </svg>
+      );
     case "clock-1":
     case "clock-2":
     case "clock-4": {
@@ -146,6 +187,8 @@ export interface ChoiceOption<T extends string> {
   value: T;
   name: string;
   detail?: string;
+  /** Where in the book the option comes from, set in small type under it. */
+  source?: string;
   icon?: IconName;
 }
 
@@ -183,6 +226,7 @@ export function ChoiceCards<T extends string>({
           )}
           <span className={styles.cardName}>{o.name}</span>
           {o.detail && <span className={styles.cardDetail}>{o.detail}</span>}
+          {o.source && <span className={styles.cardSource}>{o.source}</span>}
           <span className={styles.cardCheck} aria-hidden="true">
             ✓
           </span>

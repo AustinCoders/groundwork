@@ -95,11 +95,16 @@ export interface CodingItem {
 
 export type MockItem = TalkItem | CodingItem;
 
+/** A company's loop as the interview book describes it, rather than one built
+ *  from a company type. Absent means the reader is building their own. */
+export type StyleId = "amazon" | "big" | "startup" | "service";
+
 export interface LoopConfig {
   role: Role;
   seniority: Seniority;
   company: CompanyType;
   intensity: Intensity;
+  style?: StyleId | null;
 }
 
 /** One stage of a planned loop, before any questions are chosen. */

@@ -7,6 +7,7 @@ import { planLoop, STAGE_RULES } from "@/lib/mock/loops";
 import { buildSession, stagePosition, type Session, type SessionMode } from "@/lib/mock/session";
 import { competencyProfile, VERDICT_LABEL } from "@/lib/mock/scoring";
 import { RETIRE_AT, RETRY_BELOW, type HistoryEntry, type RetryEntry } from "@/lib/mock/storage";
+import { STYLES, styleOf } from "@/lib/mock/styles";
 import type {
   Competency,
   CompanyType,
@@ -49,6 +50,7 @@ function readConfig(): LoopConfig {
     intensity: INTENSITIES.some(([i]) => i === saved.intensity)
       ? (saved.intensity as Intensity)
       : DEFAULT_CONFIG.intensity,
+    style: saved.style && saved.style in STYLES ? saved.style : null,
   };
 }
 
@@ -172,7 +174,7 @@ function Record({ history }: { history: HistoryEntry[] }) {
             </span>
             <span>
               {h.mode === "loop"
-                ? `${ROLES.find(([r]) => r === h.config.role)?.[1]} · ${LEVELS.find(([l]) => l === h.config.seniority)?.[1]} · ${COMPANIES.find(([c]) => c === h.config.company)?.[1]}`
+                ? `${ROLES.find(([r]) => r === h.config.role)?.[1]} · ${LEVELS.find(([l]) => l === h.config.seniority)?.[1]} · ${styleOf(h.config.style)?.name ?? COMPANIES.find(([c]) => c === h.config.company)?.[1]}`
                 : h.mode === "retry"
                   ? "Retry round"
                   : "Single round"}{" "}
@@ -272,7 +274,8 @@ export function Lobby({
       const session = buildSession({
         id: newId(),
         mode: which,
-        config,
+        // A single round is not a company's loop, so it carries no style.
+        config: which === "loop" ? config : { ...config, style: null },
         plan: thePlan,
         banks,
         seed: newSeed(),

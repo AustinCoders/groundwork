@@ -2,6 +2,7 @@ import { MINUTES_PER_CODING, MINUTES_PER_TALK } from "@/lib/mock/loops";
 import { decideLoop, stageScore, VERDICT_LABEL, verdictFor } from "@/lib/mock/scoring";
 import { stageResults, type Session, type SessionQuestion } from "@/lib/mock/session";
 import type { StageId } from "@/lib/mock/types";
+import { styleOf } from "@/lib/mock/styles";
 
 /**
  * How the time went. The score says whether the answers were right; this says
@@ -104,7 +105,7 @@ export function debriefText(s: Session, stageTitle: (id: StageId) => string): st
 
   const what =
     s.mode === "loop"
-      ? `${ROLE[s.config.role]}, ${LEVEL[s.config.seniority]}, ${COMPANY[s.config.company]} (${s.config.intensity} loop)`
+      ? `${ROLE[s.config.role]}, ${LEVEL[s.config.seniority]}, ${styleOf(s.config.style)?.name ?? COMPANY[s.config.company]} (${s.config.intensity} loop)`
       : s.mode === "retry"
         ? "Retry round"
         : `${stageTitle(s.plan[0]?.stage)} round, ${LEVEL[s.config.seniority]}`;

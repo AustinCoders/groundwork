@@ -150,13 +150,15 @@ test("a mock interview round runs from the lobby to the debrief", async ({ page 
   await expect(page.getByText("Every question")).toBeVisible();
 });
 
-test("the loop wizard walks the four choices and follows them", async ({ page }) => {
+test("the loop wizard walks the choices and follows them", async ({ page }) => {
   await page.goto("/mock");
   const card = (group: string, name: RegExp) => page.getByRole("group", { name: group }).getByRole("button", { name });
   const step = (name: RegExp) => page.getByRole("list", { name: "Steps" }).getByRole("button", { name });
   const map = page.getByRole("list", { name: "The loop, in order" });
 
   // a first visit starts at the first question and moves on as each is answered
+  await expect(page.getByRole("heading", { name: "Whose loop?" })).toBeVisible();
+  await card("Loop style", /^Build my own/).click();
   await expect(page.getByRole("heading", { name: "What's the role?" })).toBeVisible();
   await card("Role", /^Backend/).click();
   await card("Experience", /^10\+ years/).click();
@@ -179,6 +181,31 @@ test("the loop wizard walks the four choices and follows them", async ({ page })
   await expect(map.getByText("React & the frontend")).toBeVisible();
   await expect(map.getByText("System design")).toHaveCount(0);
   await expect(step(/^Role/)).toContainText("Frontend");
+});
+
+test("a company-style loop takes over the company and shapes the rounds", async ({ page }) => {
+  await page.goto("/mock");
+  const card = (group: string, name: RegExp) => page.getByRole("group", { name: group }).getByRole("button", { name });
+  const steps = page.getByRole("list", { name: "Steps" });
+  const map = page.getByRole("list", { name: "The loop, in order" });
+
+  await card("Loop style", /^Amazon-style/).click();
+  // the style decides the kind of company, so there is no company step
+  await expect(steps.getByRole("button", { name: /^Company/ })).toHaveCount(0);
+  await card("Role", /^Frontend/).click();
+  await card("Experience", /^5–7 years/).click();
+  await card("Length", /^Standard/).click();
+
+  await expect(page.getByRole("heading", { name: "Your loop" })).toBeVisible();
+  await expect(steps.getByRole("button", { name: /^Style/ })).toContainText("Amazon-style");
+  await expect(page.getByText(/Bar Raiser/).first()).toBeVisible();
+  await expect(map.getByText("veto", { exact: true })).toBeVisible();
+
+  // going back to your own loop brings the company step back
+  await steps.getByRole("button", { name: /^Style/ }).click();
+  await card("Loop style", /^Build my own/).click();
+  await expect(steps.getByRole("button", { name: /^Company/ })).toBeVisible();
+  await expect(map.getByText("veto", { exact: true })).toHaveCount(0);
 });
 
 test("the step-through demos advance and finish", async ({ page }) => {

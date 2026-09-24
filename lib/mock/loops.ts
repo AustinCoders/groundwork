@@ -12,6 +12,7 @@ import type {
   Competency,
   TalkItem,
 } from "@/lib/mock/types";
+import { styleOf } from "@/lib/mock/styles";
 
 /**
  * How a loop is put together. The rules follow the interview book: which
@@ -177,24 +178,31 @@ export const MINUTES_PER_CODING = { function: 15, component: 20 } as const;
  */
 export function planLoop(config: LoopConfig, hotFor: Record<StageId, CompanyType[]>): PlannedStage[] {
   const planned: PlannedStage[] = [];
+  // A company style fixes the company type and then bends the plan; role and
+  // level rules still hold, so a backend loop never gets machine coding.
+  const style = styleOf(config.style);
+  if (style) config = { ...config, company: style.company };
 
   for (const stage of STAGE_ORDER) {
     const rule = STAGE_RULES[stage];
-    if (WEIGHT_RANK[rule.weight] > INTENSITY_RANK[config.intensity]) continue;
+    if (style?.exclude?.includes(stage)) continue;
     if (rule.roles && !rule.roles.includes(config.role)) continue;
     if (rule.seniority && !rule.seniority.includes(config.seniority)) continue;
 
-    const forced = rule.everywhere || (rule.alwaysFor?.includes(config.seniority) ?? false);
+    const included = style?.include?.includes(stage) ?? false;
+    if (!included && WEIGHT_RANK[rule.weight] > INTENSITY_RANK[config.intensity]) continue;
+    const forced = included || rule.everywhere || (rule.alwaysFor?.includes(config.seniority) ?? false);
     if (!forced && !(hotFor[stage] || []).includes(config.company)) continue;
 
     const coding = rule.kind === "coding";
-    const questions = coding
+    let questions = coding
       ? stage === "machine"
         ? config.intensity === "full"
           ? 2
           : 1
         : CODING_PER_STAGE[config.intensity]
       : TALK_PER_STAGE[config.intensity];
+    questions += style?.boost?.[stage] ?? 0;
     const perQuestion = coding
       ? MINUTES_PER_CODING[stage === "machine" ? "component" : "function"]
       : MINUTES_PER_TALK[config.seniority];
@@ -203,8 +211,8 @@ export function planLoop(config: LoopConfig, hotFor: Record<StageId, CompanyType
       stage,
       questions,
       minutes: questions * perQuestion,
-      core: rule.core(config),
-      reason: rule.reason(config),
+      core: rule.core(config) || (style?.core?.includes(stage) ?? false),
+      reason: style?.reasons?.[stage] ?? rule.reason(config),
     });
   }
 
@@ -259,11 +267,15 @@ export function shuffle<T>(items: readonly T[], random: () => number): T[] {
 const SENIORITY_ORDER: Seniority[] = ["junior", "mid", "senior"];
 
 function talkFit(item: TalkItem, config: LoopConfig): number {
+  const style = styleOf(config.style);
+  const company = style?.company ?? config.company;
   if (item.onlyFor?.seniority && !item.onlyFor.seniority.includes(config.seniority)) return -1;
-  if (item.onlyFor?.company && !item.onlyFor.company.includes(config.company)) return -1;
-  if (item.level === "any") return 2;
+  if (item.onlyFor?.company && !item.onlyFor.company.includes(company)) return -1;
+  // A style's own rounds of the book come first, ahead of level fit.
+  const preferred = style?.prefer?.[item.stage]?.includes(item.origin) ? 4 : 0;
+  if (item.level === "any") return 2 + preferred;
   const gap = Math.abs(SENIORITY_ORDER.indexOf(item.level) - SENIORITY_ORDER.indexOf(config.seniority));
-  return gap === 0 ? 3 : gap === 1 ? 1 : 0;
+  return (gap === 0 ? 3 : gap === 1 ? 1 : 0) + preferred;
 }
 
 const CODING_LEVELS: Record<Seniority, CodingItem["level"][]> = {
@@ -273,7 +285,9 @@ const CODING_LEVELS: Record<Seniority, CodingItem["level"][]> = {
 };
 
 function codingFit(item: CodingItem, config: LoopConfig): number {
-  const levels = CODING_LEVELS[config.seniority];
+  const levels = styleOf(config.style)?.hardCoding
+    ? (["advanced", "intermediate"] as CodingItem["level"][])
+    : CODING_LEVELS[config.seniority];
   const levelScore = item.level === levels[0] ? 3 : item.level === levels[1] ? 2 : 0;
   if (item.stage === "machine") return levelScore;
   // Data structures for anyone owning a backend; the language itself for a

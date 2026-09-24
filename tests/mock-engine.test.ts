@@ -10,6 +10,7 @@ import {
   verdictFor,
   type StageResult,
 } from "@/lib/mock/scoring";
+import { STYLE_ORDER, STYLES } from "@/lib/mock/styles";
 import type { CompanyType, Intensity, LoopConfig, Role, Seniority, StageId, TalkItem } from "@/lib/mock/types";
 
 const hot = stageHotFor();
@@ -261,5 +262,66 @@ describe("the hiring committee", () => {
     const profile = competencyProfile([r("coding", 1, true), r("javascript", 0.5)]);
     expect(profile).toEqual({ coding: 1, javascript: 0.5 });
     expect(profile.design).toBeUndefined();
+  });
+});
+
+describe("company-style loops", () => {
+  const base = { role: "fullstack", seniority: "mid", company: "agency", intensity: "standard" } as const;
+  const stagesOf = (config: LoopConfig) => planLoop(config, hot).map((p) => p.stage);
+
+  it("follows every style's rounds, for every role and level", () => {
+    for (const style of STYLE_ORDER) {
+      for (const role of ROLES)
+        for (const seniority of LEVELS)
+          for (const intensity of INTENSITIES) {
+            const config: LoopConfig = { role, seniority, company: "agency", intensity, style };
+            const plan = planLoop(config, hot);
+            const stages = plan.map((p) => p.stage);
+            const s = STYLES[style];
+            for (const x of s.exclude ?? []) expect(stages, `${style} runs ${x}`).not.toContain(x);
+            for (const x of s.include ?? []) {
+              const rule = STAGE_RULES[x];
+              const allowed =
+                (!rule.roles || rule.roles.includes(role)) && (!rule.seniority || rule.seniority.includes(seniority));
+              if (allowed) expect(stages, `${style} ${role} ${seniority} drops ${x}`).toContain(x);
+            }
+            for (const p of plan) if (s.core?.includes(p.stage)) expect(p.core).toBe(true);
+            expect(plan.some((p) => STAGE_RULES[p.stage].kind === "coding")).toBe(true);
+          }
+    }
+  });
+
+  it("uses the style's kind of company, not the one saved before", () => {
+    expect(stagesOf({ ...base, style: "service" })).toEqual(
+      stagesOf({ ...base, company: "service", style: "service" })
+    );
+  });
+
+  it("gives Amazon's behaviour round more questions, drawn from the Leadership Principles round", () => {
+    const plain = planLoop({ ...base, company: "product" }, hot).find((p) => p.stage === "behaviour")!;
+    const amazon = planLoop({ ...base, style: "amazon" }, hot).find((p) => p.stage === "behaviour")!;
+    expect(amazon.questions).toBe(plain.questions + 2);
+    expect(amazon.reason).toMatch(/Bar Raiser/);
+
+    const picked = pickItems(stageBank("behaviour"), { ...base, style: "amazon" }, 4, seededRandom(3));
+    expect(picked.every((i) => i.kind === "talk" && i.origin === "r11lp")).toBe(true);
+  });
+
+  it("puts machine coding in a startup loop and leaves it out of a backend one", () => {
+    expect(stagesOf({ ...base, role: "frontend", style: "startup" })).toContain("machine");
+    expect(stagesOf({ ...base, role: "backend", style: "startup" })).not.toContain("machine");
+  });
+
+  it("treats a lean-no in the Bar Raiser's round as a no", () => {
+    const results: StageResult[] = [
+      { stage: "coding", core: true, competency: "coding", scores: [0.9] },
+      { stage: "behaviour", core: true, competency: "behaviour", scores: [0.55] },
+    ];
+    const title = (s: StageId) => s;
+    const config: LoopConfig = { ...base, company: "product" };
+    expect(decideLoop(results, config, title).verdict).not.toBe("no-hire");
+    const amazon = decideLoop(results, { ...config, style: "amazon" }, title);
+    expect(amazon.verdict).toBe("no-hire");
+    expect(amazon.reasons.join(" ")).toMatch(/veto/);
   });
 });

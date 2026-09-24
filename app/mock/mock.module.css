@@ -42,6 +42,21 @@
   background: var(--dg-box-red);
 }
 
+.coreBadge[data-veto="true"] {
+  border-style: double;
+  border-width: 3px;
+  font-weight: 700;
+}
+
+.styleNote {
+  margin: 0 0 10px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--ink);
+  background: var(--hl-yellow);
+  color: var(--ink);
+  border-radius: 0 8px 8px 0;
+}
+
 .kindTag {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -115,7 +130,8 @@
   margin: 6px 0 26px;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   gap: 6px;
 }
 
@@ -332,6 +348,19 @@
 }
 
 .card[aria-pressed="true"] .cardDetail {
+  color: var(--ink-soft);
+}
+
+.cardSource {
+  margin-top: auto;
+  padding-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--pencil);
+}
+
+.card[aria-pressed="true"] .cardSource {
   color: var(--ink-soft);
 }
 
@@ -1588,7 +1617,7 @@
 }
 
 @media (max-width: 640px) {
-  /* too narrow for five labels: the dots say where you are, the question
+  /* too narrow for five or six labels: the dots say where you are, the question
      below says what it is */
   .stepperText {
     display: none;

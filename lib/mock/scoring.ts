@@ -1,4 +1,5 @@
 import type { Competency, LoopConfig, Seniority, StageId, TalkItem } from "@/lib/mock/types";
+import { styleOf } from "@/lib/mock/styles";
 
 /**
  * Scoring is a self-assessment, so it is only as honest as the questions it
@@ -148,8 +149,18 @@ export function decideLoop(
   const sunk = scored.filter((r) => r.core && verdictFor(stageScore(r)) === "no-hire");
   const leanNos = scored.filter((r) => verdictFor(stageScore(r)) === "lean-no");
 
+  // Amazon's Bar Raiser: in a round someone can veto, a lean-no is already a no.
+  const vetoed = scored.filter(
+    (r) => styleOf(config.style)?.veto?.includes(r.stage) && verdictFor(stageScore(r)) === "lean-no"
+  );
+
   let verdict: Verdict;
-  if (sunk.length) {
+  if (vetoed.length && !sunk.length) {
+    verdict = "no-hire";
+    reasons.push(
+      `A lean-no in ${vetoed.map((r) => stageTitle(r.stage)).join(" and ")} — the round a Bar Raiser owns — is a veto, not a vote to be outweighed.`
+    );
+  } else if (sunk.length) {
     verdict = "no-hire";
     reasons.push(
       `A no-hire in ${sunk.map((r) => stageTitle(r.stage)).join(" and ")} — a core round — is rarely overruled in the debrief, whatever the other rounds say.`
