@@ -29,8 +29,11 @@ npm install     # Node 22.11+ (see .nvmrc)
 npm run dev     # http://localhost:3000
 ```
 
-`predev` copies the Pyodide, sql.js and TypeScript-lib runtimes into `public/wasm/` — the playground
-needs them and they are deliberately not committed.
+`predev` copies the TypeScript lib files into `public/wasm/` — the playground needs them and they
+are deliberately not committed. Pyodide and sql.js are fetched from jsDelivr at the versions pinned
+in `package.json`, which keeps 16.5 MB out of every deployment; `node scripts/copy-wasm-assets.mjs
+--all` writes them into `public/wasm/` instead, for self-hosting with `NEXT_PUBLIC_PYODIDE_BASE` and
+`NEXT_PUBLIC_SQL_JS_BASE`.
 
 ## Checks
 

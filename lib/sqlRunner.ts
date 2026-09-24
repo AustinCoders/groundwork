@@ -1,5 +1,6 @@
 import type { Database, SqlJsStatic } from "sql.js";
 import type { RunnerDonePayload, RunnerOutputEntry } from "@/lib/runner";
+import { SQL_JS_BASE } from "@/lib/wasmAssets";
 
 export interface SqlRunOptions {
   code: string;
@@ -14,7 +15,7 @@ function loadSqlJs(): Promise<SqlJsStatic> {
     sqlJsPromise = import("sql.js").then((mod) => {
       const initSqlJs = (mod as unknown as { default?: typeof mod }).default ?? mod;
       return (initSqlJs as unknown as (config: { locateFile: (file: string) => string }) => Promise<SqlJsStatic>)({
-        locateFile: (file: string) => `/wasm/sql-js/${file}`,
+        locateFile: (file: string) => `${SQL_JS_BASE}${file}`,
       });
     });
   }

@@ -1,3 +1,5 @@
+import { PYODIDE_BASE } from "@/lib/wasmAssets";
+
 interface PyodideInterface {
   runPythonAsync: (code: string) => Promise<unknown>;
   setStdout: (opts: { batched: (text: string) => void }) => void;
@@ -9,9 +11,10 @@ let pyodidePromise: Promise<PyodideInterface> | null = null;
 async function getPyodide(): Promise<PyodideInterface> {
   if (!pyodidePromise) {
     pyodidePromise = (async () => {
-      // @ts-expect-error -- runtime-only asset served from public/, no module/types to resolve
-      const mod = await import(/* webpackIgnore: true */ "/wasm/pyodide/pyodide.mjs");
-      const pyodide: PyodideInterface = await mod.loadPyodide({ indexURL: "/wasm/pyodide/" });
+      // Fetched at runtime from the CDN, so there is no module for the bundler
+      // to resolve and no types to import.
+      const mod = await import(/* webpackIgnore: true */ `${PYODIDE_BASE}pyodide.mjs`);
+      const pyodide: PyodideInterface = await mod.loadPyodide({ indexURL: PYODIDE_BASE });
       pyodide.setStdout({ batched: (text) => postMessage({ type: "console", payload: { kind: "log", text } }) });
       pyodide.setStderr({ batched: (text) => postMessage({ type: "console", payload: { kind: "error", text } }) });
       return pyodide;

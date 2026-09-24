@@ -1,14 +1,21 @@
 import type { NextConfig } from "next";
 import { CANONICAL_ORIGIN, LEGACY_HOSTS } from "./lib/site";
+import { wasmOrigins } from "./lib/wasmAssets";
+
+// Pyodide and sql.js are fetched from a CDN rather than shipped in the
+// deployment, so their origin has to be allowed for both the module scripts and
+// the .wasm and data files those scripts then fetch. Self-hosting them again
+// (NEXT_PUBLIC_PYODIDE_BASE) narrows this back to 'self' on its own.
+const runtimeOrigins = wasmOrigins().join(" ");
 
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com ${runtimeOrigins}`.trim(),
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob:",
   "media-src 'self' blob:",
-  "connect-src 'self'",
+  `connect-src 'self' ${runtimeOrigins}`.trim(),
   "frame-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
