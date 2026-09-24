@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { CANONICAL_ORIGIN, LEGACY_HOSTS } from "./lib/site";
 
 const csp = [
   "default-src 'self'",
@@ -26,6 +27,15 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
+  },
+
+  async redirects() {
+    return LEGACY_HOSTS.map((host) => ({
+      source: "/:path*",
+      has: [{ type: "host" as const, value: host }],
+      destination: `${CANONICAL_ORIGIN}/:path*`,
+      permanent: true,
+    }));
   },
 };
 
