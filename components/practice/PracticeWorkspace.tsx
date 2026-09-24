@@ -11,6 +11,7 @@ import { Dropdown } from "@/components/ui/select";
 import { isLanguage, LANGUAGES, type LanguageKey } from "@/lib/codeLanguages";
 import { gradeResults, isResultLine, parseResultLine, withHarness } from "@/lib/polyglot/grade";
 import { starterFor } from "@/lib/polyglot/starters";
+import type { EditorProblem } from "@/lib/editor/tools";
 import { templatesFor } from "@/lib/playgroundTemplates";
 import type { Json, Polyglot } from "@/lib/polyglot/types";
 import { useClientValue, useMounted } from "@/lib/hooks";
@@ -164,7 +165,9 @@ export function PracticeWorkspace({
 
   const mounted = useMounted();
   const [currentLang, setCurrentLang] = useState<LanguageKey>("javascript");
-  const [activeTab, setActiveTab] = useState<"console" | "tests">("console");
+  const [activeTab, setActiveTab] = useState<"console" | "tests" | "problems">("console");
+  // What ESLint or the type checker found in the code, for the Problems tab.
+  const [problems, setProblems] = useState<EditorProblem[]>([]);
   const [consoleLines, setConsoleLines] = useState<RunnerOutputEntry[]>([]);
   const [consolePhase, setConsolePhase] = useState<"idle" | "running" | "compiling" | "ran" | "cleared">("idle");
   const [runMs, setRunMs] = useState<number | null>(null);
@@ -684,6 +687,8 @@ export function PracticeWorkspace({
                 editor.flashSaved();
               }}
               onLanguageChange={handleLanguageChange}
+              onProblems={setProblems}
+              onShowProblems={() => setActiveTab("problems")}
               toolbarStart={
                 <>
                   <button
@@ -743,6 +748,23 @@ export function PracticeWorkspace({
                   Console{" "}
                   <span className="tab__count" id="console-count">
                     {consoleLines.length}
+                  </span>
+                </button>
+                <button
+                  className={`tab${activeTab === "problems" ? " is-active" : ""}`}
+                  id="tab-problems"
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === "problems"}
+                  aria-controls="view-problems"
+                  onClick={() => setActiveTab("problems")}
+                >
+                  Problems{" "}
+                  <span
+                    className={`tab__count${problems.some((p) => p.severity === "error") ? " is-fail" : ""}`}
+                    id="problems-count"
+                  >
+                    {problems.length}
                   </span>
                 </button>
                 {!playground && (
@@ -848,6 +870,39 @@ export function PracticeWorkspace({
                       </div>
                     )
                   )
+                )}
+              </div>
+              <div
+                className={`panel__view${activeTab === "problems" ? " is-active" : ""}`}
+                id="view-problems"
+                role="tabpanel"
+              >
+                {problems.length === 0 ? (
+                  <p className="panel__empty">
+                    No problems. ESLint checks JavaScript and the type checker checks TypeScript as you type.
+                  </p>
+                ) : (
+                  <ul className="problems">
+                    {problems.map((p, i) => (
+                      <li key={i}>
+                        <button
+                          type="button"
+                          className="problem"
+                          data-severity={p.severity}
+                          onClick={() => editorRef.current?.reveal(p.from, p.to)}
+                        >
+                          <span className="problem__mark" aria-label={p.severity}>
+                            {p.severity === "error" ? "✕" : "⚠"}
+                          </span>
+                          <span className="problem__msg">{p.message}</span>
+                          <span className="problem__src">{p.source}</span>
+                          <span className="problem__pos">
+                            Ln {p.line}, Col {p.column}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </div>
               <div

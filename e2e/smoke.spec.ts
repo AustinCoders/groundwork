@@ -347,3 +347,42 @@ test("the playground runs examples to the end and switches language from its chi
   await expect(page.locator(".cm-content")).toContainText("CREATE TABLE users");
   expect(problems).toEqual([]);
 });
+
+test("the editor lints as you type, formats on save and has a command palette", async ({ page }) => {
+  const problems = collectProblems(page);
+  await page.goto("/practice?id=free");
+  const editor = page.locator(".cm-content");
+  await expect(editor.locator(".tok-key").first()).toBeVisible();
+
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.insertText("var total = 0\nif (total == '1') console.log(totl)\n");
+
+  // ESLint, in a worker, underlines and lists what it finds
+  await expect(page.locator(".ed__problems")).toHaveText("✕ 1 ⚠ 2", { timeout: 15_000 });
+  await page.locator(".ed__problems").click();
+  await expect(page.locator("#view-problems")).toContainText("eslint(no-undef)");
+
+  // ⌘/Ctrl+S runs Prettier before saving
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+s");
+  await expect(editor).toContainText('if (total == "1") console.log(totl);', { timeout: 15_000 });
+
+  // every action is in the palette
+  await page.keyboard.press("ControlOrMeta+Shift+p");
+  await page.getByRole("combobox", { name: "Command" }).fill("run on save");
+  await page.keyboard.press("Enter");
+  await page.getByRole("button", { name: "Editor settings" }).click();
+  await expect(page.getByRole("switch", { name: "Run the code" })).toBeChecked();
+
+  // TypeScript gets the type checker instead of ESLint
+  await page
+    .getByRole("group", { name: "Quick language" })
+    .getByRole("button", { name: /TypeScript/ })
+    .click();
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.insertText("const n: number = 'five';\n");
+  await expect(page.locator(".ed__problems")).toHaveText("✕ 1 ⚠ 0", { timeout: 20_000 });
+  expect(problems).toEqual([]);
+});

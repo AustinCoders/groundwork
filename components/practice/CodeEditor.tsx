@@ -1,8 +1,8 @@
 "use client";
 
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import CodeMirror, { type ReactCodeMirrorRef } from "@uiw/react-codemirror";
-import { Compartment, EditorState } from "@codemirror/state";
+import { Compartment, EditorState, type Extension } from "@codemirror/state";
 import {
   EditorView,
   keymap,
@@ -16,14 +16,43 @@ import {
   crosshairCursor,
   type ViewUpdate,
 } from "@codemirror/view";
-import { defaultKeymap, history, historyKeymap, indentWithTab, toggleLineComment } from "@codemirror/commands";
-import { search, searchKeymap, highlightSelectionMatches, selectNextOccurrence } from "@codemirror/search";
+import {
+  copyLineDown,
+  defaultKeymap,
+  history,
+  historyKeymap,
+  indentWithTab,
+  toggleLineComment,
+} from "@codemirror/commands";
+import {
+  search,
+  searchKeymap,
+  highlightSelectionMatches,
+  selectNextOccurrence,
+  gotoLine,
+  openSearchPanel,
+} from "@codemirror/search";
 import { autocompletion, completionKeymap, closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
-import { lintGutter, linter, type Diagnostic } from "@codemirror/lint";
-import { bracketMatching, indentOnInput, syntaxHighlighting, HighlightStyle } from "@codemirror/language";
+import { lintGutter, linter, lintKeymap, nextDiagnostic, type Diagnostic } from "@codemirror/lint";
+import {
+  bracketMatching,
+  codeFolding,
+  foldAll,
+  foldGutter,
+  foldKeymap,
+  indentOnInput,
+  indentUnit,
+  syntaxHighlighting,
+  unfoldAll,
+  HighlightStyle,
+} from "@codemirror/language";
+import { indentationMarkers } from "@replit/codemirror-indentation-markers";
 import { tags } from "@lezer/highlight";
 
+import { CommandPalette, type Command } from "@/components/practice/CommandPalette";
 import { Dropdown } from "@/components/ui/select";
+import { fixAll, formatCode, FORMATS, lintCode, LINTS, type EditorProblem } from "@/lib/editor/tools";
+import { loadSettings, saveSettings, type EditorSettings } from "@/lib/editor/settings";
 import {
   HINTS,
   isLanguage,
@@ -47,6 +76,9 @@ export interface CodeEditorHandle {
   toggleWrap(on?: boolean): boolean;
   toggleFullscreen(on?: boolean): boolean;
   isFullscreen(): boolean;
+  /** Put the cursor at a position and scroll it into view, e.g. from the
+   *  Problems list. */
+  reveal(from: number, to?: number): void;
 }
 
 export interface CodeEditorProps {
@@ -58,6 +90,10 @@ export interface CodeEditorProps {
   onRun?: () => void;
   onSave?: () => void;
   onLanguageChange?: (key: LanguageKey, meta: LanguageMeta) => void;
+  /** Every lint or type-check pass, with what it found. */
+  onProblems?: (problems: EditorProblem[]) => void;
+  /** The status bar's problem counts were clicked. */
+  onShowProblems?: () => void;
 
   toolbarStart?: React.ReactNode;
 }
@@ -135,25 +171,157 @@ const cmTheme = EditorView.theme({
   ".cm-diagnostic-error": { borderLeftColor: "var(--ide-red)" },
 });
 
-function jsLinter(view: EditorView): Diagnostic[] {
-  const code = view.state.doc.toString();
-  try {
-    new Function("return (async function () {\n" + code + "\n});");
-    return [];
-  } catch (err) {
-    return [
-      {
-        from: 0,
-        to: Math.min(code.length, 1),
-        severity: "error",
-        message: err instanceof Error ? err.message : String(err),
-      },
-    ];
-  }
+type Ref<T> = { current: T };
+
+/** ESLint for JavaScript, the type checker for TypeScript — both in the tools
+ *  worker. A result for text that has since changed is dropped. */
+function makeLintSource(refs: {
+  lang: Ref<LanguageKey>;
+  problems: Ref<((p: EditorProblem[]) => void) | undefined>;
+  setCounts: (c: { errors: number; warnings: number }) => void;
+}) {
+  let warmed = false;
+  return async function lintSource(view: EditorView): Promise<Diagnostic[]> {
+    // The first pass loads ESLint (~330 KB) into the worker; let the page
+    // finish loading what it needs first.
+    if (!warmed) {
+      await new Promise<void>((resolve) =>
+        "requestIdleCallback" in window
+          ? window.requestIdleCallback(() => resolve(), { timeout: 2000 })
+          : setTimeout(resolve, 1000)
+      );
+      warmed = true;
+    }
+    const lang = refs.lang.current;
+    const code = view.state.doc.toString();
+    let problems: EditorProblem[] = [];
+    try {
+      problems = await lintCode(code, lang);
+    } catch {
+      return [];
+    }
+    if (view.state.doc.toString() !== code || refs.lang.current !== lang) return [];
+    refs.problems.current?.(problems);
+    refs.setCounts({
+      errors: problems.filter((p) => p.severity === "error").length,
+      warnings: problems.filter((p) => p.severity === "warning").length,
+    });
+    const end = view.state.doc.length;
+    return problems.map((p) => ({
+      from: Math.min(p.from, end),
+      to: Math.min(Math.max(p.to, p.from), end),
+      severity: p.severity,
+      message: p.message,
+      source: p.source,
+      actions: p.fix ? [{ name: "Fix", apply: (v: EditorView) => v.dispatch({ changes: p.fix! }) }] : [],
+    }));
+  };
+}
+
+function lintExtension(lang: LanguageKey, on: boolean, source: (view: EditorView) => Promise<Diagnostic[]>) {
+  return on && LINTS.has(lang) ? [lintGutter(), linter(source, { delay: 500 })] : [];
+}
+
+function tabExtension(size: number) {
+  return [EditorState.tabSize.of(size), indentUnit.of(" ".repeat(size))];
+}
+
+interface EditorActions {
+  format: () => Promise<void>;
+  save: () => Promise<void>;
+  palette: () => void;
+}
+
+/** Everything the editor is built from. Built once per editor; what can change
+ *  later sits in a compartment. */
+function editorExtensions(ctx: {
+  actions: Ref<EditorActions>;
+  run: Ref<(() => void) | undefined>;
+  compartments: Record<"lang" | "lint" | "wrap" | "tab" | "guides" | "vim" | "minimap", Compartment>;
+  lint: Extension;
+  settings: EditorSettings;
+}): Extension[] {
+  const { actions, run, compartments: c, settings } = ctx;
+  return [
+    lineNumbers(),
+    highlightActiveLineGutter(),
+    highlightSpecialChars(),
+    history(),
+    drawSelection(),
+    dropCursor(),
+    EditorState.allowMultipleSelections.of(true),
+    indentOnInput(),
+    syntaxHighlighting(cmHighlight, { fallback: true }),
+    bracketMatching(),
+    closeBrackets(),
+    autocompletion(),
+    codeFolding(),
+    foldGutter({ openText: "⌄", closedText: "›" }),
+    rectangularSelection(),
+    crosshairCursor(),
+    highlightActiveLine(),
+    highlightSelectionMatches(),
+    search({ top: true }),
+    // Vim goes first so its bindings win while it is on.
+    c.vim.of([]),
+    keymap.of([
+      { key: "Mod-Shift-p", run: () => (actions.current.palette(), true), preventDefault: true },
+      { key: "F1", run: () => (actions.current.palette(), true) },
+      { key: "Shift-Alt-f", run: () => (void actions.current.format(), true), preventDefault: true },
+      { key: "Mod-g", run: gotoLine, preventDefault: true },
+      { key: "F8", run: nextDiagnostic },
+      { key: "Mod-Enter", run: () => (run.current?.(), true) },
+      { key: "Mod-s", run: () => (void actions.current.save(), true), preventDefault: true },
+      { key: "Mod-/", run: toggleLineComment },
+      { key: "Mod-d", run: selectNextOccurrence },
+      { key: "Shift-Alt-ArrowDown", run: copyLineDown },
+      ...closeBracketsKeymap,
+      ...foldKeymap,
+      ...lintKeymap,
+      ...defaultKeymap,
+      ...searchKeymap,
+      ...historyKeymap,
+      ...completionKeymap,
+      indentWithTab,
+    ]),
+    // Filled in once the language's highlighting has loaded.
+    c.lang.of([]),
+    c.lint.of(ctx.lint),
+    c.wrap.of(settings.wrap ? EditorView.lineWrapping : []),
+    c.tab.of(tabExtension(settings.tabSize)),
+    c.guides.of(settings.indentGuides ? indentationMarkers() : []),
+    c.minimap.of([]),
+    cmTheme,
+    // The content element is a textbox; without this it reaches a screen
+    // reader unnamed.
+    EditorView.contentAttributes.of({ "aria-label": "Code editor" }),
+  ];
+}
+
+function Switch({ on, onChange, label }: { on: boolean; onChange: () => void; label: string }) {
+  return (
+    <label className="ed__switch">
+      <span>{label}</span>
+      <input type="checkbox" role="switch" checked={on} onChange={onChange} />
+      <span className="ed__switch-track" aria-hidden="true" />
+    </label>
+  );
 }
 
 export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function CodeEditor(
-  { filename, language, value, height = 420, onChange, onRun, onSave, onLanguageChange, toolbarStart },
+  {
+    filename,
+    language,
+    value,
+    height = 420,
+    onChange,
+    onRun,
+    onSave,
+    onLanguageChange,
+    onProblems,
+    onShowProblems,
+    toolbarStart,
+  },
   ref
 ) {
   const initialLang: LanguageKey = isLanguage(language) ? language : "javascript";
@@ -162,94 +330,108 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
   const cmRef = useRef<ReactCodeMirrorRef>(null);
   const [currentLang, setCurrentLang] = useState<LanguageKey>(initialLang);
   const [fontSize, setFontSizeState] = useState(14.5);
-  const [wrapped, setWrapped] = useState(false);
+  // The editor only mounts on the client, so reading saved settings in the
+  // initialiser cannot disagree with a server render.
+  const [settings, setSettings] = useState<EditorSettings>(loadSettings);
+  const wrapped = settings.wrap;
   const [fullscreen, setFullscreen] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [counts, setCounts] = useState({ errors: 0, warnings: 0 });
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  // CodeMirror builds its view after this component's first effects have run,
+  // so the effects that configure the view run again once it exists. Without
+  // this, a page opened fresh never got its highlighting or saved settings.
+  const [viewReady, setViewReady] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const noticeTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const currentLangRef = useRef<LanguageKey>(initialLang);
+  const settingsRef = useRef(settings);
   const [pos, setPos] = useState("Ln 1, Col 1");
   const [stats, setStats] = useState("");
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
+  // The editor's extensions are built once, so they reach the latest props
+  // through refs, brought up to date after every render.
   const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
   const onRunRef = useRef(onRun);
-  onRunRef.current = onRun;
   const onSaveRef = useRef(onSave);
-  onSaveRef.current = onSave;
   const onLanguageChangeRef = useRef(onLanguageChange);
-  onLanguageChangeRef.current = onLanguageChange;
+  const onProblemsRef = useRef(onProblems);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+    onRunRef.current = onRun;
+    onSaveRef.current = onSave;
+    onLanguageChangeRef.current = onLanguageChange;
+    onProblemsRef.current = onProblems;
+  });
+  const actionsRef = useRef<EditorActions>({ format: async () => {}, save: async () => {}, palette: () => {} });
 
-  const langCompartment = useRef(new Compartment()).current;
-  const lintCompartment = useRef(new Compartment()).current;
-  const wrapCompartment = useRef(new Compartment()).current;
+  const [langCompartment] = useState(() => new Compartment());
+  const [lintCompartment] = useState(() => new Compartment());
+  const [wrapCompartment] = useState(() => new Compartment());
+  const [tabCompartment] = useState(() => new Compartment());
+  const [guidesCompartment] = useState(() => new Compartment());
+  const [vimCompartment] = useState(() => new Compartment());
+  const [minimapCompartment] = useState(() => new Compartment());
 
-  const extensions = useMemo(
-    () => [
-      lineNumbers(),
-      highlightActiveLineGutter(),
-      highlightSpecialChars(),
-      history(),
-      drawSelection(),
-      dropCursor(),
-      EditorState.allowMultipleSelections.of(true),
-      indentOnInput(),
-      syntaxHighlighting(cmHighlight, { fallback: true }),
-      bracketMatching(),
-      closeBrackets(),
-      autocompletion(),
-      rectangularSelection(),
-      crosshairCursor(),
-      highlightActiveLine(),
-      highlightSelectionMatches(),
-      search({ top: true }),
-      keymap.of([
-        {
-          key: "Mod-Enter",
-          run: () => {
-            onRunRef.current?.();
-            return true;
-          },
-        },
-        {
-          key: "Mod-s",
-          run: () => {
-            onSaveRef.current?.();
-            return true;
-          },
-          preventDefault: true,
-        },
-        { key: "Mod-/", run: toggleLineComment },
-        { key: "Mod-d", run: selectNextOccurrence },
-        ...closeBracketsKeymap,
-        ...defaultKeymap,
-        ...searchKeymap,
-        ...historyKeymap,
-        ...completionKeymap,
-        indentWithTab,
-      ]),
-      // Filled in once the language's highlighting has loaded; see below.
-      langCompartment.of([]),
-      lintCompartment.of(initialLang === "javascript" ? [lintGutter(), linter(jsLinter)] : []),
-      wrapCompartment.of([]),
-      cmTheme,
-      // The content element is a textbox; without this it reaches a screen
-      // reader unnamed.
-      EditorView.contentAttributes.of({ "aria-label": "Code editor" }),
-    ],
+  function flash(message: string) {
+    setNotice(message);
+    clearTimeout(noticeTimerRef.current);
+    noticeTimerRef.current = setTimeout(() => setNotice(null), 2200);
+  }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+  // Both are handed refs, not their values: the refs are read inside
+  // CodeMirror's callbacks (a keypress, a lint pass), never while rendering.
+  // eslint-disable-next-line react-hooks/refs -- read in callbacks only, see above
+  const [lintSource] = useState(() => makeLintSource({ lang: currentLangRef, problems: onProblemsRef, setCounts }));
+  // eslint-disable-next-line react-hooks/refs -- read in callbacks only, see above
+  const [extensions] = useState(() =>
+    editorExtensions({
+      actions: actionsRef,
+      run: onRunRef,
+      compartments: {
+        lang: langCompartment,
+        lint: lintCompartment,
+        wrap: wrapCompartment,
+        tab: tabCompartment,
+        guides: guidesCompartment,
+        vim: vimCompartment,
+        minimap: minimapCompartment,
+      },
+      lint: lintExtension(initialLang, settings.lint, lintSource),
+      settings,
+    })
   );
 
+  // The settings panel closes on a click anywhere outside it or its button.
   useEffect(() => {
-    onLanguageChangeRef.current?.(initialLang, LANGUAGES[initialLang]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (!settingsOpen) return;
+    function onDown(e: MouseEvent) {
+      const t = e.target as Element | null;
+      if (t?.closest("#ed-settings, [aria-controls='ed-settings']")) return;
+      setSettingsOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [settingsOpen]);
+
+  // The language the parent was last told about. The effect below also runs
+  // when the view appears, which must not count as switching language: the
+  // parent answers a switch by loading that language's code into the editor.
+  const announcedLangRef = useRef<LanguageKey | null>(null);
 
   useEffect(() => {
+    currentLangRef.current = currentLang;
+    if (announcedLangRef.current !== currentLang) {
+      announcedLangRef.current = currentLang;
+      onLanguageChangeRef.current?.(currentLang, LANGUAGES[currentLang]);
+    }
     const view = cmRef.current?.view;
     if (!view) return;
+    if (!LINTS.has(currentLang) || !settingsRef.current.lint) onProblemsRef.current?.([]);
     view.dispatch({
-      effects: lintCompartment.reconfigure(currentLang === "javascript" ? [lintGutter(), linter(jsLinter)] : []),
+      effects: lintCompartment.reconfigure(lintExtension(currentLang, settingsRef.current.lint, lintSource)),
     });
     // Each language's highlighting is its own chunk, loaded when first chosen.
     // A slow load must not land on top of a language chosen after it.
@@ -260,19 +442,251 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
         if (current) cmRef.current?.view?.dispatch({ effects: langCompartment.reconfigure(ext) });
       })
       .catch(() => {});
-    onLanguageChangeRef.current?.(currentLang, LANGUAGES[currentLang]);
     return () => {
       current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentLang]);
+  }, [currentLang, viewReady]);
 
+  // Settings: stored, and pushed into the editor's compartments. Vim and the
+  // minimap are their own chunks, loaded only when switched on.
   useEffect(() => {
+    settingsRef.current = settings;
+    saveSettings(settings);
     const view = cmRef.current?.view;
     if (!view) return;
-    view.dispatch({ effects: wrapCompartment.reconfigure(wrapped ? EditorView.lineWrapping : []) });
+    view.dispatch({
+      effects: [
+        wrapCompartment.reconfigure(settings.wrap ? EditorView.lineWrapping : []),
+        tabCompartment.reconfigure(tabExtension(settings.tabSize)),
+        guidesCompartment.reconfigure(settings.indentGuides ? indentationMarkers() : []),
+        lintCompartment.reconfigure(lintExtension(currentLangRef.current, settings.lint, lintSource)),
+      ],
+    });
+    if (!settings.lint) onProblemsRef.current?.([]);
+    let live = true;
+    if (settings.vim) {
+      import("@replit/codemirror-vim").then(({ vim }) => {
+        if (live) cmRef.current?.view?.dispatch({ effects: vimCompartment.reconfigure(vim()) });
+      });
+    } else view.dispatch({ effects: vimCompartment.reconfigure([]) });
+    if (settings.minimap) {
+      import("@replit/codemirror-minimap").then(({ showMinimap }) => {
+        if (!live) return;
+        cmRef.current?.view?.dispatch({
+          effects: minimapCompartment.reconfigure(
+            showMinimap.compute(["doc"], () => ({
+              create: () => {
+                const dom = document.createElement("div");
+                return { dom };
+              },
+              displayText: "blocks",
+              showOverlay: "always",
+            }))
+          ),
+        });
+      });
+    } else view.dispatch({ effects: minimapCompartment.reconfigure([]) });
+    return () => {
+      live = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wrapped]);
+  }, [settings, viewReady]);
+
+  function toggle<K extends keyof EditorSettings>(key: K, value?: EditorSettings[K]) {
+    setSettings((s) => ({ ...s, [key]: value ?? !s[key] }));
+  }
+
+  /** Prettier, with the cursor kept where it was in the code. */
+  async function format(): Promise<boolean> {
+    const view = cmRef.current?.view;
+    const lang = currentLangRef.current;
+    if (!view) return false;
+    if (!FORMATS.has(lang)) {
+      flash(`No formatter for ${LANGUAGES[lang].label} yet`);
+      return false;
+    }
+    const code = view.state.doc.toString();
+    try {
+      const out = await formatCode(code, lang, view.state.selection.main.head, settingsRef.current.tabSize);
+      if (view.state.doc.toString() !== code) return false;
+      if (out.code !== code) {
+        view.dispatch({
+          changes: { from: 0, to: code.length, insert: out.code },
+          selection: { anchor: Math.min(out.cursor, out.code.length) },
+          scrollIntoView: true,
+        });
+      }
+      return true;
+    } catch (err) {
+      // Prettier refuses code that does not parse; say where, briefly.
+      flash(`Prettier: ${(err instanceof Error ? err.message : String(err)).split("\n")[0]}`);
+      return false;
+    }
+  }
+
+  /** ⌘/Ctrl+S: format if that is on, save, then run if that is on. */
+  async function save() {
+    const s = settingsRef.current;
+    const formatted = s.formatOnSave && FORMATS.has(currentLangRef.current) ? await format() : false;
+    onSaveRef.current?.();
+    if (s.runOnSave) onRunRef.current?.();
+    flash(
+      formatted
+        ? s.runOnSave
+          ? "Formatted, saved and running"
+          : "Formatted and saved"
+        : s.runOnSave
+          ? "Saved and running"
+          : "Saved"
+    );
+  }
+
+  async function fixEverything() {
+    const view = cmRef.current?.view;
+    const lang = currentLangRef.current;
+    if (!view) return;
+    if (lang !== "javascript") {
+      flash("ESLint fixes are for JavaScript");
+      return;
+    }
+    const code = view.state.doc.toString();
+    const out = await fixAll(code, lang).catch(() => code);
+    if (out !== code && view.state.doc.toString() === code) {
+      view.dispatch({ changes: { from: 0, to: code.length, insert: out } });
+      flash("Fixed what ESLint could fix");
+    } else flash("Nothing ESLint can fix by itself");
+  }
+
+  useEffect(() => {
+    actionsRef.current = {
+      format: async () => {
+        if (await format()) flash("Formatted");
+      },
+      save,
+      palette: () => setPaletteOpen(true),
+    };
+  });
+
+  const commands: Command[] = [
+    { id: "run", group: "Run", label: "Run the code", keys: "⌘/Ctrl Enter", run: () => onRunRef.current?.() },
+    { id: "save", group: "File", label: "Save", keys: "⌘/Ctrl S", run: () => void save() },
+    {
+      id: "format",
+      group: "Format",
+      label: "Format document (Prettier)",
+      keys: "⇧⌥F",
+      run: () => void actionsRef.current.format(),
+    },
+    { id: "fix", group: "ESLint", label: "Fix all auto-fixable problems", run: () => void fixEverything() },
+    {
+      id: "next-problem",
+      group: "Go",
+      label: "Next problem",
+      keys: "F8",
+      run: () => {
+        const v = cmRef.current?.view;
+        if (v) nextDiagnostic(v);
+        v?.focus();
+      },
+    },
+    {
+      id: "goto",
+      group: "Go",
+      label: "Go to line…",
+      keys: "⌘/Ctrl G",
+      run: () => {
+        const v = cmRef.current?.view;
+        if (v) gotoLine(v);
+      },
+    },
+    {
+      id: "find",
+      group: "Edit",
+      label: "Find and replace",
+      keys: "⌘/Ctrl F",
+      run: () => {
+        const v = cmRef.current?.view;
+        if (v) openSearchPanel(v);
+      },
+    },
+    {
+      id: "fold",
+      group: "View",
+      label: "Fold all",
+      run: () => {
+        const v = cmRef.current?.view;
+        if (v) foldAll(v);
+      },
+    },
+    {
+      id: "unfold",
+      group: "View",
+      label: "Unfold all",
+      run: () => {
+        const v = cmRef.current?.view;
+        if (v) unfoldAll(v);
+      },
+    },
+    {
+      id: "wrap",
+      group: "View",
+      label: `${settings.wrap ? "Turn off" : "Turn on"} word wrap`,
+      keys: "⌥Z",
+      run: () => toggle("wrap"),
+    },
+    {
+      id: "minimap",
+      group: "View",
+      label: `${settings.minimap ? "Hide" : "Show"} the minimap`,
+      run: () => toggle("minimap"),
+    },
+    {
+      id: "guides",
+      group: "View",
+      label: `${settings.indentGuides ? "Hide" : "Show"} indent guides`,
+      run: () => toggle("indentGuides"),
+    },
+    { id: "vim", group: "Keys", label: `${settings.vim ? "Turn off" : "Turn on"} Vim mode`, run: () => toggle("vim") },
+    {
+      id: "lint",
+      group: "ESLint",
+      label: `${settings.lint ? "Turn off" : "Turn on"} linting`,
+      run: () => toggle("lint"),
+    },
+    {
+      id: "fos",
+      group: "File",
+      label: `${settings.formatOnSave ? "Don't format" : "Format"} on save`,
+      run: () => toggle("formatOnSave"),
+    },
+    {
+      id: "ros",
+      group: "File",
+      label: `${settings.runOnSave ? "Don't run" : "Run"} on save`,
+      run: () => toggle("runOnSave"),
+    },
+    {
+      id: "tab",
+      group: "Format",
+      label: `Indent with ${settings.tabSize === 2 ? 4 : 2} spaces`,
+      run: () => toggle("tabSize", settings.tabSize === 2 ? 4 : 2),
+    },
+    { id: "bigger", group: "View", label: "Bigger text", run: () => setFontSizeState((s) => Math.min(24, s + 1)) },
+    { id: "smaller", group: "View", label: "Smaller text", run: () => setFontSizeState((s) => Math.max(11, s - 1)) },
+    {
+      id: "full",
+      group: "View",
+      label: fullscreen ? "Leave fullscreen" : "Fullscreen",
+      run: () => setFullscreen((f) => !f),
+    },
+    ...LANG_ORDER.map((key) => ({
+      id: `lang-${key}`,
+      group: "Language",
+      label: LANGUAGES[key].label,
+      run: () => setCurrentLang(key),
+    })),
+  ];
 
   useEffect(() => {
     document.body.style.overflow = fullscreen ? "hidden" : "";
@@ -320,8 +734,18 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
       getFontSize: () => fontSize,
       toggleWrap: (on?: boolean) => {
         const next = on == null ? !wrapped : on;
-        setWrapped(next);
+        toggle("wrap", next);
         return next;
+      },
+      reveal: (from: number, to?: number) => {
+        const view = cmRef.current?.view;
+        if (!view) return;
+        const end = view.state.doc.length;
+        view.dispatch({
+          selection: { anchor: Math.min(from, end), head: Math.min(to ?? from, end) },
+          scrollIntoView: true,
+        });
+        view.focus();
       },
       toggleFullscreen: (on?: boolean) => {
         const next = on == null ? !fullscreen : on;
@@ -400,7 +824,7 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
             aria-label="Wrap long lines"
             aria-pressed={wrapped}
             style={{ borderColor: wrapped ? "var(--ink)" : undefined }}
-            onClick={() => setWrapped((w) => !w)}
+            onClick={() => toggle("wrap")}
           >
             ↵
           </button>
@@ -413,8 +837,80 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
           >
             ⛶
           </button>
+          <button
+            className="btn btn--icon"
+            type="button"
+            title="Command palette (⌘/Ctrl ⇧ P)"
+            aria-label="Command palette"
+            onClick={() => setPaletteOpen(true)}
+          >
+            ⌘
+          </button>
+          <button
+            className="btn btn--icon"
+            type="button"
+            title="Editor settings"
+            aria-label="Editor settings"
+            aria-expanded={settingsOpen}
+            aria-controls="ed-settings"
+            onClick={() => setSettingsOpen((o) => !o)}
+          >
+            ⚙
+          </button>
         </div>
       </div>
+      {settingsOpen && (
+        <div
+          className="ed__settings"
+          id="ed-settings"
+          role="group"
+          aria-label="Editor settings"
+          onKeyDown={(e) => e.key === "Escape" && setSettingsOpen(false)}
+        >
+          <p className="ed__settings-h">On ⌘/Ctrl + S</p>
+          <Switch on={settings.formatOnSave} onChange={() => toggle("formatOnSave")} label="Format with Prettier" />
+          <Switch on={settings.runOnSave} onChange={() => toggle("runOnSave")} label="Run the code" />
+          <p className="ed__settings-h">Editor</p>
+          <Switch on={settings.lint} onChange={() => toggle("lint")} label="ESLint / type-check as I type" />
+          <Switch on={settings.vim} onChange={() => toggle("vim")} label="Vim keys" />
+          <Switch on={settings.minimap} onChange={() => toggle("minimap")} label="Minimap" />
+          <Switch on={settings.indentGuides} onChange={() => toggle("indentGuides")} label="Indent guides" />
+          <Switch on={settings.wrap} onChange={() => toggle("wrap")} label="Word wrap" />
+          <div className="ed__settings-row">
+            <span>Indent</span>
+            <span className="ed__seg" role="group" aria-label="Indent size">
+              {([2, 4] as const).map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  aria-pressed={settings.tabSize === n}
+                  onClick={() => toggle("tabSize", n)}
+                >
+                  {n} spaces
+                </button>
+              ))}
+            </span>
+          </div>
+          <button
+            type="button"
+            className="ed__settings-link"
+            onClick={() => {
+              setSettingsOpen(false);
+              setPaletteOpen(true);
+            }}
+          >
+            All commands… <kbd>⌘/Ctrl ⇧ P</kbd>
+          </button>
+        </div>
+      )}
+      <CommandPalette
+        open={paletteOpen}
+        commands={commands}
+        onClose={() => {
+          setPaletteOpen(false);
+          cmRef.current?.view?.focus();
+        }}
+      />
       <div className="ed__body">
         <CodeMirror
           ref={cmRef}
@@ -427,14 +923,44 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
           extensions={extensions}
           onChange={(next) => onChangeRef.current?.(next)}
           onUpdate={handleUpdate}
+          onCreateEditor={() => setViewReady(true)}
         />
       </div>
       <div className="ed__status">
         <span className="ed__ready">{meta.label}</span>
+        {settings.lint && LINTS.has(currentLang) && (
+          <button
+            type="button"
+            className="ed__problems"
+            title="Problems (F8 for the next one)"
+            onClick={() => onShowProblems?.()}
+            data-state={counts.errors ? "error" : counts.warnings ? "warning" : "clean"}
+          >
+            ✕ {counts.errors} ⚠ {counts.warnings}
+          </button>
+        )}
         <span className="ed__pos">{pos}</span>
         <span className="ed__len">{stats}</span>
         <span className="ed__spacer" />
-        <span className={`ed__saved${savedFlash ? " is-on" : ""}`}>saved</span>
+        {notice ? (
+          <span className="ed__notice" role="status">
+            {notice}
+          </span>
+        ) : (
+          <span className={`ed__saved${savedFlash ? " is-on" : ""}`}>saved</span>
+        )}
+        <span className="ed__meta">Spaces: {settings.tabSize}</span>
+        {FORMATS.has(currentLang) && (
+          <button
+            type="button"
+            className="ed__meta ed__meta--btn"
+            title="Format document (⇧⌥F)"
+            onClick={() => void actionsRef.current.format()}
+          >
+            {"{ }"} Prettier
+          </button>
+        )}
+        {settings.vim && <span className="ed__meta">VIM</span>}
         <span className="ed__hint">{meta.runnable ? HINTS[meta.runnable] : WRITE_ONLY_HINT}</span>
       </div>
     </div>

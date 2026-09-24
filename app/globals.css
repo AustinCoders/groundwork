@@ -5969,11 +5969,14 @@ a.step__title:hover {
   border-color: var(--ide-accent);
 }
 
+/* one line, like VS Code's: the run hint gives way first when space is short */
 .ed__status {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  white-space: nowrap;
   padding: 5px 12px;
   background: var(--ide-bg-elevated);
   border-top: 1px solid var(--ide-border);
@@ -6010,6 +6013,368 @@ a.step__title:hover {
 
 .ed__saved.is-on {
   opacity: 1;
+}
+
+/* ---- VS Code-style tooling: settings, palette, problems, lint marks ---- */
+
+.ed {
+  position: relative;
+}
+
+.ed__notice {
+  color: var(--ide-fg);
+  font-weight: 700;
+}
+
+.ed__status > * {
+  flex: none;
+}
+
+.ed__status > .ed__hint,
+.ed__status > .ed__len {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ed__status > .ed__spacer {
+  flex: 1 1 0;
+}
+
+.ed__meta {
+  color: var(--ide-fg-dim);
+  font-family: var(--font-code);
+  font-size: 11.5px;
+}
+
+.ed__meta--btn,
+.ed__problems {
+  padding: 1px 7px;
+  font: inherit;
+  font-family: var(--font-code);
+  font-size: 11.5px;
+  color: var(--ide-fg-dim);
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.ed__meta--btn:hover,
+.ed__problems:hover {
+  color: var(--ide-fg);
+  background: rgba(205, 214, 244, 0.1);
+}
+
+.ed__problems[data-state="error"] {
+  color: var(--ide-red);
+}
+
+.ed__problems[data-state="warning"] {
+  color: var(--ide-string);
+}
+
+.ed__settings {
+  position: absolute;
+  z-index: 30;
+  top: 50px;
+  right: 10px;
+  width: min(300px, calc(100% - 20px));
+  max-height: calc(100% - 64px);
+  overflow: auto;
+  padding: 10px 12px 12px;
+  background: var(--ide-bg-elevated);
+  color: var(--ide-fg);
+  border: 1px solid var(--ide-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  font-size: 13.5px;
+}
+
+.ed__settings-h {
+  margin: 8px 0 4px;
+  font-family: var(--font-code);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ide-fg-faint);
+}
+
+.ed__settings-row,
+.ed__switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+}
+
+.ed__switch {
+  position: relative;
+  cursor: pointer;
+}
+
+.ed__switch input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.ed__switch-track {
+  flex: none;
+  position: relative;
+  width: 32px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--ide-border);
+  transition: background 0.15s ease;
+}
+
+.ed__switch-track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--ide-fg);
+  transition: transform 0.15s ease;
+}
+
+.ed__switch input:checked + .ed__switch-track {
+  background: var(--ide-accent);
+}
+
+.ed__switch input:checked + .ed__switch-track::after {
+  transform: translateX(14px);
+  background: var(--ide-bg);
+}
+
+.ed__switch input:focus-visible + .ed__switch-track {
+  outline: 2px solid var(--ide-accent);
+  outline-offset: 2px;
+}
+
+.ed__seg {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--ide-border);
+  border-radius: 8px;
+}
+
+.ed__seg button {
+  padding: 2px 9px;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--ide-fg-dim);
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.ed__seg button[aria-pressed="true"] {
+  color: var(--ide-bg);
+  background: var(--ide-accent);
+  font-weight: 700;
+}
+
+.ed__settings-link {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px 0 0;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ide-fg);
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--ide-border);
+  cursor: pointer;
+}
+
+.palette {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 12vh 16px 16px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.palette__box {
+  width: min(620px, 100%);
+  overflow: hidden;
+  background: var(--ide-bg-elevated);
+  color: var(--ide-fg);
+  border: 1px solid var(--ide-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+}
+
+.palette__input {
+  width: 100%;
+  padding: 12px 14px;
+  font: inherit;
+  font-family: var(--font-code);
+  font-size: 14px;
+  color: var(--ide-fg);
+  background: var(--ide-bg);
+  border: 0;
+  border-bottom: 1px solid var(--ide-border);
+  outline: none;
+}
+
+.palette__list {
+  max-height: min(50vh, 420px);
+  overflow: auto;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+}
+
+.palette__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 7px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.palette__item[aria-selected="true"] {
+  background: var(--ide-accent);
+  color: var(--ide-bg);
+}
+
+.palette__group {
+  color: var(--ide-fg-dim);
+}
+
+.palette__item[aria-selected="true"] .palette__group {
+  color: inherit;
+}
+
+.palette__keys {
+  margin-left: auto;
+  font-family: var(--font-code);
+  font-size: 11.5px;
+  opacity: 0.85;
+}
+
+.palette__empty {
+  padding: 10px;
+  color: var(--ide-fg-dim);
+}
+
+.problems {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.problem {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: baseline;
+  width: 100%;
+  padding: 5px 6px;
+  font: inherit;
+  text-align: left;
+  color: var(--ide-fg);
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.problem:hover,
+.problem:focus-visible {
+  background: rgba(205, 214, 244, 0.08);
+}
+
+.problem[data-severity="error"] .problem__mark {
+  color: var(--ide-red);
+}
+
+.problem[data-severity="warning"] .problem__mark {
+  color: var(--ide-string);
+}
+
+.problem__src,
+.problem__pos {
+  color: var(--ide-fg-faint);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .problem {
+    grid-template-columns: 18px minmax(0, 1fr);
+  }
+
+  .problem__src,
+  .problem__pos {
+    grid-column: 2;
+  }
+}
+
+/* squiggles under what ESLint or the type checker flagged */
+.ed .cm-lintRange-error {
+  background-image: none;
+  text-decoration: underline wavy var(--ide-red);
+  text-decoration-skip-ink: none;
+  text-underline-offset: 3px;
+}
+
+.ed .cm-lintRange-warning {
+  background-image: none;
+  text-decoration: underline wavy var(--ide-string);
+  text-decoration-skip-ink: none;
+  text-underline-offset: 3px;
+}
+
+.ed .cm-tooltip-lint {
+  padding: 4px 0;
+}
+
+.ed .cm-diagnostic {
+  padding: 4px 10px;
+  font-family: var(--font-code);
+  font-size: 12.5px;
+}
+
+.ed .cm-diagnosticSource {
+  color: var(--ide-fg-faint);
+}
+
+.ed .cm-diagnosticAction {
+  font: inherit;
+  padding: 1px 8px;
+  color: var(--ide-bg);
+  background: var(--ide-accent);
+  border-radius: 5px;
+}
+
+.ed .cm-foldGutter .cm-gutterElement {
+  padding: 0 4px;
+  color: var(--ide-fg-faint);
+  cursor: pointer;
+}
+
+.ed .cm-foldPlaceholder {
+  background: var(--ide-selection);
+  border: 1px solid var(--ide-border);
+  color: var(--ide-fg-dim);
+  padding: 0 6px;
 }
 
 /* These read against the active line as well as the editor background, which
@@ -6374,7 +6739,7 @@ a.step__title:hover {
   gap: 16px;
 }
 
-.practice-layout--playground .ed__body {
+.practice-layout--playground .ed__cm {
   height: clamp(360px, calc(100dvh - 250px), 880px);
 }
 
@@ -6394,6 +6759,7 @@ a.step__title:hover {
 }
 
 .run-status {
+  white-space: nowrap;
   font-family: var(--font-code);
   font-size: 12px;
   padding: 2px 9px;
@@ -6431,7 +6797,7 @@ a.step__title:hover {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .practice-layout--playground .ed__body {
+  .practice-layout--playground .ed__cm {
     height: clamp(300px, 55dvh, 640px);
   }
 
