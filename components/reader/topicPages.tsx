@@ -41,6 +41,10 @@ export function topicChapterMetadata(topicId: string, chapterId: string): Metada
     title: `${ch.title} — ${data.meta.title}`,
     description,
     alternates: { canonical: `${notesHref(topicId)}/${ch.id}` },
+    // A chapter that is still a syllabus stub has a heading and a bullet list.
+    // It is a real page for anyone following the map, and a thin one for a
+    // crawler, so it stays linked and asks not to be indexed.
+    robots: ch.ready ? undefined : { index: false, follow: true },
     openGraph: {
       type: "article",
       title: `${ch.title} — ${data.meta.title}`,

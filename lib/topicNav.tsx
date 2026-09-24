@@ -30,7 +30,9 @@ export function navNotesHref(list: TopicNav[], topicId?: string | null): string 
 }
 
 export function navHref(t: TopicNav, savedLevel?: string | null): string {
-  if (t.status !== "ready") return `/soon?topic=${t.id}`;
+  // An outline has a cover and a syllabus but nothing to read, so the level
+  // picker and the reading path are both empty rooms. /soon says so honestly.
+  if (t.status !== "ready" || t.written === 0) return `/soon?topic=${t.id}`;
   if (!t.levelIds) return fileHref(t.notes);
 
   const known = savedLevel && t.levelIds.indexOf(savedLevel as LevelId) !== -1;

@@ -80,6 +80,7 @@ export function topicsNav(): TopicNav[] {
     notes: t.notes,
     blurb: t.blurb,
     levelIds: t.levels ? t.levels.map((l) => l.id) : null,
+    written: 0,
   }));
 }
 

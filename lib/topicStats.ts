@@ -1,6 +1,8 @@
 import { chapters, exercises, hasNotes, htmlMinutes, topicExerciseCount, topics, totalTime } from "@/lib/content";
+import { topicsNav } from "@/lib/topics";
 import { GIT_BODY_HTML, GIT_SECTIONS } from "@/content/git-body";
 import { onShelf } from "@/lib/topicIds";
+import type { TopicNav } from "@/content/types";
 
 export interface TopicStat {
   written: number;
@@ -42,6 +44,13 @@ export function topicStats(): Record<string, TopicStat> {
     };
   });
   return out;
+}
+
+/** The nav list with each topic's written count filled in, which is what decides
+ *  whether a link into the topic goes to its reading path or to /soon. */
+export function topicsNavWithStats(): TopicNav[] {
+  const stats = topicStats();
+  return topicsNav().map((t) => ({ ...t, written: stats[t.id]?.written ?? 0 }));
 }
 
 export function siteStats(): SiteStats {

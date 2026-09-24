@@ -136,13 +136,16 @@ export function CoverMap({ groups, basePath }: { groups: RouteGroup[]; basePath:
       <div className="covermap__body">
         <div className="covermap__route">
           {groups.map((group) => {
+            const groupWritten = group.stations.filter((s) => s.ready).length;
             const groupMinutes = group.stations.reduce((sum, s) => sum + (s.ready ? s.minutes : 0), 0);
             return (
               <section className="route" key={group.id}>
                 <h3 className="route__name">
                   {group.name}
                   <span className="route__meta">
-                    {plural(group.stations.filter((s) => s.ready).length, "chapter")} · {formatSpan(groupMinutes)}
+                    {groupWritten
+                      ? `${plural(groupWritten, "chapter")} · ${formatSpan(groupMinutes)}`
+                      : `${plural(group.stations.length, "chapter")} planned`}
                   </span>
                 </h3>
                 <ol className="route__line">
@@ -174,7 +177,7 @@ export function CoverMap({ groups, basePath }: { groups: RouteGroup[]; basePath:
                             {s.num}
                           </span>
                           <span className="station__name">{s.short}</span>
-                          <span className="station__min">{s.minutes}m</span>
+                          <span className="station__min">{s.ready ? `${s.minutes}m` : "—"}</span>
                         </Link>
                         {mounted && s.ready && (
                           <button
@@ -204,13 +207,16 @@ export function CoverMap({ groups, basePath }: { groups: RouteGroup[]; basePath:
               <h3 className="covermap__peek-title">{preview.short}</h3>
               <p className="covermap__peek-sub">{preview.subtitle}</p>
               <div className="covermap__peek-meta">
-                <span className="chip">{preview.minutes} min read</span>
+                {preview.ready ? (
+                  <span className="chip">{preview.minutes} min read</span>
+                ) : (
+                  <span className="chip">not written yet</span>
+                )}
                 {preview.exercises > 0 && <span className="chip">{plural(preview.exercises, "exercise")}</span>}
                 {mounted && done.has(preview.id) && <span className="chip chip--done">read ✓</span>}
-                {!preview.ready && <span className="chip">not written yet</span>}
               </div>
               <Link className="btn covermap__peek-go" href={`${basePath}/${preview.id}`}>
-                Open this chapter →
+                {preview.ready ? "Open this chapter →" : "See what it will cover →"}
               </Link>
             </>
           )}
