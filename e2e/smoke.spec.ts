@@ -328,3 +328,22 @@ test("switching language gives that language's starter and keeps each language's
   await expect(editor).toContainText("// mine, in JavaScript");
   expect(problems).toEqual([]);
 });
+
+test("the playground runs examples to the end and switches language from its chips", async ({ page }) => {
+  const problems = collectProblems(page);
+  await page.goto("/practice?id=free");
+  await expect(page.locator(".cm-content")).toBeVisible();
+
+  // everything a timer or a promise prints arrives, in the engine's order
+  await page.getByRole("combobox", { name: "Load an example" }).click();
+  await page.getByRole("option", { name: "Event loop order" }).click();
+  await page.getByRole("button", { name: "Run the code" }).click();
+  const lines = page.locator("#view-console .line");
+  await expect(lines).toHaveCount(6);
+  await expect(lines.last()).toContainText("5 · timeout (macrotask)");
+  await expect(page.locator(".run-status")).toContainText("✓ ran");
+
+  await page.getByRole("group", { name: "Quick language" }).getByRole("button", { name: /SQL/ }).click();
+  await expect(page.locator(".cm-content")).toContainText("CREATE TABLE users");
+  expect(problems).toEqual([]);
+});

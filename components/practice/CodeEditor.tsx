@@ -39,6 +39,7 @@ export interface CodeEditorHandle {
   setValue(text: string): void;
   focus(): void;
   getLanguage(): LanguageKey;
+  setLanguage(key: LanguageKey): void;
   getLanguageMeta(): LanguageMeta;
   flashSaved(): void;
   setFontSize(px: number): number;
@@ -304,6 +305,7 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
       },
       focus: () => cmRef.current?.view?.focus(),
       getLanguage: () => currentLang,
+      setLanguage: (key: LanguageKey) => setCurrentLang(key),
       getLanguageMeta: () => LANGUAGES[currentLang],
       flashSaved: () => {
         setSavedFlash(true);

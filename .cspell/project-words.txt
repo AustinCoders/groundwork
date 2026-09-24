@@ -147,6 +147,7 @@ Codility
 colocating
 contravariantly
 Corasick
+cout
 covermap
 Cpath
 crds
@@ -155,6 +156,8 @@ Csvg
 ctes
 Cutshort
 datacentre
+dataclass
+dataclasses
 dataloaders
 dbaeumer
 dbbca
@@ -206,6 +209,7 @@ gcell
 geohash
 getrandom
 Gochi
+goroutines
 GSAP
 GTID
 Gurgaon
@@ -236,6 +240,7 @@ inspectable
 Insta
 invertibility
 IOCP
+ipairs
 issip
 IVXLCDM
 jank
@@ -266,6 +271,7 @@ Linearithmic
 linearizability
 linearizable
 linkish
+LINQ
 listenbtn
 Literata
 livelock
@@ -288,6 +294,7 @@ memoises
 memoising
 memoizable
 Metas
+metatables
 Meteo
 Microdata
 Mindbell

@@ -1787,6 +1787,14 @@ kbd {
   display: none;
 }
 
+/* Radix places the menu itself; the offsets above are for the older,
+   hand-positioned menus and would push this one off its anchor. */
+.dd__menu[data-slot="select-content"] {
+  position: relative;
+  inset: auto;
+  max-height: var(--radix-select-content-available-height, 320px);
+}
+
 .dd__opt {
   padding: 7px 10px;
   border-radius: 7px;
@@ -1853,6 +1861,13 @@ kbd {
 
 .dd__menu--grid .dd__opt {
   white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .dd__menu--grid .dd__viewport {
+    grid-template-columns: repeat(3, max-content);
+    gap: 2px 14px;
+  }
 }
 
 /* groups sit in the same grid, each under a label that spans the row */
@@ -6278,6 +6293,151 @@ a.step__title:hover {
   background: rgba(243, 139, 168, 0.1);
   color: var(--ide-red);
   border-left: 4px solid var(--ide-red);
+}
+
+/* ---- Playground: a scratch space, code and output side by side ---- */
+
+.lc-topbar--playground {
+  flex-wrap: wrap;
+  padding: 8px 12px;
+}
+
+.pg-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.pg-head__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 24px;
+  line-height: 1;
+  color: var(--ide-fg);
+}
+
+.pg-langs {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--ide-border);
+  border-radius: 10px;
+  background: var(--ide-bg);
+}
+
+.pg-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--ide-fg-dim);
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.pg-lang:hover {
+  color: var(--ide-fg);
+  background: rgba(205, 214, 244, 0.08);
+}
+
+.pg-lang[aria-pressed="true"] {
+  color: var(--ide-bg);
+  background: var(--ide-accent);
+  font-weight: 700;
+}
+
+.pg-lang__ext {
+  font-family: var(--font-code);
+  font-size: 10.5px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+}
+
+.practice-layout--playground {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.practice-layout--playground .workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, 1fr);
+  align-items: stretch;
+  gap: 16px;
+}
+
+.practice-layout--playground .ed__body {
+  height: clamp(360px, calc(100dvh - 250px), 880px);
+}
+
+.practice-layout--playground .panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.practice-layout--playground .panel__body {
+  flex: 1;
+  max-height: none;
+}
+
+.practice-layout--playground .workbench > .keys {
+  display: none;
+}
+
+.run-status {
+  font-family: var(--font-code);
+  font-size: 12px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  color: var(--ide-fg-dim);
+  background: var(--ide-border);
+}
+
+.run-status[data-state="ok"] {
+  color: var(--ide-green);
+  background: rgba(166, 227, 161, 0.16);
+}
+
+.run-status[data-state="error"] {
+  color: var(--ide-red);
+  background: rgba(243, 139, 168, 0.16);
+}
+
+@media (max-width: 720px) {
+  .pg-head {
+    gap: 10px;
+  }
+
+  .pg-langs {
+    flex-wrap: wrap;
+  }
+
+  .pg-lang {
+    padding: 5px 8px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .practice-layout--playground .workbench {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .practice-layout--playground .ed__body {
+    height: clamp(300px, 55dvh, 640px);
+  }
+
+  .practice-layout--playground .panel__body {
+    min-height: 220px;
+  }
 }
 
 @media (max-width: 1000px) {

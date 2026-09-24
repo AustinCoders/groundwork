@@ -7,9 +7,11 @@ import { CodeEditor, type CodeEditorHandle } from "@/components/practice/CodeEdi
 import { Confetti } from "@/components/practice/Confetti";
 import { EditorSkeleton } from "@/components/practice/EditorSkeleton";
 import { ShortcutHelp } from "@/components/practice/ShortcutHelp";
+import { Dropdown } from "@/components/ui/select";
 import { isLanguage, LANGUAGES, type LanguageKey } from "@/lib/codeLanguages";
 import { gradeResults, isResultLine, parseResultLine, withHarness } from "@/lib/polyglot/grade";
 import { starterFor } from "@/lib/polyglot/starters";
+import { templatesFor } from "@/lib/playgroundTemplates";
 import type { Json, Polyglot } from "@/lib/polyglot/types";
 import { useClientValue, useMounted } from "@/lib/hooks";
 import type { PracticeExercise } from "@/lib/practiceFree";
@@ -102,15 +104,15 @@ function copyText(text: string): Promise<boolean> {
   return Promise.resolve(false);
 }
 
-function CopyButton({ onCopy }: { onCopy: () => string }) {
+function CopyButton({ onCopy, label = "Copy the code" }: { onCopy: () => string; label?: string }) {
   const [flash, setFlash] = useState<"ok" | "fail" | null>(null);
 
   return (
     <button
       className="btn btn--icon"
       type="button"
-      title="Copy the code"
-      aria-label="Copy the code"
+      title={label}
+      aria-label={label}
       onClick={() => {
         copyText(onCopy()).then((ok) => {
           setFlash(ok ? "ok" : "fail");
@@ -164,7 +166,9 @@ export function PracticeWorkspace({
   const [currentLang, setCurrentLang] = useState<LanguageKey>("javascript");
   const [activeTab, setActiveTab] = useState<"console" | "tests">("console");
   const [consoleLines, setConsoleLines] = useState<RunnerOutputEntry[]>([]);
-  const [consolePhase, setConsolePhase] = useState<"idle" | "compiling" | "ran" | "cleared">("idle");
+  const [consolePhase, setConsolePhase] = useState<"idle" | "running" | "compiling" | "ran" | "cleared">("idle");
+  const [runMs, setRunMs] = useState<number | null>(null);
+  const runStartRef = useRef(0);
   const [testResults, setTestResults] = useState<RunnerTestResult[] | null>(null);
   const alreadySolved = useClientValue(() => !isFree && progress.isExerciseSolved(exercise.id), false);
   const [justSolved, setJustSolved] = useState(false);
@@ -244,8 +248,7 @@ export function PracticeWorkspace({
   /** Where a language starts: its own starter written from the problem's
    *  signature, or a note saying why this problem only works in JavaScript. */
   function starterIn(lang: LanguageKey, poly: Polyglot | null): string {
-    if (isFree)
-      return lang === "javascript" ? exercise.starter : `${LANGUAGES[lang].comment} Playground — write anything.\n`;
+    if (isFree) return templatesFor(lang)[0]?.code ?? `${LANGUAGES[lang].comment} Playground — write anything.\n`;
     if (lang === "javascript" || lang === "sql") return lang === "sql" ? "" : exercise.starter;
     if (poly?.ok) return starterFor(lang, poly.signature, exercise.title);
     if (lang === "typescript") return exercise.starter;
@@ -290,6 +293,12 @@ export function PracticeWorkspace({
     }
   }
 
+  /** A run has finished: show that it did, and how long it took. */
+  function markRan() {
+    setConsolePhase("ran");
+    setRunMs(Math.round(performance.now() - runStartRef.current));
+  }
+
   function runCode(withTests: boolean) {
     const editor = editorRef.current;
     if (!editor) return;
@@ -298,7 +307,9 @@ export function PracticeWorkspace({
     const meta = editor.getLanguageMeta();
 
     setConsoleLines([]);
-    setConsolePhase("idle");
+    setConsolePhase("running");
+    setRunMs(null);
+    runStartRef.current = performance.now();
     setActiveTab(withTests ? "tests" : "console");
     if (withTests) setTestResults(null);
 
@@ -310,14 +321,14 @@ export function PracticeWorkspace({
         onConsole: (entry) => setConsoleLines((prev) => [...prev, entry]),
         onDone: (payload) => {
           runningRef.current = null;
-          setConsolePhase("ran");
+          markRan();
           if (tests) finishTests(payload.results || []);
         },
       });
     }
 
     if (!meta.runnable) {
-      setConsolePhase("ran");
+      markRan();
       setConsoleLines([
         {
           kind: "system",
@@ -339,7 +350,7 @@ export function PracticeWorkspace({
         onConsole: (entry) => setConsoleLines((prev) => [...prev, entry]),
         onDone: (payload) => {
           runningRef.current = null;
-          setConsolePhase("ran");
+          markRan();
           if (withTests) finishTests(payload.results || []);
         },
       });
@@ -371,7 +382,7 @@ export function PracticeWorkspace({
         },
         onDone: () => {
           runningRef.current = null;
-          setConsolePhase("ran");
+          markRan();
           if (grading) finishTests(gradeResults(grading, rows));
         },
       });
@@ -384,7 +395,7 @@ export function PracticeWorkspace({
         onConsole: (entry) => setConsoleLines((prev) => [...prev, entry]),
         onDone: () => {
           runningRef.current = null;
-          setConsolePhase("ran");
+          markRan();
         },
       });
       return;
@@ -397,18 +408,64 @@ export function PracticeWorkspace({
         startRunner(jsCode, withTests);
       })
       .catch((err) => {
-        setConsolePhase("ran");
+        markRan();
         setConsoleLines([{ kind: "error", text: `Compile error: ${err && err.message ? err.message : String(err)}` }]);
       });
   }
 
   const allExercisesLevelHref = `/path?topic=js&level=${exercise.level}`;
 
+  // The playground is a scratch space, not a problem: no statement beside it,
+  // the output next to the code, and languages one tap away.
+  const playground = isFree && !interview;
+  const runnable = Boolean(LANGUAGES[currentLang].runnable);
+  const errored = consoleLines.some((l) => l.kind === "error");
+  const templates = templatesFor(currentLang);
+
+  function loadTemplate(name: string) {
+    const t = templates.find((x) => x.name === name);
+    const editor = editorRef.current;
+    if (!t || !editor) return;
+    const current = editor.getValue();
+    const untouched = !current.trim() || templates.some((x) => x.code === current);
+    if (!untouched && !window.confirm(`Replace what is in the editor with “${t.name}”?`)) return;
+    editor.setValue(t.code);
+    editor.focus();
+  }
+
+  function consoleText(): string {
+    return consoleLines
+      .map((l) => (l.kind === "table" ? [l.columns.join("\t"), ...l.rows.map((r) => r.join("\t"))].join("\n") : l.text))
+      .join("\n");
+  }
+
   return (
     <>
       <Confetti fire={justSolved} />
-      <div className="lc-topbar">
-        {interview ? (
+      <div className={`lc-topbar${playground ? " lc-topbar--playground" : ""}`}>
+        {playground ? (
+          <div className="pg-head">
+            <h1 className="pg-head__title">
+              <span aria-hidden="true">✎</span> Playground
+            </h1>
+            <div className="pg-langs" role="group" aria-label="Quick language">
+              {(["javascript", "typescript", "python", "sql"] as const).map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  className="pg-lang"
+                  aria-pressed={currentLang === key}
+                  onClick={() => editorRef.current?.setLanguage(key)}
+                >
+                  <span className="pg-lang__ext" aria-hidden="true">
+                    {LANGUAGES[key].ext}
+                  </span>
+                  {LANGUAGES[key].label}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : interview ? (
           <div />
         ) : (
           <div className="lc-topbar__nav">
@@ -447,6 +504,16 @@ export function PracticeWorkspace({
           </div>
         )}
         <div className="lc-topbar__actions">
+          {playground && templates.length > 1 && (
+            <Dropdown
+              items={templates.map((t) => ({ value: t.name, label: t.name }))}
+              value=""
+              placeholder="Examples"
+              onChange={loadTemplate}
+              ariaLabel="Load an example"
+              compact
+            />
+          )}
           <button
             className="btn btn--run"
             type="button"
@@ -491,108 +558,112 @@ export function PracticeWorkspace({
 
       <ShortcutHelp open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
 
-      <div className="practice-layout">
-        <aside className="brief" id="brief">
-          <div className="brief__tabs" role="tablist" aria-label="Problem panel">
-            <span className="brief__tab is-active" role="tab" aria-selected="true">
-              Description
-            </span>
-          </div>
-          <div className="brief__scroll">
-            {!interview && (
-              <Crumbs
-                items={[
-                  { label: "All topics", href: "/" },
-                  { label: "JavaScript", href: "/notes" },
-                  { label: chapter ? chapter.short : "Playground" },
-                ]}
-              />
-            )}
-            <h1 id="ex-title">{exercise.title}</h1>
-            <div className="brief__meta" id="ex-meta">
-              {isFree ? (
-                <span className="tag">no tests · nothing to pass</span>
-              ) : (
-                <>
-                  <span className={`tag tag--${exercise.level}`}>{exercise.level}</span>
-                  {chapter && (
-                    <span className="tag">
-                      layer {chapter.num} · {chapter.short}
-                    </span>
-                  )}
-                  <span className="tag">
-                    {exercise.tests.length} {exercise.tests.length === 1 ? "test" : "tests"}
-                  </span>
-                  {solved && !interview && <span className="tag tag--done">solved ✓</span>}
-                </>
-              )}
+      <div className={`practice-layout${playground ? " practice-layout--playground" : ""}`}>
+        {!playground && (
+          <aside className="brief" id="brief">
+            <div className="brief__tabs" role="tablist" aria-label="Problem panel">
+              <span className="brief__tab is-active" role="tab" aria-selected="true">
+                Description
+              </span>
             </div>
-            <div
-              className="brief__body"
-              id="ex-body"
-              suppressHydrationWarning
-              dangerouslySetInnerHTML={{ __html: exercise.brief }}
-            />
-
-            {!(isFree && !exercise.solution) && (
-              <div className="brief__section" id="hint-section">
-                <h2>Stuck?</h2>
-                <div id="hint-list">
-                  {exercise.hints.slice(0, hintsShown).map((hint, i) => (
-                    <div className="hint" key={i}>
-                      <span className="hint__num">hint {i + 1}</span>
-                      <span dangerouslySetInnerHTML={{ __html: hint }} />
-                    </div>
-                  ))}
-                </div>
-                {!isFree && exercise.hints.length > 0 && (
-                  <button
-                    className="btn"
-                    id="hint-btn"
-                    type="button"
-                    disabled={hintsShown >= exercise.hints.length}
-                    onClick={() => setHintsShown((n) => Math.min(exercise.hints.length, n + 1))}
-                  >
-                    {hintsShown >= exercise.hints.length
-                      ? "That was the last hint"
-                      : hintsShown === 0
-                        ? "Show a hint"
-                        : `Another hint (${exercise.hints.length - hintsShown} left)`}
-                  </button>
-                )}{" "}
-                {exercise.solution && (
-                  <button
-                    className="btn"
-                    id="solution-btn"
-                    type="button"
-                    onClick={() => {
-                      if (!window.confirm("Replace what you have written with the solution? Your version is not kept."))
-                        return;
-                      editorRef.current?.setValue(exercise.solution!);
-                      editorRef.current?.focus();
-                      setSawSolution(true);
-                    }}
-                  >
-                    Show the solution
-                  </button>
+            <div className="brief__scroll">
+              {!interview && (
+                <Crumbs
+                  items={[
+                    { label: "All topics", href: "/" },
+                    { label: "JavaScript", href: "/notes" },
+                    { label: chapter ? chapter.short : "Playground" },
+                  ]}
+                />
+              )}
+              <h1 id="ex-title">{exercise.title}</h1>
+              <div className="brief__meta" id="ex-meta">
+                {isFree ? (
+                  <span className="tag">no tests · nothing to pass</span>
+                ) : (
+                  <>
+                    <span className={`tag tag--${exercise.level}`}>{exercise.level}</span>
+                    {chapter && (
+                      <span className="tag">
+                        layer {chapter.num} · {chapter.short}
+                      </span>
+                    )}
+                    <span className="tag">
+                      {exercise.tests.length} {exercise.tests.length === 1 ? "test" : "tests"}
+                    </span>
+                    {solved && !interview && <span className="tag tag--done">solved ✓</span>}
+                  </>
                 )}
               </div>
-            )}
+              <div
+                className="brief__body"
+                id="ex-body"
+                suppressHydrationWarning
+                dangerouslySetInnerHTML={{ __html: exercise.brief }}
+              />
 
-            {!interview && (
-              <nav className="brief__nav" id="ex-nav" aria-label="Other exercises">
-                <Link className="btn" href={allExercisesLevelHref}>
-                  All exercises
-                </Link>
-                {!isFree && (
-                  <Link className="btn" href="/practice?id=free">
-                    Playground
+              {!(isFree && !exercise.solution) && (
+                <div className="brief__section" id="hint-section">
+                  <h2>Stuck?</h2>
+                  <div id="hint-list">
+                    {exercise.hints.slice(0, hintsShown).map((hint, i) => (
+                      <div className="hint" key={i}>
+                        <span className="hint__num">hint {i + 1}</span>
+                        <span dangerouslySetInnerHTML={{ __html: hint }} />
+                      </div>
+                    ))}
+                  </div>
+                  {!isFree && exercise.hints.length > 0 && (
+                    <button
+                      className="btn"
+                      id="hint-btn"
+                      type="button"
+                      disabled={hintsShown >= exercise.hints.length}
+                      onClick={() => setHintsShown((n) => Math.min(exercise.hints.length, n + 1))}
+                    >
+                      {hintsShown >= exercise.hints.length
+                        ? "That was the last hint"
+                        : hintsShown === 0
+                          ? "Show a hint"
+                          : `Another hint (${exercise.hints.length - hintsShown} left)`}
+                    </button>
+                  )}{" "}
+                  {exercise.solution && (
+                    <button
+                      className="btn"
+                      id="solution-btn"
+                      type="button"
+                      onClick={() => {
+                        if (
+                          !window.confirm("Replace what you have written with the solution? Your version is not kept.")
+                        )
+                          return;
+                        editorRef.current?.setValue(exercise.solution!);
+                        editorRef.current?.focus();
+                        setSawSolution(true);
+                      }}
+                    >
+                      Show the solution
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {!interview && (
+                <nav className="brief__nav" id="ex-nav" aria-label="Other exercises">
+                  <Link className="btn" href={allExercisesLevelHref}>
+                    All exercises
                   </Link>
-                )}
-              </nav>
-            )}
-          </div>
-        </aside>
+                  {!isFree && (
+                    <Link className="btn" href="/practice?id=free">
+                      Playground
+                    </Link>
+                  )}
+                </nav>
+              )}
+            </div>
+          </aside>
+        )}
 
         <div className="workbench">
           {mounted ? (
@@ -638,7 +709,7 @@ export function PracticeWorkspace({
             <EditorSkeleton />
           )}
 
-          {mounted && (
+          {mounted && !playground && (
             <ResizeHandle
               height={editorHeight}
               onResize={(next) => {
@@ -674,25 +745,41 @@ export function PracticeWorkspace({
                     {consoleLines.length}
                   </span>
                 </button>
-                <button
-                  className={`tab${activeTab === "tests" ? " is-active" : ""}`}
-                  id="tab-tests"
-                  type="button"
-                  role="tab"
-                  aria-selected={activeTab === "tests"}
-                  aria-controls="view-tests"
-                  onClick={() => setActiveTab("tests")}
-                >
-                  Test Result{" "}
-                  <span
-                    className={`tab__count${testResults ? (testResults.every((r) => r.ok) ? " is-pass" : " is-fail") : ""}`}
-                    id="tests-count"
+                {!playground && (
+                  <button
+                    className={`tab${activeTab === "tests" ? " is-active" : ""}`}
+                    id="tab-tests"
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === "tests"}
+                    aria-controls="view-tests"
+                    onClick={() => setActiveTab("tests")}
                   >
-                    {testResults ? `${testResults.filter((r) => r.ok).length}/${testResults.length}` : "—"}
-                  </span>
-                </button>
+                    Test Result{" "}
+                    <span
+                      className={`tab__count${testResults ? (testResults.every((r) => r.ok) ? " is-pass" : " is-fail") : ""}`}
+                      id="tests-count"
+                    >
+                      {testResults ? `${testResults.filter((r) => r.ok).length}/${testResults.length}` : "—"}
+                    </span>
+                  </button>
+                )}
               </div>
               <span className="ed__spacer" style={{ flex: 1 }} />
+              {playground && runnable && consolePhase !== "idle" && consolePhase !== "cleared" && (
+                <span
+                  className="run-status"
+                  data-state={consolePhase === "ran" ? (errored ? "error" : "ok") : "running"}
+                  aria-live="polite"
+                >
+                  {consolePhase === "ran"
+                    ? `${errored ? "✕ error" : "✓ ran"}${runMs !== null ? ` · ${runMs < 1000 ? `${runMs} ms` : `${(runMs / 1000).toFixed(1)} s`}` : ""}`
+                    : consolePhase === "compiling"
+                      ? "compiling…"
+                      : "running…"}
+                </span>
+              )}
+              {playground && consoleLines.length > 0 && <CopyButton onCopy={consoleText} label="Copy output" />}
               <button
                 className="btn btn--ghost"
                 id="clear-console"

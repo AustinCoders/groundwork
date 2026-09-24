@@ -123,6 +123,7 @@ export function run(options: RunOptions): { stop: () => void } {
     "  __send('done', { results: __results, crashed: true });\n" +
     "  return;\n" +
     "}\n" +
+    "await __settle();\n" +
     "__send('done', { results: __results });\n";
 
   worker.postMessage({ type: "run", source });
