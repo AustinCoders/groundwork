@@ -220,3 +220,23 @@ test("a component exercise renders a preview and runs its tests in the sandbox",
 
   expect(problems).toEqual([]);
 });
+
+// The lobby remembers your last choices in this browser. Reading them during
+// the first render made the server's buttons and the client's disagree, which
+// only shows up for someone who has been here before.
+test("the mock lobby hydrates cleanly with saved choices", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "groundwork:mock:config",
+      JSON.stringify({ role: "frontend", seniority: "senior", company: "agency", intensity: "full" })
+    );
+    localStorage.setItem("jsnotes:theme", JSON.stringify("dark"));
+  });
+  const problems = collectProblems(page);
+
+  await page.goto("/mock", { waitUntil: "networkidle" });
+  await expect(page.getByRole("button", { name: /^Frontend/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: /^10\+ years/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: /^Agency/ })).toHaveAttribute("aria-pressed", "true");
+  expect(problems, "the lobby logged problems").toEqual([]);
+});

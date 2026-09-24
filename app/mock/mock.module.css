@@ -186,70 +186,105 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* The loop as an agenda: the stages are a schedule, so they read top to bottom
+   like one — number, name and why on the left, the facts in a column on the
+   right that lines up from row to row. A grid of cards made ten stages into
+   ten uneven boxes that each wrapped differently. */
+
 .map {
   list-style: none;
   margin: 0 0 22px;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
-  gap: 12px;
   counter-reset: stage;
+  border-top: 1.5px solid var(--line);
 }
 
 .mapStage {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 12px 14px 12px 44px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--sheet);
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) max-content;
+  column-gap: 16px;
+  row-gap: 2px;
+  align-items: baseline;
+  padding: 14px 6px 14px 0;
+  border-bottom: 1px dashed var(--line-soft);
   counter-increment: stage;
 }
 
 .mapStage::before {
   content: counter(stage);
-  position: absolute;
-  left: 12px;
-  top: 10px;
-  width: 22px;
-  height: 22px;
+  grid-row: 1 / span 2;
+  align-self: start;
+  width: 28px;
+  height: 28px;
   display: grid;
   place-items: center;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--ink);
-  border: 1.5px solid var(--ink);
+  border: 1.5px solid var(--line-soft);
   border-radius: 50%;
   background: var(--sheet-2);
+  font-variant-numeric: tabular-nums;
 }
 
-.mapStage[data-core="true"] {
-  border-color: var(--ink-soft);
+.mapStage[data-core="true"]::before {
+  border-color: var(--ink);
+  background: var(--hl-mint);
+}
+
+/* the thread between the numbers */
+.mapStage:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 44px;
+  bottom: -14px;
+  border-left: 1.5px dotted var(--line-soft);
+}
+
+.mapStage > .mapTitle {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.mapStage > .mapMeta {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  align-self: center;
+  display: grid;
+  grid-template-columns: 3.4em 12.5em 3.6em;
+  justify-items: start;
+  white-space: nowrap;
+}
+
+.mapStage > .mapReason {
+  grid-column: 2;
+  grid-row: 2;
+  max-width: 64ch;
 }
 
 .mapTitle {
   font-family: var(--font-heading);
   font-size: 22px;
-  line-height: 1.05;
+  line-height: 1.1;
   color: var(--ink);
 }
 
 .mapMeta {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 6px 8px;
   align-items: center;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--pencil);
   font-variant-numeric: tabular-nums;
 }
 
 .mapReason {
   margin: 0;
-  font-size: 14px;
+  font-size: 14.5px;
   line-height: 1.4;
   color: var(--pencil);
 }
@@ -1334,6 +1369,21 @@
 }
 
 @media (max-width: 640px) {
+  .mapStage {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .mapStage > .mapMeta {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .mapStage > .mapReason {
+    grid-row: 3;
+  }
+
   .configGrid {
     grid-template-columns: minmax(0, 1fr);
     gap: 6px;

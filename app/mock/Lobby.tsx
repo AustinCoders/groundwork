@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { fetchStages, usePrefetchStages } from "@/app/mock/useStageBanks";
 import { loopMinutes, planLoop, STAGE_RULES } from "@/lib/mock/loops";
 import { buildSession, stagePosition, type Session, type SessionMode } from "@/lib/mock/session";
@@ -19,6 +19,7 @@ import type {
 } from "@/lib/mock/types";
 import type { MockCatalog } from "@/lib/mock/bank";
 import { store } from "@/lib/storage";
+import { subscribeNever } from "@/lib/hooks";
 import styles from "./mock.module.css";
 
 const CONFIG_KEY = "groundwork:mock:config";
@@ -70,6 +71,31 @@ function readConfig(): LoopConfig {
       ? (saved.intensity as Intensity)
       : DEFAULT_CONFIG.intensity,
   };
+}
+
+// The saved choices come out of this browser, which the server cannot see, so
+// the first render must use the defaults and switch after hydration — reading
+// localStorage in useState's initialiser made the server's buttons and the
+// client's disagree. The cache keeps useSyncExternalStore's snapshot stable.
+let cachedRaw: string | null | undefined;
+let cachedConfig: LoopConfig = DEFAULT_CONFIG;
+
+function savedConfig(): LoopConfig {
+  let raw: string | null = null;
+  try {
+    raw = localStorage.getItem(CONFIG_KEY);
+  } catch {
+    raw = null;
+  }
+  if (raw !== cachedRaw) {
+    cachedRaw = raw;
+    cachedConfig = readConfig();
+  }
+  return cachedConfig;
+}
+
+function serverConfig(): LoopConfig {
+  return DEFAULT_CONFIG;
 }
 
 function newId(): string {
@@ -136,7 +162,7 @@ function LoopMap({ plan, stages }: { plan: PlannedStage[]; stages: Record<StageI
               <span className={styles.nowrap}>
                 {p.questions} {p.questions === 1 ? "question" : "questions"} · {p.minutes} min
               </span>
-              {p.core && <span className={styles.coreBadge}>core</span>}
+              {p.core ? <span className={styles.coreBadge}>core</span> : <span aria-hidden="true" />}
             </span>
             <p className={styles.mapReason}>{p.reason}</p>
           </li>
@@ -265,18 +291,18 @@ export function Lobby({
   );
 
   const [mode, setMode] = useState<SessionMode>("loop");
-  const [config, setConfigState] = useState<LoopConfig>(readConfig);
+  const stored = useSyncExternalStore(subscribeNever, savedConfig, serverConfig);
+  const [picked, setPicked] = useState<LoopConfig | null>(null);
+  const config = picked ?? stored;
   const [drillStage, setDrillStage] = useState<StageId>("javascript");
   const [drillCount, setDrillCount] = useState(5);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function setConfig(patch: Partial<LoopConfig>) {
-    setConfigState((prev) => {
-      const next = { ...prev, ...patch };
-      store.set(CONFIG_KEY, next);
-      return next;
-    });
+    const next = { ...config, ...patch };
+    store.set(CONFIG_KEY, next);
+    setPicked(next);
   }
 
   const plan = useMemo(() => planLoop(config, catalog.hotFor), [config, catalog.hotFor]);

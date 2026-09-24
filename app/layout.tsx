@@ -45,9 +45,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" data-theme="light" suppressHydrationWarning className={fontVariables}>
       <head>
         <meta name="color-scheme" content="light dark" />
-        <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body>
+        {/* Where the Script docs put it. Next hoists a beforeInteractive script
+            into <head> whatever its position; rendered inside a hand-written
+            <head> instead, React meets a raw <script> while hydrating and warns
+            that it will never run on the client. */}
+        <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <TopicsNavProvider topics={topicsNavWithStats()}>
           <TopicsReadyProvider ids={readyTopicIds}>
             <RouteFade>{children}</RouteFade>
