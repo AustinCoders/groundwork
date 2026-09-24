@@ -79,15 +79,6 @@ function serverConfig(): LoopConfig {
   return DEFAULT_CONFIG;
 }
 
-function hasSavedConfig(): boolean {
-  savedConfig();
-  return cachedRaw !== null && cachedRaw !== undefined;
-}
-
-function serverHasSaved(): boolean {
-  return false;
-}
-
 function newId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
@@ -216,7 +207,6 @@ export function Lobby({
   const stored = useSyncExternalStore(subscribeNever, savedConfig, serverConfig);
   const [picked, setPicked] = useState<LoopConfig | null>(null);
   const config = picked ?? stored;
-  const hasSaved = useSyncExternalStore(subscribeNever, hasSavedConfig, serverHasSaved);
   const [drillStage, setDrillStage] = useState<StageId>("javascript");
   const [drillCount, setDrillCount] = useState(5);
   const [busy, setBusy] = useState(false);
@@ -348,7 +338,6 @@ export function Lobby({
         <LoopWizard
           config={config}
           onChange={setConfig}
-          hasSaved={hasSaved}
           plan={plan}
           stages={stages}
           hotFor={catalog.hotFor}

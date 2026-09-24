@@ -98,14 +98,13 @@ export function LoopMap({
  * Planning a loop, one question at a time and in order: a step opens only once
  * every step before it has an answer, because what the later steps offer
  * depends on the earlier ones (a company style removes the company step; the
- * lengths are timed for the role and level chosen). A returning reader, whose
- * choices are already saved, lands on the finished loop; changing one choice
+ * lengths are timed for the role and level chosen). Every visit starts at the
+ * first step, even with choices saved from before; changing an earlier choice
  * goes on to the first step still waiting for an answer, or back to the loop.
  */
 export function LoopWizard({
   config,
   onChange,
-  hasSaved,
   plan,
   stages,
   hotFor,
@@ -117,7 +116,6 @@ export function LoopWizard({
 }: {
   config: LoopConfig;
   onChange: (patch: Partial<LoopConfig>) => void;
-  hasSaved: boolean;
   plan: PlannedStage[];
   stages: Record<StageId, StageInfo>;
   hotFor: Record<StageId, CompanyType[]>;
@@ -130,18 +128,10 @@ export function LoopWizard({
   const steps = stepsFor(config);
   const REVIEW = steps.length - 1;
   const [stepOverride, setStepOverride] = useState<StepId | null>(null);
-  // Which steps have an answer: true once chosen here, false when a change
-  // earlier on means the step has to be asked again. Anything not marked is
-  // answered only if the choices were saved from an earlier visit — derived
-  // rather than stored, so the server (which cannot see saved choices) and the
-  // first client render agree.
+  // Which steps have been answered in this visit: true once chosen, false when
+  // a change earlier on means the step has to be asked again.
   const [answers, setAnswers] = useState<Partial<Record<StepId, boolean>>>({});
-  // The first choice saves the config, which would make every step look
-  // answered from then on; what counts is whether choices were saved before
-  // this visit began.
-  const [savedBefore, setSavedBefore] = useState<boolean | null>(null);
-  const cameBack = savedBefore ?? hasSaved;
-  const isAnswered = (id: StepId, marks = answers) => marks[id] ?? cameBack;
+  const isAnswered = (id: StepId, marks = answers) => marks[id] ?? false;
   const firstOpen = (list: StepId[], marks = answers) => {
     const i = list.findIndex((id) => id !== "review" && !isAnswered(id, marks));
     return i === -1 ? list.length - 1 : i;
@@ -149,7 +139,7 @@ export function LoopWizard({
   // The furthest step that can be opened: the first one still unanswered.
   const reached = firstOpen(steps);
   // Held by id rather than position, since choosing a style removes a step.
-  const wanted: StepId = stepOverride && steps.includes(stepOverride) ? stepOverride : cameBack ? "review" : "style";
+  const wanted: StepId = stepOverride && steps.includes(stepOverride) ? stepOverride : "style";
   const step = Math.min(steps.indexOf(wanted), reached);
   const stepId = steps[step];
 
@@ -181,7 +171,6 @@ export function LoopWizard({
 
   function choose(patch: Partial<LoopConfig>) {
     movedByReader.current = true;
-    if (savedBefore === null) setSavedBefore(hasSaved);
     onChange(patch);
     const marks = { ...answers, [stepId]: true };
     // Leaving a company style for your own loop brings the company step back,

@@ -289,11 +289,15 @@ test("the mock lobby hydrates cleanly with saved choices", async ({ page }) => {
   const problems = collectProblems(page);
 
   await page.goto("/mock", { waitUntil: "networkidle" });
-  // a returning reader lands on the finished loop, with their choices on the steps
-  await expect(page.getByRole("heading", { name: "Your loop" })).toBeVisible();
+  // a returning reader still walks the steps in order, from the first
+  await expect(page.getByRole("heading", { name: "Whose loop?" })).toBeVisible();
   const steps = page.getByRole("list", { name: "Steps" });
-  await expect(steps.getByRole("button", { name: /^Role/ })).toContainText("Frontend");
-  await expect(steps.getByRole("button", { name: /^Experience/ })).toContainText("10+ years");
-  await expect(steps.getByRole("button", { name: /^Company/ })).toContainText("Agency");
+  await expect(steps.getByRole("button", { name: /^Role/ })).toBeDisabled();
+  await expect(steps.getByRole("button", { name: /^Your loop/ })).toBeDisabled();
+  // the saved level still carries over to a single round
+  await page.getByRole("tab", { name: "Single round" }).click();
+  await expect(
+    page.getByRole("group", { name: "Experience" }).getByRole("button", { name: /^10\+ years/ })
+  ).toHaveAttribute("aria-pressed", "true");
   expect(problems, "the lobby logged problems").toEqual([]);
 });
