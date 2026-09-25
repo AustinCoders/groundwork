@@ -6,11 +6,12 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex: 1 1 auto;
+  width: 100%;
   max-width: 1600px;
-  margin: 12px auto 0;
-  padding: 0 16px 16px;
-  height: calc(100dvh - 24px);
-  min-height: 480px;
+  min-height: 0;
+  margin: 0 auto;
+  padding: 10px 16px 16px;
 }
 
 .top {
@@ -108,8 +109,89 @@
   font-family: var(--wb-font);
 }
 
-.gridDot {
+.paperDot {
   fill: var(--line);
+}
+
+.paperLine {
+  stroke: var(--line);
+}
+
+.paperFaint {
+  stroke: color-mix(in srgb, var(--line) 55%, transparent);
+}
+
+.pageWrap {
+  display: flex;
+}
+
+.pagePop {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: -3px;
+  z-index: 6;
+  width: 250px;
+  padding: 10px;
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+}
+
+.paperGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.zoom .paperOpt {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  height: auto;
+  padding: 5px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  background: var(--sheet-2);
+  border: 1.5px solid transparent;
+  border-radius: 9px;
+}
+
+.zoom .paperOpt[aria-pressed="true"] {
+  color: var(--ink);
+  border-color: var(--green);
+}
+
+.paperPreview {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--wb-paper);
+  border-radius: 5px;
+}
+
+.snapRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 6px 4px 0;
+  font-size: 14px;
+  color: var(--ink);
+  border-top: 1.5px dashed var(--line);
+  cursor: pointer;
+}
+
+.snapRow input {
+  accent-color: var(--green);
+}
+
+.snapRow kbd {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--pencil);
 }
 
 .selection rect:first-child {
@@ -522,9 +604,7 @@
 
 @media (max-width: 720px) {
   .app {
-    padding: 0 8px 8px;
-    margin-top: 8px;
-    height: calc(100dvh - 76px);
+    padding: 8px;
   }
 
   .top {
@@ -578,5 +658,10 @@
     bottom: auto;
     top: 8px;
     left: 8px;
+  }
+
+  .pagePop {
+    bottom: auto;
+    top: calc(100% + 10px);
   }
 }

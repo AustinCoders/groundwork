@@ -14,7 +14,7 @@ import {
   type ThemeValue,
 } from "@/lib/storage";
 
-export function ThemePicker() {
+export function ThemePicker({ openUp = true, compact }: { openUp?: boolean; compact?: boolean } = {}) {
   const mounted = useMounted();
   const osScheme = useOSColorScheme();
   const [explicitTheme, setExplicitTheme] = useState<ThemeValue | null>(null);
@@ -32,10 +32,19 @@ export function ThemePicker() {
   }
 
   if (!mounted) return null;
-  return <Dropdown items={THEME_ITEMS} value={theme} onChange={onThemeChange} ariaLabel="Theme" openUp />;
+  return (
+    <Dropdown
+      items={THEME_ITEMS}
+      value={theme}
+      onChange={onThemeChange}
+      ariaLabel="Theme"
+      openUp={openUp}
+      compact={compact}
+    />
+  );
 }
 
-export function FontPicker() {
+export function FontPicker({ openUp = true, compact }: { openUp?: boolean; compact?: boolean } = {}) {
   const mounted = useMounted();
   const [explicitFont, setExplicitFont] = useState<FontValue | null>(null);
 
@@ -52,5 +61,14 @@ export function FontPicker() {
   }
 
   if (!mounted) return null;
-  return <Dropdown items={FONT_ITEMS} value={font} onChange={onFontChange} ariaLabel="Handwriting style" openUp />;
+  return (
+    <Dropdown
+      items={FONT_ITEMS}
+      value={font}
+      onChange={onFontChange}
+      ariaLabel="Handwriting style"
+      openUp={openUp}
+      compact={compact}
+    />
+  );
 }

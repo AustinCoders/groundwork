@@ -1,0 +1,104 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  min-height: 480px;
+  overflow: hidden;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+  min-width: 0;
+  padding: 8px 16px;
+  border-bottom: 1.5px solid var(--line);
+  background: var(--sheet);
+}
+
+.head :global(.back-btn) {
+  flex: none;
+  color: var(--pencil);
+  border-color: var(--line);
+}
+
+.head :global(.back-btn:hover) {
+  color: var(--ink);
+  background: var(--sheet-2);
+}
+
+.brand {
+  display: inline-flex;
+  flex: none;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 400;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--ink);
+}
+
+.slot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.prefs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.pref {
+  width: 150px;
+}
+
+.pref :global(.dd__btn) {
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 720px) {
+  .head {
+    gap: 8px;
+    padding: 6px 8px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .pref {
+    width: 112px;
+  }
+}
+
+@media (max-width: 420px) {
+  .brand {
+    display: none;
+  }
+
+  .pref {
+    width: 96px;
+  }
+}

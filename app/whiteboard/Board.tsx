@@ -5,6 +5,7 @@ import { ElementView } from "./ElementView";
 import { Icon } from "./icons";
 import { StylePanel } from "./StylePanel";
 import { BoardMenu } from "./BoardMenu";
+import { PagePicker, PaperPattern, isPaper, paperVisible, type Paper } from "./Paper";
 import { textBox } from "@/lib/whiteboard/geometry";
 import {
   boardShareUrl,
@@ -53,10 +54,13 @@ import {
   lastBoard,
   listBoards,
   loadBoard,
+  loadPrefs,
   rememberLast,
   renameBoard,
   saveBoard,
+  savePrefs,
   type BoardMeta,
+  type BoardPrefs,
 } from "@/lib/whiteboard/storage";
 import styles from "./whiteboard.module.css";
 
@@ -148,7 +152,16 @@ export function Board() {
   }, []);
   const [style, setStyle] = useState<Style>(DEFAULT_STYLE);
   const [cam, setCam] = useState<Camera>({ x: 0, y: 0, zoom: 1 });
-  const [grid, setGrid] = useState(true);
+  const [prefs, setPrefs] = useState(loadPrefs);
+  const grid = prefs.snap;
+  const paper: Paper = isPaper(prefs.paper) ? prefs.paper : "dots";
+  const updatePrefs = useCallback((patch: Partial<BoardPrefs>) => {
+    setPrefs((p) => {
+      const next = { ...p, ...patch };
+      savePrefs(next);
+      return next;
+    });
+  }, []);
   const [editing, setEditing] = useState<string | null>(null);
   const [marquee, setMarquee] = useState<Box | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -782,7 +795,7 @@ export function Board() {
         return;
       }
       if (k === "g") {
-        setGrid((g) => !g);
+        updatePrefs({ snap: !stateRef.current.grid });
         return;
       }
       const match = TOOLS.find((t) => t.key.toLowerCase() === k);
@@ -996,13 +1009,11 @@ export function Board() {
           onDoubleClick={onDoubleClick}
         >
           <defs>
-            <pattern id="wb-grid" width={GRID} height={GRID} patternUnits="userSpaceOnUse">
-              <circle cx={1} cy={1} r={1 / cam.zoom} className={styles.gridDot} />
-            </pattern>
+            <PaperPattern id="wb-paper" paper={paper} zoom={cam.zoom} />
           </defs>
           <g transform={`scale(${cam.zoom}) translate(${cam.x} ${cam.y})`}>
-            {grid && cam.zoom > 0.35 && (
-              <rect x={visible.x} y={visible.y} width={visible.w} height={visible.h} fill="url(#wb-grid)" />
+            {paperVisible(paper, cam.zoom) && (
+              <rect x={visible.x} y={visible.y} width={visible.w} height={visible.h} fill="url(#wb-paper)" />
             )}
             {els.map((el) => (
               <ElementView key={el.id} el={el} hidden={el.id === editing && el.kind === "text"} />
@@ -1083,15 +1094,12 @@ export function Board() {
           <button type="button" aria-label="Fit everything" title="Fit everything — ⇧1" onClick={fitToContent}>
             ⤢
           </button>
-          <button
-            type="button"
-            aria-label="Grid and snapping"
-            aria-pressed={grid}
-            title="Grid and snapping — G"
-            onClick={() => setGrid((g) => !g)}
-          >
-            <Icon name="grid" />
-          </button>
+          <PagePicker
+            paper={paper}
+            onPaper={(p) => updatePrefs({ paper: p })}
+            snap={grid}
+            onSnap={(v) => updatePrefs({ snap: v })}
+          />
         </div>
 
         {notice && (

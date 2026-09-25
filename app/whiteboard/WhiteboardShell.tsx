@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Shell } from "@/components/Shell";
+import { BareShell } from "@/components/AppHeader";
 
 const Board = dynamic(() => import("./Board").then((m) => m.Board), {
   ssr: false,
@@ -14,8 +14,8 @@ const Board = dynamic(() => import("./Board").then((m) => m.Board), {
 
 export function WhiteboardShell() {
   return (
-    <Shell skipLabel="Skip to the whiteboard" skipHref="#board" variant="focused" workspace>
+    <BareShell title="Whiteboard" skipLabel="Skip to the whiteboard" skipHref="#board">
       <Board />
-    </Shell>
+    </BareShell>
   );
 }

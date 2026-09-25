@@ -78,3 +78,19 @@ export function deleteBoard(id: string) {
     read<BoardMeta[]>(INDEX, []).filter((b) => b.id !== id)
   );
 }
+
+const PREFS = "groundwork:boards:prefs";
+
+export interface BoardPrefs {
+  paper: string;
+  snap: boolean;
+}
+
+export function loadPrefs(): BoardPrefs {
+  const p = read<Partial<BoardPrefs>>(PREFS, {});
+  return { paper: typeof p.paper === "string" ? p.paper : "dots", snap: p.snap !== false };
+}
+
+export function savePrefs(prefs: BoardPrefs) {
+  write(PREFS, prefs);
+}

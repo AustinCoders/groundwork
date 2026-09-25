@@ -75,3 +75,19 @@ test("exports a PNG and opens a share link as a new board", async ({ page, conte
   await expect(other.locator("svg[role=application]")).toHaveAttribute("aria-label", /1 element/);
   await expect(other.getByRole("textbox", { name: "Board name" })).toHaveValue(/shared/);
 });
+
+test("has its own header and remembers the page layout", async ({ page }) => {
+  await canvas(page);
+  await expect(page.locator("#site-sidenav")).toHaveCount(0);
+  await expect(page.getByRole("heading", { level: 1, name: "Whiteboard" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Home|Back to/ })).toBeVisible();
+  await expect(page.getByLabel("Theme")).toBeVisible();
+
+  await page.getByRole("button", { name: "Page layout" }).click();
+  await page.getByRole("button", { name: "Isometric" }).click();
+  await page.getByRole("checkbox", { name: "Snap to grid" }).uncheck();
+  await page.reload({ waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Page layout" }).click();
+  await expect(page.getByRole("button", { name: "Isometric" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("checkbox", { name: "Snap to grid" })).not.toBeChecked();
+});
