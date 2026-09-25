@@ -96,6 +96,7 @@ export interface CodeEditorProps {
   onShowProblems?: () => void;
   files?: FileTabsProps["files"];
   languages?: readonly LanguageKey[];
+  showLanguagePicker?: boolean;
   fileActions?: Omit<FileTabsProps, "files">;
 
   toolbarStart?: React.ReactNode;
@@ -330,64 +331,74 @@ function FileTabs({ files, onSelect, onClose, onNew, onRename, onCloseMany }: Fi
     };
   }, [menu]);
 
-  const openMenu = (id: string, x: number, y: number) => setMenu({ id, x, y });
+  const listRef = useRef<HTMLSpanElement>(null);
+  const activeId = files.find((f) => f.active)?.id;
+
+  useEffect(() => {
+    listRef.current?.querySelector(".ed__tab.is-active")?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [activeId, files.length]);
+
+  const openMenu = (id: string, x: number, y: number) =>
+    setMenu({ id, x: Math.max(8, Math.min(x, window.innerWidth - 190)), y: Math.min(y, window.innerHeight - 170) });
   const act = (fn: () => void) => () => {
     setMenu(null);
     fn();
   };
 
   return (
-    <span className="ed__tabs ed__tabs--files" role="list" aria-label="Files">
-      {files.map((f) => (
-        <span key={f.id} role="listitem" className={`ed__tab${f.active ? " is-active" : ""}`}>
-          {editing === f.id ? (
-            <input
-              className="ed__tab-rename"
-              aria-label={`Rename ${f.name}`}
-              defaultValue={f.name}
-              autoFocus
-              onFocus={(e) => e.currentTarget.setSelectionRange(0, e.currentTarget.value.lastIndexOf(".") >>> 0)}
-              onBlur={(e) => {
-                onRename(f.id, e.currentTarget.value);
-                setEditing(null);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") e.currentTarget.blur();
-                if (e.key === "Escape") setEditing(null);
-              }}
-            />
-          ) : (
-            <button
-              type="button"
-              aria-current={f.active ? "true" : undefined}
-              className="ed__tab-btn"
-              title="Double-click to rename"
-              onClick={() => onSelect(f.id)}
-              onDoubleClick={() => setEditing(f.id)}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                openMenu(f.id, e.clientX, e.clientY);
-              }}
-            >
-              <span className="ed__tab-icon" aria-hidden="true">
-                ◆
-              </span>
-              <span className="ed__tab-name">{f.name}</span>
-            </button>
-          )}
-          {files.length > 1 && (
-            <button
-              type="button"
-              className="ed__tab-close"
-              aria-label={`Close ${f.name}`}
-              onClick={() => onClose(f.id)}
-            >
-              ×
-            </button>
-          )}
-        </span>
-      ))}
-      <span role="listitem" className="ed__tab-new-item">
+    <span className="ed__files">
+      <span className="ed__tabs ed__tabs--files" role="list" aria-label="Files" ref={listRef}>
+        {files.map((f) => (
+          <span key={f.id} role="listitem" className={`ed__tab${f.active ? " is-active" : ""}`}>
+            {editing === f.id ? (
+              <input
+                className="ed__tab-rename"
+                aria-label={`Rename ${f.name}`}
+                defaultValue={f.name}
+                autoFocus
+                onFocus={(e) => e.currentTarget.setSelectionRange(0, e.currentTarget.value.lastIndexOf(".") >>> 0)}
+                onBlur={(e) => {
+                  onRename(f.id, e.currentTarget.value);
+                  setEditing(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") e.currentTarget.blur();
+                  if (e.key === "Escape") setEditing(null);
+                }}
+              />
+            ) : (
+              <button
+                type="button"
+                aria-current={f.active ? "true" : undefined}
+                className="ed__tab-btn"
+                title="Double-click to rename"
+                onClick={() => onSelect(f.id)}
+                onDoubleClick={() => setEditing(f.id)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  openMenu(f.id, e.clientX, e.clientY);
+                }}
+              >
+                <span className="ed__tab-icon" aria-hidden="true">
+                  ◆
+                </span>
+                <span className="ed__tab-name">{f.name}</span>
+              </button>
+            )}
+            {files.length > 1 && (
+              <button
+                type="button"
+                className="ed__tab-close"
+                aria-label={`Close ${f.name}`}
+                onClick={() => onClose(f.id)}
+              >
+                ×
+              </button>
+            )}
+          </span>
+        ))}
+      </span>
+      <span className="ed__tab-new-item">
         <button type="button" className="ed__tab-new" aria-label="New file" title="New file" onClick={onNew}>
           +
         </button>
@@ -456,6 +467,7 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
     files,
     fileActions,
     languages = LANG_ORDER.filter((k) => !WEB_LANGUAGES.includes(k)),
+    showLanguagePicker = true,
     toolbarStart,
   },
   ref
@@ -929,19 +941,21 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
           </span>
         )}
         <span className="ed__spacer" />
-        <Dropdown
-          items={languages.map((key) => ({
-            value: key,
-            label: LANGUAGES[key].label,
-            group: LANGUAGES[key].runnable ? "Runs here" : "Write only",
-          }))}
-          value={currentLang}
-          onChange={(key) => setCurrentLang(key as LanguageKey)}
-          ariaLabel="Language"
-          plain
-          columns={4}
-          compact
-        />
+        {showLanguagePicker && (
+          <Dropdown
+            items={languages.map((key) => ({
+              value: key,
+              label: LANGUAGES[key].label,
+              group: LANGUAGES[key].runnable ? "Runs here" : "Write only",
+            }))}
+            value={currentLang}
+            onChange={(key) => setCurrentLang(key as LanguageKey)}
+            ariaLabel="Language"
+            plain
+            columns={4}
+            compact
+          />
+        )}
         <div className="ed__tools">
           {toolbarStart}
           <button

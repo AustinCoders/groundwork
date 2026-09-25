@@ -10,7 +10,7 @@ import { EditorSkeleton } from "@/components/practice/EditorSkeleton";
 import { ShortcutHelp } from "@/components/practice/ShortcutHelp";
 import { Dropdown } from "@/components/ui/select";
 import { isLanguage, LANG_ORDER, LANGUAGES, type LanguageKey } from "@/lib/codeLanguages";
-import { gradeResults, HARNESS_LANGUAGES, isResultLine, parseResultLine, withHarness } from "@/lib/polyglot/grade";
+import { canGrade, gradeResults, isResultLine, parseResultLine, withHarness } from "@/lib/polyglot/grade";
 import { starterFor } from "@/lib/polyglot/starters";
 import { instrumentCode, type EditorProblem } from "@/lib/editor/tools";
 import type { Trace } from "@/lib/debug/view";
@@ -67,6 +67,7 @@ const MARKS: Record<string, string> = { log: "›", info: "i", warn: "!", error:
 const EDITOR_HEIGHT_KEY = "jsnotes:editor-height";
 const LIVE_KEY = "jsnotes:playground-live";
 const STDIN_KEY = "groundwork:playground:stdin";
+const QUICK_LANGS: readonly LanguageKey[] = ["javascript", "typescript", "python", "sql", "html", "css"];
 const EDITOR_HEIGHT_MIN = 220;
 const EDITOR_HEIGHT_MAX = 900;
 
@@ -187,9 +188,9 @@ export function PracticeWorkspace({
   const [activeTab, setActiveTab] = useState<
     "console" | "tests" | "problems" | "preview" | "history" | "input" | "debug"
   >("console");
-  const [stdin, setStdin] = useState(() =>
-    isFree && !interview && typeof window !== "undefined" ? store.get<string>(STDIN_KEY, "") : ""
-  );
+  const storedStdin = useClientValue(() => (isFree && !interview ? store.get<string>(STDIN_KEY, "") : ""), "");
+  const [stdinOverride, setStdin] = useState<string | null>(null);
+  const stdin = stdinOverride ?? storedStdin;
   const runs = useSyncExternalStore(subscribeRuns, runsSnapshot, serverRunsSnapshot);
   const recordedRunRef = useRef(0);
   const [previewDoc, setPreviewDoc] = useState<string | null>(null);
@@ -199,7 +200,9 @@ export function PracticeWorkspace({
   const [consoleLines, setConsoleLines] = useState<RunnerOutputEntry[]>([]);
   const [consolePhase, setConsolePhase] = useState<"idle" | "running" | "compiling" | "ran" | "cleared">("idle");
   const [runMs, setRunMs] = useState<number | null>(null);
-  const [live, setLive] = useState(() => isFree && !interview && store.get<boolean>(LIVE_KEY, false));
+  const storedLive = useClientValue(() => isFree && !interview && store.get<boolean>(LIVE_KEY, false), false);
+  const [liveOverride, setLive] = useState<boolean | null>(null);
+  const live = liveOverride ?? storedLive;
   const liveTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const runStartRef = useRef(0);
   const [testResults, setTestResults] = useState<RunnerTestResult[] | null>(null);
@@ -319,7 +322,7 @@ export function PracticeWorkspace({
     return [{ files: next, active: page.id }, page];
   }
 
-  const hasPage = Boolean(project?.files.some((f) => f.lang === "html"));
+  const hasPage = mounted && Boolean(project?.files.some((f) => f.lang === "html"));
   const [shareState, setShareState] = useState<"idle" | "copied" | "failed" | "too-big">("idle");
 
   async function share() {
@@ -484,7 +487,7 @@ export function PracticeWorkspace({
   }
 
   const hasTests = !isFree && exercise.tests.length > 0;
-  const gradesInLanguage = HARNESS_LANGUAGES.includes(currentLang) && polyglot?.ok === true;
+  const gradesInLanguage = polyglot?.ok === true && canGrade(currentLang, polyglot.signature);
   const showsTestButton =
     hasTests && (currentLang === "javascript" || currentLang === "typescript" || gradesInLanguage);
   const skippedHere = gradesInLanguage && polyglot?.ok ? polyglot.skipped : 0;
@@ -501,7 +504,7 @@ export function PracticeWorkspace({
   useEffect(() => {
     if (consolePhase !== "ran") return;
     const lang = currentLangRef.current;
-    if (["javascript", "python", "ruby", "lua"].includes(lang))
+    if (["javascript", "python", "ruby", "lua", "c", "cpp"].includes(lang))
       editorRef.current?.showInline(groupByLine(consoleLines));
     const p = projectRef.current;
     const file = p?.files.find((f) => f.id === p.active);
@@ -700,9 +703,16 @@ export function PracticeWorkspace({
       return;
     }
 
-    if (meta.runnable === "python" || meta.runnable === "ruby" || meta.runnable === "php" || meta.runnable === "lua") {
+    if (
+      meta.runnable === "python" ||
+      meta.runnable === "ruby" ||
+      meta.runnable === "php" ||
+      meta.runnable === "lua" ||
+      meta.runnable === "c" ||
+      meta.runnable === "cpp"
+    ) {
       const kind = meta.runnable;
-      const grading = withTests && polyglot?.ok ? polyglot : null;
+      const grading = withTests && polyglot?.ok && canGrade(kind, polyglot.signature) ? polyglot : null;
       const rows: [number, number, Json, string?][] = [];
       const options = {
         code: grading ? withHarness(kind, editor.getValue(), grading) : editor.getValue(),
@@ -788,7 +798,7 @@ export function PracticeWorkspace({
               <span aria-hidden="true">✎</span> Playground
             </h1>
             <div className="pg-langs" role="group" aria-label="Quick language">
-              {(["javascript", "typescript", "python", "sql", "html", "css"] as const).map((key) => (
+              {QUICK_LANGS.map((key) => (
                 <button
                   key={key}
                   type="button"
@@ -802,6 +812,22 @@ export function PracticeWorkspace({
                   {LANGUAGES[key].label}
                 </button>
               ))}
+              <span className={`pg-more${QUICK_LANGS.includes(currentLang) ? "" : " is-current"}`}>
+                <Dropdown
+                  items={LANG_ORDER.map((key) => ({
+                    value: key,
+                    label: LANGUAGES[key].label,
+                    short: QUICK_LANGS.includes(key) ? "More" : LANGUAGES[key].label,
+                    group: LANGUAGES[key].runnable ? "Runs here" : "Write only",
+                  }))}
+                  value={currentLang}
+                  placeholder="More"
+                  onChange={(key) => editorRef.current?.setLanguage(key as LanguageKey)}
+                  ariaLabel="Language"
+                  columns={4}
+                  compact
+                />
+              </span>
             </div>
           </div>
         ) : interview ? (
@@ -1132,6 +1158,7 @@ export function PracticeWorkspace({
               files={project?.files.map((f) => ({ id: f.id, name: f.name, active: f.id === project.active }))}
               fileActions={project ? fileActions : undefined}
               languages={project ? LANG_ORDER : undefined}
+              showLanguagePicker={!playground}
               toolbarStart={
                 <>
                   <button

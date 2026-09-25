@@ -5769,7 +5769,7 @@ a.step__title:hover {
     display: none;
   }
 
-  .ed__bar .ed__tabs--files {
+  .ed__bar .ed__files {
     order: 3;
     flex-basis: 100%;
   }
@@ -5779,9 +5779,16 @@ a.step__title:hover {
   }
 }
 
-.ed__tabs--files {
+.ed__files {
+  display: flex;
+  align-items: stretch;
   min-width: 0;
   flex: 1 1 auto;
+}
+
+.ed__tabs--files {
+  min-width: 0;
+  flex: 0 1 auto;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -7292,6 +7299,29 @@ a.step__title:hover {
 }
 
 .pg-lang[aria-pressed="true"] {
+  color: var(--ide-bg);
+  background: var(--ide-accent);
+  font-weight: 700;
+}
+
+.pg-more {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 2px;
+  border-left: 1px solid var(--ide-border);
+  padding-left: 4px;
+}
+
+.pg-more .dd__btn {
+  padding: 5px 10px;
+  font-size: 13.5px;
+  color: var(--ide-fg-dim);
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+}
+
+.pg-more.is-current .dd__btn {
   color: var(--ide-bg);
   background: var(--ide-accent);
   font-weight: 700;
