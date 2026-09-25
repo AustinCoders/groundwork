@@ -310,9 +310,10 @@ interface FileTabsProps {
   onNew: () => void;
   onRename: (id: string, name: string) => void;
   onCloseMany: (ids: string[]) => void;
+  reopen?: { label: string; run: () => void } | null;
 }
 
-function FileTabs({ files, onSelect, onClose, onNew, onRename, onCloseMany }: FileTabsProps) {
+function FileTabs({ files, onSelect, onClose, onNew, onRename, onCloseMany, reopen }: FileTabsProps) {
   const [editing, setEditing] = useState<string | null>(null);
   const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
 
@@ -416,6 +417,11 @@ function FileTabs({ files, onSelect, onClose, onNew, onRename, onCloseMany }: Fi
         >
           ⋯
         </button>
+        {reopen && (
+          <button type="button" className="ed__reopen" onClick={reopen.run} title="Bring back what you just closed">
+            ↺ Reopen {reopen.label}
+          </button>
+        )}
       </span>
       {menu && (
         <span className="tab-menu" role="menu" style={{ left: menu.x, top: menu.y }}>

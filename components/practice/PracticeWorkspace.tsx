@@ -30,6 +30,7 @@ import {
 import {
   langForName,
   loadProject,
+  uniqueName,
   makeFile,
   saveProject,
   starterCode,
@@ -396,6 +397,29 @@ export function PracticeWorkspace({
     return () => window.removeEventListener("message", onMessage);
   });
 
+  const [closed, setClosed] = useState<PgFile[] | null>(null);
+  const closedTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  function rememberClosed(files: PgFile[]) {
+    clearTimeout(closedTimerRef.current);
+    setClosed(files.length ? files : null);
+    if (files.length) closedTimerRef.current = setTimeout(() => setClosed(null), 10_000);
+  }
+
+  function reopenClosed() {
+    const p = projectRef.current;
+    if (!p || !closed?.length) return;
+    const files = [...p.files];
+    const back = closed.map((f) => {
+      const file = { ...f, name: uniqueName(files, f.name.replace(/\.[^.]+$/, ""), LANGUAGES[f.lang].ext) };
+      files.push(file);
+      return file;
+    });
+    clearTimeout(closedTimerRef.current);
+    setClosed(null);
+    activate({ ...p, files }, back[0]);
+  }
+
   const fileActions = {
     onSelect(id: string) {
       const p = projectRef.current!;
@@ -406,8 +430,7 @@ export function PracticeWorkspace({
       const p = projectRef.current!;
       const file = p.files.find((f) => f.id === id);
       if (!file || p.files.length < 2) return;
-      const edited = file.code.trim() && file.code !== starterCode(file.lang);
-      if (edited && !window.confirm(`Close ${file.name}? What is in it is deleted.`)) return;
+      rememberClosed([file]);
       const index = p.files.indexOf(file);
       const files = p.files.filter((f) => f.id !== id);
       if (id !== p.active) return commitProject({ ...p, files });
@@ -417,13 +440,7 @@ export function PracticeWorkspace({
       const p = projectRef.current!;
       const closing = p.files.filter((f) => ids.includes(f.id));
       if (!closing.length) return;
-      const edited = closing.filter((f) => f.code.trim() && f.code !== starterCode(f.lang));
-      const what = closing.length === p.files.length ? "all files" : `${closing.length} files`;
-      if (
-        edited.length &&
-        !window.confirm(`Close ${what}? What is in ${edited.map((f) => f.name).join(", ")} is deleted.`)
-      )
-        return;
+      rememberClosed(closing.filter((f) => f.code.trim() && f.code !== starterCode(f.lang)));
       const kept = p.files.filter((f) => !ids.includes(f.id));
       const files = kept.length ? kept : [makeFile([], currentLangRef.current)];
       const active = files.find((f) => f.id === p.active) ?? files[0];
@@ -538,57 +555,6 @@ export function PracticeWorkspace({
     setLive(next);
     store.set(LIVE_KEY, next);
     if (next) runCode(false);
-  }
-
-  const [translating, setTranslating] = useState<LanguageKey | null>(null);
-  const translateTargets = LANG_ORDER.filter((k) => k !== currentLang && k !== "sql" && k !== "html" && k !== "css");
-
-  async function translateTo(to: LanguageKey) {
-    const editor = editorRef.current;
-    const from = currentLangRef.current;
-    if (!editor || translating) return;
-    const code = editor.getValue();
-    let shape: string | undefined;
-    if (!isFree && to !== "javascript" && to !== "html" && to !== "css" && to !== "sql") {
-      const poly = await loadPolyglot(exercise.id);
-      if (poly.ok) shape = starterFor(to, poly.signature, exercise.title);
-    }
-    setTranslating(to);
-    try {
-      const res = await fetch("/api/translate", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ code, from, to, shape }),
-      });
-      const data = (await res.json().catch(() => ({}))) as { code?: string; error?: string };
-      if (!res.ok || !data.code) throw new Error(data.error || `Translation failed (${res.status}).`);
-      const translated = data.code;
-      const p = projectRef.current;
-      if (p) {
-        const active = p.files.find((f) => f.id === p.active);
-        const base = active ? active.name.replace(/\.[^.]+$/, "") : "translated";
-        const file = makeFile(p.files, to, translated, base);
-        activate({ ...p, files: [...p.files, file] }, file);
-      } else {
-        const existing = codeStore.load(exercise.id, to);
-        const differs = existing && existing.trim() && existing !== starterIn(to, polyglot);
-        if (differs && !window.confirm(`Replace your ${LANGUAGES[to].label} version with this translation?`)) return;
-        codeStore.save(exercise.id, translated, to);
-        editor.setLanguage(to);
-      }
-      setConsoleLines([
-        {
-          kind: "system",
-          text: `Translated from ${LANGUAGES[from].label} to ${LANGUAGES[to].label} by Claude — read it before you trust it.`,
-        },
-      ]);
-      setActiveTab("console");
-    } catch (err) {
-      setConsoleLines([{ kind: "error", text: err instanceof Error ? err.message : String(err) }]);
-      setActiveTab("console");
-    } finally {
-      setTranslating(null);
-    }
   }
 
   async function debugCode() {
@@ -939,17 +905,6 @@ export function PracticeWorkspace({
           >
             ▶ Run
           </button>
-          {!isComponent && !interview && currentLang !== "sql" && currentLang !== "html" && currentLang !== "css" && (
-            <Dropdown
-              items={translateTargets.map((k) => ({ value: k, label: LANGUAGES[k].label }))}
-              value=""
-              placeholder={translating ? `Translating to ${LANGUAGES[translating].label}…` : "🌐 Translate"}
-              onChange={(v) => void translateTo(v as LanguageKey)}
-              ariaLabel="Translate this code to another language"
-              columns={3}
-              compact
-            />
-          )}
           {(currentLang === "javascript" || currentLang === "typescript" || currentLang === "python") &&
             !isComponent &&
             !interview && (
@@ -1172,7 +1127,16 @@ export function PracticeWorkspace({
               onProblems={setProblems}
               onShowProblems={() => setActiveTab("problems")}
               files={project?.files.map((f) => ({ id: f.id, name: f.name, active: f.id === project.active }))}
-              fileActions={project ? fileActions : undefined}
+              fileActions={
+                project
+                  ? {
+                      ...fileActions,
+                      reopen: closed?.length
+                        ? { label: closed.length === 1 ? closed[0].name : `${closed.length} files`, run: reopenClosed }
+                        : null,
+                    }
+                  : undefined
+              }
               languages={project ? LANG_ORDER : undefined}
               showLanguagePicker={!playground}
               toolbarStart={

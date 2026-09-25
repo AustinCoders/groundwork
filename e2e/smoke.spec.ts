@@ -537,27 +537,6 @@ test("lua runs in the browser and is graded against a problem's tests", async ({
   await expect(page.locator(".verdict")).toContainText("All 7 tests pass", { timeout: 60_000 });
 });
 
-test("translate sends the code to the server and opens the result as a new file", async ({ page }) => {
-  let sent: { from?: string; to?: string; code?: string } = {};
-  await page.route("**/api/translate", async (route) => {
-    sent = route.request().postDataJSON();
-    await route.fulfill({ json: { code: "print(6 * 7)\n" } });
-  });
-  await page.goto("/practice?id=free");
-  const editor = page.locator(".cm-content");
-  await editor.click();
-  await page.keyboard.press("ControlOrMeta+a");
-  await page.keyboard.insertText("console.log(6 * 7);\n");
-  await page.getByRole("combobox", { name: "Translate this code to another language" }).click();
-  await page.getByRole("option", { name: "Python", exact: true }).click();
-  await expect(editor).toContainText("print(6 * 7)");
-  expect(sent).toMatchObject({ from: "javascript", to: "python", code: "console.log(6 * 7);\n" });
-  await expect(
-    page.getByRole("list", { name: "Files" }).getByRole("button", { name: "scratch.py", exact: true })
-  ).toBeVisible();
-  await expect(page.locator("#view-console")).toContainText("Translated from JavaScript to Python");
-});
-
 test("python can be stepped through too", async ({ page }) => {
   await page.goto("/practice?id=free");
   await page
@@ -599,4 +578,36 @@ test("the design round has a whiteboard that stays with the answer", async ({ pa
   const push = page.getByRole("button", { name: "Answered — show me" });
   if (await push.isVisible()) await push.click();
   await expect(page.getByText("Your whiteboard")).toBeVisible();
+});
+
+test("the mock lobby shows how ready you are and what to practise next", async ({ page }) => {
+  await page.addInitScript(() => {
+    const now = Date.now();
+    const mk = (d: number, js: number, de: number) => ({
+      id: `h${d}`,
+      mode: "loop",
+      config: { role: "fullstack", seniority: "mid", company: "product", intensity: "quick" },
+      startedAt: now - d * 86400000 - 3e6,
+      finishedAt: now - d * 86400000,
+      stages: [
+        { stage: "javascript", core: false, scores: [js] },
+        { stage: "design", core: false, scores: [de] },
+      ],
+      verdict: "lean-hire",
+      headline: "",
+      level: "at",
+      score: 0.6,
+      questions: 4,
+      timedOut: 0,
+      skipped: 0,
+    });
+    localStorage.setItem("groundwork:mock:history", JSON.stringify([mk(1, 0.6, 0.3), mk(0, 0.8, 0.4)]));
+  });
+  await page.goto("/mock");
+  const board = page.locator("section[aria-labelledby=mock-readiness]");
+  await expect(board.getByRole("img", { name: /Readiness \d+ out of 100/ })).toBeVisible();
+  await expect(board.getByText("2 🔥")).toBeVisible();
+  await expect(board.getByText("System design").first()).toBeVisible();
+  await board.getByRole("button", { name: "Set up that round" }).click();
+  await expect(page.getByRole("tab", { name: "Single round" })).toHaveAttribute("aria-selected", "true");
 });

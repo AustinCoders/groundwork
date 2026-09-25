@@ -5814,7 +5814,10 @@ a.step__title:hover {
 }
 
 .ed__tabs--files .ed__tab-close {
-  padding: 2px 5px;
+  min-width: 24px;
+  min-height: 24px;
+  opacity: 0.7;
+  padding: 2px 6px;
   color: inherit;
   background: none;
   border: 0;
@@ -5855,6 +5858,33 @@ a.step__title:hover {
   border: 0;
   border-radius: 6px;
   cursor: pointer;
+}
+
+.ed__reopen {
+  flex: none;
+  align-self: center;
+  margin-left: 4px;
+  padding: 3px 9px;
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--ide-bg);
+  background: var(--ide-accent);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  animation: reopenIn 0.2s ease both;
+}
+
+@keyframes reopenIn {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+
+.lc-topbar--playground .lc-topbar__actions {
+  margin-left: auto;
 }
 
 .tab-menu {
