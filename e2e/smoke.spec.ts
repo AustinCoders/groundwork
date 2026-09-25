@@ -365,6 +365,7 @@ test("the playground has no sidebar, a site menu, and goes back where you came f
   await page.getByRole("button", { name: "Menu" }).click();
   const drawer = page.getByRole("dialog", { name: /menu/ });
   await expect(drawer.getByRole("link", { name: "Whiteboard" })).toBeVisible();
+  await drawer.getByRole("button", { name: /Theme/ }).click();
   await drawer.getByRole("radio", { name: "Kraft" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "kraft");
   await page.keyboard.press("Escape");
@@ -747,6 +748,7 @@ test("the site menu folds its sections and changes the text size everywhere", as
   await page.getByRole("button", { name: "Menu" }).click();
   const menu = page.getByRole("dialog", { name: /menu/ });
   await expect(menu.getByRole("link", { name: "Whiteboard" })).toBeVisible();
+  await expect(menu.getByRole("button", { name: /Theme/ })).toHaveAttribute("aria-expanded", "false");
   const textSize = menu.getByRole("button", { name: /Text size/ });
   await textSize.click();
   await expect(textSize).toHaveAttribute("aria-expanded", "true");
@@ -760,7 +762,7 @@ test("the site menu folds its sections and changes the text size everywhere", as
     .toBe("1.1");
   await page.getByRole("button", { name: "Menu" }).click();
   const problemsMenu = page.getByRole("dialog", { name: /menu/ });
-  await expect(problemsMenu.getByRole("button", { name: /Theme/ })).toBeVisible();
+  await expect(problemsMenu.getByRole("button", { name: /Theme/ })).toHaveAttribute("aria-expanded", "false");
   await expect(problemsMenu.getByRole("button", { name: /Text size/ })).toHaveCount(0);
 });
 

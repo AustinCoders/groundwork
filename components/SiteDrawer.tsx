@@ -28,18 +28,6 @@ const LINKS: { href: string; label: string; mark: string }[] = [
 
 type Section = "go" | "theme" | "font" | "reading" | "narrator";
 
-const OPEN_KEY = "groundwork:drawer:open";
-const DEFAULT_OPEN: Section[] = ["theme"];
-
-function readOpen(): Set<Section> {
-  try {
-    const raw = localStorage.getItem(OPEN_KEY);
-    return new Set(raw ? (JSON.parse(raw) as Section[]) : DEFAULT_OPEN);
-  } catch {
-    return new Set(DEFAULT_OPEN);
-  }
-}
-
 const plain = (label: string) => label.replace(/^\S+\s/, "");
 
 function useHtmlAttr(name: string): string {
@@ -173,7 +161,7 @@ function ProgressCard({ onClose }: { onClose: () => void }) {
 
 function DrawerBody({ onClose, reading }: { onClose: () => void; reading: boolean }) {
   const pathname = usePathname();
-  const [open, setOpen] = useState<Set<Section>>(readOpen);
+  const [open, setOpen] = useState<Set<Section>>(() => new Set());
   const theme = useHtmlAttr("data-theme");
   const font = useHtmlAttr("data-font");
   const [zoom, stepZoom] = useReaderZoom();
@@ -184,9 +172,6 @@ function DrawerBody({ onClose, reading }: { onClose: () => void; reading: boolea
       const next = new Set(prev);
       if (isOpen) next.add(id);
       else next.delete(id);
-      try {
-        localStorage.setItem(OPEN_KEY, JSON.stringify([...next]));
-      } catch {}
       return next;
     });
   }
