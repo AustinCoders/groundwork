@@ -1,7 +1,7 @@
 import type { Extension } from "@codemirror/state";
 import type { StreamParser } from "@codemirror/language";
 
-export type RunnableKind = "js" | "ts" | "python" | "sql" | "web";
+export type RunnableKind = "js" | "ts" | "python" | "sql" | "web" | "ruby" | "php" | "lua";
 
 export interface LanguageMeta {
   label: string;
@@ -140,21 +140,21 @@ export const LANGUAGES: Record<LanguageKey, LanguageMeta> = {
   ruby: {
     label: "Ruby",
     ext: "rb",
-    runnable: null,
+    runnable: "ruby",
     comment: "#",
     support: () => legacy(async () => (await import("@codemirror/legacy-modes/mode/ruby")).ruby),
   },
   php: {
     label: "PHP",
     ext: "php",
-    runnable: null,
+    runnable: "php",
     comment: "//",
     support: async () => (await import("@codemirror/lang-php")).php(),
   },
   lua: {
     label: "Lua",
     ext: "lua",
-    runnable: null,
+    runnable: "lua",
     comment: "--",
     support: () => legacy(async () => (await import("@codemirror/legacy-modes/mode/lua")).lua),
   },
@@ -170,6 +170,9 @@ export const HINTS: Record<RunnableKind, string> = {
   python: "⌘/Ctrl + Enter to run — first run downloads the Python runtime (~13MB, cached after)",
   sql: "⌘/Ctrl + Enter to run against an in-memory SQLite database",
   web: "⌘/Ctrl + Enter to render the page in Preview",
+  ruby: "⌘/Ctrl + Enter to run — first run downloads the Ruby runtime (~10 MB, cached after)",
+  php: "⌘/Ctrl + Enter to run — first run downloads the PHP runtime (~8 MB, cached after)",
+  lua: "⌘/Ctrl + Enter to run in Lua 5.4",
 };
 
 export const WEB_LANGUAGES: readonly LanguageKey[] = ["html", "css"];

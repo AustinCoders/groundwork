@@ -154,6 +154,7 @@ crds
 CRDT
 Csvg
 ctes
+currentline
 Cutshort
 datacentre
 dataclass
@@ -208,10 +209,12 @@ forgeeksskeegfor
 gcell
 geohash
 getframe
+getinfo
 getrandom
 Gochi
 goroutines
 GSAP
+gsub
 GTID
 Gurgaon
 halvings
@@ -342,6 +345,7 @@ Pantnagar
 parameterised
 partitionable
 PAYPALISHIRING
+pcall
 pgvector
 PINALSIGYAHRPI
 pineapplepenapple
@@ -493,6 +497,7 @@ vnodes
 vvvlo
 Warshall
 WASD
+wasmoon
 webdev
 wertf
 worklets

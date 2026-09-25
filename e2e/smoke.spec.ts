@@ -521,3 +521,18 @@ test("debugging a problem runs the solution on its first test's input", async ({
   await expect(page.locator(".debug__where")).toContainText("in twoSum");
   await expect(page.locator(".debug__var", { hasText: "nums" })).toContainText("2");
 });
+
+test("lua runs in the browser and is graded against a problem's tests", async ({ page }) => {
+  await page.goto("/problems/ex-two-sum");
+  const editor = page.locator(".cm-content");
+  await page.getByRole("combobox", { name: "Language" }).click();
+  await page.getByRole("option", { name: "Lua", exact: true }).click();
+  await expect(editor).toContainText("function twoSum(nums, target)");
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.insertText(
+    "function twoSum(nums, target)\n  local seen = {}\n  for i, n in ipairs(nums) do\n    if seen[target - n] ~= nil then return {seen[target - n], i - 1} end\n    seen[n] = i - 1\n  end\n  return {}\nend\n"
+  );
+  await page.getByRole("button", { name: "Submit" }).click();
+  await expect(page.locator(".verdict")).toContainText("All 7 tests pass", { timeout: 60_000 });
+});

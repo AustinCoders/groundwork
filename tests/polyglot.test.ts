@@ -118,3 +118,22 @@ describe("grading", () => {
     expect(code).toContain("__got = twoSum(*__args)");
   });
 });
+
+describe("graders for the scripting languages", () => {
+  const poly = recordPolyglot(byId("ex-two-sum")) as Ready;
+
+  it("calls each language's function by that language's name", () => {
+    expect(withHarness("ruby", "", poly)).toContain("__got = two_sum(*__args)");
+    expect(withHarness("php", "<?php", poly)).toContain("$__got = twoSum(...$__args);");
+    expect(withHarness("lua", "", poly)).toContain("pcall(twoSum, table.unpack(__args))");
+  });
+
+  it("writes the cases as Lua tables and escapes them for PHP", () => {
+    expect(withHarness("lua", "", poly)).toContain("{{{2, 7, 11, 15}, 9}}");
+    const php = withHarness("php", "<?php", {
+      ...poly,
+      tests: [{ name: "q", cases: [{ args: ["it's \\ ok"], expected: 1 }] }],
+    });
+    expect(php).toContain(String.raw`json_decode('[[["it\'s \\\\ ok"]]]', true)`);
+  });
+});

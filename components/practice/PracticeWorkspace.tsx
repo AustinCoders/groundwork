@@ -10,7 +10,7 @@ import { EditorSkeleton } from "@/components/practice/EditorSkeleton";
 import { ShortcutHelp } from "@/components/practice/ShortcutHelp";
 import { Dropdown } from "@/components/ui/select";
 import { isLanguage, LANG_ORDER, LANGUAGES, type LanguageKey } from "@/lib/codeLanguages";
-import { gradeResults, isResultLine, parseResultLine, withHarness } from "@/lib/polyglot/grade";
+import { gradeResults, HARNESS_LANGUAGES, isResultLine, parseResultLine, withHarness } from "@/lib/polyglot/grade";
 import { starterFor } from "@/lib/polyglot/starters";
 import { instrumentCode, type EditorProblem } from "@/lib/editor/tools";
 import type { Trace } from "@/lib/debug/view";
@@ -40,6 +40,7 @@ import type { Json, Polyglot } from "@/lib/polyglot/types";
 import { useClientValue, useMounted } from "@/lib/hooks";
 import type { PracticeExercise } from "@/lib/practiceFree";
 import { runPython } from "@/lib/pythonRunner";
+import { runScript } from "@/lib/scriptRunner";
 import { runReact } from "@/lib/reactRunner";
 import { run as runnerRun, transpileTS, type RunnerOutputEntry, type RunnerTestResult } from "@/lib/runner";
 import { runSQL } from "@/lib/sqlRunner";
@@ -483,7 +484,7 @@ export function PracticeWorkspace({
   }
 
   const hasTests = !isFree && exercise.tests.length > 0;
-  const gradesInLanguage = currentLang === "python" && polyglot?.ok === true;
+  const gradesInLanguage = HARNESS_LANGUAGES.includes(currentLang) && polyglot?.ok === true;
   const showsTestButton =
     hasTests && (currentLang === "javascript" || currentLang === "typescript" || gradesInLanguage);
   const skippedHere = gradesInLanguage && polyglot?.ok ? polyglot.skipped : 0;
@@ -500,7 +501,8 @@ export function PracticeWorkspace({
   useEffect(() => {
     if (consolePhase !== "ran") return;
     const lang = currentLangRef.current;
-    if (lang === "javascript" || lang === "python") editorRef.current?.showInline(groupByLine(consoleLines));
+    if (["javascript", "python", "ruby", "lua"].includes(lang))
+      editorRef.current?.showInline(groupByLine(consoleLines));
     const p = projectRef.current;
     const file = p?.files.find((f) => f.id === p.active);
     if (!file || !LANGUAGES[file.lang].runnable || recordedRunRef.current === runStartRef.current) return;
@@ -647,13 +649,14 @@ export function PracticeWorkspace({
       return;
     }
 
-    if (meta.runnable === "python") {
+    if (meta.runnable === "python" || meta.runnable === "ruby" || meta.runnable === "php" || meta.runnable === "lua") {
+      const kind = meta.runnable;
       const grading = withTests && polyglot?.ok ? polyglot : null;
       const rows: [number, number, Json, string?][] = [];
-      runningRef.current = runPython({
-        code: grading ? withHarness("python", editor.getValue(), grading) : editor.getValue(),
+      const options = {
+        code: grading ? withHarness(kind, editor.getValue(), grading) : editor.getValue(),
         stdin: grading ? "" : stdin,
-        onConsole: (entry) => {
+        onConsole: (entry: RunnerOutputEntry) => {
           if (grading && entry.kind === "log" && isResultLine(entry.text)) {
             rows.push(...parseResultLine(entry.text));
             const rest = entry.text
@@ -670,7 +673,8 @@ export function PracticeWorkspace({
           markRan();
           if (grading) finishTests(gradeResults(grading, rows));
         },
-      });
+      };
+      runningRef.current = kind === "python" ? runPython(options) : runScript({ ...options, lang: kind });
       return;
     }
 
