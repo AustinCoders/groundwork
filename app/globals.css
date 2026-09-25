@@ -2864,9 +2864,14 @@ svg {
 
 figcaption {
   font-size: 16px;
-  color: var(--pencil);
+  color: var(--ink-soft);
   margin-top: 8px;
   font-weight: 300;
+}
+
+figcaption code,
+.sub code {
+  color: var(--ink);
 }
 
 .dg text {
@@ -3287,22 +3292,22 @@ figcaption {
 
 .tone-yes {
   background: var(--dg-box-green);
-  color: var(--green);
+  color: color-mix(in srgb, var(--green) 65%, var(--ink));
 }
 
 .tone-no {
   background: var(--sheet-2);
-  color: var(--pencil);
+  color: var(--ink-soft);
 }
 
 .tone-warn {
   background: var(--dg-box-yellow);
-  color: var(--dg-yellow-stroke);
+  color: color-mix(in srgb, var(--dg-yellow-stroke) 50%, var(--ink));
 }
 
 .tone-bad {
   background: var(--dg-box-red);
-  color: var(--red);
+  color: color-mix(in srgb, var(--red) 70%, var(--ink));
 }
 
 span.tone-yes,

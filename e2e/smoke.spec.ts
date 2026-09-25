@@ -722,3 +722,22 @@ test("the architecture map links every box to a written chapter", async ({ page 
   await page.waitForURL("**/architecture/arch-whiteboard");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 });
+
+test("an architecture chapter has its own rail, contents and read marker", async ({ page }) => {
+  await page.goto("/architecture/arch-build");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  const rail = page.getByRole("navigation", { name: "Chapters" });
+  await expect(rail.locator("a[aria-current=page]")).toContainText("The build");
+  const contents = page.getByRole("complementary", { name: "On this page" });
+  const firstSection = contents.getByRole("link").first();
+  const target = (await firstSection.getAttribute("href"))!;
+  await firstSection.click();
+  await expect(page).toHaveURL(new RegExp(`${target}$`));
+
+  await contents.getByRole("checkbox", { name: /Mark as read/ }).check();
+  await expect(rail.locator("a[aria-current=page]")).toContainText("✓");
+
+  await page.getByRole("heading", { level: 1 }).click();
+  await page.keyboard.press("]");
+  await page.waitForURL("**/architecture/arch-rendering");
+});

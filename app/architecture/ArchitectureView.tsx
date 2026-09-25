@@ -14,6 +14,7 @@ export interface ChapterCard {
   id: string;
   num: string;
   title: string;
+  short?: string;
   subtitle: string;
   level: "beginner" | "intermediate" | "advanced";
   minutes: number;
@@ -95,7 +96,7 @@ const LANES: Lane[] = [
   },
 ];
 
-const PARTS: { level: ChapterCard["level"]; title: string; blurb: string }[] = [
+export const PARTS: { level: ChapterCard["level"]; title: string; blurb: string }[] = [
   {
     level: "beginner",
     title: "Foundations",
