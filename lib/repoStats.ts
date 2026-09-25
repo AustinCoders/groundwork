@@ -7,7 +7,7 @@ const ROOT = process.cwd();
 function walk(dir: string, keep: (path: string) => boolean, out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
     if (name === "node_modules" || name.startsWith(".")) continue;
-    const path = join(dir, name);
+    const path = join(/*turbopackIgnore: true*/ dir, name);
     if (statSync(path).isDirectory()) walk(path, keep, out);
     else if (keep(path)) out.push(path);
   }
@@ -37,10 +37,10 @@ let cached: RepoStats | null = null;
 
 export function repoStats(): RepoStats {
   if (cached) return cached;
-  const app = walk(join(ROOT, "app"), () => true).map((p) => relative(ROOT, p));
-  const code = ["app", "components", "lib"].flatMap((d) => walk(join(ROOT, d), isCode));
-  const content = walk(join(ROOT, "content"), isCode);
-  const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
+  const app = walk(join(/*turbopackIgnore: true*/ ROOT, "app"), () => true).map((p) => relative(ROOT, p));
+  const code = ["app", "components", "lib"].flatMap((d) => walk(join(/*turbopackIgnore: true*/ ROOT, d), isCode));
+  const content = walk(join(/*turbopackIgnore: true*/ ROOT, "content"), isCode);
+  const pkg = JSON.parse(readFileSync(join(/*turbopackIgnore: true*/ ROOT, "package.json"), "utf8")) as {
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
   };
@@ -53,11 +53,14 @@ export function repoStats(): RepoStats {
     contentLines: lines(content),
     dependencies: Object.keys(pkg.dependencies ?? {}).length,
     devDependencies: Object.keys(pkg.devDependencies ?? {}).length,
-    unitTestFiles: readdirSync(join(ROOT, "tests")).filter((f) => f.endsWith(".test.ts")).length,
-    e2eSpecs: readdirSync(join(ROOT, "e2e")).filter((f) => f.endsWith(".spec.ts")).length,
+    unitTestFiles: readdirSync(join(/*turbopackIgnore: true*/ ROOT, "tests")).filter((f) => f.endsWith(".test.ts"))
+      .length,
+    e2eSpecs: readdirSync(join(/*turbopackIgnore: true*/ ROOT, "e2e")).filter((f) => f.endsWith(".spec.ts")).length,
     languages: LANG_ORDER.length,
     runnableLanguages: LANG_ORDER.filter((k) => LANGUAGES[k].runnable).length,
-    workflows: readdirSync(join(ROOT, ".github", "workflows")).filter((f) => /\.ya?ml$/.test(f)).length,
+    workflows: readdirSync(join(/*turbopackIgnore: true*/ ROOT, ".github", "workflows")).filter((f) =>
+      /\.ya?ml$/.test(f)
+    ).length,
   };
   return cached;
 }
