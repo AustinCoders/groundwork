@@ -881,6 +881,305 @@
   white-space: nowrap;
 }
 
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 4px 0 20px;
+}
+
+.said {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: min(760px, 100%);
+  animation: saidIn 0.28s ease both;
+}
+
+.said[data-you] {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.saidBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.said[data-you] .saidBody {
+  align-items: flex-end;
+}
+
+.saidWho {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+
+.saidRole {
+  color: var(--pencil);
+}
+
+.saidBubble {
+  padding: 14px 18px;
+  color: var(--ink);
+  background: var(--say-bg);
+  border: 1.5px solid var(--ink);
+  border-radius: 4px 16px 16px 16px;
+}
+
+.said[data-you] .saidBubble {
+  background: var(--hl-mint);
+  border-radius: 16px 4px 16px 16px;
+  white-space: pre-wrap;
+}
+
+.said[data-aside] .saidBubble {
+  padding: 8px 14px;
+  font-style: italic;
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--line);
+}
+
+.saidBubble .prompt {
+  margin: 0;
+  font-size: clamp(22px, 2.8vw, 30px);
+}
+
+.saidQuiet {
+  margin: 0;
+  color: var(--pencil);
+}
+
+.avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-top: 18px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--hl-yellow);
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+}
+
+.avatar[data-tone="sharp"] {
+  background: var(--dg-box-red);
+}
+
+.avatar[data-tone="calm"] {
+  background: var(--hl-mint);
+}
+
+.briefPersona {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.briefPersona .avatar {
+  margin-top: 0;
+  width: 32px;
+  height: 32px;
+  font-size: 11px;
+}
+
+.shiftTag {
+  padding: 1px 8px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  border-radius: 999px;
+  border: 1.5px solid var(--green);
+  color: var(--green);
+}
+
+.shiftTag[data-shift="easier"] {
+  border-color: var(--pencil);
+  color: var(--pencil);
+}
+
+@keyframes saidIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .said {
+    animation: none;
+  }
+}
+
+.padTabs {
+  display: inline-flex;
+  gap: 4px;
+  margin-bottom: 10px;
+  padding: 3px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+}
+
+.padTab {
+  padding: 5px 14px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--pencil);
+  background: none;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.padTab[aria-selected="true"] {
+  color: var(--ink);
+  background: var(--hl-mint);
+  font-weight: 700;
+}
+
+.boardWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.boardTools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.boardTool,
+.boardStencil {
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.boardTool[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--sheet);
+  border-color: var(--ink);
+}
+
+.boardStencil {
+  border-style: dashed;
+}
+
+.boardSep {
+  width: 1px;
+  height: 22px;
+  margin: 0 4px;
+  background: var(--line);
+}
+
+.board {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 800 / 420;
+  background-color: var(--sheet-2);
+  background-image: radial-gradient(var(--line) 1px, transparent 1px);
+  background-size: 20px 20px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  touch-action: none;
+  user-select: none;
+}
+
+.boardShape rect,
+.boardShape path {
+  fill: var(--sheet);
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+
+.boardShape .boardHit {
+  fill: transparent;
+  stroke: none;
+}
+
+.boardShape[data-selected] .boardHit {
+  fill: transparent;
+  stroke: none;
+}
+
+.boardShape[data-kind="text"] text {
+  font-style: italic;
+}
+
+.boardShape[data-selected] rect,
+.boardShape[data-selected] path {
+  stroke: var(--green);
+  stroke-width: 3;
+  fill: var(--hl-mint);
+}
+
+.boardShape text {
+  fill: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  pointer-events: none;
+}
+
+.boardShape {
+  cursor: grab;
+}
+
+.boardArrow {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+
+.boardHead {
+  fill: var(--ink);
+}
+
+.boardFoot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.boardLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.boardLabel input {
+  padding: 4px 8px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 6px;
+}
+
+.boardFigure {
+  margin: 0 0 18px;
+}
+
 .answerArea {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

@@ -9,6 +9,9 @@ import { codingScore, rubricFor, talkScore, type CriterionId, type Mark } from "
 import { currentQuestion, stagePosition, type Action, type Session, type SessionQuestion } from "@/lib/mock/session";
 import type { CodingItem, Seniority, StageId, StageInfo, TalkItem } from "@/lib/mock/types";
 import type { PracticeExercise } from "@/lib/practiceFree";
+import { opener, personaFor, shiftRemark, type Persona } from "@/lib/mock/persona";
+import { BoardView, Whiteboard } from "@/app/mock/Whiteboard";
+import { EMPTY_BOARD } from "@/lib/mock/board";
 import styles from "./mock.module.css";
 
 const FOLLOW_UP_SECONDS = 90;
@@ -81,12 +84,14 @@ function StageBrief({ session, info, dispatch }: { session: Session; info: Stage
             {info.title}
           </h2>
           <dl className={styles.briefFacts}>
-            {info.who && (
-              <div>
-                <dt>Across the table</dt>
-                <dd>{info.who}</dd>
-              </div>
-            )}
+            <div>
+              <dt>Interviewing you</dt>
+              <dd className={styles.briefPersona}>
+                <Avatar persona={personaFor(info.id, session.config, info.who)} />
+                {personaFor(info.id, session.config, info.who).name},{" "}
+                {personaFor(info.id, session.config, info.who).role.toLowerCase()}
+              </dd>
+            </div>
             {info.decides && (
               <div>
                 <dt>Decides</dt>
@@ -142,6 +147,44 @@ function QuestionHead({ q, session, info }: { q: SessionQuestion; session: Sessi
       </span>
       <span className="tag">{item.originTitle}</span>
       {item.level !== "any" && <span className="tag">{LEVEL_LABEL[item.level]}</span>}
+      {q.adapted && (
+        <span className={styles.shiftTag} data-shift={q.adapted}>
+          {q.adapted === "harder" ? "↑ raised the bar" : "↓ back to basics"}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function Avatar({ persona }: { persona: Persona }) {
+  return (
+    <span className={styles.avatar} data-tone={persona.tone} aria-hidden="true">
+      {persona.initials}
+    </span>
+  );
+}
+
+function Said({ persona, aside, children }: { persona: Persona; aside?: boolean; children: React.ReactNode }) {
+  return (
+    <div className={styles.said} data-aside={aside || undefined}>
+      <Avatar persona={persona} />
+      <div className={styles.saidBody}>
+        <span className={styles.saidWho}>
+          {persona.name} <span className={styles.saidRole}>· {persona.role}</span>
+        </span>
+        <div className={styles.saidBubble}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function YouSaid({ text }: { text: string }) {
+  return (
+    <div className={styles.said} data-you>
+      <div className={styles.saidBody}>
+        <span className={styles.saidWho}>You</span>
+        <div className={styles.saidBubble}>{text.trim() || "(answered out loud)"}</div>
+      </div>
     </div>
   );
 }
@@ -296,6 +339,9 @@ function TalkQuestion({
   dispatch: Dispatch;
 }) {
   const item = q.item as TalkItem;
+  const persona = personaFor(q.stage, session.config, info.who);
+  const [padView, setPadView] = useState<"notes" | "board">("notes");
+  const { inStage } = stagePosition(session);
   const seconds = MINUTES_PER_TALK[session.config.seniority] * 60;
   const expire = useCallback(() => dispatch({ type: "answered", at: Date.now(), timedOut: true }), [dispatch]);
   const expireFollowUp = useCallback(() => dispatch({ type: "followup-answered" }), [dispatch]);
@@ -304,19 +350,57 @@ function TalkQuestion({
     return (
       <section className="sheet" aria-labelledby="q-prompt">
         <QuestionHead q={q} session={session} info={info} />
-        <h2 id="q-prompt" className={styles.prompt} dangerouslySetInnerHTML={{ __html: item.prompt }} />
+        <div className={styles.chat} role="log" aria-label={`Interview with ${persona.name}`}>
+          {inStage === 1 && (
+            <Said persona={persona} aside>
+              {opener(persona, session.startedAt + session.cursor)}
+            </Said>
+          )}
+          {q.adapted && (
+            <Said persona={persona} aside>
+              {shiftRemark(q.adapted, persona)}
+            </Said>
+          )}
+          <Said persona={persona}>
+            <h2 id="q-prompt" className={styles.prompt} dangerouslySetInnerHTML={{ __html: item.prompt }} />
+          </Said>
+        </div>
         <div className={styles.answerArea}>
           <div>
-            <label className={styles.notesLabel} htmlFor="mock-notes">
-              Say it out loud. Jot the skeleton here if it helps — it is kept for the review.
-            </label>
-            <textarea
-              id="mock-notes"
-              className={styles.notes}
-              value={q.notes}
-              autoFocus
-              onChange={(e) => dispatch({ type: "notes", text: e.target.value })}
-            />
+            {q.stage === "design" && (
+              <div className={styles.padTabs} role="tablist" aria-label="Answer with">
+                {(["notes", "board"] as const).map((pad) => (
+                  <button
+                    key={pad}
+                    type="button"
+                    role="tab"
+                    aria-selected={padView === pad}
+                    className={styles.padTab}
+                    onClick={() => setPadView(pad)}
+                  >
+                    {pad === "notes"
+                      ? "Notes"
+                      : `Whiteboard${q.board?.shapes.length ? ` (${q.board.shapes.length})` : ""}`}
+                  </button>
+                ))}
+              </div>
+            )}
+            {padView === "board" && q.stage === "design" ? (
+              <Whiteboard board={q.board ?? EMPTY_BOARD} onChange={(board) => dispatch({ type: "board", board })} />
+            ) : (
+              <>
+                <label className={styles.notesLabel} htmlFor="mock-notes">
+                  Say it out loud. Jot the skeleton here if it helps — it is kept for the review.
+                </label>
+                <textarea
+                  id="mock-notes"
+                  className={styles.notes}
+                  value={q.notes}
+                  autoFocus
+                  onChange={(e) => dispatch({ type: "notes", text: e.target.value })}
+                />
+              </>
+            )}
           </div>
           {q.startedAt !== null && <TimerRing startedAt={q.startedAt} seconds={seconds} onExpire={expire} />}
         </div>
@@ -343,10 +427,15 @@ function TalkQuestion({
     return (
       <section className="sheet" aria-labelledby="q-push">
         <QuestionHead q={q} session={session} info={info} />
-        <p className="sub" dangerouslySetInnerHTML={{ __html: item.prompt }} />
-        <div className={styles.push}>
-          <span className={styles.pushWho}>They push</span>
-          <p id="q-push" className={styles.pushText} dangerouslySetInnerHTML={{ __html: q.followUp }} />
+        <div className={styles.chat} role="log" aria-label={`Interview with ${persona.name}`}>
+          <Said persona={persona}>
+            <p className={styles.saidQuiet} dangerouslySetInnerHTML={{ __html: item.prompt }} />
+          </Said>
+          <YouSaid text={q.notes} />
+          <Said persona={persona}>
+            <span className={styles.pushWho}>Follow-up</span>
+            <p id="q-push" className={styles.pushText} dangerouslySetInnerHTML={{ __html: q.followUp }} />
+          </Said>
         </div>
         <div className={styles.answerArea}>
           <div>
@@ -388,6 +477,12 @@ function TalkQuestion({
       />
       {q.timedOut && (
         <p className="warn">The clock ran out before you finished. In the room they would have moved on.</p>
+      )}
+      {q.board && q.board.shapes.length > 0 && (
+        <figure className={styles.boardFigure}>
+          <BoardView board={q.board} />
+          <figcaption className={styles.hint}>Your whiteboard</figcaption>
+        </figure>
       )}
       <div className={styles.review}>
         <AgainstPanel item={item} q={q} seniority={session.config.seniority} />

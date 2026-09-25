@@ -9,6 +9,8 @@ import {
   type StageResult,
 } from "@/lib/mock/scoring";
 import type { LoopConfig, MockItem, PlannedStage, StageId } from "@/lib/mock/types";
+import { pickAlternates, shiftFor, type Alternates, type Shift } from "@/lib/mock/adaptive";
+import type { Board } from "@/lib/mock/board";
 
 export type SessionMode = "loop" | "drill" | "retry";
 
@@ -27,6 +29,9 @@ export interface SessionQuestion {
   coding: CodingOutcome | null;
   score: number | null;
   skipped: boolean;
+  alternates?: Alternates;
+  adapted?: Shift | null;
+  board?: Board;
 }
 
 export interface Session {
@@ -98,12 +103,22 @@ export function buildSession(opts: {
       });
     }
   } else {
+    const reserved = new Set<string>();
     for (const p of opts.plan) {
-      const picked = pickItems(opts.banks[p.stage] || [], opts.config, p.questions, random, asked);
+      const pool = opts.banks[p.stage] || [];
+      const picked = pickItems(pool, opts.config, p.questions, random, asked);
       if (!picked.length) continue;
       picked.forEach((item) => asked.add(item.id));
       plan.push({ ...p, questions: picked.length });
-      for (const item of picked) questions.push(withFollowUp(item));
+      picked.forEach((item, i) => {
+        const q = withFollowUp(item);
+        if (i > 0 && opts.mode !== "retry") {
+          const taken = new Set([...asked, ...reserved]);
+          q.alternates = pickAlternates(pool, item, opts.config, random, taken);
+          for (const alt of [q.alternates.harder, q.alternates.easier]) if (alt) reserved.add(alt.id);
+        }
+        questions.push(q);
+      });
     }
   }
 
@@ -125,6 +140,7 @@ export type Action =
   | { type: "enter"; at: number }
   | { type: "resume"; at: number }
   | { type: "notes"; text: string }
+  | { type: "board"; board: Board }
   | { type: "answered"; at: number; timedOut: boolean }
   | { type: "followup-notes"; text: string }
   | { type: "followup-answered" }
@@ -150,17 +166,26 @@ function patch(s: Session, change: Partial<SessionQuestion>): Session {
   return { ...s, questions };
 }
 
+function adapt(s: Session, nextIndex: number): SessionQuestion {
+  const upcoming = s.questions[nextIndex];
+  const shift = shiftFor(s.questions[s.cursor].score);
+  const alt = shift ? upcoming.alternates?.[shift] : undefined;
+  const used = new Set(s.questions.map((q) => q.item.id));
+  if (!shift || !alt || used.has(alt.id)) return upcoming;
+  const followUp =
+    alt.kind === "talk" && alt.followUps.length
+      ? alt.followUps[(s.startedAt + nextIndex) % alt.followUps.length]
+      : null;
+  return { ...newQuestion(alt, followUp), alternates: upcoming.alternates, adapted: shift };
+}
+
 function advance(s: Session, at: number): Session {
   const nextIndex = s.cursor + 1;
   if (nextIndex >= s.questions.length) return { ...s, finishedAt: at };
   const newStage = s.questions[nextIndex].stage !== s.questions[s.cursor].stage;
-  const next: Session = { ...s, cursor: nextIndex, step: newStage ? "brief" : "answer" };
-  if (!newStage) {
-    const questions = next.questions.slice();
-    questions[nextIndex] = { ...questions[nextIndex], startedAt: at };
-    return { ...next, questions };
-  }
-  return next;
+  const questions = s.questions.slice();
+  if (!newStage) questions[nextIndex] = { ...adapt(s, nextIndex), startedAt: at };
+  return { ...s, questions, cursor: nextIndex, step: newStage ? "brief" : "answer" };
 }
 
 export function reduce(s: Session, a: Action): Session {
@@ -177,6 +202,9 @@ export function reduce(s: Session, a: Action): Session {
 
     case "notes":
       return s.step === "answer" ? patch(s, { notes: a.text }) : s;
+
+    case "board":
+      return s.step === "answer" || s.step === "followup" ? patch(s, { board: a.board }) : s;
 
     case "answered": {
       if (s.step !== "answer" || q.item.kind !== "talk") return s;

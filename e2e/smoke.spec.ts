@@ -574,3 +574,29 @@ test("python can be stepped through too", async ({ page }) => {
   await expect(page.locator(".debug__var", { hasText: "total" })).toContainText("6");
   await expect(page.locator(".debug__out")).toContainText("6");
 });
+
+test("the design round has a whiteboard that stays with the answer", async ({ page }) => {
+  await page.goto("/mock");
+  await page.getByRole("tab", { name: "Single round" }).click();
+  await page
+    .getByRole("button", { name: /^System design/ })
+    .first()
+    .click();
+  await page.getByRole("button", { name: /^Start/ }).click();
+  await page.getByRole("button", { name: "Walk in" }).click();
+  await expect(page.getByRole("log", { name: /Interview with/ })).toBeVisible();
+
+  await page.getByRole("tab", { name: /Whiteboard/ }).click();
+  await page.getByRole("button", { name: "+ Client" }).click();
+  await page.getByRole("button", { name: "+ Service" }).click();
+  await page.getByRole("button", { name: "Arrow", exact: true }).click();
+  const shapes = page.locator("svg g[data-kind]");
+  await shapes.nth(0).click();
+  await shapes.nth(1).click();
+  await expect(page.getByRole("img", { name: "Whiteboard with 2 shapes and 1 arrows" })).toBeVisible();
+
+  await page.getByRole("button", { name: "I've answered" }).click();
+  const push = page.getByRole("button", { name: "Answered — show me" });
+  if (await push.isVisible()) await push.click();
+  await expect(page.getByText("Your whiteboard")).toBeVisible();
+});

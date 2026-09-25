@@ -16,6 +16,7 @@ import { answerSeconds, debriefText, isRushed, pacing } from "@/lib/mock/pacing"
 import { stageResults, type Session } from "@/lib/mock/session";
 import type { Competency, StageId, StageInfo, TalkItem } from "@/lib/mock/types";
 import { formatClock } from "@/lib/mockSession";
+import { BoardView } from "@/app/mock/Whiteboard";
 import styles from "./mock.module.css";
 
 const HIRE_BAR = 0.65;
@@ -243,6 +244,7 @@ export function Scorecard({
                       {isRushed(q, session) ? " · too quick to be a full answer" : ""}
                     </span>
                     {q.notes.trim() && <div className={styles.yours}>{q.notes.trim()}</div>}
+                    {q.board && q.board.shapes.length > 0 && <BoardView board={q.board} />}
                     {talk && score !== null && !q.skipped && (
                       <ul className={styles.reasons} style={{ margin: 0 }}>
                         {rubricFor(talk, Boolean(q.followUp)).map((c) => (

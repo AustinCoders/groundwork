@@ -211,3 +211,44 @@ describe("pacing and the text debrief", () => {
     expect(text).not.toMatch(/<[a-z]/);
   });
 });
+
+describe("an interviewer who adapts", () => {
+  it("keeps harder and easier questions ready for every question after a stage's first", () => {
+    const s = start(7);
+    const later = s.questions.filter((q, i) => i > 0 && q.stage === s.questions[i - 1].stage);
+    expect(later.length).toBeGreaterThan(0);
+    expect(later.some((q) => q.alternates?.harder || q.alternates?.easier)).toBe(true);
+    const ids = s.questions
+      .flatMap((q) => [q.item.id, q.alternates?.harder?.id, q.alternates?.easier?.id])
+      .filter(Boolean);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("raises the bar after a strong answer and lowers it after a skip", () => {
+    for (const [mark, shift] of [
+      [1, "harder"],
+      [0, "easier"],
+    ] as const) {
+      let s = start(7);
+      const i = s.questions.findIndex(
+        (q, k) => k > 0 && q.stage === s.questions[k - 1].stage && q.alternates?.[shift] && q.item.kind === "talk"
+      );
+      if (i < 0) continue;
+      let t = 2_000;
+      while (s.cursor < i - 1)
+        s = reduce(s, s.step === "brief" ? { type: "enter", at: t++ } : { type: "skip", at: t++ });
+      if (s.step === "brief") s = reduce(s, { type: "enter", at: t++ });
+      if (mark === 0) s = reduce(s, { type: "skip", at: t++ });
+      else {
+        s = reduce(s, { type: "answered", at: t++, timedOut: false });
+        if (s.step === "followup") s = reduce(s, { type: "followup-answered" });
+        for (const c of ["testing", "substance", "trap", "followup", "delivery"] as const)
+          s = reduce(s, { type: "mark", criterion: c, mark: 1 });
+        s = reduce(s, { type: "next", at: t++ });
+      }
+      const next = s.questions[i];
+      expect(next.adapted).toBe(shift);
+      expect(next.item.id).toBe(start(7).questions[i].alternates?.[shift]?.id);
+    }
+  });
+});
