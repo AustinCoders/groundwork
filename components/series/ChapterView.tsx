@@ -176,6 +176,19 @@ export function ChapterView({
     return () => document.removeEventListener("keydown", onKey);
   }, [router, basePath, next, prev]);
 
+  const currentPart = chapter.level;
+  const [opened, setOpened] = useState<{ at: string; parts: Set<string> }>(() => ({
+    at: chapter.id,
+    parts: new Set([currentPart]),
+  }));
+  const openParts = opened.at === chapter.id ? opened.parts : new Set([currentPart]);
+  const togglePart = (level: string) => {
+    const next = new Set(openParts);
+    if (next.has(level)) next.delete(level);
+    else next.add(level);
+    setOpened({ at: chapter.id, parts: next });
+  };
+
   const rail = (
     <nav className={styles.rail} aria-label="Chapters">
       <Link className={styles.railHome} href={basePath} onClick={() => setRailOpen(false)}>
@@ -186,35 +199,44 @@ export function ChapterView({
         const list = chapters.filter((c) => c.level === p.level);
         const read = mounted ? list.filter((c) => done.has(c.id)).length : 0;
         return (
-          <section key={p.level} className={styles.railPart}>
-            <p className={styles.railHead}>
-              <span>
+          <section key={p.level} className={styles.railPart} data-open={openParts.has(p.level) || undefined}>
+            <button
+              type="button"
+              className={styles.railHead}
+              aria-expanded={openParts.has(p.level)}
+              aria-controls={`rail-${p.level}`}
+              onClick={() => togglePart(p.level)}
+            >
+              <span className={styles.railChevron} aria-hidden="true" />
+              <span className={styles.railPartName}>
                 Part {pi + 1} · {p.title}
               </span>
               <span className={styles.railCount}>
                 {read}/{list.length}
               </span>
-            </p>
-            <ol className={styles.railList}>
-              {list.map((c) => (
-                <li key={c.id}>
-                  <Link
-                    href={`${basePath}/${c.id}`}
-                    aria-current={c.id === chapter.id ? "page" : undefined}
-                    className={styles.railLink}
-                    onClick={() => setRailOpen(false)}
-                  >
-                    <span className={styles.railNum}>{c.num}</span>
-                    <span className={styles.railTitle}>{c.short || c.title}</span>
-                    {mounted && done.has(c.id) && (
-                      <span className={styles.railDone} aria-label="read">
-                        ✓
-                      </span>
-                    )}
-                  </Link>
-                </li>
-              ))}
-            </ol>
+            </button>
+            <div className={styles.railFold} id={`rail-${p.level}`} inert={!openParts.has(p.level)}>
+              <ol className={styles.railList}>
+                {list.map((c) => (
+                  <li key={c.id}>
+                    <Link
+                      href={`${basePath}/${c.id}`}
+                      aria-current={c.id === chapter.id ? "page" : undefined}
+                      className={styles.railLink}
+                      onClick={() => setRailOpen(false)}
+                    >
+                      <span className={styles.railNum}>{c.num}</span>
+                      <span className={styles.railTitle}>{c.short || c.title}</span>
+                      {mounted && done.has(c.id) && (
+                        <span className={styles.railDone} aria-label="read">
+                          ✓
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </div>
           </section>
         );
       })}

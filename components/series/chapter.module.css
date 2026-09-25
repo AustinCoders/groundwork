@@ -168,7 +168,7 @@
 .rail {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 6px;
 }
 
 .railHome {
@@ -201,14 +201,69 @@
 
 .railHead {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
   gap: 8px;
-  margin: 0 10px 4px;
+  width: 100%;
+  margin: 0;
+  padding: 6px 10px;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.06em;
+  text-align: left;
   text-transform: uppercase;
   color: var(--ink-soft);
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.railHead:hover {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+}
+
+.railHead:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+.railPartName {
+  flex: 1;
+  min-width: 0;
+}
+
+.railChevron {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-right: 2px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.railPart[data-open] .railChevron {
+  transform: rotate(45deg);
+}
+
+.railFold {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.railPart[data-open] .railFold {
+  grid-template-rows: 1fr;
+}
+
+.railFold > .railList {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .railCount {
