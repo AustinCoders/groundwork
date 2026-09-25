@@ -14,7 +14,7 @@ const Board = dynamic(() => import("./Board").then((m) => m.Board), {
 
 export function WhiteboardShell() {
   return (
-    <BareShell title="Whiteboard" skipLabel="Skip to the whiteboard" skipHref="#board">
+    <BareShell title="Whiteboard" skipLabel="Skip to the whiteboard" skipHref="#board" header={false}>
       <Board />
     </BareShell>
   );

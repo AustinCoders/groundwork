@@ -40,11 +40,13 @@ export function BareShell({
   title,
   skipLabel,
   skipHref = "#main",
+  header = true,
   children,
 }: {
   title: string;
   skipLabel: string;
   skipHref?: string;
+  header?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -53,8 +55,9 @@ export function BareShell({
         {skipLabel}
       </a>
       <div className={styles.page}>
-        <AppHeader title={title} />
+        {header && <AppHeader title={title} />}
         <main className={styles.main} id="main">
+          {!header && <h1 className="visually-hidden">{title}</h1>}
           {children}
         </main>
       </div>

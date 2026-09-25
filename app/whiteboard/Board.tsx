@@ -6,6 +6,7 @@ import { Icon, type IconName } from "./icons";
 import { StylePanel } from "./StylePanel";
 import { BoardMenu } from "./BoardMenu";
 import { ContextMenu, type MenuItem } from "./ContextMenu";
+import { ConfirmDialog, NameDialog } from "./Dialogs";
 import { Shortcuts } from "./Shortcuts";
 import { TemplatesMenu } from "./TemplatesMenu";
 import { PagePicker, PaperPattern, paperOf, paperVisible, tintOf, tintVars } from "./Paper";
@@ -267,6 +268,9 @@ export function Board() {
   const [ctx, setCtx] = useState<{ x: number; y: number } | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  const [dialog, setDialog] = useState<
+    { kind: "new" } | { kind: "delete"; id: string; name: string; count: number } | { kind: "clear" } | null
+  >(null);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -381,6 +385,7 @@ export function Board() {
     const prev = boardRef.current;
     if (prev !== id && hasBoard(prev) && loaded.current !== stateRef.current.hist.present)
       saveBoard(prev, stateRef.current.hist.present);
+    setBoards(listBoards());
     const els0 = loadBoard(id);
     loaded.current = els0;
     boardRef.current = id;
@@ -1057,7 +1062,7 @@ export function Board() {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (typingInField(e) || ownsKey(e) || stateRef.current.editing) return;
-      if ((e.target as HTMLElement | null)?.closest?.("dialog")) return;
+      if ((e.target as HTMLElement | null)?.closest?.("dialog, [data-overlay]")) return;
       const mod = e.metaKey || e.ctrlKey;
       const { sel: current, els: all, hist: h } = stateRef.current;
       const k = e.key.toLowerCase();
@@ -1344,7 +1349,7 @@ export function Board() {
       className={styles.tool}
       aria-pressed={tool === t.tool}
       aria-label={`${t.label} (${t.key})`}
-      title={`${t.label} — ${t.key}`}
+      data-tip={`${t.label} — ${t.key}`}
       onClick={() => setTool(t.tool)}
     >
       <Icon name={t.tool as IconName} />
@@ -1406,9 +1411,11 @@ export function Board() {
                 strokeWidth={1.5 / cam.zoom}
               />
             )}
-            {shown.map((el) => (
-              <ElementView key={el.id} el={el} hidden={el.id === editing && el.kind === "text"} />
-            ))}
+            <g key={boardId} className={styles.boardFade}>
+              {shown.map((el) => (
+                <ElementView key={el.id} el={el} hidden={el.id === editing && el.kind === "text"} />
+              ))}
+            </g>
             {selBox && !editing && (
               <g className={styles.selection}>
                 <rect
@@ -1514,38 +1521,23 @@ export function Board() {
           boards={boards}
           current={current}
           onOpen={openBoard}
-          onNew={() => {
-            const id = newId();
-            saveBoard(id, [], `Board ${listBoards().length + 1}`);
-            setBoards(listBoards());
-            openBoard(id);
-          }}
+          onNew={() => setDialog({ kind: "new" })}
           onRename={(name) => {
             renameBoard(boardId, name);
             setBoards(listBoards());
           }}
           onDelete={(id) => {
-            deleteBoard(id);
-            const rest = listBoards();
-            if (id === boardId) {
-              if (rest[0]) openBoard(rest[0].id);
-              else {
-                const fresh = newId();
-                saveBoard(fresh, [], "My board");
-                openBoard(fresh);
-              }
-            }
-            setBoards(listBoards());
+            const b = boards.find((x) => x.id === id);
+            if (b)
+              setDialog({ kind: "delete", id, name: b.name, count: b.id === boardId ? hist.present.length : b.count });
           }}
           onExport={exportAs}
           onCopyPng={() => void copyPng()}
           onImport={importJson}
           onShare={share}
           onClear={() => {
-            if (hist.present.length && window.confirm("Clear everything on this board? Undo brings it back.")) {
-              apply([]);
-              setSel(new Set());
-            }
+            if (hist.present.length) setDialog({ kind: "clear" });
+            else say("This board is already empty.");
           }}
         />
       </div>
@@ -1563,7 +1555,7 @@ export function Board() {
                   aria-label={`More shapes: ${SHAPE_NAMES[extraShape]} (S)`}
                   aria-expanded={shapesOpen}
                   aria-haspopup="menu"
-                  title="More shapes — S"
+                  data-tip="More shapes — S"
                   onClick={() => {
                     if (tool !== extraShape) setTool(extraShape);
                     setShapesOpen((v) => !v);
@@ -1585,7 +1577,7 @@ export function Board() {
                         aria-checked={tool === s}
                         className={styles.tool}
                         aria-label={SHAPE_NAMES[s]}
-                        title={SHAPE_NAMES[s]}
+                        data-tip={SHAPE_NAMES[s]}
                         onClick={() => pickExtraShape(s)}
                       >
                         <Icon name={s} />
@@ -1596,7 +1588,7 @@ export function Board() {
               </div>
             )}
             {gi === 3 && (
-              <label className={styles.tool} title="Insert an image — I" aria-label="Insert an image (I)">
+              <label className={styles.tool} data-tip="Insert an image — I" aria-label="Insert an image (I)">
                 <Icon name="image" />
                 <input
                   ref={fileRef}
@@ -1613,33 +1605,28 @@ export function Board() {
             )}
           </div>
         ))}
-      </div>
-
-      <div className={`${styles.island} ${styles.islandTR}`}>
-        <TemplatesMenu onPick={insertTemplate} />
-        <button
-          type="button"
-          className={`${styles.islandBtn} ${styles.hideSmall}`}
-          aria-label="Full screen (F)"
-          aria-pressed={fullscreen}
-          title="Full screen — F"
-          onClick={toggleFullscreen}
-        >
-          <Icon name="fullscreen" />
-        </button>
-        <button
-          type="button"
-          className={`${styles.islandBtn} ${styles.hideSmall}`}
-          aria-label="Keyboard shortcuts (?)"
-          title="Keyboard shortcuts — ?"
-          onClick={() => setHelpOpen(true)}
-        >
-          <Icon name="help" />
-        </button>
-        <button type="button" className={styles.shareBtn} onClick={() => void share()} title="Copy a share link">
-          <Icon name="share" />
-          <span>Share</span>
-        </button>
+        <div className={styles.toolGroup}>
+          <TemplatesMenu onPick={insertTemplate} />
+          <button
+            type="button"
+            className={`${styles.tool} ${styles.hideSmall}`}
+            aria-label="Full screen (F)"
+            aria-pressed={fullscreen}
+            data-tip="Full screen — F"
+            onClick={toggleFullscreen}
+          >
+            <Icon name="fullscreen" />
+          </button>
+          <button
+            type="button"
+            className={styles.tool}
+            aria-label="Keyboard shortcuts (?)"
+            data-tip="Shortcuts — ?"
+            onClick={() => setHelpOpen(true)}
+          >
+            <Icon name="help" />
+          </button>
+        </div>
       </div>
 
       <div className={`${styles.island} ${styles.islandBL}`}>
@@ -1647,7 +1634,7 @@ export function Board() {
           type="button"
           className={styles.islandBtn}
           aria-label="Undo"
-          title="Undo — ⌘/Ctrl Z"
+          data-tip="Undo — ⌘/Ctrl Z"
           disabled={!hist.past.length}
           onClick={() => {
             setSel(new Set());
@@ -1660,33 +1647,45 @@ export function Board() {
           type="button"
           className={styles.islandBtn}
           aria-label="Redo"
-          title="Redo — ⌘/Ctrl ⇧ Z"
+          data-tip="Redo — ⌘/Ctrl ⇧ Z"
           disabled={!hist.future.length}
           onClick={() => setHist(redo)}
         >
           <Icon name="redo" />
         </button>
         <span className={styles.islandSep} aria-hidden="true" />
-        <button type="button" className={styles.islandBtn} aria-label="Zoom out" onClick={() => zoomAt(1 / 1.2)}>
+        <button
+          type="button"
+          className={styles.islandBtn}
+          aria-label="Zoom out"
+          data-tip="Zoom out — ⌘/Ctrl −"
+          onClick={() => zoomAt(1 / 1.2)}
+        >
           −
         </button>
         <button
           type="button"
           className={`${styles.islandBtn} ${styles.zoomPct}`}
           aria-label="Reset zoom"
-          title="Reset zoom — ⌘/Ctrl 0"
+          data-tip="Reset zoom — ⌘/Ctrl 0"
           onClick={() => zoomAt(1 / cam.zoom)}
         >
           {Math.round(cam.zoom * 100)}%
         </button>
-        <button type="button" className={styles.islandBtn} aria-label="Zoom in" onClick={() => zoomAt(1.2)}>
+        <button
+          type="button"
+          className={styles.islandBtn}
+          aria-label="Zoom in"
+          data-tip="Zoom in — ⌘/Ctrl +"
+          onClick={() => zoomAt(1.2)}
+        >
           +
         </button>
         <button
           type="button"
           className={styles.islandBtn}
           aria-label="Fit everything"
-          title="Fit everything — ⇧1"
+          data-tip="Fit everything — ⇧1"
           onClick={fitToContent}
         >
           ⤢
@@ -1738,6 +1737,65 @@ export function Board() {
 
       {ctx && <ContextMenu x={ctx.x} y={ctx.y} items={ctxItems} onClose={() => setCtx(null)} />}
       {helpOpen && <Shortcuts onClose={() => setHelpOpen(false)} />}
+      {dialog?.kind === "new" && (
+        <NameDialog
+          title="New board"
+          label="Name"
+          initial={`Board ${boards.length + 1}`}
+          confirmLabel="Create board"
+          onSubmit={(name) => {
+            const id = newId();
+            saveBoard(id, [], name);
+            setBoards(listBoards());
+            openBoard(id);
+            say(`“${name}” is ready.`);
+          }}
+          onClose={() => setDialog(null)}
+        />
+      )}
+      {dialog?.kind === "delete" && (
+        <ConfirmDialog
+          title={`Delete “${dialog.name}”?`}
+          body={
+            <p>
+              {dialog.count
+                ? `Its ${dialog.count} ${dialog.count === 1 ? "item goes" : "items go"} with it. This can't be undone — export it first if you might want it back.`
+                : "It's empty, so nothing else is lost."}
+            </p>
+          }
+          confirmLabel="Delete board"
+          danger
+          onConfirm={() => {
+            const id = dialog.id;
+            deleteBoard(id);
+            const rest = listBoards();
+            if (id === boardId) {
+              if (rest[0]) openBoard(rest[0].id);
+              else {
+                const next = newId();
+                saveBoard(next, [], "My board");
+                openBoard(next);
+              }
+            }
+            setBoards(listBoards());
+            say(`Deleted “${dialog.name}”.`);
+          }}
+          onClose={() => setDialog(null)}
+        />
+      )}
+      {dialog?.kind === "clear" && (
+        <ConfirmDialog
+          title="Clear this board?"
+          body={<p>Everything on it is removed. Undo (⌘/Ctrl Z) brings it back.</p>}
+          confirmLabel="Clear board"
+          danger
+          onConfirm={() => {
+            apply([]);
+            setSel(new Set());
+          }}
+          onClose={() => setDialog(null)}
+        />
+      )}
     </div>
   );
 }

@@ -61,12 +61,12 @@ test("exports a PNG and opens a share link as a new board", async ({ page, conte
   await page.getByRole("button", { name: "Boards and export" }).click();
   const [download] = await Promise.all([
     page.waitForEvent("download"),
-    page.getByRole("menuitem", { name: "PNG image" }).click(),
+    page.getByRole("button", { name: "PNG image" }).click(),
   ]);
   expect(download.suggestedFilename()).toMatch(/\.png$/);
 
   await page.getByRole("button", { name: "Boards and export" }).click();
-  await page.getByRole("menuitem", { name: "Copy a share link" }).click();
+  await page.getByRole("button", { name: /Share this board/ }).click();
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain("#board=");
   const url = await page.evaluate(() => navigator.clipboard.readText());
 
@@ -79,9 +79,16 @@ test("exports a PNG and opens a share link as a new board", async ({ page, conte
 test("has its own header and remembers the page layout", async ({ page }) => {
   await canvas(page);
   await expect(page.locator("#site-sidenav")).toHaveCount(0);
-  await expect(page.getByRole("heading", { level: 1, name: "Whiteboard" })).toBeVisible();
+  await expect(page.locator("header")).toHaveCount(0);
+  await expect(page.getByRole("heading", { level: 1, name: "Whiteboard" })).toHaveCount(1);
   await expect(page.getByRole("link", { name: /Home|Back to/ })).toBeVisible();
-  await expect(page.getByLabel("Theme")).toBeVisible();
+  await page.getByRole("button", { name: "Boards and export" }).click();
+  await page.getByRole("radio", { name: "Blueprint" }).click();
+  await page.getByRole("radio", { name: "Roboto" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "blueprint");
+  await expect(page.locator("html")).toHaveAttribute("data-font", "roboto");
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("complementary", { name: "Board menu" })).toHaveCount(0);
 
   await page.getByRole("button", { name: "Page layout" }).click();
   await page.getByRole("tab", { name: "Technical" }).click();
@@ -145,4 +152,31 @@ test("an arrow's end can be dragged off one shape and onto another", async ({ pa
   await page.keyboard.press("v");
   await drag(page, at(680, 490), at(680, 640));
   await expect.poll(() => arrow.getAttribute("d")).not.toBe(before);
+});
+
+test("new boards ask for a name and deleting one asks first", async ({ page }) => {
+  const { svg, box } = await canvas(page);
+  await page.keyboard.press("r");
+  await drag(page, [box.x + 300, box.y + 300], [box.x + 400, box.y + 380]);
+
+  await page.getByRole("button", { name: "Boards and export" }).click();
+  await page.getByRole("button", { name: "+ New board" }).click();
+  const dialog = page.getByRole("dialog", { name: "New board" });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("textbox", { name: "Name" }).fill("System design notes");
+  await dialog.getByRole("button", { name: "Create board" }).click();
+  await expect(page.getByRole("textbox", { name: "Board name" })).toHaveValue("System design notes");
+  await expect(svg).toHaveAttribute("aria-label", /0 elements/);
+
+  await page.getByRole("button", { name: "Boards and export" }).click();
+  await page.getByRole("button", { name: "Delete My first board" }).click();
+  const confirm = page.getByRole("dialog", { name: /Delete “My first board”/ });
+  await expect(confirm).toContainText("1 item");
+  await confirm.getByRole("button", { name: "Cancel" }).click();
+  await page.getByRole("button", { name: "Boards and export" }).click();
+  await expect(page.getByRole("button", { name: "Delete My first board" })).toBeVisible();
+  await page.getByRole("button", { name: "Delete My first board" }).click();
+  await page.getByRole("button", { name: "Delete board" }).click();
+  await page.getByRole("button", { name: "Boards and export" }).click();
+  await expect(page.getByRole("button", { name: "Delete My first board" })).toHaveCount(0);
 });

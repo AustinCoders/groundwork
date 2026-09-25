@@ -31,11 +31,11 @@ export function TemplatesMenu({ onPick }: { onPick: (t: Template) => void }) {
     <div className={styles.popWrap} ref={wrap}>
       <button
         type="button"
-        className={styles.islandBtn}
+        className={styles.tool}
         aria-label="Templates"
         aria-expanded={open}
         aria-haspopup="menu"
-        title="Start from a template"
+        data-tip="Templates"
         onClick={() => setOpen((v) => !v)}
       >
         <Icon name="templates" />

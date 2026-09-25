@@ -407,7 +407,7 @@ export function PagePicker({
         aria-label="Page layout"
         aria-expanded={open}
         aria-haspopup="dialog"
-        title="Page layout, colour and snapping"
+        data-tip="Page, colour and snapping"
         onClick={() => setOpen((v) => !v)}
       >
         <Icon name="grid" />
