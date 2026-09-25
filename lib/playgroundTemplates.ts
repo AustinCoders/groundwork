@@ -77,6 +77,25 @@ main();
 `,
   },
   {
+    name: "Which is faster?",
+    code: `const nums = Array.from({ length: 10_000 }, (_, i) => i);
+
+compare({
+  "for loop": () => {
+    let sum = 0;
+    for (let i = 0; i < nums.length; i++) sum += nums[i];
+    return sum;
+  },
+  reduce: () => nums.reduce((a, b) => a + b, 0),
+  "for...of": () => {
+    let sum = 0;
+    for (const n of nums) sum += n;
+    return sum;
+  },
+});
+`,
+  },
+  {
     name: "Array methods",
     code: `const orders = [
   { id: 1, total: 42, paid: true },
@@ -169,6 +188,23 @@ pairs = [(a, b) for a in range(1, 4) for b in range(a, 4)]
 print(squares)
 print(by_parity)
 print(pairs)
+`,
+  },
+  {
+    name: "Which is faster?",
+    code: `nums = list(range(10_000))
+
+def with_loop():
+    total = 0
+    for n in nums:
+        total += n
+    return total
+
+compare({
+    "for loop": with_loop,
+    "sum()": lambda: sum(nums),
+    "comprehension": lambda: sum([n for n in nums]),
+})
 `,
   },
   {

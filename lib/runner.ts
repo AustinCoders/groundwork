@@ -30,6 +30,7 @@ export interface RunnerDonePayload {
 export interface RunOptions {
   code: string;
   tests?: { name: string; body: string }[];
+  stdin?: string;
   timeout?: number;
   onConsole?: (entry: RunnerOutputEntry) => void;
   onDone?: (payload: RunnerDonePayload) => void;
@@ -115,6 +116,7 @@ export function run(options: RunOptions): { stop: () => void } {
   const source =
     "'use strict';\n" +
     "var __results = [];\n" +
+    `__setStdin(${JSON.stringify(options.stdin ?? "")});\n` +
     "__base();\n" +
     "try {\n" +
     code +

@@ -6403,6 +6403,35 @@ a.step__title:hover {
   color: var(--ide-fg-dim);
 }
 
+.stdin {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stdin__label {
+  color: var(--ide-fg-dim);
+  font-size: 12.5px;
+}
+
+.stdin__box {
+  width: 100%;
+  min-height: 160px;
+  padding: 10px 12px;
+  font-family: var(--font-code);
+  font-size: 13.5px;
+  color: var(--ide-fg);
+  background: var(--ide-bg-elevated);
+  border: 1px solid var(--ide-border);
+  border-radius: 8px;
+  resize: vertical;
+}
+
+.stdin__box:focus-visible {
+  outline: 2px solid var(--ide-accent);
+  outline-offset: 1px;
+}
+
 .runs {
   margin: 0 0 10px;
   padding: 0;

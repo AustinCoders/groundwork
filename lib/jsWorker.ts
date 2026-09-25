@@ -5,6 +5,58 @@ function send(type: string, payload: unknown) {
 }
 
 let baseLine = 0;
+let stdinLines: string[] = [];
+
+function readLine(): string | null {
+  return stdinLines.length ? stdinLines.shift()! : null;
+}
+
+const inputScope = self as unknown as Record<string, unknown>;
+inputScope.__setStdin = (text: string) => {
+  stdinLines = text ? text.replace(/\r\n/g, "\n").split("\n") : [];
+  if (stdinLines.at(-1) === "") stdinLines.pop();
+};
+inputScope.readline = readLine;
+
+function formatTime(ms: number): string {
+  if (ms >= 1) return `${ms.toFixed(2)} ms`;
+  if (ms >= 0.001) return `${(ms * 1000).toFixed(2)} µs`;
+  return `${(ms * 1e6).toFixed(0)} ns`;
+}
+
+inputScope.compare = (candidates: Record<string, () => unknown>, options: { budgetMs?: number } = {}) => {
+  const budget = Math.min(Math.max(options.budgetMs ?? 300, 50), 2000);
+  const rows = Object.entries(candidates).map(([name, fn]) => {
+    for (let i = 0; i < 5; i++) fn();
+    let runs = 0;
+    const start = performance.now();
+    let elapsed = 0;
+    do {
+      for (let i = 0; i < 10; i++) fn();
+      runs += 10;
+      elapsed = performance.now() - start;
+    } while (elapsed < budget);
+    return { name, perCall: elapsed / runs, runs };
+  });
+  rows.sort((a, b) => a.perCall - b.perCall);
+  const fastest = rows[0]?.perCall ?? 1;
+  send("console", {
+    kind: "table",
+    columns: ["", "per call", "runs/sec", "vs fastest"],
+    rows: rows.map((r, i) => [
+      `${i === 0 ? "🏆 " : ""}${r.name}`,
+      formatTime(r.perCall),
+      Math.round(1000 / r.perCall).toLocaleString(),
+      i === 0 ? "fastest" : `${(r.perCall / fastest).toFixed(2)}× slower`,
+    ]),
+  });
+  return rows.map((r) => r.name);
+};
+inputScope.prompt = (message?: unknown) => {
+  const line = readLine();
+  if (message !== undefined) send("console", { kind: "info", text: `${String(message)} ${line ?? ""}`.trim() });
+  return line;
+};
 
 function frameLine(stack: string | undefined): number | undefined {
   const m = stack?.match(/<anonymous>:(\d+):\d+/);

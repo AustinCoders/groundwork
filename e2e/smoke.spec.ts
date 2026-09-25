@@ -478,3 +478,18 @@ test("the playground keeps a history of runs and can reopen an earlier run's cod
     page.getByRole("list", { name: "Files" }).getByRole("button", { name: "scratch-earlier.js", exact: true })
   ).toBeVisible();
 });
+
+test("the playground reads stdin and compares how fast two solutions run", async ({ page }) => {
+  await page.goto("/practice?id=free");
+  const editor = page.locator(".cm-content");
+  await page.getByRole("tab", { name: /Input/ }).click();
+  await page.locator(".stdin__box").fill("Ada\n3\n4\n");
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.insertText(
+    "const name = prompt();\nconst a = Number(readline()), b = Number(readline());\nconsole.log(`${name}: ${a + b}`);\ncompare({ slow: () => [...Array(200).keys()].reduce((x, y) => x + y), fast: () => 1 }, { budgetMs: 50 });\n"
+  );
+  await page.getByRole("button", { name: "Run the code" }).click();
+  await expect(page.locator("#view-console")).toContainText("Ada: 7");
+  await expect(page.locator(".sql-result")).toContainText("🏆 fast");
+});

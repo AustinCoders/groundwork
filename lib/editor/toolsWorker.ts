@@ -101,6 +101,8 @@ function loadLinter() {
               assert: "readonly",
               React: "readonly",
               __loopGuard: "readonly",
+              compare: "readonly",
+              readline: "readonly",
             },
           },
           rules: RULES,

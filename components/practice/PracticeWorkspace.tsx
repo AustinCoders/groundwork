@@ -63,6 +63,7 @@ const MARKS: Record<string, string> = { log: "›", info: "i", warn: "!", error:
 
 const EDITOR_HEIGHT_KEY = "jsnotes:editor-height";
 const LIVE_KEY = "jsnotes:playground-live";
+const STDIN_KEY = "groundwork:playground:stdin";
 const EDITOR_HEIGHT_MIN = 220;
 const EDITOR_HEIGHT_MAX = 900;
 
@@ -178,7 +179,12 @@ export function PracticeWorkspace({
 
   const mounted = useMounted();
   const [currentLang, setCurrentLang] = useState<LanguageKey>("javascript");
-  const [activeTab, setActiveTab] = useState<"console" | "tests" | "problems" | "preview" | "history">("console");
+  const [activeTab, setActiveTab] = useState<"console" | "tests" | "problems" | "preview" | "history" | "input">(
+    "console"
+  );
+  const [stdin, setStdin] = useState(() =>
+    isFree && !interview && typeof window !== "undefined" ? store.get<string>(STDIN_KEY, "") : ""
+  );
   const runs = useSyncExternalStore(subscribeRuns, runsSnapshot, serverRunsSnapshot);
   const recordedRunRef = useRef(0);
   const [previewDoc, setPreviewDoc] = useState<string | null>(null);
@@ -548,6 +554,7 @@ export function PracticeWorkspace({
     function startRunner(code: string, tests: boolean) {
       runningRef.current = runnerRun({
         code,
+        stdin: tests ? "" : stdin,
         tests: tests ? exercise.tests : [],
         timeout: 5000,
         onConsole: (entry) => setConsoleLines((prev) => [...prev, entry]),
@@ -599,6 +606,7 @@ export function PracticeWorkspace({
       const rows: [number, number, Json, string?][] = [];
       runningRef.current = runPython({
         code: grading ? withHarness("python", editor.getValue(), grading) : editor.getValue(),
+        stdin: grading ? "" : stdin,
         onConsole: (entry) => {
           if (grading && entry.kind === "log" && isResultLine(entry.text)) {
             rows.push(...parseResultLine(entry.text));
@@ -1091,6 +1099,22 @@ export function PracticeWorkspace({
                     </span>
                   </button>
                 )}
+                {playground && (
+                  <button
+                    className={`tab${activeTab === "input" ? " is-active" : ""}`}
+                    id="tab-input"
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === "input"}
+                    aria-controls="view-input"
+                    onClick={() => setActiveTab("input")}
+                  >
+                    Input{" "}
+                    <span className="tab__count" id="input-count">
+                      {stdin ? stdin.replace(/\n$/, "").split("\n").length : 0}
+                    </span>
+                  </button>
+                )}
                 {playground && hasPage && (
                   <button
                     className={`tab${activeTab === "preview" ? " is-active" : ""}`}
@@ -1229,6 +1253,31 @@ export function PracticeWorkspace({
                       Run an HTML file, or a stylesheet or script it links, to see the page here.
                     </p>
                   )}
+                </div>
+              )}
+              {playground && (
+                <div
+                  className={`panel__view${activeTab === "input" ? " is-active" : ""}`}
+                  id="view-input"
+                  role="tabpanel"
+                >
+                  <label className="stdin">
+                    <span className="stdin__label">
+                      Each line is one answer to <code>input()</code> in Python, or <code>prompt()</code> /{" "}
+                      <code>readline()</code> in JavaScript.
+                    </span>
+                    <textarea
+                      className="stdin__box"
+                      value={stdin}
+                      spellCheck={false}
+                      rows={8}
+                      placeholder={"5\nAda\n3 4 7"}
+                      onChange={(e) => {
+                        setStdin(e.target.value);
+                        store.set(STDIN_KEY, e.target.value);
+                      }}
+                    />
+                  </label>
                 </div>
               )}
               {playground && (

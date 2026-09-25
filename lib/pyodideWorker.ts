@@ -4,6 +4,7 @@ interface PyodideInterface {
   runPythonAsync: (code: string) => Promise<unknown>;
   setStdout: (opts: { batched: (text: string) => void }) => void;
   setStderr: (opts: { batched: (text: string) => void }) => void;
+  setStdin: (opts: { stdin: () => string | undefined }) => void;
 }
 
 let pyodidePromise: Promise<PyodideInterface> | null = null;
@@ -21,6 +22,32 @@ if not hasattr(_b, "_gw_print"):
         mark = "\\x02%d\\x03" % (f.f_lineno if f is not None else 0)
         _b._gw_print(mark + sep.join(str(a) for a in args), end=end, flush=flush)
     _b.print = _gw
+
+    def compare(candidates, budget_ms=300):
+        import time as _t
+        rows = []
+        for name, fn in candidates.items():
+            for _ in range(3):
+                fn()
+            runs, start = 0, _t.perf_counter()
+            while True:
+                for _ in range(10):
+                    fn()
+                runs += 10
+                elapsed = (_t.perf_counter() - start) * 1000
+                if elapsed >= budget_ms:
+                    break
+            rows.append((name, elapsed / runs))
+        rows.sort(key=lambda r: r[1])
+        best = rows[0][1]
+        width = max(len(n) for n, _ in rows) + 3
+        for i, (name, per) in enumerate(rows):
+            label = ("* " if i == 0 else "  ") + name
+            speed = "fastest" if i == 0 else "%.2fx slower" % (per / best)
+            _b._gw_print("%s  %10.4f ms/call  %s" % (label.ljust(width), per, speed))
+        return [n for n, _ in rows]
+
+    _b.compare = compare
 `;
 
 function withLine(text: string): { text: string; line?: number } {
@@ -65,6 +92,11 @@ self.onmessage = async (event: MessageEvent) => {
 
   try {
     const pyodide = await getPyodide();
+    const lines: string[] = String(data.stdin ?? "")
+      .replace(/\r\n/g, "\n")
+      .split("\n");
+    if (lines.at(-1) === "") lines.pop();
+    pyodide.setStdin({ stdin: () => (lines.length ? `${lines.shift()}\n` : undefined) });
     await pyodide.runPythonAsync(data.code);
     postMessage({ type: "done", payload: { results: [] } });
   } catch (err) {
