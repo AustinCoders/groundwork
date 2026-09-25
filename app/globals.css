@@ -70,7 +70,7 @@
   --ide-yellow: var(--dg-yellow-stroke);
   --ide-green: var(--green);
   --ide-cursor: var(--ink);
-  --ide-hover: color-mix(in srgb, var(--ide-fg) 10%, transparent);
+  --ide-hover: color-mix(in srgb, var(--ide-fg) 12%, transparent);
   --ide-hover-strong: color-mix(in srgb, var(--ide-fg) 15%, transparent);
 
   --font-code: var(--font-mono);
