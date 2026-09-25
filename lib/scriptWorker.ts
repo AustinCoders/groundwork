@@ -4,6 +4,7 @@ type Lang = "lua" | "ruby" | "php" | "c" | "cpp";
 
 interface Engine {
   run(code: string, stdin: string[]): Promise<void>;
+  warm?(): Promise<void>;
 }
 
 const LINE_MARK = /^\u0002(\d+)\u0003/;
@@ -224,6 +225,23 @@ const STD_HEADERS = [
 
 function nativeEngine(lang: "c" | "cpp"): Promise<Engine> {
   return loadClang().then(([clang, shim]) => ({
+    async warm() {
+      const file = lang === "c" ? "w.c" : "w.cpp";
+      const source =
+        lang === "c"
+          ? "#include <stdio.h>\nint main(void) { return 0; }\n"
+          : "#include <iostream>\n#include <string>\n#include <unordered_map>\n#include <vector>\nint main() { return 0; }\n";
+      await clang
+        .runClang(
+          [lang === "c" ? "clang" : "clang++", "-O1", file, "-o", "w.wasm"],
+          { [file]: source },
+          {
+            stdout: () => {},
+            stderr: () => {},
+          }
+        )
+        .catch(() => {});
+    },
     async run(code, stdin) {
       const file = lang === "c" ? "main.c" : "main.cpp";
       const args =
@@ -282,24 +300,28 @@ const LABEL: Record<Lang, string> = {
   cpp: "C++ compiler (~12 MB)",
 };
 
+function startEngine(lang: Lang) {
+  if (engines.has(lang)) return;
+  engines.set(
+    lang,
+    lang === "lua" ? luaEngine() : lang === "ruby" ? rubyEngine() : lang === "php" ? phpEngine() : nativeEngine(lang)
+  );
+  engines
+    .get(lang)!
+    .then((engine) => engine.warm?.())
+    .catch(() => engines.delete(lang));
+}
+
 self.onmessage = async (event: MessageEvent) => {
   const data = event.data as { type: string; lang: Lang; code: string; stdin?: string };
+  if (data?.type === "warm") return startEngine(data.lang);
   if (!data || data.type !== "run") return;
   if (!engines.has(data.lang)) {
     postMessage({
       type: "console",
       payload: { kind: "system", text: `▶ loading the ${LABEL[data.lang]} runtime — one-time, cached after this…` },
     });
-    engines.set(
-      data.lang,
-      data.lang === "lua"
-        ? luaEngine()
-        : data.lang === "ruby"
-          ? rubyEngine()
-          : data.lang === "php"
-            ? phpEngine()
-            : nativeEngine(data.lang)
-    );
+    startEngine(data.lang);
   }
   const stdin = String(data.stdin ?? "")
     .replace(/\r\n/g, "\n")

@@ -11,7 +11,7 @@ import { lastLevel, progress, rememberLevel } from "@/lib/storage";
 import { levelRows } from "@/lib/levelRows";
 import type { ChapterMeta } from "@/content/types";
 import { useMounted } from "@/lib/hooks";
-import { problemHref } from "@/lib/practiceLinks";
+import { problemHref } from "@/lib/problemHref";
 
 function LevelTag({ level }: { level: string }) {
   return <span className={`tag tag--${level}`}>{level}</span>;

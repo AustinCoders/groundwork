@@ -7,7 +7,7 @@ import { Crumbs } from "@/components/Crumbs";
 import { progress } from "@/lib/storage";
 import { useMounted, useProgressValue } from "@/lib/hooks";
 import { plural } from "@/lib/format";
-import { problemHref } from "@/lib/practiceLinks";
+import { problemHref } from "@/lib/problemHref";
 
 export interface ProblemRow {
   id: string;

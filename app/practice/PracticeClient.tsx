@@ -1,12 +1,11 @@
 "use client";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import { Shell } from "@/components/Shell";
 import { BackButton } from "@/components/practice/BackButton";
 import { PracticeWorkspace } from "@/components/practice/PracticeWorkspace";
-import { practice as allExercisesData } from "@/content/practice";
 import { FREE_EXERCISE, type PracticeExercise } from "@/lib/practiceFree";
+import { problemHref } from "@/lib/problemHref";
 
 export interface ChapterLink {
   id: string;
@@ -15,69 +14,58 @@ export interface ChapterLink {
   href: string;
 }
 
-export interface PracticeClientProps {
-  chapterLinks: Record<string, ChapterLink>;
-  exerciseId?: string;
+export interface NeighbourLink {
+  id: string;
+  title: string;
 }
 
-export default function PracticeClient({ exerciseId, ...rest }: PracticeClientProps) {
-  if (exerciseId) return <PracticeBody id={exerciseId} fromQuery={false} {...rest} />;
+export interface PracticeClientProps {
+  exercise?: PracticeExercise;
+  chapter?: ChapterLink | null;
+  prev?: NeighbourLink | null;
+  next?: NeighbourLink | null;
+}
+
+export default function PracticeClient({ exercise, chapter = null, prev = null, next = null }: PracticeClientProps) {
+  if (exercise) return <PracticeBody exercise={exercise} isFree={false} chapter={chapter} prev={prev} next={next} />;
   return (
     <Suspense fallback={null}>
-      <PracticeFromQuery {...rest} />
+      <PracticeFromQuery />
     </Suspense>
   );
 }
 
-function PracticeFromQuery(props: Omit<PracticeClientProps, "exerciseId">) {
-  const searchParams = useSearchParams();
-  return <PracticeBody id={searchParams.get("id")} fromQuery {...props} />;
+function PracticeFromQuery() {
+  const router = useRouter();
+  const id = useSearchParams().get("id");
+  const problem = id && id !== "free" ? id : null;
+
+  useEffect(() => {
+    if (problem) router.replace(problemHref(problem));
+  }, [problem, router]);
+
+  if (problem)
+    return (
+      <p className="sub" style={{ margin: "40px auto", textAlign: "center" }}>
+        Opening the problem…
+      </p>
+    );
+  return <PracticeBody exercise={FREE_EXERCISE} isFree chapter={null} prev={null} next={null} />;
 }
 
 function PracticeBody({
-  id,
-  fromQuery,
-  chapterLinks,
+  exercise,
+  isFree,
+  chapter,
+  prev,
+  next,
 }: {
-  id: string | null;
-  fromQuery: boolean;
-  chapterLinks: Record<string, ChapterLink>;
+  exercise: PracticeExercise;
+  isFree: boolean;
+  chapter: ChapterLink | null;
+  prev: NeighbourLink | null;
+  next: NeighbourLink | null;
 }) {
-  const isFree = !id || id === "free";
-  const exercise: PracticeExercise | null | undefined = isFree
-    ? FREE_EXERCISE
-    : allExercisesData.find((e) => e.id === id);
-
-  useEffect(() => {
-    if (!fromQuery) return;
-    document.title = exercise && !isFree ? `${exercise.title} — practice` : "Playground — practice";
-  }, [exercise, isFree, fromQuery]);
-
-  if (!exercise) {
-    return (
-      <div className="narrow" style={{ margin: "40px auto", padding: "0 16px" }}>
-        <section className="sheet">
-          <h2>No such exercise</h2>
-          <p className="sub">The link points at an exercise that does not exist.</p>
-          <p>
-            <Link className="btn" href="/">
-              Back to the topics
-            </Link>{" "}
-            <Link className="btn" href="/practice?id=free">
-              Open the playground
-            </Link>
-          </p>
-        </section>
-      </div>
-    );
-  }
-
-  const chapter = exercise.chapter ? (chapterLinks[exercise.chapter] ?? null) : null;
-  const allExercises = allExercisesData;
-  const index = allExercises.findIndex((e) => e.id === exercise.id);
-  const prev = !isFree ? ((allExercises[index - 1] as PracticeExercise | undefined) ?? null) : null;
-  const next = !isFree ? ((allExercises[index + 1] as PracticeExercise | undefined) ?? null) : null;
-
   return (
     <Shell
       skipLabel="Skip to the editor"

@@ -178,7 +178,7 @@ export function DebugPanel({
     () => (step ? Object.entries(step.vars).filter(([, v]) => v.t !== "tdz" && v.t !== "fn") : []),
     [step]
   );
-  const printed = output.filter((o) => o.kind !== "table" && (o.step ?? 0) <= index + 1);
+  const printed = output.filter((o) => o.kind !== "table" && o.kind !== "system" && (o.step ?? 0) <= index + 1);
 
   if (!total) return <p className="panel__empty">Nothing ran — is there any code outside a function?</p>;
 

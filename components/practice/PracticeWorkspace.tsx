@@ -40,14 +40,14 @@ import type { Json, Polyglot } from "@/lib/polyglot/types";
 import { useClientValue, useMounted } from "@/lib/hooks";
 import type { PracticeExercise } from "@/lib/practiceFree";
 import { runPython } from "@/lib/pythonRunner";
-import { runScript } from "@/lib/scriptRunner";
+import { runScript, warmScript } from "@/lib/scriptRunner";
 import { runReact } from "@/lib/reactRunner";
 import { run as runnerRun, transpileTS, type RunnerOutputEntry, type RunnerTestResult } from "@/lib/runner";
 import { runSQL } from "@/lib/sqlRunner";
 import { isSoundEnabled, playSolvedDing, setSoundEnabled } from "@/lib/sound";
 import { code as codeStore, progress, store } from "@/lib/storage";
-import type { ChapterLink } from "@/app/practice/PracticeClient";
-import { problemHref } from "@/lib/practiceLinks";
+import type { ChapterLink, NeighbourLink } from "@/app/practice/PracticeClient";
+import { problemHref } from "@/lib/problemHref";
 
 const polyglotCache = new Map<string, Promise<Polyglot>>();
 
@@ -170,8 +170,8 @@ export function PracticeWorkspace({
   exercise: PracticeExercise;
   isFree: boolean;
   chapter: ChapterLink | null;
-  prev: PracticeExercise | null;
-  next: PracticeExercise | null;
+  prev: NeighbourLink | null;
+  next: NeighbourLink | null;
   interview?: boolean;
   onOutcome?: (outcome: WorkspaceOutcome) => void;
 }) {
@@ -468,6 +468,7 @@ export function PracticeWorkspace({
   }
 
   async function handleLanguageChange(lang: LanguageKey) {
+    if (lang === "c" || lang === "cpp" || lang === "ruby" || lang === "php" || lang === "lua") warmScript(lang);
     if (projectRef.current) return openLanguage(lang);
     if (!interview) store.set(langKey, lang);
     currentLangRef.current = lang;
@@ -593,7 +594,7 @@ export function PracticeWorkspace({
   async function debugCode() {
     const editor = editorRef.current;
     const lang = currentLangRef.current;
-    if (!editor || (lang !== "javascript" && lang !== "typescript") || isComponent) return;
+    if (!editor || (lang !== "javascript" && lang !== "typescript" && lang !== "python") || isComponent) return;
     runningRef.current?.stop();
     setDebugRun(null);
     setActiveTab("debug");
@@ -602,8 +603,27 @@ export function PracticeWorkspace({
     if (!isFree) {
       const poly = await loadPolyglot(exercise.id);
       const first = poly.ok ? poly.tests[0]?.cases[0] : undefined;
-      if (poly.ok && first)
+      if (poly.ok && first && lang === "python")
+        code += `\n${poly.signature.name}(*__import__("json").loads(${JSON.stringify(JSON.stringify(first.args))}))\n`;
+      else if (poly.ok && first)
         code += `\n${poly.signature.name}(${first.args.map((a) => JSON.stringify(a)).join(", ")});\n`;
+    }
+    const output: RunnerOutputEntry[] = [];
+    const finish = (trace: Trace | undefined) => {
+      runningRef.current = null;
+      setConsolePhase("ran");
+      setConsoleLines(output.map((o) => ({ ...o, line: undefined })));
+      setDebugRun({ trace: trace ?? { steps: [], truncated: false }, output });
+    };
+    if (lang === "python") {
+      runningRef.current = runPython({
+        code,
+        stdin,
+        trace: true,
+        onConsole: (entry) => output.push(entry),
+        onDone: (payload) => finish(payload.trace),
+      });
+      return;
     }
     let instrumented: string;
     try {
@@ -616,19 +636,13 @@ export function PracticeWorkspace({
       setActiveTab("console");
       return;
     }
-    const output: RunnerOutputEntry[] = [];
     runningRef.current = runnerRun({
       code: instrumented,
       stdin,
       trace: true,
       timeout: 8000,
       onConsole: (entry) => output.push(entry),
-      onDone: (payload) => {
-        runningRef.current = null;
-        setConsolePhase("ran");
-        setConsoleLines(output.map((o) => ({ ...o, line: undefined })));
-        setDebugRun({ trace: payload.trace ?? { steps: [], truncated: false }, output });
-      },
+      onDone: (payload) => finish(payload.trace),
     });
   }
 
@@ -936,18 +950,20 @@ export function PracticeWorkspace({
               compact
             />
           )}
-          {(currentLang === "javascript" || currentLang === "typescript") && !isComponent && !interview && (
-            <button
-              className="btn"
-              type="button"
-              title={
-                isFree ? "Step through the code line by line" : "Step through your solution on the first test's input"
-              }
-              onClick={() => void debugCode()}
-            >
-              <span aria-hidden="true">🐞</span> Debug
-            </button>
-          )}
+          {(currentLang === "javascript" || currentLang === "typescript" || currentLang === "python") &&
+            !isComponent &&
+            !interview && (
+              <button
+                className="btn"
+                type="button"
+                title={
+                  isFree ? "Step through the code line by line" : "Step through your solution on the first test's input"
+                }
+                onClick={() => void debugCode()}
+              >
+                <span aria-hidden="true">🐞</span> Debug
+              </button>
+            )}
           {!isFree && exercise.tests.length > 0 && (
             <button
               className="btn btn--test"

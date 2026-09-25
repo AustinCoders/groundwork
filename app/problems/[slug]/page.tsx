@@ -47,6 +47,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ProblemPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  if (!exercise(slug)) notFound();
-  return <PracticeClient exerciseId={slug} chapterLinks={practiceChapterLinks()} />;
+  const ex = exercise(slug);
+  if (!ex) notFound();
+  const all = exercises();
+  const index = all.findIndex((e) => e.id === slug);
+  const link = (e: (typeof all)[number] | undefined) => (e ? { id: e.id, title: e.title } : null);
+  return (
+    <PracticeClient
+      exercise={ex}
+      chapter={practiceChapterLinks()[ex.chapter] ?? null}
+      prev={link(all[index - 1])}
+      next={link(all[index + 1])}
+    />
+  );
 }

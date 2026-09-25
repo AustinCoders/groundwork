@@ -217,8 +217,10 @@ finops
 flexbox
 footgun
 forgeeksskeegfor
+frozenset
 gcell
 geohash
+getattr
 getframe
 getinfo
 getrandom
@@ -258,6 +260,7 @@ invertibility
 IOCP
 iomanip
 ipairs
+isinstance
 issip
 IVXLCDM
 jank
@@ -404,6 +407,7 @@ renderable
 renderitem
 replayable
 replit
+repr
 requestfailed
 rerank
 rescuable
@@ -435,6 +439,7 @@ setgroup
 SETNX
 setprecision
 setrow
+settrace
 Shopyvilla
 signups
 singleflight

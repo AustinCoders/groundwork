@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import PracticeClient from "./PracticeClient";
 import { pageMetadata } from "@/lib/metadata";
-import { practiceChapterLinks } from "@/lib/practiceLinks";
 
 export const metadata: Metadata = pageMetadata({
   title: "Playground",
@@ -10,5 +9,5 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function PracticePage() {
-  return <PracticeClient chapterLinks={practiceChapterLinks()} />;
+  return <PracticeClient />;
 }

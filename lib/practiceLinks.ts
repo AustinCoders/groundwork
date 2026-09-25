@@ -13,6 +13,4 @@ export function practiceChapterLinks(): Record<string, ChapterLink> {
   return links;
 }
 
-export function problemHref(exerciseId: string): string {
-  return `/problems/${exerciseId}`;
-}
+export { problemHref } from "@/lib/problemHref";

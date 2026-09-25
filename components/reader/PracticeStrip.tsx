@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { progress } from "@/lib/storage";
 import { useProgressValue } from "@/lib/hooks";
-import { problemHref } from "@/lib/practiceLinks";
+import { problemHref } from "@/lib/problemHref";
 
 export interface PracticeLink {
   id: string;

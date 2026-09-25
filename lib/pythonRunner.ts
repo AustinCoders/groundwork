@@ -3,6 +3,7 @@ import type { RunnerDonePayload, RunnerOutputEntry } from "@/lib/runner";
 export interface PythonRunOptions {
   code: string;
   stdin?: string;
+  trace?: boolean;
   timeout?: number;
   onConsole?: (entry: RunnerOutputEntry) => void;
   onDone?: (payload: RunnerDonePayload) => void;
@@ -52,7 +53,7 @@ export function runPython(options: PythonRunOptions): { stop: () => void } {
   }
 
   worker.addEventListener("message", onMessage);
-  worker.postMessage({ type: "run", code: options.code, stdin: options.stdin ?? "" });
+  worker.postMessage({ type: "run", code: options.code, stdin: options.stdin ?? "", trace: Boolean(options.trace) });
 
   timer = setTimeout(() => {
     if (finished) return;

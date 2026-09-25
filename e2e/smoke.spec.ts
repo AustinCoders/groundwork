@@ -557,3 +557,20 @@ test("translate sends the code to the server and opens the result as a new file"
   ).toBeVisible();
   await expect(page.locator("#view-console")).toContainText("Translated from JavaScript to Python");
 });
+
+test("python can be stepped through too", async ({ page }) => {
+  await page.goto("/practice?id=free");
+  await page
+    .getByRole("group", { name: "Quick language" })
+    .getByRole("button", { name: /Python/ })
+    .click();
+  const editor = page.locator(".cm-content");
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.insertText("nums = [3, 1, 2]\ntotal = 0\nfor n in nums:\n    total += n\nprint(total)\n");
+  await page.getByRole("button", { name: /Debug/ }).click();
+  await expect(page.locator(".debug__where")).toContainText("line 1", { timeout: 90_000 });
+  await page.getByRole("button", { name: "Last step" }).click();
+  await expect(page.locator(".debug__var", { hasText: "total" })).toContainText("6");
+  await expect(page.locator(".debug__out")).toContainText("6");
+});

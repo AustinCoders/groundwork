@@ -83,3 +83,7 @@ export function runScript(options: ScriptRunOptions): { stop: () => void } {
     },
   };
 }
+
+export function warmScript(lang: ScriptRunOptions["lang"]) {
+  getWorker().postMessage({ type: "warm", lang });
+}
