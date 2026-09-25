@@ -147,7 +147,7 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
   const [filters, update] = useFilters();
   const [menuOpen, setMenuOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
+  const [opened, setOpened] = useState<{ q: string; ids: Set<string> } | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
@@ -275,16 +275,20 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
     update({ levels: filters.levels.includes(l) ? filters.levels.filter((x) => x !== l) : [...filters.levels, l] });
   }
 
+  const openIds = useMemo(() => {
+    if (opened && opened.q === q) return opened.ids;
+    if (q) return new Set(visible.map((g) => g.chapter));
+    return new Set(visible[0] ? [visible[0].chapter] : []);
+  }, [opened, q, visible]);
+
   function toggleGroup(id: string) {
-    setCollapsed((c) => {
-      const next = new Set(c);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    const next = new Set(openIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setOpened({ q, ids: next });
   }
 
-  const allCollapsed = visible.length > 0 && visible.every((g) => collapsed.has(g.chapter));
+  const anyOpen = visible.some((g) => openIds.has(g.chapter));
 
   const filterPanel = (
     <>
@@ -530,9 +534,9 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
                 <button
                   type="button"
                   className={styles.linkBtn}
-                  onClick={() => setCollapsed(allCollapsed ? new Set() : new Set(visible.map((g) => g.chapter)))}
+                  onClick={() => setOpened({ q, ids: anyOpen ? new Set() : new Set(visible.map((g) => g.chapter)) })}
                 >
-                  {allCollapsed ? "Expand all" : "Collapse all"}
+                  {anyOpen ? "Collapse all" : "Expand all"}
                 </button>
               )}
             </div>
@@ -566,7 +570,7 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
                 visible.map((g) => {
                   const all = groupOf.get(g.chapter)!.problems;
                   const done = mounted ? all.filter((p) => solved.has(p.id)).length : 0;
-                  const open = !collapsed.has(g.chapter);
+                  const open = openIds.has(g.chapter);
                   return (
                     <section className={styles.group} key={g.chapter} aria-labelledby={`g-${g.chapter}`}>
                       <div className={styles.groupHead}>

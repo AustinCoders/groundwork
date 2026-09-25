@@ -697,3 +697,18 @@ test("the problems page filters by topic and difficulty and keeps them in the UR
   await page.keyboard.press("/");
   await expect(page.getByRole("searchbox", { name: "Search problems" })).toBeFocused();
 });
+
+test("problem groups start with only the first open and collapse all together", async ({ page }) => {
+  await page.goto("/problems");
+  const toggles = page.locator("button[aria-controls^='gl-']");
+  const open = page.locator("button[aria-expanded='true'][aria-controls^='gl-']");
+  await expect(toggles.first()).toHaveAttribute("aria-expanded", "true");
+  await expect(open).toHaveCount(1);
+  await toggles.nth(3).click();
+  await toggles.nth(6).click();
+  await expect(open).toHaveCount(3);
+  await page.getByRole("button", { name: "Collapse all" }).click();
+  await expect(open).toHaveCount(0);
+  await page.getByRole("button", { name: "Expand all" }).click();
+  await expect(open).toHaveCount(await toggles.count());
+});
