@@ -9,6 +9,7 @@ export const gitRebase: GitSection = {
     "Rebase does not move commits. It makes new copies of them on a new base and moves the branch label to the copies.",
   body: `
 <div class="cover__meta">
+    <span class="tag tag--beginner">Fresher</span>
     <span class="tag tag--intermediate">Mid</span>
     <span class="tag tag--advanced">Senior</span>
   </div>
@@ -19,6 +20,22 @@ export const gitRebase: GitSection = {
     to have been written on top of the latest main, and the fact
     that you branched off earlier disappears.
   </p>
+
+  <div class="bx is-prim">
+    <span class="ttl">In one minute</span>
+    <p>
+      You started a branch on Monday. By Wednesday main has moved on.
+      <code>git fetch</code> then <code>git rebase origin/main</code>
+      re-applies your commits one by one on top of today's main, as if
+      you had started this morning. Your commits get new IDs, so if
+      you had already pushed the branch you must push again with
+      <code>git push --force-with-lease</code>. If a commit conflicts,
+      fix the file, <code>git add</code> it and run
+      <code>git rebase --continue</code>; <code>git rebase --abort</code>
+      puts everything back. The one rule: only rebase commits nobody
+      else has built on.
+    </p>
+  </div>
 
   <h3>What rebase actually does</h3>
   <p>
@@ -99,7 +116,7 @@ export const gitRebase: GitSection = {
     skips any commit whose change is already on the new base, by
     comparing <em>patch IDs</em> (a hash of the diff), so a fix that
     was cherry-picked to main does not get applied twice. Second,
-    <code>git rebase main</code> is shorthand for
+    <code>git rebase main</code> is roughly shorthand for
     <code>git rebase --onto main $(git merge-base main HEAD) HEAD</code>:
     "take the commits between the merge base and HEAD, and put them
     on main". Keep that longer form in mind; it explains
@@ -128,14 +145,14 @@ export const gitRebase: GitSection = {
 
   <p class="sub">git rebase -i origin/main</p>
   <div class="codeblock">
-    <pre><code>pick   5a90c2e Add coupon field to cart form
-fixup  0c7e1d4 fixup! Add coupon field to cart form
-pick   b41f7a3 Add coupon model
-squash 7f2a9b0 coupon model tests
-reword e2c81d0 Aply coupon before tax
-edit   6d3b8c1 Extract tax helper
-drop   a4e0f93 debug logging, remove later
-exec   npm test</code></pre>
+    <pre><code>pick 5a90c2e # Add coupon field to cart form
+fixup 0c7e1d4 # fixup! Add coupon field to cart form
+pick b41f7a3 # Add coupon model
+squash 7f2a9b0 # coupon model tests
+reword e2c81d0 # Aply coupon before tax
+edit 6d3b8c1 # Extract tax helper
+drop a4e0f93 # debug logging, remove later
+exec npm test</code></pre>
     <button class="codeblock__copy" type="button">copy</button>
   </div>
 
@@ -183,6 +200,12 @@ Successfully rebased and updated refs/heads/feature.</code></pre>
     smaller pieces. The finished branch reads as if you knew exactly
     what you were doing from the start: a few clear commits instead
     of eleven, each one reviewable and revertable on its own.
+  </p>
+  <p>
+    Recent versions of Git write the subject after a <code>#</code>
+    as a reminder that only the verb and the ID matter; editing the
+    subject there does not change the commit message. That is what
+    <code>reword</code> is for.
   </p>
   <p>
     <code>git rebase -x "npm test" origin/main</code> adds an
@@ -311,20 +334,64 @@ $ git rebase --keep-base main</code></pre>
     top branch used to leave the lower branches pointing at the
     old, pre-rebase commits. Since Git 2.38,
     <code>--update-refs</code> moves every branch that points into
-    the rebased range:
+    the rebased range, and says so when it finishes
+    (<code>Updated the following refs with --update-refs:</code>):
   </p>
   <p class="sub">git rebase -i --update-refs main, run on billing-ui</p>
   <div class="codeblock">
-    <pre><code>pick 1a2b3c4 Add billing tables
-pick 5d6e7f8 Add billing migration
+    <pre><code>pick 1a2b3c4 # Add billing tables
+pick 5d6e7f8 # Add billing migration
 update-ref refs/heads/billing-schema
 
-pick 9a0b1c2 Add invoice endpoint
+pick 9a0b1c2 # Add invoice endpoint
 update-ref refs/heads/billing-api
 
-pick 3d4e5f6 Add invoice page</code></pre>
+pick 3d4e5f6 # Add invoice page</code></pre>
     <button class="codeblock__copy" type="button">copy</button>
   </div>
+
+  <figure>
+    <svg viewBox="0 0 900 330" class="dg" role="img" aria-label="Before: main has three commits. A stack of four commits branches from the second main commit, with billing-schema on the second stack commit, billing-api on the third and billing-ui on the fourth. After git rebase --update-refs main, run on billing-ui: four new copies sit on top of main's tip, and all three branch labels have moved to the matching copies.">
+      <g class="rough">
+        <path class="ln" d="M60 110 H240" />
+        <path class="lng" d="M150 110 C190 110 200 62 250 62 H580" />
+        <circle cx="60" cy="110" r="7" style="fill: var(--ink)" />
+        <circle cx="150" cy="110" r="7" style="fill: var(--ink)" />
+        <circle cx="240" cy="110" r="9" style="fill: var(--ink)" />
+        <circle cx="250" cy="62" r="7" style="fill: var(--green)" />
+        <circle cx="360" cy="62" r="7" style="fill: var(--green)" />
+        <circle cx="470" cy="62" r="7" style="fill: var(--green)" />
+        <circle cx="580" cy="62" r="7" style="fill: var(--green)" />
+        <path class="ln" d="M60 290 H240" />
+        <path class="lng" d="M240 290 C280 290 290 242 340 242 H670" />
+        <circle cx="60" cy="290" r="7" style="fill: var(--ink)" />
+        <circle cx="150" cy="290" r="7" style="fill: var(--ink)" />
+        <circle cx="240" cy="290" r="9" style="fill: var(--ink)" />
+        <circle cx="340" cy="242" r="8" style="fill: var(--sheet); stroke: var(--green); stroke-width: 3" />
+        <circle cx="450" cy="242" r="8" style="fill: var(--sheet); stroke: var(--green); stroke-width: 3" />
+        <circle cx="560" cy="242" r="8" style="fill: var(--sheet); stroke: var(--green); stroke-width: 3" />
+        <circle cx="670" cy="242" r="8" style="fill: var(--sheet); stroke: var(--green); stroke-width: 3" />
+      </g>
+      <text class="sm" x="20" y="22">BEFORE</text>
+      <text class="sm gr" x="360" y="40" text-anchor="middle">billing-schema</text>
+      <text class="sm gr" x="470" y="40" text-anchor="middle">billing-api</text>
+      <text class="sm gr" x="580" y="40" text-anchor="middle">billing-ui ← HEAD</text>
+      <text class="lbl" x="258" y="115">main</text>
+      <text class="sm" x="20" y="186">AFTER git rebase --update-refs main</text>
+      <text class="sm gr" x="450" y="220" text-anchor="middle">billing-schema</text>
+      <text class="sm gr" x="560" y="220" text-anchor="middle">billing-api</text>
+      <text class="sm gr" x="670" y="220" text-anchor="middle">billing-ui ← HEAD</text>
+      <text class="lbl" x="240" y="322" text-anchor="middle">main</text>
+      <text class="sm" x="720" y="112">one rebase,</text>
+      <text class="sm" x="720" y="132">three labels moved</text>
+    </svg>
+    <figcaption>
+      Without <code>--update-refs</code>, only <code>billing-ui</code>
+      would move. <code>billing-schema</code> and
+      <code>billing-api</code> would still point at the old commits,
+      and their pull requests would show stale code.
+    </figcaption>
+  </figure>
   <p>
     Git writes the <code>update-ref</code> lines for you. Edit a
     commit low in the stack, and after one rebase all three branches
@@ -332,6 +399,30 @@ pick 3d4e5f6 Add invoice page</code></pre>
     <code>rebase.updateRefs true</code> to make it the default, then
     push each branch with <code>--force-with-lease</code>.
   </p>
+
+  <div class="bx is-ref">
+    <span class="ttl">For seniors: git replay</span>
+    <p>
+      <code>git replay</code> (added in Git 2.44 and still marked
+      experimental) does rebase's core job with no working tree and
+      no index. It replays commits in memory using the same
+      <code>ort</code> merge machinery, so it runs in a bare
+      repository and never touches files, which makes it fast on huge
+      repositories and safe on servers. <code>git replay --onto main
+      main..billing-ui</code> rebases that branch and, in current
+      versions, updates the ref itself in one atomic transaction;
+      <code>--contained</code> also moves every branch inside the
+      range, as <code>--update-refs</code> does, and
+      <code>--ref-action=print</code> prints
+      <code>update-ref</code> commands instead. It has no interactive
+      mode and no way to stop and let you resolve: on a conflict it
+      exits with status 1 and changes nothing. That is why its users
+      are forges and stacked-PR tools rather than people at a
+      terminal. Its options have already changed between releases, so
+      scripts should check <code>git replay -h</code> on the version
+      they run.
+    </p>
+  </div>
 
   <h3>Conflicts in the middle of a rebase</h3>
   <p>
@@ -348,10 +439,16 @@ hint: Resolve all conflicts manually, mark them as resolved with
 hint: "git add/rm &lt;conflicted_files&gt;", then run "git rebase --continue".
 hint: You can instead skip this commit: run "git rebase --skip".
 hint: To abort and get back to the state before "git rebase", run "git rebase --abort".
-Could not apply e2c81d0... Apply coupon before tax
+hint: Disable this message with "git config set advice.mergeConflict false"
+Could not apply e2c81d0... # Apply coupon before tax
 
 $ git status
-rebase in progress; onto d41c8e2
+interactive rebase in progress; onto d41c8e2
+Last commands done (3 commands done):
+   pick b41f7a3 # Add coupon model
+   pick e2c81d0 # Apply coupon before tax
+  (see more in file .git/rebase-merge/done)
+No commands remaining.
 You are currently rebasing branch 'feature' on 'd41c8e2'.
   (fix conflicts and then run "git rebase --continue")
   (use "git rebase --skip" to skip this patch)
@@ -366,6 +463,12 @@ $ git add src/cart.js
 $ git rebase --continue</code></pre>
     <button class="codeblock__copy" type="button">copy</button>
   </div>
+  <p>
+    Status says "interactive rebase" even though you typed a plain
+    <code>git rebase</code>. Both run on the same machinery and the
+    same to-do list, and the "Last commands done" lines show which
+    commit you are stopped on.
+  </p>
 
   <div class="table-scroll">
     <table>

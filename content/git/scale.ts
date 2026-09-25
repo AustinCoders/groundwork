@@ -8,17 +8,35 @@ export const gitScale: GitSection = {
   subtitle:
     "What to reach for when the repository gets huge, the files get binary, and the team spans three operating systems.",
   body: `
+<div class="cover__meta">
+  <span class="tag tag--beginner">Fresher</span>
+  <span class="tag tag--intermediate">Mid</span>
+  <span class="tag tag--advanced">Senior</span>
+</div>
+
 <p>
   Git was built for the Linux kernel: many small text files and a long history. It stays fast well
   past that, but three things push it off the happy path. Large binaries, millions of files, and a
   team spread across Windows, macOS and Linux. This chapter is the toolkit for each.
 </p>
 
+<div class="bx is-prim">
+<span class="ttl">In one minute</span>
+<p>
+  If a clone takes forever, you probably do not need all of it: <code>git clone
+  --filter=blob:none</code> downloads history but fetches old file contents only when asked. If
+  <code>git status</code> is slow, run <code>git maintenance start</code> once in that repository.
+  Big images or videos belong in Git LFS, set up before the first one is committed. And on a
+  mixed Windows and Mac team, commit a <code>.gitattributes</code> with <code>* text=auto</code> so
+  line endings stop showing up as changes.
+</p>
+</div>
+
 <div class="table-scroll"><table>
 <thead><tr><th>Problem</th><th>Reach for</th></tr></thead>
 <tbody>
 <tr><td>Large binaries: design files, videos, models</td><td><strong>Git LFS</strong>: pointers in Git, contents on a separate store</td></tr>
-<tr><td>CI only needs the latest commit</td><td>Shallow clone, <code>--depth 1</code></td></tr>
+<tr><td>CI only needs the latest commit</td><td>Shallow clone, <code>--depth 1</code>, or <code>--revision=&lt;sha&gt; --depth 1</code> for one exact commit</td></tr>
 <tr><td>Clone is slow because history is big</td><td>Partial clone, <code>--filter=blob:none</code></td></tr>
 <tr><td>Huge monorepo, you work in one folder</td><td><code>git sparse-checkout set apps/web</code></td></tr>
 <tr><td><code>git status</code> and <code>git log</code> are slow</td><td><code>git maintenance start</code>, commit-graph, fsmonitor</td></tr>
@@ -229,12 +247,15 @@ git lfs ls-files</code></pre>
 <h4>Shallow clone</h4>
 <pre><code>git clone --depth 1 https://github.com/org/app.git
 git fetch --deepen 50
-git fetch --unshallow</code></pre>
+git fetch --unshallow
+git clone --revision=v2.4.0 --depth 1 https://github.com/org/app.git</code></pre>
 <p>
   Only the last <em>N</em> commits arrive, and <code>--depth</code> implies
   <code>--single-branch</code>. It's the right call for a CI job that builds once and exits, and it's
   why <code>actions/checkout</code> defaults to <code>fetch-depth: 1</code>. The costs show up when
-  you do anything with history:
+  you do anything with history. The last line (Git 2.49 and later) fetches exactly one tag or
+  commit and creates no branches, leaving you on a detached HEAD, which suits a reproducible
+  build. The costs of shallow history:
 </p>
 <ul>
   <li><code>git log</code> and <code>git blame</code> stop at the cut-off.</li>
@@ -254,7 +275,10 @@ git clone --filter=blob:limit=1m https://github.com/org/app.git</code></pre>
   missing objects later. A <strong>treeless</strong> clone (<code>tree:0</code>) goes further and is
   good for throwaway builds, but commands that walk history fetch trees one batch at a time and
   crawl. The trade-off is that <code>git blame</code> or <code>git log -p</code> on old history now
-  needs the network.
+  needs the network, and fetches missing blobs one request at a time. <code>git backfill</code>
+  (Git 2.49, still marked experimental) downloads the missing blobs in large batches grouped by
+  path, so a developer can start working from a quick blobless clone and fill in history in the
+  background. With <code>--sparse</code> it only fetches blobs inside your sparse-checkout.
 </p>
 
 <h4>Sparse-checkout</h4>
@@ -283,13 +307,29 @@ git commit-graph write --reachable --changed-paths</code></pre>
 <div class="table-scroll"><table>
 <thead><tr><th>Feature</th><th>What it speeds up</th></tr></thead>
 <tbody>
-<tr><td><code>git maintenance start</code></td><td>Registers the repo and schedules background tasks through launchd, cron, systemd or Task Scheduler: hourly prefetch and commit-graph updates, daily loose-object cleanup and incremental repack, weekly packing of refs. Your <code>git fetch</code> then has little left to download.</td></tr>
+<tr><td><code>git maintenance start</code></td><td>Registers the repo and schedules background tasks through launchd, cron, systemd or Task Scheduler: hourly prefetch and commit-graph updates, daily loose-object cleanup and incremental repack, weekly packing of refs. It sets <code>maintenance.strategy=incremental</code> and turns off the automatic foreground gc for that repository. Prefetch downloads into hidden <code>refs/prefetch/</code> refs, so your <code>origin/*</code> branches do not move behind your back, but your next <code>git fetch</code> has little left to download.</td></tr>
 <tr><td>commit-graph</td><td>A precomputed file of commit parents and generation numbers. <code>log --graph</code>, <code>merge-base</code> and reachability checks stop parsing every commit. <code>--changed-paths</code> adds Bloom filters, which make <code>git log -- some/file</code> much faster.</td></tr>
 <tr><td><code>core.fsmonitor</code></td><td>The built-in file system monitor on macOS and Windows. <code>git status</code> asks a daemon what changed instead of checking every file.</td></tr>
 <tr><td><code>core.untrackedCache</code></td><td>Remembers directory scans, so finding untracked files is cheaper.</td></tr>
 <tr><td><code>feature.manyFiles</code></td><td>Turns on a group of settings for repositories with many files, including a smaller index format and the untracked cache.</td></tr>
 </tbody>
 </table></div>
+
+<div class="bx is-ref">
+<span class="ttl">For seniors: repacking at scale</span>
+<p>
+  A plain <code>git gc</code> rewrites every object into one pack. That is fine at 100 MB and
+  painful at 50 GB: it is slow, can need about twice the disk while it runs, and competes for
+  disk and CPU with everything else on the machine. The incremental strategy instead keeps a
+  <strong>multi-pack-index</strong>, one index over many packs, and repacks a few small packs at a
+  time. Current versions also offer <code>maintenance.strategy=geometric</code>, which keeps pack
+  sizes in a geometric progression so most runs only merge the newest, smallest packs, and puts
+  unreachable objects into a cruft pack when a full repack is needed. Large hosts run the same ideas server-side. If
+  your repository has hundreds of thousands of refs, as CI systems that tag every build tend to
+  create, the reftable backend is the other half of the fix, because the files backend rewrites
+  <code>packed-refs</code> on every deletion.
+</p>
+</div>
 
 <h4>Scalar</h4>
 <pre><code>scalar clone https://github.com/org/monorepo.git

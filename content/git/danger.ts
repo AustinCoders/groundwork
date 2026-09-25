@@ -7,12 +7,29 @@ export const gitDanger: GitSection = {
   short: "Danger zone",
   subtitle: "Leaked secrets, force-push accidents, commands that eat work, and how to come back from each one.",
   body: `
+<div class="cover__meta">
+  <span class="tag tag--beginner">Fresher</span>
+  <span class="tag tag--intermediate">Mid</span>
+  <span class="tag tag--advanced">Senior</span>
+</div>
+
 <p>
   Almost everything in Git can be undone, because commits are rarely deleted straight away. They
   become unreachable, and the reflog remembers them for weeks. The dangerous cases are the exceptions:
   work that was never committed, history that other people already copied, and data that should never
   have been public. This chapter is about those.
 </p>
+
+<div class="bx is-prim">
+<span class="ttl">In one minute</span>
+<p>
+  Three rules keep you out of trouble. Commit or stash before any command that rewrites files,
+  because Git cannot bring back edits it never saw. Never use plain <code>git push --force</code>;
+  use <code>--force-with-lease</code>, and only on your own branch. And if you ever push a password
+  or key, tell someone and replace the key first. Deleting the file afterwards does not remove it
+  from history.
+</p>
+</div>
 
 <h3>You committed a secret</h3>
 <p>
@@ -112,6 +129,21 @@ git push origin --force --tags</code></pre>
   <code>.gitignore</code> before the first commit and commit a <code>.env.example</code> instead. To
   check existing history: <code>git log -p -S "AKIA" --all</code> finds every commit that added or
   removed that string.
+</p>
+</div>
+
+<div class="bx is-ref">
+<span class="ttl">For seniors: running a history rewrite for a team</span>
+<p>
+  The Git commands are the easy part. Announce a freeze and wait until nobody has unpushed work on
+  the affected branches. Take a mirror backup. Rewrite in one pass and check the result with
+  <code>git log --all -S "the secret"</code> returning nothing. Temporarily lift the protection
+  that blocks force-pushes, push every branch and tag, and put the protection back. Then have
+  every developer and CI system make a fresh clone rather than pull, because a single old clone
+  that pushes can reintroduce the whole old history. Open pull requests are based on the old
+  commits and usually have to be recreated. filter-repo writes a <code>commit-map</code> file of
+  old to new IDs inside <code>.git/filter-repo/</code>; keep it, since tickets, deploy logs and
+  release notes will keep quoting the old hashes.
 </p>
 </div>
 
@@ -242,8 +274,9 @@ git push</code></pre>
 <p>
   After the revert, Git still considers the feature's commits merged. Fix the bug on the branch and
   merge again, and only the fix arrives. The original changes stay reverted. First revert the revert,
-  <code>git revert &lt;hash of the revert&gt;</code>, then merge the fix. Or rebuild the feature on
-  fresh commits with <code>git rebase --no-ff</code>.
+  <code>git revert &lt;hash of the revert&gt;</code>, then merge the fix. Or give the feature fresh
+  commits that Git has never seen: on the feature branch, <code>git rebase --no-ff &lt;commit it
+  started from&gt;</code> replays every commit with a new ID, and the next merge brings all of it.
 </p>
 </div>
 <p>

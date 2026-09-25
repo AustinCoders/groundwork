@@ -8,12 +8,29 @@ export const gitHygiene: GitSection = {
   subtitle:
     "Small commits, messages that explain why, hooks that catch mistakes early, and tags that mark what shipped.",
   body: `
+<div class="cover__meta">
+  <span class="tag tag--beginner">Fresher</span>
+  <span class="tag tag--intermediate">Mid</span>
+  <span class="tag tag--advanced">Senior</span>
+</div>
+
 <p>
   A commit message is documentation written at the one moment you had the most context. Six months
   later, a good message is the difference between understanding a line of code and rewriting it out
   of fear. History is also a tool: <code>bisect</code>, <code>revert</code>, <code>blame</code> and
   <code>cherry-pick</code> all work far better on clean commits than on a pile of "wip" and "fix".
 </p>
+
+<div class="bx is-prim">
+<span class="ttl">In one minute</span>
+<p>
+  Make each commit one change you could describe in a short sentence. Write that sentence as the
+  first line, in the imperative ("Fix tax rounding on coupons", not "fixed stuff"), keep it under
+  about 50 characters, and add a blank line and a few lines of <em>why</em> if the reason is not
+  obvious. Read <code>git diff --staged</code> before you commit. That is most of commit hygiene;
+  the rest of this page is tooling that makes it automatic.
+</p>
+</div>
 
 <h3>Atomic commits</h3>
 <p>
@@ -242,7 +259,9 @@ chmod +x .githooks/pre-commit</code></pre>
 </table></div>
 <p>
   Pair any of them with <strong>lint-staged</strong> or an equivalent, so the hook only checks files
-  in this commit and not the whole repository.
+  in this commit and not the whole repository. To test a hook without making a commit,
+  <code>git hook run pre-commit</code> runs it exactly as Git would, from wherever
+  <code>core.hooksPath</code> points.
 </p>
 <div class="bx is-ref">
 <span class="ttl">Keep hooks fast, and back them up in CI</span>

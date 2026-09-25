@@ -25,6 +25,21 @@ export const gitUndo: GitSection = {
     new commit on top.
   </p>
 
+  <div class="bx is-prim">
+    <span class="ttl">In one minute</span>
+    <p>
+      Messed up a file you have not committed? <code>git restore file</code>
+      puts it back (and throws your edits away). Staged something by
+      mistake? <code>git restore --staged file</code>. Wrong last
+      commit that you have not pushed? <code>git reset --soft HEAD~1</code>
+      undoes it and keeps the changes. Already pushed?
+      <code>git revert &lt;commit&gt;</code> adds a new commit that
+      reverses it. Think something is lost? <code>git reflog</code>
+      lists everywhere you have been, and almost anything you ever
+      committed can be found there.
+    </p>
+  </div>
+
   <h3>The decision table</h3>
   <div class="table-scroll">
     <table>
@@ -422,6 +437,24 @@ $ git stash branch coupon-ui stash@{0}</code></pre>
       Stashes are local, never pushed, easy to forget and easy to drop.
       If the work matters for more than an afternoon, commit it on a
       scratch branch instead.
+    </p>
+  </div>
+
+  <div class="bx is-ref">
+    <span class="ttl">For seniors: what a stash really is</span>
+    <p>
+      A stash entry is an ordinary merge-shaped commit. Its first
+      parent is the commit you were on, its second parent is a commit
+      holding your staged changes (<code>index on …</code>), and with
+      <code>-u</code> a third parent holds the untracked files. The
+      stash commit's own tree is your working tree. The list is just
+      the reflog of <code>refs/stash</code>, which is why entries
+      expire like any reflog and why a stash never leaves your
+      machine. Git 2.51 added <code>git stash export --to-ref
+      refs/stashes/mine</code>, which turns the whole list into a
+      normal chain of commits you can push, and
+      <code>git stash import</code> to rebuild the list on another
+      machine.
     </p>
   </div>
 

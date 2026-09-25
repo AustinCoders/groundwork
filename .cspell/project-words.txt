@@ -426,6 +426,7 @@ reflogs
 refspec
 reftable
 reindexing
+remerge
 renderable
 renderitem
 replayable

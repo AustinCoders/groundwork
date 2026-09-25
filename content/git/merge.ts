@@ -14,6 +14,21 @@ export const gitMerge: GitSection = {
     <span class="tag tag--advanced">Senior</span>
   </div>
 
+  <div class="bx is-prim">
+    <span class="ttl">In one minute</span>
+    <p>
+      <code>git merge feature</code>, run while you are on main,
+      brings feature's work into main. If main has not moved, Git just
+      slides main forward. If both have moved, Git combines the two and
+      records a merge commit. When both sides changed the same lines,
+      Git stops and marks the file with <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>
+      and <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>. You edit the file
+      to the right result, <code>git add</code> it, and
+      <code>git commit</code>. If you panic, <code>git merge --abort</code>
+      puts everything back.
+    </p>
+  </div>
+
   <h3>Fast-forward: when there is nothing to merge</h3>
   <p>
     If the branch you are on has not moved since the other branch
@@ -136,8 +151,9 @@ b41f7a3 Add coupon model
     The three dots in <code>git diff A...B</code> mean "diff from
     the merge base of A and B to B", which is exactly what a pull
     request page shows: what the branch changed, ignoring what main
-    did since. The two dots in <code>git log A..B</code> mean
-    "commits reachable from B but not from A".
+    did since. <code>git diff --merge-base A B</code> is the same
+    comparison spelled out. The two dots in <code>git log A..B</code>
+    mean "commits reachable from B but not from A".
   </p>
   <p>
     Sometimes there is more than one best common ancestor, usually
@@ -185,7 +201,7 @@ b41f7a3 Add coupon model
       </thead>
       <tbody>
         <tr><td><code>ort</code></td><td>The default since Git 2.34 for merging two branches. A rewrite of <code>recursive</code> that is much faster and handles renames better. Recursively merges multiple merge bases.</td></tr>
-        <tr><td><code>recursive</code></td><td>The default before 2.34. Same idea, older code. Recent Git versions run <code>ort</code> when you ask for it.</td></tr>
+        <tr><td><code>recursive</code></td><td>The default from 2005 until 2.33. Since Git 2.50 it is only another name for <code>ort</code>: the old code is gone, and <code>-s recursive</code> in old scripts runs <code>ort</code>.</td></tr>
         <tr><td><code>octopus</code></td><td>The default when you merge three or more branches at once, <code>git merge a b c</code>. Makes one commit with many parents, and refuses if any conflict needs a manual fix.</td></tr>
         <tr><td><code>ours</code></td><td>Records a merge but keeps your tree exactly as it was. Their changes are discarded completely. Used to mark an old branch as "merged" without taking anything from it.</td></tr>
         <tr><td><code>resolve</code></td><td>An older, simpler two-head algorithm. Rarely needed.</td></tr>
@@ -437,6 +453,48 @@ Automatic merge failed; fix conflicts and then commit the result.</code></pre>
     resulting tree ID, plus any conflicts. It is the kind of
     check a hosting service runs to show "This branch has no
     conflicts".
+  </p>
+
+  <h3>Reviewing what a merge really did</h3>
+  <p>
+    A merge commit is easy to hide changes in. <code>git show</code>
+    on a merge prints a <em>combined diff</em> that leaves out every
+    hunk where the result matches one of the parents. A resolution
+    that quietly threw away one side's change therefore shows nothing
+    at all. Git 2.36 added a better
+    view: <code>--remerge-diff</code> redoes the merge in memory,
+    conflicts and all, and diffs that automatic result against the
+    commit that was actually recorded. What you see is exactly what a
+    human changed during the merge.
+  </p>
+
+  <p class="sub">git show --remerge-diff on a merge with a conflict</p>
+  <div class="codeblock">
+    <pre><code>$ git show --remerge-diff --format='%h %s' 7ce6145
+7ce6145 Merge branch 'feature/checkout'
+
+diff --git a/src/cart.js b/src/cart.js
+remerge CONFLICT (content): Merge conflict in src/cart.js
+index 5f0d2b8..9a24f70 100644
+--- a/src/cart.js
++++ b/src/cart.js
+@@ -1,7 +1,3 @@
+ export function cartTotal(subtotal, tax, shipping) {
+-&lt;&lt;&lt;&lt;&lt;&lt;&lt; a90f4d1 (Add shipping to cart total)
+-  const total = subtotal + tax + shipping;
+-=======
+-  const total = applyCoupon(subtotal) + tax;
+-&gt;&gt;&gt;&gt;&gt;&gt;&gt; e2c81d0 (Apply coupon before tax)
++  const total = applyCoupon(subtotal) + tax + shipping;
+   return total;</code></pre>
+    <button class="codeblock__copy" type="button">copy</button>
+  </div>
+  <p>
+    For a clean merge it prints only the commit line, which is the
+    point: no diff means nobody changed anything by hand.
+    <code>git log --remerge-diff --merges</code> runs the same check
+    over a whole history, which is a strong review habit for release
+    branches and for anyone auditing "what landed with that merge".
   </p>
 
   <h3>Undoing a merge</h3>

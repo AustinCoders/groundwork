@@ -151,8 +151,9 @@ main</code></pre>
   <p>
     One detail makes <code>switch</code> safer: it will not detach
     HEAD unless you ask. <code>git switch v2.1.0</code> fails with
-    <code>fatal: a branch is expected, got tag 'v2.1.0'</code>,
-    where <code>checkout</code> would quietly detach you. And if you
+    <code>fatal: a branch is expected, got tag 'v2.1.0'</code> and a
+    hint to add <code>--detach</code>, where <code>checkout</code>
+    would quietly detach you. And if you
     run <code>git switch feat/search</code> when only
     <code>origin/feat/search</code> exists, both commands create a
     local branch that tracks it. That shortcut is called
@@ -335,6 +336,7 @@ $ git push origin --delete feat/coupon</code></pre>
     <pre><code>$ git branch -d spike/cache
 error: the branch 'spike/cache' is not fully merged
 hint: If you are sure you want to delete it, run 'git branch -D spike/cache'
+hint: Disable this message with "git config set advice.forceDeleteBranch false"
 
 $ git branch -D spike/cache
 Deleted branch spike/cache (was 51d7e3a).</code></pre>
@@ -366,6 +368,8 @@ Deleted branch spike/cache (was 51d7e3a).</code></pre>
         <tr><td>Which release tags contain it?</td><td><code>git tag --contains 8f2c9d1</code></td></tr>
         <tr><td>Most recently touched branches first</td><td><code>git branch --sort=-committerdate</code></td></tr>
         <tr><td>Every branch with its date and author, for a script</td><td><code>git for-each-ref --sort=-committerdate --format='%(committerdate:short) %(refname:short) %(authorname)' refs/heads</code></td></tr>
+        <tr><td>The same, as a <code>git branch</code> listing</td><td><code>git branch --format='%(refname:short) %(upstream:track)'</code></td></tr>
+        <tr><td>How far every branch is ahead of and behind main, in one pass</td><td><code>git for-each-ref --format='%(refname:short) %(ahead-behind:main)' refs/heads</code> (Git 2.41 and later)</td></tr>
         <tr><td>Is branch A an ancestor of branch B?</td><td><code>git merge-base --is-ancestor A B</code> (exit code 0 means yes)</td></tr>
       </tbody>
     </table>
@@ -402,6 +406,27 @@ Deleted branch feat/search-box (was e2c81d0).</code></pre>
     </p>
   </div>
 
+  <div class="bx is-ref">
+    <span class="ttl">For seniors: when ref names collide</span>
+    <p>
+      With the default <em>files</em> ref storage, a branch name is a
+      path under <code>.git/refs/heads/</code>. That has two
+      consequences teams trip over. On macOS and Windows, whose file
+      systems ignore case, <code>Fix/login</code> and
+      <code>fix/login</code> are the same file, so a fetch that brings
+      both from a Linux user fails or makes one shadow the other. And
+      <code>feat</code> and <code>feat/x</code> cannot both exist,
+      because one would have to be a file and a directory at once.
+      The reftable backend fixes the case problem, since names are no
+      longer paths, but Git keeps refusing <code>feat</code> next to
+      <code>feat/x</code> on every backend so that repositories stay
+      portable. Enforce lower-case prefixes with a server-side rule,
+      and run
+      <code>git check-ref-format --branch "name"</code> in tooling that
+      creates branches, to reject names Git would refuse anyway.
+    </p>
+  </div>
+
   <div class="sticky mint">
     <span class="ttl">Naming that pays off</span>
     <p>
@@ -410,10 +435,9 @@ Deleted branch feat/search-box (was e2c81d0).</code></pre>
       <code>fix/PAY-288-null-cart</code>,
       <code>chore/bump-node-20</code>. Six months later, a branch
       list is a readable index of what the team has been doing,
-      and tooling can filter on the prefix. One limit: a ref cannot
-      be both a file and a directory, so once
+      and tooling can filter on the prefix. One limit: once
       <code>feat</code> exists as a branch, <code>feat/x</code>
-      cannot be created.
+      cannot be created, and the other way round.
     </p>
   </div>
 `,

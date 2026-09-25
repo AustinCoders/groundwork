@@ -71,6 +71,18 @@ export const gitAreas: GitSection = {
     </figcaption>
   </figure>
 
+  <div class="bx is-prim">
+    <span class="ttl">In one minute</span>
+    <p>
+      You edit files in your folder. <code>git add</code> copies the
+      changes you want into a waiting area called the index.
+      <code>git commit</code> saves exactly what is in the index as a
+      new commit. <code>git push</code> sends your commits to the
+      shared copy. Run <code>git status</code> any time to see which
+      files are in which place.
+    </p>
+  </div>
+
   <h3>What the index really is</h3>
   <p>
     The index is easy to picture wrongly as "a list of changes I have
@@ -125,6 +137,26 @@ export const gitAreas: GitSection = {
     <code>git status</code> sometimes rewrites <code>.git/index</code>
     even though you did not change anything: it is refreshing stats.
   </p>
+
+  <div class="bx is-ref">
+    <span class="ttl">For seniors: two index flags people confuse</span>
+    <p>
+      Each index entry can carry flags that change how Git treats the
+      file. <code>git update-index --assume-unchanged f</code> is a
+      performance promise: "I will not edit this, so do not check it".
+      Git may drop the flag or overwrite your edits whenever it
+      rewrites that entry, so it is the wrong tool for keeping a local
+      config change out of commits. <code>--skip-worktree</code> says
+      "keep my version of this file"; Git leaves it alone and refuses
+      to overwrite it if upstream changes it, which forces you to deal
+      with the clash. Sparse-checkout is built on the same
+      skip-worktree bit. For a local-only config tweak, a better
+      answer is still a template file in the repository and the real
+      file in <code>.gitignore</code>. <code>git ls-files -v</code>
+      shows the flags: a lower-case letter means assume-unchanged,
+      <code>S</code> means skip-worktree.
+    </p>
+  </div>
 
   <h3>The states a file moves through</h3>
   <p>
@@ -402,8 +434,8 @@ git commit -m "chore: stop tracking local env file"</code></pre>
     <code>--cached</code> removes the file from the index but leaves
     it on your disk. This stops tracking it <em>from now on</em>; the
     file is still in every old commit. If it held real secrets,
-    rotate them, then read the Danger zone chapter about rewriting
-    history.
+    rotate them, then read <a href="/git/danger">Danger zone</a>
+    about rewriting history.
   </p>
 
   <div class="table-scroll">

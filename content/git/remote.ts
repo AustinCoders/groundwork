@@ -173,6 +173,10 @@ hint:   git config pull.rebase false  # merge
 hint:   git config pull.rebase true   # rebase
 hint:   git config pull.ff only       # fast-forward only
 hint:
+hint: You can replace "git config" with "git config --global" to set a default
+hint: preference for all repositories. You can also pass --rebase, --no-rebase,
+hint: or --ff-only on the command line to override the configured default per
+hint: invocation.
 fatal: Need to specify how to reconcile divergent branches.</code></pre>
     <button class="codeblock__copy" type="button">copy</button>
   </div>
@@ -255,7 +259,8 @@ error: failed to push some refs to 'github.com:acme/shop.git'
 hint: Updates were rejected because the remote contains work that you do not
 hint: have locally. This is usually caused by another repository pushing to
 hint: the same ref. If you want to integrate the remote changes, use
-hint: 'git pull' before pushing again.</code></pre>
+hint: 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.</code></pre>
     <button class="codeblock__copy" type="button">copy</button>
   </div>
   <p>
@@ -314,6 +319,11 @@ To github.com:acme/shop.git
  ! [rejected]        feat/search -&gt; feat/search (stale info)
 error: failed to push some refs to 'github.com:acme/shop.git'
 
+$ git push --force-with-lease --force-if-includes
+To github.com:acme/shop.git
+ ! [rejected]        feat/search -&gt; feat/search (remote ref updated since checkout)
+error: failed to push some refs to 'github.com:acme/shop.git'
+
 $ git config --global alias.pushf 'push --force-with-lease --force-if-includes'</code></pre>
     <button class="codeblock__copy" type="button">copy</button>
   </div>
@@ -321,10 +331,35 @@ $ git config --global alias.pushf 'push --force-with-lease --force-if-includes'<
     <code>(stale info)</code> means the branch moved on the server
     since your last fetch. Fetch, look at what arrived with
     <code>git log feat/search..origin/feat/search</code>, fold it
-    in, then push again. Protected branches such as main should
-    reject force pushes on the server side anyway; these flags
-    protect everything else.
+    in, then push again. <code>(remote ref updated since checkout)</code>
+    is <code>--force-if-includes</code> catching the background-fetch
+    case: your <code>origin/feat/search</code> was updated, but the
+    new tip never became part of your branch. Protected branches such
+    as main should reject force pushes on the server side anyway;
+    these flags protect everything else.
   </p>
+
+  <div class="bx is-ref">
+    <span class="ttl">For seniors: what actually crosses the wire</span>
+    <p>
+      Current Git clients speak <strong>wire protocol v2</strong> by
+      default. A fetch starts with <code>ls-refs</code>, in which the
+      client asks only for the refs its refspec names, so fetching
+      one branch from a server with a million refs no longer downloads
+      a million ref names. Then comes <em>negotiation</em>: the
+      client sends <code>want</code> lines for the tips it needs and
+      <code>have</code> lines for commits it already has, walking back
+      through its own history, until the server has found a common
+      base. The server builds one pack of the missing objects, reusing
+      deltas it already has on disk. That is why a fetch after months
+      away can spend visible time in "Counting objects", why a
+      shallow clone makes later fetches harder for the server, and
+      why <code>GIT_TRACE_PACKET=1 git fetch</code> is the tool when a
+      fetch is inexplicably slow. Push runs the same exchange in the
+      other direction, and the server applies all ref updates in one
+      go only if you ask for <code>git push --atomic</code>.
+    </p>
+  </div>
 
   <h3>Multiple remotes and the fork workflow</h3>
   <p>

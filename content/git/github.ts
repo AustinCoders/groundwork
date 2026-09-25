@@ -24,6 +24,19 @@ export const gitGithub: GitSection = {
     top of the Git you already know.
   </p>
 
+  <div class="bx is-prim">
+    <span class="ttl">In one minute</span>
+    <p>
+      You push a branch, then open a pull request (PR) asking to merge
+      it into <code>main</code>. Teammates read the diff and comment,
+      automated checks run your tests, and once it is approved and
+      green someone presses the merge button. You fix review comments
+      by pushing more commits to the same branch; the PR updates
+      itself. After the merge, delete the branch and start the next
+      task from a fresh <code>main</code>.
+    </p>
+  </div>
+
   <h3>Forks or branches</h3>
   <p>
     A PR always compares two branches: the <em>base</em> (where the change
@@ -253,6 +266,22 @@ $ gh pr ready 412</code></pre>
     repositories get them.
   </p>
 
+  <div class="bx is-ref">
+    <span class="ttl">For seniors: what a merge queue costs</span>
+    <p>
+      A queue trades CI minutes for a green main. Each entry is tested
+      on top of every entry ahead of it, so one failure throws away
+      the speculative builds behind it and they run again. Grouping
+      several PRs into one build saves minutes when things pass and
+      costs extra runs when a group fails, because the queue has to
+      work out which PR broke it. Flaky tests multiply all of this: a
+      one-in-fifty flake becomes a regular queue stall at a hundred
+      merges a day. Before turning a queue on, make the required
+      checks fast and deterministic, and move slow suites to run
+      after merge.
+    </p>
+  </div>
+
   <h3>The three merge buttons</h3>
   <p>
     Each repository chooses which of these to allow. They produce very
@@ -334,7 +363,7 @@ $ gh pr ready 412</code></pre>
       </thead>
       <tbody>
         <tr><td><strong>Create a merge commit</strong></td><td>All the PR's commits plus a merge commit, like <code>git merge --no-ff</code></td><td>Full history; the PR is one revertable unit (<code>git revert -m 1</code>)</td><td>"wip" and "fix typo" commits land on main; the graph gets busy</td></tr>
-        <tr><td><strong>Squash and merge</strong></td><td>One new commit with the combined diff; message from the PR title and number</td><td>Main reads like a changelog; one commit to revert or bisect per PR</td><td>Intermediate commits are gone from main; the branch no longer looks merged to Git</td></tr>
+        <tr><td><strong>Squash and merge</strong></td><td>One new commit with the combined diff. A repository setting decides its message; the PR title and number is the common choice</td><td>Main reads like a changelog; one commit to revert or bisect per PR</td><td>Intermediate commits are gone from main; the branch no longer looks merged to Git</td></tr>
         <tr><td><strong>Rebase and merge</strong></td><td>Each commit replayed onto main, always with new IDs</td><td>Linear history that keeps well-curated commits</td><td>Messy commits land individually; commits can't be matched back to the branch by ID</td></tr>
       </tbody>
     </table>
@@ -456,8 +485,8 @@ jobs:
     if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm

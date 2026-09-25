@@ -7,6 +7,12 @@ export const gitCheat: GitSection = {
   short: "Cheat sheet",
   subtitle: "Every command worth knowing, grouped by the job you're doing, plus the setup to run once per machine.",
   body: `
+<div class="cover__meta">
+  <span class="tag tag--beginner">Fresher</span>
+  <span class="tag tag--intermediate">Mid</span>
+  <span class="tag tag--advanced">Senior</span>
+</div>
+
 <h3>One-time setup on a new machine</h3>
 <p>
   Worth doing properly, once. These settings remove most everyday friction: no more "set upstream"
@@ -74,7 +80,7 @@ git config --global alias.please "push --force-with-lease --force-if-includes"</
 <text class="sm" x="562" y="301" text-anchor="middle">or --amend, or rebase -i</text>
 <text class="lbl" x="782" y="278" text-anchor="middle">git revert &lt;sha&gt;</text>
 <text class="sm" x="782" y="301" text-anchor="middle">new commit, safe to push</text>
-<text class="sm" x="450" y="355" text-anchor="middle">Lost something along the way? git reflog lists every commit HEAD pointed to in the last 90 days.</text>
+<text class="sm" x="450" y="355" text-anchor="middle">Lost something? git reflog lists every commit HEAD pointed to, kept for 30 to 90 days.</text>
 </svg>
 <figcaption>
   Two questions decide it. Uncommitted work is cheap to undo but easy to lose for good. Pushed
@@ -92,6 +98,7 @@ git config --global alias.please "push --force-with-lease --force-if-includes"</
 <tr><td><code>git clone --depth 1 &lt;url&gt;</code></td><td>Latest commit only, for CI</td></tr>
 <tr><td><code>git config --global &lt;key&gt; &lt;value&gt;</code></td><td>Set an option for every repository you use</td></tr>
 <tr><td><code>git config --list --show-origin</code></td><td>Every setting, and the file it came from</td></tr>
+<tr><td><code>git config get</code> / <code>set</code> / <code>unset</code> / <code>list</code></td><td>The same jobs as the flag forms, as subcommands (Git 2.46 and later)</td></tr>
 <tr><td><code>git help &lt;command&gt;</code></td><td>The full manual page</td></tr>
 </tbody>
 </table></div>
@@ -242,6 +249,26 @@ git config --global alias.please "push --force-with-lease --force-if-includes"</
 <tr><td><code>git tag -v v1.2.0</code></td><td>Verify a tag's signature</td></tr>
 <tr><td><code>git tag -d v1.2.0</code> then <code>git push origin --delete v1.2.0</code></td><td>Delete a tag locally and on the remote</td></tr>
 <tr><td><code>git log v1.1.0..v1.2.0 --oneline</code></td><td>What changed between two releases</td></tr>
+</tbody>
+</table></div>
+
+<h3>Newer commands worth knowing</h3>
+<div class="table-scroll"><table>
+<thead><tr><th>Command</th><th>Does</th><th>Since</th></tr></thead>
+<tbody>
+<tr><td><code>git switch</code>, <code>git restore</code></td><td>Branches and files as two separate commands</td><td>2.23</td></tr>
+<tr><td><code>git diff --merge-base main</code></td><td>Your work, including uncommitted edits, against where you left <code>main</code></td><td>2.30</td></tr>
+<tr><td><code>git push --force-with-lease --force-if-includes</code></td><td>Force-push that also refuses remote commits you never integrated</td><td>2.30</td></tr>
+<tr><td><code>git maintenance start</code></td><td>Schedule background upkeep for a big repository</td><td>2.31</td></tr>
+<tr><td><code>git log --remerge-diff</code></td><td>Show only what a person changed while resolving a merge</td><td>2.36</td></tr>
+<tr><td><code>git sparse-checkout set &lt;dirs&gt;</code></td><td>Only these folders on disk (cone mode is the default)</td><td>2.37</td></tr>
+<tr><td><code>git rebase --update-refs</code></td><td>Move every branch in a stack in one rebase</td><td>2.38</td></tr>
+<tr><td><code>git merge-tree --write-tree a b</code></td><td>Test a merge without touching your files</td><td>2.38</td></tr>
+<tr><td><code>git worktree add --orphan -b &lt;name&gt; &lt;dir&gt;</code></td><td>A new worktree on a branch with no history</td><td>2.42</td></tr>
+<tr><td><code>git replay --onto &lt;base&gt; &lt;range&gt;</code></td><td>Rebase without a working tree, for servers and tools (experimental)</td><td>2.44</td></tr>
+<tr><td><code>git refs migrate --ref-format=reftable</code></td><td>Move an existing repository to the reftable backend</td><td>2.46</td></tr>
+<tr><td><code>git clone --revision=&lt;rev&gt; --depth 1</code></td><td>Exactly one commit, for a reproducible build</td><td>2.49</td></tr>
+<tr><td><code>git backfill</code></td><td>Fill in a blobless clone's history in batches (experimental)</td><td>2.49</td></tr>
 </tbody>
 </table></div>
 

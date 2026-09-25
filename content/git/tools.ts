@@ -9,6 +9,7 @@ export const gitTools: GitSection = {
     "Find the commit that broke it, the reason a line exists, and the history of one function, then move fixes between branches.",
   body: `
 <div class="cover__meta">
+    <span class="tag tag--beginner">Fresher</span>
     <span class="tag tag--intermediate">Mid</span>
     <span class="tag tag--advanced">Senior</span>
   </div>
@@ -20,6 +21,21 @@ export const gitTools: GitSection = {
     to know <em>when</em>, <em>who</em> and <em>why</em>, and the ones for
     moving work around once you do.
   </p>
+
+  <div class="bx is-prim">
+    <span class="ttl">In one minute</span>
+    <p>
+      Three questions come up on every bug. <em>Why is this line
+      here?</em> <code>git blame file</code> shows the commit that last
+      changed each line; open that commit with <code>git show</code>
+      and read its message. <em>When did it break?</em>
+      <code>git bisect</code> checks out commits between a good and a
+      bad version and asks you "good or bad?" until it names the one
+      that broke it. <em>Can I get that fix onto this branch?</em>
+      <code>git cherry-pick &lt;commit&gt;</code> copies it over. The
+      rest of this page is the detail behind those three.
+    </p>
+  </div>
 
   <h3>bisect: binary search through history</h3>
   <p>
@@ -430,6 +446,34 @@ $ git worktree list
 
 $ git worktree remove ../shop-hotfix
 $ git worktree prune</code></pre>
+
+  <figure>
+    <svg viewBox="0 0 900 300" class="dg" role="img" aria-label="One shared .git directory holds the objects, branches, tags, config and hooks. Two working folders hang off it: ~/shop with HEAD on feature/cart, and ~/shop-hotfix with HEAD on hotfix/login. Each folder has its own HEAD, index and files, and the second one's .git is a one-line file pointing back to the shared directory.">
+      <g class="rough">
+        <rect x="300" y="20" width="300" height="110" rx="12" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 2" />
+        <rect x="40" y="190" width="300" height="90" rx="12" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 2" />
+        <rect x="560" y="190" width="300" height="90" rx="12" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 2" />
+        <path class="ln" d="M190 186 L356 136" marker-end="url(#arrow)" />
+        <path class="ln" d="M710 186 L544 136" marker-end="url(#arrow)" />
+      </g>
+      <text class="lbl" x="450" y="50" text-anchor="middle">shared .git</text>
+      <text class="sm" x="450" y="76" text-anchor="middle">objects, branches, tags</text>
+      <text class="sm" x="450" y="98" text-anchor="middle">config, hooks, stash</text>
+      <text class="lbl" x="190" y="218" text-anchor="middle">~/shop</text>
+      <text class="sm" x="190" y="242" text-anchor="middle">HEAD → feature/cart</text>
+      <text class="sm" x="190" y="264" text-anchor="middle">own index and files</text>
+      <text class="lbl" x="710" y="218" text-anchor="middle">~/shop-hotfix</text>
+      <text class="sm" x="710" y="242" text-anchor="middle">HEAD → hotfix/login</text>
+      <text class="sm" x="710" y="264" text-anchor="middle">.git here is a one-line file</text>
+    </svg>
+    <figcaption>
+      Everything that names history is shared, so a commit made in one
+      folder is instantly visible from the other. Only the "where am I"
+      state is per folder: HEAD, the index, the files, and refs such as
+      <code>bisect</code> that belong to one checkout.
+    </figcaption>
+  </figure>
+
   <p>
     A branch can be checked out in only one worktree at a time, which stops
     two folders from fighting over the same branch. Dependencies and build
@@ -437,6 +481,18 @@ $ git worktree prune</code></pre>
     one. A second worktree is also how people run a long test suite on one branch
     while coding on another, or run several coding agents side by side
     without them overwriting each other's files.
+  </p>
+  <p>
+    Newer versions filled in the gaps. <code>git worktree add --orphan
+    -b docs ../site</code> (Git 2.42) starts a branch with no history,
+    handy for a <code>gh-pages</code> style branch.
+    <code>--relative-paths</code>, or <code>worktree.useRelativePaths
+    true</code> (Git 2.48), links worktrees with relative paths so the
+    whole set survives being moved or mounted into a container.
+    <code>git worktree lock</code> stops <code>prune</code> from
+    removing a worktree on a drive that is not mounted, and
+    <code>git worktree repair</code> fixes the links after you move
+    folders by hand.
   </p>
 
   <h3>git grep</h3>

@@ -8,6 +8,12 @@ export const gitInterview: GitSection = {
   subtitle:
     "Questions interviewers actually ask, from fresher to senior, with short answers you can defend under follow-up.",
   body: `
+<div class="cover__meta">
+  <span class="tag tag--beginner">Fresher</span>
+  <span class="tag tag--intermediate">Mid</span>
+  <span class="tag tag--advanced">Senior</span>
+</div>
+
 <p>
   Each answer is written to be said out loud in under a minute. Scenario questions are marked. In
   those, the interviewer cares less about the exact command than about the order you do things in
@@ -59,6 +65,14 @@ export const gitInterview: GitSection = {
 <div class="qa">
   <span class="q">When would you use <code>git stash</code>?</span>
   <p>When you need a clean working tree for a moment, for example to switch branches for an urgent fix, but your current work isn't ready to commit. <code>git stash</code> sets it aside, <code>git stash pop</code> brings it back. Use <code>-u</code> to include untracked files. For anything longer than an hour, a commit on a branch is safer.</p>
+</div>
+<div class="qa">
+  <span class="q">What's the difference between <code>git diff</code> and <code>git diff --staged</code>?</span>
+  <p>Plain <code>git diff</code> compares your files with the staging area, so it shows what you have <em>not</em> staged yet. <code>git diff --staged</code> compares the staging area with the last commit, which is exactly what the next commit will contain. After <code>git add .</code>, plain <code>git diff</code> prints nothing. <code>git diff HEAD</code> shows both together.</p>
+</div>
+<div class="qa">
+  <span class="q">Why do newer guides use <code>git switch</code> and <code>git restore</code> instead of <code>git checkout</code>?</span>
+  <p><code>checkout</code> does two unrelated jobs: changing branch and overwriting files, and a typo can turn one into the other. Since Git 2.23, <code>switch</code> only changes branches and refuses to detach HEAD unless asked, and <code>restore</code> only restores files. <code>checkout</code> still works and the Git project has said it will stay, so you need to read both.</p>
 </div>
 <div class="qa">
   <span class="q">What is detached HEAD, and how do you avoid losing work in it?</span>
@@ -116,6 +130,18 @@ export const gitInterview: GitSection = {
   <p>Pro: one clean commit per pull request on <code>main</code>, easy to read and revert. Con: the branch's individual commits are lost from <code>main</code>, so <code>bisect</code> can only narrow things down to the whole PR. Also, Git no longer sees the branch as merged, so <code>git branch -d</code> refuses and continuing work on that branch causes repeat conflicts. Start a fresh branch after a squash merge.</p>
 </div>
 <div class="qa">
+  <span class="q">What do <code>A..B</code> and <code>A...B</code> mean?</span>
+  <p>In <code>git log</code>, <code>A..B</code> is the commits reachable from B but not from A, "what B has that A lacks", and <code>A...B</code> is the commits on either side but not both. In <code>git diff</code> the meanings shift: <code>A..B</code> is just the two tips compared, while <code>A...B</code> compares B with the merge base, which is what a pull request shows. Mixing them up is how people get a diff that seems to delete main's newer work.</p>
+</div>
+<div class="qa">
+  <span class="q">What does <code>rerere</code> do, and when does it help?</span>
+  <p>"Reuse recorded resolution". With <code>rerere.enabled</code> on, Git records each conflict and how you resolved it, and replays the resolution when the identical conflict appears again. It pays off when you rebase a long-lived branch repeatedly, or test-merge a branch, abort, and merge again later. Git still stops so you can check the result, and <code>git rerere forget &lt;path&gt;</code> drops a bad recording.</p>
+</div>
+<div class="qa">
+  <span class="q">You have three stacked branches, each with an open pull request. The bottom one changes after review. How do you update the others?</span>
+  <p>Check out the top branch and run <code>git rebase -i --update-refs main</code> (Git 2.38 and later). The to-do list contains <code>update-ref</code> lines for the lower branches, so one rebase moves all three. Then push each with <code>--force-with-lease</code>. If the bottom PR was squash-merged, replay only the commits above it with <code>git rebase --update-refs --onto origin/main &lt;old bottom branch&gt;</code>.</p>
+</div>
+<div class="qa">
   <span class="q">Lightweight versus annotated tags?</span>
   <p>A lightweight tag is just a ref pointing at a commit. An annotated tag is a real object with a tagger, date, message and optional signature. <code>git describe</code> and <code>git push --follow-tags</code> use annotated tags by default. Releases should always be annotated.</p>
 </div>
@@ -144,7 +170,19 @@ export const gitInterview: GitSection = {
 </div>
 <div class="qa">
   <span class="q">What merge strategies does Git have?</span>
-  <p><code>ort</code> is the default for two-head merges since Git 2.34, replacing <code>recursive</code>. It's much faster and handles renames better. <code>octopus</code> merges more than two branches if there are no conflicts. The <code>ours</code> strategy records a merge but keeps your tree entirely, which is different from <code>-X ours</code>: that option only picks your side for conflicting hunks and still merges everything else.</p>
+  <p><code>ort</code> is the default for two-head merges since Git 2.34, replacing <code>recursive</code>, and since Git 2.50 <code>recursive</code> is only an alias for <code>ort</code>. It's much faster and handles renames better. <code>octopus</code> merges more than two branches if there are no conflicts. The <code>ours</code> strategy records a merge but keeps your tree entirely, which is different from <code>-X ours</code>: that option only picks your side for conflicting hunks and still merges everything else.</p>
+</div>
+<div class="qa">
+  <span class="q">What actually happens when you run <code>git commit</code>?</span>
+  <p>The index already holds a blob for every tracked file, because <code>git add</code> wrote them. Commit turns the index into tree objects, one per directory (<code>git write-tree</code>), writes a commit object naming the root tree, the parent (the current <code>HEAD</code>), author, committer and message (<code>git commit-tree</code>), then moves the branch <code>HEAD</code> points at to the new commit and appends to the reflog (<code>git update-ref</code>). Hooks run around it: <code>pre-commit</code> and <code>commit-msg</code> can abort. Nothing touches the network, and unchanged files cost nothing because their blobs and subtrees are reused.</p>
+</div>
+<div class="qa">
+  <span class="q">How do you check what someone changed by hand while resolving a merge?</span>
+  <p><code>git show --remerge-diff &lt;merge&gt;</code> (Git 2.36 and later). It redoes the merge in memory, conflict markers included, and diffs that against the commit that was recorded, so the output is exactly the human resolution. The default combined diff hides hunks where the result matches one parent, so a resolution that silently dropped one side's change can look clean. <code>git log --remerge-diff --merges</code> audits a whole range.</p>
+</div>
+<div class="qa">
+  <span class="q">What is changing in Git 3.0, and does it affect you?</span>
+  <p>Git 3.0 has no release date yet, but the planned changes are documented. New repositories will default to SHA-256 object IDs, to the reftable ref backend instead of loose files plus <code>packed-refs</code>, and to <code>main</code> as the first branch name. Existing repositories are not converted. What to do now: set <code>init.defaultBranch</code>, stop assuming hashes are 40 characters, read refs through <code>git rev-parse</code> and <code>for-each-ref</code> rather than files under <code>.git/refs</code>, and check that your tools and host support the new formats before you opt in.</p>
 </div>
 <div class="qa">
   <span class="q">What happens during <code>git gc</code>?</span>

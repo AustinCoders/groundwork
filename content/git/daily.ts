@@ -201,7 +201,7 @@ git show a3f9c1</code></pre>
         <tr><td><code>-- src/tax.js</code></td><td>Only commits that touched this path.</td></tr>
         <tr><td><code>--no-merges</code> / <code>--merges</code></td><td>Hide merge commits / show only them.</td></tr>
         <tr><td><code>--first-parent</code></td><td>Follow only the first parent: main as a list of what landed.</td></tr>
-        <tr><td><code>main..feature</code></td><td>Commits on feature that main does not have. See the mental model chapter.</td></tr>
+        <tr><td><code>main..feature</code></td><td>Commits on feature that main does not have. See <a href="/git/model">the mental model</a>.</td></tr>
         <tr><td><code>--stat</code>, <code>--name-status</code></td><td>Which files each commit changed, with counts or with A/M/D/R letters.</td></tr>
       </tbody>
     </table>
@@ -271,6 +271,26 @@ $ git lg -2
     script: <code>%H</code> and a separator you control are far
     safer to parse than the human layouts, which can change.
   </p>
+
+  <div class="bx is-ref">
+    <span class="ttl">For seniors: scripting against Git</span>
+    <p>
+      Git splits its commands into <em>porcelain</em>, meant for
+      people, and <em>plumbing</em>, meant for scripts. Porcelain
+      output (plain <code>git status</code>, <code>git branch</code>,
+      the default <code>log</code> layout) can change between versions
+      and follows your colour and locale settings. For a script, ask
+      for a stable format: <code>git status --porcelain=v2 --branch</code>
+      prints the branch, upstream and ahead/behind counts as
+      <code># branch.ab +1 -0</code> lines followed by one record per
+      file; <code>git for-each-ref --format</code> lists refs;
+      <code>git log --format=%H</code> lists commits; and
+      <code>-z</code> on most of these separates records with NUL, so
+      file names with spaces or newlines cannot break the parser.
+      <code>git rev-parse</code> answers "what commit is this name?",
+      and exits non-zero when the name does not exist.
+    </p>
+  </div>
 
   <h3>git show: one object in full</h3>
   <p>
@@ -460,8 +480,8 @@ Ravi Iyer (1):
       two clearer commands: <code>git switch</code> for changing
       branches, <code>git restore</code> for throwing away file
       changes. <code>checkout</code> still works and you'll see it
-      everywhere, but the newer pair is much harder to misfire. The
-      three areas chapter has the full mapping.
+      everywhere, but the newer pair is much harder to misfire.
+      <a href="/git/areas">The three areas</a> has the full mapping.
     </p>
   </div>
 `,

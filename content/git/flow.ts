@@ -9,6 +9,7 @@ export const gitFlow: GitSection = {
     "Trunk-based, GitHub flow and GitFlow compared, and how release branches, feature flags and CI gates fit around them.",
   body: `
 <div class="cover__meta">
+    <span class="tag tag--beginner">Fresher</span>
     <span class="tag tag--intermediate">Mid</span>
     <span class="tag tag--advanced">Senior</span>
   </div>
@@ -21,6 +22,19 @@ export const gitFlow: GitSection = {
     the strategy your team uses and defend the trade-off, because that
     question comes up in almost every senior interview.
   </p>
+
+  <div class="bx is-prim">
+    <span class="ttl">In one minute</span>
+    <p>
+      On your first team, ask one question: "where do I branch from,
+      and where does my pull request go?" Most teams answer "from
+      <code>main</code>, back into <code>main</code>". Keep your branch
+      small, open the PR within a day or two, and pull in the latest
+      <code>main</code> often. The names below (trunk-based, GitHub
+      flow, GitFlow) are different answers to how long work may stay
+      on a branch and how releases are cut.
+    </p>
+  </div>
 
   <h3>The one idea underneath all of them</h3>
   <p>
@@ -235,7 +249,8 @@ export const gitFlow: GitSection = {
     Open source adds one more shape on top of any of these: the
     <strong>fork and pull request</strong> model, where contributors
     can't push to the main repository at all. They push to their own copy
-    and open a PR upstream. That is covered in the pull requests section.
+    and open a PR upstream. That is covered in
+    <a href="/git/github">Pull requests and GitHub</a>.
   </p>
 
   <h3>Release branches done well</h3>
@@ -324,7 +339,7 @@ return applySingleCoupon(cart, codes[0]);</code></pre>
     <li><strong>CI must only build what changed.</strong> Running every test for a README edit doesn't scale. Tools such as Nx, Turborepo, Bazel and Pants compute which packages a diff affects, for example <code>turbo run test --filter=...[origin/main]</code>. Path filters in the workflow are the crude version.</li>
     <li><strong>Ownership needs to be per folder.</strong> A <code>CODEOWNERS</code> file routes <code>apps/billing/</code> changes to the billing team and requires their review.</li>
     <li><strong>PR volume makes a merge queue close to mandatory.</strong> With dozens of merges an hour, "up to date with main" is out of date by the time CI finishes.</li>
-    <li><strong>Clones get big.</strong> Partial clone (<code>git clone --filter=blob:none</code>) skips downloading old file contents until needed, and <code>git sparse-checkout set apps/web packages/ui</code> writes only the folders you work on. The scaling section covers both.</li>
+    <li><strong>Clones get big.</strong> Partial clone (<code>git clone --filter=blob:none</code>) skips downloading old file contents until needed, and <code>git sparse-checkout set apps/web packages/ui</code> writes only the folders you work on. <a href="/git/scale">Scale and edge cases</a> covers both.</li>
     <li><strong>History gets noisy.</strong> Scope your questions to a path: <code>git log --oneline -- apps/web</code>.</li>
   </ul>
 

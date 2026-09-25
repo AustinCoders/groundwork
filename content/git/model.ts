@@ -84,7 +84,7 @@ export const gitModel: GitSection = {
       Every commit points at every file, but a file is stored once per
       distinct content. Three snapshots cost four stored files here,
       not nine. Directories (trees) are left out to keep the picture
-      small; the next chapter puts them back.
+      small; <a href="/git/objects">the next chapter</a> puts them back.
     </figcaption>
   </figure>
 
@@ -247,7 +247,8 @@ a3f9c1d8e2b47f0c9a1e6d3b5f8c2a7e4d0b9f16</code></pre>
     When <code>HEAD</code> holds a commit ID directly, instead of a
     branch name, you are in <strong>detached HEAD</strong>. You can
     still commit, but no branch moves to follow you, so those commits
-    are easy to lose when you switch away. The Branches chapter
+    are easy to lose when you switch away.
+    <a href="/git/branch">Branches, HEAD, and detached HEAD</a>
     covers the recovery.
   </p>
 
@@ -273,6 +274,27 @@ a3f9c1d8e2b47f0c9a1e6d3b5f8c2a7e4d0b9f16</code></pre>
         <tr><td>Which release first shipped this?</td><td>A tag that contains it, printed like <code>v1.2~3</code>: three commits before v1.2.</td><td><code>git describe --contains &lt;sha&gt;</code></td></tr>
       </tbody>
     </table>
+  </div>
+
+  <div class="bx is-ref">
+    <span class="ttl">For seniors: what makes these questions fast</span>
+    <p>
+      Every question in that table is a graph walk, and on a large
+      repository a naive walk opens hundreds of thousands of commit
+      objects. Git avoids most of that with the
+      <strong>commit-graph</strong> file: a compact index of each
+      commit's parents, root tree and <em>generation number</em> (its
+      distance from the roots). If X has a higher generation number
+      than Y, X cannot be an ancestor of Y, so whole regions of the
+      graph are skipped without being read. <code>git maintenance</code>
+      keeps the file current, and <code>git branch --contains</code>,
+      <code>merge-base</code> and <code>log --graph</code> all speed up
+      because of it. When a script needs ahead and behind counts for
+      many branches at once, <code>git for-each-ref
+      --format='%(refname:short) %(ahead-behind:main)'</code> (Git 2.41
+      and later) does it in one walk instead of one
+      <code>rev-list</code> per branch.
+    </p>
   </div>
 
   <p>
@@ -436,7 +458,11 @@ $ git rev-list --left-right --count main...feature
       commits in the range". Diff only compares two snapshots, so two
       dots is just the two tips, and it will show main's newer work
       as if feature had deleted it. When you want "what did this
-      branch change", use three dots: <code>git diff main...feature</code>.
+      branch change", use three dots: <code>git diff main...feature</code>,
+      or the more explicit <code>git diff --merge-base main feature</code>
+      (Git 2.30 and later). <code>git diff --merge-base main</code>
+      with one name compares your working tree against the point
+      where your branch left main, uncommitted edits included.
     </p>
   </div>
 

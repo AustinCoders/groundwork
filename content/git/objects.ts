@@ -9,6 +9,7 @@ export const gitObjects: GitSection = {
     "A key-value store of four object types, named by the hash of their contents, with a thin layer of pointers on top.",
   body: `
 <div class="cover__meta">
+    <span class="tag tag--beginner">Fresher</span>
     <span class="tag tag--intermediate">Mid</span>
     <span class="tag tag--advanced">Senior</span>
   </div>
@@ -21,6 +22,21 @@ export const gitObjects: GitSection = {
     of only four kinds of object. Knowing them separates people who
     use Git from people who understand it.
   </p>
+
+  <div class="bx is-prim">
+    <span class="ttl">In one minute</span>
+    <p>
+      Git keeps a folder of objects in <code>.git/objects</code>. A
+      <em>blob</em> is one file's content, a <em>tree</em> is one
+      folder, and a <em>commit</em> points at the top tree plus the
+      commit before it. Each object is named by a hash of its bytes,
+      so the same content always gets the same name and is stored
+      once. Branches and tags are just names that point at commits.
+      You never need to touch these files, but knowing they exist
+      explains why commits cannot change, why renames are guessed,
+      and why "deleted" work can usually be found again.
+    </p>
+  </div>
 
   <div class="table-scroll">
     <table>
@@ -388,6 +404,29 @@ fffdaf0757acf8370b1985b1ea6e40302304cc33 refs/tags/v1.0
     <code>git update-ref</code>, which also writes the reflog.
   </p>
 
+  <div class="bx is-ref">
+    <span class="ttl">For seniors: files versus reftable</span>
+    <p>
+      The classic <em>files</em> backend has real failure modes at
+      scale. Deleting one ref rewrites the whole
+      <code>packed-refs</code> file, which can be hundreds of
+      megabytes on a busy server. A transaction that moves many refs
+      is not atomic, so a reader can see a half-applied update. And
+      because each ref is a file path, two branches that differ only
+      in case (<code>Fix</code> and <code>fix</code>) collide on
+      macOS and Windows. Reftable stores refs in sorted binary tables
+      with compaction after each write, which removes all three
+      problems. An existing repository can switch with
+      <code>git refs migrate --ref-format=reftable</code> (Git 2.46
+      and later), and <code>git rev-parse --show-ref-format</code>
+      tells you which one you have. The Git project plans to make
+      reftable the default for new repositories in Git 3.0. Until
+      then, check that every tool touching the repository (IDE
+      plugins, tools built on other Git libraries, your CI image) understands
+      it before you migrate.
+    </p>
+  </div>
+
   <h3>The index is a file too</h3>
   <p>
     The staging area is <code>.git/index</code>, a binary file that
@@ -415,8 +454,9 @@ $ xxd .git/index | head -2
     the stage. During a merge conflict one path gets up to three
     entries: stage 1 is the merge base, 2 is yours, 3 is theirs.
     Resolving a conflict means collapsing those back to a single
-    stage 0 entry, which is what <code>git add</code> does. The three areas
-    chapter covers the index from the user's side.
+    stage 0 entry, which is what <code>git add</code> does.
+    <a href="/git/areas">The three areas</a> covers the index from the
+    user's side.
   </p>
 
   <h3>Loose objects and packfiles</h3>
@@ -520,8 +560,13 @@ size-garbage: 0</code></pre>
       <strong>You rarely run gc yourself.</strong> Many commands run
       <code>git gc --auto</code>, which acts when there are more than
       about 6,700 loose objects (<code>gc.auto</code>) or more than 50
-      packs. <code>git maintenance start</code> schedules background
-      work instead, for large repositories.
+      packs (<code>gc.autoPackLimit</code>). For large repositories,
+      <code>git maintenance start</code> schedules smaller background
+      tasks instead and turns the automatic foreground gc off for that
+      repository. Do not mix the two by hand: if you want a full gc
+      in a repository under scheduled maintenance, run
+      <code>git maintenance run --task=gc</code>, which takes the same
+      lock as the background jobs.
     </li>
     <li>
       <strong>The network speaks packs.</strong> A clone, fetch or
@@ -557,8 +602,11 @@ size-garbage: 0</code></pre>
     64 hex characters. The catch is interoperability: a SHA-256
     repository cannot exchange objects with a SHA-1 one, and hosting
     support is still limited. The Git project plans to make SHA-256
-    the default for new repositories in Git 3.0. For now, write
-    tooling that does not assume IDs are 40 characters long.
+    the default for new repositories in Git 3.0, which has no release
+    date yet, and it has no plan to drop SHA-1 repositories. For now,
+    write tooling that does not assume IDs are 40 characters long:
+    <code>git rev-parse --show-object-format</code> tells a script
+    which hash a repository uses.
   </p>
 
   <div class="sticky">

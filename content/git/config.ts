@@ -104,7 +104,10 @@ file:/Users/aisha/.gitconfig-work	aisha@corp.dev</code></pre>
     <code>git config set user.email you@example.com</code> do the same
     as the older flag forms, which still work. Keys are
     case-insensitive (Git prints them in lower case), and a value can
-    be removed with <code>git config --global --unset key</code>.
+    be removed with <code>git config unset --global key</code> (or the
+    older <code>git config --global --unset key</code>). Examples on
+    this site use the older forms because they work on every version
+    you are likely to meet.
   </p>
 
   <h3>The first five minutes</h3>
@@ -133,8 +136,11 @@ git config --global core.editor "code --wait"</code></pre>
   <p>
     <strong>Default branch.</strong> <code>init.defaultBranch</code>
     (Git 2.28 and later) names the first branch in every new
-    repository. Without it, older installs create
-    <code>master</code> and newer ones print a hint every time.
+    repository. Without it, Git still creates <code>master</code>,
+    and current versions print a long hint on every
+    <code>git init</code> warning that the default will change to
+    <code>main</code> in Git 3.0. Setting it once silences the hint
+    and makes every machine agree.
   </p>
   <p>
     <strong>Editor.</strong> Git opens an editor for commit messages,
@@ -410,6 +416,29 @@ Hi aisha! You've successfully authenticated, but GitHub does not provide shell a
       host as a <em>signing</em> key and commits show as verified.
       Signing proves who made a commit; the email field alone proves
       nothing.
+    </p>
+  </div>
+
+  <div class="bx is-ref">
+    <span class="ttl">For seniors: config that protects you</span>
+    <p>
+      A repository's own <code>.git/config</code> can run programs:
+      <code>core.fsmonitor</code>, <code>core.sshCommand</code>, hooks
+      and filters are all commands. Since Git 2.35.2, Git refuses to
+      read a repository owned by another user, with
+      <code>fatal: detected dubious ownership in repository</code>,
+      so a shared folder or a mounted volume cannot quietly run
+      someone else's settings as you. In a CI container where the
+      checkout belongs to a different user, trust exactly that path
+      with <code>git config --global --add safe.directory /work/app</code>
+      rather than <code>'*'</code>. Also note what config never
+      travels: a clone copies no <code>.git/config</code> and no
+      hooks, which is why team rules belong in committed files such
+      as <code>.gitattributes</code> and on the server, not in
+      anyone's local config. On shared or build machines,
+      <code>transfer.fsckObjects true</code> makes fetch and receive
+      check every incoming object and reject corrupt or malformed
+      ones.
     </p>
   </div>
 
