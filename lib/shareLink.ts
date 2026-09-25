@@ -1,4 +1,5 @@
 import { isLanguage, type LanguageKey } from "@/lib/codeLanguages";
+import { packJson, unpackJson } from "@/lib/compress";
 
 export interface SharedFile {
   name: string;
@@ -8,27 +9,9 @@ export interface SharedFile {
 
 const PREFIX = "#share=";
 
-function toBase64Url(bytes: Uint8Array): string {
-  let binary = "";
-  for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-
-function fromBase64Url(text: string): Uint8Array {
-  const b64 = text.replace(/-/g, "+").replace(/_/g, "/");
-  const binary = atob(b64 + "=".repeat((4 - (b64.length % 4)) % 4));
-  return Uint8Array.from(binary, (c) => c.charCodeAt(0));
-}
-
-async function pipe(bytes: Uint8Array, stream: CompressionStream | DecompressionStream): Promise<Uint8Array> {
-  const out = new Blob([bytes as BlobPart]).stream().pipeThrough(stream);
-  return new Uint8Array(await new Response(out).arrayBuffer());
-}
-
 export async function shareUrl(files: SharedFile[]): Promise<string> {
-  const json = JSON.stringify(files.map((f) => [f.name, f.lang, f.code]));
-  const packed = await pipe(new TextEncoder().encode(json), new CompressionStream("deflate-raw"));
-  return `${location.origin}/practice?id=free${PREFIX}${toBase64Url(packed)}`;
+  const packed = await packJson(files.map((f) => [f.name, f.lang, f.code]));
+  return `${location.origin}/practice?id=free${PREFIX}${packed}`;
 }
 
 export function hasShare(hash: string): boolean {
@@ -38,8 +21,7 @@ export function hasShare(hash: string): boolean {
 export async function readShare(hash: string): Promise<SharedFile[] | null> {
   if (!hasShare(hash)) return null;
   try {
-    const bytes = await pipe(fromBase64Url(hash.slice(PREFIX.length)), new DecompressionStream("deflate-raw"));
-    const rows = JSON.parse(new TextDecoder().decode(bytes)) as unknown;
+    const rows = await unpackJson<unknown>(hash.slice(PREFIX.length));
     if (!Array.isArray(rows)) return null;
     const files = rows
       .filter(

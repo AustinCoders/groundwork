@@ -285,6 +285,17 @@ export function Shell({
                 </span>
                 <span className="site-navlink__name">Mock interview</span>
               </Link>
+              <Link
+                className="site-navlink"
+                href="/whiteboard"
+                title="Whiteboard — sketch and diagram"
+                prefetch={false}
+              >
+                <span className="site-navlink__icon" aria-hidden="true">
+                  ▱
+                </span>
+                <span className="site-navlink__name">Whiteboard</span>
+              </Link>
               <Link className="site-navlink" href="/review" title="Review — spaced repetition" prefetch={false}>
                 <span className="site-navlink__icon" aria-hidden="true">
                   ↻

@@ -15,6 +15,7 @@ const PAGES = [
   "/problems/ex-accounts-merge",
   "/review",
   "/mock",
+  "/whiteboard",
   "/progress",
   "/git",
   "/architecture",
