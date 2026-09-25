@@ -277,99 +277,6 @@
   background: var(--line);
 }
 
-.modal {
-  width: min(420px, calc(100vw - 32px));
-  padding: 20px;
-  color: var(--ink);
-  background: var(--sheet);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  box-shadow: var(--shadow-lg);
-}
-
-.modal::backdrop {
-  background: rgba(0, 0, 0, 0.4);
-}
-
-.modalTitle {
-  margin: 0 0 8px;
-  font-family: var(--font-heading);
-  font-size: 22px;
-  font-weight: 400;
-  overflow-wrap: anywhere;
-}
-
-.modalBody p {
-  margin: 0;
-  font-size: 14.5px;
-  line-height: 1.5;
-  color: var(--pencil);
-}
-
-.modalLabel {
-  display: block;
-  margin: 6px 0 6px;
-  font-size: 13px;
-  color: var(--pencil);
-}
-
-.modalInput {
-  width: 100%;
-  padding: 9px 11px;
-  font: inherit;
-  font-size: 16px;
-  color: var(--ink);
-  background: var(--sheet-2);
-  border: 1.5px solid var(--line);
-  border-radius: 9px;
-}
-
-.modalInput:focus {
-  border-color: var(--green);
-  outline: none;
-}
-
-.modalActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 18px;
-}
-
-.modalBtn {
-  min-height: 38px;
-  padding: 0 16px;
-  font: inherit;
-  font-size: 14px;
-  color: var(--ink);
-  background: var(--sheet-2);
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  cursor: pointer;
-}
-
-.modalBtn:focus-visible {
-  outline: 2px solid var(--green);
-  outline-offset: 2px;
-}
-
-.modalBtn:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-.modalPrimary {
-  color: var(--sheet);
-  background: var(--green);
-  border-color: transparent;
-}
-
-.modalDanger {
-  color: var(--sheet);
-  background: var(--red);
-  border-color: transparent;
-}
-
 .popWrap {
   position: relative;
   display: flex;
@@ -1102,15 +1009,6 @@
     display: none;
   }
 
-  .modalActions {
-    flex-direction: column-reverse;
-  }
-
-  .modalBtn {
-    width: 100%;
-    min-height: 44px;
-  }
-
   .dock {
     top: auto;
     bottom: var(--gap);
@@ -1508,12 +1406,10 @@
     color 0.15s ease;
 }
 
-.modal[open],
 .help[open] {
   animation: wbZoom 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.modal[open]::backdrop,
 .help[open]::backdrop {
   animation: wbFade 0.18s ease-out;
 }
@@ -1552,7 +1448,6 @@
 }
 
 .drawer h2,
-.modal h2,
 .help h2 {
   padding: 0;
   border: 0;
@@ -1561,8 +1456,6 @@
 
 .drawer h2::before,
 .drawer h2::after,
-.modal h2::before,
-.modal h2::after,
 .help h2::before,
 .help h2::after {
   content: none;

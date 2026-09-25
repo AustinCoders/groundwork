@@ -309,13 +309,12 @@ interface FileTabsProps {
   onSelect: (id: string) => void;
   onClose: (id: string) => void;
   onNew: () => void;
-  onRename: (id: string, name: string) => void;
+  onRename: (id: string) => void;
   onCloseMany: (ids: string[]) => void;
   reopen?: { label: string; run: () => void } | null;
 }
 
 function FileTabs({ files, onSelect, onClose, onNew, onRename, onCloseMany, reopen }: FileTabsProps) {
-  const [editing, setEditing] = useState<string | null>(null);
   const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
 
   useEffect(() => {
@@ -352,41 +351,23 @@ function FileTabs({ files, onSelect, onClose, onNew, onRename, onCloseMany, reop
       <span className="ed__tabs ed__tabs--files" role="list" aria-label="Files" ref={listRef}>
         {files.map((f) => (
           <span key={f.id} role="listitem" className={`ed__tab${f.active ? " is-active" : ""}`}>
-            {editing === f.id ? (
-              <input
-                className="ed__tab-rename"
-                aria-label={`Rename ${f.name}`}
-                defaultValue={f.name}
-                autoFocus
-                onFocus={(e) => e.currentTarget.setSelectionRange(0, e.currentTarget.value.lastIndexOf(".") >>> 0)}
-                onBlur={(e) => {
-                  onRename(f.id, e.currentTarget.value);
-                  setEditing(null);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") e.currentTarget.blur();
-                  if (e.key === "Escape") setEditing(null);
-                }}
-              />
-            ) : (
-              <button
-                type="button"
-                aria-current={f.active ? "true" : undefined}
-                className="ed__tab-btn"
-                title="Double-click to rename"
-                onClick={() => onSelect(f.id)}
-                onDoubleClick={() => setEditing(f.id)}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  openMenu(f.id, e.clientX, e.clientY);
-                }}
-              >
-                <span className="ed__tab-icon" aria-hidden="true">
-                  ◆
-                </span>
-                <span className="ed__tab-name">{f.name}</span>
-              </button>
-            )}
+            <button
+              type="button"
+              aria-current={f.active ? "true" : undefined}
+              className="ed__tab-btn"
+              title="Double-click to rename"
+              onClick={() => onSelect(f.id)}
+              onDoubleClick={() => onRename(f.id)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                openMenu(f.id, e.clientX, e.clientY);
+              }}
+            >
+              <span className="ed__tab-icon" aria-hidden="true">
+                ◆
+              </span>
+              <span className="ed__tab-name">{f.name}</span>
+            </button>
             {files.length > 1 && (
               <button
                 type="button"
@@ -426,7 +407,7 @@ function FileTabs({ files, onSelect, onClose, onNew, onRename, onCloseMany, reop
       </span>
       {menu && (
         <span className="tab-menu" role="menu" style={{ left: menu.x, top: menu.y }}>
-          <button type="button" role="menuitem" autoFocus onClick={act(() => setEditing(menu.id))}>
+          <button type="button" role="menuitem" autoFocus onClick={act(() => onRename(menu.id))}>
             Rename
           </button>
           <button type="button" role="menuitem" disabled={files.length < 2} onClick={act(() => onClose(menu.id))}>

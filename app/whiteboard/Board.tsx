@@ -6,7 +6,7 @@ import { Icon, type IconName } from "./icons";
 import { StylePanel } from "./StylePanel";
 import { BoardMenu } from "./BoardMenu";
 import { ContextMenu, type MenuItem } from "./ContextMenu";
-import { ConfirmDialog, NameDialog } from "./Dialogs";
+import { ConfirmDialog, NameDialog } from "@/components/Modal";
 import { Shortcuts } from "./Shortcuts";
 import { TemplatesMenu } from "./TemplatesMenu";
 import { PagePicker, PaperPattern, paperOf, paperVisible, tintOf, tintVars } from "./Paper";

@@ -413,10 +413,25 @@ test("the playground keeps several files in tabs, each in its own language", asy
   await expect(editor).toContainText("// kept in the js file");
 
   await page.getByRole("button", { name: "New file" }).click();
-  await file("scratch-2.js").dblclick();
-  await page.getByRole("textbox", { name: /Rename/ }).fill("types.ts");
+  const create = page.getByRole("dialog", { name: "New file" });
+  await create.getByRole("radio", { name: /JavaScript/ }).click();
+  await create.getByRole("textbox", { name: "File name" }).fill("scratch");
+  await expect(create).toContainText("There is already a file called scratch.js");
+  await create.getByRole("textbox", { name: "File name" }).fill("helpers");
+  await create.getByRole("button", { name: "Create file" }).click();
+  await expect(file("helpers.js")).toHaveAttribute("aria-current", "true");
+
+  await file("helpers.js").dblclick();
+  const rename = page.getByRole("dialog", { name: /Rename helpers.js/ });
+  await rename.getByRole("textbox", { name: "New name" }).fill("types.ts");
+  await expect(rename).toContainText("Switches the file to TypeScript");
   await page.keyboard.press("Enter");
   await expect(page.locator(".ed__ready")).toHaveText("TypeScript");
+
+  await page.getByRole("button", { name: "Close types.ts" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(file("types.ts")).toHaveCount(0);
+  await page.getByRole("button", { name: /Reopen/ }).click();
 
   await page.reload();
   for (const name of ["scratch.js", "scratch.py", "types.ts"]) await expect(file(name)).toBeVisible();
@@ -521,8 +536,9 @@ test("the debugger steps through code and draws what it holds", async ({ page })
 test("debugging a problem runs the solution on its first test's input", async ({ page }) => {
   await page.goto("/problems/ex-two-sum");
   await expect(page.locator(".cm-content")).toBeVisible();
-  page.once("dialog", (d) => d.accept());
+  await page.getByRole("tab", { name: /Hints/ }).click();
   await page.getByRole("button", { name: "Show the solution" }).click();
+  await page.getByRole("dialog", { name: "Show the solution?" }).getByRole("button", { name: "Show solution" }).click();
   await page.getByRole("button", { name: /Debug/ }).click();
   await page.getByRole("button", { name: "Next step" }).click();
   await expect(page.locator(".debug__where")).toContainText("in twoSum");

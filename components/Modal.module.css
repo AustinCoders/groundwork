@@ -1,0 +1,195 @@
+.modal {
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 20px;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+}
+
+.wide {
+  width: min(560px, calc(100vw - 32px));
+}
+
+.modal[open] {
+  animation: zoom 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.modal::backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.modal[open]::backdrop {
+  animation: fade 0.18s ease-out;
+}
+
+.title {
+  margin: 0 0 8px;
+  padding: 0;
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+  background: none;
+  border: 0;
+}
+
+.title::before,
+.title::after {
+  content: none !important;
+  display: none !important;
+}
+
+.body p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--pencil);
+}
+
+.body p + p {
+  margin-top: 8px;
+}
+
+.body code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  color: var(--ink);
+}
+
+.label {
+  display: block;
+  margin: 6px 0 6px;
+  font-size: 13px;
+  color: var(--pencil);
+}
+
+.input {
+  width: 100%;
+  padding: 9px 11px;
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--sheet-2);
+  border: 1.5px solid var(--line);
+  border-radius: 9px;
+  transition: border-color 0.15s ease;
+}
+
+.input:focus {
+  border-color: var(--green);
+  outline: none;
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--red);
+}
+
+.hint,
+.error {
+  min-height: 1.4em;
+  margin: 6px 2px 0;
+  font-size: 12.5px;
+  color: var(--pencil);
+}
+
+.error {
+  color: var(--red);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.btn {
+  min-height: 38px;
+  padding: 0 16px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--sheet-2);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  cursor: pointer;
+  transition:
+    filter 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.12s ease;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--ink-soft);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.primary {
+  color: var(--sheet);
+  background: var(--green);
+  border-color: transparent;
+}
+
+.danger {
+  color: var(--sheet);
+  background: var(--red);
+  border-color: transparent;
+}
+
+.primary:hover:not(:disabled),
+.danger:hover:not(:disabled) {
+  border-color: transparent;
+  filter: brightness(1.08);
+}
+
+@keyframes zoom {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .btn {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal[open],
+  .modal[open]::backdrop {
+    animation: none;
+  }
+
+  .btn {
+    transition: none;
+  }
+}

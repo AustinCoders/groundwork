@@ -9,6 +9,8 @@ import { Confetti } from "@/components/practice/Confetti";
 import { EditorSkeleton } from "@/components/practice/EditorSkeleton";
 import { ShortcutHelp } from "@/components/practice/ShortcutHelp";
 import { TopIcon } from "@/components/practice/TopIcon";
+import { NewFileDialog, RenameFileDialog } from "@/components/practice/FileDialogs";
+import { ConfirmDialog } from "@/components/Modal";
 import { SiteDrawer } from "@/components/SiteDrawer";
 import { Dropdown } from "@/components/ui/select";
 import { isLanguage, LANG_ORDER, LANGUAGES, type LanguageKey } from "@/lib/codeLanguages";
@@ -234,6 +236,16 @@ export function PracticeWorkspace({
   const [soundOn, setSoundOnState] = useState(true);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [briefTab, setBriefTab] = useState<"description" | "tests" | "hints">("description");
+  const [dialog, setDialog] = useState<
+    | { kind: "new" }
+    | { kind: "rename"; id: string }
+    | { kind: "confirm"; title: string; body: React.ReactNode; label: string; danger?: boolean; run: () => void }
+    | null
+  >(null);
+  const closeDialog = useCallback(() => setDialog(null), []);
+  const ask = (title: string, body: React.ReactNode, label: string, run: () => void, danger = true) =>
+    setDialog({ kind: "confirm", title, body, label, run, danger });
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   useEffect(() => {
@@ -424,6 +436,47 @@ export function PracticeWorkspace({
     activate({ ...p, files }, back[0]);
   }
 
+  const touched = (f: PgFile) => Boolean(f.code.trim()) && !LANG_ORDER.some((l) => starterCode(l) === f.code);
+
+  function closeFile(id: string) {
+    const p = projectRef.current!;
+    const file = p.files.find((f) => f.id === id);
+    if (!file || p.files.length < 2) return;
+    rememberClosed([file]);
+    const index = p.files.indexOf(file);
+    const files = p.files.filter((f) => f.id !== id);
+    if (id !== p.active) return commitProject({ ...p, files });
+    activate({ ...p, files }, files[Math.min(index, files.length - 1)]);
+  }
+
+  function closeMany(ids: string[]) {
+    const p = projectRef.current!;
+    const closing = p.files.filter((f) => ids.includes(f.id));
+    if (!closing.length) return;
+    rememberClosed(closing.filter(touched));
+    const kept = p.files.filter((f) => !ids.includes(f.id));
+    const files = kept.length ? kept : [makeFile([], currentLangRef.current)];
+    const active = files.find((f) => f.id === p.active) ?? files[0];
+    activate({ ...p, files }, active);
+  }
+
+  function createFile(name: string, lang: LanguageKey) {
+    const p = projectRef.current!;
+    const file = { ...makeFile(p.files, lang), name };
+    activate({ ...p, files: [...p.files, file] }, file);
+  }
+
+  function renameFile(id: string, name: string) {
+    const p = projectRef.current!;
+    const file = p.files.find((f) => f.id === id);
+    const clean = name.trim().replace(/[\\/]/g, "");
+    if (!file || !clean || clean === file.name || p.files.some((f) => f.id !== id && f.name === clean)) return;
+    const lang = langForName(clean) ?? file.lang;
+    const renamed = { ...file, name: clean, lang };
+    commitProject({ ...p, files: p.files.map((f) => (f.id === id ? renamed : f)) });
+    if (id === p.active && lang !== file.lang) editorRef.current?.setLanguage(lang);
+  }
+
   const fileActions = {
     onSelect(id: string) {
       const p = projectRef.current!;
@@ -431,40 +484,35 @@ export function PracticeWorkspace({
       if (file && id !== p.active) activate(p, file);
     },
     onClose(id: string) {
-      const p = projectRef.current!;
-      const file = p.files.find((f) => f.id === id);
-      if (!file || p.files.length < 2) return;
-      rememberClosed([file]);
-      const index = p.files.indexOf(file);
-      const files = p.files.filter((f) => f.id !== id);
-      if (id !== p.active) return commitProject({ ...p, files });
-      activate({ ...p, files }, files[Math.min(index, files.length - 1)]);
+      const file = projectRef.current?.files.find((f) => f.id === id);
+      if (!file) return;
+      if (!touched(file)) return closeFile(id);
+      ask(
+        `Close ${file.name}?`,
+        <p>Its code goes with it. You can bring it back for 10 seconds with Reopen.</p>,
+        "Close file",
+        () => closeFile(id)
+      );
     },
     onCloseMany(ids: string[]) {
-      const p = projectRef.current!;
-      const closing = p.files.filter((f) => ids.includes(f.id));
-      if (!closing.length) return;
-      rememberClosed(closing.filter((f) => f.code.trim() && f.code !== starterCode(f.lang)));
-      const kept = p.files.filter((f) => !ids.includes(f.id));
-      const files = kept.length ? kept : [makeFile([], currentLangRef.current)];
-      const active = files.find((f) => f.id === p.active) ?? files[0];
-      activate({ ...p, files }, active);
+      const closing = projectRef.current?.files.filter((f) => ids.includes(f.id)) ?? [];
+      const written = closing.filter(touched);
+      if (!written.length) return closeMany(ids);
+      ask(
+        closing.length === 1 ? `Close ${closing[0].name}?` : `Close ${closing.length} files?`,
+        <p>
+          {written.length === 1 ? `${written[0].name} has code in it.` : `${written.length} of them have code in them.`}{" "}
+          You can bring them back for 10 seconds with Reopen.
+        </p>,
+        closing.length === 1 ? "Close file" : "Close files",
+        () => closeMany(ids)
+      );
     },
     onNew() {
-      const p = projectRef.current!;
-      const file = makeFile(p.files, currentLangRef.current);
-      activate({ ...p, files: [...p.files, file] }, file);
+      setDialog({ kind: "new" });
     },
-    onRename(id: string, name: string) {
-      const p = projectRef.current!;
-      const file = p.files.find((f) => f.id === id);
-      const clean = name.trim().replace(/[\\/]/g, "");
-      if (!file || !clean || clean === file.name || p.files.some((f) => f.id !== id && f.name === clean)) return;
-      const lang = langForName(clean) ?? file.lang;
-      const renamed = { ...file, name: clean, lang };
-      const next = { ...p, files: p.files.map((f) => (f.id === id ? renamed : f)) };
-      commitProject(next);
-      if (id === p.active && lang !== file.lang) editorRef.current?.setLanguage(lang);
+    onRename(id: string) {
+      setDialog({ kind: "rename", id });
     },
   };
 
@@ -747,8 +795,6 @@ export function PracticeWorkspace({
       });
   }
 
-  const allExercisesLevelHref = `/path?topic=js&level=${exercise.level}`;
-
   const playground = isFree && !interview;
   const runnable = Boolean(LANGUAGES[currentLang].runnable);
   const errored = consoleLines.some((l) => l.kind === "error");
@@ -760,9 +806,12 @@ export function PracticeWorkspace({
     if (!t || !editor) return;
     const current = editor.getValue();
     const untouched = !current.trim() || templates.some((x) => x.code === current);
-    if (!untouched && !window.confirm(`Replace what is in the editor with “${t.name}”?`)) return;
-    editor.setValue(t.code);
-    editor.focus();
+    const load = () => {
+      editor.setValue(t.code);
+      editor.focus();
+    };
+    if (untouched) return load();
+    ask(`Load “${t.name}”?`, <p>It replaces what is in the editor now.</p>, "Replace code", load);
   }
 
   function consoleText(): string {
@@ -880,6 +929,11 @@ export function PracticeWorkspace({
                 <TopIcon name="next" />
               </span>
             )}
+            <span className="lc-topbar__title">
+              <span>{exercise.title}</span>
+              <span className={`tag tag--${exercise.level}`}>{exercise.level}</span>
+              {solved && <span className="tag tag--done">solved ✓</span>}
+            </span>
           </div>
         )}
         <div className="lc-topbar__actions">
@@ -1017,54 +1071,151 @@ export function PracticeWorkspace({
 
       <ShortcutHelp open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <SiteDrawer open={menuOpen} onClose={closeMenu} />
+      {dialog?.kind === "confirm" && (
+        <ConfirmDialog
+          title={dialog.title}
+          body={dialog.body}
+          confirmLabel={dialog.label}
+          danger={dialog.danger}
+          onConfirm={dialog.run}
+          onClose={closeDialog}
+        />
+      )}
+      {dialog?.kind === "new" && project && (
+        <NewFileDialog files={project.files} initialLang={currentLang} onCreate={createFile} onClose={closeDialog} />
+      )}
+      {dialog?.kind === "rename" &&
+        project &&
+        (() => {
+          const file = project.files.find((f) => f.id === dialog.id);
+          return file ? (
+            <RenameFileDialog
+              file={file}
+              files={project.files}
+              onRename={(name) => renameFile(file.id, name)}
+              onClose={closeDialog}
+            />
+          ) : null;
+        })()}
 
       <div className={`practice-layout${playground ? " practice-layout--playground" : ""}`}>
         {!playground && (
           <aside className="brief" id="brief">
             <div className="brief__tabs" role="tablist" aria-label="Problem panel">
-              <span className="brief__tab is-active" role="tab" aria-selected="true">
-                Description
-              </span>
-            </div>
-            <div className="brief__scroll">
-              {!interview && (
-                <Crumbs
-                  items={[
-                    { label: "All topics", href: "/" },
-                    { label: "JavaScript", href: "/notes" },
-                    { label: chapter ? chapter.short : "Playground" },
-                  ]}
-                />
-              )}
-              <h1 id="ex-title">{exercise.title}</h1>
-              <div className="brief__meta" id="ex-meta">
-                {isFree ? (
-                  <span className="tag">no tests · nothing to pass</span>
-                ) : (
-                  <>
-                    <span className={`tag tag--${exercise.level}`}>{exercise.level}</span>
-                    {chapter && (
-                      <span className="tag">
-                        layer {chapter.num} · {chapter.short}
-                      </span>
-                    )}
-                    <span className="tag">
-                      {exercise.tests.length} {exercise.tests.length === 1 ? "test" : "tests"}
+              {(
+                [
+                  ["description", "Description", null],
+                  ...(isFree || !exercise.tests.length
+                    ? []
+                    : [
+                        [
+                          "tests",
+                          "Tests",
+                          testResults
+                            ? `${testResults.filter((r) => r.ok).length}/${testResults.length}`
+                            : String(exercise.tests.length),
+                        ],
+                      ]),
+                  ...(isFree && !exercise.solution ? [] : [["hints", "Hints", exercise.hints.length || null]]),
+                ] as [typeof briefTab, string, string | number | null][]
+              ).map(([id, label, count]) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  id={`brief-tab-${id}`}
+                  aria-selected={briefTab === id}
+                  aria-controls="brief-panel"
+                  className={`brief__tab${briefTab === id ? " is-active" : ""}`}
+                  onClick={() => setBriefTab(id)}
+                >
+                  {label}
+                  {count !== null && (
+                    <span
+                      className={`brief__count${
+                        id === "tests" && testResults ? (testResults.every((r) => r.ok) ? " is-pass" : " is-fail") : ""
+                      }`}
+                    >
+                      {count}
                     </span>
-                    {solved && !interview && <span className="tag tag--done">solved ✓</span>}
-                  </>
-                )}
-              </div>
-              <div
-                className="brief__body"
-                id="ex-body"
-                suppressHydrationWarning
-                dangerouslySetInnerHTML={{ __html: exercise.brief }}
-              />
+                  )}
+                </button>
+              ))}
+            </div>
+            <div
+              className="brief__scroll"
+              key={briefTab}
+              role="tabpanel"
+              id="brief-panel"
+              aria-labelledby={`brief-tab-${briefTab}`}
+            >
+              {briefTab === "tests" && (
+                <ol className="brief__tests">
+                  {exercise.tests.map((t) => {
+                    const r = testResults?.find((x) => x.name === t.name);
+                    return (
+                      <li key={t.name} className={r ? (r.ok ? "is-pass" : "is-fail") : undefined}>
+                        <p className="brief__test-name">
+                          <span className="brief__test-mark" aria-hidden="true">
+                            {r ? (r.ok ? "✓" : "✕") : "○"}
+                          </span>
+                          {t.name}
+                          {r && <span className="visually-hidden">{r.ok ? " (passed)" : " (failed)"}</span>}
+                        </p>
+                        {r && !r.ok && r.message && <p className="brief__test-why">{r.message}</p>}
+                        <pre className="brief__test-code">
+                          <code>{t.body}</code>
+                        </pre>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
+              {briefTab === "description" && (
+                <>
+                  {!interview && (
+                    <Crumbs
+                      items={[
+                        { label: "All topics", href: "/" },
+                        { label: "JavaScript", href: "/notes" },
+                        { label: chapter ? chapter.short : "Playground" },
+                      ]}
+                    />
+                  )}
+                  <h1 id="ex-title">{exercise.title}</h1>
+                  <div className="brief__meta" id="ex-meta">
+                    {isFree ? (
+                      <span className="tag">no tests · nothing to pass</span>
+                    ) : (
+                      <>
+                        <span className={`tag tag--${exercise.level}`}>{exercise.level}</span>
+                        {chapter && (
+                          <span className="tag">
+                            layer {chapter.num} · {chapter.short}
+                          </span>
+                        )}
+                        <span className="tag">
+                          {exercise.tests.length} {exercise.tests.length === 1 ? "test" : "tests"}
+                        </span>
+                        {solved && !interview && <span className="tag tag--done">solved ✓</span>}
+                      </>
+                    )}
+                  </div>
+                  <div
+                    className="brief__body"
+                    id="ex-body"
+                    suppressHydrationWarning
+                    dangerouslySetInnerHTML={{ __html: exercise.brief }}
+                  />
+                </>
+              )}
 
-              {!(isFree && !exercise.solution) && (
+              {briefTab === "hints" && (
                 <div className="brief__section" id="hint-section">
                   <h2>Stuck?</h2>
+                  <p className="brief__lead">
+                    Hints come one at a time, each a little more direct. The solution replaces your code.
+                  </p>
                   <div id="hint-list">
                     {exercise.hints.slice(0, hintsShown).map((hint, i) => (
                       <div className="hint" key={i}>
@@ -1093,33 +1244,23 @@ export function PracticeWorkspace({
                       className="btn"
                       id="solution-btn"
                       type="button"
-                      onClick={() => {
-                        if (
-                          !window.confirm("Replace what you have written with the solution? Your version is not kept.")
+                      onClick={() =>
+                        ask(
+                          "Show the solution?",
+                          <p>It replaces what you have written, and your version is not kept.</p>,
+                          "Show solution",
+                          () => {
+                            editorRef.current?.setValue(exercise.solution!);
+                            editorRef.current?.focus();
+                            setSawSolution(true);
+                          }
                         )
-                          return;
-                        editorRef.current?.setValue(exercise.solution!);
-                        editorRef.current?.focus();
-                        setSawSolution(true);
-                      }}
+                      }
                     >
                       Show the solution
                     </button>
                   )}
                 </div>
-              )}
-
-              {!interview && (
-                <nav className="brief__nav" id="ex-nav" aria-label="Other exercises">
-                  <Link className="btn" href={allExercisesLevelHref}>
-                    All exercises
-                  </Link>
-                  {!isFree && (
-                    <Link className="btn" href="/practice?id=free">
-                      Playground
-                    </Link>
-                  )}
-                </nav>
               )}
             </div>
           </aside>
@@ -1175,13 +1316,19 @@ export function PracticeWorkspace({
                     type="button"
                     data-tip="Start again"
                     aria-label="Reset to the starting code"
-                    onClick={() => {
-                      if (!window.confirm("Throw away your version and start again?")) return;
-                      const lang = currentLangRef.current;
-                      if (!projectRef.current) codeStore.clear(exercise.id, lang);
-                      editorRef.current?.setValue(starterIn(lang, polyglot));
-                      editorRef.current?.focus();
-                    }}
+                    onClick={() =>
+                      ask(
+                        "Start again?",
+                        <p>Your version is thrown away and the starting code comes back.</p>,
+                        "Start again",
+                        () => {
+                          const lang = currentLangRef.current;
+                          if (!projectRef.current) codeStore.clear(exercise.id, lang);
+                          editorRef.current?.setValue(starterIn(lang, polyglot));
+                          editorRef.current?.focus();
+                        }
+                      )
+                    }
                   >
                     <TopIcon name="reset" size={16} />
                   </button>
