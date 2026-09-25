@@ -2250,27 +2250,34 @@ export const topics: TopicsData = {
             {
               title: "What this site is",
               chapter: "arch-overview",
-              items: ["The build-artifact decision and what it costs"],
+              items: [
+                "One decision shaped everything else: the site is a build artifact, and the heavy work runs in your browser.",
+              ],
             },
             {
               title: "The tech stack",
               chapter: "arch-tech-stack",
-              items: ["Every dependency, and what is deliberately absent"],
+              items: ["Every dependency, what it does here, where it runs, and what it would cost to remove."],
             },
             {
               title: "Where everything lives",
               chapter: "arch-repo-map",
-              items: ["Nine directories and the rule each follows"],
+              items: ["Ten directories, the rule each one follows, and the places the rules bend."],
             },
             {
               title: "The content model",
               chapter: "arch-content-model",
-              items: ["Topic, level, chapter, exercise \u2014 and the URLs"],
+              items: ["Four types, two special cases, and one record that turns into several routes."],
             },
             {
-              title: "Written vs planned",
+              title: "What is written and what is not",
               chapter: "arch-coming-soon",
-              items: ["4 topics of 20, and what coming soon means"],
+              items: ["Seven of twenty-one topics are written. The other fourteen say so rather than pretending."],
+            },
+            {
+              title: "Every route and why the URLs look the way they do",
+              chapter: "arch-routes",
+              items: ["53 pages, 27 route handlers, the metadata files, and the links that live after the # sign."],
             },
           ],
         },
@@ -2289,28 +2296,90 @@ export const topics: TopicsData = {
           checkpoint: "you can trace a request from the browser to the file that answers it",
           syllabus: [
             {
-              title: "Opening a page",
+              title: "What happens when you open a page",
               chapter: "arch-request-path",
-              items: ["Edge, cache, and the two paths a request can take"],
+              items: [
+                "Every page and every JSON file is already a file when you ask for it. Four handlers under /api are the only code that runs per request, plus one quiet exception.",
+              ],
             },
-            { title: "The build", chapter: "arch-build", items: ["One interface, and everything derived from it"] },
             {
-              title: "Server vs client",
+              title: "How 1,734 files get made",
+              chapter: "arch-build",
+              items: [
+                "One source of truth, one pass, and every page, index, test case and preview image is derived from it in about thirty seconds.",
+              ],
+            },
+            {
+              title: "Server, client, and the line between them",
               chapter: "arch-rendering",
-              items: ["What crosses into the bundle, and the mistake made twice"],
+              items: [
+                "Every page is rendered on the server once, at build time. The work is in deciding what crosses into the browser and making sure the first client render matches what the server wrote.",
+              ],
             },
-            { title: "Where state lives", chapter: "arch-state", items: ["Ten keys, one seam, no accounts"] },
             {
-              title: "The playground",
+              title: "Where a reader's state lives",
+              chapter: "arch-state",
+              items: [
+                "Thirty-one localStorage keys, two sessionStorage keys, a query string and a URL hash. There are no accounts, no cookies and no database.",
+              ],
+            },
+            {
+              title: "An editor inside a web page",
               chapter: "arch-playground",
-              items: ["A Web Worker, three wasm runtimes, no server"],
+              items: [
+                "CodeMirror, a worker full of tools, files that live in localStorage, and links that carry code.",
+              ],
             },
             {
-              title: "The four endpoints",
-              chapter: "arch-apis",
-              items: ["What they call and what happens when it fails"],
+              title: "Eleven languages, no server",
+              chapter: "arch-runtimes",
+              items: [
+                "Three workers, two iframes, one database on the main thread, and a C compiler that downloads itself.",
+              ],
             },
-            { title: "Search", chapter: "arch-search", items: ["Static JSON, fetched lazily, and what it costs"] },
+            {
+              title: "How an answer gets checked",
+              chapter: "arch-grading",
+              items: [
+                "Tests written once in JavaScript, replayed in six other languages, and a React sandbox in an iframe.",
+              ],
+            },
+            {
+              title: "Stepping through a run",
+              chapter: "arch-debugger",
+              items: ["Record every statement once, then scrub through the recording as if it were live."],
+            },
+            {
+              title: "The whiteboard",
+              chapter: "arch-whiteboard",
+              items: ["An infinite SVG board built on plain arrays, pure functions and one history stack."],
+            },
+            {
+              title: "The mock interview engine",
+              chapter: "arch-mock",
+              items: ["A loop planner, a pure session reducer and a hiring committee, all in the browser."],
+            },
+            {
+              title: "Every endpoint, and how each one fails",
+              chapter: "arch-apis",
+              items: [
+                "Four route handlers run per request, and three families of JSON routes were run once, at build time. This chapter covers what each takes, what it caches and what the reader sees when it breaks.",
+              ],
+            },
+            {
+              title: "Search without a search service",
+              chapter: "arch-search",
+              items: [
+                "Twenty-one JSON files written at build time, fetched on the first keystroke and scanned in the browser, with a test that fails the build when one grows too large.",
+              ],
+            },
+            {
+              title: "The design system",
+              chapter: "arch-design-system",
+              items: [
+                "Nine themes and seven fonts as CSS variables, two page shells, and the checks that keep them readable.",
+              ],
+            },
           ],
         },
         {
@@ -2328,23 +2397,54 @@ export const topics: TopicsData = {
           checkpoint: "you can name what would break first, and what it would take to fix",
           syllabus: [
             {
-              title: "Performance",
+              title: "Performance, and how it is kept",
               chapter: "arch-performance",
-              items: ["Four real regressions and how each was found"],
+              items: [
+                "Budgets that fail CI, code that loads only when it is asked for, and two places where the browser is told to skip work.",
+              ],
             },
             {
-              title: "Security & limits",
+              title: "Security: strangers' code and strangers' links",
               chapter: "arch-security",
-              items: ["CSP, headers, and three layers of rate limiting"],
+              items: [
+                "Code runs in workers and sandboxed frames, share links are parsed as hostile, and a policy says who the page may talk to.",
+              ],
             },
-            { title: "CI and tests", chapter: "arch-testing", items: ["Fifteen tests, none of them on a component"] },
             {
-              title: "Current health",
-              chapter: "arch-health",
-              items: ["A real error sweep, and what is still unresolved"],
+              title: "Tests, hooks and CI",
+              chapter: "arch-testing",
+              items: [
+                "166 unit tests, 74 browser tests, and one test that checks what these pages say about the site.",
+              ],
             },
-            { title: "What breaks first", chapter: "arch-scaling", items: ["In order, with what each would take"] },
-            { title: "What is next", chapter: "arch-roadmap", items: ["Four items, sized, and why accounts are last"] },
+            {
+              title: "How code reaches readers",
+              chapter: "arch-delivery",
+              items: [
+                "A branch, a preview, a merge, and a daily job that deletes what Vercel would otherwise keep forever.",
+              ],
+            },
+            {
+              title: "Current health: what is actually wrong",
+              chapter: "arch-health",
+              items: [
+                "The checks pass. The debt is in a stuck framework version, a few very large files, repeated code, and documents that have drifted from the code.",
+              ],
+            },
+            {
+              title: "What breaks first",
+              chapter: "arch-scaling",
+              items: [
+                "Traffic is the least of it. The limits that are close are a search index, a storage plan and a few files that grow with every exercise.",
+              ],
+            },
+            {
+              title: "What is missing on purpose, and what is next",
+              chapter: "arch-roadmap",
+              items: [
+                "Half of the old list has shipped. What is left is a schema, offline reading, accounts, and a short list this rewrite turned up.",
+              ],
+            },
           ],
         },
       ],

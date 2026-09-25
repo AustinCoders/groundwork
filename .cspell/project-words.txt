@@ -365,6 +365,7 @@ parameterised
 partitionable
 PAYPALISHIRING
 pcall
+Peucker
 pgvector
 PINALSIGYAHRPI
 pineapplepenapple
@@ -399,6 +400,7 @@ qtop
 quickselect
 quicksorts
 rabbbit
+Ramer
 rarr
 Ravi
 reconvergence
@@ -530,6 +532,7 @@ worklets
 worktree
 wxyz
 xored
+xorshift
 xxxcba
 xyzaabyx
 xyzabc

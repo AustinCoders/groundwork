@@ -712,3 +712,13 @@ test("problem groups start with only the first open and collapse all together", 
   await page.getByRole("button", { name: "Expand all" }).click();
   await expect(open).toHaveCount(await toggles.count());
 });
+
+test("the architecture map links every box to a written chapter", async ({ page }) => {
+  await page.goto("/architecture");
+  const nodes = page.locator("main a[href^='/architecture/arch-']");
+  expect(await nodes.count()).toBeGreaterThanOrEqual(46);
+  await expect(page.locator("main li > span[class*='__node']")).toHaveCount(0);
+  await page.getByRole("link", { name: /Whiteboard An SVG board/ }).click();
+  await page.waitForURL("**/architecture/arch-whiteboard");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+});
