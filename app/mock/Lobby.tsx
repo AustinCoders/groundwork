@@ -24,6 +24,7 @@ import { store } from "@/lib/storage";
 import { subscribeNever } from "@/lib/hooks";
 import { ChoiceCards } from "@/app/mock/ChoiceCards";
 import { LoopWizard } from "@/app/mock/LoopWizard";
+import { ReadinessBoard } from "@/app/mock/Readiness";
 import { COMPANIES, INTENSITIES, LEVELS, ROLES } from "@/app/mock/options";
 import styles from "./mock.module.css";
 
@@ -292,6 +293,17 @@ export function Lobby({
           </button>
         </div>
       )}
+
+      <ReadinessBoard
+        history={history}
+        available={catalog.stages.map((s) => s.id)}
+        stageTitle={(id) => stages[id]?.title ?? id}
+        onPractise={(stage) => {
+          setDrillStage(stage);
+          setMode("drill");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+      />
 
       <div className={styles.modes} role="tablist" aria-label="Kind of practice">
         <button

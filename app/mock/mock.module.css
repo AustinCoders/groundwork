@@ -1180,6 +1180,247 @@
   margin: 0 0 18px;
 }
 
+.readyTop {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 16px;
+  align-items: stretch;
+  margin-bottom: 18px;
+}
+
+.readyTile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--sheet);
+}
+
+.nextUp {
+  border-color: var(--ink);
+  background: var(--hl-yellow);
+}
+
+.nextUp .btn {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.nextStage {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+.gauge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 128px;
+  height: 128px;
+}
+
+.gauge svg {
+  position: absolute;
+  inset: 0;
+}
+
+.gaugeTrack {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 10;
+}
+
+.gaugeFill {
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 10;
+  stroke-linecap: round;
+}
+
+.gaugeFill[data-band="getting-there"] {
+  stroke: var(--pencil);
+}
+
+.gaugeFill[data-band="ready"],
+.gaugeFill[data-band="strong"] {
+  stroke: var(--green);
+}
+
+.gaugeNum {
+  position: relative;
+  margin-top: -10px;
+  font-family: var(--font-heading);
+  font-size: 40px;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.gaugeBand {
+  position: absolute;
+  bottom: 30px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pencil);
+}
+
+.streakDots {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.streakDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--line-soft);
+}
+
+.streakDot[data-on] {
+  background: var(--green);
+}
+
+.readyH {
+  margin: 18px 0 8px;
+  font-size: 20px;
+}
+
+.compList {
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.compRow {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 56px 56px 120px;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 4px;
+  border-bottom: 1px dashed var(--line-soft);
+}
+
+.compName {
+  color: var(--ink);
+}
+
+.compScore {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-align: right;
+  color: var(--red);
+}
+
+.compScore[data-band="getting-there"] {
+  color: var(--pencil);
+}
+
+.compScore[data-band="ready"],
+.compScore[data-band="strong"] {
+  color: var(--green);
+}
+
+.compDelta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--pencil);
+}
+
+.compDelta[data-dir="up"] {
+  color: var(--green);
+}
+
+.compDelta[data-dir="down"] {
+  color: var(--red);
+}
+
+.spark {
+  overflow: visible;
+}
+
+.sparkLine {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+
+.sparkBar {
+  stroke: var(--line);
+  stroke-dasharray: 3 3;
+}
+
+.sparkDot {
+  fill: var(--ink);
+}
+
+.heat {
+  width: auto;
+  border-collapse: separate;
+  border-spacing: 3px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.heat th {
+  padding: 2px 6px;
+  font-weight: 400;
+  text-align: left;
+  color: var(--pencil);
+  white-space: nowrap;
+}
+
+.heat td {
+  min-width: 38px;
+  padding: 6px 4px;
+  text-align: center;
+  border-radius: 6px;
+  background: var(--sheet-2);
+  color: var(--ink);
+}
+
+.heat td[data-band="not-yet"] {
+  background: var(--dg-box-red);
+}
+
+.heat td[data-band="getting-there"] {
+  background: var(--hl-yellow);
+}
+
+.heat td[data-band="ready"] {
+  background: var(--hl-mint);
+}
+
+.heat td[data-band="strong"] {
+  background: var(--green);
+  color: var(--sheet);
+  font-weight: 700;
+}
+
+@media (max-width: 860px) {
+  .readyTop {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: start;
+  }
+
+  .compRow {
+    grid-template-columns: minmax(0, 1fr) 48px 48px;
+  }
+
+  .compRow .spark {
+    display: none;
+  }
+}
+
 .answerArea {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
