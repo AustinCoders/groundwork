@@ -674,3 +674,26 @@ test("the file menu opens next to the button that opened it", async ({ page }) =
   expect(Math.abs(menu.x - at.x)).toBeLessThan(12);
   expect(Math.abs(menu.y - (at.y + at.height))).toBeLessThan(16);
 });
+
+test("the problems page filters by topic and difficulty and keeps them in the URL", async ({ page }) => {
+  await page.goto("/problems");
+  const status = page.getByRole("status").first();
+  await expect(status).toHaveText(/All \d+ problems/);
+  const filters = page.getByRole("complementary", { name: "Filters" });
+  await filters.getByRole("button", { name: /DSA/ }).click();
+  await filters.getByRole("button", { name: /advanced/i }).click();
+  await expect(page).toHaveURL(/topic=dsa/);
+  await expect(page).toHaveURL(/level=advanced/);
+  await expect(status).toHaveText(/\d+ of \d+ problems/);
+
+  await page.getByRole("button", { name: "One list" }).click();
+  await page.getByRole("searchbox", { name: "Search problems" }).fill("zzzz-no-such-problem");
+  await expect(page.getByText("No problems match")).toBeVisible();
+  await page.getByRole("button", { name: "Clear filters" }).click();
+  await expect(status).toHaveText(/All \d+ problems/);
+
+  await page.reload();
+  await expect(page).toHaveURL(/view=list/);
+  await page.keyboard.press("/");
+  await expect(page.getByRole("searchbox", { name: "Search problems" })).toBeFocused();
+});
