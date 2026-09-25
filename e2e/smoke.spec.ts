@@ -775,8 +775,20 @@ test("the git guide has a chapter per section and old anchors still land", async
     "Setup"
   );
   await page.getByRole("button", { name: "Menu" }).click();
-  await expect(page.getByRole("dialog", { name: /menu/ }).locator("a[aria-current=page]")).toContainText("Git");
+  const menu = page.getByRole("dialog", { name: /menu/ });
+  await expect(menu.getByRole("navigation", { name: "Site" }).getByRole("link", { name: "Git" })).toHaveCount(0);
+  const topicsFold = menu.getByRole("button", { name: /Topics/ });
+  await expect(topicsFold).toHaveAttribute("aria-expanded", "false");
+  await expect(topicsFold).toContainText("Git");
+  await topicsFold.click();
+  await expect(menu.getByRole("navigation", { name: "Topics" }).locator("a[aria-current=page]")).toContainText("Git");
+  await menu.getByRole("searchbox").fill("white");
+  await expect(menu.getByRole("link", { name: /Whiteboard/ })).toBeVisible();
+  await expect(menu.getByRole("link", { name: /React/ })).toHaveCount(0);
   await page.keyboard.press("Escape");
+  await expect(menu.getByRole("searchbox")).toHaveValue("");
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveCount(0);
 
   await page.goto("/git#undo");
   await page.waitForURL("**/git/undo");
