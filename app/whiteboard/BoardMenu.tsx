@@ -3,36 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { BackButton } from "@/components/practice/BackButton";
-import { useFontChoice, useThemeChoice } from "@/components/ThemeFontPicker";
-import { FONT_ITEMS, THEME_ITEMS, type FontValue, type ThemeValue } from "@/lib/storage";
+import { AppearancePicker } from "@/components/AppearancePicker";
 import { SITE_NAME } from "@/lib/site";
 import { Icon } from "./icons";
 import type { BoardMeta } from "@/lib/whiteboard/storage";
 import styles from "./whiteboard.module.css";
-
-const THEME_COLOURS: Record<ThemeValue, [string, string, string]> = {
-  light: ["#fffdf6", "#1f3a73", "#1f7a55"],
-  dark: ["#191d25", "#d9e5fb", "#64dfa6"],
-  kraft: ["#ecdfc0", "#3b2a14", "#2f6b4a"],
-  blueprint: ["#1c3c5e", "#eaf4ff", "#7fe0b8"],
-  sepia: ["#faf1dc", "#4a3221", "#4c7a52"],
-  forest: ["#f8fbf2", "#2c4a24", "#2f7d4f"],
-  rose: ["#241823", "#f7dbe8", "#7fe0b8"],
-  mono: ["#ffffff", "#111111", "#276b38"],
-  lavender: ["#faf7fe", "#402a63", "#2f8a6f"],
-};
-
-const FONT_FAMILIES: Record<FontValue, string> = {
-  classic: "var(--font-caveat), cursive",
-  marker: "var(--font-patrick-hand), cursive",
-  sketch: "var(--font-architects-daughter), cursive",
-  pen: "var(--font-gochi-hand), cursive",
-  script: "var(--font-dancing-script), cursive",
-  serif: "var(--font-literata), Georgia, serif",
-  roboto: "var(--font-roboto), system-ui, sans-serif",
-};
-
-const plain = (label: string) => label.replace(/^\S+\s/, "");
 
 export function BoardMenu({
   boards,
@@ -60,8 +35,6 @@ export function BoardMenu({
   onClear: () => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [theme, chooseTheme] = useThemeChoice();
-  const [font, chooseFont] = useFontChoice();
   const drawerRef = useRef<HTMLElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -148,51 +121,8 @@ export function BoardMenu({
           </button>
         </section>
 
-        <section className={styles.drawerSection} aria-labelledby="wb-look">
-          <h2 id="wb-look" className={styles.menuH}>
-            Theme
-          </h2>
-          <div className={styles.themeGrid} role="radiogroup" aria-labelledby="wb-look">
-            {THEME_ITEMS.map((t) => {
-              const [sheet, ink, accent] = THEME_COLOURS[t.value];
-              return (
-                <button
-                  key={t.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={theme === t.value}
-                  className={styles.themeOpt}
-                  onClick={() => chooseTheme(t.value)}
-                >
-                  <span className={styles.themeSwatch} style={{ background: sheet }} aria-hidden="true">
-                    <span style={{ background: ink }} />
-                    <span style={{ background: accent }} />
-                  </span>
-                  <span>{plain(t.label)}</span>
-                </button>
-              );
-            })}
-          </div>
-          <h2 id="wb-font" className={styles.menuH}>
-            Handwriting
-          </h2>
-          <div className={styles.fontGrid} role="radiogroup" aria-labelledby="wb-font">
-            {FONT_ITEMS.map((f) => (
-              <button
-                key={f.value}
-                type="button"
-                role="radio"
-                aria-checked={font === f.value}
-                className={styles.fontOpt}
-                onClick={() => chooseFont(f.value)}
-              >
-                <span className={styles.fontSample} style={{ fontFamily: FONT_FAMILIES[f.value] }} aria-hidden="true">
-                  Aa
-                </span>
-                <span>{plain(f.label)}</span>
-              </button>
-            ))}
-          </div>
+        <section className={styles.drawerSection} aria-labelledby="wb-look-theme">
+          <AppearancePicker idPrefix="wb-look" headingClass={styles.menuH} />
         </section>
 
         <section className={styles.drawerSection} aria-labelledby="wb-export">

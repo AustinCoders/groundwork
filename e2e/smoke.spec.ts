@@ -356,14 +356,21 @@ test("the editor lints as you type, formats on save and has a command palette", 
   expect(problems).toEqual([]);
 });
 
-test("the playground folds the sidebar away and goes back where you came from", async ({ page }) => {
+test("the playground has no sidebar, a site menu, and goes back where you came from", async ({ page }) => {
   await page.goto("/notes/basic-async");
   await page.locator("a.site-navlink", { hasText: "Playground" }).first().click();
   await page.waitForURL("**/practice?id=free");
 
-  await expect(page.locator(".site-sidenav")).toHaveClass(/is-collapsed/);
-  const back = page.locator(".back-btn");
-  await expect(back).toContainText("Back to");
+  await expect(page.locator(".site-sidenav")).toHaveCount(0);
+  await page.getByRole("button", { name: "Menu" }).click();
+  const drawer = page.getByRole("dialog", { name: /menu/ });
+  await expect(drawer.getByRole("link", { name: "Whiteboard" })).toBeVisible();
+  await drawer.getByRole("radio", { name: "Kraft" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "kraft");
+  await page.keyboard.press("Escape");
+  await expect(drawer).toHaveCount(0);
+
+  const back = page.getByRole("link", { name: /Back to/ });
   await back.click();
   await page.waitForURL("**/notes/basic-async");
 });

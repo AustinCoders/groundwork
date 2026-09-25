@@ -8,6 +8,8 @@ import { CodeEditor, type CodeEditorHandle } from "@/components/practice/CodeEdi
 import { Confetti } from "@/components/practice/Confetti";
 import { EditorSkeleton } from "@/components/practice/EditorSkeleton";
 import { ShortcutHelp } from "@/components/practice/ShortcutHelp";
+import { TopIcon } from "@/components/practice/TopIcon";
+import { SiteDrawer } from "@/components/SiteDrawer";
 import { Dropdown } from "@/components/ui/select";
 import { isLanguage, LANG_ORDER, LANGUAGES, type LanguageKey } from "@/lib/codeLanguages";
 import { canGrade, gradeResults, isResultLine, parseResultLine, withHarness } from "@/lib/polyglot/grade";
@@ -231,6 +233,8 @@ export function PracticeWorkspace({
 
   const [soundOn, setSoundOnState] = useState(true);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   useEffect(() => {
     const kick = setTimeout(() => setSoundOnState(isSoundEnabled()), 0);
@@ -773,7 +777,20 @@ export function PracticeWorkspace({
       <div className={`lc-topbar${playground ? " lc-topbar--playground" : ""}`}>
         {playground ? (
           <div className="pg-head">
-            <BackButton variant="bar" fallbackHref="/" fallbackLabel="Home" />
+            <span className="lc-topbar__group">
+              <BackButton variant="icon" className="lc-icon-btn" fallbackHref="/" fallbackLabel="Home" />
+              <button
+                type="button"
+                className="lc-icon-btn"
+                aria-label="Menu"
+                aria-haspopup="dialog"
+                aria-expanded={menuOpen}
+                data-tip="Pages, theme and handwriting"
+                onClick={() => setMenuOpen(true)}
+              >
+                <TopIcon name="menu" />
+              </button>
+            </span>
             <h1 className="pg-head__title">
               <span aria-hidden="true">✎</span> Playground
             </h1>
@@ -814,41 +831,53 @@ export function PracticeWorkspace({
         ) : (
           <div className="lc-topbar__nav">
             <BackButton
-              variant="bar"
+              variant="icon"
+              className="lc-icon-btn"
               fallbackHref={chapter ? chapter.href : "/problems"}
               fallbackLabel={chapter ? `Back to ${chapter.short}` : "All problems"}
             />
+            <button
+              type="button"
+              className="lc-icon-btn"
+              aria-label="Menu"
+              aria-haspopup="dialog"
+              aria-expanded={menuOpen}
+              data-tip="Pages, theme and handwriting"
+              onClick={() => setMenuOpen(true)}
+            >
+              <TopIcon name="menu" />
+            </button>
             <span className="lc-topbar__divider" aria-hidden="true" />
-            <Link className="lc-icon-btn" href="/problems" title="Problem list" aria-label="Problem list">
-              ☰
+            <Link className="lc-icon-btn" href="/problems" data-tip="All problems" aria-label="Problem list">
+              <TopIcon name="list" />
             </Link>
             <span className="lc-topbar__divider" aria-hidden="true" />
             {!isFree && prev ? (
               <Link
                 className="lc-icon-btn"
                 href={problemHref(prev.id)}
-                title={`Previous: ${prev.title}`}
+                data-tip={`Previous: ${prev.title}`}
                 aria-label={`Previous problem: ${prev.title}`}
               >
-                ‹
+                <TopIcon name="prev" />
               </Link>
             ) : (
               <span className="lc-icon-btn is-disabled" aria-hidden="true">
-                ‹
+                <TopIcon name="prev" />
               </span>
             )}
             {!isFree && next ? (
               <Link
                 className="lc-icon-btn"
                 href={problemHref(next.id)}
-                title={`Next: ${next.title}`}
+                data-tip={`Next: ${next.title}`}
                 aria-label={`Next problem: ${next.title}`}
               >
-                ›
+                <TopIcon name="next" />
               </Link>
             ) : (
               <span className="lc-icon-btn is-disabled" aria-hidden="true">
-                ›
+                <TopIcon name="next" />
               </span>
             )}
           </div>
@@ -860,21 +889,21 @@ export function PracticeWorkspace({
               className="btn live-btn"
               aria-label="Live"
               aria-pressed={live}
-              title="Run as you type, with each console.log's value beside its line"
+              data-tip="Run as you type"
               onClick={toggleLive}
             >
-              <span aria-hidden="true">⚡</span> <span className="pg-btn__label">Live</span>
+              <TopIcon name="live" size={16} /> <span className="pg-btn__label">Live</span>
             </button>
           )}
           {playground && (
             <button
               type="button"
               className="btn"
-              title="Copy a link that opens these files in anyone's playground"
+              data-tip="Copy a link to these files"
               aria-label={shareState === "copied" ? "Link copied" : "Share a link to these files"}
               onClick={() => void share()}
             >
-              <span aria-hidden="true">🔗</span>{" "}
+              <TopIcon name="link" size={16} />{" "}
               <span className={shareState === "idle" ? "pg-btn__label" : undefined}>
                 {shareState === "copied"
                   ? "Link copied"
@@ -912,12 +941,10 @@ export function PracticeWorkspace({
                 className="btn"
                 type="button"
                 aria-label="Debug"
-                title={
-                  isFree ? "Step through the code line by line" : "Step through your solution on the first test's input"
-                }
+                data-tip={isFree ? "Step through line by line" : "Step through on the first test"}
                 onClick={() => void debugCode()}
               >
-                <span aria-hidden="true">🐞</span> <span className="pg-btn__label">Debug</span>
+                <TopIcon name="debug" size={16} /> <span className="pg-btn__label">Debug</span>
               </button>
             )}
           {!isFree && exercise.tests.length > 0 && (
@@ -937,7 +964,7 @@ export function PracticeWorkspace({
               <button
                 className="lc-icon-btn"
                 type="button"
-                title={soundOn ? "Mute the solved sound" : "Unmute the solved sound"}
+                data-tip={soundOn ? "Mute the solved sound" : "Unmute the solved sound"}
                 aria-label={soundOn ? "Mute the solved sound" : "Unmute the solved sound"}
                 aria-pressed={!soundOn}
                 onClick={toggleSound}
@@ -964,7 +991,7 @@ export function PracticeWorkspace({
               <button
                 className="lc-icon-btn"
                 type="button"
-                title="Keyboard shortcuts (?)"
+                data-tip="Keyboard shortcuts — ?"
                 aria-label="Keyboard shortcuts"
                 onClick={() => setShortcutsOpen(true)}
               >
@@ -989,6 +1016,7 @@ export function PracticeWorkspace({
       </div>
 
       <ShortcutHelp open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      <SiteDrawer open={menuOpen} onClose={closeMenu} />
 
       <div className={`practice-layout${playground ? " practice-layout--playground" : ""}`}>
         {!playground && (
@@ -1552,33 +1580,6 @@ export function PracticeWorkspace({
               </div>
             </div>
           </section>
-
-          <div className="keys">
-            <span>
-              <kbd>⌘/Ctrl</kbd> + <kbd>Enter</kbd> run
-            </span>
-            <span>
-              <kbd>⌘/Ctrl</kbd> + <kbd>S</kbd> save
-            </span>
-            <span>
-              <kbd>⌘/Ctrl</kbd> + <kbd>/</kbd> comment
-            </span>
-            <span>
-              <kbd>⌘/Ctrl</kbd> + <kbd>F</kbd> find/replace
-            </span>
-            <span>
-              <kbd>⌘/Ctrl</kbd> + <kbd>D</kbd> select next match
-            </span>
-            <span>
-              <kbd>Alt</kbd> + click multi-cursor
-            </span>
-            <span>
-              <kbd>Tab</kbd> indent · <kbd>⇧Tab</kbd> outdent
-            </span>
-            <span>
-              <kbd>Esc</kbd> leave fullscreen
-            </span>
-          </div>
         </div>
       </div>
     </>

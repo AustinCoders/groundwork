@@ -5470,8 +5470,9 @@ a.step__title:hover {
     color 0.12s ease;
 }
 
-.lc-icon-btn:hover {
-  background: rgba(205, 214, 244, 0.08);
+.lc-icon-btn:hover,
+.lc-icon-btn[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--ide-fg) 10%, transparent);
   color: var(--ide-fg);
 }
 
@@ -7452,10 +7453,6 @@ a.step__title:hover {
   max-height: none;
 }
 
-.practice-layout--playground .workbench > .keys {
-  display: none;
-}
-
 .run-status {
   white-space: nowrap;
   font-family: var(--font-code);
@@ -7604,10 +7601,6 @@ a.step__title:hover {
 
   .panel__body {
     max-height: 260px;
-  }
-
-  .workbench > .keys {
-    display: none;
   }
 }
 
@@ -8797,4 +8790,159 @@ a.step__title:hover {
   height: 100%;
   border: 0;
   background: #fff;
+}
+
+.bare-main {
+  --bar-h: 0px;
+  min-height: 100dvh;
+}
+
+.bare-main > .lc-topbar {
+  position: relative;
+  z-index: 5;
+  width: calc(100% - 32px);
+  margin: 14px auto 0;
+}
+
+@media (max-width: 720px) {
+  .bare-main > .lc-topbar {
+    width: calc(100% - 16px);
+    margin-top: 8px;
+  }
+}
+
+.lc-topbar__group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+}
+
+button.lc-icon-btn {
+  padding: 0;
+  font: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.lc-icon-btn:focus-visible {
+  outline: 2px solid var(--ide-accent);
+  outline-offset: 2px;
+}
+
+.lc-topbar .btn svg {
+  flex: none;
+  vertical-align: -3px;
+}
+
+.lc-topbar [data-tip] {
+  position: relative;
+}
+
+.lc-topbar [data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 60;
+  padding: 5px 9px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--sheet);
+  background: var(--ink);
+  border-radius: 7px;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transform: translateY(-3px);
+  pointer-events: none;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.lc-topbar__actions [data-tip]::after {
+  left: auto;
+  right: 0;
+}
+
+.lc-topbar [data-tip]:hover::after,
+.lc-topbar [data-tip]:focus-visible::after {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.35s;
+}
+
+.lc-topbar [data-tip][aria-expanded="true"]::after {
+  display: none;
+}
+
+.lc-icon-btn,
+.lc-topbar .btn {
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.12s ease;
+}
+
+.lc-icon-btn:active,
+.lc-topbar .btn:active {
+  transform: scale(0.94);
+}
+
+.bare-main .lc-topbar {
+  animation: ws-drop 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.bare-main .practice-layout > * {
+  animation: ws-rise 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.bare-main .practice-layout > :nth-child(2) {
+  animation-delay: 0.06s;
+}
+
+.bare-main .practice-layout > :nth-child(3) {
+  animation-delay: 0.12s;
+}
+
+@keyframes ws-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes ws-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@media (hover: none) {
+  .lc-topbar [data-tip]::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bare-main .lc-topbar,
+  .bare-main .practice-layout > * {
+    animation: none;
+  }
+
+  .lc-icon-btn,
+  .lc-topbar .btn,
+  .lc-topbar [data-tip]::after {
+    transition: none;
+  }
+
+  .lc-icon-btn:active,
+  .lc-topbar .btn:active {
+    transform: none;
+  }
 }

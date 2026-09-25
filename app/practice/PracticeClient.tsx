@@ -1,8 +1,6 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
-import { Shell } from "@/components/Shell";
-import { BackButton } from "@/components/practice/BackButton";
 import { PracticeWorkspace } from "@/components/practice/PracticeWorkspace";
 import { FREE_EXERCISE, type PracticeExercise } from "@/lib/practiceFree";
 import { problemHref } from "@/lib/problemHref";
@@ -67,29 +65,20 @@ function PracticeBody({
   next: NeighbourLink | null;
 }) {
   return (
-    <Shell
-      skipLabel="Skip to the editor"
-      skipHref="#editor"
-      variant="focused"
-      workspace
-      contextNav={
-        <nav className="site-sidenav__section" aria-label="This exercise">
-          <BackButton
-            variant="rail"
-            fallbackHref={chapter ? chapter.href : "/"}
-            fallbackLabel={chapter ? `Back to ${chapter.short}` : "Home"}
-          />
-        </nav>
-      }
-    >
-      <PracticeWorkspace
-        key={exercise.id}
-        exercise={exercise}
-        isFree={isFree}
-        chapter={chapter}
-        prev={prev}
-        next={next}
-      />
-    </Shell>
+    <>
+      <a className="skip-link" href="#editor">
+        Skip to the editor
+      </a>
+      <main className="bare-main" id="main">
+        <PracticeWorkspace
+          key={exercise.id}
+          exercise={exercise}
+          isFree={isFree}
+          chapter={chapter}
+          prev={prev}
+          next={next}
+        />
+      </main>
+    </>
   );
 }
