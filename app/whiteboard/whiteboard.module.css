@@ -1558,3 +1558,15 @@
     display: none;
   }
 }
+
+@media (max-width: 360px) {
+  .dock .tool {
+    width: 32px;
+    height: 34px;
+  }
+
+  .toolGroup + .toolGroup {
+    margin-left: 1px;
+    padding-left: 1px;
+  }
+}

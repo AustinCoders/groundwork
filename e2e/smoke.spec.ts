@@ -651,3 +651,15 @@ for (const [width, maxBar] of [
     await expect(page.getByRole("button", { name: "Debug" })).toBeVisible();
   });
 }
+
+test("the playground opens at the top and fits the screen on a laptop", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto("/problems/ex-accounts-merge");
+  await page.mouse.wheel(0, 800);
+  await page.getByRole("button", { name: "Menu" }).click();
+  await page.getByRole("link", { name: "Playground", exact: true }).click();
+  await page.waitForURL("**/practice?id=free");
+  await expect(page.locator(".cm-content")).toBeVisible();
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(720);
+});

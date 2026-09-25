@@ -336,7 +336,13 @@ function FileTabs({ files, onSelect, onClose, onNew, onRename, onCloseMany, reop
   const activeId = files.find((f) => f.active)?.id;
 
   useEffect(() => {
-    listRef.current?.querySelector(".ed__tab.is-active")?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    const list = listRef.current;
+    const tab = list?.querySelector<HTMLElement>(".ed__tab.is-active");
+    if (!list || !tab) return;
+    const left = tab.offsetLeft - list.offsetLeft;
+    if (left < list.scrollLeft) list.scrollLeft = left;
+    else if (left + tab.offsetWidth > list.scrollLeft + list.clientWidth)
+      list.scrollLeft = left + tab.offsetWidth - list.clientWidth;
   }, [activeId, files.length]);
 
   const openMenu = (id: string, x: number, y: number) =>
