@@ -734,7 +734,7 @@ test("an architecture chapter has its own rail, contents and read marker", async
   await firstSection.click();
   await expect(page).toHaveURL(new RegExp(`${target}$`));
 
-  await contents.getByRole("checkbox", { name: /Mark as read/ }).check();
+  await contents.getByRole("button", { name: /Mark as read/ }).click();
   await expect(rail.locator("a[aria-current=page]")).toContainText("✓");
 
   await page.getByRole("heading", { level: 1 }).click();
@@ -746,16 +746,20 @@ test("the site menu folds its sections and changes the text size everywhere", as
   await page.goto("/architecture/arch-build");
   await page.getByRole("button", { name: "Menu" }).click();
   const menu = page.getByRole("dialog", { name: /menu/ });
-  await menu.locator("summary", { hasText: "Reading" }).click();
+  await expect(menu.getByRole("link", { name: "Whiteboard" })).toBeVisible();
+  const textSize = menu.getByRole("button", { name: /Text size/ });
+  await textSize.click();
+  await expect(textSize).toHaveAttribute("aria-expanded", "true");
   await menu.getByRole("button", { name: "Larger text" }).click();
   await expect(menu.locator("output")).toHaveText("110%");
   await page.keyboard.press("Escape");
+
   await page.goto("/problems");
   await expect
     .poll(() => page.evaluate(() => document.documentElement.style.getPropertyValue("--reader-zoom")))
     .toBe("1.1");
   await page.getByRole("button", { name: "Menu" }).click();
-  await expect(
-    page.getByRole("dialog", { name: /menu/ }).locator("details[open] summary", { hasText: "Reading" })
-  ).toBeVisible();
+  const problemsMenu = page.getByRole("dialog", { name: /menu/ });
+  await expect(problemsMenu.getByRole("button", { name: /Theme/ })).toBeVisible();
+  await expect(problemsMenu.getByRole("button", { name: /Text size/ })).toHaveCount(0);
 });

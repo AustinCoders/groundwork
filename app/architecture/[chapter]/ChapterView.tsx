@@ -73,6 +73,7 @@ export function ChapterView({
   const [menuOpen, setMenuOpen] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
   const [active, setActive] = useState<string | null>(null);
+  const [pct, setPct] = useState(0);
   const bodyRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
@@ -110,7 +111,9 @@ export function ChapterView({
       ticking = false;
       const doc = document.documentElement;
       const max = doc.scrollHeight - doc.clientHeight;
-      if (barRef.current) barRef.current.style.transform = `scaleX(${max > 0 ? Math.min(1, window.scrollY / max) : 0})`;
+      const frac = max > 0 ? Math.min(1, window.scrollY / max) : 0;
+      if (barRef.current) barRef.current.style.transform = `scaleX(${frac})`;
+      setPct(Math.round(frac * 100));
       let current: string | null = null;
       for (const item of toc) {
         const h = document.getElementById(item.id);
@@ -377,30 +380,68 @@ export function ChapterView({
           <aside className={styles.right} aria-label="On this page">
             <div className={styles.rightInner}>
               {toc.length > 0 && (
-                <>
-                  <p className={styles.tocHead}>On this page</p>
+                <section className={styles.tocCard} aria-label="Sections">
+                  <div className={styles.tocTop}>
+                    <svg className={styles.ring} viewBox="0 0 36 36" aria-hidden="true">
+                      <circle cx="18" cy="18" r="15" className={styles.ringTrack} />
+                      <circle
+                        cx="18"
+                        cy="18"
+                        r="15"
+                        className={styles.ringFill}
+                        strokeDasharray={`${(pct / 100) * 94.25} 94.25`}
+                        transform="rotate(-90 18 18)"
+                      />
+                    </svg>
+                    <div>
+                      <p className={styles.tocHead}>On this page</p>
+                      <p className={styles.tocMeta}>
+                        {toc.length} sections · {pct}% read
+                      </p>
+                    </div>
+                  </div>
                   <ol className={styles.toc}>
-                    {toc.map((t) => (
-                      <li key={t.id}>
-                        <a href={`#${t.id}`} aria-current={active === t.id ? "location" : undefined}>
-                          {t.text}
-                        </a>
-                      </li>
-                    ))}
+                    {toc.map((t, i) => {
+                      const at = toc.findIndex((x) => x.id === active);
+                      const state = i === at ? "now" : i < at ? "past" : "next";
+                      return (
+                        <li key={t.id} data-state={state}>
+                          <a href={`#${t.id}`} aria-current={state === "now" ? "location" : undefined}>
+                            <span className={styles.tocNum}>{String(i + 1).padStart(2, "0")}</span>
+                            <span className={styles.tocText}>{t.text}</span>
+                          </a>
+                        </li>
+                      );
+                    })}
                   </ol>
-                </>
+                </section>
               )}
-              <label className={styles.doneSide}>
-                <input
-                  type="checkbox"
-                  checked={mounted && isDone}
-                  onChange={(e) => progress.setChapterDone(chapter.id, e.target.checked)}
-                />
-                <span>{mounted && isDone ? "Read" : "Mark as read"}</span>
-              </label>
-              <p className={styles.keys}>
-                <kbd>[</kbd> <kbd>]</kbd> previous / next · <kbd>t</kbd> top
-              </p>
+              <button
+                type="button"
+                className={`${styles.readBtn}${mounted && isDone ? ` ${styles.readBtnOn}` : ""}`}
+                aria-pressed={mounted && isDone}
+                onClick={() => progress.setChapterDone(chapter.id, !isDone)}
+              >
+                <span className={styles.readTick} aria-hidden="true">
+                  {mounted && isDone ? "✓" : ""}
+                </span>
+                {mounted && isDone ? "Read" : "Mark as read"}
+              </button>
+              <div className={styles.sideFoot}>
+                <button
+                  type="button"
+                  className={styles.topBtn}
+                  onClick={() => window.scrollTo({ top: 0, behavior: prefersMotion() ? "smooth" : "auto" })}
+                  disabled={pct === 0}
+                >
+                  <TopIcon name="prev" size={14} />
+                  Back to top
+                </button>
+                <p className={styles.keys}>
+                  <kbd>[</kbd>
+                  <kbd>]</kbd> chapters · <kbd>t</kbd> top
+                </p>
+              </div>
             </div>
           </aside>
         </div>
@@ -425,7 +466,7 @@ export function ChapterView({
           </div>
         </div>
       )}
-      <SiteDrawer open={menuOpen} onClose={closeMenu} />
+      <SiteDrawer open={menuOpen} onClose={closeMenu} reading />
     </>
   );
 }

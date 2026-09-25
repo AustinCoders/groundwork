@@ -25,7 +25,7 @@ const LINKS: { href: string; label: string; mark: string }[] = [
 type Section = "go" | "theme" | "font" | "reading" | "narrator";
 
 const OPEN_KEY = "groundwork:drawer:open";
-const DEFAULT_OPEN: Section[] = ["go", "theme"];
+const DEFAULT_OPEN: Section[] = ["theme"];
 
 function readOpen(): Set<Section> {
   try {
@@ -50,6 +50,16 @@ function useHtmlAttr(name: string): string {
   );
 }
 
+const ICONS: Record<Section, React.ReactNode> = {
+  go: null,
+  theme: (
+    <path d="M12 3a9 9 0 100 18c1.1 0 1.6-.9 1.2-1.8-.5-1.1.3-2.2 1.5-2.2H17a4 4 0 004-4c0-5-4-10-9-10zM7.5 12h.01M10 7.5h.01M15 8h.01" />
+  ),
+  font: <path d="M4 20l6-16 6 16M6.5 14h7M18 20c1.5-3 2-6 2-9" />,
+  reading: <path d="M4 7V5h10v2M9 5v14M7 19h4M14 12h6M17 12v7M15.5 19h3" />,
+  narrator: <path d="M4 9h4l5-4v14l-5-4H4zM16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12" />,
+};
+
 function Fold({
   id,
   title,
@@ -66,18 +76,45 @@ function Fold({
   children: React.ReactNode;
 }) {
   return (
-    <details className={styles.fold} open={open} onToggle={(e) => onToggle(id, e.currentTarget.open)}>
-      <summary className={styles.foldHead}>
-        <span className={styles.foldTitle}>{title}</span>
-        {summary && <span className={styles.foldSummary}>{summary}</span>}
-        <span className={styles.chevron} aria-hidden="true" />
-      </summary>
-      <div className={styles.foldBody}>{children}</div>
-    </details>
+    <div className={styles.fold} data-open={open || undefined}>
+      <h2 className={styles.foldH}>
+        <button
+          type="button"
+          className={styles.foldHead}
+          aria-expanded={open}
+          aria-controls={`fold-${id}`}
+          onClick={() => onToggle(id, !open)}
+        >
+          <span className={styles.foldIcon} aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              width="17"
+              height="17"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ margin: 0 }}
+            >
+              {ICONS[id]}
+            </svg>
+          </span>
+          <span className={styles.foldTitle}>{title}</span>
+          {summary && <span className={styles.foldSummary}>{summary}</span>}
+          <span className={styles.chevron} aria-hidden="true" />
+        </button>
+      </h2>
+      <div className={styles.foldPanel} id={`fold-${id}`} role="region" aria-label={title} inert={!open}>
+        <div className={styles.foldInner}>
+          <div className={styles.foldBody}>{children}</div>
+        </div>
+      </div>
+    </div>
   );
 }
 
-function DrawerBody({ onClose }: { onClose: () => void }) {
+function DrawerBody({ onClose, reading }: { onClose: () => void; reading: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState<Set<Section>>(readOpen);
   const theme = useHtmlAttr("data-theme");
@@ -102,7 +139,8 @@ function DrawerBody({ onClose }: { onClose: () => void }) {
 
   return (
     <>
-      <Fold id="go" title="Go to" open={open.has("go")} onToggle={toggle}>
+      <section className={styles.go} aria-label="Go to">
+        <p className={styles.goHead}>Go to</p>
         <nav aria-label="Site">
           <ul className={styles.links}>
             {LINKS.map((l) => {
@@ -118,39 +156,50 @@ function DrawerBody({ onClose }: { onClose: () => void }) {
             })}
           </ul>
         </nav>
-      </Fold>
-      <Fold id="theme" title="Theme" summary={themeName} open={open.has("theme")} onToggle={toggle}>
-        <AppearancePicker idPrefix="site-look" only="theme" />
-      </Fold>
-      <Fold id="font" title="Handwriting" summary={fontName} open={open.has("font")} onToggle={toggle}>
-        <AppearancePicker idPrefix="site-look" only="font" />
-      </Fold>
-      <Fold id="reading" title="Reading" summary={`${ZOOM_STEPS[zoom]}%`} open={open.has("reading")} onToggle={toggle}>
-        <div className={styles.row} role="group" aria-label="Text size">
-          <span className={styles.rowLabel}>Text size</span>
-          <div className={styles.stepper}>
-            <button type="button" aria-label="Smaller text" disabled={zoom === 0} onClick={() => stepZoom(-1)}>
-              A−
-            </button>
-            <output aria-live="polite">{ZOOM_STEPS[zoom]}%</output>
-            <button
-              type="button"
-              aria-label="Larger text"
-              disabled={zoom === ZOOM_STEPS.length - 1}
-              onClick={() => stepZoom(1)}
-            >
-              A+
-            </button>
-          </div>
-        </div>
-        <p className={styles.note}>Changes the size of chapter text across the site.</p>
-      </Fold>
-      <Fold id="narrator" title="Narrator" summary="Listen" open={open.has("narrator")} onToggle={toggle}>
-        <div className={styles.narrator}>
-          <NarrationSettings />
-        </div>
-        <p className={styles.note}>Used by the Listen button on every chapter.</p>
-      </Fold>
+      </section>
+      <div className={styles.folds}>
+        <Fold id="theme" title="Theme" summary={themeName} open={open.has("theme")} onToggle={toggle}>
+          <AppearancePicker idPrefix="site-look" only="theme" />
+        </Fold>
+        <Fold id="font" title="Handwriting" summary={fontName} open={open.has("font")} onToggle={toggle}>
+          <AppearancePicker idPrefix="site-look" only="font" />
+        </Fold>
+        {reading && (
+          <Fold
+            id="reading"
+            title="Text size"
+            summary={`${ZOOM_STEPS[zoom]}%`}
+            open={open.has("reading")}
+            onToggle={toggle}
+          >
+            <div className={styles.row} role="group" aria-label="Text size">
+              <div className={styles.stepper}>
+                <button type="button" aria-label="Smaller text" disabled={zoom === 0} onClick={() => stepZoom(-1)}>
+                  A−
+                </button>
+                <output aria-live="polite">{ZOOM_STEPS[zoom]}%</output>
+                <button
+                  type="button"
+                  aria-label="Larger text"
+                  disabled={zoom === ZOOM_STEPS.length - 1}
+                  onClick={() => stepZoom(1)}
+                >
+                  A+
+                </button>
+              </div>
+            </div>
+            <p className={styles.note}>Changes the size of chapter text across the site.</p>
+          </Fold>
+        )}
+        {reading && (
+          <Fold id="narrator" title="Narrator" summary="Listen" open={open.has("narrator")} onToggle={toggle}>
+            <div className={styles.narrator}>
+              <NarrationSettings />
+            </div>
+            <p className={styles.note}>Used by the Listen button on every chapter.</p>
+          </Fold>
+        )}
+      </div>
     </>
   );
 }
@@ -158,10 +207,12 @@ function DrawerBody({ onClose }: { onClose: () => void }) {
 export function SiteDrawer({
   open,
   onClose,
+  reading = false,
   children,
 }: {
   open: boolean;
   onClose: () => void;
+  reading?: boolean;
   children?: React.ReactNode;
 }) {
   const ref = useRef<HTMLElement>(null);
@@ -169,7 +220,7 @@ export function SiteDrawer({
   useEffect(() => {
     if (!open) return;
     const back = document.activeElement as HTMLElement | null;
-    ref.current?.querySelector<HTMLElement>("button, a, summary")?.focus();
+    ref.current?.querySelector<HTMLElement>("button, a")?.focus();
     function onKey(e: KeyboardEvent) {
       if (e.key !== "Escape") return;
       if ((e.target as HTMLElement | null)?.closest?.("[role=listbox], [data-radix-popper-content-wrapper]")) return;
@@ -204,23 +255,23 @@ export function SiteDrawer({
           </button>
         </div>
         {children}
-        <div className={styles.folds}>
-          <DrawerBody onClose={onClose} />
-        </div>
-        <div className={styles.foot}>
-          <button type="button" className={styles.action} onClick={() => window.print()}>
-            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style={{ margin: 0 }}>
-              <path
-                d="M7 9V3h10v6M7 17H5a2 2 0 01-2-2v-4a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2h-2M7 14h10v7H7z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Print or save as PDF
-          </button>
-        </div>
+        <DrawerBody onClose={onClose} reading={reading} />
+        {reading && (
+          <div className={styles.foot}>
+            <button type="button" className={styles.action} onClick={() => window.print()}>
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style={{ margin: 0 }}>
+                <path
+                  d="M7 9V3h10v6M7 17H5a2 2 0 01-2-2v-4a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2h-2M7 14h10v7H7z"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Print or save as PDF
+            </button>
+          </div>
+        )}
       </aside>
     </div>,
     document.body
