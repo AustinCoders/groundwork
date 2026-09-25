@@ -536,6 +536,57 @@ export function PracticeWorkspace({
     if (next) runCode(false);
   }
 
+  const [translating, setTranslating] = useState<LanguageKey | null>(null);
+  const translateTargets = LANG_ORDER.filter((k) => k !== currentLang && k !== "sql" && k !== "html" && k !== "css");
+
+  async function translateTo(to: LanguageKey) {
+    const editor = editorRef.current;
+    const from = currentLangRef.current;
+    if (!editor || translating) return;
+    const code = editor.getValue();
+    let shape: string | undefined;
+    if (!isFree && to !== "javascript" && to !== "html" && to !== "css" && to !== "sql") {
+      const poly = await loadPolyglot(exercise.id);
+      if (poly.ok) shape = starterFor(to, poly.signature, exercise.title);
+    }
+    setTranslating(to);
+    try {
+      const res = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ code, from, to, shape }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { code?: string; error?: string };
+      if (!res.ok || !data.code) throw new Error(data.error || `Translation failed (${res.status}).`);
+      const translated = data.code;
+      const p = projectRef.current;
+      if (p) {
+        const active = p.files.find((f) => f.id === p.active);
+        const base = active ? active.name.replace(/\.[^.]+$/, "") : "translated";
+        const file = makeFile(p.files, to, translated, base);
+        activate({ ...p, files: [...p.files, file] }, file);
+      } else {
+        const existing = codeStore.load(exercise.id, to);
+        const differs = existing && existing.trim() && existing !== starterIn(to, polyglot);
+        if (differs && !window.confirm(`Replace your ${LANGUAGES[to].label} version with this translation?`)) return;
+        codeStore.save(exercise.id, translated, to);
+        editor.setLanguage(to);
+      }
+      setConsoleLines([
+        {
+          kind: "system",
+          text: `Translated from ${LANGUAGES[from].label} to ${LANGUAGES[to].label} by Claude — read it before you trust it.`,
+        },
+      ]);
+      setActiveTab("console");
+    } catch (err) {
+      setConsoleLines([{ kind: "error", text: err instanceof Error ? err.message : String(err) }]);
+      setActiveTab("console");
+    } finally {
+      setTranslating(null);
+    }
+  }
+
   async function debugCode() {
     const editor = editorRef.current;
     const lang = currentLangRef.current;
@@ -848,6 +899,17 @@ export function PracticeWorkspace({
           >
             ▶ Run
           </button>
+          {!isComponent && !interview && currentLang !== "sql" && currentLang !== "html" && currentLang !== "css" && (
+            <Dropdown
+              items={translateTargets.map((k) => ({ value: k, label: LANGUAGES[k].label }))}
+              value=""
+              placeholder={translating ? `Translating to ${LANGUAGES[translating].label}…` : "🌐 Translate"}
+              onChange={(v) => void translateTo(v as LanguageKey)}
+              ariaLabel="Translate this code to another language"
+              columns={3}
+              compact
+            />
+          )}
           {(currentLang === "javascript" || currentLang === "typescript") && !isComponent && !interview && (
             <button
               className="btn"

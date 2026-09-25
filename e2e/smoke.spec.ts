@@ -281,7 +281,7 @@ test("switching language gives that language's starter and keeps each language's
   await page.goto("/problems/ex-two-sum");
   const editor = page.locator(".cm-content");
   const pick = async (name: string) => {
-    await page.getByRole("combobox", { name: "Language" }).click();
+    await page.getByRole("combobox", { name: "Language", exact: true }).click();
     await page.getByRole("option", { name, exact: true }).click();
   };
 
@@ -525,7 +525,7 @@ test("debugging a problem runs the solution on its first test's input", async ({
 test("lua runs in the browser and is graded against a problem's tests", async ({ page }) => {
   await page.goto("/problems/ex-two-sum");
   const editor = page.locator(".cm-content");
-  await page.getByRole("combobox", { name: "Language" }).click();
+  await page.getByRole("combobox", { name: "Language", exact: true }).click();
   await page.getByRole("option", { name: "Lua", exact: true }).click();
   await expect(editor).toContainText("function twoSum(nums, target)");
   await editor.click();
@@ -535,4 +535,25 @@ test("lua runs in the browser and is graded against a problem's tests", async ({
   );
   await page.getByRole("button", { name: "Submit" }).click();
   await expect(page.locator(".verdict")).toContainText("All 7 tests pass", { timeout: 60_000 });
+});
+
+test("translate sends the code to the server and opens the result as a new file", async ({ page }) => {
+  let sent: { from?: string; to?: string; code?: string } = {};
+  await page.route("**/api/translate", async (route) => {
+    sent = route.request().postDataJSON();
+    await route.fulfill({ json: { code: "print(6 * 7)\n" } });
+  });
+  await page.goto("/practice?id=free");
+  const editor = page.locator(".cm-content");
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.insertText("console.log(6 * 7);\n");
+  await page.getByRole("combobox", { name: "Translate this code to another language" }).click();
+  await page.getByRole("option", { name: "Python", exact: true }).click();
+  await expect(editor).toContainText("print(6 * 7)");
+  expect(sent).toMatchObject({ from: "javascript", to: "python", code: "console.log(6 * 7);\n" });
+  await expect(
+    page.getByRole("list", { name: "Files" }).getByRole("button", { name: "scratch.py", exact: true })
+  ).toBeVisible();
+  await expect(page.locator("#view-console")).toContainText("Translated from JavaScript to Python");
 });
