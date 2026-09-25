@@ -50,6 +50,7 @@ import { indentationMarkers } from "@replit/codemirror-indentation-markers";
 import { tags } from "@lezer/highlight";
 
 import { CommandPalette, type Command } from "@/components/practice/CommandPalette";
+import { TopIcon } from "@/components/practice/TopIcon";
 import { Dropdown } from "@/components/ui/select";
 import { fixAll, formatCode, FORMATS, lintCode, LINTS, type EditorProblem } from "@/lib/editor/tools";
 import { loadSettings, saveSettings, type EditorSettings } from "@/lib/editor/settings";
@@ -400,14 +401,14 @@ function FileTabs({ files, onSelect, onClose, onNew, onRename, onCloseMany, reop
         ))}
       </span>
       <span className="ed__tab-new-item">
-        <button type="button" className="ed__tab-new" aria-label="New file" title="New file" onClick={onNew}>
-          +
+        <button type="button" className="ed__tab-new" aria-label="New file" data-tip="New file" onClick={onNew}>
+          <TopIcon name="plus" size={15} />
         </button>
         <button
           type="button"
           className="ed__tab-new"
           aria-label="File actions"
-          title="Close all, close others, rename"
+          data-tip="Close, rename, more"
           aria-haspopup="menu"
           aria-expanded={Boolean(menu)}
           onClick={(e) => {
@@ -415,7 +416,7 @@ function FileTabs({ files, onSelect, onClose, onNew, onRename, onCloseMany, reop
             openMenu(files.find((f) => f.active)?.id ?? files[0].id, r.left, r.bottom + 4);
           }}
         >
-          ⋯
+          <TopIcon name="more" size={15} />
         </button>
         {reopen && (
           <button type="button" className="ed__reopen" onClick={reopen.run} title="Bring back what you just closed">
@@ -967,31 +968,31 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
           <button
             className="btn btn--icon"
             type="button"
-            title="Fullscreen"
+            data-tip="Full screen"
             aria-label="Fullscreen"
             onClick={() => setFullscreen((f) => !f)}
           >
-            ⛶
+            <TopIcon name="expand" size={16} />
           </button>
           <button
             className="btn btn--icon"
             type="button"
-            title="Command palette (⌘/Ctrl ⇧ P)"
+            data-tip="Commands — ⌘/Ctrl ⇧ P"
             aria-label="Command palette"
             onClick={() => setPaletteOpen(true)}
           >
-            ⌘
+            <TopIcon name="command" size={16} />
           </button>
           <button
             className="btn btn--icon"
             type="button"
-            title="Editor settings"
+            data-tip="Editor settings"
             aria-label="Editor settings"
             aria-expanded={settingsOpen}
             aria-controls="ed-settings"
             onClick={() => setSettingsOpen((o) => !o)}
           >
-            ⚙
+            <TopIcon name="settings" size={16} />
           </button>
         </div>
       </div>

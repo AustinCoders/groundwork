@@ -140,7 +140,7 @@ function CopyButton({ onCopy, label = "Copy the code" }: { onCopy: () => string;
     <button
       className="btn btn--icon"
       type="button"
-      title={label}
+      data-tip={label}
       aria-label={label}
       onClick={() => {
         copyText(onCopy()).then((ok) => {
@@ -149,7 +149,7 @@ function CopyButton({ onCopy, label = "Copy the code" }: { onCopy: () => string;
         });
       }}
     >
-      {flash === "ok" ? "✓" : flash === "fail" ? "✕" : "⧉"}
+      <TopIcon name={flash === "ok" ? "check" : flash === "fail" ? "cross" : "copy"} size={16} />
     </button>
   );
 }
@@ -1173,7 +1173,7 @@ export function PracticeWorkspace({
                   <button
                     className="btn btn--icon"
                     type="button"
-                    title="Reset to the starting code"
+                    data-tip="Start again"
                     aria-label="Reset to the starting code"
                     onClick={() => {
                       if (!window.confirm("Throw away your version and start again?")) return;
@@ -1183,7 +1183,7 @@ export function PracticeWorkspace({
                       editorRef.current?.focus();
                     }}
                   >
-                    ↺
+                    <TopIcon name="reset" size={16} />
                   </button>
                   <CopyButton onCopy={() => editorRef.current?.getValue() ?? ""} />
                 </>
@@ -1387,7 +1387,8 @@ export function PracticeWorkspace({
                       "Ran with no output — nothing was logged."
                     ) : (
                       <>
-                        Nothing yet — hit <b>Run</b> and whatever you log shows up here.
+                        Nothing yet — press <b>Run</b> or <kbd>⌘/Ctrl</kbd> + <kbd>Enter</kbd>, and whatever you log
+                        shows up here.
                       </>
                     )}
                   </p>
