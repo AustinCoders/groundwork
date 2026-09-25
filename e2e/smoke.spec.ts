@@ -663,3 +663,14 @@ test("the playground opens at the top and fits the screen on a laptop", async ({
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
   expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(720);
 });
+
+test("the file menu opens next to the button that opened it", async ({ page }) => {
+  await page.goto("/practice?id=free");
+  await expect(page.locator(".cm-content")).toBeVisible();
+  const button = page.getByRole("button", { name: "File actions" });
+  const at = (await button.boundingBox())!;
+  await button.click();
+  const menu = (await page.getByRole("menu").boundingBox())!;
+  expect(Math.abs(menu.x - at.x)).toBeLessThan(12);
+  expect(Math.abs(menu.y - (at.y + at.height))).toBeLessThan(16);
+});

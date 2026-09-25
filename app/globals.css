@@ -8976,11 +8976,11 @@ button.lc-icon-btn {
 }
 
 .bare-main .lc-topbar {
-  animation: ws-drop 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: ws-drop 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
 }
 
 .bare-main .practice-layout > * {
-  animation: ws-rise 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: ws-rise 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
 }
 
 .bare-main .practice-layout > :nth-child(2) {
