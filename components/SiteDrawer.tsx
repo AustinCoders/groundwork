@@ -9,7 +9,7 @@ import { NarrationSettings } from "@/components/reader/NarrationSettings";
 import { ZOOM_STEPS, useReaderZoom } from "@/lib/readerZoom";
 import { computeStats } from "@/lib/gamification";
 import { useProgressValue } from "@/lib/hooks";
-import { progress, setSavedTheme, type ThemeValue } from "@/lib/storage";
+import { progress } from "@/lib/storage";
 import { FONT_ITEMS, THEME_ITEMS } from "@/lib/storage";
 import { SITE_NAME } from "@/lib/site";
 import styles from "./SiteDrawer.module.css";
@@ -262,46 +262,6 @@ function DrawerBody({ onClose, reading }: { onClose: () => void; reading: boolea
   );
 }
 
-function QuickTheme() {
-  const theme = useHtmlAttr("data-theme");
-  const dark = ["dark", "blueprint", "rose"].includes(theme);
-  const next: ThemeValue = dark ? "light" : "dark";
-  return (
-    <button
-      type="button"
-      className={styles.close}
-      aria-label={dark ? "Switch to the light theme" : "Switch to the dark theme"}
-      title={dark ? "Light theme" : "Dark theme"}
-      onClick={() => {
-        setSavedTheme(next);
-        document.documentElement.setAttribute("data-theme", next);
-      }}
-    >
-      <svg
-        viewBox="0 0 24 24"
-        width="18"
-        height="18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-        style={{ margin: 0 }}
-      >
-        {dark ? (
-          <>
-            <circle cx="12" cy="12" r="4" />
-            <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-          </>
-        ) : (
-          <path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z" />
-        )}
-      </svg>
-    </button>
-  );
-}
-
 export function SiteDrawer({
   open,
   onClose,
@@ -348,12 +308,9 @@ export function SiteDrawer({
             </span>
             <span>{SITE_NAME}</span>
           </Link>
-          <span className={styles.headActions}>
-            <QuickTheme />
-            <button type="button" className={styles.close} aria-label="Close the menu" onClick={onClose}>
-              ×
-            </button>
-          </span>
+          <button type="button" className={styles.close} aria-label="Close the menu" onClick={onClose}>
+            ×
+          </button>
         </div>
         {children}
         <DrawerBody onClose={onClose} reading={reading} />
