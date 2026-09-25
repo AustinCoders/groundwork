@@ -778,20 +778,19 @@ export function PracticeWorkspace({
               <span aria-hidden="true">✎</span> Playground
             </h1>
             <div className="pg-langs" role="group" aria-label="Quick language">
-              {QUICK_LANGS.map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  className="pg-lang"
-                  aria-pressed={currentLang === key}
-                  onClick={() => editorRef.current?.setLanguage(key)}
-                >
-                  <span className="pg-lang__ext" aria-hidden="true">
-                    {LANGUAGES[key].ext}
-                  </span>
-                  {LANGUAGES[key].label}
-                </button>
-              ))}
+              <span className="pg-langs__scroll">
+                {QUICK_LANGS.map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className="pg-lang"
+                    aria-pressed={currentLang === key}
+                    onClick={() => editorRef.current?.setLanguage(key)}
+                  >
+                    {LANGUAGES[key].label}
+                  </button>
+                ))}
+              </span>
               <span className={`pg-more${QUICK_LANGS.includes(currentLang) ? "" : " is-current"}`}>
                 <Dropdown
                   items={LANG_ORDER.map((key) => ({
@@ -859,11 +858,12 @@ export function PracticeWorkspace({
             <button
               type="button"
               className="btn live-btn"
+              aria-label="Live"
               aria-pressed={live}
               title="Run as you type, with each console.log's value beside its line"
               onClick={toggleLive}
             >
-              <span aria-hidden="true">⚡</span> Live
+              <span aria-hidden="true">⚡</span> <span className="pg-btn__label">Live</span>
             </button>
           )}
           {playground && (
@@ -875,7 +875,7 @@ export function PracticeWorkspace({
               onClick={() => void share()}
             >
               <span aria-hidden="true">🔗</span>{" "}
-              <span className={shareState === "idle" ? "pg-share__label" : undefined}>
+              <span className={shareState === "idle" ? "pg-btn__label" : undefined}>
                 {shareState === "copied"
                   ? "Link copied"
                   : shareState === "failed"
@@ -897,7 +897,7 @@ export function PracticeWorkspace({
             />
           )}
           <button
-            className="btn btn--run"
+            className="btn btn--run pg-run"
             type="button"
             title="Run the code (⌘/Ctrl + Enter)"
             aria-label="Run the code"
@@ -911,12 +911,13 @@ export function PracticeWorkspace({
               <button
                 className="btn"
                 type="button"
+                aria-label="Debug"
                 title={
                   isFree ? "Step through the code line by line" : "Step through your solution on the first test's input"
                 }
                 onClick={() => void debugCode()}
               >
-                <span aria-hidden="true">🐞</span> Debug
+                <span aria-hidden="true">🐞</span> <span className="pg-btn__label">Debug</span>
               </button>
             )}
           {!isFree && exercise.tests.length > 0 && (

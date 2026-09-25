@@ -611,3 +611,20 @@ test("the mock lobby shows how ready you are and what to practise next", async (
   await board.getByRole("button", { name: "Set up that round" }).click();
   await expect(page.getByRole("tab", { name: "Single round" })).toHaveAttribute("aria-selected", "true");
 });
+
+for (const [width, maxBar] of [
+  [1024, 80],
+  [768, 80],
+  [390, 130],
+] as const) {
+  test(`the playground fits a ${width}px screen`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto("/practice?id=free");
+    await expect(page.locator(".cm-content")).toBeVisible();
+    const bar = await page.locator(".lc-topbar").boundingBox();
+    expect(bar!.height).toBeLessThanOrEqual(maxBar);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+    await expect(page.getByRole("button", { name: "Run the code" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Debug" })).toBeVisible();
+  });
+}
