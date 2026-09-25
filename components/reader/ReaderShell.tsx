@@ -10,10 +10,8 @@ import { activateScripts, enhanceCodeBlocks, enhanceTables, enhanceTryBlocks } f
 import { setupNarration } from "@/components/reader/narration";
 import { NarrationSettings } from "@/components/reader/NarrationSettings";
 import { ChapterNav } from "@/components/reader/ChapterNav";
+import { ZOOM_KEY, ZOOM_STEPS } from "@/lib/readerZoom";
 import type { ChapterMeta, LevelNav } from "@/content/types";
-
-const ZOOM_STEPS = [85, 92, 100, 110, 120, 132, 145, 160];
-const ZOOM_KEY = "jsnotes:zoom";
 
 function prefersMotion() {
   return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;

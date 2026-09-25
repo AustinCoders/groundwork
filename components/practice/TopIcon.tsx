@@ -48,6 +48,7 @@ export function TopIcon({ name, size = 18 }: { name: TopIconName; size?: number 
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      style={{ margin: 0, flex: "none" }}
     >
       {PATHS[name]}
     </svg>

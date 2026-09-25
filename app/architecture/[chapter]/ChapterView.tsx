@@ -323,48 +323,53 @@ export function ChapterView({
                 dangerouslySetInnerHTML={{ __html: html }}
               />
 
-              <div className={styles.finish}>
-                <label className={styles.doneToggle}>
-                  <input
-                    type="checkbox"
-                    checked={mounted && isDone}
-                    onChange={(e) => progress.setChapterDone(chapter.id, e.target.checked)}
-                  />
-                  <span>{mounted && isDone ? "Read ✓" : "Mark this chapter as read"}</span>
-                </label>
-              </div>
+              <section className={`${styles.end}${mounted && isDone ? ` ${styles.endDone}` : ""}`} aria-label="Finish">
+                <div className={styles.endStatus}>
+                  <span className={styles.endMark} aria-hidden="true">
+                    {mounted && isDone ? "✓" : chapter.num}
+                  </span>
+                  <div>
+                    <p className={styles.endTitle}>{mounted && isDone ? "Chapter read" : "Finished reading?"}</p>
+                    <p className={styles.endSub}>
+                      {mounted ? done.size : 0} of {chapters.length} chapters read in this series
+                    </p>
+                    <span className={styles.endBar} aria-hidden="true">
+                      <span style={{ width: `${((mounted ? done.size : 0) / chapters.length) * 100}%` }} />
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className={styles.endBtn}
+                  aria-pressed={mounted && isDone}
+                  onClick={() => progress.setChapterDone(chapter.id, !isDone)}
+                >
+                  {mounted && isDone ? "Mark as unread" : "Mark as read"}
+                </button>
+              </section>
 
               <nav className={styles.pager} aria-label="Chapter navigation">
-                {prev ? (
-                  <Link className={styles.pageCard} href={`${basePath}/${prev.id}`}>
-                    <span className={styles.pageHint}>
-                      <TopIcon name="prev" size={14} /> Previous · {prev.num}
-                    </span>
-                    <span className={styles.pageTitle}>{prev.title}</span>
-                  </Link>
-                ) : (
-                  <Link className={styles.pageCard} href={basePath}>
-                    <span className={styles.pageHint}>
-                      <TopIcon name="prev" size={14} /> Back to
-                    </span>
-                    <span className={styles.pageTitle}>The system map</span>
-                  </Link>
-                )}
-                {next ? (
-                  <Link className={`${styles.pageCard} ${styles.pageNext}`} href={`${basePath}/${next.id}`}>
-                    <span className={styles.pageHint}>
-                      Next · {next.num} <TopIcon name="next" size={14} />
-                    </span>
-                    <span className={styles.pageTitle}>{next.title}</span>
-                  </Link>
-                ) : (
-                  <Link className={`${styles.pageCard} ${styles.pageNext}`} href={basePath}>
-                    <span className={styles.pageHint}>
-                      The end <TopIcon name="next" size={14} />
-                    </span>
-                    <span className={styles.pageTitle}>Back to the system map</span>
-                  </Link>
-                )}
+                <Link className={styles.pageCard} href={prev ? `${basePath}/${prev.id}` : basePath}>
+                  <span className={styles.pageArrow} aria-hidden="true">
+                    <TopIcon name="prev" size={18} />
+                  </span>
+                  <span className={styles.pageText}>
+                    <span className={styles.pageHint}>{prev ? `Previous · ${prev.num}` : "Back to"}</span>
+                    <span className={styles.pageTitle}>{prev ? prev.title : "The system map"}</span>
+                  </span>
+                </Link>
+                <Link
+                  className={`${styles.pageCard} ${styles.pageNext}`}
+                  href={next ? `${basePath}/${next.id}` : basePath}
+                >
+                  <span className={styles.pageText}>
+                    <span className={styles.pageHint}>{next ? `Next · ${next.num}` : "The end"}</span>
+                    <span className={styles.pageTitle}>{next ? next.title : "Back to the system map"}</span>
+                  </span>
+                  <span className={styles.pageArrow} aria-hidden="true">
+                    <TopIcon name="next" size={18} />
+                  </span>
+                </Link>
               </nav>
             </article>
           </main>

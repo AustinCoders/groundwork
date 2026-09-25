@@ -741,3 +741,21 @@ test("an architecture chapter has its own rail, contents and read marker", async
   await page.keyboard.press("]");
   await page.waitForURL("**/architecture/arch-rendering");
 });
+
+test("the site menu folds its sections and changes the text size everywhere", async ({ page }) => {
+  await page.goto("/architecture/arch-build");
+  await page.getByRole("button", { name: "Menu" }).click();
+  const menu = page.getByRole("dialog", { name: /menu/ });
+  await menu.locator("summary", { hasText: "Reading" }).click();
+  await menu.getByRole("button", { name: "Larger text" }).click();
+  await expect(menu.locator("output")).toHaveText("110%");
+  await page.keyboard.press("Escape");
+  await page.goto("/problems");
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.style.getPropertyValue("--reader-zoom")))
+    .toBe("1.1");
+  await page.getByRole("button", { name: "Menu" }).click();
+  await expect(
+    page.getByRole("dialog", { name: /menu/ }).locator("details[open] summary", { hasText: "Reading" })
+  ).toBeVisible();
+});

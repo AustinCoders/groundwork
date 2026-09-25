@@ -19,5 +19,9 @@ export const THEME_INIT_SCRIPT = `(function () {
 
     var savedFont = readJSON("jsnotes:font");
     document.documentElement.setAttribute("data-font", savedFont || "classic");
+
+    var savedZoom = readJSON("jsnotes:zoom");
+    if (typeof savedZoom === "number" && savedZoom >= 50 && savedZoom <= 200)
+      document.documentElement.style.setProperty("--reader-zoom", String(savedZoom / 100));
   } catch (e) {}
 })();`;
