@@ -114,10 +114,14 @@ export function ChapterView({
       const frac = max > 0 ? Math.min(1, window.scrollY / max) : 0;
       if (barRef.current) barRef.current.style.transform = `scaleX(${frac})`;
       setPct(Math.round(frac * 100));
+      const line = Math.min(window.innerHeight * 0.3, 260);
+      const atEnd = max > 0 && window.scrollY >= max - 4;
       let current: string | null = null;
       for (const item of toc) {
         const h = document.getElementById(item.id);
-        if (h && h.getBoundingClientRect().top < 140) current = item.id;
+        if (!h) continue;
+        const top = h.getBoundingClientRect().top;
+        if (top < line || (atEnd && top < window.innerHeight - 40)) current = item.id;
       }
       setActive(current);
     }
@@ -396,7 +400,10 @@ export function ChapterView({
                     <div>
                       <p className={styles.tocHead}>On this page</p>
                       <p className={styles.tocMeta}>
-                        {toc.length} sections · {pct}% read
+                        {active
+                          ? `Section ${toc.findIndex((t) => t.id === active) + 1} of ${toc.length}`
+                          : `${toc.length} sections`}{" "}
+                        · {pct}%
                       </p>
                     </div>
                   </div>

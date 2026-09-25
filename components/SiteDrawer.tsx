@@ -7,6 +7,9 @@ import { createPortal } from "react-dom";
 import { AppearancePicker } from "@/components/AppearancePicker";
 import { NarrationSettings } from "@/components/reader/NarrationSettings";
 import { ZOOM_STEPS, useReaderZoom } from "@/lib/readerZoom";
+import { computeStats } from "@/lib/gamification";
+import { useProgressValue } from "@/lib/hooks";
+import { progress, setSavedTheme, type ThemeValue } from "@/lib/storage";
 import { FONT_ITEMS, THEME_ITEMS } from "@/lib/storage";
 import { SITE_NAME } from "@/lib/site";
 import styles from "./SiteDrawer.module.css";
@@ -114,6 +117,59 @@ function Fold({
   );
 }
 
+function ProgressCard({ onClose }: { onClose: () => void }) {
+  const key = useProgressValue(() => {
+    const s = computeStats();
+    const due = progress.dueForReview(Object.keys(progress.all().chapters)).length;
+    return JSON.stringify({ ...s, due });
+  }, "");
+  if (!key) return null;
+  const s = JSON.parse(key) as ReturnType<typeof computeStats> & { due: number };
+  const pct = s.xpForNextLevel ? Math.min(100, (s.xpIntoLevel / s.xpForNextLevel) * 100) : 0;
+  return (
+    <section className={styles.stats} aria-label="Your progress">
+      <div className={styles.statsTop}>
+        <span className={styles.level}>Level {s.level}</span>
+        <span className={styles.xp}>
+          {s.xpIntoLevel} / {s.xpForNextLevel} XP
+        </span>
+      </div>
+      <span className={styles.xpBar} aria-hidden="true">
+        <span style={{ width: `${pct}%` }} />
+      </span>
+      <div className={styles.statGrid}>
+        <div>
+          <strong>{s.chaptersRead}</strong>
+          <span>chapters read</span>
+        </div>
+        <div>
+          <strong>{s.exercisesSolved}</strong>
+          <span>problems solved</span>
+        </div>
+        <div>
+          <strong>
+            {s.streak}
+            {s.streak > 0 && <span aria-hidden="true"> 🔥</span>}
+          </strong>
+          <span>day streak</span>
+        </div>
+      </div>
+      {s.due > 0 ? (
+        <Link className={styles.due} href="/review" onClick={onClose}>
+          <span>
+            <b>{s.due}</b> {s.due === 1 ? "chapter is" : "chapters are"} due for review
+          </span>
+          <span aria-hidden="true">→</span>
+        </Link>
+      ) : (
+        <Link className={styles.statsLink} href="/progress" onClick={onClose}>
+          See all progress <span aria-hidden="true">→</span>
+        </Link>
+      )}
+    </section>
+  );
+}
+
 function DrawerBody({ onClose, reading }: { onClose: () => void; reading: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState<Set<Section>>(readOpen);
@@ -139,6 +195,7 @@ function DrawerBody({ onClose, reading }: { onClose: () => void; reading: boolea
 
   return (
     <>
+      <ProgressCard onClose={onClose} />
       <section className={styles.go} aria-label="Go to">
         <p className={styles.goHead}>Go to</p>
         <nav aria-label="Site">
@@ -157,6 +214,7 @@ function DrawerBody({ onClose, reading }: { onClose: () => void; reading: boolea
           </ul>
         </nav>
       </section>
+      <p className={styles.goHead}>Customize</p>
       <div className={styles.folds}>
         <Fold id="theme" title="Theme" summary={themeName} open={open.has("theme")} onToggle={toggle}>
           <AppearancePicker idPrefix="site-look" only="theme" />
@@ -201,6 +259,46 @@ function DrawerBody({ onClose, reading }: { onClose: () => void; reading: boolea
         )}
       </div>
     </>
+  );
+}
+
+function QuickTheme() {
+  const theme = useHtmlAttr("data-theme");
+  const dark = ["dark", "blueprint", "rose"].includes(theme);
+  const next: ThemeValue = dark ? "light" : "dark";
+  return (
+    <button
+      type="button"
+      className={styles.close}
+      aria-label={dark ? "Switch to the light theme" : "Switch to the dark theme"}
+      title={dark ? "Light theme" : "Dark theme"}
+      onClick={() => {
+        setSavedTheme(next);
+        document.documentElement.setAttribute("data-theme", next);
+      }}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        width="18"
+        height="18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        style={{ margin: 0 }}
+      >
+        {dark ? (
+          <>
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+          </>
+        ) : (
+          <path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z" />
+        )}
+      </svg>
+    </button>
   );
 }
 
@@ -250,14 +348,17 @@ export function SiteDrawer({
             </span>
             <span>{SITE_NAME}</span>
           </Link>
-          <button type="button" className={styles.close} aria-label="Close the menu" onClick={onClose}>
-            ×
-          </button>
+          <span className={styles.headActions}>
+            <QuickTheme />
+            <button type="button" className={styles.close} aria-label="Close the menu" onClick={onClose}>
+              ×
+            </button>
+          </span>
         </div>
         {children}
         <DrawerBody onClose={onClose} reading={reading} />
-        {reading && (
-          <div className={styles.foot}>
+        <div className={styles.foot}>
+          {reading && (
             <button type="button" className={styles.action} onClick={() => window.print()}>
               <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style={{ margin: 0 }}>
                 <path
@@ -270,8 +371,14 @@ export function SiteDrawer({
               </svg>
               Print or save as PDF
             </button>
-          </div>
-        )}
+          )}
+          <p className={styles.footNote}>
+            Your progress stays in this browser.{" "}
+            <Link href="/architecture" onClick={onClose}>
+              How this is built
+            </Link>
+          </p>
+        </div>
       </aside>
     </div>,
     document.body
