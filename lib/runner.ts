@@ -1,7 +1,9 @@
+import type { Trace } from "@/lib/debug/view";
 export interface RunnerConsoleEntry {
   kind: "log" | "info" | "warn" | "error" | "system";
   text: string;
   line?: number;
+  step?: number;
 }
 
 export interface RunnerTableEntry {
@@ -25,12 +27,14 @@ export interface RunnerDonePayload {
   syntax?: boolean;
   timedOut?: boolean;
   stopped?: boolean;
+  trace?: Trace;
 }
 
 export interface RunOptions {
   code: string;
   tests?: { name: string; body: string }[];
   stdin?: string;
+  trace?: boolean;
   timeout?: number;
   onConsole?: (entry: RunnerOutputEntry) => void;
   onDone?: (payload: RunnerDonePayload) => void;
@@ -117,6 +121,7 @@ export function run(options: RunOptions): { stop: () => void } {
     "'use strict';\n" +
     "var __results = [];\n" +
     `__setStdin(${JSON.stringify(options.stdin ?? "")});\n` +
+    `__traceStart(${options.trace ? "true" : "false"});\n` +
     "__base();\n" +
     "try {\n" +
     code +
@@ -124,11 +129,11 @@ export function run(options: RunOptions): { stop: () => void } {
     buildTestSource(tests) +
     "\n} catch (err) {\n" +
     "  __send('console', { kind: 'error', text: (err && err.stack ? String(err.message) : String(err)), line: __lineOf(err) });\n" +
-    "  __send('done', { results: __results, crashed: true });\n" +
+    "  __send('done', { results: __results, crashed: true, trace: __traceEnd() });\n" +
     "  return;\n" +
     "}\n" +
     "await __settle();\n" +
-    "__send('done', { results: __results });\n";
+    "__send('done', { results: __results, trace: __traceEnd() });\n";
 
   worker.postMessage({ type: "run", source });
 

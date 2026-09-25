@@ -12,7 +12,8 @@ export interface EditorProblem {
 export type ToolRequest =
   | { id: number; type: "format"; code: string; lang: string; cursor?: number; tabWidth?: number }
   | { id: number; type: "lint"; code: string; lang: string }
-  | { id: number; type: "fix"; code: string; lang: string };
+  | { id: number; type: "fix"; code: string; lang: string }
+  | { id: number; type: "instrument"; code: string; lang: string };
 
 export interface ToolResponse {
   id: number;
@@ -62,4 +63,8 @@ export function lintCode(code: string, lang: string) {
 
 export function fixAll(code: string, lang: string) {
   return ask<string>({ type: "fix", code, lang });
+}
+
+export function instrumentCode(code: string, lang: string) {
+  return ask<string>({ type: "instrument", code, lang });
 }

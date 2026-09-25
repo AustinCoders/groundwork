@@ -2,7 +2,7 @@
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import CodeMirror, { type ReactCodeMirrorRef } from "@uiw/react-codemirror";
-import { Compartment, EditorState, type Extension } from "@codemirror/state";
+import { Compartment, EditorState, type Extension, type StateEffect } from "@codemirror/state";
 import {
   EditorView,
   keymap,
@@ -53,7 +53,7 @@ import { CommandPalette, type Command } from "@/components/practice/CommandPalet
 import { Dropdown } from "@/components/ui/select";
 import { fixAll, formatCode, FORMATS, lintCode, LINTS, type EditorProblem } from "@/lib/editor/tools";
 import { loadSettings, saveSettings, type EditorSettings } from "@/lib/editor/settings";
-import { inlineResults, setInlineResults, type InlineResult } from "@/lib/editor/inline";
+import { inlineResults, setDebugLine, setInlineResults, type InlineResult } from "@/lib/editor/inline";
 import {
   HINTS,
   isLanguage,
@@ -80,6 +80,7 @@ export interface CodeEditorHandle {
   isFullscreen(): boolean;
   reveal(from: number, to?: number): void;
   showInline(results: InlineResult[]): void;
+  showDebugLine(line: number | null): void;
 }
 
 export interface CodeEditorProps {
@@ -868,6 +869,14 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
         const next = on == null ? !wrapped : on;
         toggle("wrap", next);
         return next;
+      },
+      showDebugLine: (line: number | null) => {
+        const view = cmRef.current?.view;
+        if (!view) return;
+        const effects: StateEffect<unknown>[] = [setDebugLine.of(line)];
+        if (line !== null && line >= 1 && line <= view.state.doc.lines)
+          effects.push(EditorView.scrollIntoView(view.state.doc.line(line).from, { y: "center" }));
+        view.dispatch({ effects });
       },
       showInline: (results: InlineResult[]) => {
         cmRef.current?.view?.dispatch({ effects: setInlineResults.of(results) });

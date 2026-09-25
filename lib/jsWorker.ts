@@ -1,4 +1,5 @@
 import { assert, fmt } from "@/lib/assertKit";
+import { toView, type Trace, type TraceStep, type View } from "@/lib/debug/view";
 
 function send(type: string, payload: unknown) {
   postMessage({ type, payload });
@@ -74,9 +75,55 @@ self.__base = () => {
 // @ts-expect-error -- read by the generated source
 self.__lineOf = (err: unknown) => frameLine(err instanceof Error ? err.stack : undefined);
 
+const MAX_STEPS = 2000;
+let tracing = false;
+let traceSteps: TraceStep[] = [];
+let traceTruncated = false;
+const callStack: string[] = [];
+
+inputScope.__traceStart = (on: boolean) => {
+  tracing = on;
+  traceSteps = [];
+  traceTruncated = false;
+  callStack.length = 0;
+};
+inputScope.__traceEnd = (): Trace | undefined => {
+  if (!tracing) return undefined;
+  tracing = false;
+  return { steps: traceSteps, truncated: traceTruncated };
+};
+inputScope.__enter = (name: string) => {
+  callStack.push(name);
+};
+inputScope.__exit = () => {
+  callStack.pop();
+};
+inputScope.__t = (line: number, snapshot: () => Record<string, () => unknown>) => {
+  if (!tracing) return;
+  if (traceSteps.length >= MAX_STEPS) {
+    traceTruncated = true;
+    return;
+  }
+  const vars: Record<string, View> = {};
+  for (const [name, get] of Object.entries(snapshot())) {
+    try {
+      const value = get();
+      if (typeof value !== "function") vars[name] = toView(value);
+    } catch {
+      vars[name] = { t: "tdz" };
+    }
+  }
+  traceSteps.push({ line, fn: callStack.at(-1) ?? "(top level)", depth: callStack.length, vars });
+};
+
 function line(kind: string) {
   return (...args: unknown[]) => {
-    send("console", { kind, text: args.map((a) => fmt(a, 0)).join(" "), line: frameLine(new Error().stack) });
+    send("console", {
+      kind,
+      text: args.map((a) => fmt(a, 0)).join(" "),
+      line: tracing ? undefined : frameLine(new Error().stack),
+      step: tracing ? traceSteps.length : undefined,
+    });
   };
 }
 

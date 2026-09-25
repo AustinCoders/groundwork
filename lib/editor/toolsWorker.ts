@@ -1,6 +1,7 @@
 import type { Linter as LinterType } from "eslint";
 import type { CompilerHost, CompilerOptions } from "typescript";
 import tsLibFileNames from "@/lib/tsLibFiles.json";
+import { instrument } from "@/lib/debug/instrument";
 import type { EditorProblem, ToolRequest, ToolResponse } from "@/lib/editor/tools";
 
 function lineStarts(code: string): number[] {
@@ -220,6 +221,15 @@ self.onmessage = async (event: MessageEvent<ToolRequest>) => {
       case "fix":
         reply({ ok: true, result: await fixAll(req.code) });
         break;
+      case "instrument": {
+        const { ts } = await loadTs();
+        const lang = req.lang === "typescript" ? "typescript" : "javascript";
+        let js = instrument(ts, req.code, lang);
+        if (lang === "typescript")
+          js = ts.transpileModule(js, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
+        reply({ ok: true, result: js });
+        break;
+      }
     }
   } catch (err) {
     reply({ ok: false, error: err instanceof Error ? err.message : String(err) });

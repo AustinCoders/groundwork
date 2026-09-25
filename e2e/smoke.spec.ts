@@ -493,3 +493,31 @@ test("the playground reads stdin and compares how fast two solutions run", async
   await expect(page.locator("#view-console")).toContainText("Ada: 7");
   await expect(page.locator(".sql-result")).toContainText("🏆 fast");
 });
+
+test("the debugger steps through code and draws what it holds", async ({ page }) => {
+  await page.goto("/practice?id=free");
+  const editor = page.locator(".cm-content");
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.insertText(
+    "const list = { val: 1, next: { val: 2, next: null } };\nconst nums = [3, 1];\nlet total = 0;\nfor (const n of nums) total += n;\nconsole.log(total);\n"
+  );
+  await page.getByRole("button", { name: /Debug/ }).click();
+  await expect(page.locator(".debug__where")).toContainText("line 1");
+  await page.getByRole("button", { name: "Last step" }).click();
+  await expect(page.locator(".debug__where")).toContainText("line 5");
+  await expect(page.locator(".debug__var", { hasText: "list" }).locator(".dv-list")).toContainText("1→2→null");
+  await expect(page.locator(".debug__var", { hasText: "total" })).toContainText("4");
+  await expect(page.locator(".cm-debug-line")).toContainText("console.log(total)");
+});
+
+test("debugging a problem runs the solution on its first test's input", async ({ page }) => {
+  await page.goto("/problems/ex-two-sum");
+  await expect(page.locator(".cm-content")).toBeVisible();
+  page.once("dialog", (d) => d.accept());
+  await page.getByRole("button", { name: "Show the solution" }).click();
+  await page.getByRole("button", { name: /Debug/ }).click();
+  await page.getByRole("button", { name: "Next step" }).click();
+  await expect(page.locator(".debug__where")).toContainText("in twoSum");
+  await expect(page.locator(".debug__var", { hasText: "nums" })).toContainText("2");
+});

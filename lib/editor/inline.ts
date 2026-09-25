@@ -52,8 +52,26 @@ const inlineField = StateField.define<DecorationSet>({
   provide: (f) => EditorView.decorations.from(f),
 });
 
+export const setDebugLine = StateEffect.define<number | null>();
+
+const debugLineMark = Decoration.line({ class: "cm-debug-line" });
+
+const debugField = StateField.define<DecorationSet>({
+  create: () => Decoration.none,
+  update(set, tr) {
+    for (const effect of tr.effects) {
+      if (!effect.is(setDebugLine)) continue;
+      const line = effect.value;
+      if (line === null || line < 1 || line > tr.state.doc.lines) return Decoration.none;
+      return Decoration.set([debugLineMark.range(tr.state.doc.line(line).from)]);
+    }
+    return tr.docChanged ? Decoration.none : set;
+  },
+  provide: (f) => EditorView.decorations.from(f),
+});
+
 export function inlineResults(): Extension {
-  return inlineField;
+  return [inlineField, debugField];
 }
 
 export function groupByLine(

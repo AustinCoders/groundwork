@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
 import { Crumbs } from "@/components/Crumbs";
 import { BackButton } from "@/components/practice/BackButton";
 import { CodeEditor, type CodeEditorHandle } from "@/components/practice/CodeEditor";
@@ -12,7 +12,9 @@ import { Dropdown } from "@/components/ui/select";
 import { isLanguage, LANG_ORDER, LANGUAGES, type LanguageKey } from "@/lib/codeLanguages";
 import { gradeResults, isResultLine, parseResultLine, withHarness } from "@/lib/polyglot/grade";
 import { starterFor } from "@/lib/polyglot/starters";
-import type { EditorProblem } from "@/lib/editor/tools";
+import { instrumentCode, type EditorProblem } from "@/lib/editor/tools";
+import type { Trace } from "@/lib/debug/view";
+import { DebugPanel } from "@/components/practice/DebugPanel";
 import { groupByLine } from "@/lib/editor/inline";
 import { PAGE_SCRIPT, templatesFor } from "@/lib/playgroundTemplates";
 import { buildPage, pageFor, PREVIEW_MESSAGE } from "@/lib/webPreview";
@@ -179,9 +181,11 @@ export function PracticeWorkspace({
 
   const mounted = useMounted();
   const [currentLang, setCurrentLang] = useState<LanguageKey>("javascript");
-  const [activeTab, setActiveTab] = useState<"console" | "tests" | "problems" | "preview" | "history" | "input">(
-    "console"
-  );
+  const [debugRun, setDebugRun] = useState<{ trace: Trace; output: RunnerOutputEntry[] } | null>(null);
+  const showDebugLine = useCallback((line: number | null) => editorRef.current?.showDebugLine(line), []);
+  const [activeTab, setActiveTab] = useState<
+    "console" | "tests" | "problems" | "preview" | "history" | "input" | "debug"
+  >("console");
   const [stdin, setStdin] = useState(() =>
     isFree && !interview && typeof window !== "undefined" ? store.get<string>(STDIN_KEY, "") : ""
   );
@@ -530,6 +534,48 @@ export function PracticeWorkspace({
     if (next) runCode(false);
   }
 
+  async function debugCode() {
+    const editor = editorRef.current;
+    const lang = currentLangRef.current;
+    if (!editor || (lang !== "javascript" && lang !== "typescript") || isComponent) return;
+    runningRef.current?.stop();
+    setDebugRun(null);
+    setActiveTab("debug");
+    setConsolePhase("running");
+    let code = editor.getValue();
+    if (!isFree) {
+      const poly = await loadPolyglot(exercise.id);
+      const first = poly.ok ? poly.tests[0]?.cases[0] : undefined;
+      if (poly.ok && first)
+        code += `\n${poly.signature.name}(${first.args.map((a) => JSON.stringify(a)).join(", ")});\n`;
+    }
+    let instrumented: string;
+    try {
+      instrumented = await instrumentCode(code, lang);
+    } catch (err) {
+      setConsolePhase("ran");
+      setConsoleLines([
+        { kind: "error", text: `Could not debug: ${err instanceof Error ? err.message : String(err)}` },
+      ]);
+      setActiveTab("console");
+      return;
+    }
+    const output: RunnerOutputEntry[] = [];
+    runningRef.current = runnerRun({
+      code: instrumented,
+      stdin,
+      trace: true,
+      timeout: 8000,
+      onConsole: (entry) => output.push(entry),
+      onDone: (payload) => {
+        runningRef.current = null;
+        setConsolePhase("ran");
+        setConsoleLines(output.map((o) => ({ ...o, line: undefined })));
+        setDebugRun({ trace: payload.trace ?? { steps: [], truncated: false }, output });
+      },
+    });
+  }
+
   function markRan() {
     setConsolePhase("ran");
     setRunMs(Math.round(performance.now() - runStartRef.current));
@@ -764,16 +810,19 @@ export function PracticeWorkspace({
               type="button"
               className="btn"
               title="Copy a link that opens these files in anyone's playground"
+              aria-label={shareState === "copied" ? "Link copied" : "Share a link to these files"}
               onClick={() => void share()}
             >
               <span aria-hidden="true">🔗</span>{" "}
-              {shareState === "copied"
-                ? "Link copied"
-                : shareState === "failed"
-                  ? "Could not copy"
-                  : shareState === "too-big"
-                    ? "Too big for a link"
-                    : "Share"}
+              <span className={shareState === "idle" ? "pg-share__label" : undefined}>
+                {shareState === "copied"
+                  ? "Link copied"
+                  : shareState === "failed"
+                    ? "Could not copy"
+                    : shareState === "too-big"
+                      ? "Too big for a link"
+                      : "Share"}
+              </span>
             </button>
           )}
           {playground && templates.length > 1 && (
@@ -795,6 +844,18 @@ export function PracticeWorkspace({
           >
             ▶ Run
           </button>
+          {(currentLang === "javascript" || currentLang === "typescript") && !isComponent && !interview && (
+            <button
+              className="btn"
+              type="button"
+              title={
+                isFree ? "Step through the code line by line" : "Step through your solution on the first test's input"
+              }
+              onClick={() => void debugCode()}
+            >
+              <span aria-hidden="true">🐞</span> Debug
+            </button>
+          )}
           {!isFree && exercise.tests.length > 0 && (
             <button
               className="btn btn--test"
@@ -1066,6 +1127,22 @@ export function PracticeWorkspace({
                     {consoleLines.length}
                   </span>
                 </button>
+                {debugRun && (
+                  <button
+                    className={`tab${activeTab === "debug" ? " is-active" : ""}`}
+                    id="tab-debug"
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === "debug"}
+                    aria-controls="view-debug"
+                    onClick={() => setActiveTab("debug")}
+                  >
+                    Debug{" "}
+                    <span className="tab__count" id="debug-count">
+                      {debugRun.trace.steps.length}
+                    </span>
+                  </button>
+                )}
                 <button
                   className={`tab${activeTab === "problems" ? " is-active" : ""}`}
                   id="tab-problems"
@@ -1177,6 +1254,22 @@ export function PracticeWorkspace({
             </div>
 
             <div className="panel__body">
+              {debugRun && (
+                <div
+                  className={`panel__view${activeTab === "debug" ? " is-active" : ""}`}
+                  id="view-debug"
+                  role="tabpanel"
+                >
+                  {activeTab === "debug" && (
+                    <DebugPanel
+                      key={debugRun.trace.steps.length + ":" + debugRun.output.length}
+                      trace={debugRun.trace}
+                      output={debugRun.output}
+                      onLine={showDebugLine}
+                    />
+                  )}
+                </div>
+              )}
               <div
                 className={`panel__view${activeTab === "console" ? " is-active" : ""}`}
                 id="view-console"
