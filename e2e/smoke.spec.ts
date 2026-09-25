@@ -364,7 +364,9 @@ test("the playground has no sidebar, a site menu, and goes back where you came f
   await expect(page.locator(".site-sidenav")).toHaveCount(0);
   await page.getByRole("button", { name: "Menu" }).click();
   const drawer = page.getByRole("dialog", { name: /menu/ });
-  await expect(drawer.getByRole("link", { name: "Whiteboard" })).toBeVisible();
+  await expect(
+    drawer.getByRole("navigation", { name: "Site" }).getByRole("link", { name: "Whiteboard" })
+  ).toBeVisible();
   await drawer.getByRole("button", { name: /Theme/ }).click();
   await drawer.getByRole("radio", { name: "Kraft" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "kraft");
@@ -747,8 +749,18 @@ test("the site menu folds its sections and changes the text size everywhere", as
   await page.goto("/architecture/arch-build");
   await page.getByRole("button", { name: "Menu" }).click();
   const menu = page.getByRole("dialog", { name: /menu/ });
-  await expect(menu.getByRole("link", { name: "Whiteboard" })).toBeVisible();
+  await expect(menu.getByRole("navigation", { name: "Site" }).getByRole("link", { name: "Whiteboard" })).toBeVisible();
   await expect(menu.getByRole("button", { name: /Theme/ })).toHaveAttribute("aria-expanded", "false");
+  const built = menu.getByRole("button", { name: /How this is built/ });
+  await expect(built).toContainText("I2");
+  await built.click();
+  await expect(
+    menu.getByRole("navigation", { name: "How this is built" }).locator("a[aria-current=page]")
+  ).toContainText("The build");
+  await expect(menu.getByRole("button", { name: /Interview book/ })).toHaveAttribute("aria-expanded", "false");
+  await expect(
+    menu.getByRole("navigation", { name: "Topics" }).getByRole("link", { name: /Interview book/ })
+  ).toHaveCount(0);
   const textSize = menu.getByRole("button", { name: /Text size/ });
   await textSize.click();
   await expect(textSize).toHaveAttribute("aria-expanded", "true");

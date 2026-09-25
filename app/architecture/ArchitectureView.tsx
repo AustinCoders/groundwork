@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ARCH_PARTS as PARTS } from "@/lib/architectureParts";
 import { useCallback, useMemo, useState } from "react";
 import { BackButton } from "@/components/practice/BackButton";
 import { SiteDrawer } from "@/components/SiteDrawer";
@@ -93,24 +94,6 @@ const LANES: Lane[] = [
       { chapter: "arch-performance", label: "Performance", note: "Lighthouse budgets and what each page ships" },
       { chapter: "arch-security", label: "Security", note: "Sandboxing your code and distrusting share links" },
     ],
-  },
-];
-
-export const PARTS: { level: ChapterCard["level"]; title: string; blurb: string }[] = [
-  {
-    level: "beginner",
-    title: "Foundations",
-    blurb: "What the site is, what it is made of, and where everything lives.",
-  },
-  {
-    level: "intermediate",
-    title: "How it runs",
-    blurb: "From request to rendered page, and every feature that runs in your browser.",
-  },
-  {
-    level: "advanced",
-    title: "How it holds up",
-    blurb: "Speed, safety, tests, delivery, current health and what breaks first.",
   },
 ];
 

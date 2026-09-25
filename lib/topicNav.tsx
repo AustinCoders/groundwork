@@ -3,14 +3,41 @@
 import { createContext, useContext } from "react";
 import type { LevelId, TopicNav } from "@/content/types";
 
-const TopicsNavContext = createContext<TopicNav[]>([]);
+export interface GuideNav {
+  id: string;
+  name: string;
+  mark: string;
+  accent: string;
+  href: string;
+  total: number;
+  groups: { title: string; chapters: { id: string; num: string; title: string; href: string }[] }[];
+}
 
-export function TopicsNavProvider({ topics, children }: { topics: TopicNav[]; children: React.ReactNode }) {
-  return <TopicsNavContext.Provider value={topics}>{children}</TopicsNavContext.Provider>;
+const TopicsNavContext = createContext<TopicNav[]>([]);
+const GuidesNavContext = createContext<GuideNav[]>([]);
+
+export function TopicsNavProvider({
+  topics,
+  guides = [],
+  children,
+}: {
+  topics: TopicNav[];
+  guides?: GuideNav[];
+  children: React.ReactNode;
+}) {
+  return (
+    <TopicsNavContext.Provider value={topics}>
+      <GuidesNavContext.Provider value={guides}>{children}</GuidesNavContext.Provider>
+    </TopicsNavContext.Provider>
+  );
 }
 
 export function useTopicsNav(): TopicNav[] {
   return useContext(TopicsNavContext);
+}
+
+export function useGuidesNav(): GuideNav[] {
+  return useContext(GuidesNavContext);
 }
 
 export function findNav(list: TopicNav[], id?: string | null): TopicNav | null {

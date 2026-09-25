@@ -4,7 +4,8 @@ import { topicChapterMetadata, topicChapterParams } from "@/components/reader/to
 import { chapterMetas, chapters, notesHref } from "@/lib/content";
 import { ChapterView } from "@/components/series/ChapterView";
 import { withHeadingIds } from "@/lib/headingToc";
-import { PARTS, type ChapterCard } from "../ArchitectureView";
+import { ARCH_PARTS } from "@/lib/architectureParts";
+import type { ChapterCard } from "../ArchitectureView";
 
 const TOPIC = "architecture";
 
@@ -37,7 +38,7 @@ export default async function Page({ params }: { params: Promise<{ chapter: stri
     <ChapterView
       seriesTitle="How this is built"
       homeLabel="The system map"
-      parts={PARTS}
+      parts={ARCH_PARTS}
       basePath={notesHref(TOPIC)}
       chapter={cards[index]}
       html={html}

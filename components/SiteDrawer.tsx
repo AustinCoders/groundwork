@@ -12,7 +12,7 @@ import { useProgressValue } from "@/lib/hooks";
 import { progress } from "@/lib/storage";
 import { FONT_ITEMS, THEME_ITEMS } from "@/lib/storage";
 import { SITE_NAME } from "@/lib/site";
-import { navHref, useTopicsNav } from "@/lib/topicNav";
+import { navHref, useGuidesNav, useTopicsNav, type GuideNav } from "@/lib/topicNav";
 import type { TopicNav } from "@/content/types";
 import styles from "./SiteDrawer.module.css";
 
@@ -49,7 +49,7 @@ interface Hit {
   meta: string;
 }
 
-type Section = "topics" | "theme" | "font" | "reading" | "narrator";
+type Section = string;
 
 const plain = (label: string) => label.replace(/^\S+\s/, "");
 
@@ -65,7 +65,9 @@ function useHtmlAttr(name: string): string {
   );
 }
 
-const ICONS: Record<Section, React.ReactNode> = {
+const ICONS: Record<string, React.ReactNode> = {
+  interview: <path d="M12 21a9 9 0 100-18 9 9 0 000 18zM12 16a4 4 0 100-8 4 4 0 000 8zM12 12h.01" />,
+  architecture: <path d="M12 3l9 5-9 5-9-5zM3 13l9 5 9-5M3 17.5l9 5 9-5" />,
   topics: (
     <path d="M4 19.5v-15A1.5 1.5 0 015.5 3H20v15H5.5A1.5 1.5 0 004 19.5zm0 0A1.5 1.5 0 005.5 21H20M8 7h8M8 11h5" />
   ),
@@ -243,10 +245,59 @@ function TopicList({ topics, current, onClose }: { topics: TopicNav[]; current: 
   );
 }
 
+function GuideList({ guide, pathname, onClose }: { guide: GuideNav; pathname: string; onClose: () => void }) {
+  const style = { "--accent": accentVar(guide.accent) } as React.CSSProperties;
+  return (
+    <nav aria-label={guide.name} className={styles.topicNav}>
+      <Link
+        href={guide.href}
+        className={styles.overview}
+        aria-current={pathname === guide.href ? "page" : undefined}
+        onClick={onClose}
+        prefetch={false}
+        style={style}
+      >
+        <span className={styles.chip} aria-hidden="true">
+          {guide.mark}
+        </span>
+        <span className={styles.hitLabel}>Start page</span>
+        <span aria-hidden="true">→</span>
+      </Link>
+      {guide.groups.map((g) => (
+        <div key={g.title} className={styles.group}>
+          <p className={styles.groupLabel}>
+            {g.title} · {g.chapters.length}
+          </p>
+          <ul className={styles.hits}>
+            {g.chapters.map((c) => (
+              <li key={c.id}>
+                <Link
+                  href={c.href}
+                  className={styles.hit}
+                  aria-current={pathname === c.href ? "page" : undefined}
+                  onClick={onClose}
+                  prefetch={false}
+                  style={style}
+                >
+                  <span className={styles.num} aria-hidden="true">
+                    {c.num}
+                  </span>
+                  <span className={styles.hitLabel}>{c.title}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </nav>
+  );
+}
+
 function DrawerBody({ onClose, reading }: { onClose: () => void; reading: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
-  const topics = useTopicsNav();
+  const guides = useGuidesNav();
+  const topics = useTopicsNav().filter((t) => !guides.some((g) => g.id === t.id));
   const [open, setOpen] = useState<Set<Section>>(() => new Set());
   const [query, setQuery] = useState("");
   const theme = useHtmlAttr("data-theme");
@@ -271,9 +322,16 @@ function DrawerBody({ onClose, reading }: { onClose: () => void; reading: boolea
 
   const q = query.trim().toLowerCase();
   const hits: Hit[] = q
-    ? [...LINKS.map((l) => ({ ...l, meta: "Page" })), ...topics.map(topicHit)].filter((h) =>
-        h.label.toLowerCase().includes(q)
-      )
+    ? [
+        ...LINKS.map((l) => ({ ...l, meta: "Page" })),
+        ...topics.map(topicHit),
+        ...guides.flatMap((g) => [
+          { href: g.href, label: g.name, mark: g.mark, accent: g.accent, meta: `${g.total} chapters` },
+          ...g.groups.flatMap((grp) =>
+            grp.chapters.map((c) => ({ href: c.href, label: c.title, mark: g.mark, accent: g.accent, meta: g.name }))
+          ),
+        ]),
+      ].filter((h) => h.label.toLowerCase().includes(q))
     : [];
 
   function onSearchKey(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -364,6 +422,21 @@ function DrawerBody({ onClose, reading }: { onClose: () => void; reading: boolea
             >
               <TopicList topics={topics} current={current} onClose={onClose} />
             </Fold>
+            {guides.map((g) => {
+              const here = g.groups.flatMap((grp) => grp.chapters).find((c) => c.href === pathname);
+              return (
+                <Fold
+                  key={g.id}
+                  id={g.id}
+                  title={g.name}
+                  summary={here ? here.num : `${g.total} chapters`}
+                  open={open.has(g.id)}
+                  onToggle={toggle}
+                >
+                  <GuideList guide={g} pathname={pathname} onClose={onClose} />
+                </Fold>
+              );
+            })}
           </div>
           <p className={styles.goHead}>Customize</p>
           <div className={styles.folds}>
