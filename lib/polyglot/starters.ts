@@ -139,7 +139,7 @@ export function starterFor(lang: StarterLanguage, sig: Signature, title: string)
     case "lua":
       return `${note("--")}-- Tables here start at 1, but indices the tests expect start at 0.\n\nfunction ${fn}(${params.map((p) => p.name).join(", ")})\n  -- your code here\n  return ${Z}\nend\n`;
     case "cpp":
-      return `#include <bits/stdc++.h>\nusing namespace std;\n\n${note("//")}\n${T(ret)} ${fn}(${params.map((p) => `${depth(p.type).dims ? `${T(p.type)}&` : T(p.type)} ${p.name}`).join(", ")}) {\n    // your code here\n    return ${Z};\n}\n`;
+      return `#include <algorithm>\n#include <climits>\n#include <string>\n#include <unordered_map>\n#include <unordered_set>\n#include <vector>\nusing namespace std;\n\n${note("//")}\n${T(ret)} ${fn}(${params.map((p) => `${depth(p.type).dims ? `${T(p.type)}&` : T(p.type)} ${p.name}`).join(", ")}) {\n    // your code here\n    return ${Z};\n}\n`;
     case "c": {
       const args = params.flatMap((p) =>
         depth(p.type).dims ? [`${T(p.type)} ${p.name}`, `int ${p.name}Size`] : [`${T(p.type)} ${p.name}`]

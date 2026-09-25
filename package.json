@@ -72,6 +72,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
+    "@bjorn3/browser_wasi_shim": "^0.4.2",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^22",

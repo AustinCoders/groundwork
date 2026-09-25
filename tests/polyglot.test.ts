@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { practice } from "@/content/practice";
-import { gradeResults, parseResultLine, RESULT_MARK, withHarness } from "@/lib/polyglot/grade";
+import { canGrade, gradeResults, parseResultLine, RESULT_MARK, withHarness } from "@/lib/polyglot/grade";
 import { recordPolyglot } from "@/lib/polyglot/record";
 import { starterFor, typeName, type StarterLanguage } from "@/lib/polyglot/starters";
 import type { Polyglot } from "@/lib/polyglot/types";
@@ -135,5 +135,31 @@ describe("graders for the scripting languages", () => {
       tests: [{ name: "q", cases: [{ args: ["it's \\ ok"], expected: 1 }] }],
     });
     expect(php).toContain(String.raw`json_decode('[[["it\'s \\\\ ok"]]]', true)`);
+  });
+});
+
+describe("graders for C and C++", () => {
+  const poly = recordPolyglot(byId("ex-two-sum")) as Ready;
+
+  it("declares each case's arguments as C++ values before the call", () => {
+    const cpp = withHarness("cpp", "", poly);
+    expect(cpp).toContain("vector<int> __a0 = {2, 7, 11, 15};");
+    expect(cpp).toContain("auto __r = twoSum(__a0, __a1);");
+  });
+
+  it("passes C arrays with their length and asks for the returned length", () => {
+    const c = withHarness("c", "", poly);
+    expect(c).toContain("int __a0[] = {2, 7, 11, 15};");
+    expect(c).toContain("twoSum(__a0, 4, 9, &__rs)");
+  });
+
+  it("only offers C grading where C can take the arguments", () => {
+    expect(canGrade("c", poly.signature)).toBe(true);
+    const grid = {
+      ...poly.signature,
+      params: [{ name: "g", type: { k: "list", of: { k: "list", of: { k: "int" } } } as const }],
+    };
+    expect(canGrade("c", grid)).toBe(false);
+    expect(canGrade("cpp", grid)).toBe(true);
   });
 });

@@ -1,6 +1,6 @@
 import { SCRIPT_RUNTIMES } from "@/lib/wasmAssets";
 
-type Lang = "lua" | "ruby" | "php";
+type Lang = "lua" | "ruby" | "php" | "c" | "cpp";
 
 interface Engine {
   run(code: string, stdin: string[]): Promise<void>;
@@ -164,8 +164,123 @@ async function phpEngine(): Promise<Engine> {
   };
 }
 
+interface Clang {
+  runClang: (
+    args: string[],
+    files: Record<string, string | Record<string, string>>,
+    options: { stdout: (b: Uint8Array | null) => void; stderr: (b: Uint8Array | null) => void }
+  ) => Promise<Record<string, Uint8Array>>;
+}
+
+let clangPromise: Promise<[Clang, typeof import("@bjorn3/browser_wasi_shim")]> | null = null;
+
+function loadClang() {
+  clangPromise ??= Promise.all([load(SCRIPT_RUNTIMES.clang.module), load(SCRIPT_RUNTIMES.clang.wasm)]);
+  return clangPromise;
+}
+
+function compilerLine(text: string, file: string) {
+  const m = text.match(new RegExp(`^${file.replace(".", "\\.")}:(\\d+):\\d+: (error|warning|note)`));
+  return m ? { line: Number(m[1]), kind: m[2] === "error" ? "error" : m[2] === "warning" ? "warn" : "info" } : null;
+}
+
+const STD_HEADERS = [
+  "algorithm",
+  "array",
+  "bitset",
+  "cassert",
+  "cctype",
+  "climits",
+  "cmath",
+  "cstdint",
+  "cstdio",
+  "cstdlib",
+  "cstring",
+  "deque",
+  "functional",
+  "iomanip",
+  "iostream",
+  "iterator",
+  "limits",
+  "list",
+  "map",
+  "memory",
+  "numeric",
+  "optional",
+  "queue",
+  "set",
+  "sstream",
+  "stack",
+  "string",
+  "string_view",
+  "tuple",
+  "unordered_map",
+  "unordered_set",
+  "utility",
+  "vector",
+]
+  .map((h) => `#include <${h}>`)
+  .join("\n");
+
+function nativeEngine(lang: "c" | "cpp"): Promise<Engine> {
+  return loadClang().then(([clang, shim]) => ({
+    async run(code, stdin) {
+      const file = lang === "c" ? "main.c" : "main.cpp";
+      const args =
+        lang === "c"
+          ? ["clang", "-O1", "-std=c17", file, "-o", "main.wasm", "-lm"]
+          : ["clang++", "-O1", "-std=c++20", "-fno-exceptions", file, "-o", "main.wasm"];
+      let diagnostics = "";
+      const collect = (b: Uint8Array | null) => {
+        if (b) diagnostics += new TextDecoder().decode(b);
+      };
+      let files: Record<string, Uint8Array>;
+      try {
+        files = await clang.runClang(
+          lang === "cpp" ? [...args.slice(0, 1), "-I.", ...args.slice(1)] : args,
+          lang === "cpp" ? { [file]: code, bits: { "stdc++.h": STD_HEADERS } } : { [file]: code },
+          { stdout: collect, stderr: collect }
+        );
+      } catch {
+        files = {};
+      }
+      for (const text of diagnostics.split("\n").filter(Boolean)) {
+        const where = compilerLine(text, file);
+        postMessage({
+          type: "console",
+          payload: { kind: where?.kind ?? "error", text: text.replace(`${file}:`, "line "), line: where?.line },
+        });
+      }
+      const binary = files["main.wasm"];
+      if (!binary) throw new Error("It did not compile — see the errors above.");
+      postMessage({ type: "started" });
+      const encoder = new TextEncoder();
+      const input = new shim.OpenFile(new shim.File(encoder.encode(stdin.map((l) => `${l}\n`).join(""))));
+      const out = shim.ConsoleStdout.lineBuffered((line: string) => emit("log", `${line}\n`));
+      const err = shim.ConsoleStdout.lineBuffered((line: string) => emit("error", `${line}\n`));
+      const wasi = new shim.WASI(["main"], [], [input, out, err]);
+      const instance = await WebAssembly.instantiate(await WebAssembly.compile(binary as BufferSource), {
+        wasi_snapshot_preview1: wasi.wasiImport,
+      });
+      let status = 0;
+      try {
+        status = wasi.start(instance as unknown as { exports: { memory: WebAssembly.Memory; _start: () => unknown } });
+      } catch (e) {
+        throw new Error(e instanceof Error ? `The program crashed: ${e.message}` : "The program crashed.");
+      }
+      if (status !== 0) throw new Error(`The program exited with status ${status}.`);
+    },
+  }));
+}
+
 const engines = new Map<Lang, Promise<Engine>>();
-const LABEL: Record<Lang, string> = { lua: "Lua", ruby: "Ruby (~10 MB)", php: "PHP (~8 MB)" };
+const LABEL: Record<Lang, string> = {
+  lua: "Lua",
+  ruby: "Ruby (~10 MB)",
+  php: "PHP (~8 MB)",
+  c: "C compiler (~12 MB)",
+  cpp: "C++ compiler (~12 MB)",
+};
 
 self.onmessage = async (event: MessageEvent) => {
   const data = event.data as { type: string; lang: Lang; code: string; stdin?: string };
@@ -175,7 +290,16 @@ self.onmessage = async (event: MessageEvent) => {
       type: "console",
       payload: { kind: "system", text: `▶ loading the ${LABEL[data.lang]} runtime — one-time, cached after this…` },
     });
-    engines.set(data.lang, data.lang === "lua" ? luaEngine() : data.lang === "ruby" ? rubyEngine() : phpEngine());
+    engines.set(
+      data.lang,
+      data.lang === "lua"
+        ? luaEngine()
+        : data.lang === "ruby"
+          ? rubyEngine()
+          : data.lang === "php"
+            ? phpEngine()
+            : nativeEngine(data.lang)
+    );
   }
   const stdin = String(data.stdin ?? "")
     .replace(/\r\n/g, "\n")
@@ -183,7 +307,7 @@ self.onmessage = async (event: MessageEvent) => {
   if (stdin.at(-1) === "") stdin.pop();
   try {
     const engine = await engines.get(data.lang)!;
-    postMessage({ type: "started" });
+    if (data.lang !== "c" && data.lang !== "cpp") postMessage({ type: "started" });
     await engine.run(data.code, stdin);
     flush();
     postMessage({ type: "done", payload: { results: [] } });

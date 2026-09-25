@@ -1,7 +1,7 @@
 import type { RunnerDonePayload, RunnerOutputEntry } from "@/lib/runner";
 
 export interface ScriptRunOptions {
-  lang: "lua" | "ruby" | "php";
+  lang: "lua" | "ruby" | "php" | "c" | "cpp";
   code: string;
   stdin?: string;
   timeout?: number;

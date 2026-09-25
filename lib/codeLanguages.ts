@@ -1,7 +1,7 @@
 import type { Extension } from "@codemirror/state";
 import type { StreamParser } from "@codemirror/language";
 
-export type RunnableKind = "js" | "ts" | "python" | "sql" | "web" | "ruby" | "php" | "lua";
+export type RunnableKind = "js" | "ts" | "python" | "sql" | "web" | "ruby" | "php" | "lua" | "c" | "cpp";
 
 export interface LanguageMeta {
   label: string;
@@ -84,14 +84,14 @@ export const LANGUAGES: Record<LanguageKey, LanguageMeta> = {
   cpp: {
     label: "C++",
     ext: "cpp",
-    runnable: null,
+    runnable: "cpp",
     comment: "//",
     support: async () => (await import("@codemirror/lang-cpp")).cpp(),
   },
   c: {
     label: "C",
     ext: "c",
-    runnable: null,
+    runnable: "c",
     comment: "//",
     support: async () => (await import("@codemirror/lang-cpp")).cpp(),
   },
@@ -173,6 +173,8 @@ export const HINTS: Record<RunnableKind, string> = {
   ruby: "⌘/Ctrl + Enter to run — first run downloads the Ruby runtime (~10 MB, cached after)",
   php: "⌘/Ctrl + Enter to run — first run downloads the PHP runtime (~8 MB, cached after)",
   lua: "⌘/Ctrl + Enter to run in Lua 5.4",
+  c: "⌘/Ctrl + Enter to compile with clang and run — the first compile downloads it (~12 MB)",
+  cpp: "⌘/Ctrl + Enter to compile with clang++ (C++20, no exceptions) and run — first time downloads it (~12 MB)",
 };
 
 export const WEB_LANGUAGES: readonly LanguageKey[] = ["html", "css"];

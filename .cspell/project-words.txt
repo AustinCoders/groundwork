@@ -114,6 +114,7 @@ bbaac
 BDCABA
 bitpacking
 bivariantly
+bjorn
 boxg
 boxr
 bsbininm
@@ -121,6 +122,7 @@ buildx
 Bulkheading
 CACACACACA
 caedbdedda
+cassert
 catsandog
 Caveat
 cbaabcabc
@@ -131,12 +133,15 @@ ccac
 cccaaa
 ccccbbbaa
 CCCCCAAAAA
+cctype
 CDXLIV
 Chargebee
 cheatsheet
 chipbtn
 CLDR
 clike
+climits
+cmath
 coalescable
 codefirst
 codegen
@@ -152,6 +157,10 @@ covermap
 Cpath
 crds
 CRDT
+cstdint
+cstdio
+cstdlib
+cstring
 Csvg
 ctes
 currentline
@@ -194,6 +203,7 @@ EDNS
 effectful
 eidbaooo
 eidboaoo
+endl
 epoll
 esbenp
 ESOPs
@@ -201,6 +211,7 @@ eventloop
 EWMA
 Failback
 Fastly
+fflush
 finishable
 finops
 flexbox
@@ -245,6 +256,7 @@ inspectable
 Insta
 invertibility
 IOCP
+iomanip
 ipairs
 issip
 IVXLCDM
@@ -367,6 +379,7 @@ prereq
 prereqs
 prevs
 Prototion
+putchar
 pwwkew
 Pyodide
 qbody
@@ -420,6 +433,7 @@ serializability
 Serwist
 setgroup
 SETNX
+setprecision
 setrow
 Shopyvilla
 signups
@@ -430,6 +444,7 @@ sourcer
 sparkline
 SPOF
 SSML
+sstream
 statefulness
 stdbool
 stdc
@@ -511,6 +526,7 @@ xyzba
 xyzxyw
 xyzxyz
 xyzzyx
+yowasp
 Yugabyte
 Zipf
 Zipfian

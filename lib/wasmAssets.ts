@@ -10,6 +10,8 @@ export const SQL_JS_BASE =
 export const WASMOON_VERSION = "1.16.0";
 export const RUBY_WASM_VERSION = "2.10.1";
 export const PHP_WASM_VERSION = "0.1.0";
+export const CLANG_VERSION = "22.0.0-git20542-10";
+export const WASI_SHIM_VERSION = "0.4.2";
 
 const NPM_CDN = process.env.NEXT_PUBLIC_NPM_CDN || "https://cdn.jsdelivr.net/npm/";
 
@@ -25,6 +27,10 @@ export const SCRIPT_RUNTIMES = {
   php: {
     module: `${NPM_CDN}php-wasm@${PHP_WASM_VERSION}/PhpWeb.mjs`,
     wasm: "",
+  },
+  clang: {
+    module: `${NPM_CDN}@yowasp/clang@${CLANG_VERSION}/gen/bundle.js`,
+    wasm: `${NPM_CDN}@bjorn3/browser_wasi_shim@${WASI_SHIM_VERSION}/+esm`,
   },
 } as const;
 
