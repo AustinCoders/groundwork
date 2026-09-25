@@ -1,4 +1,4 @@
-import type { El } from "@/lib/whiteboard/model";
+import { sanitizeEls, type El } from "@/lib/whiteboard/model";
 
 export interface BoardMeta {
   id: string;
@@ -35,8 +35,7 @@ export function listBoards(): BoardMeta[] {
 }
 
 export function loadBoard(id: string): El[] {
-  const els = read<El[]>(boardKey(id), []);
-  return Array.isArray(els) ? els : [];
+  return sanitizeEls(read<unknown>(boardKey(id), []), 50000);
 }
 
 export function lastBoard(): string | null {
@@ -47,15 +46,20 @@ export function rememberLast(id: string) {
   write(LAST, id);
 }
 
+export function hasBoard(id: string): boolean {
+  return read<BoardMeta[]>(INDEX, []).some((b) => b.id === id);
+}
+
 export function saveBoard(id: string, els: El[], name?: string): boolean {
   const ok = write(boardKey(id), els);
   const list = read<BoardMeta[]>(INDEX, []);
   const existing = list.find((b) => b.id === id);
+  if (!ok && existing) return false;
   const meta: BoardMeta = {
     id,
     name: name ?? existing?.name ?? "Untitled board",
     updatedAt: Date.now(),
-    count: els.length,
+    count: ok ? els.length : 0,
   };
   write(INDEX, [meta, ...list.filter((b) => b.id !== id)]);
   return ok;
@@ -83,12 +87,17 @@ const PREFS = "groundwork:boards:prefs";
 
 export interface BoardPrefs {
   paper: string;
+  tint: string;
   snap: boolean;
 }
 
 export function loadPrefs(): BoardPrefs {
   const p = read<Partial<BoardPrefs>>(PREFS, {});
-  return { paper: typeof p.paper === "string" ? p.paper : "dots", snap: p.snap !== false };
+  return {
+    paper: typeof p.paper === "string" ? p.paper : "dots",
+    tint: typeof p.tint === "string" ? p.tint : "auto",
+    snap: p.snap !== false,
+  };
 }
 
 export function savePrefs(prefs: BoardPrefs) {

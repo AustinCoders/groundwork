@@ -13,6 +13,7 @@ export function BoardMenu({
   onRename,
   onDelete,
   onExport,
+  onCopyPng,
   onImport,
   onShare,
   onClear,
@@ -24,6 +25,7 @@ export function BoardMenu({
   onRename: (name: string) => void;
   onDelete: (id: string) => void;
   onExport: (kind: "png" | "svg" | "json") => void;
+  onCopyPng: () => void;
   onImport: (text: string) => void;
   onShare: () => void;
   onClear: () => void;
@@ -35,7 +37,11 @@ export function BoardMenu({
   useEffect(() => {
     if (!open) return;
     const close = (e: Event) => {
-      if (e instanceof KeyboardEvent ? e.key === "Escape" : !boxRef.current?.contains(e.target as Node)) setOpen(false);
+      if (e instanceof KeyboardEvent) {
+        if (e.key !== "Escape") return;
+        e.stopPropagation();
+        setOpen(false);
+      } else if (!boxRef.current?.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener("pointerdown", close);
     document.addEventListener("keydown", close);
@@ -67,7 +73,10 @@ export function BoardMenu({
         aria-label="Board name"
         key={current?.id}
         defaultValue={current?.name ?? ""}
-        onBlur={(e) => onRename(e.target.value)}
+        onBlur={(e) => {
+          if (!e.target.value.trim()) e.target.value = current?.name ?? "";
+          else onRename(e.target.value);
+        }}
         onKeyDown={(e) => {
           if (e.key === "Enter") e.currentTarget.blur();
         }}
@@ -110,6 +119,9 @@ export function BoardMenu({
           </button>
           <button type="button" role="menuitem" className={styles.menuItem} onClick={act(() => onExport("json"))}>
             Board file (.json)
+          </button>
+          <button type="button" role="menuitem" className={styles.menuItem} onClick={act(onCopyPng)}>
+            Copy as PNG
           </button>
           <button
             type="button"

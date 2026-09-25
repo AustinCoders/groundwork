@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  alignEls,
   bounds,
   commit,
+  distributeEls,
+  expandGroups,
+  groupEls,
+  sanitizeEls,
+  setLocked,
   DEFAULT_STYLE,
   duplicate,
   elementAt,
@@ -135,5 +141,100 @@ describe("editing", () => {
     expect(h.present).toHaveLength(2);
     h = undo(undo(undo(h)));
     expect(h.present).toHaveLength(0);
+  });
+});
+
+describe("whiteboard: shapes, locking, groups and import safety", () => {
+  const arrowBetween = (from: string, to: string): El => ({
+    id: "arr",
+    kind: "arrow",
+    x: 0,
+    y: 0,
+    w: 0,
+    h: 0,
+    points: [
+      [0, 0],
+      [0, 0],
+    ],
+    start: from,
+    end: to,
+    style: DEFAULT_STYLE,
+  });
+
+  it("hit-tests the new polygon shapes by their outline, not their box", () => {
+    const tri = box("t", 0, 0, "triangle");
+    expect(hitTest(tri, [50, 45], 0)).toBe(true);
+    expect(hitTest(tri, [3, 3], 0)).toBe(false);
+    const star = { ...box("s", 0, 0, "star"), w: 100, h: 100 };
+    expect(hitTest(star, [50, 55], 0)).toBe(true);
+    expect(hitTest(star, [2, 98], 0)).toBe(false);
+  });
+
+  it("detaches a bound arrow that is moved on its own", () => {
+    const els = routeArrows([box("a", 0, 0), box("b", 300, 0), arrowBetween("a", "b")]);
+    const moved = moveEls(els, new Set(["arr"]), 0, 100);
+    const arrow = moved.find((e) => e.id === "arr")!;
+    expect(arrow.start).toBeNull();
+    expect(arrow.end).toBeNull();
+    expect(arrow.y).toBeGreaterThan(els.find((e) => e.id === "arr")!.y + 50);
+  });
+
+  it("keeps locked elements in place and on the board", () => {
+    const els = setLocked([box("a", 0, 0), box("b", 200, 0)], new Set(["a"]), true);
+    expect(moveEls(els, new Set(["a", "b"]), 10, 10).map((e) => e.x)).toEqual([0, 210]);
+    expect(removeEls(els, new Set(["a", "b"])).map((e) => e.id)).toEqual(["a"]);
+  });
+
+  it("selects a whole group from one member and gives duplicates their own group", () => {
+    const grouped = groupEls([box("a", 0, 0), box("b", 200, 0), box("c", 400, 0)], new Set(["a", "b"]));
+    expect([...expandGroups(grouped, new Set(["a"]))].sort()).toEqual(["a", "b"]);
+    const { els, created } = duplicate(grouped, new Set(["a", "b"]));
+    const copies = els.filter((e) => created.includes(e.id));
+    expect(copies[0].group).toBe(copies[1].group);
+    expect(copies[0].group).not.toBe(grouped[0].group);
+  });
+
+  it("aligns and spaces out a selection", () => {
+    const els = [box("a", 0, 0), box("b", 150, 40), box("c", 500, 90)];
+    const left = alignEls(els, new Set(["a", "b", "c"]), "left");
+    expect(left.map((e) => e.x)).toEqual([0, 0, 0]);
+    const spread = distributeEls([box("a", 0, 0), box("b", 110, 0), box("c", 400, 0)], new Set(["a", "b", "c"]), "x");
+    expect(spread.map((e) => e.x)).toEqual([0, 200, 400]);
+  });
+
+  it("cleans untrusted board data instead of crashing on it", () => {
+    const els = sanitizeEls([
+      { id: "a", kind: "line", x: 0, y: 0, style: {}, points: [5] },
+      { id: "b", kind: "text", x: 1, y: 2, text: 42, style: true },
+      { id: "c", kind: "rect", x: "no", y: 0, style: { width: 1e9, dash: "wavy" } },
+      { id: "d", kind: "script", x: 0, y: 0, style: {} },
+      { id: "e", kind: "image", x: 0, y: 0, style: {}, src: "javascript:alert(1)" },
+      {
+        id: "f",
+        kind: "arrow",
+        x: 0,
+        y: 0,
+        style: {},
+        points: [
+          [0, 0],
+          [9, 9],
+        ],
+        start: "missing",
+        end: "a",
+      },
+      null,
+    ]);
+    expect(els.map((e) => e.id)).toEqual(["a", "b", "c", "f"]);
+    expect(els[0].points).toEqual([
+      [0, 0],
+      [0, 0],
+    ]);
+    expect(els[1].text).toBeUndefined();
+    expect(els[2].x).toBe(0);
+    expect(els[2].style.width).toBe(60);
+    expect(els[2].style.dash).toBe("solid");
+    expect(els[3].start).toBeNull();
+    expect(els[3].end).toBe("a");
+    expect(() => els.map(bounds)).not.toThrow();
   });
 });

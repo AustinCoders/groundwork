@@ -1,6 +1,6 @@
 import { packJson, unpackJson } from "@/lib/compress";
 import { describe, partToSvg, type Palette } from "@/lib/whiteboard/geometry";
-import { unionBounds, type El } from "@/lib/whiteboard/model";
+import { sanitizeEls, unionBounds, type El } from "@/lib/whiteboard/model";
 
 const PAD = 32;
 
@@ -68,24 +68,12 @@ export function downloadJson(els: El[], board: string) {
   download(new Blob([data], { type: "application/json" }), fileName(board, "json"));
 }
 
-function isEl(v: unknown): v is El {
-  const e = v as El;
-  return (
-    Boolean(e) &&
-    typeof e.id === "string" &&
-    typeof e.kind === "string" &&
-    typeof e.x === "number" &&
-    typeof e.y === "number" &&
-    Boolean(e.style)
-  );
-}
-
 export function parseBoardJson(text: string): { name: string; els: El[] } | null {
   try {
     const data = JSON.parse(text) as { name?: unknown; elements?: unknown };
     if (!Array.isArray(data.elements)) return null;
-    const els = data.elements.filter(isEl);
-    return { name: typeof data.name === "string" ? data.name : "Imported board", els };
+    const els = sanitizeEls(data.elements);
+    return { name: typeof data.name === "string" ? data.name.slice(0, 60) || "Imported board" : "Imported board", els };
   } catch {
     return null;
   }
@@ -101,7 +89,7 @@ export async function compressImage(file: Blob, max = 1600): Promise<{ src: stri
   canvas.height = h;
   canvas.getContext("2d")!.drawImage(bitmap, 0, 0, w, h);
   bitmap.close();
-  const type = file.type === "image/png" ? "image/png" : "image/jpeg";
+  const type = /^image\/(png|gif|webp|svg)/.test(file.type) ? "image/png" : "image/jpeg";
   return { src: canvas.toDataURL(type, 0.85), w, h };
 }
 
@@ -123,6 +111,6 @@ export async function readBoardShare(hash: string): Promise<{ name: string; els:
   if (!data || !Array.isArray(data.elements)) return null;
   return {
     name: typeof data.name === "string" ? data.name.slice(0, 60) : "Shared board",
-    els: data.elements.filter(isEl).slice(0, 2000),
+    els: sanitizeEls(data.elements, 2000),
   };
 }

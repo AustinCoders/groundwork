@@ -84,10 +84,65 @@ test("has its own header and remembers the page layout", async ({ page }) => {
   await expect(page.getByLabel("Theme")).toBeVisible();
 
   await page.getByRole("button", { name: "Page layout" }).click();
+  await page.getByRole("tab", { name: "Technical" }).click();
   await page.getByRole("button", { name: "Isometric" }).click();
-  await page.getByRole("checkbox", { name: "Snap to grid" }).uncheck();
+  await page.getByRole("tab", { name: "Colour" }).click();
+  await page.getByRole("button", { name: "Blueprint" }).click();
+  await page.getByRole("checkbox", { name: /Snap to the page/ }).uncheck();
   await page.reload({ waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Page layout" }).click();
+  await expect(page.getByRole("tab", { name: "Technical" })).toHaveAttribute("aria-selected", "true");
   await expect(page.getByRole("button", { name: "Isometric" })).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByRole("checkbox", { name: "Snap to grid" })).not.toBeChecked();
+  await expect(page.getByRole("checkbox", { name: /Snap to the page/ })).not.toBeChecked();
+  await expect(page.locator("#board")).toHaveAttribute("data-tint", "blueprint");
+});
+
+test("templates, locking, grouping and the right-click menu", async ({ page }) => {
+  const { svg, box } = await canvas(page);
+  await page.getByRole("button", { name: "Flowchart" }).click();
+  await expect(svg).toHaveAttribute("aria-label", /14 elements/);
+  await page.keyboard.press("Escape");
+
+  await page.keyboard.press("r");
+  await drag(page, [box.x + 1000, box.y + 440], [box.x + 1100, box.y + 510]);
+  await page.keyboard.press("ControlOrMeta+Shift+l");
+  await page.keyboard.press("Delete");
+  await expect(svg).toHaveAttribute("aria-label", /15 elements/);
+  await expect(page.getByRole("status")).toContainText(/unlock/i);
+
+  await page.mouse.click(box.x + 1005, box.y + 445, { button: "right" });
+  await page.getByRole("menuitem", { name: /Unlock/ }).click();
+  await page.mouse.click(box.x + 1005, box.y + 445, { button: "right" });
+  await page.getByRole("menuitem", { name: /Delete/ }).click();
+  await expect(svg).toHaveAttribute("aria-label", /14 elements/);
+
+  await page.keyboard.press("s");
+  await drag(page, [box.x + 80, box.y + 300], [box.x + 180, box.y + 380]);
+  await expect(page.locator("g[data-kind=triangle]")).toHaveCount(1);
+  await page.keyboard.press("?");
+  await expect(page.getByRole("dialog", { name: "Keyboard shortcuts" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "Keyboard shortcuts" })).toHaveCount(0);
+});
+
+test("an arrow's end can be dragged off one shape and onto another", async ({ page }) => {
+  const { box } = await canvas(page);
+  const at = (x: number, y: number): [number, number] => [box.x + x, box.y + y];
+  await page.keyboard.press("r");
+  await drag(page, at(200, 200), at(320, 280));
+  await page.keyboard.press("o");
+  await drag(page, at(600, 200), at(720, 280));
+  await page.keyboard.press("d");
+  await drag(page, at(600, 420), at(720, 520));
+  await page.keyboard.press("a");
+  await drag(page, at(260, 240), at(660, 240));
+  const arrow = page.locator("g[data-kind=arrow] path").first();
+
+  const end = (await page.locator("circle[data-end=end]").boundingBox())!;
+  await drag(page, [end.x + end.width / 2, end.y + end.height / 2], at(660, 470));
+  await page.keyboard.press("Escape");
+  const before = await arrow.getAttribute("d");
+  await page.keyboard.press("v");
+  await drag(page, at(680, 490), at(680, 640));
+  await expect.poll(() => arrow.getAttribute("d")).not.toBe(before);
 });

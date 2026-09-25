@@ -1,6 +1,17 @@
 "use client";
 
-import { FILLS, STROKES, type Dash, type Kind, type Style, type Tool } from "@/lib/whiteboard/model";
+import {
+  FILLS,
+  isBoxKind,
+  STROKES,
+  type Align,
+  type Dash,
+  type Head,
+  type Kind,
+  type Style,
+  type Tool,
+} from "@/lib/whiteboard/model";
+import { Icon, type IconName } from "./icons";
 import styles from "./whiteboard.module.css";
 
 const NAMES: Record<string, string> = {
@@ -49,12 +60,35 @@ function Swatch({
   );
 }
 
+const HEADS: { value: Head; label: string }[] = [
+  { value: "none", label: "None" },
+  { value: "arrow", label: "Arrow" },
+  { value: "triangle", label: "Solid" },
+  { value: "dot", label: "Dot" },
+  { value: "bar", label: "Bar" },
+];
+
+const ALIGNS: { how: Align; icon: IconName; label: string }[] = [
+  { how: "left", icon: "alignLeft", label: "Align left" },
+  { how: "centre", icon: "alignCentre", label: "Align centres" },
+  { how: "right", icon: "alignRight", label: "Align right" },
+  { how: "top", icon: "alignTop", label: "Align top" },
+  { how: "middle", icon: "alignMiddle", label: "Align middles" },
+  { how: "bottom", icon: "alignBottom", label: "Align bottom" },
+];
+
 export function StylePanel({
   style,
   kinds,
   count,
+  locked,
+  grouped,
   onStyle,
   onLayer,
+  onAlign,
+  onDistribute,
+  onGroup,
+  onLock,
   onDuplicate,
   onDelete,
   onClose,
@@ -63,16 +97,24 @@ export function StylePanel({
   style: Style;
   kinds: (Kind | Tool)[];
   count: number;
+  locked: boolean;
+  grouped: boolean;
   onStyle: (patch: Partial<Style>) => void;
   onLayer: (to: "front" | "back" | "forward" | "backward") => void;
+  onAlign: (how: Align) => void;
+  onDistribute: (axis: "x" | "y") => void;
+  onGroup: (on: boolean) => void;
+  onLock: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
 }) {
-  const fillable = kinds.some((k) => k === "rect" || k === "ellipse" || k === "diamond" || k === "sticky");
-  const hasText = kinds.some(
-    (k) => k === "text" || k === "sticky" || k === "rect" || k === "ellipse" || k === "diamond"
-  );
-  const stroked = kinds.some((k) => k !== "image" && k !== "sticky");
+  const fillable = kinds.some((k) => isBoxKind(k) || k === "sticky");
+  const hasText = kinds.some((k) => k === "text" || k === "sticky" || isBoxKind(k));
+  const stroked = kinds.some((k) => k !== "image" && k !== "sticky" && k !== "highlighter");
+  const linear = kinds.some((k) => k === "line" || k === "arrow");
+  const arrowDefault = kinds.every((k) => k === "arrow");
+  const startHead = style.startHead ?? "none";
+  const endHead = style.endHead ?? (arrowDefault ? "arrow" : "none");
 
   return (
     <aside className={styles.panel} aria-label="Style">
@@ -135,6 +177,33 @@ export function StylePanel({
           </div>
         </fieldset>
       )}
+      {linear && (
+        <fieldset className={styles.group}>
+          <legend>Ends</legend>
+          <div className={styles.headRow}>
+            <label>
+              <span>Start</span>
+              <select value={startHead} onChange={(e) => onStyle({ startHead: e.target.value as Head })}>
+                {HEADS.map((h) => (
+                  <option key={h.value} value={h.value}>
+                    {h.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>End</span>
+              <select value={endHead} onChange={(e) => onStyle({ endHead: e.target.value as Head })}>
+                {HEADS.map((h) => (
+                  <option key={h.value} value={h.value}>
+                    {h.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </fieldset>
+      )}
       {hasText && (
         <fieldset className={styles.group}>
           <legend>Text size</legend>
@@ -169,6 +238,36 @@ export function StylePanel({
           onChange={(e) => onStyle({ opacity: Number(e.target.value) / 100 })}
         />
       </fieldset>
+      {count > 1 && (
+        <fieldset className={styles.group}>
+          <legend>Align</legend>
+          <div className={styles.iconRow}>
+            {ALIGNS.map((a) => (
+              <button key={a.how} type="button" aria-label={a.label} title={a.label} onClick={() => onAlign(a.how)}>
+                <Icon name={a.icon} />
+              </button>
+            ))}
+            <button
+              type="button"
+              aria-label="Space out horizontally"
+              title="Space out horizontally (3 or more)"
+              disabled={count < 3}
+              onClick={() => onDistribute("x")}
+            >
+              <Icon name="spreadX" />
+            </button>
+            <button
+              type="button"
+              aria-label="Space out vertically"
+              title="Space out vertically (3 or more)"
+              disabled={count < 3}
+              onClick={() => onDistribute("y")}
+            >
+              <Icon name="spreadY" />
+            </button>
+          </div>
+        </fieldset>
+      )}
       {count > 0 && (
         <fieldset className={styles.group}>
           <legend>{count} selected</legend>
@@ -184,6 +283,19 @@ export function StylePanel({
             </button>
             <button type="button" title="Send to back — ⇧[" onClick={() => onLayer("back")}>
               To back
+            </button>
+            {count > 1 && !grouped && (
+              <button type="button" title="Group — ⌘/Ctrl G" onClick={() => onGroup(true)}>
+                Group
+              </button>
+            )}
+            {grouped && (
+              <button type="button" title="Ungroup — ⌘/Ctrl ⇧ G" onClick={() => onGroup(false)}>
+                Ungroup
+              </button>
+            )}
+            <button type="button" title="Lock or unlock — ⌘/Ctrl ⇧ L" onClick={onLock} aria-pressed={locked}>
+              {locked ? "Unlock" : "Lock"}
             </button>
             <button type="button" title="Duplicate — ⌘/Ctrl D" onClick={onDuplicate}>
               Duplicate

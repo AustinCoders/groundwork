@@ -1,7 +1,15 @@
-export type Tool =
-  "select" | "hand" | "pen" | "line" | "arrow" | "rect" | "ellipse" | "diamond" | "text" | "sticky" | "eraser";
+export type ExtraShape = "triangle" | "hexagon" | "star" | "cylinder" | "parallelogram" | "cloud";
 
-export type Kind = "pen" | "line" | "arrow" | "rect" | "ellipse" | "diamond" | "text" | "sticky" | "image";
+export const EXTRA_SHAPES: ExtraShape[] = ["triangle", "hexagon", "star", "cylinder", "parallelogram", "cloud"];
+
+export type BoxKind = "rect" | "ellipse" | "diamond" | ExtraShape;
+
+export type Tool =
+  "select" | "hand" | "pen" | "highlighter" | "laser" | "line" | "arrow" | BoxKind | "text" | "sticky" | "eraser";
+
+export type Kind = "pen" | "line" | "arrow" | BoxKind | "text" | "sticky" | "image";
+
+export type Head = "none" | "arrow" | "triangle" | "dot" | "bar";
 
 export type Dash = "solid" | "dashed" | "dotted";
 
@@ -12,6 +20,8 @@ export interface Style {
   dash: Dash;
   opacity: number;
   fontSize: number;
+  startHead?: Head;
+  endHead?: Head;
 }
 
 export type Point = [number, number];
@@ -29,6 +39,8 @@ export interface El {
   style: Style;
   start?: string | null;
   end?: string | null;
+  locked?: boolean;
+  group?: string;
 }
 
 export interface Box {
@@ -59,6 +71,95 @@ let counter = 0;
 export function newId(): string {
   counter = (counter + 1) % 1_000_000;
   return `${Date.now().toString(36)}${counter.toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+}
+
+export function textBox(text: string, fontSize: number): { w: number; h: number } {
+  const lines = text.split("\n");
+  const longest = Math.max(1, ...lines.map((l) => l.length));
+  return { w: Math.ceil(longest * fontSize * 0.58) + 8, h: Math.ceil(lines.length * fontSize * 1.25) + 8 };
+}
+
+export function sameEls(a: readonly El[], b: readonly El[]): boolean {
+  return a.length === b.length && a.every((el, i) => el === b[i]);
+}
+
+export function isBoxKind(kind: string): kind is BoxKind {
+  return kind === "rect" || kind === "ellipse" || kind === "diamond" || (EXTRA_SHAPES as string[]).includes(kind);
+}
+
+export function holdsText(el: El): boolean {
+  return el.kind === "text" || el.kind === "sticky" || isBoxKind(el.kind);
+}
+
+export function heads(el: El): { start: Head; end: Head } {
+  if (el.kind !== "arrow" && el.kind !== "line") return { start: "none", end: "none" };
+  return {
+    start: el.style.startHead ?? "none",
+    end: el.style.endHead ?? (el.kind === "arrow" ? "arrow" : "none"),
+  };
+}
+
+export function polygonPoints(kind: Kind, b: Box): Point[] | null {
+  const { x, y, w, h } = b;
+  const cx = x + w / 2;
+  const cy = y + h / 2;
+  switch (kind) {
+    case "diamond":
+      return [
+        [cx, y],
+        [x + w, cy],
+        [cx, y + h],
+        [x, cy],
+      ];
+    case "triangle":
+      return [
+        [cx, y],
+        [x + w, y + h],
+        [x, y + h],
+      ];
+    case "hexagon":
+      return [
+        [x + w * 0.25, y],
+        [x + w * 0.75, y],
+        [x + w, cy],
+        [x + w * 0.75, y + h],
+        [x + w * 0.25, y + h],
+        [x, cy],
+      ];
+    case "parallelogram":
+      return [
+        [x + w * 0.2, y],
+        [x + w, y],
+        [x + w * 0.8, y + h],
+        [x, y + h],
+      ];
+    case "star": {
+      const pts: Point[] = [];
+      for (let i = 0; i < 10; i++) {
+        const r = i % 2 ? 0.42 : 1;
+        const a = -Math.PI / 2 + (i * Math.PI) / 5;
+        pts.push([cx + (Math.cos(a) * r * w) / 2, cy + (Math.sin(a) * r * h) / 2 + h * 0.06]);
+      }
+      return pts;
+    }
+    default:
+      return null;
+  }
+}
+
+function insidePolygon(p: Point, poly: Point[]): boolean {
+  let hit = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i];
+    const [xj, yj] = poly[j];
+    if (yi > p[1] !== yj > p[1] && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) hit = !hit;
+  }
+  return hit;
+}
+
+function nearPolygon(p: Point, poly: Point[], t: number): boolean {
+  for (let i = 0; i < poly.length; i++) if (distToSegment(p, poly[i], poly[(i + 1) % poly.length]) <= t) return true;
+  return false;
 }
 
 export function isLinear(el: El): boolean {
@@ -139,11 +240,8 @@ export function hitTest(el: El, p: Point, tolerance: number): boolean {
     const dy = p[1] - (b.y + b.h / 2);
     return rx > 0 && ry > 0 && (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) <= 1;
   }
-  if (el.kind === "diamond") {
-    const cx = b.x + b.w / 2;
-    const cy = b.y + b.h / 2;
-    return Math.abs(p[0] - cx) / (b.w / 2 + t) + Math.abs(p[1] - cy) / (b.h / 2 + t) <= 1;
-  }
+  const poly = polygonPoints(el.kind, b);
+  if (poly) return insidePolygon(p, poly) || nearPolygon(p, poly, t);
   return true;
 }
 
@@ -170,9 +268,28 @@ export function edgeToward(el: El, toward: Point, gap = 6): Point {
   if (!dx && !dy) return [cx, cy];
   const rx = b.w / 2 + gap;
   const ry = b.h / 2 + gap;
+  const poly = polygonPoints(el.kind, b);
+  if (poly) {
+    let best = Infinity;
+    for (let i = 0; i < poly.length; i++) {
+      const [ax, ay] = poly[i];
+      const [bx, by] = poly[(i + 1) % poly.length];
+      const ex = bx - ax;
+      const ey = by - ay;
+      const den = dx * ey - dy * ex;
+      if (!den) continue;
+      const u = ((ax - cx) * ey - (ay - cy) * ex) / den;
+      const v = ((ax - cx) * dy - (ay - cy) * dx) / den;
+      if (u > 0 && v >= 0 && v <= 1) best = Math.min(best, u);
+    }
+    if (best !== Infinity) {
+      const len = Math.hypot(dx, dy);
+      const k = Math.min(1, best + gap / len);
+      return [cx + dx * k, cy + dy * k];
+    }
+  }
   let k: number;
-  if (el.kind === "ellipse") k = 1 / Math.sqrt((dx * dx) / (rx * rx) + (dy * dy) / (ry * ry));
-  else if (el.kind === "diamond") k = 1 / (Math.abs(dx) / rx + Math.abs(dy) / ry);
+  if (el.kind === "ellipse" || el.kind === "cloud") k = 1 / Math.sqrt((dx * dx) / (rx * rx) + (dy * dy) / (ry * ry));
   else k = Math.min(dx ? rx / Math.abs(dx) : Infinity, dy ? ry / Math.abs(dy) : Infinity);
   return [cx + dx * Math.min(k, 1), cy + dy * Math.min(k, 1)];
 }
@@ -195,6 +312,7 @@ export function routeArrows(els: El[], changed?: ReadonlySet<string>): El[] {
     const source: Point = from ? centre(bounds(from)) : absStart;
     const a = from ? edgeToward(from, target) : absStart;
     const b = to ? edgeToward(to, source) : absEnd;
+    if (Math.hypot(b[0] - a[0], b[1] - a[1]) < 2) return el;
     return {
       ...el,
       x: a[0],
@@ -208,8 +326,97 @@ export function routeArrows(els: El[], changed?: ReadonlySet<string>): El[] {
 }
 
 export function moveEls(els: El[], ids: ReadonlySet<string>, dx: number, dy: number): El[] {
-  const moved = els.map((el) => (ids.has(el.id) ? { ...el, x: el.x + dx, y: el.y + dy } : el));
+  const moved = els.map((el) => {
+    if (!ids.has(el.id) || el.locked) return el;
+    const next = { ...el, x: el.x + dx, y: el.y + dy };
+    if (el.kind === "arrow") {
+      if (el.start && !ids.has(el.start)) next.start = null;
+      if (el.end && !ids.has(el.end)) next.end = null;
+    }
+    return next;
+  });
   return routeArrows(moved, ids);
+}
+
+export function movableIds(els: El[], ids: ReadonlySet<string>): Set<string> {
+  return new Set(els.filter((e) => ids.has(e.id) && !e.locked).map((e) => e.id));
+}
+
+export function expandGroups(els: El[], ids: ReadonlySet<string>): Set<string> {
+  const groups = new Set(els.filter((e) => ids.has(e.id) && e.group).map((e) => e.group));
+  if (!groups.size) return new Set(ids);
+  return new Set(els.filter((e) => ids.has(e.id) || (e.group && groups.has(e.group))).map((e) => e.id));
+}
+
+export function groupEls(els: El[], ids: ReadonlySet<string>): El[] {
+  const group = newId();
+  return els.map((e) => (ids.has(e.id) ? { ...e, group } : e));
+}
+
+export function ungroupEls(els: El[], ids: ReadonlySet<string>): El[] {
+  return els.map((e) => (ids.has(e.id) && e.group ? { ...e, group: undefined } : e));
+}
+
+export function setLocked(els: El[], ids: ReadonlySet<string>, locked: boolean): El[] {
+  return els.map((e) => (ids.has(e.id) ? { ...e, locked: locked || undefined } : e));
+}
+
+export type Align = "left" | "centre" | "right" | "top" | "middle" | "bottom";
+
+export function alignEls(els: El[], ids: ReadonlySet<string>, how: Align): El[] {
+  const chosen = els.filter((e) => ids.has(e.id) && !e.locked);
+  const all = unionBounds(els.filter((e) => ids.has(e.id)));
+  if (!all || chosen.length < 2) return els;
+  const shift = new Map<string, Point>();
+  for (const el of chosen) {
+    const b = bounds(el);
+    const dx =
+      how === "left"
+        ? all.x - b.x
+        : how === "right"
+          ? all.x + all.w - b.x - b.w
+          : how === "centre"
+            ? all.x + all.w / 2 - b.x - b.w / 2
+            : 0;
+    const dy =
+      how === "top"
+        ? all.y - b.y
+        : how === "bottom"
+          ? all.y + all.h - b.y - b.h
+          : how === "middle"
+            ? all.y + all.h / 2 - b.y - b.h / 2
+            : 0;
+    shift.set(el.id, [dx, dy]);
+  }
+  return shiftEls(els, shift);
+}
+
+export function distributeEls(els: El[], ids: ReadonlySet<string>, axis: "x" | "y"): El[] {
+  const chosen = els.filter((e) => ids.has(e.id) && !e.locked && !(e.kind === "arrow" && (e.start || e.end)));
+  if (chosen.length < 3) return els;
+  const boxes = chosen.map((el) => ({ el, b: bounds(el) }));
+  boxes.sort((a, b) => (axis === "x" ? a.b.x - b.b.x : a.b.y - b.b.y));
+  const first = boxes[0].b;
+  const last = boxes[boxes.length - 1].b;
+  const span = axis === "x" ? last.x + last.w - first.x : last.y + last.h - first.y;
+  const used = boxes.reduce((sum, { b }) => sum + (axis === "x" ? b.w : b.h), 0);
+  const gap = (span - used) / (boxes.length - 1);
+  const shift = new Map<string, Point>();
+  let at = axis === "x" ? first.x : first.y;
+  for (const { el, b } of boxes) {
+    const d = at - (axis === "x" ? b.x : b.y);
+    shift.set(el.id, axis === "x" ? [d, 0] : [0, d]);
+    at += (axis === "x" ? b.w : b.h) + gap;
+  }
+  return shiftEls(els, shift);
+}
+
+function shiftEls(els: El[], shift: Map<string, Point>): El[] {
+  const moved = els.map((el) => {
+    const d = shift.get(el.id);
+    return d ? { ...el, x: el.x + d[0], y: el.y + d[1] } : el;
+  });
+  return routeArrows(moved, new Set(shift.keys()));
 }
 
 export function resizeBox(start: Box, handle: Handle, p: Point, keepRatio: boolean): Box {
@@ -248,13 +455,13 @@ export function resizeEl(el: El, from: Box, to: Box): El {
   const b = bounds(el);
   const sx = from.w ? to.w / from.w : 1;
   const sy = from.h ? to.h / from.h : 1;
-  return {
-    ...el,
-    x: to.x + (b.x - from.x) * sx,
-    y: to.y + (b.y - from.y) * sy,
-    w: Math.max(1, b.w * sx),
-    h: Math.max(1, b.h * sy),
-  };
+  const x = to.x + (b.x - from.x) * sx;
+  const y = to.y + (b.y - from.y) * sy;
+  if (el.kind === "text") {
+    const fontSize = Math.min(240, Math.max(8, Math.round(el.style.fontSize * Math.min(sx, sy))));
+    return { ...el, x, y, ...textBox(el.text ?? "", fontSize), style: { ...el.style, fontSize } };
+  }
+  return { ...el, x, y, w: Math.max(1, b.w * sx), h: Math.max(1, b.h * sy) };
 }
 
 export function simplify(points: Point[], epsilon: number): Point[] {
@@ -282,12 +489,18 @@ export function snap(v: number, grid: number, on: boolean): number {
 
 export function duplicate(els: El[], ids: ReadonlySet<string>, offset = 20): { els: El[]; created: string[] } {
   const map = new Map<string, string>();
+  const groups = new Map<string, string>();
   const copies = els
     .filter((e) => ids.has(e.id))
     .map((e) => {
       const id = newId();
       map.set(e.id, id);
-      return { ...e, id, x: e.x + offset, y: e.y + offset };
+      let group = e.group;
+      if (group) {
+        if (!groups.has(group)) groups.set(group, newId());
+        group = groups.get(group);
+      }
+      return { ...e, id, x: e.x + offset, y: e.y + offset, group, locked: undefined };
     })
     .map((e) => ({
       ...e,
@@ -297,7 +510,8 @@ export function duplicate(els: El[], ids: ReadonlySet<string>, offset = 20): { e
   return { els: [...els, ...copies], created: copies.map((c) => c.id) };
 }
 
-export function removeEls(els: El[], ids: ReadonlySet<string>): El[] {
+export function removeEls(els: El[], chosen: ReadonlySet<string>): El[] {
+  const ids = new Set(els.filter((e) => chosen.has(e.id) && !e.locked).map((e) => e.id));
   return els
     .filter((e) => !ids.has(e.id))
     .map((e) =>
@@ -350,4 +564,96 @@ export function undo(h: History): History {
 export function redo(h: History): History {
   if (!h.future.length) return h;
   return { past: [...h.past, h.present], present: h.future[0], future: h.future.slice(1) };
+}
+
+const KINDS: Kind[] = [
+  "pen",
+  "line",
+  "arrow",
+  "rect",
+  "ellipse",
+  "diamond",
+  "text",
+  "sticky",
+  "image",
+  ...EXTRA_SHAPES,
+];
+const HEAD_KINDS: Head[] = ["none", "arrow", "triangle", "dot", "bar"];
+const DASHES: Dash[] = ["solid", "dashed", "dotted"];
+
+function num(v: unknown, fallback: number, min = -1e7, max = 1e7): number {
+  return typeof v === "number" && Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : fallback;
+}
+
+function str(v: unknown, max = 200): string | undefined {
+  return typeof v === "string" ? v.slice(0, max) : undefined;
+}
+
+function cleanStyle(v: unknown): Style {
+  const s = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
+  const style: Style = {
+    stroke: str(s.stroke, 40) ?? DEFAULT_STYLE.stroke,
+    fill: str(s.fill, 40) ?? DEFAULT_STYLE.fill,
+    width: num(s.width, DEFAULT_STYLE.width, 0.5, 60),
+    dash: DASHES.includes(s.dash as Dash) ? (s.dash as Dash) : "solid",
+    opacity: num(s.opacity, 1, 0.05, 1),
+    fontSize: num(s.fontSize, DEFAULT_STYLE.fontSize, 6, 400),
+  };
+  if (HEAD_KINDS.includes(s.startHead as Head)) style.startHead = s.startHead as Head;
+  if (HEAD_KINDS.includes(s.endHead as Head)) style.endHead = s.endHead as Head;
+  return style;
+}
+
+export function sanitizeEls(list: unknown, limit = 5000): El[] {
+  if (!Array.isArray(list)) return [];
+  const out: El[] = [];
+  const seen = new Set<string>();
+  for (const raw of list.slice(0, limit)) {
+    if (!raw || typeof raw !== "object") continue;
+    const r = raw as Record<string, unknown>;
+    const id = str(r.id, 64);
+    if (!id || seen.has(id) || !KINDS.includes(r.kind as Kind)) continue;
+    const kind = r.kind as Kind;
+    const el: El = {
+      id,
+      kind,
+      x: num(r.x, 0),
+      y: num(r.y, 0),
+      w: num(r.w, 0),
+      h: num(r.h, 0),
+      style: cleanStyle(r.style),
+    };
+    if (kind === "pen" || kind === "line" || kind === "arrow") {
+      const pts = Array.isArray(r.points)
+        ? r.points
+            .filter((p): p is [number, number] => Array.isArray(p) && Number.isFinite(p[0]) && Number.isFinite(p[1]))
+            .slice(0, 20000)
+            .map(([px, py]) => [px, py] as Point)
+        : [];
+      el.points = pts.length ? pts : [[0, 0]];
+      if (kind !== "pen" && el.points.length < 2) el.points = [el.points[0], el.points[0]];
+    }
+    const text = str(r.text, 20000);
+    if (text !== undefined) el.text = text;
+    if (kind === "image") {
+      const src = str(r.src, 20_000_000);
+      if (!src || !src.startsWith("data:image/")) continue;
+      el.src = src;
+    }
+    if (kind === "arrow") {
+      el.start = str(r.start, 64) ?? null;
+      el.end = str(r.end, 64) ?? null;
+    }
+    if (r.locked === true) el.locked = true;
+    const group = str(r.group, 64);
+    if (group) el.group = group;
+    seen.add(id);
+    out.push(el);
+  }
+  const ids = new Set(out.map((e) => e.id));
+  return out.map((e) =>
+    e.kind === "arrow" && ((e.start && !ids.has(e.start)) || (e.end && !ids.has(e.end)))
+      ? { ...e, start: e.start && ids.has(e.start) ? e.start : null, end: e.end && ids.has(e.end) ? e.end : null }
+      : e
+  );
 }
