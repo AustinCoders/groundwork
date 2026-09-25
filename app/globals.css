@@ -5850,6 +5850,43 @@ a.step__title:hover {
   cursor: pointer;
 }
 
+.tab-menu {
+  position: fixed;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  min-width: 170px;
+  padding: 5px;
+  background: var(--ide-bg-elevated);
+  border: 1px solid var(--ide-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+}
+
+.tab-menu button {
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  color: var(--ide-fg);
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tab-menu button:hover:not(:disabled),
+.tab-menu button:focus-visible {
+  color: var(--ide-bg);
+  background: var(--ide-accent);
+  outline: none;
+}
+
+.tab-menu button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
 .ed__tab-new:hover {
   color: var(--ide-fg);
   background: rgba(205, 214, 244, 0.1);
@@ -6350,7 +6387,15 @@ a.step__title:hover {
   margin-left: auto;
   font-family: var(--font-code);
   font-size: 11.5px;
-  opacity: 0.85;
+  color: var(--ide-fg-dim);
+  background: var(--ide-bg);
+  border-color: var(--ide-border);
+}
+
+.palette__item[aria-selected="true"] .palette__keys {
+  color: inherit;
+  background: transparent;
+  border-color: currentColor;
 }
 
 .palette__empty {

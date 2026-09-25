@@ -220,6 +220,16 @@ function lintExtension(lang: LanguageKey, on: boolean, source: (view: EditorView
   return on && LINTS.has(lang) ? [lintGutter(), linter(source, { delay: 500 })] : [];
 }
 
+function indentGuides() {
+  const colors = {
+    light: "var(--ide-border)",
+    dark: "var(--ide-border)",
+    activeLight: "var(--ide-fg-faint)",
+    activeDark: "var(--ide-fg-faint)",
+  };
+  return indentationMarkers({ thickness: 1, markerType: "codeOnly", colors });
+}
+
 function tabExtension(size: number) {
   return [EditorState.tabSize.of(size), indentUnit.of(" ".repeat(size))];
 }
@@ -284,7 +294,7 @@ function editorExtensions(ctx: {
     c.lint.of(ctx.lint),
     c.wrap.of(settings.wrap ? EditorView.lineWrapping : []),
     c.tab.of(tabExtension(settings.tabSize)),
-    c.guides.of(settings.indentGuides ? indentationMarkers() : []),
+    c.guides.of(settings.indentGuides ? indentGuides() : []),
     c.minimap.of([]),
     cmTheme,
     EditorView.contentAttributes.of({ "aria-label": "Code editor" }),
@@ -297,10 +307,34 @@ interface FileTabsProps {
   onClose: (id: string) => void;
   onNew: () => void;
   onRename: (id: string, name: string) => void;
+  onCloseMany: (ids: string[]) => void;
 }
 
-function FileTabs({ files, onSelect, onClose, onNew, onRename }: FileTabsProps) {
+function FileTabs({ files, onSelect, onClose, onNew, onRename, onCloseMany }: FileTabsProps) {
   const [editing, setEditing] = useState<string | null>(null);
+  const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    if (!menu) return;
+    const close = (e: Event) => {
+      if (e instanceof KeyboardEvent && e.key !== "Escape") return;
+      if (e.target instanceof Element && e.target.closest(".tab-menu")) return;
+      setMenu(null);
+    };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", close);
+    };
+  }, [menu]);
+
+  const openMenu = (id: string, x: number, y: number) => setMenu({ id, x, y });
+  const act = (fn: () => void) => () => {
+    setMenu(null);
+    fn();
+  };
+
   return (
     <span className="ed__tabs ed__tabs--files" role="list" aria-label="Files">
       {files.map((f) => (
@@ -329,6 +363,10 @@ function FileTabs({ files, onSelect, onClose, onNew, onRename }: FileTabsProps) 
               title="Double-click to rename"
               onClick={() => onSelect(f.id)}
               onDoubleClick={() => setEditing(f.id)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                openMenu(f.id, e.clientX, e.clientY);
+              }}
             >
               <span className="ed__tab-icon" aria-hidden="true">
                 ◆
@@ -352,7 +390,42 @@ function FileTabs({ files, onSelect, onClose, onNew, onRename }: FileTabsProps) 
         <button type="button" className="ed__tab-new" aria-label="New file" title="New file" onClick={onNew}>
           +
         </button>
+        <button
+          type="button"
+          className="ed__tab-new"
+          aria-label="File actions"
+          title="Close all, close others, rename"
+          aria-haspopup="menu"
+          aria-expanded={Boolean(menu)}
+          onClick={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            openMenu(files.find((f) => f.active)?.id ?? files[0].id, r.left, r.bottom + 4);
+          }}
+        >
+          ⋯
+        </button>
       </span>
+      {menu && (
+        <span className="tab-menu" role="menu" style={{ left: menu.x, top: menu.y }}>
+          <button type="button" role="menuitem" autoFocus onClick={act(() => setEditing(menu.id))}>
+            Rename
+          </button>
+          <button type="button" role="menuitem" disabled={files.length < 2} onClick={act(() => onClose(menu.id))}>
+            Close
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            disabled={files.length < 2}
+            onClick={act(() => onCloseMany(files.filter((f) => f.id !== menu.id).map((f) => f.id)))}
+          >
+            Close others
+          </button>
+          <button type="button" role="menuitem" onClick={act(() => onCloseMany(files.map((f) => f.id)))}>
+            Close all
+          </button>
+        </span>
+      )}
     </span>
   );
 }
@@ -504,7 +577,7 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
       effects: [
         wrapCompartment.reconfigure(settings.wrap ? EditorView.lineWrapping : []),
         tabCompartment.reconfigure(tabExtension(settings.tabSize)),
-        guidesCompartment.reconfigure(settings.indentGuides ? indentationMarkers() : []),
+        guidesCompartment.reconfigure(settings.indentGuides ? indentGuides() : []),
         lintCompartment.reconfigure(lintExtension(currentLangRef.current, settings.lint, lintSource)),
       ],
     });
@@ -722,6 +795,23 @@ export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function
       label: fullscreen ? "Leave fullscreen" : "Fullscreen",
       run: () => setFullscreen((f) => !f),
     },
+    ...(files && fileActions
+      ? [
+          { id: "file-new", group: "File", label: "New file", run: () => fileActions.onNew() },
+          {
+            id: "file-close-others",
+            group: "File",
+            label: "Close other files",
+            run: () => fileActions.onCloseMany(files.filter((f) => !f.active).map((f) => f.id)),
+          },
+          {
+            id: "file-close-all",
+            group: "File",
+            label: "Close all files",
+            run: () => fileActions.onCloseMany(files.map((f) => f.id)),
+          },
+        ]
+      : []),
     ...languages.map((key) => ({
       id: `lang-${key}`,
       group: "Language",

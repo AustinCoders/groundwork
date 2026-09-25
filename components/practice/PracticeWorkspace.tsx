@@ -399,6 +399,22 @@ export function PracticeWorkspace({
       if (id !== p.active) return commitProject({ ...p, files });
       activate({ ...p, files }, files[Math.min(index, files.length - 1)]);
     },
+    onCloseMany(ids: string[]) {
+      const p = projectRef.current!;
+      const closing = p.files.filter((f) => ids.includes(f.id));
+      if (!closing.length) return;
+      const edited = closing.filter((f) => f.code.trim() && f.code !== starterCode(f.lang));
+      const what = closing.length === p.files.length ? "all files" : `${closing.length} files`;
+      if (
+        edited.length &&
+        !window.confirm(`Close ${what}? What is in ${edited.map((f) => f.name).join(", ")} is deleted.`)
+      )
+        return;
+      const kept = p.files.filter((f) => !ids.includes(f.id));
+      const files = kept.length ? kept : [makeFile([], currentLangRef.current)];
+      const active = files.find((f) => f.id === p.active) ?? files[0];
+      activate({ ...p, files }, active);
+    },
     onNew() {
       const p = projectRef.current!;
       const file = makeFile(p.files, currentLangRef.current);
@@ -783,24 +799,59 @@ export function PracticeWorkspace({
               ☁ Submit
             </button>
           )}
-          <button
-            className="lc-icon-btn"
-            type="button"
-            title={soundOn ? "Mute the solved sound" : "Unmute the solved sound"}
-            aria-label={soundOn ? "Mute the solved sound" : "Unmute the solved sound"}
-            onClick={toggleSound}
-          >
-            {soundOn ? "🔊" : "🔇"}
-          </button>
-          <button
-            className="lc-icon-btn"
-            type="button"
-            title="Keyboard shortcuts (?)"
-            aria-label="Keyboard shortcuts"
-            onClick={() => setShortcutsOpen(true)}
-          >
-            ⌨
-          </button>
+          {!playground && (
+            <>
+              <button
+                className="lc-icon-btn"
+                type="button"
+                title={soundOn ? "Mute the solved sound" : "Unmute the solved sound"}
+                aria-label={soundOn ? "Mute the solved sound" : "Unmute the solved sound"}
+                aria-pressed={!soundOn}
+                onClick={toggleSound}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M4 9h4l5-4v14l-5-4H4z" />
+                  {soundOn ? (
+                    <path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" />
+                  ) : (
+                    <path d="M17 9l5 6M22 9l-5 6" />
+                  )}
+                </svg>
+              </button>
+              <button
+                className="lc-icon-btn"
+                type="button"
+                title="Keyboard shortcuts (?)"
+                aria-label="Keyboard shortcuts"
+                onClick={() => setShortcutsOpen(true)}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="2.5" y="6" width="19" height="12" rx="2" />
+                  <path d="M6 10h.01M9.5 10h.01M13 10h.01M16.5 10h.01M7 14h10" />
+                </svg>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
