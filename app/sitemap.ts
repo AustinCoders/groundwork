@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { topics, notesHref, chapterHref, chapters, exercises } from "@/lib/content";
 import { problemHref } from "@/lib/practiceLinks";
 import { SITE_URL } from "@/lib/site";
+import { GIT_CHAPTERS } from "@/content/git-body";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
@@ -11,6 +12,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/problems`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/practice`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${SITE_URL}/whiteboard`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    ...GIT_CHAPTERS.map((s) => ({
+      url: `${SITE_URL}/git/${s.id}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
   ];
 
   const problemRoutes: MetadataRoute.Sitemap = exercises().map((ex) => ({

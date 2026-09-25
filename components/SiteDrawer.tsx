@@ -19,6 +19,7 @@ const LINKS: { href: string; label: string; mark: string }[] = [
   { href: "/practice?id=free", label: "Playground", mark: "✎" },
   { href: "/problems", label: "Problems", mark: "⌘" },
   { href: "/whiteboard", label: "Whiteboard", mark: "▱" },
+  { href: "/git", label: "Git", mark: "⑂" },
   { href: "/mock", label: "Mock interview", mark: "⏱" },
   { href: "/review", label: "Review", mark: "↻" },
   { href: "/progress", label: "Progress", mark: "▤" },
@@ -201,7 +202,8 @@ function DrawerBody({ onClose, reading }: { onClose: () => void; reading: boolea
         <nav aria-label="Site">
           <ul className={styles.links}>
             {LINKS.map((l) => {
-              const here = l.href.split("?")[0] === pathname;
+              const base = l.href.split("?")[0];
+              const here = base === "/" ? pathname === "/" : pathname === base || pathname.startsWith(`${base}/`);
               return (
                 <li key={l.href}>
                   <Link href={l.href} aria-current={here ? "page" : undefined} onClick={onClose} prefetch={false}>

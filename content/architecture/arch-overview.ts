@@ -47,7 +47,7 @@ export const archOverview: Chapter = {
 <tr><td>Server functions</td><td>4, all under <code>/api/</code></td></tr>
 <tr><td>Databases</td><td>0</td></tr>
 <tr><td>Topics</td><td>21 — 5 written, 14 outlined, 2 standalone</td></tr>
-<tr><td>Written chapters</td><td>225, plus 358 outlines</td></tr>
+<tr><td>Written chapters</td><td>227, plus 358 outlines</td></tr>
 <tr><td>Exercises with tests</td><td>538</td></tr>
 <tr><td>Interview questions</td><td>405 across 27 rounds</td></tr>
 <tr><td>Editor languages</td><td>17, of which 11 run in the browser</td></tr>

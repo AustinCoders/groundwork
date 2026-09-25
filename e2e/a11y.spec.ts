@@ -18,6 +18,8 @@ const PAGES = [
   "/whiteboard",
   "/progress",
   "/git",
+  "/git/merge",
+  "/git/github",
   "/architecture",
   "/architecture/arch-request-path",
 ];

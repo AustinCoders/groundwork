@@ -27,7 +27,7 @@ export const archContentModel: Chapter = {
 <text class="lbl" x="300" y="126" text-anchor="middle">Level</text>
 <text class="sm" x="300" y="148" text-anchor="middle">3 per topic</text>
 <text class="lbl" x="511" y="126" text-anchor="middle">Chapter</text>
-<text class="sm" x="511" y="148" text-anchor="middle">225 written</text>
+<text class="sm" x="511" y="148" text-anchor="middle">227 written</text>
 <text class="lbl" x="732" y="126" text-anchor="middle">Exercise</text>
 <text class="sm" x="732" y="148" text-anchor="middle">538 with tests</text>
 <text class="sm" x="194" y="114" text-anchor="middle">1..3</text>
@@ -154,7 +154,7 @@ export const archContentModel: Chapter = {
   every chapter id is returned from <code>generateStaticParams</code>, but the page shows a "not written
   yet" stamp and the syllabus bullets instead of a body, is marked <code>noindex</code>, has no Listen
   button and no "mark as read", and is left out of the sitemap and the cross-topic search index. The
-  syllabus marks it with an open circle instead of a tick. It is why the site can show 583 chapters while honestly claiming 225.
+  syllabus marks it with an open circle instead of a tick. It is why the site can show 585 chapters while honestly claiming 227.
 </p>
 
 <h3>One interface in the middle</h3>

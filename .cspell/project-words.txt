@@ -86,6 +86,7 @@ Alnum
 alsogarbage
 Aman
 ampm
+APFS
 apos
 appl
 applepen
@@ -104,6 +105,7 @@ Autoboxing
 autoboxes
 autorun
 autoscales
+autosquash
 axe
 baaaaaaa
 babad
@@ -116,6 +118,8 @@ BDCABA
 bitpacking
 bivariantly
 bjorn
+blobless
+Blobless
 boxg
 boxr
 bsbininm
@@ -198,7 +202,9 @@ Dockerfiles
 doesn
 Doist
 downlevelled
+Driessen
 dvdf
+DWIM
 eccbbbbdec
 EDNS
 effectful
@@ -219,12 +225,16 @@ flexbox
 footgun
 forgeeksskeegfor
 frozenset
+fsmonitor
 gcell
 geohash
 getattr
 getframe
 getinfo
 getrandom
+ghstack
+gitdir
+gitlink
 Gochi
 goroutines
 GSAP
@@ -317,6 +327,7 @@ Meilisearch
 memoises
 memoising
 memoizable
+mergetool
 Metas
 metatables
 Meteo
@@ -357,6 +368,8 @@ oper
 Overclaiming
 PACELC
 PACELC's
+packfile
+packfiles
 pagebtn
 PAHNAPLSIIGYIR
 paise
@@ -409,6 +422,9 @@ Redpanda
 Reenie
 refetches
 reflog
+reflogs
+refspec
+reftable
 reindexing
 renderable
 renderitem
@@ -417,6 +433,7 @@ replit
 repr
 requestfailed
 rerank
+rerere
 rescuable
 reshard
 Resharding
@@ -449,6 +466,7 @@ setprecision
 setrow
 settrace
 Shopyvilla
+shortlog
 signups
 singleflight
 skimmable
@@ -530,6 +548,7 @@ webdev
 wertf
 worklets
 worktree
+worktrees
 wxyz
 xored
 xorshift
@@ -542,6 +561,7 @@ xyzxyz
 xyzzyx
 yowasp
 Yugabyte
+zdiff
 Zipf
 Zipfian
 znode

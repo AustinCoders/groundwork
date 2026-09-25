@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { topicChapterMetadata, topicChapterParams } from "@/components/reader/topicPages";
 import { chapterMetas, chapters, notesHref } from "@/lib/content";
-import { ChapterView, type TocItem } from "./ChapterView";
-import type { ChapterCard } from "../ArchitectureView";
+import { ChapterView } from "@/components/series/ChapterView";
+import { withHeadingIds } from "@/lib/headingToc";
+import { PARTS, type ChapterCard } from "../ArchitectureView";
 
 const TOPIC = "architecture";
 
@@ -14,37 +15,6 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ chapter: string }> }): Promise<Metadata> {
   const { chapter } = await params;
   return topicChapterMetadata(TOPIC, chapter);
-}
-
-function slug(text: string): string {
-  return text
-    .replace(/<[^>]+>/g, "")
-    .replace(/&[a-z]+;/g, " ")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 60);
-}
-
-function withHeadingIds(html: string): { html: string; toc: TocItem[] } {
-  const toc: TocItem[] = [];
-  const seen = new Set<string>();
-  const out = html.replace(/<h3>([\s\S]*?)<\/h3>/g, (_, inner: string) => {
-    let id = slug(inner) || "section";
-    while (seen.has(id)) id = `${id}-2`;
-    seen.add(id);
-    const text = inner
-      .replace(/<[^>]+>/g, "")
-      .replace(/&amp;/g, "&")
-      .replace(/&rarr;/g, "→")
-      .replace(/&mdash;/g, "—")
-      .replace(/&middot;/g, "·")
-      .replace(/&[a-z]+;/g, " ")
-      .trim();
-    toc.push({ id, text });
-    return `<h3 id="${id}">${inner}</h3>`;
-  });
-  return { html: out, toc };
 }
 
 export default async function Page({ params }: { params: Promise<{ chapter: string }> }) {
@@ -65,6 +35,9 @@ export default async function Page({ params }: { params: Promise<{ chapter: stri
   }));
   return (
     <ChapterView
+      seriesTitle="How this is built"
+      homeLabel="The system map"
+      parts={PARTS}
       basePath={notesHref(TOPIC)}
       chapter={cards[index]}
       html={html}

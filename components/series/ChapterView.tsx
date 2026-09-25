@@ -10,15 +10,30 @@ import { activateScripts, enhanceCodeBlocks, enhanceTables, enhanceTryBlocks } f
 import { setupNarration } from "@/components/reader/narration";
 import { progress } from "@/lib/storage";
 import { useMounted, useProgressValue } from "@/lib/hooks";
-import { PARTS, type ChapterCard } from "../ArchitectureView";
+import type { TocItem } from "@/lib/headingToc";
 import styles from "./chapter.module.css";
 
-export interface TocItem {
+export interface SeriesCard {
   id: string;
-  text: string;
+  num: string;
+  title: string;
+  short?: string;
+  subtitle: string;
+  level: string;
+  minutes: number;
 }
 
-function DiagramDefs() {
+export interface SeriesPart {
+  level: string;
+  title: string;
+  blurb?: string;
+}
+
+type ChapterCard = SeriesCard;
+
+export type { TocItem };
+
+export function DiagramDefs() {
   return (
     <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
       <filter id="wob">
@@ -54,6 +69,10 @@ function prefersMotion() {
 }
 
 export function ChapterView({
+  seriesTitle,
+  homeLabel,
+  parts: PARTS,
+  progressPrefix = "",
   basePath,
   chapter,
   html,
@@ -61,6 +80,10 @@ export function ChapterView({
   chapters,
   diagrams,
 }: {
+  seriesTitle: string;
+  homeLabel: string;
+  parts: SeriesPart[];
+  progressPrefix?: string;
   basePath: string;
   chapter: ChapterCard;
   html: string;
@@ -87,7 +110,7 @@ export function ChapterView({
   const doneKey = useProgressValue(
     () =>
       chapters
-        .filter((c) => progress.isChapterDone(c.id))
+        .filter((c) => progress.isChapterDone(progressPrefix + c.id))
         .map((c) => c.id)
         .join(","),
     ""
@@ -157,7 +180,7 @@ export function ChapterView({
     <nav className={styles.rail} aria-label="Chapters">
       <Link className={styles.railHome} href={basePath} onClick={() => setRailOpen(false)}>
         <TopIcon name="prev" size={15} />
-        The system map
+        {homeLabel}
       </Link>
       {PARTS.map((p, pi) => {
         const list = chapters.filter((c) => c.level === p.level);
@@ -207,12 +230,7 @@ export function ChapterView({
       <div className={styles.page}>
         <header className={styles.top}>
           <div className={styles.topLeft}>
-            <BackButton
-              variant="icon"
-              className={styles.iconBtn}
-              fallbackHref={basePath}
-              fallbackLabel="The system map"
-            />
+            <BackButton variant="icon" className={styles.iconBtn} fallbackHref={basePath} fallbackLabel={homeLabel} />
             <button
               type="button"
               className={styles.iconBtn}
@@ -235,7 +253,7 @@ export function ChapterView({
               Chapters
             </button>
             <nav className={styles.crumbs} aria-label="Breadcrumb">
-              <Link href={basePath}>How this is built</Link>
+              <Link href={basePath}>{seriesTitle}</Link>
               <span aria-hidden="true">/</span>
               <span>{part?.title}</span>
               <span aria-hidden="true">/</span>
@@ -349,7 +367,7 @@ export function ChapterView({
                   type="button"
                   className={styles.endBtn}
                   aria-pressed={mounted && isDone}
-                  onClick={() => progress.setChapterDone(chapter.id, !isDone)}
+                  onClick={() => progress.setChapterDone(progressPrefix + chapter.id, !isDone)}
                 >
                   {mounted && isDone ? "Mark as unread" : "Mark as read"}
                 </button>
@@ -362,7 +380,7 @@ export function ChapterView({
                   </span>
                   <span className={styles.pageText}>
                     <span className={styles.pageHint}>{prev ? `Previous · ${prev.num}` : "Back to"}</span>
-                    <span className={styles.pageTitle}>{prev ? prev.title : "The system map"}</span>
+                    <span className={styles.pageTitle}>{prev ? prev.title : homeLabel}</span>
                   </span>
                 </Link>
                 <Link
@@ -371,7 +389,7 @@ export function ChapterView({
                 >
                   <span className={styles.pageText}>
                     <span className={styles.pageHint}>{next ? `Next · ${next.num}` : "The end"}</span>
-                    <span className={styles.pageTitle}>{next ? next.title : "Back to the system map"}</span>
+                    <span className={styles.pageTitle}>{next ? next.title : `Back to ${homeLabel.toLowerCase()}`}</span>
                   </span>
                   <span className={styles.pageArrow} aria-hidden="true">
                     <TopIcon name="next" size={18} />
@@ -427,7 +445,7 @@ export function ChapterView({
                 type="button"
                 className={`${styles.readBtn}${mounted && isDone ? ` ${styles.readBtnOn}` : ""}`}
                 aria-pressed={mounted && isDone}
-                onClick={() => progress.setChapterDone(chapter.id, !isDone)}
+                onClick={() => progress.setChapterDone(progressPrefix + chapter.id, !isDone)}
               >
                 <span className={styles.readTick} aria-hidden="true">
                   {mounted && isDone ? "✓" : ""}

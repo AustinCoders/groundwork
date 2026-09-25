@@ -763,3 +763,20 @@ test("the site menu folds its sections and changes the text size everywhere", as
   await expect(problemsMenu.getByRole("button", { name: /Theme/ })).toBeVisible();
   await expect(problemsMenu.getByRole("button", { name: /Text size/ })).toHaveCount(0);
 });
+
+test("the git guide has a chapter per section and old anchors still land", async ({ page }) => {
+  await page.goto("/git");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Git");
+  await page.getByRole("link", { name: /Setup and configuration/ }).click();
+  await page.waitForURL("**/git/config");
+  await expect(page.getByRole("navigation", { name: "Chapters" }).locator("a[aria-current=page]")).toContainText(
+    "Setup"
+  );
+  await page.getByRole("button", { name: "Menu" }).click();
+  await expect(page.getByRole("dialog", { name: /menu/ }).locator("a[aria-current=page]")).toContainText("Git");
+  await page.keyboard.press("Escape");
+
+  await page.goto("/git#undo");
+  await page.waitForURL("**/git/undo");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Undoing");
+});

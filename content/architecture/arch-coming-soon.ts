@@ -38,20 +38,20 @@ export const archComingSoon: Chapter = {
 </table></div>
 
 <p class="sub">
-  225 chapters written, 358 outlined. By chapter that is 39% of the plan; by topic it is 7 of 21.
+  227 chapters written, 358 outlined. By chapter that is 39% of the plan; by topic it is 7 of 21.
 </p>
 
 <figure>
-<svg viewBox="0 0 900 250" class="dg" role="img" aria-label="Two bars drawn to scale. Chapters: 225 written and 358 outlined. Exercises with tests: 277 in DSA, 162 in React, 99 in JavaScript, and none anywhere else.">
+<svg viewBox="0 0 900 250" class="dg" role="img" aria-label="Two bars drawn to scale. Chapters: 227 written and 358 outlined. Exercises with tests: 277 in DSA, 162 in React, 99 in JavaScript, and none anywhere else.">
 <g class="rough">
-<rect x="30" y="50" width="324.2" height="48" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 2" />
-<rect x="354.2" y="50" width="515.8" height="48" style="fill: var(--sheet); stroke: var(--line-soft); stroke-width: 2" />
+<rect x="30" y="50" width="325.9" height="48" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 2" />
+<rect x="355.9" y="50" width="514.1" height="48" style="fill: var(--sheet); stroke: var(--line-soft); stroke-width: 2" />
 <rect x="30" y="150" width="432.5" height="48" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 2" />
 <rect x="462.5" y="150" width="252.9" height="48" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 2" />
 <rect x="715.4" y="150" width="154.6" height="48" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 2" />
 </g>
 <text class="sm" x="30" y="38">CHAPTERS, TO SCALE</text>
-<text class="lbl" x="192" y="80" text-anchor="middle">225 written</text>
+<text class="lbl" x="193" y="80" text-anchor="middle">227 written</text>
 <text class="lbl" x="612" y="80" text-anchor="middle">358 outlined</text>
 <text class="sm" x="30" y="138">EXERCISES WITH TESTS, BY TOPIC</text>
 <text class="lbl" x="246" y="180" text-anchor="middle">DSA 277</text>
