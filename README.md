@@ -26,7 +26,7 @@ rather than rendering straight from storage.
 ## Running it
 
 ```bash
-npm install     # Node 22.11+ (see .nvmrc)
+npm install     # Node 24 (see .nvmrc)
 npm run dev     # http://localhost:3000
 ```
 

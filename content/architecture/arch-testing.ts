@@ -136,7 +136,7 @@ export const archTesting: Chapter = {
 <thead><tr><th>#</th><th>Step</th><th>Seconds</th><th>Note</th></tr></thead>
 <tbody>
 <tr><td>1</td><td>Checkout</td><td>1</td><td></td></tr>
-<tr><td>2</td><td>Set up Node</td><td>8</td><td>Version from <code>.nvmrc</code>, which is 22.11.0, with the npm cache</td></tr>
+<tr><td>2</td><td>Set up Node</td><td>8</td><td>Version from <code>.nvmrc</code>, which is 24, with the npm cache</td></tr>
 <tr><td>3</td><td><code>npm ci --ignore-scripts</code></td><td>14</td><td><code>msedge-tts</code> has a pnpm-only preinstall gate; its published build does not need it</td></tr>
 <tr><td>4</td><td>Generate route types</td><td>under 1</td><td><code>next typegen</code>, so <code>tsc</code> can see the route helper types</td></tr>
 <tr><td>5</td><td>Typecheck</td><td>11</td><td>Includes every content file</td></tr>

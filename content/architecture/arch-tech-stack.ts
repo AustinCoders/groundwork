@@ -24,7 +24,7 @@ export const archTechStack: Chapter = {
 <tr><td><b>CSS</b></td><td>&mdash;</td><td><code>app/globals.css</code> at 9,319 lines, plus 7 CSS modules for the newer full-screen tools</td></tr>
 <tr><td><b>Tailwind</b></td><td>4</td><td>Imported for its theme and utilities layers only, with no preflight reset. The site is styled with custom properties and its own class names</td></tr>
 <tr><td><b>Vercel</b></td><td>&mdash;</td><td>Host, CDN, firewall, analytics</td></tr>
-<tr><td><b>Node</b></td><td>22.x</td><td>Pinned in <code>engines</code>, and to 22.11.0 in <code>.nvmrc</code>, so CI and the host agree</td></tr>
+<tr><td><b>Node</b></td><td>24.x</td><td>Pinned in <code>engines</code> and to 24 in <code>.nvmrc</code>, so CI, Vercel and the project settings agree</td></tr>
 </tbody>
 </table></div>
 

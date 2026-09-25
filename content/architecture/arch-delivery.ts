@@ -86,8 +86,8 @@ export const archDelivery: Chapter = {
 <p>
   Together they come to 1.4 MB. The script can still copy Pyodide and sql.js into the build with
   <code>--all</code>, but the build does not pass that flag, so those runtimes come from jsDelivr.
-  <code>package.json</code> pins Node to <code>22.x</code>, and CI reads 22.11.0 from
-  <code>.nvmrc</code>.
+  <code>package.json</code> pins Node to <code>24.x</code>, the same major as the Vercel project settings, and CI reads 24 from
+  <code>.nvmrc</code>. When the two disagree, Vercel warns on every build that <code>engines</code> overrides the project setting.
 </p>
 
 <h3><code>vercel.json</code>, in full</h3>
