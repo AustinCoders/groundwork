@@ -61,10 +61,46 @@ export const DEFAULT_STYLE: Style = {
   fontSize: 20,
 };
 
-export const STROKES = ["ink", "#e03131", "#2f9e44", "#1971c2", "#f08c00", "#9c36b5", "#0c8599", "#868e96"];
-export const FILLS = ["none", "paper", "#ffc9c9", "#b2f2bb", "#a5d8ff", "#ffec99", "#eebefa", "#99e9f2"];
+export const STROKES = ["ink", "red", "green", "blue", "orange", "purple", "teal", "grey"];
+export const FILLS = [
+  "none",
+  "paper",
+  "red-soft",
+  "green-soft",
+  "blue-soft",
+  "yellow-soft",
+  "purple-soft",
+  "teal-soft",
+];
 
-export const STICKY_FILL = "#ffec99";
+export const STICKY_FILL = "yellow-soft";
+
+export const PALETTE_TOKENS = ["red", "orange", "yellow", "green", "teal", "blue", "purple", "grey"].flatMap((c) => [
+  c,
+  `${c}-soft`,
+]);
+
+export const LEGACY_COLOURS: Record<string, string> = {
+  "#e03131": "red",
+  "#2f9e44": "green",
+  "#1971c2": "blue",
+  "#f08c00": "orange",
+  "#9c36b5": "purple",
+  "#0c8599": "teal",
+  "#868e96": "grey",
+  "#ffc9c9": "red-soft",
+  "#b2f2bb": "green-soft",
+  "#a5d8ff": "blue-soft",
+  "#ffec99": "yellow-soft",
+  "#eebefa": "purple-soft",
+  "#99e9f2": "teal-soft",
+  "#e9ecef": "grey-soft",
+  "#fab005": "yellow",
+};
+
+export function paletteToken(value: string): string {
+  return LEGACY_COLOURS[value.toLowerCase()] ?? value;
+}
 
 let counter = 0;
 

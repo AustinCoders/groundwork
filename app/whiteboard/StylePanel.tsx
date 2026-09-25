@@ -7,30 +7,32 @@ import {
   type Align,
   type Dash,
   type Head,
+  paletteToken,
   type Kind,
   type Style,
   type Tool,
 } from "@/lib/whiteboard/model";
 import { Icon, type IconName } from "./icons";
+import { colour, CSS_PALETTE } from "@/lib/whiteboard/geometry";
 import styles from "./whiteboard.module.css";
 
 const NAMES: Record<string, string> = {
   ink: "Ink",
   none: "No fill",
   paper: "Paper",
-  "#e03131": "Red",
-  "#2f9e44": "Green",
-  "#1971c2": "Blue",
-  "#f08c00": "Orange",
-  "#9c36b5": "Purple",
-  "#0c8599": "Teal",
-  "#868e96": "Grey",
-  "#ffc9c9": "Pink",
-  "#b2f2bb": "Mint",
-  "#a5d8ff": "Sky",
-  "#ffec99": "Butter",
-  "#eebefa": "Lilac",
-  "#99e9f2": "Aqua",
+  red: "Red",
+  green: "Green",
+  blue: "Blue",
+  orange: "Orange",
+  purple: "Purple",
+  teal: "Teal",
+  grey: "Grey",
+  "red-soft": "Pink",
+  "green-soft": "Mint",
+  "blue-soft": "Sky",
+  "yellow-soft": "Butter",
+  "purple-soft": "Lilac",
+  "teal-soft": "Aqua",
 };
 
 function Swatch({
@@ -50,10 +52,10 @@ function Swatch({
       className={styles.swatch}
       data-value={value}
       aria-pressed={active}
-      aria-label={`${label}: ${NAMES[value] ?? value}`}
-      title={NAMES[value] ?? value}
+      aria-label={`${label}: ${NAMES[paletteToken(value)] ?? value}`}
+      title={NAMES[paletteToken(value)] ?? value}
       style={{
-        ["--swatch" as string]: value === "ink" ? "var(--wb-ink)" : value === "paper" ? "var(--wb-paper)" : value,
+        ["--swatch" as string]: colour(value, CSS_PALETTE),
       }}
       onClick={onPick}
     />

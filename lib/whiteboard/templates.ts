@@ -35,17 +35,17 @@ function label(x: number, y: number, text: string, fontSize = 24): El {
   });
 }
 
-function sticky(x: number, y: number, text: string, fill = "#ffec99"): El {
+function sticky(x: number, y: number, text: string, fill = "yellow-soft"): El {
   return box("sticky", x, y, 180, 120, text, { fill, fontSize: 18 });
 }
 
 function flowchart(): El[] {
-  const start = box("ellipse", 60, 0, 180, 70, "Start", { fill: "#b2f2bb" });
+  const start = box("ellipse", 60, 0, 180, 70, "Start", { fill: "green-soft" });
   const input = box("parallelogram", 40, 130, 220, 80, "Read input");
-  const decide = box("diamond", 50, 270, 200, 130, "Valid?", { fill: "#ffec99" });
+  const decide = box("diamond", 50, 270, 200, 130, "Valid?", { fill: "yellow-soft" });
   const work = box("rect", 50, 460, 200, 80, "Process it");
-  const fix = box("rect", 340, 295, 180, 80, "Show an error", { fill: "#ffc9c9" });
-  const end = box("ellipse", 60, 600, 180, 70, "End", { fill: "#b2f2bb" });
+  const fix = box("rect", 340, 295, 180, 80, "Show an error", { fill: "red-soft" });
+  const end = box("ellipse", 60, 600, 180, 70, "End", { fill: "green-soft" });
   const yes = label(160, 410, "yes", 18);
   const no = label(262, 300, "no", 18);
   return [
@@ -69,12 +69,12 @@ function flowchart(): El[] {
 function systemDesign(): El[] {
   const client = box("rect", 0, 150, 160, 80, "Client");
   const cdn = box("cloud", 0, 0, 170, 100, "CDN");
-  const lb = box("hexagon", 240, 145, 170, 90, "Load balancer", { fill: "#a5d8ff" });
+  const lb = box("hexagon", 240, 145, 170, 90, "Load balancer", { fill: "blue-soft" });
   const api1 = box("rect", 490, 70, 170, 80, "API server");
   const api2 = box("rect", 490, 230, 170, 80, "API server");
-  const cache = box("cylinder", 750, 0, 150, 110, "Cache", { fill: "#ffec99" });
-  const db = box("cylinder", 750, 150, 150, 120, "Database", { fill: "#b2f2bb" });
-  const queue = box("parallelogram", 730, 320, 190, 70, "Queue", { fill: "#eebefa" });
+  const cache = box("cylinder", 750, 0, 150, 110, "Cache", { fill: "yellow-soft" });
+  const db = box("cylinder", 750, 150, 150, 120, "Database", { fill: "green-soft" });
+  const queue = box("parallelogram", 730, 320, 190, 70, "Queue", { fill: "purple-soft" });
   const worker = box("rect", 990, 315, 160, 80, "Worker");
   return [
     client,
@@ -113,7 +113,7 @@ function kanban(): El[] {
   return columns(
     ["To do", "Doing", "Done"],
     [["Write the spec", "Design the API"], ["Build the board"], ["Set up the repo", "Pick a stack"]],
-    ["#ffec99", "#a5d8ff", "#b2f2bb"]
+    ["yellow-soft", "blue-soft", "green-soft"]
   );
 }
 
@@ -121,12 +121,12 @@ function retro(): El[] {
   return columns(
     ["Went well", "To improve", "Actions"],
     [["Shipped on time"], ["Too many meetings"], ["Try a no-meeting day"]],
-    ["#b2f2bb", "#ffc9c9", "#a5d8ff"]
+    ["green-soft", "red-soft", "blue-soft"]
   );
 }
 
 function mindMap(): El[] {
-  const centre = box("ellipse", 300, 200, 220, 110, "Main idea", { fill: "#ffec99", fontSize: 24 });
+  const centre = box("ellipse", 300, 200, 220, 110, "Main idea", { fill: "yellow-soft", fontSize: 24 });
   const spots: [number, number][] = [
     [0, 20],
     [320, -80],
@@ -135,7 +135,7 @@ function mindMap(): El[] {
     [320, 480],
     [0, 380],
   ];
-  const fills = ["#ffc9c9", "#a5d8ff", "#b2f2bb", "#eebefa", "#99e9f2", "#ffec99"];
+  const fills = ["red-soft", "blue-soft", "green-soft", "purple-soft", "teal-soft", "yellow-soft"];
   const out: El[] = [centre];
   spots.forEach(([x, y], i) => {
     const node = box("rect", x + 10, y, 180, 70, `Branch ${i + 1}`, { fill: fills[i] });
@@ -146,10 +146,10 @@ function mindMap(): El[] {
 
 function matrix(): El[] {
   const cells: [string, string, number, number][] = [
-    ["Do first", "#ffc9c9", 0, 0],
-    ["Schedule", "#a5d8ff", 300, 0],
-    ["Delegate", "#ffec99", 0, 220],
-    ["Drop", "#e9ecef", 300, 220],
+    ["Do first", "red-soft", 0, 0],
+    ["Schedule", "blue-soft", 300, 0],
+    ["Delegate", "yellow-soft", 0, 220],
+    ["Drop", "grey-soft", 300, 220],
   ];
   const out: El[] = cells.map(([text, fill, x, y]) => box("rect", x + 60, y + 40, 280, 200, text, { fill }));
   out.push(label(230, 0, "Important →", 20));

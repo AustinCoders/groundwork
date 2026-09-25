@@ -10,7 +10,7 @@ import { ConfirmDialog, NameDialog } from "@/components/Modal";
 import { Shortcuts } from "./Shortcuts";
 import { TemplatesMenu } from "./TemplatesMenu";
 import { PagePicker, PaperPattern, paperOf, paperVisible, tintOf, tintVars } from "./Paper";
-import { textBox } from "@/lib/whiteboard/geometry";
+import { colour, CSS_PALETTE, textBox } from "@/lib/whiteboard/geometry";
 import {
   boardShareUrl,
   compressImage,
@@ -205,7 +205,7 @@ function useSmallScreen(): boolean {
 function highlighterStyle(s: Style): Style {
   return {
     ...s,
-    stroke: s.stroke === "ink" ? "#fab005" : s.stroke,
+    stroke: s.stroke === "ink" ? "yellow" : s.stroke,
     width: Math.max(12, s.width * 5),
     opacity: 0.35,
     dash: "solid",
@@ -974,6 +974,7 @@ export function Board() {
     return {
       ink: cs.getPropertyValue("--wb-ink").trim() || "#1e1e1e",
       paper: cs.getPropertyValue("--wb-paper").trim() || "#ffffff",
+      token: (name: string) => cs.getPropertyValue(`--c-${name}`).trim() || "#888888",
     };
   }, []);
 
@@ -1835,7 +1836,7 @@ function TextEditor({ el, cam, onDone }: { el: El; cam: Camera; onDone: (text: s
         width: Math.max(60, fit.w + 24) * cam.zoom,
         height: Math.max(fit.h, el.style.fontSize * 1.6) * cam.zoom,
         fontSize: el.style.fontSize * cam.zoom,
-        color: el.kind === "sticky" ? "#1e1e1e" : el.style.stroke === "ink" ? "var(--wb-ink)" : el.style.stroke,
+        color: el.kind === "sticky" ? "var(--wb-ink)" : colour(el.style.stroke, CSS_PALETTE),
         textAlign: boxed && el.kind !== "sticky" ? "center" : "left",
       }}
       onChange={(e) => setText(e.target.value)}

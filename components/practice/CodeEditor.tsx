@@ -146,7 +146,7 @@ const cmTheme = EditorView.theme({
   ".cm-activeLine": { backgroundColor: "var(--ide-selection)" },
   ".cm-activeLineGutter": { backgroundColor: "var(--ide-selection)", color: "var(--ide-accent)", fontWeight: "700" },
   ".cm-matchingBracket, .cm-nonmatchingBracket": {
-    backgroundColor: "rgba(249, 226, 175, 0.25)",
+    backgroundColor: "color-mix(in srgb, var(--c-yellow) 28%, transparent)",
     outline: "none",
   },
   ".cm-tooltip": {
@@ -170,9 +170,9 @@ const cmTheme = EditorView.theme({
     padding: "2px 8px",
     cursor: "pointer",
   },
-  ".cm-searchMatch": { backgroundColor: "rgba(249, 226, 175, 0.25)" },
-  ".cm-searchMatch-selected": { backgroundColor: "rgba(243, 139, 168, 0.35)" },
-  ".cm-selectionMatch": { backgroundColor: "rgba(166, 227, 161, 0.2)" },
+  ".cm-searchMatch": { backgroundColor: "color-mix(in srgb, var(--c-yellow) 28%, transparent)" },
+  ".cm-searchMatch-selected": { backgroundColor: "color-mix(in srgb, var(--c-orange) 38%, transparent)" },
+  ".cm-selectionMatch": { backgroundColor: "color-mix(in srgb, var(--c-green) 20%, transparent)" },
   ".cm-diagnostic-error": { borderLeftColor: "var(--ide-red)" },
 });
 

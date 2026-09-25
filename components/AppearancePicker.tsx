@@ -1,20 +1,8 @@
 "use client";
 
 import { useFontChoice, useThemeChoice } from "@/components/ThemeFontPicker";
-import { FONT_ITEMS, THEME_ITEMS, type FontValue, type ThemeValue } from "@/lib/storage";
+import { FONT_ITEMS, THEME_ITEMS, type FontValue } from "@/lib/storage";
 import styles from "./AppearancePicker.module.css";
-
-const THEME_COLOURS: Record<ThemeValue, [string, string, string]> = {
-  light: ["#fffdf6", "#1f3a73", "#1f7a55"],
-  dark: ["#191d25", "#d9e5fb", "#64dfa6"],
-  kraft: ["#ecdfc0", "#3b2a14", "#2f6b4a"],
-  blueprint: ["#1c3c5e", "#eaf4ff", "#7fe0b8"],
-  sepia: ["#faf1dc", "#4a3221", "#4c7a52"],
-  forest: ["#f8fbf2", "#2c4a24", "#2f7d4f"],
-  rose: ["#241823", "#f7dbe8", "#7fe0b8"],
-  mono: ["#ffffff", "#111111", "#276b38"],
-  lavender: ["#faf7fe", "#402a63", "#2f8a6f"],
-};
 
 const FONT_FAMILIES: Record<FontValue, string> = {
   classic: "var(--font-caveat), cursive",
@@ -42,25 +30,26 @@ export function AppearancePicker({
   const heading = headingClass ?? styles.heading;
   const themes = (
     <div className={styles.themeGrid} role="radiogroup" aria-label="Theme">
-      {THEME_ITEMS.map((t) => {
-        const [sheet, ink, accent] = THEME_COLOURS[t.value];
-        return (
-          <button
-            key={t.value}
-            type="button"
-            role="radio"
-            aria-checked={theme === t.value}
-            className={styles.opt}
-            onClick={() => chooseTheme(t.value)}
-          >
-            <span className={styles.swatch} style={{ background: sheet }} aria-hidden="true">
-              <span style={{ background: ink }} />
-              <span style={{ background: accent }} />
+      {THEME_ITEMS.map((t) => (
+        <button
+          key={t.value}
+          type="button"
+          role="radio"
+          aria-checked={theme === t.value}
+          className={styles.opt}
+          onClick={() => chooseTheme(t.value)}
+        >
+          <span className={styles.swatch} data-theme={t.value} aria-hidden="true">
+            <span className={styles.swatchInk} />
+            <span className={styles.swatchDots}>
+              {["red", "orange", "yellow", "green", "blue", "purple"].map((c) => (
+                <span key={c} style={{ background: `var(--c-${c})` }} />
+              ))}
             </span>
-            <span>{plain(t.label)}</span>
-          </button>
-        );
-      })}
+          </span>
+          <span>{plain(t.label)}</span>
+        </button>
+      ))}
     </div>
   );
   const fonts = (

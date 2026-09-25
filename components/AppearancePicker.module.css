@@ -55,25 +55,32 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
-  height: 36px;
+  gap: 6px;
+  height: 40px;
   padding: 0 9px;
+  color: var(--ink);
+  background: var(--sheet);
   border: 1px solid var(--line);
   border-radius: 7px;
 }
 
-.swatch span {
+.swatchInk {
   display: block;
+  width: 70%;
   height: 4px;
+  background: var(--ink);
   border-radius: 2px;
 }
 
-.swatch span:first-child {
-  width: 70%;
+.swatchDots {
+  display: flex;
+  gap: 3px;
 }
 
-.swatch span:last-child {
-  width: 40%;
+.swatchDots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
 }
 
 .sample {

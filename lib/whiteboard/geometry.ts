@@ -7,6 +7,8 @@ import {
   type El,
   type Head,
   type Point,
+  paletteToken,
+  PALETTE_TOKENS,
 } from "@/lib/whiteboard/model";
 
 export { textBox };
@@ -20,13 +22,20 @@ export interface Part {
 export interface Palette {
   ink: string;
   paper: string;
+  token: (name: string) => string;
 }
 
-export const CSS_PALETTE: Palette = { ink: "var(--wb-ink)", paper: "var(--wb-paper)" };
+export const CSS_PALETTE: Palette = {
+  ink: "var(--wb-ink)",
+  paper: "var(--wb-paper)",
+  token: (name) => `var(--c-${name})`,
+};
 
 export function colour(value: string, palette: Palette): string {
   if (value === "ink") return palette.ink;
   if (value === "paper") return palette.paper;
+  const token = paletteToken(value);
+  if (PALETTE_TOKENS.includes(token)) return palette.token(token);
   return value;
 }
 
@@ -86,7 +95,7 @@ export function describe(el: El, palette: Palette): Part[] {
   const b = bounds(el);
   const parts: Part[] = [];
   const onFill =
-    el.style.fill !== "none" && el.style.fill !== "paper" && el.style.stroke === "ink" ? "#1e1e1e" : stroke;
+    el.style.fill !== "none" && el.style.fill !== "paper" && el.style.stroke === "ink" ? palette.ink : stroke;
   const label = (
     color: string,
     area: { x: number; y: number; w: number; h: number },
@@ -164,7 +173,7 @@ export function describe(el: El, palette: Palette): Part[] {
       break;
     }
     case "sticky": {
-      const bg = el.style.fill === "none" ? STICKY_FILL : fill;
+      const bg = el.style.fill === "none" ? colour(STICKY_FILL, palette) : fill;
       parts.push({
         tag: "rect",
         attrs: {
@@ -178,7 +187,7 @@ export function describe(el: El, palette: Palette): Part[] {
           "stroke-width": 1,
         },
       });
-      label("#1e1e1e", { ...b, y: b.y + 4 }, "start", b.w - 16);
+      label(palette.ink, { ...b, y: b.y + 4 }, "start", b.w - 16);
       break;
     }
     case "text":

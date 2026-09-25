@@ -93,3 +93,28 @@ describe("editor syntax colours", () => {
     }
   });
 });
+
+describe("the theme palette", () => {
+  const PALETTE = ["--c-orange", "--c-yellow", "--c-teal", "--c-blue", "--c-purple", "--c-grey"] as const;
+  const withPalette = blocks().filter((b) => declaration(b.body, "--c-blue") && declaration(b.body, "--sheet"));
+
+  it("is defined by every theme", () => {
+    expect(withPalette.length).toBe(9);
+    for (const theme of withPalette)
+      for (const token of PALETTE) expect(declaration(theme.body, token), `${theme.selector} ${token}`).toBeTruthy();
+  });
+
+  it("stands out from the page in every theme", () => {
+    for (const theme of withPalette) {
+      const sheet = hexToRgb(declaration(theme.body, "--sheet")!);
+      for (const token of PALETTE) {
+        const value = declaration(theme.body, token)!;
+        const ratio = contrast(hexToRgb(value), sheet);
+        expect(
+          ratio,
+          `${theme.selector} ${token} (${value}) is ${ratio.toFixed(2)}:1 on the sheet`
+        ).toBeGreaterThanOrEqual(3);
+      }
+    }
+  });
+});

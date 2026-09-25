@@ -48,7 +48,7 @@
 
 .paperMargin {
   fill: none;
-  stroke: color-mix(in srgb, #e03131 55%, transparent);
+  stroke: color-mix(in srgb, var(--c-red) 55%, transparent);
 }
 
 .selection rect:first-child {
@@ -74,7 +74,7 @@
 
 .laser {
   fill: none;
-  stroke: #ff3b3b;
+  stroke: var(--c-red);
   stroke-linecap: round;
   stroke-linejoin: round;
 }
