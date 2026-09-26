@@ -8,6 +8,7 @@ export type CriterionId = "testing" | "substance" | "trap" | "followup" | "deliv
 export interface Criterion {
   id: CriterionId;
   label: string;
+  hint: string;
   against?: string;
   weight: number;
 }
@@ -15,11 +16,18 @@ export interface Criterion {
 export function rubricFor(item: TalkItem, followUpAsked: boolean): Criterion[] {
   const out: Criterion[] = [];
   if (item.testing) {
-    out.push({ id: "testing", label: "You answered what they were really testing", against: item.testing, weight: 2 });
+    out.push({
+      id: "testing",
+      label: "You answered what they were really testing",
+      hint: "Yes only if you named the idea underneath the question, not just its surface.",
+      against: item.testing,
+      weight: 2,
+    });
   }
   out.push({
     id: "substance",
     label: "Your answer had the substance of the model answer",
+    hint: "Check your main points against the model. Missing its central idea is a No.",
     against: item.say || undefined,
     weight: 3,
   });
@@ -27,14 +35,25 @@ export function rubricFor(item: TalkItem, followUpAsked: boolean): Criterion[] {
     out.push({
       id: "trap",
       label: "You stayed clear of the answer that loses the room",
+      hint: "If anything you said sits close to the red box, mark No.",
       against: item.trap,
       weight: 2,
     });
   }
   if (followUpAsked) {
-    out.push({ id: "followup", label: "You held up when they pushed", weight: 2 });
+    out.push({
+      id: "followup",
+      label: "You held up when they pushed",
+      hint: "You answered the follow-up itself, without falling back to your prepared answer.",
+      weight: 2,
+    });
   }
-  out.push({ id: "delivery", label: "Structured and concise — no rambling, no filler", weight: 1 });
+  out.push({
+    id: "delivery",
+    label: "Structured and concise — no rambling, no filler",
+    hint: "A clear first sentence, the core in about two minutes, and no circling back.",
+    weight: 1,
+  });
   return out;
 }
 

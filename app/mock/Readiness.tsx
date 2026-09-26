@@ -70,7 +70,7 @@ export function ReadinessBoard({
   const next = nextUp(history, now, available);
 
   return (
-    <section className="sheet" aria-labelledby="mock-readiness">
+    <section className={styles.panel} aria-labelledby="mock-readiness">
       <h2 id="mock-readiness">How ready you are</h2>
       <div className={styles.readyTop}>
         <Gauge score={ready.score} band={BAND_LABEL[ready.band]} />

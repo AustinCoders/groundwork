@@ -1,8 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { Crumbs } from "@/components/Crumbs";
-import { Shell } from "@/components/Shell";
+import Link from "next/link";
+import { SiteDrawer } from "@/components/SiteDrawer";
+import { TopIcon } from "@/components/practice/TopIcon";
+import { SITE_NAME } from "@/lib/site";
+import styles from "./mock.module.css";
 import { Lobby } from "@/app/mock/Lobby";
 import dynamic from "next/dynamic";
 import { loadRoom, loadScorecard } from "@/app/mock/preload";
@@ -41,6 +44,8 @@ export function MockApp({ catalog }: { catalog: MockCatalog }) {
   const [screen, setScreen] = useState<Screen>("lobby");
   const [session, setSession] = useState<Session | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   const dispatch = useCallback((a: Action) => setSession((s) => (s ? reduce(s, a) : s)), []);
 
@@ -147,50 +152,71 @@ export function MockApp({ catalog }: { catalog: MockCatalog }) {
   const inRoom = screen === "room" && session;
 
   return (
-    <Shell skipLabel="Skip to the mock interview" variant={inRoom ? "focused" : "full"}>
-      {!inRoom && (
-        <>
-          <Crumbs items={[{ label: "All topics", href: "/" }, { label: "Mock interview" }]} />
-          {screen === "lobby" && (
-            <section className="sheet hero">
-              <span className="hero__kicker">the whole loop, timed and scored</span>
-              <h1>Mock interview</h1>
-              <p className="hero__lead">
-                A real loop, round by round: the recruiter, the coding, the deep dives, system design, behaviour and the
-                number. Answer out loud, get pushed with a follow-up, mark yourself against what the round is actually
-                listening for — then a debrief that decides the way a hiring committee would.
-              </p>
-            </section>
+    <>
+      <a className="skip-link" href="#main">
+        Skip to the mock interview
+      </a>
+      <div className={styles.page} data-room={inRoom ? "true" : undefined}>
+        <header className={styles.top}>
+          <button
+            type="button"
+            className={styles.iconBtn}
+            aria-label="Menu"
+            aria-haspopup="dialog"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen(true)}
+          >
+            <TopIcon name="menu" />
+          </button>
+          <Link href="/" className={styles.brand} aria-label={`${SITE_NAME} home`}>
+            <span className="brand__mark" aria-hidden="true">
+              JS
+            </span>
+            <span className={styles.brandName}>{SITE_NAME}</span>
+          </Link>
+          <span className={styles.topSep} aria-hidden="true" />
+          <span className={styles.topTitle}>Mock interview</span>
+          <span className={styles.spacer} />
+          {inRoom ? (
+            <span className={styles.topLive}>
+              <span className={styles.liveDot} aria-hidden="true" /> In the room
+            </span>
+          ) : (
+            <Link href="/interview" className={styles.topLink}>
+              Interview book
+            </Link>
           )}
-        </>
-      )}
+        </header>
+        <main id="main" className={styles.main}>
+          {error && <p className="warn">{error}</p>}
 
-      {error && <p className="warn">{error}</p>}
+          {screen === "lobby" && (
+            <Lobby
+              catalog={catalog}
+              history={saved.history}
+              retry={saved.retry}
+              inProgress={saved.current}
+              onStart={enterRoom}
+              onResume={resume}
+              onDiscard={discard}
+            />
+          )}
 
-      {screen === "lobby" && (
-        <Lobby
-          catalog={catalog}
-          history={saved.history}
-          retry={saved.retry}
-          inProgress={saved.current}
-          onStart={enterRoom}
-          onResume={resume}
-          onDiscard={discard}
-        />
-      )}
+          {inRoom && <Room session={session} stages={stages} dispatch={dispatch} onEnd={endEarly} />}
 
-      {inRoom && <Room session={session} stages={stages} dispatch={dispatch} onEnd={endEarly} />}
-
-      {screen === "scorecard" && session && (
-        <Scorecard
-          session={session}
-          stages={stages}
-          retryCount={saved.retry.length}
-          onRetry={retryWeak}
-          onAgain={again}
-          onNew={backToLobby}
-        />
-      )}
-    </Shell>
+          {screen === "scorecard" && session && (
+            <Scorecard
+              session={session}
+              stages={stages}
+              retryCount={saved.retry.length}
+              onRetry={retryWeak}
+              onAgain={again}
+              onNew={backToLobby}
+            />
+          )}
+        </main>
+      </div>
+      <SiteDrawer open={menuOpen} onClose={closeMenu} />
+    </>
   );
 }

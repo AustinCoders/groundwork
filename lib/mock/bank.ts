@@ -80,6 +80,54 @@ export function stageTitle(stage: StageId): string {
 
 const BULK = /rapid-fire|the rest of|the ten numbers|implementations they ask|say out loud/i;
 
+export const NOT_A_QUESTION = new Set([
+  "r1-9",
+  "r1-10",
+  "r1tp-1",
+  "r1tp-2",
+  "r1tp-3",
+  "r1tp-4",
+  "r1tp-6",
+  "r6-6",
+  "r8-7",
+  "r11lp-1",
+  "r11lp-2",
+  "r11lp-7",
+  "s4-0",
+  "r12-0",
+  "r12-6",
+  "r12lv-2",
+  "r12lv-4",
+  "r12lv-5",
+]);
+
+export const AS_ASKED: Record<string, string> = {
+  "r1tp-5": "We have a few minutes left. What would you like to ask me?",
+  "r3-3": "When would you use Promise.all, allSettled, race and any?",
+  "r3ts-0": "When do you reach for an interface, and when for a type alias?",
+  "r3ts-3": "What is the difference between any, unknown and never?",
+  "s3-1": "How does garbage collection work in V8, and how would you find a memory leak?",
+  "s3-2": "Walk me through the browser rendering pipeline. What triggers each stage?",
+  "s3-3": "How does Node handle concurrency? Where are the threads, and what is event loop lag?",
+  "s3-4": "What do HTTP/2 and HTTP/3 change, and what does opening a connection actually cost?",
+  "s2-0":
+    "Before you design anything, estimate it: ten million daily users. Requests per second, and storage per year?",
+  "s2-1": "Explain CAP and PACELC. Which consistency model would you pick, and when?",
+  "s2-2": "Why does naive hashing fall apart when you add a node, and how does consistent hashing fix it?",
+  "s2-3": "How do you choose a sharding key, and what happens when you choose the wrong one?",
+  "s2-4": "How do you keep data consistent across two services? Two-phase commit, or a saga?",
+  "s2-5": "Can you guarantee exactly-once delivery? If not, what do you do instead?",
+  "s2-6": "How does Kafka keep ordering? Talk me through partitions, consumer groups and a rebalance.",
+  "s2-7": "Design a chat system for millions of users.",
+  "s2-8": "Design a news feed. How do you choose between fan-out on write and fan-out on read?",
+  "s2-9": "Design a payment system.",
+  "s2-10": "At this scale, how do you keep the system observable and reliable?",
+  "r11-6": "That's all from me. Do you have any questions for us?",
+  "r12-4": "Honestly, that is a very high expectation for your experience.",
+  "r12-8": "Your current company has made a counter-offer. What are you going to do?",
+  "r12lv-1": "We'd like to offer you the role, one level below the one you applied for. How do you feel about that?",
+};
+
 function round(id: string): InterviewRoundRaw | undefined {
   return INTERVIEW_ROUNDS_RAW.find((r) => r.id === id);
 }
@@ -134,17 +182,19 @@ function bookItems(stage: StageId, source: TalkSource): TalkItem[] {
   const out: TalkItem[] = [];
   r.qs.forEach((q: InterviewQuestionRaw, index) => {
     if (BULK.test(q.q)) return;
+    const id = `${r.id}-${index}`;
+    if (NOT_A_QUESTION.has(id)) return;
     const { ladder, rest } = parseLadder(q.after);
     const answer = [q.a || "", codeHTML(q.code), rest].filter(Boolean).join("");
     out.push({
-      id: `${r.id}-${index}`,
+      id,
       kind: "talk",
       stage,
       origin: r.id,
       originTitle: `${r.code} · ${r.navTitle}`,
       level: "any",
       onlyFor: source.onlyFor,
-      prompt: q.q,
+      prompt: AS_ASKED[id] ?? q.q,
       testing: q.test || undefined,
       answer: answer || undefined,
       say: q.say || undefined,

@@ -1,22 +1,22 @@
 import type { CompanyType, Intensity, Role, Seniority } from "@/lib/mock/types";
 
 export const ROLES: [Role, string, string][] = [
-  ["frontend", "Frontend", "React, the browser"],
-  ["fullstack", "Full-stack", "both ends"],
-  ["backend", "Backend", "Node, databases"],
+  ["frontend", "Frontend", "React and the browser"],
+  ["fullstack", "Full-stack", "both ends of the wire"],
+  ["backend", "Backend", "Node, APIs and databases"],
 ];
 
 export const LEVELS: [Seniority, string, string][] = [
-  ["junior", "2–3 years", "junior"],
-  ["mid", "5–7 years", "mid-level"],
-  ["senior", "10+ years", "senior"],
+  ["junior", "2–3 years", "junior, and freshers"],
+  ["mid", "5–7 years", "mid-level, owns features"],
+  ["senior", "10+ years", "senior, sets direction"],
 ];
 
 export const COMPANIES: [CompanyType, string, string][] = [
-  ["service", "Service", "consulting, TCS tier"],
-  ["product", "Product startup", "Series A–C"],
-  ["saas", "Product & SaaS", "Freshworks tier"],
-  ["agency", "Agency", "studios, client work"],
+  ["service", "Service", "large IT services, set process"],
+  ["product", "Product startup", "seed to Series C, small teams"],
+  ["saas", "Product & SaaS", "mid-size product companies"],
+  ["agency", "Agency", "studios and client work"],
 ];
 
 export const INTENSITIES: [Intensity, string][] = [

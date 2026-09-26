@@ -10,6 +10,7 @@ import { currentQuestion, stagePosition, type Action, type Session, type Session
 import type { CodingItem, Seniority, StageId, StageInfo, TalkItem } from "@/lib/mock/types";
 import type { PracticeExercise } from "@/lib/practiceFree";
 import { opener, personaFor, shiftRemark, type Persona } from "@/lib/mock/persona";
+import { STAGE_GUIDE } from "@/lib/mock/guide";
 import { BoardView, Whiteboard } from "@/app/mock/Whiteboard";
 import { EMPTY_BOARD } from "@/lib/mock/board";
 import styles from "./mock.module.css";
@@ -72,10 +73,12 @@ function Rail({ session, stages, onEnd }: { session: Session; stages: Record<Sta
 function StageBrief({ session, info, dispatch }: { session: Session; info: StageInfo; dispatch: Dispatch }) {
   const { stageIndex } = stagePosition(session);
   const plan = session.plan[stageIndex];
+  const persona = personaFor(info.id, session.config);
+  const guide = STAGE_GUIDE[info.id];
   return (
-    <section className="sheet" aria-labelledby="stage-title">
+    <section className={`${styles.panel} ${styles.briefPanel}`} aria-labelledby="stage-title">
       <div className={styles.brief}>
-        <div>
+        <div className={styles.briefMain}>
           <p className={styles.eyebrow}>
             {session.plan.length > 1 ? `Round ${stageIndex + 1} of ${session.plan.length}` : "One round"}
             {info.code ? ` · ${info.code}` : ""}
@@ -83,18 +86,11 @@ function StageBrief({ session, info, dispatch }: { session: Session; info: Stage
           <h2 id="stage-title" className={styles.briefTitle}>
             {info.title}
           </h2>
+          <p className={styles.briefPitch}>{guide.pitch}</p>
           <dl className={styles.briefFacts}>
-            <div>
-              <dt>Interviewing you</dt>
-              <dd className={styles.briefPersona}>
-                <Avatar persona={personaFor(info.id, session.config, info.who)} />
-                {personaFor(info.id, session.config, info.who).name},{" "}
-                {personaFor(info.id, session.config, info.who).role.toLowerCase()}
-              </dd>
-            </div>
             {info.decides && (
               <div>
-                <dt>Decides</dt>
+                <dt>What it decides</dt>
                 <dd>{info.decides}</dd>
               </div>
             )}
@@ -105,23 +101,60 @@ function StageBrief({ session, info, dispatch }: { session: Session; info: Stage
               </div>
             )}
           </dl>
+          <div className={styles.briefShape}>
+            <p className={styles.eyebrow}>shape of a strong answer</p>
+            <ol className={styles.shape}>
+              {guide.shape.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          </div>
+          <div className={styles.briefTips}>
+            <div>
+              <p className={styles.eyebrow}>do this</p>
+              <ul className={styles.tipList}>
+                {guide.tips.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className={styles.eyebrow}>where marks are lost</p>
+              <ul className={`${styles.tipList} ${styles.tipBad}`}>
+                {guide.markedDown.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
-        <div className={styles.recordTile}>
-          <span className={styles.recordNum}>{plan?.questions}</span>
-          <span className={styles.recordLabel}>
-            {info.kind === "coding" ? "problems, graded by their tests" : "questions, answered out loud"}
-          </span>
-          <p className={styles.mapMeta} style={{ marginTop: 10 }}>
-            about {plan?.minutes} min
-            {plan?.core && <span className={styles.coreBadge}>core round</span>}
-          </p>
+        <div className={styles.briefSide}>
+          <div className={styles.personaCard}>
+            <Avatar persona={persona} big />
+            <b className={styles.personaName}>{persona.name}</b>
+            <span className={styles.personaRole}>{persona.role}</span>
+            {info.who && <span className={styles.personaWho}>Usually run by: {info.who}</span>}
+          </div>
+          <div className={styles.briefNumbers}>
+            <div>
+              <b>{plan?.questions}</b>
+              <span>{info.kind === "coding" ? "problems, graded by tests" : "questions, out loud"}</span>
+            </div>
+            <div>
+              <b>{plan?.minutes}</b>
+              <span>minutes, about</span>
+            </div>
+          </div>
           {plan?.core && (
-            <p className={styles.mapReason}>A no-hire here sinks the loop, whatever the other rounds say.</p>
+            <p className={styles.coreNote}>
+              <span className={styles.coreBadge}>core round</span> A no-hire here sinks the loop, whatever the other
+              rounds say.
+            </p>
           )}
           <div className={styles.actions}>
             <button
               type="button"
-              className="btn btn--primary"
+              className={`btn btn--primary ${styles.walkIn}`}
               autoFocus
               onClick={() => dispatch({ type: "enter", at: Date.now() })}
             >
@@ -134,6 +167,28 @@ function StageBrief({ session, info, dispatch }: { session: Session; info: Stage
         </div>
       </div>
     </section>
+  );
+}
+
+function Coach({ stage }: { stage: StageId }) {
+  const guide = STAGE_GUIDE[stage];
+  return (
+    <div className={styles.coach}>
+      <p className={styles.eyebrow}>shape of a strong answer</p>
+      <ol className={styles.shape} data-compact>
+        {guide.shape.map((step) => (
+          <li key={step}>{step}</li>
+        ))}
+      </ol>
+      <details className={styles.coachTips}>
+        <summary>Tips for this round</summary>
+        <ul className={styles.tipList}>
+          {guide.tips.map((t) => (
+            <li key={t}>{t}</li>
+          ))}
+        </ul>
+      </details>
+    </div>
   );
 }
 
@@ -156,9 +211,9 @@ function QuestionHead({ q, session, info }: { q: SessionQuestion; session: Sessi
   );
 }
 
-function Avatar({ persona }: { persona: Persona }) {
+function Avatar({ persona, big = false }: { persona: Persona; big?: boolean }) {
   return (
-    <span className={styles.avatar} data-tone={persona.tone} aria-hidden="true">
+    <span className={styles.avatar} data-tone={persona.tone} data-big={big || undefined} aria-hidden="true">
       {persona.initials}
     </span>
   );
@@ -280,6 +335,7 @@ function Rubric({ q, dispatch }: { q: SessionQuestion; dispatch: Dispatch }) {
             {c.label}
             <span className={styles.weight}>×{c.weight}</span>
           </span>
+          <span className={styles.criterionHint}>{c.hint}</span>
           <div className={styles.marks}>
             {MARKS.map(([m, label]) => (
               <button
@@ -339,7 +395,7 @@ function TalkQuestion({
   dispatch: Dispatch;
 }) {
   const item = q.item as TalkItem;
-  const persona = personaFor(q.stage, session.config, info.who);
+  const persona = personaFor(q.stage, session.config);
   const [padView, setPadView] = useState<"notes" | "board">("notes");
   const { inStage } = stagePosition(session);
   const seconds = MINUTES_PER_TALK[session.config.seniority] * 60;
@@ -348,12 +404,12 @@ function TalkQuestion({
 
   if (session.step === "answer") {
     return (
-      <section className="sheet" aria-labelledby="q-prompt">
+      <section className={styles.panel} aria-labelledby="q-prompt">
         <QuestionHead q={q} session={session} info={info} />
         <div className={styles.chat} role="log" aria-label={`Interview with ${persona.name}`}>
           {inStage === 1 && (
             <Said persona={persona} aside>
-              {opener(persona, session.startedAt + session.cursor)}
+              {opener(persona, q.stage, session.startedAt + session.cursor)}
             </Said>
           )}
           {q.adapted && (
@@ -402,7 +458,10 @@ function TalkQuestion({
               </>
             )}
           </div>
-          {q.startedAt !== null && <TimerRing startedAt={q.startedAt} seconds={seconds} onExpire={expire} />}
+          <div className={styles.side}>
+            {q.startedAt !== null && <TimerRing startedAt={q.startedAt} seconds={seconds} onExpire={expire} />}
+            <Coach stage={q.stage} />
+          </div>
         </div>
         <div className={styles.actions}>
           <button
@@ -425,7 +484,7 @@ function TalkQuestion({
 
   if (session.step === "followup" && q.followUp) {
     return (
-      <section className="sheet" aria-labelledby="q-push">
+      <section className={styles.panel} aria-labelledby="q-push">
         <QuestionHead q={q} session={session} info={info} />
         <div className={styles.chat} role="log" aria-label={`Interview with ${persona.name}`}>
           <Said persona={persona}>
@@ -467,7 +526,7 @@ function TalkQuestion({
   }
 
   return (
-    <section className="sheet" aria-labelledby="q-review">
+    <section className={styles.panel} aria-labelledby="q-review">
       <QuestionHead q={q} session={session} info={info} />
       <h2
         id="q-review"
@@ -545,7 +604,7 @@ function CodingQuestion({
   if (session.step === "review") {
     const score = outcome ? codingScore(outcome) : 0;
     return (
-      <section className="sheet" aria-labelledby="c-review">
+      <section className={styles.panel} aria-labelledby="c-review">
         <p className={styles.eyebrow}>
           {info.title} · {inStage} of {ofStage}
         </p>

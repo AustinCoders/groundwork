@@ -25,6 +25,8 @@ import { subscribeNever } from "@/lib/hooks";
 import { ChoiceCards } from "@/app/mock/ChoiceCards";
 import { LoopWizard } from "@/app/mock/LoopWizard";
 import { ReadinessBoard } from "@/app/mock/Readiness";
+import { LOBBY_STEPS, STAGE_GUIDE } from "@/lib/mock/guide";
+import { personaFor } from "@/lib/mock/persona";
 import { COMPANIES, INTENSITIES, LEVELS, ROLES } from "@/app/mock/options";
 import styles from "./mock.module.css";
 
@@ -129,7 +131,7 @@ function Record({ history }: { history: HistoryEntry[] }) {
   const hires = loops.filter((h) => h.verdict === "hire" || h.verdict === "strong-hire").length;
 
   return (
-    <section className="sheet" aria-labelledby="mock-record">
+    <section className={styles.panel} aria-labelledby="mock-record">
       <h2 id="mock-record">Your record</h2>
       <div className={styles.record}>
         <div className={styles.recordTile}>
@@ -175,6 +177,44 @@ function Record({ history }: { history: HistoryEntry[] }) {
         ))}
       </ul>
     </section>
+  );
+}
+
+function HeroPreview() {
+  return (
+    <div className={styles.preview} aria-hidden="true">
+      <div className={styles.previewCard}>
+        <div className={styles.previewHead}>
+          <span className={styles.avatar} data-tone="calm">
+            PR
+          </span>
+          <span>
+            <b>Priya</b>
+            <small>Principal engineer · System design</small>
+          </span>
+          <span className={styles.previewClock}>
+            <svg viewBox="0 0 44 44" width="44" height="44">
+              <circle cx="22" cy="22" r="18" className={styles.previewRingTrack} />
+              <circle cx="22" cy="22" r="18" className={styles.previewRingFill} />
+            </svg>
+            <em>6:12</em>
+          </span>
+        </div>
+        <p className={styles.previewAsk}>Design a URL shortener that handles 10,000 writes a second.</p>
+        <p className={styles.previewYou}>
+          Before I draw anything: reads or writes heavier? And how long do links live?
+        </p>
+        <p className={styles.previewPush}>
+          <span>Follow-up</span> Good. Now two users shorten the same URL at once. What happens?
+        </p>
+      </div>
+      <div className={styles.previewRubric}>
+        <span data-mark="1">✓ Answered what they were testing</span>
+        <span data-mark="0.5">~ Named the trade-off</span>
+        <span data-mark="1">✓ Held up when pushed</span>
+      </div>
+      <span className={styles.previewStamp}>Hire</span>
+    </div>
   );
 }
 
@@ -272,9 +312,65 @@ export function Lobby({
   }
 
   const resumeInfo = inProgress ? stagePosition(inProgress) : null;
+  const talkCount = catalog.stages.filter((s) => s.kind === "talk").reduce((n, s) => n + s.available, 0);
+  const codeCount = catalog.stages.filter((s) => s.kind === "coding").reduce((n, s) => n + s.available, 0);
+
+  function goPlan(which: SessionMode) {
+    setMode(which);
+    document.getElementById("plan")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
     <>
+      <section className={styles.hero} aria-labelledby="mock-title">
+        <div className={styles.heroCopy}>
+          <p className={styles.kicker}>
+            <span className={styles.liveDot} aria-hidden="true" /> Timed · scored · follow-ups included
+          </p>
+          <h1 id="mock-title" className={styles.h1}>
+            A mock interview <span className={styles.h1Accent}>that pushes back.</span>
+          </h1>
+          <p className={styles.lead}>
+            The whole loop, round by round: the recruiter, coding graded by real tests, the deep dives, system design,
+            behaviour and the number. Answer out loud against a clock, get pushed the way real interviewers push, and
+            leave with a debrief that decides like a hiring committee.
+          </p>
+          <div className={styles.heroActions}>
+            <button type="button" className="btn btn--primary" onClick={() => goPlan("loop")}>
+              Plan a full loop
+            </button>
+            <button type="button" className="btn" onClick={() => goPlan("drill")}>
+              Practise one round
+            </button>
+          </div>
+          <dl className={styles.heroStats}>
+            <div>
+              <dt>rounds</dt>
+              <dd>{catalog.stages.length}</dd>
+            </div>
+            <div>
+              <dt>questions with model answers</dt>
+              <dd>{talkCount}</dd>
+            </div>
+            <div>
+              <dt>coding problems with tests</dt>
+              <dd>{codeCount}</dd>
+            </div>
+          </dl>
+        </div>
+        <HeroPreview />
+      </section>
+
+      <ol className={styles.howSteps} aria-label="How a mock works">
+        {LOBBY_STEPS.map((s, i) => (
+          <li key={s.title}>
+            <span className={styles.howNum}>{String(i + 1).padStart(2, "0")}</span>
+            <b>{s.title}</b>
+            <span>{s.body}</span>
+          </li>
+        ))}
+      </ol>
+
       {inProgress && resumeInfo && (
         <div className={styles.resume} role="status">
           <div>
@@ -305,35 +401,41 @@ export function Lobby({
         }}
       />
 
-      <div className={styles.modes} role="tablist" aria-label="Kind of practice">
-        <button
-          type="button"
-          role="tab"
-          className={styles.mode}
-          aria-selected={mode === "loop"}
-          onClick={() => setMode("loop")}
-        >
-          Full loop
-        </button>
-        <button
-          type="button"
-          role="tab"
-          className={styles.mode}
-          aria-selected={mode === "drill"}
-          onClick={() => setMode("drill")}
-        >
-          Single round
-        </button>
-        <button
-          type="button"
-          role="tab"
-          className={styles.mode}
-          aria-selected={mode === "retry"}
-          onClick={() => setMode("retry")}
-        >
-          Retry weak answers
-          {retry.length > 0 && <span className={styles.modeCount}>{retry.length}</span>}
-        </button>
+      <div id="plan" className={styles.planHead}>
+        <div>
+          <p className={styles.eyebrow}>start here</p>
+          <h2 className={styles.sectionTitle}>What do you want to practise?</h2>
+        </div>
+        <div className={styles.modes} role="tablist" aria-label="Kind of practice">
+          <button
+            type="button"
+            role="tab"
+            className={styles.mode}
+            aria-selected={mode === "loop"}
+            onClick={() => setMode("loop")}
+          >
+            Full loop
+          </button>
+          <button
+            type="button"
+            role="tab"
+            className={styles.mode}
+            aria-selected={mode === "drill"}
+            onClick={() => setMode("drill")}
+          >
+            Single round
+          </button>
+          <button
+            type="button"
+            role="tab"
+            className={styles.mode}
+            aria-selected={mode === "retry"}
+            onClick={() => setMode("retry")}
+          >
+            Retry weak answers
+            {retry.length > 0 && <span className={styles.modeCount}>{retry.length}</span>}
+          </button>
+        </div>
       </div>
 
       {mode === "loop" && (
@@ -352,7 +454,7 @@ export function Lobby({
       )}
 
       {mode === "drill" && (
-        <section className="sheet" aria-labelledby="mock-drill">
+        <section className={styles.panel} aria-labelledby="mock-drill">
           <p className={styles.eyebrow}>one round, properly</p>
           <h2 id="mock-drill">Pick the room</h2>
           <div className={styles.rounds}>
@@ -364,22 +466,20 @@ export function Lobby({
                 aria-pressed={drillStage === s.id}
                 onClick={() => setDrillStage(s.id)}
               >
-                <span className={styles.row}>
-                  <span className={styles.mapTitle}>{s.title}</span>
-                </span>
-                <span className={styles.mapMeta}>
+                <span className={styles.mapTitle}>{s.title}</span>
+                <span className={styles.roundTop}>
+                  <span className={styles.avatar} data-tone={personaFor(s.id, config).tone} aria-hidden="true">
+                    {personaFor(s.id, config).initials}
+                  </span>
                   <span className={styles.kindTag} data-kind={s.kind}>
                     {s.kind === "coding" ? "code" : "talk"}
                   </span>
+                </span>
+                <span className={styles.roundPitch}>{STAGE_GUIDE[s.id].pitch}</span>
+                <span className={styles.mapMeta}>
                   {s.code && <span>{s.code}</span>}
                   <span>{s.available} in the bank</span>
                 </span>
-                <dl className={styles.roundFacts}>
-                  <dt>Who</dt>
-                  <dd>{s.who}</dd>
-                  <dt>Decides</dt>
-                  <dd>{s.decides}</dd>
-                </dl>
               </button>
             ))}
           </div>
@@ -440,7 +540,7 @@ export function Lobby({
       )}
 
       {mode === "retry" && (
-        <section className="sheet" aria-labelledby="mock-retry">
+        <section className={styles.panel} aria-labelledby="mock-retry">
           <p className={styles.eyebrow}>the ones that got away</p>
           <h2 id="mock-retry">Retry weak answers</h2>
           {retry.length === 0 ? (

@@ -53,6 +53,7 @@ test("the mock interview room and debrief have no accessibility violations", asy
     expect(summary, `${where} has accessibility violations`).toEqual([]);
   };
 
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/mock", { waitUntil: "networkidle" });
   await page.getByRole("tab", { name: "Single round" }).click();
   await page.getByRole("button", { name: /^System design/ }).click();

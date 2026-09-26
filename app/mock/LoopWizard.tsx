@@ -178,163 +178,188 @@ export function LoopWizard({
   const totalQuestions = plan.reduce((n, p) => n + p.questions, 0);
 
   return (
-    <section className="sheet" aria-labelledby="wizard-q">
-      <p className={styles.eyebrow}>plan the loop</p>
+    <section className={styles.panel} aria-labelledby="wizard-q">
+      <div className={styles.wizard} data-review={stepId === "review" || undefined}>
+        <div className={styles.wizardMain}>
+          <p className={styles.eyebrow}>plan the loop</p>
 
-      <ol className={styles.stepper} aria-label="Steps">
-        {steps.map((id, i) => {
-          const label = STEP_LABEL[id];
-          const locked = i > reached;
-          const state = i === step ? "current" : !locked && (i === REVIEW || isAnswered(id)) ? "done" : "next";
-          return (
-            <li key={id} className={styles.stepperItem} data-state={state}>
-              <button
-                type="button"
-                className={styles.stepperButton}
-                aria-current={i === step ? "step" : undefined}
-                disabled={locked}
-                title={locked ? "Answer the steps before this one first" : undefined}
-                onClick={() => goTo(i)}
-              >
-                <span className={styles.stepperDot} aria-hidden="true">
-                  {i === REVIEW ? (
-                    <svg viewBox="0 0 12 12" width="11" height="11" fill="currentColor" focusable="false">
-                      <path d="M3 1.5l7 4.5-7 4.5z" />
-                    </svg>
-                  ) : (
-                    i + 1
-                  )}
-                </span>
-                <span className={styles.stepperText}>
-                  <span className={styles.stepperLabel}>{label}</span>
-                  {i < REVIEW && isAnswered(id) && <span className={styles.stepperValue}>{values[id]}</span>}
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ol>
-
-      <div key={stepId} className={styles.stepBody}>
-        <h2 id="wizard-q" ref={headingRef} tabIndex={-1} className={styles.stepQuestion}>
-          {STEP_QUESTION[stepId]}
-        </h2>
-
-        {stepId === "style" && (
-          <ChoiceCards<StyleChoice>
-            label="Loop style"
-            value={isAnswered("style") ? (config.style ?? "custom") : null}
-            onChoose={(choice) =>
-              choose(choice === "custom" ? { style: null } : { style: choice, company: STYLES[choice].company })
-            }
-            options={[
-              ...STYLE_ORDER.map((id) => ({
-                value: id as StyleChoice,
-                name: STYLES[id].name,
-                detail: STYLES[id].detail,
-                source: `from ${STYLES[id].basedOn}`,
-                icon: STYLE_ICON[id],
-              })),
-              {
-                value: "custom" as const,
-                name: "Build my own",
-                detail: "pick the kind of company, and the loop follows its rounds",
-                icon: STYLE_ICON.custom,
-              },
-            ]}
-          />
-        )}
-        {stepId === "role" && (
-          <ChoiceCards
-            label="Role"
-            value={isAnswered("role") ? config.role : null}
-            onChoose={(role) => choose({ role })}
-            options={ROLES.map(([value, name, detail]) => ({ value, name, detail, icon: ROLE_ICON[value] }))}
-          />
-        )}
-        {stepId === "level" && (
-          <ChoiceCards
-            label="Experience"
-            value={isAnswered("level") ? config.seniority : null}
-            onChoose={(seniority) => choose({ seniority })}
-            options={LEVELS.map(([value, name, detail]) => ({ value, name, detail, icon: LEVEL_ICON[value] }))}
-          />
-        )}
-        {stepId === "company" && (
-          <ChoiceCards
-            label="Company"
-            value={isAnswered("company") ? config.company : null}
-            onChoose={(company) => choose({ company })}
-            options={COMPANIES.map(([value, name, detail]) => ({ value, name, detail, icon: COMPANY_ICON[value] }))}
-          />
-        )}
-        {stepId === "length" && (
-          <ChoiceCards
-            label="Length"
-            value={isAnswered("length") ? config.intensity : null}
-            onChoose={(intensity) => choose({ intensity })}
-            options={INTENSITIES.map(([value, name]) => {
-              const p = planLoop({ ...config, intensity: value }, hotFor);
-              return {
-                value,
-                name,
-                detail: `about ${hours(loopMinutes(p))} · ${p.length} rounds`,
-                icon: LENGTH_ICON[value],
-              };
+          <ol className={styles.stepper} aria-label="Steps">
+            {steps.map((id, i) => {
+              const label = STEP_LABEL[id];
+              const locked = i > reached;
+              const state = i === step ? "current" : !locked && (i === REVIEW || isAnswered(id)) ? "done" : "next";
+              return (
+                <li key={id} className={styles.stepperItem} data-state={state}>
+                  <button
+                    type="button"
+                    className={styles.stepperButton}
+                    aria-current={i === step ? "step" : undefined}
+                    disabled={locked}
+                    title={locked ? "Answer the steps before this one first" : undefined}
+                    onClick={() => goTo(i)}
+                  >
+                    <span className={styles.stepperDot} aria-hidden="true">
+                      {i === REVIEW ? (
+                        <svg viewBox="0 0 12 12" width="11" height="11" fill="currentColor" focusable="false">
+                          <path d="M3 1.5l7 4.5-7 4.5z" />
+                        </svg>
+                      ) : (
+                        i + 1
+                      )}
+                    </span>
+                    <span className={styles.stepperText}>
+                      <span className={styles.stepperLabel}>{label}</span>
+                      {i < REVIEW && isAnswered(id) && <span className={styles.stepperValue}>{values[id]}</span>}
+                    </span>
+                  </button>
+                </li>
+              );
             })}
-          />
-        )}
+          </ol>
 
-        {step < REVIEW && (
-          <div className={styles.stepNav}>
-            <button type="button" className="btn btn--ghost" disabled={step === 0} onClick={() => goTo(step - 1)}>
-              ← Back
-            </button>
-            <span className={styles.spacer} />
-            {isAnswered(stepId) ? (
-              <button type="button" className="btn" onClick={() => goTo(nextStep)}>
-                {nextStep === REVIEW ? "See the loop →" : `Next: ${STEP_LABEL[steps[nextStep]]} →`}
-              </button>
-            ) : (
-              <button type="button" className="btn" disabled>
-                Choose one to go on
-              </button>
+          <div key={stepId} className={styles.stepBody}>
+            <h2 id="wizard-q" ref={headingRef} tabIndex={-1} className={styles.stepQuestion}>
+              {STEP_QUESTION[stepId]}
+            </h2>
+
+            {stepId === "style" && (
+              <ChoiceCards<StyleChoice>
+                label="Loop style"
+                value={isAnswered("style") ? (config.style ?? "custom") : null}
+                onChoose={(choice) =>
+                  choose(choice === "custom" ? { style: null } : { style: choice, company: STYLES[choice].company })
+                }
+                options={[
+                  ...STYLE_ORDER.map((id) => ({
+                    value: id as StyleChoice,
+                    name: STYLES[id].name,
+                    detail: STYLES[id].detail,
+                    source: `from ${STYLES[id].basedOn}`,
+                    icon: STYLE_ICON[id],
+                  })),
+                  {
+                    value: "custom" as const,
+                    name: "Build my own",
+                    detail: "pick the kind of company, and the loop follows its rounds",
+                    icon: STYLE_ICON.custom,
+                  },
+                ]}
+              />
             )}
+            {stepId === "role" && (
+              <ChoiceCards
+                label="Role"
+                value={isAnswered("role") ? config.role : null}
+                onChoose={(role) => choose({ role })}
+                options={ROLES.map(([value, name, detail]) => ({ value, name, detail, icon: ROLE_ICON[value] }))}
+              />
+            )}
+            {stepId === "level" && (
+              <ChoiceCards
+                label="Experience"
+                value={isAnswered("level") ? config.seniority : null}
+                onChoose={(seniority) => choose({ seniority })}
+                options={LEVELS.map(([value, name, detail]) => ({ value, name, detail, icon: LEVEL_ICON[value] }))}
+              />
+            )}
+            {stepId === "company" && (
+              <ChoiceCards
+                label="Company"
+                value={isAnswered("company") ? config.company : null}
+                onChoose={(company) => choose({ company })}
+                options={COMPANIES.map(([value, name, detail]) => ({ value, name, detail, icon: COMPANY_ICON[value] }))}
+              />
+            )}
+            {stepId === "length" && (
+              <ChoiceCards
+                label="Length"
+                value={isAnswered("length") ? config.intensity : null}
+                onChoose={(intensity) => choose({ intensity })}
+                options={INTENSITIES.map(([value, name]) => {
+                  const p = planLoop({ ...config, intensity: value }, hotFor);
+                  return {
+                    value,
+                    name,
+                    detail: `about ${hours(loopMinutes(p))} · ${p.length} rounds`,
+                    icon: LENGTH_ICON[value],
+                  };
+                })}
+              />
+            )}
+
+            {step < REVIEW && (
+              <div className={styles.stepNav}>
+                <button type="button" className="btn btn--ghost" disabled={step === 0} onClick={() => goTo(step - 1)}>
+                  ← Back
+                </button>
+                <span className={styles.spacer} />
+                {isAnswered(stepId) ? (
+                  <button type="button" className="btn" onClick={() => goTo(nextStep)}>
+                    {nextStep === REVIEW ? "See the loop →" : `Next: ${STEP_LABEL[steps[nextStep]]} →`}
+                  </button>
+                ) : (
+                  <button type="button" className="btn" disabled>
+                    Choose one to go on
+                  </button>
+                )}
+              </div>
+            )}
+
+            {stepId === "review" && (
+              <>
+                {style && (
+                  <p className={styles.styleNote}>
+                    <b>{style.name}</b> — {style.detail}. Built from {style.basedOn} of the book
+                    {style.veto?.length ? "; a lean-no in the round marked veto is a no" : ""}.
+                  </p>
+                )}
+                <p className={styles.mapTotals}>
+                  {plan.length} rounds · {totalQuestions} questions · about {hours(totalMinutes)} — tap any step above
+                  to change it
+                </p>
+                <LoopMap plan={plan} stages={stages} veto={style?.veto} />
+                <div className={styles.startBar}>
+                  <button
+                    type="button"
+                    className="btn btn--primary"
+                    disabled={busy}
+                    onPointerEnter={onStartIntent}
+                    onFocus={onStartIntent}
+                    onClick={onStart}
+                  >
+                    {busy ? "Setting up the room…" : "Start the loop"}
+                  </button>
+                  <p className={styles.startNote}>
+                    Answer out loud before you look. Each question has a clock, the interviewer will push with a
+                    follow-up, and <b>core</b> rounds can sink the loop on their own — the way a real debrief works.
+                  </p>
+                </div>
+              </>
+            )}
+            {error && <p className="warn">{error}</p>}
           </div>
-        )}
-
-        {stepId === "review" && (
-          <>
-            {style && (
-              <p className={styles.styleNote}>
-                <b>{style.name}</b> — {style.detail}. Built from {style.basedOn} of the book
-                {style.veto?.length ? "; a lean-no in the round marked veto is a no" : ""}.
-              </p>
-            )}
-            <p className={styles.mapTotals}>
-              {plan.length} rounds · {totalQuestions} questions · about {hours(totalMinutes)} — tap any step above to
-              change it
+        </div>
+        {stepId !== "review" && (
+          <aside className={styles.livePlan} aria-label="Your loop so far">
+            <p className={styles.eyebrow}>your loop so far</p>
+            <p className={styles.liveTotals}>
+              <b>{plan.length}</b> rounds · <b>{totalQuestions}</b> questions · about <b>{hours(totalMinutes)}</b>
             </p>
-            <LoopMap plan={plan} stages={stages} veto={style?.veto} />
-            <div className={styles.startBar}>
-              <button
-                type="button"
-                className="btn btn--primary"
-                disabled={busy}
-                onPointerEnter={onStartIntent}
-                onFocus={onStartIntent}
-                onClick={onStart}
-              >
-                {busy ? "Setting up the room…" : "Start the loop"}
-              </button>
-              <p className={styles.startNote}>
-                Answer out loud before you look. Each question has a clock, the interviewer will push with a follow-up,
-                and <b>core</b> rounds can sink the loop on their own — the way a real debrief works.
-              </p>
-            </div>
-          </>
+            <ol className={styles.liveList} aria-label="Loop preview">
+              {plan.map((p) => (
+                <li key={p.stage} data-core={p.core || undefined}>
+                  <span className={styles.liveDotSmall} aria-hidden="true" />
+                  <span className={styles.liveName}>{stages[p.stage]?.title}</span>
+                  <span className={styles.liveMin}>{p.minutes} min</span>
+                </li>
+              ))}
+            </ol>
+            <p className={styles.liveNote}>
+              {style ? `${style.name}: ${style.detail}.` : "Rounds follow the kind of company you pick."} Filled dots
+              are core rounds; a no-hire in one of them sinks the loop.
+            </p>
+          </aside>
         )}
-        {error && <p className="warn">{error}</p>}
       </div>
     </section>
   );

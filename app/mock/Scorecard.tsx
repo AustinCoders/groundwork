@@ -17,6 +17,7 @@ import { stageResults, type Session } from "@/lib/mock/session";
 import type { Competency, StageId, StageInfo, TalkItem } from "@/lib/mock/types";
 import { formatClock } from "@/lib/mockSession";
 import { BoardView } from "@/app/mock/Whiteboard";
+import { COMPETENCY_PLAN } from "@/lib/mock/guide";
 import styles from "./mock.module.css";
 
 const HIRE_BAR = 0.65;
@@ -86,6 +87,10 @@ export function Scorecard({
   const kind = session.mode === "loop" ? "Loop" : session.mode === "retry" ? "Retry round" : "Round";
   const pace = pacing(session);
   const [copied, setCopied] = useState<"idle" | "done" | "failed">("idle");
+  const focus = (Object.entries(profile) as [Competency, number][])
+    .filter(([, v]) => v < STRONG_BAR)
+    .sort((a, b) => a[1] - b[1])
+    .slice(0, 2);
 
   async function copyDebrief() {
     try {
@@ -99,7 +104,7 @@ export function Scorecard({
 
   return (
     <>
-      <section className="sheet" aria-labelledby="debrief-h">
+      <section className={styles.panel} aria-labelledby="debrief-h">
         <div className={styles.verdictSheet}>
           <div>
             <p className={styles.eyebrow}>{kind} debrief</p>
@@ -149,7 +154,7 @@ export function Scorecard({
       </section>
 
       <div className={styles.split}>
-        <section className="sheet" aria-labelledby="rounds-h">
+        <section className={styles.panel} aria-labelledby="rounds-h">
           <h2 id="rounds-h">Round by round</h2>
           <div className="table-scroll">
             <table className={styles.stageTable}>
@@ -192,7 +197,7 @@ export function Scorecard({
           </div>
         </section>
 
-        <section className="sheet" aria-labelledby="profile-h">
+        <section className={styles.panel} aria-labelledby="profile-h">
           <h2 id="profile-h">What it says about you</h2>
           <dl className={styles.profile}>
             {(Object.entries(profile) as [Competency, number][])
@@ -214,7 +219,34 @@ export function Scorecard({
         </section>
       </div>
 
-      <section className="sheet" aria-labelledby="qs-h">
+      {focus.length > 0 && (
+        <section className={styles.panel} aria-labelledby="next-h">
+          <p className={styles.eyebrow}>before the real one</p>
+          <h2 id="next-h">What to work on next</h2>
+          <div className={styles.nextGrid}>
+            {focus.map(([c, v]) => (
+              <article key={c} className={styles.nextCard}>
+                <div className={styles.nextTop}>
+                  <b>{COMPETENCY_LABEL[c]}</b>
+                  <span className={styles.qScore} data-band={band(v)}>
+                    {Math.round(v * 100)}%
+                  </span>
+                </div>
+                <p>{COMPETENCY_PLAN[c].why}</p>
+                <ol className={styles.nextSteps}>
+                  {COMPETENCY_PLAN[c].steps.map((st) => (
+                    <li key={st.href}>
+                      <Link href={st.href}>{st.label}</Link>
+                    </li>
+                  ))}
+                </ol>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section className={styles.panel} aria-labelledby="qs-h">
         <h2 id="qs-h">Every question</h2>
         <ol className={styles.qList}>
           {session.questions.map((q, i) => {
@@ -273,7 +305,7 @@ export function Scorecard({
         </ol>
       </section>
 
-      <section className="sheet" aria-label="What next">
+      <section className={styles.panel} aria-label="What next">
         <div className={styles.startBar} style={{ borderTop: 0, paddingTop: 0 }}>
           {retryCount > 0 && (
             <button type="button" className="btn btn--primary" onClick={onRetry}>
