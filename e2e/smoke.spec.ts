@@ -4,7 +4,7 @@ import { expect, test, type ConsoleMessage, type Page } from "@playwright/test";
 import { practice } from "../content/practice";
 
 const PAGES = [
-  { path: "/", heading: /Everything I know/i },
+  { path: "/", heading: /Walk into the interview ready/i },
   { path: "/notes", heading: /JavaScript/i },
   { path: "/notes/setup-mental-model", heading: /Setup/i },
   { path: "/interview", heading: /Interview/i },
@@ -805,4 +805,24 @@ test("the git guide has a chapter per section and old anchors still land", async
   await page.goto("/git#undo");
   await page.waitForURL("**/git/undo");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Undoing");
+});
+
+test("the home page reads as a landing page and every path leads somewhere real", async ({ page }) => {
+  await page.goto("/");
+  for (const name of [/Most prep is either/, /a path that starts there/, /Ready to read today/, /Before you start/]) {
+    await expect(page.getByRole("heading", { level: 2, name })).toBeVisible();
+  }
+  const faq = page.locator("details", { hasText: "Do I need to sign up?" });
+  await faq.locator("summary").click();
+  await expect(faq).toContainText("There is no account");
+
+  await page.getByRole("link", { name: "The machine coding round" }).click();
+  await page.waitForURL("**/interview/r2");
+  await page.goBack();
+  await page.getByRole("button", { name: "Menu" }).click();
+  await expect(page.getByRole("dialog", { name: /menu/ })).toBeVisible();
+  await page.keyboard.press("Escape");
+
+  await page.setViewportSize({ width: 375, height: 800 });
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
