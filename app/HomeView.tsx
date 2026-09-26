@@ -261,10 +261,7 @@ function TryIt() {
   const allGood = results !== null && passed === DEMO_TESTS.length;
 
   return (
-    <div
-      className={`${styles.paper} ${styles.paperCode}`}
-      data-state={results ? (allGood ? "pass" : "fail") : undefined}
-    >
+    <div className={styles.editor} data-state={results ? (allGood ? "pass" : "fail") : undefined}>
       <div className={styles.codeBar}>
         <span aria-hidden="true" />
         <span aria-hidden="true" />
@@ -325,37 +322,6 @@ function TryIt() {
   );
 }
 
-function HeroArt({ interview }: { interview: HomeViewProps["interview"] }) {
-  return (
-    <div className={styles.art}>
-      <div className={`${styles.paper} ${styles.paperNote}`} aria-hidden="true">
-        <span className={styles.tape} />
-        <span className={styles.paperKicker}>JavaScript · Beginner · B13</span>
-        <p className={styles.paperTitle}>
-          A closure is a function plus <mark>the scope it was born in</mark>.
-        </p>
-        <span className={styles.lineLong} />
-        <span className={styles.lineMid} />
-      </div>
-      <TryIt />
-      <div className={`${styles.paper} ${styles.paperRound}`} aria-hidden="true">
-        <span className={styles.paperKicker}>Round 2 of {interview.rounds} · Machine coding</span>
-        <p className={styles.paperQ}>“Now make it work with two browser tabs open.”</p>
-      </div>
-      <span className={styles.doodleNote} aria-hidden="true">
-        go on, run it
-      </span>
-      <svg className={styles.doodleArrow} viewBox="0 0 120 80" aria-hidden="true">
-        <path d="M8 12 C 40 4, 86 20, 100 62" />
-        <path d="M86 56 L 101 64 L 106 47" />
-      </svg>
-      <svg className={styles.doodleStar} viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" />
-      </svg>
-    </div>
-  );
-}
-
 function WelcomeBack() {
   const key = useProgressValue(() => {
     const s = computeStats();
@@ -368,14 +334,180 @@ function WelcomeBack() {
   const [level, read, solved, streak, due] = key.split("|").map(Number);
   return (
     <div className={styles.welcome}>
-      <span className={styles.welcomeHi} aria-hidden="true">
-        👋
-      </span>
+      <span aria-hidden="true">👋</span>
       <p>
         <strong>Welcome back.</strong> Level {level} · {plural(read, "chapter")} read · {plural(solved, "problem")}{" "}
         solved{streak > 0 ? ` · 🔥 ${streak}-day streak` : ""}
       </p>
       <Link href={due > 0 ? "/review" : "/progress"}>{due > 0 ? `${due} due for review →` : "Your progress →"}</Link>
+    </div>
+  );
+}
+
+function ProductWindow() {
+  return (
+    <div className={styles.window}>
+      <div className={styles.windowBar} aria-hidden="true">
+        <span />
+        <span />
+        <span />
+        <em>groundwork / javascript / closures</em>
+      </div>
+      <div className={styles.windowBody}>
+        <article className={styles.chapter} aria-hidden="true">
+          <span className={styles.chapterKicker}>B13 · Beginner · 12 min read</span>
+          <h3>Closures</h3>
+          <p>
+            A closure is a function plus <mark>the scope it was born in</mark>. When <code>counter</code> returns, its
+            call is over, but the arrow it handed back still holds on to <code>n</code>.
+          </p>
+          <div className={styles.scopes}>
+            <div>
+              <b>global</b>
+              <div>
+                <b>counter()</b>
+                <span>
+                  n = <i>0</i>
+                </span>
+                <div>
+                  <b>() =&gt; ++n</b>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p className={styles.chapterNote}>
+            <span>Interview follow-up</span> Why does a second counter start from 1?
+          </p>
+        </article>
+        <TryIt />
+      </div>
+    </div>
+  );
+}
+
+function StoryVisual({ step }: { step: number }) {
+  if (step === 0)
+    return (
+      <div className={styles.vis} aria-hidden="true">
+        {["What the engine does", "Execution context", "Scope", "Closures", "Async & the event loop"].map((t, i) => (
+          <span
+            key={t}
+            className={styles.layer}
+            style={{ "--i": i } as React.CSSProperties}
+            data-top={i === 3 || undefined}
+          >
+            {t}
+          </span>
+        ))}
+        <small>Each layer only uses words from the ones below it.</small>
+      </div>
+    );
+  if (step === 1)
+    return (
+      <div className={styles.vis} aria-hidden="true">
+        <div className={styles.visTests}>
+          {["returns a promise", "resolves in order", "rejects on the first failure", "handles an empty list"].map(
+            (t, i) => (
+              <span key={t} style={{ "--i": i } as React.CSSProperties}>
+                <b>✓</b> {t}
+              </span>
+            )
+          )}
+        </div>
+        <strong className={styles.visBig}>4 / 4 passed</strong>
+        <small>Your answer, graded by the same tests as the real exercise.</small>
+      </div>
+    );
+  if (step === 2)
+    return (
+      <div className={styles.vis} aria-hidden="true">
+        <div className={styles.chat}>
+          <p data-who="them">Build me a debounce.</p>
+          <p data-who="you">Timer, clear on each call, fire after the wait.</p>
+          <p data-who="them">Now the first call should fire immediately. And cancel?</p>
+        </div>
+        <small>Every round shows the follow-up they push with next.</small>
+      </div>
+    );
+  return (
+    <div className={styles.vis} aria-hidden="true">
+      <div className={styles.cal}>
+        {Array.from({ length: 28 }, (_, i) => (
+          <span key={i} data-on={[2, 5, 9, 12, 16, 23].includes(i) || undefined} data-due={i === 23 || undefined} />
+        ))}
+      </div>
+      <small>Read today, back in 3 days, then 7, 21 and 60.</small>
+    </div>
+  );
+}
+
+const STORY = [
+  {
+    k: "Read",
+    title: "Read a chapter that builds on the last one.",
+    body: "Topics are layered bottom to top, so closures arrive after scope, and async after the event loop. You never skim past a word you do not know yet.",
+  },
+  {
+    k: "Run",
+    title: "Prove it with real tests, right in the page.",
+    body: "Chapters that need practice end in an editor. Your answer runs in your browser against real tests, and a pass is what counts.",
+  },
+  {
+    k: "Get asked",
+    title: "Then get asked the follow-up.",
+    body: "The interview book shows how each round really goes: the question, the wrong answer that loses the room, and what they push with next.",
+  },
+  {
+    k: "Remember",
+    title: "And it comes back before you forget.",
+    body: "Chapters you finish come back for review on a spaced schedule, so what you read in week one is still there on interview day.",
+  },
+];
+
+function Story() {
+  const [active, setActive] = useState(0);
+  const refs = useRef<(HTMLElement | null)[]>([]);
+  useEffect(() => {
+    if (!("IntersectionObserver" in window)) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) setActive(Number((e.target as HTMLElement).dataset.step));
+        });
+      },
+      { rootMargin: "-45% 0px -45% 0px" }
+    );
+    refs.current.forEach((el) => el && io.observe(el));
+    return () => io.disconnect();
+  }, []);
+  return (
+    <div className={styles.story}>
+      <ol className={styles.storySteps}>
+        {STORY.map((s, i) => (
+          <li
+            key={s.k}
+            data-step={i}
+            data-active={i === active || undefined}
+            ref={(el) => {
+              refs.current[i] = el;
+            }}
+          >
+            <span className={styles.storyKey}>
+              {i + 1} · {s.k}
+            </span>
+            <h3>{s.title}</h3>
+            <p>{s.body}</p>
+            <div className={styles.storyInline}>
+              <StoryVisual step={i} />
+            </div>
+          </li>
+        ))}
+      </ol>
+      <div className={styles.storyStage}>
+        <div className={styles.storySticky} key={active}>
+          <StoryVisual step={active} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -420,16 +552,16 @@ function PathTabs() {
         ))}
       </div>
       <div className={styles.panel} role="tabpanel" id="path-panel" aria-labelledby={`path-tab-${active}`} key={active}>
-        <div className={styles.panelText}>
+        <div>
           <h3>{p.title}</h3>
-          <p className={styles.pain}>{p.pain}</p>
-          <p className={styles.pathLabel}>After this path you can</p>
+          <p className={styles.muted}>{p.pain}</p>
+          <p className={styles.label}>After this path you can</p>
           <ul className={styles.gains}>
             {p.gains.map((g) => (
               <li key={g}>{g}</li>
             ))}
           </ul>
-          <Link href={p.path[0].href} className={`${styles.btn} ${styles.btnBig}`}>
+          <Link href={p.path[0].href} className={styles.btn}>
             Start this path <span className={styles.btnArrow}>→</span>
           </Link>
         </div>
@@ -483,27 +615,6 @@ function Journey() {
   );
 }
 
-function TopicTicker({ topics }: { topics: ShelfCard[] }) {
-  const row = (hidden: boolean) => (
-    <ul className={styles.tickerRow} aria-hidden={hidden || undefined}>
-      {topics.map((t) => (
-        <li key={t.id} style={accent(t.accent)}>
-          <span className={styles.tickerMark}>{t.mark}</span>
-          {t.name}
-        </li>
-      ))}
-    </ul>
-  );
-  return (
-    <div className={styles.ticker} role="region" aria-label="Topics on the shelf">
-      <div className={styles.tickerMove}>
-        {row(false)}
-        {row(true)}
-      </div>
-    </div>
-  );
-}
-
 const TOOLS = [
   { href: "/problems", tone: "purple", icon: "M8 9l-4 3 4 3M16 9l4 3-4 3", t: "Problems" },
   { href: "/practice?id=free", tone: "blue", icon: "M4 20h4L19 9l-4-4L4 16zM14 6l4 4", t: "Playground" },
@@ -513,32 +624,18 @@ const TOOLS = [
 
 export function HomeView({ stats, ready, soon, problems, languages, interview }: HomeViewProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
   const pageRef = useRef<HTMLDivElement>(null);
-  const artRef = useRef<HTMLDivElement>(null);
-  const barRef = useRef<HTMLSpanElement>(null);
   const hours = Math.round(stats.minutes / 60);
   useReveal(pageRef);
 
   useEffect(() => {
-    const bar = barRef.current;
-    if (!bar) return;
-    const onScroll = () => {
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      bar.style.transform = `scaleX(${max > 0 ? window.scrollY / max : 0})`;
-    };
+    const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  function onHeroMove(e: React.PointerEvent<HTMLElement>) {
-    const art = artRef.current;
-    if (!art || e.pointerType !== "mouse" || !prefersMotion()) return;
-    const r = e.currentTarget.getBoundingClientRect();
-    art.style.setProperty("--px", ((e.clientX - r.left) / r.width - 0.5).toFixed(3));
-    art.style.setProperty("--py", ((e.clientY - r.top) / r.height - 0.5).toFixed(3));
-  }
 
   const toolText: Record<string, string> = {
     Problems: `${problems} problems grouped by the pattern each one teaches.`,
@@ -580,225 +677,154 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
         Skip to the content
       </a>
       <div className={styles.page} ref={pageRef}>
-        <header className={styles.nav}>
-          <div className={styles.navInner}>
-            <button
-              type="button"
-              className={styles.iconBtn}
-              aria-label="Menu"
-              aria-haspopup="dialog"
-              aria-expanded={menuOpen}
-              onClick={() => setMenuOpen(true)}
-            >
-              <TopIcon name="menu" />
-            </button>
-            <Link href="/" className={styles.brand} aria-label={`${SITE_NAME} home`}>
-              <span className="brand__mark" aria-hidden="true">
-                JS
-              </span>
-              <span>{SITE_NAME}</span>
-            </Link>
-            <nav className={styles.navLinks} aria-label="Sections">
-              <a href="#why">Why</a>
-              <a href="#loop">Interview loop</a>
-              <a href="#who">Who it is for</a>
-              <a href="#shelf">Topics</a>
-              <a href="#faq">FAQ</a>
-            </nav>
-            <Link href="/level/js" className={`${styles.btn} ${styles.btnSmall}`}>
-              Start reading
-            </Link>
-          </div>
-          <span className={styles.progress} ref={barRef} aria-hidden="true" />
+        <header className={styles.nav} data-scrolled={scrolled || undefined}>
+          <button
+            type="button"
+            className={styles.iconBtn}
+            aria-label="Menu"
+            aria-haspopup="dialog"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen(true)}
+          >
+            <TopIcon name="menu" />
+          </button>
+          <Link href="/" className={styles.brand} aria-label={`${SITE_NAME} home`}>
+            <span className="brand__mark" aria-hidden="true">
+              JS
+            </span>
+            <span>{SITE_NAME}</span>
+          </Link>
+          <nav className={styles.navLinks} aria-label="Sections">
+            <a href="#how">How it works</a>
+            <a href="#who">Paths</a>
+            <a href="#loop">Interview loop</a>
+            <a href="#shelf">Topics</a>
+            <a href="#faq">FAQ</a>
+          </nav>
+          <Link href="/level/js" className={`${styles.btn} ${styles.btnSmall}`}>
+            Start reading
+          </Link>
         </header>
 
         <main id="main">
-          <section className={styles.hero} onPointerMove={onHeroMove}>
-            <span className={`${styles.blob} ${styles.blobA}`} aria-hidden="true" />
-            <span className={`${styles.blob} ${styles.blobB}`} aria-hidden="true" />
-            <span className={`${styles.blob} ${styles.blobC}`} aria-hidden="true" />
-            <div className={styles.heroCopy}>
-              <WelcomeBack />
-              <p className={styles.kicker}>
-                <span className={styles.dot} aria-hidden="true" /> Free · no sign-up · {stats.writtenChapters} chapters
-                written
-              </p>
-              <h1 className={styles.h1}>
-                Understand JavaScript properly.{" "}
-                <span className={styles.h1Accent}>
-                  Walk into the interview ready.
-                  <svg className={styles.underline} viewBox="0 0 400 24" preserveAspectRatio="none" aria-hidden="true">
-                    <path d="M4 16 C 90 4, 190 22, 280 10 S 380 8, 396 14" />
-                  </svg>
-                </span>
-              </h1>
-              <p className={styles.lead}>
-                Notes that never use a word before explaining it, exercises graded by real tests right in the page, and
-                an interview book that walks every round up to the offer. Try it: the code on the right really runs.
-              </p>
-              <div className={styles.actions}>
-                <Link href="/level/js" className={`${styles.btn} ${styles.btnBig}`}>
-                  Start with JavaScript <span className={styles.btnArrow}>→</span>
-                </Link>
-                <Link href="/interview" className={`${styles.btn} ${styles.btnGhost} ${styles.btnBig}`}>
-                  Prepare for an interview
-                </Link>
-              </div>
-              <ul className={styles.checks}>
-                <li>Free forever</li>
-                <li>No account needed</li>
-                <li>Code runs in your browser</li>
-              </ul>
+          <section className={styles.hero}>
+            <WelcomeBack />
+            <p className={styles.kicker}>
+              <span className={styles.dot} aria-hidden="true" /> Free · no sign-up · {stats.writtenChapters} chapters
+              written
+            </p>
+            <h1 className={styles.h1}>
+              Understand JavaScript properly. <span className={styles.accentText}>Walk into the interview ready.</span>
+            </h1>
+            <p className={styles.lead}>
+              Notes that never use a word before explaining it, exercises graded by real tests right in the page, and an
+              interview book that walks every round up to the offer.
+            </p>
+            <div className={styles.actions}>
+              <Link href="/level/js" className={`${styles.btn} ${styles.btnBig}`}>
+                Start with JavaScript <span className={styles.btnArrow}>→</span>
+              </Link>
+              <Link href="/interview" className={`${styles.btn} ${styles.btnGhost} ${styles.btnBig}`}>
+                Prepare for an interview
+              </Link>
             </div>
-            <div className={styles.artWrap} ref={artRef}>
-              <HeroArt interview={interview} />
+            <p className={styles.tryHint} aria-hidden="true">
+              ↓ the editor below really runs. Break it and see.
+            </p>
+            <div className={styles.windowWrap}>
+              <ProductWindow />
             </div>
+            <dl className={styles.stats}>
+              {[
+                { n: stats.writtenChapters, s: "", l: "chapters written" },
+                { n: stats.exercises, s: "", l: "exercises you can run" },
+                { n: hours, s: "h", l: "of careful reading" },
+                { n: interview.questions, s: "+", l: "interview questions" },
+              ].map((x) => (
+                <div key={x.l}>
+                  <dt>{x.l}</dt>
+                  <dd>
+                    <Counter value={x.n} suffix={x.s} />
+                  </dd>
+                </div>
+              ))}
+            </dl>
           </section>
 
-          <TopicTicker topics={[...ready, ...soon]} />
-
-          <section className={styles.numbers} aria-label="By the numbers">
-            {[
-              { n: stats.writtenChapters, s: "", label: "chapters written", tone: "yellow" },
-              { n: stats.exercises, s: "", label: "exercises you can run", tone: "green" },
-              { n: hours, s: "h", label: "of careful reading", tone: "blue" },
-              { n: interview.questions, s: "+", label: "interview questions answered", tone: "red" },
-            ].map((x) => (
-              <div key={x.label} className={styles.note} style={accent(x.tone)} data-reveal>
-                <strong>
-                  <Counter value={x.n} suffix={x.s} />
-                </strong>
-                <span>{x.label}</span>
-              </div>
-            ))}
-          </section>
-
-          <section className={styles.section} id="why" aria-labelledby="why-h">
+          <section className={styles.section} id="how" aria-labelledby="how-h">
             <div className={styles.head} data-reveal>
-              <p className={styles.eyebrow}>Why come here</p>
-              <h2 id="why-h" className={styles.h2}>
-                Most prep is either <s>too shallow</s> or <s>too scattered</s>.
+              <p className={styles.eyebrow}>How it works</p>
+              <h2 id="how-h" className={styles.h2}>
+                Read it. Run it. Get asked about it. Keep it.
               </h2>
               <p className={styles.sub}>
-                Tutorials skip the why, problem sites skip the theory, and docs assume you already know. {SITE_NAME}{" "}
-                puts the explanation, the practice and the interview in one place, in the right order.
+                Most prep is either too shallow or too scattered. Here, the explanation, the practice and the interview
+                sit in one place, in the right order.
               </p>
             </div>
+            <Story />
+          </section>
+
+          <section className={styles.section} id="features" aria-labelledby="feat-h">
+            <div className={styles.head} data-reveal>
+              <p className={styles.eyebrow}>Everything in one place</p>
+              <h2 id="feat-h" className={styles.h2}>
+                Built for the way interviews actually go.
+              </h2>
+            </div>
             <div className={styles.bento}>
-              <article className={`${styles.cell} ${styles.cellWide}`} style={accent("yellow")} data-reveal>
-                <div className={styles.cellText}>
-                  <h3>Nothing is used before it is explained</h3>
-                  <p>
-                    Every topic is layered bottom to top. You never hit a word the page has not taught you yet, so you
-                    stop skimming and start understanding.
-                  </p>
-                </div>
-                <ol className={styles.ladder} aria-hidden="true">
-                  <li>Async &amp; the event loop</li>
-                  <li>Closures</li>
-                  <li>Scope</li>
-                  <li>Execution context</li>
-                  <li>What the engine does</li>
-                </ol>
-              </article>
-              <article className={styles.cell} style={accent("green")} data-reveal>
-                <h3>Read it, then run it</h3>
+              <article className={`${styles.cell} ${styles.cellWide}`} style={accent("green")} data-reveal>
+                <span className={styles.cellIcon}>
+                  <Icon d="M8 9l-4 3 4 3M16 9l4 3-4 3M13.5 6l-3 12" />
+                </span>
+                <h3>{problems} exercises, graded for real</h3>
                 <p>
-                  {problems} exercises graded by real tests. {languages.runnable} languages run right in your browser.
+                  An editor that knows {languages.total} languages and runs {languages.runnable} of them inside your
+                  browser. No install, no server, no waiting.
                 </p>
-                <div className={styles.miniTests} aria-hidden="true">
-                  <span className={styles.miniBar}>
-                    <span />
-                  </span>
-                  <b>5 / 5 tests passed</b>
+                <div className={styles.langs} aria-hidden="true">
+                  {["JS", "TS", "Python", "SQL", "C++", "C", "Ruby", "PHP", "Lua", "HTML", "CSS"].map((l) => (
+                    <span key={l}>{l}</span>
+                  ))}
                 </div>
               </article>
               <article className={styles.cell} style={accent("red")} data-reveal>
-                <h3>Every round, in order</h3>
-                <p>
-                  {interview.rounds} rounds from the screening call to the offer number, and the follow-up that comes
-                  next.
-                </p>
-                <div className={styles.miniDots} aria-hidden="true">
-                  {Array.from({ length: 9 }, (_, i) => (
-                    <span key={i} />
-                  ))}
-                  <b>🎉</b>
-                </div>
+                <span className={styles.cellIcon}>
+                  <Icon d="M12 21a9 9 0 100-18 9 9 0 000 18zM12 16a4 4 0 100-8 4 4 0 000 8zM12 12h.01" />
+                </span>
+                <h3>{interview.rounds} interview rounds</h3>
+                <p>From the screening call to the offer number, with {interview.questions}+ questions answered.</p>
               </article>
               <article className={styles.cell} style={accent("orange")} data-reveal>
-                <h3>Rehearse the whole loop</h3>
-                <p>A mock interview with a timer, follow-ups, a rubric and a hiring-committee debrief.</p>
-                <svg className={styles.ring} viewBox="0 0 64 64" aria-hidden="true">
-                  <circle cx="32" cy="32" r="26" />
-                  <circle cx="32" cy="32" r="26" className={styles.ringFill} />
-                  <text x="32" y="37">
-                    45:00
-                  </text>
-                </svg>
+                <span className={styles.cellIcon}>
+                  <Icon d="M12 7v5l3 2M12 21a9 9 0 110-18 9 9 0 010 18z" />
+                </span>
+                <h3>Mock interviews</h3>
+                <p>A timer, follow-ups, a rubric and a hiring-committee style debrief.</p>
               </article>
-              <article className={`${styles.cell} ${styles.cellWide}`} style={accent("teal")} data-reveal>
-                <div className={styles.cellText}>
-                  <h3>Think out loud on a whiteboard</h3>
-                  <p>
-                    Shapes, arrows that stay attached, sticky notes and system design templates, for the rounds where
-                    you draw instead of type.
-                  </p>
-                </div>
-                <svg className={styles.board} viewBox="0 0 260 130" aria-hidden="true">
-                  <rect x="6" y="46" width="62" height="36" rx="8" />
-                  <rect x="100" y="12" width="66" height="36" rx="8" />
-                  <rect x="100" y="80" width="66" height="36" rx="8" />
-                  <ellipse cx="226" cy="64" rx="30" ry="22" />
-                  <path d="M68 60 L100 32 M68 68 L100 96 M166 30 L196 56 M166 98 L196 72" />
-                  <text x="37" y="69">
-                    LB
-                  </text>
-                  <text x="133" y="35">
-                    API
-                  </text>
-                  <text x="133" y="103">
-                    API
-                  </text>
-                  <text x="226" y="69">
-                    DB
-                  </text>
-                </svg>
+              <article className={styles.cell} style={accent("teal")} data-reveal>
+                <span className={styles.cellIcon}>
+                  <Icon d="M3 5h18v12H3zM8 21h8M12 17v4M7 9h4M7 13h7" />
+                </span>
+                <h3>A real whiteboard</h3>
+                <p>Arrows that stay attached, sticky notes and system design templates.</p>
               </article>
-              <article className={styles.cell} style={accent("purple")} data-reveal>
-                <h3>Remember what you read</h3>
-                <p>Chapters come back for review before you forget them. Streaks and XP keep you honest.</p>
-                <div className={styles.streak} aria-hidden="true">
-                  {[1, 1, 1, 0, 1, 1, 1].map((on, i) => (
-                    <span key={i} data-on={on || undefined} />
-                  ))}
-                  <b>🔥 6</b>
-                </div>
+              <article className={`${styles.cell} ${styles.cellWide}`} style={accent("purple")} data-reveal>
+                <span className={styles.cellIcon}>
+                  <Icon d="M4 12a8 8 0 0113.7-5.6L20 9M20 4v5h-5M20 12a8 8 0 01-13.7 5.6L4 15M4 20v-5h5" />
+                </span>
+                <h3>Nothing to sign up for</h3>
+                <p>
+                  Progress, streaks, XP and your whiteboards live in this browser. Nothing about you leaves your
+                  machine, and there is no paid tier hiding the good parts.
+                </p>
               </article>
             </div>
           </section>
 
-          <div className={styles.band}>
-            <section className={`${styles.section} ${styles.loop}`} id="loop" aria-labelledby="loop-h">
-              <div className={styles.head} data-reveal>
-                <p className={styles.eyebrow}>The interview book</p>
-                <h2 id="loop-h" className={styles.h2}>
-                  From the first call to the offer, round by round.
-                </h2>
-                <p className={styles.sub}>
-                  What each round is really testing, the answer, the code, the wrong answer that loses the room, and the
-                  follow-up they push with next. Pick any round to read it.
-                </p>
-              </div>
-              <div data-reveal>
-                <Journey />
-              </div>
-            </section>
-          </div>
-
           <section className={styles.section} id="who" aria-labelledby="who-h">
             <div className={styles.head} data-reveal>
-              <p className={styles.eyebrow}>Who it is for</p>
+              <p className={styles.eyebrow}>Paths</p>
               <h2 id="who-h" className={styles.h2}>
                 Where are you now? There is a path that starts there.
               </h2>
@@ -808,40 +834,20 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             </div>
           </section>
 
-          <section className={styles.section} aria-labelledby="how-h">
-            <div className={styles.head} data-reveal>
-              <p className={styles.eyebrow}>How it works</p>
-              <h2 id="how-h" className={styles.h2}>
-                Three steps, then just keep going.
-              </h2>
+          <section className={styles.section} id="loop" aria-labelledby="loop-h">
+            <div className={styles.loopCard} data-reveal>
+              <div className={styles.head}>
+                <p className={styles.eyebrow}>The interview book</p>
+                <h2 id="loop-h" className={styles.h2}>
+                  From the first call to the offer, round by round.
+                </h2>
+                <p className={styles.sub}>
+                  What each round is really testing, the answer, the wrong answer that loses the room, and the
+                  follow-up. Pick any round to read it.
+                </p>
+              </div>
+              <Journey />
             </div>
-            <ol className={styles.steps}>
-              {[
-                {
-                  t: "Pick a topic",
-                  d: `${ready.length} are fully written today. The rest show exactly what is planned, chapter by chapter.`,
-                },
-                {
-                  t: "Say where you are",
-                  d: "Beginner, intermediate or advanced. It only changes where the path starts, never what it skips.",
-                },
-                {
-                  t: "Read, then run it",
-                  d: "Each chapter that needs practice ends in an editor with real tests. Pass them and it counts.",
-                },
-              ].map((s, i) => (
-                <li key={s.t} data-reveal>
-                  <span className={styles.stepNum}>{i + 1}</span>
-                  <h3>{s.t}</h3>
-                  <p>{s.d}</p>
-                  {i < 2 && (
-                    <svg className={styles.stepArrow} viewBox="0 0 60 30" aria-hidden="true">
-                      <path d="M2 20 C 20 2, 40 2, 56 16 M46 8 L57 17 L44 21" />
-                    </svg>
-                  )}
-                </li>
-              ))}
-            </ol>
           </section>
 
           <section className={styles.section} id="shelf" aria-labelledby="shelf-h">
@@ -854,8 +860,13 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             <div className={styles.shelf}>
               {ready.map((t) => (
                 <Link key={t.id} href={t.href} className={styles.book} style={accent(t.accent)} data-reveal>
-                  <span className={styles.bookMark} aria-hidden="true">
-                    {t.mark}
+                  <span className={styles.bookTop}>
+                    <span className={styles.bookMark} aria-hidden="true">
+                      {t.mark}
+                    </span>
+                    <span className={styles.bookGo} aria-hidden="true">
+                      →
+                    </span>
                   </span>
                   <span className={styles.bookName}>{t.name}</span>
                   <span className={styles.bookTag}>{t.tagline}</span>
@@ -864,14 +875,16 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                     {t.exercises > 0 && <span>{plural(t.exercises, "exercise")}</span>}
                     <span>{formatSpan(t.minutes)}</span>
                   </span>
-                  <span className={styles.bookGo} aria-hidden="true">
-                    →
-                  </span>
                 </Link>
               ))}
               <Link href="/interview" className={styles.book} style={accent("red")} data-reveal>
-                <span className={styles.bookMark} aria-hidden="true">
-                  ◎
+                <span className={styles.bookTop}>
+                  <span className={styles.bookMark} aria-hidden="true">
+                    ◎
+                  </span>
+                  <span className={styles.bookGo} aria-hidden="true">
+                    →
+                  </span>
                 </span>
                 <span className={styles.bookName}>Interview book</span>
                 <span className={styles.bookTag}>Every round, every question, the answer.</span>
@@ -879,14 +892,11 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                   <span>{plural(interview.rounds, "round")}</span>
                   <span>{interview.questions}+ questions</span>
                 </span>
-                <span className={styles.bookGo} aria-hidden="true">
-                  →
-                </span>
               </Link>
             </div>
             {soon.length > 0 && (
-              <div data-reveal>
-                <h3 className={styles.soonHead}>Being written next</h3>
+              <div className={styles.soonWrap} data-reveal>
+                <p className={styles.label}>Being written next</p>
                 <ul className={styles.soon}>
                   {soon.map((t) => (
                     <li key={t.id}>
@@ -895,7 +905,6 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                           {t.mark}
                         </span>
                         {t.name}
-                        <span className={styles.soonCount}>{t.chapters} planned</span>
                       </Link>
                     </li>
                   ))}
@@ -921,12 +930,11 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                   prefetch={false}
                   data-reveal
                 >
-                  <span className={styles.toolIcon}>
-                    <Icon d={x.icon} size={24} />
+                  <span className={styles.cellIcon}>
+                    <Icon d={x.icon} />
                   </span>
                   <strong>{x.t}</strong>
                   <span>{toolText[x.t]}</span>
-                  <em aria-hidden="true">Open →</em>
                 </Link>
               ))}
             </div>
@@ -960,41 +968,43 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
           </section>
 
           <section className={styles.section} id="faq" aria-labelledby="faq-h">
-            <div className={styles.head} data-reveal>
-              <p className={styles.eyebrow}>Questions</p>
-              <h2 id="faq-h" className={styles.h2}>
-                Before you start.
-              </h2>
-            </div>
-            <div className={styles.faq}>
-              {faqs.map((f) => (
-                <details key={f.q} className={styles.faqItem} data-reveal>
-                  <summary>{f.q}</summary>
-                  <p>
-                    {f.a}
-                    {f.q.startsWith("How is the site") && (
-                      <>
-                        {" "}
-                        <Link href="/architecture">Read how it is built →</Link>
-                      </>
-                    )}
-                  </p>
-                </details>
-              ))}
+            <div className={styles.faqGrid}>
+              <div className={styles.head} data-reveal>
+                <p className={styles.eyebrow}>Questions</p>
+                <h2 id="faq-h" className={styles.h2}>
+                  Before you start.
+                </h2>
+                <p className={styles.sub}>Everything people ask before opening their first chapter.</p>
+              </div>
+              <div className={styles.faq}>
+                {faqs.map((f) => (
+                  <details key={f.q} className={styles.faqItem} data-reveal>
+                    <summary>{f.q}</summary>
+                    <p>
+                      {f.a}
+                      {f.q.startsWith("How is the site") && (
+                        <>
+                          {" "}
+                          <Link href="/architecture">Read how it is built →</Link>
+                        </>
+                      )}
+                    </p>
+                  </details>
+                ))}
+              </div>
             </div>
           </section>
 
           <section className={styles.cta} aria-labelledby="cta-h" data-reveal>
-            <svg className={styles.ctaDoodle} viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" />
-            </svg>
-            <h2 id="cta-h">Ten minutes from now, you could understand one thing properly.</h2>
-            <p>Open a chapter. No account, no card, no catch.</p>
+            <h2 id="cta-h" className={styles.h2}>
+              Ten minutes from now, you could understand one thing properly.
+            </h2>
+            <p className={styles.sub}>Open a chapter. No account, no card, no catch.</p>
             <div className={styles.actions}>
-              <Link href="/level/js" className={`${styles.btn} ${styles.btnInvert} ${styles.btnBig}`}>
+              <Link href="/level/js" className={`${styles.btn} ${styles.btnBig}`}>
                 Start with JavaScript <span className={styles.btnArrow}>→</span>
               </Link>
-              <Link href="/problems" className={`${styles.btn} ${styles.btnOutline} ${styles.btnBig}`}>
+              <Link href="/problems" className={`${styles.btn} ${styles.btnGhost} ${styles.btnBig}`}>
                 Solve a problem
               </Link>
             </div>
@@ -1010,12 +1020,12 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                 </span>
                 {SITE_NAME}
               </p>
-              <p className={styles.footNote}>
+              <p className={styles.muted}>
                 Written by hand, rendered by a browser. Your progress stays on your device.
               </p>
             </div>
             <nav aria-label="Learn">
-              <p className={styles.footHead}>Learn</p>
+              <p className={styles.label}>Learn</p>
               {ready.slice(0, 5).map((t) => (
                 <Link key={t.id} href={t.href}>
                   {t.name}
@@ -1024,7 +1034,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
               <Link href="/interview">Interview book</Link>
             </nav>
             <nav aria-label="Practice">
-              <p className={styles.footHead}>Practice</p>
+              <p className={styles.label}>Practice</p>
               <Link href="/problems">Problems</Link>
               <Link href="/practice?id=free" prefetch={false}>
                 Playground
@@ -1033,7 +1043,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
               <Link href="/whiteboard">Whiteboard</Link>
             </nav>
             <nav aria-label="You">
-              <p className={styles.footHead}>You</p>
+              <p className={styles.label}>You</p>
               <Link href="/progress">Progress</Link>
               <Link href="/review">Review</Link>
               <Link href="/architecture">How this is built</Link>

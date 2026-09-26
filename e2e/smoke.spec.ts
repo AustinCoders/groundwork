@@ -809,7 +809,7 @@ test("the git guide has a chapter per section and old anchors still land", async
 
 test("the home page reads as a landing page and every path leads somewhere real", async ({ page }) => {
   await page.goto("/");
-  for (const name of [/Most prep is either/, /a path that starts there/i, /Ready to read today/, /Before you start/]) {
+  for (const name of [/Read it. Run it/, /a path that starts there/i, /Ready to read today/, /Before you start/]) {
     await expect(page.getByRole("heading", { level: 2, name })).toBeVisible();
   }
   const faq = page.locator("details", { hasText: "Do I need to sign up?" });
