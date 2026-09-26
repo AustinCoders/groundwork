@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { SiteDrawer } from "@/components/SiteDrawer";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { formatSpan, plural } from "@/lib/format";
@@ -686,37 +686,98 @@ function PathTabs() {
   );
 }
 
-function Journey() {
+function Words({ text }: { text: string }) {
+  return (
+    <>
+      {text.split(" ").map((w, i, all) => (
+        <Fragment key={i}>
+          <span className={styles.w} style={vars({ i })}>
+            {w}
+          </span>
+          {i < all.length - 1 ? " " : null}
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
+function Journey({ children }: { children: React.ReactNode }) {
   const guides = useGuidesNav();
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const pinRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLOListElement>(null);
   const book = guides.find((g) => g.id === "interview");
   const rounds = book?.groups[0]?.chapters ?? [];
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    const pin = pinRef.current;
+    const track = trackRef.current;
+    if (!wrap || !pin || !track) return;
+    const wide = window.matchMedia("(min-width: 1081px)");
+    let dist = 0;
+    let raf = 0;
+    const measure = () => {
+      const on = wide.matches && prefersMotion();
+      wrap.dataset.pinned = on ? "true" : "false";
+      if (!on) {
+        wrap.style.height = "";
+        track.style.transform = "";
+        return;
+      }
+      dist = Math.max(0, track.scrollWidth - pin.clientWidth);
+      wrap.style.height = `${dist + window.innerHeight}px`;
+      update();
+    };
+    const update = () => {
+      raf = 0;
+      if (wrap.dataset.pinned !== "true") return;
+      const top = wrap.getBoundingClientRect().top;
+      const prog = dist > 0 ? Math.min(1, Math.max(0, -top / dist)) : 0;
+      track.style.transform = `translate3d(${(-prog * dist).toFixed(1)}px, 0, 0)`;
+      wrap.style.setProperty("--jp", prog.toFixed(4));
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    measure();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", measure);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", measure);
+    };
+  }, [rounds.length]);
+
   if (!rounds.length) return null;
-  const scroll = (dir: number) => trackRef.current?.scrollBy({ left: dir * 320, behavior: "smooth" });
   return (
-    <div className={styles.journey}>
-      <div className={styles.journeyNav}>
-        <button type="button" onClick={() => scroll(-1)} aria-label="Earlier rounds">
-          ←
-        </button>
-        <button type="button" onClick={() => scroll(1)} aria-label="Later rounds">
-          →
-        </button>
-      </div>
-      <ol className={styles.track} ref={trackRef} aria-label="Interview rounds in order">
-        {rounds.map((r) => (
-          <li key={r.id}>
-            <Link href={r.href} prefetch={false}>
-              <span className={styles.node}>{r.num}</span>
-              <span className={styles.nodeTitle}>{r.title}</span>
-            </Link>
+    <div className={styles.sideWrap} ref={wrapRef}>
+      <div className={styles.sidePin} ref={pinRef}>
+        {children}
+        <span className={styles.sideProgress} aria-hidden="true">
+          <span />
+        </span>
+        <ol className={styles.track} ref={trackRef} aria-label="Interview rounds in order">
+          {rounds.map((r, i) => (
+            <li key={r.id} style={vars({ i })}>
+              <Link href={r.href} prefetch={false} className={styles.round} data-glow>
+                <span className={styles.roundNum}>{r.num}</span>
+                <span className={styles.roundStep}>Round {String(i + 1).padStart(2, "0")}</span>
+                <span className={styles.roundTitle}>{r.title}</span>
+                <span className={styles.roundGo} aria-hidden="true">
+                  Read it →
+                </span>
+              </Link>
+            </li>
+          ))}
+          <li className={styles.offer}>
+            <span className={styles.roundNum}>🎉</span>
+            <span className={styles.roundTitle}>The offer</span>
+            <span className={styles.roundStep}>and the number you negotiate</span>
           </li>
-        ))}
-        <li className={styles.offer}>
-          <span className={styles.node}>🎉</span>
-          <span className={styles.nodeTitle}>The offer</span>
-        </li>
-      </ol>
+        </ol>
+      </div>
     </div>
   );
 }
@@ -755,6 +816,15 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
       window.removeEventListener("resize", onScroll);
     };
   }, []);
+
+  function onGlow(e: React.PointerEvent) {
+    if (e.pointerType !== "mouse") return;
+    const card = (e.target as Element).closest<HTMLElement>("[data-glow]");
+    if (!card) return;
+    const r = card.getBoundingClientRect();
+    card.style.setProperty("--mx", `${e.clientX - r.left}px`);
+    card.style.setProperty("--my", `${e.clientY - r.top}px`);
+  }
 
   const toolText: Record<string, string> = {
     Problems: `${problems} problems grouped by the pattern each one teaches.`,
@@ -795,7 +865,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
       <a className="skip-link" href="#main">
         Skip to the content
       </a>
-      <div className={styles.page} ref={pageRef}>
+      <div className={styles.page} ref={pageRef} onPointerMove={onGlow}>
         <header className={styles.nav} data-scrolled={scrolled || undefined}>
           <button
             type="button"
@@ -823,6 +893,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
           <Link href="/level/js" className={`${styles.btn} ${styles.btnSmall}`}>
             Start reading
           </Link>
+          <span className={styles.scrollBar} aria-hidden="true" />
         </header>
 
         <main id="main">
@@ -901,7 +972,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             <div className={styles.head} data-reveal>
               <p className={styles.eyebrow}>How it works</p>
               <h2 id="how-h" className={styles.h2}>
-                Read it. Run it. Get asked about it. Keep it.
+                <Words text="Read it. Run it. Get asked about it. Keep it." />
               </h2>
               <p className={styles.sub}>
                 Most prep is either too shallow or too scattered. Here, the explanation, the practice and the interview
@@ -915,11 +986,11 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             <div className={styles.head} data-reveal>
               <p className={styles.eyebrow}>Everything in one place</p>
               <h2 id="feat-h" className={styles.h2}>
-                Built for the way interviews actually go.
+                <Words text="Built for the way interviews actually go." />
               </h2>
             </div>
             <div className={styles.bento}>
-              <article className={`${styles.cell} ${styles.cellWide}`} style={accent("green")} data-reveal>
+              <article className={`${styles.cell} ${styles.cellWide}`} style={accent("green")} data-reveal data-glow>
                 <span className={styles.cellIcon}>
                   <Icon d="M8 9l-4 3 4 3M16 9l4 3-4 3M13.5 6l-3 12" />
                 </span>
@@ -934,28 +1005,28 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                   ))}
                 </div>
               </article>
-              <article className={styles.cell} style={accent("red")} data-reveal>
+              <article className={styles.cell} style={accent("red")} data-reveal data-glow>
                 <span className={styles.cellIcon}>
                   <Icon d="M12 21a9 9 0 100-18 9 9 0 000 18zM12 16a4 4 0 100-8 4 4 0 000 8zM12 12h.01" />
                 </span>
                 <h3>{interview.rounds} interview rounds</h3>
                 <p>From the screening call to the offer number, with {interview.questions}+ questions answered.</p>
               </article>
-              <article className={styles.cell} style={accent("orange")} data-reveal>
+              <article className={styles.cell} style={accent("orange")} data-reveal data-glow>
                 <span className={styles.cellIcon}>
                   <Icon d="M12 7v5l3 2M12 21a9 9 0 110-18 9 9 0 010 18z" />
                 </span>
                 <h3>Mock interviews</h3>
                 <p>A timer, follow-ups, a rubric and a hiring-committee style debrief.</p>
               </article>
-              <article className={styles.cell} style={accent("teal")} data-reveal>
+              <article className={styles.cell} style={accent("teal")} data-reveal data-glow>
                 <span className={styles.cellIcon}>
                   <Icon d="M3 5h18v12H3zM8 21h8M12 17v4M7 9h4M7 13h7" />
                 </span>
                 <h3>A real whiteboard</h3>
                 <p>Arrows that stay attached, sticky notes and system design templates.</p>
               </article>
-              <article className={`${styles.cell} ${styles.cellWide}`} style={accent("purple")} data-reveal>
+              <article className={`${styles.cell} ${styles.cellWide}`} style={accent("purple")} data-reveal data-glow>
                 <span className={styles.cellIcon}>
                   <Icon d="M4 12a8 8 0 0113.7-5.6L20 9M20 4v5h-5M20 12a8 8 0 01-13.7 5.6L4 15M4 20v-5h5" />
                 </span>
@@ -972,7 +1043,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             <div className={styles.head} data-reveal>
               <p className={styles.eyebrow}>Paths</p>
               <h2 id="who-h" className={styles.h2}>
-                Where are you now? There is a path that starts there.
+                <Words text="Where are you now? There is a path that starts there." />
               </h2>
             </div>
             <div data-reveal>
@@ -980,32 +1051,31 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             </div>
           </section>
 
-          <section className={styles.section} id="loop" aria-labelledby="loop-h">
-            <div className={styles.loopCard} data-reveal>
+          <section className={styles.loopSection} id="loop" aria-labelledby="loop-h">
+            <Journey>
               <div className={styles.head}>
                 <p className={styles.eyebrow}>The interview book</p>
                 <h2 id="loop-h" className={styles.h2}>
-                  From the first call to the offer, round by round.
+                  <Words text="From the first call to the offer, round by round." />
                 </h2>
                 <p className={styles.sub}>
                   What each round is really testing, the answer, the wrong answer that loses the room, and the
                   follow-up. Pick any round to read it.
                 </p>
               </div>
-              <Journey />
-            </div>
+            </Journey>
           </section>
 
           <section className={styles.section} id="shelf" aria-labelledby="shelf-h">
             <div className={styles.head} data-reveal>
               <p className={styles.eyebrow}>On the shelf</p>
               <h2 id="shelf-h" className={styles.h2}>
-                Ready to read today.
+                <Words text="Ready to read today." />
               </h2>
             </div>
             <div className={styles.shelf}>
               {ready.map((t) => (
-                <Link key={t.id} href={t.href} className={styles.book} style={accent(t.accent)} data-reveal>
+                <Link key={t.id} href={t.href} className={styles.book} style={accent(t.accent)} data-reveal data-glow>
                   <span className={styles.bookTop}>
                     <span className={styles.bookMark} aria-hidden="true">
                       {t.mark}
@@ -1023,7 +1093,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                   </span>
                 </Link>
               ))}
-              <Link href="/interview" className={styles.book} style={accent("red")} data-reveal>
+              <Link href="/interview" className={styles.book} style={accent("red")} data-reveal data-glow>
                 <span className={styles.bookTop}>
                   <span className={styles.bookMark} aria-hidden="true">
                     ◎
@@ -1063,7 +1133,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             <div className={styles.head} data-reveal>
               <p className={styles.eyebrow}>Practice tools</p>
               <h2 id="tools-h" className={styles.h2}>
-                Reading is half of it.
+                <Words text="Reading is half of it." />
               </h2>
             </div>
             <div className={styles.tools}>
@@ -1072,6 +1142,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                   key={x.href}
                   href={x.href}
                   className={styles.tool}
+                  data-glow
                   style={accent(x.tone)}
                   prefetch={false}
                   data-reveal
@@ -1090,7 +1161,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             <div className={styles.head} data-reveal>
               <p className={styles.eyebrow}>Why not just…</p>
               <h2 id="vs-h" className={styles.h2}>
-                What you already tried, and what is different here.
+                <Words text="What you already tried, and what is different here." />
               </h2>
             </div>
             <div className={styles.compare} data-reveal>
@@ -1118,7 +1189,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
               <div className={styles.head} data-reveal>
                 <p className={styles.eyebrow}>Questions</p>
                 <h2 id="faq-h" className={styles.h2}>
-                  Before you start.
+                  <Words text="Before you start." />
                 </h2>
                 <p className={styles.sub}>Everything people ask before opening their first chapter.</p>
               </div>
@@ -1143,7 +1214,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
 
           <section className={styles.cta} aria-labelledby="cta-h" data-reveal>
             <h2 id="cta-h" className={styles.h2}>
-              Ten minutes from now, you could understand one thing properly.
+              <Words text="Ten minutes from now, you could understand one thing properly." />
             </h2>
             <p className={styles.sub}>Open a chapter. No account, no card, no catch.</p>
             <div className={styles.actions}>
@@ -1158,6 +1229,11 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
         </main>
 
         <footer className={styles.foot}>
+          <svg className={styles.bigBrand} viewBox="0 0 1000 190" aria-hidden="true" focusable="false">
+            <text x="500" y="150" textAnchor="middle">
+              {SITE_NAME}
+            </text>
+          </svg>
           <div className={styles.footCols}>
             <div>
               <p className={styles.footBrand}>
