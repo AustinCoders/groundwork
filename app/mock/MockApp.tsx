@@ -5,6 +5,7 @@ import Link from "next/link";
 import { SiteDrawer } from "@/components/SiteDrawer";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { SITE_NAME } from "@/lib/site";
+import { smoothScroll, useScrollFx } from "@/lib/scrollFx";
 import styles from "./mock.module.css";
 import { Lobby } from "@/app/mock/Lobby";
 import dynamic from "next/dynamic";
@@ -45,7 +46,11 @@ export function MockApp({ catalog }: { catalog: MockCatalog }) {
   const [session, setSession] = useState<Session | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const closeMenu = useCallback(() => {
+    setMenuOpen(false);
+    smoothScroll.start();
+  }, []);
+  const pageRef = useRef<HTMLDivElement>(null);
 
   const dispatch = useCallback((a: Action) => setSession((s) => (s ? reduce(s, a) : s)), []);
 
@@ -69,8 +74,9 @@ export function MockApp({ catalog }: { catalog: MockCatalog }) {
 
   const place = `${screen}:${session?.cursor ?? -1}:${session?.step === "brief"}`;
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [place]);
+    smoothScroll.to(0, screen !== "lobby");
+  }, [place, screen]);
+  useScrollFx(pageRef, `${screen}:${saved.history.length}`);
 
   const enterRoom = useCallback((s: Session) => {
     filed.current = null;
@@ -156,7 +162,8 @@ export function MockApp({ catalog }: { catalog: MockCatalog }) {
       <a className="skip-link" href="#main">
         Skip to the mock interview
       </a>
-      <div className={styles.page} data-room={inRoom ? "true" : undefined}>
+      <div className={styles.page} ref={pageRef} data-room={inRoom ? "true" : undefined}>
+        <span className={styles.scrollBar} data-scrollbar aria-hidden="true" />
         <header className={styles.top}>
           <button
             type="button"
@@ -164,7 +171,10 @@ export function MockApp({ catalog }: { catalog: MockCatalog }) {
             aria-label="Menu"
             aria-haspopup="dialog"
             aria-expanded={menuOpen}
-            onClick={() => setMenuOpen(true)}
+            onClick={() => {
+              smoothScroll.stop();
+              setMenuOpen(true);
+            }}
           >
             <TopIcon name="menu" />
           </button>

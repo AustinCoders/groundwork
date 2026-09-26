@@ -3287,3 +3287,20 @@
 .answerArea .notes {
   min-height: 300px;
 }
+
+.scrollBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  width: 100%;
+  height: 3px;
+  background: var(--c-green);
+  transform-origin: left;
+  transform: scaleX(var(--sp, 0));
+  pointer-events: none;
+}
+
+.page[data-room] .scrollBar {
+  display: none;
+}

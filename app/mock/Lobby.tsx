@@ -28,6 +28,8 @@ import { ReadinessBoard } from "@/app/mock/Readiness";
 import { LOBBY_STEPS, STAGE_GUIDE } from "@/lib/mock/guide";
 import { personaFor } from "@/lib/mock/persona";
 import { COMPANIES, INTENSITIES, LEVELS, ROLES } from "@/app/mock/options";
+import { HowScored, MockFaq, RoundsDecoded, SampleDebrief } from "@/app/mock/LobbyGuide";
+import { smoothScroll } from "@/lib/scrollFx";
 import styles from "./mock.module.css";
 
 const CONFIG_KEY = "groundwork:mock:config";
@@ -245,6 +247,13 @@ export function Lobby({
   const [picked, setPicked] = useState<LoopConfig | null>(null);
   const config = picked ?? stored;
   const [drillStage, setDrillStage] = useState<StageId>("javascript");
+
+  function practise(stage: StageId) {
+    setDrillStage(stage);
+    setMode("drill");
+    const plan = document.getElementById("plan");
+    if (plan) smoothScroll.to(plan.getBoundingClientRect().top + window.scrollY - 80);
+  }
   const [drillCount, setDrillCount] = useState(5);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -361,7 +370,7 @@ export function Lobby({
         <HeroPreview />
       </section>
 
-      <ol className={styles.howSteps} aria-label="How a mock works">
+      <ol className={styles.howSteps} aria-label="How a mock works" data-fx="stagger">
         {LOBBY_STEPS.map((s, i) => (
           <li key={s.title}>
             <span className={styles.howNum}>{String(i + 1).padStart(2, "0")}</span>
@@ -394,14 +403,10 @@ export function Lobby({
         history={history}
         available={catalog.stages.map((s) => s.id)}
         stageTitle={(id) => stages[id]?.title ?? id}
-        onPractise={(stage) => {
-          setDrillStage(stage);
-          setMode("drill");
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }}
+        onPractise={practise}
       />
 
-      <div id="plan" className={styles.planHead}>
+      <div id="plan" className={styles.planHead} data-fx="up">
         <div>
           <p className={styles.eyebrow}>start here</p>
           <h2 className={styles.sectionTitle}>What do you want to practise?</h2>
@@ -575,7 +580,14 @@ export function Lobby({
         </section>
       )}
 
-      <Record history={history} />
+      <div data-fx="up">
+        <Record history={history} />
+      </div>
+
+      <RoundsDecoded stages={catalog.stages} config={config} onPractise={practise} />
+      <HowScored />
+      <SampleDebrief />
+      <MockFaq />
     </>
   );
 }

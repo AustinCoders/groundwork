@@ -154,7 +154,7 @@ export function Scorecard({
       </section>
 
       <div className={styles.split}>
-        <section className={styles.panel} aria-labelledby="rounds-h">
+        <section className={styles.panel} aria-labelledby="rounds-h" data-fx="left">
           <h2 id="rounds-h">Round by round</h2>
           <div className="table-scroll">
             <table className={styles.stageTable}>
@@ -197,7 +197,7 @@ export function Scorecard({
           </div>
         </section>
 
-        <section className={styles.panel} aria-labelledby="profile-h">
+        <section className={styles.panel} aria-labelledby="profile-h" data-fx="right">
           <h2 id="profile-h">What it says about you</h2>
           <dl className={styles.profile}>
             {(Object.entries(profile) as [Competency, number][])
@@ -220,7 +220,7 @@ export function Scorecard({
       </div>
 
       {focus.length > 0 && (
-        <section className={styles.panel} aria-labelledby="next-h">
+        <section className={styles.panel} aria-labelledby="next-h" data-fx="up">
           <p className={styles.eyebrow}>before the real one</p>
           <h2 id="next-h">What to work on next</h2>
           <div className={styles.nextGrid}>
@@ -246,7 +246,7 @@ export function Scorecard({
         </section>
       )}
 
-      <section className={styles.panel} aria-labelledby="qs-h">
+      <section className={styles.panel} aria-labelledby="qs-h" data-fx="up">
         <h2 id="qs-h">Every question</h2>
         <ol className={styles.qList}>
           {session.questions.map((q, i) => {
@@ -305,7 +305,7 @@ export function Scorecard({
         </ol>
       </section>
 
-      <section className={styles.panel} aria-label="What next">
+      <section className={styles.panel} aria-label="What next" data-fx="scale">
         <div className={styles.startBar} style={{ borderTop: 0, paddingTop: 0 }}>
           {retryCount > 0 && (
             <button type="button" className="btn btn--primary" onClick={onRetry}>
