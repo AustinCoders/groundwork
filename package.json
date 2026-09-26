@@ -103,5 +103,11 @@
     "*": [
       "cspell --no-must-find-files --no-progress"
     ]
+  },
+  "allowScripts": {
+    "esbuild": true,
+    "fsevents": false,
+    "msedge-tts": false,
+    "unrs-resolver": true
   }
 }
