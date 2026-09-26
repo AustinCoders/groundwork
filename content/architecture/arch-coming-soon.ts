@@ -23,7 +23,7 @@ export const archComingSoon: Chapter = {
 <tr><td>React</td><td><b>57</b></td><td>0</td><td>162</td></tr>
 <tr><td>JavaScript</td><td><b>41</b></td><td>0</td><td>99</td></tr>
 <tr><td>DSA in JS</td><td><b>34</b></td><td>0</td><td>277</td></tr>
-<tr><td>Interview book</td><td><b>27 rounds</b></td><td>&mdash;</td><td>405 questions, no exercises</td></tr>
+<tr><td>Interview book</td><td><b>27 rounds</b></td><td>&mdash;</td><td>420 questions, no exercises</td></tr>
 <tr><td>How this is built</td><td><b>26</b></td><td>0</td><td>0</td></tr>
 <tr><td>System Design</td><td><b>24</b></td><td>0</td><td>0</td></tr>
 <tr><td>Git</td><td><b>16 sections</b></td><td>&mdash;</td><td>A standalone guide, not a chaptered topic</td></tr>

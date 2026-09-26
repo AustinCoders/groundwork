@@ -18,55 +18,64 @@ qs:[
 q:'Attack 1 — the metrics',
 test:'Whether the numbers are measurements or decoration.',
 a:`<p>Forty percent fewer runtime errors. Thirty-five percent faster pages. Twenty-five percent infra saving. I will pick one at random and ask exactly how you measured it, over what window, and against what baseline. If you cannot answer that, every other number on the page turns from a fact into a claim — including the ones you <em>can</em> defend.</p>
-<p><b>Prepare all ten.</b> They are listed in R10.</p>`
+<p><b>Prepare all ten.</b> They are listed in R10.</p>`,
+fu:['Forty percent fewer errors — counted in which tool, over which weeks?','What was the baseline before you started?','Which number on this page are you least sure of?']
 },
 {
 q:'Attack 2 — scale',
 test:'Whether you can reason about load you have not personally carried.',
 a:`<p>Five thousand registered users and ten thousand monthly visitors is a small system. If I am hiring for traffic, I want to know whether you can think about ten times or a hundred times that.</p>
-<p>The answer is not to inflate it. It is to be precise about what you <em>have</em> done — depth on delivery, reliability and architecture ownership — and then demonstrate in R8 that you can reason about scale you have not met. Those are different skills and interviewers know it.</p>`
+<p>The answer is not to inflate it. It is to be precise about what you <em>have</em> done — depth on delivery, reliability and architecture ownership — and then demonstrate in R8 that you can reason about scale you have not met. Those are different skills and interviewers know it.</p>`,
+fu:['What is the peak requests per second you have actually seen?','What breaks first at ten times this traffic?','Have you ever load-tested it?']
 },
 {
 q:'Attack 3 — no async layer',
 test:'Whether six services with no messaging is a decision or a gap.',
 a:`<p>No message queue, no background job system, no event bus anywhere on the page. Six NestJS services communicating with no async messaging means either tight HTTP coupling or something missing from the story.</p>
-<p>The full answer is R5.4. Learn its shape: <b>name the trade-off honestly, give the specific trigger that would change the decision, name the tool and why that tool.</b></p>`
+<p>The full answer is R5.4. Learn its shape: <b>name the trade-off honestly, give the specific trigger that would change the decision, name the tool and why that tool.</b></p>`,
+fu:['What happens to a booking request when the email provider is slow?','Where would you add a queue first, and which one?','How do the six services talk to each other today?']
 },
 {
 q:'Attack 4 — observability',
 test:'Whether "post-launch reliability ownership" has anything behind it.',
 a:`<p>"Structured logging" is where your monitoring story ends. No metrics, no tracing, no alerting, no error-tracking tool named. For someone who claims to own reliability after launch, that is the biggest genuine hole on the page.</p>
-<p>Own it in the room: logs today, and here is the order I would add things — error tracking first, then p95 latency and error rate with alerts, then tracing last because it costs the most to instrument. That sequencing <em>is</em> the senior answer.</p>`
+<p>Own it in the room: logs today, and here is the order I would add things — error tracking first, then p95 latency and error rate with alerts, then tracing last because it costs the most to instrument. That sequencing <em>is</em> the senior answer.</p>`,
+fu:['How did you find out about your last outage?','What would you alert on, and who gets paged?','What is your p95 latency right now?']
 },
 {
 q:'Attack 5 — thin AWS',
 test:'Whether the cloud claims are wide or deep.',
-a:`<p>EC2, S3, IAM. No RDS, no ECS or EKS, no Lambda, no CloudFront, no load balancer, no auto-scaling group. It reads like a few VMs with Docker on them — which is completely fine, but say so before they work it out. R9.1 has the wording.</p>`
+a:`<p>EC2, S3, IAM. No RDS, no ECS or EKS, no Lambda, no CloudFront, no load balancer, no auto-scaling group. It reads like a few VMs with Docker on them — which is completely fine, but say so before they work it out. R9.1 has the wording.</p>`,
+fu:['Have you run RDS or ECS in production?','How does traffic reach your instances?','What happens when an EC2 instance dies at 2am?']
 },
 {
 q:'Attack 6 — backend testing',
 test:'Whether the architecture you designed is tested.',
 a:`<p>Jest appears under Prototion, five years ago, and nowhere in your two most recent roles — the ones where you own architecture. I will ask what your coverage looks like on the six services you designed.</p>
-<p>Have a real answer. If the coverage is thin, say what is covered (the domain logic, the validation) and what is not (e2e), and what you would do first with a week.</p>`
+<p>Have a real answer. If the coverage is thin, say what is covered (the domain logic, the validation) and what is not (e2e), and what you would do first with a week.</p>`,
+fu:['What is the coverage on the services you designed?','What kind of bug would your tests not catch?','Tell me about a test you wrote that caught something real.']
 },
 {
 q:'Attack 7 — the agency ceiling',
 test:'Whether you can live with one product for three years.',
 a:`<p>Three roles, all client-delivery shops. The doubt is whether you can iterate on a single product, own its debt, and care about retention rather than handover.</p>
-<p>Your "why leaving" answer in R1.2 is built to defuse exactly this — it names handover as the limitation and turns it into the reason you want their job. Use it early, before they form the doubt.</p>`
+<p>Your "why leaving" answer in R1.2 is built to defuse exactly this — it names handover as the limitation and turns it into the reason you want their job. Use it early, before they form the doubt.</p>`,
+fu:['What is the oldest code of yours still in production, and who maintains it now?','How would you feel about the same codebase for three years?','What did you learn about a project only after you handed it over?']
 },
 {
 q:'Attack 8 — Roorkee to Bangalore',
 test:'Whether you will actually relocate, or take the offer and ask to stay remote in month two.',
 a:`<p>You are listed as Roorkee-based and remote. Every interviewer will quietly wonder.</p>`,
-note:`<p><b>Two resume edits to make tonight.</b> First: change <code>Roorkee, India · Open to relocation</code> to <code>Bangalore, India (relocated Sept 2026)</code>. You are physically there — say it in the past tense. This single edit measurably increases walk-in callbacks. Second: add one observability and one testing token to your skills line <em>if they are true</em> — Sentry, Winston, Supertest, e2e. If they are not true, spend one evening making one of them true on a side project so you can speak about it honestly.</p>`
+note:`<p><b>Two resume edits to make tonight.</b> First: change <code>Roorkee, India · Open to relocation</code> to <code>Bangalore, India (relocated Sept 2026)</code>. You are physically there — say it in the past tense. This single edit measurably increases walk-in callbacks. Second: add one observability and one testing token to your skills line <em>if they are true</em> — Sentry, Winston, Supertest, e2e. If they are not true, spend one evening making one of them true on a side project so you can speak about it honestly.</p>`,
+fu:['Where in Bangalore are you staying?','Would you still want this role at five days in the office?','What would you do if a fully remote offer came along in your second month?']
 },
 {
 q:'The reframe that fixes half of these',
 test:'Nothing. This is the single most useful sentence on this page.',
 a:`<p>Do not defend the gaps. <b>Convert them into decisions.</b></p>
 <p>"We did not add a queue" is a weakness. "At five thousand users with a p95 under two hundred milliseconds, a queue would have been infrastructure we had to operate for no measurable gain — the point where I would add one is when notification sends started blocking the request path" is an architect talking.</p>
-<p>The gap is identical. The candidate is not.</p>`
+<p>The gap is identical. The candidate is not.</p>`,
+fu:['So why did you not add a queue?','What number would have changed your mind?','Was that your decision, or the client\'s?']
 },
 {
 q:'The same question, answered at your level',
@@ -79,7 +88,8 @@ a:`<p>Every scripted answer in this book is written at one level — six years, 
 </ul>
 <p>Eleven questions across this book carry a <b>ladder</b>: the bar at each level, the words you would actually say there, and why those words land at that level and not the one above. They sit on the questions every loop asks — <a href="#r1">tell me about yourself</a>, <a href="#r3">the event loop</a> and <a href="#r3">closures</a>, <a href="#r4">useEffect</a> and <a href="#r4">reconciliation</a>, <a href="#r4fe">stacking contexts</a>, <a href="#r2">machine coding</a>, <a href="#r7">the DSA round</a>, <a href="#r8">system design</a>, <a href="#r11">disagreeing with a decision</a>, and <a href="#r12">the number</a>. Read the column that matches you, then read the one above it, because that is the gap you are being asked to close.</p>`,
 note:`<p>Two rules that hold at every level. <b>Never answer above your level.</b> A two-year candidate who talks about organisational trade-offs invites questions they cannot survive, and the interviewer has already noticed. <b>Never answer below it.</b> A ten-year candidate who recites the definition and stops has just tested at three years, and the debrief will say so in those words.</p>`,
-trap:`<p>Assuming your years decide your level. They do not — <a href="#r12lv">scope evidence does</a>. Six years of building features inside someone else\\'s architecture answers at the two-to-three-year rung on the design ladder, and three years of owning a system answers above it. Read the ladders and find the column that matches what you have actually done.</p>`
+trap:`<p>Assuming your years decide your level. They do not — <a href="#r12lv">scope evidence does</a>. Six years of building features inside someone else\\'s architecture answers at the two-to-three-year rung on the design ladder, and three years of owning a system answers above it. Read the ladders and find the column that matches what you have actually done.</p>`,
+fu:['What is the hardest-to-reverse decision you have made yourself?','What would someone one level above you have done differently here?','What scope are you being hired to grow into?']
 },
 {
 q:'Which loop are you in? Know by the end of the first conversation.',
@@ -98,7 +108,8 @@ a:`<h4>Service &amp; consulting walk-in <span class="pill n">same day · 3–5 h
 
 <h4>Agency &amp; product studio <span class="pill n">2–4 days · 2–3 rounds</span></h4>
 <p>Technical plus portfolio walkthrough (60 min) → take-home or pairing (often waived if your GitHub is convincing) → founder chat (30 min).</p>
-<p><b>How you win:</b> your client-ownership story is their exact pain. Talk about delivery, estimation and client communication more than about code — and push hard for fully fixed pay.</p>`
+<p><b>How you win:</b> your client-ownership story is their exact pain. Talk about delivery, estimation and client communication more than about code — and push hard for fully fixed pay.</p>`,
+fu:['Can you join within thirty days? (The service walk-in question.)','Can you do a ninety-minute machine coding round this week? (The startup question.)','Are you comfortable taking an online assessment first? (The mid-size product question.)']
 }
 ]},
 {
@@ -192,7 +203,8 @@ fu:['What was your specific contribution versus the team\'s?','How many engineer
 q:'How many years of hands-on TypeScript, React and Node — separately?',
 test:'Resume arithmetic. Recruiters screen against a checklist with numbers on it.',
 a:`<p>Have three separate numbers ready and keep them consistent across every conversation, because they get written down and compared later. For your profile: TypeScript six, React six, Node roughly four. If a number is smaller than the job asks for, give it and immediately give the strongest adjacent evidence rather than padding it.</p>`,
-trap:`<p>Rounding every number up to your total experience. A recruiter who asks four of these and gets "six, six, six, six" stops believing all of them.</p>`
+trap:`<p>Rounding every number up to your total experience. A recruiter who asks four of these and gets "six, six, six, six" stops believing all of them.</p>`,
+fu:['How much of that Node time was in production rather than on side projects?','Which of the three would you rate yourself lowest on?']
 },
 {
 q:'This role is mostly backend. Your resume looks frontend-leaning.',
@@ -269,7 +281,8 @@ a:`<p>Every submission is run against a hidden set — typically fifteen to thir
 <li><b>Memory limit</b>, which almost never matters unless you are memoising an entire grid.</li>
 </ul>
 <p>The consequence is the whole strategy for this round: <b>a submitted brute force scoring 60% beats an unsubmitted optimal solution scoring nothing</b>, and unsubmitted is what happens when you spend fifty minutes on the elegant version.</p>`,
-trap:`<p>Running the sample, seeing it match, and moving on. The sample is the easy case, deliberately. If you have not typed in the empty array and the single-element array yourself, you have not tested.</p>`
+trap:`<p>Running the sample, seeing it match, and moving on. The sample is the easy case, deliberately. If you have not typed in the empty array and the single-element array yourself, you have not tested.</p>`,
+fu:['Your solution passes the samples and fails four hidden cases. Which inputs do you try first?','n goes up to 10⁵ and your solution is O(n²). Will it pass?','You have eleven of fifteen with twenty minutes left. Keep optimising, or move on?']
 },
 {
 q:'Which language do you pick — and the JavaScript trap in this round.',
@@ -295,7 +308,8 @@ after:`<p>Two more JavaScript-specific things that fail silently on a platform a
 <li><b>Recursion depth.</b> Node blows the stack around ten thousand frames. A recursive DFS over 10⁵ nodes crashes — convert to an explicit stack.</li>
 <li><b>Printing inside a loop.</b> <code>console.log</code> per line on 10⁵ lines is slow enough to time out on its own. Buffer into an array and print once, as above.</li>
 </ul>`,
-note:`<p>If the platform offers a language-specific time multiplier, it is usually already applied to JavaScript. Do not switch to C++ for speed unless you write C++ weekly — the syntax cost is bigger than the runtime cost at this level.</p>`
+note:`<p>If the platform offers a language-specific time multiplier, it is usually already applied to JavaScript. Do not switch to C++ for speed unless you write C++ weekly — the syntax cost is bigger than the runtime cost at this level.</p>`,
+fu:['Your sum goes past 2⁵³. What happens, and what do you change?','Your recursive DFS crashes only on the largest case. Why?','The output is right and the case still times out. Where do you look?']
 },
 {
 q:'The MCQ section nobody prepares for.',
@@ -309,7 +323,8 @@ a:`<p>Product and service assessments usually bolt fifteen to twenty-five multip
 <li><b>Occasionally aptitude.</b> Percentages, ratios, one series. Service companies only. Do not lose sleep, but do not be surprised.</li>
 </ul>
 <p>Answer every one — there is no negative marking on any platform in common use, so a blank is strictly worse than a guess.</p>`,
-trap:`<p>Spending eight minutes on one output-prediction question with three nested closures. Flag it, guess, move on. The MCQ section is a time trap disguised as an easy section.</p>`
+trap:`<p>Spending eight minutes on one output-prediction question with three nested closures. Flag it, guess, move on. The MCQ section is a time trap disguised as an easy section.</p>`,
+fu:['A resolved promise, a setTimeout(0) and a console.log — in what order do they print?','What is the complexity of a binary search inside a for loop?','What does a LEFT JOIN return when the right table has no matching row?']
 },
 {
 q:'How do you spend sixty minutes on two problems?',
@@ -322,7 +337,8 @@ a:`<ul>
 <li><b>55–60 min.</b> Submit everything, including the half-solution. Test one edge case per problem with custom input.</li>
 </ul>
 <p>The people who fail this round are almost never the people who could not solve the problems. They are the people who solved one beautifully and ran out of clock on the other.</p>`,
-say:`<p>There is nobody to say this to. That is the point — write the plan down on paper before the timer starts, because there is no interviewer to pull you out of a hole at minute forty.</p>`
+say:`<p>There is nobody to say this to. That is the point — write the plan down on paper before the timer starts, because there is no interviewer to pull you out of a hole at minute forty.</p>`,
+fu:['You are forty minutes in with one problem half-done. What now?','The brute force passed every case. Do you still optimise it?','Which problem do you open first, and how do you decide?']
 },
 {
 q:'Proctoring: tab switches, the webcam, and the plagiarism flag.',
@@ -336,7 +352,8 @@ a:`<p>Assume everything is recorded, because it is. Standard proctoring on Hacke
 <li><b>Code similarity.</b> Submissions are compared against every other submission for that problem and against public solutions. A pasted LeetCode answer with the variable names intact is the most-caught thing in this round.</li>
 </ul>`,
 note:`<p><b>2026:</b> platforms now flag suspiciously perfect first drafts — no compile errors, optimal on the first submission, typed at an even pace. That pattern gets a human review, not an automatic pass. The safe version is honest: solve it yourself, and let the keystroke rhythm look like thinking. If a company allows AI assistance they say so explicitly in the instructions; silence is not permission.</p>`,
-trap:`<p>Opening a second browser to check a syntax detail. Use the platform docs or your own memory. One tab switch to Google an array method costs nothing; a rhythm of them costs the round.</p>`
+trap:`<p>Opening a second browser to check a syntax detail. Use the platform docs or your own memory. One tab switch to Google an array method costs nothing; a rhythm of them costs the round.</p>`,
+fu:['The report shows fourteen tab switches. What were they?','Your solution is close to a public one. Can you explain it line by line?','Did you use any AI assistance during the test?']
 },
 {
 q:'The variants: timed window, certified score, and the 24-hour OA.',
@@ -346,7 +363,8 @@ a:`<ul>
 <li><b>Certified assessment.</b> CodeSignal-style, one score reused across many companies. Worth taking seriously once — a good score gets you skipped past this round elsewhere for a year.</li>
 <li><b>The 24-hour take-home OA.</b> A small build task on the platform rather than DSA. This is a <a href="#r1th">take-home round</a> wearing an OA badge — read that chapter, not this one.</li>
 <li><b>The paired follow-up.</b> Some companies bring your OA solution into the next round and ask you to explain or extend it. Keep a copy of what you submitted. You will not get it back from the platform.</li>
-</ul>`
+</ul>`,
+fu:['Walk me through the solution you submitted.','Now extend it to handle updates to the input.','What would you change about it with another thirty minutes?']
 },
 {
 q:'You did not hear back. What actually happened?',
@@ -357,7 +375,8 @@ a:`<p>OA rejections are almost never communicated, and the cutoff is not publish
 <li><b>A proctoring flag</b> put your attempt in a manual review queue that nobody drained.</li>
 <li><b>Nothing to do with you.</b> The role was filled or frozen and the pipeline was dropped whole.</li>
 </ul>
-<p>The useful response is to keep your own record: date, company, platform, problems, roughly what you scored. After four of them a pattern shows up — usually "I keep timing out on the second problem", which is a fixable thing, not a talent problem.</p>`
+<p>The useful response is to keep your own record: date, company, platform, problems, roughly what you scored. After four of them a pattern shows up — usually "I keep timing out on the second problem", which is a fixable thing, not a talent problem.</p>`,
+fu:['Have you applied or interviewed with us in the last six months? (Most companies enforce a cool-off period.)','Would you be willing to retake the assessment?','Do you have a certified score you can share instead?']
 }
 ]},
 {
@@ -373,7 +392,8 @@ test:'Whether you built for a reviewer or for yourself.',
 a:`<p>A senior engineer opens your repository between two meetings. In order: reads the README, tries to run it, skims the folder structure, opens the one file the task is really about, looks at the tests, checks the commit list. Fifteen minutes, sometimes ten.</p>
 <p>Everything follows from that. If <code>npm install &amp;&amp; npm run dev</code> does not produce a working thing on the first try, the rest of your work is not read — not because they are lazy, but because "it does not run on a clean machine" is itself the finding.</p>`,
 say:`<p>Test this by cloning your own repository into a fresh folder and following your own README literally, on a machine where you have not been developing. Every missing step shows up in ninety seconds.</p>`,
-trap:`<p>A <code>.env</code> that only exists on your laptop. Ship <code>.env.example</code> with every key, and make the app fail loudly with a readable message when one is missing — that is a point in your favour, not an excuse.</p>`
+trap:`<p>A <code>.env</code> that only exists on your laptop. Ship <code>.env.example</code> with every key, and make the app fail loudly with a readable message when one is missing — that is a point in your favour, not an excuse.</p>`,
+fu:['It did not start on my machine. What did you assume about the environment?','Which Node version did you build this on, and where is that written down?','How long does it take to go from a clean clone to a running app?']
 },
 {
 q:'They said four hours. How much do you actually build?',
@@ -426,7 +446,8 @@ and a metric on cancel latency.
 
 ## Time
 About five hours.`}],
-after:`<p>The "trade-offs I made on purpose" section is the one that separates you. It converts every shortcut from something they find into something you decided — and it is the exact conversation they will open the defence call with.</p>`
+after:`<p>The "trade-offs I made on purpose" section is the one that separates you. It converts every shortcut from something they find into something you decided — and it is the exact conversation they will open the defence call with.</p>`,
+fu:['Why Postgres over Mongo for this?','You list in-memory idempotency keys as a trade-off. What exactly breaks behind a load balancer?','What would you do first with one more day?']
 },
 {
 q:'Tests: how many, and which ones?',
@@ -438,7 +459,8 @@ a:`<p>Nobody expects full coverage on a take-home, and 100% coverage on a four-h
 <li><b>One failure test.</b> Bad payload returns a 400 with a useful body.</li>
 </ul>
 <p>Five to ten meaningful tests. Then make sure <code>npm test</code> passes on a clean clone — a failing test suite in a submission is worse than no tests at all.</p>`,
-trap:`<p>Tests that assert on mocks you wrote yourself, proving only that your mock returns what you told it to. One real test through the stack outweighs twenty of those.</p>`
+trap:`<p>Tests that assert on mocks you wrote yourself, proving only that your mock returns what you told it to. One real test through the stack outweighs twenty of those.</p>`,
+fu:['Why these tests and not others?','How do you test a thirty-minute rule without waiting thirty minutes?','Which test would you add first with more time?']
 },
 {
 q:'Your commit history is part of the submission.',
@@ -450,7 +472,8 @@ a:`<p>Reviewers open the commit list. It is the closest thing they have to watch
 <li><b>No single "initial commit"</b> containing the entire project. It says you developed it somewhere else, and it removes the one artefact that showed your process.</li>
 <li><b>No commented-out code and no <code>console.log</code></b> in the final commit. Both are read as how you actually work.</li>
 </ul>`,
-note:`<p>If the repository is private and they ask you to zip it, include the <code>.git</code> folder. Most candidates strip it and lose the signal entirely.</p>`
+note:`<p>If the repository is private and they ask you to zip it, include the <code>.git</code> folder. Most candidates strip it and lose the signal entirely.</p>`,
+fu:['Why is the whole project in a single commit?','Walk me through your commits in order — what was the plan?','Did you squash or rewrite history before submitting?']
 },
 {
 q:'The five things that get scored and almost nobody ships.',
@@ -461,7 +484,8 @@ a:`<ul>
 <li><b>Configuration through env</b>, with <code>.env.example</code> committed and no secrets in the repository. A committed key is an instant no in a security-aware team.</li>
 <li><b>One migration and one seed script.</b> It is the difference between "I can run it" and "I cannot see your data model".</li>
 <li><b>A one-command start.</b> <code>docker compose up</code> for the dependencies. On a Node take-home this alone puts you above most of the pile.</li>
-</ul>`
+</ul>`,
+fu:['What happens if I post an unknown field to this endpoint?','Where are the secrets, and how would I run this without yours?','How do I get a database with data in it?']
 },
 {
 q:'"How long did this take you?"',
@@ -509,7 +533,8 @@ code:[{label:'the genuinely common ones at this stage',code:`// group an array o
 // retry(fn, times) with async/await
 // run promises with a concurrency limit of 2
 // a &lt;SearchInput /&gt; that debounces and cancels the stale request`}],
-after:`<p>That last one is the one to have ready cold. It is the phone-screen favourite for anyone with React on their resume, and it has an obviously wrong answer — debouncing without cancelling the in-flight request, so a slow early response overwrites a fast late one.</p>`
+after:`<p>That last one is the one to have ready cold. It is the phone-screen favourite for anyone with React on their resume, and it has an obviously wrong answer — debouncing without cancelling the in-flight request, so a slow early response overwrites a fast late one.</p>`,
+fu:['Now make it handle a million items.','What does it do with an empty input?','How would you test it?']
 },
 {
 q:'Talking while you type.',
@@ -521,7 +546,8 @@ a:`<p>Narrate at three moments, not continuously:</p>
 <li><b>When you are stuck.</b> Say what you tried and what you are considering. "The recursive version blows up on cycles — I am going to track visited nodes in a Set." A stuck candidate who is thinking out loud is a hire; a stuck candidate who goes quiet for ninety seconds is not.</li>
 </ul>
 <p>Then shut up and type. Continuous commentary is as bad as silence.</p>`,
-say:`<p>Let me make sure I have the input right — an array of objects, and I return an object keyed by the field, values as arrays, order preserved. Can the field be missing on some objects?</p>`
+say:`<p>Let me make sure I have the input right — an array of objects, and I return an object keyed by the field, values as arrays, order preserved. Can the field be missing on some objects?</p>`,
+fu:['You have gone quiet. What are you thinking?','Why a Map and not a plain object?','What is the complexity of what you just wrote?']
 },
 {
 q:'The two or three language questions used as a filter.',
@@ -535,7 +561,8 @@ a:`<p>This round rarely goes deep — it picks two or three from a small set and
 <li><b>One TypeScript question</b> if TS is on the job description — usually <code>interface</code> versus <code>type</code>, or what <code>unknown</code> buys you over <code>any</code>. That is <a href="#r3ts">R3·TS</a>.</li>
 </ul>
 <p>Answer in three sentences and stop. Long answers in a phone screen eat the coding time and the interviewer is watching the clock.</p>`,
-trap:`<p>Reciting a memorised definition. "A closure is a function bundled with its lexical environment" is a phrase, not an answer. Give the behaviour and one line of code where it bites.</p>`
+trap:`<p>Reciting a memorised definition. "A closure is a function bundled with its lexical environment" is a phrase, not an answer. Give the behaviour and one line of code where it bites.</p>`,
+fu:['Why does the promise callback run before the timeout?','What does spread do to a nested object?','What does unknown buy you over any?']
 },
 {
 q:'When the first call is the hiring manager, not an engineer.',
@@ -560,7 +587,8 @@ a:`<p>Different questions from the ones you asked the recruiter — this person 
 <li><b>What is on call like?</b> Ask before the offer, not after.</li>
 <li><b>What does the rest of the loop cover?</b> They will usually tell you exactly what to prepare for, and that is a free advantage.</li>
 </ul>`,
-say:`<p>What does the codebase look like right now — where does the team feel the most friction? And how does a change get from a branch to production?</p>`
+say:`<p>What does the codebase look like right now — where does the team feel the most friction? And how does a change get from a branch to production?</p>`,
+fu:['Is there anything about the role that worries you so far?','What are you optimising for in your next job?']
 },
 {
 q:'The setup that quietly loses this round.',
@@ -642,6 +670,7 @@ after:`<div class="ladder">
 </div>
 </div>
 <p>Nested arrays of task objects force a deep clone on every drag and make "which column is this card in" an O(n·m) search. Say that out loud as you choose — the reasoning scores higher than the result.</p>`,
+trap:`<p>Opening a drag-and-drop library\'s docs in minute two. You spend twenty minutes learning its API instead of showing your data model, and when it misbehaves you have nothing working and nothing of your own to talk about. Build the drag on the platform events unless they tell you otherwise.</p>`,
 fu:['Now persist it and reload without losing order.','Add an undo.','What happens if two tabs are open?']
 },
 {
@@ -660,6 +689,7 @@ const pageRows = rows.slice(page * SIZE, page * SIZE + SIZE)
 
 <span class="o">useEffect(() =&gt; { setPage(0) }, [query, status])</span>  <span class="c">// the bit everyone forgets</span>`}],
 after:`<p>Debounce the search input at ~300ms and say why. Put the fetch in a custom hook (<code>useTasks</code>), never inline in the component body — that single move is most of the "separation of concerns" score.</p>`,
+trap:`<p>Three pieces of state and three effects — one fetching when the query changes, one filtering, one paginating — each writing state the others read. It renders several times per keystroke, it flickers, and the empty-page bug appears anyway. Derive the visible rows; do not sync them.</p>`,
 fu:['Now make sorting server-side.','The dataset is 50,000 rows — what changes?','Make the filter state survive a page refresh.']
 },
 {
@@ -676,6 +706,7 @@ const step = STEPS[i]
 const errors = step.schema ? validate(step.schema, form) : {}
 const canNext = Object.keys(errors).length === 0`}],
 after:`<p>Keep every step's data in one parent object rather than per-step state, so the review step is a read and going back does not lose input. Mention Zod and derive the TypeScript types from the schema with <code>z.infer</code>, so the runtime check and the compile-time type cannot drift apart.</p>`,
+trap:`<p>A <code>switch</code> over the step index with its own <code>useState</code> inside each step component. It works for three steps, loses the user\'s input when they press back, and turns "add a fourth step" into a change in four places while the interviewer watches the clock.</p>`,
 fu:['Add a fourth step.','Persist a half-finished form and resume it.','The last step submits — handle the failure.']
 },
 {
@@ -689,6 +720,7 @@ const overlaps = (a: Slot, b: Slot) =&gt;
 <span class="c">// 10:00–11:00 and 11:00–12:00 → false. Correct.</span>
 <span class="c">// Using &lt;= here is the classic off-by-one that breaks adjacency.</span>`}],
 after:`<p>Keep everything in UTC internally and format only at the edge. If they ask about recurring slots, the answer is: store the rule, expand to concrete instances for the visible window, and store exceptions separately — never store a thousand rows for a weekly repeat.</p>`,
+trap:`<p>Storing slots as local-time strings such as <code>"2026-10-04 10:00"</code>. They compare correctly until the first user in another timezone or the first daylight-saving change abroad, and then conflicts are detected wrongly in both directions.</p>`,
 fu:['Two people book the last seat at the same moment.','Handle a user in a different timezone.','Now support recurring weekly slots.']
 },
 {
@@ -706,6 +738,7 @@ code:[{code:`src/
   common/
     filters/http-exception.filter.ts
     interceptors/logging.interceptor.ts`}],
+trap:`<p>Injecting the repository straight into the controller and writing the rules there because it is quicker to type. It runs, and it throws away the one thing this variant is scoring — that you keep HTTP, rules and data access apart when the clock is running.</p>`,
 fu:['Add pagination.','Make POST idempotent.','Where would you put a transaction?']
 },
 {
@@ -734,7 +767,8 @@ code:[{code:`src/
   hooks/             <span class="c">// useDebounce, useLocalStorage, useFetch</span>
   lib/               <span class="c">// api client, formatters, pure helpers</span>
   types/             <span class="c">// domain types</span>`}],
-after:`<p>Two rules that survive contact with a timer: a component that fetches is a feature, not a component; and anything you would unit-test goes in <code>lib/</code> or a hook, never inside JSX.</p>`
+after:`<p>Two rules that survive contact with a timer: a component that fetches is a feature, not a component; and anything you would unit-test goes in <code>lib/</code> or a hook, never inside JSX.</p>`,
+fu:['Where does the API client live, and why there?','This component fetches its own data. Is it still a component?','Where would the test for this hook go?']
 }
 ]},
 {
@@ -816,6 +850,7 @@ f()
 console.log('c')
 <span class="c">// a c b</span>`}],
 after:`<p>The practical consequence is sequencing. Two independent awaits run one after the other; if they do not depend on each other, that is wasted latency:</p>`,
+trap:`<p>"<code>await</code> blocks until the promise resolves." It pauses only the rest of <em>this function</em>. The thread goes straight back to the caller and keeps serving everything else — which is the whole reason Node can hold thousands of requests on one thread.</p>`,
 fu:['Rewrite this to run them in parallel.','What happens if one of them rejects?','Does await block the event loop?']
 },
 {
@@ -1014,6 +1049,7 @@ f.call(c)                 <span class="c">// fix 1</span>
 const g = c.inc.bind(c)   <span class="c">// fix 2</span>
 const h = c.incArrow      <span class="c">// fix 3 — works detached</span>`}],
 after:`<p>And the flip side that shows judgement: an arrow is <em>wrong</em> as an object method or on a prototype, because there is no dynamic <code>this</code> to pick up the instance — <code>const o = { n: 1, get: () =&gt; this.n }</code> is always broken.</p>`,
+trap:`<p>"An arrow function\'s <code>this</code> is the object it is written in." It is the <code>this</code> of the enclosing <em>scope</em>, and an object literal is not a scope — which is exactly why <code>{ get: () =&gt; this.n }</code> never sees <code>n</code>.</p>`,
 fu:['What is this inside a plain callback passed to forEach?','Why do class methods need bind in React class components but not with arrow fields?','Implement bind yourself.']
 },
 {
@@ -1064,6 +1100,7 @@ let l = 1
 
 typeof undeclared   <span class="c">// "undefined" — safe</span>
 typeof l            <span class="c">// ReferenceError if l is in its TDZ — the one place typeof throws</span>`}],
+trap:`<p>"<code>let</code> and <code>const</code> are not hoisted." They are — the binding exists from the top of the block, which is why reading it early throws instead of quietly reaching an outer variable with the same name. What they are not is <em>initialised</em>.</p>`,
 fu:['Are function declarations hoisted differently from function expressions?','Why is const the default in modern code?']
 },
 {
@@ -1090,6 +1127,7 @@ JSON.parse(JSON.stringify(src))
   return out
 }`}],
 after:`<p>What <code>structuredClone</code> still cannot do: functions, DOM nodes, class prototypes (you get a plain object back, not an instance), and getters/setters. If you need those, a hand-written recursive clone with a <code>WeakMap</code> of already-seen objects is the answer — and the <code>WeakMap</code> is what handles cycles.</p>`,
+trap:`<p>Offering <code>JSON.parse(JSON.stringify(obj))</code> as the answer rather than as the thing to warn about. It turns Dates into strings, drops <code>undefined</code> and functions, empties Maps and Sets, and throws on cycles and BigInt — silently, except for the last two.</p>`,
 fu:['Why WeakMap and not Map here?','What is a shallow clone and when is it enough?']
 },
 {
@@ -1266,6 +1304,7 @@ interface Window { myApp: App }        <span class="c">// augments the global Wi
 <span class="c">// unions — only types do this</span>
 type Status = 'idle' | 'loading' | 'done'
 type Id = string | number`}],
+trap:`<p>"A type alias cannot be extended." It can, with an intersection — <code>type B = A &amp; { extra: string }</code>. The real differences are declaration merging and what each can express; inventing others is what makes this answer sound memorised.</p>`,
 fu:['Which would you use for a React component\'s props?','Can a type extend an interface? (Yes, via intersection.)']
 },
 {
@@ -1285,6 +1324,7 @@ async function apiGet&lt;S extends z.ZodTypeAny&gt;(url: string, schema: S): Pro
   return schema.parse(await res.json())   <span class="c">// throws on a contract break, loudly</span>
 }`}],
 a:`<p>Then deliver the honest caveat, which is the actual senior answer: <b>this is a lie to the compiler.</b> <code>res.json()</code> returns whatever the server sent; the generic asserts a shape nobody verified. If the contract matters, parse it and infer the type from the schema so the runtime check and the compile-time type cannot drift apart:</p>`,
+trap:`<p>Presenting <code>apiGet&lt;User&gt;(url)</code> as type-safe. The generic is an assertion about data the compiler never saw — if the API changes shape, the build stays green and the crash happens in production, three calls away from the fetch.</p>`,
 fu:['What does `extends` mean in a generic constraint?','How would you type a function that takes a key of an object and returns that property\'s type?']
 },
 {
@@ -1333,6 +1373,7 @@ catch (e) {
   if (e instanceof Error) log(e.message)
   else log(String(e))
 }`}],
+trap:`<p>"<code>unknown</code> is basically <code>any</code>." They are opposites at the point of use: <code>any</code> lets you do anything without checking, <code>unknown</code> lets you do nothing until you have checked. That difference is the entire reason <code>unknown</code> exists.</p>`,
 fu:['Why is `catch (e: any)` dangerous?','When is `any` genuinely the right answer? (Migrating a large JS codebase incrementally.)']
 },
 {
@@ -1387,6 +1428,7 @@ a.port                       <span class="c">// string | number — precision lo
 const b = { port: 3000, host: 'localhost' } satisfies Config
 b.port                       <span class="o">// number — checked AND narrow</span>
 <span class="c">// and a typo in a key is still an error, which a bare const would not catch</span>`}],
+trap:`<p>Treating <code>satisfies</code> as another spelling of <code>as</code>. <code>as</code> tells the compiler to trust you and silences the error; <code>satisfies</code> asks the compiler to check you and keeps it. Writing <code>as Config</code> where you meant <code>satisfies Config</code> hides exactly the typo you wanted caught.</p>`,
 fu:['Where would you use it in a theme or route table?','What is `as const` and how does it interact?']
 },
 {
@@ -1476,6 +1518,7 @@ code:[{code:`<span class="c">// delete row 0 and the typed values shift up by on
 {rows.map(r =&gt; &lt;input key={r.id} defaultValue={r.name} /&gt;)}`}],
 after:`<p>Index keys are safe for a list that is never reordered, filtered, sorted or spliced — an append-only log, for instance. Say that qualification; a blanket "never use index keys" sounds memorised.</p>
 <p>The inverse trick worth knowing: you can <em>deliberately</em> change a key to force a remount and reset state — <code>&lt;Form key={userId} /&gt;</code> is the idiomatic way to clear a form when the selected user changes.</p>`,
+trap:`<p><code>key={Math.random()}</code> to make the warning go away. Every render produces new keys, so React unmounts and remounts every row every time — state, focus and typed input are lost on each keystroke, and it is slower than having no key at all.</p>`,
 fu:['How would you reset a form when the selected item changes?','What if your data genuinely has no id?','Is Math.random() as a key ever acceptable?']
 },
 {
@@ -1621,6 +1664,7 @@ export async function getProducts() {
 
 <span class="c">// invalidate after a write, from a Server Action or route handler</span>
 revalidateTag('products')`}],
+trap:`<p>"Next caches every fetch by default, so you opt out with <code>no-store</code>." That was Next 14. Since 15 the default is uncached, and in 16 caching is explicit with <code>'use cache'</code> — the answer that was right two years ago is now the one that dates you.</p>`,
 fu:['How do you invalidate after a mutation?','What is the difference between revalidatePath and revalidateTag?','Why did the default change?']
 },
 {
@@ -1641,6 +1685,7 @@ code:[{code:`<span class="c">// this does NOT pull Feed into the client bundle</
 <span class="c">// this DOES — an import inside a client file is a client import</span>
 'use client'
 import ServerFeed from './server-feed'   <span class="c">// no longer a server component</span>`}],
+trap:`<p>"A <code>'use client'</code> component only renders in the browser." Client components are still rendered to HTML on the server for the first load and then hydrated. The directive decides whether the code ships to the browser, not where the first render happens — and getting that wrong unravels every answer you give about hydration afterwards.</p>`,
 fu:['How do you share state between two client islands?','Where does a context provider go in an App Router app?','What is the RSC payload?']
 },
 {
@@ -1912,6 +1957,7 @@ app.get('/hash', (req, res) =&gt; {
 <span class="c">// 3. push it to a queue and answer 202 Accepted</span>
 <span class="c">// 4. cluster / PM2 to use all cores — helps throughput, not one slow request</span>`}],
 after:`<p>Detail that shows depth: the libuv thread pool defaults to <b>four</b> threads and is shared by file I/O, DNS lookups, zlib and crypto. Four concurrent <code>bcrypt</code> calls saturate it, and the fifth waits — a real and frequently misdiagnosed production stall. <code>UV_THREADPOOL_SIZE</code> raises it.</p>`,
+trap:`<p>Either half on its own. "Node is single-threaded, so it handles one request at a time" misses the I/O offload; "libuv has a thread pool, so CPU-heavy work is fine" misses that your JavaScript still runs on one thread. The answer is both halves together.</p>`,
 fu:['How would you detect that in production? (Event loop lag metric.)','What does worker_threads share with the main thread?','Does clustering help a single slow request?']
 },
 {
@@ -1951,6 +1997,7 @@ create(@Body() dto: CreateBookingDto) { return this.svc.create(dto) }`},
 a:`<p>The security value is <code>whitelist</code>, not the type safety. Without it, a client can post <code>{ seats: 2, isAdmin: true }</code> and that extra property travels into your service and potentially into an ORM <code>create</code> — this is mass assignment, and it is the actual reason the flag exists. Say that; most candidates only mention type safety.</p>
 <p><code>transform: true</code> matters too: without it your "DTO" is a plain object that merely satisfies the shape, so <code>instanceof</code> checks and class methods silently do not work.</p>`,
 note:`<p>The 2026 alternative worth naming: many teams have moved to <b>Zod</b> with a custom validation pipe, because it gives one schema that produces both the runtime check and the TypeScript type via <code>z.infer</code>, rather than keeping decorators and types in sync by hand. Mentioning that you know both and why you would choose either is a strong answer.</p>`,
+trap:`<p>"The TypeScript types on the DTO validate the request." Types are erased at compile time. Without <code>ValidationPipe</code> registered, the decorators do nothing and any JSON reaches your service — the most common gap between "we validate at the boundary" and what the code actually does.</p>`,
 fu:['How do you validate query params and route params?','How do you return a useful error shape from a failed validation?','What is mass assignment?']
 },
 {
@@ -1960,6 +2007,7 @@ say:`<p>I want to be precise about the word, because it gets overloaded: they ar
 <p>The specific point at which I would add one is notifications. Today a booking confirmation sends email inline, so a slow SMTP provider adds latency to the user's request, and a failure there can fail a booking that actually succeeded — the write is committed but the user sees an error. That is a queue-shaped problem. I would put BullMQ on Redis in first because we already run Redis, and only reach for Kafka if we needed event replay, ordered partitions, or several independent consumers of the same stream.</p>`,
 a:`<p>This turns your biggest architectural gap into evidence of judgement. Learn the shape of it: <em>name the tradeoff honestly → give the specific trigger that would change the decision → name the tool and why that tool</em>.</p>`,
 after:`<p>Know the difference if they push: a <b>queue</b> (BullMQ, SQS, RabbitMQ) delivers each job to one consumer and is about work distribution. A <b>log</b> (Kafka) retains an ordered stream that many independent consumers read at their own offset, and is about event history. Choosing Kafka for background jobs is over-engineering; choosing a queue when you need replay is under-engineering.</p>`,
+trap:`<p>Either extreme. "We never needed one", with no trigger for when you would, sounds like you never thought about it. "In hindsight I would have used Kafka" adds an event log to a system that needed, at most, a job queue.</p>`,
 fu:['What happens if the queue worker crashes mid-job?','What is a dead letter queue?','How do you make a job idempotent?']
 },
 {
@@ -2010,6 +2058,7 @@ COMMIT;
  WHERE id = $1 AND version = $2;
 <span class="c">-- 0 rows → someone else committed first → re-read and retry</span>`}],
 after:`<p>Close with the layered answer: <em>"in practice I would use the atomic decrement for the common path and keep the unique constraint as the backstop, because application logic changes and constraints do not."</em> Defence in depth is the senior position.</p>`,
+trap:`<p>"Wrap it in a transaction." At the default read-committed isolation a transaction does not stop this: both read one seat left, both write, both commit. The protection comes from the conditional update, the lock or the constraint — a transaction on its own is not a lock.</p>`,
 fu:['What if the seat must be held for 10 minutes during payment?','How does this change across two services?','What is a deadlock and how do you avoid one?']
 },
 {
@@ -2020,6 +2069,7 @@ a:`<p>Short-lived access JWT (10–15 minutes) plus a long-lived refresh token. 
 <p>Then the sentence that shows you have thought about it rather than copied it:</p>`,
 say:`<p>The thing to be honest about with JWTs is that they cannot be revoked. Once signed, that token is valid until it expires — so if a user is banned or logs out, a stateless check will still accept their token. You either keep access-token lifetimes very short and accept a small window, or you keep a denylist in Redis, at which point you have reintroduced the state that JWTs were supposed to remove. On our systems we did short lifetimes plus a Redis denylist for explicit logout, because we already ran Redis.</p>`,
 after:`<p>Other details worth having ready: passwords hashed with <b>argon2id</b> or bcrypt (never SHA — it is fast, which is exactly wrong for passwords); <code>localStorage</code> is readable by any XSS so tokens there are a real risk; and if you use cookies you need CSRF protection, which SameSite mostly but not entirely provides.</p>`,
+trap:`<p>"JWTs are more secure than sessions." They are cheaper to verify across instances, and harder to revoke. Framing stateless tokens as a security upgrade tells the interviewer you have never had to log a stolen token out.</p>`,
 fu:['Where do you store the access token on the client?','What is refresh token rotation and reuse detection?','How would you implement "log out of all devices"?']
 },
 {
@@ -2036,6 +2086,7 @@ local n = redis.call('INCR', KEYS[1])
 if n == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end
 return n`}],
 after:`<p>Return <b>429</b> with <code>Retry-After</code>, and the <code>RateLimit-Limit</code> / <code>RateLimit-Remaining</code> / <code>RateLimit-Reset</code> headers so well-behaved clients can back off instead of hammering. And say why it must be in Redis rather than in memory: with more than one instance behind a load balancer, in-process counters give each instance its own limit.</p>`,
+trap:`<p>A counter in a plain object inside the process. It works on your laptop; behind a load balancer with four instances every user gets four times the limit, and every deploy resets it to zero.</p>`,
 fu:['Where do you put the limiter — app, gateway or CDN?','How do you rate limit by user when they are not logged in?','What do you do about a distributed attack from many IPs?']
 },
 {
@@ -2051,6 +2102,7 @@ const first = await redis.set(\`idem:\${key}\`, 'pending', { NX: true, EX: 86400
 if (!first) return cachedResponseFor(key)
 <span class="c">// ...do the work, then store the response body and status against the key</span>`}],
 after:`<p>Also note: idempotent is not the same as safe. <code>DELETE</code> is idempotent (deleting twice leaves the same state) but not safe (it changes state). <code>GET</code> is both.</p>`,
+trap:`<p>"We just never retry a POST." Clients, proxies and flaky mobile networks retry whether you allow it or not. The only choice you get is whether the retry is harmless — and treating "idempotent" and "safe" as the same word usually comes with this answer.</p>`,
 fu:['How long do you keep idempotency keys?','What if the same key arrives with a different body?','Is a webhook handler idempotent?']
 },
 {
@@ -2106,6 +2158,7 @@ process.on('SIGTERM', async () =&gt; {
   process.exit(0)
 })`}],
 note:`<p>NestJS has this built in: <code>app.enableShutdownHooks()</code> plus <code>OnModuleDestroy</code> / <code>beforeApplicationShutdown</code> lifecycle hooks. Naming the framework support rather than hand-rolling it is the better answer.</p>`,
+trap:`<p>Calling <code>process.exit()</code> the moment SIGTERM arrives — or not handling it at all, so the orchestrator waits out its grace period and sends SIGKILL. Either way, every request in flight during every deploy is dropped.</p>`,
 fu:['What is the difference between a liveness and a readiness probe?','What happens to a job that was half-processed?']
 },
 {
@@ -2124,8 +2177,72 @@ a:`<ul>
 <li><b>Circuit breaker.</b> After N consecutive failures to a dependency, stop calling it and fail fast for a cooldown, then let one probe through. Stops a slow dependency from exhausting your connection pool and taking you down with it.</li>
 <li><b>WebSockets vs SSE vs polling.</b> SSE for one-directional server→client updates: simpler, plain HTTP, auto-reconnect. WebSockets when the client also pushes. Polling when neither is worth the operational cost.</li>
 <li><b>Correlation ids.</b> Generate one in middleware, put it in <code>AsyncLocalStorage</code>, attach it to every log line and pass it downstream. Without it, debugging across services is guesswork.</li>
-<li><b>Node LTS.</b> Node 26 became Active LTS in May 2026; 24 is in its final months of active support; 22 is in maintenance until April 2027. Production runs on an LTS line, never on Current.</li>
+<li><b>Node LTS.</b> Node 24 is the Active LTS line. Node 26, released in April 2026, is Current until it is promoted to LTS in October; 22 is in maintenance until April 2027. Production runs on an LTS line, never on Current.</li>
 </ul>`
+},
+{
+q:'How do you handle errors in a Node service? What happens to a rejection nobody catches?',
+test:'Whether you separate errors you expect from bugs, and whether you know the process now dies on an unhandled rejection.',
+a:`<p>Split errors into two kinds, because they need opposite handling:</p>
+<ul>
+<li><b>Operational errors</b> — things that happen to correct code: a timeout, a 404 from a provider, a unique violation, bad input. You expect them, map them to a response, and keep serving.</li>
+<li><b>Programmer errors</b> — bugs: reading a property of <code>undefined</code>, a broken invariant. Nothing sensible can be done in the moment. Log everything you have, return a 500, and fix the code.</li>
+</ul>
+<p>Then exactly one place turns errors into HTTP. In NestJS that is a global exception filter; in Express 5, a rejected promise from an async handler reaches the error middleware on its own, which Express 4 never did. Domain code throws typed errors and never knows about status codes.</p>
+<p>The part they are really asking about: <b>since Node 15, an unhandled promise rejection crashes the process by default.</b> A missing <code>await</code> or a <code>.then</code> with no <code>.catch</code> is no longer a warning in the log — it is a restart. That is the right default, because a process in an unknown state should not keep taking traffic.</p>`,
+code:[{label:'typed errors, with the cause kept',code:`class AppError extends Error {
+  constructor(code, status, message, options) {
+    super(message, options)             <span class="c">// options.cause keeps the original error</span>
+    this.code = code
+    this.status = status
+  }
+}
+
+class SlotUnavailable extends AppError {
+  constructor() { super('SLOT_UNAVAILABLE', 409, 'That slot is full.') }
+}
+
+<span class="c">// wrap, do not swallow — the cause survives into the log</span>
+try { await provider.charge(order) }
+catch (err) { throw new AppError('PAYMENT_FAILED', 502, 'Payment provider error', { cause: err }) }`},
+{label:'the last line of defence — log, then leave',code:`process.on('unhandledRejection', (reason) =&gt; {
+  logger.fatal({ err: reason }, 'unhandled rejection')
+  process.exitCode = 1
+  shutdown()                            <span class="c">// the graceful SIGTERM path, then exit</span>
+})
+
+process.on('uncaughtException', (err) =&gt; {
+  logger.fatal({ err }, 'uncaught exception')
+  process.exit(1)                       <span class="o">// never carry on — the state is unknown</span>
+})`}],
+after:`<p>Two details that show you have run this. The body the client sees is the error envelope from R5.5 — a stable code and a safe message, never a stack trace — while the full error and its <code>cause</code> chain go to the log with the request id. And a process manager or orchestrator restarts a crashed process in seconds, so "crash on unknown state" costs one restart; "carry on in unknown state" can cost you a week of bad data.</p>`,
+trap:`<p>"We wrap everything in try/catch and log it." Catching an error you cannot handle and carrying on is worse than crashing: the request hangs or returns half-written data, and a log line is the only trace. Catch what you can act on, and let the rest reach the one handler that can.</p>`,
+fu:['What is the difference between throwing and returning an error result?','Why not keep the process alive after an uncaught exception?','How do you make sure a stack trace never reaches the client?','What does the cause option on Error give you?']
+},
+{
+q:'An endpoint is fast locally and slow in production. How do you find out why?',
+test:'Method under uncertainty. They want you to measure where the time goes before you touch any code.',
+a:`<p>First, split the time. A slow request is slow in one of four places, and each one has a different tool:</p>
+<ol>
+<li><b>Waiting on the database</b> — a plan that changes with production data volume, a missing index, or an N+1 that ten local rows hid. The slow query log or <code>pg_stat_statements</code> finds it.</li>
+<li><b>Waiting for a connection</b> — the pool is exhausted, so requests queue before the query even starts. It looks like a slow query and is actually a leak, or one long transaction holding connections.</li>
+<li><b>Waiting on another service</b> — a provider with a slow p99 and no timeout on your side, so your request waits as long as theirs does.</li>
+<li><b>A blocked event loop</b> — something synchronous and CPU-heavy, so <em>every</em> request on the process is slow, not only this one. Event loop lag tells you in one number.</li>
+</ol>
+<p>Tracing answers the first three at once: a span per query and per outbound call shows where the milliseconds went. For the fourth, take a CPU profile under load and read the flame graph.</p>`,
+code:[{label:'what to reach for',code:`<span class="c"># a CPU profile — writes a .cpuprofile you open in Chrome DevTools</span>
+node --cpu-prof dist/main.js
+
+<span class="c">// is the pool exhausted? (node-postgres)</span>
+pool.totalCount, pool.idleCount, pool.waitingCount   <span class="c">// waiting &gt; 0 for long = exhausted</span>
+
+<span class="c">-- which queries cost the most in total, not per call</span>
+SELECT query, calls, mean_exec_time, total_exec_time
+  FROM pg_stat_statements
+ ORDER BY total_exec_time DESC LIMIT 10;`}],
+after:`<p>The difference between local and production is almost always data volume or concurrency, so say which one you suspect and how you would reproduce it — production-sized data in staging, or a load test at production concurrency. "It works on my machine" is a statement about ten rows and one user.</p>`,
+trap:`<p>Guessing. "I would add caching" or "I would add an index" before anyone has measured is the answer that loses this round — the next question is where the time went, and you will not know.</p>`,
+fu:['The trace shows 800ms before the first query starts. What is happening?','How do you profile a production process without taking it down?','Every endpoint got slow at the same moment. What does that tell you?','What timeouts would you set on outbound calls, and how do you pick them?']
 }
 ]},
 {
@@ -2170,6 +2287,7 @@ SELECT b.* FROM bookings b
 <span class="c">-- the index this wants:</span>
 CREATE INDEX ON bookings (user_id, created_at DESC);
 <span class="c">-- equality column first, then the range/sort column</span>`}],
+trap:`<p>"I would add an index." Before reading the plan that is a guess — the query may already use an index badly, be waiting on a lock, or be fine and stuck behind an exhausted pool. Say <code>EXPLAIN ANALYZE</code> first, every time.</p>`,
 fu:['What does BUFFERS tell you?','How do you find slow queries in the first place? (pg_stat_statements, slow query log.)','When would you NOT add an index?']
 },
 {
@@ -2228,6 +2346,7 @@ a:`<p><b>Atomicity</b> all or nothing. <b>Consistency</b> constraints hold befor
 <li><b>Phantom read</b> — you run the same query twice and the second time a new row matches.</li>
 </ul>`,
 note:`<p>Postgres <code>SERIALIZABLE</code> is optimistic: it does not block, it detects a conflict at commit time and aborts with a serialisation failure. <b>That means your application must be prepared to retry the transaction.</b> Candidates who suggest serializable without mentioning the retry loop have not run it in production.</p>`,
+trap:`<p>"Postgres transactions are serializable by default." The default is read committed, which allows non-repeatable reads and phantoms — and believing otherwise is how double-booking bugs get written by people who thought the database had it covered.</p>`,
 fu:['What is a write skew?','How would you retry a serialisation failure safely?','What isolation level would you use for a booking?']
 },
 {
@@ -2256,6 +2375,7 @@ after:`<p>The three failure modes — this is where the marks are:</p>
 <li><b>Cache penetration.</b> Repeated requests for a key that does not exist bypass the cache every time, which is also an easy attack. Cache the negative result with a short TTL, or use a Bloom filter for high volume.</li>
 </ul>
 <p>And the eviction policy question: <code>allkeys-lru</code> for a pure cache; <code>volatile-lru</code> or <code>volatile-ttl</code> when the same instance also holds sessions or locks that must not be evicted. Getting that wrong means Redis silently drops your session data under memory pressure.</p>`,
+trap:`<p>Updating the cache on write instead of deleting the key. Two concurrent writes can reach the cache in the opposite order to the database and leave it permanently stale. The race is subtle, which is why this answer sounds fine until someone asks about concurrency.</p>`,
 fu:['What if the cache delete fails after the DB commit?','What is write-through and when is it better?','How would you cache a list endpoint rather than a single row?']
 },
 {
@@ -2354,7 +2474,7 @@ intro:'Your background shows no competitive programming, so this is your weakest
 pre:`<div class="note"><span class="lbl">If you have three days, not three weeks</span><p>Do not attempt breadth. Do the first four patterns only — hash map, two pointers, sliding window, stack — about eight problems each, until recognition is instant. Those four cover the large majority of mediums given to full-stack candidates. Add intervals as a fifth, because your booking-marketplace background means an interviewer may reach for it deliberately.</p></div>`,
 post:`<div class="prep">
 <span class="ttl">The DSA track on this site</span>
-<p>This round is six questions about how to behave in the room. The patterns themselves are a whole track — <a href="/dsa">34 chapters and 245 exercises</a> — and this is the order to walk it.</p>
+<p>This round is ten questions: how to behave in the room, and the handful of patterns worth having cold. The patterns themselves are a whole track — <a href="/dsa">34 chapters and 245 exercises</a> — and this is the order to walk it.</p>
 <ul>
 <li><a href="/dsa/dsa-interview-strategy">Interview strategy</a> and <a href="/dsa/dsa-complexity-analysis">Complexity analysis</a> — start here; they change how you answer everything else</li>
 <li>The patterns that carry most interviews: <a href="/dsa/dsa-hashing">Hashing</a>, <a href="/dsa/dsa-two-pointers">Two pointers</a>, <a href="/dsa/dsa-sliding-window">Sliding window</a>, <a href="/dsa/dsa-binary-search">Binary search</a></li>
@@ -2398,7 +2518,8 @@ after:`<div class="ladder">
 <p class="script">&ldquo;Before I pick — how large is the input, and does it fit in memory? If it is a stream the window still works but anything that sorts first does not, and that changes the answer. Assuming it fits: sliding window at O(n) versus sorting first at O(n log n). The sort is meaningfully simpler to get right, and for n in the low thousands I would genuinely ship it — but this is asking for the linear one, so I will do the window. If we have time afterwards I would like to talk about what happens when the constraint becomes two-dimensional, because that is where this pattern stops being enough.&rdquo;</p>
 <p class="why"><b>Why this is the level above:</b> Two things happen here that do not at five years. You made the input scale a question instead of an assumption, and you named a case where the simpler, asymptotically worse algorithm would be the right call. Senior DSA rounds are looking for that judgement more than for the trick — the trick they assume.</p>
 </div>
-</div>`
+</div>`,
+fu:['Which pattern is this, and what in the wording told you?','What is the brute force, and where does it waste work?','Which of these eight are you least comfortable with?']
 },
 {
 q:'Sliding window — the template to internalise',
@@ -2417,6 +2538,7 @@ code:[{label:'longest substring without repeating characters',code:`function lon
 }
 <span class="c">// O(n) time, O(min(n, alphabet)) space</span>`}],
 a:`<p>The shape generalises: expand <code>end</code> every iteration, shrink <code>start</code> while the window is invalid, record the answer. The only thing that changes between problems is what "invalid" means and what state you keep — a count map, a sum, a set.</p>`,
+trap:`<p>Moving <code>start</code> to <code>last.get(c) + 1</code> without checking that the old index is inside the window. On <code>"abba"</code> the second <code>a</code> sends <code>start</code> backwards to index 1, the window suddenly contains <code>bb</code> again, and the answer comes out as 3 instead of 2. The <code>&gt;= start</code> check is not decoration.</p>`,
 fu:['Now do it for at most K distinct characters.','What if the string is a stream and you cannot index backwards?']
 },
 {
@@ -2444,6 +2566,7 @@ function minRooms(meetings) {
   return best
 }`}],
 a:`<p>The tie-break in that sort is the whole problem: at the same timestamp, an ending meeting must be processed before a starting one, or a room that just freed up gets double-counted. That is the same half-open <code>[start, end)</code> reasoning from the machine coding round — say so, and connect it to the booking system you built.</p>`,
+trap:`<p><code>intervals.sort()</code> with no comparator. JavaScript sorts arrays as strings, so <code>[[10, 12], [9, 11]]</code> stays in that order — "10" sorts before "9" — and the merge silently misses the overlap.</p>`,
 fu:['What if meetings can be cancelled dynamically?','How would you do this with a heap instead?']
 },
 {
@@ -2469,6 +2592,7 @@ code:[{label:'the JavaScript answer — Map preserves insertion order',code:`cla
 }`}],
 a:`<p>Say out loud why this is O(1): a JavaScript <code>Map</code> guarantees insertion order, and <code>delete</code> plus <code>set</code> is the cheapest way to move a key to the most-recent end. That is language fluency, not a shortcut — but be ready to give the canonical version too, because some interviewers want it.</p>
 <p><b>The canonical answer:</b> a hash map from key to node, plus a doubly linked list with sentinel head and tail. The map gives O(1) lookup; the list gives O(1) move-to-front and O(1) eviction from the tail. The sentinels exist so you never write a null check for the empty case.</p>`,
+trap:`<p>An array of keys with <code>indexOf</code> and <code>splice</code> to track recency. It is correct and reads cleanly, and it is O(n) per operation — the question said O(1), so it answers a different question.</p>`,
 fu:['Now make it an LFU cache.','How would you make it thread-safe? (Trick question in JS — but ask about worker threads.)','How does this relate to Redis eviction policies?']
 },
 {
@@ -2508,7 +2632,131 @@ a:`<ol>
 <li><b>Write it, then dry-run it out loud</b> on a small input — including an empty input and a single element. Finding your own off-by-one is worth more than not having one.</li>
 </ol>
 <p>Following that script with a working brute force scores better than a silent optimal solution. And if you are genuinely stuck, say so and ask for a hint — it costs a little, and burning ten minutes in silence costs the round.</p>`,
-note:`<p>Complexities you should be able to state without pausing: hash map operations O(1) average; sorting O(n log n); binary search O(log n); BFS/DFS O(V+E); a nested loop O(n²); recursion depth is space. Getting a complexity wrong after solving the problem is a surprisingly common way to lose the round.</p>`
+note:`<p>Complexities you should be able to state without pausing: hash map operations O(1) average; sorting O(n log n); binary search O(log n); BFS/DFS O(V+E); a nested loop O(n²); recursion depth is space. Getting a complexity wrong after solving the problem is a surprisingly common way to lose the round.</p>`,
+fu:['You have been quiet for a minute. Where are you?','Can you do better than O(n²)?','What input would break your solution?','Walk me through it on an empty array.']
+},
+{
+q:'What is the time and space complexity of this — and how do you know?',
+test:'Whether you can read complexity off real JavaScript, including the cost hidden inside built-in methods.',
+a:`<p>Most complexity mistakes in this round are not in your loops. They are in a built-in method you called inside a loop and assumed was free. Know these without pausing:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Operation</th><th>Cost</th><th>The trap</th></tr></thead>
+<tbody>
+<tr><td><code>push</code>, <code>pop</code></td><td>O(1) amortised</td><td>None — the backing store grows geometrically, so the occasional copy averages out.</td></tr>
+<tr><td><code>shift</code>, <code>unshift</code></td><td>O(n)</td><td>Every element moves. <code>queue.shift()</code> inside a BFS turns O(V + E) into something quadratic.</td></tr>
+<tr><td><code>includes</code>, <code>indexOf</code>, <code>find</code></td><td>O(n)</td><td>Inside a loop, quadratic. A <code>Set</code> makes the check O(1).</td></tr>
+<tr><td><code>slice</code>, spread, <code>concat</code></td><td>O(k) for k elements copied</td><td><code>[...acc, x]</code> inside a reduce is O(n²) overall.</td></tr>
+<tr><td><code>sort</code></td><td>O(n log n)</td><td>With no comparator it compares as strings: <code>[10, 9, 1].sort()</code> gives <code>[1, 10, 9]</code>.</td></tr>
+<tr><td><code>Map</code> / <code>Set</code> get, set, has</td><td>O(1) average</td><td>Average, not worst case — say the word.</td></tr>
+</tbody></table></div>
+<p>Space is the half people forget. Recursion uses a stack frame per level, so a recursive DFS down a path-shaped tree is O(n) space even though you allocated nothing. And if they ask about auxiliary space, the output array does not count — say which one you mean.</p>`,
+code:[{label:'read these three out loud',code:`<span class="c">// 1. looks O(n). Is O(n²) — includes is a scan.</span>
+const unique = []
+for (const x of arr) if (!unique.includes(x)) unique.push(x)
+
+<span class="c">// 2. looks O(n). Is O(n²) — the spread copies acc every time.</span>
+const doubled = arr.reduce((acc, x) =&gt; [...acc, x * 2], [])
+
+<span class="c">// 3. looks O(n²). Is O(n) — start only ever moves forward.</span>
+let start = 0, sum = 0
+for (let end = 0; end &lt; arr.length; end++) {
+  sum += arr[end]
+  while (sum &gt; k) sum -= arr[start++]   <span class="c">// non-negative input</span>
+}`}],
+after:`<p>The third one is worth being able to argue: the inner <code>while</code> looks like a nested loop, but <code>start</code> only moves forward, so across the whole run it moves at most n times. Counting how many times each element is touched in total, rather than per iteration, is amortised analysis — and it is exactly the sentence they want to hear.</p>`,
+trap:`<p>Counting loops. "One loop, so O(n)" misses the O(n) method inside it; "two loops, so O(n²)" gets the sliding window wrong the other way. Count the work, not the brackets.</p>`,
+fu:['What does sort cost in V8, and is it stable?','Why is push O(1) if the array sometimes has to copy itself?','What is the space complexity of your recursive solution?','Can a hash map lookup ever be O(n)?']
+},
+{
+q:'Count the subarrays that sum to k. The array can contain negative numbers.',
+test:'Whether you notice that negatives break the sliding window, and reach for prefix sums and a hash map instead.',
+a:`<p>The instinct is a sliding window, and here it is wrong. A window only works when growing it moves the sum in one direction; with negative numbers, adding an element can make the sum smaller, so you never know whether to shrink. Say that out loud — spotting why the obvious pattern fails is most of the marks.</p>
+<p>The move is <b>prefix sums</b>. If the running sum up to index <code>j</code> is <code>P[j]</code>, the subarray from <code>i + 1</code> to <code>j</code> sums to <code>P[j] − P[i]</code>. So a subarray ending at <code>j</code> sums to k exactly when some earlier prefix equals <code>P[j] − k</code>. Count every prefix you have seen, and each step is one lookup.</p>`,
+code:[{label:'brute force first — O(n²), and say so',code:`function countBrute(nums, k) {
+  let count = 0
+  for (let i = 0; i &lt; nums.length; i++) {
+    let sum = 0
+    for (let j = i; j &lt; nums.length; j++) {
+      sum += nums[j]
+      if (sum === k) count++
+    }
+  }
+  return count
+}`},
+{label:'prefix sums and a map — O(n) time, O(n) space',code:`function subarraySum(nums, k) {
+  const seen = new Map([[0, 1]])      <span class="o">// the empty prefix: subarrays that start at index 0</span>
+  let sum = 0, count = 0
+  for (const x of nums) {
+    sum += x
+    count += seen.get(sum - k) ?? 0   <span class="c">// earlier prefixes that make this one work</span>
+    seen.set(sum, (seen.get(sum) ?? 0) + 1)
+  }
+  return count
+}
+<span class="c">// [1, -1, 1], k = 1  →  3</span>`}],
+after:`<p>Two details to volunteer. The <code>[0, 1]</code> seed is the one everybody forgets, and without it you miss every subarray that starts at index 0. And the order of the two lines inside the loop matters: look up first, then record the current prefix — the other way round, with k = 0, you count an empty subarray at every step.</p>
+<p>The same idea solves a family: the longest subarray with sum k (store the first index of each prefix instead of a count), subarrays divisible by k (store <code>sum % k</code>, normalised because <code>%</code> can be negative in JavaScript), and the longest run with equal zeros and ones (count 0 as −1). Naming the family shows recognition rather than memory.</p>`,
+trap:`<p>A sliding window. It passes every example with positive numbers, which is exactly why the interviewer put a negative in the input. If your approach does not explain what happens on <code>[3, -2, 1]</code>, it is not an approach yet.</p>`,
+fu:['Now return the length of the longest such subarray.','If every number is positive, is there an O(1)-space answer?','Why does the map start with 0 already in it?','Count the subarrays whose sum is divisible by k.']
+},
+{
+q:'Write a binary search for the first index whose value is at least the target.',
+test:'Boundary discipline. Everyone knows binary search; most people write one that loops forever or misses by one under pressure.',
+a:`<p>Do not memorise five variants. Memorise one — <b>lower bound</b>, the first index where <code>arr[i] &gt;= target</code> — and derive the rest from it. Exact match, last occurrence, insert position and count of a value are each a line on top of it.</p>
+<p>Use a half-open range <code>[lo, hi)</code> and a single rule: if <code>mid</code> could be the answer, keep it (<code>hi = mid</code>); if it cannot, discard it (<code>lo = mid + 1</code>). The loop ends when <code>lo === hi</code>, and that is the answer, with nothing to patch afterwards.</p>`,
+code:[{code:`function lowerBound(arr, target) {
+  let lo = 0, hi = arr.length              <span class="c">// half-open: hi is one past the end</span>
+  while (lo &lt; hi) {
+    const mid = (lo + hi) &gt;&gt;&gt; 1            <span class="o">// integer midpoint — / 2 gives a float in JS</span>
+    if (arr[mid] &lt; target) lo = mid + 1    <span class="c">// too small, cannot be the answer</span>
+    else hi = mid                          <span class="c">// might be the answer — keep it</span>
+  }
+  return lo                                <span class="c">// arr.length if everything is smaller</span>
+}
+
+<span class="c">// everything else is lowerBound plus one line</span>
+const indexOf = (a, t) =&gt; { const i = lowerBound(a, t); return a[i] === t ? i : -1 }
+const upperBound = (a, t) =&gt; lowerBound(a, t + 1)     <span class="c">// integers only</span>
+const countOf = (a, t) =&gt; upperBound(a, t) - lowerBound(a, t)`}],
+after:`<p>Say why each boundary is what it is, because that is what they are checking. <code>hi</code> starts at <code>arr.length</code>, not <code>length − 1</code>, so "insert at the end" is a possible answer. <code>lo = mid + 1</code> always moves, and <code>hi = mid</code> always shrinks the range because <code>mid &lt; hi</code>, so the loop cannot stall. Then dry-run it on an empty array and on a target larger than everything.</p>
+<p>Rotated sorted arrays, peak finding and binary search on the answer (in the ₹50L section) are the same loop with a different test inside the <code>if</code>. The test changes; the boundaries do not.</p>`,
+trap:`<p><code>const mid = (lo + hi) / 2</code> from a C or Java habit. In JavaScript that is a float, <code>arr[2.5]</code> is <code>undefined</code>, every comparison against it is false, and the search quietly returns the wrong index. Use <code>Math.floor</code> or <code>&gt;&gt;&gt; 1</code>.</p>`,
+fu:['Now find the last occurrence of the target.','Search a rotated sorted array.','Why would lo = mid make this loop forever?','What changes when the array has duplicates?']
+},
+{
+q:'Count the islands in a grid. Then: why does your recursive version crash on a large one?',
+test:'Grid traversal, the most common graph problem at this level — and whether you know what JavaScript does to deep recursion.',
+a:`<p>Walk the grid. Every time you meet land you have not visited, that is a new island: count it, then flood-fill everything connected so it is never counted again. O(rows × cols) time, because each cell is touched a constant number of times.</p>
+<p>Recursive DFS is the shortest to write and the first thing to break. A grid that is one long snake of land recurses once per cell, and Node\'s stack gives out somewhere around ten thousand frames — a 200 × 200 grid can do it. Say that before they ask, then write the iterative version:</p>`,
+code:[{label:'iterative BFS — no recursion, no shift()',code:`function numIslands(grid) {
+  const R = grid.length, C = grid[0]?.length ?? 0
+  const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+  let islands = 0
+
+  for (let r = 0; r &lt; R; r++) {
+    for (let c = 0; c &lt; C; c++) {
+      if (grid[r][c] !== '1') continue
+      islands++
+      grid[r][c] = '0'                          <span class="o">// mark when you enqueue, not when you dequeue</span>
+      const queue = [[r, c]]
+      for (let head = 0; head &lt; queue.length; head++) {   <span class="c">// a pointer, not queue.shift()</span>
+        const [cr, cc] = queue[head]
+        for (const [dr, dc] of dirs) {
+          const nr = cr + dr, nc = cc + dc
+          if (nr &gt;= 0 &amp;&amp; nr &lt; R &amp;&amp; nc &gt;= 0 &amp;&amp; nc &lt; C &amp;&amp; grid[nr][nc] === '1') {
+            grid[nr][nc] = '0'
+            queue.push([nr, nc])
+          }
+        }
+      }
+    }
+  }
+  return islands
+}`}],
+after:`<p>Three details that score. <b>Mark on enqueue</b>: marking on dequeue lets the same cell enter the queue several times from different neighbours. <b>A head pointer instead of <code>shift()</code></b>, because <code>shift</code> is O(n) and makes the BFS quadratic on a big grid. And <b>ask before mutating the input</b> — overwriting the grid is the no-extra-space answer, but if the caller needs it back, keep a separate <code>visited</code> array and say what it costs.</p>
+<p>The same skeleton does Rotting Oranges (start the queue with every rotten cell at once — multi-source BFS), the shortest path through a binary maze (BFS finds shortest paths in unweighted grids; DFS does not), and Surrounded Regions (flood from the border first).</p>`,
+trap:`<p>Using DFS for the follow-up "now find the shortest path". DFS finds <em>a</em> path, not the shortest; BFS explores in rings of increasing distance, which is why the first time it reaches the target is the shortest route. Mixing the two up is the most common wrong answer at this point in the round.</p>`,
+fu:['Now return the size of the largest island.','Find the shortest path from the top-left to the bottom-right.','Land is added one cell at a time. Keep the island count after each addition.','What if the grid is too large to fit in memory?']
 }
 ]},
 {
@@ -2530,7 +2778,7 @@ pre:`<div class="cards">
 </div>`,
 post:`<div class="prep">
 <span class="ttl">The system design track on this site</span>
-<p>Eight questions here; <a href="/system-design">24 chapters</a> behind them.</p>
+<p>Ten questions here; <a href="/system-design">24 chapters</a> behind them.</p>
 <ul>
 <li><a href="/system-design/sysdes-interview-mental-model">The mental model</a> — how to open, and what the interviewer is scoring</li>
 <li><a href="/system-design/sysdes-capacity-estimation">Capacity estimation</a> — the numbers you are expected to produce without a calculator</li>
@@ -2589,6 +2837,7 @@ after:`<div class="ladder">
 <li>Reconcile: a scheduled job that queries the provider for any booking still pending past its window, because webhooks do get lost.</li>
 </ul>
 <p>That webhook-and-reconciliation detail is what separates candidates who have shipped commerce from candidates who have read about it.</p>`,
+trap:`<p>Opening with microservices, Kafka and Elasticsearch for a marketplace with a few thousand listings. Every box is a system someone has to run, and the interviewer\'s next question is "why" — for each one. Start with one database and earn every addition with a number.</p>`,
 fu:['What if the payment succeeds but your webhook handler crashes?','How do you handle a camp in a different timezone?','Ten times the traffic — what breaks first?','How would you add "5 people are looking at this slot"?']
 },
 {
@@ -2605,6 +2854,7 @@ metrics_hour   (agent_id, bucket, calls, handoffs, p95_ms)  <span class="c">-- 1
 <span class="c">-- so "last 24h" reads 24 rows, not 4 million events</span>`}],
 after:`<p><b>Deliver.</b> Server-sent events, not WebSockets — the flow is one-directional, SSE is plain HTTP, it reconnects automatically, and it passes through proxies that block WebSocket upgrades. Push <b>deltas</b>, not the whole payload. Cache the current bucket in Redis with a short TTL so a hundred open dashboards do not become a hundred identical queries every second.</p>
 <p>The detail worth volunteering: <b>percentiles do not average.</b> You cannot compute a p95 across agents by averaging their individual p95s. Either store a histogram per bucket (t-digest or HDR histogram) or accept that you can only aggregate counts and sums. Interviewers who work with metrics notice this immediately.</p>`,
+trap:`<p>Averaging each agent\'s p95 to get a team p95. The result is not a percentile of anything, and anyone who works with metrics hears it immediately. Store histograms, or aggregate only counts and sums.</p>`,
 fu:['How do you handle an agent that goes offline mid-call?','What if a viewer opens a dashboard for a 90-day window?','How would you alert on a metric?']
 },
 {
@@ -2622,6 +2872,7 @@ a:`<p>CDN in front; static or incrementally regenerated pages for catalogue cont
 </tbody></table></div>
 <p>Say the sentence: <em>"a design that insists on real-time accuracy everywhere cannot be cached, and therefore cannot handle the spike. The trick is to be precise about which single number has to be exact and when."</em></p>`,
 after:`<p>For the spike specifically: pre-warm the cache before a known event, put a queue in front of checkout if the write path is the bottleneck, and have a degraded mode — if the recommendations service is down, render the page without recommendations rather than failing it.</p>`,
+trap:`<p>"Autoscaling will handle it." New instances take minutes to launch and warm up; a spike arrives in seconds, and the database behind them does not autoscale at all. Caching and a degraded mode survive the first minute. Autoscaling helps with the tenth.</p>`,
 fu:['How do you invalidate a price change across the CDN?','What is a stampede and how does it show up here?','How would you handle a flash sale with 10,000 people and 100 units?']
 },
 {
@@ -2637,6 +2888,7 @@ a:`<p>Producers write a notification request; a queue decouples the send from th
 <li><b>Provider failover.</b> Two email providers, health-checked, with a circuit breaker.</li>
 <li><b>Delivery tracking.</b> Provider webhooks for delivered, bounced and complained; a hard bounce should suppress that address permanently.</li>
 </ul>`,
+trap:`<p>One retry policy for every failure. A hard bounce retried for hours damages your standing with the email provider; a transient timeout that is never retried loses the message. Classify the failure before you decide what to do with it.</p>`,
 fu:['How do you send 1 million notifications without melting the provider?','What happens if the template service is down?','How do you test this without emailing real users?']
 },
 {
@@ -2650,6 +2902,7 @@ a:`<p>Key generation is the interesting part, and there are three answers with r
 </ul>
 <p>Reads massively outnumber writes, so this is fundamentally a cache problem: Redis in front, database as source of truth, and the redirect served from the edge.</p>`,
 after:`<p>The detail worth volunteering: <b>301 vs 302</b>. A 301 is cached permanently by browsers, so you get fast redirects and <em>no analytics</em> — the second click never reaches you. A 302 keeps every click observable at the cost of a round trip. If click counting is a product requirement, that decision is forced, and saying so shows you connect technical choices to product ones.</p>`,
+trap:`<p>Hashing the long URL and keeping the first seven characters, with no collision handling. Two different URLs will eventually share a prefix, and the same URL shortened by two users gets one key — which breaks per-user analytics and deletion.</p>`,
 fu:['How would you support custom aliases?','How do you expire links?','How would you count clicks without slowing the redirect?']
 },
 {
@@ -2663,6 +2916,7 @@ a:`<div class="table-scroll"><table>
 <tr><td><b>Database per tenant</b></td><td>Strongest — and the answer for regulated or enterprise customers</td><td>Expensive; operationally heavy; per-tenant backup and restore is a feature you now own.</td></tr>
 </tbody></table></div>
 <p>The pragmatic answer most companies land on, and the one to give: <b>shared schema with row-level security by default, and database-per-tenant as a premium tier for enterprise customers who require it.</b> Then the noisy-neighbour question — per-tenant rate limits and query timeouts, so one customer's report cannot degrade everyone else.</p>`,
+trap:`<p>Database per tenant for everyone from day one because it "isolates properly". At a few hundred small tenants that is a few hundred migrations per release and a connection pool per database — operations work nobody budgeted for.</p>`,
 fu:['How do you run a migration across 500 tenant schemas?','How would you move one tenant to a dedicated database?','How do you handle a tenant-specific customisation?']
 },
 {
@@ -2689,6 +2943,45 @@ a:`<ul>
 <li>"The first thing that breaks at ten times this load is the database, and here is what I would do about it."</li>
 </ul>
 <p>Two habits that matter as much as the content: <b>keep drawing</b> — an interviewer staring at a blank board stops believing you can do this — and <b>ask before you assume</b>. "Is this a global product or single-region?" changes the whole design, and asking it is free.</p>`
+},
+{
+q:'Design typeahead search for a catalogue of a million products.',
+test:'Whether you can split a latency budget across the client, the edge and the server, and precompute answers instead of searching on every keystroke.',
+a:`<p><b>Scope and numbers first.</b> Suggestions for a prefix, top ten, ranked by popularity, on screen within about 100ms of the keystroke. A million products — but the set of <em>queries worth suggesting</em> is smaller, and more useful to index than raw titles. Every keystroke is a potential request, so suggestion traffic is several times search traffic. That makes this a caching design more than a search design.</p>
+<p><b>The client does half the work.</b> Debounce at around 150ms, cancel the previous request with <code>AbortController</code> so a slow early response cannot overwrite a fast late one, and keep results per prefix in memory so backspacing is free. That alone removes most of the traffic.</p>
+<p><b>Precompute the answers.</b> The top ten for a prefix barely changes minute to minute. So rather than searching at request time, build a map of prefix → top ten offline from query logs and product popularity, and serve it from Redis or straight from the CDN. Long prefixes are rare and can fall through to a real search.</p>`,
+code:[{label:'the shape of it',code:`keystroke → debounce 150ms → client prefix cache
+          → CDN    GET /suggest?q=sho         (cached a few minutes)
+          → API    Redis GET suggest:sho     → ["shoes", "shorts", ...]
+          → miss   search index prefix query → write back to Redis
+
+<span class="c">// offline, every few minutes:</span>
+query logs + product popularity → top 10 per prefix → Redis`}],
+after:`<p><b>The trie question will come.</b> A trie with the top ten stored at each node is the textbook answer and worth sketching — lookup is O(length of the prefix) and the answer is already waiting at the node. Then say what you would actually run: at a million rows Postgres with a <code>text_pattern_ops</code> or trigram index is enough, and a search engine (OpenSearch, Typesense, Meilisearch) earns its place when you need typo tolerance and relevance ranking. Precomputed prefixes in Redis sit in front of either.</p>
+<p>Two details worth volunteering: normalise before you key anything — lower case, trimmed, accents stripped — and filter what you suggest. A query log will happily suggest something offensive or a competitor\'s name, and that is a product incident, not a bug.</p>`,
+trap:`<p>A <code>LIKE '%term%'</code> query against the products table on every keystroke. A plain B-tree index cannot serve it, so it scans, and at typing speed it is the fastest way to take down the database you were meant to be protecting.</p>`,
+fu:['How do you personalise suggestions without losing the cache?','A product goes viral. How quickly does it appear in suggestions?','How would you handle typos?','What does the client show while the network is slow?']
+},
+{
+q:'Design live order tracking for a food delivery app.',
+test:'A write-heavy, short-lived data problem. Whether you notice that only the latest position matters, and design for that.',
+a:`<p><b>The numbers change the design.</b> Say fifty thousand riders active at peak, each sending a location every four seconds: about twelve thousand writes a second. A customer watching an order reads one rider\'s position. The data is worthless after a few seconds, and nobody needs every point — only the latest one, plus a thinned trail for disputes.</p>
+<ul>
+<li><b>Ingest.</b> The rider app sends its position to a stateless ingest service. Batch on the device when the network is poor, and drop stale points on arrival instead of replaying them in order.</li>
+<li><b>Current position in Redis.</b> One key per rider, overwritten on every update, with a short TTL so a rider who goes offline disappears. A geo set (<code>GEOADD</code>) lets dispatch ask "which riders are within two kilometres of this restaurant" in one command.</li>
+<li><b>Fan-out to watchers.</b> The customer\'s app holds a WebSocket or SSE connection for their order. Each update is published to a channel for that order, and the gateway holding the customer\'s connection forwards it. Most orders have one watcher, so there is no fan-out problem to solve.</li>
+<li><b>History, thinned.</b> Keep one point every few hundred metres, or every Nth update, in a durable store for disputes and ETA training. Writing all twelve thousand a second into Postgres is the design mistake.</li>
+</ul>`,
+code:[{label:'the hot path',code:`rider app ──every 4s──▶ ingest ──▶ SET     rider:{id}:pos  EX 30
+                                ──▶ GEOADD  riders:active  lng lat {id}
+                                ──▶ PUBLISH order:{orderId}
+customer app ◀──SSE / WS── gateway ◀── SUBSCRIBE order:{orderId}
+
+<span class="c">// a sampled trail goes to the durable store, off the hot path</span>`}],
+after:`<p>The details that show you have thought about the real device. <b>The phone is unreliable</b> — GPS jumps, tunnels and dead zones — so the server smooths or snaps points to roads before a customer watches a rider teleport across a lake. <b>Battery matters</b>, so the update interval stretches while the rider is stationary. And <b>members of a geo set do not expire on their own</b>: a sweep has to remove riders whose position key has lapsed, or dispatch will assign an order to someone who went home an hour ago.</p>
+<p>The ETA is a separate problem — a model over road speeds, restaurant preparation time and the rider\'s history — and it is fine to say you would scope it out of this hour.</p>`,
+trap:`<p>Writing every location update as a row in the main database and having the customer app poll it. Twelve thousand inserts a second of data that is stale in five seconds, plus a read per watcher per poll, all landing on the one system that most needs to stay healthy for orders and payments.</p>`,
+fu:['The rider loses signal for two minutes. What does the customer see?','How do you find the nearest free rider for a new order?','How would you keep the trail for a dispute raised six months later?','What changes on a festival night at five times the load?']
 }
 ]},
 {
@@ -2704,6 +2997,7 @@ test:'Whether "4 hours to 15 minutes" is a real pipeline you built or a line you
 say:`<p>A push to a branch triggers a GitHub Actions workflow: install, lint, type-check, unit tests, then a Docker build. On merge to main it builds the image, tags it with the commit SHA, pushes to the registry, and deploys to EC2 by pulling the new tag and restarting the container behind a health check. That took our release from a roughly four-hour manual process — SSH in, pull, install, build, restart, check by hand — to about fifteen minutes, which is the difference between a hotfix being an event you schedule and a hotfix being routine.</p>
 <p>To be straight about the shape of it: this is Docker on EC2 instances, not a managed orchestrator. We did not run Kubernetes or ECS, because at four applications and this traffic the operational cost was not worth what it would have bought us. I can hold a conversation about ECS task definitions, but I would be learning it properly on the job rather than claiming it.</p>`,
 a:`<p>That last paragraph is worth more than pretending. Every interviewer has been burned by a candidate who listed Kubernetes and could not explain a pod — and they test for it, so the downside of overclaiming is severe and the upside of honesty is real.</p>`,
+trap:`<p>Deploying the <code>latest</code> tag. Nobody can say which commit is running, two instances that pulled at different times can run different code, and a rollback means guessing which image was "latest" yesterday.</p>`,
 fu:['How do you roll back?','What runs in CI that is not a test?','Why tag with the SHA rather than latest?']
 },
 {
@@ -2719,13 +3013,14 @@ a:`<p>Have the specific levers ready, and name which one accounted for most of i
 <li><b>Data transfer</b> — often the invisible line item. Serving assets from S3 and CloudFront instead of from the instance.</li>
 </ul>`,
 say:`<p>Mostly it was right-sizing and the non-production environments. We had picked instance sizes at the start of the project and never revisited them against real utilisation, and the four non-production environments were running the same sizes as production around the clock.</p>`,
+trap:`<p>A percentage with no absolute figure behind it. Twenty-five percent of which monthly bill, compared across which months? Without the before and after in rupees or dollars, it sounds like a number chosen for the resume.</p>`,
 fu:['How did you measure the baseline?','What did you look at to decide a size was wrong?','What would you cut next?']
 },
 {
 q:'Walk me through a Dockerfile for a Node service. What makes it good?',
 test:'Whether you copied a Dockerfile or understand layer caching and image size.',
 code:[{code:`<span class="c"># ---- build ----</span>
-FROM node:26-alpine AS build
+FROM node:24-alpine AS build
 WORKDIR /app
 COPY package*.json ./          <span class="o"># before the source: this layer caches</span>
 RUN npm ci
@@ -2733,7 +3028,7 @@ COPY . .
 RUN npm run build
 
 <span class="c"># ---- run ----</span>
-FROM node:26-alpine
+FROM node:24-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 COPY package*.json ./
@@ -2752,6 +3047,7 @@ a:`<p>Score the points explicitly as you go:</p>
 <li><b>Exec-form <code>CMD</code>.</b> Shell form wraps the process in <code>/bin/sh</code>, which does not forward SIGTERM — so your graceful shutdown from R5 never runs and every deploy kills in-flight requests.</li>
 <li><b><code>.dockerignore</code></b> with <code>node_modules</code>, <code>.git</code>, <code>.env</code> — otherwise you copy the host's <code>node_modules</code> into the build context and both slow the build and risk shipping secrets.</li>
 </ul>`,
+trap:`<p><code>COPY . .</code> above <code>RUN npm ci</code>, with no <code>.dockerignore</code>. Every commit reinstalls every dependency, and the host\'s <code>node_modules</code> — possibly built for a different operating system — gets copied over the ones installed in the image.</p>`,
 fu:['Why is the image still 400MB and how would you shrink it? (distroless, or alpine + prune.)','What is a layer and why does order matter?','How do you get secrets into a build without baking them in?']
 },
 {
@@ -2766,6 +3062,7 @@ a:`<p>Nothing in the repository, ever. Then a layered answer:</p>
 <li><b>Boot-time validation</b> — <code>ConfigModule</code> with a Joi or Zod schema, so a missing variable fails the process immediately with a clear message rather than causing a null-pointer at 3am inside one request path.</li>
 </ul>`,
 after:`<p>If they push on what you would do differently: per-environment parameter paths (<code>/app/prod/DB_URL</code>) with IAM policies scoped to the path, so the staging role literally cannot read production secrets. That is the control that turns a mistake into a permission error.</p>`,
+trap:`<p>Passing secrets as build arguments or baking them in with <code>ENV</code>. Both are readable by anyone who can pull the image — from its history or its config — so the registry quietly becomes a secrets store nobody meant to create.</p>`,
 fu:['What do you do when a secret leaks?','How do you rotate a database password with zero downtime?','How does a developer run this locally?']
 },
 {
@@ -2785,6 +3082,107 @@ a:`<ul>
 <li><b>Zero-downtime deploy with a migration in it.</b> The expand-migrate-contract sequence, plus: migrations run as a separate step before the new code deploys, never on application boot — otherwise five instances start migrating simultaneously.</li>
 <li><b>Infrastructure as code.</b> If you have not used Terraform, say so, and say what you did instead (console plus documented steps) and why that is worse — drift, no review, no reproducibility.</li>
 </ul>`
+},
+{
+q:'Your Docker build takes eight minutes on every commit. Make it fast.',
+test:'Whether you understand layer caching well enough to predict which lines rebuild, and whether your CI keeps a cache at all.',
+a:`<p>Find out which step is slow and why it is not cached. Nine times in ten it is one of three things:</p>
+<ol>
+<li><b>The dependency layer is invalidated by every commit</b>, because <code>COPY . .</code> sits above <code>RUN npm ci</code>. Any change to any file busts the cache and every dependency reinstalls. Copy the manifest and lockfile, install, then copy the source.</li>
+<li><b>The build context is huge.</b> No <code>.dockerignore</code>, so <code>node_modules</code>, <code>.git</code> and old build output are sent to the builder every time — and a change to any of them invalidates the <code>COPY</code>.</li>
+<li><b>CI starts from an empty cache.</b> A fresh runner has no layers, so a perfectly ordered Dockerfile still builds from scratch. The cache has to be exported and imported explicitly.</li>
+</ol>
+<p>Then two BuildKit features most teams have not turned on. A <b>cache mount</b> keeps the npm cache between builds without putting it in the image. A <b>secret mount</b> hands a build step a token — for a private registry, say — that never lands in a layer.</p>`,
+code:[{label:'Dockerfile — a cache mount and a secret mount',code:`# syntax=docker/dockerfile:1
+FROM node:24-alpine AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm \\
+    --mount=type=secret,id=npmrc,target=/root/.npmrc \\
+    npm ci
+
+FROM deps AS build
+COPY . .
+RUN npm run build`},
+{label:'CI — keep the layer cache between runs',code:`docker buildx build \\
+  --cache-from type=gha \\
+  --cache-to type=gha,mode=max \\
+  --secret id=npmrc,src=$HOME/.npmrc \\
+  -t app:$GIT_SHA .`}],
+after:`<p>On GitHub Actions, <code>docker/build-push-action</code> wires up the <code>type=gha</code> cache for you; on any other CI, <code>type=registry</code> stores the cache as an image next to your app image. Either way, the number to quote is the second build after a one-line code change — if that still reinstalls dependencies, the ordering is wrong.</p>
+<p>And the honest ceiling: once caching works, what is left is usually the TypeScript build and the test suite. That is a CI problem, not a Docker one, and the fix is running them as parallel jobs rather than inside the image build.</p>`,
+trap:`<p>Passing a registry token with <code>ARG NPM_TOKEN</code> or <code>ENV</code> to make <code>npm ci</code> work. Build arguments show up in the image history and environment variables are baked into the image config, so anyone who can pull it can read the token. Secret mounts exist for exactly this.</p>`,
+fu:['Which line of your Dockerfile invalidates the cache most often?','How do you get a private package token into the build safely?','Why measure the second build after a code change rather than the first?','Would you build the image once and promote it, or rebuild it per environment?']
+},
+{
+q:'Design the CI pipeline for a team of eight. What runs, in what order, and what blocks a merge?',
+test:'Whether you design CI for fast feedback and trust, rather than as a list of tools.',
+a:`<p>Two goals that pull in different directions: a developer should know within a few minutes if they broke something, and nothing untested should reach production. The design is the ordering that gets you both.</p>
+<ul>
+<li><b>Fast checks first, in parallel.</b> Lint, type-check and unit tests as separate jobs running at the same time. A lint failure should come back in a minute, not after a ten-minute build.</li>
+<li><b>Then the slow checks</b>, only once the cheap ones pass: integration tests against a real Postgres in a service container, the Docker build, and an end-to-end smoke test on the flows that take money.</li>
+<li><b>Required checks and branch protection.</b> The merge button stays disabled until the required jobs pass and a reviewer approves. That is what turns CI from a suggestion into a rule.</li>
+<li><b>Build once, promote the same artifact.</b> The image tested on main is the image that goes to staging and then production, tagged by commit SHA. Rebuilding per environment means production runs something nobody tested.</li>
+<li><b>Cancel superseded runs.</b> Three pushes to one branch should not run three full pipelines.</li>
+</ul>`,
+code:[{label:'the shape, in GitHub Actions terms',code:`on: [pull_request]
+
+concurrency:
+  group: ci-\${{ github.ref }}
+  cancel-in-progress: true            <span class="c"># a new push cancels the old run</span>
+
+jobs:
+  lint:       { runs-on: ubuntu-latest, steps: [ ... ] }
+  typecheck:  { runs-on: ubuntu-latest, steps: [ ... ] }
+  unit:       { runs-on: ubuntu-latest, steps: [ ... ] }
+  integration:
+    needs: [lint, typecheck, unit]    <span class="o"># only after the fast checks pass</span>
+    runs-on: ubuntu-latest
+    services:
+      postgres: { image: postgres:17, env: { POSTGRES_PASSWORD: test } }
+    steps: [ ... ]`}],
+after:`<p>Then the parts that decide whether the team trusts it. <b>A flaky test is an incident</b>: one that fails one run in twenty trains everyone to press re-run, and the day it catches something real nobody believes it — quarantine it and fix it that week. <b>Keep the whole pipeline to roughly ten minutes</b>, because beyond that people stop waiting for it and merge on hope. And <b>security checks belong here</b> — a dependency audit and secret scanning on every pull request, because the cheapest place to catch a committed key is before it merges.</p>`,
+trap:`<p>One long sequential job that installs, lints, tests, builds and deploys in a single script. It works, it takes twenty minutes, it fails on the last step as often as the first, and nobody can tell from the red cross what actually broke.</p>`,
+fu:['A test fails one run in twenty. What do you do?','How do you keep the pipeline fast as the codebase grows?','Where do database migrations run in this pipeline?','What changes for a monorepo with four apps in it?']
+},
+{
+q:'How do you deploy with zero downtime — and what should the health check actually check?',
+test:'Whether you know the three moments a deploy drops requests, and whether your health check could take the whole fleet down.',
+a:`<p>A deploy drops requests at one of three moments, and a zero-downtime deploy is closing all three:</p>
+<ol>
+<li><b>Traffic reaches the new instance before it is ready</b> — the process is up but still connecting to the database or warming a cache. Fix: a readiness check, and the load balancer only routes to instances that pass it.</li>
+<li><b>Traffic reaches the old instance after it has started shutting down.</b> Fix: on SIGTERM, fail readiness first, wait for the load balancer to notice, then stop accepting connections and drain the in-flight ones — the SIGTERM answer from R5. The load balancer\'s deregistration delay must cover your drain time.</li>
+<li><b>Old and new code disagree about the database.</b> During a rolling deploy both versions run at once, so every schema change has to work with both — expand, migrate, contract, from R6.</li>
+</ol>
+<p>Then roll gradually: replace a few instances, watch error rate and latency, continue. If the numbers move, stop and redeploy the previous image tag.</p>`,
+code:[{label:'two probes, two different questions',code:`<span class="c">// liveness: is this process wedged? restart it if so</span>
+app.get('/live', (_, res) =&gt; res.status(200).end())
+
+<span class="c">// readiness: should this instance get traffic right now?</span>
+let started = false        <span class="c">// set once config, pool and caches are ready</span>
+app.get('/ready', (_, res) =&gt;
+  res.status(started &amp;&amp; !shuttingDown ? 200 : 503).end())`}],
+after:`<p>The distinction worth saying out loud: <b>liveness asks whether the process is stuck; readiness asks whether it should get traffic.</b> Neither should lean on shared dependencies. If every instance checks the database and the database blinks for thirty seconds, liveness restarts the whole fleet at once, or readiness pulls every instance out of the load balancer together — either way a small hiccup becomes a full outage. Check what is specific to this instance: started, configured, not shutting down.</p>`,
+trap:`<p>A liveness probe that queries the database. It looks thorough, and it turns every short database blip into every instance being killed and cold-started at the same moment — the outage you were trying to prevent, caused by the check that was meant to catch it.</p>`,
+fu:['What is the difference between liveness and readiness?','How long should the drain be, and what decides it?','The new version passes health checks and errors on real traffic. How do you catch that?','Blue-green or rolling for this service — which, and why?']
+},
+{
+q:'All you have in production is logs. What would you add first, and in what order?',
+test:'Whether you build observability in order of value per hour of effort, rather than naming every tool you have heard of.',
+a:`<p>Order by what each piece tells you and what it costs to add:</p>
+<ol>
+<li><b>Make the logs useful.</b> Structured JSON, one line per event, a request id on every line, a level, and no secrets or personal data. It costs an afternoon and makes everything after it better, because you can finally follow one request through the noise.</li>
+<li><b>Error tracking.</b> Sentry or an equivalent: every unhandled error grouped, counted, with a stack trace and the release it started in. This is how you stop hearing about bugs from users.</li>
+<li><b>The RED metrics per endpoint</b> — rate, errors, and duration as a histogram so you get p95 and p99 — plus event loop lag and pool usage for a Node service. Then alerts on what users feel: error rate and p95 latency on the endpoints that matter.</li>
+<li><b>Tracing last.</b> OpenTelemetry spans across services show where a slow request spent its time. It is the most powerful piece and the most work, and it pays off once there is more than one service in the path.</li>
+</ol>`,
+code:[{label:'a log line you can search, join and alert on',code:`{"level":"error","time":"2026-09-26T10:42:07.118Z","reqId":"01J8X…",
+ "route":"POST /bookings","status":502,"durationMs":2140,
+ "err":{"type":"AppError","code":"PAYMENT_FAILED","cause":"ETIMEDOUT"},
+ "msg":"payment provider timed out"}`}],
+after:`<p>Two sentences that land. <b>Alert on symptoms, not causes</b>: page someone when checkout errors pass one percent, not when CPU passes eighty, because busy CPU with happy users is not an incident. And <b>every alert must be actionable</b> — an alert nobody acts on is noise, and noise is how the real one gets ignored at 2am.</p>`,
+trap:`<p>"We would add Prometheus, Grafana, Jaeger, ELK and PagerDuty." A list of tools with no order and no reason reads as someone who has seen the diagram, not someone who has been paged. Say what question each piece answers, and the order you would add them in.</p>`,
+fu:['What would you alert on for a booking service, and at what threshold?','How do you keep personal data out of the logs?','Why a histogram rather than an average?','A user says checkout failed at 10:42. How do you find their request?']
 }
 ]},
 {
@@ -3002,7 +3400,8 @@ a:`<h4>To the engineer who interviewed you</h4>
 <li>How does the appraisal cycle work, and what was the average increment last cycle?</li>
 <li>Is there a formal engineering level structure, and where would this role sit?</li>
 </ul>`,
-note:`<p><b>The one worth asking every single time:</b> "Is there anything about my background that gives you hesitation, that I could address now?" It is uncomfortable and it works. Either you get to answer the objection while you are still in the room, or they say no and you have closed the loop cleanly. Almost nobody asks it, and interviewers remember the people who do.</p>`
+note:`<p><b>The one worth asking every single time:</b> "Is there anything about my background that gives you hesitation, that I could address now?" It is uncomfortable and it works. Either you get to answer the objection while you are still in the room, or they say no and you have closed the loop cleanly. Almost nobody asks it, and interviewers remember the people who do.</p>`,
+fu:['Which of the teams you have met would you most want to join?','What would make you say no to an offer from us?']
 }
 ]},
 {
@@ -3333,7 +3732,8 @@ a:`<p>It happens for two reasons that look identical from outside: the loop did 
 <li><b>Not worth accepting</b> when it comes with the same money as your current role, when the team cannot describe what promotion requires, or when "we will re-evaluate in six months" is offered instead of anything written.</li>
 </ul>`,
 say:`<p>I understand the level. Can you tell me whether that came out of the loop, or whether it is what this team has headcount for? And what does the path to the next level look like here — what has to be true, and roughly on what cycle?</p>`,
-trap:`<p>Accepting a down-level on a verbal promise of an early review. Promotion at big companies runs on calendars and committees, not on a hiring manager\\'s intent. If it is not a written start-level or a written review date, treat it as not happening.</p>`
+trap:`<p>Accepting a down-level on a verbal promise of an early review. Promotion at big companies runs on calendars and committees, not on a hiring manager\\'s intent. If it is not a written start-level or a written review date, treat it as not happening.</p>`,
+fu:['What would you need to see to accept the lower level?','If we match your number at the lower level, does that change anything?','When would you expect to be considered for promotion?']
 },
 {
 q:'Read the offer: base, RSUs, sign-on',
@@ -3528,7 +3928,8 @@ a:`<div class="table-scroll"><table>
 <tr><td><b>Brand</b></td><td>Three client studios</td><td>Recognisable product company on the resume — unfair, and it is what gets you shortlisted</td></tr>
 <tr><td><b>Scope of influence</b></td><td>You own four applications</td><td>You changed how several teams work, and can evidence it</td></tr>
 </tbody></table></div>
-<p>Four of those five are closeable with study. <b>Brand is not</b> — and it is the one that decides whether anybody reads your resume. That is why the path below is two jumps and not one.</p>`
+<p>Four of those five are closeable with study. <b>Brand is not</b> — and it is the one that decides whether anybody reads your resume. That is why the path below is two jumps and not one.</p>`,
+fu:['What is the largest system you have personally operated — users, requests per second, data?','Tell me about a change you drove that another team had to adopt.','Which of these gaps are you closing right now, and how?']
 },
 {
 q:'The two-jump plan, with dates',
@@ -3540,7 +3941,8 @@ a:`<p><b>₹12L → ₹50L is not a job change. It is a trajectory.</b> Trying t
 <div class="card"><h4>Months 24–30</h4><p>Interview at the ₹45–55L tier with two years of product-company scale on the resume, a brand recruiters recognise, and DSA that is warm rather than cold. This jump is <em>normal</em> at that point.</p></div>
 </div>
 <p>The uncomfortable part: the highest-leverage decision you make in the next three months is <b>which company</b>, not <b>which number</b>. A ₹2L difference today is worth nothing against the ₹25L difference that the right brand and the right traffic make in two years.</p>`,
-note:`<p>The one shortcut worth taking seriously: <b>US-remote roles hiring in India.</b> They skip the brand filter, pay well above local bands, and weigh portfolio and communication far more heavily — both of which you are strong on. It is a harder search with fewer openings and it needs referrals, but for your specific profile it is the most realistic way to compress two jumps into one.</p>`
+note:`<p>The one shortcut worth taking seriously: <b>US-remote roles hiring in India.</b> They skip the brand filter, pay well above local bands, and weigh portfolio and communication far more heavily — both of which you are strong on. It is a harder search with fewer openings and it needs referrals, but for your specific profile it is the most realistic way to compress two jumps into one.</p>`,
+fu:['Why this company, when another studio offered more?','Where do you want to be in two years, and how does this job get you there?','Would you take a lower number for a better-known name?']
 },
 {
 q:'Your resume is the blocker, not your ability.',
@@ -3552,7 +3954,8 @@ a:`<p>At ₹22–28L a good recruiter reads your bullets. At ₹50L a screener s
 <li><b>Lead with Groundwork.</b> You built a learning platform with 85 chapters, 299 runnable exercises, and published tracks in JavaScript, DSA and System Design. Most six-year engineers have nothing like it. <b>Those are exactly the three subjects a ₹50L loop tests</b> — and you are teaching them. Put it in the top third of your resume with the numbers, not in a "personal projects" footer.</li>
 <li><b>Replace vanity numbers with hard ones.</b> "5,000 registered users" is a small number stated plainly. If you have p95 latency, requests per second, data volume, uptime, or cost figures, those read as an engineer who operates systems. If you do not have them, that is a thing to start collecting at your next job from week one.</li>
 </ol>`,
-say:`<p>Alongside my work I write and maintain Groundwork, a technical learning platform — 85 chapters and 299 runnable exercises across JavaScript engine internals, algorithms and system design, with about 15 hours of written material. Teaching a thing at that depth is how I know I actually understand it.</p>`
+say:`<p>Alongside my work I write and maintain Groundwork, a technical learning platform — 85 chapters and 299 runnable exercises across JavaScript engine internals, algorithms and system design, with about 15 hours of written material. Teaching a thing at that depth is how I know I actually understand it.</p>`,
+fu:['Who referred you, and how do you know them?','Tell me about Groundwork — who uses it, and what was hardest to build?','What is the largest number on your resume that you can prove?']
 },
 {
 q:'What to build in the next six months to close the scale gap',
@@ -3563,7 +3966,8 @@ a:`<p>You cannot fake having handled millions of users. You <em>can</em> build s
 <li><b>Build one thing that is genuinely distributed.</b> A job queue with at-least-once delivery, idempotent consumers and a dead letter queue. Small, but it forces you through exactly-once semantics, retries and partial failure — the vocabulary of the design round.</li>
 <li><b>Instrument something properly.</b> OpenTelemetry traces, p50/p95/p99 dashboards, an alert on an error budget. This closes attack 4 from the scouting report, and observability is a real interview topic at this level rather than a footnote.</li>
 </ul>
-<p>Each of these is small enough to finish and specific enough to talk about for ten minutes. That combination is what makes a side project useful in an interview; a half-built clone of a famous app is not.</p>`
+<p>Each of these is small enough to finish and specific enough to talk about for ten minutes. That combination is what makes a side project useful in an interview; a half-built clone of a famous app is not.</p>`,
+fu:['What broke first when you load-tested it, and at what load?','Why at-least-once delivery and not exactly-once?','What is on your dashboard, and what would page you?']
 }
 ]},
 {
@@ -3627,6 +4031,7 @@ code:[{label:'topological sort — Kahn, and the cycle detection you get for fre
 <span class="c">// near O(1) amortised per operation</span>`}],
 after:`<p><b>Practise:</b> Number of Islands · Course Schedule I &amp; II · Clone Graph · Rotting Oranges · Word Ladder · Pacific Atlantic Water Flow · Number of Provinces · Redundant Connection · Accounts Merge · Alien Dictionary.</p>
 <p>The two things interviewers watch for: do you build the adjacency list cleanly, and do you handle the <b>disconnected graph</b> — a single BFS from node 0 misses everything else, so the outer loop over all nodes is not optional.</p>`,
+trap:`<p>A recursive DFS over a large grid or a long chain, in JavaScript. It is correct, and it dies with a stack overflow somewhere past ten thousand levels. Write the iterative version, or at least say out loud where the recursive one will fail.</p>`,
 fu:['Now do it iteratively instead of recursively.','What if the graph has 10 million nodes?','How do you detect a cycle in a directed vs undirected graph?']
 },
 {
@@ -3649,6 +4054,7 @@ code:[{code:`function dijkstra(n, adj, src) {          <span class="c">// adj[u]
 <span class="c">// O((V + E) log V)</span>`}],
 a:`<p>The <code>if (d &gt; dist[u]) continue</code> line is the whole trick: JavaScript has no decrease-key, so you push duplicates and skip the stale ones when they surface. Candidates who omit it get a correct but slow solution and usually cannot explain why.</p>
 <p><b>When Dijkstra is wrong:</b> negative edge weights — it will silently return the wrong answer, not fail. That is Bellman-Ford's territory (and it detects negative cycles). For unweighted graphs BFS is simpler and faster. For a grid with 0/1 weights, 0-1 BFS with a deque beats a heap.</p>`,
+trap:`<p>Marking a node visited when you <em>push</em> it, the way you would in BFS. In Dijkstra a node can be reached again by a cheaper path later, so it is only final when it is <em>popped</em>. Marking on push returns wrong distances whenever the first route found is not the shortest.</p>`,
 fu:['What if there are negative weights?','Network Delay Time · Cheapest Flights Within K Stops · Path With Minimum Effort','Why not just use BFS?']
 },
 {
@@ -3676,6 +4082,7 @@ code:[{label:'two heaps — median of a stream',code:`class MedianFinder {
 }`}],
 after:`<p>JavaScript has no built-in heap, so <b>write one before the interview</b> and know it cold — sift-up, sift-down, and the array-as-tree indexing (<code>parent = (i-1) &gt;&gt; 1</code>, children <code>2i+1</code>, <code>2i+2</code>). Spending fifteen of your forty minutes writing a heap from scratch is how this round is lost.</p>
 <p><b>Practise:</b> Kth Largest Element · Top K Frequent · Merge K Sorted Lists · Find Median from Data Stream · Task Scheduler · Reorganize String.</p>`,
+trap:`<p>A <em>max</em>-heap of size K for the K largest. It keeps the wrong end: each time you need to throw away the smallest of your candidates, so the heap is a min-heap whose top is the smallest of the K you are keeping.</p>`,
 fu:['Could you do Top K without a heap? (Quickselect, O(n) average.)','What if the stream is infinite and you need a sliding-window median?']
 },
 {
@@ -3711,6 +4118,7 @@ code:[{label:'edit distance — the 2-D template worth knowing by heart',code:`f
 <span class="c">// O(mn) time, O(mn) space — then say: "this rolls to O(n) space,</span>
 <span class="c">// because row i only depends on row i-1"</span>`}],
 after:`<p><b>The method that works in the room</b>, and say it out loud in this order: write the brute-force recursion first → identify the repeated subproblem → memoise it (top-down) → only then convert to a table (bottom-up) if they ask. Jumping straight to a table is how people freeze. Memoised recursion is a complete, acceptable answer.</p>`,
+trap:`<p>Greedy for Coin Change — always take the largest coin that fits. With coins <code>[1, 3, 4]</code> and amount 6 it gives 4 + 1 + 1, three coins, when 3 + 3 is two. If you cannot prove the greedy choice is safe, it is a DP.</p>`,
 fu:['Reduce the space to O(n).','Now reconstruct the actual sequence of edits, not just the count.','Why is this not greedy?']
 },
 {
@@ -3741,6 +4149,7 @@ code:[{label:'backtracking — the template',code:`function subsets(nums) {
 }
 <span class="c">// O(n) — each index is pushed once and popped once</span>`}],
 after:`<p><b>Monotonic stack</b> is the one people never recognise. The signal is "next/previous greater or smaller element", and it unlocks Daily Temperatures, Largest Rectangle in Histogram, Trapping Rain Water and Sum of Subarray Minimums — all of which look hard and are the same six lines. Its sibling, the monotonic <em>deque</em>, does Sliding Window Maximum in O(n).</p>`,
+trap:`<p>Pushing <code>cur</code> into the result instead of a copy of it. Every entry points at the same array, which is empty by the time the recursion unwinds — so the output is a list of empty arrays, and the logic looks perfectly fine on the board.</p>`,
 fu:['Largest Rectangle in Histogram — walk me through it.','How do you handle duplicates in a permutation problem?','What is the space complexity of your recursion?']
 },
 {
@@ -3761,6 +4170,7 @@ code:[{label:'Koko eating bananas — the canonical one',code:`function minSpeed
 <span class="c">// O(n log(max)) — the log is over the ANSWER range, not the input</span>`}],
 after:`<p>The template detail worth drilling: <code>while (lo &lt; hi)</code> with <code>hi = mid</code> and <code>lo = mid + 1</code> converges without an off-by-one and needs no post-loop adjustment. Practise it until you never have to think about the boundary again — boundary bugs under time pressure are how this round is actually lost.</p>
 <p><b>Practise:</b> Koko Eating Bananas · Capacity to Ship Packages · Split Array Largest Sum · Minimise Max Distance · Median of Two Sorted Arrays (the genuinely hard one).</p>`,
+trap:`<p>Writing <code>lo = mid</code> with a floored midpoint. When <code>hi = lo + 1</code>, <code>mid</code> equals <code>lo</code>, nothing moves, and the loop runs forever. Pick one template in which every branch shrinks the range, and never mix templates halfway through a problem.</p>`,
 fu:['How do you know the predicate is monotonic?','Median of Two Sorted Arrays in O(log(m+n)).']
 },
 {
@@ -3789,7 +4199,8 @@ a:`<p>They chose a problem you have not seen on purpose. The score is not "solve
 <li><b>Ask for a hint at the twenty-minute mark</b> if you are stuck. It costs a little. Twenty-five minutes of silence costs the round.</li>
 <li><b>Code the best idea you have, even if suboptimal</b>, then dry-run it on your example. Working and O(n²) beats elegant and unfinished — every time.</li>
 </ol>
-<p>The trap to avoid: recognising the problem, half-remembering the clever solution, and trying to reproduce it from memory. That fails badly and visibly. Derive it, out loud, from the brute force — even if you know the trick, walking there is what gets scored.</p>`
+<p>The trap to avoid: recognising the problem, half-remembering the clever solution, and trying to reproduce it from memory. That fails badly and visibly. Derive it, out loud, from the brute force — even if you know the trick, walking there is what gets scored.</p>`,
+fu:['You have been stuck for ten minutes. What do you say?','Prove your brute force is correct on this input.','Where is the repeated work in your current approach?']
 }
 ]},
 {
@@ -3827,6 +4238,7 @@ Memory:  cache the hot 20% of the feed
          100M users x 1KB of feed ids x 0.2 = 20GB  <span class="c">// fits in Redis, comfortably</span>`}],
 after:`<p>The numbers worth memorising because you will use them every time: 100,000 seconds in a day (86,400, round it); 1 million QPS is enormous, 10,000 QPS is a normal large service; a single Postgres box does roughly 5,000–20,000 simple QPS; a Redis node does 100,000+; disk seek about 10ms, SSD read about 100µs, memory read about 100ns, same-datacentre round trip about 0.5ms, cross-continent about 150ms.</p>
 <p>Then say the sentence that turns numbers into a design: <b>"a 200:1 read-to-write ratio means I should do the expensive work on write and keep reads dumb"</b> — which is exactly the fan-out decision two questions down.</p>`,
+trap:`<p>Skipping the numbers, or drowning in them. No estimate means the design is not sized to anything; five minutes of exact arithmetic means a tenth of the round went on long division. Round hard, say the ratio, and move on.</p>`,
 fu:['Where did the 3x peak factor come from?','What if this grows 10x next year?','Which of those numbers would you actually measure first?']
 },
 {
@@ -3845,6 +4257,7 @@ a:`<p><b>CAP, stated correctly:</b> when a network <em>partition</em> occurs, yo
 </tbody></table></div>`,
 after:`<p>The practical answer that scores: <em>"I would not pick one model for the whole system. The balance is linearizable, the like count is eventual, and the user's own profile needs read-your-writes. Consistency is chosen per data type, not per database."</em></p>
 <p>And the concrete mechanism for read-your-writes, because they will ask: after a write, pin that user's reads to the primary for a few seconds, or carry the write's log position in a token and have the replica wait until it has caught up to it.</p>`,
+trap:`<p>"CAP means pick two of three." Partitions are not optional, so the only real choice is what you give up <em>during</em> one — and "we chose CA" tells a staff interviewer you have learnt the triangle, not the theorem.</p>`,
 fu:['Give me a real example of losing read-your-writes.','Is Postgres with async replicas CP or AP?','What is a quorum read and write, and what does R + W > N give you?']
 },
 {
@@ -3860,6 +4273,7 @@ code:[{code:`ring:   0 ─── A ───── B ─────── C ─
 <span class="c">// only keys between A and D move, and only from B. Everything else stays put.</span>`}],
 after:`<p><b>Virtual nodes</b> are the part people forget and the part that makes it actually work: with only N points on the ring the distribution is lumpy and removing a node dumps its entire load onto one neighbour. So each physical node gets 100–200 virtual positions, which smooths distribution and spreads a failed node's load across all survivors.</p>
 <p>Where you have met it without knowing: Cassandra and DynamoDB partitioning, Memcached client-side sharding, and load balancers doing sticky routing.</p>`,
+trap:`<p>Offering consistent hashing as the fix for a hot key. It spreads <em>keys</em> evenly; one key that takes a tenth of all traffic still lands on one node. Hot keys need replicas, a local cache in front, or splitting the key itself.</p>`,
 fu:['How do you handle a hot key that consistent hashing cannot help with?','What happens to replicas on the ring?','How would you rebalance without downtime?']
 },
 {
@@ -3880,6 +4294,7 @@ a:`<div class="table-scroll"><table>
 <li><b>Resharding.</b> Doubling shard count is far easier than going from 3 to 5, because each shard splits cleanly in two. Plan for powers of two, or use logical shards: create 1,024 logical shards up front and map many onto each physical node, so growing is a remapping rather than a rehash.</li>
 <li><b>The celebrity problem.</b> One user with 50 million followers breaks any key-based scheme. It gets special-cased — and that is the correct answer, not a failure of the design.</li>
 </ul>`,
+trap:`<p>Sharding first. A well-indexed Postgres primary with read replicas carries far more than most products ever reach, and sharding makes joins, transactions and migrations permanently harder. Say what you would exhaust before it — indexes, caching, replicas, partitioning, a bigger machine — and the signal that finally forces the shard.</p>`,
 fu:['Which key would you choose for a chat application?','How do you run a migration across 100 shards?','What is a logical shard?']
 },
 {
@@ -3898,6 +4313,7 @@ code:[{label:'a booking saga, and the part people forget',code:`reserve seat    
 <span class="c">// That business consequence is the real cost of a saga.</span>`}],
 after:`<p>Two flavours worth naming: <b>choreography</b> (each service listens for events and reacts — no coordinator, but the flow is scattered across services and hard to follow) and <b>orchestration</b> (a single saga coordinator drives the steps — easier to reason about, monitor and debug, at the cost of a component that knows the whole flow). At six services, orchestration is almost always the right call, and saying so with that reasoning is a strong answer.</p>
 <p>And the related pattern they may fish for: the <b>outbox</b>. Writing to your database and publishing to Kafka are two systems and cannot be atomic — so you write the event into an <code>outbox</code> table in the <em>same</em> transaction as the business change, and a separate relay publishes from that table. That is how you avoid the "committed the order but never published the event" bug.</p>`,
+trap:`<p>"Compensation is a rollback." A rollback makes it as if nothing happened; a compensation is a new action the customer can see — a refund on their statement, a cancellation email. A saga designed without saying what the user experiences on the undo path is half a design.</p>`,
 fu:['What if a compensating action itself fails?','How do you make a saga step idempotent?','What is the outbox pattern solving exactly?']
 },
 {
@@ -3916,6 +4332,7 @@ code:[{label:'the idempotent consumer',code:`async function handle(event) {
   await doTheWork(event)                   <span class="c">// same transaction, ideally</span>
 }`}],
 after:`<p>Three details that show real experience: the dedupe key must be generated by the producer, not the broker, or a producer retry creates a new id and defeats it; the dedupe table needs a retention policy or it grows forever; and if the work and the dedupe insert are not in one transaction there is a window where you can crash between them — which is why the natural business key (an order id, an idempotency key) is better than a separate table when you can use it.</p>`,
+trap:`<p>"Kafka gives us exactly-once." Kafka\'s exactly-once semantics cover reading from and writing back to Kafka inside its transactions. The moment your consumer writes to a database or calls a payment provider, you are back to at-least-once, and idempotency is your job.</p>`,
 fu:['What does Kafka mean by exactly-once semantics then?','How long do you keep dedupe keys?','What if the work is calling a third-party API that is not idempotent?']
 },
 {
@@ -3930,6 +4347,7 @@ a:`<p>A topic is split into <b>partitions</b>; each partition is an ordered, app
 <li><b>Retention</b> is time or size based, not consumption based. Messages stay after being read, which is what makes replay possible and is the real difference from a queue.</li>
 </ul>`,
 after:`<p><b>Queue vs log, stated crisply:</b> a queue (SQS, RabbitMQ, BullMQ) distributes work — a message goes to one consumer and is then gone. A log (Kafka) retains an ordered history that many independent consumer groups read at their own offsets. Choose Kafka when you need replay, ordering, or several unrelated systems consuming the same stream. Choose a queue for background jobs. Using Kafka as a job queue is the most common over-engineering at this level, and saying that out loud is a point in your favour.</p>`,
+trap:`<p>"If it is slow, add more consumers." Past the partition count, extra consumers in a group sit idle. Parallelism is fixed when the topic is created, and adding partitions later changes which partition existing keys map to.</p>`,
 fu:['How do you handle a poison message?','What happens if you need to increase partitions later? (Ordering by key breaks for existing keys.)','How would you do a schema change on an event?']
 },
 {
@@ -3942,6 +4360,7 @@ a:`<p><b>Scope first:</b> one-to-one and group messages, delivery and read recei
 <p><b>Storage.</b> Extremely write-heavy, always read by conversation, almost never updated — that shape points at Cassandra or DynamoDB with a partition key of <code>conversationId</code> and a clustering key of the sequence number, so "the last 50 messages in this conversation" is one sequential read.</p>`,
 after:`<p><b>Group messages</b> are the fan-out decision: for a 10-person group, write to all 10 inboxes. For a 100,000-member channel, that is 100,000 writes per message — so large groups switch to fan-out-on-read, where members pull from a shared conversation log. Naming that threshold explicitly is exactly the kind of trade-off this round rewards.</p>
 <p><b>Presence</b> is the sneaky scale problem: naive presence means every status change is broadcast to every contact, which is O(users × contacts) and will dominate your traffic. The real answers are a heartbeat with a TTL in Redis, and only pushing presence for conversations the user currently has open.</p>`,
+trap:`<p>Ordering messages by the sender\'s timestamp. Phone clocks drift and some are simply wrong, so replies appear above the messages they answer. Order is assigned by the server, per conversation.</p>`,
 fu:['How do you guarantee a message is not lost if the gateway crashes mid-send?','How do read receipts work for a group of 500?','How would you add end-to-end encryption, and what breaks? (Server-side search.)']
 },
 {
@@ -3958,6 +4377,7 @@ a:`<p>Everything follows from the 200:1 read-to-write ratio you computed at the 
 </tbody></table></div>
 <p><b>The real answer is hybrid</b>, and this is what they are waiting for: fan-out on write for normal accounts, and for accounts above a follower threshold, do not fan out — merge their posts in at read time. Twitter's actual design, and it is the correct answer because it puts each strategy where its cost is lowest.</p>`,
 after:`<p>Store the feed as a capped list of post ids in Redis (say the newest 800), not the post bodies — hydrate the bodies from a cache or the database at read time, so an edited or deleted post does not need rewriting across millions of feed lists.</p>`,
+trap:`<p>Pure fan-out on write for everyone. It is the right default until one account with millions of followers posts, and a single write becomes millions of inserts — and the feed is minutes late for everyone queued behind them.</p>`,
 fu:['What happens when someone follows 5,000 accounts?','How do you handle a deleted post that is already in a million feeds?','Where does ranking fit into this?']
 },
 {
@@ -3973,6 +4393,7 @@ a:`<p>The framing that sets the tone: <em>"this is the one system where I will t
 <li><b>Exactly-once effects via the saga above</b>, with refund as the compensating action, and the human consequence acknowledged.</li>
 </ul>`,
 after:`<p>If they push on scale: payments are usually low-QPS and high-stakes, so the interesting scaling problem is not throughput but <b>the ledger growing forever</b> — which is solved with periodic balance snapshots so you never replay the whole history, plus partitioning by account and archiving cold periods.</p>`,
+trap:`<p>A <code>balance</code> column you increment and decrement. Two concurrent updates can lose one, a bug leaves no trail of what happened, and reconciling against the provider becomes guesswork. Balances are derived from an append-only ledger.</p>`,
 fu:['What if the provider says success but your database write fails?','How do you handle a partial refund?','How would you detect a double charge after the fact?']
 },
 {
@@ -3987,6 +4408,7 @@ a:`<p><b>The three pillars, and what each is actually for:</b> metrics tell you 
 </ul>
 <p><b>Alert on symptoms, not causes.</b> Page on "checkout error rate above 1%" — a user-visible symptom — not on "CPU above 80%", which may be entirely fine. Every alert that does not require a human to act on it immediately should be a dashboard instead, because alert fatigue is how real outages get missed.</p>`,
 after:`<p>Also know: <b>p99 over average</b>, always — an average hides the tail, and the tail is what users actually complain about. <b>Percentiles do not average</b> across services, so you aggregate histograms, not percentiles. And the <b>four golden signals</b> — latency, traffic, errors, saturation — which is the shortest correct answer to "what would you monitor?"</p>`,
+trap:`<p>"We have dashboards for CPU, memory and disk." Those are causes, not symptoms — a service can sit at twenty percent CPU while failing every checkout. Start from what users experience, errors and latency on the paths that matter, and work down.</p>`,
 fu:['Your p99 is bad but p50 is fine. Where do you look?','How do you decide what to sample in tracing?','What goes in a runbook?']
 }
 ]},
@@ -4019,6 +4441,8 @@ arr.push(1.5)              <span class="c">// → PACKED_DOUBLE</span>
 arr.push('x')              <span class="c">// → PACKED_ELEMENTS, boxed, slow</span>
 arr[100] = 1               <span class="c">// → HOLEY, slower still, and it never goes back</span>`}],
 after:`<p>The practical rules that follow, which is what they actually want: initialise all properties in the constructor and in the same order; never <code>delete</code> a property (set it to <code>null</code> or <code>undefined</code>); keep arrays type-homogeneous and hole-free; and prefer monomorphic functions — one that receives four different object shapes is far slower than four specialised ones.</p>`,
+note:`<p>V8\'s pipeline in 2026 has four tiers, not two. <b>Ignition</b> interprets bytecode; <b>Sparkplug</b> compiles it to machine code quickly without optimising; <b>Maglev</b> is a fast optimising compiler that uses the type feedback; <b>TurboFan</b> is the slower, most aggressive top tier. A deopt can drop a function from either optimising tier back to bytecode. Naming Maglev is a small signal that your picture of V8 is current.</p>`,
+trap:`<p>"JavaScript is interpreted." V8 starts in an interpreter and compiles hot code to machine code through several tiers, specialised to the types it has seen. That is exactly why the shape of your objects changes the speed of your code.</p>`,
 fu:['What is a megamorphic call site?','Why is delete so expensive?','How would you actually verify any of this? (--trace-deopt, --allow-natives-syntax.)']
 },
 {
@@ -4046,6 +4470,7 @@ process.memoryUsage()   <span class="c">// heapUsed climbing across forced GCs =
 <span class="c">//      - a closure capturing a request context</span>
 <span class="c">//      - a timer that was never cleared</span>`}],
 after:`<p>The fixes map one to one: remove listeners on cleanup or use <code>once</code>; give every in-memory cache a size bound and a TTL, or use a <code>WeakMap</code> keyed by an object whose lifetime you do not control; clear timers; and in production, expose heap metrics so you see the sawtooth flatten into a ramp before it becomes an out-of-memory crash.</p>`,
+trap:`<p>"JavaScript is garbage collected, so it cannot leak." The collector frees what is unreachable. A JavaScript leak is memory that is still reachable by mistake — a listener, a cache, a closure — and the collector is doing its job correctly by keeping it.</p>`,
 fu:['What is the difference between a memory leak and high memory usage?','Why is a WeakMap the right cache key sometimes?','What does --max-old-space-size actually change?']
 },
 {
@@ -4071,6 +4496,7 @@ els.forEach((el, i) =&gt; el.style.height = heights[i] + 10 + 'px')  <span class
 after:`<p>The properties that force a synchronous layout when read — <code>offsetHeight</code>, <code>getBoundingClientRect</code>, <code>scrollTop</code>, <code>getComputedStyle</code> — are worth memorising, because reading one after a write is what causes the thrash.</p>
 <p><b><code>will-change</code></b> promotes an element to its own compositor layer, which makes it cheap to animate — but each layer costs GPU memory, and applying it to everything makes things slower, not faster. Add it just before the animation and remove it after.</p>
 <p>And connect it to <b>INP</b> from R4: a long task blocks the main thread, so the next paint after an interaction is delayed. That is why breaking up long tasks (with <code>scheduler.yield()</code> or <code>setTimeout</code>) improves a metric that looks like it should be about rendering.</p>`,
+trap:`<p>"React\'s virtual DOM avoids reflows." It reduces how many DOM writes you make; it does nothing about which properties you change or when you read layout back. An animation on <code>top</code> janks the same with React or without it.</p>`,
 fu:['What is the compositor thread and what can it do without the main thread?','Why is a CSS animation often smoother than a JS one?','How would you find a long task in production?']
 },
 {
@@ -4094,6 +4520,7 @@ h.enable()
 <span class="c">// h.mean, h.percentile(99) — alert on the p99, not the mean</span>`}],
 after:`<p>This is the single most useful Node production metric and almost nobody instruments it. High event loop lag with low CPU means you are blocked on something synchronous; high lag with high CPU means genuine CPU work that belongs on a worker thread or a queue. Being able to say that diagnostic split is a staff-level answer.</p>
 <p>Also worth knowing: <code>process.nextTick</code> has its own queue that drains before promise microtasks and can starve the loop if it recurses; and <code>setImmediate</code> versus <code>setTimeout(fn, 0)</code> is non-deterministic at the top level but deterministic inside an I/O callback, where <code>setImmediate</code> always fires first because the check phase follows poll.</p>`,
+trap:`<p>"Node uses a thread pool for all I/O." Network I/O goes through the operating system\'s event notification on the main loop; the thread pool serves file system calls, DNS lookups, compression and crypto. Getting that wrong leads to raising <code>UV_THREADPOOL_SIZE</code> to fix a slow HTTP client, which changes nothing.</p>`,
 fu:['You see 300ms event loop lag in production. Walk me through the diagnosis.','When would you reach for worker_threads over a queue?','What does clustering actually give you and what does it not?']
 },
 {
@@ -4107,7 +4534,75 @@ a:`<ul>
 <p><b>The costs worth quoting:</b> a TCP handshake is one round trip; TLS 1.3 adds one more (TLS 1.2 added two); so a fresh HTTPS connection to a distant origin costs roughly 2 round trips before a single byte of your content moves. At 150ms cross-continent that is 300ms of nothing.</p>
 <p>Which explains the fixes: <code>preconnect</code> for origins you will definitely use, keep-alive and connection reuse, and reducing the number of distinct origins — every third-party domain is another handshake.</p>`,
 after:`<p>Resource hints, in order of aggressiveness: <code>dns-prefetch</code> (resolve only) → <code>preconnect</code> (resolve, connect, TLS) → <code>preload</code> (fetch this now, high priority, I need it this navigation) → <code>prefetch</code> (fetch idly, I will probably need it next navigation). Misusing <code>preload</code> for everything makes things worse by competing with the LCP resource for bandwidth.</p>`,
+trap:`<p>"HTTP/3 is faster because UDP is faster." UDP is only the transport QUIC runs on. The gains are that one lost packet no longer stalls every stream and that connections set up in fewer round trips — on a clean, low-latency network the difference can be small.</p>`,
 fu:['Why did bundling everything become an anti-pattern with HTTP/2?','What is 0-RTT and what is its security caveat? (Replay attacks.)','How does a CDN change any of this?']
+},
+{
+q:'A hot function got ten times slower after a harmless-looking change. How do you prove it was deoptimised?',
+test:'Whether hidden classes and inline caches are something you can observe and measure, not just describe.',
+a:`<p>Start with the mechanism, briefly, because the proof depends on it. Every property access site keeps an <b>inline cache</b> of the object shapes — hidden classes — it has seen. One shape is <b>monomorphic</b> and compiles to a direct load at a fixed offset. A handful of shapes is <b>polymorphic</b>: a short chain of checks, still fast. Past that the site goes <b>megamorphic</b> and falls back to a generic lookup, and the optimising compiler can no longer specialise the function around it.</p>
+<p>The "harmless" changes that do this: adding an optional property to some objects and not others, building the same object in different key orders on two code paths, or passing a class instance and a plain object literal through the same function. Same fields, different shapes.</p>
+<p>Then prove it rather than guess:</p>`,
+code:[{label:'the evidence, from cheapest to most detailed',code:`<span class="c"># 1. did it deoptimise, and why? look for your function by name</span>
+node --trace-opt --trace-deopt app.js 2&gt;&amp;1 | grep -A2 scoreBooking
+
+<span class="c"># 2. where does the time actually go? sample the CPU under load</span>
+node --cpu-prof app.js            <span class="c"># open the .cpuprofile in DevTools</span>
+
+<span class="c"># 3. in a micro-benchmark, ask V8 directly</span>
+node --allow-natives-syntax bench.js
+<span class="c">#   %PrepareFunctionForOptimization(fn); fn(sample)</span>
+<span class="c">#   %OptimizeFunctionOnNextCall(fn); fn(sample)</span>
+<span class="c">#   %GetOptimizationStatus(fn)     — a bit field, not a boolean</span>`}],
+after:`<p>The deopt trace gives a reason. "Wrong map" means an object arrived with a hidden class the optimised code did not expect, which points straight at the shape change. The fix is usually dull: construct these objects in one place, in one order, with every property initialised — to <code>null</code> if need be — so every caller produces the same shape.</p>
+<p>Keep the judgement in the answer too. This matters in a function called millions of times a second — a parser, a scoring loop, the hot path of a library. In an ordinary request handler the database costs a thousand times more, and reshaping objects there is not where the time is.</p>`,
+trap:`<p>"V8 is clever, it optimises everything." It optimises what it has seen, on the assumption it keeps seeing it. Code that feeds one function many shapes is exactly the code it cannot optimise — and the slowdown never shows up as an error, only in a flame graph.</p>`,
+fu:['What is the difference between polymorphic and megamorphic?','Why does the order you add properties in change the hidden class?','Would you ever reshape objects in an ordinary API handler?','What does "wrong map" mean in a deopt trace?']
+},
+{
+q:'Why can a loop of already-resolved promises stop a Node server from answering requests?',
+test:'Whether you know that await does not always yield to I/O, and where the event loop actually gets its turn.',
+a:`<p>Because <code>await</code> yields to the <b>microtask queue</b>, not to the event loop. Awaiting a promise that is already resolved queues the continuation as a microtask, and the microtask queue is drained completely before the loop moves on to timers, I/O or <code>setImmediate</code>. A loop that awaits resolved values a million times never leaves the microtask queue, so incoming requests wait in the poll phase until it finishes — even though every line says <code>await</code>.</p>
+<p><code>process.nextTick</code> is worse: its queue drains even before promise microtasks, so a function that reschedules itself with <code>nextTick</code> starves promises and I/O alike.</p>`,
+code:[{label:'looks async, blocks everything',code:`app.get('/recalculate', async (req, res) =&gt; {
+  for (const row of rows) {             <span class="c">// a million rows</span>
+    await cache.get(row.id)             <span class="c">// resolved from memory — no real I/O</span>
+    score(row)
+  }
+  res.json({ ok: true })
+})
+<span class="c">// every other request waits: the loop never reaches the poll phase</span>`},
+{label:'give the loop a turn — or move the work',code:`import { setImmediate as yieldToLoop } from 'node:timers/promises'
+
+for (let i = 0; i &lt; rows.length; i++) {
+  score(rows[i])
+  if (i % 1000 === 0) await yieldToLoop()   <span class="o">// a macrotask: pending I/O is served</span>
+}
+
+<span class="c">// for genuinely heavy work: a worker thread, or a job queue</span>`}],
+after:`<p>The diagnostic signature is the one from the Node internals question: event loop lag climbs, one core sits at full CPU, and there is no slow query anywhere. The fix depends on the size of the work. Chunking with <code>setImmediate</code> keeps the server responsive but still spends the main thread; anything that takes more than a few hundred milliseconds in total belongs in a worker thread or on a queue, where it cannot hold the loop at all.</p>`,
+trap:`<p>"It is async, so it does not block." <code>async</code> describes how a function returns, not where its work runs. The CPU work between awaits runs on the main thread either way, and awaits that resolve immediately never hand control back to I/O.</p>`,
+fu:['Why does setImmediate let I/O through when a resolved promise does not?','What happens if process.nextTick schedules itself recursively?','When would you use a worker thread instead of chunking?','How is this different from saturating the libuv thread pool?']
+},
+{
+q:'p99 latency spikes every few minutes with no change in traffic. How would you tell whether it is garbage collection?',
+test:'Whether you can connect generational GC to a latency graph, and measure it before tuning anything.',
+a:`<p>First, the shape that points at GC: the spikes are periodic or grow with heap size, they hit every endpoint on the instance at the same moment, and they do not line up with slow queries or slow dependencies. A pause stops all JavaScript on the process, so every request in flight is late together.</p>
+<p>Then measure it directly — Node reports every collection as a performance entry, with its kind and its duration:</p>`,
+code:[{label:'see every GC, its kind, and how long it took',code:`const { PerformanceObserver } = require('node:perf_hooks')
+
+new PerformanceObserver((list) =&gt; {
+  for (const e of list.getEntries()) {
+    metrics.histogram('gc.pause_ms', e.duration, { kind: e.detail.kind })
+  }
+}).observe({ entryTypes: ['gc'] })
+
+<span class="c">// or, on a test run: node --trace-gc app.js</span>
+<span class="c">// Scavenge lines are the young generation; Mark-Compact lines are the costly ones</span>`}],
+after:`<p>Read the result through the generations. Frequent short scavenges are normal and cheap. Long <b>Mark-Compact</b> pauses that grow over time mean the old generation is large and growing — either a leak (the heap after each major GC keeps rising, which is the leak workflow from the GC question) or a lot of medium-lived data being promoted, such as unbounded caches or objects held by slow requests.</p>
+<p>The fixes, in the order to try them. Stop keeping what you do not need: bound the caches, stream instead of buffering. If short-lived objects are being promoted because the young generation fills too fast under load, a larger <code>--max-semi-space-size</code> lets them die young. And set <code>--max-old-space-size</code> deliberately below the container\'s memory limit, leaving room for buffers and native memory outside the V8 heap. Then measure again — GC flags are the last lever, not the first.</p>`,
+trap:`<p>Calling <code>global.gc()</code> on a timer, or raising <code>--max-old-space-size</code> until the spikes move. The first adds pauses of its own; the second makes each major collection bigger and later — and if the heap can now outgrow the container\'s memory limit, the kernel kills the process instead, with no stack trace.</p>`,
+fu:['What survives a scavenge, and what happens to it next?','Why can a bigger heap make pauses worse?','How do you tell a leak from a large but stable heap?','How much of a Node process\'s memory lives outside the V8 heap?']
 }
 ]},
 {
@@ -4151,6 +4646,7 @@ q:'Tell me about a technical decision that turned out to be wrong.',
 test:'Whether you can hold a strong opinion and still update. This gets asked in some form every single time at this level.',
 a:`<p>The shape that lands: <b>the decision → the reasoning that was sound at the time → the signal that contradicted it → how long you took to accept it → what you did → the rule you now carry.</b></p>
 <p>The part most candidates skip is the fourth: <b>how long you took to accept it.</b> Being honest that you defended it for two weeks before the evidence became undeniable is more credible than a story where you updated instantly, and it demonstrates the thing they are actually probing — whether ego gets in the way of the data.</p>`,
+trap:`<p>A wrong decision that was really someone else\'s — the spec changed, the vendor let you down, the deadline was imposed. The question is about your judgement, and a story where you were not the one deciding cannot answer it.</p>`,
 fu:['What was the cost of the delay in changing course?','How do you decide when to reverse versus push through?','Has that rule ever been wrong?']
 },
 {
@@ -4178,6 +4674,7 @@ a:`<p>The factors, in the order that actually decides it:</p>
 <li><b>Compliance and data residency</b>, which sometimes decide it outright regardless of the rest.</li>
 </ul>
 <p>Say the default out loud: <b>buy, unless it is core or the vendor cost scales badly with your growth.</b> Then give the exception you have actually lived.</p>`,
+trap:`<p>"We built it because the vendors were not flexible enough." Without the cost of owning it — the months to build and the years of maintenance — flexibility is a preference, not a reason, and a staff interviewer hears the engineer\'s bias towards building in it straight away.</p>`,
 fu:['When did you build something you should have bought?','How would you decide on a vendor with no exit path?']
 },
 {
