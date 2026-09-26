@@ -7,7 +7,7 @@ const PAGES = [
   { path: "/", heading: /Walk into the interview ready/i },
   { path: "/notes", heading: /JavaScript/i },
   { path: "/notes/setup-mental-model", heading: /Setup/i },
-  { path: "/interview", heading: /Interview/i },
+  { path: "/interview", heading: /Every round of the loop/i },
   { path: "/interview/r1oa", heading: /online assessment/i },
   { path: "/level/js", heading: /JavaScript/i },
   { path: "/path?topic=js&level=beginner", heading: /Beginner/i },
@@ -834,4 +834,29 @@ test("the home page reads as a landing page and every path leads somewhere real"
 
   await page.setViewportSize({ width: 375, height: 800 });
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
+test("the interview book hides answers in practice mode, remembers marks and drills them", async ({ page }) => {
+  await page.goto("/interview/r3");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("JavaScript");
+  await page.getByRole("button", { name: "Practise", exact: true }).click();
+  const first = page.locator("article").first();
+  await expect(first.getByRole("button", { name: "Show the answer" })).toBeVisible();
+  await first.getByRole("button", { name: "Show the answer" }).click();
+  await expect(first.getByText("The answer that loses the room")).toBeVisible();
+  await first.getByRole("button", { name: "Shaky" }).click();
+  await expect(first.getByRole("button", { name: "Shaky" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Read", exact: true }).click();
+
+  await page.goto("/interview/questions?filter=shaky");
+  await expect(page.getByText("1 of")).toBeVisible();
+  await page.getByRole("button", { name: /Drill 1 as flashcards/ }).click();
+  await page.getByRole("button", { name: /Reveal/ }).click();
+  await page.getByRole("button", { name: /Knew it/ }).click();
+  await expect(page.getByText("1 card through.")).toBeVisible();
+
+  await page.goto("/interview");
+  await expect(page.getByRole("link", { name: /JavaScript & TS/ })).toBeVisible();
+  await page.getByRole("button", { name: "Agency" }).click();
+  await expect(page.getByRole("button", { name: "Agency" })).toHaveAttribute("aria-pressed", "true");
 });
