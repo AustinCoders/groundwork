@@ -512,7 +512,7 @@ function StoryVisual({ step }: { step: number }) {
   );
 }
 
-function Story() {
+function Story({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const activeRef = useRef(0);
@@ -565,42 +565,45 @@ function Story() {
     <>
       <div className={styles.story} ref={ref} style={vars({ steps: STORY.length })}>
         <div className={styles.pin}>
-          <div className={styles.pinText}>
-            <div className={styles.rail} aria-label="Steps" role="group">
-              {STORY.map((s, i) => (
-                <button
-                  key={s.k}
-                  type="button"
-                  aria-current={i === active ? "step" : undefined}
-                  className={styles.railStep}
-                  style={vars({ i })}
-                  onClick={() => jump(i)}
-                >
-                  <span className={styles.railFill} />
-                  <b>
-                    {String(i + 1).padStart(2, "0")} · {s.k}
-                  </b>
-                </button>
-              ))}
-            </div>
-            <div className={styles.pinCopy}>
-              {STORY.map((s, i) => (
-                <article key={s.k} data-state={state(i)} aria-hidden={i !== active}>
-                  <span className={styles.bigNum} aria-hidden="true">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <h3>{s.title}</h3>
-                  <p>{s.body}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-          <div className={styles.pinStage}>
-            {STORY.map((s, i) => (
-              <div key={s.k} className={styles.stageItem} data-state={state(i)}>
-                <StoryVisual step={i} />
+          {children}
+          <div className={styles.pinGrid}>
+            <div className={styles.pinText}>
+              <div className={styles.rail} aria-label="Steps" role="group">
+                {STORY.map((s, i) => (
+                  <button
+                    key={s.k}
+                    type="button"
+                    aria-current={i === active ? "step" : undefined}
+                    className={styles.railStep}
+                    style={vars({ i })}
+                    onClick={() => jump(i)}
+                  >
+                    <span className={styles.railFill} />
+                    <b>
+                      {String(i + 1).padStart(2, "0")} · {s.k}
+                    </b>
+                  </button>
+                ))}
               </div>
-            ))}
+              <div className={styles.pinCopy}>
+                {STORY.map((s, i) => (
+                  <article key={s.k} data-state={state(i)} aria-hidden={i !== active}>
+                    <span className={styles.bigNum} aria-hidden="true">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <h3>{s.title}</h3>
+                    <p>{s.body}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+            <div className={styles.pinStage}>
+              {STORY.map((s, i) => (
+                <div key={s.k} className={styles.stageItem} data-state={state(i)}>
+                  <StoryVisual step={i} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -964,18 +967,19 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             </div>
           </section>
 
-          <section className={styles.section} id="how" aria-labelledby="how-h">
-            <div className={styles.head} data-fx="head">
-              <p className={styles.eyebrow}>How it works</p>
-              <h2 id="how-h" className={styles.h2}>
-                <Words text="Read it. Run it. Get asked about it. Keep it." />
-              </h2>
-              <p className={styles.sub}>
-                Most prep is either too shallow or too scattered. Here, the explanation, the practice and the interview
-                sit in one place, in the right order.
-              </p>
-            </div>
-            <Story />
+          <section className={`${styles.section} ${styles.howSection}`} id="how" aria-labelledby="how-h">
+            <Story>
+              <div className={styles.head} data-fx="head">
+                <p className={styles.eyebrow}>How it works</p>
+                <h2 id="how-h" className={styles.h2}>
+                  <Words text="Read it. Run it. Get asked about it. Keep it." />
+                </h2>
+                <p className={styles.sub}>
+                  Most prep is either too shallow or too scattered. Here, the explanation, the practice and the
+                  interview sit in one place, in the right order.
+                </p>
+              </div>
+            </Story>
           </section>
 
           <section className={styles.section} id="features" aria-labelledby="feat-h">

@@ -568,18 +568,31 @@
 .story {
   position: relative;
   height: calc(var(--steps) * 85vh);
-  margin-top: 24px;
 }
 
 .pin {
   position: sticky;
   top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 3vh, 36px);
+  height: 100vh;
+  padding: 88px 0 clamp(16px, 3vh, 32px);
+}
+
+.pinGrid {
   display: grid;
+  flex: 1;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
   align-items: start;
+  align-content: start;
   gap: 64px;
-  height: 100vh;
-  padding-top: max(96px, 14vh);
+  min-height: 0;
+  padding-top: clamp(8px, 2vh, 24px);
+}
+
+.pin .head .sub {
+  margin-top: 10px;
 }
 
 .pinText {
@@ -641,7 +654,6 @@
 .pinCopy {
   position: relative;
   display: grid;
-  min-height: 320px;
 }
 
 .pinCopy article {
@@ -670,7 +682,7 @@
 .bigNum {
   display: block;
   font-family: var(--font-heading);
-  font-size: 96px;
+  font-size: clamp(56px, 9vh, 96px);
   font-weight: 700;
   line-height: 0.9;
   color: color-mix(in srgb, var(--primary) 30%, var(--line));
@@ -706,7 +718,7 @@
 }
 
 .stageItem[data-state="active"] {
-  --lp: calc(0.3 + var(--p, 0) * 0.7);
+  --lp: calc(0.45 + var(--p, 0) * 0.55);
 }
 
 .stageItem[data-state="past"] {
@@ -762,8 +774,8 @@
   flex-direction: column;
   justify-content: center;
   gap: 14px;
-  min-height: 460px;
-  padding: 40px;
+  min-height: min(440px, 52vh);
+  padding: clamp(24px, 4vh, 40px);
   background: var(--sheet);
   border: 1px solid var(--line);
   border-radius: 28px;
@@ -1649,6 +1661,16 @@
   }
 
   .story {
+    height: auto;
+  }
+
+  .pin {
+    position: static;
+    height: auto;
+    padding: 0;
+  }
+
+  .pinGrid {
     display: none;
   }
 
@@ -1775,6 +1797,16 @@
 
 @media (prefers-reduced-motion: reduce) {
   .story {
+    height: auto;
+  }
+
+  .pin {
+    position: static;
+    height: auto;
+    padding: 0;
+  }
+
+  .pinGrid {
     display: none;
   }
 
@@ -2441,4 +2473,18 @@
     width: 100%;
     rotate: 0deg;
   }
+}
+
+@media (max-height: 800px) and (min-width: 1081px) {
+  .pin .head .sub {
+    display: none;
+  }
+
+  .pinCopy p {
+    font-size: 16px;
+  }
+}
+
+.howSection {
+  padding-top: clamp(8px, 2vw, 32px);
 }
