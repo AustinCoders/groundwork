@@ -362,20 +362,6 @@ function ProductWindow() {
             A closure is a function plus <mark>the scope it was born in</mark>. When <code>counter</code> returns, its
             call is over, but the arrow it handed back still holds on to <code>n</code>.
           </p>
-          <div className={styles.scopes}>
-            <div>
-              <b>global</b>
-              <div>
-                <b>counter()</b>
-                <span>
-                  n = <i>0</i>
-                </span>
-                <div>
-                  <b>() =&gt; ++n</b>
-                </div>
-              </div>
-            </div>
-          </div>
           <p className={styles.chapterNote}>
             <span>Interview follow-up</span> Why does a second counter start from 1?
           </p>
@@ -752,18 +738,10 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
   useReveal(pageRef);
 
   useEffect(() => {
-    const hero = heroRef.current;
-    const still = !prefersMotion();
     let raf = 0;
     const update = () => {
       raf = 0;
       setScrolled(window.scrollY > 8);
-      const win = hero?.querySelector<HTMLElement>("[data-window]");
-      if (!hero || !win) return;
-      const top = win.getBoundingClientRect().top;
-      const h = window.innerHeight;
-      const p = still ? 1 : Math.min(1, Math.max(0, 1 - (top - h * 0.12) / (h * 0.62)));
-      hero.style.setProperty("--hero-p", p.toFixed(4));
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
@@ -849,55 +827,59 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
 
         <main id="main">
           <section className={styles.hero} ref={heroRef}>
-            <WelcomeBack />
-            <p className={styles.kicker}>
-              <span className={styles.dot} aria-hidden="true" /> Free · no sign-up · {stats.writtenChapters} chapters
-              written
-            </p>
-            <h1 className={styles.h1}>
-              <span className={styles.h1Top}>
-                Understand <Rotator /> properly.
-              </span>
-              <span className={styles.h1Main}>
-                {HEADLINE.map((w, i) => (
-                  <span key={w + i} className={styles.word} style={vars({ i })}>
-                    {w}{" "}
-                  </span>
-                ))}
-              </span>
-            </h1>
-            <p className={styles.lead}>
-              Notes that never use a word before explaining it, exercises graded by real tests right in the page, and an
-              interview book that walks every round up to the offer.
-            </p>
-            <div className={styles.actions}>
-              <Link href="/level/js" className={`${styles.btn} ${styles.btnBig}`}>
-                Start with JavaScript <span className={styles.btnArrow}>→</span>
-              </Link>
-              <Link href="/interview" className={`${styles.btn} ${styles.btnGhost} ${styles.btnBig}`}>
-                Prepare for an interview
-              </Link>
+            <div className={styles.heroCopy}>
+              <WelcomeBack />
+              <p className={styles.kicker}>
+                <span className={styles.dot} aria-hidden="true" /> Free · no sign-up · {stats.writtenChapters} chapters
+                written
+              </p>
+              <h1 className={styles.h1}>
+                <span className={styles.h1Top}>
+                  Understand <Rotator /> properly.
+                </span>
+                <span className={styles.h1Main}>
+                  {HEADLINE.map((w, i) => (
+                    <span key={w + i} className={styles.word} style={vars({ i })}>
+                      {w}{" "}
+                    </span>
+                  ))}
+                </span>
+              </h1>
+              <p className={styles.lead}>
+                Notes that never use a word before explaining it, exercises graded by real tests right in the page, and
+                an interview book that walks every round up to the offer.
+              </p>
+              <div className={styles.actions}>
+                <Link href="/level/js" className={`${styles.btn} ${styles.btnBig}`}>
+                  Start with JavaScript <span className={styles.btnArrow}>→</span>
+                </Link>
+                <Link href="/interview" className={`${styles.btn} ${styles.btnGhost} ${styles.btnBig}`}>
+                  Prepare for an interview
+                </Link>
+              </div>
+              <ul className={styles.checks}>
+                <li>Free forever</li>
+                <li>No account</li>
+                <li>Runs in your browser</li>
+              </ul>
             </div>
-            <p className={styles.tryHint} aria-hidden="true">
-              ↓ the editor below really runs. Break it and see.
-            </p>
-            <div className={styles.windowWrap}>
+            <div className={styles.heroArt}>
+              <p className={styles.tryHint} aria-hidden="true">
+                this editor really runs. break it ↘
+              </p>
               <div className={styles.windowTilt} data-window>
                 <ProductWindow />
               </div>
               <span className={`${styles.chip} ${styles.chipA}`} aria-hidden="true">
-                <b>✓</b> 3 / 3 passed
+                <b>R2</b> Machine coding
               </span>
               <span className={`${styles.chip} ${styles.chipB}`} aria-hidden="true">
                 🔥 6-day streak
               </span>
-              <span className={`${styles.chip} ${styles.chipC}`} aria-hidden="true">
-                <b>R2</b> Machine coding
-              </span>
-              <span className={`${styles.chip} ${styles.chipD}`} aria-hidden="true">
-                +25 XP
-              </span>
             </div>
+          </section>
+
+          <section className={styles.statsBand} aria-label="By the numbers">
             <dl className={styles.stats}>
               {[
                 { n: stats.writtenChapters, s: "", l: "chapters written" },
