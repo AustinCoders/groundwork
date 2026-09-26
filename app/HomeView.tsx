@@ -12,6 +12,7 @@ import { progress } from "@/lib/storage";
 import { SITE_NAME } from "@/lib/site";
 import { useGuidesNav } from "@/lib/topicNav";
 import type { SiteStats } from "@/lib/topicStats";
+import "lenis/dist/lenis.css";
 import styles from "./home.module.css";
 
 export interface ShelfCard {
@@ -133,28 +134,91 @@ function Icon({ d, size = 22 }: { d: string; size?: number }) {
   );
 }
 
-function useReveal(root: React.RefObject<HTMLElement | null>) {
+let smooth: { scrollTo: (y: number) => void; stop: () => void; start: () => void } | null = null;
+
+function useScrollFx(root: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
     const host = root.current;
     if (!host || !prefersMotion() || !("IntersectionObserver" in window)) return;
-    if (CSS.supports("animation-timeline: view()")) return;
-    const items = Array.from(host.querySelectorAll<HTMLElement>("[data-reveal]"));
-    const below = items.filter((el) => el.getBoundingClientRect().top > window.innerHeight * 0.9);
-    below.forEach((el) => el.setAttribute("data-hidden", ""));
+    host.setAttribute("data-fx", "on");
+    const bar = host.querySelector<HTMLElement>("[data-scrollbar]");
+    const els = Array.from(host.querySelectorAll<HTMLElement>("[data-fx]"));
+    const live = new Set<HTMLElement>();
+    const clamp = (n: number) => Math.min(1, Math.max(0, n));
+
+    const measure = (el: HTMLElement, h: number, y: number, max: number) => {
+      const r = el.getBoundingClientRect();
+      const start = r.top + y - h;
+      const travel = Math.min(h * 0.45, max - start);
+      const enter = start <= 0 || travel <= 0 ? 1 : clamp((y - start) / travel);
+      el.style.setProperty("--in", enter.toFixed(3));
+      el.style.setProperty("--vp", clamp((h - r.top) / (h + r.height)).toFixed(3));
+      el.style.setProperty("--out", clamp(-r.top / Math.max(1, r.height)).toFixed(3));
+    };
+
+    const frame = (all: boolean) => {
+      const h = window.innerHeight;
+      const y = window.scrollY;
+      const max = document.documentElement.scrollHeight - h;
+      (all ? els : live).forEach((el) => measure(el, h, y, max));
+      bar?.style.setProperty("--sp", (max > 0 ? y / max : 0).toFixed(4));
+    };
+
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
-          if (!e.isIntersecting) return;
-          e.target.removeAttribute("data-hidden");
-          io.unobserve(e.target);
+          if (e.isIntersecting) live.add(e.target as HTMLElement);
+          else live.delete(e.target as HTMLElement);
         });
+        frame(true);
       },
-      { rootMargin: "0px 0px -8% 0px", threshold: 0.12 }
+      { rootMargin: "15% 0px 15% 0px" }
     );
-    below.forEach((el) => io.observe(el));
+    els.forEach((el) => io.observe(el));
+    frame(true);
+
+    let raf = 0;
+    const onScroll = () => {
+      if (!raf)
+        raf = requestAnimationFrame(() => {
+          raf = 0;
+          frame(false);
+        });
+    };
+    const onResize = () => frame(true);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+
+    let dead = false;
+    let loop = 0;
+    let lenis: { raf: (t: number) => void; destroy: () => void } | null = null;
+    import("lenis").then(({ default: Lenis }) => {
+      if (dead) return;
+      const l = new Lenis({
+        lerp: 0.085,
+        smoothWheel: true,
+        anchors: { offset: -64 },
+        prevent: (node) => Boolean(node.closest("[role=dialog], textarea, [data-no-smooth]")),
+      });
+      lenis = l;
+      smooth = { scrollTo: (y) => l.scrollTo(y), stop: () => l.stop(), start: () => l.start() };
+      const tick = (t: number) => {
+        l.raf(t);
+        loop = requestAnimationFrame(tick);
+      };
+      loop = requestAnimationFrame(tick);
+    });
+
     return () => {
+      dead = true;
+      cancelAnimationFrame(raf);
+      cancelAnimationFrame(loop);
+      lenis?.destroy();
+      smooth = null;
       io.disconnect();
-      below.forEach((el) => el.removeAttribute("data-hidden"));
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+      host.removeAttribute("data-fx");
     };
   }, [root]);
 }
@@ -513,7 +577,9 @@ function Story() {
     if (!el) return;
     const top = el.getBoundingClientRect().top + window.scrollY;
     const total = el.offsetHeight - window.innerHeight;
-    window.scrollTo({ top: top + (total * (i + 0.55)) / STORY.length, behavior: "smooth" });
+    const target = top + (total * (i + 0.55)) / STORY.length;
+    if (smooth) smooth.scrollTo(target);
+    else window.scrollTo({ top: target, behavior: "smooth" });
   }
 
   const state = (i: number) => (i < active ? "past" : i === active ? "active" : "next");
@@ -563,7 +629,7 @@ function Story() {
       </div>
       <ol className={styles.storyList}>
         {STORY.map((s, i) => (
-          <li key={s.k} data-reveal>
+          <li key={s.k} data-fx="up">
             <span className={styles.storyKey}>
               {String(i + 1).padStart(2, "0")} · {s.k}
             </span>
@@ -792,11 +858,14 @@ const TOOLS = [
 export function HomeView({ stats, ready, soon, problems, languages, interview }: HomeViewProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const closeMenu = useCallback(() => {
+    setMenuOpen(false);
+    smooth?.start();
+  }, []);
   const pageRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const hours = Math.round(stats.minutes / 60);
-  useReveal(pageRef);
+  useScrollFx(pageRef);
 
   useEffect(() => {
     let raf = 0;
@@ -873,7 +942,10 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             aria-label="Menu"
             aria-haspopup="dialog"
             aria-expanded={menuOpen}
-            onClick={() => setMenuOpen(true)}
+            onClick={() => {
+              smooth?.stop();
+              setMenuOpen(true);
+            }}
           >
             <TopIcon name="menu" />
           </button>
@@ -893,11 +965,11 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
           <Link href="/level/js" className={`${styles.btn} ${styles.btnSmall}`}>
             Start reading
           </Link>
-          <span className={styles.scrollBar} aria-hidden="true" />
+          <span className={styles.scrollBar} data-scrollbar aria-hidden="true" />
         </header>
 
         <main id="main">
-          <section className={styles.hero} ref={heroRef}>
+          <section className={styles.hero} ref={heroRef} data-fx="heroOut">
             <div className={styles.heroCopy}>
               <WelcomeBack />
               <p className={styles.kicker}>
@@ -950,7 +1022,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             </div>
           </section>
 
-          <section className={styles.statsBand} aria-label="By the numbers">
+          <section className={styles.statsBand} aria-label="By the numbers" data-fx="up">
             <dl className={styles.stats}>
               {[
                 { n: stats.writtenChapters, s: "", l: "chapters written" },
@@ -968,8 +1040,32 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             </dl>
           </section>
 
+          <div className={styles.marquee} data-fx="marquee" aria-hidden="true">
+            <ul className={styles.marqueeRow}>
+              {[...ready, ...soon, ...ready].map((t, k) => (
+                <li key={t.id + k}>{t.name}</li>
+              ))}
+            </ul>
+            <ul className={styles.marqueeRow}>
+              {[
+                "Read it",
+                "Run it",
+                "Get asked",
+                "Keep it",
+                "Read it",
+                "Run it",
+                "Get asked",
+                "Keep it",
+                "Read it",
+                "Run it",
+              ].map((w, k) => (
+                <li key={w + k}>{w}</li>
+              ))}
+            </ul>
+          </div>
+
           <section className={styles.section} id="how" aria-labelledby="how-h">
-            <div className={styles.head} data-reveal>
+            <div className={styles.head} data-fx="head">
               <p className={styles.eyebrow}>How it works</p>
               <h2 id="how-h" className={styles.h2}>
                 <Words text="Read it. Run it. Get asked about it. Keep it." />
@@ -983,14 +1079,14 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
           </section>
 
           <section className={styles.section} id="features" aria-labelledby="feat-h">
-            <div className={styles.head} data-reveal>
+            <div className={styles.head} data-fx="head">
               <p className={styles.eyebrow}>Everything in one place</p>
               <h2 id="feat-h" className={styles.h2}>
                 <Words text="Built for the way interviews actually go." />
               </h2>
             </div>
             <div className={styles.bento}>
-              <article className={`${styles.cell} ${styles.cellWide}`} style={accent("green")} data-reveal data-glow>
+              <article className={`${styles.cell} ${styles.cellWide}`} style={accent("green")} data-fx="left" data-glow>
                 <span className={styles.cellIcon}>
                   <Icon d="M8 9l-4 3 4 3M16 9l4 3-4 3M13.5 6l-3 12" />
                 </span>
@@ -1005,28 +1101,43 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                   ))}
                 </div>
               </article>
-              <article className={styles.cell} style={accent("red")} data-reveal data-glow>
+              <article
+                className={styles.cell}
+                style={{ ...accent("red"), ...vars({ d: 1 }) }}
+                data-fx="right"
+                data-glow
+              >
                 <span className={styles.cellIcon}>
                   <Icon d="M12 21a9 9 0 100-18 9 9 0 000 18zM12 16a4 4 0 100-8 4 4 0 000 8zM12 12h.01" />
                 </span>
                 <h3>{interview.rounds} interview rounds</h3>
                 <p>From the screening call to the offer number, with {interview.questions}+ questions answered.</p>
               </article>
-              <article className={styles.cell} style={accent("orange")} data-reveal data-glow>
+              <article className={styles.cell} style={accent("orange")} data-fx="flip" data-glow>
                 <span className={styles.cellIcon}>
                   <Icon d="M12 7v5l3 2M12 21a9 9 0 110-18 9 9 0 010 18z" />
                 </span>
                 <h3>Mock interviews</h3>
                 <p>A timer, follow-ups, a rubric and a hiring-committee style debrief.</p>
               </article>
-              <article className={styles.cell} style={accent("teal")} data-reveal data-glow>
+              <article
+                className={styles.cell}
+                style={{ ...accent("teal"), ...vars({ d: 1 }) }}
+                data-fx="flip"
+                data-glow
+              >
                 <span className={styles.cellIcon}>
                   <Icon d="M3 5h18v12H3zM8 21h8M12 17v4M7 9h4M7 13h7" />
                 </span>
                 <h3>A real whiteboard</h3>
                 <p>Arrows that stay attached, sticky notes and system design templates.</p>
               </article>
-              <article className={`${styles.cell} ${styles.cellWide}`} style={accent("purple")} data-reveal data-glow>
+              <article
+                className={`${styles.cell} ${styles.cellWide}`}
+                style={{ ...accent("purple"), ...vars({ d: 2 }) }}
+                data-fx="right"
+                data-glow
+              >
                 <span className={styles.cellIcon}>
                   <Icon d="M4 12a8 8 0 0113.7-5.6L20 9M20 4v5h-5M20 12a8 8 0 01-13.7 5.6L4 15M4 20v-5h5" />
                 </span>
@@ -1040,13 +1151,13 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
           </section>
 
           <section className={styles.section} id="who" aria-labelledby="who-h">
-            <div className={styles.head} data-reveal>
+            <div className={styles.head} data-fx="head">
               <p className={styles.eyebrow}>Paths</p>
               <h2 id="who-h" className={styles.h2}>
                 <Words text="Where are you now? There is a path that starts there." />
               </h2>
             </div>
-            <div data-reveal>
+            <div data-fx="scale">
               <PathTabs />
             </div>
           </section>
@@ -1067,15 +1178,22 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
           </section>
 
           <section className={styles.section} id="shelf" aria-labelledby="shelf-h">
-            <div className={styles.head} data-reveal>
+            <div className={styles.head} data-fx="head">
               <p className={styles.eyebrow}>On the shelf</p>
               <h2 id="shelf-h" className={styles.h2}>
                 <Words text="Ready to read today." />
               </h2>
             </div>
             <div className={styles.shelf}>
-              {ready.map((t) => (
-                <Link key={t.id} href={t.href} className={styles.book} style={accent(t.accent)} data-reveal data-glow>
+              {ready.map((t, i) => (
+                <Link
+                  key={t.id}
+                  href={t.href}
+                  className={styles.book}
+                  style={{ ...accent(t.accent), ...vars({ d: i % 3 }) }}
+                  data-fx="up"
+                  data-glow
+                >
                   <span className={styles.bookTop}>
                     <span className={styles.bookMark} aria-hidden="true">
                       {t.mark}
@@ -1093,7 +1211,13 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                   </span>
                 </Link>
               ))}
-              <Link href="/interview" className={styles.book} style={accent("red")} data-reveal data-glow>
+              <Link
+                href="/interview"
+                className={styles.book}
+                style={{ ...accent("red"), ...vars({ d: ready.length % 3 }) }}
+                data-fx="up"
+                data-glow
+              >
                 <span className={styles.bookTop}>
                   <span className={styles.bookMark} aria-hidden="true">
                     ◎
@@ -1111,7 +1235,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
               </Link>
             </div>
             {soon.length > 0 && (
-              <div className={styles.soonWrap} data-reveal>
+              <div className={styles.soonWrap} data-fx="right">
                 <p className={styles.label}>Being written next</p>
                 <ul className={styles.soon}>
                   {soon.map((t) => (
@@ -1130,22 +1254,22 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
           </section>
 
           <section className={styles.section} aria-labelledby="tools-h">
-            <div className={styles.head} data-reveal>
+            <div className={styles.head} data-fx="head">
               <p className={styles.eyebrow}>Practice tools</p>
               <h2 id="tools-h" className={styles.h2}>
                 <Words text="Reading is half of it." />
               </h2>
             </div>
             <div className={styles.tools}>
-              {TOOLS.map((x) => (
+              {TOOLS.map((x, i) => (
                 <Link
                   key={x.href}
                   href={x.href}
                   className={styles.tool}
                   data-glow
-                  style={accent(x.tone)}
+                  style={{ ...accent(x.tone), ...vars({ d: i }) }}
                   prefetch={false}
-                  data-reveal
+                  data-fx="flip"
                 >
                   <span className={styles.cellIcon}>
                     <Icon d={x.icon} />
@@ -1158,20 +1282,20 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
           </section>
 
           <section className={styles.section} aria-labelledby="vs-h">
-            <div className={styles.head} data-reveal>
+            <div className={styles.head} data-fx="head">
               <p className={styles.eyebrow}>Why not just…</p>
               <h2 id="vs-h" className={styles.h2}>
                 <Words text="What you already tried, and what is different here." />
               </h2>
             </div>
-            <div className={styles.compare} data-reveal>
+            <div className={styles.compare} data-fx="compare">
               <div className={styles.compareHead} aria-hidden="true">
                 <span />
                 <span>The usual way</span>
                 <span>{SITE_NAME}</span>
               </div>
-              {COMPARE.map((c) => (
-                <div key={c.them} className={styles.compareRow}>
+              {COMPARE.map((c, i) => (
+                <div key={c.them} className={styles.compareRow} style={vars({ r: i })}>
                   <h3>{c.them}</h3>
                   <p className={styles.them}>
                     <span aria-hidden="true">✗</span> {c.gap}
@@ -1186,7 +1310,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
 
           <section className={styles.section} id="faq" aria-labelledby="faq-h">
             <div className={styles.faqGrid}>
-              <div className={styles.head} data-reveal>
+              <div className={styles.head} data-fx="head">
                 <p className={styles.eyebrow}>Questions</p>
                 <h2 id="faq-h" className={styles.h2}>
                   <Words text="Before you start." />
@@ -1194,8 +1318,8 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                 <p className={styles.sub}>Everything people ask before opening their first chapter.</p>
               </div>
               <div className={styles.faq}>
-                {faqs.map((f) => (
-                  <details key={f.q} className={styles.faqItem} data-reveal>
+                {faqs.map((f, i) => (
+                  <details key={f.q} className={styles.faqItem} data-fx="right" style={vars({ d: i * 0.6 })}>
                     <summary>{f.q}</summary>
                     <p>
                       {f.a}
@@ -1212,7 +1336,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             </div>
           </section>
 
-          <section className={styles.cta} aria-labelledby="cta-h" data-reveal>
+          <section className={styles.cta} aria-labelledby="cta-h" data-fx="scale">
             <h2 id="cta-h" className={styles.h2}>
               <Words text="Ten minutes from now, you could understand one thing properly." />
             </h2>
@@ -1229,7 +1353,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
         </main>
 
         <footer className={styles.foot}>
-          <svg className={styles.bigBrand} viewBox="0 0 1000 190" aria-hidden="true" focusable="false">
+          <svg className={styles.bigBrand} viewBox="0 0 1000 190" aria-hidden="true" focusable="false" data-fx="brand">
             <text x="500" y="150" textAnchor="middle">
               {SITE_NAME}
             </text>
