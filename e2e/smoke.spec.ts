@@ -817,10 +817,10 @@ test("the home page reads as a landing page and every path leads somewhere real"
   await expect(faq).toContainText("There is no account");
 
   await page.getByRole("button", { name: /Run tests/ }).click();
-  await expect(page.getByText("3 / 3 passed")).toBeVisible();
+  await expect(page.getByText("3 / 3 passed", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Break it" }).click();
   await page.getByRole("button", { name: /Run tests/ }).click();
-  await expect(page.getByText("1 / 3 passed")).toBeVisible();
+  await expect(page.getByText("1 / 3 passed", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Reset" }).click();
 
   await page.getByRole("tab", { name: /Mid/ }).click();

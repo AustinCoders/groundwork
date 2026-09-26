@@ -137,6 +137,7 @@ function useReveal(root: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
     const host = root.current;
     if (!host || !prefersMotion() || !("IntersectionObserver" in window)) return;
+    if (CSS.supports("animation-timeline: view()")) return;
     const items = Array.from(host.querySelectorAll<HTMLElement>("[data-reveal]"));
     const below = items.filter((el) => el.getBoundingClientRect().top > window.innerHeight * 0.9);
     below.forEach((el) => el.setAttribute("data-hidden", ""));
@@ -385,62 +386,6 @@ function ProductWindow() {
   );
 }
 
-function StoryVisual({ step }: { step: number }) {
-  if (step === 0)
-    return (
-      <div className={styles.vis} aria-hidden="true">
-        {["What the engine does", "Execution context", "Scope", "Closures", "Async & the event loop"].map((t, i) => (
-          <span
-            key={t}
-            className={styles.layer}
-            style={{ "--i": i } as React.CSSProperties}
-            data-top={i === 3 || undefined}
-          >
-            {t}
-          </span>
-        ))}
-        <small>Each layer only uses words from the ones below it.</small>
-      </div>
-    );
-  if (step === 1)
-    return (
-      <div className={styles.vis} aria-hidden="true">
-        <div className={styles.visTests}>
-          {["returns a promise", "resolves in order", "rejects on the first failure", "handles an empty list"].map(
-            (t, i) => (
-              <span key={t} style={{ "--i": i } as React.CSSProperties}>
-                <b>✓</b> {t}
-              </span>
-            )
-          )}
-        </div>
-        <strong className={styles.visBig}>4 / 4 passed</strong>
-        <small>Your answer, graded by the same tests as the real exercise.</small>
-      </div>
-    );
-  if (step === 2)
-    return (
-      <div className={styles.vis} aria-hidden="true">
-        <div className={styles.chat}>
-          <p data-who="them">Build me a debounce.</p>
-          <p data-who="you">Timer, clear on each call, fire after the wait.</p>
-          <p data-who="them">Now the first call should fire immediately. And cancel?</p>
-        </div>
-        <small>Every round shows the follow-up they push with next.</small>
-      </div>
-    );
-  return (
-    <div className={styles.vis} aria-hidden="true">
-      <div className={styles.cal}>
-        {Array.from({ length: 28 }, (_, i) => (
-          <span key={i} data-on={[2, 5, 9, 12, 16, 23].includes(i) || undefined} data-due={i === 23 || undefined} />
-        ))}
-      </div>
-      <small>Read today, back in 3 days, then 7, 21 and 60.</small>
-    </div>
-  );
-}
-
 const STORY = [
   {
     k: "Read",
@@ -458,59 +403,234 @@ const STORY = [
     body: "The interview book shows how each round really goes: the question, the wrong answer that loses the room, and what they push with next.",
   },
   {
-    k: "Remember",
+    k: "Keep",
     title: "And it comes back before you forget.",
     body: "Chapters you finish come back for review on a spaced schedule, so what you read in week one is still there on interview day.",
   },
 ];
 
-function Story() {
-  const [active, setActive] = useState(0);
-  const refs = useRef<(HTMLElement | null)[]>([]);
-  useEffect(() => {
-    if (!("IntersectionObserver" in window)) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) setActive(Number((e.target as HTMLElement).dataset.step));
-        });
-      },
-      { rootMargin: "-45% 0px -45% 0px" }
-    );
-    refs.current.forEach((el) => el && io.observe(el));
-    return () => io.disconnect();
-  }, []);
-  return (
-    <div className={styles.story}>
-      <ol className={styles.storySteps}>
-        {STORY.map((s, i) => (
-          <li
-            key={s.k}
-            data-step={i}
-            data-active={i === active || undefined}
-            ref={(el) => {
-              refs.current[i] = el;
-            }}
-          >
-            <span className={styles.storyKey}>
-              {i + 1} · {s.k}
+const LAYERS = ["What the engine does", "Execution context", "Scope", "Closures", "Async & the event loop"];
+const RUN_TESTS = ["returns a promise", "resolves in order", "rejects on the first failure", "handles an empty list"];
+const CHAT: { who: "them" | "you"; text: string }[] = [
+  { who: "them", text: "Build me a debounce." },
+  { who: "you", text: "A timer, cleared on every call, fired after the wait." },
+  { who: "them", text: "Good. Now the first call fires at once. And how do I cancel it?" },
+];
+const REVIEW_DAYS = [0, 3, 10, 31];
+
+function vars(v: Record<string, number>): React.CSSProperties {
+  return Object.fromEntries(Object.entries(v).map(([k, n]) => [`--${k}`, n])) as React.CSSProperties;
+}
+
+function StoryVisual({ step }: { step: number }) {
+  if (step === 0)
+    return (
+      <div className={styles.vis} aria-hidden="true">
+        <div className={styles.layers}>
+          {LAYERS.map((t, i) => (
+            <span key={t} className={styles.layer} style={vars({ i })} data-top={i === 3 || undefined}>
+              <b>{String(i + 1).padStart(2, "0")}</b>
+              {t}
             </span>
-            <h3>{s.title}</h3>
-            <p>{s.body}</p>
-            <div className={styles.storyInline}>
-              <StoryVisual step={i} />
-            </div>
-          </li>
-        ))}
-      </ol>
-      <div className={styles.storyStage}>
-        <div className={styles.storySticky} key={active}>
-          <StoryVisual step={active} />
+          ))}
         </div>
+        <small>Each layer only uses words from the ones below it.</small>
       </div>
+    );
+  if (step === 1)
+    return (
+      <div className={styles.vis} aria-hidden="true">
+        <div className={styles.visTests}>
+          {RUN_TESTS.map((t, i) => (
+            <span key={t} style={vars({ i })}>
+              <i>✓</i>
+              {t}
+            </span>
+          ))}
+        </div>
+        <span className={styles.visBar}>
+          <span />
+        </span>
+        <strong className={styles.visBig}>4 / 4 passed</strong>
+      </div>
+    );
+  if (step === 2)
+    return (
+      <div className={styles.vis} aria-hidden="true">
+        <div className={styles.chat}>
+          {CHAT.map((m, i) => (
+            <p key={m.text} data-who={m.who} style={vars({ i })}>
+              {m.text}
+            </p>
+          ))}
+          <span className={styles.typing}>
+            <i />
+            <i />
+            <i />
+          </span>
+        </div>
+        <small>Every round shows the follow-up they push with next.</small>
+      </div>
+    );
+  return (
+    <div className={styles.vis} aria-hidden="true">
+      <div className={styles.cal}>
+        {Array.from({ length: 35 }, (_, i) => {
+          const k = REVIEW_DAYS.indexOf(i);
+          return <span key={i} data-on={k >= 0 || undefined} style={k >= 0 ? vars({ k }) : undefined} />;
+        })}
+      </div>
+      <small>Read today. Back after 3 days, then 7 more, then 21.</small>
     </div>
   );
 }
+
+function Story() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
+  const activeRef = useRef(0);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const r = el.getBoundingClientRect();
+      const total = r.height - window.innerHeight;
+      const prog = total > 0 ? Math.min(1, Math.max(0, -r.top / total)) : 1;
+      const x = prog * STORY.length;
+      const step = Math.min(STORY.length - 1, Math.floor(x));
+      const local = Math.min(1, Math.max(0, (x - step) * 1.35));
+      el.style.setProperty("--progress", prog.toFixed(4));
+      el.style.setProperty("--p", local.toFixed(4));
+      if (step !== activeRef.current) {
+        activeRef.current = step;
+        setActive(step);
+      }
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+
+  function jump(i: number) {
+    const el = ref.current;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    const total = el.offsetHeight - window.innerHeight;
+    window.scrollTo({ top: top + (total * (i + 0.55)) / STORY.length, behavior: "smooth" });
+  }
+
+  const state = (i: number) => (i < active ? "past" : i === active ? "active" : "next");
+
+  return (
+    <>
+      <div className={styles.story} ref={ref} style={vars({ steps: STORY.length })}>
+        <div className={styles.pin}>
+          <div className={styles.pinText}>
+            <div className={styles.rail} aria-label="Steps" role="group">
+              {STORY.map((s, i) => (
+                <button
+                  key={s.k}
+                  type="button"
+                  aria-current={i === active ? "step" : undefined}
+                  className={styles.railStep}
+                  style={vars({ i })}
+                  onClick={() => jump(i)}
+                >
+                  <span className={styles.railFill} />
+                  <b>
+                    {String(i + 1).padStart(2, "0")} · {s.k}
+                  </b>
+                </button>
+              ))}
+            </div>
+            <div className={styles.pinCopy}>
+              {STORY.map((s, i) => (
+                <article key={s.k} data-state={state(i)} aria-hidden={i !== active}>
+                  <span className={styles.bigNum} aria-hidden="true">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <h3>{s.title}</h3>
+                  <p>{s.body}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+          <div className={styles.pinStage}>
+            {STORY.map((s, i) => (
+              <div key={s.k} className={styles.stageItem} data-state={state(i)}>
+                <StoryVisual step={i} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <ol className={styles.storyList}>
+        {STORY.map((s, i) => (
+          <li key={s.k} data-reveal>
+            <span className={styles.storyKey}>
+              {String(i + 1).padStart(2, "0")} · {s.k}
+            </span>
+            <h3>{s.title}</h3>
+            <p>{s.body}</p>
+            <StoryVisual step={i} />
+          </li>
+        ))}
+      </ol>
+    </>
+  );
+}
+
+const TOPIC_WORDS = ["JavaScript", "React", "DSA", "System Design", "Git"];
+
+function Rotator() {
+  const [i, setI] = useState(0);
+  const [width, setWidth] = useState<number | null>(null);
+  const measure = useRef<(HTMLSpanElement | null)[]>([]);
+  useEffect(() => {
+    if (!prefersMotion()) return;
+    const t = setInterval(() => setI((n) => (n + 1) % TOPIC_WORDS.length), 2600);
+    return () => clearInterval(t);
+  }, []);
+  useEffect(() => {
+    const el = measure.current[i];
+    if (!el) return;
+    const w = el.offsetWidth;
+    const id = requestAnimationFrame(() => setWidth(w + 2));
+    return () => cancelAnimationFrame(id);
+  }, [i]);
+  return (
+    <span className={styles.rotator} style={width ? { width } : undefined}>
+      <span className={styles.rotWord} key={i}>
+        {TOPIC_WORDS[i]}
+      </span>
+      <span className={styles.rotMeasure} aria-hidden="true">
+        {TOPIC_WORDS.map((w, k) => (
+          <span
+            key={w}
+            ref={(el) => {
+              measure.current[k] = el;
+            }}
+          >
+            {w}
+          </span>
+        ))}
+      </span>
+    </span>
+  );
+}
+
+const HEADLINE = "Walk into the interview ready.".split(" ");
 
 function PathTabs() {
   const [active, setActive] = useState(0);
@@ -627,14 +747,35 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
   const [scrolled, setScrolled] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
   const pageRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
   const hours = Math.round(stats.minutes / 60);
   useReveal(pageRef);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
+    const hero = heroRef.current;
+    const still = !prefersMotion();
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      setScrolled(window.scrollY > 8);
+      const win = hero?.querySelector<HTMLElement>("[data-window]");
+      if (!hero || !win) return;
+      const top = win.getBoundingClientRect().top;
+      const h = window.innerHeight;
+      const p = still ? 1 : Math.min(1, Math.max(0, 1 - (top - h * 0.12) / (h * 0.62)));
+      hero.style.setProperty("--hero-p", p.toFixed(4));
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
 
   const toolText: Record<string, string> = {
@@ -707,14 +848,23 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
         </header>
 
         <main id="main">
-          <section className={styles.hero}>
+          <section className={styles.hero} ref={heroRef}>
             <WelcomeBack />
             <p className={styles.kicker}>
               <span className={styles.dot} aria-hidden="true" /> Free · no sign-up · {stats.writtenChapters} chapters
               written
             </p>
             <h1 className={styles.h1}>
-              Understand JavaScript properly. <span className={styles.accentText}>Walk into the interview ready.</span>
+              <span className={styles.h1Top}>
+                Understand <Rotator /> properly.
+              </span>
+              <span className={styles.h1Main}>
+                {HEADLINE.map((w, i) => (
+                  <span key={w + i} className={styles.word} style={vars({ i })}>
+                    {w}{" "}
+                  </span>
+                ))}
+              </span>
             </h1>
             <p className={styles.lead}>
               Notes that never use a word before explaining it, exercises graded by real tests right in the page, and an
@@ -732,7 +882,21 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
               ↓ the editor below really runs. Break it and see.
             </p>
             <div className={styles.windowWrap}>
-              <ProductWindow />
+              <div className={styles.windowTilt} data-window>
+                <ProductWindow />
+              </div>
+              <span className={`${styles.chip} ${styles.chipA}`} aria-hidden="true">
+                <b>✓</b> 3 / 3 passed
+              </span>
+              <span className={`${styles.chip} ${styles.chipB}`} aria-hidden="true">
+                🔥 6-day streak
+              </span>
+              <span className={`${styles.chip} ${styles.chipC}`} aria-hidden="true">
+                <b>R2</b> Machine coding
+              </span>
+              <span className={`${styles.chip} ${styles.chipD}`} aria-hidden="true">
+                +25 XP
+              </span>
             </div>
             <dl className={styles.stats}>
               {[
