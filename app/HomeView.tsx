@@ -6,13 +6,13 @@ import { SiteDrawer } from "@/components/SiteDrawer";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { formatSpan, plural } from "@/lib/format";
 import { prefersMotion } from "@/lib/dom";
+import { smoothScroll, useScrollFx } from "@/lib/scrollFx";
 import { computeStats } from "@/lib/gamification";
 import { useProgressValue } from "@/lib/hooks";
 import { progress } from "@/lib/storage";
 import { SITE_NAME } from "@/lib/site";
 import { useGuidesNav } from "@/lib/topicNav";
 import type { SiteStats } from "@/lib/topicStats";
-import "lenis/dist/lenis.css";
 import styles from "./home.module.css";
 
 export interface ShelfCard {
@@ -132,95 +132,6 @@ function Icon({ d, size = 22 }: { d: string; size?: number }) {
       <path d={d} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
-}
-
-let smooth: { scrollTo: (y: number) => void; stop: () => void; start: () => void } | null = null;
-
-function useScrollFx(root: React.RefObject<HTMLElement | null>) {
-  useEffect(() => {
-    const host = root.current;
-    if (!host || !prefersMotion() || !("IntersectionObserver" in window)) return;
-    host.setAttribute("data-fx", "on");
-    const bar = host.querySelector<HTMLElement>("[data-scrollbar]");
-    const els = Array.from(host.querySelectorAll<HTMLElement>("[data-fx]"));
-    const live = new Set<HTMLElement>();
-    const clamp = (n: number) => Math.min(1, Math.max(0, n));
-
-    const measure = (el: HTMLElement, h: number, y: number, max: number) => {
-      const r = el.getBoundingClientRect();
-      const start = r.top + y - h;
-      const travel = Math.min(h * 0.32, max - start);
-      const enter = start <= 0 || travel <= 0 ? 1 : clamp((y - start) / travel);
-      el.style.setProperty("--in", enter.toFixed(3));
-      el.style.setProperty("--vp", clamp((h - r.top) / (h + r.height)).toFixed(3));
-      el.style.setProperty("--out", clamp(-r.top / Math.max(1, r.height)).toFixed(3));
-    };
-
-    const frame = (all: boolean) => {
-      const h = window.innerHeight;
-      const y = window.scrollY;
-      const max = document.documentElement.scrollHeight - h;
-      (all ? els : live).forEach((el) => measure(el, h, y, max));
-      bar?.style.setProperty("--sp", (max > 0 ? y / max : 0).toFixed(4));
-    };
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) live.add(e.target as HTMLElement);
-          else live.delete(e.target as HTMLElement);
-        });
-        frame(true);
-      },
-      { rootMargin: "15% 0px 15% 0px" }
-    );
-    els.forEach((el) => io.observe(el));
-    frame(true);
-
-    let raf = 0;
-    const onScroll = () => {
-      if (!raf)
-        raf = requestAnimationFrame(() => {
-          raf = 0;
-          frame(false);
-        });
-    };
-    const onResize = () => frame(true);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onResize);
-
-    let dead = false;
-    let loop = 0;
-    let lenis: { raf: (t: number) => void; destroy: () => void } | null = null;
-    import("lenis").then(({ default: Lenis }) => {
-      if (dead) return;
-      const l = new Lenis({
-        lerp: 0.085,
-        smoothWheel: true,
-        anchors: { offset: -64 },
-        prevent: (node) => Boolean(node.closest("[role=dialog], textarea, [data-no-smooth]")),
-      });
-      lenis = l;
-      smooth = { scrollTo: (y) => l.scrollTo(y), stop: () => l.stop(), start: () => l.start() };
-      const tick = (t: number) => {
-        l.raf(t);
-        loop = requestAnimationFrame(tick);
-      };
-      loop = requestAnimationFrame(tick);
-    });
-
-    return () => {
-      dead = true;
-      cancelAnimationFrame(raf);
-      cancelAnimationFrame(loop);
-      lenis?.destroy();
-      smooth = null;
-      io.disconnect();
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onResize);
-      host.removeAttribute("data-fx");
-    };
-  }, [root]);
 }
 
 const GOOD_CODE = `function counter() {
@@ -555,8 +466,7 @@ function Story({ children }: { children: React.ReactNode }) {
     const top = el.getBoundingClientRect().top + window.scrollY;
     const total = el.offsetHeight - window.innerHeight;
     const target = top + (total * (i + 0.55)) / STORY.length;
-    if (smooth) smooth.scrollTo(target);
-    else window.scrollTo({ top: target, behavior: "smooth" });
+    smoothScroll.to(target);
   }
 
   const state = (i: number) => (i < active ? "past" : i === active ? "active" : "next");
@@ -799,7 +709,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
   const [scrolled, setScrolled] = useState(false);
   const closeMenu = useCallback(() => {
     setMenuOpen(false);
-    smooth?.start();
+    smoothScroll.start();
   }, []);
   const pageRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
@@ -891,7 +801,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             aria-haspopup="dialog"
             aria-expanded={menuOpen}
             onClick={() => {
-              smooth?.stop();
+              smoothScroll.stop();
               setMenuOpen(true);
             }}
           >
