@@ -6,6 +6,9 @@ import { SiteDrawer } from "@/components/SiteDrawer";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { formatSpan, plural } from "@/lib/format";
 import { prefersMotion } from "@/lib/dom";
+import { computeStats } from "@/lib/gamification";
+import { useProgressValue } from "@/lib/hooks";
+import { progress } from "@/lib/storage";
 import { SITE_NAME } from "@/lib/site";
 import { useGuidesNav } from "@/lib/topicNav";
 import type { SiteStats } from "@/lib/topicStats";
@@ -46,9 +49,16 @@ const PERSONAS = [
     emoji: "🌱",
     title: "Going for your first job",
     pain: "You can make things work, but closures, this and the event loop still feel like magic, and the online assessment scares you.",
+    gains: [
+      "Explain what happens before line 1 runs",
+      "Solve array and string problems with a pattern, not luck",
+      "Walk into the online assessment knowing its format",
+    ],
     path: [
-      { label: "JavaScript, from the engine up", href: "/level/js" },
-      { label: "DSA patterns, not puzzle answers", href: "/level/dsa" },
+      { label: "How your code actually runs", href: "/notes/execution-context" },
+      { label: "Closures, finally clear", href: "/notes/closures" },
+      { label: "Async and the event loop", href: "/notes/basic-async" },
+      { label: "Two pointers, the first real pattern", href: "/dsa/dsa-two-pointers" },
       { label: "The online assessment round", href: "/interview/r1oa" },
     ],
   },
@@ -58,10 +68,17 @@ const PERSONAS = [
     emoji: "🚀",
     title: "Switching after 2–5 years",
     pain: "You ship features every week, then freeze when someone asks why React re-rendered, or to build a widget live in 90 minutes.",
+    gains: [
+      "Say exactly why a component re-rendered, and stop it",
+      "Build a working widget live, under a clock",
+      "Talk through a cache or a queue without hand-waving",
+    ],
     path: [
-      { label: "React: what really triggers a render", href: "/level/react" },
+      { label: "Why React re-renders, and memo", href: "/react/react-memoisation" },
+      { label: "Async, properly", href: "/notes/async-properly" },
       { label: "The machine coding round", href: "/interview/r2" },
-      { label: "System design, trade-offs first", href: "/level/system-design" },
+      { label: "Caching fundamentals", href: "/system-design/sysdes-caching-fundamentals" },
+      { label: "The system design round", href: "/interview/r8" },
     ],
   },
   {
@@ -70,9 +87,16 @@ const PERSONAS = [
     emoji: "🏔️",
     title: "Aiming at the ₹50L bar",
     pain: "The questions stop being about syntax. It is distributed systems, runtime internals, and proving you can lead without the title.",
+    gains: [
+      "Reason about consensus, partitions and failure out loud",
+      "Explain the runtime under React, not just the API",
+      "Tell staff-level stories that survive the follow-up",
+    ],
     path: [
       { label: "What changes at ₹50L", href: "/interview/s0" },
-      { label: "Distributed systems design", href: "/interview/s2" },
+      { label: "React Fiber, the engine underneath", href: "/react/react-fiber" },
+      { label: "Distributed consensus", href: "/system-design/sysdes-distributed-consensus" },
+      { label: "Distributed systems design round", href: "/interview/s2" },
       { label: "Behavioural at staff level", href: "/interview/s4" },
     ],
   },
@@ -172,10 +196,139 @@ function Counter({ value, suffix = "" }: { value: number; suffix?: string }) {
   );
 }
 
+const GOOD_CODE = `function counter() {
+  let n = 0;
+  return () => ++n;
+}`;
+
+const BROKEN_CODE = `let n = 0;
+function counter() {
+  return () => ++n;
+}`;
+
+const DEMO_TESTS = [
+  {
+    name: "counts up from 1",
+    body: "const c = counter(); const a = c(), b = c(); if (a !== 1 || b !== 2) throw new Error(`got ${a} then ${b}`);",
+  },
+  {
+    name: "each counter keeps its own n",
+    body: "const x = counter(), y = counter(); x(); x(); const v = y(); if (v !== 1) throw new Error(`a new counter started at ${v}`);",
+  },
+  {
+    name: "survives a thousand calls",
+    body: "const c = counter(); let v = 0; for (let i = 0; i < 1000; i++) v = c(); if (v !== 1000) throw new Error(`ended at ${v}`);",
+  },
+];
+
+type DemoResult = { name: string; ok: boolean; message?: string };
+
+function TryIt() {
+  const [code, setCode] = useState(GOOD_CODE);
+  const [results, setResults] = useState<DemoResult[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [running, setRunning] = useState(false);
+
+  async function runTests() {
+    setRunning(true);
+    setError(null);
+    const { run } = await import("@/lib/runner");
+    run({
+      code,
+      tests: DEMO_TESTS,
+      timeout: 3000,
+      onConsole: (e) => {
+        if (e.kind === "error") setError(e.text);
+      },
+      onDone: (p) => {
+        setRunning(false);
+        setResults(
+          p.results.length
+            ? p.results.map((r) => ({ name: r.name, ok: r.ok, message: r.message }))
+            : DEMO_TESTS.map((t) => ({ name: t.name, ok: false }))
+        );
+      },
+    });
+  }
+
+  function load(next: string) {
+    setCode(next);
+    setResults(null);
+    setError(null);
+  }
+
+  const passed = results?.filter((r) => r.ok).length ?? 0;
+  const allGood = results !== null && passed === DEMO_TESTS.length;
+
+  return (
+    <div
+      className={`${styles.paper} ${styles.paperCode}`}
+      data-state={results ? (allGood ? "pass" : "fail") : undefined}
+    >
+      <div className={styles.codeBar}>
+        <span aria-hidden="true" />
+        <span aria-hidden="true" />
+        <span aria-hidden="true" />
+        <em>counter.js</em>
+        <button type="button" className={styles.runPill} onClick={runTests} disabled={running}>
+          {running ? "Running…" : "▶ Run tests"}
+        </button>
+      </div>
+      <label className="visually-hidden" htmlFor="try-code">
+        Code to test
+      </label>
+      <textarea
+        id="try-code"
+        className={styles.codeInput}
+        value={code}
+        spellCheck={false}
+        rows={4}
+        onChange={(e) => {
+          setCode(e.target.value);
+          setResults(null);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            runTests();
+          }
+        }}
+      />
+      <ul className={styles.tests} aria-live="polite">
+        {(results ?? DEMO_TESTS.map((t) => ({ name: t.name, ok: false, pending: true }))).map((r) => (
+          <li key={r.name} data-ok={"pending" in r ? undefined : r.ok}>
+            <span aria-hidden="true">{"pending" in r ? "○" : r.ok ? "✓" : "✗"}</span> {r.name}
+            {"message" in r && r.message && !r.ok && <em> · {r.message}</em>}
+          </li>
+        ))}
+      </ul>
+      {error && <p className={styles.runError}>{error}</p>}
+      <div className={styles.tryFoot}>
+        {results ? (
+          <strong className={allGood ? styles.passNote : styles.failNote}>
+            {passed} / {DEMO_TESTS.length} passed
+          </strong>
+        ) : (
+          <span>Edit it, then run the real tests.</span>
+        )}
+        {code === GOOD_CODE ? (
+          <button type="button" className={styles.linkBtn} onClick={() => load(BROKEN_CODE)}>
+            Break it
+          </button>
+        ) : (
+          <button type="button" className={styles.linkBtn} onClick={() => load(GOOD_CODE)}>
+            Reset
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function HeroArt({ interview }: { interview: HomeViewProps["interview"] }) {
   return (
-    <div className={styles.art} aria-hidden="true">
-      <div className={`${styles.paper} ${styles.paperNote}`}>
+    <div className={styles.art}>
+      <div className={`${styles.paper} ${styles.paperNote}`} aria-hidden="true">
         <span className={styles.tape} />
         <span className={styles.paperKicker}>JavaScript · Beginner · B13</span>
         <p className={styles.paperTitle}>
@@ -183,48 +336,114 @@ function HeroArt({ interview }: { interview: HomeViewProps["interview"] }) {
         </p>
         <span className={styles.lineLong} />
         <span className={styles.lineMid} />
-        <span className={styles.lineShort} />
       </div>
-      <div className={`${styles.paper} ${styles.paperCode}`}>
-        <div className={styles.codeBar}>
-          <span />
-          <span />
-          <span />
-          <em>counter.js</em>
-          <b className={styles.runPill}>▶ Run</b>
-        </div>
-        <pre>
-          <code>
-            <b>function</b> counter() {"{"}
-            {"\n"}
-            {"  "}
-            <b>let</b> n = <i>0</i>;{"\n"}
-            {"  "}
-            <b>return</b> () =&gt; ++n;{"\n"}
-            {"}"}
-          </code>
-        </pre>
-        <ul className={styles.tests}>
-          <li>✓ counts up from 1</li>
-          <li>✓ each counter keeps its own n</li>
-          <li>✓ survives a thousand calls</li>
-        </ul>
-        <span className={styles.stamp}>3 / 3 passed</span>
-      </div>
-      <div className={`${styles.paper} ${styles.paperRound}`}>
+      <TryIt />
+      <div className={`${styles.paper} ${styles.paperRound}`} aria-hidden="true">
         <span className={styles.paperKicker}>Round 2 of {interview.rounds} · Machine coding</span>
         <p className={styles.paperQ}>“Now make it work with two browser tabs open.”</p>
-        <span className={styles.followUp}>the follow-up they push with next →</span>
       </div>
-      <span className={styles.xp}>+25 XP</span>
-      <svg className={styles.doodleArrow} viewBox="0 0 120 80">
+      <span className={styles.doodleNote} aria-hidden="true">
+        go on, run it
+      </span>
+      <svg className={styles.doodleArrow} viewBox="0 0 120 80" aria-hidden="true">
         <path d="M8 12 C 40 4, 86 20, 100 62" />
         <path d="M86 56 L 101 64 L 106 47" />
       </svg>
-      <span className={styles.doodleNote}>run it right here</span>
-      <svg className={styles.doodleStar} viewBox="0 0 24 24">
+      <svg className={styles.doodleStar} viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" />
       </svg>
+    </div>
+  );
+}
+
+function WelcomeBack() {
+  const key = useProgressValue(() => {
+    const s = computeStats();
+    const due = progress.dueForReview(Object.keys(progress.all().chapters)).length;
+    return s.chaptersRead + s.exercisesSolved > 0
+      ? `${s.level}|${s.chaptersRead}|${s.exercisesSolved}|${s.streak}|${due}`
+      : "";
+  }, "");
+  if (!key) return null;
+  const [level, read, solved, streak, due] = key.split("|").map(Number);
+  return (
+    <div className={styles.welcome}>
+      <span className={styles.welcomeHi} aria-hidden="true">
+        👋
+      </span>
+      <p>
+        <strong>Welcome back.</strong> Level {level} · {plural(read, "chapter")} read · {plural(solved, "problem")}{" "}
+        solved{streak > 0 ? ` · 🔥 ${streak}-day streak` : ""}
+      </p>
+      <Link href={due > 0 ? "/review" : "/progress"}>{due > 0 ? `${due} due for review →` : "Your progress →"}</Link>
+    </div>
+  );
+}
+
+function PathTabs() {
+  const [active, setActive] = useState(0);
+  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  const p = PERSONAS[active];
+  function onKey(e: React.KeyboardEvent) {
+    const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+    if (!step) return;
+    e.preventDefault();
+    const next = (active + step + PERSONAS.length) % PERSONAS.length;
+    setActive(next);
+    tabs.current[next]?.focus();
+  }
+  return (
+    <div className={styles.paths} style={accent(p.tone)}>
+      <div className={styles.tabs} role="tablist" aria-label="Where are you now?" onKeyDown={onKey}>
+        {PERSONAS.map((x, i) => (
+          <button
+            key={x.tag}
+            ref={(el) => {
+              tabs.current[i] = el;
+            }}
+            type="button"
+            role="tab"
+            id={`path-tab-${i}`}
+            aria-selected={i === active}
+            aria-controls="path-panel"
+            tabIndex={i === active ? 0 : -1}
+            className={styles.tab}
+            style={accent(x.tone)}
+            onClick={() => setActive(i)}
+          >
+            <span aria-hidden="true">{x.emoji}</span>
+            <span>
+              <b>{x.tag}</b>
+              <small>{x.title}</small>
+            </span>
+          </button>
+        ))}
+      </div>
+      <div className={styles.panel} role="tabpanel" id="path-panel" aria-labelledby={`path-tab-${active}`} key={active}>
+        <div className={styles.panelText}>
+          <h3>{p.title}</h3>
+          <p className={styles.pain}>{p.pain}</p>
+          <p className={styles.pathLabel}>After this path you can</p>
+          <ul className={styles.gains}>
+            {p.gains.map((g) => (
+              <li key={g}>{g}</li>
+            ))}
+          </ul>
+          <Link href={p.path[0].href} className={`${styles.btn} ${styles.btnBig}`}>
+            Start this path <span className={styles.btnArrow}>→</span>
+          </Link>
+        </div>
+        <ol className={styles.road}>
+          {p.path.map((step, i) => (
+            <li key={step.href} style={{ "--i": i } as React.CSSProperties}>
+              <Link href={step.href}>
+                <span className={styles.roadNum}>{i + 1}</span>
+                <span>{step.label}</span>
+              </Link>
+            </li>
+          ))}
+        </ol>
+      </div>
     </div>
   );
 }
@@ -399,6 +618,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             <span className={`${styles.blob} ${styles.blobB}`} aria-hidden="true" />
             <span className={`${styles.blob} ${styles.blobC}`} aria-hidden="true" />
             <div className={styles.heroCopy}>
+              <WelcomeBack />
               <p className={styles.kicker}>
                 <span className={styles.dot} aria-hidden="true" /> Free · no sign-up · {stats.writtenChapters} chapters
                 written
@@ -413,9 +633,8 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                 </span>
               </h1>
               <p className={styles.lead}>
-                {SITE_NAME} is a study site for developers who want the real understanding, not the cheat sheet. Notes
-                that never use a word before explaining it, exercises you run and grade right in the page, and an
-                interview book that walks every round, from the screening call to the offer number.
+                Notes that never use a word before explaining it, exercises graded by real tests right in the page, and
+                an interview book that walks every round up to the offer. Try it: the code on the right really runs.
               </p>
               <div className={styles.actions}>
                 <Link href="/level/js" className={`${styles.btn} ${styles.btnBig}`}>
@@ -559,50 +778,33 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             </div>
           </section>
 
-          <section className={`${styles.section} ${styles.loop}`} id="loop" aria-labelledby="loop-h">
-            <div className={styles.head} data-reveal>
-              <p className={styles.eyebrow}>The interview book</p>
-              <h2 id="loop-h" className={styles.h2}>
-                From the first call to the offer, round by round.
-              </h2>
-              <p className={styles.sub}>
-                What each round is really testing, the answer, the code, the wrong answer that loses the room, and the
-                follow-up they push with next. Pick any round to read it.
-              </p>
-            </div>
-            <div data-reveal>
-              <Journey />
-            </div>
-          </section>
+          <div className={styles.band}>
+            <section className={`${styles.section} ${styles.loop}`} id="loop" aria-labelledby="loop-h">
+              <div className={styles.head} data-reveal>
+                <p className={styles.eyebrow}>The interview book</p>
+                <h2 id="loop-h" className={styles.h2}>
+                  From the first call to the offer, round by round.
+                </h2>
+                <p className={styles.sub}>
+                  What each round is really testing, the answer, the code, the wrong answer that loses the room, and the
+                  follow-up they push with next. Pick any round to read it.
+                </p>
+              </div>
+              <div data-reveal>
+                <Journey />
+              </div>
+            </section>
+          </div>
 
           <section className={styles.section} id="who" aria-labelledby="who-h">
             <div className={styles.head} data-reveal>
               <p className={styles.eyebrow}>Who it is for</p>
               <h2 id="who-h" className={styles.h2}>
-                Wherever you are, there is a path that starts there.
+                Where are you now? There is a path that starts there.
               </h2>
             </div>
-            <div className={styles.personas}>
-              {PERSONAS.map((p) => (
-                <article key={p.tag} className={styles.persona} style={accent(p.tone)} data-reveal>
-                  <div className={styles.personaTop}>
-                    <span className={styles.personaEmoji} aria-hidden="true">
-                      {p.emoji}
-                    </span>
-                    <span className={styles.tag}>{p.tag}</span>
-                  </div>
-                  <h3>{p.title}</h3>
-                  <p className={styles.pain}>{p.pain}</p>
-                  <p className={styles.pathLabel}>Your path</p>
-                  <ol className={styles.path}>
-                    {p.path.map((step) => (
-                      <li key={step.href}>
-                        <Link href={step.href}>{step.label}</Link>
-                      </li>
-                    ))}
-                  </ol>
-                </article>
-              ))}
+            <div data-reveal>
+              <PathTabs />
             </div>
           </section>
 

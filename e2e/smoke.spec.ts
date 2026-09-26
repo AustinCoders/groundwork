@@ -809,14 +809,23 @@ test("the git guide has a chapter per section and old anchors still land", async
 
 test("the home page reads as a landing page and every path leads somewhere real", async ({ page }) => {
   await page.goto("/");
-  for (const name of [/Most prep is either/, /a path that starts there/, /Ready to read today/, /Before you start/]) {
+  for (const name of [/Most prep is either/, /a path that starts there/i, /Ready to read today/, /Before you start/]) {
     await expect(page.getByRole("heading", { level: 2, name })).toBeVisible();
   }
   const faq = page.locator("details", { hasText: "Do I need to sign up?" });
   await faq.locator("summary").click();
   await expect(faq).toContainText("There is no account");
 
-  await page.getByRole("link", { name: "The machine coding round" }).click();
+  await page.getByRole("button", { name: /Run tests/ }).click();
+  await expect(page.getByText("3 / 3 passed")).toBeVisible();
+  await page.getByRole("button", { name: "Break it" }).click();
+  await page.getByRole("button", { name: /Run tests/ }).click();
+  await expect(page.getByText("1 / 3 passed")).toBeVisible();
+  await page.getByRole("button", { name: "Reset" }).click();
+
+  await page.getByRole("tab", { name: /Mid/ }).click();
+  await expect(page.getByRole("tab", { name: /Mid/ })).toHaveAttribute("aria-selected", "true");
+  await page.getByRole("tabpanel").getByRole("link", { name: "The machine coding round" }).click();
   await page.waitForURL("**/interview/r2");
   await page.goBack();
   await page.getByRole("button", { name: "Menu" }).click();
