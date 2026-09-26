@@ -26,6 +26,7 @@ const PAGES = [
 
 for (const path of PAGES) {
   test(`${path} has no accessibility violations`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(path, { waitUntil: "networkidle" });
 
     const results = await new AxeBuilder({ page })
