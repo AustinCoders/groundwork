@@ -149,7 +149,7 @@ function useScrollFx(root: React.RefObject<HTMLElement | null>) {
     const measure = (el: HTMLElement, h: number, y: number, max: number) => {
       const r = el.getBoundingClientRect();
       const start = r.top + y - h;
-      const travel = Math.min(h * 0.45, max - start);
+      const travel = Math.min(h * 0.32, max - start);
       const enter = start <= 0 || travel <= 0 ? 1 : clamp((y - start) / travel);
       el.style.setProperty("--in", enter.toFixed(3));
       el.style.setProperty("--vp", clamp((h - r.top) / (h + r.height)).toFixed(3));
@@ -223,44 +223,6 @@ function useScrollFx(root: React.RefObject<HTMLElement | null>) {
   }, [root]);
 }
 
-function Counter({ value, suffix = "" }: { value: number; suffix?: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || !prefersMotion() || !("IntersectionObserver" in window)) return;
-    if (el.getBoundingClientRect().top < window.innerHeight) return;
-    let raf = 0;
-    el.textContent = `0${suffix}`;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        io.disconnect();
-        let start: number | null = null;
-        const frame = (now: number) => {
-          if (start === null) start = now;
-          const t = Math.min(1, (now - start) / 1100);
-          el.textContent = `${Math.round(value * (1 - Math.pow(1 - t, 3)))}${suffix}`;
-          if (t < 1) raf = requestAnimationFrame(frame);
-        };
-        raf = requestAnimationFrame(frame);
-      },
-      { threshold: 0.5 }
-    );
-    io.observe(el);
-    return () => {
-      io.disconnect();
-      cancelAnimationFrame(raf);
-      el.textContent = `${value}${suffix}`;
-    };
-  }, [value, suffix]);
-  return (
-    <span ref={ref}>
-      {value}
-      {suffix}
-    </span>
-  );
-}
-
 const GOOD_CODE = `function counter() {
   let n = 0;
   return () => ++n;
@@ -327,6 +289,11 @@ function TryIt() {
 
   return (
     <div className={styles.editor} data-state={results ? (allGood ? "pass" : "fail") : undefined}>
+      {allGood && (
+        <span className={styles.stamp} aria-hidden="true">
+          Passed ✓
+        </span>
+      )}
       <div className={styles.codeBar}>
         <span aria-hidden="true" />
         <span aria-hidden="true" />
@@ -409,29 +376,39 @@ function WelcomeBack() {
   );
 }
 
-function ProductWindow() {
+function HeroArt({ interview }: { interview: HomeViewProps["interview"] }) {
   return (
-    <div className={styles.window}>
-      <div className={styles.windowBar} aria-hidden="true">
-        <span />
-        <span />
-        <span />
-        <em>groundwork / javascript / closures</em>
+    <div className={styles.art}>
+      <div className={`${styles.paper} ${styles.paperNote}`} aria-hidden="true">
+        <span className={styles.tape} />
+        <span className={styles.paperKicker}>JavaScript · Beginner · B13</span>
+        <p className={styles.paperTitle}>
+          A closure is a function plus <mark>the scope it was born in</mark>.
+        </p>
+        <span className={styles.lineLong} />
+        <span className={styles.lineMid} />
       </div>
-      <div className={styles.windowBody}>
-        <article className={styles.chapter} aria-hidden="true">
-          <span className={styles.chapterKicker}>B13 · Beginner · 12 min read</span>
-          <h3>Closures</h3>
-          <p>
-            A closure is a function plus <mark>the scope it was born in</mark>. When <code>counter</code> returns, its
-            call is over, but the arrow it handed back still holds on to <code>n</code>.
-          </p>
-          <p className={styles.chapterNote}>
-            <span>Interview follow-up</span> Why does a second counter start from 1?
-          </p>
-        </article>
+      <div className={`${styles.paper} ${styles.paperCode}`}>
         <TryIt />
       </div>
+      <div className={`${styles.paper} ${styles.paperRound}`} aria-hidden="true">
+        <span className={styles.paperKicker}>Round 2 of {interview.rounds} · Machine coding</span>
+        <p className={styles.paperQ}>“Now make it work with two browser tabs open.”</p>
+        <span className={styles.followUp}>the follow-up they push with next →</span>
+      </div>
+      <span className={styles.xp} aria-hidden="true">
+        +25 XP
+      </span>
+      <span className={styles.doodleNote} aria-hidden="true">
+        go on, run it
+      </span>
+      <svg className={styles.doodleArrow} viewBox="0 0 120 80" aria-hidden="true">
+        <path d="M8 12 C 40 4, 86 20, 100 62" />
+        <path d="M86 56 L 101 64 L 106 47" />
+      </svg>
+      <svg className={styles.doodleStar} viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" />
+      </svg>
     </div>
   );
 }
@@ -643,47 +620,6 @@ function Story() {
   );
 }
 
-const TOPIC_WORDS = ["JavaScript", "React", "DSA", "System Design", "Git"];
-
-function Rotator() {
-  const [i, setI] = useState(0);
-  const [width, setWidth] = useState<number | null>(null);
-  const measure = useRef<(HTMLSpanElement | null)[]>([]);
-  useEffect(() => {
-    if (!prefersMotion()) return;
-    const t = setInterval(() => setI((n) => (n + 1) % TOPIC_WORDS.length), 2600);
-    return () => clearInterval(t);
-  }, []);
-  useEffect(() => {
-    const el = measure.current[i];
-    if (!el) return;
-    const w = el.offsetWidth;
-    const id = requestAnimationFrame(() => setWidth(w + 2));
-    return () => cancelAnimationFrame(id);
-  }, [i]);
-  return (
-    <span className={styles.rotator} style={width ? { width } : undefined}>
-      <span className={styles.rotWord} key={i}>
-        {TOPIC_WORDS[i]}
-      </span>
-      <span className={styles.rotMeasure} aria-hidden="true">
-        {TOPIC_WORDS.map((w, k) => (
-          <span
-            key={w}
-            ref={(el) => {
-              measure.current[k] = el;
-            }}
-          >
-            {w}
-          </span>
-        ))}
-      </span>
-    </span>
-  );
-}
-
-const HEADLINE = "Walk into the interview ready.".split(" ");
-
 function PathTabs() {
   const [active, setActive] = useState(0);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -792,14 +728,14 @@ function Journey({ children }: { children: React.ReactNode }) {
         return;
       }
       dist = Math.max(0, track.scrollWidth - pin.clientWidth);
-      wrap.style.height = `${dist + window.innerHeight}px`;
+      wrap.style.height = `${dist * 0.55 + window.innerHeight}px`;
       update();
     };
     const update = () => {
       raf = 0;
       if (wrap.dataset.pinned !== "true") return;
       const top = wrap.getBoundingClientRect().top;
-      const prog = dist > 0 ? Math.min(1, Math.max(0, -top / dist)) : 0;
+      const prog = dist > 0 ? Math.min(1, Math.max(0, -top / (dist * 0.55))) : 0;
       track.style.transform = `translate3d(${(-prog * dist).toFixed(1)}px, 0, 0)`;
       wrap.style.setProperty("--jp", prog.toFixed(4));
     };
@@ -864,6 +800,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
   }, []);
   const pageRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
+  const artRef = useRef<HTMLDivElement>(null);
   const hours = Math.round(stats.minutes / 60);
   useScrollFx(pageRef);
 
@@ -885,6 +822,14 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
       window.removeEventListener("resize", onScroll);
     };
   }, []);
+
+  function onHeroMove(e: React.PointerEvent<HTMLElement>) {
+    const art = artRef.current;
+    if (!art || e.pointerType !== "mouse" || !prefersMotion()) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    art.style.setProperty("--px", ((e.clientX - r.left) / r.width - 0.5).toFixed(3));
+    art.style.setProperty("--py", ((e.clientY - r.top) / r.height - 0.5).toFixed(3));
+  }
 
   function onGlow(e: React.PointerEvent) {
     if (e.pointerType !== "mouse") return;
@@ -969,7 +914,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
         </header>
 
         <main id="main">
-          <section className={styles.hero} ref={heroRef} data-fx="heroOut">
+          <section className={styles.hero} ref={heroRef} data-fx="heroOut" onPointerMove={onHeroMove}>
             <div className={styles.heroCopy}>
               <WelcomeBack />
               <p className={styles.kicker}>
@@ -977,15 +922,12 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                 written
               </p>
               <h1 className={styles.h1}>
-                <span className={styles.h1Top}>
-                  Understand <Rotator /> properly.
-                </span>
-                <span className={styles.h1Main}>
-                  {HEADLINE.map((w, i) => (
-                    <span key={w + i} className={styles.word} style={vars({ i })}>
-                      {w}{" "}
-                    </span>
-                  ))}
+                Understand JavaScript properly.{" "}
+                <span className={styles.h1Accent}>
+                  Walk into the interview ready.
+                  <svg className={styles.underline} viewBox="0 0 400 24" preserveAspectRatio="none" aria-hidden="true">
+                    <path d="M4 16 C 90 4, 190 22, 280 10 S 380 8, 396 14" />
+                  </svg>
                 </span>
               </h1>
               <p className={styles.lead}>
@@ -1000,69 +942,27 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                   Prepare for an interview
                 </Link>
               </div>
-              <ul className={styles.checks}>
-                <li>Free forever</li>
-                <li>No account</li>
-                <li>Runs in your browser</li>
-              </ul>
+              <dl className={styles.heroStats}>
+                {[
+                  { n: stats.writtenChapters, s: "", l: "chapters" },
+                  { n: stats.exercises, s: "", l: "runnable exercises" },
+                  { n: hours, s: "h", l: "of reading" },
+                  { n: interview.questions, s: "+", l: "interview questions" },
+                ].map((x) => (
+                  <div key={x.l}>
+                    <dt>{x.l}</dt>
+                    <dd>
+                      {x.n}
+                      {x.s}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
-            <div className={styles.heroArt}>
-              <p className={styles.tryHint} aria-hidden="true">
-                this editor really runs. break it ↘
-              </p>
-              <div className={styles.windowTilt} data-window>
-                <ProductWindow />
-              </div>
-              <span className={`${styles.chip} ${styles.chipA}`} aria-hidden="true">
-                <b>R2</b> Machine coding
-              </span>
-              <span className={`${styles.chip} ${styles.chipB}`} aria-hidden="true">
-                🔥 6-day streak
-              </span>
+            <div className={styles.artWrap} ref={artRef}>
+              <HeroArt interview={interview} />
             </div>
           </section>
-
-          <section className={styles.statsBand} aria-label="By the numbers" data-fx="up">
-            <dl className={styles.stats}>
-              {[
-                { n: stats.writtenChapters, s: "", l: "chapters written" },
-                { n: stats.exercises, s: "", l: "exercises you can run" },
-                { n: hours, s: "h", l: "of careful reading" },
-                { n: interview.questions, s: "+", l: "interview questions" },
-              ].map((x) => (
-                <div key={x.l}>
-                  <dt>{x.l}</dt>
-                  <dd>
-                    <Counter value={x.n} suffix={x.s} />
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-
-          <div className={styles.marquee} data-fx="marquee" aria-hidden="true">
-            <ul className={styles.marqueeRow}>
-              {[...ready, ...soon, ...ready].map((t, k) => (
-                <li key={t.id + k}>{t.name}</li>
-              ))}
-            </ul>
-            <ul className={styles.marqueeRow}>
-              {[
-                "Read it",
-                "Run it",
-                "Get asked",
-                "Keep it",
-                "Read it",
-                "Run it",
-                "Get asked",
-                "Keep it",
-                "Read it",
-                "Run it",
-              ].map((w, k) => (
-                <li key={w + k}>{w}</li>
-              ))}
-            </ul>
-          </div>
 
           <section className={styles.section} id="how" aria-labelledby="how-h">
             <div className={styles.head} data-fx="head">
