@@ -10,7 +10,11 @@
     "public/**",
     "package-lock.json",
     "tsconfig.tsbuildinfo",
-    ".vercel/**"
+    ".vercel/**",
+    ".claude/**",
+    "_bmad/**",
+    "_bmad-output/**",
+    "skills-lock.json"
   ],
   "ignoreRegExpList": ["/<code>[\\s\\S]*?<\\/code>/g", "/<pre>[\\s\\S]*?<\\/pre>/g"],
   "dictionaryDefinitions": [

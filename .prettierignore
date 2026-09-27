@@ -8,3 +8,10 @@ package-lock.json
 # without changing a character of what the site renders.
 content/interview-data.ts
 content/practice/
+
+# BMad Method, a vendored agent workflow. It is updated with `npx skills update`,
+# never edited here, so it keeps upstream formatting.
+.claude/skills/
+_bmad/
+_bmad-output/
+skills-lock.json

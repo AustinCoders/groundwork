@@ -581,3 +581,4 @@ zxabba
 zzzzzzzzzzzzzzzzzzzzzcab
 lerp
 GEOADD
+bmad
