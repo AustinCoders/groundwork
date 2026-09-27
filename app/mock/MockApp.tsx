@@ -166,7 +166,7 @@ export function MockApp({ catalog }: { catalog: MockCatalog }) {
       <div className={styles.page} ref={pageRef} data-room={inRoom ? "true" : undefined}>
         <span className={styles.scrollBar} data-scrollbar aria-hidden="true" />
         <header className={styles.top}>
-          <BackButton variant="icon" className={styles.iconBtn} fallbackHref="/" fallbackLabel="Home" />
+          <BackButton variant="bar" className="head-back" fallbackHref="/" fallbackLabel="Home" />
           <button
             type="button"
             className={styles.iconBtn}

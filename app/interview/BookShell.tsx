@@ -35,8 +35,8 @@ export function BookShell({ children, scan = null }: { children: React.ReactNode
         <span className={styles.scrollBar} data-scrollbar aria-hidden="true" />
         <header className={styles.top}>
           <BackButton
-            variant="icon"
-            className={styles.iconBtn}
+            variant="bar"
+            className="head-back"
             fallbackHref={pathname === "/interview" ? "/" : "/interview"}
             fallbackLabel={pathname === "/interview" ? "Home" : "Interview book"}
           />
