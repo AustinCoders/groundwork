@@ -59,7 +59,7 @@ function readProgress(): ProgressData {
   return data;
 }
 
-const REVIEW_GAPS_DAYS = [3, 7, 21, 60, 180];
+export const REVIEW_GAPS_DAYS = [3, 7, 21, 60, 180];
 const DAY = 24 * 60 * 60 * 1000;
 
 function markOf(v: true | ChapterMark): ChapterMark {

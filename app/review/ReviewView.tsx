@@ -2,95 +2,251 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { Shell } from "@/components/Shell";
-import { Crumbs } from "@/components/Crumbs";
-import { progress } from "@/lib/storage";
-import { useMounted, useProgressValue } from "@/lib/hooks";
+import { PageFrame } from "@/components/frame/PageFrame";
+import { useConfidence } from "@/lib/interviewConfidence";
+import { useClientValue, useProgressValue } from "@/lib/hooks";
 import { plural } from "@/lib/format";
+import { dueAt, progress, REVIEW_GAPS_DAYS, type ChapterMark } from "@/lib/storage";
+import styles from "@/components/frame/dash.module.css";
 
 export interface ReviewChapter {
   id: string;
   num: string;
-  short: string;
   title: string;
   subtitle: string;
-  topicId: string;
   topicName: string;
   href: string;
 }
 
+const DAY = 24 * 60 * 60 * 1000;
+
+const GAP_LABEL = ["3 days", "1 week", "3 weeks", "2 months", "6 months"];
+
+const LINKS = [
+  { href: "/review", label: "Review" },
+  { href: "/progress", label: "Progress" },
+];
+
+interface Row {
+  ch: ReviewChapter;
+  mark: ChapterMark;
+  due: number | null;
+}
+
+function markOf(v: true | ChapterMark): ChapterMark {
+  return v === true ? { at: 0, reviews: 0 } : v;
+}
+
+function startOfDay(t: number): number {
+  const d = new Date(t);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+
+function thisMinute(): number {
+  return Math.floor(Date.now() / 60000) * 60000;
+}
+
+function whenLabel(due: number, today: number): string {
+  const days = Math.round((startOfDay(due) - today) / DAY);
+  if (days <= 0) {
+    const late = -days;
+    return late === 0 ? "due today" : `${plural(late, "day")} overdue`;
+  }
+  if (days === 1) return "tomorrow";
+  return new Date(due).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+}
+
 export function ReviewView({ chapters }: { chapters: ReviewChapter[] }) {
-  const mounted = useMounted();
-  const ids = useMemo(() => chapters.map((c) => c.id), [chapters]);
+  const marksKey = useProgressValue(() => JSON.stringify(progress.all().chapters), "");
+  const conf = useConfidence();
+  const now = useClientValue(thisMinute, 0);
+  const ready = marksKey !== "";
 
-  const dueKey = useProgressValue(() => progress.dueForReview(ids).join(","), "");
-  const doneCount = useProgressValue(() => progress.countDone(chapters), 0);
+  const { due, upcoming, read, reviews, finished } = useMemo(() => {
+    const marks = (marksKey ? JSON.parse(marksKey) : {}) as Record<string, true | ChapterMark>;
+    const rows: Row[] = chapters
+      .filter((ch) => marks[ch.id])
+      .map((ch) => {
+        const mark = markOf(marks[ch.id]);
+        return { ch, mark, due: dueAt(marks[ch.id]) };
+      });
+    return {
+      read: rows.length,
+      reviews: rows.reduce((n, r) => n + r.mark.reviews, 0),
+      finished: rows.filter((r) => r.due === null).length,
+      due: rows.filter((r) => r.due !== null && r.due <= now).sort((a, b) => a.due! - b.due!),
+      upcoming: rows
+        .filter((r) => r.due !== null && r.due > now)
+        .sort((a, b) => a.due! - b.due!)
+        .slice(0, 12),
+    };
+  }, [marksKey, chapters, now]);
 
-  const due = useMemo(() => {
-    if (!dueKey) return [];
-    const order = dueKey.split(",");
-    return order.map((id) => chapters.find((c) => c.id === id)).filter((c): c is ReviewChapter => Boolean(c));
-  }, [dueKey, chapters]);
-
-  if (!mounted) return null;
+  const today = startOfDay(now);
+  const weekOut = upcoming.filter((r) => r.due! - today < 7 * DAY).length;
+  const shaky = Object.values(conf).filter((c) => c !== "knew").length;
 
   return (
-    <Shell skipLabel="Skip to the review list" progressChapters={chapters}>
-      <Crumbs items={[{ label: "All topics", href: "/" }, { label: "Review" }]} />
-
-      <section className="sheet hero">
-        <span className="hero__kicker">spaced repetition</span>
-        <h1>What to read again</h1>
-        <p className="hero__lead">
-          A chapter comes back 3 days after you read it, then a week, then three weeks, then two months, then six.
-          Recognition fades quietly — this is the part that turns 60 chapters of reading into something you can still
-          recall in an interview.
-        </p>
-        <div className="cover__meta">
-          <span className="chip">{plural(doneCount, "chapter")} read</span>
-          <span className="chip">{due.length} due today</span>
+    <PageFrame
+      title="Review"
+      links={LINKS}
+      skipLabel="Skip to the review list"
+      scan={`${due.length}:${upcoming.length}`}
+    >
+      <section className={styles.hero}>
+        <div data-fx="stagger">
+          <p className={styles.eyebrow}>Spaced review</p>
+          <h1 className={styles.h1}>
+            {!ready ? (
+              "What to read again."
+            ) : due.length > 0 ? (
+              <>
+                <span className={styles.accent}>{plural(due.length, "chapter")}</span> to look at again today.
+              </>
+            ) : read > 0 ? (
+              "Nothing due. Everything you read is still fresh."
+            ) : (
+              "Read something first, and it comes back here."
+            )}
+          </h1>
+          <p className={styles.lead}>
+            A chapter you finish comes back after 3 days, then a week, three weeks, two months and six months. Each time
+            you skim it and mark it reviewed, the gap gets longer. That is what turns reading into something you can
+            still recall in the room.
+          </p>
         </div>
+        <dl className={styles.stats} data-fx="right">
+          <div>
+            <dt>due now</dt>
+            <dd>{due.length}</dd>
+          </div>
+          <div>
+            <dt>due this week</dt>
+            <dd>{weekOut}</dd>
+          </div>
+          <div>
+            <dt>chapters read</dt>
+            <dd>{read}</dd>
+          </div>
+          <div>
+            <dt>reviews done</dt>
+            <dd>{reviews}</dd>
+          </div>
+        </dl>
       </section>
 
-      {due.length === 0 ? (
-        <section className="sheet">
-          <h2>Nothing due</h2>
-          <p className="sub">
-            {doneCount === 0
-              ? "Tick a chapter as read and it will start showing up here."
-              : "Everything you've read is still fresh. Come back in a few days."}
-          </p>
-        </section>
-      ) : (
-        <>
-          <h2 className="section-title">Due now</h2>
-          <p className="section-note">Skim it, then mark it reviewed — that pushes it to the next, longer gap.</p>
-          <ol className="steps">
-            {due.map((ch) => (
-              <li className="step" key={ch.id}>
-                <span className="step__num" aria-hidden="true">
-                  {ch.num}
-                </span>
-                <div>
-                  <span className="step__title">{ch.title}</span>
-                  <p className="step__sub">{ch.subtitle}</p>
-                  <div className="step__meta">
-                    <span className="tag">{ch.topicName}</span>
+      <ol className={styles.ladder} aria-label="How the gaps grow" data-fx="stagger">
+        <li>
+          <b>Read</b>
+          <span>day 0</span>
+        </li>
+        {GAP_LABEL.map((g, i) => (
+          <li key={g}>
+            <b>Review {i + 1}</b>
+            <span>after {g}</span>
+          </li>
+        ))}
+        <li data-done>
+          <b>Kept</b>
+          <span>{finished} so far</span>
+        </li>
+      </ol>
+
+      {due.length > 0 && (
+        <section className={styles.block} aria-labelledby="due-h">
+          <div className={styles.blockHead}>
+            <h2 id="due-h" className={styles.h2}>
+              Due now
+            </h2>
+            <p>Skim it, then mark it reviewed. That pushes it to the next, longer gap.</p>
+          </div>
+          <ol className={styles.dueList}>
+            {due.map((r, i) => (
+              <li key={r.ch.id} className={styles.dueCard} data-fx="up" style={{ "--d": i % 4 } as React.CSSProperties}>
+                <div className={styles.dueTop}>
+                  <span className={styles.topic}>{r.ch.topicName}</span>
+                  <span className={styles.late}>{whenLabel(r.due!, today)}</span>
+                </div>
+                <div className={styles.dueMain}>
+                  <span className={styles.num}>{r.ch.num}</span>
+                  <div>
+                    <h3>{r.ch.title}</h3>
+                    {r.ch.subtitle && <p>{r.ch.subtitle}</p>}
                   </div>
-                  <div className="step__actions">
-                    <Link className="btn" href={ch.href}>
-                      Read it again
-                    </Link>
-                    <button className="btn btn--primary" type="button" onClick={() => progress.markReviewed(ch.id)}>
-                      ✓ Reviewed
-                    </button>
-                  </div>
+                </div>
+                <div className={styles.dueFoot}>
+                  <span
+                    className={styles.stage}
+                    aria-label={`Review ${r.mark.reviews + 1} of ${REVIEW_GAPS_DAYS.length}`}
+                  >
+                    {REVIEW_GAPS_DAYS.map((_, k) => (
+                      <i
+                        key={k}
+                        data-on={k < r.mark.reviews || undefined}
+                        data-now={k === r.mark.reviews || undefined}
+                      />
+                    ))}
+                  </span>
+                  <Link href={r.ch.href} className={styles.ghost}>
+                    Read it again
+                  </Link>
+                  <button type="button" className={styles.btn} onClick={() => progress.markReviewed(r.ch.id)}>
+                    ✓ Reviewed
+                  </button>
                 </div>
               </li>
             ))}
           </ol>
-        </>
+        </section>
       )}
-    </Shell>
+
+      {ready && due.length === 0 && (
+        <section className={styles.empty} data-fx="scale">
+          <span aria-hidden="true">{read ? "🌿" : "📖"}</span>
+          <h2 className={styles.h2}>{read ? "All caught up." : "Nothing to review yet."}</h2>
+          <p>
+            {read
+              ? "Come back when something is due. Meanwhile, read one new chapter."
+              : "Tick “Mark as read” at the end of any chapter and it starts its review schedule here."}
+          </p>
+          <Link href="/" className={styles.btn}>
+            Find a chapter to read →
+          </Link>
+        </section>
+      )}
+
+      {upcoming.length > 0 && (
+        <section className={styles.block} aria-labelledby="next-h">
+          <div className={styles.blockHead}>
+            <h2 id="next-h" className={styles.h2}>
+              Coming up
+            </h2>
+            <p>The next chapters to come back, and when.</p>
+          </div>
+          <ul className={styles.upList} data-fx="stagger">
+            {upcoming.map((r) => (
+              <li key={r.ch.id}>
+                <span className={styles.when}>{whenLabel(r.due!, today)}</span>
+                <Link href={r.ch.href}>{r.ch.title}</Link>
+                <span className={styles.topic}>{r.ch.topicName}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {shaky > 0 && (
+        <section className={styles.callout} data-fx="up">
+          <div>
+            <b>{plural(shaky, "interview answer")} marked shaky or blank.</b>
+            <p>Those come back through the question bank, as flashcards.</p>
+          </div>
+          <Link href="/interview/questions?filter=shaky" className={styles.btn}>
+            Drill them →
+          </Link>
+        </section>
+      )}
+    </PageFrame>
   );
 }
