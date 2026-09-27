@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
 import { SiteDrawer } from "@/components/SiteDrawer";
 import { TopIcon } from "@/components/practice/TopIcon";
+import { BackButton } from "@/components/practice/BackButton";
 import { SITE_NAME } from "@/lib/site";
 import { smoothScroll, useScrollFx } from "@/lib/scrollFx";
 import styles from "./book.module.css";
@@ -33,6 +34,12 @@ export function BookShell({ children, scan = null }: { children: React.ReactNode
       <div className={styles.page} ref={pageRef}>
         <span className={styles.scrollBar} data-scrollbar aria-hidden="true" />
         <header className={styles.top}>
+          <BackButton
+            variant="icon"
+            className={styles.iconBtn}
+            fallbackHref={pathname === "/interview" ? "/" : "/interview"}
+            fallbackLabel={pathname === "/interview" ? "Home" : "Interview book"}
+          />
           <button
             type="button"
             className={styles.iconBtn}

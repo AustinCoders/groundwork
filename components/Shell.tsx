@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ClockWeather } from "@/components/ClockWeather";
+import { BackButton } from "@/components/practice/BackButton";
 import { DailyRecap } from "@/components/DailyRecap";
 import { FontPicker, ThemePicker } from "@/components/ThemeFontPicker";
 import { StreakMini } from "@/components/StreakMini";
@@ -174,6 +175,7 @@ export function Shell({
       <DailyRecap topics={readyTopics} />
 
       <header className="topbar">
+        <BackButton variant="icon" className="btn btn--icon btn--ghost" fallbackHref="/" fallbackLabel="Home" />
         <button
           className="btn btn--icon btn--ghost js-drawer-toggle"
           type="button"
@@ -234,6 +236,10 @@ export function Shell({
                 <span className="brand__meta">handwritten · web dev</span>
               </span>
             </Link>
+
+            <nav className="site-sidenav__section" aria-label="Back">
+              <BackButton variant="rail" fallbackHref="/" fallbackLabel="Home" />
+            </nav>
 
             <ClockWeather />
             <StreakMini />

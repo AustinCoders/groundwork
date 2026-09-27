@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import Link from "next/link";
 import { SiteDrawer } from "@/components/SiteDrawer";
 import { TopIcon } from "@/components/practice/TopIcon";
+import { BackButton } from "@/components/practice/BackButton";
 import { SITE_NAME } from "@/lib/site";
 import { smoothScroll, useScrollFx } from "@/lib/scrollFx";
 import styles from "./mock.module.css";
@@ -165,6 +166,7 @@ export function MockApp({ catalog }: { catalog: MockCatalog }) {
       <div className={styles.page} ref={pageRef} data-room={inRoom ? "true" : undefined}>
         <span className={styles.scrollBar} data-scrollbar aria-hidden="true" />
         <header className={styles.top}>
+          <BackButton variant="icon" className={styles.iconBtn} fallbackHref="/" fallbackLabel="Home" />
           <button
             type="button"
             className={styles.iconBtn}

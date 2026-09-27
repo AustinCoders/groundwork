@@ -14,7 +14,7 @@ const PAGES = [
   { path: "/practice?id=free", heading: /Playground/i },
   { path: "/problems", heading: /problem/i },
   { path: "/problems/ex-accounts-merge", heading: /Accounts Merge/i },
-  { path: "/review", heading: /read again/i },
+  { path: "/review", heading: /look at again|still fresh|comes back here/i },
   { path: "/mock", heading: /mock interview/i },
   { path: "/progress", heading: /progress/i },
   { path: "/git", heading: /Git/i },
@@ -859,4 +859,33 @@ test("the interview book hides answers in practice mode, remembers marks and dri
   await expect(page.getByRole("link", { name: /JavaScript & TS/ })).toBeVisible();
   await page.getByRole("button", { name: "Agency" }).click();
   await expect(page.getByRole("button", { name: "Agency" })).toHaveAttribute("aria-pressed", "true");
+});
+
+test("review brings a due chapter back, and every section header has a way back", async ({ page }) => {
+  await page.goto("/review");
+  await page.evaluate(() => {
+    const day = 86400000;
+    localStorage.setItem(
+      "jsnotes:progress",
+      JSON.stringify({ chapters: { closures: { at: Date.now() - 5 * day, reviews: 0 } }, exercises: {} })
+    );
+  });
+  await page.reload();
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("1 chapter");
+  await page.getByRole("button", { name: "✓ Reviewed" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("still fresh");
+  await expect(page.getByText("Coming up")).toBeVisible();
+
+  await page.goto("/progress");
+  await expect(page.getByRole("heading", { name: "By topic" })).toBeVisible();
+
+  for (const path of ["/review", "/progress", "/mock", "/interview", "/interview/r1", "/interview/questions"]) {
+    await page.goto(path);
+    await expect(
+      page
+        .locator("header")
+        .getByRole("link", { name: /Back|Home|Interview book/ })
+        .first()
+    ).toBeVisible();
+  }
 });
