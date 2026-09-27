@@ -1,3 +1,38 @@
+.eyebrow {
+  margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+}
+
+.h1 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 18px;
+  font-family: var(--font-heading);
+  font-size: clamp(26px, 3vw, 36px);
+  font-weight: 700;
+}
+
+.h2 small {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
 .levelUp {
   margin-bottom: 20px;
   padding: 14px 20px;
@@ -8,17 +43,25 @@
   border-radius: 14px;
 }
 
-.hero {
+.player {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
+  grid-template-columns: 200px minmax(0, 1fr) 260px;
   align-items: center;
-  gap: 40px;
+  gap: clamp(24px, 3vw, 44px);
+  padding: clamp(24px, 3.4vw, 40px);
+  background:
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--c-green) 20%, transparent), transparent 55%),
+    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--c-teal) 16%, transparent), transparent 55%),
+    var(--sheet);
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  box-shadow: var(--shadow-md);
 }
 
 .ringWrap {
   position: relative;
-  width: 220px;
-  height: 220px;
+  width: 200px;
+  height: 200px;
 }
 
 .ring {
@@ -34,13 +77,13 @@
 }
 
 .ringTrack {
-  stroke: var(--sheet-2);
+  stroke: color-mix(in srgb, var(--ink) 8%, var(--sheet-2));
 }
 
 .ringFill {
   stroke: var(--c-green);
   stroke-linecap: round;
-  transition: stroke-dashoffset 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .ringCenter {
@@ -52,25 +95,44 @@
   justify-content: center;
 }
 
-.ringCenter b {
-  font-family: var(--font-heading);
-  font-size: 72px;
-  line-height: 1;
-}
-
 .ringCenter span {
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-soft);
 }
 
-.xpBar {
-  height: 12px;
+.ringCenter b {
+  font-family: var(--font-heading);
+  font-size: 80px;
+  line-height: 0.95;
+}
+
+.playerMain {
+  min-width: 0;
+}
+
+.xpRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
   margin-top: 20px;
+}
+
+.xpRow > span {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.xpBar {
+  flex: 1;
+  min-width: 180px;
+  height: 14px;
   overflow: hidden;
-  background: var(--sheet-2);
+  background: color-mix(in srgb, var(--ink) 8%, var(--sheet-2));
   border-radius: 999px;
 }
 
@@ -79,62 +141,117 @@
   height: 100%;
   background: linear-gradient(90deg, var(--c-green), var(--c-teal));
   border-radius: inherit;
-  transition: width 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: width 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.streak {
+.chips {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 14px;
-  margin-top: 22px;
+  gap: 8px;
+  margin-top: 18px;
 }
 
-.streak > span {
-  font-size: 36px;
-  filter: grayscale(1);
-  opacity: 0.5;
+.chips span {
+  padding: 7px 14px;
+  font-size: 14.5px;
+  background: var(--sheet);
+  border: 1px solid var(--line);
+  border-radius: 999px;
 }
 
-.streak[data-lit] > span {
-  filter: none;
-  opacity: 1;
-  animation: flicker 2.4s ease-in-out infinite;
+.chips span[data-lit] {
+  background: color-mix(in srgb, var(--c-orange) 12%, var(--sheet));
+  border-color: color-mix(in srgb, var(--c-orange) 45%, var(--line));
 }
 
-@keyframes flicker {
-  50% {
-    transform: scale(1.1) rotate(-4deg);
-  }
-}
-
-.streak b {
-  display: block;
+.chips b {
   font-family: var(--font-heading);
-  font-size: 28px;
+  font-size: 18px;
 }
 
-.streak div span {
+.week {
+  margin: 0;
+  padding: 18px;
+  background: var(--sheet);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+}
+
+.week figcaption {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.weekBars {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  align-items: end;
+  gap: 6px;
+  height: 110px;
+  margin-top: 12px;
+}
+
+.weekBars > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  height: 100%;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+.weekBar {
+  width: 100%;
+  min-height: 4px;
+  max-height: calc(100% - 20px);
+  background: color-mix(in srgb, var(--c-green) 45%, var(--sheet-2));
+  border-radius: 6px 6px 3px 3px;
+}
+
+.weekBars > div[data-today] .weekBar {
+  background: var(--c-green);
+}
+
+.weekBars > div[data-today] {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.week p {
+  margin: 12px 0 0;
   font-size: 14px;
   color: var(--ink-soft);
+}
+
+.week p b {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  color: var(--ink);
 }
 
 .statRow {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
-  margin: 40px 0 0;
+  margin: 20px 0 0;
 }
 
 .statRow div {
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: auto auto;
-  column-gap: 14px;
   align-items: center;
+  column-gap: 14px;
   padding: 18px 20px;
   background: var(--sheet);
   border: 1px solid var(--line);
+  border-top: 4px solid var(--accent);
   border-radius: 18px;
 }
 
@@ -145,7 +262,8 @@
   width: 46px;
   height: 46px;
   font-size: 22px;
-  background: var(--sheet-2);
+  color: color-mix(in srgb, var(--accent) 65%, var(--ink));
+  background: color-mix(in srgb, var(--accent) 14%, var(--sheet));
   border-radius: 14px;
 }
 
@@ -162,11 +280,63 @@
   color: var(--ink-soft);
 }
 
+.block {
+  margin-top: clamp(48px, 6vw, 72px);
+}
+
+.next {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.nextCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 22px;
+  color: var(--ink);
+  text-decoration: none;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%), var(--sheet);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-radius: 20px;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.nextCard:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+}
+
+.nextCard b {
+  font-family: var(--font-heading);
+  font-size: 23px;
+  line-height: 1.15;
+}
+
+.nextCard span {
+  flex: 1;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.nextCard em {
+  margin-top: 8px;
+  font-size: 14.5px;
+  font-style: normal;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--accent) 60%, var(--ink));
+}
+
 .heat {
   padding: 22px;
   background: var(--sheet);
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: 22px;
 }
 
 .heatScroll {
@@ -177,12 +347,12 @@
 .heatMonths,
 .heatGrid {
   display: grid;
-  gap: 3px;
-  min-width: 720px;
+  gap: 4px;
+  min-width: 760px;
 }
 
 .heatMonths {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--ink-soft);
@@ -191,14 +361,14 @@
 .heatWeek {
   display: grid;
   grid-template-rows: repeat(7, 1fr);
-  gap: 3px;
+  gap: 4px;
 }
 
 .heatWeek span,
 .legend span {
   aspect-ratio: 1;
-  background: var(--sheet-2);
-  border-radius: 3px;
+  background: color-mix(in srgb, var(--ink) 6%, var(--sheet-2));
+  border-radius: 4px;
 }
 
 .heatWeek span[data-pad] {
@@ -231,9 +401,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-top: 14px;
-  font-size: 13.5px;
+  margin-top: 16px;
+  font-size: 14px;
   color: var(--ink-soft);
+}
+
+.heatFoot b {
+  color: var(--ink);
 }
 
 .legend {
@@ -249,20 +423,20 @@
 
 .tracks {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
   gap: 12px;
 }
 
 .track {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px 18px;
+  gap: 16px;
+  padding: 14px 18px;
   color: var(--ink);
   text-decoration: none;
   background: var(--sheet);
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 18px;
   transition:
     transform 0.2s ease,
     border-color 0.2s ease;
@@ -278,53 +452,68 @@
   border-style: dashed;
 }
 
-.trackMark {
-  display: grid;
+.donut {
   flex: none;
-  place-items: center;
-  min-width: 42px;
-  height: 42px;
-  padding: 0 6px;
+  width: 56px;
+  height: 56px;
+}
+
+.donutTrack,
+.donutFill {
+  fill: none;
+  stroke-width: 6;
+}
+
+.donutTrack {
+  stroke: color-mix(in srgb, var(--ink) 8%, var(--sheet-2));
+}
+
+.donutFill {
+  stroke: color-mix(in srgb, var(--accent) 80%, var(--ink));
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 28px 28px;
+  transition: stroke-dashoffset 1s ease;
+}
+
+.donut text {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 700;
-  color: color-mix(in srgb, var(--accent) 60%, var(--ink));
-  background: color-mix(in srgb, var(--accent) 14%, var(--sheet));
-  border-radius: 12px;
+  text-anchor: middle;
+  fill: var(--ink);
 }
 
 .trackBody {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
   min-width: 0;
 }
 
-.trackTop {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
+.trackBody b {
+  font-size: 16.5px;
 }
 
-.trackTop span {
-  font-family: var(--font-mono);
-  font-size: 12.5px;
+.trackBody span {
+  font-size: 13.5px;
   color: var(--ink-soft);
 }
 
-.trackBar {
-  height: 8px;
-  overflow: hidden;
-  background: var(--sheet-2);
-  border-radius: 999px;
-}
-
-.trackBar span {
-  display: block;
-  height: 100%;
-  background: color-mix(in srgb, var(--accent) 80%, var(--ink));
-  border-radius: inherit;
+.trackMark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 6px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--accent) 60%, var(--ink));
+  background: color-mix(in srgb, var(--accent) 14%, var(--sheet));
+  border-radius: 10px;
 }
 
 .conf {
@@ -341,7 +530,7 @@
 
 .confBar {
   display: flex;
-  height: 16px;
+  height: 18px;
   overflow: hidden;
   background: var(--sheet-2);
   border-radius: 999px;
@@ -365,8 +554,7 @@
 .confLegend {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 24px;
+  gap: 10px 26px;
   margin-top: 16px;
   font-size: 15px;
 }
@@ -384,50 +572,56 @@
   border-radius: 3px;
 }
 
-.confLegend a {
-  margin-left: auto;
-}
-
 .badges {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 12px;
 }
 
 .badge {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 18px;
-  background: var(--sheet);
+  align-items: center;
+  gap: 6px;
+  padding: 22px 16px;
+  text-align: center;
+  background: var(--paper);
   border: 1.5px dashed var(--line);
-  border-radius: 16px;
+  border-radius: 20px;
 }
 
 .badge[data-earned] {
+  background:
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--c-yellow) 20%, transparent), transparent 65%),
+    var(--sheet);
   border-style: solid;
   border-color: color-mix(in srgb, var(--c-yellow) 55%, var(--line));
-  background: color-mix(in srgb, var(--c-yellow) 8%, var(--sheet));
-  opacity: 1;
 }
 
-.badge > span {
-  font-size: 30px;
+.medal {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 4px;
+  font-size: 28px;
+  background: var(--sheet-2);
+  border-radius: 50%;
   filter: grayscale(1);
-  opacity: 0.45;
 }
 
-.badge:not([data-earned]) b {
-  color: var(--ink-soft);
-}
-
-.badge[data-earned] > span {
+.badge[data-earned] .medal {
+  background: color-mix(in srgb, var(--c-yellow) 25%, var(--sheet));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--c-yellow) 25%, transparent);
   filter: none;
-  opacity: 1;
 }
 
 .badge b {
   font-size: 15.5px;
+}
+
+.badge:not([data-earned]) b {
+  color: var(--ink-soft);
 }
 
 .badge p {
@@ -458,39 +652,65 @@
   line-height: 1.3;
 }
 
-.track:focus-visible {
+.track:focus-visible,
+.nextCard:focus-visible {
   outline: 2px solid var(--c-green);
   outline-offset: 2px;
 }
 
-@media (max-width: 900px) {
-  .hero {
+@media (max-width: 1080px) {
+  .player {
+    grid-template-columns: 170px minmax(0, 1fr);
+  }
+
+  .ringWrap {
+    width: 170px;
+    height: 170px;
+  }
+
+  .ringCenter b {
+    font-size: 64px;
+  }
+
+  .week {
+    grid-column: 1 / -1;
+  }
+
+  .statRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .next {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .player {
     grid-template-columns: 1fr;
     justify-items: start;
   }
 
   .ringWrap {
-    width: 160px;
-    height: 160px;
+    width: 140px;
+    height: 140px;
   }
 
   .ringCenter b {
     font-size: 52px;
   }
 
-  .statRow {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .week {
+    width: 100%;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ringFill,
   .xpBar span,
-  .track {
+  .donutFill,
+  .track,
+  .nextCard {
     transition: none;
-  }
-
-  .streak[data-lit] > span {
-    animation: none;
   }
 }

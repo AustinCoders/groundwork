@@ -872,20 +872,22 @@ test("review brings a due chapter back, and every section header has a way back"
   });
   await page.reload();
   await expect(page.getByRole("heading", { level: 1 })).toContainText("1 chapter");
-  await page.getByRole("button", { name: "✓ Reviewed" }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("still fresh");
-  await expect(page.getByText("Coming up")).toBeVisible();
+  await page.getByRole("button", { name: "Start the session →" }).click();
+  await page.getByRole("button", { name: "✓ I still had it" }).click();
+  await expect(page.getByText("Session done.")).toBeVisible();
+  await page.getByRole("button", { name: "Back to review" }).click();
+  await page
+    .getByRole("button", { name: "✓ I still had it" })
+    .waitFor({ state: "detached" })
+    .catch(() => {});
+  await expect(page.getByText("still fresh")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Coming back soon" })).toBeVisible();
 
   await page.goto("/progress");
   await expect(page.getByRole("heading", { name: "By topic" })).toBeVisible();
 
   for (const path of ["/review", "/progress", "/mock", "/interview", "/interview/r1", "/interview/questions"]) {
     await page.goto(path);
-    await expect(
-      page
-        .locator("header")
-        .getByRole("link", { name: /Back|Home|Interview book/ })
-        .first()
-    ).toBeVisible();
+    await expect(page.locator("header a.head-back")).toBeVisible();
   }
 });
