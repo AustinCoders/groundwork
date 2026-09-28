@@ -31,7 +31,8 @@ Switching the theme changes the character of the page, not only its paper. The s
 1. `tests/contrast.test.ts` asserts `--primary`, `--success`, `--danger`, `--caution` and `--info` against the sheet, `--on-primary` against `--primary`, and `--mark` against the ink, in all nine themes.
 2. `rg -n "var\(--(green|red|c-green|c-red|hl-yellow|hl-mint)\)" app components` returns only categorical uses: charts, topic chips, whiteboard colours and diagrams. The list is recorded in the build record.
 3. Screenshots of Home, Review, Progress, `/interview`, `/mock`, `/problems`, a problem page, `/whiteboard`, `/git`, `/architecture`, `/notes` and a chapter in all nine themes show the theme's accent on buttons, links and progress.
-4. `npm run check`, `npm run build` and `npm run test:e2e` (the a11y spec included) pass.
+4. A complete tenth theme, added as one CSS block and one `THEME_ITEMS` entry, passes every test with no other change, and a module that writes `var(--green)` as an action colour fails `npm run test`.
+5. `npm run check`, `npm run build` and `npm run test:e2e` (the a11y spec included) pass.
 
 ## Boundaries
 
@@ -49,4 +50,5 @@ Colour roles only. Paper, ink, sheet, line, the categorical `--c-*` colours, the
 - Decision: the user approved the palette as published and asked for it before the rest of the plan (2026-09-28).
 - Decision: entry 1 is the tracer. The tokens, the test, the theme-picker preview and the home page's `--primary` switch to the accent, so one real page proves the tokens in all nine themes (agent, 2026-09-28).
 - Decision: entries 2, 3 and 4 are separate lanes over separate files, so they can run in parallel after entry 1. Entry 4 waits on entry 1 because both edit `app/globals.css`.
+- Decision: entry 6, the theme contract, was added at the user's request (2026-09-28): adding a theme or changing a palette must reach every section without touching any page, and tests must fail when a section bypasses the roles or a theme forgets a token. It runs after the three lanes, because its guard fails until they finish.
 - Decision: entry 5, the nine-theme review, is the closing sweep. It fixes what the screenshots show and takes no new scope (agent, 2026-09-28).

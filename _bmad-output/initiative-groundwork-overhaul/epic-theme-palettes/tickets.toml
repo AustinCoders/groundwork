@@ -48,13 +48,26 @@ risk = "medium"
 unknown = "How many of globals.css's 158 colour uses are content styles (callouts, diagrams, dry-run tables) that should stay categorical."
 
 [[entry]]
+id = 6
+type = "story"
+title = "Theme contract: a new theme is one CSS block and one list entry"
+description = "Adds tests that make every theme self-sufficient and every section theme-aware. Every [data-theme] block defines the same colour tokens as Paper. THEME_ITEMS in lib/storage.ts and the CSS theme blocks match one to one. No CSS module or global component rule uses --green, --red, --c-green, --c-red, --hl-yellow, --hl-mint or --sticky-mint-* outside a short, named list of categorical uses, and no module CSS has a hex or rgb literal. The e2e accent tests iterate THEME_ITEMS and read each theme's expected colours from app/globals.css, not from a hand-kept map. The design-system chapter's cost note says what adding a theme takes."
+verify = "Adding a tenth theme block without --mark, adding a THEME_ITEMS entry without a CSS block, or writing var(--green) in a module as a button colour each fails npm run test with a message that names the file and token; a complete tenth theme added as one block and one list entry passes every test."
+covers = ["CAP-11", "CAP-8"]
+after = [2, 3, 4]
+hitl = false
+risk = "low"
+unknown = "Which remaining green, red and highlighter uses are truly categorical (charts, topic chips, whiteboard colours, diagram strokes) and belong on the allowed list."
+references = ["_bmad-output/specs/spec-groundwork-overhaul/palette.md"]
+
+[[entry]]
 id = 5
 type = "story"
 title = "Nine-theme review and sweep"
 description = "Screenshots every section in all nine themes, fixes what reads wrong, records the remaining categorical uses of green and red, and ticks the roadmap."
 verify = "The Done-when screenshots show the accent everywhere, the rg check returns only the recorded categorical uses, and npm run check, npm run build and npm run test:e2e pass."
 covers = ["CAP-11"]
-after = [2, 3, 4]
+after = [2, 3, 4, 6]
 hitl = false
 risk = "low"
 unknown = "Its fixes, set by the screenshots."
