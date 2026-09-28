@@ -1,0 +1,33 @@
+[[epic]]
+id = 1
+slug = "epic-audit-fixes"
+title = "Audit fixes: private, operable, consistent"
+covers = ["CAP-1", "CAP-2", "CAP-6", "CAP-7", "CAP-9", "CAP-10"]
+
+[[epic]]
+id = 2
+slug = "epic-topic-redesign"
+title = "Every topic page on the shared frame"
+covers = ["CAP-3", "CAP-4", "CAP-5", "CAP-8"]
+after = [{ epic = 1, needs = "focus handling for the menu and sheets (entry 2), the nine-theme a11y harness (entry 3), the stale-copy and claims changes (entry 4) and the sitemap and seo-test changes (entry 5)" }]
+
+[[epic]]
+id = 3
+slug = "epic-fast-on-phones"
+title = "Fast on phones"
+covers = ["CAP-5"]
+after = [
+  { epic = 1, needs = "the keyboard fixes in the mock room and the Playground (entry 2) and the practice breadcrumb and skip-link edits (entries 2 and 5)" },
+  { epic = 2, needs = "Shell, ReaderShell and their global CSS deleted (entry 10) before the CSS split, the Radix picker removal, the scroll-effect rework and the duplicate-Shell trim" },
+]
+
+[[epic]]
+id = 4
+slug = "epic-one-system"
+title = "One system underneath"
+covers = ["CAP-8", "CAP-9", "CAP-10"]
+after = [
+  { epic = 1, needs = "the CSP with the Sentry origin (entry 7), the hardened CI (entry 6) and the a11y harness (entry 3)" },
+  { epic = 2, needs = "the final shared frame with Shell deleted (entry 10) for the rest of the site to converge on" },
+  { epic = 3, needs = "the CSS split and cssChunking, the Playground and mock-room changes and the Radix removal, which touch the same files as the frame, globals.css, component and dead-code work" },
+]

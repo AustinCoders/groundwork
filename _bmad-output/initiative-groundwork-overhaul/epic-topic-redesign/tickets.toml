@@ -1,0 +1,138 @@
+[[entry]]
+id = 1
+type = "story"
+title = "TP-1 · Topic frame and shared reader parts (tracer)"
+description = "Adds the optional topic props to PageFrame (back, titleHref, mark and accent, actions, reading, layout, skipHref) with a thin TopicFrame that epic 4 later converges the rest of the site on; extracts ChapterRail, TocCard, ChapterEnd, ChapterPager, ChaptersSheet (keeping epic 1 entry 2's focus handling), useActiveHeading, useChapterKeys and DiagramDefs for entry 3, and PartSection and ChapterCard for entries 4 and 9; and, as the tracer, renders only the /notes cover's existing content inside TopicFrame (the other 17 covers stay on Shell until entry 4), adding /notes to the head-back e2e loop."
+verify = "/notes shows the labelled back pill, menu and JavaScript title with its current cover content and passes the a11y spec; /review, /progress, /git and /architecture look unchanged in before-and-after screenshots; the architecture, git, keyboard and head-back e2e tests pass."
+covers = ["CAP-3", "CAP-8"]
+after = ["1.2", "1.3"]
+hitl = false
+risk = "medium"
+unknown = "Whether the series CSS modules split cleanly enough that git and architecture stay pixel-identical."
+references = ["_bmad-output/planning-artifacts/audit-2026-09-28/topics.md#32-shared-frame-topicframe", "_bmad-output/planning-artifacts/audit-2026-09-28/topics.md#34-component-reuse-plan"]
+
+[[entry]]
+id = 2
+type = "story"
+title = "TP-0 · Topic routing and data fixes"
+description = "Bases outline state on the written count instead of status so /soon?topic= stays on /soon and lists the topic's syllabus sections from content/topics.ts instead of bouncing to a level picker, fixes the stale /soon copy (handed over from epic 1 entry 4), limits the /path sidebar to the current topic, sets dynamicParams false on the 18 topic chapter routes and on /architecture/[chapter] so unknown slugs 404, counts zero minutes for unwritten chapters, adds a 404-status smoke test and a vitest for the minutes, and updates arch-request-path.ts, arch-routes.ts and arch-content-model.ts where they describe these behaviours."
+verify = "/soon?topic=typescript renders the TypeScript syllabus without redirecting, the /path?topic=js sidebar lists 41 chapters, curl -w '%{http_code}' on /notes/nope and /architecture/nope prints 404, /level/typescript shows no minutes, and the seo, claims, sitemap and new tests pass."
+covers = ["CAP-4"]
+after = ["1.4", "1.5"]
+hitl = false
+risk = "low"
+unknown = "Whether topicStats or claims figures move when unwritten chapters count zero minutes; if epic 1 entry 8 lands first, rebase on its claims test."
+references = ["_bmad-output/planning-artifacts/audit-2026-09-28/topics.md#17-bugs-found-while-auditing"]
+
+[[entry]]
+id = 3
+type = "story"
+title = "TP-3 · Chapter reader: rail, readable column, contents"
+description = "Renders every written chapter in TopicFrame's reader layout with entry 1's rail (search ported in, level folds, read ticks), a ≤760px article with h3 ids and an on-page contents, a header pager and the chapter keys, a restyled practice block, an end card with Mark as read and the review hint, text size, narrator and print moved into the site menu with print CSS re-targeted to the article, the playground e2e test moved to the menu's Playground link, the chapters added to the a11y spec and head-back loop, and arch-search.ts and arch-rendering.ts rewritten for the new reader."
+verify = "At 1440 a chapter paragraph is at most 760px wide and every h3 is linked from the contents; at 390 the text column is at least 350px and the Chapters sheet opens; the keys [ ] n p t work; printing prints only the article; marking a chapter read brings it back on /review after the first gap; the narration, React and DSA demo, search, playground and head-back e2e tests pass; a11y on /notes/setup-mental-model passes in light and dark at 1440 and 390."
+covers = ["CAP-3"]
+after = [1]
+hitl = false
+risk = "high"
+unknown = "How Lenis smooth scrolling interacts with the drag and slider demos, and which selectors narration's SPEECH_EXCLUDE needs for the new end and practice blocks."
+references = ["_bmad-output/planning-artifacts/audit-2026-09-28/topics.md#b-chapter-reader-written-chapter", "_bmad-output/planning-artifacts/audit-2026-09-28/topics.md#35-must-not-regress-acceptance-checklist-for-every-story"]
+
+[[entry]]
+id = 4
+type = "story"
+title = "TP-2 · Topic cover as a landing page"
+description = "Replaces the cover for the four written topics with a hero and Continue action, an Up next card holding the reading-time picker (a useReadingPlan hook lifted from CoverMap), and chapters grouped by level as entry 1's PartSection and ChapterCard with subtitles, minutes, exercise counts and read ticks, keeping HashRedirect and a static layout under reduced motion, and adds the four covers to the a11y spec and head-back loop."
+verify = "The #main h1 on /notes contains JavaScript, a card's read tick updates the read count, Continue opens the first unread chapter, the first chapter card is above the fold at 1440x900, there is no horizontal scroll at 375, a11y on the four covers passes, and the spec's three-tap phone walk (open /notes, Continue, reach a Closures section from its contents) works at 390."
+covers = ["CAP-3"]
+after = [1, 3]
+hitl = false
+risk = "medium"
+unknown = "Whether the station tick e2e selectors move with the new cards or the test is updated."
+references = ["_bmad-output/planning-artifacts/audit-2026-09-28/topics.md#a-topic-cover--landing-written-topics"]
+
+[[entry]]
+id = 5
+type = "story"
+title = "TP-4 · Unwritten chapters and the loading skeleton"
+description = "Gives outline chapters the reader layout with a roadmap card of what the chapter will cover, Meanwhile links to written chapters and interview rounds from a new lib/topicRelated.ts that entry 6 reuses, and prev and next among outline chapters, and restyles ChapterSkeleton to the new grid."
+verify = "/typescript/ts-setup-compiler shows its items, Meanwhile links and prev and next, keeps noindex, and a throttled navigation between two chapters shows no layout jump from skeleton to page."
+covers = ["CAP-3", "CAP-4"]
+after = [3, 4]
+hitl = false
+risk = "low"
+unknown = "Which written chapters and rounds each outline topic should point to, and whether the skeleton belongs in a per-topic layout.tsx."
+references = ["_bmad-output/planning-artifacts/audit-2026-09-28/topics.md#e-outline-topic-landing-replaces-soon", "_bmad-output/planning-artifacts/audit-2026-09-28/ux-a11y.md#24-responsive", "_bmad-output/planning-artifacts/audit-2026-09-28/ux-a11y.md#25-ux-flows"]
+
+[[entry]]
+id = 6
+type = "story"
+title = "TP-5 · A real page for unwritten topics"
+description = "Renders a server-side TopicOutline on outline covers (roadmap by level, Meanwhile from entry 5's lib/topicRelated.ts, curriculum notes), redirects /soon?topic=, /level/<outline> and /path?topic=<outline> to it with next.config redirects matched on the query so the target stays static, points navHref, the home page and the menu at it, and updates tests/seo.test.ts and the How this is built chapters on coming-soon routing (arch-coming-soon.ts, arch-routes.ts, arch-state.ts)."
+verify = "curl -sL on /soon?topic=typescript, /level/typescript and /path?topic=typescript each ends on /typescript with the roadmap in the HTML; the home page's Being written next link for TypeScript lands there; no page shows 0 / 0 or 0 min; the sitemap still omits outline covers; the seo and claims tests pass."
+covers = ["CAP-4"]
+after = [2, 4, 5]
+hitl = false
+risk = "medium"
+unknown = "Whether next.config redirects with a query match cover every old /soon link, and whether any external link depends on /soon rendering."
+references = ["_bmad-output/planning-artifacts/audit-2026-09-28/topics.md#e-outline-topic-landing-replaces-soon"]
+
+[[entry]]
+id = 7
+type = "story"
+title = "TP-6 · Level page"
+description = "Moves /level/<topic> onto TopicFrame with a staggered hero, three level cards whose stats count written chapters only, the saved level marked, and the syllabus as one accordion in a CSS module, and adds /level/js to the head-back loop; entry 8 then re-points its path links."
+verify = "/level/js has an h1 containing JavaScript, /level?topic=system-design lands on /level/system-design, the saved level shows as Your level, and a11y on /level/js passes in light and dark at 1440 and 390."
+covers = ["CAP-3", "CAP-4"]
+after = [1, 6]
+hitl = false
+risk = "low"
+unknown = "None beyond moving the Syllabus and .level styles out of globals.css."
+
+[[entry]]
+id = 8
+type = "story"
+title = "TP-7 · Path page, rendered on the server"
+description = "Moves the path onto TopicFrame with its steps in server HTML via static per-topic and per-level segments (never request-time searchParams), redirects old /path?topic=&level= links, re-points LevelView's links, navHref and the smoke and a11y URLs, sends only this topic's chapter data, collapses exercises except for the next step, keeps one primary action, moves Reset progress to a low-emphasis foot with confirmation, adds the path to the head-back loop, and updates the /path row in arch-routes.ts."
+verify = "The server HTML for the JavaScript beginner path contains the step titles and a heading with Beginner; the old /path?topic=js&level=beginner URL redirects there; the build lists no new dynamic route; the path payload is near 30 KB instead of 365 KB; Reset still asks and clears progress; a11y on the path passes."
+covers = ["CAP-3", "CAP-5"]
+after = [1, 6, 7]
+hitl = false
+risk = "medium"
+unknown = "How saved progress hydrates over server-rendered steps without a flash."
+
+[[entry]]
+id = 9
+type = "story"
+title = "TP-8 · Git and How this is built on the same frame"
+description = "Renders SeriesLanding, ChapterView and ArchitectureView inside TopicFrame with the labelled back pill, brand, title and actions, sharing the reader parts entry 3 settled and the PartSection and ChapterCard entry 4 settled, and adds /git, /architecture and a chapter of each to the head-back e2e loop."
+verify = "/git, /git/merge, /architecture and /architecture/arch-request-path show the labelled back pill, and their e2e and a11y tests pass."
+covers = ["CAP-3", "CAP-8"]
+after = [3, 4]
+hitl = false
+risk = "low"
+unknown = "Whether the git progress key prefix needs any change when the rail is shared."
+
+[[entry]]
+id = 10
+type = "story"
+title = "TP-9 · Delete the old Shell and reader"
+description = "Deletes Shell, ReaderShell, ChapterSheet, CoverSheet, CoverMap, ChapterNav, ChapterNavSection, SoonClient and their global CSS, moves app/error.tsx and app/not-found.tsx onto PageFrame, keeps or moves the sidebar widgets as the user decides, and rewrites the remaining How this is built chapters that name the old reader (arch-repo-map.ts, arch-design-system.ts, arch-build.ts)."
+verify = "rg for components/Shell, ReaderShell and CoverMap in app, components and lib finds nothing; npm run check, the build, e2e, a11y and contrast tests pass; the 404 page renders in the frame."
+covers = ["CAP-8"]
+after = [4, 5, 6, 7, 8, 9]
+hitl = true
+risk = "medium"
+unknown = "Keep, move or drop the daily recap, clock and weather, streak and today's pick widgets; the user decides before the story starts."
+references = ["_bmad-output/planning-artifacts/audit-2026-09-28/topics.md#34-component-reuse-plan"]
+
+[[entry]]
+id = 11
+type = "story"
+title = "Refactor sweep"
+description = "Cleans up what the build records and deferred review findings of entries 1 to 10 leave behind, scoped when it starts; cleanup only, with any scope pushed out of another story becoming a new story."
+verify = "npm run check, npm run build and npm run test:e2e pass, and every deferred review finding of this epic is either fixed or recorded as a new roadmap task."
+covers = ["CAP-8"]
+after = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+hitl = false
+risk = "low"
+unknown = "Its scope, set from the build records when it starts."

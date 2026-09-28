@@ -1,0 +1,103 @@
+[[entry]]
+id = 1
+type = "story"
+title = "Remove the CV details and make the privacy copy true"
+description = "Makes the scouting report, the R1 answer and the R10 resume-grilling round generic (no earlier employer, home town or relocation month; R10 becomes a template), checks lib/mock/bank.ts which reuses those rounds, removes the two names from the spelling list, rewrites the FAQ's privacy answers to name what leaves the browser (page analytics, the weather lookup, narrator text sent to /api/tts, error reports to /api/client-error and to Sentry once entry 7 turns it on), and adds an indexed /privacy page in PageFrame, linked from the FAQ and the home footer, which entry 5 adds to the sitemap."
+verify = "A grep of content/, lib/ and .cspell/project-words.txt for the removed names finds nothing, /privacy renders in the frame with its metadata, and the FAQ links it."
+covers = ["CAP-1"]
+after = []
+hitl = false
+risk = "low"
+unknown = "Whether the analytics provider and the weather service need naming by vendor on the privacy page."
+references = ["_bmad-output/planning-artifacts/audit-2026-09-28/seo-content-roadmap.md#c1--high--the-interview-book-still-holds-one-persons-cv-t01-regressed", "_bmad-output/planning-artifacts/audit-2026-09-28/seo-content-roadmap.md#c6--medium--the-privacy-copy-says-more-than-the-site-does"]
+
+[[entry]]
+id = 2
+type = "story"
+title = "Fix the keyboard traps and the broken skip link"
+description = "Makes the closed off-canvas Shell sidebar inert at 900px and below, holds and restores focus in the SiteDrawer, the series Chapters sheet and the problems Filters sheet, scopes the flashcard drill's and mock room's Enter and Space handlers so focused buttons and links still activate, points the Playground's skip link at a real target, and adds e2e/keyboard.spec.ts covering each; epic 2 entry 1 carries the Chapters-sheet focus handling into the shared ChaptersSheet."
+verify = "e2e/keyboard.spec.ts passes at 390: tabbing from the top of /notes never lands in the closed sidebar; the SiteDrawer on /review, the Chapters sheet on /git/merge and the Filters sheet on /problems each keep focus inside and return it on Escape; Enter activates Stop in the flashcard drill and a drawer link during the mock brief; the Playground skip link focuses the editor."
+covers = ["CAP-2"]
+after = []
+hitl = false
+risk = "medium"
+unknown = "Whether the SiteDrawer focus trap conflicts with its nested listboxes and search, which already handle Escape."
+references = ["_bmad-output/planning-artifacts/audit-2026-09-28/ux-a11y.md#22-accessibility"]
+
+[[entry]]
+id = 3
+type = "story"
+title = "Accessibility suite in every theme and on a phone"
+description = "Runs the axe checks in all nine themes at 1440 and at a 390 viewport set inside e2e/a11y.spec.ts (the Playwright mobile project stays with epic 4), adds /interview/questions, /soon?topic=typescript, the 404 page and an open menu, switches scrollable-region-focusable back on by giving .table-scroll (components/reader/enhancements.ts) and the progress heatmap tabindex, role region and a label, fixes the contrast failures it finds with theme tokens, extends tests/contrast.test.ts to the text tokens, and updates arch-design-system.ts and arch-health.ts where they describe the suite."
+verify = "npm run test:e2e runs the a11y spec across nine themes at 1440 and 390 with no rule disabled and passes, and tests/contrast.test.ts and tests/claims.test.ts pass."
+covers = ["CAP-2"]
+after = [2]
+hitl = false
+risk = "medium"
+unknown = "How many more contrast or scrollable-region failures appear, and how much CI time about 400 axe runs add."
+references = ["_bmad-output/planning-artifacts/audit-2026-09-28/ux-a11y.md#3-playwright--axe-coverage"]
+
+[[entry]]
+id = 4
+type = "story"
+title = "Stale copy, round 2"
+description = "Fixes the JavaScript tagline's section count, the language counts on /practice and in the README, and the numbers in docs/ROADMAP.md from siteStats(), and extends tests/claims.test.ts to the counts that change; the /soon copy is epic 2 entry 2's and the question count is entry 8's."
+verify = "tests/claims.test.ts asserts the tagline and language counts and passes, and docs/ROADMAP.md states the chapter, exercise, Git and How this is built counts the content holds."
+covers = ["CAP-6"]
+after = []
+hitl = false
+risk = "low"
+unknown = "Which outline sizes docs/ROADMAP.md should state for GraphQL, Redis and Kubernetes (22, 21 and 24, or 6, 12 and 8)."
+references = ["_bmad-output/planning-artifacts/audit-2026-09-28/seo-content-roadmap.md#c3--medium--stale-coming-soon-copy-on-all-14-outline-topics"]
+
+[[entry]]
+id = 5
+type = "story"
+title = "Share images, topic breadcrumbs and a correct sitemap"
+description = "Makes lib/metadata.ts keep an og:image on every page (a per-section default where no page image exists), makes problem breadcrumbs name the problem's own topic, adds /mock, /interview/questions and entry 1's /privacy to the sitemap, drops /practice, sets lastModified from content rather than build time, and updates arch-build.ts where it states the URL count, lastModified and the OG files."
+verify = "A script over the built sitemap finds og:image on every URL; /problems/<a DSA problem id> shows a DSA breadcrumb; tests/seo.test.ts covers the sitemap changes; tests/claims.test.ts passes."
+covers = ["CAP-7"]
+after = [1, 2]
+hitl = false
+risk = "low"
+unknown = "What date source content has for lastModified; git commit dates at build time may be the only option."
+references = ["_bmad-output/planning-artifacts/audit-2026-09-28/seo-content-roadmap.md#part-b-seo-findings"]
+
+[[entry]]
+id = 6
+type = "story"
+title = "CI runs the comments check, with locked-down workflows"
+description = "Adds npm run comments to the CI workflow, sets least-privilege permissions and a concurrency group on every workflow, pins third-party actions by commit with Dependabot keeping them current, and updates arch-health.ts and arch-repo-map.ts where they describe CI."
+verify = "A pull request CI log shows npm run comments running, every workflow file declares permissions, and tests/claims.test.ts passes."
+covers = ["CAP-10"]
+after = [3]
+hitl = false
+risk = "low"
+unknown = "Whether Dependabot's github-actions updates work cleanly with SHA-pinned actions in this repo."
+references = ["_bmad-output/planning-artifacts/audit-2026-09-28/code-quality.md#finding-7-medium-ci-does-not-run-npm-run-comments-and-the-workflows-are-not-hardened"]
+
+[[entry]]
+id = 7
+type = "story"
+title = "Turn on error reporting and submit the sitemap"
+description = "The user sets NEXT_PUBLIC_SENTRY_DSN for Production on Vercel and verifies the domain in Search Console and Bing; the story redeploys, confirms the live CSP carries the Sentry origin (next.config.ts sentryOrigin already adds it at build), confirms a thrown error arrives, submits entry 5's sitemap, and updates arch-delivery.ts and arch-roadmap.ts; entry 1's privacy page already names Sentry."
+verify = "A deliberate client error on production appears in Sentry, the production CSP header lists the Sentry origin, and Search Console and Bing list the sitemap as submitted."
+covers = ["CAP-9", "CAP-7"]
+after = [1, 5]
+hitl = true
+risk = "low"
+unknown = "Whether the Sentry project exists yet, and whether domain verification uses DNS or a meta tag in app/layout.tsx."
+references = ["_bmad-output/planning-artifacts/audit-2026-09-28/code-quality.md#finding-6-medium-error-reporting-is-effectively-off-in-production"]
+
+[[entry]]
+id = 8
+type = "story"
+title = "One interview-question count"
+description = "Defines the interview-question count once from the content and uses it on the home page, the question bank and arch-overview.ts, extending the existing INTERVIEW_TOTAL_QUESTIONS assertion in tests/claims.test.ts."
+verify = "tests/claims.test.ts asserts the chosen count, and the home page, the question bank and arch-overview.ts all show it."
+covers = ["CAP-6"]
+after = [1, 2]
+hitl = true
+risk = "low"
+unknown = "Which count is true (209 in the bank, 245 question objects, or 420+ with drills); the user decides before the story starts."
+references = ["_bmad-output/planning-artifacts/audit-2026-09-28/seo-content-roadmap.md#c2--medium--the-site-gives-three-different-interview-question-counts"]
