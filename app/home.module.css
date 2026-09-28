@@ -284,7 +284,7 @@
 
 .underline path {
   fill: none;
-  stroke: var(--c-yellow);
+  stroke: var(--primary);
   stroke-width: 6;
   stroke-linecap: round;
   stroke-dasharray: 460;
@@ -323,11 +323,11 @@
 }
 
 .editor[data-state="pass"] {
-  box-shadow: inset 0 3px 0 var(--c-green);
+  box-shadow: inset 0 3px 0 var(--success);
 }
 
 .editor[data-state="fail"] {
-  box-shadow: inset 0 3px 0 var(--c-red);
+  box-shadow: inset 0 3px 0 var(--danger);
 }
 
 .codeBar {
@@ -429,11 +429,11 @@
 }
 
 .tests li[data-ok="true"] {
-  color: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  color: color-mix(in srgb, var(--success) 70%, var(--ink));
 }
 
 .tests li[data-ok="false"] {
-  color: color-mix(in srgb, var(--c-red) 75%, var(--ink));
+  color: color-mix(in srgb, var(--danger) 75%, var(--ink));
 }
 
 .tests li em {
@@ -446,7 +446,7 @@
   padding: 0 18px 10px;
   font-family: var(--font-mono);
   font-size: 12px;
-  color: color-mix(in srgb, var(--c-red) 75%, var(--ink));
+  color: color-mix(in srgb, var(--danger) 75%, var(--ink));
 }
 
 .tryFoot {
@@ -468,11 +468,11 @@
 }
 
 .passNote {
-  color: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  color: color-mix(in srgb, var(--success) 70%, var(--ink));
 }
 
 .failNote {
-  color: color-mix(in srgb, var(--c-red) 75%, var(--ink));
+  color: color-mix(in srgb, var(--danger) 75%, var(--ink));
 }
 
 @keyframes popIn {
@@ -838,8 +838,8 @@
   gap: 12px;
   padding: 14px 16px;
   color: var(--ink);
-  background: color-mix(in srgb, var(--c-green) calc(var(--d) * 12%), var(--sheet-2));
-  border: 1px solid color-mix(in srgb, var(--c-green) calc(var(--d) * 45%), var(--line));
+  background: color-mix(in srgb, var(--success) calc(var(--d) * 12%), var(--sheet-2));
+  border: 1px solid color-mix(in srgb, var(--success) calc(var(--d) * 45%), var(--line));
   border-radius: 12px;
 }
 
@@ -851,7 +851,7 @@
   font-style: normal;
   font-weight: 700;
   color: var(--sheet);
-  background: color-mix(in srgb, var(--c-green) 75%, var(--ink));
+  background: var(--success);
   border-radius: 50%;
   opacity: var(--d);
   transform: scale(calc(0.4 + var(--d) * 0.6));
@@ -868,7 +868,7 @@
 .visBar span {
   display: block;
   height: 100%;
-  background: var(--c-green);
+  background: var(--success);
   border-radius: inherit;
   transform-origin: left;
   transform: scaleX(clamp(0, calc(var(--lp, 1) * 1.15), 1));
@@ -878,7 +878,7 @@
   font-family: var(--font-heading);
   font-size: 44px;
   line-height: 1;
-  color: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  color: color-mix(in srgb, var(--success) 70%, var(--ink));
   opacity: clamp(0, calc((var(--lp, 1) - 0.72) * 5), 1);
   transform: scale(calc(0.8 + clamp(0, calc((var(--lp, 1) - 0.72) * 5), 1) * 0.2));
   transform-origin: left center;
@@ -919,7 +919,7 @@
 }
 
 .chat p:nth-child(3) {
-  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--c-red) 55%, var(--line));
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--caution) 55%, var(--line));
 }
 
 .typing {
@@ -1468,7 +1468,7 @@
 }
 
 .them span {
-  color: color-mix(in srgb, var(--c-red) 75%, var(--ink));
+  color: color-mix(in srgb, var(--danger) 75%, var(--ink));
 }
 
 .us {
@@ -1878,7 +1878,7 @@
 .sideProgress span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--c-red), var(--c-yellow));
+  background: var(--primary);
   border-radius: inherit;
   transform-origin: left;
   transform: scaleX(var(--jp));
@@ -2225,7 +2225,7 @@
 
 .paperTitle mark {
   color: inherit;
-  background: color-mix(in srgb, var(--hl-yellow) 80%, transparent);
+  background: color-mix(in srgb, var(--mark) 80%, transparent);
   border-radius: 3px;
 }
 
@@ -2303,7 +2303,7 @@
   font-family: var(--font-heading);
   font-size: 22px;
   font-weight: 700;
-  color: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  color: color-mix(in srgb, var(--success) 70%, var(--ink));
   border: 3px solid currentColor;
   border-radius: 10px;
   rotate: -10deg;
@@ -2327,8 +2327,8 @@
   font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 700;
-  color: var(--sticky-fg);
-  background: var(--sticky-bg);
+  color: var(--ink);
+  background: var(--mark);
   border-radius: 8px;
   box-shadow: var(--shadow-md);
   rotate: 7deg;

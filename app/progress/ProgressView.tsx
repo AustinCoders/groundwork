@@ -44,7 +44,8 @@ const DEFAULT_STATS: Stats = {
 
 function accentVar(a: string): React.CSSProperties {
   const name = a === "mint" ? "green" : a;
-  return { "--accent": name === "ink" ? "var(--ink)" : `var(--c-${name})` } as React.CSSProperties;
+  const value = name === "ink" || name === "primary" ? `var(--${name})` : `var(--c-${name})`;
+  return { "--accent": value } as React.CSSProperties;
 }
 
 function useLevelUp(level: number): boolean {
@@ -328,7 +329,7 @@ export function ProgressView({ tracks }: { tracks: TopicTrack[] }) {
           <Link
             href={continueWith?.href ?? "/"}
             className={styles.nextCard}
-            style={accentVar(continueWith?.accent ?? "green")}
+            style={accentVar(continueWith?.accent ?? "primary")}
           >
             <b>{continueWith ? `Keep going with ${continueWith.name}` : "Start a topic"}</b>
             <span>

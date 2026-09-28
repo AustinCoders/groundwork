@@ -105,13 +105,18 @@ export const archDesignSystem: Chapter = {
   <code>--danger</code>, <code>--caution</code> or <code>--info</code> instead.
 </p>
 <p>
-  The table is the intended use, and the site moves onto it in steps. So far the home page's
-  buttons and stats, the theme picker's cards and the dropdowns' selected option read the roles,
-  and <code>--primary</code> means the theme's accent wherever a page does not override it. The
-  rest has not moved yet. Links are still <code>--ink</code>, the reading progress bar and the
-  focus ring are still <code>--red</code>, <code>.btn--primary</code> is still mint, highlights
-  are still <code>--hl-yellow</code>, and the mock interview and the interview book still set
-  their own green and red <code>--primary</code>.
+  The table is the intended use, and the site moves onto it in steps. The home page, review,
+  progress, the interview book, the mock interview, the site menu, the modal and the shared page
+  frame now read the roles, as do the theme picker's cards and the dropdowns' selected option.
+  Their buttons, links, progress bars, active tabs, selections, focus rings and highlights follow
+  the theme, and their passed, failed, due and tip states use the state roles. None of them sets
+  its own <code>--primary</code>, and <code>tests/theme-roles.test.ts</code> fails if one of them
+  declares a role token or goes back to a fixed green, red or highlighter colour outside a short
+  list of categorical uses. The rest moves in later steps. The global rules in
+  <code>app/globals.css</code> still paint links <code>--ink</code>, the reading progress bar and
+  the focus ring <code>--red</code>, <code>.btn--primary</code> mint and highlights
+  <code>--hl-yellow</code>, and the whiteboard, the problems pages, the git guide, the
+  architecture pages and the topic pages have not moved yet.
 </p>
 <p>
   <code>app/theme-bridge.css</code> maps these names onto the conventional ones Tailwind utilities

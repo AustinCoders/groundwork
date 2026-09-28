@@ -5,7 +5,7 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  color: color-mix(in srgb, var(--primary) 70%, var(--ink));
 }
 
 .h2 {
@@ -45,14 +45,14 @@
 }
 
 .primary {
-  color: var(--paper);
-  background: color-mix(in srgb, var(--c-green) 85%, var(--ink));
+  color: var(--on-primary);
+  background: var(--primary);
   border: 0;
 }
 
 .primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px -14px color-mix(in srgb, var(--c-green) 80%, transparent);
+  box-shadow: 0 12px 24px -14px color-mix(in srgb, var(--primary) 80%, transparent);
 }
 
 .ghost {
@@ -70,7 +70,7 @@
   font: inherit;
   font-size: 14px;
   font-weight: 600;
-  color: var(--ink);
+  color: var(--primary);
   background: var(--sheet);
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -97,7 +97,7 @@
   justify-content: center;
   padding: clamp(26px, 4vw, 44px);
   background:
-    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--c-green) 18%, transparent), transparent 60%), var(--sheet);
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--primary) 18%, transparent), transparent 60%), var(--sheet);
   border: 1px solid var(--line);
   border-radius: 28px;
 }
@@ -115,7 +115,7 @@
   font-size: clamp(88px, 11vw, 140px);
   font-weight: 700;
   line-height: 0.85;
-  color: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  color: color-mix(in srgb, var(--primary) 70%, var(--ink));
 }
 
 .bigCount span {
@@ -166,13 +166,13 @@
   width: 100%;
   min-height: 4px;
   max-height: calc(100% - 40px);
-  background: color-mix(in srgb, var(--c-green) 35%, var(--sheet-2));
+  background: color-mix(in srgb, var(--primary) 45%, var(--line));
   border-radius: 8px 8px 4px 4px;
   transition: height 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .barCol[data-today] .bar {
-  background: color-mix(in srgb, var(--c-orange) 75%, var(--sheet));
+  background: var(--primary);
 }
 
 .barNum {
@@ -254,7 +254,7 @@
   font-family: var(--font-mono);
   font-size: 12.5px;
   font-weight: 700;
-  color: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  color: color-mix(in srgb, var(--primary) 70%, var(--ink));
 }
 
 .when {
@@ -274,12 +274,14 @@
 .rowMain a {
   font-family: var(--font-heading);
   font-size: 21px;
-  color: var(--ink);
-  text-decoration: none;
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
 
 .rowMain a:hover {
-  text-decoration: underline;
+  text-decoration-thickness: 2px;
 }
 
 .rowMain span {
@@ -292,12 +294,12 @@
   padding: 0 16px;
   font-size: 14px;
   color: var(--ink);
-  background: color-mix(in srgb, var(--c-green) 12%, var(--sheet));
-  border: 1px solid color-mix(in srgb, var(--c-green) 40%, var(--line));
+  background: var(--primary-soft);
+  border: 1px solid color-mix(in srgb, var(--primary) 40%, var(--line));
 }
 
 .tick:hover {
-  border-color: var(--c-green);
+  border-color: var(--primary);
 }
 
 .stage {
@@ -314,11 +316,11 @@
 }
 
 .stage i[data-on] {
-  background: var(--c-green);
+  background: var(--primary);
 }
 
 .stage i[data-now] {
-  background: color-mix(in srgb, var(--c-orange) 70%, var(--sheet));
+  background: var(--caution);
 }
 
 .topic {
@@ -333,7 +335,7 @@
   font-family: var(--font-mono);
   font-size: 12.5px;
   font-weight: 600;
-  color: color-mix(in srgb, var(--c-orange) 70%, var(--ink));
+  color: var(--caution);
 }
 
 .explain {
@@ -366,7 +368,7 @@
   margin: 0;
   padding-top: 18px;
   text-align: center;
-  border-top: 3px solid color-mix(in srgb, var(--c-green) 35%, var(--line));
+  border-top: 3px solid color-mix(in srgb, var(--primary) 35%, var(--line));
 }
 
 .explain li::before {
@@ -377,13 +379,13 @@
   width: 15px;
   height: 15px;
   background: var(--sheet);
-  border: 3px solid color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  border: 3px solid color-mix(in srgb, var(--primary) 70%, var(--ink));
   border-radius: 50%;
   translate: -50% 0;
 }
 
 .explain li[data-kept]::before {
-  background: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  background: color-mix(in srgb, var(--primary) 70%, var(--ink));
 }
 
 .explain b {
@@ -426,7 +428,7 @@
 .sessionBar span {
   display: block;
   height: 100%;
-  background: var(--c-green);
+  background: var(--primary);
   transition: width 0.4s ease;
 }
 
@@ -460,7 +462,7 @@
   font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 700;
-  color: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  color: color-mix(in srgb, var(--primary) 70%, var(--ink));
 }
 
 .focusTitle {
@@ -482,8 +484,9 @@
   padding: 16px 18px;
   font-size: 15.5px;
   line-height: 1.55;
-  background: color-mix(in srgb, var(--c-yellow) 12%, var(--sheet));
-  border-left: 4px solid var(--c-yellow);
+  color: var(--ink);
+  background: var(--info-soft);
+  border-left: 4px solid var(--info);
   border-radius: 12px;
 }
 
@@ -539,7 +542,7 @@
 .tick:focus-visible,
 .link:focus-visible,
 .rowMain a:focus-visible {
-  outline: 2px solid var(--c-green);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 

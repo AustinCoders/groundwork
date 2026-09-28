@@ -5,7 +5,7 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  color: color-mix(in srgb, var(--primary) 70%, var(--ink));
 }
 
 .h1 {
@@ -50,7 +50,7 @@
   gap: clamp(24px, 3vw, 44px);
   padding: clamp(24px, 3.4vw, 40px);
   background:
-    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--c-green) 20%, transparent), transparent 55%),
+    radial-gradient(circle at 0% 0%, var(--primary-soft), transparent 55%),
     radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--c-teal) 16%, transparent), transparent 55%),
     var(--sheet);
   border: 1px solid var(--line);
@@ -81,7 +81,7 @@
 }
 
 .ringFill {
-  stroke: var(--c-green);
+  stroke: var(--primary);
   stroke-linecap: round;
   transition: stroke-dashoffset 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -139,7 +139,7 @@
 .xpBar span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--c-green), var(--c-teal));
+  background: var(--primary);
   border-radius: inherit;
   transition: width 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -210,12 +210,12 @@
   width: 100%;
   min-height: 4px;
   max-height: calc(100% - 20px);
-  background: color-mix(in srgb, var(--c-green) 45%, var(--sheet-2));
+  background: color-mix(in srgb, var(--primary) 45%, var(--line));
   border-radius: 6px 6px 3px 3px;
 }
 
 .weekBars > div[data-today] .weekBar {
-  background: var(--c-green);
+  background: var(--primary);
 }
 
 .weekBars > div[data-today] {
@@ -377,22 +377,22 @@
 
 .heatWeek span[data-l="1"],
 .legend span[data-l="1"] {
-  background: color-mix(in srgb, var(--c-green) 30%, var(--sheet));
+  background: color-mix(in srgb, var(--primary) 25%, var(--sheet));
 }
 
 .heatWeek span[data-l="2"],
 .legend span[data-l="2"] {
-  background: color-mix(in srgb, var(--c-green) 55%, var(--sheet));
+  background: color-mix(in srgb, var(--primary) 45%, var(--sheet));
 }
 
 .heatWeek span[data-l="3"],
 .legend span[data-l="3"] {
-  background: color-mix(in srgb, var(--c-green) 80%, var(--sheet));
+  background: color-mix(in srgb, var(--primary) 70%, var(--sheet));
 }
 
 .heatWeek span[data-l="4"],
 .legend span[data-l="4"] {
-  background: color-mix(in srgb, var(--c-green) 85%, var(--ink));
+  background: var(--primary);
 }
 
 .heatFoot {
@@ -538,17 +538,17 @@
 
 .confBar span[data-c="knew"],
 .confLegend span[data-c="knew"]::before {
-  background: var(--c-green);
+  background: var(--success);
 }
 
 .confBar span[data-c="shaky"],
 .confLegend span[data-c="shaky"]::before {
-  background: var(--c-yellow);
+  background: var(--caution);
 }
 
 .confBar span[data-c="blank"],
 .confLegend span[data-c="blank"]::before {
-  background: var(--c-red);
+  background: var(--danger);
 }
 
 .confLegend {
@@ -654,7 +654,7 @@
 
 .track:focus-visible,
 .nextCard:focus-visible {
-  outline: 2px solid var(--c-green);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 

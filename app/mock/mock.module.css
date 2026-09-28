@@ -29,9 +29,9 @@
   text-transform: uppercase;
   padding: 1px 7px;
   border-radius: 999px;
-  border: 1.5px solid var(--red);
-  color: var(--red);
-  background: var(--dg-box-red);
+  border: 1.5px solid var(--caution);
+  color: var(--ink);
+  background: var(--caution-soft);
 }
 
 .coreBadge[data-veto="true"] {
@@ -43,8 +43,8 @@
 .styleNote {
   margin: 0 0 10px;
   padding: 10px 14px;
-  border-left: 3px solid var(--ink);
-  background: var(--hl-yellow);
+  border-left: 3px solid var(--info);
+  background: var(--info-soft);
   color: var(--ink);
   border-radius: 0 8px 8px 0;
 }
@@ -97,8 +97,8 @@
 
 .mode[aria-selected="true"] {
   color: var(--ink);
-  background: var(--sheet);
-  box-shadow: var(--shadow-sm);
+  background: var(--primary-soft);
+  box-shadow: inset 0 0 0 1.5px var(--primary);
 }
 
 .modeCount {
@@ -106,7 +106,7 @@
   font-size: 12px;
   padding: 0 7px;
   border-radius: 999px;
-  background: var(--hl-pink);
+  background: var(--primary-soft);
   color: var(--ink);
 }
 
@@ -182,11 +182,11 @@
 
 .stepperItem[data-state="current"] .stepperDot {
   color: var(--ink);
-  border-color: var(--ink);
-  background: var(--hl-mint);
+  border-color: var(--primary);
+  background: var(--primary-soft);
   box-shadow:
     0 0 0 4px var(--sheet),
-    0 0 0 5.5px var(--ink);
+    0 0 0 5.5px var(--primary);
 }
 
 .stepperText {
@@ -253,7 +253,7 @@
 }
 
 .stepQuestion:focus-visible {
-  outline: 2px solid var(--ink);
+  outline: 2px solid var(--primary);
   outline-offset: 6px;
 }
 
@@ -305,8 +305,8 @@
 }
 
 .card[aria-pressed="true"] {
-  border-color: var(--ink);
-  background: var(--hl-mint);
+  border-color: var(--primary);
+  background: var(--primary-soft);
   box-shadow: var(--shadow-sm);
 }
 
@@ -363,8 +363,8 @@
   place-items: center;
   font-size: 13px;
   font-weight: 700;
-  color: var(--sheet);
-  background: var(--ink);
+  color: var(--on-primary);
+  background: var(--primary);
   border-radius: 50%;
   opacity: 0;
   transform: scale(0.6);
@@ -461,7 +461,7 @@
 
 .mapStage[data-core="true"]::before {
   border-color: var(--ink);
-  background: var(--hl-mint);
+  background: var(--caution-soft);
 }
 
 .mapStage:not(:last-child)::after {
@@ -567,8 +567,8 @@
 }
 
 .roundCard[aria-pressed="true"] {
-  border-color: var(--ink);
-  background: var(--hl-mint);
+  border-color: var(--primary);
+  background: var(--primary-soft);
 }
 
 .roundFacts {
@@ -719,10 +719,10 @@
   gap: 12px 18px;
   padding: 14px 18px;
   margin: 0 0 22px;
-  border: 1.5px solid var(--ink);
+  border: 1.5px solid var(--info);
   border-radius: var(--radius);
-  background: var(--hl-yellow);
-  color: var(--sticky-fg);
+  background: var(--info-soft);
+  color: var(--ink);
 }
 
 .resume strong {
@@ -785,7 +785,7 @@
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: var(--ink);
+  background: var(--primary);
   transition: width 0.3s ease;
 }
 
@@ -795,7 +795,7 @@
 }
 
 .railStage[data-state="done"] .railFill {
-  background: var(--green);
+  background: var(--primary);
 }
 
 .railName {
@@ -849,7 +849,7 @@
 }
 
 .briefFacts .fail {
-  border-left-color: var(--red);
+  border-left-color: var(--caution);
 }
 
 .qHead {
@@ -932,7 +932,7 @@
 }
 
 .said[data-you] .saidBubble {
-  background: var(--hl-mint);
+  background: var(--primary-soft);
   border-radius: 16px 4px 16px 16px;
   white-space: pre-wrap;
 }
@@ -997,8 +997,8 @@
   font-family: var(--font-mono);
   font-size: 11.5px;
   border-radius: 999px;
-  border: 1.5px solid var(--green);
-  color: var(--green);
+  border: 1.5px solid var(--info);
+  color: var(--info);
 }
 
 .shiftTag[data-shift="easier"] {
@@ -1045,7 +1045,7 @@
 
 .padTab[aria-selected="true"] {
   color: var(--ink);
-  background: var(--hl-mint);
+  background: var(--primary-soft);
   font-weight: 700;
 }
 
@@ -1075,9 +1075,9 @@
 }
 
 .boardTool[aria-pressed="true"] {
-  background: var(--ink);
-  color: var(--sheet);
-  border-color: var(--ink);
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: var(--primary);
 }
 
 .boardStencil {
@@ -1128,9 +1128,9 @@
 
 .boardShape[data-selected] rect,
 .boardShape[data-selected] path {
-  stroke: var(--green);
+  stroke: var(--primary);
   stroke-width: 3;
-  fill: var(--hl-mint);
+  fill: var(--primary-soft);
 }
 
 .boardShape text {
@@ -1199,8 +1199,14 @@
 }
 
 .nextUp {
-  border-color: var(--ink);
-  background: var(--hl-yellow);
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.nextUp .eyebrow,
+.nextUp .recordLabel,
+.roundCard[aria-pressed="true"] .mapMeta {
+  color: var(--ink-soft);
 }
 
 .nextUp .btn {
@@ -1235,18 +1241,18 @@
 
 .gaugeFill {
   fill: none;
-  stroke: var(--red);
+  stroke: var(--danger);
   stroke-width: 10;
   stroke-linecap: round;
 }
 
 .gaugeFill[data-band="getting-there"] {
-  stroke: var(--pencil);
+  stroke: var(--caution);
 }
 
 .gaugeFill[data-band="ready"],
 .gaugeFill[data-band="strong"] {
-  stroke: var(--green);
+  stroke: var(--success);
 }
 
 .gaugeNum {
@@ -1282,7 +1288,7 @@
 }
 
 .streakDot[data-on] {
-  background: var(--green);
+  background: var(--primary);
 }
 
 .readyH {
@@ -1317,16 +1323,16 @@
   font-family: var(--font-mono);
   font-weight: 700;
   text-align: right;
-  color: var(--red);
+  color: var(--danger);
 }
 
 .compScore[data-band="getting-there"] {
-  color: var(--pencil);
+  color: var(--caution);
 }
 
 .compScore[data-band="ready"],
 .compScore[data-band="strong"] {
-  color: var(--green);
+  color: var(--success);
 }
 
 .compDelta {
@@ -1336,11 +1342,11 @@
 }
 
 .compDelta[data-dir="up"] {
-  color: var(--green);
+  color: var(--success);
 }
 
 .compDelta[data-dir="down"] {
-  color: var(--red);
+  color: var(--danger);
 }
 
 .spark {
@@ -1389,19 +1395,19 @@
 }
 
 .heat td[data-band="not-yet"] {
-  background: var(--dg-box-red);
+  background: var(--danger-soft);
 }
 
 .heat td[data-band="getting-there"] {
-  background: var(--hl-yellow);
+  background: var(--caution-soft);
 }
 
 .heat td[data-band="ready"] {
-  background: var(--hl-mint);
+  background: var(--success-soft);
 }
 
 .heat td[data-band="strong"] {
-  background: var(--green);
+  background: var(--success);
   color: var(--sheet);
   font-weight: 700;
 }
@@ -1443,7 +1449,7 @@
 }
 
 .notes:focus-visible {
-  outline: 2px solid var(--ink);
+  outline: 2px solid var(--primary);
   outline-offset: 1px;
 }
 
@@ -1506,11 +1512,11 @@
 }
 
 .timer[data-state="low"] .timerArc {
-  stroke: var(--dg-yellow-stroke);
+  stroke: var(--caution);
 }
 
 .timer[data-state="over"] .timerArc {
-  stroke: var(--red);
+  stroke: var(--danger);
 }
 
 .timerText {
@@ -1689,24 +1695,24 @@
 }
 
 .mark[aria-pressed="true"][data-mark="0"] {
-  background: var(--dg-box-red);
-  color: var(--red);
+  background: var(--danger-soft);
+  color: var(--ink);
   font-weight: 700;
-  box-shadow: inset 0 0 0 1.5px var(--red);
+  box-shadow: inset 0 0 0 1.5px var(--danger);
 }
 
 .mark[aria-pressed="true"][data-mark="0.5"] {
-  background: var(--dg-box-yellow);
+  background: var(--caution-soft);
   color: var(--ink);
   font-weight: 700;
-  box-shadow: inset 0 0 0 1.5px var(--dg-yellow-stroke);
+  box-shadow: inset 0 0 0 1.5px var(--caution);
 }
 
 .mark[aria-pressed="true"][data-mark="1"] {
-  background: var(--dg-box-green);
-  color: var(--green);
+  background: var(--success-soft);
+  color: var(--ink);
   font-weight: 700;
-  box-shadow: inset 0 0 0 1.5px var(--green);
+  box-shadow: inset 0 0 0 1.5px var(--success);
 }
 
 .meter {
@@ -1769,14 +1775,14 @@
 }
 
 .inlineTimer[data-state="low"] {
-  border-color: var(--dg-yellow-stroke);
-  background: var(--dg-box-yellow);
+  border-color: var(--caution);
+  background: var(--caution-soft);
 }
 
 .inlineTimer[data-state="over"] {
-  border-color: var(--red);
-  color: var(--red);
-  background: var(--dg-box-red);
+  border-color: var(--danger);
+  color: var(--ink);
+  background: var(--danger-soft);
 }
 
 .workspace {
@@ -1832,15 +1838,15 @@
 
 .stamp[data-verdict="strong-hire"],
 .stamp[data-verdict="hire"] {
-  color: var(--green);
+  color: var(--success);
 }
 
 .stamp[data-verdict="lean-no"] {
-  color: var(--dg-yellow-stroke);
+  color: var(--caution);
 }
 
 .stamp[data-verdict="no-hire"] {
-  color: var(--red);
+  color: var(--danger);
 }
 
 .stampWord {
@@ -1957,18 +1963,18 @@
 
 .verdictChip[data-verdict="strong-hire"],
 .verdictChip[data-verdict="hire"] {
-  background: var(--dg-box-green);
-  color: var(--green);
+  background: var(--success-soft);
+  color: var(--ink);
 }
 
 .verdictChip[data-verdict="lean-no"] {
-  background: var(--dg-box-yellow);
+  background: var(--caution-soft);
   color: var(--ink);
 }
 
 .verdictChip[data-verdict="no-hire"] {
-  background: var(--dg-box-red);
-  color: var(--red);
+  background: var(--danger-soft);
+  color: var(--ink);
 }
 
 .profile {
@@ -2067,18 +2073,18 @@
 }
 
 .qScore[data-band="good"] {
-  background: var(--dg-box-green);
-  color: var(--green);
+  background: var(--success-soft);
+  color: var(--ink);
 }
 
 .qScore[data-band="mid"] {
-  background: var(--dg-box-yellow);
+  background: var(--caution-soft);
   color: var(--ink);
 }
 
 .qScore[data-band="bad"] {
-  background: var(--dg-box-red);
-  color: var(--red);
+  background: var(--danger-soft);
+  color: var(--ink);
 }
 
 .qBody {
@@ -2187,8 +2193,6 @@
 }
 
 .page {
-  --primary: var(--c-green);
-  --on-primary: var(--paper);
   --max: 1200px;
   --r-lg: 20px;
   min-height: 100vh;
@@ -2321,8 +2325,8 @@
   padding: 6px 12px;
   font-family: var(--font-mono);
   font-size: 12px;
-  color: color-mix(in srgb, var(--c-red) 70%, var(--ink));
-  background: color-mix(in srgb, var(--c-red) 10%, var(--sheet));
+  color: color-mix(in srgb, var(--danger) 70%, var(--ink));
+  background: color-mix(in srgb, var(--danger) 10%, var(--sheet));
   border-radius: 999px;
 }
 
@@ -2336,7 +2340,7 @@
 }
 
 .topLive .liveDot {
-  background: var(--c-red);
+  background: var(--danger);
 }
 
 .liveDot::after {
@@ -2581,8 +2585,8 @@
 }
 
 .previewPush {
-  background: color-mix(in srgb, var(--c-red) 8%, var(--sheet));
-  border: 1.5px solid color-mix(in srgb, var(--c-red) 45%, var(--line));
+  background: color-mix(in srgb, var(--caution) 8%, var(--sheet));
+  border: 1.5px solid color-mix(in srgb, var(--caution) 45%, var(--line));
   border-bottom-left-radius: 4px;
 }
 
@@ -2593,7 +2597,7 @@
   font-size: 11px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--c-red) 72%, var(--ink));
+  color: color-mix(in srgb, var(--caution) 72%, var(--ink));
 }
 
 .previewRubric {
@@ -2613,11 +2617,11 @@
 }
 
 .previewRubric span[data-mark="1"] {
-  color: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  color: color-mix(in srgb, var(--success) 70%, var(--ink));
 }
 
 .previewRubric span[data-mark="0.5"] {
-  color: color-mix(in srgb, var(--c-yellow) 55%, var(--ink));
+  color: color-mix(in srgb, var(--caution) 55%, var(--ink));
 }
 
 .previewStamp {
@@ -2628,7 +2632,7 @@
   font-family: var(--font-heading);
   font-size: 24px;
   font-weight: 700;
-  color: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  color: color-mix(in srgb, var(--success) 70%, var(--ink));
   border: 3px solid currentColor;
   border-radius: 10px;
   rotate: -9deg;
@@ -2712,8 +2716,8 @@
 
 .mode[aria-selected="true"] {
   color: var(--ink);
-  background: var(--sheet);
-  box-shadow: var(--shadow-sm);
+  background: var(--primary-soft);
+  box-shadow: inset 0 0 0 1.5px var(--primary);
 }
 
 .wizard {
@@ -2962,12 +2966,12 @@
   top: 0;
   left: 0;
   font-weight: 700;
-  color: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  color: color-mix(in srgb, var(--success) 70%, var(--ink));
 }
 
 .tipBad li::before {
   content: "✗";
-  color: color-mix(in srgb, var(--c-red) 72%, var(--ink));
+  color: color-mix(in srgb, var(--danger) 72%, var(--ink));
 }
 
 .briefSide {
@@ -3158,7 +3162,7 @@
   gap: 10px;
   padding: 9px 12px;
   font-size: 14.5px;
-  color: var(--ink);
+  color: var(--primary);
   text-decoration: none;
   background: var(--sheet);
   border: 1px solid var(--line);
@@ -3295,7 +3299,7 @@
   z-index: 60;
   width: 100%;
   height: 3px;
-  background: var(--c-green);
+  background: var(--primary);
   transform-origin: left;
   transform: scaleX(var(--sp, 0));
   pointer-events: none;

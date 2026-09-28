@@ -14,7 +14,7 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  color: color-mix(in srgb, var(--primary) 70%, var(--ink));
 }
 
 .label {
@@ -88,7 +88,7 @@
 .roundTab[aria-selected="true"] {
   color: var(--ink);
   background: var(--sheet);
-  border-color: color-mix(in srgb, var(--c-green) 50%, var(--line));
+  border-color: color-mix(in srgb, var(--primary) 50%, var(--line));
   box-shadow: var(--shadow-sm);
 }
 
@@ -101,7 +101,7 @@
 }
 
 .roundTab[aria-selected="true"] .roundCode {
-  color: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  color: color-mix(in srgb, var(--primary) 70%, var(--ink));
 }
 
 .roundName {
@@ -199,8 +199,9 @@
   font-family: var(--font-heading);
   font-size: 20px;
   line-height: 1.35;
-  background: color-mix(in srgb, var(--c-yellow) 12%, var(--sheet));
-  border-left: 4px solid var(--c-yellow);
+  color: var(--ink);
+  background: var(--info-soft);
+  border-left: 4px solid var(--info);
   border-radius: 10px;
 }
 
@@ -263,8 +264,8 @@
   height: 22px;
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--paper);
-  background: color-mix(in srgb, var(--c-green) 75%, var(--ink));
+  color: var(--on-primary);
+  background: var(--primary);
   border-radius: 50%;
 }
 
@@ -301,7 +302,7 @@
 
 .tips li::before {
   content: "✓";
-  color: color-mix(in srgb, var(--c-green) 75%, var(--ink));
+  color: color-mix(in srgb, var(--success) 75%, var(--ink));
 }
 
 .marked li {
@@ -310,7 +311,7 @@
 
 .marked li::before {
   content: "✗";
-  color: color-mix(in srgb, var(--c-red) 75%, var(--ink));
+  color: color-mix(in srgb, var(--danger) 75%, var(--ink));
 }
 
 .practise {
@@ -321,8 +322,8 @@
   padding: 12px 20px;
   font: inherit;
   font-weight: 600;
-  color: var(--paper);
-  background: var(--c-green);
+  color: var(--on-primary);
+  background: var(--primary);
   border: 0;
   border-radius: 12px;
   cursor: pointer;
@@ -355,7 +356,7 @@
   font-family: var(--font-heading);
   font-size: 28px;
   font-weight: 700;
-  color: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  color: color-mix(in srgb, var(--primary) 70%, var(--ink));
 }
 
 .criterion b {
@@ -389,7 +390,7 @@
 .weightBar span {
   display: block;
   height: 100%;
-  background: var(--c-green);
+  background: var(--primary);
   border-radius: inherit;
 }
 
@@ -477,8 +478,8 @@
   height: 22px;
   font-size: 12px;
   font-weight: 700;
-  color: var(--paper);
-  background: color-mix(in srgb, var(--c-green) 75%, var(--ink));
+  color: var(--sheet);
+  background: var(--success);
   border-radius: 50%;
 }
 
@@ -502,8 +503,8 @@
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 700;
-  color: var(--sticky-fg);
-  background: var(--sticky-bg);
+  color: var(--ink);
+  background: var(--mark);
   border-radius: 8px;
   rotate: 4deg;
 }
@@ -523,7 +524,7 @@
   font-size: 44px;
   font-weight: 700;
   line-height: 1;
-  color: color-mix(in srgb, var(--c-green) 70%, var(--ink));
+  color: color-mix(in srgb, var(--success) 70%, var(--ink));
 }
 
 .verdict span {
@@ -612,7 +613,7 @@
 }
 
 .faqItem[open] {
-  border-color: color-mix(in srgb, var(--c-green) 45%, var(--line));
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--line));
 }
 
 .faqItem summary {
@@ -661,7 +662,7 @@
 .roundTab:focus-visible,
 .practise:focus-visible,
 .faqItem summary:focus-visible {
-  outline: 2px solid var(--c-green);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 

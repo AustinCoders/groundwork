@@ -110,6 +110,7 @@ test("narration plays a chapter", async ({ page }) => {
 });
 
 test("a mock interview round runs from the lobby to the debrief", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("jsnotes:theme", JSON.stringify("lavender")));
   await page.goto("/mock");
 
   await page.getByRole("tab", { name: "Single round" }).click();
@@ -135,6 +136,7 @@ test("a mock interview round runs from the lobby to the debrief", async ({ page 
 
   await expect(page.getByText("Round debrief")).toBeVisible();
   await expect(page.getByRole("img", { name: "Verdict: Strong hire" })).toBeVisible();
+  await expect(page.getByRole("img", { name: "Verdict: Strong hire" })).toHaveCSS("color", "rgb(35, 107, 86)");
   await expect(page.getByText("Every question")).toBeVisible();
 });
 
@@ -808,6 +810,7 @@ test("the git guide has a chapter per section and old anchors still land", async
 });
 
 test("the home page reads as a landing page and every path leads somewhere real", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("jsnotes:theme", JSON.stringify("lavender")));
   await page.goto("/");
   for (const name of [/Read it. Run it/, /a path that starts there/i, /Ready to read today/, /Before you start/]) {
     await expect(page.getByRole("heading", { level: 2, name })).toBeVisible();
@@ -821,6 +824,7 @@ test("the home page reads as a landing page and every path leads somewhere real"
   await page.getByRole("button", { name: "Break it" }).click();
   await page.getByRole("button", { name: /Run tests/ }).click();
   await expect(page.getByText("1 / 3 passed", { exact: true })).toBeVisible();
+  await expect(page.locator("[class*='__editor'][data-state='fail']")).toHaveCSS("box-shadow", /rgb\(184, 57, 94\)/);
   await page.getByRole("button", { name: "Reset" }).click();
 
   await page.getByRole("tab", { name: /Mid/ }).click();
@@ -837,6 +841,7 @@ test("the home page reads as a landing page and every path leads somewhere real"
 });
 
 test("the interview book hides answers in practice mode, remembers marks and drills them", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("jsnotes:theme", JSON.stringify("lavender")));
   await page.goto("/interview/r3");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("JavaScript");
   await page.getByRole("button", { name: "Practise", exact: true }).click();
@@ -846,6 +851,7 @@ test("the interview book hides answers in practice mode, remembers marks and dri
   await expect(first.getByText("The answer that loses the room")).toBeVisible();
   await first.getByRole("button", { name: "Shaky" }).click();
   await expect(first.getByRole("button", { name: "Shaky" })).toHaveAttribute("aria-pressed", "true");
+  await expect(first.getByRole("button", { name: "Shaky" })).toHaveCSS("border-color", "rgb(125, 100, 8)");
   await page.getByRole("button", { name: "Read", exact: true }).click();
 
   await page.goto("/interview/questions?filter=shaky");
@@ -948,4 +954,33 @@ test("the theme picker shows each theme's accent, and the current theme's accent
   await expect(accentChip("Lavender")).toHaveCSS("background-color", THEME_ACCENTS.lavender);
   await expect(card("Night")).toHaveAttribute("aria-checked", "true");
   await expect(card("Night")).toHaveCSS("border-color", THEME_ACCENTS.dark);
+});
+
+test("review, the interview book, mock and progress take the theme's accent, not a fixed green or red", async ({
+  page,
+}) => {
+  const main = page.locator("#main");
+  const surfaces = [
+    { path: "/review", action: () => main.getByRole("link", { name: "Find something to read →" }), onAccent: true },
+    {
+      path: "/interview",
+      action: () => main.getByRole("link", { name: /Start with the scouting report/ }),
+      onAccent: true,
+    },
+    { path: "/interview/questions", action: () => main.getByRole("button", { name: "Every part" }), onAccent: true },
+    { path: "/mock", action: () => main.getByRole("button", { name: "Plan a full loop" }), onAccent: true },
+    { path: "/progress", action: () => main.locator("[class*='__xpBar'] > span"), onAccent: false },
+  ];
+
+  for (const theme of ["lavender", "kraft", "forest", "dark"]) {
+    await page.goto("/");
+    await page.evaluate((value) => localStorage.setItem("jsnotes:theme", JSON.stringify(value)), theme);
+
+    for (const { path, action, onAccent } of surfaces) {
+      await page.goto(path);
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+      await expect(action(), `${path} in ${theme}`).toHaveCSS("background-color", THEME_ACCENTS[theme]);
+      if (onAccent) await expect(action(), `${path} in ${theme}`).toHaveCSS("color", THEME_ON_ACCENTS[theme]);
+    }
+  }
 });

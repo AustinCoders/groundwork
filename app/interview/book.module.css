@@ -1,6 +1,4 @@
 .page {
-  --primary: var(--c-red);
-  --accent-2: var(--c-green);
   --max: 1200px;
   --r: 20px;
   min-height: 100vh;
@@ -25,7 +23,7 @@
   z-index: 60;
   width: 100%;
   height: 3px;
-  background: linear-gradient(90deg, var(--c-red), var(--c-yellow));
+  background: var(--primary);
   transform-origin: left;
   transform: scaleX(var(--sp, 0));
   pointer-events: none;
@@ -105,8 +103,8 @@
 
 .topLinks a[aria-current="page"] {
   color: var(--ink);
-  background: var(--sheet);
-  box-shadow: inset 0 0 0 1px var(--line);
+  background: var(--primary-soft);
+  box-shadow: inset 0 0 0 1px var(--primary);
 }
 
 .main {
@@ -171,9 +169,9 @@
   font: inherit;
   font-size: 16px;
   font-weight: 600;
-  color: var(--paper);
+  color: var(--on-primary);
   text-decoration: none;
-  background: color-mix(in srgb, var(--primary) 85%, var(--ink));
+  background: var(--primary);
   border: 1.5px solid transparent;
   border-radius: 12px;
   cursor: pointer;
@@ -203,7 +201,7 @@
   padding: 1px 6px;
   font-family: var(--font-mono);
   font-size: 11px;
-  background: color-mix(in srgb, var(--paper) 20%, transparent);
+  background: color-mix(in srgb, var(--on-primary) 20%, transparent);
   border-radius: 5px;
 }
 
@@ -335,8 +333,8 @@
   font-family: var(--font-mono);
   font-size: 11.5px;
   font-weight: 700;
-  color: var(--sticky-fg);
-  background: var(--sticky-bg);
+  color: var(--ink);
+  background: var(--mark);
   border-radius: 6px;
 }
 
@@ -358,8 +356,9 @@
   padding: 14px 16px;
   font-size: 15.5px;
   line-height: 1.55;
-  background: color-mix(in srgb, var(--c-yellow) 12%, var(--sheet));
-  border-left: 4px solid var(--c-yellow);
+  color: var(--ink);
+  background: var(--mark);
+  border-left: 4px solid color-mix(in srgb, var(--mark) 50%, var(--ink));
   border-radius: 10px;
   animation: pop 0.35s ease;
 }
@@ -492,8 +491,8 @@
 
 .filter button[aria-pressed="true"],
 .chips button[aria-pressed="true"] {
-  color: var(--paper);
-  background: color-mix(in srgb, var(--primary) 85%, var(--ink));
+  color: var(--on-primary);
+  background: var(--primary);
   border-color: transparent;
 }
 
@@ -568,7 +567,7 @@
 }
 
 .tile[data-read] {
-  background: color-mix(in srgb, var(--accent-2) 6%, var(--sheet));
+  background: color-mix(in srgb, var(--success) 6%, var(--sheet));
 }
 
 .tileTop {
@@ -586,7 +585,7 @@
 
 .readBadge {
   font-size: 12.5px;
-  color: color-mix(in srgb, var(--accent-2) 70%, var(--ink));
+  color: color-mix(in srgb, var(--success) 70%, var(--ink));
 }
 
 .tileTitle {
@@ -630,19 +629,16 @@
   border-radius: 999px;
 }
 
-.confBar span[data-c="knew"],
-.confRow button[data-c="knew"][aria-pressed="true"] {
-  background: var(--c-green);
+.confBar span[data-c="knew"] {
+  background: var(--success);
 }
 
-.confBar span[data-c="shaky"],
-.confRow button[data-c="shaky"][aria-pressed="true"] {
-  background: var(--c-yellow);
+.confBar span[data-c="shaky"] {
+  background: var(--caution);
 }
 
-.confBar span[data-c="blank"],
-.confRow button[data-c="blank"][aria-pressed="true"] {
-  background: var(--c-red);
+.confBar span[data-c="blank"] {
+  background: var(--danger);
 }
 
 .cta {
@@ -670,7 +666,7 @@
 }
 
 .crumbs a {
-  color: var(--ink-soft);
+  color: var(--primary);
 }
 
 .roundHero {
@@ -757,7 +753,7 @@
 
 .companies span[data-hot] {
   color: var(--ink);
-  background: color-mix(in srgb, var(--accent-2) 14%, var(--sheet));
+  background: color-mix(in srgb, var(--c-green) 14%, var(--sheet));
   text-decoration: none;
 }
 
@@ -806,8 +802,8 @@
 
 .modeSwitch button[aria-pressed="true"] {
   color: var(--ink);
-  background: var(--sheet);
-  box-shadow: var(--shadow-sm);
+  background: var(--primary-soft);
+  box-shadow: inset 0 0 0 1px var(--primary);
 }
 
 .modeNote {
@@ -875,18 +871,18 @@
 }
 
 .railList button[data-mark="knew"] .railNum {
-  color: var(--paper);
-  background: color-mix(in srgb, var(--c-green) 80%, var(--ink));
+  color: var(--sheet);
+  background: var(--success);
 }
 
 .railList button[data-mark="shaky"] .railNum {
-  color: var(--ink);
-  background: var(--c-yellow);
+  color: var(--sheet);
+  background: var(--caution);
 }
 
 .railList button[data-mark="blank"] .railNum {
-  color: var(--paper);
-  background: color-mix(in srgb, var(--c-red) 85%, var(--ink));
+  color: var(--sheet);
+  background: var(--danger);
 }
 
 .railText {
@@ -909,13 +905,13 @@
   font-weight: 600;
   color: var(--ink);
   text-decoration: none;
-  background: color-mix(in srgb, var(--accent-2) 12%, var(--sheet));
-  border: 1px solid color-mix(in srgb, var(--accent-2) 40%, var(--line));
+  background: color-mix(in srgb, var(--primary) 12%, var(--sheet));
+  border: 1px solid color-mix(in srgb, var(--primary) 40%, var(--line));
   border-radius: 12px;
 }
 
 .mockLink:hover {
-  border-color: var(--accent-2);
+  border-color: var(--primary);
 }
 
 .roundBody {
@@ -944,15 +940,15 @@
 }
 
 .qCard[data-mark="knew"] {
-  border-left: 4px solid var(--c-green);
+  border-left: 4px solid var(--success);
 }
 
 .qCard[data-mark="shaky"] {
-  border-left: 4px solid var(--c-yellow);
+  border-left: 4px solid var(--caution);
 }
 
 .qCard[data-mark="blank"] {
-  border-left: 4px solid var(--c-red);
+  border-left: 4px solid var(--danger);
 }
 
 .qHead {
@@ -1135,23 +1131,23 @@
   border-color: var(--ink-soft);
 }
 
-.confRow button[aria-pressed="true"][data-c="knew"],
-.confRow button[aria-pressed="true"][data-c="blank"] {
-  color: var(--paper);
-  border-color: transparent;
+.confRow button[aria-pressed="true"] {
+  color: var(--ink);
 }
 
 .confRow button[aria-pressed="true"][data-c="knew"] {
-  background: color-mix(in srgb, var(--c-green) 80%, var(--ink));
-}
-
-.confRow button[aria-pressed="true"][data-c="blank"] {
-  background: color-mix(in srgb, var(--c-red) 85%, var(--ink));
+  background: var(--success-soft);
+  border-color: var(--success);
 }
 
 .confRow button[aria-pressed="true"][data-c="shaky"] {
-  color: var(--ink);
-  border-color: transparent;
+  background: var(--caution-soft);
+  border-color: var(--caution);
+}
+
+.confRow button[aria-pressed="true"][data-c="blank"] {
+  background: var(--danger-soft);
+  border-color: var(--danger);
 }
 
 .confRow .textLink {
@@ -1165,8 +1161,8 @@
   justify-content: space-between;
   gap: 12px;
   padding: 18px 22px;
-  background: color-mix(in srgb, var(--accent-2) 8%, var(--sheet));
-  border: 1px solid color-mix(in srgb, var(--accent-2) 35%, var(--line));
+  background: color-mix(in srgb, var(--success) 8%, var(--sheet));
+  border: 1px solid color-mix(in srgb, var(--success) 35%, var(--line));
   border-radius: 16px;
 }
 
@@ -1182,7 +1178,7 @@
 .doneCheck input {
   width: 18px;
   height: 18px;
-  accent-color: var(--c-green);
+  accent-color: var(--success);
 }
 
 .pager {
@@ -1315,15 +1311,15 @@
 }
 
 .bankItem[data-mark="knew"] {
-  border-left: 4px solid var(--c-green);
+  border-left: 4px solid var(--success);
 }
 
 .bankItem[data-mark="shaky"] {
-  border-left: 4px solid var(--c-yellow);
+  border-left: 4px solid var(--caution);
 }
 
 .bankItem[data-mark="blank"] {
-  border-left: 4px solid var(--c-red);
+  border-left: 4px solid var(--danger);
 }
 
 .bankQ {
@@ -1488,15 +1484,15 @@
 }
 
 .tally div[data-c="knew"] {
-  border-top: 4px solid var(--c-green);
+  border-top: 4px solid var(--success);
 }
 
 .tally div[data-c="shaky"] {
-  border-top: 4px solid var(--c-yellow);
+  border-top: 4px solid var(--caution);
 }
 
 .tally div[data-c="blank"] {
-  border-top: 4px solid var(--c-red);
+  border-top: 4px solid var(--danger);
 }
 
 .tally b {
