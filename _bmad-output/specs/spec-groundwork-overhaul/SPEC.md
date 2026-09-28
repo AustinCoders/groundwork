@@ -2,6 +2,7 @@
 id: SPEC-groundwork-overhaul
 companions:
   - capability-map.md
+  - palette.md
   - ../../planning-artifacts/audit-2026-09-28/README.md
   - ../../planning-artifacts/audit-2026-09-28/topics.md
   - ../../planning-artifacts/audit-2026-09-28/performance.md
@@ -26,6 +27,7 @@ Around that sit:
 - mobile Lighthouse scores of 72–89, with two pages blank until JavaScript loads;
 - counts that disagree;
 - seven page shells copied by hand.
+- every theme sharing one green action colour and one yellow highlighter, so a theme changes the paper but not the character of the page.
 
 Readers are affected most on phones and with keyboards. The author is affected because every new page repeats the drift.
 
@@ -91,6 +93,13 @@ Readers are affected most on phones and with keyboards. The author is affected b
     - Unit tests cover `lib/storage.ts` progress and review scheduling.
     - e2e visits every written topic's reader and runs a mobile project.
     - CI runs `npm run comments`.
+
+- **CAP-11**
+  - **intent:** Every theme gives buttons, links, progress, active states and the highlighter its own accent and marker, and states keep one meaning in every theme.
+  - **success:**
+    - The role tokens `--accent`, `--on-accent`, `--mark`, `--success`, `--danger`, `--caution` and `--info` are defined in all nine themes and asserted at 4.5:1 by `tests/contrast.test.ts`.
+    - No module or global rule uses `--green`, `--c-green`, `--red`, `--c-red`, `--hl-yellow` or `--hl-mint` for an action, a link, progress or a highlight.
+    - Home, Review, Progress, the interview book, Mock, Problems, the Playground, the whiteboard, Git, How this is built and the topic pages show the theme's accent in all nine themes.
 
 ## Constraints
 

@@ -1,0 +1,60 @@
+[[entry]]
+id = 1
+type = "story"
+title = "Role tokens in all nine themes (tracer)"
+description = "Adds --accent, --on-accent, --accent-soft, --mark, --success, --danger, --caution and --info with their soft tints to every theme block in app/globals.css from palette.md, maps theme-bridge.css --primary, --ring and the select states onto them, extends tests/contrast.test.ts to the role pairs, shows each theme's accent on the theme picker cards, switches the home page's --primary to the accent, and updates arch-design-system.ts where it describes the token block."
+verify = "tests/contrast.test.ts passes with the role checks in all nine themes, and the home page's Start button and stats show the theme's accent in all nine themes."
+covers = ["CAP-11", "CAP-8"]
+after = []
+hitl = false
+risk = "low"
+unknown = "Whether any Radix select or shadcn part reads --accent in the shadcn sense and needs --accent-soft instead."
+references = ["_bmad-output/specs/spec-groundwork-overhaul/palette.md"]
+
+[[entry]]
+id = 2
+type = "story"
+title = "Home, Review, Progress, the interview book, Mock and the menu on the roles"
+description = "Moves every action, link, progress, selection and highlight in home.module.css, review.module.css, progress.module.css, book.module.css (dropping its red --primary), mock.module.css, guide.module.css, frame.module.css, SiteDrawer.module.css and Modal.module.css onto the role tokens from entry 1, keeping pass, fail, due and tip on the state tokens."
+verify = "In all nine themes, the primary buttons, links, progress bars and active tabs on /, /review, /progress, /interview, /interview/questions and /mock use the theme's accent, and the a11y spec passes."
+covers = ["CAP-11"]
+after = [1]
+hitl = false
+risk = "medium"
+unknown = "Which of mock.module.css's 71 colour uses are verdict states and which are actions."
+
+[[entry]]
+id = 3
+type = "story"
+title = "Problems, the whiteboard, Git and How this is built on the roles"
+description = "Moves actions, links, progress, selection and highlights in problems.module.css, whiteboard.module.css, components/series/chapter.module.css and landing.module.css, architecture.module.css, AppearancePicker.module.css, components/series/ChapterView.tsx and components/practice/CodeEditor.tsx onto the role tokens, leaving the whiteboard's drawing colours and pass or fail badges on the categorical and state tokens."
+verify = "In all nine themes, /problems, a problem page, /whiteboard, /git/merge and /architecture show the theme's accent on buttons, links, progress and the active chapter, and their e2e tests pass."
+covers = ["CAP-11"]
+after = [1]
+hitl = false
+risk = "low"
+unknown = "Whether the whiteboard's tool highlight should follow the accent or stay neutral."
+
+[[entry]]
+id = 4
+type = "story"
+title = "Global rules and the topic pages on the roles"
+description = "Moves actions, links, progress, selection and highlights in the global rules of app/globals.css (the old sidebar, reader, cover, level, path, practice and playground styles, the notebook margin line and the title highlighter) and in components/reader/ReaderShell.tsx and narration.ts onto the role tokens, without touching the theme blocks entry 1 wrote."
+verify = "In all nine themes, /notes, /notes/closures, /level/js, /path?topic=js&level=beginner and the playground show the theme's accent on buttons, links, progress and the active chapter, the margin line follows the theme, and the smoke and a11y e2e tests pass."
+covers = ["CAP-11"]
+after = [1]
+hitl = false
+risk = "medium"
+unknown = "How many of globals.css's 158 colour uses are content styles (callouts, diagrams, dry-run tables) that should stay categorical."
+
+[[entry]]
+id = 5
+type = "story"
+title = "Nine-theme review and sweep"
+description = "Screenshots every section in all nine themes, fixes what reads wrong, records the remaining categorical uses of green and red, and ticks the roadmap."
+verify = "The Done-when screenshots show the accent everywhere, the rg check returns only the recorded categorical uses, and npm run check, npm run build and npm run test:e2e pass."
+covers = ["CAP-11"]
+after = [2, 3, 4]
+hitl = false
+risk = "low"
+unknown = "Its fixes, set by the screenshots."

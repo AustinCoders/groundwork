@@ -2,7 +2,7 @@
 type: initiative
 title: "Groundwork overhaul after the 28 Sep audit"
 parent: none
-covers: [CAP-1, CAP-2, CAP-3, CAP-4, CAP-5, CAP-6, CAP-7, CAP-8, CAP-9, CAP-10]
+covers: [CAP-1, CAP-2, CAP-3, CAP-4, CAP-5, CAP-6, CAP-7, CAP-8, CAP-9, CAP-10, CAP-11]
 after: []
 assignee: ""
 risk: high
@@ -28,7 +28,7 @@ Readers on phones and keyboards move through any topic in the same frame as the 
 ## Done when
 
 1. The spec's success signal passes on production: the phone walk, Lighthouse mobile ≥ 90 on the CAP-5 pages, and axe clean in all nine themes.
-2. Every capability CAP-1 to CAP-10 is live on `main` and deployed, with no flag.
+2. Every capability CAP-1 to CAP-11 is live on `main` and deployed, with no flag.
 3. The roadmap phases Audit fixes, Redesign every topic page, Fast on phones and One system underneath read all done in `docs/roadmap.html`.
 4. `npm run check`, `npm run build` and `npm run test:e2e` pass on `main` after the last merge.
 
@@ -56,4 +56,5 @@ Tracer path across epics: the JavaScript cover renders inside the shared topic f
 - Assumption: epics are built in the order in `tickets.toml`, one story per session with `bmad-build`, each on its own `feature/<name>` branch.
 - Decision: epics run audit fixes → topic redesign → fast on phones → one system, because each later epic edits files the earlier one changes first (see each `after` in `tickets.toml`). This replaces the order in roadmap-analysis.md, which put the quick performance wins before the redesign. Those wins can still be pulled forward at epic 3's inception, pinned only on epic 1 (agent, 2026-09-28; confirm).
 - Open question: the spec's four open questions. The widget and question-count questions block specific entries, and those entries say which. The GraphQL, Redis and Kubernetes sizes also affect epic 1 entry 4.
+- Decision: epic-theme-palettes (id 5) runs first, ahead of the audit fixes, because the user asked for the palettes before the plan (2026-09-28).
 - Open question: every `Decision (agent; confirm)` line in the epics is unconfirmed until the user says so, including the no-baseline decision above.
