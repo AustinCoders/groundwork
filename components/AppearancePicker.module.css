@@ -43,11 +43,11 @@
 }
 
 .opt[aria-checked="true"] {
-  border-color: var(--green);
+  border-color: var(--primary);
 }
 
 .opt:focus-visible {
-  outline: 2px solid var(--green);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
@@ -64,12 +64,27 @@
   border-radius: 7px;
 }
 
+.swatchLine {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .swatchInk {
   display: block;
-  width: 70%;
+  flex: 1;
   height: 4px;
   background: var(--ink);
   border-radius: 2px;
+}
+
+.swatchPrimary {
+  display: block;
+  flex: none;
+  width: 18px;
+  height: 8px;
+  background: var(--primary);
+  border-radius: 4px;
 }
 
 .swatchDots {

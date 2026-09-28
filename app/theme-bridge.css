@@ -5,19 +5,18 @@
   --card-foreground: var(--ink);
   --popover: var(--sheet);
   --popover-foreground: var(--ink);
-  --primary: var(--ink);
-  --primary-foreground: var(--sheet);
+  --primary-foreground: var(--on-primary);
   --secondary: var(--sheet-2);
   --secondary-foreground: var(--ink);
   --muted: var(--line);
   --muted-foreground: var(--pencil);
-  --accent: var(--hl-mint);
+  --accent: var(--primary);
   --accent-foreground: var(--ink);
-  --destructive: var(--red);
+  --destructive: var(--danger);
   --destructive-foreground: var(--sheet);
   --border: var(--line);
   --input: var(--line);
-  --ring: var(--ink-soft);
+  --ring: var(--primary);
 }
 
 @theme inline static {
@@ -98,7 +97,7 @@
 }
 
 [data-slot="select-item"][data-state="checked"] {
-  background: var(--hl-mint);
-  color: var(--sticky-mint-fg);
+  background: var(--primary-soft);
+  color: var(--ink);
   font-weight: 700;
 }

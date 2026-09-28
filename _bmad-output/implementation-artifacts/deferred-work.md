@@ -1,0 +1,9 @@
+- source_plan: `_bmad-output/initiative-groundwork-overhaul/epic-theme-palettes/story-role-tokens-in-all-nine-themes-tracer-plan.md`
+  summary: When entries 5.2–5.4 adopt the roles, text on any `-soft` tint must be `--ink`, and state colours used as text must sit on `--sheet`.
+  evidence: Computed with the approved palette, a state's text on its own tint fails 4.5:1 in several themes: Paper success 4.17, danger 4.19 and caution 4.27; Blueprint danger 4.03; Lavender danger 4.15 and caution 4.30; Kraft caution 4.42. Kraft caution on --paper is 4.36, and Blueprint danger on --sheet-2 is 4.47. Ink on every tint is 6.9:1 or higher. Nothing renders these pairs yet; add a test for the pair when the first chip adopts it.
+- source_plan: `_bmad-output/initiative-groundwork-overhaul/epic-theme-palettes/story-role-tokens-in-all-nine-themes-tracer-plan.md`
+  summary: Links coloured with `--primary` must keep an underline or another cue that doesn't rely on colour.
+  evidence: --primary against --ink is 1.76:1 or lower in every theme, and 1.04:1 in Mono, below the 3:1 that WCAG 1.4.1 needs between link text and body text. Links are still --ink today, so this is a rule for the entries that move links onto the accent.
+- source_plan: `_bmad-output/initiative-groundwork-overhaul/epic-theme-palettes/story-role-tokens-in-all-nine-themes-tracer-plan.md`
+  summary: tests/claims.test.ts has no case for content/architecture/arch-design-system.ts, whose counts (78 properties, 56 overrides, 90, 63 and 54 checks) can go stale silently, and its "18 pages" for the a11y spec is really 20.
+  evidence: The claims-test cases cover arch-overview, arch-coming-soon, arch-content-model, arch-scaling, arch-build and the README only. e2e/a11y.spec.ts PAGES lists 20 routes. Both predate this change; epic-audit-fixes entry 3 already edits this chapter's a11y paragraph.

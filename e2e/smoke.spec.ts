@@ -891,3 +891,61 @@ test("review brings a due chapter back, and every section header has a way back"
     await expect(page.locator("header a.head-back")).toBeVisible();
   }
 });
+
+const THEME_ACCENTS: Record<string, string> = {
+  light: "rgb(36, 81, 179)",
+  dark: "rgb(143, 176, 255)",
+  kraft: "rgb(138, 58, 18)",
+  blueprint: "rgb(127, 216, 255)",
+  sepia: "rgb(122, 46, 42)",
+  forest: "rgb(45, 106, 67)",
+  rose: "rgb(255, 143, 184)",
+  mono: "rgb(22, 22, 22)",
+  lavender: "rgb(106, 63, 184)",
+};
+
+const THEME_ON_ACCENTS: Record<string, string> = {
+  light: "rgb(255, 253, 246)",
+  dark: "rgb(16, 19, 26)",
+  kraft: "rgb(251, 243, 223)",
+  blueprint: "rgb(15, 36, 57)",
+  sepia: "rgb(250, 241, 220)",
+  forest: "rgb(248, 251, 242)",
+  rose: "rgb(36, 24, 35)",
+  mono: "rgb(255, 255, 255)",
+  lavender: "rgb(250, 247, 254)",
+};
+
+test("the home page's primary action takes each theme's accent", async ({ page }) => {
+  const start = page.getByRole("link", { name: /Start with JavaScript/ }).first();
+  await page.goto("/");
+  await expect(start).toHaveCSS("background-color", THEME_ACCENTS.light);
+
+  for (const [theme, accent] of Object.entries(THEME_ACCENTS)) {
+    await page.evaluate((value) => localStorage.setItem("jsnotes:theme", JSON.stringify(value)), theme);
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+    await expect(start).toHaveCSS("background-color", accent);
+    await expect(start).toHaveCSS("color", THEME_ON_ACCENTS[theme]);
+  }
+});
+
+test("the theme picker shows each theme's accent, and the current theme's accent on the selected card", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.setItem("jsnotes:theme", JSON.stringify("dark")));
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+
+  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  const drawer = page.getByRole("dialog", { name: /menu/ });
+  await drawer.getByRole("button", { name: /Theme/ }).click();
+  const card = (name: string) => drawer.getByRole("radio", { name });
+  const accentChip = (name: string) => card(name).locator("[data-theme] > :first-child > :last-child");
+
+  await expect(accentChip("Paper")).toHaveCSS("background-color", THEME_ACCENTS.light);
+  await expect(accentChip("Lavender")).toHaveCSS("background-color", THEME_ACCENTS.lavender);
+  await expect(card("Night")).toHaveAttribute("aria-checked", "true");
+  await expect(card("Night")).toHaveCSS("border-color", THEME_ACCENTS.dark);
+});

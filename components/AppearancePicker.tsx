@@ -40,7 +40,10 @@ export function AppearancePicker({
           onClick={() => chooseTheme(t.value)}
         >
           <span className={styles.swatch} data-theme={t.value} aria-hidden="true">
-            <span className={styles.swatchInk} />
+            <span className={styles.swatchLine}>
+              <span className={styles.swatchInk} />
+              <span className={styles.swatchPrimary} />
+            </span>
             <span className={styles.swatchDots}>
               {["red", "orange", "yellow", "green", "blue", "purple"].map((c) => (
                 <span key={c} style={{ background: `var(--c-${c})` }} />

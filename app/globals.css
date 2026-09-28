@@ -2,7 +2,8 @@
 @import "tailwindcss/utilities" layer(utilities);
 @import "./theme-bridge.css";
 
-:root {
+:root,
+[data-theme="light"] {
   color-scheme: light;
   --paper: #f6f4ea;
   --grid: rgba(31, 58, 115, 0.07);
@@ -87,6 +88,14 @@
   --c-blue: #1c64b8;
   --c-purple: #8a36aa;
   --c-grey: #6b727c;
+
+  --primary: #2451b3;
+  --on-primary: #fffdf6;
+  --mark: #ffe873;
+  --success: #1f7a55;
+  --danger: #c4342b;
+  --caution: #8a6400;
+  --info: #1c64b8;
 }
 
 :root,
@@ -101,6 +110,11 @@
   --c-blue-soft: color-mix(in srgb, var(--c-blue) 20%, var(--sheet));
   --c-purple-soft: color-mix(in srgb, var(--c-purple) 20%, var(--sheet));
   --c-grey-soft: color-mix(in srgb, var(--c-grey) 18%, var(--sheet));
+  --primary-soft: color-mix(in srgb, var(--primary) 16%, var(--sheet));
+  --success-soft: color-mix(in srgb, var(--success) 16%, var(--sheet));
+  --danger-soft: color-mix(in srgb, var(--danger) 16%, var(--sheet));
+  --caution-soft: color-mix(in srgb, var(--caution) 16%, var(--sheet));
+  --info-soft: color-mix(in srgb, var(--info) 16%, var(--sheet));
 }
 
 html[data-font="marker"] {
@@ -199,6 +213,14 @@ html[data-font="roboto"] {
   --c-blue: #79b8ff;
   --c-purple: #d2a8ff;
   --c-grey: #9aa4b2;
+
+  --primary: #8fb0ff;
+  --on-primary: #10131a;
+  --mark: #4a4020;
+  --success: #64dfa6;
+  --danger: #ff9184;
+  --caution: #f2cc60;
+  --info: #79b8ff;
 }
 
 [data-theme="kraft"] {
@@ -261,6 +283,14 @@ html[data-font="roboto"] {
   --c-blue: #2a5585;
   --c-purple: #6a3a76;
   --c-grey: #655b4c;
+
+  --primary: #8a3a12;
+  --on-primary: #fbf3df;
+  --mark: #f0cf6a;
+  --success: #285c3f;
+  --danger: #9b1b30;
+  --caution: #6e5200;
+  --info: #2a5585;
 }
 
 [data-theme="blueprint"] {
@@ -323,6 +353,14 @@ html[data-font="roboto"] {
   --c-blue: #a9d4ff;
   --c-purple: #d9b8ff;
   --c-grey: #b7c6d8;
+
+  --primary: #7fd8ff;
+  --on-primary: #0f2439;
+  --mark: #5a5a2c;
+  --success: #7fe0b8;
+  --danger: #ff8f7a;
+  --caution: #ffe08a;
+  --info: #a9d4ff;
 }
 
 [data-theme="sepia"] {
@@ -385,6 +423,14 @@ html[data-font="roboto"] {
   --c-blue: #385e88;
   --c-purple: #734681;
   --c-grey: #716554;
+
+  --primary: #7a2e2a;
+  --on-primary: #faf1dc;
+  --mark: #f0d68a;
+  --success: #3d6543;
+  --danger: #a3392a;
+  --caution: #7a5c0c;
+  --info: #385e88;
 }
 
 [data-theme="forest"] {
@@ -447,6 +493,14 @@ html[data-font="roboto"] {
   --c-blue: #2c6388;
   --c-purple: #764687;
   --c-grey: #646d60;
+
+  --primary: #2d6a43;
+  --on-primary: #f8fbf2;
+  --mark: #e3e79a;
+  --success: #1f6f5c;
+  --danger: #b5452f;
+  --caution: #7a6206;
+  --info: #2c6388;
 }
 
 [data-theme="rose"] {
@@ -509,6 +563,14 @@ html[data-font="roboto"] {
   --c-blue: #9cc4ff;
   --c-purple: #e0a8ff;
   --c-grey: #bfa9b7;
+
+  --primary: #ff8fb8;
+  --on-primary: #241823;
+  --mark: #5c2a44;
+  --success: #7fe0b8;
+  --danger: #ff9a6b;
+  --caution: #f5d68a;
+  --info: #9cc4ff;
 }
 
 [data-theme="mono"] {
@@ -571,6 +633,14 @@ html[data-font="roboto"] {
   --c-blue: #1d58a3;
   --c-purple: #733087;
   --c-grey: #555555;
+
+  --primary: #161616;
+  --on-primary: #ffffff;
+  --mark: #e2e2dc;
+  --success: #276b38;
+  --danger: #b3261e;
+  --caution: #6e5a00;
+  --info: #1d58a3;
 }
 
 [data-theme="lavender"] {
@@ -633,6 +703,14 @@ html[data-font="roboto"] {
   --c-blue: #3858b8;
   --c-purple: #7446b8;
   --c-grey: #686376;
+
+  --primary: #6a3fb8;
+  --on-primary: #faf7fe;
+  --mark: #e6d3fb;
+  --success: #236b56;
+  --danger: #b8395e;
+  --caution: #7d6408;
+  --info: #3858b8;
 }
 
 * {
@@ -1870,8 +1948,8 @@ kbd {
 }
 
 .dd__opt[aria-selected="true"] {
-  background: var(--hl-mint);
-  color: var(--sticky-mint-fg);
+  background: var(--primary-soft);
+  color: var(--ink);
   font-weight: 700;
 }
 
@@ -1900,7 +1978,7 @@ kbd {
   flex: none;
   width: 12px;
   font-size: 11px;
-  color: var(--green);
+  color: var(--primary);
 }
 
 .dd__menu--grid {

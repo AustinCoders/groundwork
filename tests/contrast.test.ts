@@ -118,3 +118,37 @@ describe("the theme palette", () => {
     }
   });
 });
+
+describe("the role colours", () => {
+  const ROLES = ["--primary", "--on-primary", "--mark", "--success", "--danger", "--caution", "--info"] as const;
+  const ON_THE_SHEET = ["--primary", "--success", "--danger", "--caution", "--info"] as const;
+  const PAIRS: [foreground: string, background: string][] = [
+    ...ON_THE_SHEET.map((role): [string, string] => [role, "--sheet"]),
+    ["--on-primary", "--primary"],
+    ["--ink", "--mark"],
+  ];
+  const withTheme = blocks().filter((b) => declaration(b.body, "--sheet") && declaration(b.body, "--ink"));
+
+  it("is defined by every theme", () => {
+    expect(withTheme.length).toBe(9);
+    for (const theme of withTheme)
+      for (const token of ROLES)
+        expect(declaration(theme.body, token), `${theme.selector} is missing ${token}`).toBeTruthy();
+  });
+
+  it("meets WCAG AA against its pair in every theme", () => {
+    for (const theme of withTheme) {
+      for (const [foreground, background] of PAIRS) {
+        const fg = declaration(theme.body, foreground);
+        const bg = declaration(theme.body, background);
+        expect(fg, `${theme.selector} is missing ${foreground}`).toBeTruthy();
+        expect(bg, `${theme.selector} is missing ${background}`).toBeTruthy();
+        const ratio = contrast(hexToRgb(fg!), hexToRgb(bg!));
+        expect(
+          ratio,
+          `${theme.selector} ${foreground} (${fg}) is ${ratio.toFixed(2)}:1 against ${background} (${bg})`
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+});

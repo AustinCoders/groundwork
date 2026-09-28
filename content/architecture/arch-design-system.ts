@@ -58,11 +58,13 @@ export const archDesignSystem: Chapter = {
 
 <h3>Nine themes</h3>
 <p>
-  The <code>:root</code> block in <code>globals.css</code> defines 65 custom properties: paper and
+  The <code>:root</code> block in <code>globals.css</code> defines 78 custom properties: paper and
   sheet colours, ink, pencil, red and green, highlighter colours, sticky notes, code colours,
-  diagram boxes, shadows, sizes, fonts and the editor's <code>--ide-*</code> palette. That block is
-  the Paper theme. Each of the other eight is an <code>html[data-theme="&hellip;"]</code> block
-  that overrides the same 43 properties (the colours and the shadows) and sets <code>color-scheme</code>, so native
+  diagram boxes, shadows, sizes, fonts, the editor's <code>--ide-*</code> palette, the categorical
+  <code>--c-*</code> colours and the role colours. That block is the Paper theme, and it also
+  matches <code>[data-theme="light"]</code>, so a Paper preview inside another theme shows Paper.
+  Each of the other eight is a <code>[data-theme="&hellip;"]</code> block that overrides the same
+  56 properties (the colours and the shadows) and sets <code>color-scheme</code>, so native
   scrollbars and form controls match.
 </p>
 <div class="table-scroll"><table>
@@ -80,10 +82,45 @@ export const archDesignSystem: Chapter = {
 </tbody>
 </table></div>
 <p>
+  Seven of those properties are roles, and every theme sets all seven, so the accent is blue on
+  Paper, rust on Kraft and violet on Lavender. Role values are opaque hex, so the contrast test
+  can check them. The shared <code>:root, [data-theme]</code> block derives a <code>-soft</code>
+  tint of the accent and of each state by mixing 16% of it into the sheet, next to the
+  <code>--c-*-soft</code> tints.
+</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Role</th><th>Use</th><th>Replaces</th></tr></thead>
+<tbody>
+<tr><td><code>--primary</code></td><td>Buttons, links, the active tab or nav item, progress fills, focus rings and selected states</td><td>Green as an action colour, and the interview book's red <code>--primary</code></td></tr>
+<tr><td><code>--on-primary</code></td><td>Text and icons on an accent fill</td><td>&mdash;</td></tr>
+<tr><td><code>--primary-soft</code></td><td>Selected rows and chips</td><td><code>--hl-mint</code> as a selected background</td></tr>
+<tr><td><code>--mark</code></td><td>The highlighter behind words, inline code and title underlines</td><td><code>--hl-yellow</code> as the highlighter</td></tr>
+<tr><td><code>--success</code>, <code>--danger</code>, <code>--caution</code>, <code>--info</code></td><td>States only: passed and failed tests, done and due, tips. Never decoration.</td><td><code>--green</code> and <code>--red</code> as states</td></tr>
+</tbody>
+</table></div>
+<p>
+  Text on any <code>-soft</code> tint is <code>--ink</code>. <code>--red</code> and
+  <code>--green</code> stay, as the categorical <code>--c-red</code> and <code>--c-green</code>
+  for charts, topic chips and the whiteboard. A state uses <code>--success</code>,
+  <code>--danger</code>, <code>--caution</code> or <code>--info</code> instead.
+</p>
+<p>
+  The table is the intended use, and the site moves onto it in steps. So far the home page's
+  buttons and stats, the theme picker's cards and the dropdowns' selected option read the roles,
+  and <code>--primary</code> means the theme's accent wherever a page does not override it. The
+  rest has not moved yet. Links are still <code>--ink</code>, the reading progress bar and the
+  focus ring are still <code>--red</code>, <code>.btn--primary</code> is still mint, highlights
+  are still <code>--hl-yellow</code>, and the mock interview and the interview book still set
+  their own green and red <code>--primary</code>.
+</p>
+<p>
   <code>app/theme-bridge.css</code> maps these names onto the conventional ones Tailwind utilities
-  expect (<code>--background</code>, <code>--primary</code>, <code>--border</code> and so on)
+  expect (<code>--background</code>, <code>--border</code>, <code>--ring</code> and so on)
   inside an <code>@theme inline</code> block, so a Tailwind class and a hand-written rule resolve
-  to the same colour in every theme.
+  to the same colour in every theme. <code>--primary</code> needs no alias. The bridge points
+  <code>--ring</code> and <code>--accent</code> at it and <code>--destructive</code> at
+  <code>--danger</code>. Home, Progress and the site drawer set <code>--accent</code> locally to a
+  topic's colour, which is why the accent role is not called <code>--accent</code>.
 </p>
 
 <h3>Seven fonts</h3>
@@ -141,8 +178,10 @@ export const archDesignSystem: Chapter = {
 </p>
 <p>
   <code>components/AppearancePicker.tsx</code> is the larger version used inside drawers. Themes
-  are a <code>role="radiogroup"</code> of swatches, each showing that theme's sheet, ink and
-  accent colours, and fonts are a second radiogroup with an "Aa" sample set in each font.
+  are a <code>role="radiogroup"</code> of swatches, and fonts are a second radiogroup with an "Aa"
+  sample set in each font. Each swatch carries its own <code>data-theme</code>, so it is a live
+  preview of that theme's sheet, ink, <code>--primary</code> chip and categorical colours. The
+  selected card's border and the focus outline use the current theme's <code>--primary</code>.
 </p>
 
 <h3>Two page shells</h3>
@@ -254,11 +293,18 @@ export const archDesignSystem: Chapter = {
   reach 4.5:1. A new theme that forgets a token, or picks a comment grey that is too faint, fails
   in Vitest before anyone sees it.
 </p>
+<p>
+  The same file checks the role colours in every theme: <code>--primary</code> and the four states
+  against the sheet, <code>--on-primary</code> against <code>--primary</code>, and the ink against
+  <code>--mark</code>. That is 63 more checks at 4.5:1, and a theme block that leaves out a role
+  fails with the theme's selector and the token's name. The six categorical colours get 54 checks
+  at 3:1 against the sheet.
+</p>
 
 <div class="bx is-ref">
 <span class="ttl">What the variables approach costs</span>
 <p>
-  Each theme restates 43 colours, and nothing but the contrast test and the reviewer's eye notices
+  Each theme restates 56 values, and nothing but the contrast test and the reviewer's eye notices
   when one is off. A component that hard-codes a hex colour is wrong in eight themes. What it buys
   is that a theme switch costs one attribute write and nothing in React, and that a theme can be
   added in one CSS block and one list entry.
