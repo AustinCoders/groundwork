@@ -28,7 +28,7 @@ Switching the theme changes the character of the page, not only its paper. The s
 
 ## Done when
 
-1. `tests/contrast.test.ts` asserts `--accent`, `--success`, `--danger`, `--caution` and `--info` against the sheet, `--on-accent` against the accent, and `--mark` against the ink, in all nine themes.
+1. `tests/contrast.test.ts` asserts `--primary`, `--success`, `--danger`, `--caution` and `--info` against the sheet, `--on-primary` against `--primary`, and `--mark` against the ink, in all nine themes.
 2. `rg -n "var\(--(green|red|c-green|c-red|hl-yellow|hl-mint)\)" app components` returns only categorical uses: charts, topic chips, whiteboard colours and diagrams. The list is recorded in the build record.
 3. Screenshots of Home, Review, Progress, `/interview`, `/mock`, `/problems`, a problem page, `/whiteboard`, `/git`, `/architecture`, `/notes` and a chapter in all nine themes show the theme's accent on buttons, links and progress.
 4. `npm run check`, `npm run build` and `npm run test:e2e` (the a11y spec included) pass.

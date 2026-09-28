@@ -97,7 +97,7 @@ Readers are affected most on phones and with keyboards. The author is affected b
 - **CAP-11**
   - **intent:** Every theme gives buttons, links, progress, active states and the highlighter its own accent and marker, and states keep one meaning in every theme.
   - **success:**
-    - The role tokens `--accent`, `--on-accent`, `--mark`, `--success`, `--danger`, `--caution` and `--info` are defined in all nine themes and asserted at 4.5:1 by `tests/contrast.test.ts`.
+    - The role tokens `--primary` (the accent), `--on-primary`, `--mark`, `--success`, `--danger`, `--caution` and `--info` are defined in all nine themes and asserted at 4.5:1 by `tests/contrast.test.ts`.
     - No module or global rule uses `--green`, `--c-green`, `--red`, `--c-red`, `--hl-yellow` or `--hl-mint` for an action, a link, progress or a highlight.
     - Home, Review, Progress, the interview book, Mock, Problems, the Playground, the whiteboard, Git, How this is built and the topic pages show the theme's accent in all nine themes.
 

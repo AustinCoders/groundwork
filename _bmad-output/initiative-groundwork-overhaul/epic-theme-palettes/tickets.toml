@@ -2,7 +2,7 @@
 id = 1
 type = "story"
 title = "Role tokens in all nine themes (tracer)"
-description = "Adds --accent, --on-accent, --accent-soft, --mark, --success, --danger, --caution and --info with their soft tints to every theme block in app/globals.css from palette.md, maps theme-bridge.css --primary, --ring and the select states onto them, extends tests/contrast.test.ts to the role pairs, shows each theme's accent on the theme picker cards, switches the home page's --primary to the accent, and updates arch-design-system.ts where it describes the token block."
+description = "Adds --primary (the accent), --on-primary, --primary-soft, --mark, --success, --danger, --caution and --info with their soft tints to every theme block in app/globals.css from palette.md, maps theme-bridge.css --primary, --ring and the select states onto them, extends tests/contrast.test.ts to the role pairs, shows each theme's accent on the theme picker cards, switches the home page's --primary to the accent, and updates arch-design-system.ts where it describes the token block."
 verify = "tests/contrast.test.ts passes with the role checks in all nine themes, and the home page's Start button and stats show the theme's accent in all nine themes."
 covers = ["CAP-11", "CAP-8"]
 after = []

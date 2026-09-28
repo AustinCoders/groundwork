@@ -3,13 +3,13 @@
 The user approved this palette on 2026-09-28, from https://claude.ai/artifact/M5iVnLkFJ6uRsR7L6SuRZw.
 
 - Paper, ink, sheet, line and the categorical colours (`--c-*`) are unchanged.
-- The role tokens below are new, one set per theme.
+- The role tokens below are new, one set per theme. The accent role is named `--primary`, not `--accent`, because `--accent` is already a per-topic local variable.
 - Every value below is at least 4.5:1 against its pair:
   - `accent`, `success`, `danger`, `caution` and `info` against the sheet;
   - `on-accent` against the accent;
   - `mark` against the ink.
 
-| Theme | accent | on-accent | mark | success | danger | caution | info |
+| Theme | primary (accent) | on-primary | mark | success | danger | caution | info |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | light (Paper) | #2451b3 | #fffdf6 | #ffe873 | #1f7a55 | #c4342b | #8a6400 | #1c64b8 |
 | dark (Night) | #8fb0ff | #10131a | #4a4020 | #64dfa6 | #ff9184 | #f2cc60 | #79b8ff |
@@ -23,9 +23,9 @@ The user approved this palette on 2026-09-28, from https://claude.ai/artifact/M5
 
 ## Role rules
 
-- **accent:** primary buttons, links, the active tab or nav item, progress fills, focus rings and selected states. It replaces green used as an action colour and the interview book's red `--primary`.
-- **on-accent:** text and icons on an accent fill.
-- **accent-soft:** a derived tint, `color-mix(in srgb, var(--accent) 16%, var(--sheet))`, for selected rows and chips. It replaces `--hl-mint` used as a selected background.
-- **mark:** highlighter behind words, inline code and title underlines. It replaces `--hl-yellow` in that role.
-- **success, danger, caution, info:** states only. Passed and failed tests, done and due, tips. Never decoration.
+- **`--primary` (the accent):** primary buttons, links, the active tab or nav item, progress fills, focus rings and selected states. It replaces green used as an action colour and the interview book's red `--primary`.
+- **`--on-primary`:** text and icons on an accent fill.
+- **`--primary-soft`:** a derived tint, `color-mix(in srgb, var(--primary) 16%, var(--sheet))`, for selected rows and chips. It replaces `--hl-mint` used as a selected background.
+- **`--mark`:** highlighter behind words, inline code and title underlines. It replaces `--hl-yellow` in that role.
+- **`--success`, `--danger`, `--caution`, `--info`:** states only. Passed and failed tests, done and due, tips. Never decoration.
 - `--green` and `--red` stay as the categorical `--c-green` and `--c-red` for charts, topic chips and the whiteboard.
