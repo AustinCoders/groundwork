@@ -105,21 +105,31 @@ export const archDesignSystem: Chapter = {
   <code>--danger</code>, <code>--caution</code> or <code>--info</code> instead.
 </p>
 <p>
-  The table is the intended use, and the site moves onto it in steps. The home page, review,
+  The table is the intended use, and most of the site now reads the roles: the home page, review,
   progress, the interview book, the mock interview, the site menu, the modal and the shared page
-  frame now read the roles, and so do the problems list, the whiteboard, the git guide, the
-  architecture pages and the code editor's highlights, active line, autocomplete and error marks,
-  as well as the theme picker's cards and the dropdowns' selected option. Their buttons, links,
-  progress bars, active tabs, selections, focus rings and highlights follow the theme, and their
-  passed, failed, read, due and tip states use the state roles. None of them sets its own <code>--primary</code>, and
-  <code>tests/theme-roles.test.ts</code> fails if one of them declares a role token or goes back
-  to a fixed green, red or highlighter colour outside a short list of categorical uses, such as
+  frame, the problems list, the whiteboard, the git guide, the architecture pages, the theme
+  picker, the dropdowns, the code editor and the practice workspace, the topic covers and
+  chapters, <code>/level</code> and <code>/path</code>. Their buttons, links, progress bars,
+  active tabs and chapters, selections, focus rings, highlights and the notebook's margin line
+  follow the theme, and their passed, failed, read, due and tip states use the state roles.
+  Nothing sets its own <code>--primary</code>, and the practice workspace no longer paints with
+  the green <code>--ide-accent</code> alias.
+</p>
+<p>
+  What stays fixed is mostly what a chapter says in colour, so that it means the same in every
+  theme, such as the callouts (the sticky notes, the red gotcha box and the green and yellow
+  boxes), the diagrams and step-through visualisers, the dry-run and truth tables, the level tags
+  and the interview book's cards and pills. The visualisers' current-step highlight follows the
+  theme's marker. Some uses outside the chapters stay categorical too, such as the daily recap
+  note, the problem hint, the progress page's achievements, the home page's interview-story reds,
+  the book's test, say and trap boxes, the mock interviewers' avatars, the editor's window dots,
   the problem levels, the lanes of the architecture map, and the whiteboard's ruled margin and
-  laser. What is left moves in a later step. The global rules in <code>app/globals.css</code>
-  still paint links <code>--ink</code>, the reading progress bar and the focus ring
-  <code>--red</code>, <code>.btn--primary</code> mint, highlights <code>--hl-yellow</code> and
-  the practice workspace's buttons <code>--ide-accent</code>, which is green, and the topic pages
-  have not moved yet.
+  laser. <code>tests/theme-roles.test.ts</code> scans the role-owned modules, the global rules in
+  <code>app/globals.css</code>, the code editor, <code>narration.ts</code>,
+  <code>ReaderShell.tsx</code> and <code>ChapterView.tsx</code> for a listed set of fixed green,
+  red, mint and highlighter tokens and their <code>--ide-*</code> aliases, and fails when one is
+  used outside its file's categorical list or a module declares its own role token. A wider
+  contract for the rest of the site is still to come.
 </p>
 <p>
   <code>app/theme-bridge.css</code> maps these names onto the conventional ones Tailwind utilities
@@ -227,7 +237,7 @@ export const archDesignSystem: Chapter = {
 
 <h3>CSS modules and globals.css</h3>
 <p>
-  <code>globals.css</code> is 9,319 lines. It holds the tokens, the prose styles every chapter
+  <code>globals.css</code> is 9,608 lines. It holds the tokens, the prose styles every chapter
   uses, and the reading pages' layout. Seven CSS modules hold everything that belongs to one tool:
   <code>app/mock/mock.module.css</code> (3,310 lines), <code>app/whiteboard/whiteboard.module.css</code>
   (1,598), <code>app/problems/problems.module.css</code> (1,167), and four small ones for the

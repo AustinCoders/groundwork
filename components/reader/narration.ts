@@ -128,7 +128,7 @@ export function setupNarration(container: HTMLElement): () => void {
   if (canHighlight && !document.getElementById("narration-highlight-style")) {
     const style = document.createElement("style");
     style.id = "narration-highlight-style";
-    style.textContent = "::highlight(narration) { background-color: var(--hl-yellow); }";
+    style.textContent = "::highlight(narration) { background-color: var(--mark); }";
     document.head.appendChild(style);
   }
 

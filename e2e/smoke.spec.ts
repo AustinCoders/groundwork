@@ -336,6 +336,10 @@ test("the editor lints as you type, formats on save and has a command palette", 
   await expect(page.locator(".ed__problems")).toHaveText("✕ 1 ⚠ 2", { timeout: 15_000 });
   await page.locator(".ed__problems").click();
   await expect(page.locator("#view-problems")).toContainText("eslint(no-undef)");
+  await expect(page.locator('.problem[data-severity="warning"] .problem__mark').first()).toHaveCSS(
+    "color",
+    "rgb(138, 100, 0)"
+  );
 
   await editor.click();
   await page.keyboard.press("ControlOrMeta+s");
@@ -1041,6 +1045,120 @@ test("problems, the whiteboard, git and architecture take the theme's accent, an
     return `rgb(${r}, ${g}, ${b})`;
   });
   await expect(currentChapter.getByLabel("read", { exact: true })).toHaveCSS("color", ink);
+});
+
+test("topic covers and chapters, level, path and the playground take the theme's accent", async ({ page }) => {
+  const cover = page.getByRole("link", { name: /^(Start here|Continue) — / });
+  const readingProgress = page.locator("#progress");
+  const inBodyLink = page.locator("#closures").getByRole("link", { name: "the outer reference" });
+  const currentChapterNumber = page
+    .getByRole("navigation", { name: "Chapters" })
+    .locator(".site-navlink.is-active .site-navlink__num");
+  const run = page.getByRole("button", { name: "Run the code" });
+  const writtenRow = page.locator(".syllabus-item.is-ready").first();
+  const levelCrumb = page.locator("#crumbs a").first();
+  const levelCta = page.locator(".level__cta").first();
+  const pathMeter = page.locator("#meter-fill");
+
+  for (const [theme, accent] of Object.entries(THEME_ACCENTS)) {
+    await page.goto("/");
+    await page.evaluate((value) => localStorage.setItem("jsnotes:theme", JSON.stringify(value)), theme);
+
+    await page.goto("/notes");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+    await expect(cover, `/notes in ${theme}`).toHaveCSS("background-color", accent);
+    await expect(cover, `/notes in ${theme}`).toHaveCSS("color", THEME_ON_ACCENTS[theme]);
+
+    await page.goto("/notes/closures");
+    await expect(readingProgress, `/notes/closures in ${theme}`).toHaveCSS("background-color", accent);
+    await expect(inBodyLink, `/notes/closures in ${theme}`).toHaveCSS("color", accent);
+    await expect(currentChapterNumber, `/notes/closures in ${theme}`).toHaveCSS("border-color", accent);
+    await page.keyboard.press("Tab");
+    await inBodyLink.focus();
+    await expect(inBodyLink, `/notes/closures in ${theme}`).toHaveCSS("outline-style", "solid");
+    await expect(inBodyLink, `/notes/closures in ${theme}`).toHaveCSS("outline-color", accent);
+
+    await page.goto("/practice");
+    await expect(run, `/practice in ${theme}`).toHaveCSS("background-color", accent);
+    await expect(run, `/practice in ${theme}`).toHaveCSS("color", THEME_ON_ACCENTS[theme]);
+
+    await page.goto("/level/js");
+    await expect(writtenRow, `/level/js in ${theme}`).toHaveCSS("border-left-color", accent);
+    await expect(levelCrumb, `/level/js in ${theme}`).toHaveCSS("color", accent);
+    await expect(levelCta, `/level/js in ${theme}`).toHaveCSS("color", accent);
+
+    await page.goto("/path?topic=js&level=beginner");
+    await expect(pathMeter, `/path in ${theme}`).toHaveCSS("background-color", accent);
+  }
+});
+
+function colourChannels(value: string): number[] {
+  const srgb = /color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)(?: \/ ([\d.]+))?\)/.exec(value);
+  if (srgb) return [...srgb.slice(1, 4).map((v) => Math.round(Number(v) * 255)), Number(srgb[4] ?? 1)];
+  const rgb = /rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/.exec(value);
+  return rgb ? [...rgb.slice(1, 4).map(Number), Number(rgb[4] ?? 1)] : [];
+}
+
+test("links inside a kept callout keep the callout's colour", async ({ page }) => {
+  await page.goto("/notes/basic-async");
+  const warn = page
+    .locator(".warn")
+    .filter({ has: page.locator("a") })
+    .first();
+  const callout = await warn.evaluate((box) => getComputedStyle(box).color);
+  await expect(warn.locator("a").first()).toHaveCSS("color", callout);
+});
+
+test("the notebook's margin line takes the theme's accent instead of a fixed red", async ({ page }) => {
+  const marginLine = async () =>
+    colourChannels(
+      await page.locator("#closures").evaluate((sheet) => getComputedStyle(sheet, "::before").backgroundColor)
+    );
+  const accentLine = (theme: string) => [...colourChannels(THEME_ACCENTS[theme]).slice(0, 3), 0.32];
+
+  await page.goto("/notes/closures");
+  expect(await marginLine()).toEqual(accentLine("light"));
+  expect(await marginLine()).not.toEqual([196, 52, 43, 0.32]);
+
+  await page.evaluate(() => localStorage.setItem("jsnotes:theme", JSON.stringify("lavender")));
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "lavender");
+  expect(await marginLine()).toEqual(accentLine("lavender"));
+});
+
+test("a passed and a failed test keep their state colours where success is not green and danger is not red", async ({
+  page,
+}) => {
+  const editor = page.locator(".cm-content");
+  const testsCount = page.locator("#tests-count");
+  const ink = () =>
+    page.evaluate(() => {
+      const hex = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim().replace("#", "");
+      const [r, g, b] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
+      return `rgb(${r}, ${g}, ${b})`;
+    });
+
+  await page.goto("/");
+  await page.evaluate(() => localStorage.setItem("jsnotes:theme", JSON.stringify("lavender")));
+  await page.goto("/problems/ex-two-sum");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "lavender");
+  await expect(editor).toContainText("function twoSum(nums, target)");
+  await page.getByRole("button", { name: "Submit" }).click();
+  await expect(page.locator(".verdict--fail")).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".test--fail .test__mark").first()).toHaveCSS("color", "rgb(184, 57, 94)");
+  await expect(testsCount).toHaveCSS("color", await ink());
+
+  await page.evaluate(() => localStorage.setItem("jsnotes:theme", JSON.stringify("forest")));
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "forest");
+  await expect(editor).toContainText("function twoSum(nums, target)");
+  await page.getByRole("tab", { name: /Hints/ }).click();
+  await page.getByRole("button", { name: "Show the solution" }).click();
+  await page.getByRole("dialog", { name: "Show the solution?" }).getByRole("button", { name: "Show solution" }).click();
+  await page.getByRole("button", { name: "Submit" }).click();
+  await expect(page.locator(".verdict--pass")).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".test--pass .test__mark").first()).toHaveCSS("color", "rgb(31, 111, 92)");
+  await expect(testsCount).toHaveCSS("color", await ink());
 });
 
 test("the editor's selected search match takes the theme's accent", async ({ page }) => {
