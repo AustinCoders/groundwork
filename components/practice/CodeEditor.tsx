@@ -144,9 +144,9 @@ const cmTheme = EditorView.theme({
     fontSize: "var(--ed-size, 14.5px)",
   },
   ".cm-activeLine": { backgroundColor: "var(--ide-selection)" },
-  ".cm-activeLineGutter": { backgroundColor: "var(--ide-selection)", color: "var(--ide-accent)", fontWeight: "700" },
+  ".cm-activeLineGutter": { backgroundColor: "var(--ide-selection)", color: "var(--primary)", fontWeight: "700" },
   ".cm-matchingBracket, .cm-nonmatchingBracket": {
-    backgroundColor: "color-mix(in srgb, var(--c-yellow) 28%, transparent)",
+    backgroundColor: "color-mix(in srgb, var(--primary) 22%, transparent)",
     outline: "none",
   },
   ".cm-tooltip": {
@@ -157,8 +157,8 @@ const cmTheme = EditorView.theme({
     fontFamily: "var(--font-code)",
   },
   ".cm-tooltip-autocomplete ul li[aria-selected]": {
-    backgroundColor: "var(--ide-accent)",
-    color: "var(--ide-bg)",
+    backgroundColor: "var(--primary)",
+    color: "var(--on-primary)",
   },
   ".cm-panels": { backgroundColor: "var(--ide-bg-elevated)", color: "var(--ide-fg)", fontFamily: "var(--font-body)" },
   ".cm-panels.cm-panels-top": { borderBottom: "1px solid var(--ide-border)" },
@@ -170,10 +170,16 @@ const cmTheme = EditorView.theme({
     padding: "2px 8px",
     cursor: "pointer",
   },
-  ".cm-searchMatch": { backgroundColor: "color-mix(in srgb, var(--c-yellow) 28%, transparent)" },
-  ".cm-searchMatch-selected": { backgroundColor: "color-mix(in srgb, var(--c-orange) 38%, transparent)" },
-  ".cm-selectionMatch": { backgroundColor: "color-mix(in srgb, var(--c-green) 20%, transparent)" },
-  ".cm-diagnostic-error": { borderLeftColor: "var(--ide-red)" },
+  ".cm-searchMatch": {
+    backgroundColor: "color-mix(in srgb, var(--mark) 80%, transparent)",
+    outline: "1px solid color-mix(in srgb, var(--ink) 35%, transparent)",
+  },
+  ".cm-searchMatch-selected": {
+    backgroundColor: "color-mix(in srgb, var(--primary) 30%, transparent)",
+    outline: "1px solid var(--primary)",
+  },
+  ".cm-selectionMatch": { backgroundColor: "color-mix(in srgb, var(--primary) 14%, transparent)" },
+  ".cm-diagnostic-error": { borderLeftColor: "var(--danger)" },
 });
 
 type Ref<T> = { current: T };

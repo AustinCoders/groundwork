@@ -3,6 +3,7 @@
   --wb-paper: var(--sheet);
   --wb-line: var(--line);
   --wb-muted: var(--pencil);
+  --wb-select: var(--primary);
   --wb-font: var(--font-body);
   --island-bg: var(--sheet);
   --gap: 12px;
@@ -12,6 +13,10 @@
   overflow: hidden;
   background: var(--wb-paper);
   isolation: isolate;
+}
+
+.app:not([data-tint="auto"]) {
+  --wb-select: var(--wb-ink);
 }
 
 .app[data-fullscreen] {
@@ -53,23 +58,23 @@
 
 .selection rect:first-child {
   fill: none;
-  stroke: var(--green);
+  stroke: var(--wb-select);
 }
 
 .handle {
   fill: var(--island-bg);
-  stroke: var(--green);
+  stroke: var(--wb-select);
 }
 
 .lockBadge {
   fill: var(--island-bg);
-  stroke: var(--green);
+  stroke: var(--wb-select);
   stroke-width: 2;
 }
 
 .marquee {
-  fill: color-mix(in srgb, var(--green) 10%, transparent);
-  stroke: var(--green);
+  fill: color-mix(in srgb, var(--wb-select) 10%, transparent);
+  stroke: var(--wb-select);
 }
 
 .laser {
@@ -94,7 +99,7 @@
   font-family: var(--wb-font);
   line-height: 1.25;
   background: transparent;
-  border: 1.5px dashed var(--green);
+  border: 1.5px dashed var(--wb-select);
   border-radius: 6px;
   outline: none;
   resize: none;
@@ -151,7 +156,7 @@
 }
 
 .emptyStart button:hover {
-  border-color: var(--green);
+  border-color: var(--primary);
 }
 
 .island {
@@ -224,8 +229,8 @@
 .tool[aria-checked="true"],
 .islandBtn[aria-pressed="true"],
 .islandBtn[aria-expanded="true"] {
-  color: var(--sheet);
-  background: var(--ink);
+  color: var(--on-primary);
+  background: var(--primary);
 }
 
 .tool:disabled,
@@ -238,7 +243,7 @@
 .islandBtn:focus-visible,
 .swatch:focus-visible,
 .menuBtn:focus-visible {
-  outline: 2px solid var(--green);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
@@ -249,6 +254,11 @@
   font-family: var(--font-mono);
   font-size: 8.5px;
   opacity: 0.55;
+}
+
+.tool[aria-pressed="true"] .toolKey,
+.tool[aria-checked="true"] .toolKey {
+  opacity: 0.85;
 }
 
 .toolMore {
@@ -381,7 +391,7 @@
 }
 
 .blankBtn[aria-pressed="true"] {
-  border-color: var(--green);
+  border-color: var(--primary);
 }
 
 .tabs {
@@ -437,7 +447,7 @@
 }
 
 .paperOpt[aria-pressed="true"] {
-  border-color: var(--green);
+  border-color: var(--primary);
 }
 
 .paperPreview {
@@ -471,7 +481,7 @@
 }
 
 .snapRow input {
-  accent-color: var(--green);
+  accent-color: var(--primary);
 }
 
 .snapRow kbd {
@@ -580,7 +590,7 @@
 
 .group input[type="range"] {
   width: 100%;
-  accent-color: var(--green);
+  accent-color: var(--primary);
 }
 
 .swatches {
@@ -633,8 +643,8 @@
 }
 
 .seg button[aria-pressed="true"] {
-  color: var(--sheet);
-  background: var(--ink);
+  color: var(--on-primary);
+  background: var(--primary);
 }
 
 .widthBar {
@@ -686,7 +696,7 @@
 }
 
 .iconRow button:hover:not(:disabled) {
-  background: var(--hl-mint);
+  background: var(--primary-soft);
 }
 
 .iconRow button:disabled {
@@ -715,15 +725,20 @@
 
 .actions button:hover,
 .menuItem:hover {
-  background: var(--hl-mint);
+  background: var(--primary-soft);
 }
 
 .actions button[aria-pressed="true"] {
-  box-shadow: inset 0 0 0 1.5px var(--green);
+  box-shadow: inset 0 0 0 1.5px var(--primary);
 }
 
 .danger {
-  color: var(--red) !important;
+  color: var(--danger) !important;
+}
+
+.actions button.danger:hover {
+  color: var(--ink) !important;
+  background: var(--danger-soft);
 }
 
 .menuWrap {
@@ -795,7 +810,7 @@
 }
 
 .boardList li[data-current] {
-  background: var(--hl-mint);
+  background: var(--primary-soft);
 }
 
 .boardList li > button:first-child {
@@ -839,7 +854,17 @@
 }
 
 .boardDelete:hover {
-  color: var(--red);
+  color: var(--danger);
+}
+
+.boardList li[data-current] .boardMeta,
+.boardList li[data-current] .boardDelete:not(:hover) {
+  color: var(--ink-soft);
+}
+
+.boardList li[data-current] .boardDelete:hover {
+  color: var(--ink);
+  background: var(--danger-soft);
 }
 
 .ctx {
@@ -1138,8 +1163,8 @@
   font: inherit;
   text-align: left;
   color: var(--ink);
-  background: color-mix(in srgb, var(--green) 14%, var(--sheet-2));
-  border: 1px solid color-mix(in srgb, var(--green) 35%, transparent);
+  background: var(--primary-soft);
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
   border-radius: 12px;
   cursor: pointer;
   transition:
@@ -1155,7 +1180,7 @@
 .shareCard svg {
   flex: none;
   margin-top: 2px;
-  color: var(--green);
+  color: var(--primary);
 }
 
 .shareCard span {
@@ -1171,7 +1196,7 @@
 .shareCard small {
   font-size: 12.5px;
   line-height: 1.4;
-  color: var(--pencil);
+  color: var(--ink-soft);
 }
 
 .newBoard {
@@ -1190,7 +1215,7 @@
 }
 
 .newBoard:hover {
-  border-color: var(--green);
+  border-color: var(--primary);
   background: var(--sheet-2);
 }
 
@@ -1214,7 +1239,7 @@
 }
 
 .exportGrid button:hover {
-  background: var(--hl-mint);
+  background: var(--primary-soft);
 }
 
 .exportWide {
@@ -1227,16 +1252,17 @@
   font: inherit;
   font-size: 14px;
   text-align: left;
-  color: var(--red);
+  color: var(--danger);
   background: transparent;
-  border: 1px solid color-mix(in srgb, var(--red) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent);
   border-radius: 9px;
   cursor: pointer;
   transition: background 0.15s ease;
 }
 
 .clearBtn:hover {
-  background: color-mix(in srgb, var(--red) 10%, transparent);
+  color: var(--ink);
+  background: var(--danger-soft);
 }
 
 .boardFade {

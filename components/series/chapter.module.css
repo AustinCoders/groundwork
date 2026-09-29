@@ -46,14 +46,14 @@
 .crumbs a {
   font-family: var(--font-heading);
   font-size: 18px;
-  color: var(--ink);
+  color: var(--primary);
   text-decoration: none;
   border-bottom: 1.5px dashed transparent;
   transition: border-color 0.15s ease;
 }
 
 .crumbs a:hover {
-  border-bottom-color: var(--ink-soft);
+  border-bottom-color: var(--primary);
 }
 
 .crumbs span[aria-current] {
@@ -140,7 +140,7 @@
 
 .progress > div {
   height: 100%;
-  background: var(--green);
+  background: var(--primary);
   transform: scaleX(0);
   transform-origin: left;
 }
@@ -227,7 +227,7 @@
 }
 
 .railHead:focus-visible {
-  outline: 2px solid var(--green);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
@@ -302,8 +302,8 @@
 .railLink[aria-current="page"] {
   color: var(--ink);
   font-weight: 600;
-  background: color-mix(in srgb, var(--green) 14%, transparent);
-  box-shadow: inset 3px 0 0 var(--green);
+  background: var(--primary-soft);
+  box-shadow: inset 3px 0 0 var(--primary);
 }
 
 .railNum {
@@ -323,7 +323,11 @@
 .railDone {
   flex: none;
   font-size: 12px;
-  color: var(--green);
+  color: var(--success);
+}
+
+.railLink[aria-current="page"] .railDone {
+  color: var(--ink);
 }
 
 .main {
@@ -373,8 +377,8 @@
 
 .article:global(.is-done) .badge {
   color: var(--sheet);
-  background: var(--green);
-  border-color: var(--green);
+  background: var(--success);
+  border-color: var(--success);
 }
 
 .title {
@@ -454,7 +458,10 @@
 }
 
 .inlineToc a {
-  color: var(--ink);
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
 
 .content {
@@ -483,8 +490,8 @@
 }
 
 .endDone {
-  background: color-mix(in srgb, var(--green) 8%, var(--sheet));
-  border-color: color-mix(in srgb, var(--green) 45%, var(--line));
+  background: var(--success-soft);
+  border-color: color-mix(in srgb, var(--success) 45%, var(--line));
 }
 
 .endStatus {
@@ -513,8 +520,8 @@
 .endDone .endMark {
   font-size: 20px;
   color: var(--sheet);
-  background: var(--green);
-  border-color: var(--green);
+  background: var(--success);
+  border-color: var(--success);
 }
 
 .endTitle {
@@ -545,7 +552,7 @@
 .endBar > span {
   position: absolute;
   inset: 0 auto 0 0;
-  background: var(--green);
+  background: var(--primary);
   border-radius: inherit;
   transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -556,8 +563,8 @@
   font: inherit;
   font-size: 14.5px;
   font-weight: 600;
-  color: var(--sheet);
-  background: color-mix(in srgb, var(--green) 80%, var(--ink));
+  color: var(--on-primary);
+  background: var(--primary);
   border: 0;
   border-radius: 10px;
   cursor: pointer;
@@ -704,7 +711,7 @@
 
 .ringFill {
   fill: none;
-  stroke: var(--green);
+  stroke: var(--primary);
   stroke-width: 4;
   stroke-linecap: round;
   transition: stroke-dasharray 0.2s linear;
@@ -769,14 +776,14 @@
 }
 
 .toc li[data-state="past"] .tocNum {
-  color: var(--green);
+  color: var(--primary);
 }
 
 .toc li[data-state="now"] a {
   color: var(--ink);
   font-weight: 600;
-  background: color-mix(in srgb, var(--green) 13%, transparent);
-  box-shadow: inset 3px 0 0 var(--green);
+  background: var(--primary-soft);
+  box-shadow: inset 3px 0 0 var(--primary);
 }
 
 .toc li[data-state="now"] .tocNum {
@@ -803,8 +810,8 @@
     color 0.2s ease;
 }
 
-.readBtn:hover {
-  border-color: var(--green);
+.readBtn:not(.readBtnOn):hover {
+  border-color: var(--primary);
 }
 
 .readTick {
@@ -822,15 +829,15 @@
 
 .readBtnOn {
   font-weight: 600;
-  background: color-mix(in srgb, var(--green) 12%, var(--sheet));
+  background: var(--success-soft);
   border-style: solid;
-  border-color: color-mix(in srgb, var(--green) 50%, var(--line));
+  border-color: color-mix(in srgb, var(--success) 50%, var(--line));
 }
 
 .readBtnOn .readTick {
   color: var(--sheet);
-  background: var(--green);
-  border-color: var(--green);
+  background: var(--success);
+  border-color: var(--success);
 }
 
 .sideFoot {
@@ -942,7 +949,7 @@
 .readBtn:focus-visible,
 .topBtn:focus-visible,
 .chip:focus-visible {
-  outline: 2px solid var(--green);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 

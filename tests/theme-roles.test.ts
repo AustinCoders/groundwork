@@ -42,6 +42,12 @@ const CATEGORICAL_SELECTORS: Record<string, string[]> = {
   "components/frame/frame.module.css": [],
   "components/SiteDrawer.module.css": [],
   "components/Modal.module.css": [],
+  "app/problems/problems.module.css": [".page", ".sheetRoot"],
+  "app/whiteboard/whiteboard.module.css": [".paperMargin", ".laser", '.swatch[data-value="none"]'],
+  "components/series/landing.module.css": [".page"],
+  "app/architecture/architecture.module.css": [".page"],
+  "components/series/chapter.module.css": [],
+  "components/AppearancePicker.module.css": [],
 };
 
 const FILES = Object.keys(CATEGORICAL_SELECTORS);
@@ -147,5 +153,18 @@ describe("theme-blind colours in role-owned modules", () => {
     const used = new Set(themeBlindUses(read(file)).map((use) => use.selector));
     const stale = CATEGORICAL_SELECTORS[file].filter((selector) => !used.has(selector));
     expect(stale, `${file} lists categorical selectors that no longer use a fixed colour`).toEqual([]);
+  });
+});
+
+describe("theme-blind colours in the code editor", () => {
+  const file = "components/practice/CodeEditor.tsx";
+  const IDE_ALIASES = /var\(\s*--(ide-accent|ide-green|ide-red)\s*[,)]/g;
+
+  it(`${file} paints highlights, the active line, autocomplete and errors with role tokens`, () => {
+    const source = read(file);
+    const uses = [...source.matchAll(THEME_BLIND), ...source.matchAll(IDE_ALIASES)].map(
+      (match) => `${file}:${lineAt(source, match.index)} uses var(--${match[1]}); use a role token instead`
+    );
+    expect(uses).toEqual([]);
   });
 });

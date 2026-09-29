@@ -1,6 +1,6 @@
 .page {
   --beginner: var(--green);
-  --intermediate: var(--dg-yellow-stroke, #b7791f);
+  --intermediate: var(--dg-yellow-stroke);
   --advanced: var(--red);
   --hover: color-mix(in srgb, var(--ink) 7%, transparent);
   min-height: 100dvh;
@@ -98,8 +98,8 @@
 }
 
 .search:focus-within {
-  border-color: var(--green);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 18%, transparent);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
 }
 
 .search input {
@@ -159,14 +159,14 @@
 }
 
 .primary {
-  color: var(--sheet);
-  background: color-mix(in srgb, var(--green) 80%, var(--ink));
+  color: var(--on-primary);
+  background: var(--primary);
   border-color: transparent;
   font-weight: 600;
 }
 
 .primary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--green) 80%, var(--ink));
+  background: var(--primary);
   border-color: transparent;
   filter: brightness(1.08);
 }
@@ -255,7 +255,7 @@
 
 .facetBtn[aria-pressed="true"] {
   color: var(--ink);
-  background: color-mix(in srgb, var(--green) 14%, transparent);
+  background: var(--primary-soft);
   font-weight: 600;
 }
 
@@ -280,8 +280,8 @@
 }
 
 .facetCheck[aria-pressed="true"] .box {
-  background: var(--lvl, var(--green));
-  border-color: var(--lvl, var(--green));
+  background: var(--lvl, var(--primary));
+  border-color: var(--lvl, var(--primary));
   box-shadow: inset 0 0 0 2.5px var(--sheet);
 }
 
@@ -369,7 +369,7 @@
   padding: 0;
   font: inherit;
   font-size: 13.5px;
-  color: var(--red);
+  color: var(--primary);
   background: none;
   border: 0;
   border-bottom: 1.5px dashed currentColor;
@@ -413,7 +413,7 @@
 
 .ringFill {
   fill: none;
-  stroke: var(--green);
+  stroke: var(--primary);
   stroke-width: 9;
   stroke-linecap: round;
   transition: stroke-dasharray 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -475,7 +475,7 @@
 .bar > span {
   position: absolute;
   inset: 0 auto 0 0;
-  background: var(--lvl, var(--green));
+  background: var(--lvl, var(--primary));
   border-radius: inherit;
   transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -535,8 +535,8 @@
   font-size: 12px;
   line-height: 20px;
   text-align: center;
-  color: var(--sheet);
-  background: var(--green);
+  color: var(--on-primary);
+  background: var(--primary);
   border-radius: 999px;
 }
 
@@ -776,7 +776,7 @@
 }
 
 .rowLink:focus-visible {
-  outline: 2px solid var(--green);
+  outline: 2px solid var(--primary);
   outline-offset: -2px;
 }
 
@@ -860,8 +860,8 @@
 }
 
 .checkDone {
-  background: var(--green);
-  border-color: var(--green);
+  background: var(--success);
+  border-color: var(--success);
 }
 
 .empty {
@@ -889,7 +889,7 @@
 
 .sheetRoot {
   --beginner: var(--green);
-  --intermediate: var(--dg-yellow-stroke, #b7791f);
+  --intermediate: var(--dg-yellow-stroke);
   --advanced: var(--red);
   --hover: color-mix(in srgb, var(--ink) 7%, transparent);
   position: fixed;
@@ -948,7 +948,7 @@
 .linkBtn:focus-visible,
 .clear:focus-visible,
 .sort select:focus-visible {
-  outline: 2px solid var(--green);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 

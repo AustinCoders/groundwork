@@ -107,16 +107,19 @@ export const archDesignSystem: Chapter = {
 <p>
   The table is the intended use, and the site moves onto it in steps. The home page, review,
   progress, the interview book, the mock interview, the site menu, the modal and the shared page
-  frame now read the roles, as do the theme picker's cards and the dropdowns' selected option.
-  Their buttons, links, progress bars, active tabs, selections, focus rings and highlights follow
-  the theme, and their passed, failed, due and tip states use the state roles. None of them sets
-  its own <code>--primary</code>, and <code>tests/theme-roles.test.ts</code> fails if one of them
-  declares a role token or goes back to a fixed green, red or highlighter colour outside a short
-  list of categorical uses. The rest moves in later steps. The global rules in
-  <code>app/globals.css</code> still paint links <code>--ink</code>, the reading progress bar and
-  the focus ring <code>--red</code>, <code>.btn--primary</code> mint and highlights
-  <code>--hl-yellow</code>, and the whiteboard, the problems pages, the git guide, the
-  architecture pages and the topic pages have not moved yet.
+  frame now read the roles, and so do the problems list, the whiteboard, the git guide, the
+  architecture pages and the code editor's highlights, active line, autocomplete and error marks,
+  as well as the theme picker's cards and the dropdowns' selected option. Their buttons, links,
+  progress bars, active tabs, selections, focus rings and highlights follow the theme, and their
+  passed, failed, read, due and tip states use the state roles. None of them sets its own <code>--primary</code>, and
+  <code>tests/theme-roles.test.ts</code> fails if one of them declares a role token or goes back
+  to a fixed green, red or highlighter colour outside a short list of categorical uses, such as
+  the problem levels, the lanes of the architecture map, and the whiteboard's ruled margin and
+  laser. What is left moves in a later step. The global rules in <code>app/globals.css</code>
+  still paint links <code>--ink</code>, the reading progress bar and the focus ring
+  <code>--red</code>, <code>.btn--primary</code> mint, highlights <code>--hl-yellow</code> and
+  the practice workspace's buttons <code>--ide-accent</code>, which is green, and the topic pages
+  have not moved yet.
 </p>
 <p>
   <code>app/theme-bridge.css</code> maps these names onto the conventional ones Tailwind utilities
@@ -226,8 +229,8 @@ export const archDesignSystem: Chapter = {
 <p>
   <code>globals.css</code> is 9,319 lines. It holds the tokens, the prose styles every chapter
   uses, and the reading pages' layout. Seven CSS modules hold everything that belongs to one tool:
-  <code>app/mock/mock.module.css</code> (2,187 lines), <code>app/whiteboard/whiteboard.module.css</code>
-  (1,572), <code>app/problems/problems.module.css</code> (1,167), and four small ones for the
+  <code>app/mock/mock.module.css</code> (3,310 lines), <code>app/whiteboard/whiteboard.module.css</code>
+  (1,598), <code>app/problems/problems.module.css</code> (1,167), and four small ones for the
   modal, the drawer, the appearance picker and the bare header. The rule of thumb is that anything
   chapter HTML can contain goes in globals, because chapter bodies are strings that cannot import a
   module, and anything else goes in a module so it loads only with its page.

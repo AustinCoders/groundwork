@@ -984,3 +984,73 @@ test("review, the interview book, mock and progress take the theme's accent, not
     }
   }
 });
+
+test("problems, the whiteboard, git and architecture take the theme's accent, and a read chapter shows success", async ({
+  page,
+}) => {
+  const surfaces = [
+    { path: "/problems", action: () => page.getByRole("link", { name: "Solve it" }) },
+    { path: "/git", action: () => page.getByRole("link", { name: /^(Start|Continue) reading/ }) },
+    { path: "/architecture", action: () => page.getByRole("link", { name: /^(Start|Continue) reading/ }) },
+    { path: "/whiteboard", action: () => page.getByRole("button", { name: "Select (V)" }) },
+  ];
+  const rail = page.getByRole("navigation", { name: "Chapters" });
+  const currentChapter = rail.locator('a[aria-current="page"]');
+  const finish = page.getByRole("region", { name: "Finish" });
+  const markRead = finish.getByRole("button", { name: "Mark as read" });
+
+  for (const [theme, accent] of Object.entries(THEME_ACCENTS)) {
+    await page.goto("/");
+    await page.evaluate((value) => localStorage.setItem("jsnotes:theme", JSON.stringify(value)), theme);
+
+    for (const { path, action } of surfaces) {
+      await page.goto(path);
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+      await expect(action(), `${path} in ${theme}`).toHaveCSS("background-color", accent);
+      await expect(action(), `${path} in ${theme}`).toHaveCSS("color", THEME_ON_ACCENTS[theme]);
+    }
+
+    for (const path of ["/git/merge", "/architecture/arch-build"]) {
+      await page.goto(path);
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+      await expect(currentChapter, `${path} in ${theme}`).toHaveCSS(
+        "box-shadow",
+        new RegExp(accent.replace(/[()]/g, "\\$&"))
+      );
+      await expect(page.locator("[class$='__progress'] > div"), `${path} in ${theme}`).toHaveCSS(
+        "background-color",
+        accent
+      );
+      await expect(
+        page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link"),
+        `${path} in ${theme}`
+      ).toHaveCSS("color", accent);
+      if (path === "/git/merge") await expect(markRead, `${path} in ${theme}`).toHaveCSS("background-color", accent);
+    }
+  }
+
+  await page.evaluate(() => localStorage.setItem("jsnotes:theme", JSON.stringify("forest")));
+  await page.goto("/git/merge");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "forest");
+  await markRead.click();
+  await expect(finish.getByRole("button", { name: "Mark as unread" })).toBeVisible();
+  await expect(finish.locator("[class*='__endMark']")).toHaveCSS("background-color", "rgb(31, 111, 92)");
+  const ink = await page.evaluate(() => {
+    const hex = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim().replace("#", "");
+    const [r, g, b] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    return `rgb(${r}, ${g}, ${b})`;
+  });
+  await expect(currentChapter.getByLabel("read", { exact: true })).toHaveCSS("color", ink);
+});
+
+test("the editor's selected search match takes the theme's accent", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("jsnotes:theme", JSON.stringify("lavender")));
+  await page.goto("/problems/ex-two-sum");
+  const editor = page.locator(".cm-content");
+  await expect(editor).toContainText("function twoSum(nums, target)");
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+f");
+  await page.keyboard.type("target");
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".cm-searchMatch-selected").first()).toHaveCSS("outline-color", THEME_ACCENTS.lavender);
+});

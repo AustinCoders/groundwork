@@ -152,3 +152,43 @@ describe("the role colours", () => {
     }
   });
 });
+
+describe("text on the role tints", () => {
+  const TINTS = ["--primary-soft", "--success-soft", "--danger-soft", "--caution-soft", "--info-soft"] as const;
+  const PAIRS: [foreground: string, tint: string][] = [
+    ...TINTS.map((tint): [string, string] => ["--ink", tint]),
+    ["--ink-soft", "--primary-soft"],
+  ];
+  const MIX = /color-mix\(in srgb,\s*var\((--[\w-]+)\)\s*([\d.]+)%,\s*var\((--[\w-]+)\)\)/;
+  const shared = blocks().find((b) => declaration(b.body, "--primary-soft"));
+  const withTheme = blocks().filter((b) => declaration(b.body, "--sheet") && declaration(b.body, "--ink"));
+
+  function tintIn(body: string, tint: string): Rgb {
+    const recipe = MIX.exec(declaration(shared!.body, tint) ?? "");
+    expect(recipe, `${tint} is not a color-mix of a role and a base`).toBeTruthy();
+    const [, role, percent, base] = recipe!;
+    const share = Number(percent) / 100;
+    const top = hexToRgb(declaration(body, role)!);
+    const under = hexToRgb(declaration(body, base)!);
+    return [0, 1, 2].map((i) => share * top[i] + (1 - share) * under[i]) as Rgb;
+  }
+
+  it("is mixed once, for every theme", () => {
+    expect(shared, "no block declares the -soft tints").toBeTruthy();
+    expect(withTheme.length).toBe(9);
+  });
+
+  it("keeps ink and soft ink at WCAG AA on every tint in every theme", () => {
+    for (const theme of withTheme) {
+      for (const [foreground, tint] of PAIRS) {
+        const fg = declaration(theme.body, foreground);
+        expect(fg, `${theme.selector} is missing ${foreground}`).toBeTruthy();
+        const ratio = contrast(hexToRgb(fg!), tintIn(theme.body, tint));
+        expect(
+          ratio,
+          `${theme.selector} ${foreground} (${fg}) is ${ratio.toFixed(2)}:1 on ${tint}`
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+});
