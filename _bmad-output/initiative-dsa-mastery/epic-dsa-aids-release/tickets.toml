@@ -1,0 +1,65 @@
+[[entry]]
+id = 1
+type = "story"
+title = "Review asks a DSA chapter's check questions"
+description = "Makes a due chapter of a quiz-completion topic in /review ask two of its check questions through 3.1's lazy per-chapter import and keeps its review gap in groundwork:quiz (both right moves it to the next gap, one right makes it due again after the same gap counted from now, both wrong steps it back one gap), so the reviews count in jsnotes:progress only ever grows and XP never falls, falling back to self-rating when a chapter has fewer than two questions, showing not checked on the review page, and leaving markReviewed, dueAt and REVIEW_GAPS_DAYS untouched."
+verify = "With seeded due chapters /review asks two binary-search questions and moves its due date by the rule for two, one and no right answers while XP never falls, a due /notes chapter still shows self-rating, and a vitest pins a non-DSA chapter's schedule as before."
+covers = ["X1"]
+after = ["3.2"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 2
+type = "story"
+title = "Which-pattern drill"
+description = "Adds a /dsa/patterns drill that mixes the pattern-tagged recognise questions from the reader's done or tested-out DSA chapters, asks for the pattern, explains each answer, points a reader with no done chapter to the placement, and adds the route to How this is built."
+verify = "With seeded done chapters from all three levels the drill mixes their questions and explains each answer, with none done it points to the placement, and axe passes on it in all nine themes."
+covers = ["X2"]
+after = ["6.8", "3.7"]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 3
+type = "story"
+title = "DSA cheat sheet"
+description = "Adds a /dsa/cheat-sheet page built from the chapters' pattern records that lists every pattern with its signals, template and complexity, grouped by level on one page, links each to its chapter and to its player's anchor, and adds the route to How this is built."
+verify = "Every pattern links to a chapter and a player anchor that exist, a test fails when a pattern record has no chapter, and axe passes on the page in all nine themes."
+covers = ["X3"]
+after = ["6.8", 2]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Refactor sweep"
+description = "Cleans up what entries 1 to 3 and their reviews deferred, scoped from their build records when it starts, and takes cleanup only."
+verify = "npm run check, npm run build and npm run test:e2e pass, and every finding this epic deferred is fixed or moved to a named later entry."
+covers = ["X1", "X2", "X3"]
+after = [1, 2, 3]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Release gate: completeness, nine themes and the phone walk"
+description = "Adds a completeness test (42 written chapters, an empty allow-list, a pool of at least 8 with 2 placement-tagged and a player for every chapter), the success-signal walk as a 390px e2e test, axe under reduced motion on every DSA page type in all nine themes at 1440 and 390, a seeded legacy-progress check that marks, XP, badges and due dates are unchanged and a check that no non-DSA e2e expectation changed, the overhaul's must-not-regress checklist (topics.md §3.5) on /dsa and a chapter at each level, and brings How this is built, the DSA topic copy, the sitemap, docs/roadmap.html (with its artifact republished) and docs/ROADMAP.md in line with the release."
+verify = "The completeness test, the walk, the nine-theme axe run and the legacy-progress check pass, the claims and seo tests pass, and npm run check, build and test:e2e pass on feature/dsa-rebuild."
+covers = ["X4"]
+after = [4, "1.5", "2.7", "3.8"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 6
+type = "story"
+title = "Merge and production check"
+description = "When the user says merge, rebases feature/dsa-rebuild on main if main has moved, reruns the full gate, fast-forwards main, pushes origin, deletes the branch locally and on GitHub, and runs the success-signal walk against production."
+verify = "main points at the release commit, the branch is gone locally and on GitHub, and on production the walk passes and /dsa/patterns, /dsa/cheat-sheet and a DSA review question load."
+covers = ["X4"]
+after = [5]
+hitl = true
+risk = "medium"

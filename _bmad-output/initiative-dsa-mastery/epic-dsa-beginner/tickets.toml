@@ -1,0 +1,99 @@
+[[entry]]
+id = 1
+type = "story"
+title = "B1 complexity and B2 the JavaScript toolkit (new)"
+description = "Brings B1 complexity analysis and B2 the JavaScript toolkit to the depth bar with why-it-works and common-mistakes boxes (fixes O and Ω as bounds rather than cases and adds the constraint-to-complexity table; writes B2 on Map, Set and array costs, comparators, the missing heap, deque and ordered map, the head-index queue whose tracer B11 reuses, recursion depth, string building and typed arrays, and moves the existing exercises that fit and writes new ones where none exist), gives each a pool of at least 8 questions with two placement-tagged, at least one authored trace question and a pattern record, embeds the growth race and the shift-versus-head-index queue from play-catalog.md with a test that each tracer's code matches the chapter code block it names, and takes them off the curriculum test's allow-list."
+verify = "The curriculum, pool and tracer tests pass with B1 complexity analysis and B2 the JavaScript toolkit off the allow-list, and in a browser on /dsa/dsa-complexity-analysis a keyboard user plays the growth race and passes the check."
+covers = ["R1", "R2", "R3", "R4", "R5", "R6"]
+after = ["2.7", "3.8"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 2
+type = "story"
+title = "B3 arrays and strings"
+description = "Brings B3 arrays and strings to the depth bar with why-it-works and common-mistakes boxes (teaches cyclic sort and Boyer-Moore voting), gives it a pool of at least 8 questions with two placement-tagged, at least one authored trace question and a pattern record, embeds Kadane and Boyer-Moore from play-catalog.md with a test that each tracer's code matches the chapter code block it names, and takes it off the curriculum test's allow-list."
+verify = "The curriculum, pool and tracer tests pass with B3 arrays and strings off the allow-list, and in a browser on /dsa/dsa-arrays-strings a keyboard user plays Boyer-Moore and passes the check."
+covers = ["R1", "R3", "R4", "R5", "R6"]
+after = [1]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 9
+type = "story"
+title = "B4 prefix sums (new)"
+description = "Writes B4 prefix sums to the depth bar with why-it-works and common-mistakes boxes (the prefix array, range sums, prefix plus hash map with negative numbers, difference arrays and 2D prefix sums, relinking its four subarray-sum exercises), gives it a pool of at least 8 questions with two placement-tagged, at least one authored trace question and a pattern record, embeds the prefix build, range sum and hash-map count from play-catalog.md with a test that each tracer's code matches the chapter code block it names, and takes it off the curriculum test's allow-list."
+verify = "The curriculum, pool and tracer tests pass with B4 prefix sums off the allow-list, and in a browser on /dsa/dsa-prefix-sums a keyboard user plays the prefix build and range sum and passes the check."
+covers = ["R1", "R3", "R4", "R5", "R6"]
+after = [2]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 3
+type = "story"
+title = "B5 hashing and B6 two pointers"
+description = "Brings B5 hashing and B6 two pointers to the depth bar with why-it-works and common-mistakes boxes (teaches composite keys, longest consecutive sequence, bucket top-k, collisions, the Dutch national flag and next permutation, and may extend 2.4's pair-sum code lines), gives each a pool of at least 8 questions with two placement-tagged, at least one authored trace question and a pattern record, embeds the hash buckets and the Dutch flag beside the ported pair sum from play-catalog.md with a test that each tracer's code matches the chapter code block it names, and takes them off the curriculum test's allow-list."
+verify = "The curriculum, pool and tracer tests pass with B5 hashing and B6 two pointers off the allow-list, and in a browser on /dsa/dsa-hashing a keyboard user plays the hash buckets and passes the check."
+covers = ["R1", "R3", "R4", "R5", "R6"]
+after = [9]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 4
+type = "story"
+title = "B7 sliding window and B8 binary search"
+description = "Brings B7 sliding window and B8 binary search to the depth bar with why-it-works and common-mistakes boxes (teaches fixed and variable windows, the shrink invariant and a new beginner sliding-window exercise; extends 2.1's tracer and 3.1's pool with lower and upper bound, the loop invariant, search on the answer and one midpoint formula across prose and player), gives each a pool of at least 8 questions with two placement-tagged, at least one authored trace question and a pattern record, embeds lower bound beside the ported window and search from play-catalog.md with a test that each tracer's code matches the chapter code block it names, and takes them off the curriculum test's allow-list."
+verify = "The curriculum, pool and tracer tests pass with B7 sliding window and B8 binary search off the allow-list, and in a browser on /dsa/dsa-sliding-window a keyboard user plays the ported window and passes the check."
+covers = ["R1", "R3", "R4", "R5", "R6"]
+after = [3]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 5
+type = "story"
+title = "B9 recursion"
+description = "Brings B9 recursion to the depth bar with why-it-works and common-mistakes boxes (fixes the fib(4) diagram, the stack drawing and the explicit-stack conversion, and teaches helper and accumulator patterns, trusting the recursive call and fast power with its exercise), gives it a pool of at least 8 questions with two placement-tagged, at least one authored trace question and a pattern record, embeds the call stack and recursion tree with a memo toggle from play-catalog.md with a test that each tracer's code matches the chapter code block it names, and takes it off the curriculum test's allow-list."
+verify = "The curriculum, pool and tracer tests pass with B9 recursion off the allow-list, and in a browser on /dsa/dsa-basic-recursion a keyboard user plays the call stack and passes the check."
+covers = ["R1", "R2", "R3", "R4", "R5", "R6"]
+after = [4]
+hitl = false
+risk = "high"
+unknown = "Whether the call-stack view from 2.3 fits the recursion tree with a memo toggle in one player, or the chapter embeds two players."
+
+[[entry]]
+id = 6
+type = "story"
+title = "B10 sorting"
+description = "Brings B10 sorting to the depth bar with why-it-works and common-mistakes boxes (follows recursion with merge sort and quick sort), gives it a pool of at least 8 questions with two placement-tagged, at least one authored trace question and a pattern record, embeds insertion sort, merge sort and quick-sort partition from play-catalog.md with a test that each tracer's code matches the chapter code block it names, and takes it off the curriculum test's allow-list."
+verify = "The curriculum, pool and tracer tests pass with B10 sorting off the allow-list, and in a browser on /dsa/dsa-sorting-algorithms a keyboard user plays merge sort and passes the check."
+covers = ["R1", "R3", "R4", "R5", "R6"]
+after = [5]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 7
+type = "story"
+title = "B11 stacks and queues and B12 linked lists"
+description = "Brings B11 stacks and queues and B12 linked lists to the depth bar with why-it-works and common-mistakes boxes (makes B11's head-index queue, reusing 4.1's tracer, the queue every later chapter uses), gives each a pool of at least 8 questions with two placement-tagged, at least one authored trace question and a pattern record, embeds the parentheses stack, the head-index queue, list reversal and Floyd's cycle detection from play-catalog.md with a test that each tracer's code matches the chapter code block it names, and takes them off the curriculum test's allow-list."
+verify = "The curriculum, pool and tracer tests pass with B11 stacks and queues and B12 linked lists off the allow-list, and in a browser on /dsa/dsa-linked-lists a keyboard user plays list reversal and passes the check."
+covers = ["R1", "R3", "R4", "R5", "R6"]
+after = [6]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 8
+type = "story"
+title = "Refactor sweep"
+description = "Cleans up what entries 1 to 7 and 9 and their reviews deferred, including one voice, box style and cross-links across the beginner chapters, scoped from their build records when it starts, and takes cleanup only."
+verify = "npm run check, npm run build and npm run test:e2e pass, and every finding this epic deferred is fixed or moved to a named later entry."
+covers = ["R1", "R2", "R3", "R4", "R5", "R6"]
+after = [1, 2, 9, 3, 4, 5, 6, 7]
+hitl = false
+risk = "low"

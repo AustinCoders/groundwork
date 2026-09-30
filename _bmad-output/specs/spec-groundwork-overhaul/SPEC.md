@@ -132,6 +132,7 @@ Readers are affected most on phones and with keyboards. The author is affected b
 
 ## Assumptions
 
+- `spec-dsa-mastery` starts after epic-topic-redesign, which moves `/dsa` like every written topic. The DSA initiative then adds optional slots to its parts: a completion policy on every tick surface, a cover aside and body islands.
 - Outline topics get their landing on their own cover URL (`/typescript`), and `/soon?topic=` redirects there (`topics.md` §3.3e).
 - `/path` moves to static segments or a server shell per topic, so its HTML is not empty and the route does not become dynamic.
 

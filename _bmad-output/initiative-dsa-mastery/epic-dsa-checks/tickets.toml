@@ -1,0 +1,90 @@
+[[entry]]
+id = 1
+type = "story"
+title = "Question model, loader and the binary-search pool"
+description = "Defines the question types (single, multi, order and predict), the fixed pattern vocabulary with one pattern record per chapter (signals, template, complexity), a server loader that gives a chapter page only its own pool plus a lazy per-chapter import for client pages such as review, integrity tests for every pool present, and binary search's pool of at least 8 with two placement-tagged questions, at least one authored trace question and its pattern record."
+verify = "The integrity tests pass, the loader returns only binary search's questions for its page, and that page's payload holds no other chapter's questions."
+covers = ["C1"]
+after = ["1.2"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 2
+type = "story"
+title = "Check runner and store on binary search"
+description = "Replaces 1.3's stub Check island with a check runner that draws 5 from the pool with at least one trace and one recognise or complexity question and passes at 4, using a ChoiceList component later entries reuse, native choices, runner-scoped keys and aria-live feedback, showing explanations for every choice and a link to each missed question's section, a pass screen with the score and the review-in-3-days note, fresh draws on retry, a pass through setChapterDone, a mark-done-anyway path, free unmarking and a Check yourself offer on old marks, keeping results in the versioned groundwork:quiz store and listing that key in How this is built."
+verify = "On /dsa/dsa-binary-search a keyboard user passes and sees the score and the chapter due on /review after the first gap, misses and sees explanations, section links and a different draw on retry, and marks it done anyway and sees not checked, a seeded old mark shows read before checks, the store and draw-rule tests pass, and axe passes on the check in all nine themes."
+covers = ["C2"]
+after = [1, "1.3"]
+hitl = false
+risk = "high"
+unknown = "Whether the end-card slot from 1.3 gives the runner enough width on phones for code in a question; the builder may open the check in a sheet at 390px."
+
+[[entry]]
+id = 3
+type = "story"
+title = "Placement engine"
+description = "Builds the pure staged, adaptive placement from quiz-and-placement.md (routing, modules, not-sure answers, early stop after three misses, credit on two correct answers with no missed prerequisite) with RAISE_AT and LOWER_BELOW moved from the mock into a shared lib, reading placement-tagged questions through 3.1's loader, and the versioned groundwork:dsa:placement store, and lists that key in How this is built."
+verify = "Vitest runs scripted answer sequences through the engine and gets the expected level, allotted and tested-out chapters, and an early stop after three misses in a row, and the mock's adaptive tests still pass."
+covers = ["C6"]
+after = [1, 2, "1.2"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Check states on the rail, cover and path"
+description = "Makes 1.3's completion policy report checked (only while the read mark exists), not checked, read before checks and tested out (from 3.3's store) in text on the DSA rail, Chapters sheet, cover cards, read counts and path steps."
+verify = "With a seeded mix of passed, marked-anyway, old and tested-out chapters, each surface shows each state in text, and the Git, How this is built and /path?topic=js tick tests pass unchanged."
+covers = ["C3"]
+after = [2, 3]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Generated trace questions"
+description = "Owns turning a tracer frame into a what-happens-next or state-after-step-k choice, and lets each chapter's tracers generate such questions from their presets to join its draw, with a seeded draw for tests."
+verify = "Binary search's pool includes generated questions whose answers match the tracer's frames in vitest, and a seeded draw includes at least one."
+covers = ["C4"]
+after = [1, 2, "2.1"]
+hitl = false
+risk = "medium"
+unknown = "Whether questions are generated in the server loader or in the browser from the lazily loaded tracer; the builder decides by payload size."
+
+[[entry]]
+id = 6
+type = "story"
+title = "Predict the next step in the player"
+description = "Adds an optional predict mode to the Player that asks, with 3.2's ChoiceList and 3.5's frame-to-choice step, what the next frame will be before revealing it."
+verify = "On /dsa/dsa-binary-search a keyboard user turns on predict mode, answers before each reveal and sees right or wrong in text, and axe passes on the player in predict mode in all nine themes."
+covers = ["C5"]
+after = [2, 5, "2.6"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 7
+type = "story"
+title = "Placement flow, plan and Re-check"
+description = "Shows the three doors (start from the beginning, find my level, pick a level) to first-time readers on /dsa and /level/dsa through a Topic field rather than a topic id, runs the placement on a static, noindexed /dsa/placement route with no timer and at most 18 questions, shows the level and plan without a raw score, puts the plan in the cover aside with Continue, makes 1.3's next-chapter hook follow the plan so Continue, Up next and the path's next step skip tested-out chapters, offers retake and a reset that clears only the placement key, gives readers with DSA marks Re-check my level, stops level cards and the path writing jsnotes:level for quiz topics, and adds the routes to How this is built."
+verify = "An e2e test with a fixture bank takes the placement as a first-time reader, lands on the plan, sees Continue open the first allotted chapter, and finds jsnotes:progress, jsnotes:activity and jsnotes:level byte-identical; a reader with marks sees Re-check my level; axe passes on the placement and result screens in all nine themes."
+covers = ["C7"]
+after = [3, 4]
+hitl = false
+risk = "medium"
+unknown = "Only binary search has a pool until the level epics run, so the routing stage cannot fill from real content yet; the e2e uses a fixture bank."
+
+[[entry]]
+id = 8
+type = "story"
+title = "Refactor sweep"
+description = "Cleans up what entries 1 to 7 and their reviews deferred, scoped from their build records when it starts, and takes cleanup only."
+verify = "npm run check, npm run build and npm run test:e2e pass, and every finding this epic deferred is fixed or moved to a named later entry."
+covers = ["C1", "C2", "C3", "C4", "C5", "C6", "C7"]
+after = [1, 2, 3, 4, 5, 6, 7]
+hitl = false
+risk = "low"

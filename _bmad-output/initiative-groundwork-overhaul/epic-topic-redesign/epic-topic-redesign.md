@@ -57,6 +57,7 @@ This epic owns the topic UI: the 18 generic topic routes, `/level`, `/path`, `/s
   - Entry 8 waits on entry 7 (level links, `navHref`, `.level` and `.step` rules).
   - Entry 9 waits on entry 4 (PartSection, ChapterCard and the `landing.module.css` split).
 - Decision: each entry that changes a route, a count or the reader updates the How this is built chapter that describes it, and the entry names the file (spec Constraints).
+- Decision (user, 2026-09-30): this epic runs before initiative-dsa-mastery and keeps `/dsa` in entries 3, 4, 7 and 8. The DSA initiative later adds optional slots to the parts built here: a completion policy read by every tick surface (end card, rail, cover card, path step), a cover aside and chapter-body islands. Keep those parts open to optional props, and keep tick logic in one place per surface.
 - Waits on epic-audit-fixes because:
   - entry 1 needs epic 1 entry 2's focus handling for the sheet it extracts, and entry 3's a11y harness for the light and dark matrix in Done when 1;
   - entry 2 edits the claims test, `content/topics.ts` and the sitemap after epic 1 entries 4 and 5.

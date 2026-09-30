@@ -1,0 +1,99 @@
+[[entry]]
+id = 1
+type = "story"
+title = "A1 advanced DP and A10 advanced backtracking"
+description = "Brings A1 advanced DP and A10 advanced backtracking to the depth bar with why-it-works and common-mistakes boxes (points state machines to I12), gives each a pool of at least 8 questions with two placement-tagged, at least one authored trace question and a pattern record, embeds bitmask and interval DP, and N-Queens with pruning from play-catalog.md with a test that each tracer's code matches the chapter code block it names, and takes them off the curriculum test's allow-list."
+verify = "The curriculum, pool and tracer tests pass with A1 advanced DP and A10 advanced backtracking off the allow-list, and in a browser on /dsa/dsa-advanced-dp a keyboard user plays bitmask DP and passes the check."
+covers = ["R1", "R2", "R3", "R4", "R5", "R6"]
+after = ["5.12"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 2
+type = "story"
+title = "A2 union-find and A4 minimum spanning trees"
+description = "Brings A2 union-find and A4 minimum spanning trees to the depth bar with why-it-works and common-mistakes boxes (keeps both chapters' depth, adds the boxes and may extend 2.5's union-find code lines), gives each a pool of at least 8 questions with two placement-tagged, at least one authored trace question and a pattern record, embeds Kruskal and Prim beside the ported union-find forest from play-catalog.md with a test that each tracer's code matches the chapter code block it names, and takes them off the curriculum test's allow-list."
+verify = "The curriculum, pool and tracer tests pass with A2 union-find and A4 minimum spanning trees off the allow-list, and in a browser on /dsa/dsa-minimum-spanning-tree a keyboard user plays Kruskal and passes the check."
+covers = ["R1", "R3", "R4", "R5", "R6"]
+after = [1]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 3
+type = "story"
+title = "A3 shortest paths"
+description = "Brings A3 shortest paths to the depth bar with why-it-works and common-mistakes boxes (points topological sort to I8), gives it a pool of at least 8 questions with two placement-tagged, at least one authored trace question and a pattern record, embeds Dijkstra with its heap and distance table from play-catalog.md with a test that each tracer's code matches the chapter code block it names, and takes it off the curriculum test's allow-list."
+verify = "The curriculum, pool and tracer tests pass with A3 shortest paths off the allow-list, and in a browser on /dsa/dsa-advanced-graph-algorithms a keyboard user plays Dijkstra and passes the check."
+covers = ["R1", "R2", "R3", "R4", "R5", "R6"]
+after = [2]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 4
+type = "story"
+title = "A5 advanced graphs: SCC, bridges, Euler paths, LCA (new)"
+description = "Writes A5 advanced graphs to the depth bar with why-it-works and common-mistakes boxes (writes the chapter on Tarjan and Kosaraju, bridges and articulation points, Euler paths and LCA by binary lifting, and moves the existing exercises that fit and writes new ones where none exist), gives it a pool of at least 8 questions with two placement-tagged, at least one authored trace question and a pattern record, embeds Tarjan's low-link and the binary lifting table from play-catalog.md with a test that each tracer's code matches the chapter code block it names, and takes it off the curriculum test's allow-list."
+verify = "The curriculum, pool and tracer tests pass with A5 advanced graphs off the allow-list, and in a browser on /dsa/dsa-graph-structure a keyboard user plays Tarjan's low-link and passes the check."
+covers = ["R1", "R3", "R4", "R5", "R6"]
+after = [3]
+hitl = false
+risk = "high"
+unknown = "Whether Tarjan's low-link and binary lifting fit the graph and grid views as they are, or need a combined view; the builder may add a small view to 2.2's family."
+
+[[entry]]
+id = 5
+type = "story"
+title = "A6 segment and Fenwick trees"
+description = "Brings A6 segment and Fenwick trees to the depth bar with why-it-works and common-mistakes boxes (keeps the chapter's depth and adds the boxes), gives it a pool of at least 8 questions with two placement-tagged, at least one authored trace question and a pattern record, embeds segment tree query and update and the Fenwick lowbit walk from play-catalog.md with a test that each tracer's code matches the chapter code block it names, and takes it off the curriculum test's allow-list."
+verify = "The curriculum, pool and tracer tests pass with A6 segment and Fenwick trees off the allow-list, and in a browser on /dsa/dsa-segment-fenwick-trees a keyboard user plays the segment tree update and passes the check."
+covers = ["R1", "R3", "R4", "R5", "R6"]
+after = [4]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 9
+type = "story"
+title = "A7 sparse tables (new)"
+description = "Writes A7 sparse tables to the depth bar with why-it-works and common-mistakes boxes (range-minimum queries, binary lifting reuse and sqrt decomposition, moving the existing exercises that fit and writing new ones where none exist), gives it a pool of at least 8 questions with two placement-tagged, at least one authored trace question and a pattern record, embeds the sparse table build and query from play-catalog.md with a test that each tracer's code matches the chapter code block it names, and takes it off the curriculum test's allow-list."
+verify = "The curriculum, pool and tracer tests pass with A7 sparse tables off the allow-list, and in a browser on /dsa/dsa-sparse-table a keyboard user plays the sparse table query and passes the check."
+covers = ["R1", "R3", "R4", "R5", "R6"]
+after = [5]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 6
+type = "story"
+title = "A8 string algorithms and A9 design problems"
+description = "Brings A8 string algorithms and A9 design problems to the depth bar with why-it-works and common-mistakes boxes (builds on 1.4's NUL fix), gives each a pool of at least 8 questions with two placement-tagged, at least one authored trace question and a pattern record, embeds the KMP failure table and the LRU cache from play-catalog.md with a test that each tracer's code matches the chapter code block it names, and takes them off the curriculum test's allow-list."
+verify = "The curriculum, pool and tracer tests pass with A8 string algorithms and A9 design problems off the allow-list, and in a browser on /dsa/dsa-string-algorithms a keyboard user plays the KMP failure table and passes the check."
+covers = ["R1", "R3", "R4", "R5", "R6"]
+after = [9, "1.4"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 7
+type = "story"
+title = "A11 interview strategy"
+description = "Brings A11 interview strategy to the depth bar with why-it-works and common-mistakes boxes (points to the mock interview and the interview book for rounds and technique), gives it a pool of at least 8 questions with two placement-tagged, at least one authored trace question and a pattern record, embeds from constraints to approach from play-catalog.md with a test that each tracer's code matches the chapter code block it names, and takes it off the curriculum test's allow-list."
+verify = "The curriculum, pool and tracer tests pass with A11 interview strategy off the allow-list, and in a browser on /dsa/dsa-interview-strategy a keyboard user plays from constraints to approach and passes the check."
+covers = ["R1", "R2", "R3", "R4", "R5", "R6"]
+after = [6]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 8
+type = "story"
+title = "Refactor sweep"
+description = "Cleans up what entries 1 to 7 and 9 and their reviews deferred, including one voice, box style and cross-links across the advanced chapters, scoped from their build records when it starts, and takes cleanup only."
+verify = "npm run check, npm run build and npm run test:e2e pass, and every finding this epic deferred is fixed or moved to a named later entry."
+covers = ["R1", "R2", "R3", "R4", "R5", "R6"]
+after = [1, 2, 3, 4, 5, 9, 6, 7]
+hitl = false
+risk = "low"

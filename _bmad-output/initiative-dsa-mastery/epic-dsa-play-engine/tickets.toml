@@ -1,0 +1,77 @@
+[[entry]]
+id = 1
+type = "story"
+title = "Player tracer: binary search end to end"
+description = "Builds the tracer model (each tracer declares its code lines and the chapter code block it mirrors), a lazy registry with one line per chapter, and the Player with its controls, scoped keys, status narration, visibility pause and reduced-motion steps plus the array, code and variables views, and fills 1.1's stub Play island from the data-play placeholder that replaces the binary-search chapter's inline demo."
+verify = "On /dsa/dsa-binary-search a keyboard user steps, plays, scrubs and resets the search with the code line and lo, hi and mid in sync, the chapter file has no inline script, and the binary-search tracer tests pass."
+covers = ["P1", "P3"]
+after = ["1.1", "1.2"]
+hitl = false
+risk = "high"
+unknown = "Whether the Player's first frame can render on the server inside 1.1's island without shipping the tracer to the client twice; the builder measures the chapter payload before and after."
+
+[[entry]]
+id = 2
+type = "story"
+title = "Layout views: grid, graph, tree and forest"
+description = "Adds the grid, SVG graph, tree and forest views to the Player, each labelling every state in text, with server-render tests that check each view's labels for a sample frame."
+verify = "The four views' render tests pass in vitest and every highlighted state in each sample frame has a text label."
+covers = ["P2"]
+after = [1]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 3
+type = "story"
+title = "List views: linked list, call stack, buckets, chips and bars"
+description = "Adds the linked-list, call-stack, hash-bucket, chips and bars views to the Player, each labelling every state in text, with server-render tests for a sample frame."
+verify = "The five views' render tests pass in vitest and every highlighted state in each sample frame has a text label."
+covers = ["P2"]
+after = [2]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Port the array and grid demos"
+description = "Turns the two-pointers, sliding-window, next-greater and LCS demos into tested tracers with their parsers and input limits in 2.1's model, embeds them through data-play placeholders, and removes their inline scripts."
+verify = "Each of the four chapters plays its demo with no inline script left, and the four tracer suites pass."
+covers = ["P3"]
+after = [3]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Port the heap, graph and union-find demos"
+description = "Turns the heap demo into a tracer on the tree view, the graph demo into separate BFS and DFS tracers on the graph view, and the union-find demo into a tracer on the forest view, with parsers and limits in 2.1's model, removes their inline scripts, and rewrites the graph demo e2e test for the player."
+verify = "The three chapters play their demos with no inline script left, the four tracer suites pass, and the rewritten graph demo e2e test passes."
+covers = ["P3"]
+after = [4]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 6
+type = "story"
+title = "Presets, edited input and the table view"
+description = "Lets a reader pick a tracer's preset or edit its input through the parser and size limit each tracer declares, with the refusal reason shown in text, and adds a table view listing every frame's variables."
+verify = "On /dsa/dsa-binary-search an edited array replays correctly, an over-limit array is refused with its reason, the table view lists every step, and axe passes on the player under reduced motion in all nine themes."
+covers = ["P4"]
+after = [5]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 7
+type = "story"
+title = "Refactor sweep"
+description = "Cleans up what entries 1 to 6 and their reviews deferred, scoped from their build records when it starts, and takes cleanup only."
+verify = "npm run check, npm run build and npm run test:e2e pass, and every finding this epic deferred is fixed or moved to a named later entry."
+covers = ["P1", "P2", "P3", "P4"]
+after = [1, 2, 3, 4, 5, 6]
+hitl = false
+risk = "low"
