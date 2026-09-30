@@ -561,6 +561,10 @@ export function SiteDrawer({
             Your progress stays in this browser.{" "}
             <Link href="/architecture" onClick={onClose}>
               How this is built
+            </Link>{" "}
+            <span aria-hidden="true">·</span>{" "}
+            <Link href="/privacy" onClick={onClose}>
+              Privacy
             </Link>
           </p>
         </div>

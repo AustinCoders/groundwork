@@ -1,6 +1,7 @@
 import { INTERVIEW_ROUNDS_RAW } from "@/content/interview-data";
 import type { InterviewCodeBlock, InterviewQuestionRaw, InterviewRoundRaw } from "@/content/interview-types";
 import { chapters, exercises, topics } from "@/lib/content";
+import { isBulkTitle } from "@/lib/interviewBulk";
 import { mockQuestions, type MockQuestion } from "@/lib/mockQuestions";
 import { problemHref } from "@/lib/practiceLinks";
 import { STAGE_ORDER, STAGE_RULES } from "@/lib/mock/loops";
@@ -78,8 +79,6 @@ export function stageTitle(stage: StageId): string {
   return STAGE_TITLE[stage];
 }
 
-const BULK = /rapid-fire|the rest of|the ten numbers|implementations they ask|say out loud/i;
-
 export const NOT_A_QUESTION = new Set([
   "r1-9",
   "r1-10",
@@ -106,6 +105,16 @@ export const AS_ASKED: Record<string, string> = {
   "r3-3": "When would you use Promise.all, allSettled, race and any?",
   "r3ts-0": "When do you reach for an interface, and when for a type alias?",
   "r3ts-3": "What is the difference between any, unknown and never?",
+  "r4-4":
+    "Have you moved a codebase from one state library to another, say Redux to Zustand? Defend that to someone who disagrees — or, if you haven't, tell me how you would decide.",
+  "r4-13":
+    "Tell me about a time you made pages load faster, and exactly what you measured — or, if you haven't, how you would measure it.",
+  "r5-2":
+    "Do you validate input with typed DTOs at the boundary? Show me how — or, if you don't, how you would set it up.",
+  "r9-1":
+    "Have you cut infrastructure cost? Walk me through exactly how — or, if you haven't, where you would look first.",
+  "r10-3":
+    "Have you written engineering standards for a team? Give me three rules and why each exists — or, if you haven't, three you would write.",
   "s3-1": "How does garbage collection work in V8, and how would you find a memory leak?",
   "s3-2": "Walk me through the browser rendering pipeline. What triggers each stage?",
   "s3-3": "How does Node handle concurrency? Where are the threads, and what is event loop lag?",
@@ -181,7 +190,7 @@ function bookItems(stage: StageId, source: TalkSource): TalkItem[] {
   if (!r) return [];
   const out: TalkItem[] = [];
   r.qs.forEach((q: InterviewQuestionRaw, index) => {
-    if (BULK.test(q.q)) return;
+    if (isBulkTitle(q.q)) return;
     const id = `${r.id}-${index}`;
     if (NOT_A_QUESTION.has(id)) return;
     const { ladder, rest } = parseLadder(q.after);

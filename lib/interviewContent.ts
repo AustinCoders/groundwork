@@ -1,8 +1,7 @@
 import { INTERVIEW_ROUNDS_RAW } from "@/content/interview-data";
 import type { InterviewCodeBlock, InterviewQuestionRaw, InterviewRoundRaw } from "@/content/interview-types";
 import type { Chapter, NotesFile } from "@/content/types";
-
-const BULK_TITLE = /rapid-fire|the rest of|the ten numbers|implementations they ask|say out loud/i;
+import { isBulkTitle } from "@/lib/interviewBulk";
 
 function codeBlocksHTML(blocks: InterviewCodeBlock | InterviewCodeBlock[] | undefined): string {
   if (!blocks) return "";
@@ -34,7 +33,7 @@ function questionHTML(q: InterviewQuestionRaw, roundId: string, i: number): stri
 
 function questionCount(round: InterviewRoundRaw): number {
   return round.qs.reduce((sum, q) => {
-    if (BULK_TITLE.test(q.q)) {
+    if (isBulkTitle(q.q)) {
       const items = (q.a?.match(/<li>/g) || []).length;
       if (items > 0) return sum + items;
     }

@@ -284,7 +284,6 @@ jsnotes
 Kadane
 Kadane's
 Kalam
-Kampspire
 Karan
 KBITRATE
 keymap
@@ -373,7 +372,6 @@ packfiles
 pagebtn
 PAHNAPLSIIGYIR
 paise
-Pantnagar
 parameterised
 partitionable
 PAYPALISHIRING
@@ -400,7 +398,6 @@ prereq
 prereqs
 prevs
 Priya
-Prototion
 putchar
 pwwkew
 Pyodide
@@ -451,7 +448,6 @@ rmeter
 rname
 Rohan
 rollups
-Roorkee
 sadbutsad
 savestate
 schemafirst
@@ -466,7 +462,6 @@ SETNX
 setprecision
 setrow
 settrace
-Shopyvilla
 shortlog
 signups
 singleflight
@@ -583,3 +578,5 @@ lerp
 GEOADD
 bmad
 akshataustin
+jokeapi
+gstatic

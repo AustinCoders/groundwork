@@ -146,7 +146,7 @@ export const archRoutes: Chapter = {
   after.
 </p>
 
-<h3>/level, /path, /review, /progress, /soon</h3>
+<h3>/level, /path, /review, /progress, /soon, /privacy</h3>
 <div class="table-scroll"><table>
 <thead><tr><th>Route</th><th>What the server builds</th><th>What the browser adds</th></tr></thead>
 <tbody>
@@ -156,13 +156,14 @@ export const archRoutes: Chapter = {
 <tr><td><code>/review</code></td><td>Every written chapter</td><td>Which ones are due, from your read dates</td></tr>
 <tr><td><code>/progress</code></td><td>A frame</td><td>Streaks, XP, badges and the calendar, all from <code>localStorage</code></td></tr>
 <tr><td><code>/soon?topic=</code></td><td>A frame</td><td>The planned topic's syllabus</td></tr>
+<tr><td><code>/privacy</code></td><td>The whole page: what stays in the browser, what leaves it, and which service receives it</td><td>Nothing</td></tr>
 </tbody>
 </table></div>
 <p>
   <code>/path</code>, <code>/review</code>, <code>/progress</code>, <code>/soon</code> and the bare
   <code>/level</code> are marked <code>noindex</code>: without your browser's data they are either empty
   or a duplicate of a page that is indexed. <code>/level/&lt;topic&gt;</code> is indexed, and listed in
-  the sitemap, only for topics with something written.
+  the sitemap, only for topics with something written. <code>/privacy</code> is static and indexed.
 </p>
 
 <h3>Search indexes</h3>

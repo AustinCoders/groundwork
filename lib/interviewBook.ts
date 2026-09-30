@@ -1,5 +1,6 @@
 import { INTERVIEW_ROUNDS_RAW } from "@/content/interview-data";
 import type { InterviewCodeBlock, InterviewQuestionRaw, InterviewRoundRaw } from "@/content/interview-types";
+import { isBulkTitle } from "@/lib/interviewBulk";
 import type { StageId } from "@/lib/mock/types";
 
 export type BookPart = "before" | "technical" | "people" | "offer" | "staff" | "prep";
@@ -75,8 +76,6 @@ const MOCK_STAGE: Record<string, StageId> = {
 
 const GUIDES = new Set(["scout", "s0", "plan"]);
 
-const BULK_TITLE = /rapid-fire|the rest of|the ten numbers|implementations they ask|say out loud/i;
-
 export interface BookQuestion {
   id: string;
   n: number;
@@ -134,7 +133,7 @@ function toQuestion(round: InterviewRoundRaw, q: InterviewQuestionRaw, i: number
     note: q.note ?? null,
     after: q.after ?? null,
     fu: q.fu ?? [],
-    bulk: GUIDES.has(round.id) || BULK_TITLE.test(q.q),
+    bulk: GUIDES.has(round.id) || isBulkTitle(q.q),
   };
 }
 

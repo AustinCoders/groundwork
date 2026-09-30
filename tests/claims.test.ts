@@ -126,6 +126,21 @@ const a11yPages = [...(/const PAGES = \[([\s\S]*?)\];/.exec(a11ySpec)?.[1] ?? ""
 const a11yTests =
   (a11ySpec.match(/^ {2}test\(/gm) ?? []).length * a11yPages + (a11ySpec.match(/^test\(/gm) ?? []).length;
 
+const smokeSpec = read("e2e/smoke.spec.ts");
+const smokePages = [...(/const PAGES = \[([\s\S]*?)\];/.exec(smokeSpec)?.[1] ?? "").matchAll(/path:/g)].length;
+const smokeViewports = [
+  ...(/for \(const \[width, maxBar\] of \[([\s\S]*?)\] as const\)/.exec(smokeSpec)?.[1] ?? "").matchAll(
+    /\[\d+, \d+\]/g
+  ),
+].length;
+const smokeFlows = (smokeSpec.match(/^test\(/gm) ?? []).length;
+const smokeTests = smokePages + smokeViewports + smokeFlows;
+
+const whiteboardSpec = read("e2e/whiteboard.spec.ts");
+const whiteboardTests = (whiteboardSpec.match(/^ {0,2}test\(/gm) ?? []).length;
+
+const browserTests = smokeTests + a11yTests + whiteboardTests;
+
 const flattenedCases: { file: string; claim: string; about: string }[] = [
   {
     file: "content/architecture/arch-design-system.ts",
@@ -162,6 +177,21 @@ const flattenedCases: { file: string; claim: string; about: string }[] = [
     claim: `<tr><td><code>a11y.spec.ts</code></td><td>${a11yTests}</td><td>axe with the WCAG 2.0 and 2.1 A and AA tags over ${a11yPages} pages`,
     about: "the accessibility spec's tests and pages",
   },
+  {
+    file: "content/architecture/arch-testing.ts",
+    claim: `<tr><td><code>smoke.spec.ts</code></td><td>${smokeTests}</td><td>${smokePages} routes load with no console error and no failed request; the playground fits at 1024, 768 and 390 pixels wide; ${smokeFlows} flows`,
+    about: "the smoke spec's tests, routes and flows",
+  },
+  {
+    file: "content/architecture/arch-testing.ts",
+    claim: `<h3>Browser tests: 3 specs, ${browserTests} tests</h3>`,
+    about: "the three specs' total",
+  },
+  {
+    file: "content/architecture/arch-testing.ts",
+    claim: `unit tests, ${browserTests} browser tests`,
+    about: "the browser total in the subtitle",
+  },
 ];
 
 const CHART =
@@ -189,6 +219,10 @@ describe("what the site says about its stylesheets and checks", () => {
     expect(cssModules.length).toBeGreaterThan(0);
     expect(a11yPages).toBeGreaterThan(0);
     expect(a11yTests).toBeGreaterThan(a11yPages);
+    expect(smokePages).toBeGreaterThan(0);
+    expect(smokeViewports).toBeGreaterThan(0);
+    expect(smokeSpec.match(/^ {2}test\(/gm) ?? [], "one test per PAGES entry and one per viewport").toHaveLength(2);
+    expect(whiteboardTests).toBeGreaterThan(0);
   });
 
   it.each(flattenedCases)("$file still tells the truth about $about", ({ file, claim }) => {

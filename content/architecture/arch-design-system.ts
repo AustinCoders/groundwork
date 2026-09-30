@@ -257,7 +257,7 @@ export const archDesignSystem: Chapter = {
 <p>
   <code>globals.css</code> is about 9,600 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
-  one of 16 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
+  one of 17 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
   lines. The rule of thumb is that anything
   chapter HTML can contain goes in globals, because chapter bodies are strings that cannot import a
   module, and anything else goes in a module so it loads only with its page.
@@ -310,7 +310,7 @@ export const archDesignSystem: Chapter = {
 
 <h3>The checks</h3>
 <p>
-  <code>e2e/a11y.spec.ts</code> runs axe through <code>@axe-core/playwright</code> against 20
+  <code>e2e/a11y.spec.ts</code> runs axe through <code>@axe-core/playwright</code> against 21
   pages, including the home page, a chapter, the playground, the problems list, the mock lobby, the
   whiteboard and this architecture section. It checks the WCAG 2.0 and 2.1 A and AA tags and fails
   on any violation. One more test walks a system design round in the mock interview and runs axe

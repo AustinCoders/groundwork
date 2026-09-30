@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { bankQuestions, bookRound, bookRounds } from "@/lib/interviewBook";
+import { isBulkTitle } from "@/lib/interviewBulk";
+import { INTERVIEW_TOTAL_QUESTIONS } from "@/lib/interviewContent";
 import { mockCatalog, parseLadder, stageBank, stageHotFor } from "@/lib/mock/bank";
 import { loopMinutes, pickItems, planLoop, seededRandom, STAGE_ORDER, STAGE_RULES } from "@/lib/mock/loops";
 import {
@@ -55,6 +58,44 @@ describe("the question bank", () => {
         expect(item.prompt, `${item.id} is a bulk list, not a question`).not.toMatch(/rapid-fire|the rest of/i);
       }
     }
+  });
+
+  it("never draws a question the book marks as a bulk list", () => {
+    let drawn = 0;
+    for (const stage of STAGE_ORDER) {
+      for (const item of stageBank(stage)) {
+        if (item.kind !== "talk" || item.origin.endsWith("-bank")) continue;
+        const index = Number(item.id.slice(item.origin.length + 1));
+        const question = bookRound(item.origin)?.questions[index];
+        expect(question, `${item.id} has no question in the book`).toBeDefined();
+        expect(question?.bulk, `${item.id} is a bulk list in the book`).toBe(false);
+        drawn += 1;
+      }
+    }
+    expect(drawn).toBeGreaterThan(0);
+  });
+
+  it("keeps bulk lists out of the question bank", () => {
+    const bulk = new Set(bookRounds().flatMap((r) => r.questions.filter((q) => q.bulk).map((q) => q.id)));
+    expect(bulk.size).toBeGreaterThan(0);
+    expect(bookRound("r10")!.questions[0].bulk, "R10's number template is a bulk list").toBe(true);
+    for (const q of bankQuestions()) {
+      expect(bulk.has(q.id), `${q.id} is a bulk list`).toBe(false);
+      expect(isBulkTitle(q.q), `${q.id} has a bulk-list title`).toBe(false);
+    }
+  });
+
+  it("counts each bulk list by its items and every other question once", () => {
+    const counted = bookRounds().reduce(
+      (sum, r) =>
+        sum +
+        r.questions.reduce((n, q) => {
+          const items = (q.a?.match(/<li>/g) ?? []).length;
+          return n + (isBulkTitle(q.q) && items > 0 ? items : 1);
+        }, 0),
+      0
+    );
+    expect(counted).toBe(INTERVIEW_TOTAL_QUESTIONS);
   });
 
   it("links every question back to where it is written up", () => {

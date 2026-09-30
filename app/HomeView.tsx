@@ -760,14 +760,15 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
     Whiteboard: "Sketch a system design with templates and arrows that stay stuck.",
   };
 
-  const faqs = [
+  const faqs: { q: string; a: string; link?: { href: string; label: string } }[] = [
     {
       q: "Is it really free?",
       a: "Yes. Every chapter, exercise, mock interview and the whiteboard are free. There is no paid tier hiding the good parts.",
     },
     {
       q: "Do I need to sign up?",
-      a: "No. There is no account. Your progress, streak and boards are saved in this browser, so nothing about you leaves your machine.",
+      a: "No. There is no account. Your progress, streak and boards are saved in this browser. Some things do leave it: anonymous page analytics, your location if you ask for the weather, the text the narrator reads aloud, error reports, requests to a CDN for the playground's language runtimes, and the request logs every web host keeps.",
+      link: { href: "/privacy", label: "What leaves, and where it goes →" },
     },
     {
       q: "I only have a few weeks before my interview. Where do I start?",
@@ -784,6 +785,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
     {
       q: "How is the site itself built?",
       a: "It is all written up, from the content model to the build and the tests, in How this is built.",
+      link: { href: "/architecture", label: "Read how it is built →" },
     },
   ];
 
@@ -957,8 +959,8 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                 </span>
                 <h3>Nothing to sign up for</h3>
                 <p>
-                  Progress, streaks, XP and your whiteboards live in this browser. Nothing about you leaves your
-                  machine, and there is no paid tier hiding the good parts.
+                  Progress, streaks, XP and your whiteboards live in this browser, with no account and no paid tier
+                  hiding the good parts. <Link href="/privacy">The privacy page</Link> lists what does leave it.
                 </p>
               </article>
             </div>
@@ -1137,10 +1139,10 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                     <summary>{f.q}</summary>
                     <p>
                       {f.a}
-                      {f.q.startsWith("How is the site") && (
+                      {f.link && (
                         <>
                           {" "}
-                          <Link href="/architecture">Read how it is built →</Link>
+                          <Link href={f.link.href}>{f.link.label}</Link>
                         </>
                       )}
                     </p>
@@ -1207,6 +1209,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
               <Link href="/progress">Progress</Link>
               <Link href="/review">Review</Link>
               <Link href="/architecture">How this is built</Link>
+              <Link href="/privacy">Privacy</Link>
             </nav>
           </div>
         </footer>

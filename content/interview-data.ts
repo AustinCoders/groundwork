@@ -6,9 +6,9 @@ id:'scout', code:'00', navTitle:'Scouting report',
 title:'The scouting report',
 meta:[['Written by','The interviewer, not you'],['Read it','Before anything else'],['Purpose','Know your resume better than they do']],
 tiers:[['read this first',1]],
-intro:'This is how your resume reads from the other side of the table, in the ninety seconds before your name gets called. It is worked through on one example profile — six years full-stack, TypeScript on both ends, four production applications at a client studio — because an attack only makes sense against a specific page. Read each one against your own resume: the eight hold, and only the details change. Every one of them will surface somewhere across your loop, and each has a good answer — if you prepare it now instead of inventing it in the room.',
+intro:'This is how your resume reads from the other side of the table, in the ninety seconds before your name gets called. It is worked through on one example profile — six years full-stack, TypeScript on both ends, three production applications at a client studio — because an attack only makes sense against a specific page. Read each one against your own resume: the eight hold, and only the details change. Every one of them will surface somewhere across your loop, and each has a good answer — if you prepare it now instead of inventing it in the room.',
 pre:`<div class="cards">
-<div class="card g"><h4>You own things end to end</h4><p>"Technical owner of 4 client applications in production" is the line that gets you the interview. Most six-year candidates have owned features; you have owned releases. Lead with it.</p></div>
+<div class="card g"><h4>You own things end to end</h4><p>"Technical owner of 3 client applications in production" is the line that gets you the interview. Most six-year candidates have owned features; you have owned releases. Lead with it.</p></div>
 <div class="card g"><h4>Your stack is the hiring sweet spot</h4><p>TypeScript on both ends, Next.js App Router, NestJS, Redis, Docker, GitHub Actions — in production, not in tutorials. That combination is in demand right now.</p></div>
 <div class="card g"><h4>Every bullet has a number</h4><p>Reads as an engineer who measures. It also creates attack 1 below.</p></div>
 <div class="card g"><h4>You have set standards for others</h4><p>Authoring the frontend and API standards, code review, mentoring. That is the difference between senior as a title and senior as a behaviour.</p></div>
@@ -17,23 +17,23 @@ qs:[
 {
 q:'Attack 1 — the metrics',
 test:'Whether the numbers are measurements or decoration.',
-a:`<p>Forty percent fewer runtime errors. Thirty-five percent faster pages. Twenty-five percent infra saving. I will pick one at random and ask exactly how you measured it, over what window, and against what baseline. If you cannot answer that, every other number on the page turns from a fact into a claim — including the ones you <em>can</em> defend.</p>
-<p><b>Prepare all ten.</b> They are listed in R10.</p>`,
-fu:['Forty percent fewer errors — counted in which tool, over which weeks?','What was the baseline before you started?','Which number on this page are you least sure of?']
+a:`<p>Thirty percent fewer runtime errors. Forty-five percent faster pages. A fifth off the infrastructure bill. I will pick one at random and ask exactly how you measured it, over what window, and against what baseline. If you cannot answer that, every other number on the page turns from a fact into a claim — including the ones you <em>can</em> defend.</p>
+<p><b>Prepare every number on your resume.</b> R10 gives the template.</p>`,
+fu:['Thirty percent fewer errors — counted in which tool, over which weeks?','What was the baseline before you started?','Which number on this page are you least sure of?']
 },
 {
 q:'Attack 2 — scale',
 test:'Whether you can reason about load you have not personally carried.',
-a:`<p>Five thousand registered users and ten thousand monthly visitors is a small system. If I am hiring for traffic, I want to know whether you can think about ten times or a hundred times that.</p>
+a:`<p>Eight thousand registered users and twenty-five thousand monthly visitors is a small system. If I am hiring for traffic, I want to know whether you can think about ten times or a hundred times that.</p>
 <p>The answer is not to inflate it. It is to be precise about what you <em>have</em> done — depth on delivery, reliability and architecture ownership — and then demonstrate in R8 that you can reason about scale you have not met. Those are different skills and interviewers know it.</p>`,
 fu:['What is the peak requests per second you have actually seen?','What breaks first at ten times this traffic?','Have you ever load-tested it?']
 },
 {
 q:'Attack 3 — no async layer',
-test:'Whether six services with no messaging is a decision or a gap.',
-a:`<p>No message queue, no background job system, no event bus anywhere on the page. Six NestJS services communicating with no async messaging means either tight HTTP coupling or something missing from the story.</p>
+test:'Whether five services with no messaging is a decision or a gap.',
+a:`<p>No message queue, no background job system, no event bus anywhere on the page. Five NestJS services communicating with no async messaging means either tight HTTP coupling or something missing from the story.</p>
 <p>The full answer is R5.4. Learn its shape: <b>name the trade-off honestly, give the specific trigger that would change the decision, name the tool and why that tool.</b></p>`,
-fu:['What happens to a booking request when the email provider is slow?','Where would you add a queue first, and which one?','How do the six services talk to each other today?']
+fu:['What happens to a booking request when the email provider is slow?','Where would you add a queue first, and which one?','How do the five services talk to each other today?']
 },
 {
 q:'Attack 4 — observability',
@@ -45,35 +45,35 @@ fu:['How did you find out about your last outage?','What would you alert on, and
 {
 q:'Attack 5 — thin AWS',
 test:'Whether the cloud claims are wide or deep.',
-a:`<p>EC2, S3, IAM. No RDS, no ECS or EKS, no Lambda, no CloudFront, no load balancer, no auto-scaling group. It reads like a few VMs with Docker on them — which is completely fine, but say so before they work it out. R9.1 has the wording.</p>`,
+a:`<p>EC2, S3 and Route 53. No RDS, no ECS or EKS, no Lambda, no CloudFront, no load balancer, no auto-scaling group. It reads like a few VMs with Docker on them — which is completely fine, but say so before they work it out. R9.1 has the wording.</p>`,
 fu:['Have you run RDS or ECS in production?','How does traffic reach your instances?','What happens when an EC2 instance dies at 2am?']
 },
 {
 q:'Attack 6 — backend testing',
 test:'Whether the architecture you designed is tested.',
-a:`<p>Jest appears under Prototion, five years ago, and nowhere in your two most recent roles — the ones where you own architecture. I will ask what your coverage looks like on the six services you designed.</p>
+a:`<p>Jest appears under an early role and nowhere in your recent roles — the ones where you own architecture. I will ask what your coverage looks like on the five services you designed.</p>
 <p>Have a real answer. If the coverage is thin, say what is covered (the domain logic, the validation) and what is not (e2e), and what you would do first with a week.</p>`,
 fu:['What is the coverage on the services you designed?','What kind of bug would your tests not catch?','Tell me about a test you wrote that caught something real.']
 },
 {
 q:'Attack 7 — the agency ceiling',
 test:'Whether you can live with one product for three years.',
-a:`<p>Three roles, all client-delivery shops. The doubt is whether you can iterate on a single product, own its debt, and care about retention rather than handover.</p>
+a:`<p>Every role on the page is at a client-delivery shop. The doubt is whether you can iterate on a single product, own its debt, and care about retention rather than handover.</p>
 <p>Your "why leaving" answer in R1.2 is built to defuse exactly this — it names handover as the limitation and turns it into the reason you want their job. Use it early, before they form the doubt.</p>`,
 fu:['What is the oldest code of yours still in production, and who maintains it now?','How would you feel about the same codebase for three years?','What did you learn about a project only after you handed it over?']
 },
 {
-q:'Attack 8 — Roorkee to Bangalore',
+q:'Attack 8 — relocation',
 test:'Whether you will actually relocate, or take the offer and ask to stay remote in month two.',
-a:`<p>You are listed as Roorkee-based and remote. Every interviewer will quietly wonder.</p>`,
-note:`<p><b>Two resume edits to make tonight.</b> First: change <code>Roorkee, India · Open to relocation</code> to <code>Bangalore, India (relocated Sept 2026)</code>. You are physically there — say it in the past tense. This single edit measurably increases walk-in callbacks. Second: add one observability and one testing token to your skills line <em>if they are true</em> — Sentry, Winston, Supertest, e2e. If they are not true, spend one evening making one of them true on a side project so you can speak about it honestly.</p>`,
-fu:['Where in Bangalore are you staying?','Would you still want this role at five days in the office?','What would you do if a fully remote offer came along in your second month?']
+a:`<p>You are listed in &lt;your home city&gt; and remote. Every interviewer will quietly wonder.</p>`,
+note:`<p><b>Two resume edits to make tonight.</b> First: once you have moved, change <code>&lt;your home city&gt;, India · Open to relocation</code> to <code>&lt;the job's city&gt;, India</code>. A local address tells a recruiter there is no move to plan around, so you read as someone they can schedule this week. Until you have moved, keep "Open to relocation" and have your moving date ready. Second: add one observability and one testing token to your skills line <em>if they are true</em> — Sentry, Winston, Supertest, e2e. If they are not true, spend one evening making one of them true on a side project so you can speak about it honestly.</p>`,
+fu:['When do you move, and is the date fixed?','Which part of the city are you staying in, or looking at?','Would you still want this role at five days in the office?','What would you do if a fully remote offer came along in your second month?']
 },
 {
 q:'The reframe that fixes half of these',
 test:'Nothing. This is the single most useful sentence on this page.',
 a:`<p>Do not defend the gaps. <b>Convert them into decisions.</b></p>
-<p>"We did not add a queue" is a weakness. "At five thousand users with a p95 under two hundred milliseconds, a queue would have been infrastructure we had to operate for no measurable gain — the point where I would add one is when notification sends started blocking the request path" is an architect talking.</p>
+<p>"We did not add a queue" is a weakness. "At eight thousand users with a p95 under two hundred milliseconds, a queue would have been infrastructure we had to operate for no measurable gain — the point where I would add one is when notification sends started blocking the request path" is an architect talking.</p>
 <p>The gap is identical. The candidate is not.</p>`,
 fu:['So why did you not add a queue?','What number would have changed your mind?','Was that your decision, or the client\'s?']
 },
@@ -122,10 +122,10 @@ qs:[
 {
 q:'Tell me about yourself.',
 test:'Whether you can compress six years into a pitch, and whether you sound senior when you do it.',
-say:`<p>I am a full-stack engineer, six years, all of it in TypeScript. For the last three at a client studio I have been the technical owner of four production applications — Next.js on the front, NestJS services behind, deployed on AWS. That means I own architecture, release and reliability, not just features. The work I am proudest of is a front-office platform where I designed the service layer across five environments and cut infrastructure cost by a quarter. I am looking for a product role where I own a system for years instead of handing it over.</p>`,
+say:`<p>I am a full-stack engineer, six years, all of it in TypeScript. For the last few years at a client studio I have been the technical owner of three production applications — Next.js on the front, NestJS services behind, deployed on AWS. That means I own architecture, release and reliability, not just features. The work I am proudest of is a clinic-booking platform where I designed the service layer across four environments and cut infrastructure cost by a fifth. I am looking for a product role where I own a system for years instead of handing it over.</p>`,
 a:`<p>Four beats: <b>what you are</b>, <b>what you own</b>, <b>one concrete proof</b>, <b>what you want next</b>. Sixty seconds, not four minutes.</p>
-<p>Do not walk your career chronologically. Starting at 2020 and working forward is the single most common way this answer dies — by the time you reach the interesting part they have stopped listening.</p>`,
-fu:['Which of those four applications was hardest and why?','You said you own reliability — what does that mean day to day?','Why full-stack rather than specialising?'],
+<p>Do not walk your career chronologically. Starting at your first job and working forward is the single most common way this answer dies — by the time you reach the interesting part they have stopped listening.</p>`,
+fu:['Which of those three applications was hardest and why?','You said you own reliability — what does that mean day to day?','Why full-stack rather than specialising?'],
 after:`<div class="ladder">
 <span class="ttl">The same answer at three levels</span>
 <div class="rung">
@@ -137,7 +137,7 @@ after:`<div class="ladder">
 <div class="rung">
 <span class="lv">5–7 years</span>
 <p class="bar"><b>The bar:</b> four beats — what you are, what you own, one concrete proof with a number in it, what you want next. Two minutes.</p>
-<p class="script">&ldquo;Full-stack engineer, six years, React and Node. At my current company I own the frontend architecture across four applications — releases, reliability and the shared component layer. The thing I would point at is the checkout: p95 went from 4.1 seconds to 1.3 by moving the pricing call server-side and caching it, and that was mine from diagnosis to ship. I am moving because I have taken that about as far as the scale here allows, and the platform work you are hiring for is a bigger version of the same problem.&rdquo;</p>
+<p class="script">&ldquo;Full-stack engineer, six years, React and Node. At my current company I own the frontend architecture across three applications — releases, reliability and the shared component layer. The thing I would point at is the checkout: p95 went from 4.1 seconds to 1.3 by moving the pricing call server-side and caching it, and that was mine from diagnosis to ship. I am moving because I have taken that about as far as the scale here allows, and the platform work you are hiring for is a bigger version of the same problem.&rdquo;</p>
 <p class="why"><b>Why it lands:</b> The number is the entire difference between this and the rung above it. &ldquo;I own the architecture&rdquo; is a claim; 4.1 to 1.3 seconds is evidence, and it hands the interviewer their next question, which you have prepared. Ending on why <em>this</em> role stops them from asking it later, less kindly.</p>
 </div>
 <div class="rung">
@@ -173,11 +173,12 @@ a:`<p>Give the real number, then immediately give the shortest credible path: "I
 fu:['Would your employer let you buy out?','Do you have any bond or service agreement?']
 },
 {
-q:'Are you actually relocating to Bangalore, or are you looking for remote?',
+q:'Are you actually relocating for this role, or are you looking for remote?',
 test:'They have been burned by this. Somebody took the offer, joined, and asked to stay remote in month two.',
-say:`<p>I have already moved. I am in Bangalore now, I have a place, and I am here to work from an office. Remote was fine for three years but I want to be in a room with a team again.</p>`,
-a:`<p>Say it in the past tense. "I am open to relocating" and "I have relocated" land completely differently — one is an intention, the other is a fact they can plan around.</p>`,
-fu:['Which part of the city are you in?','How do you feel about five days in office?']
+say:`<p><b>If you have moved:</b> I have already moved. I am here now, I have a place, and I want to work from an office. Remote suited me for a while, but I want to be in a room with a team again.</p>
+<p><b>If you have not moved yet:</b> I move on &lt;the date&gt;, I have somewhere to live lined up, and I can be in the office from &lt;your start date&gt;.</p>`,
+a:`<p>Say it in the past tense if you can. "I am open to relocating" and "I have relocated" land completely differently — one is an intention, the other is a fact they can plan around. If you have not moved yet, a fixed date is the next best thing.</p>`,
+fu:['When do you move, and is the date fixed?','Which part of the city are you in, or looking at?','How do you feel about five days in office?']
 },
 {
 q:'Do you have any other offers or ongoing processes?',
@@ -191,10 +192,10 @@ q:'Walk me through your last project in two minutes.',
 test:'Whether you can describe technical work to a non-technical person. The recruiter has to repeat this to the hiring manager.',
 a:`<p>Use the four-beat shape and rehearse it out loud tonight, because you will give this answer in every single loop you enter:</p>
 <ul>
-<li><b>Problem.</b> An AI front-office platform needed to answer inbound calls and hand off cleanly to humans.</li>
-<li><b>Your role.</b> You designed and deployed the service layer across five environments.</li>
-<li><b>The hard part.</b> Five environments with different data, secrets and provider keys, plus a real-time dashboard over agent performance and reliability metrics.</li>
-<li><b>The result.</b> Infrastructure cost down twenty-five percent.</li>
+<li><b>Problem.</b> A clinic-booking platform needed to take appointments online and keep every clinic's calendar in sync.</li>
+<li><b>Your role.</b> You designed and deployed the service layer across four environments.</li>
+<li><b>The hard part.</b> Four environments with different data, secrets and provider keys, plus a live dashboard over bookings, no-shows and reliability metrics.</li>
+<li><b>The result.</b> Infrastructure cost down twenty percent.</li>
 </ul>
 <p>No jargon the recruiter cannot repeat. "Service layer" is fine; "typed DTO validation at the boundary" is not — save that for R5.</p>`,
 fu:['What was your specific contribution versus the team\'s?','How many engineers?','How long did it take?']
@@ -202,7 +203,7 @@ fu:['What was your specific contribution versus the team\'s?','How many engineer
 {
 q:'How many years of hands-on TypeScript, React and Node — separately?',
 test:'Resume arithmetic. Recruiters screen against a checklist with numbers on it.',
-a:`<p>Have three separate numbers ready and keep them consistent across every conversation, because they get written down and compared later. For your profile: TypeScript six, React six, Node roughly four. If a number is smaller than the job asks for, give it and immediately give the strongest adjacent evidence rather than padding it.</p>`,
+a:`<p>Have three separate numbers ready and keep them consistent across every conversation, because they get written down and compared later. For the example profile: TypeScript six, React five, Node roughly five. If a number is smaller than the job asks for, give it and immediately give the strongest adjacent evidence rather than padding it.</p>`,
 trap:`<p>Rounding every number up to your total experience. A recruiter who asks four of these and gets "six, six, six, six" stops believing all of them.</p>`,
 fu:['How much of that Node time was in production rather than on side projects?','Which of the three would you rate yourself lowest on?']
 },
@@ -211,7 +212,7 @@ q:'This role is mostly backend. Your resume looks frontend-leaning.',
 test:'Whether you argue with the framing or reframe it. The recruiter is reading a checklist and yours has a gap on it.',
 a:`<p>Never dispute the observation — it is correct, and your resume does read frontend-first. Concede it in four words, then move the conversation to the part of your backend work that is hardest to fake: production ownership.</p>
 <p>The shape is <b>concede, quantify, prove, redirect</b>. The proof has to be a system you ran, not a framework you touched.</p>`,
-say:`<p>That is a fair read of the resume. What it does not show is that the services are mine too — NestJS behind all four applications, and I own the deploy. On the front-office platform I designed the service layer across five environments and took infrastructure cost down twenty-five percent, which is not a thing you get to do from the frontend. So the split is genuinely closer to sixty-forty than the resume suggests, and if the role is eighty percent backend I would want that, not fight it.</p>`,
+say:`<p>That is a fair read of the resume. What it does not show is that the services are mine too — NestJS behind all three applications, and I own the deploy. On the booking platform I designed the service layer across four environments and took infrastructure cost down twenty percent, which is not a thing you get to do from the frontend. So the split is genuinely closer to sixty-forty than the resume suggests, and if the role is eighty percent backend I would want that, not fight it.</p>`,
 trap:`<p>"No no, I am equally strong in both." You are not, and R5 will prove it inside ten minutes. Overclaiming here does not get you past the screen — it gets you a backend deep dive you were not ready for, with an interviewer who was told you were equally strong.</p>`,
 fu:['How much of your week is backend today?','Have you owned a database schema end to end?','Would you be happy if this role never touched React again?']
 },
@@ -254,8 +255,8 @@ trap:`<p>"No, I think you covered everything." It is the single most common answ
 q:'The rest of the screening call',
 test:'Nothing. These are box-ticks — answer in one line each and keep the call moving.',
 a:`<ul>
-<li>Highest qualification and year of passing. <em>B.Tech IT, Pantnagar, 2019.</em></li>
-<li>Any employment gaps? <em>None — May 2020 to today, continuous.</em></li>
+<li>Highest qualification and year of passing. <em>&lt;Your degree&gt;, &lt;your college&gt;, &lt;the year&gt;.</em></li>
+<li>Any employment gaps? <em><b>If none:</b> None — &lt;the month and year you started&gt; to today, continuous. <b>If there was one:</b> &lt;the months&gt;, &lt;the reason, in one line&gt; — and continuous since &lt;the date you went back&gt;.</em></li>
 <li>Have you led a team? How many people?</li>
 <li>Are you interviewing for frontend, backend or full-stack roles? <em>Answer full-stack, and if pressed say frontend-leaning full-stack — that is what your resume actually shows, and pretending otherwise gets exposed in R5.</em></li>
 <li>Are you comfortable with the office location and a five-day model?</li>
@@ -384,7 +385,7 @@ id:'r1th', code:'R1·TH', navTitle:'Take-home round',
 title:'The take-home assignment',
 meta:[['Length','4–8 hours of work, a 3–7 day window'],['Who','A senior engineer, reading for fifteen minutes'],['Decides','Startup and agency loops — often instead of machine coding'],['Fail mode','Two days of work and no README']],
 tiers:[['product',1],['agency',1],['saas',1],['service',0]],
-intro:'This is the round your profile should win outright. Four production applications and an AI platform mean you have shipped the exact thing they are asking for, at real scale, with real edges. The candidates who beat you here are not better engineers — they are the ones who made the reviewer\'s fifteen minutes easy.',
+intro:'This is the round your profile should win outright. Three production applications and a booking platform in production mean you have shipped the exact thing they are asking for, at real scale, with real edges. The candidates who beat you here are not better engineers — they are the ones who made the reviewer\'s fifteen minutes easy.',
 qs:[
 {
 q:'What actually happens to your submission?',
@@ -518,9 +519,9 @@ q:'Walk me through your last project — the engineer\'s version.',
 test:'Depth. The recruiter wanted a story; this person wants a system, and they can tell within two sentences which one you are giving.',
 a:`<p>Same project as <a href="#r1">R1</a>, completely different answer. The recruiter version was four beats and no jargon. This version has architecture, a number, and a problem you solved that was genuinely hard.</p>
 <p>Shape it as <b>what it does → how it is put together → the hardest part → what it cost or saved</b>, and stop at ninety seconds so they can steer.</p>`,
-say:`<p>The front-office platform answers inbound calls and hands off to a human when it should. Next.js on the front, NestJS services behind it, Postgres and Redis, all on AWS. I designed the service layer and the deploy across five environments, which was the hard part: five sets of data, secrets and provider keys, with a real-time dashboard over agent performance on top. Rationalising how those environments were provisioned took infrastructure cost down about twenty-five percent. Happy to go deeper on the environment split or on the real-time piece — whichever is more useful.</p>`,
+say:`<p>The clinic-booking platform lets patients book appointments online and keeps each clinic's calendar in sync. Next.js on the front, NestJS services behind it, Postgres and Redis, all on AWS. I designed the service layer and the deploy across four environments, which was the hard part: four sets of data, secrets and provider keys, with a live dashboard over bookings and no-shows on top. Rationalising how those environments were provisioned took infrastructure cost down about twenty percent. Happy to go deeper on the environment split or on the real-time piece — whichever is more useful.</p>`,
 trap:`<p>"I worked on the frontend and also did some backend work." That sentence contains no system, no decision and no number, and it is the most common opening in this round. Every sentence should be something only a person who built it could say.</p>`,
-fu:['Why NestJS and not plain Express?','What was in the five environments that differed?','Where did the twenty-five percent come from?']
+fu:['Why NestJS and not plain Express?','What was in the four environments that differed?','Where did the twenty percent come from?']
 },
 {
 q:'The twenty-minute shared editor question.',
@@ -570,7 +571,7 @@ test:'Fit and level. They are deciding what to open you at, not whether you can 
 a:`<p>In smaller companies the first technical conversation is with the person you would report to, and the questions change shape completely. They will ask why this role, what you want to own, how you work with a team, and what you are looking for in your next two years — with one or two technical probes to confirm the resume.</p>
 <p>Three things to get across, all of them things a manager buys:</p>
 <ul>
-<li><b>Ownership, not tasks.</b> "I own release and reliability for four applications" is the sentence. Feature lists are not.</li>
+<li><b>Ownership, not tasks.</b> "I own release and reliability for three applications" is the sentence. Feature lists are not.</li>
 <li><b>A reason to want this job specifically.</b> The client-studio-to-product story from <a href="#r1">R1</a> works here and lands harder, because this person lives the difference.</li>
 <li><b>A question about scope.</b> "What would you want me to own in the first six months?" It is the question a senior asks and a mid-level does not.</li>
 </ul>`,
@@ -711,8 +712,8 @@ fu:['Add a fourth step.','Persist a half-finished form and resume it.','The last
 },
 {
 q:'Build a booking or calendar slot picker with conflict detection.',
-test:'Interval logic and timezones. Directly on your resume, so expect it.',
-a:`<p>Say up front that you have shipped a booking marketplace — it buys you credibility for the whole round. Then model slots as <b>half-open intervals</b> <code>[start, end)</code>, which makes back-to-back slots not overlap, and write the predicate as a named pure function:</p>`,
+test:'Interval logic and timezones. If a booking product is on your resume, expect it.',
+a:`<p>If you have shipped a booking product, say so up front — it buys you credibility for the whole round. Then model slots as <b>half-open intervals</b> <code>[start, end)</code>, which makes back-to-back slots not overlap, and write the predicate as a named pure function:</p>`,
 code:[{code:`<span class="c">// half-open: [aStart, aEnd) and [bStart, bEnd)</span>
 const overlaps = (a: Slot, b: Slot) =&gt;
   a.start &lt; b.end &amp;&amp; b.start &lt; a.end
@@ -725,7 +726,7 @@ fu:['Two people book the last seat at the same moment.','Handle a user in a diff
 },
 {
 q:'Backend variant — build a small REST API in NestJS.',
-test:'Whether the layering on your resume is real when you have to type it in ninety minutes.',
+test:'If your resume claims clean layering, whether it is real when you have to type it in ninety minutes.',
 a:`<p>Given your stack this may replace the frontend problem. Scaffold with the CLI, then make the layering visible: controller does HTTP only, service holds logic, repository touches data, DTOs validate at the boundary, one module per domain, a global exception filter.</p>`,
 code:[{code:`src/
   bookings/
@@ -1157,7 +1158,7 @@ code:[{label:'debounce — waits for silence',code:`function debounce(fn, ms) {
   }
 }`}],
 a:`<p><b>Debounce</b> waits for the input to stop: search-as-you-type, autosave, resize-then-recalculate. <b>Throttle</b> guarantees a maximum rate: scroll handlers, drag, mousemove, analytics pings.</p>
-<p>Concrete answer for "where did you use it": the faceted search on your camp-booking marketplace was debounced at 300ms — without it, filtering across location, age, interest and price fired a request per keystroke per facet.</p>`,
+<p>Concrete answer for "where did you use it": the clinic search on the booking platform was debounced at 300ms — without it, filtering across location, specialty, date and price fired a request per keystroke per facet.</p>`,
 trap:`<p>A throttle with no trailing call. The naive version drops the last event, so a user who stops scrolling mid-gesture never gets the final position and the UI ends up out of sync. Mentioning the trailing edge unprompted is the difference here.</p>`,
 fu:['Which one would you use for an autosave?','How do you cancel a pending debounce when a component unmounts?','requestAnimationFrame vs throttle for scroll?']
 },
@@ -1291,7 +1292,7 @@ id:'r3ts', code:'R3·TS', navTitle:'TypeScript',
 title:'TypeScript, properly',
 meta:[['Length','Folded into R3'],['Who','Senior engineer'],['Decides','Whether "TypeScript" means typed JS or types'],['Fail mode','Knowing the syntax, not the type system']],
 tiers:[['product',1],['saas',1],['agency',1],['service',0]],
-intro:'Your resume says six years of TypeScript across both ends. That raises the bar rather than lowering it: they will not ask what an interface is, they will ask you to write a mapped type.',
+intro:'If your resume says TypeScript across both ends, that raises the bar rather than lowering it: they will not ask what an interface is, they will ask you to write a mapped type.',
 qs:[
 {
 q:'<code>interface</code> vs <code>type</code>.',
@@ -1577,11 +1578,11 @@ note:`<p>React 18+ Strict Mode mounts, unmounts and remounts every effect in dev
 fu:['When should you NOT use an effect?','How do you fetch data in React today? (A query library or the framework, not raw useEffect.)','What is useLayoutEffect for?']
 },
 {
-q:'You migrated Redux to Zustand. Defend that to someone who disagrees.',
-test:'This is on your resume, so it will be asked. They are testing whether you can name what you gave up.',
-say:`<p>The trigger was a measured cost, not a preference. With Redux Toolkit every piece of state touched a slice file, an action, a selector and often a thunk — four places to change for one feature, which is where the roughly half of state code that was ceremony came from. Zustand collapsed that into one store hook with a selector, so a feature that took four files took one.</p>
+q:'If you have moved a codebase from Redux to Zustand, defend that to someone who disagrees.',
+test:'If a migration like this is on your resume, it will be asked. They are testing whether you can name what you gave up.',
+say:`<p>The trigger was a measured cost, not a preference. With Redux Toolkit every piece of state touched a slice file, an action, a selector and often a thunk — four places to change for one feature, which is where most of the ceremony in the state code came from. Zustand collapsed that into one store hook with a selector, so a feature that took four files took one.</p>
 <p>Two things I gave up, and I want to be straight about them. We lost Redux DevTools time-travel debugging, which we had genuinely used to track down a payments bug — I mitigated that with Zustand's devtools middleware, but it is not the same. And we lost the enforced discipline that stops a team putting logic in the wrong layer; I replaced that with a single store directory and a review rule, which is weaker.</p>
-<p>If I were starting a system with a large team and heavy derived state, I would still pick Redux Toolkit. For four applications and a small team, the ceremony was not paying for itself.</p>`,
+<p>If I were starting a system with a large team and heavy derived state, I would still pick Redux Toolkit. For three applications and a small team, the ceremony was not paying for itself.</p>`,
 a:`<p>That answer wins because it names the losses. A candidate who claims a migration had no downside gets marked down every time — the interviewer's job is to find out whether you evaluate or evangelise.</p>
 <p>Be ready for the technical follow-up on <em>why</em> Zustand re-renders less than Context: it uses an external store with selector-based subscriptions (<code>useSyncExternalStore</code> underneath), so a component re-renders only when the slice it selected changes. Context has no selector — every consumer re-renders when the value changes.</p>`,
 fu:['Why not just use Context?','How does Zustand avoid re-rendering every consumer?','What would make you go back to Redux?']
@@ -1594,7 +1595,7 @@ a:`<p>Context solves <b>prop drilling</b> — it is dependency injection for the
 <ol>
 <li>Split into several contexts by change frequency — a rarely-changing <code>ThemeContext</code> and a frequently-changing <code>CartContext</code> should not be one object.</li>
 <li>Memoise the provider value, otherwise a new object literal every render invalidates every consumer regardless.</li>
-<li>For genuinely shared mutable state, use an external store with selectors — which is the actual argument for Zustand in your migration story.</li>
+<li>For genuinely shared mutable state, use an external store with selectors — which is the actual argument for Zustand in a Redux-to-Zustand migration story.</li>
 </ol>`,
 code:[{code:`<span class="c">// every consumer re-renders on every parent render — new object each time</span>
 &lt;Ctx.Provider value={{ user, setUser }}&gt;
@@ -1618,16 +1619,16 @@ fu:['How do you validate an uncontrolled form?','What warning do you get when a 
 },
 {
 q:'Explain the four rendering strategies in Next.js and how you choose.',
-test:'Directly relevant to your Shopyvilla work. They will connect it to your 40% claim.',
+test:'If you have moved pages between rendering modes, they will connect this to the numbers on your resume.',
 a:`<div class="table-scroll"><table>
 <thead><tr><th>Strategy</th><th>Rendered</th><th>Right for</th></tr></thead>
 <tbody>
 <tr><td>Static (SSG)</td><td>Build time</td><td>Marketing, docs — identical for everyone. Fastest and cheapest.</td></tr>
-<tr><td>ISR</td><td>Build time, revalidated on a schedule or on demand</td><td>Catalogue and product pages that change hourly, not per request. Your commerce work.</td></tr>
+<tr><td>ISR</td><td>Build time, revalidated on a schedule or on demand</td><td>Catalogue and product pages that change hourly, not per request.</td></tr>
 <tr><td>Server (SSR)</td><td>Per request</td><td>Personalised or auth-gated pages; search results that depend on query params.</td></tr>
 <tr><td>Client (CSR)</td><td>In the browser</td><td>Dashboards behind a login where SEO is irrelevant and data is user-specific.</td></tr>
 </tbody></table></div>`,
-say:`<p>On Shopyvilla, fifteen category and product pages were client-rendered, so crawlers got an empty shell and users got a spinner. Moving them to server rendering with incremental regeneration cut initial load by about forty percent and made the catalogue actually indexable — the organic visibility was the point and the speed was the side effect.</p>`,
+say:`<p>On one e-commerce client, a dozen category and product pages were client-rendered, so crawlers got an empty shell and users got a spinner. Moving them to server rendering with incremental regeneration cut initial load by about a third and made the catalogue actually indexable — the organic visibility was the point and the speed was the side effect.</p>`,
 fu:['How do you choose the revalidate window?','What happens on the very first request after a deploy with ISR?','How would you handle a page that is 90% static and 10% personalised?']
 },
 {
@@ -1764,13 +1765,13 @@ trap:`<p>Reaching for <code>suppressHydrationWarning</code> across a whole subtr
 fu:['How would you render a theme from localStorage without a flash?','Why does invalid nesting cause this?']
 },
 {
-q:'You cut page load 35%. Take me through exactly what you measured.',
+q:'If you have made pages load faster, take me through exactly what you measured.',
 test:'The highest-risk question in your entire loop. Every number on your resume is a claim until you can source it.',
 a:`<p>Answer in four beats — measured, diagnosed, changed, verified:</p>
 <ul>
 <li><b>Measured.</b> Name the metric and the tool. Lighthouse LCP on the three heaviest routes, plus server-side p95 on the endpoints those routes call. Give the before number if you have it.</li>
 <li><b>Diagnosed.</b> The heavy routes made the same expensive read on every request — listing and category data that changed a few times a day. The database was repeating identical work.</li>
-<li><b>Changed.</b> Redis cache-aside in front of those endpoints, plus the Redux→Zustand move which cut the JavaScript the client had to parse before hydration.</li>
+<li><b>Changed.</b> Redis cache-aside in front of those endpoints, plus the move to a lighter state library, which cut the JavaScript the client had to parse before hydration.</li>
 <li><b>Verified.</b> Same Lighthouse runs, same routes, plus cache hit ratio from Redis <code>INFO</code>.</li>
 </ul>`,
 say:`<p>The honest caveat is that these were lab measurements on specific routes rather than field data from real users — we did not have real-user monitoring in place. If I did it again I would put RUM in first, because lab numbers and field numbers diverge, and I would rather quote a p75 LCP from actual traffic.</p>`,
@@ -1938,7 +1939,7 @@ id:'r5', code:'R5', navTitle:'Node & NestJS',
 title:'Node, NestJS & API design',
 meta:[['Length','45–60 min'],['Who','Backend lead or architect'],['Decides','Whether "full stack" is half true'],['Fail mode','Framework syntax without runtime understanding']],
 tiers:[['service',1],['product',1],['saas',1],['agency',0]],
-intro:'Your resume claims six domain services and ownership of the API standards. That claim raises the bar in this round rather than lowering it — they will not ask what a controller is, they will ask why you did not put a queue behind it.',
+intro:'Your resume claims five domain services and ownership of the API standards. That claim raises the bar in this round rather than lowering it — they will not ask what a controller is, they will ask why you did not put a queue behind it.',
 qs:[
 {
 q:'Node is single-threaded. How does it serve thousands of concurrent requests?',
@@ -1978,8 +1979,8 @@ a:`<p>In order: <b>middleware → guards → interceptors (before) → pipes →
 fu:['Where would you put rate limiting?','How does a guard read a @Roles() decorator?','What is an execution context?']
 },
 {
-q:'You mention typed DTO validation at every boundary. Show me.',
-test:'Whether the phrase on your resume corresponds to a configuration you can reproduce.',
+q:'If you validate input with typed DTOs at every boundary, show me how.',
+test:'If the phrase is on your resume, whether it corresponds to a configuration you can reproduce.',
 code:[{code:`export class CreateBookingDto {
   @IsUUID() campId: string
   @IsISO8601() startsAt: string
@@ -2001,9 +2002,9 @@ trap:`<p>"The TypeScript types on the DTO validate the request." Types are erase
 fu:['How do you validate query params and route params?','How do you return a useful error shape from a failed validation?','What is mass assignment?']
 },
 {
-q:'Six services and no message broker. Why not?',
-test:'The most likely architectural challenge in your entire loop. They read "6 domain services" and want to know if you understand what you built.',
-say:`<p>I want to be precise about the word, because it gets overloaded: they are domain modules inside a deployment that shares infrastructure, not six independently deployed services with independent failure domains. Communication is synchronous, and at our volume that was the right call — a broker is infrastructure you have to run, monitor, secure and reason about, and at five thousand users with sub-two-hundred-millisecond responses it would have bought us nothing measurable.</p>
+q:'Five services and no message broker. Why not?',
+test:'The most likely architectural challenge in your entire loop. They read "5 domain services" and want to know if you understand what you built.',
+say:`<p>I want to be precise about the word, because it gets overloaded: they are domain modules inside a deployment that shares infrastructure, not five independently deployed services with independent failure domains. Communication is synchronous, and at our volume that was the right call — a broker is infrastructure you have to run, monitor, secure and reason about, and at eight thousand users with sub-two-hundred-millisecond responses it would have bought us nothing measurable.</p>
 <p>The specific point at which I would add one is notifications. Today a booking confirmation sends email inline, so a slow SMTP provider adds latency to the user's request, and a failure there can fail a booking that actually succeeded — the write is committed but the user sees an error. That is a queue-shaped problem. I would put BullMQ on Redis in first because we already run Redis, and only reach for Kafka if we needed event replay, ordered partitions, or several independent consumers of the same stream.</p>`,
 a:`<p>This turns your biggest architectural gap into evidence of judgement. Learn the shape of it: <em>name the tradeoff honestly → give the specific trigger that would change the decision → name the tool and why that tool</em>.</p>`,
 after:`<p>Know the difference if they push: a <b>queue</b> (BullMQ, SQS, RabbitMQ) delivers each job to one consumer and is about work distribution. A <b>log</b> (Kafka) retains an ordered stream that many independent consumers read at their own offset, and is about event history. Choosing Kafka for background jobs is over-engineering; choosing a queue when you need replay is under-engineering.</p>`,
@@ -2012,7 +2013,7 @@ fu:['What happens if the queue worker crashes mid-job?','What is a dead letter q
 },
 {
 q:'Design a REST API for booking a slot. Talk me through the contract.',
-test:'API design is on your resume as a standard you authored. This is the audit.',
+test:'If API design is on your resume as a standard you authored, this is the audit.',
 code:[{code:`GET    /camps?location=&amp;ageMin=&amp;priceMax=&amp;cursor=&amp;limit=
 GET    /camps/:id
 GET    /camps/:id/slots?from=&amp;to=
@@ -2074,7 +2075,7 @@ fu:['Where do you store the access token on the client?','What is refresh token 
 },
 {
 q:'Rate limiting — how would you build it?',
-test:'Your resume lists Redis for rate limiting, so this is an audit question.',
+test:'If your resume lists Redis for rate limiting, this is an audit question.',
 a:`<p>Counters in Redis keyed by user id or IP. Three algorithms, and knowing why you would move up the list is the answer:</p>
 <ul>
 <li><b>Fixed window.</b> <code>INCR key</code> + <code>EXPIRE</code>. Cheap, but allows a burst of double the limit across a window boundary — 100 requests at 11:59:59 and 100 more at 12:00:00.</li>
@@ -2173,7 +2174,7 @@ a:`<ul>
 <li><b>SQL injection in Node.</b> String-concatenated queries. The fix is parameterised queries — and note that an ORM's <code>raw()</code> escape hatch reintroduces the risk.</li>
 <li><b>REST vs GraphQL vs gRPC.</b> REST for public and simple APIs. GraphQL when many clients need different shapes of the same data and over-fetching is a real cost — accepting the N+1 and caching complexity it brings. gRPC for internal service-to-service where you want a typed contract and binary efficiency.</li>
 <li><b>Testing a Nest service.</b> Unit: <code>Test.createTestingModule</code> with mocked providers. E2E: Supertest against the real app with a test database, ideally in a container.</li>
-<li><b>Config across five environments.</b> <code>ConfigModule</code> with a Joi or Zod validation schema so the process <b>fails at boot</b> on a missing variable rather than at 3am during a request.</li>
+<li><b>Config across several environments.</b> <code>ConfigModule</code> with a Joi or Zod validation schema so the process <b>fails at boot</b> on a missing variable rather than at 3am during a request.</li>
 <li><b>Circuit breaker.</b> After N consecutive failures to a dependency, stop calling it and fail fast for a cooldown, then let one probe through. Stops a slow dependency from exhausting your connection pool and taking you down with it.</li>
 <li><b>WebSockets vs SSE vs polling.</b> SSE for one-directional server→client updates: simpler, plain HTTP, auto-reconnect. WebSockets when the client also pushes. Polling when neither is worth the operational cost.</li>
 <li><b>Correlation ids.</b> Generate one in middleware, put it in <code>AsyncLocalStorage</code>, attach it to every log line and pass it downstream. Without it, debugging across services is guesswork.</li>
@@ -2351,7 +2352,7 @@ fu:['What is a write skew?','How would you retry a serialisation failure safely?
 },
 {
 q:'Explain cache-aside. What are its failure modes?',
-test:'Directly on your resume. They will push until you hit a limit — so bring the limits yourself.',
+test:'If caching is on your resume, they will push until you hit a limit — so bring the limits yourself.',
 a:`<p><b>Read:</b> check Redis; on a miss read the database and write back with a TTL. <b>Write:</b> update the database, then <b>delete</b> the key — do not update it.</p>
 <p>Why delete rather than update: two concurrent writers can interleave so that the slower one writes its older value into the cache last, leaving the cache permanently stale. Deleting means the next read repopulates from the source of truth.</p>`,
 code:[{code:`async function getCamp(id) {
@@ -2789,7 +2790,7 @@ post:`<div class="prep">
 qs:[
 {
 q:'Design a camp or event booking marketplace.',
-test:'They read Kampspire on your resume and will pick this deliberately. Prepare it as your set piece.',
+test:'If a booking marketplace is on your resume, they will pick this deliberately. Prepare it as your set piece.',
 a:`<p><b>Scope it out loud first:</b> browsing and search, viewing availability, booking with payment, and the organiser side for managing listings. Explicitly exclude reviews, messaging and refunds unless they ask.</p>
 <p><b>Core entities:</b></p>`,
 code:[{code:`camps    (id, org_id, title, location_id, age_min, age_max, price_cents, status)
@@ -2842,7 +2843,7 @@ fu:['What if the payment succeeds but your webhook handler crashes?','How do you
 },
 {
 q:'Design a real-time dashboard for AI agent performance metrics.',
-test:'Straight from your front-office platform line. Know it cold.',
+test:'If anything real-time is on your resume, expect this one. Know it cold.',
 a:`<p>Three parts: ingest, aggregate, deliver.</p>
 <p><b>Ingest.</b> Agents emit events (call started, handed off, resolved, latency, sentiment). Buffer and batch on the client side — one HTTP request per event does not survive volume. Write to an append-only events table or a stream.</p>
 <p><b>Aggregate.</b> This is the key decision: <b>pre-aggregate into time buckets on write</b> rather than computing over raw events on read. Dashboards are read-heavy with a known query pattern, so paying once per event beats paying per viewer. Keep raw events for a short retention window for drill-down, and roll up into minute, hour and day tables beyond that.</p>`,
@@ -2859,7 +2860,7 @@ fu:['How do you handle an agent that goes offline mid-call?','What if a viewer o
 },
 {
 q:'Design an e-commerce listing page that survives a traffic spike.',
-test:'Your Shopyvilla work, framed as a scale problem.',
+test:'If commerce work is on your resume, this is that work framed as a scale problem.',
 a:`<p>CDN in front; static or incrementally regenerated pages for catalogue content; Redis for anything dynamic. The design decision worth articulating is the <b>staleness boundary</b>:</p>
 <div class="table-scroll"><table>
 <thead><tr><th>Data</th><th>Acceptable staleness</th><th>Therefore</th></tr></thead>
@@ -2925,7 +2926,7 @@ test:'Breadth. Any of these can appear; none needs more than a working sketch.',
 a:`<ul>
 <li><b>A rate limiter as a shared service.</b> The R5 answer, plus: where does it live — sidecar, gateway, or a library in each service, and what does the network hop cost you?</li>
 <li><b>A file upload and processing pipeline.</b> Presigned URL → S3 event → worker → status the client subscribes to. The state machine matters more than the boxes.</li>
-<li><b>An online learning platform</b> with course search and progress tracking. Your learning-platform work. The interesting part is progress: an append-only event log of "completed lesson X" beats a mutable percentage field, because it survives a course being restructured.</li>
+<li><b>An online learning platform</b> with course search and progress tracking. The interesting part is progress: an append-only event log of "completed lesson X" beats a mutable percentage field, because it survives a course being restructured.</li>
 <li><b>An authentication service</b> with refresh token rotation. R5.7 as a system.</li>
 <li><b>A comment thread or activity feed.</b> Cursor pagination, not offset — with new items arriving, offset pagination shows duplicates and skips rows.</li>
 <li><b>A job scheduler.</b> Cron-like triggers, at-least-once delivery, and the question they always ask: what stops two instances running the same job? (A lock, or a leader.)</li>
@@ -2989,31 +2990,31 @@ id:'r9', code:'R9', navTitle:'AWS, Docker, CI/CD',
 title:'AWS, Docker & CI/CD',
 meta:[['Length','20–30 min, usually folded in'],['Who','Backend lead or DevOps'],['Decides','Whether your deployment claims are real'],['Fail mode','Overclaiming cloud depth']],
 tiers:[['product',1],['saas',1],['service',1],['agency',0]],
-intro:'Your AWS surface is narrow — EC2, S3, IAM. That is completely fine at six years for a full-stack role. What is not fine is letting them discover it. Own the boundary before they find it and it becomes honesty; let them find it and it becomes a gap.',
+intro:'Your AWS surface is narrow — EC2, S3 and Route 53. That is completely fine at six years for a full-stack role. What is not fine is letting them discover it. Own the boundary before they find it and it becomes honesty; let them find it and it becomes a gap.',
 qs:[
 {
 q:'Describe your deployment pipeline end to end.',
-test:'Whether "4 hours to 15 minutes" is a real pipeline you built or a line you wrote.',
-say:`<p>A push to a branch triggers a GitHub Actions workflow: install, lint, type-check, unit tests, then a Docker build. On merge to main it builds the image, tags it with the commit SHA, pushes to the registry, and deploys to EC2 by pulling the new tag and restarting the container behind a health check. That took our release from a roughly four-hour manual process — SSH in, pull, install, build, restart, check by hand — to about fifteen minutes, which is the difference between a hotfix being an event you schedule and a hotfix being routine.</p>
-<p>To be straight about the shape of it: this is Docker on EC2 instances, not a managed orchestrator. We did not run Kubernetes or ECS, because at four applications and this traffic the operational cost was not worth what it would have bought us. I can hold a conversation about ECS task definitions, but I would be learning it properly on the job rather than claiming it.</p>`,
+test:'Whether the deploy-time number on your resume is a real pipeline you built or a line you wrote.',
+say:`<p>A push to a branch triggers a GitHub Actions workflow: install, lint, type-check, unit tests, then a Docker build. On merge to main it builds the image, tags it with the commit SHA, pushes to the registry, and deploys to EC2 by pulling the new tag and restarting the container behind a health check. That took our release from a roughly three-hour manual process — SSH in, pull, install, build, restart, check by hand — to about twenty minutes, which is the difference between a hotfix being an event you schedule and a hotfix being routine.</p>
+<p>To be straight about the shape of it: this is Docker on EC2 instances, not a managed orchestrator. We did not run Kubernetes or ECS, because at three applications and this traffic the operational cost was not worth what it would have bought us. I can hold a conversation about ECS task definitions, but I would be learning it properly on the job rather than claiming it.</p>`,
 a:`<p>That last paragraph is worth more than pretending. Every interviewer has been burned by a candidate who listed Kubernetes and could not explain a pod — and they test for it, so the downside of overclaiming is severe and the upside of honesty is real.</p>`,
 trap:`<p>Deploying the <code>latest</code> tag. Nobody can say which commit is running, two instances that pulled at different times can run different code, and a rollback means guessing which image was "latest" yesterday.</p>`,
 fu:['How do you roll back?','What runs in CI that is not a test?','Why tag with the SHA rather than latest?']
 },
 {
-q:'How did you cut infrastructure cost 25%?',
+q:'If you have cut infrastructure cost, how exactly did you do it?',
 test:'The metric interrogation again, in the infrastructure round.',
 a:`<p>Have the specific levers ready, and name which one accounted for most of it. The credible ones for your setup:</p>
 <ul>
 <li><b>Right-sizing.</b> Instance sizes chosen at project start and never revisited against actual CloudWatch utilisation. This is usually the biggest single win and it is the most honest answer.</li>
-<li><b>Non-production environments.</b> Five environments running production-sized instances 24/7. Shrink them, and shut them down outside working hours — that alone is roughly a 65% saving on those instances.</li>
+<li><b>Non-production environments.</b> Three non-production environments running production-sized instances 24/7. Shrink them, and shut them down outside working hours — that alone is roughly a 65% saving on those instances.</li>
 <li><b>S3 lifecycle rules</b> moving old assets to infrequent-access or Glacier.</li>
 <li><b>Orphaned resources</b> — unattached EBS volumes, idle Elastic IPs, old snapshots, unused load balancers. Every long-running AWS account has these.</li>
 <li><b>Savings plans or reserved instances</b> for the steady-state baseline, on-demand for the rest.</li>
 <li><b>Data transfer</b> — often the invisible line item. Serving assets from S3 and CloudFront instead of from the instance.</li>
 </ul>`,
-say:`<p>Mostly it was right-sizing and the non-production environments. We had picked instance sizes at the start of the project and never revisited them against real utilisation, and the four non-production environments were running the same sizes as production around the clock.</p>`,
-trap:`<p>A percentage with no absolute figure behind it. Twenty-five percent of which monthly bill, compared across which months? Without the before and after in rupees or dollars, it sounds like a number chosen for the resume.</p>`,
+say:`<p>Mostly it was right-sizing and the non-production environments. We had picked instance sizes at the start of the project and never revisited them against real utilisation, and the three non-production environments were running the same sizes as production around the clock.</p>`,
+trap:`<p>A percentage with no absolute figure behind it. Twenty percent of which monthly bill, compared across which months? Without the before and after in rupees or dollars, it sounds like a number chosen for the resume.</p>`,
 fu:['How did you measure the baseline?','What did you look at to decide a size was wrong?','What would you cut next?']
 },
 {
@@ -3051,8 +3052,8 @@ trap:`<p><code>COPY . .</code> above <code>RUN npm ci</code>, with no <code>.doc
 fu:['Why is the image still 400MB and how would you shrink it? (distroless, or alpine + prune.)','What is a layer and why does order matter?','How do you get secrets into a build without baking them in?']
 },
 {
-q:'How do you manage secrets and configuration across five environments?',
-test:'A front-office platform question — you claimed five environments, so this is the audit.',
+q:'How do you manage secrets and configuration across several environments?',
+test:'If your resume claims several environments, this is the audit.',
 a:`<p>Nothing in the repository, ever. Then a layered answer:</p>
 <ul>
 <li><b>Pipeline secrets</b> — GitHub Actions encrypted secrets or environments with required reviewers for production.</li>
@@ -3194,50 +3195,60 @@ intro:'Everything on your resume is a promise. This round collects on it. Write 
 pre:`<div class="trap"><span class="lbl">The rule for every number below</span><p>If you cannot defend a figure, <b>do not remove it from the resume — reframe it in the room.</b> "That was our internal estimate from log counts rather than an instrumented measurement, so I would treat it as directional" is a completely acceptable sentence and it costs you almost nothing. Inventing a methodology on the spot and then contradicting yourself two questions later ends the interview.</p></div>`,
 qs:[
 {
-q:'The ten numbers they will pick one of, at random',
+q:'Every number on your resume, one at a time',
 test:'Whether you measure or whether you write resumes.',
-a:`<ol>
-<li><b>40% fewer production runtime errors</b> — over what period, measured how, from what baseline?</li>
-<li><b>35% faster page loads</b> — which pages, which metric, measured with what tool?</li>
-<li><b>50% less state boilerplate</b> — how do you measure boilerplate? <em>(Lines of state-management code per feature is a defensible proxy. Say it in exactly those words.)</em></li>
-<li><b>4 hours to 15 minutes deployment</b> — what took four hours before, step by step?</li>
-<li><b>25% infrastructure cost cut</b> — from what monthly figure to what?</li>
-<li><b>40% lower initial load across 15 commerce pages</b> — what were they before?</li>
-<li><b>10,000 unique monthly mobile visitors</b> — was that attributable to the PWA work or to marketing? <em>(If you do not know, say you do not know — that is the honest and correct answer.)</em></li>
-<li><b>75% user adoption on the learning dashboard</b> — adoption of what, by whom, over what window?</li>
-<li><b>30% lower sync latency from batching 15 APIs</b> — what was the batching strategy?</li>
-<li><b>5,000 registered users</b> — how many were active daily or monthly? <em>(Registered is a vanity number and a good interviewer knows it.)</em></li>
+a:`<p>They will pick one figure off your resume at random, so prepare every one of them — each percentage, duration, cost and user count. Next to each, write four facts before your first interview: <b>the period</b> it covers, <b>the tool</b> it was measured in, <b>the baseline</b> it moved from, and <b>the verified change</b>. Filled in with placeholders, it looks like this:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>On the resume</th><th>Period</th><th>Measured in</th><th>Baseline</th><th>Verified change</th></tr></thead>
+<tbody>
+<tr><td>&lt;N&gt;% fewer production errors</td><td>&lt;the weeks before and after the fix&gt;</td><td>&lt;the error tracker, or the log search&gt;</td><td>&lt;errors a week before&gt;</td><td>&lt;errors a week after, and how long it held&gt;</td></tr>
+<tr><td>&lt;N&gt;% faster page loads</td><td>&lt;the release it shipped in&gt;</td><td>&lt;Lighthouse, or field data&gt;</td><td>&lt;the p75 on which pages, and which metric&gt;</td><td>&lt;the p75 a month later&gt;</td></tr>
+<tr><td>&lt;N&gt; users</td><td>&lt;as of when&gt;</td><td>&lt;the analytics tool, or a database query&gt;</td><td>&lt;where it started&gt;</td><td>&lt;how many were active in a month&gt;</td></tr>
+</tbody>
+</table></div>
+<p>Once those four facts are written down, expect these ten follow-ups:</p>
+<ol>
+<li><b>Which number here are you least sure of?</b> Name it before they find it, and say how you would firm it up.</li>
+<li><b>Was it your work, or the team's?</b> Say which part you did, and who else moved the number.</li>
+<li><b>What else changed at the same time?</b> A release, a marketing push or the season can move a number as much as your fix did. <em>(If you do not know, say you do not know — that is the honest and correct answer.)</em></li>
+<li><b>Which pages, which metric?</b> "Faster" means nothing until you say which pages, and whether it was the largest paint, the time to interactive or the full load.</li>
+<li><b>What did it look like before, step by step?</b> For a time saving, walk through what used to take the time.</li>
+<li><b>How do you measure something fuzzy?</b> For boilerplate, name the proxy. <em>(Lines of state-management code per feature is a defensible one. Say it in exactly those words.)</em></li>
+<li><b>Registered, or active?</b> Have the daily or monthly active figure ready. <em>(Registered is a vanity number and a good interviewer knows it.)</em></li>
+<li><b>Adopted by whom?</b> A usage figure needs its denominator: who could have used it, and how many did.</li>
+<li><b>What did it cost?</b> Every improvement traded something — build time, complexity, a feature cut. Name it.</li>
+<li><b>Could you do it again somewhere else?</b> Say what you would look at first on a system you have never seen.</li>
 </ol>`,
-after:`<p>Prepare each one in the four-beat form from R4.13: <b>measured → diagnosed → changed → verified</b>. Any answer that has all four beats survives; any answer missing "measured" does not.</p>`
+after:`<p>Prepare each one in the four-beat form from R4.14: <b>measured → diagnosed → changed → verified</b>. Any answer that has all four beats survives; any answer missing "measured" does not.</p>`
 },
 {
-q:'Draw the architecture of one of your four applications.',
+q:'Draw the architecture of one of your applications.',
 test:'Whether you can produce the diagram of a system you claim to have architected. Fumbling this is the fastest way to lose a room.',
 a:`<p>Pick the one you know best and practise drawing it in ninety seconds, on paper, three times tonight. What has to be on the board:</p>
 <ul>
-<li>Client (Next.js) and how it is served.</li>
+<li>The client and how it is served.</li>
 <li>The reverse proxy or load balancer in front.</li>
-<li>The Nest services and what each one owns.</li>
-<li>MySQL, Redis, S3 — and what each holds.</li>
-<li>The AI agent integration and which direction the calls go.</li>
-<li>The five environments and what differs between them.</li>
-<li>Where the real-time dashboard data comes from.</li>
+<li>The services and what each one owns.</li>
+<li>The datastores — database, cache, file storage — and what each holds.</li>
+<li>The integrations with outside services, and which direction the calls go.</li>
+<li>The environments and what differs between them.</li>
+<li>Where any real-time data comes from.</li>
 </ul>
 <p>Draw the boxes, then draw the <b>arrows with direction</b>, then label the arrows with the protocol. Most candidates draw boxes and stop; the arrows are where the architecture actually lives.</p>`,
-fu:['Where is the bottleneck?','What would you change if you started again tomorrow?','What happens if Redis goes down?']
+fu:['Where is the bottleneck?','What would you change if you started again tomorrow?','What happens if the cache goes down?']
 },
 {
 q:'What is the worst technical decision you have made, and what did it cost?',
 test:'Self-awareness. "I care too much about code quality" fails this instantly and is remembered.',
 a:`<p>Pick something real, medium-sized and genuinely owned by you. The shape: <b>the decision → why it looked right at the time → what it actually cost, concretely → how you found out → what you did about it → the rule you now carry.</b></p>
-<p>A good candidate for you is committing to a state-management or rendering approach in week one of a client project and paying the migration cost later — you have lived that with Redux, so you can tell it honestly and end with a real rule: <em>"I now decide state management after the first three features rather than in week one, because the shape of the state is not knowable at the start."</em></p>`,
+<p>A common one is committing to a state-management or rendering approach in week one of a project and paying the migration cost later. If you have lived that — a Redux store chosen before anyone knew the shape of the data, say — tell it honestly and end with a real rule: <em>"I now decide state management after the first three features rather than in week one, because the shape of the state is not knowable at the start."</em></p>`,
 trap:`<p>Two failure modes. One: a fake weakness ("I take on too much"). Two: a decision that was not yours, told as though it was — interviewers probe, and the story collapses when they ask what you would have done differently and you have no answer because you never made the call.</p>`,
 fu:['How long did it take you to notice?','Who else was affected?','What stopped you from seeing it earlier?']
 },
 {
-q:'You wrote the API and frontend standards. Give me three rules and why each exists.',
+q:'If you have written standards for a team, give me three rules and why each exists.',
 test:'Whether you wrote standards or copied them.',
-a:`<p>Three, each with its reason attached. Rules without reasons sound borrowed:</p>
+a:`<p>Have three ready, each with its reason attached. Rules without reasons sound borrowed:</p>
 <ul>
 <li><b>Every endpoint returns the same error envelope.</b> Because otherwise every client writes bespoke error handling per call, and the third one gets it wrong.</li>
 <li><b>No business logic in a controller.</b> Because a controller can only be tested through HTTP, so logic that lives there is logic nobody tests.</li>
@@ -3263,8 +3274,8 @@ q:'The rest of the grilling',
 test:'Depth behind each resume line.',
 a:`<ul>
 <li>What is the largest data volume you have worked with?</li>
-<li>What is the highest traffic you have personally handled? <em>(Answer honestly. "Not high by product-company standards — five thousand users. What I have depth in is the delivery and reliability side of that" is a fine answer; inflating it is not.)</em></li>
-<li>How do you decide what to test? What is your coverage on the services you designed? <em>(Prepare this one — there is no testing on your two most recent roles in the resume, and they will notice.)</em></li>
+<li>What is the highest traffic you have personally handled? <em>(Answer honestly. If it is small, "Not high by product-company standards — &lt;your number&gt; users. What I have depth in is the delivery and reliability side of that" is a fine answer; inflating it is not.)</em></li>
+<li>How do you decide what to test? What is your coverage on the services you designed? <em>(Prepare this one — if testing is missing from your most recent roles on the resume, they will notice.)</em></li>
 <li>Describe your code review standard. What do you actually reject a PR for?</li>
 <li>How do you mentor a junior? Name a specific person and what changed for them.</li>
 <li>How do you estimate? When were you last badly wrong, and what did you do about it?</li>
@@ -3272,7 +3283,7 @@ a:`<ul>
 <li>Which part of your stack do you know least well? <em>(Answer it. Refusing to name one is worse than any answer you could give.)</em></li>
 <li>What have you learned in the last six months? <em>(Have a real, specific answer — the React Compiler, the Next 16 caching model, something you actually read.)</em></li>
 <li>What would your current lead say your weakness is?</li>
-<li>Why three companies in six years? <em>(Two years, one year three months, three years is not a red flag. Have the arc: each move added scope — feature work, then ownership, then architecture.)</em></li>
+<li>Why have you changed jobs as often as you have? <em>(If each move came after a year or more, it is not a red flag. Have the arc: each move added scope — for example feature work, then ownership, then architecture.)</em></li>
 <li>Walk me through a piece of code you are proud of. <em>(Have one. Ideally on GitHub, ideally something you can open.)</em></li>
 </ul>`
 }
@@ -3286,7 +3297,7 @@ intro:'Prepare six real stories and you can answer any question in this round, b
 pre:`<div class="cards">
 <div class="card"><h4>1 · A production failure you owned</h4><p>What broke, how you found out, the first ten minutes, and the structural change that made recurrence impossible.</p></div>
 <div class="card"><h4>2 · A disagreement you lost</h4><p>You argued a technical position, did not win, committed fully anyway, and it worked out. More valuable than one you won.</p></div>
-<div class="card"><h4>3 · A difficult client or stakeholder</h4><p>Scope change, an impossible deadline, or a demand you pushed back on. You have three agencies of material.</p></div>
+<div class="card"><h4>3 · A difficult client or stakeholder</h4><p>Scope change, an impossible deadline, or a demand you pushed back on. Client work gives you plenty of material.</p></div>
 <div class="card"><h4>4 · Shipping under real time pressure</h4><p>What you deliberately cut, and how you made sure the debt was recorded rather than quietly forgotten.</p></div>
 <div class="card"><h4>5 · Someone you made better</h4><p>A specific junior, a specific weakness, what you did, and what they can do now that they could not before.</p></div>
 <div class="card"><h4>6 · A decision you reversed</h4><p>You committed, evidence came in against it, and you changed course. Shows you update on data rather than on ego.</p></div>
@@ -3373,7 +3384,7 @@ a:`<ul>
 <li>Tell me about a time you had to work with someone difficult.</li>
 <li>How do you decide when something is good enough to ship?</li>
 <li>What is the hardest bug you have ever debugged? <em>(Have a real one, with the diagnostic path — this doubles as a technical question.)</em></li>
-<li>What do you do outside work? <em>(You have a public learning platform with 85 chapters written. Lead with it — it is genuinely differentiating and it evidences everything else you have claimed about standards and mentoring.)</em></li>
+<li>What do you do outside work? <em>(If you have a public project of your own, lead with it — it is genuinely differentiating and it evidences everything else you have claimed about standards and mentoring.)</em></li>
 <li>What questions do you have for me? <em>(Never "none." See below.)</em></li>
 </ul>`
 },
@@ -3438,12 +3449,12 @@ note:`<p><b>2026:</b> most orgs have stopped running a standalone behavioural ro
 {
 q:'The story bank: six events, sixteen principles',
 test:'Preparation. Nobody improvises a specific answer with numbers in it.',
-a:`<p>You do not need sixteen stories. You need six real events, told at enough depth that they can be cut different ways. From your own work, these are the six:</p>`,
+a:`<p>You do not need sixteen stories. You need six real events, told at enough depth that they can be cut different ways. For the example profile, these are the six:</p>`,
 after:`<div class="table-scroll"><table>
 <thead><tr><th>Event</th><th>Cuts for</th></tr></thead>
 <tbody>
-<tr><td><b>The five environments on the front-office platform</b> — different data, secrets and provider keys, rationalised into one provisioning path, infrastructure cost down twenty-five percent</td><td>Ownership · Dive Deep · Frugality · Deliver Results</td></tr>
-<tr><td><b>The real-time dashboard</b> over agent performance and reliability metrics — you built the thing that told everyone whether the platform was actually working</td><td>Customer Obsession · Insist on the Highest Standards · Invent and Simplify</td></tr>
+<tr><td><b>The four environments on the booking platform</b> — different data, secrets and provider keys, rationalised into one provisioning path, infrastructure cost down twenty percent</td><td>Ownership · Dive Deep · Frugality · Deliver Results</td></tr>
+<tr><td><b>The live dashboard</b> over bookings, no-shows and reliability metrics — you built the thing that told everyone whether the platform was actually working</td><td>Customer Obsession · Insist on the Highest Standards · Invent and Simplify</td></tr>
 <tr><td><b>A technical decision you pushed back on</b> and lost, then implemented properly anyway</td><td>Have Backbone; Disagree and Commit · Earn Trust</td></tr>
 <tr><td><b>A decision of yours that turned out wrong</b>, and what it cost before you caught it</td><td>Are Right, A Lot · Learn and Be Curious</td></tr>
 <tr><td><b>A client handover at the studio</b> — a codebase someone else had to run after you left</td><td>Earn Trust · Insist on the Highest Standards · Hire and Develop</td></tr>
@@ -3463,15 +3474,15 @@ a:`<p>Situation, Task, Action, Result. The mistake is the proportions: most cand
 <li><b>Action</b> — sixty to ninety seconds, and every verb is "I". This is the answer.</li>
 <li><b>Result</b> — a number, and how you know it.</li>
 </ul>`,
-say:`<p><em>Situation.</em> The front-office platform ran across five environments and each one had drifted — different data, different secrets, different provider keys. Deploys were taking most of a day and breaking in ways that only showed up in one of them. <em>Task.</em> I owned the service layer and the deploy, so it was mine to fix. <em>Action.</em> I mapped what actually differed between the five, moved every difference into configuration rather than code, rebuilt provisioning so an environment came up the same way every time, and cut the ones nobody was using. <em>Result.</em> Infrastructure cost dropped about twenty-five percent, and a deploy went from most of a day to something we did without thinking about it.</p>`,
+say:`<p><em>Situation.</em> The booking platform ran across four environments and each one had drifted — different data, different secrets, different provider keys. Deploys took about three hours by hand and broke in ways that only showed up in one of them. <em>Task.</em> I owned the service layer and the deploy, so it was mine to fix. <em>Action.</em> I mapped what actually differed between the four, moved every difference into configuration rather than code, rebuilt provisioning so an environment came up the same way every time, and cut the ones nobody was using. <em>Result.</em> Infrastructure cost dropped about twenty percent, and a deploy went from about three hours to about twenty minutes.</p>`,
 trap:`<p>"We migrated the environments." The interviewer cannot write that down as your action. If the team did it, say what <em>you</em> did inside it — the honest version is always more specific than the "we" version, not less.</p>`,
-fu:['What did you personally build versus what did someone else build?','How did you measure the twenty-five percent?','What would you do differently?','Who disagreed with you, and what did they say?']
+fu:['What did you personally build versus what did someone else build?','How did you measure the twenty percent?','What would you do differently?','Who disagreed with you, and what did they say?']
 },
 {
 q:'Tell me about a time you took ownership of something outside your remit.',
 test:'Ownership. Whether you act like the outcome is yours when nobody has made it your job.',
 a:`<p>The story wants three beats: it was not yours, you took it, and you stayed with it past the interesting part. That last one is where most answers stop early — Amazon reads "I fixed it and moved on" as enthusiasm, and "I fixed it and then owned the thing it became" as ownership.</p>`,
-say:`<p>Nobody owned reliability across the four client applications — each project had a lead and reliability fell between them. I started with our own alerting because I was tired of hearing about outages from the client, then extended the same setup across the other three, and ended up owning the on-call rotation and the post-incident notes for all four. That was not my role when I started; it is what I do now.</p>`,
+say:`<p>Nobody owned reliability across the three client applications — each project had a lead and reliability fell between them. I started with our own alerting because I was tired of hearing about outages from the client, then extended the same setup across the other two, and ended up owning the on-call rotation and the post-incident notes for all three. That was not my role when I started; it is what I do now.</p>`,
 trap:`<p>A story where you took something on and handed it away the moment it got boring. Ownership at Amazon explicitly includes the boring part — "leaders never say that is not my job" is the second line of the principle.</p>`,
 fu:['What did you stop doing to make room for it?','Did you ask permission, or ask forgiveness?','What broke after you took it on?']
 },
@@ -3489,7 +3500,7 @@ q:'Tell me about the most complex problem you have dug into.',
 test:'Dive Deep. Whether you go to the bottom of a thing or stop at the layer you are comfortable in.',
 a:`<p>This is the one where a Bar Raiser will keep pulling. Expect four or five follow-ups, each one a layer down, until you either hit something you genuinely do not know or they run out of questions. Both endings are fine; pretending is not.</p>
 <p>Pick something where you actually went below your own stack. A React bug is not a deep dive. A bug you chased from a symptom in the browser into the runtime, the network, or the database is.</p>`,
-say:`<p>Agent performance metrics on the dashboard were drifting from what the provider reported, by a few percent, only under load. I could have rounded it away. Instead I traced one call end to end — the event we recorded, the timestamps we took, and where they came from. The provider timestamps were their clock, ours were ours, and under load our queue added enough delay between the two that the windows we were bucketing into no longer lined up. I moved the bucketing to a single clock and the drift went away. The number was small; the reason it existed was not.</p>`,
+say:`<p>Booking counts on the live dashboard were drifting from what the calendar provider reported, by a few percent, only under load. I could have rounded it away. Instead I traced one booking end to end — the event we recorded, the timestamps we took, and where they came from. The provider timestamps were their clock, ours were ours, and under load our webhook handling fell far enough behind that the windows we were bucketing into no longer lined up. I moved the bucketing to a single clock and the drift went away. The number was small; the reason it existed was not.</p>`,
 trap:`<p>"I checked the logs and found the issue." That is the shape of an answer, not an answer. The interviewer wants the chain — what you saw, what you suspected, what you ruled out, and how.</p>`,
 note:`<p>If they push past what you know, say so and say what you would have looked at next. "I never found out why the provider clock skewed — I would have started by comparing their timestamps against a third source" scores better than a confident invention. Bar Raisers are unusually good at spotting the invention.</p>`,
 fu:['Why did that only happen under load?','What did you rule out first, and why?','How would you stop it recurring?','What did you not get to the bottom of?']
@@ -3553,7 +3564,7 @@ a:`<div class="table-scroll"><table>
 after:`<div class="cards">
 <div class="card g"><h4>Anchor · ₹26 lakh</h4><p>The first number you say — about half again on the example's monthly in-hand. Never open at what you would accept.</p></div>
 <div class="card"><h4>Target · ₹24 lakh</h4><p>Around forty percent more in hand. At six years with production architecture ownership that is defensible without flinching.</p></div>
-<div class="card r"><h4>Walk away · ₹20 lakh</h4><p>Around twenty percent. Below this you work harder in a more expensive city for the same money; Bangalore rent eats the difference.</p></div>
+<div class="card r"><h4>Walk away · ₹20 lakh</h4><p>Around twenty percent. Below this the bigger job is not worth taking, and if it also means a move, the new rent eats the difference.</p></div>
 </div>
 <p>Those three are the example's numbers, not yours. Derive your own the same way and you will not have to think about it in the room: <b>walk away at about twenty percent more monthly in-hand, target forty, open at fifty.</b> The percentages are the part that travels.</p>`
 },
@@ -3609,7 +3620,7 @@ fu:['We cannot share bands.','Would you consider ₹X?']
 {
 q:'They push back: "that is a very high expectation for your experience."',
 test:'Whether you can justify a number with reasoning rather than defend it with feeling.',
-say:`<p>I understand, and I would rather explain the reasoning than just hold a number. Because I have no deductions today, an ₹18 lakh offer with a variable component and PF actually lands me around ₹1.11 lakh a month — that is an eleven percent increase for relocating to a more expensive city, which does not work. At ₹24 lakh the move makes sense for both of us. If the band caps below that, I would genuinely rather know now.</p>`,
+say:`<p>I understand, and I would rather explain the reasoning than just hold a number. Because I have no deductions today, an ₹18 lakh offer with a variable component and PF actually lands me around ₹1.11 lakh a month — that is an eleven percent increase for a bigger job, which does not work. At ₹24 lakh the change makes sense for both of us. If the band caps below that, I would genuinely rather know now.</p>`,
 a:`<p>This works because it moves the conversation from "what you want" to "arithmetic we can both check". It is very hard to argue with, and it does not require them to agree you are worth more — only that the maths is the maths.</p>`,
 fu:['Where did you get those numbers?','We could look at a joining bonus instead.']
 },
@@ -3715,7 +3726,7 @@ q:'What actually decides your level?',
 test:'Whether you understand where the money is decided. It is not in the compensation conversation.',
 a:`<p>The loop produces a level recommendation, and it comes from <b>scope evidence</b>, not from years. Three things move it:</p>
 <ul>
-<li><b>The size of the thing you owned.</b> "I built features on four applications" is one level. "I own architecture, release and reliability across four applications, and designed the service layer on a platform in five environments" is the next one. Both describe your job.</li>
+<li><b>The size of the thing you owned.</b> "I built features on three applications" is one level. "I own architecture, release and reliability across three applications, and designed the service layer on a platform in four environments" is the next one. Both describe your job.</li>
 <li><b>Whether your decisions affected people outside your team.</b> This is the SDE-2 to SDE-3 line almost everywhere. Setting a standard others followed counts; shipping a lot does not.</li>
 <li><b>How you answered system design and the behavioural rounds.</b> A strong coding round rarely raises a level. A design round where you named trade-offs with numbers does.</li>
 </ul>
@@ -3808,7 +3819,7 @@ id:'r13',code:'R13',navTitle:'Remote & global roles',
 title:'Working remotely for a company abroad',
 meta:[['Length','3–6 rounds over 2–5 weeks'],['Who','Often nobody senior until late'],['Decides','Whether you can be trusted unsupervised'],['Fail mode','Treating it like an Indian product loop']],
 tiers:[['product',1],['saas',1],['agency',1],['service',0]],
-intro:'A remote role for a company abroad is a different job, hired differently, paid in a different currency, and employing you through a structure most candidates have never heard of. Everything else in this book assumes an Indian employer and an Indian offer letter. This round is what changes when neither is true — and for your profile, with three years of remote work already behind you, this is the market where that history stops being an objection and starts being the qualification.',
+intro:'A remote role for a company abroad is a different job, hired differently, paid in a different currency, and employing you through a structure most candidates have never heard of. Everything else in this book assumes an Indian employer and an Indian offer letter. This round is what changes when neither is true — and if you already have remote work behind you, this is the market where that history stops being an objection and starts being the qualification.',
 pre:`<div class="table-scroll"><table>
 <thead><tr><th>The Indian loop</th><th>The global remote loop</th></tr></thead>
 <tbody>
@@ -3832,7 +3843,7 @@ a:`<p>Remote-first companies — GitLab, Automattic, Zapier, Doist, and most of 
 </ul>
 <p>Write it in an editor, not in the box. Read it once out loud. Keep each answer under 200 words unless they ask for more.</p>`,
 trap:`<p>Pasting your resume summary into a written application. They already have the resume; the form exists to see whether you can think in writing.</p>`,
-note:`<p>Your three years of remote work is the single strongest line you have here, and it is worth stating plainly: you have already done this job in this shape. In an Indian office loop the same fact is an objection to defend (<a href="#r1">R1</a>, <a href="#r11">R11</a>). Same fact, opposite sign — which is worth knowing when you decide which market to spend your weeks on.</p>`
+note:`<p>If you have already worked remotely, that is the single strongest line you have here, and it is worth stating plainly: you have already done this job in this shape. In an Indian office loop the same fact is an objection to defend (<a href="#r1">R1</a>, <a href="#r11">R11</a>). Same fact, opposite sign — which is worth knowing when you decide which market to spend your weeks on.</p>`
 },
 {
 q:'"What is your timezone overlap?"',
@@ -3922,11 +3933,11 @@ test:'Honest calibration. Prepping the wrong things for a year is the expensive 
 a:`<div class="table-scroll"><table>
 <thead><tr><th>Gap</th><th>Where you are</th><th>Where the bar is</th></tr></thead>
 <tbody>
-<tr><td><b>Scale</b></td><td>5,000 users, one region, one database</td><td>Millions of users, sharded data, multi-region, real QPS numbers you have personally watched</td></tr>
+<tr><td><b>Scale</b></td><td>8,000 users, one region, one database</td><td>Millions of users, sharded data, multi-region, real QPS numbers you have personally watched</td></tr>
 <tr><td><b>DSA</b></td><td>Patterns, mediums</td><td>Two rounds, at least one hard. Graphs, advanced DP, heaps, tries — solved live in 35 minutes</td></tr>
 <tr><td><b>Design</b></td><td>Caching, concurrency, a good API</td><td>Consistency models, consensus, partition tolerance, exactly-once semantics, capacity maths</td></tr>
-<tr><td><b>Brand</b></td><td>Three client studios</td><td>Recognisable product company on the resume — unfair, and it is what gets you shortlisted</td></tr>
-<tr><td><b>Scope of influence</b></td><td>You own four applications</td><td>You changed how several teams work, and can evidence it</td></tr>
+<tr><td><b>Brand</b></td><td>Client studios only</td><td>Recognisable product company on the resume — unfair, and it is what gets you shortlisted</td></tr>
+<tr><td><b>Scope of influence</b></td><td>You own three applications</td><td>You changed how several teams work, and can evidence it</td></tr>
 </tbody></table></div>
 <p>Four of those five are closeable with study. <b>Brand is not</b> — and it is the one that decides whether anybody reads your resume. That is why the path below is two jumps and not one.</p>`,
 fu:['What is the largest system you have personally operated — users, requests per second, data?','Tell me about a change you drove that another team had to adopt.','Which of these gaps are you closing right now, and how?']
@@ -3951,11 +3962,11 @@ a:`<p>At ₹22–28L a good recruiter reads your bullets. At ₹50L a screener s
 <p><b>Three things that change that, in order of impact:</b></p>
 <ol>
 <li><b>Referrals.</b> Above ₹40L, cold applications convert at close to nothing. A referral skips the screener entirely. This is not a networking platitude — it is the actual mechanism, and it is the highest-return hour you can spend.</li>
-<li><b>Lead with Groundwork.</b> You built a learning platform with 85 chapters, 299 runnable exercises, and published tracks in JavaScript, DSA and System Design. Most six-year engineers have nothing like it. <b>Those are exactly the three subjects a ₹50L loop tests</b> — and you are teaching them. Put it in the top third of your resume with the numbers, not in a "personal projects" footer.</li>
-<li><b>Replace vanity numbers with hard ones.</b> "5,000 registered users" is a small number stated plainly. If you have p95 latency, requests per second, data volume, uptime, or cost figures, those read as an engineer who operates systems. If you do not have them, that is a thing to start collecting at your next job from week one.</li>
+<li><b>Lead with a public project of your own.</b> If you have built one — &lt;a learning site with N chapters and M runnable exercises&gt;, say — most six-year engineers have nothing like it. If it covers JavaScript, DSA or system design, <b>those are exactly the subjects a ₹50L loop tests</b> — and you are teaching them. Put it in the top third of your resume with the numbers, not in a "personal projects" footer.</li>
+<li><b>Replace vanity numbers with hard ones.</b> "8,000 registered users" is a small number stated plainly. If you have p95 latency, requests per second, data volume, uptime, or cost figures, those read as an engineer who operates systems. If you do not have them, that is a thing to start collecting at your next job from week one.</li>
 </ol>`,
-say:`<p>Alongside my work I write and maintain Groundwork, a technical learning platform — 85 chapters and 299 runnable exercises across JavaScript engine internals, algorithms and system design, with about 15 hours of written material. Teaching a thing at that depth is how I know I actually understand it.</p>`,
-fu:['Who referred you, and how do you know them?','Tell me about Groundwork — who uses it, and what was hardest to build?','What is the largest number on your resume that you can prove?']
+say:`<p>Alongside my work I build and maintain &lt;your project&gt;, &lt;what it does and who uses it&gt; — &lt;its size, in numbers someone can check&gt;. Building a thing to that depth is how I know I actually understand it.</p>`,
+fu:['Who referred you, and how do you know them?','Tell me about that project — who uses it, and what was hardest to build?','What is the largest number on your resume that you can prove?']
 },
 {
 q:'What to build in the next six months to close the scale gap',
@@ -4311,7 +4322,7 @@ code:[{label:'a booking saga, and the part people forget',code:`reserve seat    
 <span class="c">// You cannot un-charge a card; you issue a refund, which is</span>
 <span class="c">// visible to the user and appears on their statement.</span>
 <span class="c">// That business consequence is the real cost of a saga.</span>`}],
-after:`<p>Two flavours worth naming: <b>choreography</b> (each service listens for events and reacts — no coordinator, but the flow is scattered across services and hard to follow) and <b>orchestration</b> (a single saga coordinator drives the steps — easier to reason about, monitor and debug, at the cost of a component that knows the whole flow). At six services, orchestration is almost always the right call, and saying so with that reasoning is a strong answer.</p>
+after:`<p>Two flavours worth naming: <b>choreography</b> (each service listens for events and reacts — no coordinator, but the flow is scattered across services and hard to follow) and <b>orchestration</b> (a single saga coordinator drives the steps — easier to reason about, monitor and debug, at the cost of a component that knows the whole flow). At five services, orchestration is almost always the right call, and saying so with that reasoning is a strong answer.</p>
 <p>And the related pattern they may fish for: the <b>outbox</b>. Writing to your database and publishing to Kafka are two systems and cannot be atomic — so you write the event into an <code>outbox</code> table in the <em>same</em> transaction as the business change, and a separate relay publishes from that table. That is how you avoid the "committed the order but never published the event" bug.</p>`,
 trap:`<p>"Compensation is a rollback." A rollback makes it as if nothing happened; a compensation is a new action the customer can see — a refund on their statement, a cancellation email. A saga designed without saying what the user experiences on the undo path is half a design.</p>`,
 fu:['What if a compensating action itself fails?','How do you make a saga step idempotent?','What is the outbox pattern solving exactly?']
@@ -4337,7 +4348,7 @@ fu:['What does Kafka mean by exactly-once semantics then?','How long do you keep
 },
 {
 q:'Kafka — partitions, ordering, consumer groups, rebalance',
-test:'If you say "event-driven", this follows. It is also the concrete gap your resume has.',
+test:'If you say "event-driven", this follows. If your resume has no messaging on it, it is also the concrete gap.',
 a:`<p>A topic is split into <b>partitions</b>; each partition is an ordered, append-only log. <b>Ordering is guaranteed within a partition and nowhere else</b> — that single sentence is most of the marks, and it drives everything else.</p>
 <ul>
 <li><b>The partition key decides ordering.</b> Key by <code>userId</code> and all events for one user land on one partition and stay ordered. Key randomly and you get even distribution and no ordering at all. This is the design decision.</li>
@@ -4637,7 +4648,7 @@ a:`<p>Structure the answer around <b>how you built the case</b>, not how right y
 <li><b>The objections you had to answer</b> — and who raised them. Naming a real sceptic and how you won them over is the most convincing part of any story like this.</li>
 <li><b>The outcome, measured.</b></li>
 </ol>
-<p>Your standards story fits this exactly. So does the Redux to Zustand migration, if you tell it as a persuasion problem rather than a technical one: you had to convince a team to accept a migration cost, and the honest naming of what was lost is what made it credible.</p>`,
+<p>Your standards story fits this exactly. So does a state-management migration like the one in R4, if you tell it as a persuasion problem rather than a technical one: you had to convince a team to accept a migration cost, and the honest naming of what was lost is what made it credible.</p>`,
 trap:`<p>The story where you were right, nobody listened, and it later broke. It answers a different question — it shows you were correct, not that you were persuasive — and at this level being unable to move people is the actual gap they are testing for.</p>`,
 fu:['Who disagreed most and why?','What would you do differently if you had to do it again?','How did you know it worked?']
 },
@@ -4709,9 +4720,9 @@ test:'Sequence. Most people revise what they already know and skip what they wil
 a:`<div class="table-scroll"><table>
 <thead><tr><th>Day</th><th>Focus</th><th>The actual work</th></tr></thead>
 <tbody>
-<tr><td class="n">1</td><td>Your own story</td><td>Write real answers to all ten metric questions in R10. Practise the two-minute front-office platform walkthrough out loud five times. Draw its architecture on paper three times from memory. Fix the two resume lines in the scouting report.</td></tr>
+<tr><td class="n">1</td><td>Your own story</td><td>Fill in R10's template for every number on your resume, then run each one past its ten follow-ups. Practise the two-minute walkthrough of your last project from R1 out loud five times. Draw its architecture on paper three times from memory. Fix the two resume lines in the scouting report.</td></tr>
 <tr><td class="n">2</td><td>JavaScript &amp; TypeScript</td><td>R3 and R3·TS end to end, out loud. Write debounce, throttle, <code>Promise.all</code> and the promise pool from scratch without looking. Make the event-loop ordering automatic.</td></tr>
-<tr><td class="n">3</td><td>React &amp; Next.js</td><td>R4. Prepare the Redux→Zustand defence properly — it is the most likely deep question in your loop. Re-read the Next 15/16 caching change until you can explain why the default flipped.</td></tr>
+<tr><td class="n">3</td><td>React &amp; Next.js</td><td>R4. Prepare the state-management migration defence properly, with your own migration if you have one — it is the most likely deep question in your loop. Re-read the Next 15/16 caching change until you can explain why the default flipped.</td></tr>
 <tr><td class="n">4</td><td>Backend &amp; data</td><td>R5 and R6. Rehearse the no-message-broker answer until it sounds like judgement rather than apology. Write the five SQL queries by hand.</td></tr>
 <tr><td class="n">5</td><td>Machine coding</td><td>Build the task board and the data table under a real 90-minute timer, twice. <b>The highest-return day on this list.</b></td></tr>
 <tr><td class="n">6</td><td>System design</td><td>Design the booking marketplace and the real-time dashboard out loud with a timer, using the seven-step frame. Record yourself once and listen back — it is unpleasant and it works.</td></tr>

@@ -49,7 +49,7 @@ The roadmap data is the JSON in `docs/roadmap.html` (`updatedAt: 2026-09-24`).
 
 | Task | Roadmap says | Actual status | Evidence | Suggested new status and notes |
 | --- | --- | --- | --- | --- |
-| t01 Remove personal details from the Interview book | done | **Partly done: regressed** | `content/interview-data.ts:54` still names an earlier employer ("Jest appears under **[an earlier employer]**, five years ago"). `:66-70` "Attack 8 — **[home city]** to [new city] … change `[home city], India · Open to relocation` to `[new city], India (relocated Sept 2026)`". `:176-178` "I have already moved. I am in [new city] now". The cover credits "Akshat" (`lib/interviewContent.ts:90`) | **Reopen.** Genericise the scouting report and R10 (see C1) |
+| t01 Remove personal details from the Interview book | done | **Partly done: regressed** | `content/interview-data.ts:54` still names an earlier employer ("Jest appears under **[an earlier employer]**, [N] years ago"). `:66-70` "Attack 8 — **[home city]** to [new city] … change `[home city], India · Open to relocation` to `[new city], India (relocated [month])`". `:176-178` "I have already moved. I am in [new city] now". The cover credits "Akshat" (`lib/interviewContent.ts:90`) | **Reopen.** Genericise the scouting report and R10 (see C1) |
 | t02 Derive every count from content/ and test it | done | Done, with one new mismatch | `tests/claims.test.ts:20-91`. But the question count is defined three ways (C2) | Keep done. Add a follow-up for C2 |
 | t03 Fix stale copy and labels | done | Done, but new stale copy has appeared since | `app/soon/SoonClient.tsx:98-100` ("23 sections … a few written"), `content/topics.ts:506` ("40 sections deep"), `app/practice/page.tsx:7` (4 languages), `README.md:16` | Add a new task "Stale copy, round 2" and extend `claims.test.ts` |
 | t04 Noindex unwritten chapters and drop them from the sitemap | done | Done | `tests/seo.test.ts:15-43,71-83,115-123`. `node.html` prerenders with `noindex` | Done |
@@ -315,17 +315,17 @@ What is fine:
 ### C1 · High · The interview book still holds one person's CV (t01 regressed)
 
 - **Evidence:**
-  - `content/interview-data.ts:54` names a previous employer: "Jest appears under [an earlier employer], five years ago".
-  - `:66-70` "Attack 8 — [home city] to [new city]", "You are listed as [home city]-based", and "change `[home city], India · Open to relocation` to `[new city], India (relocated Sept 2026)`".
+  - `content/interview-data.ts:54` names a previous employer: "Jest appears under [an earlier employer], [N] years ago".
+  - `:66-70` "Attack 8 — [home city] to [new city]", "You are listed as [home city]-based", and "change `[home city], India · Open to relocation` to `[new city], India (relocated [month])`".
   - `:176-178`, the R1 answer: "I have already moved. I am in [new city] now".
-  - The scouting report (`:5-80`) and R10 (the ten resume metrics: "75% user adoption on the learning dashboard", "15 commerce pages", "Draw the architecture of one of your four applications … the five environments … the AI agent integration") describe one specific resume.
+  - The scouting report (`:5-80`) and R10 (the ten resume metrics: "[an adoption percentage] on [a named dashboard]", "[a count of] commerce pages", "Draw the architecture of one of your [N] applications … the [N] environments … the [named integration]") describe one specific resume.
   - The book's author is shown as "Akshat" (`lib/interviewContent.ts:90`, rendered on the cover).
   - `.cspell/project-words.txt:403,454` list "[an earlier employer]" and "[home city]".
 - **Why it matters:**
   - Together, these let a reader rebuild the author's employer history, home town, relocation month and resume metrics. The t01 cleanup (`b582d59`) caught the salary and the client names but not these.
   - It also makes R10 and the scouting report read as one person's prep notes, not advice for the reader.
 - **Fix:**
-  - Replace "[home city]" with "\<your home city\>" and "[an earlier employer]" with "an early role". Drop "relocated Sept 2026".
+  - Replace "[home city]" with "\<your home city\>" and "[an earlier employer]" with "an early role". Drop "relocated [month]".
   - Rewrite R10's list as a template: "for each number on *your* resume, answer: period, tool, baseline".
   - Remove the two cspell words. Check the mock bank, which reuses these questions (`lib/mock/bank.ts`), after the edit.
 - **Effort:** 1–2 h.

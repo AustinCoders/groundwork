@@ -21,6 +21,7 @@ const PAGES = [
   { path: "/review", heading: /look at again|still fresh|comes back here/i },
   { path: "/mock", heading: /mock interview/i },
   { path: "/progress", heading: /progress/i },
+  { path: "/privacy", heading: /Privacy/ },
   { path: "/git", heading: /Git/i },
   { path: "/architecture", heading: /How this site is built/i },
   { path: "/architecture/arch-health", heading: /Current health/i },
@@ -852,6 +853,39 @@ test("the home page reads as a landing page and every path leads somewhere real"
 
   await page.setViewportSize({ width: 375, height: 800 });
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
+test("the privacy page is indexed, framed, and linked from the menu, the home page, the FAQ and the footer", async ({
+  page,
+}) => {
+  await page.goto("/privacy");
+  await expect(page.locator("header a.head-back")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Privacy");
+  await expect(page).toHaveTitle(/^Privacy · /);
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /what leaves it/);
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /\/privacy$/);
+  await expect(page.locator('meta[name="robots"][content*="noindex"]')).toHaveCount(0);
+  await page.getByRole("button", { name: "Menu" }).click();
+  await expect(
+    page.getByRole("dialog", { name: /menu/ }).getByRole("link", { name: "Privacy", exact: true })
+  ).toHaveAttribute("href", "/privacy");
+  await page.keyboard.press("Escape");
+
+  await page.goto("/");
+  await expect(
+    page.locator("article", { hasText: "Nothing to sign up for" }).getByRole("link", { name: "The privacy page" })
+  ).toHaveAttribute("href", "/privacy");
+  const faq = page.locator("details", { hasText: "Do I need to sign up?" });
+  await faq.locator("summary").click();
+  await expect(faq).toContainText("anonymous page analytics");
+  await expect(faq.getByRole("link", { name: /What leaves/ })).toHaveAttribute("href", "/privacy");
+  const built = page.locator("details", { hasText: "How is the site itself built?" });
+  await built.locator("summary").click();
+  await expect(built.getByRole("link", { name: /Read how it is built/ })).toHaveAttribute("href", "/architecture");
+  await expect(page.getByRole("navigation", { name: "You" }).getByRole("link", { name: "Privacy" })).toHaveAttribute(
+    "href",
+    "/privacy"
+  );
 });
 
 test("the interview book hides answers in practice mode, remembers marks and drills them", async ({ page }) => {

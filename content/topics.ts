@@ -2303,7 +2303,7 @@ export const topics: TopicsData = {
               ],
             },
             {
-              title: "How 1,734 files get made",
+              title: "How 1,762 files get made",
               chapter: "arch-build",
               items: [
                 "One source of truth, one pass, and every page, index, test case and preview image is derived from it in about thirty seconds.",

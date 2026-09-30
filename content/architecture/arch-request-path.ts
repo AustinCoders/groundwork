@@ -41,7 +41,7 @@ export const archRequestPath: Chapter = {
 <text class="sm" x="275" y="204" text-anchor="middle">security headers,</text>
 <text class="sm" x="275" y="222" text-anchor="middle">legacy-host redirect</text>
 <text class="lbl gr" x="545" y="48" text-anchor="middle">Prerendered file</text>
-<text class="sm" x="545" y="70" text-anchor="middle">1,742 outputs, never revalidated</text>
+<text class="sm" x="545" y="70" text-anchor="middle">1,762 outputs, never revalidated</text>
 <text class="lbl" x="545" y="140" text-anchor="middle">On-demand render</text>
 <text class="sm" x="545" y="162" text-anchor="middle">an unknown chapter or problem slug</text>
 <text class="lbl rd" x="545" y="232" text-anchor="middle">Function</text>
@@ -77,14 +77,14 @@ export const archRequestPath: Chapter = {
 
 <h3>The common case: a file</h3>
 <p>
-  The last production build wrote 1,742 entries into <code>.next/prerender-manifest.json</code>,
+  The last production build wrote 1,762 entries into <code>.next/prerender-manifest.json</code>,
   and every one has <code>initialRevalidateSeconds: false</code>. Nothing is on a timer and nothing
   is regenerated in the background. A file changes only when a deploy replaces it.
 </p>
 <div class="table-scroll"><table>
 <thead><tr><th>What</th><th>Count</th><th>Made by</th></tr></thead>
 <tbody>
-<tr><td>Pages, as HTML plus an RSC payload</td><td>1,149</td><td><code>page.tsx</code> and <code>generateStaticParams</code></td></tr>
+<tr><td>Pages, as HTML plus an RSC payload</td><td>1,177</td><td><code>page.tsx</code> and <code>generateStaticParams</code></td></tr>
 <tr><td>Test cases for other languages</td><td>538</td><td><code>app/problems/[slug]/cases/route.ts</code></td></tr>
 <tr><td>Search indexes</td><td>21</td><td>20 per-topic routes plus one global route</td></tr>
 <tr><td>Mock interview question banks</td><td>12</td><td><code>app/mock/bank/[stage]/route.ts</code>, one per stage</td></tr>

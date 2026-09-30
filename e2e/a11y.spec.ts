@@ -17,6 +17,7 @@ const PAGES = [
   "/mock",
   "/whiteboard",
   "/progress",
+  "/privacy",
   "/git",
   "/git/merge",
   "/git/github",
