@@ -8,6 +8,7 @@ import { lastLevel, store } from "@/lib/storage";
 import { useClientValue, useMounted } from "@/lib/hooks";
 import { activateScripts, enhanceCodeBlocks, enhanceTables, enhanceTryBlocks } from "@/components/reader/enhancements";
 import { setupNarration } from "@/components/reader/narration";
+import { makeScrollRegions } from "@/components/reader/scrollRegions";
 import { NarrationSettings } from "@/components/reader/NarrationSettings";
 import { ChapterNav } from "@/components/reader/ChapterNav";
 import { ZOOM_KEY, ZOOM_STEPS } from "@/lib/readerZoom";
@@ -167,8 +168,12 @@ export function ReaderShell({ topicId, levels, chapters, basePath, activeId, chi
     enhanceCodeBlocks(contentRef.current);
     enhanceTables(contentRef.current);
     enhanceTryBlocks(contentRef.current);
-    const teardown = setupNarration(contentRef.current);
-    return teardown;
+    const stopNarration = setupNarration(contentRef.current);
+    const stopScrollRegions = makeScrollRegions(contentRef.current);
+    return () => {
+      stopNarration();
+      stopScrollRegions();
+    };
   }, [mounted, activeId]);
 
   const goToChapter = useMemo(

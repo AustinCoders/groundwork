@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { BookShell } from "@/app/interview/BookShell";
+import { useScrollRegions } from "@/components/reader/scrollRegions";
 import { confidence, CONFIDENCE_LABEL, useConfidence, type Confidence } from "@/lib/interviewConfidence";
 import { useProgressValue } from "@/lib/hooks";
 import { progress, store } from "@/lib/storage";
@@ -42,6 +43,12 @@ function Html({ html, className }: { html: string; className?: string }) {
   return <div className={className} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
+function Prose({ html }: { html: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useScrollRegions(ref, html);
+  return <div ref={ref} className={`interview-body ${styles.prose}`} dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
 function QuestionCard({
   q,
   code,
@@ -55,10 +62,12 @@ function QuestionCard({
 }) {
   const [shown, setShown] = useState(false);
   const hidden = mode === "practise" && !shown && !q.bulk;
+  const card = useRef<HTMLElement>(null);
+  useScrollRegions(card, hidden);
   const hasAnswer = q.a || q.code.length || q.say || q.trap || q.note || q.after;
 
   return (
-    <article className={styles.qCard} id={q.id} data-mark={mark} data-fx="up">
+    <article ref={card} className={styles.qCard} id={q.id} data-mark={mark} data-fx="up">
       <header className={styles.qHead}>
         <span className={styles.qNum}>
           {code}.{q.n}
@@ -265,11 +274,11 @@ export function RoundView({
         </aside>
 
         <div className={styles.roundBody}>
-          {round.pre && <Html html={round.pre} className={`interview-body ${styles.prose}`} />}
+          {round.pre && <Prose html={round.pre} />}
           {questions.map((q) => (
             <QuestionCard key={q.id} q={q} code={round.code} mode={mode} mark={conf[q.id]} />
           ))}
-          {round.post && <Html html={round.post} className={`interview-body ${styles.prose}`} />}
+          {round.post && <Prose html={round.post} />}
 
           <div className={styles.doneRow} data-fx="up">
             <label className={styles.doneCheck}>

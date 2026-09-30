@@ -53,7 +53,7 @@ function lateness(due: number, today: number): string {
 
 function Stage({ reviews }: { reviews: number }) {
   return (
-    <span className={styles.stage} aria-label={`Review ${reviews + 1} of ${REVIEW_GAPS_DAYS.length}`}>
+    <span className={styles.stage} role="img" aria-label={`Review ${reviews + 1} of ${REVIEW_GAPS_DAYS.length}`}>
       {REVIEW_GAPS_DAYS.map((_, k) => (
         <i key={k} data-on={k < reviews || undefined} data-now={k === reviews || undefined} />
       ))}

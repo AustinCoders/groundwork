@@ -306,7 +306,7 @@ function editorExtensions(ctx: {
     c.guides.of(settings.indentGuides ? indentGuides() : []),
     c.minimap.of([]),
     cmTheme,
-    EditorView.contentAttributes.of({ "aria-label": "Code editor" }),
+    EditorView.contentAttributes.of({ "aria-label": "Code editor", tabindex: "0" }),
   ];
 }
 

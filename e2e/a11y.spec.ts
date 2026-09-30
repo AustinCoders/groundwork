@@ -1,15 +1,38 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+import { THEMES } from "./themes";
+import type { ThemeValue } from "../lib/storage";
+
+const WCAG_A_AND_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
+
+const WIDE = { width: 1440, height: 900 };
+const PHONE = { width: 390, height: 844 };
+const VIEWPORTS = [WIDE, PHONE];
+
+type Viewport = (typeof VIEWPORTS)[number];
+type Violation = Awaited<ReturnType<AxeBuilder["analyze"]>>["violations"][number];
+type Check = (stage: string) => Promise<void>;
+type State = {
+  name: string;
+  path: string;
+  viewports: Viewport[];
+  seed?: () => void;
+  visit: (page: Page, check: Check) => Promise<void>;
+};
 
 const PAGES = [
   "/",
   "/notes",
   "/notes/setup-mental-model",
+  "/notes/basic-async",
   "/interview",
   "/interview/r1oa",
   "/interview/r7",
+  "/interview/questions",
   "/level/js",
   "/path?topic=js&level=beginner",
+  "/path?topic=typescript&level=beginner",
+  "/level/typescript",
   "/practice?id=free",
   "/problems",
   "/problems/ex-accounts-merge",
@@ -23,65 +46,231 @@ const PAGES = [
   "/git/github",
   "/architecture",
   "/architecture/arch-request-path",
+  "/no-such-page",
 ];
 
-for (const path of PAGES) {
-  test(`${path} has no accessibility violations`, async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto(path, { waitUntil: "networkidle" });
+const STATES: State[] = [
+  {
+    name: "the site menu open",
+    path: "/review",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      await expect(page.getByRole("dialog", { name: /menu/ })).toBeVisible();
+      await check("the site menu open");
+    },
+  },
+  {
+    name: "the sidebar open",
+    path: "/notes",
+    viewports: [PHONE],
+    visit: async (page, check) => {
+      await page.getByRole("button", { name: "Open menu" }).click();
+      await expect(page.locator("#site-sidenav")).not.toHaveAttribute("inert");
+      await check("the sidebar open");
+    },
+  },
+  {
+    name: "the Chapters sheet open",
+    path: "/git/merge",
+    viewports: [PHONE],
+    visit: async (page, check) => {
+      await page.getByRole("button", { name: "Chapters", exact: true }).click();
+      await expect(page.getByRole("dialog", { name: "Chapters" })).toBeVisible();
+      await check("the Chapters sheet open");
+    },
+  },
+  {
+    name: "the Filters sheet open",
+    path: "/problems",
+    viewports: [PHONE],
+    visit: async (page, check) => {
+      await page.getByRole("button", { name: "Filters", exact: true }).click();
+      await expect(page.getByRole("dialog", { name: "Filters" })).toBeVisible();
+      await check("the Filters sheet open");
+    },
+  },
+  {
+    name: "a chapter due",
+    path: "/review",
+    viewports: VIEWPORTS,
+    seed: () => {
+      const day = 86_400_000;
+      localStorage.setItem(
+        "jsnotes:progress",
+        JSON.stringify({ chapters: { closures: { at: Date.now() - 5 * day, reviews: 0 } }, exercises: {} })
+      );
+    },
+    visit: async (page, check) => {
+      await expect(page.getByRole("heading", { level: 1 })).toContainText("1 chapter");
+      await expect(page.getByRole("heading", { name: "Due now" })).toBeVisible();
+      await check("a chapter due");
+    },
+  },
+  {
+    name: "a chapter marked read",
+    path: "/path?topic=js&level=beginner",
+    viewports: VIEWPORTS,
+    seed: () => {
+      localStorage.setItem(
+        "jsnotes:progress",
+        JSON.stringify({ chapters: { "setup-mental-model": { at: Date.now(), reviews: 0 } }, exercises: {} })
+      );
+    },
+    visit: async (page, check) => {
+      await expect(page.getByRole("checkbox", { name: "mark as read", checked: true }).first()).toBeVisible();
+      await check("a chapter marked read");
+    },
+  },
+  {
+    name: "a year of activity",
+    path: "/progress",
+    viewports: VIEWPORTS,
+    seed: () => {
+      const day = 86_400_000;
+      const log: Record<string, number> = {};
+      for (let ago = 0; ago < 300; ago += 3) {
+        const date = new Date(Date.now() - ago * day);
+        const key = [date.getFullYear(), date.getMonth() + 1, date.getDate()]
+          .map((part) => String(part).padStart(2, "0"))
+          .join("-");
+        log[key] = (ago % 5) * 2 + 1;
+      }
+      localStorage.setItem("jsnotes:activity", JSON.stringify(log));
+      localStorage.setItem(
+        "jsnotes:progress",
+        JSON.stringify({ chapters: { closures: { at: Date.now() - 2 * day, reviews: 1 } }, exercises: {} })
+      );
+    },
+    visit: async (page, check) => {
+      await expect(page.getByRole("heading", { name: "The last year" })).toBeVisible();
+      await expect(page.locator("[data-l='4']").first()).toBeAttached();
+      await check("a year of activity");
+    },
+  },
+  {
+    name: "two saved mock sessions",
+    path: "/mock",
+    viewports: VIEWPORTS,
+    seed: () => {
+      const now = Date.now();
+      const session = (daysAgo: number, javascript: number, design: number) => ({
+        id: `h${daysAgo}`,
+        mode: "loop",
+        config: { role: "fullstack", seniority: "mid", company: "product", intensity: "quick" },
+        startedAt: now - daysAgo * 86_400_000 - 3e6,
+        finishedAt: now - daysAgo * 86_400_000,
+        stages: [
+          { stage: "javascript", core: false, scores: [javascript] },
+          { stage: "design", core: false, scores: [design] },
+        ],
+        verdict: "lean-hire",
+        headline: "",
+        level: "at",
+        score: 0.6,
+        questions: 4,
+        timedOut: 0,
+        skipped: 0,
+      });
+      localStorage.setItem("groundwork:mock:history", JSON.stringify([session(1, 0.6, 0.3), session(0, 0.8, 0.4)]));
+    },
+    visit: async (page, check) => {
+      await expect(page.getByRole("heading", { name: "Round by round, last 2 sessions" })).toBeVisible();
+      await check("two saved mock sessions");
+    },
+  },
+  {
+    name: "a system design mock round",
+    path: "/mock",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page.getByRole("tab", { name: "Single round" }).click();
+      await page.getByRole("button", { name: /^System design/ }).click();
+      await page.getByRole("group", { name: "How many questions" }).getByRole("button", { name: /^3/ }).click();
+      await page.getByRole("button", { name: "Start System design" }).click();
 
-    const results = await new AxeBuilder({ page })
-      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
-      .disableRules(["scrollable-region-focusable"])
-      .analyze();
+      const walkIn = page.getByRole("button", { name: "Walk in" });
+      await walkIn.waitFor();
+      await check("the stage brief");
+      await walkIn.click();
 
-    const summary = results.violations.map(
-      (v) => `[${v.impact}] ${v.id}: ${v.help}\n    ${v.nodes[0]?.html.slice(0, 140)}`
-    );
-    expect(summary, `${path} has accessibility violations`).toEqual([]);
-  });
+      for (let question = 0; question < 3; question++) {
+        const answered = page.getByRole("button", { name: "I've answered" });
+        await answered.waitFor();
+        if (question === 0) await check("a question");
+        await answered.click();
+        const push = page.getByRole("button", { name: "Answered — show me" });
+        const rubric = page.getByText("Mark it honestly");
+        await expect(push.or(rubric)).toBeVisible();
+        if (await push.isVisible()) {
+          if (question === 0) await check("a follow-up");
+          await push.click();
+        }
+        await expect(rubric).toBeVisible();
+        if (question === 0) await check("the review and rubric");
+        for (let line = 0; line < 5; line++) await page.keyboard.press(line % 2 ? "2" : "1");
+        await page.getByRole("button", { name: "Next question" }).click();
+      }
+
+      await expect(page.getByText("Round debrief")).toBeVisible();
+      await check("the debrief");
+    },
+  },
+];
+
+const viewportName = ({ width, height }: Viewport) => `${width}×${height}`;
+
+function wearTheme(page: Page, theme: ThemeValue) {
+  return page.evaluate((value) => {
+    localStorage.setItem("jsnotes:theme", JSON.stringify(value));
+    document.documentElement.setAttribute("data-theme", value);
+  }, theme);
 }
 
-test("the mock interview room and debrief have no accessibility violations", async ({ page }) => {
-  const check = async (where: string) => {
-    const results = await new AxeBuilder({ page })
-      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
-      .disableRules(["scrollable-region-focusable"])
-      .analyze();
-    const summary = results.violations.map(
-      (v) => `[${v.impact}] ${v.id}: ${v.help}\n    ${v.nodes[0]?.html.slice(0, 140)}`
-    );
-    expect(summary, `${where} has accessibility violations`).toEqual([]);
-  };
+function describeViolation(where: string, violation: Violation): string {
+  const nodes = violation.nodes.slice(0, 3).map((node) => {
+    const detail = [...node.any, ...node.all, ...node.none].find((check) => check.message)?.message ?? "";
+    return `      ${node.target.join(" ")} ${detail}\n        ${node.html.slice(0, 160)}`;
+  });
+  const more = violation.nodes.length > 3 ? [`      and ${violation.nodes.length - 3} more`] : [];
+  return [`${where}: [${violation.impact}] ${violation.id}, ${violation.help}`, ...nodes, ...more].join("\n");
+}
 
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/mock", { waitUntil: "networkidle" });
-  await page.getByRole("tab", { name: "Single round" }).click();
-  await page.getByRole("button", { name: /^System design/ }).click();
-  await page.getByRole("group", { name: "How many questions" }).getByRole("button", { name: /^3/ }).click();
-  await page.getByRole("button", { name: "Start System design" }).click();
-
-  await page.getByRole("button", { name: "Walk in" }).waitFor();
-  await check("the stage brief");
-  await page.getByRole("button", { name: "Walk in" }).click();
-
-  for (let i = 0; i < 3; i++) {
-    await page.getByRole("button", { name: "I've answered" }).waitFor();
-    if (i === 0) await check("a question");
-    await page.getByRole("button", { name: "I've answered" }).click();
-    const push = page.getByRole("button", { name: "Answered — show me" });
-    const rubric = page.getByText("Mark it honestly");
-    await expect(push.or(rubric)).toBeVisible();
-    if (await push.isVisible()) {
-      if (i === 0) await check("a follow-up");
-      await push.click();
-    }
-    await expect(rubric).toBeVisible();
-    if (i === 0) await check("the review and rubric");
-    for (let k = 0; k < 5; k++) await page.keyboard.press(k % 2 ? "2" : "1");
-    await page.getByRole("button", { name: "Next question" }).click();
+async function expectNoViolationsInAnyTheme(page: Page, where: string, viewport: Viewport) {
+  const failures: string[] = [];
+  for (const theme of THEMES) {
+    await wearTheme(page, theme);
+    const { violations } = await new AxeBuilder({ page }).withTags(WCAG_A_AND_AA).analyze();
+    const place = `${where}, ${theme} theme, ${viewportName(viewport)}`;
+    failures.push(...violations.map((violation) => describeViolation(place, violation)));
   }
+  expect(failures, `${where} at ${viewportName(viewport)} has accessibility violations`).toEqual([]);
+}
 
-  await expect(page.getByText("Round debrief")).toBeVisible();
-  await check("the debrief");
-});
+async function open(page: Page, path: string) {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(path, { waitUntil: "networkidle" });
+  await expect(page.locator("main").first()).toBeVisible();
+}
+
+for (const viewport of VIEWPORTS) {
+  test.describe(`at ${viewportName(viewport)}`, () => {
+    test.use({ viewport });
+    test.describe.configure({ timeout: 180_000 });
+
+    for (const path of PAGES) {
+      test(`${path} has no accessibility violations in any theme`, async ({ page }) => {
+        await open(page, path);
+        await expectNoViolationsInAnyTheme(page, path, viewport);
+      });
+    }
+
+    for (const state of STATES.filter(({ viewports }) => viewports.includes(viewport))) {
+      test(`${state.path} with ${state.name} has no accessibility violations in any theme`, async ({ page }) => {
+        if (state.seed) await page.addInitScript(state.seed);
+        await open(page, state.path);
+        await state.visit(page, (stage) => expectNoViolationsInAnyTheme(page, `${state.path}, ${stage}`, viewport));
+      });
+    }
+  });
+}

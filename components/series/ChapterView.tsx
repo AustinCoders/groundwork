@@ -8,6 +8,7 @@ import { FocusTrap } from "@/components/FocusTrap";
 import { SiteDrawer } from "@/components/SiteDrawer";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { activateScripts, enhanceCodeBlocks, enhanceTables, enhanceTryBlocks } from "@/components/reader/enhancements";
+import { makeScrollRegions } from "@/components/reader/scrollRegions";
 import { setupNarration } from "@/components/reader/narration";
 import { progress } from "@/lib/storage";
 import { useMounted, useProgressValue } from "@/lib/hooks";
@@ -126,7 +127,12 @@ export function ChapterView({
     enhanceCodeBlocks(el);
     enhanceTables(el);
     enhanceTryBlocks(el);
-    return setupNarration(el.parentElement ?? el);
+    const stopNarration = setupNarration(el.parentElement ?? el);
+    const stopScrollRegions = makeScrollRegions(el);
+    return () => {
+      stopNarration();
+      stopScrollRegions();
+    };
   }, [chapter.id]);
 
   useEffect(() => {

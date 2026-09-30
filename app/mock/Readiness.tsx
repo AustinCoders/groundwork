@@ -1,6 +1,8 @@
 "use client";
 
+import { useRef } from "react";
 import { COMPETENCY_LABEL } from "@/app/mock/Lobby";
+import { useScrollRegions } from "@/components/reader/scrollRegions";
 import { useClientValue } from "@/lib/hooks";
 import { BAND_LABEL, bandFor, heatmap, nextUp, readiness, streak, trends, type TrendPoint } from "@/lib/mock/readiness";
 import type { HistoryEntry } from "@/lib/mock/storage";
@@ -61,6 +63,8 @@ export function ReadinessBoard({
   onPractise: (stage: StageId) => void;
 }) {
   const now = useClientValue(todayNoon, 0);
+  const board = useRef<HTMLElement>(null);
+  useScrollRegions(board, `${now}:${history.length}`);
   if (!now || !history.length) return null;
   const ready = readiness(history, now);
   if (!ready) return null;
@@ -70,7 +74,7 @@ export function ReadinessBoard({
   const next = nextUp(history, now, available);
 
   return (
-    <section className={styles.panel} aria-labelledby="mock-readiness">
+    <section ref={board} className={styles.panel} aria-labelledby="mock-readiness">
       <h2 id="mock-readiness">How ready you are</h2>
       <div className={styles.readyTop}>
         <Gauge score={ready.score} band={BAND_LABEL[ready.band]} />
@@ -81,7 +85,7 @@ export function ReadinessBoard({
           <span className={styles.recordLabel}>
             {days.current === 1 ? "day" : "days"} in a row · best {days.best}
           </span>
-          <span className={styles.streakDots} aria-label="Days with a mock in the last two weeks">
+          <span className={styles.streakDots} role="img" aria-label="Days with a mock in the last two weeks">
             {days.lastFortnight.map((on, i) => (
               <span key={i} className={styles.streakDot} data-on={on || undefined} />
             ))}

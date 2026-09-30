@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { chapters, exercises, topics } from "@/lib/content";
 import { INTERVIEW_TOTAL_QUESTIONS, INTERVIEW_TOTAL_ROUNDS } from "@/lib/interviewContent";
+import { THEME_ITEMS } from "@/lib/storage";
 import { siteStats } from "@/lib/topicStats";
 import { hasColourLiteral } from "./colour-literal";
 
@@ -121,10 +122,33 @@ const cssModules = filesUnder(["app", "components"])
 
 const globalsAbout = toTheHundred(lineCount(read("app/globals.css")));
 
+const listing = (items: string[]) =>
+  items.length > 1 ? `${items.slice(0, -1).join(", ")} and ${items.at(-1)}` : (items[0] ?? "");
+
 const a11ySpec = read("e2e/a11y.spec.ts");
 const a11yPages = [...(/const PAGES = \[([\s\S]*?)\];/.exec(a11ySpec)?.[1] ?? "").matchAll(/"\//g)].length;
+const a11yViewports = (/const VIEWPORTS = \[([\w, ]*)\];/.exec(a11ySpec)?.[1] ?? "")
+  .split(",")
+  .map((name) => name.trim())
+  .filter(Boolean);
+const a11yWidths = a11yViewports.map(
+  (name) => new RegExp(`const ${name} = \\{ width: (\\d+), height: \\d+ \\};`).exec(a11ySpec)?.[1] ?? "?"
+);
+const a11yStatesBlock = /^const STATES: State\[\] = \[\n([\s\S]*?)^\];$/m.exec(a11ySpec)?.[1] ?? "";
+const a11yStateEntries = a11yStatesBlock.split(/^ {4}name: /m).slice(1);
+const a11yStateViewports = a11yStateEntries.map((entry) => {
+  const listed = /^ {4}viewports: (.+),$/m.exec(entry)?.[1] ?? "";
+  if (listed === "VIEWPORTS") return a11yViewports;
+  return (/^\[(.*)\]$/.exec(listed)?.[1] ?? "")
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
+});
+const a11yStates = a11yStateEntries.length;
+const a11ySeededStates = a11yStateEntries.filter((entry) => /^ {4}seed: /m.test(entry)).length;
 const a11yTests =
-  (a11ySpec.match(/^ {2}test\(/gm) ?? []).length * a11yPages + (a11ySpec.match(/^test\(/gm) ?? []).length;
+  a11yPages * a11yViewports.length + a11yStateViewports.reduce((total, viewports) => total + viewports.length, 0);
+const a11yThemes = THEME_ITEMS.length;
 
 const smokeSpec = read("e2e/smoke.spec.ts");
 const smokePages = [...(/const PAGES = \[([\s\S]*?)\];/.exec(smokeSpec)?.[1] ?? "").matchAll(/path:/g)].length;
@@ -179,9 +203,19 @@ const flattenedCases: { file: string; claim: string; about: string }[] = [
     about: "the pages axe checks",
   },
   {
+    file: "content/architecture/arch-design-system.ts",
+    claim: `against ${a11yStates} states that a plain page load does not show: ${a11yStates - a11ySeededStates} that open with a click, and ${a11ySeededStates} seeded in <code>localStorage</code>`,
+    about: "the states axe checks",
+  },
+  {
+    file: "content/architecture/arch-design-system.ts",
+    claim: `Each page and state is checked in all ${a11yThemes} themes, at ${listing(a11yWidths)} pixels wide`,
+    about: "the themes and widths axe checks",
+  },
+  {
     file: "content/architecture/arch-testing.ts",
-    claim: `<tr><td><code>a11y.spec.ts</code></td><td>${a11yTests}</td><td>axe with the WCAG 2.0 and 2.1 A and AA tags over ${a11yPages} pages`,
-    about: "the accessibility spec's tests and pages",
+    claim: `<tr><td><code>a11y.spec.ts</code></td><td>${a11yTests}</td><td>axe with the WCAG 2.0 and 2.1 A and AA tags, and no rule disabled, over ${a11yPages} pages and ${a11yStates} states, in all ${a11yThemes} themes at ${listing(a11yWidths)} pixels wide`,
+    about: "the accessibility spec's tests, pages, states, themes and widths",
   },
   {
     file: "content/architecture/arch-testing.ts",
@@ -210,6 +244,11 @@ const flattenedCases: { file: string; claim: string; about: string }[] = [
     claim: `unit tests, ${browserTests} browser tests`,
     about: "the browser total in the subtitle",
   },
+  {
+    file: "content/architecture/arch-health.ts",
+    claim: `<tr><td>Playwright, ${specFiles.length} specs</td><td><span class="chip tone-yes">${browserTests} of ${browserTests}</span></td></tr>`,
+    about: "the Playwright row",
+  },
 ];
 
 const CHART =
@@ -236,6 +275,20 @@ describe("what the site says about its stylesheets and checks", () => {
   it("finds what it counts", () => {
     expect(cssModules.length).toBeGreaterThan(0);
     expect(a11yPages).toBeGreaterThan(0);
+    expect(a11yViewports.length, "the a11y spec declares its viewports").toBeGreaterThan(1);
+    expect(a11yWidths, "each a11y viewport has a width").not.toContain("?");
+    expect(a11yStates, "the a11y spec declares its states").toBeGreaterThan(0);
+    expect(a11ySeededStates, "the a11y spec seeds some states").toBeGreaterThan(0);
+    expect(a11yStatesBlock.match(/^ {2}\{$/gm) ?? [], "every STATES entry starts with its name").toHaveLength(
+      a11yStates
+    );
+    for (const [index, viewports] of a11yStateViewports.entries()) {
+      expect(viewports.length, `STATES entry ${index + 1} lists the viewports it runs at`).toBeGreaterThan(0);
+      for (const viewport of viewports)
+        expect(a11yViewports, `STATES entry ${index + 1} runs at a declared viewport`).toContain(viewport);
+    }
+    expect(a11ySpec, "the a11y spec runs axe in every theme").toContain("for (const theme of THEMES)");
+    expect(a11ySpec, "the a11y spec disables no rule").not.toContain("disableRules");
     expect(a11yTests).toBeGreaterThan(a11yPages);
     expect(smokePages).toBeGreaterThan(0);
     expect(smokeViewports).toBeGreaterThan(0);

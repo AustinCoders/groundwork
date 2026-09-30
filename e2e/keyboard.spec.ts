@@ -34,6 +34,12 @@ async function expectTabToLoopWithin(page: Page, region: Locator) {
   throw new Error("Tab never came back round to the first stop");
 }
 
+async function expectScrollRegion(page: Page, name: string) {
+  const region = page.getByRole("region", { name, exact: true });
+  await expect(region).toHaveAttribute("tabindex", "0");
+  expect(await region.evaluate((el) => el.scrollWidth > el.clientWidth), `${name} scrolls at 390`).toBe(true);
+}
+
 test("the closed sidebar stays out of the tab order, and comes back above the breakpoint", async ({ page }) => {
   await page.goto("/notes");
   const sidebar = page.locator("#site-sidenav");
@@ -94,8 +100,12 @@ test("the site menu holds focus, and Escape with an empty search gives it back t
   await expect(menuButton).toBeFocused();
 });
 
-test("the Chapters sheet holds focus, and Escape gives it back to the Chapters button", async ({ page }) => {
+test("the Chapters sheet holds focus and Escape gives it back, and wide tables and code take focus by name", async ({
+  page,
+}) => {
   await page.goto("/git/merge", { waitUntil: "networkidle" });
+  await expectScrollRegion(page, "Table: Choosing how the result is recorded");
+  await expectScrollRegion(page, "Code: Three-way merge and the merge base");
   const button = page.getByRole("button", { name: "Chapters", exact: true });
   await expect(button).toHaveAttribute("aria-controls", "chapters-sheet");
 
@@ -108,6 +118,10 @@ test("the Chapters sheet holds focus, and Escape gives it back to the Chapters b
   await page.keyboard.press("Escape");
   await expect(sheet).toHaveCount(0);
   await expect(button).toBeFocused();
+
+  await page.goto("/interview/r7", { waitUntil: "networkidle" });
+  await expectScrollRegion(page, "Table: The eight patterns that cover most of what you will be asked");
+  await expectScrollRegion(page, "Code: longest substring without repeating characters");
 });
 
 test("the Filters sheet holds focus, and Escape gives it back to the Filters button", async ({ page }) => {

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PageFrame } from "@/components/frame/PageFrame";
+import { useScrollRegions } from "@/components/reader/scrollRegions";
 import { Confetti } from "@/components/practice/Confetti";
 import { BADGES, computeStats, earnedBadges, recentActivity, type Stats } from "@/lib/gamification";
 import { useConfidence } from "@/lib/interviewConfidence";
@@ -81,6 +82,7 @@ function useActivity() {
 }
 
 function Heatmap({ days }: { days: { day: string; count: number }[] }) {
+  const scroller = useRef<HTMLDivElement>(null);
   const { weeks, months, active, total } = useMemo(() => {
     if (!days.length) return { weeks: [], months: [], active: 0, total: 0 };
     const pad = new Date(days[0].day).getDay();
@@ -106,10 +108,11 @@ function Heatmap({ days }: { days: { day: string; count: number }[] }) {
     };
   }, [days]);
   const cols = { gridTemplateColumns: `repeat(${weeks.length || 52}, 1fr)` };
+  useScrollRegions(scroller, weeks);
 
   return (
     <div className={styles.heat}>
-      <div className={styles.heatScroll}>
+      <div ref={scroller} className={styles.heatScroll} data-scroll-region="Activity over the last year">
         <div className={styles.heatMonths} style={cols}>
           {months.map((m) => (
             <span key={`${m.at}-${m.label}`} style={{ gridColumnStart: m.at + 1 }}>

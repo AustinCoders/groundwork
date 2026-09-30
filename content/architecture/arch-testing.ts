@@ -8,7 +8,7 @@ export const archTesting: Chapter = {
   levels: ["advanced"],
   practice: [],
   ready: true,
-  subtitle: "301 unit tests, 104 browser tests, and one test that checks what these pages say about the site.",
+  subtitle: "307 unit tests, 149 browser tests, and one test that checks what these pages say about the site.",
   body: `<h3>The shape of it</h3>
 <p>
   There are three layers of checking, each slower and more thorough than the one before:
@@ -23,7 +23,7 @@ export const archTesting: Chapter = {
   <code>main</code> and on every pull request. The latest run on <code>main</code> passed.
 </p>
 
-<h3>Unit tests: 19 files, 301 tests</h3>
+<h3>Unit tests: 19 files, 307 tests</h3>
 <p>
   <code>vitest.config.ts</code> collects <code>tests/**/*.test.ts</code> and runs them in a Node
   environment with no DOM. No React component is rendered in a unit test. That is still a decision,
@@ -34,8 +34,8 @@ export const archTesting: Chapter = {
 <thead><tr><th>Area</th><th>Files</th><th>Tests</th><th>What they hold in place</th></tr></thead>
 <tbody>
 <tr><td>Mock interview</td><td><code>mock-engine</code>, <code>mock-session</code>, <code>mock-readiness</code>, <code>mock-guide</code>, <code>mock</code></td><td>74</td><td>How the interviewer adapts, how a session moves through its stages, the readiness score, and the coaching</td></tr>
-<tr><td>Content and SEO</td><td><code>content</code>, <code>seo</code>, <code>claims</code>, <code>search-index</code>, <code>privacy</code></td><td>71</td><td>Chapter integrity, the sitemap and robots rules, the site's claims about itself, the search budget, and the privacy page's list of services</td></tr>
-<tr><td>Playground</td><td><code>polyglot</code>, <code>debug-trace</code>, <code>wasm-assets</code>, <code>contrast</code></td><td>34</td><td>Grading across languages, the step-through tracer, pinned runtime versions, and editor contrast in every theme</td></tr>
+<tr><td>Content and SEO</td><td><code>content</code>, <code>seo</code>, <code>claims</code>, <code>search-index</code>, <code>privacy</code></td><td>74</td><td>Chapter integrity, the sitemap and robots rules, the site's claims about itself, the search budget, and the privacy page's list of services</td></tr>
+<tr><td>Playground</td><td><code>polyglot</code>, <code>debug-trace</code>, <code>wasm-assets</code>, <code>contrast</code></td><td>37</td><td>Grading across languages, the step-through tracer, pinned runtime versions, and the contrast of the editor, text and role colours in every theme</td></tr>
 <tr><td>Whiteboard</td><td><code>whiteboard-model</code></td><td>17</td><td>Geometry, history and <code>sanitizeEls</code></td></tr>
 <tr><td>Themes</td><td><code>theme-roles</code>, <code>theme-contract</code></td><td>95</td><td>Role tokens instead of fixed colours in every stylesheet, and a complete block for every theme</td></tr>
 <tr><td>Tooling</td><td><code>comments</code>, <code>error-tracking</code></td><td>10</td><td>The comment checker itself, and Sentry's options and CSP origin</td></tr>
@@ -76,7 +76,7 @@ export const archTesting: Chapter = {
   and then drifted.
 </p>
 
-<h3>Browser tests: 4 specs, 104 tests</h3>
+<h3>Browser tests: 4 specs, 149 tests</h3>
 <p>
   <code>playwright.config.ts</code> starts <code>npm run start</code> on port 3100. That is the
   production build, not the dev server, because dev mode double-invokes effects and serves
@@ -87,15 +87,16 @@ export const archTesting: Chapter = {
 <thead><tr><th>Spec</th><th>Tests</th><th>Covers</th></tr></thead>
 <tbody>
 <tr><td><code>smoke.spec.ts</code></td><td>68</td><td>17 routes load with no console error and no failed request; the playground fits at 1024, 768 and 390 pixels wide; 48 flows (narration, search, share links, stdin, the debugger, Lua and Python grading, the mock interview from lobby to debrief, and the problems page filters)</td></tr>
-<tr><td><code>a11y.spec.ts</code></td><td>22</td><td>axe with the WCAG 2.0 and 2.1 A and AA tags over 21 pages, plus a mock round checked at up to five stages, from the brief to the debrief</td></tr>
+<tr><td><code>a11y.spec.ts</code></td><td>67</td><td>axe with the WCAG 2.0 and 2.1 A and AA tags, and no rule disabled, over 26 pages and 9 states, in all 9 themes at 1440 and 390 pixels wide. The states are the site menu open, at both widths; the sidebar, the Chapters sheet and the Filters sheet open, at 390 only; a mock round checked at up to five stages; and four seeded from saved progress: a chapter due for review, a chapter read on a path, a year of activity and two saved mock sessions</td></tr>
 <tr><td><code>whiteboard.spec.ts</code></td><td>6</td><td>Drawing, arrows that follow their shapes, undo, reload, PNG export, share links, templates, locking, grouping</td></tr>
-<tr><td><code>keyboard.spec.ts</code></td><td>8</td><td>At 390 pixels wide: the closed sidebar stays out of the tab order; the open sidebar, the site menu, the Chapters sheet and the Filters sheet hold focus and hand it back on Escape; the question drill and the mock brief leave Enter to a focused control; the playground's skip link lands in the editor</td></tr>
+<tr><td><code>keyboard.spec.ts</code></td><td>8</td><td>At 390 pixels wide: the closed sidebar stays out of the tab order; the open sidebar, the site menu, the Chapters sheet and the Filters sheet hold focus and hand it back on Escape; a wide table and a wide code block in a git chapter and in the interview book take focus and have names; the question drill and the mock brief leave Enter to a focused control; the playground's skip link lands in the editor</td></tr>
 </tbody>
 </table></div>
 <p>
   The smoke spec ignores requests to <code>/_vercel/</code>. Those scripts exist only on Vercel's
-  edge, so they return 404 locally every time. The accessibility spec disables one axe rule,
-  <code>scrollable-region-focusable</code>, for every page.
+  edge, so they return 404 locally every time. The accessibility spec loads each page or state
+  once per width and then switches the theme in place, the way the theme picker does, so one page
+  load covers all nine themes.
 </p>
 
 <h3>Before code leaves the machine</h3>

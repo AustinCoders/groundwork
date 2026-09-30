@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { COMPETENCY_LABEL } from "@/app/mock/Lobby";
+import { useScrollRegions } from "@/components/reader/scrollRegions";
 import {
   competencyProfile,
   decideLoop,
@@ -92,6 +93,9 @@ export function Scorecard({
     .sort((a, b) => a[1] - b[1])
     .slice(0, 2);
 
+  const rounds = useRef<HTMLElement>(null);
+  useScrollRegions(rounds, session);
+
   async function copyDebrief() {
     try {
       await navigator.clipboard.writeText(debriefText(session, title));
@@ -154,7 +158,7 @@ export function Scorecard({
       </section>
 
       <div className={styles.split}>
-        <section className={styles.panel} aria-labelledby="rounds-h" data-fx="left">
+        <section ref={rounds} className={styles.panel} aria-labelledby="rounds-h" data-fx="left">
           <h2 id="rounds-h">Round by round</h2>
           <div className="table-scroll">
             <table className={styles.stageTable}>

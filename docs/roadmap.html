@@ -1602,10 +1602,10 @@
             "effort": "1 day",
             "area": "A11y",
             "source": "Audit 28 Sep · A9",
-            "status": "todo",
+            "status": "done",
             "link": "",
-            "notes": "The theme roles fixed the Kraft and Forest buttons and the mock's “Lean no” stamp. The 30 Sep sweep ran axe on 17 pages in all nine themes, with and without saved progress, and fixed the three contrast failures it found: Kraft's grey eyebrow on the mock lobby, Blueprint's inline code on the level page, and the “mark as read” label on a read chapter in /path in Kraft, Blueprint, Forest and Rose. Axe in every theme is still open: e2e/a11y.spec.ts runs the light theme only, and nothing runs on a phone.",
-            "doneOn": null
+            "notes": "e2e/a11y.spec.ts now runs axe on 26 pages and 9 states (menus and sheets open, a chapter due, a read chapter, a year of activity, saved mock sessions) in all nine themes at 1440 and 390 pixels wide, with no rule turned off. Code blocks and tables take focus and a name while they scroll. The run moved five theme reds, the Kraft and Blueprint greys and Kraft's caution to 4.5:1 or better, and tests/contrast.test.ts guards every text colour, including text on the warning and inline-code tints.",
+            "doneOn": "2026-09-30"
           },
           {
             "id": "t49",

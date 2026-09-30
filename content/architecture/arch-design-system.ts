@@ -310,32 +310,53 @@ export const archDesignSystem: Chapter = {
 
 <h3>The checks</h3>
 <p>
-  <code>e2e/a11y.spec.ts</code> runs axe through <code>@axe-core/playwright</code> against 21
-  pages, including the home page, a chapter, the playground, the problems list, the mock lobby, the
-  whiteboard and this architecture section. It checks the WCAG 2.0 and 2.1 A and AA tags and fails
-  on any violation. One more test walks a system design round in the mock interview and runs axe
-  on the brief, a question, a follow-up, the rubric and the debrief, because those screens only
-  exist after clicking through. The one rule disabled is
-  <code>scrollable-region-focusable</code>.
+  <code>e2e/a11y.spec.ts</code> runs axe through <code>@axe-core/playwright</code> against 26
+  pages, including the home page, five chapters, the playground, the problems list, the mock
+  lobby, the whiteboard, the 404 page and this architecture section. One of them,
+  <code>/level/typescript</code>, is the level picker of a topic that is only outlined; it stands in
+  for <code>/soon</code>, which redirects there while every topic is marked ready. It also runs
+  against 9 states that a plain page load does not show: 5 that open with a click, and 4 seeded in
+  <code>localStorage</code>. The clicks open the site menu, the reader's sidebar, the Chapters and
+  Filters sheets, and a system design round in the mock interview, checked at the brief, a
+  question, a follow-up, the rubric and the debrief. The seeds give a chapter due for review, a
+  chapter marked read on a path, a year of activity on the progress page, and two saved mock
+  sessions. Each page and state is
+  checked in all 9 themes, at 1440 and 390 pixels wide, except the sidebar and the two sheets, which
+  only open on a narrow screen and are checked at 390. One helper sets the theme the way the theme
+  picker does, runs axe with the WCAG 2.0 and 2.1 A and AA tags, and fails on any violation, naming
+  the page, the state, the theme and the width. No rule is disabled. A table, a code block, a query
+  result or the progress heatmap that is wider than its box takes focus and gets a name while it
+  scrolls, and drops both when its box grows wide enough to show it whole.
 </p>
 <p>
-  Axe checks the colours a page actually renders, and it only sees the default theme.
-  <code>tests/contrast.test.ts</code> covers the rest without a browser. It parses
-  <code>globals.css</code>, finds every block that defines the editor's colours, and for each of
-  the five syntax colours (keyword, string, number, operator, comment) computes the WCAG contrast
-  ratio against the editor background and against the active line, which is
-  <code>--line-soft</code> composited over it. Across nine themes that is 90 checks, and each must
-  reach 4.5:1. A new theme that forgets a token, or picks a comment grey that is too faint, fails
-  in Vitest before anyone sees it.
+  Axe cannot settle the contrast of most text on the reading pages. The ruled paper behind it is a
+  gradient or a pseudo-element, so axe reports that text as incomplete rather than as a pass or a
+  failure. The token pairs and the tinted-box pairs in <code>tests/contrast.test.ts</code> guard
+  those colours instead.
 </p>
 <p>
-  The same file checks the role colours in every theme: <code>--primary</code> and the four states
-  against the sheet, the four states again against the editor's background
-  <code>--sheet-2</code>, <code>--on-primary</code> against <code>--primary</code>, the ink against
-  <code>--mark</code>, and <code>--ink-soft</code> against <code>--paper</code>. That is 108 more
-  checks at 4.5:1, and a theme block that leaves out a role fails with the theme's selector and
-  the token's name. The six categorical colours get 54 checks
-  at 3:1 against the sheet.
+  Axe only sees the pages and states the spec opens. <code>tests/contrast.test.ts</code> checks the
+  tokens themselves, without a browser. It parses <code>globals.css</code>, finds every block that
+  defines the editor's colours, and for each of the five syntax colours (keyword, string, number,
+  operator, comment) computes the WCAG contrast ratio against the editor background and against the
+  active line, which is <code>--line-soft</code> composited over it. Across nine themes that is 90
+  checks, and each must reach 4.5:1. A new theme that forgets a token, or picks a comment grey that
+  is too faint, fails in Vitest before anyone sees it.
+</p>
+<p>
+  The same file checks the text and role colours in every theme. The ink, the soft ink and the
+  pencil grey, then <code>--primary</code> and the four states, are each checked against the paper,
+  the sheet and the editor's background <code>--sheet-2</code>. <code>--on-primary</code> is checked
+  against <code>--primary</code> and the ink against <code>--mark</code>. That is 234 more checks at
+  4.5:1, and a theme block that leaves out a role fails with the theme's selector and the token's
+  name. The six categorical colours get 54 checks at 3:1 against the sheet.
+</p>
+<p>
+  Some text sits on a tint that is mixed over the page, so the test mixes it the same way. A
+  warning's red is checked on <code>--warn-bg</code> over the paper and over the sheet, and
+  <code>--warn-bg</code> must be a tint of that theme's own red. The interview book's green is
+  checked on <code>--dg-box-green</code>, and the ink, the soft ink and the pencil grey on the
+  inline-code tint over all three surfaces. That is 108 more checks at 4.5:1.
 </p>
 
 <div class="bx is-ref">
@@ -356,9 +377,10 @@ export const archDesignSystem: Chapter = {
   <code>color-scheme</code>. It names the list entry that has no block, the block that has no
   entry, a value listed twice and a label that is not an icon and a name. It fails when Paper
   derives a colour that belongs in the shared block, or when a rule reads <code>--scrim</code> or
-  an <code>--ide-*</code> alias that nothing declares. <code>tests/contrast.test.ts</code> fails a role, syntax or categorical colour
+  an <code>--ide-*</code> alias that nothing declares. <code>tests/contrast.test.ts</code> fails a text, role, syntax or categorical colour
   below its ratio. The e2e accent tests iterate <code>THEME_ITEMS</code> and read each theme's
-  expected colours from <code>globals.css</code>, so they check the new theme without a change.
+  expected colours from <code>globals.css</code>, and the accessibility spec runs axe in every theme
+  that list names, so they check the new theme without a change.
   What the approach still costs is 56 restated values per theme, chosen by hand. What it buys is
   that a theme switch is one attribute write and nothing in React.
 </p>

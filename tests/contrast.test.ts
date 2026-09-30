@@ -57,7 +57,7 @@ function blocks(): { selector: string; body: string }[] {
 }
 
 function declaration(body: string, name: string): string | null {
-  const m = new RegExp(`${name}:\\s*([^;]+);`).exec(body);
+  const m = new RegExp(`(?<![\\w-])${name}:\\s*([^;]+);`).exec(body);
   return m ? m[1].trim() : null;
 }
 
@@ -120,16 +120,41 @@ describe("the theme palette", () => {
   });
 });
 
+const SURFACES = ["--paper", "--sheet", "--sheet-2"] as const;
+
+function onEverySurface(foregrounds: readonly string[]): [foreground: string, background: string][] {
+  return foregrounds.flatMap((foreground) => SURFACES.map((surface): [string, string] => [foreground, surface]));
+}
+
+function expectReadable(theme: { selector: string; body: string }, [foreground, background]: [string, string]) {
+  const fg = declaration(theme.body, foreground);
+  const bg = declaration(theme.body, background);
+  expect(fg, `${theme.selector} is missing ${foreground}`).toBeTruthy();
+  expect(bg, `${theme.selector} is missing ${background}`).toBeTruthy();
+  const ratio = contrast(hexToRgb(fg!), hexToRgb(bg!));
+  expect(
+    ratio,
+    `${theme.selector} ${foreground} (${fg}) is ${ratio.toFixed(2)}:1 against ${background} (${bg})`
+  ).toBeGreaterThanOrEqual(4.5);
+}
+
+describe("the text colours", () => {
+  const TEXT = ["--ink", "--ink-soft", "--pencil"] as const;
+  const withTheme = blocks().filter((b) => declaration(b.body, "--sheet") && declaration(b.body, "--ink"));
+
+  it("meet WCAG AA on the paper, the sheet and the editor in every theme", () => {
+    expect(withTheme.length).toBe(THEME_ITEMS.length);
+    for (const theme of withTheme) for (const pair of onEverySurface(TEXT)) expectReadable(theme, pair);
+  });
+});
+
 describe("the role colours", () => {
   const ROLES = ["--primary", "--on-primary", "--mark", "--success", "--danger", "--caution", "--info"] as const;
-  const ON_THE_SHEET = ["--primary", "--success", "--danger", "--caution", "--info"] as const;
-  const IN_THE_EDITOR = ["--success", "--danger", "--caution", "--info"] as const;
+  const TEXT_ROLES = ["--primary", "--success", "--danger", "--caution", "--info"] as const;
   const PAIRS: [foreground: string, background: string][] = [
-    ...ON_THE_SHEET.map((role): [string, string] => [role, "--sheet"]),
-    ...IN_THE_EDITOR.map((state): [string, string] => [state, "--sheet-2"]),
+    ...onEverySurface(TEXT_ROLES),
     ["--on-primary", "--primary"],
     ["--ink", "--mark"],
-    ["--ink-soft", "--paper"],
   ];
   const withTheme = blocks().filter((b) => declaration(b.body, "--sheet") && declaration(b.body, "--ink"));
 
@@ -141,17 +166,51 @@ describe("the role colours", () => {
   });
 
   it("meets WCAG AA against its pair in every theme", () => {
+    for (const theme of withTheme) for (const pair of PAIRS) expectReadable(theme, pair);
+  });
+});
+
+describe("text on the tinted boxes", () => {
+  const TINTED: { text: string; tint: string; surfaces: readonly string[]; box: string }[] = [
+    { text: "--red", tint: "--warn-bg", surfaces: ["--paper", "--sheet"], box: "a warning" },
+    { text: "--green", tint: "--dg-box-green", surfaces: ["--sheet"], box: "the interview book's prep box" },
+    ...["--ink", "--ink-soft", "--pencil"].map((text) => ({
+      text,
+      tint: "--code-inline-bg",
+      surfaces: SURFACES,
+      box: "inline code",
+    })),
+  ];
+  const withTheme = blocks().filter((b) => declaration(b.body, "--warn-bg") && declaration(b.body, "--ink"));
+
+  function colour(value: string): [number, number, number, number] {
+    return value.startsWith("#") ? [...hexToRgb(value), 1] : parseRgba(value);
+  }
+
+  it("tints each theme's warning with that theme's own red", () => {
+    expect(withTheme.length).toBe(THEME_ITEMS.length);
     for (const theme of withTheme) {
-      for (const [foreground, background] of PAIRS) {
-        const fg = declaration(theme.body, foreground);
-        const bg = declaration(theme.body, background);
-        expect(fg, `${theme.selector} is missing ${foreground}`).toBeTruthy();
-        expect(bg, `${theme.selector} is missing ${background}`).toBeTruthy();
-        const ratio = contrast(hexToRgb(fg!), hexToRgb(bg!));
-        expect(
-          ratio,
-          `${theme.selector} ${foreground} (${fg}) is ${ratio.toFixed(2)}:1 against ${background} (${bg})`
-        ).toBeGreaterThanOrEqual(4.5);
+      const red = hexToRgb(declaration(theme.body, "--red")!);
+      const tint = parseRgba(declaration(theme.body, "--warn-bg")!).slice(0, 3);
+      expect(tint, `${theme.selector} --warn-bg is not a tint of its --red`).toEqual(red);
+    }
+  });
+
+  it("keeps the text at WCAG AA on each tint, over every surface the box sits on, in every theme", () => {
+    for (const theme of withTheme) {
+      for (const { text, tint, surfaces, box } of TINTED) {
+        const fg = declaration(theme.body, text);
+        const tintValue = declaration(theme.body, tint);
+        expect(fg, `${theme.selector} is missing ${text}`).toBeTruthy();
+        expect(tintValue, `${theme.selector} is missing ${tint}`).toBeTruthy();
+        for (const surface of surfaces) {
+          const background = composite(colour(tintValue!), hexToRgb(declaration(theme.body, surface)!));
+          const ratio = contrast(hexToRgb(fg!), background);
+          expect(
+            ratio,
+            `${theme.selector} ${text} (${fg}) is ${ratio.toFixed(2)}:1 on ${box}, ${tint} over ${surface}`
+          ).toBeGreaterThanOrEqual(4.5);
+        }
       }
     }
   });

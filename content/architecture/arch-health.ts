@@ -15,9 +15,9 @@ export const archHealth: Chapter = {
 <thead><tr><th>Check</th><th>Result, latest CI run on <code>main</code></th></tr></thead>
 <tbody>
 <tr><td>TypeScript, ESLint, Prettier, cspell</td><td><span class="chip tone-yes">clean</span></td></tr>
-<tr><td>Vitest</td><td><span class="chip tone-yes">166 of 166</span></td></tr>
+<tr><td>Vitest</td><td><span class="chip tone-yes">307 of 307</span></td></tr>
 <tr><td>Build</td><td><span class="chip tone-yes">1,746 static pages</span></td></tr>
-<tr><td>Playwright, smoke and accessibility</td><td><span class="chip tone-yes">74 of 74</span></td></tr>
+<tr><td>Playwright, 4 specs</td><td><span class="chip tone-yes">149 of 149</span></td></tr>
 <tr><td>Lighthouse budgets, 3 URLs, 3 runs each</td><td><span class="chip tone-yes">pass</span></td></tr>
 <tr><td><code>TODO</code>, <code>FIXME</code>, <code>HACK</code> in source</td><td><span class="chip tone-yes">0</span></td></tr>
 <tr><td><code>npm audit</code>, production dependencies</td><td><span class="chip tone-bad">1 critical, 1 high</span></td></tr>
@@ -128,7 +128,6 @@ export const archHealth: Chapter = {
 <h3>3. Duplication</h3>
 <ul>
 <li><strong>Three runners, one pattern.</strong> <code>lib/runner.ts</code>, <code>lib/pythonRunner.ts</code> and <code>lib/scriptRunner.ts</code> each keep their own module-level worker, their own <code>getWorker</code> and <code>discardWorker</code>, and their own timeout-and-terminate logic. The default timeouts disagree: 5 seconds for JavaScript, 20 for everything else. A fix to one does not reach the others.</li>
-<li><strong>The accessibility check is written twice</strong> in <code>e2e/a11y.spec.ts</code>, with the same tags and the same disabled rule, once for the page loop and once for the mock room.</li>
 <li><strong>Two share formats, two validators.</strong> The playground and the whiteboard share <code>lib/compress.ts</code>, but each validates its own payload. That one is reasonable, because the shapes differ. It is listed so it stays a choice rather than an accident.</li>
 </ul>
 

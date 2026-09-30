@@ -239,8 +239,8 @@ html[data-font="roboto"] {
 
   --ink: #3b2a14;
   --ink-soft: #5c4726;
-  --pencil: #6b5a3f;
-  --red: #a8402f;
+  --pencil: #615239;
+  --red: #803124;
   --green: #285c3f;
 
   --hl-yellow: #f0cf6a;
@@ -253,7 +253,7 @@ html[data-font="roboto"] {
   --sticky-fg: #3b2a10;
   --sticky-mint-bg: #a8d9b8;
   --sticky-mint-fg: #17331f;
-  --warn-bg: rgba(168, 64, 47, 0.09);
+  --warn-bg: rgba(128, 49, 36, 0.09);
   --say-bg: #f2e6c8;
 
   --code-bg: #fbf3df;
@@ -293,7 +293,7 @@ html[data-font="roboto"] {
   --mark: #f0cf6a;
   --success: #285c3f;
   --danger: #9b1b30;
-  --caution: #6e5200;
+  --caution: #6b5000;
   --info: #2a5585;
 }
 
@@ -309,8 +309,8 @@ html[data-font="roboto"] {
 
   --ink: #eaf4ff;
   --ink-soft: #b7d4f0;
-  --pencil: #93b4d6;
-  --red: #ff8f7a;
+  --pencil: #a4c0dc;
+  --red: #ff9480;
   --green: #7fe0b8;
 
   --hl-yellow: rgba(255, 224, 92, 0.25);
@@ -323,12 +323,12 @@ html[data-font="roboto"] {
   --sticky-fg: #ffe9a8;
   --sticky-mint-bg: rgba(110, 231, 183, 0.14);
   --sticky-mint-fg: #b7f0d7;
-  --warn-bg: rgba(255, 143, 122, 0.09);
+  --warn-bg: rgba(255, 148, 128, 0.09);
   --say-bg: rgba(180, 210, 255, 0.08);
 
   --code-bg: #0f2439;
   --code-fg: #dbe9f7;
-  --code-inline-bg: rgba(255, 224, 92, 0.12);
+  --code-inline-bg: rgba(255, 224, 92, 0.06);
   --code-comment: #7fa0c4;
 
   --dg-box: #1c3c5e;
@@ -380,7 +380,7 @@ html[data-font="roboto"] {
   --ink: #4a3221;
   --ink-soft: #6d5138;
   --pencil: #665841;
-  --red: #b1503b;
+  --red: #9a4533;
   --green: #3d6543;
 
   --hl-yellow: #f3dd8a;
@@ -393,7 +393,7 @@ html[data-font="roboto"] {
   --sticky-fg: #4a3510;
   --sticky-mint-bg: #c3e0c2;
   --sticky-mint-fg: #1f3a20;
-  --warn-bg: rgba(177, 80, 59, 0.07);
+  --warn-bg: rgba(154, 69, 51, 0.07);
   --say-bg: #f5ecd6;
 
   --code-bg: #fffaf0;
@@ -450,8 +450,8 @@ html[data-font="roboto"] {
   --ink: #2c4a24;
   --ink-soft: #425c35;
   --pencil: #5f6e52;
-  --red: #b5452f;
-  --green: #2f7d4f;
+  --red: #b0432e;
+  --green: #2e7b4e;
 
   --hl-yellow: #f0d989;
   --hl-mint: #b7e4c7;
@@ -463,7 +463,7 @@ html[data-font="roboto"] {
   --sticky-fg: #423410;
   --sticky-mint-bg: #b7e4c7;
   --sticky-mint-fg: #123d24;
-  --warn-bg: rgba(181, 69, 47, 0.06);
+  --warn-bg: rgba(176, 67, 46, 0.06);
   --say-bg: #eef5ea;
 
   --code-bg: #ffffff;
@@ -660,7 +660,7 @@ html[data-font="roboto"] {
   --ink: #402a63;
   --ink-soft: #61508a;
   --pencil: #615779;
-  --red: #c14a6a;
+  --red: #ac3b5a;
   --green: #236b56;
 
   --hl-yellow: #f3e29a;
@@ -673,7 +673,7 @@ html[data-font="roboto"] {
   --sticky-fg: #453510;
   --sticky-mint-bg: #b6e6d3;
   --sticky-mint-fg: #123d2e;
-  --warn-bg: rgba(193, 74, 106, 0.06);
+  --warn-bg: rgba(172, 59, 90, 0.06);
   --say-bg: #f1e9fa;
 
   --code-bg: #ffffff;
@@ -4885,7 +4885,7 @@ span.tone-bad {
 }
 
 .syllabus-item.is-planned {
-  opacity: 0.82;
+  border-left-style: dashed;
 }
 
 .syllabus-item__head {
@@ -4992,7 +4992,6 @@ a.syllabus-item__title:hover {
 }
 
 .step.is-planned {
-  opacity: 0.8;
   border-style: dashed;
   box-shadow: none;
 }

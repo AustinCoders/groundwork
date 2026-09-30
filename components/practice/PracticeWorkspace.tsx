@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
 import { Crumbs } from "@/components/Crumbs";
+import { useScrollRegions } from "@/components/reader/scrollRegions";
 import { BackButton } from "@/components/practice/BackButton";
 import { CodeEditor, type CodeEditorHandle } from "@/components/practice/CodeEditor";
 import { Confetti } from "@/components/practice/Confetti";
@@ -201,6 +202,8 @@ export function PracticeWorkspace({
   const [previewDoc, setPreviewDoc] = useState<string | null>(null);
   const [previewRun, setPreviewRun] = useState(0);
   const pageFrameRef = useRef<HTMLIFrameElement | null>(null);
+  const briefPanel = useRef<HTMLDivElement>(null);
+  const consolePanel = useRef<HTMLDivElement>(null);
   const [problems, setProblems] = useState<EditorProblem[]>([]);
   const [consoleLines, setConsoleLines] = useState<RunnerOutputEntry[]>([]);
   const [consolePhase, setConsolePhase] = useState<"idle" | "running" | "compiling" | "ran" | "cleared">("idle");
@@ -237,6 +240,8 @@ export function PracticeWorkspace({
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [briefTab, setBriefTab] = useState<"description" | "tests" | "hints">("description");
+  useScrollRegions(briefPanel, `${exercise.id}:${briefTab}`);
+  useScrollRegions(consolePanel, consoleLines);
   const [dialog, setDialog] = useState<
     | { kind: "new" }
     | { kind: "rename"; id: string }
@@ -1143,6 +1148,7 @@ export function PracticeWorkspace({
               ))}
             </div>
             <div
+              ref={briefPanel}
               className="brief__scroll"
               key={briefTab}
               role="tabpanel"
@@ -1163,7 +1169,7 @@ export function PracticeWorkspace({
                           {r && <span className="visually-hidden">{r.ok ? " (passed)" : " (failed)"}</span>}
                         </p>
                         {r && !r.ok && r.message && <p className="brief__test-why">{r.message}</p>}
-                        <pre className="brief__test-code">
+                        <pre className="brief__test-code" data-scroll-region={`Test: ${t.name}`}>
                           <code>{t.body}</code>
                         </pre>
                       </li>
@@ -1527,6 +1533,7 @@ export function PracticeWorkspace({
                 </div>
               )}
               <div
+                ref={consolePanel}
                 className={`panel__view${activeTab === "console" ? " is-active" : ""}`}
                 id="view-console"
                 role="tabpanel"
@@ -1550,7 +1557,7 @@ export function PracticeWorkspace({
                   consoleLines.map((entry, i) =>
                     entry.kind === "table" ? (
                       <div className="sql-result" key={i}>
-                        <div className="sql-result__scroll">
+                        <div className="sql-result__scroll" data-scroll-region="Query result">
                           <table>
                             <thead>
                               <tr>

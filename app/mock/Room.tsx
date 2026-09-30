@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { Elapsed, InlineTimer, TimerRing } from "@/app/mock/TimerRing";
 import { MINUTES_PER_CODING, MINUTES_PER_TALK } from "@/lib/mock/loops";
@@ -13,6 +13,7 @@ import { shortcutShouldStepAside } from "@/lib/shortcuts";
 import { opener, personaFor, shiftRemark, type Persona } from "@/lib/mock/persona";
 import { STAGE_GUIDE } from "@/lib/mock/guide";
 import { BoardView, Whiteboard } from "@/app/mock/Whiteboard";
+import { useScrollRegions } from "@/components/reader/scrollRegions";
 import { EMPTY_BOARD } from "@/lib/mock/board";
 import styles from "./mock.module.css";
 
@@ -247,8 +248,10 @@ function YouSaid({ text }: { text: string }) {
 
 function AgainstPanel({ item, q, seniority }: { item: TalkItem; q: SessionQuestion; seniority: Seniority }) {
   const rung = item.ladder?.find((r) => r.level === seniority);
+  const panel = useRef<HTMLDivElement>(null);
+  useScrollRegions(panel, item);
   return (
-    <div className={`${styles.against} interview-body`}>
+    <div ref={panel} className={`${styles.against} interview-body`}>
       <div>
         <span className={styles.notesLabel}>What you jotted</span>
         <div className={styles.yours}>{q.notes.trim()}</div>
