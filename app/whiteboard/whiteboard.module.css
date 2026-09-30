@@ -86,7 +86,7 @@
 
 .laserGlow {
   fill: none;
-  stroke: rgba(255, 59, 59, 0.28);
+  stroke: color-mix(in srgb, var(--c-red) 28%, transparent);
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -932,7 +932,7 @@
 }
 
 .help::backdrop {
-  background: rgba(0, 0, 0, 0.35);
+  background: color-mix(in srgb, var(--scrim) 35%, transparent);
 }
 
 .helpHead {
@@ -1109,7 +1109,7 @@
   position: absolute;
   inset: 0;
   z-index: 29;
-  background: rgba(0, 0, 0, 0.28);
+  background: color-mix(in srgb, var(--scrim) 28%, transparent);
   animation: wbFade 0.2s ease-out;
 }
 

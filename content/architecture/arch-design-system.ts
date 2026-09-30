@@ -58,14 +58,25 @@ export const archDesignSystem: Chapter = {
 
 <h3>Nine themes</h3>
 <p>
-  The <code>:root</code> block in <code>globals.css</code> defines 78 custom properties: paper and
+  The <code>:root</code> block in <code>globals.css</code> defines 63 custom properties: paper and
   sheet colours, ink, pencil, red and green, highlighter colours, sticky notes, code colours,
-  diagram boxes, shadows, sizes, fonts, the editor's <code>--ide-*</code> palette, the categorical
+  diagram boxes, shadows, sizes, fonts, the editor's syntax colours, the categorical
   <code>--c-*</code> colours and the role colours. That block is the Paper theme, and it also
   matches <code>[data-theme="light"]</code>, so a Paper preview inside another theme shows Paper.
-  Each of the other eight is a <code>[data-theme="&hellip;"]</code> block that overrides the same
-  56 properties (the colours and the shadows) and sets <code>color-scheme</code>, so native
-  scrollbars and form controls match.
+  Its 56 colour tokens are the properties whose value is a colour (the colours and the shadows).
+  Each of the other eight is a <code>[data-theme="&hellip;"]</code> block that restates exactly
+  those 56 and nothing else, and sets <code>color-scheme</code>, so native scrollbars and form
+  controls match.
+</p>
+<p>
+  Anything computed from those colours lives once, in a shared <code>:root, [data-theme]</code>
+  block: the <code>-soft</code> tints, the editor's <code>--ide-*</code> aliases such as
+  <code>--ide-fg: var(--ink)</code> and <code>--ide-hover</code>, and <code>--scrim</code>, the
+  black that the modules' backdrops (the modal, the drawer, the sheets and the whiteboard) mix
+  with <code>transparent</code>. <code>--scrim</code> is declared on <code>::backdrop</code> as
+  well, because older browsers do not let a dialog's backdrop inherit from the page. The backdrops
+  in the global rules still set their own tints. That selector matches every element that carries a theme, so a Kraft
+  swatch inside a Night page computes Kraft's editor colours instead of inheriting Night's.
 </p>
 <div class="table-scroll"><table>
 <thead><tr><th>Value</th><th>Shown as</th><th>Scheme</th></tr></thead>
@@ -112,8 +123,8 @@ export const archDesignSystem: Chapter = {
   chapters, <code>/level</code> and <code>/path</code>. Their buttons, links, progress bars,
   active tabs and chapters, selections, focus rings, highlights and the notebook's margin line
   follow the theme, and their passed, failed, read, due and tip states use the state roles.
-  Nothing sets its own <code>--primary</code>, and the practice workspace no longer paints with
-  the green <code>--ide-accent</code> alias.
+  Nothing sets its own <code>--primary</code>, and the green <code>--ide-accent</code> alias is
+  gone.
 </p>
 <p>
   What stays fixed is mostly what a chapter says in colour, so that it means the same in every
@@ -124,12 +135,19 @@ export const archDesignSystem: Chapter = {
   note, the problem hint, the progress page's achievements, the home page's interview-story reds,
   the book's test, say and trap boxes, the mock interviewers' avatars, the editor's window dots,
   the problem levels, the lanes of the architecture map, and the whiteboard's ruled margin and
-  laser. <code>tests/theme-roles.test.ts</code> scans the role-owned modules, the global rules in
-  <code>app/globals.css</code>, the code editor, <code>narration.ts</code>,
-  <code>ReaderShell.tsx</code> and <code>ChapterView.tsx</code> for a listed set of fixed green,
-  red, mint and highlighter tokens and their <code>--ide-*</code> aliases, and fails when one is
-  used outside its file's categorical list or a module declares its own role token. A wider
-  contract for the rest of the site is still to come.
+  laser. <code>tests/theme-roles.test.ts</code> finds every CSS module under <code>app/</code> and
+  <code>components/</code>, the global rules in <code>app/globals.css</code> and
+  <code>app/theme-bridge.css</code>, and every <code>.ts</code> and <code>.tsx</code> file under
+  <code>app/</code>, <code>components/</code> and <code>lib/</code>, and scans them for a listed
+  set of fixed green, red, mint and highlighter tokens, their <code>-soft</code> tints and their
+  <code>--ide-*</code> aliases. It fails when one is used outside its file's categorical list, when
+  a module declares its own role token, and when a module's declaration values hold a colour
+  literal: a hex, <code>rgb()</code>, <code>hsl()</code> or newer colour function, or a named colour
+  such as <code>white</code>. A new module or component is covered the day it is added, with an
+  empty categorical list. In <code>.ts</code> and <code>.tsx</code> files the only listed tokens
+  allowed are the fills of the two diagram arrow markers. That scan looks for the listed tokens,
+  not for hex values, so the app icons, the error page and the whiteboard's paper tints still
+  carry colours of their own.
 </p>
 <p>
   <code>app/theme-bridge.css</code> maps these names onto the conventional ones Tailwind utilities
@@ -320,12 +338,28 @@ export const archDesignSystem: Chapter = {
 </p>
 
 <div class="bx is-ref">
-<span class="ttl">What the variables approach costs</span>
+<span class="ttl">What a new theme costs</span>
 <p>
-  Each theme restates 56 values, and nothing but the contrast test and the reviewer's eye notices
-  when one is off. A component that hard-codes a hex colour is wrong in eight themes. What it buys
-  is that a theme switch costs one attribute write and nothing in React, and that a theme can be
-  added in one CSS block and one list entry.
+  Adding a theme takes one <code>[data-theme="&hellip;"]</code> block in <code>globals.css</code>
+  that restates the 56 colour tokens, the seven roles included, and one entry in
+  <code>THEME_ITEMS</code> in <code>lib/storage.ts</code>. The <code>ThemeValue</code> type, both
+  pickers and the e2e accent tests all come from that list. A dark theme may also join the
+  <code>[data-theme="dark"]</code> override selectors that swap the heading underline and the
+  code background inside sticky notes and gotcha boxes. Nothing else in the code is edited. This
+  chapter is the one hand-kept description: its theme table, its heading, and the check counts
+  that multiply by the number of themes are updated by hand.
+</p>
+<p>
+  Missing a step fails a test that names it. <code>tests/theme-contract.test.ts</code> names the
+  block and the token when a theme leaves out or adds a colour token or sets no
+  <code>color-scheme</code>. It names the list entry that has no block, the block that has no
+  entry, a value listed twice and a label that is not an icon and a name. It fails when Paper
+  derives a colour that belongs in the shared block, or when a rule reads <code>--scrim</code> or
+  an <code>--ide-*</code> alias that nothing declares. <code>tests/contrast.test.ts</code> fails a role, syntax or categorical colour
+  below its ratio. The e2e accent tests iterate <code>THEME_ITEMS</code> and read each theme's
+  expected colours from <code>globals.css</code>, so they check the new theme without a change.
+  What the approach still costs is 56 restated values per theme, chosen by hand. What it buys is
+  that a theme switch is one attribute write and nothing in React.
 </p>
 </div>`,
 };

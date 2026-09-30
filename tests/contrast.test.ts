@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { THEME_ITEMS } from "@/lib/storage";
 
 const CSS = readFileSync(join(process.cwd(), "app/globals.css"), "utf8");
 
@@ -66,7 +67,7 @@ const themes = blocks().filter(
 
 describe("editor syntax colours", () => {
   it("finds a theme to check", () => {
-    expect(themes.length).toBeGreaterThanOrEqual(9);
+    expect(themes.length).toBe(THEME_ITEMS.length);
   });
 
   it("meets WCAG AA on the editor background and on the active line, in every theme", () => {
@@ -99,7 +100,7 @@ describe("the theme palette", () => {
   const withPalette = blocks().filter((b) => declaration(b.body, "--c-blue") && declaration(b.body, "--sheet"));
 
   it("is defined by every theme", () => {
-    expect(withPalette.length).toBe(9);
+    expect(withPalette.length).toBe(THEME_ITEMS.length);
     for (const theme of withPalette)
       for (const token of PALETTE) expect(declaration(theme.body, token), `${theme.selector} ${token}`).toBeTruthy();
   });
@@ -130,7 +131,7 @@ describe("the role colours", () => {
   const withTheme = blocks().filter((b) => declaration(b.body, "--sheet") && declaration(b.body, "--ink"));
 
   it("is defined by every theme", () => {
-    expect(withTheme.length).toBe(9);
+    expect(withTheme.length).toBe(THEME_ITEMS.length);
     for (const theme of withTheme)
       for (const token of ROLES)
         expect(declaration(theme.body, token), `${theme.selector} is missing ${token}`).toBeTruthy();
@@ -175,7 +176,7 @@ describe("text on the role tints", () => {
 
   it("is mixed once, for every theme", () => {
     expect(shared, "no block declares the -soft tints").toBeTruthy();
-    expect(withTheme.length).toBe(9);
+    expect(withTheme.length).toBe(THEME_ITEMS.length);
   });
 
   it("keeps ink and soft ink at WCAG AA on every tint in every theme", () => {

@@ -197,10 +197,7 @@ export function lastLevel(): string | null {
   return store.get<string | null>(KEYS.level, null);
 }
 
-export type ThemeValue = "light" | "dark" | "kraft" | "blueprint" | "sepia" | "forest" | "rose" | "mono" | "lavender";
-export type FontValue = "classic" | "marker" | "sketch" | "pen" | "script" | "serif" | "roboto";
-
-export const THEME_ITEMS: { value: ThemeValue; label: string }[] = [
+export const THEME_ITEMS = [
   { value: "light", label: "📄 Paper" },
   { value: "dark", label: "🌙 Night" },
   { value: "kraft", label: "📦 Kraft" },
@@ -210,7 +207,10 @@ export const THEME_ITEMS: { value: ThemeValue; label: string }[] = [
   { value: "rose", label: "🌹 Rose" },
   { value: "mono", label: "⬛ Mono" },
   { value: "lavender", label: "💜 Lavender" },
-];
+] as const satisfies readonly { value: string; label: string }[];
+
+export type ThemeValue = (typeof THEME_ITEMS)[number]["value"];
+export type FontValue = "classic" | "marker" | "sketch" | "pen" | "script" | "serif" | "roboto";
 
 export const FONT_ITEMS: { value: FontValue; label: string }[] = [
   { value: "classic", label: "✎ Classic" },
@@ -223,7 +223,8 @@ export const FONT_ITEMS: { value: FontValue; label: string }[] = [
 ];
 
 export function savedTheme(): ThemeValue | null {
-  return store.get<ThemeValue | null>(KEYS.theme, null);
+  const saved = store.get<string | null>(KEYS.theme, null);
+  return THEME_ITEMS.some((item) => item.value === saved) ? (saved as ThemeValue) : null;
 }
 
 export function setSavedTheme(theme: ThemeValue): void {

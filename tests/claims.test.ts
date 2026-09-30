@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { chapters, exercises, topics } from "@/lib/content";
 import { INTERVIEW_TOTAL_QUESTIONS, INTERVIEW_TOTAL_ROUNDS } from "@/lib/interviewContent";
 import { siteStats } from "@/lib/topicStats";
+import { hasColourLiteral } from "./colour-literal";
 
 const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 
@@ -79,6 +80,17 @@ describe("what the site says about itself", () => {
 
   it.each(cases)("$file still tells the truth about $about", ({ file, claim }) => {
     expect(read(file), `expected to find: ${claim}`).toContain(claim);
+  });
+
+  it("counts the Paper theme's custom properties and colour tokens in the design-system chapter", () => {
+    const paper = /:root,\s*\[data-theme="light"\]\s*\{([^}]*)\}/.exec(read("app/globals.css"))?.[1] ?? "";
+    const values = [...paper.matchAll(/(?<![\w-])--[\w-]+\s*:\s*([^;]+);/g)].map((match) => match[1]);
+    const colours = values.filter((value) => hasColourLiteral(value)).length;
+    const chapter = read("content/architecture/arch-design-system.ts");
+    expect(values.length).toBeGreaterThan(0);
+    expect(chapter).toContain(`defines ${values.length} custom properties`);
+    expect(chapter).toContain(`Its ${colours} colour tokens`);
+    expect(chapter).toContain(`restates the ${colours} colour tokens`);
   });
 
   it("counts the topics it lists", () => {

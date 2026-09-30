@@ -7,7 +7,7 @@
 .backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.32);
+  background: color-mix(in srgb, var(--scrim) 32%, transparent);
   animation: fade 0.2s ease-out;
 }
 

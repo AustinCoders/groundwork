@@ -2,6 +2,10 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test, type ConsoleMessage, type Page } from "@playwright/test";
 import { practice } from "../content/practice";
+import type { ThemeValue } from "../lib/storage";
+import { THEMES, themeColour } from "./themes";
+
+const containing = (colour: string) => new RegExp(colour.replace(/[()]/g, "\\$&"));
 
 const PAGES = [
   { path: "/", heading: /Walk into the interview ready/i },
@@ -136,7 +140,10 @@ test("a mock interview round runs from the lobby to the debrief", async ({ page 
 
   await expect(page.getByText("Round debrief")).toBeVisible();
   await expect(page.getByRole("img", { name: "Verdict: Strong hire" })).toBeVisible();
-  await expect(page.getByRole("img", { name: "Verdict: Strong hire" })).toHaveCSS("color", "rgb(35, 107, 86)");
+  await expect(page.getByRole("img", { name: "Verdict: Strong hire" })).toHaveCSS(
+    "color",
+    themeColour("lavender", "--success")
+  );
   await expect(page.getByText("Every question")).toBeVisible();
 });
 
@@ -338,7 +345,7 @@ test("the editor lints as you type, formats on save and has a command palette", 
   await expect(page.locator("#view-problems")).toContainText("eslint(no-undef)");
   await expect(page.locator('.problem[data-severity="warning"] .problem__mark').first()).toHaveCSS(
     "color",
-    "rgb(138, 100, 0)"
+    themeColour("light", "--caution")
   );
 
   await editor.click();
@@ -828,7 +835,10 @@ test("the home page reads as a landing page and every path leads somewhere real"
   await page.getByRole("button", { name: "Break it" }).click();
   await page.getByRole("button", { name: /Run tests/ }).click();
   await expect(page.getByText("1 / 3 passed", { exact: true })).toBeVisible();
-  await expect(page.locator("[class*='__editor'][data-state='fail']")).toHaveCSS("box-shadow", /rgb\(184, 57, 94\)/);
+  await expect(page.locator("[class*='__editor'][data-state='fail']")).toHaveCSS(
+    "box-shadow",
+    containing(themeColour("lavender", "--danger"))
+  );
   await page.getByRole("button", { name: "Reset" }).click();
 
   await page.getByRole("tab", { name: /Mid/ }).click();
@@ -855,7 +865,10 @@ test("the interview book hides answers in practice mode, remembers marks and dri
   await expect(first.getByText("The answer that loses the room")).toBeVisible();
   await first.getByRole("button", { name: "Shaky" }).click();
   await expect(first.getByRole("button", { name: "Shaky" })).toHaveAttribute("aria-pressed", "true");
-  await expect(first.getByRole("button", { name: "Shaky" })).toHaveCSS("border-color", "rgb(125, 100, 8)");
+  await expect(first.getByRole("button", { name: "Shaky" })).toHaveCSS(
+    "border-color",
+    themeColour("lavender", "--caution")
+  );
   await page.getByRole("button", { name: "Read", exact: true }).click();
 
   await page.goto("/interview/questions?filter=shaky");
@@ -902,41 +915,17 @@ test("review brings a due chapter back, and every section header has a way back"
   }
 });
 
-const THEME_ACCENTS: Record<string, string> = {
-  light: "rgb(36, 81, 179)",
-  dark: "rgb(143, 176, 255)",
-  kraft: "rgb(138, 58, 18)",
-  blueprint: "rgb(127, 216, 255)",
-  sepia: "rgb(122, 46, 42)",
-  forest: "rgb(45, 106, 67)",
-  rose: "rgb(255, 143, 184)",
-  mono: "rgb(22, 22, 22)",
-  lavender: "rgb(106, 63, 184)",
-};
-
-const THEME_ON_ACCENTS: Record<string, string> = {
-  light: "rgb(255, 253, 246)",
-  dark: "rgb(16, 19, 26)",
-  kraft: "rgb(251, 243, 223)",
-  blueprint: "rgb(15, 36, 57)",
-  sepia: "rgb(250, 241, 220)",
-  forest: "rgb(248, 251, 242)",
-  rose: "rgb(36, 24, 35)",
-  mono: "rgb(255, 255, 255)",
-  lavender: "rgb(250, 247, 254)",
-};
-
 test("the home page's primary action takes each theme's accent", async ({ page }) => {
   const start = page.getByRole("link", { name: /Start with JavaScript/ }).first();
   await page.goto("/");
-  await expect(start).toHaveCSS("background-color", THEME_ACCENTS.light);
+  await expect(start).toHaveCSS("background-color", themeColour("light", "--primary"));
 
-  for (const [theme, accent] of Object.entries(THEME_ACCENTS)) {
+  for (const theme of THEMES) {
     await page.evaluate((value) => localStorage.setItem("jsnotes:theme", JSON.stringify(value)), theme);
     await page.reload();
     await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
-    await expect(start).toHaveCSS("background-color", accent);
-    await expect(start).toHaveCSS("color", THEME_ON_ACCENTS[theme]);
+    await expect(start, theme).toHaveCSS("background-color", themeColour(theme, "--primary"));
+    await expect(start, theme).toHaveCSS("color", themeColour(theme, "--on-primary"));
   }
 });
 
@@ -951,13 +940,20 @@ test("the theme picker shows each theme's accent, and the current theme's accent
   await page.getByRole("button", { name: "Menu", exact: true }).click();
   const drawer = page.getByRole("dialog", { name: /menu/ });
   await drawer.getByRole("button", { name: /Theme/ }).click();
-  const card = (name: string) => drawer.getByRole("radio", { name });
-  const accentChip = (name: string) => card(name).locator("[data-theme] > :first-child > :last-child");
+  const cards = drawer.getByRole("radiogroup", { name: "Theme" }).getByRole("radio");
+  await expect(cards).toHaveCount(THEMES.length);
 
-  await expect(accentChip("Paper")).toHaveCSS("background-color", THEME_ACCENTS.light);
-  await expect(accentChip("Lavender")).toHaveCSS("background-color", THEME_ACCENTS.lavender);
-  await expect(card("Night")).toHaveAttribute("aria-checked", "true");
-  await expect(card("Night")).toHaveCSS("border-color", THEME_ACCENTS.dark);
+  for (const [i, theme] of THEMES.entries()) {
+    const swatch = cards.nth(i).locator("[data-theme]");
+    await expect(swatch).toHaveAttribute("data-theme", theme);
+    await expect(swatch.locator(":scope > :first-child > :last-child"), theme).toHaveCSS(
+      "background-color",
+      themeColour(theme, "--primary")
+    );
+  }
+  const night = drawer.getByRole("radio", { name: "Night" });
+  await expect(night).toHaveAttribute("aria-checked", "true");
+  await expect(night).toHaveCSS("border-color", themeColour("dark", "--primary"));
 });
 
 test("review, the interview book, mock and progress take the theme's accent, not a fixed green or red", async ({
@@ -976,15 +972,16 @@ test("review, the interview book, mock and progress take the theme's accent, not
     { path: "/progress", action: () => main.locator("[class*='__xpBar'] > span"), onAccent: false },
   ];
 
-  for (const theme of ["lavender", "kraft", "forest", "dark"]) {
+  for (const theme of THEMES) {
     await page.goto("/");
     await page.evaluate((value) => localStorage.setItem("jsnotes:theme", JSON.stringify(value)), theme);
 
     for (const { path, action, onAccent } of surfaces) {
       await page.goto(path);
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
-      await expect(action(), `${path} in ${theme}`).toHaveCSS("background-color", THEME_ACCENTS[theme]);
-      if (onAccent) await expect(action(), `${path} in ${theme}`).toHaveCSS("color", THEME_ON_ACCENTS[theme]);
+      await expect(action(), `${path} in ${theme}`).toHaveCSS("background-color", themeColour(theme, "--primary"));
+      if (onAccent)
+        await expect(action(), `${path} in ${theme}`).toHaveCSS("color", themeColour(theme, "--on-primary"));
     }
   }
 });
@@ -1003,7 +1000,8 @@ test("problems, the whiteboard, git and architecture take the theme's accent, an
   const finish = page.getByRole("region", { name: "Finish" });
   const markRead = finish.getByRole("button", { name: "Mark as read" });
 
-  for (const [theme, accent] of Object.entries(THEME_ACCENTS)) {
+  for (const theme of THEMES) {
+    const accent = themeColour(theme, "--primary");
     await page.goto("/");
     await page.evaluate((value) => localStorage.setItem("jsnotes:theme", JSON.stringify(value)), theme);
 
@@ -1011,16 +1009,13 @@ test("problems, the whiteboard, git and architecture take the theme's accent, an
       await page.goto(path);
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
       await expect(action(), `${path} in ${theme}`).toHaveCSS("background-color", accent);
-      await expect(action(), `${path} in ${theme}`).toHaveCSS("color", THEME_ON_ACCENTS[theme]);
+      await expect(action(), `${path} in ${theme}`).toHaveCSS("color", themeColour(theme, "--on-primary"));
     }
 
     for (const path of ["/git/merge", "/architecture/arch-build"]) {
       await page.goto(path);
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
-      await expect(currentChapter, `${path} in ${theme}`).toHaveCSS(
-        "box-shadow",
-        new RegExp(accent.replace(/[()]/g, "\\$&"))
-      );
+      await expect(currentChapter, `${path} in ${theme}`).toHaveCSS("box-shadow", containing(accent));
       await expect(page.locator("[class$='__progress'] > div"), `${path} in ${theme}`).toHaveCSS(
         "background-color",
         accent
@@ -1033,18 +1028,17 @@ test("problems, the whiteboard, git and architecture take the theme's accent, an
     }
   }
 
+  expect(themeColour("forest", "--success")).not.toBe(themeColour("forest", "--green"));
   await page.evaluate(() => localStorage.setItem("jsnotes:theme", JSON.stringify("forest")));
   await page.goto("/git/merge");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "forest");
   await markRead.click();
   await expect(finish.getByRole("button", { name: "Mark as unread" })).toBeVisible();
-  await expect(finish.locator("[class*='__endMark']")).toHaveCSS("background-color", "rgb(31, 111, 92)");
-  const ink = await page.evaluate(() => {
-    const hex = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim().replace("#", "");
-    const [r, g, b] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
-    return `rgb(${r}, ${g}, ${b})`;
-  });
-  await expect(currentChapter.getByLabel("read", { exact: true })).toHaveCSS("color", ink);
+  await expect(finish.locator("[class*='__endMark']")).toHaveCSS(
+    "background-color",
+    themeColour("forest", "--success")
+  );
+  await expect(currentChapter.getByLabel("read", { exact: true })).toHaveCSS("color", themeColour("forest", "--ink"));
 });
 
 test("topic covers and chapters, level, path and the playground take the theme's accent", async ({ page }) => {
@@ -1060,14 +1054,16 @@ test("topic covers and chapters, level, path and the playground take the theme's
   const levelCta = page.locator(".level__cta").first();
   const pathMeter = page.locator("#meter-fill");
 
-  for (const [theme, accent] of Object.entries(THEME_ACCENTS)) {
+  for (const theme of THEMES) {
+    const accent = themeColour(theme, "--primary");
+    const onAccent = themeColour(theme, "--on-primary");
     await page.goto("/");
     await page.evaluate((value) => localStorage.setItem("jsnotes:theme", JSON.stringify(value)), theme);
 
     await page.goto("/notes");
     await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
     await expect(cover, `/notes in ${theme}`).toHaveCSS("background-color", accent);
-    await expect(cover, `/notes in ${theme}`).toHaveCSS("color", THEME_ON_ACCENTS[theme]);
+    await expect(cover, `/notes in ${theme}`).toHaveCSS("color", onAccent);
 
     await page.goto("/notes/closures");
     await expect(readingProgress, `/notes/closures in ${theme}`).toHaveCSS("background-color", accent);
@@ -1080,7 +1076,7 @@ test("topic covers and chapters, level, path and the playground take the theme's
 
     await page.goto("/practice");
     await expect(run, `/practice in ${theme}`).toHaveCSS("background-color", accent);
-    await expect(run, `/practice in ${theme}`).toHaveCSS("color", THEME_ON_ACCENTS[theme]);
+    await expect(run, `/practice in ${theme}`).toHaveCSS("color", onAccent);
 
     await page.goto("/level/js");
     await expect(writtenRow, `/level/js in ${theme}`).toHaveCSS("border-left-color", accent);
@@ -1114,16 +1110,16 @@ test("the notebook's margin line takes the theme's accent instead of a fixed red
     colourChannels(
       await page.locator("#closures").evaluate((sheet) => getComputedStyle(sheet, "::before").backgroundColor)
     );
-  const accentLine = (theme: string) => [...colourChannels(THEME_ACCENTS[theme]).slice(0, 3), 0.32];
+  const lineIn = (theme: ThemeValue, token: string) => [...colourChannels(themeColour(theme, token)).slice(0, 3), 0.32];
 
   await page.goto("/notes/closures");
-  expect(await marginLine()).toEqual(accentLine("light"));
-  expect(await marginLine()).not.toEqual([196, 52, 43, 0.32]);
+  expect(await marginLine()).toEqual(lineIn("light", "--primary"));
+  expect(await marginLine()).not.toEqual(lineIn("light", "--red"));
 
   await page.evaluate(() => localStorage.setItem("jsnotes:theme", JSON.stringify("lavender")));
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "lavender");
-  expect(await marginLine()).toEqual(accentLine("lavender"));
+  expect(await marginLine()).toEqual(lineIn("lavender", "--primary"));
 });
 
 test("a passed and a failed test keep their state colours where success is not green and danger is not red", async ({
@@ -1131,12 +1127,8 @@ test("a passed and a failed test keep their state colours where success is not g
 }) => {
   const editor = page.locator(".cm-content");
   const testsCount = page.locator("#tests-count");
-  const ink = () =>
-    page.evaluate(() => {
-      const hex = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim().replace("#", "");
-      const [r, g, b] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
-      return `rgb(${r}, ${g}, ${b})`;
-    });
+  expect(themeColour("lavender", "--danger")).not.toBe(themeColour("lavender", "--red"));
+  expect(themeColour("forest", "--success")).not.toBe(themeColour("forest", "--green"));
 
   await page.goto("/");
   await page.evaluate(() => localStorage.setItem("jsnotes:theme", JSON.stringify("lavender")));
@@ -1145,8 +1137,8 @@ test("a passed and a failed test keep their state colours where success is not g
   await expect(editor).toContainText("function twoSum(nums, target)");
   await page.getByRole("button", { name: "Submit" }).click();
   await expect(page.locator(".verdict--fail")).toBeVisible({ timeout: 30_000 });
-  await expect(page.locator(".test--fail .test__mark").first()).toHaveCSS("color", "rgb(184, 57, 94)");
-  await expect(testsCount).toHaveCSS("color", await ink());
+  await expect(page.locator(".test--fail .test__mark").first()).toHaveCSS("color", themeColour("lavender", "--danger"));
+  await expect(testsCount).toHaveCSS("color", themeColour("lavender", "--ink"));
 
   await page.evaluate(() => localStorage.setItem("jsnotes:theme", JSON.stringify("forest")));
   await page.reload();
@@ -1157,8 +1149,8 @@ test("a passed and a failed test keep their state colours where success is not g
   await page.getByRole("dialog", { name: "Show the solution?" }).getByRole("button", { name: "Show solution" }).click();
   await page.getByRole("button", { name: "Submit" }).click();
   await expect(page.locator(".verdict--pass")).toBeVisible({ timeout: 30_000 });
-  await expect(page.locator(".test--pass .test__mark").first()).toHaveCSS("color", "rgb(31, 111, 92)");
-  await expect(testsCount).toHaveCSS("color", await ink());
+  await expect(page.locator(".test--pass .test__mark").first()).toHaveCSS("color", themeColour("forest", "--success"));
+  await expect(testsCount).toHaveCSS("color", themeColour("forest", "--ink"));
 });
 
 test("the editor's selected search match takes the theme's accent", async ({ page }) => {
@@ -1170,5 +1162,8 @@ test("the editor's selected search match takes the theme's accent", async ({ pag
   await page.keyboard.press("ControlOrMeta+f");
   await page.keyboard.type("target");
   await page.keyboard.press("Enter");
-  await expect(page.locator(".cm-searchMatch-selected").first()).toHaveCSS("outline-color", THEME_ACCENTS.lavender);
+  await expect(page.locator(".cm-searchMatch-selected").first()).toHaveCSS(
+    "outline-color",
+    themeColour("lavender", "--primary")
+  );
 });

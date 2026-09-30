@@ -57,23 +57,6 @@
   --font-heading: var(--font-caveat), "Comic Sans MS", cursive;
   --font-body: var(--font-kalam), "Comic Sans MS", "Segoe Print", cursive;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
-
-  --ide-bg: var(--sheet-2);
-  --ide-bg-elevated: var(--sheet);
-  --ide-gutter: var(--sheet-2);
-  --ide-border: var(--line);
-  --ide-fg: var(--ink);
-  --ide-fg-dim: var(--ink-soft);
-  --ide-fg-faint: var(--pencil);
-  --ide-accent: var(--green);
-  --ide-selection: var(--line-soft);
-  --ide-red: var(--red);
-  --ide-yellow: var(--dg-yellow-stroke);
-  --ide-green: var(--green);
-  --ide-cursor: var(--ink);
-  --ide-hover: color-mix(in srgb, var(--ide-fg) 12%, transparent);
-  --ide-hover-strong: color-mix(in srgb, var(--ide-fg) 15%, transparent);
-
   --font-code: var(--font-mono);
 
   --ide-keyword: #ae2e26;
@@ -115,6 +98,27 @@
   --danger-soft: color-mix(in srgb, var(--danger) 16%, var(--sheet));
   --caution-soft: color-mix(in srgb, var(--caution) 16%, var(--sheet));
   --info-soft: color-mix(in srgb, var(--info) 16%, var(--sheet));
+
+  --ide-bg: var(--sheet-2);
+  --ide-bg-elevated: var(--sheet);
+  --ide-gutter: var(--sheet-2);
+  --ide-border: var(--line);
+  --ide-fg: var(--ink);
+  --ide-fg-dim: var(--ink-soft);
+  --ide-fg-faint: var(--pencil);
+  --ide-selection: var(--line-soft);
+  --ide-red: var(--red);
+  --ide-yellow: var(--dg-yellow-stroke);
+  --ide-green: var(--green);
+  --ide-cursor: var(--ink);
+  --ide-hover: color-mix(in srgb, var(--ide-fg) 12%, transparent);
+  --ide-hover-strong: color-mix(in srgb, var(--ide-fg) 15%, transparent);
+
+  --scrim: rgb(0 0 0);
+}
+
+::backdrop {
+  --scrim: rgb(0 0 0);
 }
 
 html[data-font="marker"] {

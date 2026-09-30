@@ -18,7 +18,7 @@
 }
 
 .modal::backdrop {
-  background: rgba(0, 0, 0, 0.4);
+  background: color-mix(in srgb, var(--scrim) 40%, transparent);
 }
 
 .modal[open]::backdrop {

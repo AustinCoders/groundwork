@@ -54,7 +54,7 @@ export function ThemePicker({ openUp = true, compact }: { openUp?: boolean; comp
   if (!mounted) return null;
   return (
     <Dropdown
-      items={THEME_ITEMS}
+      items={[...THEME_ITEMS]}
       value={theme}
       onChange={(v) => choose(v as ThemeValue)}
       ariaLabel="Theme"

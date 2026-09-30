@@ -1,9 +1,10 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { colourLiteralPattern, withoutStringsAndUrls } from "./colour-literal";
 
 const THEME_BLIND =
-  /var\(\s*--(green|c-green|red|c-red|c-yellow|c-orange|hl-yellow|hl-mint|hl-pink|sticky-bg|sticky-fg|sticky-mint-bg|sticky-mint-fg|dg-box-green|dg-box-red|dg-box-yellow|dg-yellow-stroke|ide-accent|ide-green|ide-red|ide-yellow)\s*[,)]/g;
+  /var\(\s*--(green|c-green|red|c-red|c-yellow|c-orange|hl-yellow|hl-mint|hl-pink|sticky-bg|sticky-fg|sticky-mint-bg|sticky-mint-fg|dg-box-green|dg-box-red|dg-box-yellow|dg-yellow-stroke|ide-accent|ide-green|ide-red|ide-yellow|c-green-soft|c-red-soft|c-yellow-soft|c-orange-soft|warn-bg)\s*[,)]/g;
 
 const ROLE_DECLARATION = /(?<![\w-])(--(?:on-)?(?:primary|mark|success|danger|caution|info)(?:-soft)?)\s*:/g;
 
@@ -20,7 +21,6 @@ const CATEGORICAL_SELECTORS: Record<string, string[]> = {
     ".paperCode .codeBar > span:nth-child(3)",
     ".doodleStar",
   ],
-  "app/review/review.module.css": [],
   "app/progress/progress.module.css": [
     ".levelUp",
     ".chips span[data-lit]",
@@ -39,20 +39,30 @@ const CATEGORICAL_SELECTORS: Record<string, string[]> = {
   ],
   "app/mock/mock.module.css": [".avatar", '.avatar[data-tone="sharp"]', '.avatar[data-tone="calm"]'],
   "app/mock/guide.module.css": [".avatar", '.avatar[data-tone="sharp"]'],
-  "components/frame/frame.module.css": [],
-  "components/SiteDrawer.module.css": [],
-  "components/Modal.module.css": [],
   "app/problems/problems.module.css": [".page", ".sheetRoot"],
-  "app/whiteboard/whiteboard.module.css": [".paperMargin", ".laser", '.swatch[data-value="none"]'],
+  "app/whiteboard/whiteboard.module.css": [".paperMargin", ".laser", ".laserGlow", '.swatch[data-value="none"]'],
   "components/series/landing.module.css": [".page"],
   "app/architecture/architecture.module.css": [".page"],
-  "components/series/chapter.module.css": [],
-  "components/AppearancePicker.module.css": [],
 };
 
-const FILES = Object.keys(CATEGORICAL_SELECTORS);
+function filesUnder(dirs: string[], name: RegExp): string[] {
+  return dirs
+    .flatMap((dir) =>
+      readdirSync(join(process.cwd(), dir), { recursive: true, encoding: "utf8" }).map((entry) => `${dir}/${entry}`)
+    )
+    .filter((file) => name.test(file))
+    .sort();
+}
+
+const MODULES = filesUnder(["app", "components"], /\.module\.css$/);
+
+const SOURCES = filesUnder(["app", "components", "lib"], /\.tsx?$/);
+
+const categoricalIn = (file: string) => CATEGORICAL_SELECTORS[file] ?? [];
 
 const GLOBALS = "app/globals.css";
+
+const BRIDGE = "app/theme-bridge.css";
 
 const GLOBAL_CATEGORICAL_SELECTORS = [
   ".daily-recap",
@@ -129,8 +139,6 @@ const GLOBAL_CATEGORICAL_SELECTORS = [
 const THEME_BLOCK_PART = /^(?::root|\[data-theme(?:="[\w-]+")?\])$/;
 
 const SOURCE_MARKER_FILLS: Record<string, Record<string, string>> = {
-  "components/practice/CodeEditor.tsx": {},
-  "components/reader/narration.ts": {},
   "components/reader/ReaderShell.tsx": { "arrow-green": "--green", "arrow-red": "--red" },
   "components/series/ChapterView.tsx": { "arrow-green": "--green", "arrow-red": "--red" },
 };
@@ -147,7 +155,7 @@ function themeBlindUses(css: string): ThemeBlindUse[] {
   let chunkStart = 0;
 
   const scanDeclarations = (end: number) => {
-    const selector = [...open].reverse().find((prelude) => !prelude.startsWith("@")) ?? "";
+    const selector = [...open].reverse().find((prelude) => !prelude.startsWith("@")) ?? open.at(-1) ?? "";
     const chunk = css.slice(chunkStart, end);
     for (const match of chunk.matchAll(THEME_BLIND)) {
       uses.push({ line: lineAt(css, chunkStart + match.index), selector, token: `--${match[1]}` });
@@ -171,12 +179,12 @@ function themeBlindUses(css: string): ThemeBlindUse[] {
   return uses;
 }
 
-function isThemeBlock(selector: string): boolean {
-  return selector.split(",").every((part) => THEME_BLOCK_PART.test(part.trim()));
+function isTokenBlock(selector: string): boolean {
+  return selector.startsWith("@theme") || selector.split(",").every((part) => THEME_BLOCK_PART.test(part.trim()));
 }
 
 function globalRuleUses(css: string): ThemeBlindUse[] {
-  return themeBlindUses(css).filter((use) => !isThemeBlock(use.selector));
+  return themeBlindUses(css).filter((use) => !isTokenBlock(use.selector));
 }
 
 function outsideCategorical(file: string, uses: ThemeBlindUse[], allowedSelectors: string[]): string[] {
@@ -200,6 +208,29 @@ function outsideMarkerFills(file: string, source: string, markerFills: Record<st
     .map((match) => `${file}:${lineAt(source, match.index)} uses var(--${match[1]}); use a role token instead`);
 }
 
+function colourLiterals(file: string, css: string): string[] {
+  const found: string[] = [];
+  let chunkStart = 0;
+  for (let i = 0; i < css.length; i += 1) {
+    const ch = css[i];
+    if (ch === "{") {
+      chunkStart = i + 1;
+    } else if (ch === ";" || ch === "}") {
+      const colon = css.indexOf(":", chunkStart);
+      if (colon >= 0 && colon < i) {
+        const value = withoutStringsAndUrls(css.slice(colon + 1, i));
+        for (const match of value.matchAll(colourLiteralPattern())) {
+          found.push(
+            `${file}:${lineAt(css, colon + 1 + match.index)} uses the colour literal ${match[0]}; use a theme token instead`
+          );
+        }
+      }
+      chunkStart = i + 1;
+    }
+  }
+  return found;
+}
+
 function localRoleDeclarations(file: string, css: string): string[] {
   return [...css.matchAll(ROLE_DECLARATION)].map(
     (match) => `${file}:${lineAt(css, match.index)} declares ${match[1]}; roles come from the theme`
@@ -208,7 +239,7 @@ function localRoleDeclarations(file: string, css: string): string[] {
 
 const read = (file: string) => readFileSync(join(process.cwd(), file), "utf8");
 
-describe("theme-blind colours in role-owned modules", () => {
+describe("theme-blind colours in every module", () => {
   const fixture = [
     ".keep {",
     "  color: var(--c-red);",
@@ -219,7 +250,8 @@ describe("theme-blind colours in role-owned modules", () => {
     "  .link {",
     "    color: var(--success);",
     "    background: var(--hl-mint, transparent);",
-    "    border-color: color-mix(in srgb, var(--c-green-soft) 50%, var(--line));",
+    "    border-color: color-mix(in srgb, var(--c-teal-soft) 50%, var(--line));",
+    "    outline-color: var(--c-green-soft);",
     "  }",
     "}",
   ].join("\n");
@@ -228,12 +260,41 @@ describe("theme-blind colours in role-owned modules", () => {
     expect(themeBlindUses(fixture)).toEqual([
       { line: 2, selector: ".keep", token: "--c-red" },
       { line: 9, selector: ".button, .link", token: "--hl-mint" },
+      { line: 11, selector: ".button, .link", token: "--c-green-soft" },
     ]);
   });
 
   it("reports a fixed colour outside the categorical list by file, line, selector and token", () => {
     expect(outsideCategorical("fixture.module.css", themeBlindUses(fixture), [".keep"])).toEqual([
       "fixture.module.css:9 .button, .link uses var(--hl-mint); use a role token instead",
+      "fixture.module.css:11 .button, .link uses var(--c-green-soft); use a role token instead",
+    ]);
+  });
+
+  it("reports each colour literal in a value by file and line, and leaves selectors, urls and colour-mix alone", () => {
+    const css = [
+      ".backdrop {",
+      "  background: rgba(0, 0, 0, 0.4);",
+      "  color: #fff;",
+      "  border-color: color-mix(in srgb, var(--scrim) 40%, transparent);",
+      "  outline-color: hsl(0 0% 0%);",
+      "}",
+      "",
+      ".white:hover,",
+      '.swatch[data-value="red"] {',
+      "  color: white;",
+      "  background: oklch(0.7 0.1 200);",
+      "  mask: url(#fade);",
+      '  font-family: "Snow", var(--font-body);',
+      "  white-space: nowrap;",
+      "}",
+    ].join("\n");
+    expect(colourLiterals("fixture.module.css", css)).toEqual([
+      "fixture.module.css:2 uses the colour literal rgba(; use a theme token instead",
+      "fixture.module.css:3 uses the colour literal #fff; use a theme token instead",
+      "fixture.module.css:5 uses the colour literal hsl(; use a theme token instead",
+      "fixture.module.css:10 uses the colour literal white; use a theme token instead",
+      "fixture.module.css:11 uses the colour literal oklch(; use a theme token instead",
     ]);
   });
 
@@ -246,17 +307,26 @@ describe("theme-blind colours in role-owned modules", () => {
     ]);
   });
 
-  it.each(FILES)("%s paints actions and states with role tokens", (file) => {
-    expect(outsideCategorical(file, themeBlindUses(read(file)), CATEGORICAL_SELECTORS[file])).toEqual([]);
+  it("lists categorical selectors only for modules that exist", () => {
+    expect(MODULES).toContain("components/AppHeader.module.css");
+    expect(Object.keys(CATEGORICAL_SELECTORS).filter((file) => !MODULES.includes(file))).toEqual([]);
   });
 
-  it.each(FILES)("%s takes its role tokens from the theme instead of declaring them", (file) => {
+  it.each(MODULES)("%s paints actions and states with role tokens", (file) => {
+    expect(outsideCategorical(file, themeBlindUses(read(file)), categoricalIn(file))).toEqual([]);
+  });
+
+  it.each(MODULES)("%s takes its role tokens from the theme instead of declaring them", (file) => {
     expect(localRoleDeclarations(file, read(file))).toEqual([]);
   });
 
-  it.each(FILES)("%s lists only categorical selectors it still uses", (file) => {
+  it.each(MODULES)("%s has no colour literals", (file) => {
+    expect(colourLiterals(file, read(file))).toEqual([]);
+  });
+
+  it.each(MODULES)("%s lists only categorical selectors it still uses", (file) => {
     const used = new Set(themeBlindUses(read(file)).map((use) => use.selector));
-    const stale = CATEGORICAL_SELECTORS[file].filter((selector) => !used.has(selector));
+    const stale = categoricalIn(file).filter((selector) => !used.has(selector));
     expect(stale, `${file} lists categorical selectors that no longer use a fixed colour`).toEqual([]);
   });
 });
@@ -297,9 +367,32 @@ describe("theme-blind colours in the global rules", () => {
     const stale = GLOBAL_CATEGORICAL_SELECTORS.filter((selector) => !used.has(selector));
     expect(stale, `${GLOBALS} lists categorical selectors that no longer use a fixed colour`).toEqual([]);
   });
+
+  it("skips the bridge's :root aliases and @theme block but scans its component rules", () => {
+    const fixture = [
+      ":root {",
+      "  --accent: var(--red);",
+      "}",
+      "",
+      "@theme inline static {",
+      "  --color-red: var(--red);",
+      "}",
+      "",
+      '[data-slot="select-item"][data-state="checked"] {',
+      "  background: var(--hl-mint);",
+      "}",
+    ].join("\n");
+    expect(outsideCategorical(BRIDGE, globalRuleUses(fixture), [])).toEqual([
+      'app/theme-bridge.css:10 [data-slot="select-item"][data-state="checked"] uses var(--hl-mint); use a role token instead',
+    ]);
+  });
+
+  it(`${BRIDGE} paints its component rules with role tokens`, () => {
+    expect(outsideCategorical(BRIDGE, globalRuleUses(read(BRIDGE)), [])).toEqual([]);
+  });
 });
 
-describe("theme-blind colours in the editor and the reader", () => {
+describe("theme-blind colours in the source", () => {
   it("allows a fixed colour only as the fill of a named diagram marker", () => {
     const source = [
       '<marker id="arrow-green">',
@@ -319,7 +412,14 @@ describe("theme-blind colours in the editor and the reader", () => {
     ]);
   });
 
-  it.each(Object.keys(SOURCE_MARKER_FILLS))("%s paints highlights, actions and states with role tokens", (file) => {
-    expect(outsideMarkerFills(file, read(file), SOURCE_MARKER_FILLS[file])).toEqual([]);
+  it("lists marker fills only for source files that exist", () => {
+    expect(SOURCES.length).toBeGreaterThan(0);
+    expect(Object.keys(SOURCE_MARKER_FILLS).filter((file) => !SOURCES.includes(file))).toEqual([]);
+  });
+
+  it("paints highlights, actions and states with role tokens in every file under app/, components/ and lib/", () => {
+    expect(SOURCES.flatMap((file) => outsideMarkerFills(file, read(file), SOURCE_MARKER_FILLS[file] ?? {}))).toEqual(
+      []
+    );
   });
 });

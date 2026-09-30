@@ -900,7 +900,7 @@
 .sheetBackdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+  background: color-mix(in srgb, var(--scrim) 35%, transparent);
   animation: fade 0.2s ease-out;
 }
 
