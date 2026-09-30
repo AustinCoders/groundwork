@@ -1197,7 +1197,7 @@
       {
         "version": 1,
         "title": "Groundwork roadmap",
-        "updatedAt": "2026-09-28",
+        "updatedAt": "2026-09-30",
         "phases": [
           {
             "id": "p-fix",
@@ -1604,7 +1604,7 @@
             "source": "Audit 28 Sep · A9",
             "status": "todo",
             "link": "",
-            "notes": "",
+            "notes": "The theme roles fixed the Kraft and Forest buttons and the mock's “Lean no” stamp. The 30 Sep sweep ran axe on 17 pages in all nine themes, with and without saved progress, and fixed the three contrast failures it found: Kraft's grey eyebrow on the mock lobby, Blueprint's inline code on the level page, and the “mark as read” label on a read chapter in /path in Kraft, Blueprint, Forest and Rose. Axe in every theme is still open: e2e/a11y.spec.ts runs the light theme only, and nothing runs on a phone.",
             "doneOn": null
           },
           {
@@ -1710,6 +1710,19 @@
             "link": "",
             "notes": "",
             "doneOn": null
+          },
+          {
+            "id": "t88",
+            "phase": "p-audit",
+            "title": "A colour palette per theme, on every page",
+            "why": "Actions were a fixed green or red in every theme. Now each theme's accent and state colours drive them, held by tests. A 30 Sep review in all nine themes looked at the first screen of 17 pages and the full length of home, mock, the interview book and progress, and ran axe on all 17 pages in every theme.",
+            "effort": "3 days",
+            "area": "Design",
+            "source": "User request 28 Sep",
+            "status": "done",
+            "link": "",
+            "notes": "",
+            "doneOn": "2026-09-30"
           },
           {
             "id": "t57",
@@ -1981,7 +1994,7 @@
             "source": "Audit 28 Sep · V1, V2",
             "status": "todo",
             "link": "",
-            "notes": "",
+            "notes": "The theme-palette epic delivered the token half: --primary now means the theme's accent everywhere, and success, danger, caution and info each have one meaning, held by tests. The type and spacing scale stays with epic-one-system.",
             "doneOn": null
           },
           {

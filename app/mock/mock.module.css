@@ -2701,6 +2701,10 @@
   margin: 0;
 }
 
+.planHead .eyebrow {
+  color: var(--ink-soft);
+}
+
 .modes {
   padding: 4px;
   background: var(--sheet-2);

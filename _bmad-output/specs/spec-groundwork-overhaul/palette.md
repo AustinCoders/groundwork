@@ -6,6 +6,7 @@ The user approved this palette on 2026-09-28, from https://claude.ai/artifact/M5
 - The role tokens below are new, one set per theme. The accent role is named `--primary`, not `--accent`, because `--accent` is already a per-topic local variable.
 - Every value below is at least 4.5:1 against its pair:
   - `accent`, `success`, `danger`, `caution` and `info` against the sheet;
+  - `success`, `danger`, `caution` and `info` against `--sheet-2`, the editor background (added 2026-09-30);
   - `on-accent` against the accent;
   - `mark` against the ink.
 
@@ -14,7 +15,7 @@ The user approved this palette on 2026-09-28, from https://claude.ai/artifact/M5
 | light (Paper) | #2451b3 | #fffdf6 | #ffe873 | #1f7a55 | #c4342b | #8a6400 | #1c64b8 |
 | dark (Night) | #8fb0ff | #10131a | #4a4020 | #64dfa6 | #ff9184 | #f2cc60 | #79b8ff |
 | kraft | #8a3a12 | #fbf3df | #f0cf6a | #285c3f | #9b1b30 | #6e5200 | #2a5585 |
-| blueprint | #7fd8ff | #0f2439 | #5a5a2c | #7fe0b8 | #ff8f7a | #ffe08a | #a9d4ff |
+| blueprint | #7fd8ff | #0f2439 | #5a5a2c | #7fe0b8 | #ff907b | #ffe08a | #a9d4ff |
 | sepia | #7a2e2a | #faf1dc | #f0d68a | #3d6543 | #a3392a | #7a5c0c | #385e88 |
 | forest | #2d6a43 | #f8fbf2 | #e3e79a | #1f6f5c | #b5452f | #7a6206 | #2c6388 |
 | rose | #ff8fb8 | #241823 | #5c2a44 | #7fe0b8 | #ff9a6b | #f5d68a | #9cc4ff |
@@ -29,3 +30,7 @@ The user approved this palette on 2026-09-28, from https://claude.ai/artifact/M5
 - **`--mark`:** highlighter behind words, inline code and title underlines. It replaces `--hl-yellow` in that role.
 - **`--success`, `--danger`, `--caution`, `--info`:** states only. Passed and failed tests, done and due, tips. Never decoration.
 - `--green` and `--red` stay as the categorical `--c-green` and `--c-red` for charts, topic chips and the whiteboard.
+
+## Changes since approval
+
+- **2026-09-30, Blueprint `--danger` `#ff8f7a` → `#ff907b`.** The states also sit on the editor background, `--sheet-2`. There, `#ff8f7a` was 4.47:1 on `#204569`. `#ff907b` is the nearest lighter value that passes, with the same hue. It is 4.50:1 on `--sheet-2` and 5.13:1 on `--sheet`. Every other state in every theme already reached 4.5:1 on `--sheet-2`. `tests/contrast.test.ts` now checks all four states against `--sheet-2` as well as `--sheet`. Blueprint's categorical `--red` stays `#ff8f7a`.

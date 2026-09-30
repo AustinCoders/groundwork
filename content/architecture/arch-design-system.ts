@@ -255,11 +255,10 @@ export const archDesignSystem: Chapter = {
 
 <h3>CSS modules and globals.css</h3>
 <p>
-  <code>globals.css</code> is 9,608 lines. It holds the tokens, the prose styles every chapter
-  uses, and the reading pages' layout. Seven CSS modules hold everything that belongs to one tool:
-  <code>app/mock/mock.module.css</code> (3,310 lines), <code>app/whiteboard/whiteboard.module.css</code>
-  (1,598), <code>app/problems/problems.module.css</code> (1,167), and four small ones for the
-  modal, the drawer, the appearance picker and the bare header. The rule of thumb is that anything
+  <code>globals.css</code> is about 9,600 lines. It holds the tokens, the prose styles every
+  chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
+  one of 16 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
+  lines. The rule of thumb is that anything
   chapter HTML can contain goes in globals, because chapter bodies are strings that cannot import a
   module, and anything else goes in a module so it loads only with its page.
 </p>
@@ -311,7 +310,7 @@ export const archDesignSystem: Chapter = {
 
 <h3>The checks</h3>
 <p>
-  <code>e2e/a11y.spec.ts</code> runs axe through <code>@axe-core/playwright</code> against 18
+  <code>e2e/a11y.spec.ts</code> runs axe through <code>@axe-core/playwright</code> against 20
   pages, including the home page, a chapter, the playground, the problems list, the mock lobby, the
   whiteboard and this architecture section. It checks the WCAG 2.0 and 2.1 A and AA tags and fails
   on any violation. One more test walks a system design round in the mock interview and runs axe
@@ -331,9 +330,11 @@ export const archDesignSystem: Chapter = {
 </p>
 <p>
   The same file checks the role colours in every theme: <code>--primary</code> and the four states
-  against the sheet, <code>--on-primary</code> against <code>--primary</code>, and the ink against
-  <code>--mark</code>. That is 63 more checks at 4.5:1, and a theme block that leaves out a role
-  fails with the theme's selector and the token's name. The six categorical colours get 54 checks
+  against the sheet, the four states again against the editor's background
+  <code>--sheet-2</code>, <code>--on-primary</code> against <code>--primary</code>, the ink against
+  <code>--mark</code>, and <code>--ink-soft</code> against <code>--paper</code>. That is 108 more
+  checks at 4.5:1, and a theme block that leaves out a role fails with the theme's selector and
+  the token's name. The six categorical colours get 54 checks
   at 3:1 against the sheet.
 </p>
 

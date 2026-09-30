@@ -60,40 +60,40 @@ export const archHealth: Chapter = {
 
 <h3>2. A few files carry most of the weight</h3>
 <p>
-  Line counts from <code>wc -l</code>, for source outside <code>content/</code> and for the two
-  largest content files:
+  Line counts from <code>wc -l</code> as of 30 September 2026, for source outside
+  <code>content/</code> and for the two largest content files:
 </p>
 
 <figure>
-<svg viewBox="0 0 900 350" class="dg" role="img" aria-label="Bar chart of the largest files by line count: globals.css 9,319; content/topics.ts 4,294; content/interview-data.ts 4,237; mock.module.css 2,187; Board.tsx 1,851; PracticeWorkspace.tsx 1,735; whiteboard.module.css 1,572; CodeEditor.tsx 1,112.">
+<svg viewBox="0 0 900 350" class="dg" role="img" aria-label="Bar chart of the largest files by line count, as of 30 September 2026: app/globals.css 9,616; content/interview-data.ts 4,734; content/topics.ts 4,394; mock/mock.module.css 3,314; app/home.module.css 2,455; whiteboard/Board.tsx 1,852; PracticeWorkspace.tsx 1,735; interview/book.module.css 1,614.">
 <g class="rough">
-<rect x="245" y="24" width="560" height="22" rx="4" style="fill: var(--dg-box-red); stroke: var(--red); stroke-width: 1.6" />
-<rect x="245" y="62" width="258" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
-<rect x="245" y="100" width="255" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
-<rect x="245" y="138" width="131" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
-<rect x="245" y="176" width="111" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
-<rect x="245" y="214" width="104" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
-<rect x="245" y="252" width="94" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
-<rect x="245" y="290" width="67" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="24" width="481" height="22" rx="4" style="fill: var(--dg-box-red); stroke: var(--red); stroke-width: 1.6" />
+<rect x="245" y="62" width="237" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
+<rect x="245" y="100" width="220" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
+<rect x="245" y="138" width="166" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="176" width="123" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="214" width="93" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="252" width="87" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="290" width="81" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <path class="ln" d="M245 16 V320" />
 </g>
 <text class="lbl" x="232" y="41" text-anchor="end">app/globals.css</text>
-<text class="lbl" x="232" y="79" text-anchor="end">content/topics.ts</text>
-<text class="lbl" x="232" y="117" text-anchor="end">content/interview-data.ts</text>
-<text class="lbl" x="232" y="155" text-anchor="end">mock.module.css</text>
-<text class="lbl" x="232" y="193" text-anchor="end">whiteboard/Board.tsx</text>
-<text class="lbl" x="232" y="231" text-anchor="end">PracticeWorkspace.tsx</text>
-<text class="lbl" x="232" y="269" text-anchor="end">whiteboard.module.css</text>
-<text class="lbl" x="232" y="307" text-anchor="end">CodeEditor.tsx</text>
-<text class="sm" x="815" y="40">9,319</text>
-<text class="sm" x="513" y="78">4,294</text>
-<text class="sm" x="510" y="116">4,237</text>
-<text class="sm" x="386" y="154">2,187</text>
-<text class="sm" x="366" y="192">1,851</text>
-<text class="sm" x="359" y="230">1,735</text>
-<text class="sm" x="349" y="268">1,572</text>
-<text class="sm" x="322" y="306">1,112</text>
-<text class="sm" x="245" y="340">lines, one bar length per line count</text>
+<text class="lbl" x="232" y="79" text-anchor="end">content/interview-data.ts</text>
+<text class="lbl" x="232" y="117" text-anchor="end">content/topics.ts</text>
+<text class="lbl" x="232" y="155" text-anchor="end">mock/mock.module.css</text>
+<text class="lbl" x="232" y="193" text-anchor="end">app/home.module.css</text>
+<text class="lbl" x="232" y="231" text-anchor="end">whiteboard/Board.tsx</text>
+<text class="lbl" x="232" y="269" text-anchor="end">PracticeWorkspace.tsx</text>
+<text class="lbl" x="232" y="307" text-anchor="end">interview/book.module.css</text>
+<text class="sm" x="736" y="40">9,616</text>
+<text class="sm" x="492" y="78">4,734</text>
+<text class="sm" x="475" y="116">4,394</text>
+<text class="sm" x="421" y="154">3,314</text>
+<text class="sm" x="378" y="192">2,455</text>
+<text class="sm" x="348" y="230">1,852</text>
+<text class="sm" x="342" y="268">1,735</text>
+<text class="sm" x="336" y="306">1,614</text>
+<text class="sm" x="245" y="340">lines as of 30 September 2026, one bar length per line count</text>
 </svg>
 <figcaption>
   One stylesheet is longer than the next two files together. The two yellow bars are content,
@@ -102,7 +102,7 @@ export const archHealth: Chapter = {
 </figure>
 
 <p>
-  <strong><code>app/globals.css</code>, 9,319 lines</strong>, is the largest single piece of debt.
+  <strong><code>app/globals.css</code>, about 9,600 lines</strong>, is the largest single piece of debt.
   The newer parts of the site (the mock interview, the whiteboard and the problems page) use CSS
   modules, and the older reader and playground styles still live in the global sheet. Every page
   downloads all of it, and nothing tells you which rules are dead.

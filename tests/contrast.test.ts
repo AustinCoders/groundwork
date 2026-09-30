@@ -123,10 +123,13 @@ describe("the theme palette", () => {
 describe("the role colours", () => {
   const ROLES = ["--primary", "--on-primary", "--mark", "--success", "--danger", "--caution", "--info"] as const;
   const ON_THE_SHEET = ["--primary", "--success", "--danger", "--caution", "--info"] as const;
+  const IN_THE_EDITOR = ["--success", "--danger", "--caution", "--info"] as const;
   const PAIRS: [foreground: string, background: string][] = [
     ...ON_THE_SHEET.map((role): [string, string] => [role, "--sheet"]),
+    ...IN_THE_EDITOR.map((state): [string, string] => [state, "--sheet-2"]),
     ["--on-primary", "--primary"],
     ["--ink", "--mark"],
+    ["--ink-soft", "--paper"],
   ];
   const withTheme = blocks().filter((b) => declaration(b.body, "--sheet") && declaration(b.body, "--ink"));
 
@@ -159,6 +162,7 @@ describe("text on the role tints", () => {
   const PAIRS: [foreground: string, tint: string][] = [
     ...TINTS.map((tint): [string, string] => ["--ink", tint]),
     ["--ink-soft", "--primary-soft"],
+    ["--ink-soft", "--success-soft"],
   ];
   const MIX = /color-mix\(in srgb,\s*var\((--[\w-]+)\)\s*([\d.]+)%,\s*var\((--[\w-]+)\)\)/;
   const shared = blocks().find((b) => declaration(b.body, "--primary-soft"));

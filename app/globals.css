@@ -362,7 +362,7 @@ html[data-font="roboto"] {
   --on-primary: #0f2439;
   --mark: #5a5a2c;
   --success: #7fe0b8;
-  --danger: #ff8f7a;
+  --danger: #ff907b;
   --caution: #ffe08a;
   --info: #a9d4ff;
 }
@@ -4771,6 +4771,10 @@ span.tone-bad {
   color: var(--pencil);
 }
 
+.level__list code {
+  color: var(--ink-soft);
+}
+
 .level__cta {
   margin-top: auto;
   font-family: var(--font-heading);
@@ -5027,7 +5031,8 @@ a.step__title:hover {
   margin: 0 0 8px;
 }
 
-.step.is-done .step__sub {
+.step.is-done .step__sub,
+.step.is-done .check {
   color: var(--ink-soft);
 }
 

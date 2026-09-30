@@ -85,7 +85,7 @@ export const archTesting: Chapter = {
 <thead><tr><th>Spec</th><th>Tests</th><th>Covers</th></tr></thead>
 <tbody>
 <tr><td><code>smoke.spec.ts</code></td><td>49</td><td>16 routes load with no console error and no failed request; the playground fits at 1024, 768 and 390 pixels wide; 30 flows (narration, search, share links, stdin, the debugger, Lua and Python grading, the mock interview from lobby to debrief, and the problems page filters)</td></tr>
-<tr><td><code>a11y.spec.ts</code></td><td>19</td><td>axe with the WCAG 2.0 and 2.1 A and AA tags over 18 pages, plus a mock round checked at up to five stages, from the brief to the debrief</td></tr>
+<tr><td><code>a11y.spec.ts</code></td><td>21</td><td>axe with the WCAG 2.0 and 2.1 A and AA tags over 20 pages, plus a mock round checked at up to five stages, from the brief to the debrief</td></tr>
 <tr><td><code>whiteboard.spec.ts</code></td><td>6</td><td>Drawing, arrows that follow their shapes, undo, reload, PNG export, share links, templates, locking, grouping</td></tr>
 </tbody>
 </table></div>

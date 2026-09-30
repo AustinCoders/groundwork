@@ -982,6 +982,11 @@ test("review, the interview book, mock and progress take the theme's accent, not
       await expect(action(), `${path} in ${theme}`).toHaveCSS("background-color", themeColour(theme, "--primary"));
       if (onAccent)
         await expect(action(), `${path} in ${theme}`).toHaveCSS("color", themeColour(theme, "--on-primary"));
+      if (path === "/mock")
+        await expect(page.locator("#plan").getByText("start here", { exact: true }), `${path} in ${theme}`).toHaveCSS(
+          "color",
+          themeColour(theme, "--ink-soft")
+        );
     }
   }
 });
@@ -1052,7 +1057,9 @@ test("topic covers and chapters, level, path and the playground take the theme's
   const writtenRow = page.locator(".syllabus-item.is-ready").first();
   const levelCrumb = page.locator("#crumbs a").first();
   const levelCta = page.locator(".level__cta").first();
+  const levelListCode = page.locator(".level__list code").first();
   const pathMeter = page.locator("#meter-fill");
+  const doneStepCheck = page.locator("#step-setup-mental-model.is-done .check");
 
   for (const theme of THEMES) {
     const accent = themeColour(theme, "--primary");
@@ -1082,9 +1089,18 @@ test("topic covers and chapters, level, path and the playground take the theme's
     await expect(writtenRow, `/level/js in ${theme}`).toHaveCSS("border-left-color", accent);
     await expect(levelCrumb, `/level/js in ${theme}`).toHaveCSS("color", accent);
     await expect(levelCta, `/level/js in ${theme}`).toHaveCSS("color", accent);
+    await expect(levelListCode, `/level/js in ${theme}`).toHaveCSS("color", themeColour(theme, "--ink-soft"));
 
+    await page.evaluate(() =>
+      localStorage.setItem(
+        "jsnotes:progress",
+        JSON.stringify({ chapters: { "setup-mental-model": true }, exercises: {} })
+      )
+    );
     await page.goto("/path?topic=js&level=beginner");
     await expect(pathMeter, `/path in ${theme}`).toHaveCSS("background-color", accent);
+    await expect(doneStepCheck, `/path in ${theme}`).toHaveCSS("color", themeColour(theme, "--ink-soft"));
+    await page.evaluate(() => localStorage.removeItem("jsnotes:progress"));
   }
 });
 
@@ -1093,6 +1109,18 @@ function colourChannels(value: string): number[] {
   if (srgb) return [...srgb.slice(1, 4).map((v) => Math.round(Number(v) * 255)), Number(srgb[4] ?? 1)];
   const rgb = /rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/.exec(value);
   return rgb ? [...rgb.slice(1, 4).map(Number), Number(rgb[4] ?? 1)] : [];
+}
+
+function contrastRatio(a: number[], b: number[]): number {
+  const luminance = (channels: number[]) => {
+    const [red, green, blue] = channels.slice(0, 3).map((value) => {
+      const share = value / 255;
+      return share <= 0.03928 ? share / 12.92 : ((share + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+  };
+  const [lighter, darker] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (lighter + 0.05) / (darker + 0.05);
 }
 
 test("links inside a kept callout keep the callout's colour", async ({ page }) => {
@@ -1166,4 +1194,38 @@ test("the editor's selected search match takes the theme's accent", async ({ pag
     "outline-color",
     themeColour("lavender", "--primary")
   );
+});
+
+test("the editor bar's selected language keeps its check mark and focus ring visible", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("jsnotes:theme", JSON.stringify("lavender")));
+  await page.goto("/practice?id=ex-two-sum");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "lavender");
+  const bar = page.locator(".ed__bar");
+  await bar.getByRole("combobox", { name: "Language", exact: true }).focus();
+  await page.keyboard.press("Enter");
+  const selected = bar.getByRole("option", { name: "JavaScript", exact: true });
+  await expect(selected).toBeFocused();
+  await expect(selected).toHaveAttribute("aria-selected", "true");
+
+  const shown = await selected.evaluate((option) => {
+    const own = getComputedStyle(option);
+    const check = getComputedStyle(option.querySelector(".dd__opt-check")!);
+    return {
+      focusVisible: option.matches(":focus-visible"),
+      text: own.color,
+      checkDisplay: check.display,
+      check: check.color,
+      ringStyle: own.outlineStyle,
+      ring: own.outlineColor,
+      fill: own.backgroundColor,
+      menu: getComputedStyle(option.closest(".dd__menu")!).backgroundColor,
+    };
+  });
+  const behind = colourChannels(shown.fill)[3] === 0 ? shown.menu : shown.fill;
+  expect(shown.focusVisible).toBe(true);
+  expect(shown.checkDisplay).not.toBe("none");
+  expect(shown.check).toBe(shown.text);
+  expect(shown.ringStyle).toBe("solid");
+  expect(shown.ring).toBe(shown.text);
+  expect(contrastRatio(colourChannels(shown.check), colourChannels(behind))).toBeGreaterThanOrEqual(3);
 });
