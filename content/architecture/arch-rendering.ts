@@ -91,7 +91,7 @@ export const archRendering: Chapter = {
 <tr><td><code>Board</code>, with <code>ssr: false</code></td><td><code>app/whiteboard/WhiteboardShell.tsx</code></td><td>Its <code>useState</code> initialisers read <code>localStorage</code>, and on a first visit even write a board. None of that can run on a server, so the server renders only the "Setting up the board" line. The board's chunk is 86 KB, or 28 KB gzipped, and is not part of the first load.</td></tr>
 <tr><td><code>Room</code> and <code>Scorecard</code></td><td><code>app/mock/MockApp.tsx</code></td><td>Only needed once a loop starts. <code>app/mock/preload.ts</code> exports the same <code>import()</code>, so the lobby warms it with <code>requestIdleCallback</code> when the pointer enters, or focus reaches, a start button.</td></tr>
 <tr><td><code>PracticeWorkspace</code></td><td><code>app/mock/Room.tsx</code></td><td>Coding rounds need the editor, but talking rounds do not.</td></tr>
-<tr><td><code>FocusScope</code></td><td><code>Shell</code> and <code>ShortcutHelp</code></td><td>Only needed once a drawer or dialog opens.</td></tr>
+<tr><td><code>FocusScope</code></td><td><code>ShortcutHelp</code></td><td>Only needed once the shortcut help opens.</td></tr>
 </tbody>
 </table></div>
 <p>

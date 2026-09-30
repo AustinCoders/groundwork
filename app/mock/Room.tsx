@@ -9,6 +9,7 @@ import { codingScore, rubricFor, talkScore, type CriterionId, type Mark } from "
 import { currentQuestion, stagePosition, type Action, type Session, type SessionQuestion } from "@/lib/mock/session";
 import type { CodingItem, Seniority, StageId, StageInfo, TalkItem } from "@/lib/mock/types";
 import type { PracticeExercise } from "@/lib/practiceFree";
+import { shortcutShouldStepAside } from "@/lib/shortcuts";
 import { opener, personaFor, shiftRemark, type Persona } from "@/lib/mock/persona";
 import { STAGE_GUIDE } from "@/lib/mock/guide";
 import { BoardView, Whiteboard } from "@/app/mock/Whiteboard";
@@ -740,7 +741,7 @@ export function Room({
       const typing =
         target && (target.tagName === "TEXTAREA" || target.tagName === "INPUT" || target.isContentEditable);
       const inEditor = target?.closest(".cm-editor");
-      if (inEditor || !q) return;
+      if (inEditor || !q || target?.closest("[role=dialog]")) return;
 
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         if (session.step === "answer" && q.item.kind === "talk") {
@@ -755,10 +756,11 @@ export function Room({
       if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
 
       if (e.key === "Enter" && session.step === "brief") {
+        if (shortcutShouldStepAside(e)) return;
         e.preventDefault();
         dispatch({ type: "enter", at: Date.now() });
       } else if (e.key === "Enter" && session.step === "review" && q.item.kind === "talk" && !firstUnmarked) {
-        if (target?.tagName === "BUTTON" || target?.tagName === "A" || target?.tagName === "SUMMARY") return;
+        if (shortcutShouldStepAside(e)) return;
         e.preventDefault();
         dispatch({ type: "next", at: Date.now() });
       } else if (firstUnmarked && (e.key === "1" || e.key === "2" || e.key === "3")) {

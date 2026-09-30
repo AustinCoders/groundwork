@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { BookShell } from "@/app/interview/BookShell";
 import { confidence, CONFIDENCE_LABEL, useConfidence, type Confidence } from "@/lib/interviewConfidence";
 import type { BankQuestion, BookPart } from "@/lib/interviewBook";
+import { shortcutShouldStepAside } from "@/lib/shortcuts";
 import styles from "../book.module.css";
 
 type Status = "all" | "unmarked" | "shaky" | "knew";
@@ -55,7 +56,7 @@ function Drill({ deck, onExit }: { deck: BankQuestion[]; onExit: () => void }) {
     function onKey(e: KeyboardEvent) {
       if ((e.target as HTMLElement).closest("input, textarea, [role=dialog]")) return;
       if (e.key === " " || e.key === "Enter") {
-        if (!open) {
+        if (!open && !shortcutShouldStepAside(e)) {
           e.preventDefault();
           setOpen(true);
         }

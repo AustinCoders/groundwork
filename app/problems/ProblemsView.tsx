@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { BackButton } from "@/components/practice/BackButton";
+import { FocusTrap } from "@/components/FocusTrap";
 import { SiteDrawer } from "@/components/SiteDrawer";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { progress } from "@/lib/storage";
@@ -627,27 +628,29 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
       {sheetOpen && (
         <div className={styles.sheetRoot}>
           <div className={styles.sheetBackdrop} onClick={() => setSheetOpen(false)} aria-hidden="true" />
-          <div className={styles.sheet} id="problem-filters" role="dialog" aria-modal="true" aria-label="Filters">
-            <div className={styles.sheetHead}>
-              <p className={styles.sheetTitle}>Filters</p>
+          <FocusTrap>
+            <div className={styles.sheet} id="problem-filters" role="dialog" aria-modal="true" aria-label="Filters">
+              <div className={styles.sheetHead}>
+                <p className={styles.sheetTitle}>Filters</p>
+                <button
+                  type="button"
+                  className={styles.iconBtn}
+                  aria-label="Close filters"
+                  onClick={() => setSheetOpen(false)}
+                >
+                  ×
+                </button>
+              </div>
+              {filterPanel}
               <button
                 type="button"
-                className={styles.iconBtn}
-                aria-label="Close filters"
+                className={`${styles.btn} ${styles.primary} ${styles.sheetDone}`}
                 onClick={() => setSheetOpen(false)}
               >
-                ×
+                Show {plural(shown, "problem")}
               </button>
             </div>
-            {filterPanel}
-            <button
-              type="button"
-              className={`${styles.btn} ${styles.primary} ${styles.sheetDone}`}
-              onClick={() => setSheetOpen(false)}
-            >
-              Show {plural(shown, "problem")}
-            </button>
-          </div>
+          </FocusTrap>
         </div>
       )}
       <SiteDrawer open={menuOpen} onClose={closeMenu} />

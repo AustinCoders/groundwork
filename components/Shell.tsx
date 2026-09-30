@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { ClockWeather } from "@/components/ClockWeather";
+import { FocusTrap } from "@/components/FocusTrap";
 import { BackButton } from "@/components/practice/BackButton";
 import { DailyRecap } from "@/components/DailyRecap";
 import { FontPicker, ThemePicker } from "@/components/ThemeFontPicker";
@@ -21,15 +21,20 @@ const SIDEBAR_KEY = "jsnotes:sidebar-collapsed";
 const WORKSPACE_SIDEBAR_KEY = "jsnotes:sidebar-collapsed:workspace";
 import { useClientValue, useLastLevel, useMounted, useProgressValue } from "@/lib/hooks";
 
-const FocusScope = dynamic(() => import("@radix-ui/react-focus-scope").then((m) => m.FocusScope));
+const DRAWER_LAYOUT = "(max-width: 900px)";
 
-function MaybeFocusTrap({ active, children }: { active: boolean; children: React.ReactElement }) {
-  if (!active) return children;
-  return (
-    <FocusScope asChild trapped loop>
-      {children}
-    </FocusScope>
-  );
+function subscribeToDrawerLayout(onChange: () => void) {
+  const media = window.matchMedia(DRAWER_LAYOUT);
+  media.addEventListener("change", onChange);
+  return () => media.removeEventListener("change", onChange);
+}
+
+function isDrawerLayout() {
+  return window.matchMedia(DRAWER_LAYOUT).matches;
+}
+
+function isDrawerLayoutOnServer() {
+  return false;
 }
 
 function TopicLink({
@@ -115,7 +120,7 @@ export function Shell({
     store.set(sidebarKey, next);
     setCollapsedOverride(next);
   }
-  const asideRef = useRef<HTMLElement>(null);
+  const drawerLayout = useSyncExternalStore(subscribeToDrawerLayout, isDrawerLayout, isDrawerLayoutOnServer);
   const mounted = useMounted();
   const savedLevel = useLastLevel();
   const chs = useMemo(() => progressChapters || [], [progressChapters]);
@@ -137,10 +142,6 @@ export function Shell({
 
   useEffect(() => {
     document.body.style.overflow = drawerOpen ? "hidden" : "";
-  }, [drawerOpen]);
-
-  useEffect(() => {
-    if (drawerOpen) asideRef.current?.focus();
   }, [drawerOpen]);
 
   useEffect(() => {
@@ -205,12 +206,12 @@ export function Shell({
           onClick={() => setDrawerOpen(false)}
         />
 
-        <MaybeFocusTrap active={drawerOpen}>
+        <FocusTrap active={drawerOpen}>
           <aside
-            ref={asideRef}
             className={`site-sidenav${drawerOpen ? " is-open" : ""}${collapsed ? " is-collapsed" : ""}`}
             id="site-sidenav"
             aria-label="Site navigation"
+            inert={drawerLayout && !drawerOpen}
             onClick={(e) => {
               if ((e.target as HTMLElement).closest("a")) closeOnMobileNav();
             }}
@@ -447,7 +448,7 @@ export function Shell({
               {footAfter}
             </div>
           </aside>
-        </MaybeFocusTrap>
+        </FocusTrap>
 
         <main className="shell-main" id="main">
           {children}

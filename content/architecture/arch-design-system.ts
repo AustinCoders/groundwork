@@ -226,10 +226,10 @@ export const archDesignSystem: Chapter = {
   clock and weather, the streak, the topic of the day, links to the practice tools and the topic
   list, and the theme and font dropdowns at the foot. The sidebar collapses, and the choice is
   saved under <code>jsnotes:sidebar-collapsed</code>, with a separate key for workspace pages. On a
-  narrow screen it becomes a drawer. Opening the drawer locks body scroll, focuses the sidebar,
-  closes on Escape, and traps focus with <code>@radix-ui/react-focus-scope</code>, which is loaded
-  with <code>next/dynamic</code> only when needed. Eleven files render it, from the home page to
-  the reader.
+  narrow screen it becomes a drawer. Opening the drawer locks body scroll, focuses its first link,
+  closes on Escape, and holds focus with the shared <code>components/FocusTrap.tsx</code>, which
+  wraps <code>@radix-ui/react-focus-scope</code>. Closed on a narrow screen, the drawer is
+  <code>inert</code>, so Tab skips it. Eleven files render it, from the home page to the reader.
 </p>
 <p>
   The practice playground, the problems list and the whiteboard are full-screen tools, and a
@@ -237,8 +237,8 @@ export const archDesignSystem: Chapter = {
   open <code>components/SiteDrawer.tsx</code> from a menu button. It is a portal with
   <code>role="dialog"</code> and <code>aria-modal</code>, seven links (home, playground, problems,
   whiteboard, mock interview, review, progress) with <code>aria-current</code> on the current one,
-  and an <code>AppearancePicker</code>. It focuses its first control, closes on Escape, locks
-  scroll, and returns focus to whatever opened it. The whiteboard renders through
+  and an <code>AppearancePicker</code>. It focuses its first control, holds Tab inside, closes on
+  Escape, locks scroll, and returns focus to whatever opened it. The whiteboard renders through
   <code>BareShell</code> with <code>header={false}</code> and has its own board menu drawer, which
   embeds the same <code>AppearancePicker</code>.
 </p>

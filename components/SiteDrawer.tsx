@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { AppearancePicker } from "@/components/AppearancePicker";
+import { FocusTrap } from "@/components/FocusTrap";
 import { NarrationSettings } from "@/components/reader/NarrationSettings";
 import { ZOOM_STEPS, useReaderZoom } from "@/lib/readerZoom";
 import { computeStats } from "@/lib/gamification";
@@ -499,12 +500,8 @@ export function SiteDrawer({
   reading?: boolean;
   children?: React.ReactNode;
 }) {
-  const ref = useRef<HTMLElement>(null);
-
   useEffect(() => {
     if (!open) return;
-    const back = document.activeElement as HTMLElement | null;
-    ref.current?.querySelector<HTMLElement>("button, a")?.focus();
     function onKey(e: KeyboardEvent) {
       if (e.key !== "Escape") return;
       const field = e.target as HTMLInputElement | null;
@@ -519,7 +516,6 @@ export function SiteDrawer({
     return () => {
       document.removeEventListener("keydown", onKey, true);
       document.body.style.overflow = overflow;
-      back?.focus();
     };
   }, [open, onClose]);
 
@@ -528,47 +524,49 @@ export function SiteDrawer({
   return createPortal(
     <div className={styles.root}>
       <div className={styles.backdrop} onClick={onClose} aria-hidden="true" />
-      <aside className={styles.drawer} ref={ref} role="dialog" aria-modal="true" aria-label={`${SITE_NAME} menu`}>
-        <div className={styles.head}>
-          <Link href="/" className={styles.brand} onClick={onClose}>
-            <span className="brand__mark" aria-hidden="true">
-              JS
-            </span>
-            <span>{SITE_NAME}</span>
-          </Link>
-          <button type="button" className={styles.close} aria-label="Close the menu" onClick={onClose}>
-            ×
-          </button>
-        </div>
-        {children}
-        <DrawerBody onClose={onClose} reading={reading} />
-        <div className={styles.foot}>
-          {reading && (
-            <button type="button" className={styles.action} onClick={() => window.print()}>
-              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style={{ margin: 0 }}>
-                <path
-                  d="M7 9V3h10v6M7 17H5a2 2 0 01-2-2v-4a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2h-2M7 14h10v7H7z"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Print or save as PDF
-            </button>
-          )}
-          <p className={styles.footNote}>
-            Your progress stays in this browser.{" "}
-            <Link href="/architecture" onClick={onClose}>
-              How this is built
-            </Link>{" "}
-            <span aria-hidden="true">·</span>{" "}
-            <Link href="/privacy" onClick={onClose}>
-              Privacy
+      <FocusTrap>
+        <aside className={styles.drawer} role="dialog" aria-modal="true" aria-label={`${SITE_NAME} menu`}>
+          <div className={styles.head}>
+            <Link href="/" className={styles.brand} onClick={onClose}>
+              <span className="brand__mark" aria-hidden="true">
+                JS
+              </span>
+              <span>{SITE_NAME}</span>
             </Link>
-          </p>
-        </div>
-      </aside>
+            <button type="button" className={styles.close} aria-label="Close the menu" onClick={onClose}>
+              ×
+            </button>
+          </div>
+          {children}
+          <DrawerBody onClose={onClose} reading={reading} />
+          <div className={styles.foot}>
+            {reading && (
+              <button type="button" className={styles.action} onClick={() => window.print()}>
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style={{ margin: 0 }}>
+                  <path
+                    d="M7 9V3h10v6M7 17H5a2 2 0 01-2-2v-4a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2h-2M7 14h10v7H7z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Print or save as PDF
+              </button>
+            )}
+            <p className={styles.footNote}>
+              Your progress stays in this browser.{" "}
+              <Link href="/architecture" onClick={onClose}>
+                How this is built
+              </Link>{" "}
+              <span aria-hidden="true">·</span>{" "}
+              <Link href="/privacy" onClick={onClose}>
+                Privacy
+              </Link>
+            </p>
+          </div>
+        </aside>
+      </FocusTrap>
     </div>,
     document.body
   );

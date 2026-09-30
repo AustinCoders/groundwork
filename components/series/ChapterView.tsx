@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BackButton } from "@/components/practice/BackButton";
+import { FocusTrap } from "@/components/FocusTrap";
 import { SiteDrawer } from "@/components/SiteDrawer";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { activateScripts, enhanceCodeBlocks, enhanceTables, enhanceTryBlocks } from "@/components/reader/enhancements";
@@ -268,7 +269,7 @@ export function ChapterView({
               type="button"
               className={`${styles.btn} ${styles.railBtn}`}
               aria-expanded={railOpen}
-              aria-controls="arch-rail"
+              aria-controls="chapters-sheet"
               onClick={() => setRailOpen(true)}
             >
               <TopIcon name="list" size={16} />
@@ -497,20 +498,22 @@ export function ChapterView({
       {railOpen && (
         <div className={styles.sheetRoot}>
           <div className={styles.sheetBackdrop} onClick={() => setRailOpen(false)} aria-hidden="true" />
-          <div className={styles.sheet} role="dialog" aria-modal="true" aria-label="Chapters">
-            <div className={styles.sheetHead}>
-              <p className={styles.sheetTitle}>Chapters</p>
-              <button
-                type="button"
-                className={styles.iconBtn}
-                aria-label="Close chapters"
-                onClick={() => setRailOpen(false)}
-              >
-                ×
-              </button>
+          <FocusTrap>
+            <div className={styles.sheet} id="chapters-sheet" role="dialog" aria-modal="true" aria-label="Chapters">
+              <div className={styles.sheetHead}>
+                <p className={styles.sheetTitle}>Chapters</p>
+                <button
+                  type="button"
+                  className={styles.iconBtn}
+                  aria-label="Close chapters"
+                  onClick={() => setRailOpen(false)}
+                >
+                  ×
+                </button>
+              </div>
+              {rail}
             </div>
-            {rail}
-          </div>
+          </FocusTrap>
         </div>
       )}
       <SiteDrawer open={menuOpen} onClose={closeMenu} reading />

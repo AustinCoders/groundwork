@@ -136,10 +136,16 @@ const smokeViewports = [
 const smokeFlows = (smokeSpec.match(/^test\(/gm) ?? []).length;
 const smokeTests = smokePages + smokeViewports + smokeFlows;
 
-const whiteboardSpec = read("e2e/whiteboard.spec.ts");
-const whiteboardTests = (whiteboardSpec.match(/^ {0,2}test\(/gm) ?? []).length;
+const specFiles = readdirSync(join(process.cwd(), "e2e"))
+  .filter((file) => file.endsWith(".spec.ts"))
+  .sort();
+const testsCountedApart: Record<string, number> = { "a11y.spec.ts": a11yTests, "smoke.spec.ts": smokeTests };
+const specTests = specFiles.map((file) => ({
+  file,
+  tests: testsCountedApart[file] ?? (read(`e2e/${file}`).match(/^ {0,2}test\(/gm) ?? []).length,
+}));
 
-const browserTests = smokeTests + a11yTests + whiteboardTests;
+const browserTests = specTests.reduce((total, spec) => total + spec.tests, 0);
 
 const flattenedCases: { file: string; claim: string; about: string }[] = [
   {
@@ -182,10 +188,22 @@ const flattenedCases: { file: string; claim: string; about: string }[] = [
     claim: `<tr><td><code>smoke.spec.ts</code></td><td>${smokeTests}</td><td>${smokePages} routes load with no console error and no failed request; the playground fits at 1024, 768 and 390 pixels wide; ${smokeFlows} flows`,
     about: "the smoke spec's tests, routes and flows",
   },
+  ...specTests
+    .filter(({ file }) => !(file in testsCountedApart))
+    .map(({ file, tests }) => ({
+      file: "content/architecture/arch-testing.ts",
+      claim: `<tr><td><code>${file}</code></td><td>${tests}</td>`,
+      about: `the ${file} row`,
+    })),
   {
     file: "content/architecture/arch-testing.ts",
-    claim: `<h3>Browser tests: 3 specs, ${browserTests} tests</h3>`,
-    about: "the three specs' total",
+    claim: `<h3>Browser tests: ${specFiles.length} specs, ${browserTests} tests</h3>`,
+    about: "every spec's total",
+  },
+  {
+    file: "content/architecture/arch-tech-stack.ts",
+    claim: `${specFiles.length} specs against a production build`,
+    about: "the Playwright row's spec count",
   },
   {
     file: "content/architecture/arch-testing.ts",
@@ -222,7 +240,8 @@ describe("what the site says about its stylesheets and checks", () => {
     expect(smokePages).toBeGreaterThan(0);
     expect(smokeViewports).toBeGreaterThan(0);
     expect(smokeSpec.match(/^ {2}test\(/gm) ?? [], "one test per PAGES entry and one per viewport").toHaveLength(2);
-    expect(whiteboardTests).toBeGreaterThan(0);
+    expect(specFiles).toEqual(expect.arrayContaining(["a11y.spec.ts", "smoke.spec.ts"]));
+    for (const { file, tests } of specTests) expect(tests, `${file} has tests`).toBeGreaterThan(0);
   });
 
   it.each(flattenedCases)("$file still tells the truth about $about", ({ file, claim }) => {

@@ -3671,11 +3671,16 @@ span.tone-bad {
     border-right: none;
     box-shadow: var(--shadow-lg);
     transform: translateX(-102%);
-    transition: transform 0.22s ease;
+    visibility: hidden;
+    transition:
+      transform 0.22s ease,
+      visibility 0s linear 0.22s;
   }
 
   .site-sidenav.is-open {
     transform: none;
+    visibility: visible;
+    transition: transform 0.22s ease;
   }
 
   .shell-main {

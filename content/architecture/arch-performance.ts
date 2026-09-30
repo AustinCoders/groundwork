@@ -118,13 +118,13 @@ export const archPerformance: Chapter = {
   time, and the 204 KB React sandbox.
 </p>
 <p>
-  <strong>Dynamic imports.</strong> There are six <code>next/dynamic</code> calls in five files:
+  <strong>Dynamic imports.</strong> There are five <code>next/dynamic</code> calls in four files:
 </p>
 <ul>
 <li>the whiteboard's <code>Board</code>, with <code>ssr: false</code></li>
 <li>the mock interview's room and scorecard</li>
 <li>the editor inside the room</li>
-<li>Radix's focus trap, twice</li>
+<li>Radix's focus trap, once, in the shortcut help</li>
 </ul>
 <p>
   Below that level, <code>lib/codeLanguages.ts</code> loads each of its 17 language grammars with

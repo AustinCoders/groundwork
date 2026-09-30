@@ -1266,7 +1266,14 @@ export function PracticeWorkspace({
           </aside>
         )}
 
-        <div className="workbench">
+        <div
+          className="workbench"
+          id="editor"
+          tabIndex={-1}
+          onFocus={(e) => {
+            if (e.target === e.currentTarget) editorRef.current?.focus();
+          }}
+        >
           {mounted ? (
             <CodeEditor
               ref={editorRef}

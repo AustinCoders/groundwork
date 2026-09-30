@@ -133,7 +133,7 @@ export const archTechStack: Chapter = {
 <h3>Small pieces</h3>
 <ul>
 <li><b>msedge-tts</b> &mdash; the narrator's voice, behind <code>/api/tts</code>. Unofficial, free, and the one real single point of failure among the server functions. See <a href="/architecture/arch-apis">the endpoints chapter</a>.</li>
-<li><b>Radix</b> &mdash; <code>@radix-ui/react-focus-scope</code> traps focus in the sidebar drawer and the shortcut help, loaded dynamically. The <code>radix-ui</code> package supplies one component, the Select in <code>components/ui/select.tsx</code>, used by four files.</li>
+<li><b>Radix</b> &mdash; <code>@radix-ui/react-focus-scope</code> traps focus in the shortcut help, loaded dynamically, and inside the shared <code>FocusTrap</code>, imported statically, which holds focus in the sidebar drawer, the site menu, the Chapters sheet and the Filters sheet. The <code>radix-ui</code> package supplies one component, the Select in <code>components/ui/select.tsx</code>, used by four files.</li>
 <li><b>clsx</b> and <b>tailwind-merge</b> &mdash; one helper, <code>cn()</code> in <code>lib/utils.ts</code>, for that Select. <code>class-variance-authority</code> is also installed, but nothing imports it.</li>
 <li><b>next/font</b> &mdash; 13 Google font families behind the 7 font styles in the display picker, alongside 9 colour themes.</li>
 <li><b>Vercel Analytics and Speed Insights</b> &mdash; pageviews and field Core Web Vitals.</li>
@@ -148,7 +148,7 @@ export const archTechStack: Chapter = {
 <tr><td><b>Prettier</b></td><td>Formatting, with <code>content/interview-data.ts</code> and <code>content/practice/</code> ignored on purpose</td></tr>
 <tr><td><b>cspell</b></td><td>Spelling across every file, including all the prose</td></tr>
 <tr><td><b>Vitest</b></td><td>15 test files. Among them: the content's integrity, the site's claims about itself, SEO metadata, and the pure engines behind the mock interview, the grader, the debugger and the whiteboard</td></tr>
-<tr><td><b>Playwright</b> + <b>axe</b></td><td>3 specs against a production build: smoke, accessibility, and the whiteboard</td></tr>
+<tr><td><b>Playwright</b> + <b>axe</b></td><td>4 specs against a production build: smoke, accessibility, the whiteboard, and keyboard use</td></tr>
 <tr><td><b>Lighthouse CI</b></td><td>Performance budgets, run three times in CI so one slow runner cannot fail them</td></tr>
 <tr><td><b>esbuild</b></td><td>Bundles the React sandbox before every build</td></tr>
 <tr><td><b>husky</b> + <b>lint-staged</b></td><td>Lint, format and spell-check staged files on commit; reject code comments on push</td></tr>
