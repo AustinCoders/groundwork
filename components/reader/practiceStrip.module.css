@@ -1,0 +1,47 @@
+.practiceHead {
+  margin-bottom: 10px;
+}
+
+.practiceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.practiceCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  transition:
+    background 0.14s ease,
+    border-color 0.14s ease,
+    transform 0.14s ease;
+}
+
+.practiceCard:hover,
+.practiceCard:focus-visible {
+  background: var(--sheet-2);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.practiceAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.practiceAll:hover {
+  text-decoration: underline;
+}

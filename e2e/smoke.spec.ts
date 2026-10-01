@@ -11,6 +11,9 @@ const PAGES = [
   { path: "/", heading: /Walk into the interview ready/i },
   { path: "/notes", heading: /JavaScript/i },
   { path: "/notes/setup-mental-model", heading: /Setup/i },
+  { path: "/react/react-components", heading: /Components/i },
+  { path: "/dsa/dsa-hashing", heading: /Hashing/i },
+  { path: "/system-design/sysdes-caching-fundamentals", heading: /Caching/i },
   { path: "/interview", heading: /Every round of the loop/i },
   { path: "/interview/r1oa", heading: /online assessment/i },
   { path: "/level/js", heading: /JavaScript/i },
@@ -143,6 +146,101 @@ test("the /notes cover renders in the topic frame", async ({ page }) => {
 
   await page.goto("/notes#closures");
   await page.waitForURL("**/notes/closures");
+});
+
+test("a written topic chapter has its own rail, contents and read marker, and the Chapters sheet works at 390", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/notes/setup-mental-model");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(/Setup/i);
+  await expectOneSetOfDiagramDefs(page);
+  const articleWidth = await page.locator("#setup-mental-model").evaluate((el) => el.getBoundingClientRect().width);
+  expect(articleWidth).toBeLessThanOrEqual(760);
+  const rail = page.getByRole("navigation", { name: "Chapters" });
+  await expect(rail.locator("a[aria-current=page]")).toContainText("Setup");
+
+  const firstPager = page.getByRole("navigation", { name: "Chapter navigation" });
+  await expect(firstPager.getByRole("link", { name: /^Back to/ })).toHaveAttribute("href", "/notes");
+
+  const contents = page.getByRole("complementary", { name: "On this page" });
+  const firstSection = contents.getByRole("link").first();
+  const target = (await firstSection.getAttribute("href"))!;
+  await firstSection.click();
+  await expect(page).toHaveURL(new RegExp(`${target}$`));
+
+  await contents.getByRole("button", { name: /Mark as read/ }).click();
+  await expect(rail.locator("a[aria-current=page]")).toContainText("✓");
+
+  await page.getByRole("heading", { level: 1 }).click();
+  await page.keyboard.press("/");
+  await expect(page.locator("#search")).toBeFocused();
+  await page.keyboard.press("Escape");
+
+  await page.getByRole("heading", { level: 1 }).click();
+  await page.keyboard.press("]");
+  await page.waitForURL("**/notes/execution-context");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(/Execution/i);
+  const pager = page.getByRole("navigation", { name: "Chapter navigation" });
+  await expect(pager.getByRole("link", { name: /^Previous/ })).toHaveAttribute("href", "/notes/setup-mental-model");
+  await page.getByRole("heading", { level: 1 }).click();
+  await page.keyboard.press("[");
+  await page.waitForURL("**/notes/setup-mental-model");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(/Setup/i);
+
+  await page.getByRole("heading", { level: 1 }).click();
+  await page.keyboard.press("n");
+  await page.waitForURL("**/notes/execution-context");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(/Execution/i);
+  await page.getByRole("heading", { level: 1 }).click();
+  await page.keyboard.press("p");
+  await page.waitForURL("**/notes/setup-mental-model");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(/Setup/i);
+
+  await page.evaluate(() => window.scrollTo(0, 800));
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await page.getByRole("heading", { level: 1 }).click();
+  await page.keyboard.press("t");
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload();
+  const narrowArticleWidth = await page
+    .locator("#setup-mental-model")
+    .evaluate((el) => el.getBoundingClientRect().width);
+  expect(narrowArticleWidth).toBeGreaterThanOrEqual(350);
+  await page.getByRole("button", { name: "Chapters", exact: true }).click();
+  const sheet = page.getByRole("dialog", { name: "Chapters" });
+  await expect(sheet).toBeVisible();
+  await expect(sheet.locator("a[aria-current=page]")).toContainText("Setup");
+});
+
+test("a topic's last chapter shows the end-of-series pager fallback", async ({ page }) => {
+  await page.goto("/notes/cheat");
+  const pager = page.getByRole("navigation", { name: "Chapter navigation" });
+  await expect(pager.getByRole("link", { name: /The end/ })).toHaveAttribute("href", "/notes");
+});
+
+test("an outline topic's chapter is untouched: the old Shell sidebar and the not-written-yet stamp", async ({
+  page,
+}) => {
+  await page.goto("/typescript/ts-setup-compiler");
+  await expect(page.locator("#site-sidenav")).toHaveCount(1);
+  await expect(page.locator(".soon-stamp")).toContainText(/not written yet/i);
+  await expect(page.getByText("This section will cover:")).toBeVisible();
+  await expect(page.locator("[data-scrollbar]")).toHaveCount(0);
+});
+
+test("print shows only the chapter head and body, hiding the rail, contents, pager and end card", async ({ page }) => {
+  await page.goto("/notes/setup-mental-model");
+  await page.emulateMedia({ media: "print" });
+
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.locator("#chapters")).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Chapters" })).toBeHidden();
+  await expect(page.getByRole("complementary", { name: "On this page" })).toBeHidden();
+  await expect(page.getByRole("navigation", { name: "Chapter navigation" })).toBeHidden();
+  await expect(page.getByRole("region", { name: "Finish" })).toBeHidden();
 });
 
 test("search finds chapter text, marks matches, and ignores demo scripts", async ({ page }) => {
@@ -443,7 +541,12 @@ test("the editor lints as you type, formats on save and has a command palette", 
 
 test("the playground has no sidebar, a site menu, and goes back where you came from", async ({ page }) => {
   await page.goto("/notes/basic-async");
-  await page.locator("a.site-navlink", { hasText: "Playground" }).first().click();
+  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  await page
+    .getByRole("dialog", { name: /menu/ })
+    .getByRole("navigation", { name: "Site" })
+    .getByRole("link", { name: "Playground" })
+    .click();
   await page.waitForURL("**/practice?id=free");
 
   await expect(page.locator(".site-sidenav")).toHaveCount(0);
@@ -1035,6 +1138,7 @@ test("review brings a due chapter back, and every section header has a way back"
     "/interview/r1",
     "/interview/questions",
     "/notes",
+    "/notes/setup-mental-model",
   ]) {
     await page.goto(path);
     await expect(page.locator("header a.head-back")).toBeVisible();
@@ -1180,11 +1284,9 @@ test("problems, the whiteboard, git and architecture take the theme's accent, an
 
 test("topic covers and chapters, level, path and the playground take the theme's accent", async ({ page }) => {
   const cover = page.getByRole("link", { name: /^(Start here|Continue) — / });
-  const readingProgress = page.locator("#progress");
+  const readingProgress = page.locator("[data-scrollbar]");
   const inBodyLink = page.locator("#closures").getByRole("link", { name: "the outer reference" });
-  const currentChapterNumber = page
-    .getByRole("navigation", { name: "Chapters" })
-    .locator(".site-navlink.is-active .site-navlink__num");
+  const currentChapter = page.getByRole("navigation", { name: "Chapters" }).locator('a[aria-current="page"]');
   const run = page.getByRole("button", { name: "Run the code" });
   const writtenRow = page.locator(".syllabus-item.is-ready").first();
   const levelCrumb = page.locator("#crumbs a").first();
@@ -1207,7 +1309,7 @@ test("topic covers and chapters, level, path and the playground take the theme's
     await page.goto("/notes/closures");
     await expect(readingProgress, `/notes/closures in ${theme}`).toHaveCSS("background-color", accent);
     await expect(inBodyLink, `/notes/closures in ${theme}`).toHaveCSS("color", accent);
-    await expect(currentChapterNumber, `/notes/closures in ${theme}`).toHaveCSS("border-color", accent);
+    await expect(currentChapter, `/notes/closures in ${theme}`).toHaveCSS("box-shadow", containing(accent));
     await page.keyboard.press("Tab");
     await inBodyLink.focus();
     await expect(inBodyLink, `/notes/closures in ${theme}`).toHaveCSS("outline-style", "solid");
@@ -1265,14 +1367,12 @@ test("links inside a kept callout keep the callout's colour", async ({ page }) =
   await expect(warn.locator("a").first()).toHaveCSS("color", callout);
 });
 
-test("the notebook's margin line takes the theme's accent instead of a fixed red", async ({ page }) => {
+test("the cover's notebook margin line takes the theme's accent instead of a fixed red", async ({ page }) => {
   const marginLine = async () =>
-    colourChannels(
-      await page.locator("#closures").evaluate((sheet) => getComputedStyle(sheet, "::before").backgroundColor)
-    );
+    colourChannels(await page.locator("#top").evaluate((sheet) => getComputedStyle(sheet, "::before").backgroundColor));
   const lineIn = (theme: ThemeValue, token: string) => [...colourChannels(themeColour(theme, token)).slice(0, 3), 0.32];
 
-  await page.goto("/notes/closures");
+  await page.goto("/notes");
   expect(await marginLine()).toEqual(lineIn("light", "--primary"));
   expect(await marginLine()).not.toEqual(lineIn("light", "--red"));
 
@@ -1280,6 +1380,19 @@ test("the notebook's margin line takes the theme's accent instead of a fixed red
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "lavender");
   expect(await marginLine()).toEqual(lineIn("lavender", "--primary"));
+});
+
+test("a written chapter's end-card accent takes the theme's accent instead of a fixed red", async ({ page }) => {
+  const markAsRead = page.getByRole("region", { name: "Finish" }).getByRole("button", { name: "Mark as read" });
+
+  await page.goto("/notes/closures");
+  await expect(markAsRead, "light").toHaveCSS("background-color", themeColour("light", "--primary"));
+  await expect(markAsRead, "light").not.toHaveCSS("background-color", themeColour("light", "--red"));
+
+  await page.evaluate(() => localStorage.setItem("jsnotes:theme", JSON.stringify("lavender")));
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "lavender");
+  await expect(markAsRead, "lavender").toHaveCSS("background-color", themeColour("lavender", "--primary"));
 });
 
 test("a passed and a failed test keep their state colours where success is not green and danger is not red", async ({

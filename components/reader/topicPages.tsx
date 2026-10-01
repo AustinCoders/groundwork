@@ -4,10 +4,14 @@ import { ReaderShell } from "@/components/reader/ReaderShell";
 import { CoverSheet } from "@/components/reader/CoverSheet";
 import { ChapterSheet } from "@/components/reader/ChapterSheet";
 import { HashRedirect } from "@/components/reader/HashRedirect";
-import { chapterMetas, chapters, notesData, notesHref } from "@/lib/content";
+import { TopicReader } from "@/components/topic/TopicReader";
+import { chapterMetas, chapters, exercisesForChapter, notesData, notesHref } from "@/lib/content";
 import { pageMetadata } from "@/lib/metadata";
 import { levelsNav, topic } from "@/lib/topics";
 import { plural } from "@/lib/format";
+import { withHeadingIds } from "@/lib/headingToc";
+import type { SeriesCard, SeriesPart } from "@/components/chapter/types";
+import type { LevelId } from "@/content/types";
 
 export function TopicCoverPage({ topicId }: { topicId: string }) {
   const data = notesData(topicId);
@@ -79,6 +83,49 @@ export function TopicChapterPage({ topicId, chapterId }: { topicId: string; chap
   const prev = list[index - 1];
   const next = list[index + 1];
   const basePath = notesHref(topicId);
+
+  if (chapter.ready) {
+    const t = topic(topicId);
+    const data = notesData(topicId);
+    const { html, toc } = withHeadingIds(chapter.body);
+    const diagrams = (chapter.body.match(/<svg[^>]*class="dg"/g) ?? []).length;
+    const parts: SeriesPart<LevelId>[] = levelsNav(topicId).map((l) => ({ level: l.id, title: l.name }));
+    const cards: SeriesCard<LevelId>[] = chapterMetas(topicId)
+      .filter((c) => c.ready)
+      .map((c) => ({
+        id: c.id,
+        num: c.num,
+        title: c.title,
+        short: c.short,
+        subtitle: c.subtitle,
+        levels: c.levels.length ? c.levels : (["beginner"] as LevelId[]),
+        minutes: c.readMinutes,
+      }));
+    const exercises = exercisesForChapter(chapter.id, topicId).map((ex) => ({
+      id: ex.id,
+      title: ex.title,
+      testCount: ex.tests.length,
+      level: ex.level,
+    }));
+    const cardIndex = cards.findIndex((c) => c.id === chapter.id);
+
+    return (
+      <TopicReader
+        topicId={topicId}
+        topicName={t?.name || data.meta.title}
+        mark={t?.mark || ""}
+        accent={t?.accent || "ink"}
+        basePath={basePath}
+        parts={parts}
+        chapter={cards[cardIndex]}
+        chapters={cards}
+        html={html}
+        toc={toc}
+        diagrams={diagrams}
+        exercises={exercises}
+      />
+    );
+  }
 
   return (
     <ReaderShell

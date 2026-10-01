@@ -77,13 +77,13 @@ const STATES: State[] = [
     },
   },
   {
-    name: "the sidebar open",
+    name: "the Chapters sheet open",
     path: "/notes/setup-mental-model",
     viewports: [PHONE],
     visit: async (page, check) => {
-      await page.getByRole("button", { name: "Open menu" }).click();
-      await expect(page.locator("#site-sidenav")).not.toHaveAttribute("inert");
-      await check("the sidebar open");
+      await page.getByRole("button", { name: "Chapters", exact: true }).click();
+      await expect(page.getByRole("dialog", { name: "Chapters" })).toBeVisible();
+      await check("the Chapters sheet open");
     },
   },
   {

@@ -12,7 +12,7 @@ export function gitCards(): SeriesCard<GitPartLevel>[] {
     title: s.title,
     short: s.short,
     subtitle: s.subtitle,
-    level: s.part,
+    levels: [s.part],
     minutes: Math.max(1, htmlMinutes(s.body)),
   }));
 }

@@ -33,7 +33,7 @@ export default async function Page({ params }: { params: Promise<{ chapter: stri
     title: c.title,
     short: c.short,
     subtitle: c.subtitle ?? "",
-    level: c.levels?.[0] ?? "beginner",
+    levels: [c.levels?.[0] ?? "beginner"],
     minutes: c.readMinutes,
   }));
   return (

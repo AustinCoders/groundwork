@@ -73,6 +73,12 @@ export function enhanceTables(container: HTMLElement) {
   });
 }
 
+export function markNoSmooth(container: HTMLElement) {
+  Array.from(container.querySelectorAll(".demo, .try, .chipset, canvas, input[type=range], [draggable=true]")).forEach(
+    (node) => node.setAttribute("data-no-smooth", "")
+  );
+}
+
 export function activateScripts(container: HTMLElement) {
   Array.from(container.querySelectorAll("script")).forEach((old) => {
     const fresh = document.createElement("script");

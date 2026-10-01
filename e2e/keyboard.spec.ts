@@ -40,43 +40,38 @@ async function expectScrollRegion(page: Page, name: string) {
   expect(await region.evaluate((el) => el.scrollWidth > el.clientWidth), `${name} scrolls at 390`).toBe(true);
 }
 
-test("the closed sidebar stays out of the tab order, and comes back above the breakpoint", async ({ page }) => {
+test("the closed Chapters sheet stays out of the tab order, and the rail's search is reachable above the breakpoint", async ({
+  page,
+}) => {
   await page.goto("/notes/setup-mental-model");
-  const sidebar = page.locator("#site-sidenav");
-  await expect(sidebar).toHaveAttribute("inert");
-  await expect(sidebar).toBeHidden();
+  await expect(page.getByRole("dialog", { name: "Chapters" })).toHaveCount(0);
 
   let reachedMain = false;
   for (let stop = 1; stop <= 30 && !reachedMain; stop++) {
     await page.keyboard.press("Tab");
-    expect(await holdsFocus(sidebar), `Tab ${stop} landed in the closed sidebar`).toBe(false);
     reachedMain = await holdsFocus(page.locator("#main"));
   }
   expect(reachedMain, "Tab reaches the page's content").toBe(true);
 
   await page.setViewportSize({ width: 1280, height: 844 });
-  await expect(sidebar).not.toHaveAttribute("inert");
-  const search = sidebar.getByRole("searchbox", { name: "Search the notes" });
+  const search = page.getByRole("searchbox", { name: "Search the notes" });
   await search.focus();
   await expect(search).toBeFocused();
 });
 
-test("the open sidebar holds focus, and Escape gives it back to the menu button", async ({ page }) => {
+test("the open Chapters sheet holds focus, and Escape gives it back to the Chapters button", async ({ page }) => {
   await page.goto("/notes/setup-mental-model");
-  const sidebar = page.locator("#site-sidenav");
-  await expect(sidebar).toHaveAttribute("inert");
-  const toggle = page.getByRole("button", { name: "Open menu" });
+  const button = page.getByRole("button", { name: "Chapters", exact: true });
 
-  await toggle.focus();
+  await button.focus();
   await page.keyboard.press("Enter");
-  await expect(toggle).toHaveAttribute("aria-expanded", "true");
-  await expect(sidebar).not.toHaveAttribute("inert");
-  await expectTabToLoopWithin(page, sidebar);
+  const sheet = page.getByRole("dialog", { name: "Chapters" });
+  await expect(sheet).toBeVisible();
+  await expectTabToLoopWithin(page, sheet);
 
   await page.keyboard.press("Escape");
-  await expect(toggle).toHaveAttribute("aria-expanded", "false");
-  await expect(toggle).toBeFocused();
-  await expect(sidebar).toHaveAttribute("inert");
+  await expect(sheet).toHaveCount(0);
+  await expect(button).toBeFocused();
 });
 
 test("the site menu holds focus, and Escape with an empty search gives it back to Menu", async ({ page }) => {

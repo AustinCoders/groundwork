@@ -306,6 +306,10 @@
   box-shadow: inset 3px 0 0 var(--primary);
 }
 
+.railHidden {
+  display: none;
+}
+
 .railNum {
   flex: none;
   width: 30px;
@@ -530,6 +534,13 @@
   font-size: 21px;
   line-height: 1.2;
   color: var(--ink);
+}
+
+.endReview {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--success);
 }
 
 .endSub {
@@ -1120,4 +1131,47 @@
   .endBar {
     width: 160px;
   }
+}
+
+.searchWrap {
+  padding: 0 10px 8px;
+}
+
+.searchInput {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--sheet-2);
+  border: 1.5px solid var(--line);
+  border-radius: 9px;
+}
+
+.searchInput:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.searchCount {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  min-height: 1em;
+}
+
+.searchOther {
+  padding: 4px 10px 0;
+  margin-top: 6px;
+  border-top: 1px solid var(--line);
+}
+
+.searchOtherTitle {
+  margin: 10px 0 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
 }

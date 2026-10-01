@@ -15,7 +15,7 @@ export function ChapterPager({
   homeLabel: string;
 }) {
   return (
-    <nav className={styles.pager} aria-label="Chapter navigation">
+    <nav className={styles.pager} aria-label="Chapter navigation" data-speech-exclude>
       <Link className={styles.pageCard} href={prev ? `${basePath}/${prev.id}` : basePath}>
         <span className={styles.pageArrow} aria-hidden="true">
           <TopIcon name="prev" size={18} />

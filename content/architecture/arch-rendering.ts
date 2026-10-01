@@ -15,14 +15,28 @@ export const archRendering: Chapter = {
   A component is a server component unless it needs something only a browser has: state, an effect,
   an event handler, <code>localStorage</code>, or a measurement. Adding <code>"use client"</code> has
   a cost, because everything the file imports is bundled and shipped. Across <code>app/</code>,
-  <code>components/</code> and <code>lib/</code>, 84 files carry the directive. About a third belong
+  <code>components/</code> and <code>lib/</code>, 87 files carry the directive. About a third belong
   to the three big interactive surfaces: the playground, the whiteboard and the mock interview.
 </p>
 
 <h3>What a chapter page is made of</h3>
+<p>
+  <code>TopicChapterPage</code> branches on <code>chapter.ready</code>. An outline chapter, one that
+  has not been written yet, takes the older path: <code>ReaderShell</code>, a client component, with
+  <code>ChapterSheet</code> passed in as its children. <code>ChapterSheet</code> is a server
+  component, so the chapter body reaches the browser as HTML and none of its text is in a JavaScript
+  bundle. The only client code inside it is two islands: <code>ChapterDone</code>, the "mark as read"
+  button, and <code>PracticeStrip</code>, which ticks off solved exercises.
+</p>
+<p>
+  A written chapter — every chapter in JavaScript, React, DSA and System Design, 156 of them — takes
+  the path below instead, built from the same shared parts (<code>ChapterRail</code>,
+  <code>TocCard</code>, <code>ChapterEnd</code>, <code>ChapterPager</code>, <code>ChaptersSheet</code>)
+  as this very page.
+</p>
 
 <figure>
-<svg viewBox="0 0 900 430" class="dg" role="img" aria-label="Nested boxes. The root layout is a server component. Inside it, the theme-init script and two client context providers. Inside RouteFade, a client component, sits TopicChapterPage, a server component, which renders ReaderShell, a client component. ReaderShell's children are ChapterSheet, a server component holding the chapter HTML and two small client islands, ChapterDone and PracticeStrip. After mount, ReaderShell's effects enhance the chapter's HTML.">
+<svg viewBox="0 0 900 430" class="dg" role="img" aria-label="Nested boxes. The root layout is a server component. Inside it, the theme-init script and two client context providers. Inside RouteFade, a client component, sits TopicChapterPage, a server component, which renders TopicFrame, a client component wrapping PageFrame, for a written chapter. TopicFrame's children are TopicReader, a client component holding the chapter HTML and the rail, TOC and end-card islands. After mount, TopicReader's effects enhance the chapter's HTML.">
 <g class="rough">
 <rect x="10" y="10" width="880" height="410" rx="12" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 2" />
 <rect x="30" y="44" width="250" height="52" rx="9" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.8" />
@@ -30,7 +44,7 @@ export const archRendering: Chapter = {
 <rect x="30" y="112" width="840" height="292" rx="10" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 2" />
 <rect x="50" y="150" width="800" height="238" rx="10" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 2" />
 <rect x="70" y="188" width="760" height="186" rx="10" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 2" />
-<rect x="90" y="226" width="500" height="132" rx="9" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 2" />
+<rect x="90" y="226" width="500" height="132" rx="9" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 2" />
 <rect x="110" y="292" width="200" height="50" rx="8" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
 <rect x="330" y="292" width="240" height="50" rx="8" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
 <rect x="614" y="226" width="200" height="132" rx="9" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
@@ -43,11 +57,11 @@ export const archRendering: Chapter = {
 <text class="sm" x="314" y="87">server-computed data handed to client context</text>
 <text class="sm" x="44" y="134">RouteFade &middot; CLIENT</text>
 <text class="sm gr" x="64" y="172">TopicChapterPage &middot; SERVER</text>
-<text class="lbl" x="84" y="210">ReaderShell &middot; client: search, zoom, narration, keys</text>
-<text class="lbl gr" x="104" y="250">ChapterSheet &middot; server</text>
-<text class="sm" x="104" y="272">chapter HTML through dangerouslySetInnerHTML</text>
-<text class="lbl" x="210" y="322" text-anchor="middle">ChapterDone</text>
-<text class="lbl" x="450" y="322" text-anchor="middle">PracticeStrip</text>
+<text class="lbl" x="84" y="210">TopicFrame &middot; client: wraps PageFrame</text>
+<text class="lbl" x="104" y="250">TopicReader &middot; client: rail search, keys, active section</text>
+<text class="sm" x="104" y="272">chapter HTML handed down as a prop</text>
+<text class="lbl" x="210" y="322" text-anchor="middle">ChapterRail / TocCard</text>
+<text class="lbl" x="450" y="322" text-anchor="middle">ChapterEnd / ChapterPager</text>
 <text class="lbl" x="714" y="252" text-anchor="middle">After mount</text>
 <text class="sm" x="714" y="276" text-anchor="middle">enhance code, tables</text>
 <text class="sm" x="714" y="296" text-anchor="middle">run demo scripts</text>
@@ -55,21 +69,29 @@ export const archRendering: Chapter = {
 </svg>
 <figcaption>
   Green is rendered on the server, and yellow is a client component. A server component can sit
-  inside a client one when it is passed in as <code>children</code>, which is how the chapter body
-  ends up as HTML while the reader around it is interactive.
+  inside a client one when it is passed in as <code>children</code> or a prop, which is how the
+  chapter body ends up as HTML while the reader around it is interactive.
 </figcaption>
 </figure>
 
 <p>
   <code>TopicChapterPage</code> in <code>components/reader/topicPages.tsx</code> is a server
-  component. It renders <code>ReaderShell</code>, which is a client component, and passes
-  <code>ChapterSheet</code> in as its children. <code>ChapterSheet</code> is a server component, so
-  the chapter body reaches the browser as HTML and none of its text is in a JavaScript bundle. The
-  only client code inside it is two islands: <code>ChapterDone</code>, the "mark as read" button,
-  and <code>PracticeStrip</code>, which ticks off solved exercises.
+  component. For a written chapter it computes the chapter's HTML with <code>withHeadingIds</code>,
+  its diagram and exercise counts, and a flat list of the topic's chapters and levels, then hands all
+  of it as props to <code>TopicReader</code> (<code>components/topic/TopicReader.tsx</code>) — a
+  client component, the same role <code>ChapterSheet</code> plays for an outline chapter, but
+  interactive from the start because it owns the rail's search box, the active-section ring and the
+  keyboard shortcuts. It renders <code>TopicFrame</code>, which wraps the client
+  <code>PageFrame</code>, for its header, puts <code>ChapterHeaderPager</code> in its
+  <code>actions</code> slot, and assembles <code>ChapterRail</code>, <code>TocCard</code>,
+  <code>ChapterEnd</code> and <code>ChapterPager</code> around the chapter body — the same shared
+  parts the architecture and Git readers use; a later story moves the architecture reader's own
+  inlined header pager onto this one too. The chapter body itself still reaches the browser as HTML,
+  written in by the server component above and handed down as a prop, not fetched or re-rendered by
+  the client.
 </p>
 <p>
-  Topic covers take the same path, with <code>TopicCoverPage</code> passing
+  Topic covers take the outline-chapter path, with <code>TopicCoverPage</code> passing
   <code>CoverSheet</code> to <code>ReaderShell</code>. The JavaScript cover at <code>/notes</code>
   is the exception: its page renders <code>TopicFrame</code>, which wraps the client
   <code>PageFrame</code>, and passes the same server-rendered <code>CoverSheet</code> in as its
@@ -78,11 +100,15 @@ export const archRendering: Chapter = {
 <p>
   The chapter body is written into the page with <code>dangerouslySetInnerHTML</code> and carries
   <code>suppressHydrationWarning</code>. The attribute is there because, after mount,
-  <code>ReaderShell</code> changes that DOM directly. <code>enhanceCodeBlocks</code>,
-  <code>enhanceTables</code>, <code>enhanceTryBlocks</code>, <code>activateScripts</code> and
-  <code>setupNarration</code> in <code>components/reader/enhancements.ts</code> and
-  <code>narration.ts</code> add copy buttons, wrap tables, run each chapter's demo scripts and
-  attach the narrator. React never re-renders that HTML, so those changes are safe.
+  <code>ReaderShell</code> or <code>TopicReader</code>, whichever rendered it, changes that DOM
+  directly. <code>enhanceCodeBlocks</code>, <code>enhanceTables</code>, <code>enhanceTryBlocks</code>,
+  <code>activateScripts</code> and <code>setupNarration</code> in
+  <code>components/reader/enhancements.ts</code> and <code>narration.ts</code> add copy buttons,
+  wrap tables, run each chapter's demo scripts and attach the narrator; <code>TopicReader</code> adds
+  one more, <code>markNoSmooth</code>, which tags every <code>.try</code>, <code>.demo</code>,
+  <code>canvas</code>, range input and draggable element with <code>data-no-smooth</code> so
+  dragging one does not fight the page's smooth-scroll underneath it. React never re-renders that
+  HTML, so those changes are safe.
 </p>
 <p>
   The root layout works the same way. It computes the topic list and the IDs of topics that have

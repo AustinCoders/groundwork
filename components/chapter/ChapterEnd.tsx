@@ -8,21 +8,28 @@ export function ChapterEnd({
   readCount,
   total,
   onToggleRead,
+  reviewDays,
 }: {
   num: string;
   read: boolean;
   readCount: number;
   total: number;
   onToggleRead: () => void;
+  reviewDays?: number;
 }) {
   return (
-    <section className={`${styles.end}${read ? ` ${styles.endDone}` : ""}`} aria-label="Finish">
+    <section className={`${styles.end}${read ? ` ${styles.endDone}` : ""}`} aria-label="Finish" data-speech-exclude>
       <div className={styles.endStatus}>
         <span className={styles.endMark} aria-hidden="true">
           {read ? "✓" : num}
         </span>
         <div>
           <p className={styles.endTitle}>{read ? "Chapter read" : "Finished reading?"}</p>
+          {read && reviewDays !== undefined && (
+            <p className={styles.endReview}>
+              Comes back for review in {reviewDays} {reviewDays === 1 ? "day" : "days"}
+            </p>
+          )}
           <p className={styles.endSub}>
             {readCount} of {total} chapters read in this series
           </p>

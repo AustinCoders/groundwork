@@ -240,8 +240,9 @@ export const archDesignSystem: Chapter = {
   fills it in for a topic, with the topic's mark beside a title that links to its cover. A page that
   sets <code>reading</code> also gets the drawer's text size, narrator and print controls. The
   JavaScript cover at <code>/notes</code> is the first topic page on it, with <code>reading</code>
-  on; the other covers and chapters that <code>topicPages.tsx</code> builds are still on the
-  Shell.
+  on. Every written chapter — JavaScript, React, DSA and System Design — reads through
+  <code>TopicReader</code> on <code>TopicFrame</code> too; the other covers, and every chapter that
+  is still an outline, stay on the Shell until they are written or redesigned.
 </p>
 <p>
   The practice playground, the problems list and the whiteboard are full-screen tools, and a
@@ -269,7 +270,7 @@ export const archDesignSystem: Chapter = {
 <p>
   <code>globals.css</code> is about 9,600 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
-  one of 17 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
+  one of 19 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
   lines. The rule of thumb is that anything
   chapter HTML can contain goes in globals, because chapter bodies are strings that cannot import a
   module, and anything else goes in a module so it loads only with its page.

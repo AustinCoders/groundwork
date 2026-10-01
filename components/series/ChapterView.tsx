@@ -55,7 +55,7 @@ export function ChapterView({
   const index = chapters.findIndex((c) => c.id === chapter.id);
   const prev = chapters[index - 1];
   const next = chapters[index + 1];
-  const partIndex = PARTS.findIndex((p) => p.level === chapter.level);
+  const partIndex = PARTS.findIndex((p) => p.level === chapter.levels[0]);
   const part = PARTS[partIndex];
 
   const doneKey = useProgressValue(

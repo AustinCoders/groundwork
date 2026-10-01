@@ -1,0 +1,13 @@
+.article {
+  max-width: 760px;
+}
+
+@media print {
+  .page [aria-label="Chapters"],
+  .page [aria-label="On this page"],
+  .page [aria-label="Chapter navigation"],
+  .page [aria-label="Finish"],
+  .page .inlineToc {
+    display: none;
+  }
+}

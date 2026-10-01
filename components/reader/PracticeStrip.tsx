@@ -4,6 +4,9 @@ import Link from "next/link";
 import { progress } from "@/lib/storage";
 import { useProgressValue } from "@/lib/hooks";
 import { problemHref } from "@/lib/problemHref";
+import { exercisesForLevel } from "@/lib/content";
+import type { LevelId } from "@/content/types";
+import styles from "./practiceStrip.module.css";
 
 export interface PracticeLink {
   id: string;
@@ -12,7 +15,15 @@ export interface PracticeLink {
   level: string;
 }
 
-export function PracticeStrip({ exercises }: { exercises: PracticeLink[] }) {
+export function PracticeStrip({
+  exercises,
+  topicId,
+  level,
+}: {
+  exercises: PracticeLink[];
+  topicId?: string;
+  level?: LevelId;
+}) {
   const solvedKey = useProgressValue(
     () =>
       exercises
@@ -25,13 +36,17 @@ export function PracticeStrip({ exercises }: { exercises: PracticeLink[] }) {
 
   if (!exercises.length) return null;
 
+  const levelTotal = topicId && level ? exercisesForLevel(level, topicId).length : 0;
+
   return (
-    <div className="practice-strip">
-      <span className="practice-strip__title">Practice this layer</span>
-      <p className="practice-strip__note">Opens in the editor — write it, run it, and check it against real tests.</p>
-      <div className="practice-list">
+    <div className="practice-strip" data-speech-exclude>
+      <div className={styles.practiceHead}>
+        <span className="practice-strip__title">Practice this chapter</span>
+        <p className="practice-strip__note">Opens in the editor — write it, run it, and check it against real tests.</p>
+      </div>
+      <div className={styles.practiceGrid}>
         {exercises.map((ex) => (
-          <Link className="practice" href={problemHref(ex.id)} key={ex.id}>
+          <Link className={styles.practiceCard} href={problemHref(ex.id)} key={ex.id}>
             <span className="practice__top">
               <span className="practice__title">{ex.title}</span>
               {solved.indexOf(ex.id) !== -1 && <span className="practice__tick">✓</span>}
@@ -42,6 +57,11 @@ export function PracticeStrip({ exercises }: { exercises: PracticeLink[] }) {
           </Link>
         ))}
       </div>
+      {levelTotal > 0 && (
+        <Link className={styles.practiceAll} href={`/path?topic=${topicId}&level=${level}`}>
+          All {levelTotal} for this level →
+        </Link>
+      )}
     </div>
   );
 }

@@ -121,7 +121,7 @@ export function SeriesLanding({
           )}
 
           {parts.map((part, pi) => {
-            const list = chapters.filter((c) => c.level === part.level);
+            const list = chapters.filter((c) => c.levels.includes(part.level));
             if (!list.length) return null;
             const read = mounted ? list.filter((c) => done.has(c.id)).length : 0;
             return (

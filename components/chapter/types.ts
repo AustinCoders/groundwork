@@ -7,7 +7,7 @@ export interface SeriesCard<Level extends string = LevelId> {
   title: string;
   short?: string;
   subtitle: string;
-  level: Level;
+  levels: Level[];
   minutes: number;
 }
 

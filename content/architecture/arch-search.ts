@@ -13,7 +13,8 @@ export const archSearch: Chapter = {
   body: `<h3>Two kinds of index</h3>
 <p>
   Search here has no server, no API key and no ranking. The build writes two kinds of index as
-  static files, and the chapter reader's search box scans them in memory.
+  static files, and the chapter reader's search box scans them in memory — the rail for a written
+  chapter, the sidebar for a cover or an outline chapter that is still unwritten.
 </p>
 <div class="table-scroll"><table>
 <thead><tr><th>Index</th><th>Route</th><th>One row per</th><th>Row holds</th></tr></thead>
@@ -57,7 +58,7 @@ export const archSearch: Chapter = {
 <h3>What happens when you type</h3>
 
 <figure>
-<svg viewBox="0 0 900 340" class="dg" role="img" aria-label="The first keystroke starts two fetches in parallel, the topic's search-index.json and the global /search-index.json. Until the topic index arrives, matching runs over the chapter titles and subtitles already in the page. Every query term must be a substring of a row's text. Matches mark chapters in the sidebar; matches in the global index from other topics are listed, up to twelve.">
+<svg viewBox="0 0 900 340" class="dg" role="img" aria-label="The first keystroke starts two fetches in parallel, the topic's search-index.json and the global /search-index.json. Until the topic index arrives, matching runs over the chapter titles and subtitles already in the page. Every query term must be a substring of a row's text. Matches mark chapters in the rail; matches in the global index from other topics are listed, up to twelve.">
 <g class="rough">
 <rect x="20" y="136" width="160" height="80" rx="10" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 2" />
 <rect x="230" y="30" width="250" height="66" rx="10" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 2" />
@@ -86,7 +87,7 @@ export const archSearch: Chapter = {
 <text class="sm" x="625" y="162" text-anchor="middle">split on spaces;</text>
 <text class="sm" x="625" y="180" text-anchor="middle">every term must be</text>
 <text class="sm" x="625" y="198" text-anchor="middle">a substring</text>
-<text class="lbl" x="817" y="58" text-anchor="middle">Sidebar</text>
+<text class="lbl" x="817" y="58" text-anchor="middle">Rail</text>
 <text class="sm" x="817" y="80" text-anchor="middle">matches marked</text>
 <text class="lbl" x="817" y="270" text-anchor="middle">Other topics</text>
 <text class="sm" x="817" y="292" text-anchor="middle">up to 12 links</text>
@@ -98,25 +99,36 @@ export const archSearch: Chapter = {
 </figure>
 
 <p>
-  All of this is in <code>ReaderShell</code>. An effect runs whenever <code>query.trim()</code> is
-  non-empty and an index is still missing. It fires both fetches in parallel and ignores late
-  responses with a <code>cancelled</code> flag in its cleanup. A failed fetch is swallowed. Until
-  the topic index arrives, or for good if it never does, matching runs over
-  <code>chapterMetas</code>, the titles, short names and subtitles the page already received as
-  props. So search always does something, and it gets better once the full index lands.
+  A written chapter runs this search through <code>useChapterSearch</code>
+  (<code>components/chapter/useChapterSearch.ts</code>), a hook <code>TopicReader</code> calls; the
+  cover and an outline chapter still run their own copy of it inline, in <code>ReaderShell</code>,
+  the frame this reader replaced for everything that is not yet written. Both own the same shape of
+  state: a query string, a lazily fetched per-topic index, a lazily fetched global index, and a
+  <code>cancelled</code> flag in the fetch effect's cleanup so a late response from a chapter you
+  have since left cannot overwrite the current one. A failed fetch is swallowed. Until the topic
+  index arrives, or for good if it never does, matching runs over the titles, short names and
+  subtitles the page already received as props. So search always does something, and it gets
+  better once the full index lands.
 </p>
 <p>
   Matching is deliberately naive. The query is lowercased and split on whitespace, and a row
   matches when every term is a substring of its <code>text</code>. There is no ranking, no stemming
-  and no typo tolerance. The sidebar marks each matching chapter and states how many chapters
-  match. The global index is filtered to rows from <em>other</em> topics with the same test and
-  capped at 12 links, so a search inside React can point you to the Node chapter that answers it.
+  and no typo tolerance. <code>TopicReader</code> renders the hook's state as
+  <code>ChapterSearch</code> (<code>components/chapter/ChapterSearch.tsx</code>), the input and the
+  other-topics list, and passes it into <code>ChapterRail</code> as a <code>search</code> slot
+  alongside the match set as a separate <code>matchInfo</code> prop; the rail marks each matching
+  <code>.railLink</code> and states how many chapters match, without touching the article next to
+  it. Both props default to empty, so <code>ChapterRail</code> renders exactly as before for the
+  architecture and Git readers, which pass neither. The global index is filtered to rows from
+  <em>other</em> topics with the same test and capped at 12 links, so a search inside React can
+  point you to the Node chapter that answers it.
 </p>
 <p>
-  The indexes live in <code>ReaderShell</code>'s state, and <code>RouteFade</code> remounts a page
-  on every client navigation. So the next chapter you open starts without them, and its first
-  search requests the files again. They are static files, so this is a cheap repeat request, but it
-  is still a request. Keeping the loaded index in a module-level cache would remove it.
+  The indexes live in the hook's own state, recreated by whichever component calls it, and
+  <code>RouteFade</code> remounts a page on every client navigation. So the next chapter you open
+  starts without them, and its first search requests the files again. They are static files, so
+  this is a cheap repeat request, but it is still a request. Keeping the loaded index in a
+  module-level cache would remove it.
 </p>
 
 <h3>The size budget</h3>
@@ -167,7 +179,7 @@ export const archSearch: Chapter = {
 <p>
   The sidebar once showed a hit count beside each chapter. Counting occurrences needs the
   repetition that made up most of the index's weight, so it went when the index was compacted. The
-  sidebar now shows <em>which</em> chapters match, not how often. An e2e test types a query, checks
+  rail now shows <em>which</em> chapters match, not how often. An e2e test types a query, checks
   that the right chapters are marked, and checks that demo-script source is not matched.
 </p>
 </div>`,
