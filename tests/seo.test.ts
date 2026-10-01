@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import sitemap from "@/app/sitemap";
 import { topicChapterMetadata, topicCoverMetadata } from "@/components/reader/topicPages";
 import { chapters, chapterHref, exercises, notesHref, topics } from "@/lib/content";
-import { problemHref } from "@/lib/practiceLinks";
+import { pageMetadata } from "@/lib/metadata";
+import { practiceChapterLinks, problemHref } from "@/lib/practiceLinks";
 import { CANONICAL_ORIGIN, SITE_URL } from "@/lib/site";
 import { navHref } from "@/lib/topicNav";
 import { topicsNavWithStats } from "@/lib/topicStats";
@@ -50,6 +51,30 @@ describe("sitemap", () => {
     for (const e of entries) {
       expect(e.url.startsWith(SITE_URL), `${e.url} is not on ${SITE_URL}`).toBe(true);
     }
+  });
+
+  it("lists the mock room, the question bank and privacy, and drops the empty playground shell", () => {
+    expect(urls.has(`${SITE_URL}/mock`)).toBe(true);
+    expect(urls.has(`${SITE_URL}/interview/questions`)).toBe(true);
+    expect(urls.has(`${SITE_URL}/privacy`)).toBe(true);
+    expect(urls.has(`${SITE_URL}/practice`)).toBe(false);
+  });
+
+  it("gives every entry a lastModified that is not the moment of the build", () => {
+    const now = Date.now();
+    for (const e of entries) {
+      const stamp = new Date(e.lastModified as Date).getTime();
+      expect(now - stamp, `${e.url} carries today's date instead of a content date`).toBeGreaterThan(60_000);
+    }
+  });
+
+  it("gives a topic's own lastModified from its own notes file, not the shared fallback", () => {
+    const stamp = (url: string) => new Date(entries.find((e) => e.url === url)!.lastModified as Date).getTime();
+    const augustTopic = stamp(`${SITE_URL}${notesHref("dsa")}`);
+    const septemberTopic = stamp(`${SITE_URL}${notesHref("react")}`);
+    const undated = stamp(`${SITE_URL}/problems`);
+    expect(augustTopic, "an August-dated topic shares a date with a September one").not.toBe(septemberTopic);
+    expect(septemberTopic, "a dated topic's cover matches the undated fallback by coincidence").not.toBe(undated);
   });
 });
 
@@ -112,6 +137,17 @@ describe("topic cover metadata", () => {
     }
   });
 
+  it("gives every cover and chapter a share image", () => {
+    for (const t of readyTopics) {
+      const coverOg = topicCoverMetadata(t.id).openGraph as { images?: unknown[] } | undefined;
+      expect(coverOg?.images?.length, `${t.id} cover has no og:image`).toBeGreaterThan(0);
+      for (const ch of chapters(t.id).filter((c) => c.ready)) {
+        const chapterOg = topicChapterMetadata(t.id, ch.id).openGraph as { images?: unknown[] } | undefined;
+        expect(chapterOg?.images?.length, `${t.id}/${ch.id} has no og:image`).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it("asks crawlers to skip a topic that is still an outline", () => {
     for (const t of readyTopics) {
       const robots = topicCoverMetadata(t.id).robots as { index?: boolean } | undefined;
@@ -136,6 +172,51 @@ describe("links into a topic", () => {
       if (t.written === 0 || t.status !== "ready") continue;
       expect(navHref(t, null), `${t.id} has chapters but links to /soon`).not.toContain("/soon");
     }
+  });
+});
+
+describe("problem breadcrumbs", () => {
+  it("names a problem's own topic instead of always saying JavaScript", () => {
+    const links = practiceChapterLinks();
+    for (const t of readyTopics) {
+      if (!t.levels) continue;
+      for (const ch of chapters(t.id)) {
+        const link = links[ch.id];
+        if (!link) continue;
+        expect(link.topic.name, `${ch.id}'s breadcrumb names the wrong topic`).toBe(t.name);
+        expect(link.topic.href, `${ch.id}'s breadcrumb links the wrong topic`).toBe(notesHref(t.id));
+      }
+    }
+  });
+});
+
+describe("share images", () => {
+  it("gives a share image to pages with no section of their own", () => {
+    const mock = pageMetadata({ title: "Mock interview", description: "d", path: "/mock" });
+    const privacy = pageMetadata({ title: "Privacy", description: "d", path: "/privacy" });
+    const og = (m: ReturnType<typeof pageMetadata>) => m.openGraph as { images?: unknown[] } | undefined;
+    expect(og(mock)?.images?.length).toBeGreaterThan(0);
+    expect(og(privacy)?.images?.length).toBeGreaterThan(0);
+  });
+
+  it("matches every section, cover and level page to its own image before falling back to the site default", () => {
+    const og = (path: string) => {
+      const meta = pageMetadata({ title: "t", description: "d", path });
+      return (meta.openGraph as { images?: string[] } | undefined)?.images?.[0];
+    };
+    expect(og("/interview/questions")).toBe("/interview/opengraph-image");
+    expect(og("/problems/ex-accounts-merge")).toBe("/problems/opengraph-image");
+    expect(og("/notes")).toBe("/notes/opengraph-image");
+    expect(og("/notes/closures")).toBe("/notes/opengraph-image");
+    expect(og("/react")).toBe("/react/opengraph-image");
+    expect(og("/dsa")).toBe("/dsa/opengraph-image");
+    expect(og("/system-design")).toBe("/system-design/opengraph-image");
+    expect(og("/git")).toBe("/git/opengraph-image");
+    expect(og("/git/merge")).toBe("/git/opengraph-image");
+    expect(og("/architecture")).toBe("/architecture/opengraph-image");
+    expect(og("/level/react")).toBe("/react/opengraph-image");
+    expect(og("/level/typescript")).toBe("/opengraph-image");
+    expect(og("/mock")).toBe("/opengraph-image");
   });
 });
 

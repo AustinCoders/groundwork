@@ -7,7 +7,13 @@ export function practiceChapterLinks(): Record<string, ChapterLink> {
     if (!t.levels) return;
     const base = notesHref(t.id);
     chapterMetas(t.id).forEach((ch) => {
-      links[ch.id] = { id: ch.id, num: ch.num, short: ch.short, href: `${base}/${ch.id}` };
+      links[ch.id] = {
+        id: ch.id,
+        num: ch.num,
+        short: ch.short,
+        href: `${base}/${ch.id}`,
+        topic: { name: t.name, href: base },
+      };
     });
   });
   return links;

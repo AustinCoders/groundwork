@@ -10,6 +10,7 @@ export interface ChapterLink {
   num: string;
   short: string;
   href: string;
+  topic: { name: string; href: string };
 }
 
 export interface NeighbourLink {

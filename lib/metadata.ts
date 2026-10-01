@@ -11,9 +11,28 @@ export interface PageMeta {
   authors?: string[];
 }
 
+const SECTION_IMAGES: [prefix: string, image: string][] = [
+  ["/notes", "/notes/opengraph-image"],
+  ["/react", "/react/opengraph-image"],
+  ["/dsa", "/dsa/opengraph-image"],
+  ["/system-design", "/system-design/opengraph-image"],
+  ["/git", "/git/opengraph-image"],
+  ["/architecture", "/architecture/opengraph-image"],
+  ["/interview", "/interview/opengraph-image"],
+  ["/problems", "/problems/opengraph-image"],
+];
+
+function ogImageFor(path: string): string {
+  const underLevel = /^\/level\/([^/]+)$/.exec(path);
+  const sectioned = underLevel ? `/${underLevel[1]}` : path;
+  const section = SECTION_IMAGES.find(([prefix]) => sectioned === prefix || sectioned.startsWith(`${prefix}/`));
+  return section ? section[1] : "/opengraph-image";
+}
+
 export function pageMetadata(o: PageMeta): Metadata {
   const full = `${o.title} · ${SITE_NAME}`;
   const type = o.type ?? "website";
+  const images = [ogImageFor(o.path)];
 
   return {
     title: o.title,
@@ -26,6 +45,7 @@ export function pageMetadata(o: PageMeta): Metadata {
       description: o.description,
       url: o.path,
       siteName: SITE_NAME,
+      images,
       ...(type === "article" && o.publishedTime ? { publishedTime: o.publishedTime } : {}),
       ...(type === "article" && o.authors ? { authors: o.authors } : {}),
     },
@@ -33,6 +53,7 @@ export function pageMetadata(o: PageMeta): Metadata {
       card: "summary_large_image",
       title: full,
       description: o.description,
+      images,
     },
   };
 }

@@ -1183,7 +1183,10 @@ export function PracticeWorkspace({
                     <Crumbs
                       items={[
                         { label: "All topics", href: "/" },
-                        { label: "JavaScript", href: "/notes" },
+                        {
+                          label: chapter ? chapter.topic.name : "JavaScript",
+                          href: chapter ? chapter.topic.href : "/notes",
+                        },
                         { label: chapter ? chapter.short : "Playground" },
                       ]}
                     />

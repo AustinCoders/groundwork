@@ -13,3 +13,5 @@ export const SITE_NAME = "Groundwork";
 
 export const SITE_DESCRIPTION =
   "Handwritten notes on web development — JavaScript, HTML, CSS, React, Next.js, Nest.js and more. Pick a topic, pick your level, get a reading path with practice.";
+
+export const UNDATED_CONTENT_LAST_CHANGED = "2026-09-30";

@@ -127,17 +127,20 @@ export const archBuild: Chapter = {
 <p>
   The 21 search indexes are <code>force-static</code> route handlers too. The
   <a href="/architecture/arch-search">search chapter</a> covers what goes in them.
-  <code>app/sitemap.ts</code> reads the same interface and lists 755 URLs: 538 problem pages, 201
-  written chapters, 5 level pages, and 11 top-level pages. Outlines are left out. Every entry's
-  <code>lastModified</code> is the moment of the build, so each deploy tells crawlers that
-  everything changed. That is not true, but it costs little. <code>app/robots.ts</code> disallows
-  <code>/api/</code> and points at the sitemap.
+  <code>app/sitemap.ts</code> reads the same interface and lists 783 URLs. Outlines are left out.
+  A topic's pages carry the <code>meta.updated</code> month from its notes file as
+  <code>lastModified</code>; everything with no such date, including every problem page, carries one
+  shared constant that moves only when that content actually changes, so deploys stop telling
+  crawlers that everything just did. <code>app/robots.ts</code> disallows <code>/api/</code> and
+  points at the sitemap.
 </p>
 <p>
   Nine <code>opengraph-image.tsx</code> files draw 1200 by 630 PNG cards with <code>next/og</code>'s
   <code>ImageResponse</code>, through <code>ogCard</code> in <code>lib/og.tsx</code>. The topic cards
   count their written chapters and exercises at build time, so the chips on a shared link cannot go
   stale. Each PNG is between 37 and 58 KB, and all of them are prerendered.
+  <code>lib/metadata.ts</code> gives every other page one of those nine images by matching its path
+  to the nearest section, so a shared link always carries a picture, not bare text.
 </p>
 
 <h3>What next.config.ts does, and does not, do</h3>

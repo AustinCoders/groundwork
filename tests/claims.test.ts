@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import sitemap from "@/app/sitemap";
 import { chapters, exercises, topics } from "@/lib/content";
 import { LANG_ORDER, LANGUAGES } from "@/lib/codeLanguages";
 import { INTERVIEW_TOTAL_QUESTIONS, INTERVIEW_TOTAL_ROUNDS } from "@/lib/interviewContent";
@@ -20,6 +21,7 @@ const exerciseCount = exercises().length;
 const writtenIncludingGit = stats.writtenChapters;
 const totalIncludingGit = topicChapters.length + (writtenIncludingGit - written);
 
+const sitemapUrlCount = sitemap().length;
 const jsChapters = chapters("js").length;
 const runnableLanguages = LANG_ORDER.filter((key) => LANGUAGES[key].runnable);
 const runnableCount = runnableLanguages.length;
@@ -31,6 +33,11 @@ const cases: { file: string; claim: string; about: string }[] = [
     file: "content/topics.ts",
     claim: `The whole map, ${jsChapters} sections deep`,
     about: "the JavaScript tagline",
+  },
+  {
+    file: "content/architecture/arch-build.ts",
+    claim: `lists ${sitemapUrlCount} URLs`,
+    about: "the sitemap's URL count",
   },
   {
     file: "README.md",
