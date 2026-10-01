@@ -27,7 +27,7 @@ A free study site for JavaScript and interview prep: notes, runnable exercises, 
 
 - Use Node 24 (`.nvmrc`): the default shell here is Node 22, so prefix commands with `PATH=~/.nvm/versions/node/v24.14.1/bin:$PATH`.
 - `npm run check` is the pre-merge gate, but it skips the build and e2e; run `npm run build` before `npm run test:e2e`, which serves the production build.
-- CI does not run `npm run comments`; only the pre-push hook and `npm run check` do.
+- CI, the pre-push hook and `npm run check` all run `npm run comments`.
 
 ## Conventions that differ from defaults
 

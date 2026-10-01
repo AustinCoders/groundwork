@@ -5,13 +5,20 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -31,6 +38,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Comments
+        run: npm run comments
+
       - name: Formatting
         run: npm run format:check
 
@@ -49,7 +59,7 @@ jobs:
       - name: End-to-end smoke
         run: npm run test:e2e
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: failure()
         with:
           name: playwright-report
@@ -62,12 +72,12 @@ jobs:
       # puppeteer with it, which is thirteen advisories we do not need in the
       # lockfile for something that only ever runs in CI.
       - name: Lighthouse budgets
-        uses: treosh/lighthouse-ci-action@v12
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12.6.2
         with:
           configPath: ./.lighthouserc.json
           temporaryPublicStorage: false
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: failure()
         with:
           name: lighthouse-report

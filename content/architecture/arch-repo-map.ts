@@ -27,7 +27,7 @@ export const archRepoMap: Chapter = {
 <tr><td><code>tests/</code></td><td>15</td><td>Vitest</td><td>Tests data and pure logic, not components</td></tr>
 <tr><td><code>e2e/</code></td><td>5</td><td>Playwright: 3 specs and an audio fixture for the narrator</td><td>A real browser against a production build</td></tr>
 <tr><td><code>docs/</code></td><td>3</td><td>The roadmap and an audit</td><td>Not shipped to readers</td></tr>
-<tr><td><code>.github/</code></td><td>3</td><td>CI, a Vercel clean-up workflow, and Dependabot</td><td>CI runs typecheck, lint, formatting, spelling and Vitest, then a build, Playwright and Lighthouse</td></tr>
+<tr><td><code>.github/</code></td><td>3</td><td>CI, a Vercel clean-up workflow, and Dependabot</td><td>CI runs typecheck, lint, comments, formatting, spelling and Vitest, then a build, Playwright and Lighthouse</td></tr>
 </tbody>
 </table></div>
 

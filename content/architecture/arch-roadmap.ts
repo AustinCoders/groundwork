@@ -52,7 +52,7 @@ export const archRoadmap: Chapter = {
 </p>
 
 <figure>
-<svg viewBox="0 0 900 330" class="dg" role="img" aria-label="Three columns. Shipped: WebAssembly off the deploy, the Git guide server-rendered, and Sentry wired behind a DSN. Next and small: patch Next, a chapter schema, Lighthouse on the playground, the comment check in CI, SQL in a worker. Later and large: new exercise formats, offline reading, accounts and sync.">
+<svg viewBox="0 0 900 330" class="dg" role="img" aria-label="Three columns. Shipped: WebAssembly off the deploy, the Git guide server-rendered, and Sentry wired behind a DSN. Next and small: patch Next, a chapter schema, Lighthouse on the playground, SQL in a worker. Later and large: new exercise formats, offline reading, accounts and sync.">
 <g class="rough">
 <rect x="20" y="20" width="270" height="290" rx="12" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 2" />
 <rect x="315" y="20" width="270" height="290" rx="12" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 2" />
@@ -71,8 +71,7 @@ export const archRoadmap: Chapter = {
 <text class="lbl" x="333" y="84">Patch Next past 16.3.2</text>
 <text class="lbl" x="333" y="124">Chapter schema</text>
 <text class="lbl" x="333" y="164">Lighthouse on /practice</text>
-<text class="lbl" x="333" y="204">Comment check in CI</text>
-<text class="lbl" x="333" y="244">SQL in a worker</text>
+<text class="lbl" x="333" y="204">SQL in a worker</text>
 <text class="sm" x="333" y="284">remove risk, add no upkeep</text>
 <text class="sm" x="628" y="48">LATER, DAYS EACH</text>
 <text class="lbl" x="628" y="84">New exercise formats</text>
@@ -92,7 +91,6 @@ export const archRoadmap: Chapter = {
 <ol>
 <li><strong>Patch Next.</strong> The installed 16.3.0 falls inside the range of a critical advisory, and 16.3.6 exists. The last attempt failed on a single slow Lighthouse sample, not a real regression. With three runs, it deserves another go before anything else here.</li>
 <li><strong>Budget the heavy pages.</strong> Add <code>/practice</code> and one problem page to the Lighthouse URL list. They ship 422 KB of gzipped script, and no budget watches them.</li>
-<li><strong>Run the comment check in CI.</strong> One line in the workflow closes the only way around the rule.</li>
 <li><strong>Move SQL into a worker.</strong> It is the one runtime without isolation or a timeout.</li>
 <li><strong>Reconcile the cleanup defaults,</strong> and have <code>lib/wasmAssets.ts</code> read versions from one place, so a Pyodide bump stops needing a hand edit.</li>
 </ol>
