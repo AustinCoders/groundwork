@@ -13,8 +13,8 @@ A visual version of this file, with progress bars, is [`roadmap.html`](roadmap.h
 
 ## 0. Content — the half the engineering serves
 
-Measured today: **7 of 21 topics are written** — 194 chapters written, 358 still outlines, plus
-Git's 16 standalone sections.
+Measured today: **7 of 21 topics are written** — 227 chapters written in all, Git's 18 standalone
+sections among them, and 358 still outlines.
 
 | Topic             | Written   | Exercises | Words | Cheat page |
 | ----------------- | --------- | --------- | ----- | ---------- |
@@ -23,8 +23,8 @@ Git's 16 standalone sections.
 | DSA in JS         | 34        | 277       | 48k   | **no**     |
 | System Design     | 24        | **0**     | 61k   | **no**     |
 | Interview book    | 27 rounds | **0**     | 61k   | —          |
-| How this is built | 18        | —         | 7k    | —          |
-| Git               | 16        | **0**     | —     | yes        |
+| How this is built | 26        | —         | 7k    | —          |
+| Git               | 18        | **0**     | —     | yes        |
 | The other 14      | outline   | —         | —     | —          |
 
 **One correction.** The last version of this file said the interview book held 405 questions.

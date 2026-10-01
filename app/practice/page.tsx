@@ -4,7 +4,8 @@ import { pageMetadata } from "@/lib/metadata";
 
 export const metadata: Metadata = pageMetadata({
   title: "Playground",
-  description: "Write JavaScript, TypeScript, Python or SQL in the browser, run it, and check it against real tests.",
+  description:
+    "Write JavaScript, TypeScript, Python, SQL and 7 more languages in the browser, run it, and check it against real tests.",
   path: "/practice",
 });
 

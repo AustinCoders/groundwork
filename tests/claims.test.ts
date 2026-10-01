@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { chapters, exercises, topics } from "@/lib/content";
+import { LANG_ORDER, LANGUAGES } from "@/lib/codeLanguages";
 import { INTERVIEW_TOTAL_QUESTIONS, INTERVIEW_TOTAL_ROUNDS } from "@/lib/interviewContent";
 import { THEME_ITEMS } from "@/lib/storage";
 import { siteStats } from "@/lib/topicStats";
@@ -19,7 +20,28 @@ const exerciseCount = exercises().length;
 const writtenIncludingGit = stats.writtenChapters;
 const totalIncludingGit = topicChapters.length + (writtenIncludingGit - written);
 
+const jsChapters = chapters("js").length;
+const runnableLanguages = LANG_ORDER.filter((key) => LANGUAGES[key].runnable);
+const runnableCount = runnableLanguages.length;
+const namedRunnable = runnableLanguages.map((key) => LANGUAGES[key].label);
+const namedRunnableAsProse = `${namedRunnable.slice(0, -1).join(", ")} and ${namedRunnable.at(-1)}`;
+
 const cases: { file: string; claim: string; about: string }[] = [
+  {
+    file: "content/topics.ts",
+    claim: `The whole map, ${jsChapters} sections deep`,
+    about: "the JavaScript tagline",
+  },
+  {
+    file: "README.md",
+    claim: `A CodeMirror editor running ${runnableCount} languages in the browser — ${namedRunnableAsProse} — with ${LANG_ORDER.length - runnableCount} more known for syntax highlighting`,
+    about: "the Playground row's language count",
+  },
+  {
+    file: "app/practice/page.tsx",
+    claim: `${namedRunnable.slice(0, 4).join(", ")} and ${runnableCount - 4} more languages`,
+    about: "the Playground page description's language count",
+  },
   {
     file: "content/architecture/arch-overview.ts",
     claim: `<tr><td>Written chapters</td><td>${writtenIncludingGit}, plus ${outlines} outlines</td></tr>`,
