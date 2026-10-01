@@ -2,14 +2,23 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ReaderShell } from "@/components/reader/ReaderShell";
 import { CoverSheet } from "@/components/reader/CoverSheet";
-import { ChapterSheet } from "@/components/reader/ChapterSheet";
 import { HashRedirect } from "@/components/reader/HashRedirect";
 import { TopicReader } from "@/components/topic/TopicReader";
+import { TopicOutlineChapter } from "@/components/topic/TopicOutlineChapter";
 import { TopicCover, type CoverCard } from "@/components/topic/TopicCover";
 import { bookRound } from "@/lib/interviewBook";
-import { chapterMetas, chapters, exercisesForChapter, notesData, notesHref } from "@/lib/content";
+import {
+  chapterMetas,
+  chapters,
+  escapeHtml,
+  exercisesForChapter,
+  notesData,
+  notesHref,
+  syllabusSectionForChapter,
+} from "@/lib/content";
 import { pageMetadata } from "@/lib/metadata";
 import { curriculumNotes, levels, levelsNav, relatedInterviewRound, topic } from "@/lib/topics";
+import { relatedTopicId } from "@/lib/topicRelated";
 import { topicStats } from "@/lib/topicStats";
 import { plural } from "@/lib/format";
 import { withHeadingIds } from "@/lib/headingToc";
@@ -120,8 +129,6 @@ export function TopicChapterPage({ topicId, chapterId }: { topicId: string; chap
   if (index === -1) notFound();
 
   const chapter = list[index];
-  const prev = list[index - 1];
-  const next = list[index + 1];
   const basePath = notesHref(topicId);
 
   if (chapter.ready) {
@@ -167,21 +174,43 @@ export function TopicChapterPage({ topicId, chapterId }: { topicId: string; chap
     );
   }
 
+  const t = topic(topicId);
+  const data = notesData(topicId);
+  const parts: SeriesPart<LevelId>[] = levelsNav(topicId).map((l) => ({ level: l.id, title: l.name }));
+  const outlineCards: SeriesCard<LevelId>[] = chapterMetas(topicId)
+    .filter((c) => !c.ready)
+    .map((c) => ({
+      id: c.id,
+      num: c.num,
+      title: c.title,
+      short: c.short,
+      subtitle: c.subtitle,
+      levels: c.levels.length ? c.levels : (["beginner"] as LevelId[]),
+      minutes: c.readMinutes,
+    }));
+  const outlineCardIndex = outlineCards.findIndex((c) => c.id === chapter.id);
+  const found = syllabusSectionForChapter(chapter.id, topicId);
+  const items = (found ? found.section.items : []).map((item) => escapeHtml(item));
+  const relTopicId = relatedTopicId(topicId);
+  const relTopic = topic(relTopicId);
+  const relRoundId = relatedInterviewRound(relTopicId);
+  const relRound = relRoundId ? bookRound(relRoundId) : null;
+
   return (
-    <ReaderShell
-      topicId={topicId}
-      levels={levelsNav(topicId)}
-      chapters={chapterMetas(topicId)}
+    <TopicOutlineChapter
+      topicName={t?.name || data.meta.title}
+      mark={t?.mark || ""}
+      accent={t?.accent || "ink"}
       basePath={basePath}
-      activeId={chapter.id}
-    >
-      <ChapterSheet
-        chapter={chapter}
-        topicId={topicId}
-        basePath={basePath}
-        prev={prev && { id: prev.id, short: prev.short }}
-        next={next && { id: next.id, short: next.short }}
-      />
-    </ReaderShell>
+      parts={parts}
+      chapter={outlineCards[outlineCardIndex]}
+      chapters={outlineCards}
+      sectionTitle={found ? found.section.title : chapter.title}
+      items={items}
+      relatedHref={notesHref(relTopicId)}
+      relatedLabel={relTopic?.name || notesData(relTopicId).meta.title}
+      relatedRoundHref={relRound ? `/interview/${relRoundId}` : null}
+      relatedRoundLabel={relRound ? `${relRound.code} · ${relRound.navTitle}` : null}
+    />
   );
 }

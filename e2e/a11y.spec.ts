@@ -36,6 +36,7 @@ const PAGES = [
   "/path?topic=js&level=beginner",
   "/path?topic=typescript&level=beginner",
   "/level/typescript",
+  "/typescript/ts-setup-compiler",
   "/practice?id=free",
   "/problems",
   "/problems/ex-accounts-merge",
@@ -101,6 +102,16 @@ const STATES: State[] = [
   {
     name: "the Chapters sheet open",
     path: "/git/merge",
+    viewports: [PHONE],
+    visit: async (page, check) => {
+      await page.getByRole("button", { name: "Chapters", exact: true }).click();
+      await expect(page.getByRole("dialog", { name: "Chapters" })).toBeVisible();
+      await check("the Chapters sheet open");
+    },
+  },
+  {
+    name: "the Chapters sheet open",
+    path: "/typescript/ts-setup-compiler",
     viewports: [PHONE],
     visit: async (page, check) => {
       await page.getByRole("button", { name: "Chapters", exact: true }).click();

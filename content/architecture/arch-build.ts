@@ -72,8 +72,9 @@ export const archBuild: Chapter = {
   24 files under <code>app/</code> export <code>generateStaticParams</code>. The 20 topic
   <code>[chapter]</code> routes call <code>topicChapterParams(topicId)</code> in
   <code>components/reader/topicPages.tsx</code>, which returns every chapter in the topic, including
-  outlines. An outline still gets a page, the "not written yet" sheet with its plan, but its
-  metadata sets <code>index: false</code>. Crawlers can follow its links, but it stays out of search
+  outlines. An outline still gets a page, a roadmap card with its syllabus section and a "Meanwhile"
+  link to a related written topic, but its metadata sets <code>index: false</code>. Crawlers can
+  follow its links, but it stays out of search
   results. <code>/problems/[slug]</code> and <code>/problems/[slug]/cases</code> both map over
   <code>exercises()</code>, and <code>/level/[topic]</code> maps over topics that have levels.
 </p>

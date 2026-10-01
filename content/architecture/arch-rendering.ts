@@ -15,18 +15,20 @@ export const archRendering: Chapter = {
   A component is a server component unless it needs something only a browser has: state, an effect,
   an event handler, <code>localStorage</code>, or a measurement. Adding <code>"use client"</code> has
   a cost, because everything the file imports is bundled and shipped. Across <code>app/</code>,
-  <code>components/</code> and <code>lib/</code>, 89 files carry the directive. About a third belong
+  <code>components/</code> and <code>lib/</code>, 90 files carry the directive. About a third belong
   to the three big interactive surfaces: the playground, the whiteboard and the mock interview.
 </p>
 
 <h3>What a chapter page is made of</h3>
 <p>
   <code>TopicChapterPage</code> branches on <code>chapter.ready</code>. An outline chapter, one that
-  has not been written yet, takes the older path: <code>ReaderShell</code>, a client component, with
-  <code>ChapterSheet</code> passed in as its children. <code>ChapterSheet</code> is a server
-  component, so the chapter body reaches the browser as HTML and none of its text is in a JavaScript
-  bundle. The only client code inside it is two islands: <code>ChapterDone</code>, the "mark as read"
-  button, and <code>PracticeStrip</code>, which ticks off solved exercises.
+  has not been written yet, renders <code>TopicFrame</code> with
+  <code>TopicOutlineChapter</code> (<code>components/topic/TopicOutlineChapter.tsx</code>), a client
+  component built from the same shared rail, header pager and bottom pager as the written path below,
+  minus the search box, <code>TocCard</code> and the Listen button, since there is no body to search,
+  link into or narrate. Its article is a roadmap card built from the chapter's syllabus section, and
+  its aside carries a "Meanwhile" link to a related written topic and its interview round, from
+  <code>lib/topicRelated.ts</code>.
 </p>
 <p>
   A written chapter — every chapter in JavaScript, React, DSA and System Design, 156 of them — takes
@@ -79,7 +81,7 @@ export const archRendering: Chapter = {
   component. For a written chapter it computes the chapter's HTML with <code>withHeadingIds</code>,
   its diagram and exercise counts, and a flat list of the topic's chapters and levels, then hands all
   of it as props to <code>TopicReader</code> (<code>components/topic/TopicReader.tsx</code>) — a
-  client component, the same role <code>ChapterSheet</code> plays for an outline chapter, but
+  client component, the same role <code>TopicOutlineChapter</code> plays for an outline chapter, but
   interactive from the start because it owns the rail's search box, the active-section ring and the
   keyboard shortcuts. It renders <code>TopicFrame</code>, which wraps the client
   <code>PageFrame</code>, for its header, puts <code>ChapterHeaderPager</code> in its

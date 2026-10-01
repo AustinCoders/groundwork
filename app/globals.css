@@ -7979,37 +7979,6 @@ a.step__title:hover {
   color: var(--ide-fg-dim);
 }
 
-.sheet.chapter--skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.ch-sk__head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.ch-sk__badge {
-  width: 52px;
-  height: 52px;
-  flex: none;
-  border-radius: 52% 48% 51% 49% / 49% 52% 48% 51%;
-  transform: rotate(-4deg);
-}
-
-.ch-sk__block {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.ch-sk__figure {
-  height: 190px;
-  border-radius: 10px;
-}
-
 .search-other__title {
   font-family: var(--font-heading);
   font-size: 21px;

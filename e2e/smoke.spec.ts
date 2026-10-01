@@ -262,14 +262,20 @@ test("a topic's last chapter shows the end-of-series pager fallback", async ({ p
   await expect(pager.getByRole("link", { name: /The end/ })).toHaveAttribute("href", "/notes");
 });
 
-test("an outline topic's chapter is untouched: the old Shell sidebar and the not-written-yet stamp", async ({
+test("an outline chapter shows its roadmap, a Meanwhile link, and prev/next scoped to its own topic", async ({
   page,
 }) => {
   await page.goto("/typescript/ts-setup-compiler");
-  await expect(page.locator("#site-sidenav")).toHaveCount(1);
-  await expect(page.locator(".soon-stamp")).toContainText(/not written yet/i);
-  await expect(page.getByText("This section will cover:")).toBeVisible();
-  await expect(page.locator("[data-scrollbar]")).toHaveCount(0);
+  await expect(page.locator("#site-sidenav")).toHaveCount(0);
+  await expect(page.locator("[data-scrollbar]")).toHaveCount(1);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(/Setup/i);
+  await expect(page.getByText("Not written yet.")).toBeVisible();
+  await expect(page.getByText(/ts-node and running TypeScript directly/)).toBeVisible();
+  await expect(page.getByRole("link", { name: /JavaScript is written/i })).toHaveAttribute("href", "/notes");
+  await expect(page.getByRole("link", { name: /R3 · JavaScript & TS/i })).toHaveAttribute("href", "/interview/r3");
+  const pager = page.getByRole("navigation", { name: "Chapter navigation" });
+  await expect(pager.getByRole("link", { name: /Back to/i })).toHaveAttribute("href", "/typescript");
+  await expect(pager.getByRole("link", { name: /Next/i })).toHaveAttribute("href", "/typescript/ts-basic-types");
 });
 
 test("print shows only the chapter head and body, hiding the rail, contents, pager and end card", async ({ page }) => {
@@ -1183,6 +1189,7 @@ test("review brings a due chapter back, and every section header has a way back"
     "/react",
     "/dsa",
     "/system-design",
+    "/typescript/ts-setup-compiler",
   ]) {
     await page.goto(path);
     await expect(page.locator("header a.head-back")).toBeVisible();

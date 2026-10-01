@@ -1175,3 +1175,37 @@
   text-transform: uppercase;
   color: var(--ink-soft);
 }
+
+.skRailPart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--line);
+}
+
+.skHead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.skBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.skFigure {
+  display: block;
+  height: 190px;
+  border-radius: 10px;
+}
+
+.skAside {
+  display: block;
+  height: 140px;
+  border-radius: 16px;
+}

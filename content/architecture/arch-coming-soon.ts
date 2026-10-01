@@ -69,8 +69,9 @@ export const archComingSoon: Chapter = {
 <p>
   An outlined topic is not an empty page. The syllabus is written: every section has a title and the
   bullet points it will cover, so the outline is a genuine table of contents rather than a placeholder.
-  Its cover renders the full map, and every outlined chapter has its own page showing a "not written yet"
-  stamp and that section's bullets.
+  Its cover renders the full map, and every outlined chapter has its own page: a roadmap card with that
+  section's bullets, a "Meanwhile" link to a related written topic and its interview round, and prev/next
+  scoped to the topic's own outline chapters.
 </p>
 <p>
   What an outline does not get is attention from outside. Every outlined page is marked
