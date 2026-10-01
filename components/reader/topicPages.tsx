@@ -5,17 +5,57 @@ import { CoverSheet } from "@/components/reader/CoverSheet";
 import { ChapterSheet } from "@/components/reader/ChapterSheet";
 import { HashRedirect } from "@/components/reader/HashRedirect";
 import { TopicReader } from "@/components/topic/TopicReader";
+import { TopicCover, type CoverCard } from "@/components/topic/TopicCover";
+import { bookRound } from "@/lib/interviewBook";
 import { chapterMetas, chapters, exercisesForChapter, notesData, notesHref } from "@/lib/content";
 import { pageMetadata } from "@/lib/metadata";
-import { levelsNav, topic } from "@/lib/topics";
+import { curriculumNotes, levels, levelsNav, relatedInterviewRound, topic } from "@/lib/topics";
+import { topicStats } from "@/lib/topicStats";
 import { plural } from "@/lib/format";
 import { withHeadingIds } from "@/lib/headingToc";
 import type { SeriesCard, SeriesPart } from "@/components/chapter/types";
 import type { LevelId } from "@/content/types";
 
 export function TopicCoverPage({ topicId }: { topicId: string }) {
-  const data = notesData(topicId);
   const basePath = notesHref(topicId);
+  const stats = topicStats()[topicId];
+
+  if (stats && stats.written > 0) {
+    const t = topic(topicId);
+    const data = notesData(topicId);
+    const cards: CoverCard[] = chapterMetas(topicId).map((c) => ({
+      id: c.id,
+      num: c.num,
+      title: c.title,
+      short: c.short,
+      subtitle: c.subtitle,
+      levels: c.levels.length ? c.levels : (["beginner"] as LevelId[]),
+      minutes: c.readMinutes,
+      ready: c.ready,
+      exercises: c.practice.length,
+    }));
+    const parts: SeriesPart<LevelId>[] = levels(topicId).map((l) => ({ level: l.id, title: l.name, blurb: l.blurb }));
+    const roundId = relatedInterviewRound(topicId);
+    const round = roundId ? bookRound(roundId) : null;
+
+    return (
+      <TopicCover
+        topicId={topicId}
+        topicName={t?.name || data.meta.title}
+        mark={t?.mark || ""}
+        accent={t?.accent || "ink"}
+        basePath={basePath}
+        lead={data.meta.lead}
+        parts={parts}
+        cards={cards}
+        relatedRoundHref={round ? `/interview/${roundId}` : null}
+        relatedRoundLabel={round ? `${round.code} · ${round.navTitle}` : null}
+        curriculumNotes={curriculumNotes(topicId)}
+      />
+    );
+  }
+
+  const data = notesData(topicId);
 
   return (
     <ReaderShell

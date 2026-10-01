@@ -238,11 +238,11 @@ export const archDesignSystem: Chapter = {
   with a labelled back pill, a menu button that opens the site drawer, the brand and the page
   title. Review, progress and privacy render it directly. <code>components/topic/TopicFrame.tsx</code>
   fills it in for a topic, with the topic's mark beside a title that links to its cover. A page that
-  sets <code>reading</code> also gets the drawer's text size, narrator and print controls. The
-  JavaScript cover at <code>/notes</code> is the first topic page on it, with <code>reading</code>
-  on. Every written chapter — JavaScript, React, DSA and System Design — reads through
-  <code>TopicReader</code> on <code>TopicFrame</code> too; the other covers, and every chapter that
-  is still an outline, stay on the Shell until they are written or redesigned.
+  sets <code>reading</code> also gets the drawer's text size, narrator and print controls. The four
+  written topics' covers — JavaScript, React, DSA and System Design — render <code>TopicCover</code>
+  on it, with <code>reading</code> on, and their chapters read through <code>TopicReader</code> on
+  it too; the other 14 covers, and every chapter that is still an outline, stay on the Shell until
+  they are written or redesigned.
 </p>
 <p>
   The practice playground, the problems list and the whiteboard are full-screen tools, and a
@@ -270,7 +270,7 @@ export const archDesignSystem: Chapter = {
 <p>
   <code>globals.css</code> is about 9,600 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
-  one of 19 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
+  one of 20 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
   lines. The rule of thumb is that anything
   chapter HTML can contain goes in globals, because chapter bodies are strings that cannot import a
   module, and anything else goes in a module so it loads only with its page.
@@ -325,16 +325,18 @@ export const archDesignSystem: Chapter = {
 
 <h3>The checks</h3>
 <p>
-  <code>e2e/a11y.spec.ts</code> runs axe through <code>@axe-core/playwright</code> against 26
-  pages, including the home page, five chapters, the playground, the problems list, the mock
-  lobby, the whiteboard, the 404 page and this architecture section. One of them,
-  <code>/level/typescript</code>, is the level picker of a topic that is only outlined; it stands in
-  for <code>/soon</code>, which redirects there while every topic is marked ready. It also runs
-  against 10 states that a plain page load does not show: 6 that open with a click, and 4 seeded in
+  <code>e2e/a11y.spec.ts</code> runs axe through <code>@axe-core/playwright</code> against 29
+  pages, including the home page, five chapters, the other three written topics' covers, the
+  playground, the problems list, the mock lobby, the whiteboard, the 404 page and this
+  architecture section. One of them, <code>/level/typescript</code>, is the level picker of a
+  topic that is only outlined; it stands in for <code>/soon</code>, which redirects there while
+  every topic is marked ready. It also runs against 11 states that a plain page load does not
+  show: 7 that open with a click, and 4 seeded in
   <code>localStorage</code>. The clicks open the site menu, the reading menu on <code>/notes</code>
-  with its Text size and Narrator folds open, the reader's sidebar, the Chapters and
-  Filters sheets, and a system design round in the mock interview, checked at the brief, a
-  question, a follow-up, the rubric and the debrief. The seeds give a chapter due for review, a
+  with its Text size and Narrator folds open, a reading budget picked on the JavaScript cover's Up
+  next card, the reader's sidebar, the Chapters and Filters sheets, and a system design round in
+  the mock interview, checked at the brief, a question, a follow-up, the rubric and the debrief.
+  The seeds give a chapter due for review, a
   chapter marked read on a path, a year of activity on the progress page, and two saved mock
   sessions. Each page and state is
   checked in all 9 themes, at 1440 and 390 pixels wide, except the sidebar and the two sheets, which

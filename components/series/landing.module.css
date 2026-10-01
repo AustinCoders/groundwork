@@ -466,6 +466,38 @@ a.node:focus-visible {
   display: flex;
 }
 
+.cardRow {
+  align-items: stretch;
+  gap: 6px;
+}
+
+.cardTick {
+  flex: none;
+  width: 36px;
+  font-size: 14px;
+  color: var(--ink-soft);
+  background: var(--sheet);
+  border: 1.5px dashed var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    color 0.14s ease,
+    border-color 0.14s ease,
+    background 0.14s ease;
+}
+
+.cardTick:hover {
+  color: var(--success);
+  border-color: var(--success);
+}
+
+.cardTick[aria-pressed="true"] {
+  color: var(--success);
+  background: var(--success-soft);
+  border-style: solid;
+  border-color: var(--success);
+}
+
 .card {
   display: flex;
   flex-direction: column;

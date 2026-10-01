@@ -25,6 +25,9 @@ const PAGES = [
   "/notes",
   "/notes/setup-mental-model",
   "/notes/basic-async",
+  "/react",
+  "/dsa",
+  "/system-design",
   "/interview",
   "/interview/r1oa",
   "/interview/r7",
@@ -74,6 +77,15 @@ const STATES: State[] = [
         await expect(head).toHaveAttribute("aria-expanded", "true");
       }
       await check("the reading menu open");
+    },
+  },
+  {
+    name: "the Up next card's budget picked",
+    path: "/notes",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page.getByRole("button", { name: "20m" }).click();
+      await check("the Up next card's budget picked");
     },
   },
   {

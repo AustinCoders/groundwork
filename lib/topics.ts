@@ -87,3 +87,14 @@ export function topicsNav(): TopicNav[] {
 export function levelsNav(topicId?: string | null): LevelNav[] {
   return levels(topicId).map((l) => ({ id: l.id, name: l.name }));
 }
+
+const RELATED_INTERVIEW_ROUND: Record<string, string> = {
+  js: "r3",
+  react: "r4",
+  dsa: "r7",
+  "system-design": "r8",
+};
+
+export function relatedInterviewRound(topicId: string): string | null {
+  return RELATED_INTERVIEW_ROUND[topicId] ?? null;
+}

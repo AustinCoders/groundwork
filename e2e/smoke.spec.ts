@@ -11,8 +11,11 @@ const PAGES = [
   { path: "/", heading: /Walk into the interview ready/i },
   { path: "/notes", heading: /JavaScript/i },
   { path: "/notes/setup-mental-model", heading: /Setup/i },
+  { path: "/react", heading: /React/i },
   { path: "/react/react-components", heading: /Components/i },
+  { path: "/dsa", heading: /DSA/i },
   { path: "/dsa/dsa-hashing", heading: /Hashing/i },
+  { path: "/system-design", heading: /System Design/i },
   { path: "/system-design/sysdes-caching-fundamentals", heading: /Caching/i },
   { path: "/interview", heading: /Every round of the loop/i },
   { path: "/interview/r1oa", heading: /online assessment/i },
@@ -101,9 +104,44 @@ test("the /path sidebar lists only its own topic's chapters, not every topic's",
 
 test("a chapter can be marked read and the count follows", async ({ page }) => {
   await page.goto("/notes");
-  const tick = page.locator(".station__tick").first();
+  const tick = page.getByRole("button", { name: /^Mark .* read$/ }).first();
   await tick.click();
-  await expect(page.locator(".covermap__score-num")).toContainText("1");
+  await expect(page.getByText("1 / 41 read")).toBeVisible();
+});
+
+test("the cover's Start/Continue/Review action follows progress", async ({ page }) => {
+  await page.goto("/notes");
+  const cta = page.locator("header a.btn--primary");
+  await expect(cta).toHaveText("Start →");
+  await expect(cta).toHaveAttribute("href", "/notes/setup-mental-model");
+
+  await page
+    .getByRole("button", { name: /^Mark .* read$/ })
+    .first()
+    .click();
+  await expect(cta).toHaveText("Continue →");
+  await expect(cta).toHaveAttribute("href", "/notes/execution-context");
+
+  const ids = await page
+    .locator("a[href^='/notes/']")
+    .evaluateAll((links) => [...new Set(links.map((l) => l.getAttribute("href")!.replace("/notes/", "")))]);
+  await page.evaluate((chapterIds) => {
+    const chapters: Record<string, true> = {};
+    chapterIds.forEach((id) => {
+      chapters[id] = true;
+    });
+    localStorage.setItem("jsnotes:progress", JSON.stringify({ chapters, exercises: {} }));
+  }, ids);
+  await page.reload();
+  await expect(cta).toHaveText("Review →");
+  await expect(cta).toHaveAttribute("href", "/review");
+});
+
+test("the Up next card's budget picker updates the reach text", async ({ page }) => {
+  await page.goto("/notes");
+  const budgetGroup = page.getByRole("group", { name: "Reading time budget" });
+  await budgetGroup.getByRole("button", { name: "20m" }).click();
+  await expect(budgetGroup.getByText(/→ \d+ chapters?, up to .+/)).toBeVisible();
 });
 
 test("the /notes cover renders in the topic frame", async ({ page }) => {
@@ -129,7 +167,7 @@ test("the /notes cover renders in the topic frame", async ({ page }) => {
   await expect
     .poll(() => page.evaluate(() => document.documentElement.style.getPropertyValue("--reader-zoom")))
     .toBe("1.1");
-  await expect.poll(() => page.locator("#chapters").evaluate((el) => getComputedStyle(el).zoom)).toBe("1.1");
+  await expect.poll(() => page.locator("#top").evaluate((el) => getComputedStyle(el).zoom)).toBe("1.1");
   await expect(menu.getByRole("button", { name: /Narrator/ })).toBeVisible();
   const print = menu.getByRole("button", { name: "Print or save as PDF" });
   await expect(print).toBeVisible();
@@ -141,8 +179,11 @@ test("the /notes cover renders in the topic frame", async ({ page }) => {
   await expect(menu).toHaveCount(0);
 
   await page.goto("/react");
-  await expect(page.locator("#site-sidenav")).toHaveCount(1);
+  await expect(page.locator("#site-sidenav")).toHaveCount(0);
   await expectOneSetOfDiagramDefs(page);
+
+  await page.goto("/typescript");
+  await expect(page.locator("#site-sidenav")).toHaveCount(1);
 
   await page.goto("/notes#closures");
   await page.waitForURL("**/notes/closures");
@@ -1139,6 +1180,9 @@ test("review brings a due chapter back, and every section header has a way back"
     "/interview/questions",
     "/notes",
     "/notes/setup-mental-model",
+    "/react",
+    "/dsa",
+    "/system-design",
   ]) {
     await page.goto(path);
     await expect(page.locator("header a.head-back")).toBeVisible();
@@ -1283,7 +1327,7 @@ test("problems, the whiteboard, git and architecture take the theme's accent, an
 });
 
 test("topic covers and chapters, level, path and the playground take the theme's accent", async ({ page }) => {
-  const cover = page.getByRole("link", { name: /^(Start here|Continue) — / });
+  const cover = page.locator("header a.btn--primary");
   const readingProgress = page.locator("[data-scrollbar]");
   const inBodyLink = page.locator("#closures").getByRole("link", { name: "the outer reference" });
   const currentChapter = page.getByRole("navigation", { name: "Chapters" }).locator('a[aria-current="page"]');
@@ -1367,12 +1411,27 @@ test("links inside a kept callout keep the callout's colour", async ({ page }) =
   await expect(warn.locator("a").first()).toHaveCSS("color", callout);
 });
 
-test("the cover's notebook margin line takes the theme's accent instead of a fixed red", async ({ page }) => {
+test("the cover's primary action takes the theme's accent instead of a fixed red", async ({ page }) => {
+  const cta = page.locator("header a.btn--primary");
+
+  await page.goto("/notes");
+  await expect(cta).toHaveCSS("background-color", themeColour("light", "--primary"));
+  await expect(cta).not.toHaveCSS("background-color", themeColour("light", "--red"));
+
+  await page.evaluate(() => localStorage.setItem("jsnotes:theme", JSON.stringify("lavender")));
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "lavender");
+  await expect(cta).toHaveCSS("background-color", themeColour("lavender", "--primary"));
+});
+
+test("an outline cover's notebook margin line still takes the theme's accent instead of a fixed red", async ({
+  page,
+}) => {
   const marginLine = async () =>
     colourChannels(await page.locator("#top").evaluate((sheet) => getComputedStyle(sheet, "::before").backgroundColor));
   const lineIn = (theme: ThemeValue, token: string) => [...colourChannels(themeColour(theme, token)).slice(0, 3), 0.32];
 
-  await page.goto("/notes");
+  await page.goto("/typescript");
   expect(await marginLine()).toEqual(lineIn("light", "--primary"));
   expect(await marginLine()).not.toEqual(lineIn("light", "--red"));
 

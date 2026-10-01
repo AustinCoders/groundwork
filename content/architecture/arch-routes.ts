@@ -72,9 +72,8 @@ export const archRoutes: Chapter = {
   the cover, <code>[chapter]/page.tsx</code>, <code>[chapter]/loading.tsx</code> and
   <code>search-index.json/route.ts</code>. The pages are a few lines each and call
   <code>TopicCoverPage</code> and <code>TopicChapterPage</code> in
-  <code>components/reader/topicPages.tsx</code>, where the real work is. The JavaScript cover is
-  the exception: <code>app/notes/page.tsx</code> renders the same cover inside
-  <code>TopicFrame</code> itself.
+  <code>components/reader/topicPages.tsx</code>, where the real work is — including which frame a
+  cover gets. <code>app/notes/page.tsx</code> is no different from the other 19 folders.
 </p>
 <p>
   A single <code>app/[topic]/[chapter]</code> route would have removed the repetition. What the explicit
@@ -260,11 +259,11 @@ export const archRoutes: Chapter = {
   <code>components/Shell.tsx</code> is the frame with the sidebar: the brand, the clock, the streak, links
   to the tools, the topic list, reading progress, and the theme and font pickers. Most topic covers and
   chapters, the level, path and soon pages, and the not-found and error pages use it.
-  Git and the architecture guide left it first, for their own series reader, and the JavaScript
-  cover at <code>/notes</code> is the first of the other topic pages to follow. It renders in
-  <code>components/topic/TopicFrame.tsx</code>, a thin wrapper over the <code>PageFrame</code> header
-  that review, progress and privacy use: a labelled back pill, a menu button for the site drawer, and
-  the topic's name linking back to its cover.
+  Git and the architecture guide left it first, for their own series reader, and the four written
+  topics' covers — JavaScript, React, DSA and System Design — and chapters have followed. They render
+  in <code>components/topic/TopicFrame.tsx</code>, a thin wrapper over the <code>PageFrame</code>
+  header that review, progress and privacy use: a labelled back pill, a menu button for the site
+  drawer, and the topic's name linking back to its cover.
 </p>
 <p>
   The playground, <code>/problems</code>, every problem page and <code>/whiteboard</code> do not. The

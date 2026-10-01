@@ -15,7 +15,7 @@ export const archRendering: Chapter = {
   A component is a server component unless it needs something only a browser has: state, an effect,
   an event handler, <code>localStorage</code>, or a measurement. Adding <code>"use client"</code> has
   a cost, because everything the file imports is bundled and shipped. Across <code>app/</code>,
-  <code>components/</code> and <code>lib/</code>, 87 files carry the directive. About a third belong
+  <code>components/</code> and <code>lib/</code>, 89 files carry the directive. About a third belong
   to the three big interactive surfaces: the playground, the whiteboard and the mock interview.
 </p>
 
@@ -91,11 +91,16 @@ export const archRendering: Chapter = {
   the client.
 </p>
 <p>
-  Topic covers take the outline-chapter path, with <code>TopicCoverPage</code> passing
-  <code>CoverSheet</code> to <code>ReaderShell</code>. The JavaScript cover at <code>/notes</code>
-  is the exception: its page renders <code>TopicFrame</code>, which wraps the client
-  <code>PageFrame</code>, and passes the same server-rendered <code>CoverSheet</code> in as its
-  children, so the cover still reaches the browser as HTML.
+  Topic covers branch the same way <code>TopicChapterPage</code> does, in
+  <code>TopicCoverPage</code>, but on <code>topicStats(topicId).written &gt; 0</code> rather than a
+  single chapter's <code>ready</code> flag. The four topics with something written — JavaScript,
+  React, DSA and System Design — get <code>TopicCover</code> (<code>components/topic/TopicCover.tsx</code>),
+  a server-computed list of cards and parts handed to a client component that renders
+  <code>TopicFrame</code> and reads its own done/next/budget state through
+  <code>useReadingPlan</code>, lifted out of <code>CoverMap</code>'s logic. Every other topic keeps
+  the outline-chapter path:
+  <code>TopicCoverPage</code> passes a server-rendered <code>CoverSheet</code> to
+  <code>ReaderShell</code>, a client component, as its children.
 </p>
 <p>
   The chapter body is written into the page with <code>dangerouslySetInnerHTML</code> and carries
