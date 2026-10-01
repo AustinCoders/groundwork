@@ -1,11 +1,11 @@
-import { GIT_CHAPTERS, GIT_PARTS } from "@/content/git-body";
+import { GIT_CHAPTERS, GIT_PARTS, type GitPartLevel } from "@/content/git-body";
 import { htmlMinutes } from "@/lib/content";
-import type { SeriesCard } from "@/components/series/ChapterView";
+import type { SeriesCard } from "@/components/chapter/types";
 
 export const GIT_BASE = "/git";
 export const GIT_PROGRESS_PREFIX = "git-";
 
-export function gitCards(): SeriesCard[] {
+export function gitCards(): SeriesCard<GitPartLevel>[] {
   return GIT_CHAPTERS.map((s) => ({
     id: s.id,
     num: s.num,

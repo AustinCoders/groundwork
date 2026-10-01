@@ -41,7 +41,7 @@ async function expectScrollRegion(page: Page, name: string) {
 }
 
 test("the closed sidebar stays out of the tab order, and comes back above the breakpoint", async ({ page }) => {
-  await page.goto("/notes");
+  await page.goto("/notes/setup-mental-model");
   const sidebar = page.locator("#site-sidenav");
   await expect(sidebar).toHaveAttribute("inert");
   await expect(sidebar).toBeHidden();
@@ -62,7 +62,7 @@ test("the closed sidebar stays out of the tab order, and comes back above the br
 });
 
 test("the open sidebar holds focus, and Escape gives it back to the menu button", async ({ page }) => {
-  await page.goto("/notes");
+  await page.goto("/notes/setup-mental-model");
   const sidebar = page.locator("#site-sidenav");
   await expect(sidebar).toHaveAttribute("inert");
   const toggle = page.getByRole("button", { name: "Open menu" });

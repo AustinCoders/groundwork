@@ -5,7 +5,7 @@ import { chapterMetas, chapters, notesHref } from "@/lib/content";
 import { ChapterView } from "@/components/series/ChapterView";
 import { withHeadingIds } from "@/lib/headingToc";
 import { ARCH_PARTS } from "@/lib/architectureParts";
-import type { ChapterCard } from "../ArchitectureView";
+import type { SeriesCard } from "@/components/chapter/types";
 
 const TOPIC = "architecture";
 
@@ -25,13 +25,13 @@ export default async function Page({ params }: { params: Promise<{ chapter: stri
   if (index === -1) notFound();
   const chapter = list[index];
   const { html, toc } = withHeadingIds(chapter.body);
-  const cards: ChapterCard[] = chapterMetas(TOPIC).map((c) => ({
+  const cards: SeriesCard[] = chapterMetas(TOPIC).map((c) => ({
     id: c.id,
     num: c.num,
     title: c.title,
     short: c.short,
     subtitle: c.subtitle ?? "",
-    level: (c.levels?.[0] ?? "beginner") as ChapterCard["level"],
+    level: c.levels?.[0] ?? "beginner",
     minutes: c.readMinutes,
   }));
   return (

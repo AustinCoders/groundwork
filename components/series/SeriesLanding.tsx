@@ -7,7 +7,10 @@ import { SiteDrawer } from "@/components/SiteDrawer";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { progress } from "@/lib/storage";
 import { useMounted, useProgressValue } from "@/lib/hooks";
-import { DiagramDefs, type SeriesCard, type SeriesPart } from "./ChapterView";
+import { ChapterCard } from "@/components/chapter/ChapterCard";
+import { DiagramDefs } from "@/components/chapter/DiagramDefs";
+import { PartSection } from "@/components/chapter/PartSection";
+import type { SeriesCard, SeriesPart } from "@/components/chapter/types";
 import styles from "./landing.module.css";
 
 export function SeriesLanding({
@@ -30,8 +33,8 @@ export function SeriesLanding({
   figureHtml?: string;
   facts: [string, string][];
   factsNote?: string;
-  parts: SeriesPart[];
-  chapters: SeriesCard[];
+  parts: SeriesPart<string>[];
+  chapters: SeriesCard<string>[];
   basePath: string;
   progressPrefix?: string;
 }) {
@@ -122,38 +125,19 @@ export function SeriesLanding({
             if (!list.length) return null;
             const read = mounted ? list.filter((c) => done.has(c.id)).length : 0;
             return (
-              <section key={part.level} className={styles.part} aria-labelledby={`part-${part.level}`}>
-                <div className={styles.partHead}>
-                  <span className={styles.partNum}>Part {pi + 1}</span>
-                  <h2 id={`part-${part.level}`}>{part.title}</h2>
-                  {part.blurb && <p>{part.blurb}</p>}
-                  <span className={styles.partProgress}>
-                    <span className={styles.bar} aria-hidden="true">
-                      <span style={{ width: `${(read / list.length) * 100}%` }} />
-                    </span>
-                    {read}/{list.length} read
-                  </span>
-                </div>
-                <ol className={styles.cards}>
-                  {list.map((c) => (
-                    <li key={c.id}>
-                      <Link className={styles.card} href={`${basePath}/${c.id}`}>
-                        <span className={styles.cardTop}>
-                          <span className={styles.cardNum}>{c.num}</span>
-                          <span className={styles.cardMin}>{c.minutes} min</span>
-                          {mounted && done.has(c.id) && (
-                            <span className={styles.cardDone} aria-label="read">
-                              ✓
-                            </span>
-                          )}
-                        </span>
-                        <span className={styles.cardTitle}>{c.title}</span>
-                        {c.subtitle && <span className={styles.cardSub}>{c.subtitle}</span>}
-                      </Link>
-                    </li>
-                  ))}
-                </ol>
-              </section>
+              <PartSection
+                key={part.level}
+                id={part.level}
+                index={pi}
+                title={part.title}
+                blurb={part.blurb}
+                read={read}
+                total={list.length}
+              >
+                {list.map((c) => (
+                  <ChapterCard key={c.id} chapter={c} href={`${basePath}/${c.id}`} read={mounted && done.has(c.id)} />
+                ))}
+              </PartSection>
             );
           })}
         </main>

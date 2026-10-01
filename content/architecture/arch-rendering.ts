@@ -15,8 +15,8 @@ export const archRendering: Chapter = {
   A component is a server component unless it needs something only a browser has: state, an effect,
   an event handler, <code>localStorage</code>, or a measurement. Adding <code>"use client"</code> has
   a cost, because everything the file imports is bundled and shipped. Across <code>app/</code>,
-  <code>components/</code> and <code>lib/</code>, 67 files carry the directive. Most belong to the
-  three big interactive surfaces: the playground, the whiteboard and the mock interview.
+  <code>components/</code> and <code>lib/</code>, 84 files carry the directive. About a third belong
+  to the three big interactive surfaces: the playground, the whiteboard and the mock interview.
 </p>
 
 <h3>What a chapter page is made of</h3>
@@ -67,6 +67,13 @@ export const archRendering: Chapter = {
   the chapter body reaches the browser as HTML and none of its text is in a JavaScript bundle. The
   only client code inside it is two islands: <code>ChapterDone</code>, the "mark as read" button,
   and <code>PracticeStrip</code>, which ticks off solved exercises.
+</p>
+<p>
+  Topic covers take the same path, with <code>TopicCoverPage</code> passing
+  <code>CoverSheet</code> to <code>ReaderShell</code>. The JavaScript cover at <code>/notes</code>
+  is the exception: its page renders <code>TopicFrame</code>, which wraps the client
+  <code>PageFrame</code>, and passes the same server-rendered <code>CoverSheet</code> in as its
+  children, so the cover still reaches the browser as HTML.
 </p>
 <p>
   The chapter body is written into the page with <code>dangerouslySetInnerHTML</code> and carries

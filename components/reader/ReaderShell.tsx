@@ -11,6 +11,7 @@ import { setupNarration } from "@/components/reader/narration";
 import { makeScrollRegions } from "@/components/reader/scrollRegions";
 import { NarrationSettings } from "@/components/reader/NarrationSettings";
 import { ChapterNav } from "@/components/reader/ChapterNav";
+import { DiagramDefs } from "@/components/chapter/DiagramDefs";
 import { ZOOM_KEY, ZOOM_STEPS } from "@/lib/readerZoom";
 import type { ChapterMeta, LevelNav } from "@/content/types";
 
@@ -216,45 +217,7 @@ export function ReaderShell({ topicId, levels, chapters, basePath, activeId, chi
       progressChapters={chapters}
       progressBar={
         <>
-          <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
-            <filter id="wob">
-              <feTurbulence type="fractalNoise" baseFrequency={0.022} numOctaves={3} seed={7} result="n" />
-              <feDisplacementMap in="SourceGraphic" in2="n" scale={2.4} xChannelSelector="R" yChannelSelector="G" />
-            </filter>
-            <marker
-              id="arrow"
-              viewBox="0 0 10 10"
-              refX="8.5"
-              refY="5"
-              markerWidth="7"
-              markerHeight="7"
-              orient="auto-start-reverse"
-            >
-              <path d="M0 0 L10 5 L0 10 z" style={{ fill: "var(--ink)" }} />
-            </marker>
-            <marker
-              id="arrow-green"
-              viewBox="0 0 10 10"
-              refX="8.5"
-              refY="5"
-              markerWidth="7"
-              markerHeight="7"
-              orient="auto-start-reverse"
-            >
-              <path d="M0 0 L10 5 L0 10 z" style={{ fill: "var(--green)" }} />
-            </marker>
-            <marker
-              id="arrow-red"
-              viewBox="0 0 10 10"
-              refX="8.5"
-              refY="5"
-              markerWidth="7"
-              markerHeight="7"
-              orient="auto-start-reverse"
-            >
-              <path d="M0 0 L10 5 L0 10 z" style={{ fill: "var(--red)" }} />
-            </marker>
-          </svg>
+          <DiagramDefs />
           <div className="progress" id="progress" role="presentation" ref={progressRef} />
         </>
       }

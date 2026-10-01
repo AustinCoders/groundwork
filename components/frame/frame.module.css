@@ -80,6 +80,44 @@
   color: var(--ink-soft);
 }
 
+a.title {
+  text-decoration: none;
+}
+
+a.title:hover {
+  color: var(--ink);
+}
+
+.titleMarked {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.titleText {
+  min-width: 0;
+  padding-right: 0.25em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 5px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--accent, var(--primary)) 60%, var(--ink));
+  background: color-mix(in srgb, var(--accent, var(--primary)) 14%, var(--sheet));
+  border-radius: 999px;
+}
+
 .links {
   display: flex;
   gap: 4px;
@@ -105,14 +143,31 @@
   box-shadow: inset 0 0 0 1px var(--primary);
 }
 
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.links + .actions {
+  margin-left: 0;
+}
+
 .main {
   max-width: 1180px;
   margin: 0 auto;
   padding: clamp(24px, 4vw, 48px) clamp(14px, 3vw, 24px) 96px;
 }
 
+.mainReader {
+  max-width: none;
+  padding: 0;
+}
+
 .iconBtn:focus-visible,
 .brand:focus-visible,
+a.title:focus-visible,
 .links a:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
@@ -121,6 +176,13 @@
 @media (max-width: 640px) {
   .brandName,
   .sep {
+    display: none;
+  }
+}
+
+@media print {
+  .top,
+  .scrollBar {
     display: none;
   }
 }

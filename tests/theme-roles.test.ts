@@ -139,8 +139,7 @@ const GLOBAL_CATEGORICAL_SELECTORS = [
 const THEME_BLOCK_PART = /^(?::root|\[data-theme(?:="[\w-]+")?\])$/;
 
 const SOURCE_MARKER_FILLS: Record<string, Record<string, string>> = {
-  "components/reader/ReaderShell.tsx": { "arrow-green": "--green", "arrow-red": "--red" },
-  "components/series/ChapterView.tsx": { "arrow-green": "--green", "arrow-red": "--red" },
+  "components/chapter/DiagramDefs.tsx": { "arrow-green": "--green", "arrow-red": "--red" },
 };
 
 type ThemeBlindUse = { line: number; selector: string; token: string };

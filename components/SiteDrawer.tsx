@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { AppearancePicker } from "@/components/AppearancePicker";
 import { FocusTrap } from "@/components/FocusTrap";
 import { NarrationSettings } from "@/components/reader/NarrationSettings";
@@ -13,6 +13,7 @@ import { useProgressValue } from "@/lib/hooks";
 import { progress } from "@/lib/storage";
 import { FONT_ITEMS, THEME_ITEMS } from "@/lib/storage";
 import { SITE_NAME } from "@/lib/site";
+import { accentVar } from "@/lib/accent";
 import { navHref, useGuidesNav, useTopicsNav, type GuideNav } from "@/lib/topicNav";
 import type { TopicNav } from "@/content/types";
 import styles from "./SiteDrawer.module.css";
@@ -26,13 +27,6 @@ const LINKS: { href: string; label: string; mark: string; accent: string }[] = [
   { href: "/review", label: "Review", mark: "↻", accent: "green" },
   { href: "/progress", label: "Progress", mark: "▤", accent: "yellow" },
 ];
-
-const ACCENTS: Record<string, string> = { mint: "green" };
-
-function accentVar(accent: string): string {
-  const name = ACCENTS[accent] ?? accent;
-  return name === "ink" ? "var(--ink)" : `var(--c-${name})`;
-}
 
 function topicBases(t: TopicNav): string[] {
   return [`/${(t.notes || "notes.html").replace(/\.html$/, "")}`, `/level/${t.id}`];
@@ -541,7 +535,14 @@ export function SiteDrawer({
           <DrawerBody onClose={onClose} reading={reading} />
           <div className={styles.foot}>
             {reading && (
-              <button type="button" className={styles.action} onClick={() => window.print()}>
+              <button
+                type="button"
+                className={styles.action}
+                onClick={() => {
+                  flushSync(onClose);
+                  window.print();
+                }}
+              >
                 <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style={{ margin: 0 }}>
                   <path
                     d="M7 9V3h10v6M7 17H5a2 2 0 01-2-2v-4a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2h-2M7 14h10v7H7z"

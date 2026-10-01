@@ -61,8 +61,24 @@ const STATES: State[] = [
     },
   },
   {
-    name: "the sidebar open",
+    name: "the reading menu open",
     path: "/notes",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      const menu = page.getByRole("dialog", { name: /menu/ });
+      await expect(menu).toBeVisible();
+      for (const fold of [/Text size/, /Narrator/]) {
+        const head = menu.getByRole("button", { name: fold });
+        await head.click();
+        await expect(head).toHaveAttribute("aria-expanded", "true");
+      }
+      await check("the reading menu open");
+    },
+  },
+  {
+    name: "the sidebar open",
+    path: "/notes/setup-mental-model",
     viewports: [PHONE],
     visit: async (page, check) => {
       await page.getByRole("button", { name: "Open menu" }).click();

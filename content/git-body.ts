@@ -21,8 +21,10 @@ import { gitCheat } from "./git/cheat";
 
 export type { GitSection };
 
+export type GitPartLevel = "foundations" | "together" | "rescue" | "mastery";
+
 export interface GitPart {
-  level: string;
+  level: GitPartLevel;
   title: string;
   blurb: string;
 }
@@ -50,7 +52,7 @@ export const GIT_PARTS: GitPart[] = [
   },
 ];
 
-const ORDER: [GitSection | undefined, string][] = [
+const ORDER: [GitSection | undefined, GitPartLevel][] = [
   [gitModel, "foundations"],
   [gitObjects, "foundations"],
   [gitAreas, "foundations"],
@@ -71,8 +73,8 @@ const ORDER: [GitSection | undefined, string][] = [
   [gitCheat, "mastery"],
 ];
 
-export const GIT_CHAPTERS: (GitSection & { part: string })[] = ORDER.filter((entry): entry is [GitSection, string] =>
-  Boolean(entry[0])
+export const GIT_CHAPTERS: (GitSection & { part: GitPartLevel })[] = ORDER.filter(
+  (entry): entry is [GitSection, GitPartLevel] => Boolean(entry[0])
 ).map(([s, part], i) => ({ ...s, num: `G${i + 1}`, part }));
 
 export const GIT_HERO_FIGURE = gitHeroFigure;

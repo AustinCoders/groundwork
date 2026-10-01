@@ -220,16 +220,28 @@ export const archDesignSystem: Chapter = {
   selected card's border and the focus outline use the current theme's <code>--primary</code>.
 </p>
 
-<h3>Two page shells</h3>
+<h3>Three page frames</h3>
 <p>
-  Reading pages use <code>components/Shell.tsx</code>. It draws the top bar and a sidebar with the
-  clock and weather, the streak, the topic of the day, links to the practice tools and the topic
-  list, and the theme and font dropdowns at the foot. The sidebar collapses, and the choice is
-  saved under <code>jsnotes:sidebar-collapsed</code>, with a separate key for workspace pages. On a
-  narrow screen it becomes a drawer. Opening the drawer locks body scroll, focuses its first link,
-  closes on Escape, and holds focus with the shared <code>components/FocusTrap.tsx</code>, which
-  wraps <code>@radix-ui/react-focus-scope</code>. Closed on a narrow screen, the drawer is
-  <code>inert</code>, so Tab skips it. Eleven files render it, from the home page to the reader.
+  Most topic covers and chapters use <code>components/Shell.tsx</code>. It draws the top bar
+  and a sidebar with the clock and weather, the streak, the topic of the day, links to the practice
+  tools and the topic list, and the theme and font dropdowns at the foot. The sidebar collapses, and
+  the choice is saved under <code>jsnotes:sidebar-collapsed</code>, with a separate key for
+  workspace pages. On a narrow screen it becomes a drawer. Opening the drawer locks body scroll,
+  focuses its first link, closes on Escape, and holds focus with the shared
+  <code>components/FocusTrap.tsx</code>, which wraps <code>@radix-ui/react-focus-scope</code>.
+  Closed on a narrow screen, the drawer is <code>inert</code>, so Tab skips it. Six files render
+  it: the topic reader's <code>ReaderShell</code>, the level, path and soon pages, and the
+  not-found and error pages.
+</p>
+<p>
+  The redesigned pages use <code>components/frame/PageFrame.tsx</code> instead: a sticky header
+  with a labelled back pill, a menu button that opens the site drawer, the brand and the page
+  title. Review, progress and privacy render it directly. <code>components/topic/TopicFrame.tsx</code>
+  fills it in for a topic, with the topic's mark beside a title that links to its cover. A page that
+  sets <code>reading</code> also gets the drawer's text size, narrator and print controls. The
+  JavaScript cover at <code>/notes</code> is the first topic page on it, with <code>reading</code>
+  on; the other covers and chapters that <code>topicPages.tsx</code> builds are still on the
+  Shell.
 </p>
 <p>
   The practice playground, the problems list and the whiteboard are full-screen tools, and a
@@ -271,8 +283,10 @@ export const archDesignSystem: Chapter = {
   <code>--sheet</code>, <code>--sheet-2</code> or the <code>--dg-box-*</code> colours, so every
   diagram follows the theme. The wobble comes from <code>.rough</code>, which applies an SVG filter
   with the id <code>wob</code>. That filter is fractal noise (base frequency 0.022, three octaves,
-  seed 7) feeding a displacement map of scale 2.4, and it is defined once in the reader shell
-  along with the <code>arrow</code>, <code>arrow-green</code> and <code>arrow-red</code> markers.
+  seed 7) feeding a displacement map of scale 2.4, and it is defined once, in
+  <code>components/chapter/DiagramDefs.tsx</code>, along with the <code>arrow</code>,
+  <code>arrow-green</code> and <code>arrow-red</code> markers. The topic reader, the series reader
+  and landing, and a page frame with its reading controls on all render that one component.
   Because the seed is fixed, the wobble is the same on every load.
 </p>
 <p>
@@ -315,8 +329,9 @@ export const archDesignSystem: Chapter = {
   lobby, the whiteboard, the 404 page and this architecture section. One of them,
   <code>/level/typescript</code>, is the level picker of a topic that is only outlined; it stands in
   for <code>/soon</code>, which redirects there while every topic is marked ready. It also runs
-  against 9 states that a plain page load does not show: 5 that open with a click, and 4 seeded in
-  <code>localStorage</code>. The clicks open the site menu, the reader's sidebar, the Chapters and
+  against 10 states that a plain page load does not show: 6 that open with a click, and 4 seeded in
+  <code>localStorage</code>. The clicks open the site menu, the reading menu on <code>/notes</code>
+  with its Text size and Narrator folds open, the reader's sidebar, the Chapters and
   Filters sheets, and a system design round in the mock interview, checked at the brief, a
   question, a follow-up, the rubric and the debrief. The seeds give a chapter due for review, a
   chapter marked read on a path, a year of activity on the progress page, and two saved mock

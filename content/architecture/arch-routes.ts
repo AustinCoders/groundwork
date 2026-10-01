@@ -18,7 +18,7 @@ export const archRoutes: Chapter = {
 </p>
 
 <figure>
-<svg viewBox="0 0 900 420" class="dg" role="img" aria-label="Five groups of routes. Pages with the Shell sidebar: topic covers and chapters, Git, level pages, path, review, progress, mock and soon. Full-screen tools: the playground, the problems list, each problem and the whiteboard. Prerendered JSON: the search indexes, the test cases and the mock question banks. Server functions: tts, weather, joke and client-error. Along the bottom, the metadata routes.">
+<svg viewBox="0 0 900 420" class="dg" role="img" aria-label="Five groups of routes. Framed pages, prerendered as HTML with the Shell sidebar or a page header: the home page, topic covers and chapters, Git, level pages, path, review, progress, mock and soon. Full-screen tools: the playground, the problems list, each problem and the whiteboard. Prerendered JSON: the search indexes, the test cases and the mock question banks. Server functions: tts, weather, joke and client-error. Along the bottom, the metadata routes.">
 <g class="rough">
 <rect x="20" y="20" width="205" height="300" rx="12" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 2" />
 <rect x="240" y="20" width="205" height="300" rx="12" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 2" />
@@ -26,8 +26,8 @@ export const archRoutes: Chapter = {
 <rect x="680" y="20" width="200" height="300" rx="12" style="fill: var(--sheet-2); stroke: var(--line-soft); stroke-width: 2" />
 <rect x="20" y="340" width="860" height="60" rx="12" style="fill: var(--sheet-2); stroke: var(--line-soft); stroke-width: 2" />
 </g>
-<text class="lbl" x="36" y="48">With the Shell</text>
-<text class="sm" x="36" y="68">sidebar, prerendered HTML</text>
+<text class="lbl" x="36" y="48">Framed pages</text>
+<text class="sm" x="36" y="68">sidebar or page header</text>
 <text class="sm" x="36" y="100">/</text>
 <text class="sm" x="36" y="122">/&lt;topic&gt;</text>
 <text class="sm" x="36" y="144">/&lt;topic&gt;/&lt;chapter&gt;</text>
@@ -72,7 +72,9 @@ export const archRoutes: Chapter = {
   the cover, <code>[chapter]/page.tsx</code>, <code>[chapter]/loading.tsx</code> and
   <code>search-index.json/route.ts</code>. The pages are a few lines each and call
   <code>TopicCoverPage</code> and <code>TopicChapterPage</code> in
-  <code>components/reader/topicPages.tsx</code>, where the real work is.
+  <code>components/reader/topicPages.tsx</code>, where the real work is. The JavaScript cover is
+  the exception: <code>app/notes/page.tsx</code> renders the same cover inside
+  <code>TopicFrame</code> itself.
 </p>
 <p>
   A single <code>app/[topic]/[chapter]</code> route would have removed the repetition. What the explicit
@@ -246,16 +248,20 @@ export const archRoutes: Chapter = {
 </svg>
 <figcaption>
   The drawer on the right is drawn dashed because it is not there until the menu button is pressed. It is
-  a portal with <code>role="dialog"</code>, and Escape closes it.
+  a portal with <code>role="dialog"</code>, and Escape closes it. The third frame, <code>PageFrame</code>,
+  is not drawn: it puts the same kind of header and drawer over a page instead of a tool.
 </figcaption>
 </figure>
 
 <p>
   <code>components/Shell.tsx</code> is the frame with the sidebar: the brand, the clock, the streak, links
-  to the tools, the topic list, reading progress, and the theme and font pickers. The home page, every
-  topic cover and chapter, <code>/git</code>, the level, path, review, progress and soon pages,
-  <code>/mock</code>, and the not-found and error pages all use it. The mock interview switches it to a
-  <code>focused</code> variant while an interview is running, which folds the topic list away.
+  to the tools, the topic list, reading progress, and the theme and font pickers. Most topic covers and
+  chapters, the level, path and soon pages, and the not-found and error pages use it.
+  Git and the architecture guide left it first, for their own series reader, and the JavaScript
+  cover at <code>/notes</code> is the first of the other topic pages to follow. It renders in
+  <code>components/topic/TopicFrame.tsx</code>, a thin wrapper over the <code>PageFrame</code> header
+  that review, progress and privacy use: a labelled back pill, a menu button for the site drawer, and
+  the topic's name linking back to its cover.
 </p>
 <p>
   The playground, <code>/problems</code>, every problem page and <code>/whiteboard</code> do not. The
@@ -264,7 +270,7 @@ export const archRoutes: Chapter = {
   canvas all want the width more than they want navigation that is always visible, so these pages use
   <code>components/SiteDrawer.tsx</code> instead: a menu button that opens a drawer with seven links and
   the shared <code>AppearancePicker</code>. <code>components/AppHeader.tsx</code> provides the thin
-  header and a <code>BareShell</code> frame, which the whiteboard uses with the header turned off. The two
-  frames never meet on one page.
+  header and a <code>BareShell</code> frame, which the whiteboard uses with the header turned off. The
+  Shell, the bare frame and <code>PageFrame</code> never meet on one page.
 </p>`,
 };

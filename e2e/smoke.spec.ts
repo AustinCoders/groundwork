@@ -55,6 +55,12 @@ function collectProblems(page: Page): string[] {
   return problems;
 }
 
+async function expectOneSetOfDiagramDefs(page: Page) {
+  for (const selector of ["filter#wob", "marker#arrow", "#arrow-green", "#arrow-red"]) {
+    await expect(page.locator(selector), `${selector} on ${page.url()}`).toHaveCount(1);
+  }
+}
+
 for (const { path, heading } of PAGES) {
   test(`${path} renders without console errors`, async ({ page }) => {
     const problems = collectProblems(page);
@@ -72,6 +78,48 @@ test("a chapter can be marked read and the count follows", async ({ page }) => {
   const tick = page.locator(".station__tick").first();
   await tick.click();
   await expect(page.locator(".covermap__score-num")).toContainText("1");
+});
+
+test("the /notes cover renders in the topic frame", async ({ page }) => {
+  await page.goto("/notes");
+  const back = page.locator("header a.head-back");
+  await expect(back).toBeVisible();
+  await expect(back).toHaveAttribute("title", "Home");
+  await expect(back).toHaveAttribute("href", "/");
+  const title = page.locator("header").getByRole("link", { name: "JavaScript", exact: true });
+  await expect(title).toHaveAttribute("href", "/notes");
+  await expect(title).toHaveAttribute("aria-current", "page");
+  await expect(title.locator("[aria-hidden=true]")).toHaveText("JS");
+  await expect(page.locator("#site-sidenav")).toHaveCount(0);
+  await expectOneSetOfDiagramDefs(page);
+
+  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  const menu = page.getByRole("dialog", { name: /menu/ });
+  const textSize = menu.getByRole("button", { name: /Text size/ });
+  await textSize.click();
+  await expect(textSize).toHaveAttribute("aria-expanded", "true");
+  await menu.getByRole("button", { name: "Larger text" }).click();
+  await expect(menu.locator("output")).toHaveText("110%");
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.style.getPropertyValue("--reader-zoom")))
+    .toBe("1.1");
+  await expect.poll(() => page.locator("#chapters").evaluate((el) => getComputedStyle(el).zoom)).toBe("1.1");
+  await expect(menu.getByRole("button", { name: /Narrator/ })).toBeVisible();
+  const print = menu.getByRole("button", { name: "Print or save as PDF" });
+  await expect(print).toBeVisible();
+  await page.evaluate(() => {
+    window.print = () => document.documentElement.setAttribute("data-printed", "");
+  });
+  await print.click();
+  await expect(page.locator("html")).toHaveAttribute("data-printed", "");
+  await expect(menu).toHaveCount(0);
+
+  await page.goto("/react");
+  await expect(page.locator("#site-sidenav")).toHaveCount(1);
+  await expectOneSetOfDiagramDefs(page);
+
+  await page.goto("/notes#closures");
+  await page.waitForURL("**/notes/closures");
 });
 
 test("search finds chapter text, marks matches, and ignores demo scripts", async ({ page }) => {
@@ -743,8 +791,14 @@ test("the architecture map links every box to a written chapter", async ({ page 
 test("an architecture chapter has its own rail, contents and read marker", async ({ page }) => {
   await page.goto("/architecture/arch-build");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expectOneSetOfDiagramDefs(page);
   const rail = page.getByRole("navigation", { name: "Chapters" });
   await expect(rail.locator("a[aria-current=page]")).toContainText("The build");
+  await expect(rail.locator("button[aria-controls='rail-intermediate']")).toHaveAttribute("aria-expanded", "true");
+  const beginnerHead = rail.locator("button[aria-controls='rail-beginner']");
+  await expect(beginnerHead).toHaveAttribute("aria-expanded", "false");
+  await beginnerHead.click();
+  await expect(beginnerHead).toHaveAttribute("aria-expanded", "true");
   const contents = page.getByRole("complementary", { name: "On this page" });
   const firstSection = contents.getByRole("link").first();
   const target = (await firstSection.getAttribute("href"))!;
@@ -757,6 +811,12 @@ test("an architecture chapter has its own rail, contents and read marker", async
   await page.getByRole("heading", { level: 1 }).click();
   await page.keyboard.press("]");
   await page.waitForURL("**/architecture/arch-rendering");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Server, client");
+  const pager = page.getByRole("navigation", { name: "Chapter navigation" });
+  await expect(pager.getByRole("link", { name: /^Previous/ })).toHaveAttribute("href", "/architecture/arch-build");
+  await expect(pager.getByRole("link", { name: /^Next/ })).toHaveAttribute("href", "/architecture/arch-state");
+  await page.keyboard.press("[");
+  await page.waitForURL("**/architecture/arch-build");
 });
 
 test("the site menu folds its sections and changes the text size everywhere", async ({ page }) => {
@@ -795,6 +855,7 @@ test("the site menu folds its sections and changes the text size everywhere", as
 test("the git guide has a chapter per section and old anchors still land", async ({ page }) => {
   await page.goto("/git");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Git");
+  await expectOneSetOfDiagramDefs(page);
   await page.getByRole("link", { name: /Setup and configuration/ }).click();
   await page.waitForURL("**/git/config");
   await expect(page.getByRole("navigation", { name: "Chapters" }).locator("a[aria-current=page]")).toContainText(
@@ -943,7 +1004,15 @@ test("review brings a due chapter back, and every section header has a way back"
   await page.goto("/progress");
   await expect(page.getByRole("heading", { name: "By topic" })).toBeVisible();
 
-  for (const path of ["/review", "/progress", "/mock", "/interview", "/interview/r1", "/interview/questions"]) {
+  for (const path of [
+    "/review",
+    "/progress",
+    "/mock",
+    "/interview",
+    "/interview/r1",
+    "/interview/questions",
+    "/notes",
+  ]) {
     await page.goto(path);
     await expect(page.locator("header a.head-back")).toBeVisible();
   }
@@ -1078,6 +1147,12 @@ test("problems, the whiteboard, git and architecture take the theme's accent, an
     themeColour("forest", "--success")
   );
   await expect(currentChapter.getByLabel("read", { exact: true })).toHaveCSS("color", themeColour("forest", "--ink"));
+  await expect(finish).toContainText("1 of");
+
+  await page.goto("/git");
+  const together = page.getByRole("region", { name: "Working together" });
+  await expect(together.locator("a[href='/git/merge']").getByLabel("read", { exact: true })).toBeVisible();
+  await expect(together).toContainText(/\b1\/\d+ read/);
 });
 
 test("topic covers and chapters, level, path and the playground take the theme's accent", async ({ page }) => {
