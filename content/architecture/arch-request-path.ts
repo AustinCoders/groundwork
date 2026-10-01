@@ -132,24 +132,31 @@ export const archRequestPath: Chapter = {
   not on the first load.
 </p>
 
-<h3>The quiet exception</h3>
+<h3>The quiet exception, now half-closed</h3>
 <p>
-  The chapter, problem and level routes all export <code>generateStaticParams</code>, but none of
-  them sets <code>dynamicParams</code>, and the default is <code>true</code>. So a slug the build
-  never saw, such as <code>/notes/not-a-chapter</code>, is not answered with a stored 404. It is
-  handed to a function, which renders the page, and <code>TopicChapterPage</code> calls
-  <code>notFound()</code>. The manifest shows this: these 22 dynamic routes are listed with
-  <code>fallback: null</code>. The two route handlers do set <code>dynamicParams = false</code> and are
-  listed with <code>fallback: false</code>, which gives a plain 404 without running anything.
+  The chapter, problem and level routes all export <code>generateStaticParams</code>. Of the 25
+  dynamic routes in the build's manifest, 22 did not also set <code>dynamicParams</code>, so the
+  default of <code>true</code> applied: a slug the build never saw, such as
+  <code>/notes/not-a-chapter</code>, was not answered with a stored 404. It was handed to a function,
+  which rendered the page, and <code>TopicChapterPage</code> called <code>notFound()</code> after the
+  fact — a page built on demand that happens to say "not found."
+</p>
+<p>
+  Nineteen of those 22 now set <code>export const dynamicParams = false</code>: the 18 topic
+  <code>[chapter]</code> routes and <code>/architecture/[chapter]</code>. The manifest lists all 19
+  with <code>fallback: false</code>, the same as <code>/git/[section]</code>, which already had it.
+  An unknown slug under any of those routes is now a stored 404, nothing rendered. Three routes are
+  still open, still listed with <code>fallback: null</code>: <code>/problems/[slug]</code>,
+  <code>/level/[topic]</code>, and <code>/interview/[chapter]</code>, which renders through
+  <code>RoundView</code> rather than <code>TopicChapterPage</code> and was never part of this fix.
 </p>
 <div class="bx is-ref">
-<span class="ttl">A one-line fix nobody has made yet</span>
+<span class="ttl">Three routes still take the slow path</span>
 <p>
-  Adding <code>export const dynamicParams = false</code> to the <code>[chapter]</code>,
-  <code>[slug]</code> and <code>[topic]</code> pages would make a mistyped URL cost nothing. The risk
-  is small: every valid slug comes from the same content arrays <code>generateStaticParams</code>
-  reads. Until someone makes that change, the honest count of code paths that can run per request
-  is five, not four.
+  <code>/problems/[slug]</code> and <code>/level/[topic]</code> would take the same one-line fix as
+  the chapter routes, but that is a separate change, not made here. <code>/interview/[chapter]</code>
+  is a different page component entirely. Until all three set <code>dynamicParams = false</code>, a
+  mistyped problem id, level or interview round still costs a render before the 404.
 </p>
 </div>
 

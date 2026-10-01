@@ -9,6 +9,8 @@ import type { SeriesCard } from "@/components/chapter/types";
 
 const TOPIC = "architecture";
 
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return topicChapterParams(TOPIC);
 }

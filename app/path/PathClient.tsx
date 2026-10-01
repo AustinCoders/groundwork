@@ -19,6 +19,7 @@ function LevelTag({ level }: { level: string }) {
 
 export interface PathClientProps {
   chapterById: Record<string, ChapterMeta>;
+  chaptersByTopic: Record<string, ChapterMeta[]>;
   chapterExercises: Record<string, ExerciseLink[]>;
   levelExercises: Record<string, ExerciseLink[]>;
 }
@@ -39,7 +40,7 @@ export default function PathClient(props: PathClientProps) {
   );
 }
 
-function PathPageInner({ chapterById, chapterExercises, levelExercises }: PathClientProps) {
+function PathPageInner({ chapterById, chaptersByTopic, chapterExercises, levelExercises }: PathClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const mounted = useMounted();
@@ -97,7 +98,7 @@ function PathPageInner({ chapterById, chapterExercises, levelExercises }: PathCl
       progressChapters={chapters}
       sidebarExtra={
         <ChapterNavSection
-          chapters={Object.values(chapterById)}
+          chapters={chaptersByTopic[topic.id] ?? []}
           levels={levelsFor(topic.id)}
           basePath={notesHref}
           defaultLevel={level.id}

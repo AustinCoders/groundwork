@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import { Crumbs } from "@/components/Crumbs";
 import { Shell } from "@/components/Shell";
-import { topic as findTopic } from "@/lib/topics";
+import { topic as findTopic, levels as levelsFor } from "@/lib/topics";
+import { topicStats } from "@/lib/topicStats";
 import { escapeHtml } from "@/lib/format";
 import { useMounted } from "@/lib/hooks";
 
@@ -24,6 +25,7 @@ function SoonPageInner() {
 
   const topicId = searchParams.get("topic") || "";
   const topic = findTopic(topicId);
+  const hasWrittenChapters = topic ? (topicStats()[topic.id]?.written ?? 0) > 0 : false;
 
   useEffect(() => {
     document.title = topic ? `${topic.name} — coming soon` : "Coming soon";
@@ -35,14 +37,12 @@ function SoonPageInner() {
       router.replace("/");
       return;
     }
-    if (topic.status === "ready") {
+    if (hasWrittenChapters) {
       router.replace(`/level/${topic.id}`);
     }
-  }, [mounted, topic, router]);
+  }, [mounted, topic, hasWrittenChapters, router]);
 
-  if (!mounted || !topic || topic.status === "ready") return null;
-
-  const planned = topic.planned || [];
+  if (!mounted || !topic || hasWrittenChapters) return null;
 
   return (
     <Shell skipLabel="Skip to the content">
@@ -96,25 +96,31 @@ function SoonPageInner() {
 
         <div className="sticky mint soon-hero__aside">
           <span className="ttl">Meanwhile</span>
-          JavaScript is the one topic with a full syllabus mapped out — beginner through advanced, 23 sections. A few
-          are already written, and the exercises that exist run right here in the browser. Most of what makes React,
-          Node or Nest confusing traces back to JavaScript&apos;s scope, prototypes and async sections anyway.
+          {topic.name} isn&apos;t written yet, but a different topic on this shelf is: JavaScript has a full syllabus
+          finished beginner through advanced, and its exercises run right here in the browser. Most of what makes React,
+          Node or Nest confusing traces back to JavaScript&apos;s scope, prototypes and async sections anyway, so it is
+          worth a look regardless of what brought you here.
         </div>
       </section>
 
-      {planned.length > 0 && (
-        <section className="sheet" id="plan-sheet">
-          <h2>What&apos;s planned for this one</h2>
-          <p className="sub">The outline exists — the writing doesn&apos;t. This is the order it will be written in.</p>
-          <ol className="plan" id="plan-list">
-            {planned.map((item, i) => (
-              <li key={i}>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
+      <section className="sheet" id="plan-sheet">
+        <h2>What&apos;s planned for this one</h2>
+        <p className="sub">The outline exists — the writing doesn&apos;t. This is the order within each level.</p>
+        <div id="plan-list">
+          {levelsFor(topic.id).map((level) => (
+            <div key={level.id}>
+              <h3>{level.name}</h3>
+              <ol className="plan">
+                {(level.syllabus || []).map((section, i) => (
+                  <li key={i}>
+                    <span>{section.title}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <footer className="site-foot">
         <Link href="/">All topics</Link>

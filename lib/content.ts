@@ -86,7 +86,7 @@ export function chapters(topicId?: string | null): Chapter[] {
 }
 
 export function chapterMetas(topicId?: string | null): ChapterMeta[] {
-  return chapters(topicId).map(({ body, ...meta }) => ({ ...meta, readMinutes: minutesFor(body) }));
+  return chapters(topicId).map(({ body, ...meta }) => ({ ...meta, readMinutes: meta.ready ? minutesFor(body) : 0 }));
 }
 
 export function exercises(): Exercise[] {
@@ -129,7 +129,7 @@ export function htmlMinutes(html: string): number {
 }
 
 export function readTime(chapter: Chapter): number {
-  return minutesFor(chapter.body);
+  return chapter.ready ? minutesFor(chapter.body) : 0;
 }
 
 export function totalTime(chapterList: Chapter[]): number {

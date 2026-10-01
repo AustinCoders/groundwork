@@ -15,12 +15,14 @@ export const metadata: Metadata = pageMetadata({
 
 export default function PathPage() {
   const chapterById: Record<string, ChapterMeta> = {};
+  const chaptersByTopic: Record<string, ChapterMeta[]> = {};
   const chapterExercises: Record<string, ExerciseLink[]> = {};
   const levelExercises: Record<string, ExerciseLink[]> = {};
 
   topics().forEach((t) => {
     if (!t.levels) return;
     const metas = chapterMetas(t.id);
+    chaptersByTopic[t.id] = metas;
     Object.assign(chapterById, byChapterId(metas));
     metas.forEach((ch) => {
       chapterExercises[ch.id] = ch.practice
@@ -49,5 +51,12 @@ export default function PathPage() {
     });
   });
 
-  return <PathClient chapterById={chapterById} chapterExercises={chapterExercises} levelExercises={levelExercises} />;
+  return (
+    <PathClient
+      chapterById={chapterById}
+      chaptersByTopic={chaptersByTopic}
+      chapterExercises={chapterExercises}
+      levelExercises={levelExercises}
+    />
+  );
 }

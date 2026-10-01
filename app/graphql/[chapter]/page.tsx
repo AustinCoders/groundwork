@@ -3,6 +3,8 @@ import { TopicChapterPage, topicChapterMetadata, topicChapterParams } from "@/co
 
 const TOPIC = "graphql";
 
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return topicChapterParams(TOPIC);
 }

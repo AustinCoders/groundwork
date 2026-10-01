@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chapters, exercises, notesData, topics } from "@/lib/content";
+import { chapters, exercises, notesData, readTime, topics, totalTime } from "@/lib/content";
 import { levels, notesHref } from "@/lib/topics";
 
 const notesTopics = topics().filter((t) => t.levels);
@@ -109,6 +109,24 @@ describe("syllabus wiring", () => {
         }
       }
     }
+  });
+});
+
+describe("reading time", () => {
+  const writtenChapter = chapters("js").find((ch) => ch.ready);
+  const outlineChapter = chapters("typescript").find((ch) => !ch.ready);
+
+  it("gives an unwritten chapter 0 minutes and keeps the floor for a written one", () => {
+    expect(outlineChapter, "expected an unwritten typescript chapter to test against").toBeDefined();
+    expect(writtenChapter, "expected a written js chapter to test against").toBeDefined();
+    expect(readTime(outlineChapter!)).toBe(0);
+    expect(readTime(writtenChapter!)).toBeGreaterThan(0);
+  });
+
+  it("excludes unwritten chapters from totalTime", () => {
+    expect(outlineChapter, "expected an unwritten typescript chapter to test against").toBeDefined();
+    expect(writtenChapter, "expected a written js chapter to test against").toBeDefined();
+    expect(totalTime([writtenChapter!, outlineChapter!])).toBe(readTime(writtenChapter!));
   });
 });
 

@@ -73,8 +73,10 @@ export const archContentModel: Chapter = {
 </p>
 <p>
   Reading time is not stored anywhere. <code>lib/content.ts</code> strips the tags from a body, counts
-  the words, divides by 180 and rounds, with a floor of two minutes. Every reading time on the site is
-  that one function.
+  the words, divides by 180 and rounds, with a floor of two minutes — for a written chapter.
+  <code>readTime()</code> and <code>chapterMetas()</code> both check <code>ready</code> first and
+  return zero for an outline chapter instead of flooring its empty body at two minutes. Every reading
+  time on the site follows that same rule.
 </p>
 
 <h3>Two things that do not fit, and how they are made to</h3>
@@ -153,7 +155,8 @@ export const archContentModel: Chapter = {
   chapter and an outline, and it decides several things at once. An outline still gets a page, because
   every chapter id is returned from <code>generateStaticParams</code>, but the page shows a "not written
   yet" stamp and the syllabus bullets instead of a body, is marked <code>noindex</code>, has no Listen
-  button and no "mark as read", and is left out of the sitemap and the cross-topic search index. The
+  button and no "mark as read", is left out of the sitemap and the cross-topic search index, and counts
+  no reading time. The
   syllabus marks it with an open circle instead of a tick. It is why the site can show 585 chapters while honestly claiming 227.
 </p>
 

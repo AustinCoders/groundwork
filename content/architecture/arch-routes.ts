@@ -87,10 +87,13 @@ export const archRoutes: Chapter = {
 </p>
 <p>
   <code>generateStaticParams</code> returns every chapter id, written or not, so all 567 chapter pages are
-  prerendered, outlines included. The chapter route does not set <code>dynamicParams</code>, so the
-  default applies: an id the build did not know about is rendered once on the server, and it calls
-  <code>notFound()</code>. Git is the exception to all of this: one folder, one page, one long HTML
-  string, and no <code>[chapter]</code>.
+  prerendered, outlines included. Each <code>[chapter]</code> route also sets
+  <code>export const dynamicParams = false</code>, so an id the build did not know about is a stored
+  404 rather than a render. Git has the same setting on its single <code>[section]</code> route, one
+  folder, one page, one long HTML string, and no <code>[chapter]</code> of its own. Two sibling dynamic
+  segments do not have this yet: <code>/problems/[slug]</code> and <code>/level/[topic]</code> still
+  default <code>dynamicParams</code> to <code>true</code>, so an unknown problem or topic id is still
+  rendered before it 404s.
 </p>
 
 <h3>/problems, and a page per problem</h3>

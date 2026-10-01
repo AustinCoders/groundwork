@@ -73,6 +73,29 @@ for (const { path, heading } of PAGES) {
   });
 }
 
+test("an unknown chapter slug is a stored 404, not a rendered not-found page", async ({ page }) => {
+  for (const path of ["/notes/nope", "/architecture/nope", "/react/nope"]) {
+    const response = await page.goto(path);
+    expect(response?.status(), `${path} did not return 404`).toBe(404);
+  }
+});
+
+test("an outline topic's /soon page renders its syllabus, and a written topic's still redirects", async ({ page }) => {
+  await page.goto("/soon?topic=typescript");
+  await expect(page).toHaveURL(/\/soon\?topic=typescript/);
+  await expect(page.locator(".soon-stamp")).toBeVisible();
+  await expect(page.getByText("Setup & the compiler")).toBeVisible();
+
+  await page.goto("/soon?topic=js");
+  await page.waitForURL("**/level/js");
+});
+
+test("the /path sidebar lists only its own topic's chapters, not every topic's", async ({ page }) => {
+  await page.goto("/path?topic=typescript&level=beginner");
+  await expect(page.locator(".site-sidenav__count")).toHaveText("29 chapters");
+  await expect(page.locator("#nav-list a[href^='/react/']")).toHaveCount(0);
+});
+
 test("a chapter can be marked read and the count follows", async ({ page }) => {
   await page.goto("/notes");
   const tick = page.locator(".station__tick").first();

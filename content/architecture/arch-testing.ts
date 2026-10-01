@@ -8,7 +8,7 @@ export const archTesting: Chapter = {
   levels: ["advanced"],
   practice: [],
   ready: true,
-  subtitle: "307 unit tests, 152 browser tests, and one test that checks what these pages say about the site.",
+  subtitle: "307 unit tests, 155 browser tests, and one test that checks what these pages say about the site.",
   body: `<h3>The shape of it</h3>
 <p>
   There are three layers of checking, each slower and more thorough than the one before:
@@ -76,7 +76,7 @@ export const archTesting: Chapter = {
   and then drifted.
 </p>
 
-<h3>Browser tests: 4 specs, 152 tests</h3>
+<h3>Browser tests: 4 specs, 155 tests</h3>
 <p>
   <code>playwright.config.ts</code> starts <code>npm run start</code> on port 3100. That is the
   production build, not the dev server, because dev mode double-invokes effects and serves
@@ -86,7 +86,7 @@ export const archTesting: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Spec</th><th>Tests</th><th>Covers</th></tr></thead>
 <tbody>
-<tr><td><code>smoke.spec.ts</code></td><td>69</td><td>17 routes load with no console error and no failed request; the playground fits at 1024, 768 and 390 pixels wide; 49 flows (narration, search, share links, stdin, the debugger, Lua and Python grading, the mock interview from lobby to debrief, and the problems page filters)</td></tr>
+<tr><td><code>smoke.spec.ts</code></td><td>72</td><td>17 routes load with no console error and no failed request; the playground fits at 1024, 768 and 390 pixels wide; 52 flows (narration, search, share links, stdin, the debugger, Lua and Python grading, the mock interview from lobby to debrief, the problems page filters, an unknown chapter slug returning a stored 404, an outline topic's <code>/soon</code> page and a written topic's redirect, and the <code>/path</code> sidebar scoped to one topic)</td></tr>
 <tr><td><code>a11y.spec.ts</code></td><td>69</td><td>axe with the WCAG 2.0 and 2.1 A and AA tags, and no rule disabled, over 26 pages and 10 states, in all 9 themes at 1440 and 390 pixels wide. The states are the site menu open, and the reading menu on <code>/notes</code> with its Text size and Narrator folds open, at both widths; the sidebar, the Chapters sheet and the Filters sheet open, at 390 only; a mock round checked at up to five stages; and four seeded from saved progress: a chapter due for review, a chapter read on a path, a year of activity and two saved mock sessions</td></tr>
 <tr><td><code>whiteboard.spec.ts</code></td><td>6</td><td>Drawing, arrows that follow their shapes, undo, reload, PNG export, share links, templates, locking, grouping</td></tr>
 <tr><td><code>keyboard.spec.ts</code></td><td>8</td><td>At 390 pixels wide: the closed sidebar stays out of the tab order; the open sidebar, the site menu, the Chapters sheet and the Filters sheet hold focus and hand it back on Escape; a wide table and a wide code block in a git chapter and in the interview book take focus and have names; the question drill and the mock brief leave Enter to a focused control; the playground's skip link lands in the editor</td></tr>
