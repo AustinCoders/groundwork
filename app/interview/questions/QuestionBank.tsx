@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { BookShell } from "@/app/interview/BookShell";
 import { confidence, CONFIDENCE_LABEL, useConfidence, type Confidence } from "@/lib/interviewConfidence";
 import type { BankQuestion, BookPart } from "@/lib/interviewBook";
+import { INTERVIEW_TOTAL_QUESTIONS } from "@/lib/interviewContent";
 import { shortcutShouldStepAside } from "@/lib/shortcuts";
 import styles from "../book.module.css";
 
@@ -214,8 +215,10 @@ export function QuestionBank({
         <p className={styles.eyebrow}>Question bank</p>
         <h1 className={styles.roundTitle}>Every question, in one place.</h1>
         <p className={styles.lead}>
-          {questions.length} questions from every round. Search them, filter them, or drill them as flashcards: read the
-          question, say your answer out loud, reveal, and mark yourself honestly.
+          {questions.length} questions answered in depth, plus {INTERVIEW_TOTAL_QUESTIONS - questions.length} more as
+          rapid-fire follow-ups and prep guides — {INTERVIEW_TOTAL_QUESTIONS} in all. Search them, filter them, or drill
+          the {questions.length} in depth as flashcards: read the question, say your answer out loud, reveal, and mark
+          yourself honestly.
         </p>
         <div className={styles.bankStats}>
           <span>

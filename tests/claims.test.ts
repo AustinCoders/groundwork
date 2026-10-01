@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import sitemap from "@/app/sitemap";
 import { chapters, exercises, topics } from "@/lib/content";
 import { LANG_ORDER, LANGUAGES } from "@/lib/codeLanguages";
+import { bankQuestions } from "@/lib/interviewBook";
 import { INTERVIEW_TOTAL_QUESTIONS, INTERVIEW_TOTAL_ROUNDS } from "@/lib/interviewContent";
 import { THEME_ITEMS } from "@/lib/storage";
 import { siteStats } from "@/lib/topicStats";
@@ -110,6 +111,17 @@ describe("what the site says about itself", () => {
 
   it.each(cases)("$file still tells the truth about $about", ({ file, claim }) => {
     expect(read(file), `expected to find: ${claim}`).toContain(claim);
+  });
+
+  it("keeps the question bank's drillable count smaller than the site's total question count", () => {
+    const drillable = bankQuestions().length;
+    expect(drillable).toBeGreaterThan(0);
+    expect(drillable, "the bank now holds every question, leaving nothing to call rapid-fire").toBeLessThan(
+      INTERVIEW_TOTAL_QUESTIONS
+    );
+    const source = read("app/interview/questions/QuestionBank.tsx");
+    expect(source).toContain("questions.length} questions answered in depth, plus");
+    expect(source).toContain("{INTERVIEW_TOTAL_QUESTIONS - questions.length}");
   });
 
   it("counts the Paper theme's custom properties and colour tokens in the design-system chapter", () => {
