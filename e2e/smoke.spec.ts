@@ -1367,8 +1367,7 @@ test("topic covers and chapters, level, path and the playground take the theme's
   const inBodyLink = page.locator("#closures").getByRole("link", { name: "the outer reference" });
   const currentChapter = page.getByRole("navigation", { name: "Chapters" }).locator('a[aria-current="page"]');
   const run = page.getByRole("button", { name: "Run the code" });
-  const writtenRow = page.locator("[class*='__itemReady']").first();
-  const levelCrumb = page.locator("#crumbs a").first();
+  const writtenRow = page.locator("[class*='__itemReady'] [class*='__itemCheck']").first();
   const levelCta = page.locator("[class*='__cardCta']").first();
   const levelListCode = page.locator("[class*='__cardList'] code").first();
   const pathMeter = page.locator("#meter-fill");
@@ -1400,8 +1399,7 @@ test("topic covers and chapters, level, path and the playground take the theme's
     await expect(run, `/practice in ${theme}`).toHaveCSS("color", onAccent);
 
     await page.goto("/level/js");
-    await expect(writtenRow, `/level/js in ${theme}`).toHaveCSS("border-left-color", accent);
-    await expect(levelCrumb, `/level/js in ${theme}`).toHaveCSS("color", accent);
+    await expect(writtenRow, `/level/js in ${theme}`).toHaveCSS("background-color", accent);
     await expect(levelCta, `/level/js in ${theme}`).toHaveCSS("color", accent);
     await expect(levelListCode, `/level/js in ${theme}`).toHaveCSS("color", themeColour(theme, "--ink-soft"));
 

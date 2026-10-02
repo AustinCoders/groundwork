@@ -48,6 +48,12 @@ export function Syllabus({
               <span className={styles.syllabusArrow} aria-hidden="true">
                 ›
               </span>
+              <span className={styles.syllabusProgress} aria-hidden="true">
+                <span
+                  className={styles.syllabusProgressFill}
+                  style={{ width: `${rows.length ? (written / rows.length) * 100 : 0}%` }}
+                />
+              </span>
             </summary>
             <div className={styles.syllabusBody}>
               <ul className={styles.syllabusList}>
