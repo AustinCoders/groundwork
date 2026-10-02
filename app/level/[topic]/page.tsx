@@ -7,7 +7,6 @@ import {
   curriculumNotes,
   exercisesForLevel,
   levels as levelsFor,
-  notesHref,
   topic as findTopic,
   topics,
   totalTime,
@@ -47,11 +46,12 @@ export default async function LevelPage({ params }: { params: Promise<{ topic: s
 
   const perLevel: Record<string, LevelStat> = {};
   levels.forEach((level) => {
-    const chapters = chaptersForLevel(level.id, topic.id);
+    const written = chaptersForLevel(level.id, topic.id).filter((c) => c.ready);
+    const writtenIds = new Set(written.map((c) => c.id));
     perLevel[level.id] = {
-      chapters: chapters.length,
-      minutes: totalTime(chapters),
-      exercises: exercisesForLevel(level.id, topic.id).length,
+      chapters: written.length,
+      minutes: totalTime(written),
+      exercises: exercisesForLevel(level.id, topic.id).filter((ex) => writtenIds.has(ex.chapter)).length,
     };
   });
 
@@ -59,11 +59,9 @@ export default async function LevelPage({ params }: { params: Promise<{ topic: s
     <LevelView
       topic={topic}
       levels={levels}
-      notesHref={notesHref(topic.id)}
       perLevel={perLevel}
       chapterById={byChapterId(metas)}
       curriculumNotes={curriculumNotes(topic.id)}
-      progressChapters={metas}
     />
   );
 }

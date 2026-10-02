@@ -261,9 +261,10 @@ export const archRoutes: Chapter = {
 <p>
   <code>components/Shell.tsx</code> is the frame with the sidebar: the brand, the clock, the streak, links
   to the tools, the topic list, reading progress, and the theme and font pickers. Most topic covers and
-  chapters, the level, path and soon pages, and the not-found and error pages use it.
+  chapters, the path and soon pages, and the not-found and error pages use it.
   Git and the architecture guide left it first, for their own series reader, and the four written
-  topics' covers — JavaScript, React, DSA and System Design — and chapters have followed. They render
+  topics' covers — JavaScript, React, DSA and System Design — and chapters, and the level pages that
+  render rather than redirect, have followed. They render
   in <code>components/topic/TopicFrame.tsx</code>, a thin wrapper over the <code>PageFrame</code>
   header that review, progress and privacy use: a labelled back pill, a menu button for the site
   drawer, and the topic's name linking back to its cover.

@@ -128,6 +128,22 @@ describe("reading time", () => {
     expect(writtenChapter, "expected a written js chapter to test against").toBeDefined();
     expect(totalTime([writtenChapter!, outlineChapter!])).toBe(readTime(writtenChapter!));
   });
+
+  it("keeps a level's chapter and exercise counts to its ready chapters, for a synthetic mixed-ready level", () => {
+    expect(outlineChapter, "expected an unwritten typescript chapter to test against").toBeDefined();
+    expect(writtenChapter, "expected a written js chapter to test against").toBeDefined();
+
+    const mixedReadyLevel = [writtenChapter!, outlineChapter!];
+    const written = mixedReadyLevel.filter((ch) => ch.ready);
+    const writtenIds = new Set(written.map((ch) => ch.id));
+    expect(written).toEqual([writtenChapter]);
+
+    const syntheticExercises = [
+      { ...exercises()[0], chapter: writtenChapter!.id },
+      { ...exercises()[0], chapter: outlineChapter!.id },
+    ];
+    expect(syntheticExercises.filter((ex) => writtenIds.has(ex.chapter)).length).toBe(1);
+  });
 });
 
 describe("routing", () => {

@@ -17,7 +17,7 @@ export const archHealth: Chapter = {
 <tr><td>TypeScript, ESLint, Prettier, cspell</td><td><span class="chip tone-yes">clean</span></td></tr>
 <tr><td>Vitest</td><td><span class="chip tone-yes">307 of 307</span></td></tr>
 <tr><td>Build</td><td><span class="chip tone-yes">1,746 static pages</span></td></tr>
-<tr><td>Playwright, 4 specs</td><td><span class="chip tone-yes">180 of 180</span></td></tr>
+<tr><td>Playwright, 4 specs</td><td><span class="chip tone-yes">181 of 181</span></td></tr>
 <tr><td>Lighthouse budgets, 3 URLs, 3 runs each</td><td><span class="chip tone-yes">pass</span></td></tr>
 <tr><td><code>TODO</code>, <code>FIXME</code>, <code>HACK</code> in source</td><td><span class="chip tone-yes">0</span></td></tr>
 <tr><td><code>npm audit</code>, production dependencies</td><td><span class="chip tone-bad">1 critical, 1 high</span></td></tr>
@@ -65,9 +65,9 @@ export const archHealth: Chapter = {
 </p>
 
 <figure>
-<svg viewBox="0 0 900 350" class="dg" role="img" aria-label="Bar chart of the largest files by line count, as of 30 September 2026: app/globals.css 9,616; content/interview-data.ts 4,734; content/topics.ts 4,394; mock/mock.module.css 3,314; app/home.module.css 2,455; whiteboard/Board.tsx 1,852; PracticeWorkspace.tsx 1,735; interview/book.module.css 1,614.">
+<svg viewBox="0 0 900 350" class="dg" role="img" aria-label="Bar chart of the largest files by line count, as of 30 September 2026: app/globals.css 9,345; content/interview-data.ts 4,734; content/topics.ts 4,394; mock/mock.module.css 3,314; app/home.module.css 2,455; whiteboard/Board.tsx 1,852; PracticeWorkspace.tsx 1,735; interview/book.module.css 1,614.">
 <g class="rough">
-<rect x="245" y="24" width="481" height="22" rx="4" style="fill: var(--dg-box-red); stroke: var(--red); stroke-width: 1.6" />
+<rect x="245" y="24" width="467" height="22" rx="4" style="fill: var(--dg-box-red); stroke: var(--red); stroke-width: 1.6" />
 <rect x="245" y="62" width="237" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
 <rect x="245" y="100" width="220" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
 <rect x="245" y="138" width="166" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
@@ -85,7 +85,7 @@ export const archHealth: Chapter = {
 <text class="lbl" x="232" y="231" text-anchor="end">whiteboard/Board.tsx</text>
 <text class="lbl" x="232" y="269" text-anchor="end">PracticeWorkspace.tsx</text>
 <text class="lbl" x="232" y="307" text-anchor="end">interview/book.module.css</text>
-<text class="sm" x="736" y="40">9,616</text>
+<text class="sm" x="722" y="40">9,345</text>
 <text class="sm" x="492" y="78">4,734</text>
 <text class="sm" x="475" y="116">4,394</text>
 <text class="sm" x="421" y="154">3,314</text>
@@ -102,7 +102,7 @@ export const archHealth: Chapter = {
 </figure>
 
 <p>
-  <strong><code>app/globals.css</code>, about 9,600 lines</strong>, is the largest single piece of debt.
+  <strong><code>app/globals.css</code>, about 9,300 lines</strong>, is the largest single piece of debt.
   The newer parts of the site (the mock interview, the whiteboard and the problems page) use CSS
   modules, and the older reader and playground styles still live in the global sheet. Every page
   downloads all of it, and nothing tells you which rules are dead.

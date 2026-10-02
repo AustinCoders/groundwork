@@ -322,6 +322,19 @@ test("old /level?topic= links still land", async ({ page }) => {
   await expect(page.locator("h1")).toContainText(/System Design/i);
 });
 
+test("the saved level gets a 'Your level' mark on its own card, not the others", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("jsnotes:level", JSON.stringify("intermediate")));
+  await page.goto("/level/js");
+
+  const intermediate = page.locator("#level-grid a", { hasText: "Intermediate" });
+  const beginner = page.locator("#level-grid a", { hasText: "Beginner" });
+  const advanced = page.locator("#level-grid a", { hasText: "Advanced" });
+
+  await expect(intermediate.getByText("Your level")).toBeVisible();
+  await expect(beginner.getByText("Your level")).toHaveCount(0);
+  await expect(advanced.getByText("Your level")).toHaveCount(0);
+});
+
 test("narration plays a chapter", async ({ page }) => {
   const audio = readFileSync(join(__dirname, "fixtures/tone.mp3"));
   const timings = readFileSync(join(__dirname, "fixtures/tone-timings.txt"), "utf8").trim();
@@ -1204,6 +1217,7 @@ test("review brings a due chapter back, and every section header has a way back"
     "/system-design",
     "/typescript",
     "/typescript/ts-setup-compiler",
+    "/level/js",
   ]) {
     await page.goto(path);
     await expect(page.locator("header a.head-back")).toBeVisible();
@@ -1353,10 +1367,10 @@ test("topic covers and chapters, level, path and the playground take the theme's
   const inBodyLink = page.locator("#closures").getByRole("link", { name: "the outer reference" });
   const currentChapter = page.getByRole("navigation", { name: "Chapters" }).locator('a[aria-current="page"]');
   const run = page.getByRole("button", { name: "Run the code" });
-  const writtenRow = page.locator(".syllabus-item.is-ready").first();
+  const writtenRow = page.locator("[class*='__itemReady']").first();
   const levelCrumb = page.locator("#crumbs a").first();
-  const levelCta = page.locator(".level__cta").first();
-  const levelListCode = page.locator(".level__list code").first();
+  const levelCta = page.locator("[class*='__cardCta']").first();
+  const levelListCode = page.locator("[class*='__cardList'] code").first();
   const pathMeter = page.locator("#meter-fill");
   const doneStepCheck = page.locator("#step-setup-mental-model.is-done .check");
   const meanwhileLink = page.getByRole("link", { name: /JavaScript is written/i });

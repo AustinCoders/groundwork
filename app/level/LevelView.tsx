@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { Crumbs } from "@/components/Crumbs";
-import { Shell } from "@/components/Shell";
+import { TopicFrame } from "@/components/topic/TopicFrame";
 import { Syllabus } from "@/components/Syllabus";
-import { ChapterNavSection } from "@/components/reader/ChapterNavSection";
 import { formatSpan, plural } from "@/lib/format";
+import { notesHref } from "@/lib/content";
 import { rememberLevel } from "@/lib/storage";
 import { useLastLevel } from "@/lib/hooks";
 import type { ChapterMeta, Level, Topic } from "@/content/types";
+import styles from "@/components/topic/level.module.css";
 
 export interface LevelStat {
   chapters: number;
@@ -19,36 +20,24 @@ export interface LevelStat {
 export interface LevelViewProps {
   topic: Topic;
   levels: Level[];
-  notesHref: string;
   perLevel: Record<string, LevelStat>;
   chapterById: Record<string, ChapterMeta>;
   curriculumNotes: string[];
-  progressChapters: ChapterMeta[];
 }
 
-export function LevelView({
-  topic,
-  levels,
-  notesHref,
-  perLevel,
-  chapterById,
-  curriculumNotes,
-  progressChapters,
-}: LevelViewProps) {
+export function LevelView({ topic, levels, perLevel, chapterById, curriculumNotes }: LevelViewProps) {
   const savedLevel = useLastLevel();
+  const basePath = notesHref(topic.id);
 
   return (
-    <Shell
-      skipLabel="Skip to the levels"
-      topicId={topic.id}
-      progressChapters={progressChapters}
-      sidebarExtra={
-        <ChapterNavSection chapters={progressChapters} levels={levels} basePath={notesHref} defaultLevel={savedLevel} />
-      }
+    <TopicFrame
+      topic={{ name: topic.name, href: basePath, mark: topic.mark, accent: topic.accent }}
+      back={{ href: basePath, label: topic.name }}
+      skip={{ label: "Skip to the levels" }}
     >
       <Crumbs items={[{ label: "All topics", href: "/" }, { label: topic.name }, { label: "Your level" }]} />
 
-      <section className="sheet hero">
+      <section className="sheet hero" data-fx="stagger">
         <span className="hero__kicker" id="level-kicker">
           step 1 of 2
         </span>
@@ -59,31 +48,35 @@ export function LevelView({
         </p>
       </section>
 
-      <div className="level-grid" id="level-grid">
+      <div className={styles.grid} id="level-grid" data-fx="stagger">
         {levels.map((level) => {
           const stat = perLevel[level.id] ?? { chapters: 0, minutes: 0, exercises: 0 };
+          const isSaved = savedLevel === level.id;
           return (
             <Link
               key={level.id}
-              className="level"
+              className={styles.card}
               href={`/path?topic=${topic.id}&level=${level.id}`}
               onClick={() => rememberLevel(level.id)}
             >
-              <span className="level__mark" aria-hidden="true">
-                {level.mark}
+              <span className={styles.cardHead}>
+                <span className={styles.cardMark} aria-hidden="true">
+                  {level.mark}
+                </span>
+                <span className={styles.cardName}>{level.name}</span>
+                {isSaved && <span className={styles.cardBadge}>Your level</span>}
               </span>
-              <span className="level__name">{level.name}</span>
-              <p className="level__tagline">“{level.tagline}”</p>
-              <p className="level__meta">
+              <p className={styles.cardTagline}>“{level.tagline}”</p>
+              <p className={styles.cardMeta}>
                 {plural(stat.chapters, "chapter")} · ~{formatSpan(stat.minutes)} · {plural(stat.exercises, "exercise")}
               </p>
-              <p className="level__blurb">{level.blurb}</p>
-              <ul className="level__list">
+              <p className={styles.cardBlurb}>{level.blurb}</p>
+              <ul className={styles.cardList}>
                 {level.bullets.map((b, i) => (
                   <li key={i} dangerouslySetInnerHTML={{ __html: b }} />
                 ))}
               </ul>
-              <span className="level__cta">Show me this path →</span>
+              <span className={styles.cardCta}>Show me this path →</span>
             </Link>
           );
         })}
@@ -110,10 +103,10 @@ export function LevelView({
 
       <footer className="site-foot">
         <Link href="/">All topics</Link>
-        <Link href={notesHref} id="browse-all-link">
+        <Link href={basePath} id="browse-all-link">
           Browse all {topic.name} notes
         </Link>
       </footer>
-    </Shell>
+    </TopicFrame>
   );
 }

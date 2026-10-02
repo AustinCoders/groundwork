@@ -229,8 +229,8 @@ export const archDesignSystem: Chapter = {
   workspace pages. On a narrow screen it becomes a drawer. Opening the drawer locks body scroll,
   focuses its first link, closes on Escape, and holds focus with the shared
   <code>components/FocusTrap.tsx</code>, which wraps <code>@radix-ui/react-focus-scope</code>.
-  Closed on a narrow screen, the drawer is <code>inert</code>, so Tab skips it. Six files render
-  it: the topic reader's <code>ReaderShell</code>, the level, path and soon pages, and the
+  Closed on a narrow screen, the drawer is <code>inert</code>, so Tab skips it. Five files render
+  it: the topic reader's <code>ReaderShell</code>, the path and soon pages, and the
   not-found and error pages.
 </p>
 <p>
@@ -241,8 +241,9 @@ export const archDesignSystem: Chapter = {
   sets <code>reading</code> also gets the drawer's text size, narrator and print controls. The four
   written topics' covers — JavaScript, React, DSA and System Design — render <code>TopicCover</code>
   on it, with <code>reading</code> on, and their chapters read through <code>TopicReader</code> on
-  it too; the other 14 covers, and every chapter that is still an outline, stay on the Shell until
-  they are written or redesigned.
+  it too; the level pages that render rather than redirect read through <code>LevelView</code> on
+  it as well; the other 14 covers, and every chapter that is still an outline, stay on the Shell
+  until they are written or redesigned.
 </p>
 <p>
   The practice playground, the problems list and the whiteboard are full-screen tools, and a
@@ -268,9 +269,9 @@ export const archDesignSystem: Chapter = {
 
 <h3>CSS modules and globals.css</h3>
 <p>
-  <code>globals.css</code> is about 9,600 lines. It holds the tokens, the prose styles every
+  <code>globals.css</code> is about 9,300 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
-  one of 21 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
+  one of 22 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
   lines. The rule of thumb is that anything
   chapter HTML can contain goes in globals, because chapter bodies are strings that cannot import a
   module, and anything else goes in a module so it loads only with its page.
