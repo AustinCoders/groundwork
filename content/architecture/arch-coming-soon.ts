@@ -78,8 +78,10 @@ export const archComingSoon: Chapter = {
   <code>noindex</code> and left out of the sitemap, so search engines are not offered 358 pages with no
   body; the commit that did this was titled "Stop offering 358 unwritten chapters to crawlers and
   readers". The cross-topic search leaves outlines out. In the sidebar, a topic with nothing written sits
-  under "More topics" in a muted style, and its link goes to <code>/soon?topic=&lt;id&gt;</code>, which
-  says plainly that the topic is planned and not written yet.
+  under "More topics" in a muted style, and its link goes straight to the topic's own cover at
+  <code>/&lt;id&gt;</code>, which renders a roadmap by level rather than pretending there is a reading
+  path. The old <code>/soon?topic=&lt;id&gt;</code> and <code>/level/&lt;id&gt;</code> links still work —
+  a redirect sends each one to the same page — but nothing on the site points at them any more.
 </p>
 <p>
   The label is computed, not typed. <code>app/layout.tsx</code> works out which topics have at least one
@@ -133,7 +135,7 @@ export const archComingSoon: Chapter = {
   <code>lib/topicStats.ts</code>. <code>topicStats()</code> gives each topic its written, planned,
   exercise and minute totals; for Git, which has no chapters, it counts the guide's sections instead.
   <code>siteStats()</code> adds those up. The two disagree on purpose in one place: the home page says 19
-  topics, not 21, because <code>onShelf()</code> in <code>lib/topicIds.ts</code> leaves out the Interview
+  topics, not 21, because <code>onShelf()</code> in <code>lib/topicShelf.ts</code> leaves out the Interview
   book and this topic, which are reached from the sidebar's tool links rather than the topic shelf.
 </p>
 <p>

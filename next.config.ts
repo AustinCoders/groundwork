@@ -3,6 +3,23 @@ import { CANONICAL_ORIGIN, LEGACY_HOSTS } from "./lib/site";
 import { wasmOrigins } from "./lib/wasmAssets";
 import { sentryOrigin } from "./lib/errorTracking";
 
+export const PINNED_OUTLINE_TOPIC_IDS = [
+  "html",
+  "css",
+  "nextjs",
+  "nestjs",
+  "typescript",
+  "node",
+  "docker",
+  "databases",
+  "testing",
+  "security",
+  "cloud-devops",
+  "graphql",
+  "redis",
+  "kubernetes",
+];
+
 const runtimeOrigins = wasmOrigins().join(" ");
 
 const reportingOrigin = sentryOrigin() || "";
@@ -36,12 +53,28 @@ const nextConfig: NextConfig = {
   },
 
   async redirects() {
-    return LEGACY_HOSTS.map((host) => ({
-      source: "/:path*",
-      has: [{ type: "host" as const, value: host }],
-      destination: `${CANONICAL_ORIGIN}/:path*`,
-      permanent: true,
-    }));
+    const outlineIds = PINNED_OUTLINE_TOPIC_IDS.join("|");
+
+    return [
+      ...LEGACY_HOSTS.map((host) => ({
+        source: "/:path*",
+        has: [{ type: "host" as const, value: host }],
+        destination: `${CANONICAL_ORIGIN}/:path*`,
+        permanent: true,
+      })),
+      {
+        source: "/soon",
+        has: [{ type: "query" as const, key: "topic", value: `(?<topic>${outlineIds})` }],
+        destination: "/:topic",
+        permanent: true,
+      },
+      {
+        source: "/path",
+        has: [{ type: "query" as const, key: "topic", value: `(?<topic>${outlineIds})` }],
+        destination: "/:topic",
+        permanent: true,
+      },
+    ];
   },
 };
 

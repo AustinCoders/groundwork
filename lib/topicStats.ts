@@ -1,7 +1,7 @@
 import { chapters, exercises, hasNotes, htmlMinutes, topicExerciseCount, topics, totalTime } from "@/lib/content";
 import { topicsNav } from "@/lib/topics";
 import { GIT_BODY_HTML, GIT_SECTIONS } from "@/content/git-body";
-import { onShelf } from "@/lib/topicIds";
+import { onShelf } from "@/lib/topicShelf";
 import type { TopicNav } from "@/content/types";
 
 export interface TopicStat {

@@ -154,12 +154,12 @@ export const archRoutes: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Route</th><th>What the server builds</th><th>What the browser adds</th></tr></thead>
 <tbody>
-<tr><td><code>/level/&lt;topic&gt;</code></td><td>19 pages, one per topic with levels: the three levels with chapter, minute and exercise counts</td><td>Your progress through each level</td></tr>
+<tr><td><code>/level/&lt;topic&gt;</code></td><td>19 pages, one per topic with levels. 5 render the three levels with chapter, minute and exercise counts; the other 14, which have nothing written, redirect to the topic's own cover instead</td><td>Your progress through each level, for the 5 that render</td></tr>
 <tr><td><code>/level?topic=</code></td><td>An empty page</td><td>A redirect to <code>/level/&lt;topic&gt;</code></td></tr>
-<tr><td><code>/path?topic=&amp;level=</code></td><td>Every chapter's metadata and exercise links, for every topic</td><td>Picks the topic and level from the query string and draws the path</td></tr>
+<tr><td><code>/path?topic=&amp;level=</code></td><td>Every chapter's metadata and exercise links, for every topic. A topic with nothing written is meant to never reach this code — <code>next.config.ts</code> redirects it to the topic's cover first — but that redirect reads from the same pinned id list as <code>/soon</code> below, so a topic that became an outline after the list was last built still reaches this page</td><td>Picks the topic and level from the query string and draws the path</td></tr>
 <tr><td><code>/review</code></td><td>Every written chapter</td><td>Which ones are due, from your read dates</td></tr>
 <tr><td><code>/progress</code></td><td>A frame</td><td>Streaks, XP, badges and the calendar, all from <code>localStorage</code></td></tr>
-<tr><td><code>/soon?topic=</code></td><td>A frame</td><td>The planned topic's syllabus</td></tr>
+<tr><td><code>/soon?topic=</code></td><td>A frame, now reached only when the <code>next.config.ts</code> redirect above misses — a stale link, or a topic that became an outline after the redirect's id list was last built</td><td>Redirects on to the topic's own cover; if the redirect in config has not caught up, renders the planned topic's syllabus itself</td></tr>
 <tr><td><code>/privacy</code></td><td>The whole page: what stays in the browser, what leaves it, and which service receives it</td><td>Nothing</td></tr>
 </tbody>
 </table></div>
@@ -167,7 +167,10 @@ export const archRoutes: Chapter = {
   <code>/path</code>, <code>/review</code>, <code>/progress</code>, <code>/soon</code> and the bare
   <code>/level</code> are marked <code>noindex</code>: without your browser's data they are either empty
   or a duplicate of a page that is indexed. <code>/level/&lt;topic&gt;</code> is indexed, and listed in
-  the sitemap, only for topics with something written. <code>/privacy</code> is static and indexed.
+  the sitemap, only for topics with something written. <code>/privacy</code> is static and indexed. A
+  topic with nothing written has its own indexable URL too — <code>/&lt;topic&gt;</code>, the same cover
+  route every topic uses — but stays <code>noindex</code> itself until a first chapter ships, the same
+  rule <code>topicCoverMetadata</code> always applied.
 </p>
 
 <h3>Search indexes</h3>

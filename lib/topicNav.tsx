@@ -57,7 +57,7 @@ export function navNotesHref(list: TopicNav[], topicId?: string | null): string 
 }
 
 export function navHref(t: TopicNav, savedLevel?: string | null): string {
-  if (t.status !== "ready" || t.written === 0) return `/soon?topic=${t.id}`;
+  if (t.status !== "ready" || t.written === 0) return `/${t.id}`;
   if (!t.levelIds) return fileHref(t.notes);
 
   const known = savedLevel && t.levelIds.indexOf(savedLevel as LevelId) !== -1;

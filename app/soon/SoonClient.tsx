@@ -5,8 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import { Crumbs } from "@/components/Crumbs";
 import { Shell } from "@/components/Shell";
-import { topic as findTopic, levels as levelsFor } from "@/lib/topics";
+import { topic as findTopic, levels as levelsFor, notesHref } from "@/lib/topics";
 import { topicStats } from "@/lib/topicStats";
+import { relatedTopicId } from "@/lib/topicRelated";
 import { escapeHtml } from "@/lib/format";
 import { useMounted } from "@/lib/hooks";
 
@@ -26,6 +27,9 @@ function SoonPageInner() {
   const topicId = searchParams.get("topic") || "";
   const topic = findTopic(topicId);
   const hasWrittenChapters = topic ? (topicStats()[topic.id]?.written ?? 0) > 0 : false;
+  const relTopicId = topic ? relatedTopicId(topic.id) : "js";
+  const relTopic = findTopic(relTopicId);
+  const relatedHref = notesHref(relTopicId);
 
   useEffect(() => {
     document.title = topic ? `${topic.name} — coming soon` : "Coming soon";
@@ -85,8 +89,8 @@ function SoonPageInner() {
           </p>
 
           <div className="hero__actions">
-            <Link className="btn btn--primary btn--big" href="/level/js">
-              See the JavaScript path →
+            <Link className="btn btn--primary btn--big" href={relatedHref}>
+              See the {relTopic?.name ?? "JavaScript"} path →
             </Link>
             <Link className="btn btn--big" href="/">
               Back to all topics
@@ -94,13 +98,13 @@ function SoonPageInner() {
           </div>
         </div>
 
-        <div className="sticky mint soon-hero__aside">
-          <span className="ttl">Meanwhile</span>
-          {topic.name} isn&apos;t written yet, but a different topic on this shelf is: JavaScript has a full syllabus
-          finished beginner through advanced, and its exercises run right here in the browser. Most of what makes React,
-          Node or Nest confusing traces back to JavaScript&apos;s scope, prototypes and async sections anyway, so it is
-          worth a look regardless of what brought you here.
-        </div>
+        {relTopic && (
+          <div className="sticky mint soon-hero__aside">
+            <span className="ttl">Meanwhile</span>
+            {topic.name} isn&apos;t written yet, but <Link href={relatedHref}>{relTopic.name} is written</Link> — start
+            there instead.
+          </div>
+        )}
       </section>
 
       <section className="sheet" id="plan-sheet">

@@ -1,6 +1,9 @@
-export const INTERVIEW_TOPIC_ID = "interview";
-export const ARCHITECTURE_TOPIC_ID = "architecture";
+import { topics } from "@/lib/topics";
+import { topicStats } from "@/lib/topicStats";
 
-export function onShelf(topicId: string): boolean {
-  return topicId !== INTERVIEW_TOPIC_ID && topicId !== ARCHITECTURE_TOPIC_ID;
+export function outlineTopicIds(): string[] {
+  const stats = topicStats();
+  return topics()
+    .filter((t) => t.status === "ready" && (stats[t.id]?.written ?? 0) === 0)
+    .map((t) => t.id);
 }

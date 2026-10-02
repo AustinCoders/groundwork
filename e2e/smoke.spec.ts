@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test, type ConsoleMessage, type Page } from "@playwright/test";
 import { practice } from "../content/practice";
-import type { ThemeValue } from "../lib/storage";
 import { THEMES, themeColour } from "./themes";
 
 const containing = (colour: string) => new RegExp(colour.replace(/[()]/g, "\\$&"));
@@ -86,20 +85,34 @@ test("an unknown chapter slug is a stored 404, not a rendered not-found page", a
   }
 });
 
-test("an outline topic's /soon page renders its syllabus, and a written topic's still redirects", async ({ page }) => {
+test("an outline topic's /soon link redirects to its outline landing, and a written topic's still redirects onward", async ({
+  page,
+}) => {
   await page.goto("/soon?topic=typescript");
-  await expect(page).toHaveURL(/\/soon\?topic=typescript/);
-  await expect(page.locator(".soon-stamp")).toBeVisible();
-  await expect(page.getByText("Setup & the compiler")).toBeVisible();
+  await page.waitForURL(/\/typescript(\?|$)/);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("TypeScript");
+  await expect(page.getByText("Not written yet")).toBeVisible();
+  await expect(page.getByRole("link", { name: /JavaScript is written/i })).toHaveAttribute("href", "/notes");
+  await expect(page.getByRole("link", { name: /R3 · JavaScript & TS/i })).toHaveAttribute("href", "/interview/r3");
 
   await page.goto("/soon?topic=js");
   await page.waitForURL("**/level/js");
 });
 
-test("the /path sidebar lists only its own topic's chapters, not every topic's", async ({ page }) => {
+test("an outline topic's old /level and /path links redirect to its outline landing", async ({ page }) => {
+  await page.goto("/level/typescript");
+  await page.waitForURL(/\/typescript(\?|$)/);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("TypeScript");
+
   await page.goto("/path?topic=typescript&level=beginner");
-  await expect(page.locator(".site-sidenav__count")).toHaveText("29 chapters");
-  await expect(page.locator("#nav-list a[href^='/react/']")).toHaveCount(0);
+  await page.waitForURL(/\/typescript(\?|$)/);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("TypeScript");
+});
+
+test("the /path sidebar lists only its own topic's chapters, not every topic's", async ({ page }) => {
+  await page.goto("/path?topic=react&level=beginner");
+  await expect(page.locator(".site-sidenav__count")).toHaveText("57 chapters");
+  await expect(page.locator("#nav-list a[href^='/dsa/']")).toHaveCount(0);
 });
 
 test("a chapter can be marked read and the count follows", async ({ page }) => {
@@ -183,7 +196,7 @@ test("the /notes cover renders in the topic frame", async ({ page }) => {
   await expectOneSetOfDiagramDefs(page);
 
   await page.goto("/typescript");
-  await expect(page.locator("#site-sidenav")).toHaveCount(1);
+  await expect(page.locator("#site-sidenav")).toHaveCount(0);
 
   await page.goto("/notes#closures");
   await page.waitForURL("**/notes/closures");
@@ -1189,6 +1202,7 @@ test("review brings a due chapter back, and every section header has a way back"
     "/react",
     "/dsa",
     "/system-design",
+    "/typescript",
     "/typescript/ts-setup-compiler",
   ]) {
     await page.goto(path);
@@ -1345,6 +1359,7 @@ test("topic covers and chapters, level, path and the playground take the theme's
   const levelListCode = page.locator(".level__list code").first();
   const pathMeter = page.locator("#meter-fill");
   const doneStepCheck = page.locator("#step-setup-mental-model.is-done .check");
+  const meanwhileLink = page.getByRole("link", { name: /JavaScript is written/i });
 
   for (const theme of THEMES) {
     const accent = themeColour(theme, "--primary");
@@ -1386,6 +1401,10 @@ test("topic covers and chapters, level, path and the playground take the theme's
     await expect(pathMeter, `/path in ${theme}`).toHaveCSS("background-color", accent);
     await expect(doneStepCheck, `/path in ${theme}`).toHaveCSS("color", themeColour(theme, "--ink-soft"));
     await page.evaluate(() => localStorage.removeItem("jsnotes:progress"));
+
+    await page.goto("/typescript");
+    await meanwhileLink.hover();
+    await expect(meanwhileLink, `/typescript in ${theme}`).toHaveCSS("color", accent);
   }
 });
 
@@ -1429,23 +1448,6 @@ test("the cover's primary action takes the theme's accent instead of a fixed red
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "lavender");
   await expect(cta).toHaveCSS("background-color", themeColour("lavender", "--primary"));
-});
-
-test("an outline cover's notebook margin line still takes the theme's accent instead of a fixed red", async ({
-  page,
-}) => {
-  const marginLine = async () =>
-    colourChannels(await page.locator("#top").evaluate((sheet) => getComputedStyle(sheet, "::before").backgroundColor));
-  const lineIn = (theme: ThemeValue, token: string) => [...colourChannels(themeColour(theme, token)).slice(0, 3), 0.32];
-
-  await page.goto("/typescript");
-  expect(await marginLine()).toEqual(lineIn("light", "--primary"));
-  expect(await marginLine()).not.toEqual(lineIn("light", "--red"));
-
-  await page.evaluate(() => localStorage.setItem("jsnotes:theme", JSON.stringify("lavender")));
-  await page.reload();
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "lavender");
-  expect(await marginLine()).toEqual(lineIn("lavender", "--primary"));
 });
 
 test("a written chapter's end-card accent takes the theme's accent instead of a fixed red", async ({ page }) => {

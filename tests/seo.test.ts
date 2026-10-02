@@ -160,10 +160,10 @@ describe("topic cover metadata", () => {
 });
 
 describe("links into a topic", () => {
-  it("sends a topic with nothing written to /soon rather than an empty reading path", () => {
+  it("sends a topic with nothing written to its own outline landing rather than an empty reading path", () => {
     for (const t of topicsNavWithStats()) {
       if (t.written > 0) continue;
-      expect(navHref(t, "beginner"), `${t.id} is an outline but links into the reader`).toBe(`/soon?topic=${t.id}`);
+      expect(navHref(t, "beginner"), `${t.id} is an outline but links into the reader`).toBe(`/${t.id}`);
     }
   });
 

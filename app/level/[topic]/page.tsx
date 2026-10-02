@@ -14,6 +14,7 @@ import {
 } from "@/lib/content";
 import { byChapterId } from "@/lib/levelRows";
 import { pageMetadata } from "@/lib/metadata";
+import { topicStats } from "@/lib/topicStats";
 
 export function generateStaticParams() {
   return topics()
@@ -39,7 +40,7 @@ export default async function LevelPage({ params }: { params: Promise<{ topic: s
   const topic = findTopic(topicId);
 
   if (!topic) notFound();
-  if (topic.status !== "ready") redirect(`/soon?topic=${topic.id}`);
+  if (topic.status !== "ready" || topicStats()[topic.id]?.written === 0) redirect(`/${topic.id}`);
 
   const levels = levelsFor(topic.id);
   const metas = chapterMetas(topic.id);

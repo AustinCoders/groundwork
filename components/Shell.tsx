@@ -9,7 +9,7 @@ import { DailyRecap } from "@/components/DailyRecap";
 import { FontPicker, ThemePicker } from "@/components/ThemeFontPicker";
 import { StreakMini } from "@/components/StreakMini";
 import { TopicOfDay } from "@/components/TopicOfDay";
-import { INTERVIEW_TOPIC_ID, onShelf } from "@/lib/topicIds";
+import { INTERVIEW_TOPIC_ID, onShelf } from "@/lib/topicShelf";
 import { findNav, navHref, navNotesHref, useTopicsNav } from "@/lib/topicNav";
 import { escapeHtml } from "@/lib/format";
 import { progress, store } from "@/lib/storage";

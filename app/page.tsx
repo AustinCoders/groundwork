@@ -3,14 +3,14 @@ import { HomeView } from "@/app/HomeView";
 import { INTERVIEW_TOTAL_QUESTIONS, INTERVIEW_TOTAL_ROUNDS } from "@/lib/interviewContent";
 import { LANG_ORDER, LANGUAGES } from "@/lib/codeLanguages";
 import { exercises } from "@/lib/content";
-import { onShelf } from "@/lib/topicIds";
+import { onShelf } from "@/lib/topicShelf";
 import type { TopicNav } from "@/content/types";
 import { siteStats, topicStats, topicsNavWithStats } from "@/lib/topicStats";
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 function hrefFor(t: TopicNav): string {
-  if (t.status !== "ready" || t.written === 0) return `/soon?topic=${t.id}`;
+  if (t.status !== "ready" || t.written === 0) return `/${t.id}`;
   return t.levelIds ? `/level/${t.id}` : `/${(t.notes || "notes.html").replace(/\.html$/, "")}`;
 }
 

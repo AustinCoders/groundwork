@@ -1,7 +1,7 @@
 import { topics as topicsData } from "@/content/topics";
 import type { Level, LevelNav, Topic, TopicNav } from "@/content/types";
 
-export { INTERVIEW_TOPIC_ID } from "./topicIds";
+export { INTERVIEW_TOPIC_ID } from "./topicShelf";
 
 function byId<T extends { id: string }>(list: T[], id: string | null | undefined): T | null {
   if (!id) return null;

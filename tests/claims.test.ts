@@ -24,6 +24,9 @@ const totalIncludingGit = topicChapters.length + (writtenIncludingGit - written)
 
 const sitemapUrlCount = sitemap().length;
 const jsChapters = chapters("js").length;
+const topicsWithLevels = all.filter((t) => t.levels).length;
+const writtenTopicsWithLevels = all.filter((t) => t.levels && chapters(t.id).some((c) => c.ready)).length;
+const outlinedTopicsWithLevels = topicsWithLevels - writtenTopicsWithLevels;
 const runnableLanguages = LANG_ORDER.filter((key) => LANGUAGES[key].runnable);
 const runnableCount = runnableLanguages.length;
 const namedRunnable = runnableLanguages.map((key) => LANGUAGES[key].label);
@@ -39,6 +42,16 @@ const cases: { file: string; claim: string; about: string }[] = [
     file: "content/architecture/arch-build.ts",
     claim: `lists ${sitemapUrlCount} URLs`,
     about: "the sitemap's URL count",
+  },
+  {
+    file: "content/architecture/arch-routes.ts",
+    claim: `${topicsWithLevels} pages, one per topic with levels. ${writtenTopicsWithLevels} render the three levels with chapter, minute and exercise counts; the other ${outlinedTopicsWithLevels}, which have nothing written, redirect to the topic's own cover instead`,
+    about: "the /level/<topic> row's written vs outline split",
+  },
+  {
+    file: "content/architecture/arch-routes.ts",
+    claim: `Your progress through each level, for the ${writtenTopicsWithLevels} that render`,
+    about: "the /level/<topic> row's browser column",
   },
   {
     file: "README.md",

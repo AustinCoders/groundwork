@@ -1,10 +1,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { ReaderShell } from "@/components/reader/ReaderShell";
-import { CoverSheet } from "@/components/reader/CoverSheet";
-import { HashRedirect } from "@/components/reader/HashRedirect";
 import { TopicReader } from "@/components/topic/TopicReader";
 import { TopicOutlineChapter } from "@/components/topic/TopicOutlineChapter";
+import { TopicOutline, type OutlineLevel } from "@/components/topic/TopicOutline";
 import { TopicCover, type CoverCard } from "@/components/topic/TopicCover";
 import { bookRound } from "@/lib/interviewBook";
 import {
@@ -64,19 +62,43 @@ export function TopicCoverPage({ topicId }: { topicId: string }) {
     );
   }
 
+  const t = topic(topicId);
   const data = notesData(topicId);
+  const metas = chapterMetas(topicId);
+  const metaById = new Map(metas.map((m) => [m.id, m]));
+  const levelsList: OutlineLevel[] = levels(topicId).map((l) => ({
+    id: l.id,
+    name: l.name,
+    tagline: l.tagline,
+    blurb: l.blurb,
+    sections: (l.syllabus || []).map((s) => ({
+      title: s.title,
+      num: (s.chapter && metaById.get(s.chapter)?.num) || null,
+      href: s.chapter ? `${basePath}/${s.chapter}` : null,
+    })),
+  }));
+  const relTopicId = relatedTopicId(topicId);
+  const relTopic = topic(relTopicId);
+  const relRoundId = relatedInterviewRound(relTopicId);
+  const relRound = relRoundId ? bookRound(relRoundId) : null;
 
   return (
-    <ReaderShell
-      topicId={topicId}
-      levels={levelsNav(topicId)}
-      chapters={chapterMetas(topicId)}
+    <TopicOutline
+      topicName={t?.name || data.meta.title}
+      mark={t?.mark || ""}
+      accent={t?.accent || "ink"}
+      tagline={t?.tagline || ""}
+      blurb={t?.blurb || data.meta.lead}
       basePath={basePath}
-      activeId={null}
-    >
-      <HashRedirect basePath={basePath} />
-      <CoverSheet data={data} basePath={basePath} topicId={topicId} />
-    </ReaderShell>
+      written={stats?.written ?? 0}
+      planned={stats?.planned ?? metas.length}
+      levels={levelsList}
+      relatedHref={notesHref(relTopicId)}
+      relatedLabel={relTopic?.name || notesData(relTopicId).meta.title}
+      relatedRoundHref={relRound ? `/interview/${relRoundId}` : null}
+      relatedRoundLabel={relRound ? `${relRound.code} · ${relRound.navTitle}` : null}
+      curriculumNotes={curriculumNotes(topicId)}
+    />
   );
 }
 

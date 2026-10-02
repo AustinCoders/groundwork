@@ -176,7 +176,9 @@ export const archState: Chapter = {
   filters straight after hydration. <code>/practice?id=</code>, <code>/path</code>,
   <code>/soon</code> and the old <code>/level?topic=</code> links do use
   <code>useSearchParams</code> inside <code>Suspense</code>. Their HTML has nothing worth
-  prerendering anyway.
+  prerendering anyway. For an outline topic, <code>/path</code> and <code>/soon</code> rarely get
+  that far: <code>next.config.ts</code> redirects their query string to the topic's own cover —
+  a prerendered page — before either client component mounts.
 </p>
 <p>
   <b>Share links</b> live in the hash, which browsers never send to a server. <code>lib/shareLink.ts</code>
