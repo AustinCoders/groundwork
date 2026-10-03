@@ -95,7 +95,7 @@ export function LevelView({ topic, levels, perLevel, chapterById, curriculumNote
                 </span>
                 <Link
                   className={styles.card}
-                  href={`/path?topic=${topic.id}&level=${level.id}`}
+                  href={`/path/${topic.id}/${level.id}`}
                   onClick={() => rememberLevel(level.id)}
                 >
                   <span className={styles.cardHead}>

@@ -58,7 +58,7 @@ export function PracticeStrip({
         ))}
       </div>
       {levelTotal > 0 && (
-        <Link className={styles.practiceAll} href={`/path?topic=${topicId}&level=${level}`}>
+        <Link className={styles.practiceAll} href={`/path/${topicId}/${level}`}>
           All {levelTotal} for this level →
         </Link>
       )}

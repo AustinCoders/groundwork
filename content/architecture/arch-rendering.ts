@@ -15,7 +15,7 @@ export const archRendering: Chapter = {
   A component is a server component unless it needs something only a browser has: state, an effect,
   an event handler, <code>localStorage</code>, or a measurement. Adding <code>"use client"</code> has
   a cost, because everything the file imports is bundled and shipped. Across <code>app/</code>,
-  <code>components/</code> and <code>lib/</code>, 90 files carry the directive. About a third belong
+  <code>components/</code> and <code>lib/</code>, 91 files carry the directive. About a third belong
   to the three big interactive surfaces: the playground, the whiteboard and the mock interview.
 </p>
 

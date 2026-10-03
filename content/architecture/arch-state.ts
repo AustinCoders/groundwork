@@ -173,12 +173,15 @@ export const archState: Chapter = {
   everything below the nearest <code>Suspense</code> boundary in the browser only. That is why
   <code>/practice</code> ships 27 KB of HTML. With the external-store approach,
   <code>/problems</code> prerenders the full unfiltered list, 276 KB of HTML, and applies your
-  filters straight after hydration. <code>/practice?id=</code>, <code>/path</code>,
+  filters straight after hydration. <code>/practice?id=</code>, the bare <code>/path</code>,
   <code>/soon</code> and the old <code>/level?topic=</code> links do use
   <code>useSearchParams</code> inside <code>Suspense</code>. Their HTML has nothing worth
-  prerendering anyway. For an outline topic, <code>/path</code> and <code>/soon</code> rarely get
-  that far: <code>next.config.ts</code> redirects their query string to the topic's own cover —
-  a prerendered page — before either client component mounts.
+  prerendering anyway — the bare <code>/path</code> only ever reads a topic and a level from the
+  query string to redirect on. For an outline topic, <code>/soon</code> rarely gets that far:
+  <code>next.config.ts</code> redirects its query string to the topic's own cover — a prerendered
+  page — before the client component mounts. A written topic's old <code>/path?topic=&amp;level=</code>
+  link is redirected by the same file straight to <code>/path/&lt;topic&gt;/&lt;level&gt;</code>, a
+  prerendered page that reads neither <code>useSearchParams</code> nor any other request input.
 </p>
 <p>
   <b>Share links</b> live in the hash, which browsers never send to a server. <code>lib/shareLink.ts</code>

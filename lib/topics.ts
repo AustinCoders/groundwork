@@ -66,7 +66,7 @@ export function topicHref(t: Topic, savedLevel?: string | null): string {
   if (!t.levels) return notesHref(t.id);
 
   const known = savedLevel && byId(levels(t.id), savedLevel);
-  return known ? `/path?topic=${t.id}&level=${savedLevel}` : `/level/${t.id}`;
+  return known ? `/path/${t.id}/${savedLevel}` : `/level/${t.id}`;
 }
 
 export function topicsNav(): TopicNav[] {

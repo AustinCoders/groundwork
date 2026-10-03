@@ -33,7 +33,7 @@ export const archRoutes: Chapter = {
 <text class="sm" x="36" y="144">/&lt;topic&gt;/&lt;chapter&gt;</text>
 <text class="sm" x="36" y="166">/git</text>
 <text class="sm" x="36" y="188">/level/&lt;topic&gt;</text>
-<text class="sm" x="36" y="210">/path?topic=&amp;level=</text>
+<text class="sm" x="36" y="210">/path/&lt;topic&gt;/&lt;level&gt;</text>
 <text class="sm" x="36" y="232">/review, /progress</text>
 <text class="sm" x="36" y="254">/mock</text>
 <text class="sm" x="36" y="276">/soon?topic=</text>
@@ -156,7 +156,8 @@ export const archRoutes: Chapter = {
 <tbody>
 <tr><td><code>/level/&lt;topic&gt;</code></td><td>19 pages, one per topic with levels. 5 render the three levels with chapter, minute and exercise counts; the other 14, which have nothing written, redirect to the topic's own cover instead</td><td>Your progress through each level, for the 5 that render</td></tr>
 <tr><td><code>/level?topic=</code></td><td>An empty page</td><td>A redirect to <code>/level/&lt;topic&gt;</code></td></tr>
-<tr><td><code>/path?topic=&amp;level=</code></td><td>Every chapter's metadata and exercise links, for every topic. A topic with nothing written is meant to never reach this code — <code>next.config.ts</code> redirects it to the topic's cover first — but that redirect reads from the same pinned id list as <code>/soon</code> below, so a topic that became an outline after the list was last built still reaches this page</td><td>Picks the topic and level from the query string and draws the path</td></tr>
+<tr><td><code>/path/&lt;topic&gt;/&lt;level&gt;</code></td><td>12 static pages: the 4 written topics (JavaScript, React, DSA, System Design) times their 3 levels. Each page's chapter metadata, exercise links and syllabus rows come from that one topic only, never the others</td><td>Which steps are read, the progress meter, and which step the primary button opens next</td></tr>
+<tr><td><code>/path?topic=&amp;level=</code></td><td>An empty page</td><td>With both a topic and a level, a redirect straight to <code>/path/&lt;topic&gt;/&lt;level&gt;</code> from <code>next.config.ts</code>, before any client code runs — unless the topic is a pinned outline one, in which case the outline redirect above still wins and sends it to the topic's own cover instead, level param or not; with only a topic, a client redirect once the saved or default level is known</td></tr>
 <tr><td><code>/review</code></td><td>Every written chapter</td><td>Which ones are due, from your read dates</td></tr>
 <tr><td><code>/progress</code></td><td>A frame</td><td>Streaks, XP, badges and the calendar, all from <code>localStorage</code></td></tr>
 <tr><td><code>/soon?topic=</code></td><td>A frame, now reached only when the <code>next.config.ts</code> redirect above misses — a stale link, or a topic that became an outline after the redirect's id list was last built</td><td>Redirects on to the topic's own cover; if the redirect in config has not caught up, renders the planned topic's syllabus itself</td></tr>
@@ -261,7 +262,7 @@ export const archRoutes: Chapter = {
 <p>
   <code>components/Shell.tsx</code> is the frame with the sidebar: the brand, the clock, the streak, links
   to the tools, the topic list, reading progress, and the theme and font pickers. Most topic covers and
-  chapters, the path and soon pages, and the not-found and error pages use it.
+  chapters, the soon page, and the not-found and error pages use it.
   Git and the architecture guide left it first, for their own series reader, and the four written
   topics' covers — JavaScript, React, DSA and System Design — and chapters, and the level pages that
   render rather than redirect, have followed. They render

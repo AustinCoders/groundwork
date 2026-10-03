@@ -61,7 +61,7 @@ export function navHref(t: TopicNav, savedLevel?: string | null): string {
   if (!t.levelIds) return fileHref(t.notes);
 
   const known = savedLevel && t.levelIds.indexOf(savedLevel as LevelId) !== -1;
-  return known ? `/path?topic=${t.id}&level=${savedLevel}` : `/level/${t.id}`;
+  return known ? `/path/${t.id}/${savedLevel}` : `/level/${t.id}`;
 }
 
 export function topicOfDay<T>(candidates: T[]): T | null {

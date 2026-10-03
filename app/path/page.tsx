@@ -1,62 +1,40 @@
-import type { Metadata } from "next";
-import PathClient, { type ExerciseLink } from "@/app/path/PathClient";
-import { chapterMetas, chapter as findChapter, exercises, levels as levelsFor, topics } from "@/lib/content";
-import { byChapterId } from "@/lib/levelRows";
-import { pageMetadata } from "@/lib/metadata";
-import type { ChapterMeta } from "@/content/types";
+"use client";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Your reading path",
-  description:
-    "The order to read a topic in, at your level, with the practice for each chapter and progress you can tick off.",
-  path: "/path",
-  index: false,
-});
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
+import { lastLevel } from "@/lib/storage";
+import { level as findLevel, topic as findTopic } from "@/lib/topics";
+import { topicStats } from "@/lib/topicStats";
+
+function PathRedirect() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const topicId = searchParams.get("topic") || "js";
+    const topic = findTopic(topicId);
+
+    if (!topic || !topic.levels || topic.status !== "ready" || topicStats()[topic.id]?.written === 0) {
+      router.replace(topic ? `/${topic.id}` : "/");
+      return;
+    }
+
+    const levelParam = searchParams.get("level");
+    const saved = lastLevel();
+    const levelId =
+      (levelParam && findLevel(levelParam, topic.id) && levelParam) ||
+      (saved && findLevel(saved, topic.id) && saved) ||
+      "beginner";
+    router.replace(`/path/${topic.id}/${levelId}`);
+  }, [router, searchParams]);
+
+  return null;
+}
 
 export default function PathPage() {
-  const chapterById: Record<string, ChapterMeta> = {};
-  const chaptersByTopic: Record<string, ChapterMeta[]> = {};
-  const chapterExercises: Record<string, ExerciseLink[]> = {};
-  const levelExercises: Record<string, ExerciseLink[]> = {};
-
-  topics().forEach((t) => {
-    if (!t.levels) return;
-    const metas = chapterMetas(t.id);
-    chaptersByTopic[t.id] = metas;
-    Object.assign(chapterById, byChapterId(metas));
-    metas.forEach((ch) => {
-      chapterExercises[ch.id] = ch.practice
-        .map((id) => exercises().find((ex) => ex.id === id))
-        .filter((ex): ex is NonNullable<typeof ex> => Boolean(ex))
-        .map((ex) => ({
-          id: ex.id,
-          title: ex.title,
-          testCount: ex.tests.length,
-          level: ex.level,
-          chapterShort: ch.short,
-        }));
-    });
-
-    const ownIds = new Set(metas.map((ch) => ch.id));
-    levelsFor(t.id).forEach((level) => {
-      levelExercises[`${t.id}:${level.id}`] = exercises()
-        .filter((ex) => ex.level === level.id && ownIds.has(ex.chapter))
-        .map((ex) => ({
-          id: ex.id,
-          title: ex.title,
-          testCount: ex.tests.length,
-          level: ex.level,
-          chapterShort: findChapter(ex.chapter, t.id)?.short ?? null,
-        }));
-    });
-  });
-
   return (
-    <PathClient
-      chapterById={chapterById}
-      chaptersByTopic={chaptersByTopic}
-      chapterExercises={chapterExercises}
-      levelExercises={levelExercises}
-    />
+    <Suspense fallback={null}>
+      <PathRedirect />
+    </Suspense>
   );
 }

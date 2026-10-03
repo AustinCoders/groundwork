@@ -33,7 +33,7 @@ const PAGES = [
   "/interview/r7",
   "/interview/questions",
   "/level/js",
-  "/path?topic=js&level=beginner",
+  "/path/js/beginner",
   "/path?topic=typescript&level=beginner",
   "/level/typescript",
   "/typescript/ts-setup-compiler",
@@ -148,7 +148,7 @@ const STATES: State[] = [
   },
   {
     name: "a chapter marked read",
-    path: "/path?topic=js&level=beginner",
+    path: "/path/js/beginner",
     viewports: VIEWPORTS,
     seed: () => {
       localStorage.setItem(
@@ -157,7 +157,7 @@ const STATES: State[] = [
       );
     },
     visit: async (page, check) => {
-      await expect(page.getByRole("checkbox", { name: "mark as read", checked: true }).first()).toBeVisible();
+      await expect(page.getByRole("button", { name: "Mark as unread", pressed: true }).first()).toBeVisible();
       await check("a chapter marked read");
     },
   },

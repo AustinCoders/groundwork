@@ -496,6 +496,153 @@ a.itemTitle:hover {
   }
 }
 
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.meter {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  max-width: 420px;
+}
+
+.meterTrack {
+  flex: 1;
+  height: 8px;
+  background: var(--sheet-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.meterFill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: inherit;
+  transition: width 0.2s ease;
+}
+
+.meterLabel {
+  flex: none;
+  font-size: 13px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stepTitle {
+  font-family: var(--font-heading);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+a.stepTitle:hover {
+  text-decoration: underline;
+}
+
+.stepSub {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--ink-soft);
+}
+
+.stepMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 2px 0;
+}
+
+.stepCheck {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 8px;
+  margin-top: 4px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--sheet-2);
+  border: 1.5px solid var(--line-soft);
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    border-color 0.14s ease,
+    color 0.14s ease;
+}
+
+.stepCheck:hover {
+  border-color: var(--ink-soft);
+}
+
+.stepCheckOn {
+  color: var(--ink-soft);
+}
+
+.stepCheckMark {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  border: 1.5px dashed var(--line);
+  border-radius: 50%;
+}
+
+.stepCheckOn .stepCheckMark {
+  color: var(--ink-soft);
+  border-style: solid;
+  border-color: var(--ink-soft);
+}
+
+.exerciseDetails {
+  margin-top: 2px;
+}
+
+.exerciseDetails summary {
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  list-style: none;
+}
+
+.exerciseDetails summary::-webkit-details-marker {
+  display: none;
+}
+
+.exerciseDetails[open] summary {
+  margin-bottom: 8px;
+}
+
+.resetRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.resetNote {
+  margin: 0;
+  max-width: 48ch;
+  font-size: 13.5px;
+  color: var(--pencil);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page * {
     animation: none !important;
@@ -504,5 +651,9 @@ a.itemTitle:hover {
 
   .card {
     transform: none !important;
+  }
+
+  .meterFill {
+    transition: none !important;
   }
 }

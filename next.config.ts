@@ -3,6 +3,10 @@ import { CANONICAL_ORIGIN, LEGACY_HOSTS } from "./lib/site";
 import { wasmOrigins } from "./lib/wasmAssets";
 import { sentryOrigin } from "./lib/errorTracking";
 
+export const PATH_LEVEL_IDS = ["beginner", "intermediate", "advanced"];
+
+export const PINNED_PATH_TOPIC_IDS = ["js", "react", "dsa", "system-design"];
+
 export const PINNED_OUTLINE_TOPIC_IDS = [
   "html",
   "css",
@@ -54,6 +58,8 @@ const nextConfig: NextConfig = {
 
   async redirects() {
     const outlineIds = PINNED_OUTLINE_TOPIC_IDS.join("|");
+    const pathIds = PINNED_PATH_TOPIC_IDS.join("|");
+    const levelIds = PATH_LEVEL_IDS.join("|");
 
     return [
       ...LEGACY_HOSTS.map((host) => ({
@@ -72,6 +78,15 @@ const nextConfig: NextConfig = {
         source: "/path",
         has: [{ type: "query" as const, key: "topic", value: `(?<topic>${outlineIds})` }],
         destination: "/:topic",
+        permanent: true,
+      },
+      {
+        source: "/path",
+        has: [
+          { type: "query" as const, key: "topic", value: `(?<topic>${pathIds})` },
+          { type: "query" as const, key: "level", value: `(?<level>${levelIds})` },
+        ],
+        destination: "/path/:topic/:level",
         permanent: true,
       },
     ];

@@ -19,7 +19,7 @@ const PAGES = [
   { path: "/interview", heading: /Every round of the loop/i },
   { path: "/interview/r1oa", heading: /online assessment/i },
   { path: "/level/js", heading: /JavaScript/i },
-  { path: "/path?topic=js&level=beginner", heading: /Beginner/i },
+  { path: "/path/js/beginner", heading: /Beginner/i },
   { path: "/practice?id=free", heading: /Playground/i },
   { path: "/problems", heading: /problem/i },
   { path: "/problems/ex-accounts-merge", heading: /Accounts Merge/i },
@@ -109,10 +109,39 @@ test("an outline topic's old /level and /path links redirect to its outline land
   await expect(page.getByRole("heading", { level: 1 })).toContainText("TypeScript");
 });
 
-test("the /path sidebar lists only its own topic's chapters, not every topic's", async ({ page }) => {
-  await page.goto("/path?topic=react&level=beginner");
-  await expect(page.locator(".site-sidenav__count")).toHaveText("57 chapters");
-  await expect(page.locator("#nav-list a[href^='/dsa/']")).toHaveCount(0);
+test("the /path page renders only its own topic's steps at the chosen level", async ({ page }) => {
+  await page.goto("/path/react/beginner");
+  await expect(page.locator("#steps [data-step]")).toHaveCount(11);
+  await expect(page.locator("#steps a[href^='/dsa/']")).toHaveCount(0);
+});
+
+test("the /path page's back pill falls back to the level picker", async ({ page }) => {
+  await page.goto("/path/js/beginner");
+  const back = page.locator("header a.head-back");
+  await expect(back).toBeVisible();
+  await expect(back).toHaveAttribute("title", "JavaScript");
+  await expect(back).toHaveAttribute("href", "/level/js");
+});
+
+test("/path and /path?topic= redirect once the saved or default level is known", async ({ page }) => {
+  await page.goto("/path");
+  await page.waitForURL("**/path/js/beginner");
+
+  await page.goto("/path?topic=js");
+  await page.waitForURL("**/path/js/beginner");
+});
+
+test("marking a step read on /path updates the meter and the step's state", async ({ page }) => {
+  await page.goto("/path/js/beginner");
+  const meterLabel = page.locator("#path-meter-label");
+  await expect(meterLabel).toHaveText("0 / 18 done");
+
+  const toggle = page.locator('[data-step="setup-mental-model"] button');
+  await toggle.click();
+
+  await expect(meterLabel).toHaveText("1 / 18 done");
+  await expect(page.locator('[data-step="setup-mental-model"]')).toHaveAttribute("data-done", "true");
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
 });
 
 test("a chapter can be marked read and the count follows", async ({ page }) => {
@@ -1370,8 +1399,8 @@ test("topic covers and chapters, level, path and the playground take the theme's
   const writtenRow = page.locator("[class*='__itemReady'] [class*='__itemCheck']").first();
   const levelCta = page.locator("[class*='__cardCta']").first();
   const levelListCode = page.locator("[class*='__cardList'] code").first();
-  const pathMeter = page.locator("#meter-fill");
-  const doneStepCheck = page.locator("#step-setup-mental-model.is-done .check");
+  const pathMeter = page.locator("#path-meter-fill");
+  const doneStepCheck = page.locator('[data-step="setup-mental-model"][data-done="true"] [data-role="check-mark"]');
   const meanwhileLink = page.getByRole("link", { name: /JavaScript is written/i });
 
   for (const theme of THEMES) {
@@ -1409,7 +1438,7 @@ test("topic covers and chapters, level, path and the playground take the theme's
         JSON.stringify({ chapters: { "setup-mental-model": true }, exercises: {} })
       )
     );
-    await page.goto("/path?topic=js&level=beginner");
+    await page.goto("/path/js/beginner");
     await expect(pathMeter, `/path in ${theme}`).toHaveCSS("background-color", accent);
     await expect(doneStepCheck, `/path in ${theme}`).toHaveCSS("color", themeColour(theme, "--ink-soft"));
     await page.evaluate(() => localStorage.removeItem("jsnotes:progress"));

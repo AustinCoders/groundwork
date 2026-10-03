@@ -229,8 +229,8 @@ export const archDesignSystem: Chapter = {
   workspace pages. On a narrow screen it becomes a drawer. Opening the drawer locks body scroll,
   focuses its first link, closes on Escape, and holds focus with the shared
   <code>components/FocusTrap.tsx</code>, which wraps <code>@radix-ui/react-focus-scope</code>.
-  Closed on a narrow screen, the drawer is <code>inert</code>, so Tab skips it. Five files render
-  it: the topic reader's <code>ReaderShell</code>, the path and soon pages, and the
+  Closed on a narrow screen, the drawer is <code>inert</code>, so Tab skips it. Four files render
+  it: the topic reader's <code>ReaderShell</code>, the soon page, and the
   not-found and error pages.
 </p>
 <p>
@@ -269,7 +269,7 @@ export const archDesignSystem: Chapter = {
 
 <h3>CSS modules and globals.css</h3>
 <p>
-  <code>globals.css</code> is about 9,300 lines. It holds the tokens, the prose styles every
+  <code>globals.css</code> is about 9,200 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
   one of 22 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
   lines. The rule of thumb is that anything
