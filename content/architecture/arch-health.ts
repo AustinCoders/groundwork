@@ -102,7 +102,7 @@ export const archHealth: Chapter = {
 </figure>
 
 <p>
-  <strong><code>app/globals.css</code>, about 9,200 lines</strong>, is the largest single piece of debt.
+  <strong><code>app/globals.css</code>, about 9,300 lines</strong>, is the largest single piece of debt.
   The newer parts of the site (the mock interview, the whiteboard and the problems page) use CSS
   modules, and the older reader and playground styles still live in the global sheet. Every page
   downloads all of it, and nothing tells you which rules are dead.

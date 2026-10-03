@@ -21,7 +21,7 @@ export const archTechStack: Chapter = {
 <tr><td><b>Next.js</b> (App Router)</td><td>16.3.0</td><td>Routing, the build, static generation, metadata routes, the server/client split</td></tr>
 <tr><td><b>React</b></td><td>19.2.8</td><td>Components; server components for everything that does not need a browser</td></tr>
 <tr><td><b>TypeScript</b></td><td>5.9.3</td><td>Types the code and the content, so a malformed chapter fails the build. The same package also runs in the browser as the playground's TypeScript compiler</td></tr>
-<tr><td><b>CSS</b></td><td>&mdash;</td><td><code>app/globals.css</code> at about 9,200 lines, plus 22 CSS modules for the pages and tools that carry their own styles</td></tr>
+<tr><td><b>CSS</b></td><td>&mdash;</td><td><code>app/globals.css</code> at about 9,300 lines, plus 22 CSS modules for the pages and tools that carry their own styles</td></tr>
 <tr><td><b>Tailwind</b></td><td>4</td><td>Imported for its theme and utilities layers only, with no preflight reset. The site is styled with custom properties and its own class names</td></tr>
 <tr><td><b>Vercel</b></td><td>&mdash;</td><td>Host, CDN, firewall, analytics</td></tr>
 <tr><td><b>Node</b></td><td>24.x</td><td>Pinned in <code>engines</code> and to 24 in <code>.nvmrc</code>, so CI, Vercel and the project settings agree</td></tr>

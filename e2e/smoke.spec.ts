@@ -1440,7 +1440,7 @@ test("topic covers and chapters, level, path and the playground take the theme's
     );
     await page.goto("/path/js/beginner");
     await expect(pathMeter, `/path in ${theme}`).toHaveCSS("background-color", accent);
-    await expect(doneStepCheck, `/path in ${theme}`).toHaveCSS("color", themeColour(theme, "--ink-soft"));
+    await expect(doneStepCheck, `/path in ${theme}`).toHaveCSS("background-color", accent);
     await page.evaluate(() => localStorage.removeItem("jsnotes:progress"));
 
     await page.goto("/typescript");

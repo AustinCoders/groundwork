@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
 import { TopicFrame } from "@/components/topic/TopicFrame";
+import { accentVar } from "@/lib/accent";
 import { formatSpan, plural } from "@/lib/format";
 import { problemHref } from "@/lib/problemHref";
 import { progress, rememberLevel } from "@/lib/storage";
@@ -68,39 +69,59 @@ export function TopicPath({
       back={{ href: `/level/${topic.id}`, label: topic.name }}
       skip={{ label: "Skip to the path" }}
     >
-      <div className={styles.page}>
-        <section className={styles.hero} data-fx="stagger">
-          <p className={styles.kicker} id="path-kicker">
-            Step 2 of 2 · your path
-          </p>
-          <h1 className={styles.title} id="path-title">
-            {topic.name} — {level.name}
-          </h1>
-          <p className={styles.lead} id="path-blurb">
-            {level.blurb}
-          </p>
+      <div className={styles.page} style={{ "--accent": accentVar(topic.accent) } as React.CSSProperties}>
+        <div className={styles.heroRow} data-fx="stagger">
+          <section className={styles.hero}>
+            <p className={styles.kicker} id="path-kicker">
+              <span className={styles.kickerMark} aria-hidden="true">
+                {topic.mark}
+              </span>
+              Step 2 of 2 · your path
+            </p>
+            <h1 className={styles.title} id="path-title">
+              {topic.name} — {level.name}
+            </h1>
+            <p className={styles.lead} id="path-blurb">
+              {level.blurb}
+            </p>
 
-          <div className={styles.meter}>
-            <div className={styles.meterTrack}>
-              <div className={styles.meterFill} id="path-meter-fill" style={{ width: `${pct}%` }} />
+            <div className={styles.meter}>
+              <div className={styles.meterTrack}>
+                <div className={styles.meterFill} id="path-meter-fill" style={{ width: `${pct}%` }} />
+              </div>
+              <span className={styles.meterLabel} id="path-meter-label">
+                {doneCount} / {chapters.length} done
+              </span>
             </div>
-            <span className={styles.meterLabel} id="path-meter-label">
-              {doneCount} / {chapters.length} done
-            </span>
-          </div>
 
-          <div className={styles.heroActions}>
-            <Link className="btn btn--primary btn--big" id="start-btn" href={continueHref}>
-              {continueLabel} →
-            </Link>
-            <Link className="btn btn--big" id="change-level" href={`/level/${topic.id}`}>
-              <span aria-hidden="true">⇄</span> Change level
-            </Link>
-            <Link className="btn btn--big" id="all-chapters" href={basePath}>
-              All chapters
-            </Link>
-          </div>
-        </section>
+            <div className={styles.heroActions}>
+              <Link className="btn btn--primary btn--big" id="start-btn" href={continueHref}>
+                {continueLabel} →
+              </Link>
+              <Link className="btn btn--big" id="change-level" href={`/level/${topic.id}`}>
+                <span aria-hidden="true">⇄</span> Change level
+              </Link>
+              <Link className="btn btn--big" id="all-chapters" href={basePath}>
+                All chapters
+              </Link>
+            </div>
+          </section>
+
+          <aside className={styles.statPanel} aria-label={`${topic.name} ${level.name} path in numbers`}>
+            <div className={styles.statRow}>
+              <span className={styles.statNum}>{chapters.length - doneCount}</span>
+              <span className={styles.statLabel}>{plural(chapters.length - doneCount, "chapter")} left</span>
+            </div>
+            <div className={styles.statRow}>
+              <span className={styles.statNum}>{formatSpan(totalMinutes)}</span>
+              <span className={styles.statLabel}>of reading in this path</span>
+            </div>
+            <div className={styles.statRow}>
+              <span className={styles.statNum}>{levelExerciseList.length}</span>
+              <span className={styles.statLabel}>{plural(levelExerciseList.length, "exercise")} to practice</span>
+            </div>
+          </aside>
+        </div>
 
         <div className={styles.sectionHead} data-fx="up">
           <h2 className={styles.sectionTitle}>The order I&apos;d read them in</h2>
@@ -120,16 +141,20 @@ export function TopicPath({
                     ○
                   </span>
                   <div className={styles.stepBody}>
-                    {entry.chapter ? (
-                      <Link className={styles.stepTitle} href={`${basePath}/${entry.chapter.id}`}>
-                        {section.title}
-                      </Link>
-                    ) : (
-                      <span className={styles.stepTitle}>{section.title}</span>
-                    )}
-                    <p className={styles.stepSub}>{section.items.join(" · ")}</p>
-                    <div className={styles.stepMeta}>
-                      <span className="tag tag--soon">coming soon</span>
+                    <div className={styles.stepMain}>
+                      {entry.chapter ? (
+                        <Link className={styles.stepTitle} href={`${basePath}/${entry.chapter.id}`}>
+                          {section.title}
+                        </Link>
+                      ) : (
+                        <span className={styles.stepTitle}>{section.title}</span>
+                      )}
+                      <p className={styles.stepSub} title={section.items.join(" · ")}>
+                        {section.items.join(" · ")}
+                      </p>
+                      <div className={styles.stepMeta}>
+                        <span className="tag tag--soon">coming soon</span>
+                      </div>
                     </div>
                   </div>
                 </li>
@@ -153,32 +178,38 @@ export function TopicPath({
                   {chapter.num}
                 </span>
                 <div className={styles.stepBody}>
-                  <Link className={styles.stepTitle} href={`${basePath}/${chapter.id}`}>
-                    {chapter.title}
-                  </Link>
-                  <p className={styles.stepSub}>{chapter.subtitle}</p>
-                  <div className={styles.stepMeta}>
-                    <span className="tag">{chapter.readMinutes} min read</span>
-                    {chapterExerciseList.length > 0 && (
-                      <span className="tag">{plural(chapterExerciseList.length, "exercise")}</span>
-                    )}
-                    {(chapter.levels || []).map((l) => (
-                      <span key={l} className={`tag tag--${l}`}>
-                        {l}
-                      </span>
-                    ))}
+                  <div className={styles.stepMain}>
+                    <Link className={styles.stepTitle} href={`${basePath}/${chapter.id}`}>
+                      {chapter.title}
+                    </Link>
+                    <p className={styles.stepSub} title={chapter.subtitle}>
+                      {chapter.subtitle}
+                    </p>
+                    <div className={styles.stepRow}>
+                      <div className={styles.stepMeta}>
+                        <span className="tag">{chapter.readMinutes} min read</span>
+                        {chapterExerciseList.length > 0 && (
+                          <span className="tag">{plural(chapterExerciseList.length, "exercise")}</span>
+                        )}
+                        {(chapter.levels || []).map((l) => (
+                          <span key={l} className={`tag tag--${l}`}>
+                            {l}
+                          </span>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        className={checkClass}
+                        aria-pressed={chapterDone}
+                        onClick={() => progress.setChapterDone(chapter.id, !chapterDone)}
+                      >
+                        <span className={styles.stepCheckMark} data-role="check-mark" aria-hidden="true">
+                          {chapterDone ? "✓" : ""}
+                        </span>
+                        {chapterDone ? "Mark as unread" : "Mark as read"}
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    className={checkClass}
-                    aria-pressed={chapterDone}
-                    onClick={() => progress.setChapterDone(chapter.id, !chapterDone)}
-                  >
-                    <span className={styles.stepCheckMark} data-role="check-mark" aria-hidden="true">
-                      {chapterDone ? "✓" : ""}
-                    </span>
-                    {chapterDone ? "Mark as unread" : "Mark as read"}
-                  </button>
                   {chapterExerciseList.length > 0 && (
                     <details className={styles.exerciseDetails} open={mounted && next?.id === chapter.id}>
                       <summary>
