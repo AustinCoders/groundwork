@@ -1,6 +1,6 @@
 import { useEffect, type RefObject } from "react";
 
-const SCROLLERS = "pre, .table-scroll, [data-scroll-region]";
+const SCROLLERS = "pre, .table-scroll, [data-scroll-region], .loop-code";
 const regionsWeMarked = new WeakSet<Element>();
 
 function textOf(node: Element | null | undefined): string {
