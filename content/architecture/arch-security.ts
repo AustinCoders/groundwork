@@ -20,7 +20,7 @@ export const archSecurity: Chapter = {
   What is left is more interesting than that list suggests:
 </p>
 <ul>
-<li>four API endpoints</li>
+<li>three API endpoints</li>
 <li>one Content-Security-Policy</li>
 <li>a playground that runs whatever a reader types, in 11 of its 17 languages</li>
 <li>two kinds of share link that carry data from one stranger's browser to another's</li>
@@ -160,7 +160,7 @@ export const archSecurity: Chapter = {
 <tr><td><code>X-Content-Type-Options</code></td><td><code>nosniff</code></td><td>A response being run as a script because it looks like one</td></tr>
 <tr><td><code>X-Frame-Options</code></td><td><code>DENY</code></td><td>Clickjacking</td></tr>
 <tr><td><code>Referrer-Policy</code></td><td><code>strict-origin-when-cross-origin</code></td><td>Leaking full paths to other sites</td></tr>
-<tr><td><code>Permissions-Policy</code></td><td>camera and microphone off, geolocation self only, <code>interest-cohort</code> off</td><td>Embedded content asking for hardware</td></tr>
+<tr><td><code>Permissions-Policy</code></td><td>camera and microphone off, geolocation off, <code>interest-cohort</code> off</td><td>Embedded content asking for hardware</td></tr>
 </tbody>
 </table></div>
 <p>
@@ -202,7 +202,6 @@ export const archSecurity: Chapter = {
 <thead><tr><th>Route</th><th>Limit per IP</th><th>Input checks</th></tr></thead>
 <tbody>
 <tr><td><code>/api/tts</code></td><td>40 a minute</td><td>Text at most 2,000 characters (413 if longer); voice from a fixed list; rate clamped to 0.5&ndash;2; pitch matched by a pattern; text escaped before it goes into SSML; 20 s maximum duration</td></tr>
-<tr><td><code>/api/weather</code></td><td>20 a minute</td><td>Latitude and longitude must be finite and in range, then are rounded to one decimal place. That helps the cache and blurs the reader's position</td></tr>
 <tr><td><code>/api/joke</code></td><td>20 a minute</td><td>No input; a fixed joke if the upstream fails</td></tr>
 <tr><td><code>/api/client-error</code></td><td>20 a minute</td><td>413 above 4,000 bytes; each field cut to 500 characters, the user agent to 200; bad JSON is dropped with a 204</td></tr>
 </tbody>

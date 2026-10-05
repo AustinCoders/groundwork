@@ -21,7 +21,7 @@ export const archTechStack: Chapter = {
 <tr><td><b>Next.js</b> (App Router)</td><td>16.3.0</td><td>Routing, the build, static generation, metadata routes, the server/client split</td></tr>
 <tr><td><b>React</b></td><td>19.2.8</td><td>Components; server components for everything that does not need a browser</td></tr>
 <tr><td><b>TypeScript</b></td><td>5.9.3</td><td>Types the code and the content, so a malformed chapter fails the build. The same package also runs in the browser as the playground's TypeScript compiler</td></tr>
-<tr><td><b>CSS</b></td><td>&mdash;</td><td><code>app/globals.css</code> at about 9,300 lines, plus 22 CSS modules for the pages and tools that carry their own styles</td></tr>
+<tr><td><b>CSS</b></td><td>&mdash;</td><td><code>app/globals.css</code> at about 7,900 lines, plus 22 CSS modules for the pages and tools that carry their own styles</td></tr>
 <tr><td><b>Tailwind</b></td><td>4</td><td>Imported for its theme and utilities layers only, with no preflight reset. The site is styled with custom properties and its own class names</td></tr>
 <tr><td><b>Vercel</b></td><td>&mdash;</td><td>Host, CDN, firewall, analytics</td></tr>
 <tr><td><b>Node</b></td><td>24.x</td><td>Pinned in <code>engines</code> and to 24 in <code>.nvmrc</code>, so CI, Vercel and the project settings agree</td></tr>
@@ -133,7 +133,7 @@ export const archTechStack: Chapter = {
 <h3>Small pieces</h3>
 <ul>
 <li><b>msedge-tts</b> &mdash; the narrator's voice, behind <code>/api/tts</code>. Unofficial, free, and the one real single point of failure among the server functions. See <a href="/architecture/arch-apis">the endpoints chapter</a>.</li>
-<li><b>Radix</b> &mdash; <code>@radix-ui/react-focus-scope</code> traps focus in the shortcut help, loaded dynamically, and inside the shared <code>FocusTrap</code>, imported statically, which holds focus in the sidebar drawer, the site menu, the Chapters sheet and the Filters sheet. The <code>radix-ui</code> package supplies one component, the Select in <code>components/ui/select.tsx</code>, used by four files.</li>
+<li><b>Radix</b> &mdash; <code>@radix-ui/react-focus-scope</code> traps focus in the shortcut help, loaded dynamically, and inside the shared <code>FocusTrap</code>, imported statically, which holds focus in the site menu, the Chapters sheet and the Filters sheet. The <code>radix-ui</code> package supplies one component, the Select in <code>components/ui/select.tsx</code>, used by four files.</li>
 <li><b>clsx</b> and <b>tailwind-merge</b> &mdash; one helper, <code>cn()</code> in <code>lib/utils.ts</code>, for that Select. <code>class-variance-authority</code> is also installed, but nothing imports it.</li>
 <li><b>next/font</b> &mdash; 13 Google font families behind the 7 font styles in the display picker, alongside 9 colour themes.</li>
 <li><b>Vercel Analytics and Speed Insights</b> &mdash; pageviews and field Core Web Vitals.</li>

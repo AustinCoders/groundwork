@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { topicCoverMetadata } from "@/components/reader/topicPages";
 import { HashRedirect } from "@/components/reader/HashRedirect";
 import { chapterMetas, exercises, notesData, notesHref } from "@/lib/content";
+import { frameTopic } from "@/lib/topics";
 import { repoStats } from "@/lib/repoStats";
 import { siteStats } from "@/lib/topicStats";
 import { ArchitectureView, type ChapterCard } from "./ArchitectureView";
@@ -29,6 +30,7 @@ export default function Page() {
     <>
       <HashRedirect basePath={basePath} />
       <ArchitectureView
+        topic={frameTopic(TOPIC, basePath)}
         title={data.meta.title}
         lead={data.meta.lead ?? data.meta.subtitle}
         basePath={basePath}

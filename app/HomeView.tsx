@@ -589,7 +589,7 @@ function PathTabs() {
         <ol className={styles.road}>
           {p.path.map((step, i) => (
             <li key={step.href} style={{ "--i": i } as React.CSSProperties}>
-              <Link href={step.href}>
+              <Link href={step.href} prefetch={false}>
                 <span className={styles.roadNum}>{i + 1}</span>
                 <span>{step.label}</span>
               </Link>
@@ -767,7 +767,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
     },
     {
       q: "Do I need to sign up?",
-      a: "No. There is no account. Your progress, streak and boards are saved in this browser. Some things do leave it: anonymous page analytics, your location if you ask for the weather, the text the narrator reads aloud, error reports, requests to a CDN for the playground's language runtimes, and the request logs every web host keeps.",
+      a: "No. There is no account. Your progress, streak and boards are saved in this browser. Some things do leave it: anonymous page analytics, the text the narrator reads aloud, error reports, requests to a CDN for the playground's language runtimes, and the request logs every web host keeps.",
       link: { href: "/privacy", label: "What leaves, and where it goes →" },
     },
     {
@@ -1056,7 +1056,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                 <ul className={styles.soon}>
                   {soon.map((t) => (
                     <li key={t.id}>
-                      <Link href={t.href} style={accent(t.accent)}>
+                      <Link href={t.href} prefetch={false} style={accent(t.accent)}>
                         <span className={styles.soonMark} aria-hidden="true">
                           {t.mark}
                         </span>
@@ -1189,7 +1189,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             <nav aria-label="Learn">
               <p className={styles.label}>Learn</p>
               {ready.slice(0, 5).map((t) => (
-                <Link key={t.id} href={t.href}>
+                <Link key={t.id} href={t.href} prefetch={false}>
                   {t.name}
                 </Link>
               ))}

@@ -11,14 +11,14 @@ export const archRoutes: Chapter = {
   subtitle: "53 pages, 27 route handlers, the metadata files, and the links that live after the # sign.",
   body: `<h3>The whole tree on one page</h3>
 <p>
-  <code>app/</code> holds 53 <code>page.tsx</code> files and 27 <code>route.ts</code> files. Only four of
+  <code>app/</code> holds 57 <code>page.tsx</code> files and 26 <code>route.ts</code> files. Only three of
   those route handlers run on request. The other 23 are JSON files in disguise: they set
   <code>dynamic = "force-static"</code>, run once during the build, and are served from the CDN like any
   page. Every URL on the site falls into one of five groups.
 </p>
 
 <figure>
-<svg viewBox="0 0 900 420" class="dg" role="img" aria-label="Five groups of routes. Framed pages, prerendered as HTML with the Shell sidebar or a page header: the home page, topic covers and chapters, Git, level pages, path, review, progress, mock and soon. Full-screen tools: the playground, the problems list, each problem and the whiteboard. Prerendered JSON: the search indexes, the test cases and the mock question banks. Server functions: tts, weather, joke and client-error. Along the bottom, the metadata routes.">
+<svg viewBox="0 0 900 420" class="dg" role="img" aria-label="Five groups of routes. Framed pages, prerendered as HTML under one page header: the home page, topic covers and chapters, Git, level pages, path, review, progress and mock. Full-screen tools: the playground, the problems list, each problem and the whiteboard. Prerendered JSON: the search indexes, the test cases and the mock question banks. Server functions: tts, joke and client-error. Along the bottom, the metadata routes.">
 <g class="rough">
 <rect x="20" y="20" width="205" height="300" rx="12" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 2" />
 <rect x="240" y="20" width="205" height="300" rx="12" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 2" />
@@ -27,7 +27,7 @@ export const archRoutes: Chapter = {
 <rect x="20" y="340" width="860" height="60" rx="12" style="fill: var(--sheet-2); stroke: var(--line-soft); stroke-width: 2" />
 </g>
 <text class="lbl" x="36" y="48">Framed pages</text>
-<text class="sm" x="36" y="68">sidebar or page header</text>
+<text class="sm" x="36" y="68">one page header</text>
 <text class="sm" x="36" y="100">/</text>
 <text class="sm" x="36" y="122">/&lt;topic&gt;</text>
 <text class="sm" x="36" y="144">/&lt;topic&gt;/&lt;chapter&gt;</text>
@@ -36,9 +36,8 @@ export const archRoutes: Chapter = {
 <text class="sm" x="36" y="210">/path/&lt;topic&gt;/&lt;level&gt;</text>
 <text class="sm" x="36" y="232">/review, /progress</text>
 <text class="sm" x="36" y="254">/mock</text>
-<text class="sm" x="36" y="276">/soon?topic=</text>
 <text class="lbl" x="256" y="48">Full screen</text>
-<text class="sm" x="256" y="68">no sidebar, a menu drawer</text>
+<text class="sm" x="256" y="68">a menu drawer, no frame</text>
 <text class="sm" x="256" y="100">/practice?id=free</text>
 <text class="sm" x="256" y="122">/problems</text>
 <text class="sm" x="256" y="144">/problems/&lt;id&gt;</text>
@@ -53,10 +52,9 @@ export const archRoutes: Chapter = {
 <text class="lbl" x="696" y="48">Server functions</text>
 <text class="sm" x="696" y="68">run on every request</text>
 <text class="sm" x="696" y="100">/api/tts</text>
-<text class="sm" x="696" y="122">/api/weather</text>
-<text class="sm" x="696" y="144">/api/joke</text>
-<text class="sm" x="696" y="166">/api/client-error</text>
-<text class="sm" x="696" y="298">4 functions</text>
+<text class="sm" x="696" y="122">/api/joke</text>
+<text class="sm" x="696" y="144">/api/client-error</text>
+<text class="sm" x="696" y="298">3 functions</text>
 <text class="lbl" x="36" y="366">Metadata routes</text>
 <text class="sm" x="36" y="388">/sitemap.xml &middot; /robots.txt &middot; /manifest.webmanifest &middot; /icon &middot; /apple-icon &middot; 9 opengraph-image routes</text>
 </svg>
@@ -160,12 +158,12 @@ export const archRoutes: Chapter = {
 <tr><td><code>/path?topic=&amp;level=</code></td><td>An empty page</td><td>With both a topic and a level, a redirect straight to <code>/path/&lt;topic&gt;/&lt;level&gt;</code> from <code>next.config.ts</code>, before any client code runs — unless the topic is a pinned outline one, in which case the outline redirect above still wins and sends it to the topic's own cover instead, level param or not; with only a topic, a client redirect once the saved or default level is known</td></tr>
 <tr><td><code>/review</code></td><td>Every written chapter</td><td>Which ones are due, from your read dates</td></tr>
 <tr><td><code>/progress</code></td><td>A frame</td><td>Streaks, XP, badges and the calendar, all from <code>localStorage</code></td></tr>
-<tr><td><code>/soon?topic=</code></td><td>A frame, now reached only when the <code>next.config.ts</code> redirect above misses — a stale link, or a topic that became an outline after the redirect's id list was last built</td><td>Redirects on to the topic's own cover; if the redirect in config has not caught up, renders the planned topic's syllabus itself</td></tr>
+<tr><td><code>/soon?topic=</code></td><td>Nothing: the page is gone. Three permanent redirects in <code>next.config.ts</code> cover the old links, an outline topic to its own cover, a written topic to <code>/level/&lt;topic&gt;</code>, and any other or missing topic to the home page</td><td>Nothing</td></tr>
 <tr><td><code>/privacy</code></td><td>The whole page: what stays in the browser, what leaves it, and which service receives it</td><td>Nothing</td></tr>
 </tbody>
 </table></div>
 <p>
-  <code>/path</code>, <code>/review</code>, <code>/progress</code>, <code>/soon</code> and the bare
+  <code>/path</code>, <code>/review</code>, <code>/progress</code> and the bare
   <code>/level</code> are marked <code>noindex</code>: without your browser's data they are either empty
   or a duplicate of a page that is indexed. <code>/level/&lt;topic&gt;</code> is indexed, and listed in
   the sitemap, only for topics with something written. <code>/privacy</code> is static and indexed. A
@@ -184,9 +182,9 @@ export const archRoutes: Chapter = {
   JavaScript's at 193,062 and the cross-topic one is 49,794.
 </p>
 
-<h3>The four functions</h3>
+<h3>The three functions</h3>
 <p>
-  <code>/api/tts</code>, <code>/api/weather</code>, <code>/api/joke</code> and
+  <code>/api/tts</code>, <code>/api/joke</code> and
   <code>/api/client-error</code> run on the Node runtime, each behind an in-memory per-IP limit from
   <code>lib/rateLimit.ts</code>: 40 requests a minute for speech and 20 for the rest.
   <code>/api/tts</code> answers a GET with an MP3 the CDN may cache for a year, word timings in a header,
@@ -223,25 +221,21 @@ export const archRoutes: Chapter = {
   trade.
 </p>
 
-<h3>The Shell, and the pages that dropped it</h3>
+<h3>The page frames</h3>
 
 <figure>
-<svg viewBox="0 0 900 300" class="dg" role="img" aria-label="On the left, a Shell page: a sidebar with tools, topics, progress and display settings, beside the main content. On the right, a full-screen page: a thin header over the tool, with the site menu as a drawer that slides in on demand.">
+<svg viewBox="0 0 900 300" class="dg" role="img" aria-label="On the left, a framed page: a header with a back pill, a menu button, the brand and the page title, over the page content. On the right, a full-screen page: a thin header over the tool, with the site menu as a drawer that slides in on demand.">
 <g class="rough">
 <rect x="30" y="40" width="400" height="236" rx="10" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 2" />
-<rect x="30" y="40" width="130" height="236" rx="10" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="30" y="40" width="400" height="40" rx="10" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <rect x="470" y="40" width="400" height="236" rx="10" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 2" />
 <rect x="470" y="40" width="400" height="40" rx="10" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <rect x="470" y="80" width="140" height="196" rx="8" style="fill: var(--sheet-2); stroke: var(--line-soft); stroke-width: 1.6; stroke-dasharray: 6 5" />
 </g>
-<text class="sm" x="30" y="28">SHELL: READING PAGES</text>
-<text class="sm" x="44" y="72">brand, clock</text>
-<text class="sm" x="44" y="100">8 tool links</text>
-<text class="sm" x="44" y="128">topics</text>
-<text class="sm" x="44" y="156">your progress</text>
-<text class="sm" x="44" y="184">theme, font</text>
-<text class="lbl" x="295" y="152" text-anchor="middle">the chapter</text>
-<text class="sm" x="295" y="176" text-anchor="middle">max reading width</text>
+<text class="sm" x="30" y="28">PAGE FRAME: EVERY OTHER PAGE</text>
+<text class="sm" x="44" y="65">back &middot; menu &middot; brand &middot; title</text>
+<text class="lbl" x="230" y="162" text-anchor="middle">the page</text>
+<text class="sm" x="230" y="186" text-anchor="middle">max reading width</text>
 <text class="sm" x="470" y="28">BARE: FULL-SCREEN TOOLS</text>
 <text class="sm" x="486" y="65">menu &middot; title &middot; actions</text>
 <text class="sm" x="484" y="112">SiteDrawer,</text>
@@ -254,30 +248,27 @@ export const archRoutes: Chapter = {
 </svg>
 <figcaption>
   The drawer on the right is drawn dashed because it is not there until the menu button is pressed. It is
-  a portal with <code>role="dialog"</code>, and Escape closes it. The third frame, <code>PageFrame</code>,
-  is not drawn: it puts the same kind of header and drawer over a page instead of a tool.
+  a portal with <code>role="dialog"</code>, and Escape closes it. The frame on the left opens the same
+  drawer from its own menu button.
 </figcaption>
 </figure>
 
 <p>
-  <code>components/Shell.tsx</code> is the frame with the sidebar: the brand, the clock, the streak, links
-  to the tools, the topic list, reading progress, and the theme and font pickers. Most topic covers and
-  chapters, the soon page, and the not-found and error pages use it.
-  Git and the architecture guide left it first, for their own series reader, and the four written
-  topics' covers — JavaScript, React, DSA and System Design — and chapters, and the level pages that
-  render rather than redirect, have followed. They render
-  in <code>components/topic/TopicFrame.tsx</code>, a thin wrapper over the <code>PageFrame</code>
-  header that review, progress and privacy use: a labelled back pill, a menu button for the site
-  drawer, and the topic's name linking back to its cover.
+  <code>components/frame/PageFrame.tsx</code> is the frame nearly every page uses: a sticky header with a
+  labelled back pill, a menu button for the site drawer, the brand and the page title. Home, review,
+  progress, privacy, the not-found and error pages render it directly.
+  <code>components/topic/TopicFrame.tsx</code> is a thin wrapper over it for a topic: the topic's mark
+  and name linking back to its cover. Every topic cover and chapter, written or outlined, the level and
+  path pages, Git and the architecture guide render in it.
 </p>
 <p>
   The playground, <code>/problems</code>, every problem page and <code>/whiteboard</code> do not. The
-  commit "Playground and problems: no sidebar, a site menu drawer" took the sidebar off them, and the
+  commit "Playground and problems: no sidebar, a site menu drawer" took the old sidebar off them, and the
   whiteboard was built full-screen from the start. An editor, a list of 538 problems and an infinite
   canvas all want the width more than they want navigation that is always visible, so these pages use
   <code>components/SiteDrawer.tsx</code> instead: a menu button that opens a drawer with seven links and
   the shared <code>AppearancePicker</code>. <code>components/AppHeader.tsx</code> provides the thin
   header and a <code>BareShell</code> frame, which the whiteboard uses with the header turned off. The
-  Shell, the bare frame and <code>PageFrame</code> never meet on one page.
+  bare frame and <code>PageFrame</code> never meet on one page.
 </p>`,
 };

@@ -54,7 +54,7 @@ export const archContentModel: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Type</th><th>Carries</th><th>Decides</th></tr></thead>
 <tbody>
-<tr><td><b>Topic</b></td><td>id, name, mark, accent, tagline, status, notes, blurb, levels, curriculumNotes, planned</td><td>The shelf, the sidebar, the topic colour, and the topic's URL</td></tr>
+<tr><td><b>Topic</b></td><td>id, name, mark, accent, tagline, status, notes, blurb, levels, curriculumNotes, planned</td><td>The shelf, the site menu, the topic colour, and the topic's URL</td></tr>
 <tr><td><b>Level</b></td><td>id, name, mark, tagline, blurb, bullets, checkpoint, syllabus</td><td>The reading path and the chapter grouping</td></tr>
 <tr><td><b>Chapter</b></td><td>id, num, title, short, subtitle, levels, practice, ready, body</td><td>A page, a search entry, a sitemap row, a reading time</td></tr>
 <tr><td><b>Exercise</b></td><td>id, chapter, level, title, brief, starter, hints, solution, tests, kind</td><td>A problem page, a playground session, a pass or fail, and possibly a mock question</td></tr>
@@ -165,7 +165,7 @@ export const archContentModel: Chapter = {
   Pages do not import content files. They go through <code>lib/content.ts</code>:
   <code>chapters()</code>, <code>chapterMetas()</code>, <code>exercise()</code>,
   <code>exercisesForLevel()</code>, <code>readTime()</code>. <code>chapterMetas()</code> exists so that
-  lists can carry every chapter without its body, which is what keeps the sidebar of a chapter page from
+  lists can carry every chapter without its body, which is what keeps the chapter list of a chapter page from
   shipping the whole topic. That is what makes adding a chapter a one-file job: drop the file in, add it
   to the topic's barrel and its level's syllabus, and the route, the search entry, the sitemap row, the
   reading time and the progress tracking all appear without being told to.

@@ -65,7 +65,6 @@ const GLOBALS = "app/globals.css";
 const BRIDGE = "app/theme-bridge.css";
 
 const GLOBAL_CATEGORICAL_SELECTORS = [
-  ".daily-recap",
   ".g",
   ".r",
   ".sticky",

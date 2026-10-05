@@ -8,7 +8,7 @@ export const archDesignSystem: Chapter = {
   levels: ["intermediate"],
   practice: [],
   ready: true,
-  subtitle: "Nine themes and seven fonts as CSS variables, two page shells, and the checks that keep them readable.",
+  subtitle: "Nine themes and seven fonts as CSS variables, two page frames, and the checks that keep them readable.",
   body: `<h3>Tokens, not components</h3>
 <p>
   There is no component library here. The design system is a set of CSS custom properties in
@@ -131,8 +131,8 @@ export const archDesignSystem: Chapter = {
   theme, such as the callouts (the sticky notes, the red gotcha box and the green and yellow
   boxes), the diagrams and step-through visualisers, the dry-run and truth tables, the level tags
   and the interview book's cards and pills. The visualisers' current-step highlight follows the
-  theme's marker. Some uses outside the chapters stay categorical too, such as the daily recap
-  note, the problem hint, the progress page's achievements, the home page's interview-story reds,
+  theme's marker. Some uses outside the chapters stay categorical too, such as the problem
+  hint, the progress page's achievements, the home page's interview-story reds,
   the book's test, say and trap boxes, the mock interviewers' avatars, the editor's window dots,
   the problem levels, the lanes of the architecture map, and the whiteboard's ruled margin and
   laser. <code>tests/theme-roles.test.ts</code> finds every CSS module under <code>app/</code> and
@@ -220,34 +220,22 @@ export const archDesignSystem: Chapter = {
   selected card's border and the focus outline use the current theme's <code>--primary</code>.
 </p>
 
-<h3>Three page frames</h3>
+<h3>Page frames</h3>
 <p>
-  Most topic covers and chapters use <code>components/Shell.tsx</code>. It draws the top bar
-  and a sidebar with the clock and weather, the streak, the topic of the day, links to the practice
-  tools and the topic list, and the theme and font dropdowns at the foot. The sidebar collapses, and
-  the choice is saved under <code>jsnotes:sidebar-collapsed</code>, with a separate key for
-  workspace pages. On a narrow screen it becomes a drawer. Opening the drawer locks body scroll,
-  focuses its first link, closes on Escape, and holds focus with the shared
-  <code>components/FocusTrap.tsx</code>, which wraps <code>@radix-ui/react-focus-scope</code>.
-  Closed on a narrow screen, the drawer is <code>inert</code>, so Tab skips it. Four files render
-  it: the topic reader's <code>ReaderShell</code>, the soon page, and the
-  not-found and error pages.
-</p>
-<p>
-  The redesigned pages use <code>components/frame/PageFrame.tsx</code> instead: a sticky header
-  with a labelled back pill, a menu button that opens the site drawer, the brand and the page
-  title. Review, progress and privacy render it directly. <code>components/topic/TopicFrame.tsx</code>
-  fills it in for a topic, with the topic's mark beside a title that links to its cover. A page that
-  sets <code>reading</code> also gets the drawer's text size, narrator and print controls. The four
-  written topics' covers — JavaScript, React, DSA and System Design — render <code>TopicCover</code>
-  on it, with <code>reading</code> on, and their chapters read through <code>TopicReader</code> on
-  it too; the level pages that render rather than redirect read through <code>LevelView</code> on
-  it as well; the other 14 covers, and every chapter that is still an outline, stay on the Shell
-  until they are written or redesigned.
+  Almost every page renders in <code>components/frame/PageFrame.tsx</code>: a sticky header with a
+  labelled back pill, a menu button that opens the site drawer, the brand and the page title. Home,
+  review, progress, privacy, the 404 page and the error page render it directly.
+  <code>components/topic/TopicFrame.tsx</code> fills it in for a topic, with the topic's mark beside
+  a title that links to its cover. A page that sets <code>reading</code> also gets the drawer's text
+  size, narrator and print controls. Every topic cover, every chapter, outline or written, the level
+  pages that render rather than redirect, the reading path, Git and this architecture section all use
+  <code>TopicFrame</code>. Opening the drawer locks body scroll, focuses its first control, closes on
+  Escape, and holds focus with the shared <code>components/FocusTrap.tsx</code>, which wraps
+  <code>@radix-ui/react-focus-scope</code>.
 </p>
 <p>
   The practice playground, the problems list and the whiteboard are full-screen tools, and a
-  sidebar would cost them width they need. They have no persistent chrome. Practice and problems
+  frame would cost them height they need. They have no persistent chrome. Practice and problems
   open <code>components/SiteDrawer.tsx</code> from a menu button. It is a portal with
   <code>role="dialog"</code> and <code>aria-modal</code>, seven links (home, playground, problems,
   whiteboard, mock interview, review, progress) with <code>aria-current</code> on the current one,
@@ -269,7 +257,7 @@ export const archDesignSystem: Chapter = {
 
 <h3>CSS modules and globals.css</h3>
 <p>
-  <code>globals.css</code> is about 9,300 lines. It holds the tokens, the prose styles every
+  <code>globals.css</code> is about 7,900 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
   one of 22 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
   lines. The rule of thumb is that anything
@@ -336,12 +324,12 @@ export const archDesignSystem: Chapter = {
   plain page load does not show: 8 that open with a click, and 4 seeded in
   <code>localStorage</code>. The clicks open the site menu, the reading menu on <code>/notes</code>
   with its Text size and Narrator folds open, a reading budget picked on the JavaScript cover's Up
-  next card, the reader's sidebar, the Chapters and Filters sheets, and a system design round in
+  next card, the Chapters and Filters sheets, and a system design round in
   the mock interview, checked at the brief, a question, a follow-up, the rubric and the debrief.
   The seeds give a chapter due for review, a
   chapter marked read on a path, a year of activity on the progress page, and two saved mock
   sessions. Each page and state is
-  checked in all 9 themes, at 1440 and 390 pixels wide, except the sidebar and the two sheets, which
+  checked in all 9 themes, at 1440 and 390 pixels wide, except the two sheets, which
   only open on a narrow screen and are checked at 390. One helper sets the theme the way the theme
   picker does, runs axe with the WCAG 2.0 and 2.1 A and AA tags, and fails on any violation, naming
   the page, the state, the theme and the width. No rule is disabled. A table, a code block, a query

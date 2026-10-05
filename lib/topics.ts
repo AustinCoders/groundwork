@@ -19,6 +19,12 @@ export function topic(id: string): Topic | null {
   return byId(topics(), id);
 }
 
+export function frameTopic(id: string, href: string) {
+  const t = topic(id);
+  if (!t) throw new Error(`frameTopic: no topic with id "${id}"`);
+  return { name: t.name, href, mark: t.mark, accent: t.accent };
+}
+
 export function levels(topicId?: string | null): Level[] {
   const t = topicId && byId(topics(), topicId);
   if (t && t.levels) return t.levels;
@@ -62,7 +68,6 @@ export function chapterHref(topicId: string | null | undefined, chapterId: strin
 }
 
 export function topicHref(t: Topic, savedLevel?: string | null): string {
-  if (t.status !== "ready") return `/soon?topic=${t.id}`;
   if (!t.levels) return notesHref(t.id);
 
   const known = savedLevel && byId(levels(t.id), savedLevel);

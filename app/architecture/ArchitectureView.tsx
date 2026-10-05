@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { ARCH_PARTS as PARTS } from "@/lib/architectureParts";
-import { useCallback, useMemo, useState } from "react";
-import { BackButton } from "@/components/practice/BackButton";
-import { SiteDrawer } from "@/components/SiteDrawer";
+import { useMemo, useState } from "react";
+import { TopicFrame, type FrameTopic } from "@/components/topic/TopicFrame";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { progress } from "@/lib/storage";
 import { useMounted, useProgressValue } from "@/lib/hooks";
@@ -102,6 +101,7 @@ function formatNumber(n: number): string {
 }
 
 export function ArchitectureView({
+  topic,
   title,
   lead,
   basePath,
@@ -110,6 +110,7 @@ export function ArchitectureView({
   written,
   exercises,
 }: {
+  topic: FrameTopic;
   title: string;
   lead: string;
   basePath: string;
@@ -119,9 +120,7 @@ export function ArchitectureView({
   exercises: number;
 }) {
   const mounted = useMounted();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [focus, setFocus] = useState<string | null>(null);
-  const closeMenu = useCallback(() => setMenuOpen(false), []);
   const byId = useMemo(() => new Map(chapters.map((c) => [c.id, c])), [chapters]);
 
   const doneKey = useProgressValue(
@@ -148,34 +147,19 @@ export function ArchitectureView({
   ];
 
   return (
-    <>
-      <a className="skip-link" href="#main">
-        Skip to the architecture
-      </a>
+    <TopicFrame
+      topic={topic}
+      reading
+      skip={{ label: "Skip to the architecture" }}
+      actions={
+        <Link className="btn btn--primary" href={`${basePath}/${next.id}`}>
+          {mounted && done.size ? "Continue reading" : "Start reading"}
+          <TopIcon name="next" size={16} />
+        </Link>
+      }
+    >
       <div className={styles.page}>
-        <header className={styles.top}>
-          <div className={styles.topLeft}>
-            <BackButton variant="icon" className={styles.iconBtn} fallbackHref="/" fallbackLabel="Home" />
-            <button
-              type="button"
-              className={styles.iconBtn}
-              aria-label="Menu"
-              aria-haspopup="dialog"
-              aria-expanded={menuOpen}
-              data-tip="Pages, theme and handwriting"
-              onClick={() => setMenuOpen(true)}
-            >
-              <TopIcon name="menu" />
-            </button>
-            <span className={styles.crumb}>How this is built</span>
-          </div>
-          <Link className={`${styles.btn} ${styles.primary}`} href={`${basePath}/${next.id}`}>
-            {mounted && done.size ? "Continue reading" : "Start reading"}
-            <TopIcon name="next" size={16} />
-          </Link>
-        </header>
-
-        <main id="main" className={styles.main}>
+        <div className={styles.main}>
           <section className={styles.hero}>
             <p className={styles.kicker}>A design review of the site you are reading</p>
             <h1 className={styles.title}>{title}</h1>
@@ -236,6 +220,7 @@ export function ArchitectureView({
                             <Link
                               className={styles.node}
                               href={`${basePath}/${ch.id}`}
+                              prefetch={false}
                               onMouseEnter={() => setFocus(lane.id)}
                               onMouseLeave={() => setFocus(null)}
                               onFocus={() => setFocus(lane.id)}
@@ -281,7 +266,7 @@ export function ArchitectureView({
                 <ol className={styles.cards}>
                   {list.map((c) => (
                     <li key={c.id}>
-                      <Link className={styles.card} href={`${basePath}/${c.id}`}>
+                      <Link className={styles.card} href={`${basePath}/${c.id}`} prefetch={false}>
                         <span className={styles.cardTop}>
                           <span className={styles.cardNum}>{c.num}</span>
                           <span className={styles.cardMin}>{c.minutes} min</span>
@@ -300,9 +285,8 @@ export function ArchitectureView({
               </section>
             );
           })}
-        </main>
+        </div>
       </div>
-      <SiteDrawer open={menuOpen} onClose={closeMenu} />
-    </>
+    </TopicFrame>
   );
 }

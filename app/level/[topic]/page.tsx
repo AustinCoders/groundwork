@@ -39,7 +39,7 @@ export default async function LevelPage({ params }: { params: Promise<{ topic: s
   const topic = findTopic(topicId);
 
   if (!topic) notFound();
-  if (topic.status !== "ready" || topicStats()[topic.id]?.written === 0) redirect(`/${topic.id}`);
+  if (topicStats()[topic.id]?.written === 0) redirect(`/${topic.id}`);
 
   const levels = levelsFor(topic.id);
   const metas = chapterMetas(topic.id);

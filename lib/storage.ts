@@ -8,8 +8,6 @@ export const KEYS = {
   code: "jsnotes:code:",
   narration: "jsnotes:narration",
   activity: "jsnotes:activity",
-  clockFormat: "jsnotes:clock-format",
-  weather: "jsnotes:weather",
   soundEnabled: "jsnotes:sound-enabled",
 } as const;
 

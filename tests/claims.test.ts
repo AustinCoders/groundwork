@@ -180,29 +180,6 @@ const sources = filesUnder(["app", "components", "lib"])
   .filter((file) => /\.tsx?$/.test(file))
   .map((file) => read(file));
 const clientFiles = sources.filter((source) => /^\s*["']use client["']/.test(source)).length;
-const shellFiles = sources.filter(
-  (source) => /from "@\/components\/Shell"/.test(source) && /<Shell\b/.test(source)
-).length;
-
-const SMALL_NUMBERS = [
-  "zero",
-  "one",
-  "two",
-  "three",
-  "four",
-  "five",
-  "six",
-  "seven",
-  "eight",
-  "nine",
-  "ten",
-  "eleven",
-  "twelve",
-];
-const spelledOut = (count: number) => {
-  const word = SMALL_NUMBERS[count] ?? thousands(count);
-  return word.charAt(0).toUpperCase() + word.slice(1);
-};
 
 const listing = (items: string[]) =>
   items.length > 1 ? `${items.slice(0, -1).join(", ")} and ${items.at(-1)}` : (items[0] ?? "");
@@ -273,11 +250,6 @@ const flattenedCases: { file: string; claim: string; about: string }[] = [
     file: "content/architecture/arch-rendering.ts",
     claim: `<code>components/</code> and <code>lib/</code>, ${clientFiles} files carry the directive`,
     about: "the files marked use client",
-  },
-  {
-    file: "content/architecture/arch-design-system.ts",
-    claim: `${spelledOut(shellFiles)} files render it:`,
-    about: "the files that render the Shell",
   },
   {
     file: "content/architecture/arch-health.ts",
@@ -367,7 +339,6 @@ describe("what the site says about its stylesheets and checks", () => {
   it("finds what it counts", () => {
     expect(cssModules.length).toBeGreaterThan(0);
     expect(clientFiles, "some files carry use client").toBeGreaterThan(0);
-    expect(shellFiles, "some files render the Shell").toBeGreaterThan(0);
     expect(a11yPages).toBeGreaterThan(0);
     expect(a11yViewports.length, "the a11y spec declares its viewports").toBeGreaterThan(1);
     expect(a11yWidths, "each a11y viewport has a width").not.toContain("?");

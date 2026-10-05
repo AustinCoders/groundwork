@@ -40,20 +40,8 @@ export function useGuidesNav(): GuideNav[] {
   return useContext(GuidesNavContext);
 }
 
-export function findNav(list: TopicNav[], id?: string | null): TopicNav | null {
-  if (!id) return null;
-  for (let i = 0; i < list.length; i++) {
-    if (list[i].id === id) return list[i];
-  }
-  return null;
-}
-
 function fileHref(notes: string | null): string {
   return `/${(notes || "notes.html").replace(/\.html$/, "")}`;
-}
-
-export function navNotesHref(list: TopicNav[], topicId?: string | null): string {
-  return fileHref(findNav(list, topicId)?.notes ?? null);
 }
 
 export function navHref(t: TopicNav, savedLevel?: string | null): string {
@@ -62,12 +50,4 @@ export function navHref(t: TopicNav, savedLevel?: string | null): string {
 
   const known = savedLevel && t.levelIds.indexOf(savedLevel as LevelId) !== -1;
   return known ? `/path/${t.id}/${savedLevel}` : `/level/${t.id}`;
-}
-
-export function topicOfDay<T>(candidates: T[]): T | null {
-  if (!candidates.length) return null;
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 0);
-  const dayOfYear = Math.floor((now.getTime() - start.getTime()) / 86_400_000);
-  return candidates[dayOfYear % candidates.length];
 }

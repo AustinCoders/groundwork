@@ -8,104 +8,6 @@
   display: flow-root;
 }
 
-.top {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 20px;
-  background: color-mix(in srgb, var(--sheet) 90%, transparent);
-  border-bottom: 1px solid var(--line);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  animation: drop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
-}
-
-.topLeft {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 0;
-}
-
-.crumb {
-  margin-left: 6px;
-  overflow: hidden;
-  font-family: var(--font-heading);
-  font-size: 20px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  color: var(--ink);
-}
-
-.iconBtn {
-  position: relative;
-  display: inline-grid;
-  place-items: center;
-  flex: none;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  font: inherit;
-  color: var(--ink-soft);
-  text-decoration: none;
-  background: transparent;
-  border: 0;
-  border-radius: 9px;
-  cursor: pointer;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    transform 0.12s ease;
-}
-
-.iconBtn:hover {
-  color: var(--ink);
-  background: var(--hover);
-}
-
-.iconBtn:active {
-  transform: scale(0.94);
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  flex: none;
-  height: 38px;
-  padding: 0 16px;
-  font: inherit;
-  font-size: 14.5px;
-  color: var(--ink);
-  text-decoration: none;
-  white-space: nowrap;
-  background: var(--sheet-2);
-  border: 1.5px solid var(--line);
-  border-radius: 10px;
-  transition:
-    filter 0.15s ease,
-    transform 0.12s ease;
-}
-
-.primary {
-  color: var(--on-primary);
-  font-weight: 600;
-  background: var(--primary);
-  border-color: transparent;
-}
-
-.primary:hover {
-  filter: brightness(1.08);
-}
-
-.btn:active {
-  transform: scale(0.97);
-}
-
 .main {
   max-width: 1180px;
   margin: 0 auto;
@@ -570,12 +472,6 @@ a.node:focus-visible {
   color: var(--ink-soft);
 }
 
-.iconBtn:focus-visible,
-.btn:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
 .page [data-tip]::after {
   content: attr(data-tip);
   position: absolute;
@@ -627,11 +523,9 @@ a.node:focus-visible {
   .facts {
     grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   }
-
   .lane {
     grid-template-columns: minmax(0, 1fr);
   }
-
   .laneHead {
     flex-direction: row;
     align-items: baseline;
@@ -640,57 +534,31 @@ a.node:focus-visible {
 }
 
 @media (max-width: 720px) {
-  .top {
-    padding: 8px 10px;
-  }
-
-  .crumb {
-    font-size: 18px;
-  }
-
-  .btn {
-    padding: 0 12px;
-  }
-
   .main {
     padding: 24px 12px 60px;
   }
-
   .lead {
     font-size: 17px;
   }
-
   .fact strong {
     font-size: 24px;
   }
-
   .map {
     padding: 10px;
   }
-
   .flow {
     display: none;
   }
-
   .nodes {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
-
   .partHead {
     grid-template-columns: minmax(0, 1fr);
   }
-
   .partProgress {
     grid-column: 1;
     grid-row: auto;
     margin-top: 6px;
-  }
-}
-
-@media (max-width: 420px) {
-  .btn span,
-  .top .btn {
-    font-size: 13.5px;
   }
 }
 

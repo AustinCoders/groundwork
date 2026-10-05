@@ -15,7 +15,7 @@ export const archRendering: Chapter = {
   A component is a server component unless it needs something only a browser has: state, an effect,
   an event handler, <code>localStorage</code>, or a measurement. Adding <code>"use client"</code> has
   a cost, because everything the file imports is bundled and shipped. Across <code>app/</code>,
-  <code>components/</code> and <code>lib/</code>, 91 files carry the directive. About a third belong
+  <code>components/</code> and <code>lib/</code>, 78 files carry the directive. About a third belong
   to the three big interactive surfaces: the playground, the whiteboard and the mock interview.
 </p>
 
@@ -55,7 +55,7 @@ export const archRendering: Chapter = {
 <text class="sm gr" x="26" y="32">app/layout.tsx &middot; SERVER</text>
 <text class="lbl" x="44" y="68">theme-init script</text>
 <text class="sm" x="44" y="87">runs before first paint</text>
-<text class="lbl" x="314" y="68">TopicsNavProvider, TopicsReadyProvider</text>
+<text class="lbl" x="314" y="68">TopicsNavProvider</text>
 <text class="sm" x="314" y="87">server-computed data handed to client context</text>
 <text class="sm" x="44" y="134">RouteFade &middot; CLIENT</text>
 <text class="sm gr" x="64" y="172">TopicChapterPage &middot; SERVER</text>
@@ -99,15 +99,14 @@ export const archRendering: Chapter = {
   React, DSA and System Design — get <code>TopicCover</code> (<code>components/topic/TopicCover.tsx</code>),
   a server-computed list of cards and parts handed to a client component that renders
   <code>TopicFrame</code> and reads its own done/next/budget state through
-  <code>useReadingPlan</code>, lifted out of <code>CoverMap</code>'s logic. Every other topic keeps
-  the outline-chapter path:
-  <code>TopicCoverPage</code> passes a server-rendered <code>CoverSheet</code> to
-  <code>ReaderShell</code>, a client component, as its children.
+  <code>useReadingPlan</code>. Every other topic's cover is a roadmap: <code>TopicCoverPage</code>
+  renders <code>TopicOutline</code> (<code>components/topic/TopicOutline.tsx</code>) in the same
+  <code>TopicFrame</code>, listing the planned levels and sections.
 </p>
 <p>
   The chapter body is written into the page with <code>dangerouslySetInnerHTML</code> and carries
   <code>suppressHydrationWarning</code>. The attribute is there because, after mount,
-  <code>ReaderShell</code> or <code>TopicReader</code>, whichever rendered it, changes that DOM
+  <code>TopicReader</code> changes that DOM
   directly. <code>enhanceCodeBlocks</code>, <code>enhanceTables</code>, <code>enhanceTryBlocks</code>,
   <code>activateScripts</code> and <code>setupNarration</code> in
   <code>components/reader/enhancements.ts</code> and <code>narration.ts</code> add copy buttons,
@@ -118,10 +117,10 @@ export const archRendering: Chapter = {
   HTML, so those changes are safe.
 </p>
 <p>
-  The root layout works the same way. It computes the topic list and the IDs of topics that have
-  written chapters on the server, then hands them to two small client providers in
-  <code>lib/topicNav.tsx</code> and <code>lib/topicReadiness.tsx</code>. The sidebar reads them from
-  context and never imports the topic data module itself.
+  The root layout works the same way. It computes the topic list, with each topic's written count, and the guides'
+  chapter lists on the server, then hands them to a small client provider in
+  <code>lib/topicNav.tsx</code>. The site drawer reads them from context and never imports the topic
+  data module itself.
 </p>
 
 <h3>next/dynamic, and where it is not used</h3>
@@ -159,8 +158,8 @@ export const archRendering: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Hook</th><th>Server and hydration</th><th>After</th><th>Used for</th></tr></thead>
 <tbody>
-<tr><td><code>useMounted()</code></td><td><code>false</code></td><td><code>true</code></td><td>Gating whole subtrees and effects, such as the editor, the sidebar's progress bar and the reader's DOM enhancements</td></tr>
-<tr><td><code>useClientValue(get, fallback)</code></td><td><code>fallback</code></td><td><code>get()</code>, read once</td><td>Saved sidebar state, zoom, reading budget, editor height, whether the browser has <code>IntersectionObserver</code></td></tr>
+<tr><td><code>useMounted()</code></td><td><code>false</code></td><td><code>true</code></td><td>Gating whole subtrees and effects, such as the editor and the reader's DOM enhancements</td></tr>
+<tr><td><code>useClientValue(get, fallback)</code></td><td><code>fallback</code></td><td><code>get()</code>, read once</td><td>Zoom, reading budget, editor height, whether the browser has <code>IntersectionObserver</code></td></tr>
 <tr><td><code>useProgressValue(get, fallback)</code></td><td><code>fallback</code></td><td><code>get()</code>, re-read on every progress write</td><td>Done counts, due reviews, streaks, solved ticks</td></tr>
 <tr><td><code>useLastLevel()</code>, <code>useOSColorScheme()</code></td><td><code>null</code>, <code>"light"</code></td><td>Saved level; live media query</td><td>Topic links, the theme picker</td></tr>
 </tbody>
@@ -170,14 +169,14 @@ export const archRendering: Chapter = {
   builds a new object on every call would re-render forever. The code gets around this in two ways.
   Some getters return a primitive. <code>ProgressView</code> subscribes to
   <code>JSON.stringify(computeStats())</code> and parses it in a <code>useMemo</code>, and
-  <code>CoverMap</code> subscribes to a string of ones and zeros. The others cache the parsed value
+  <code>useReadingPlan</code> subscribes to a string of ones and zeros. The others cache the parsed value
   against the raw string: <code>runsSnapshot()</code> in <code>lib/runHistory.ts</code>,
   <code>savedConfig()</code> in the lobby, and <code>mockSnapshot()</code>, which is dropped on every
   write.
 </p>
 <p>
-  Settings the reader can change use a second pattern. <code>Shell</code> reads the saved sidebar
-  state with <code>useClientValue</code>, keeps an override in <code>useState</code> that starts as
+  Settings the reader can change use a second pattern. <code>useReadingPlan</code> reads the saved
+  reading budget with <code>useClientValue</code>, keeps an override in <code>useState</code> that starts as
   <code>null</code>, and uses the override once the reader clicks. There is no effect that copies
   storage into state.
 </p>
@@ -197,11 +196,8 @@ export const archRendering: Chapter = {
 <p>
   These rules shaped the patterns above. <code>set-state-in-effect</code> is why
   <code>useMounted</code> is not the usual "set a flag in <code>useEffect</code>" hook. The rule
-  also explains a workaround in a few places: <code>ClockWeather</code>'s clock, clock format and
-  cached weather, and the level-up celebration on <code>/progress</code>, call <code>setState</code>
-  inside a <code>setTimeout(…, 0)</code> in their effects. <code>ReaderShell</code> resets its open level by comparing a stored
-  <code>activeId</code> during render, which is React's documented "adjust state when a prop
-  changes" pattern. Nine lines in the codebase switch a rule off: five for
+  also explains a workaround: the level-up celebration on <code>/progress</code> calls
+  <code>setState</code> inside a <code>setTimeout(…, 0)</code> in its effect. Seven lines in the codebase switch a rule off: three for
   <code>exhaustive-deps</code>, two for <code>refs</code> in <code>CodeEditor</code>, and two for
   <code>prefer-const</code>.
 </p>

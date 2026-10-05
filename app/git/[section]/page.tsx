@@ -5,6 +5,7 @@ import { GIT_CHAPTERS, GIT_PARTS } from "@/content/git-body";
 import { GIT_BASE, GIT_PROGRESS_PREFIX, gitCards } from "@/lib/gitSeries";
 import { withHeadingIds } from "@/lib/headingToc";
 import { pageMetadata } from "@/lib/metadata";
+import { frameTopic } from "@/lib/topics";
 
 export const dynamicParams = false;
 
@@ -33,6 +34,7 @@ export default async function Page({ params }: { params: Promise<{ section: stri
   const cards = gitCards();
   return (
     <ChapterView
+      topic={frameTopic("git", GIT_BASE)}
       seriesTitle="Git"
       homeLabel="All Git chapters"
       parts={GIT_PARTS}

@@ -77,17 +77,18 @@ export const archComingSoon: Chapter = {
   What an outline does not get is attention from outside. Every outlined page is marked
   <code>noindex</code> and left out of the sitemap, so search engines are not offered 358 pages with no
   body; the commit that did this was titled "Stop offering 358 unwritten chapters to crawlers and
-  readers". The cross-topic search leaves outlines out. In the sidebar, a topic with nothing written sits
-  under "More topics" in a muted style, and its link goes straight to the topic's own cover at
+  readers". The cross-topic search leaves outlines out. In the site menu, a topic with nothing written sits
+  under "Coming soon" in a muted style, and its link goes straight to the topic's own cover at
   <code>/&lt;id&gt;</code>, which renders a roadmap by level rather than pretending there is a reading
   path. The old <code>/soon?topic=&lt;id&gt;</code> and <code>/level/&lt;id&gt;</code> links still work —
-  a redirect sends each one to the same page — but nothing on the site points at them any more.
+  a redirect in <code>next.config.ts</code> sends each one to the same page, and the <code>/soon</code>
+  page itself is gone — but nothing on the site points at them any more.
 </p>
 <p>
-  The label is computed, not typed. <code>app/layout.tsx</code> works out which topics have at least one
-  written chapter from <code>topicStats()</code> and passes that list to every page through
-  <code>TopicsReadyProvider</code>. Mark one chapter of Node.js as <code>ready</code> and Node moves from
-  "More topics" to "Ready to read" on the next build, with nobody touching the sidebar.
+  The label is computed, not typed. <code>app/layout.tsx</code> passes each topic's written count, from
+  <code>topicStats()</code>, to every page through <code>TopicsNavProvider</code>, and the site menu
+  sorts topics on it. Mark one chapter of Node.js as <code>ready</code> and Node moves from
+  "Coming soon" to "Ready to read" on the next build, with nobody touching the menu.
 </p>
 
 <h3>Where the tools reach past the writing</h3>
@@ -136,7 +137,7 @@ export const archComingSoon: Chapter = {
   exercise and minute totals; for Git, which has no chapters, it counts the guide's sections instead.
   <code>siteStats()</code> adds those up. The two disagree on purpose in one place: the home page says 19
   topics, not 21, because <code>onShelf()</code> in <code>lib/topicShelf.ts</code> leaves out the Interview
-  book and this topic, which are reached from the sidebar's tool links rather than the topic shelf.
+  book and this topic, which are reached from the site menu's links rather than the topic shelf.
 </p>
 <p>
   The prose is checked too. <code>tests/claims.test.ts</code> recomputes the written and outlined
@@ -152,7 +153,7 @@ export const archComingSoon: Chapter = {
   Writing a chapter means adding one file under <code>content/&lt;topic&gt;/</code>, listing it in the
   topic's barrel, and pointing its syllabus section at it. The page already exists as an outline, so it
   keeps its URL; the sitemap row, the search entry, the reading-time estimate, the progress tracking and
-  the sidebar label all follow from <code>ready: true</code>. The thing standing between the outlines and
+  the menu label all follow from <code>ready: true</code>. The thing standing between the outlines and
   the site is writing, not code.
 </p>
 </div>`,

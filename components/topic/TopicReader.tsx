@@ -61,7 +61,6 @@ export function TopicReader({
   const [railOpen, setRailOpen] = useState(false);
   const sheetSearchInputRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
-  const barRef = useRef<HTMLDivElement>(null);
   const closeRail = useCallback(() => setRailOpen(false), []);
 
   const index = chapters.findIndex((c) => c.id === chapter.id);
@@ -104,7 +103,7 @@ export function TopicReader({
     };
   }, [chapter.id]);
 
-  const { active, pct } = useActiveHeading(toc, barRef);
+  const { active, pct } = useActiveHeading(toc);
 
   const search = useChapterSearch({ topicId, basePath, chapters });
 
@@ -171,7 +170,7 @@ export function TopicReader({
             />
           </aside>
 
-          <main className={styles.main}>
+          <div className={styles.main}>
             <article
               className={`chapter${isDone ? " is-done" : ""} ${styles.article} ${readerStyles.article}`}
               id={chapter.id}
@@ -236,7 +235,7 @@ export function TopicReader({
 
               <ChapterPager prev={prev} next={next} basePath={basePath} homeLabel="The cover" />
             </article>
-          </main>
+          </div>
 
           <TocCard toc={toc} active={active} pct={pct} read={mounted && isDone} onToggleRead={toggleRead} />
         </div>

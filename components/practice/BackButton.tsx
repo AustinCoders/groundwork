@@ -17,7 +17,7 @@ export function BackButton({
 }: {
   fallbackHref: string;
   fallbackLabel: string;
-  variant: "rail" | "bar" | "icon";
+  variant: "bar" | "icon";
   className?: string;
 }) {
   const router = useRouter();
@@ -42,13 +42,6 @@ export function BackButton({
       >
         <path d="M19 12H5M11 18l-6-6 6-6" />
       </svg>
-    ) : variant === "rail" ? (
-      <>
-        <span className="site-navlink__icon" aria-hidden="true">
-          ←
-        </span>
-        <span className="site-navlink__name btn__label">{label}</span>
-      </>
     ) : (
       <>
         <span aria-hidden="true">←</span>
@@ -58,9 +51,8 @@ export function BackButton({
 
   return (
     <Link
-      className={className ?? (variant === "rail" ? "site-navlink" : "back-btn")}
+      className={className ?? "back-btn"}
       aria-label={variant === "icon" ? label : undefined}
-      id={variant === "rail" ? "back-chapter" : undefined}
       href={href}
       title={variant === "icon" ? undefined : label}
       data-tip={variant === "icon" ? label : undefined}

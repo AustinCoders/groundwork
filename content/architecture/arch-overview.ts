@@ -15,7 +15,7 @@ export const archOverview: Chapter = {
   A reading site with four tools attached &mdash; a code playground, a set of runnable problems, a mock
   interview and a whiteboard &mdash; rendered to files at build time, served by a CDN, and doing its
   heavy lifting inside the reader's browser. There is no database, no login, no session, and nothing
-  kept alive between deploys. Four small server functions exist. Everything else was either written
+  kept alive between deploys. Three small server functions exist. Everything else was either written
   before you arrived or runs on your own machine.
 </p>
 
@@ -44,7 +44,7 @@ export const archOverview: Chapter = {
 <thead><tr><th>Measured today</th><th></th></tr></thead>
 <tbody>
 <tr><td>Prerendered routes</td><td>1,742 in the last production build of <code>main</code></td></tr>
-<tr><td>Server functions</td><td>4, all under <code>/api/</code></td></tr>
+<tr><td>Server functions</td><td>3, all under <code>/api/</code></td></tr>
 <tr><td>Databases</td><td>0</td></tr>
 <tr><td>Topics</td><td>21 — 5 written, 14 outlined, 2 standalone</td></tr>
 <tr><td>Written chapters</td><td>227, plus 358 outlines</td></tr>
@@ -63,7 +63,7 @@ export const archOverview: Chapter = {
 <h3>The three layers, and where work happens</h3>
 
 <figure>
-<svg viewBox="0 0 900 380" class="dg" role="img" aria-label="Three layers. At the top, the reader's browser, which holds Web Workers, WebAssembly runtimes and sandboxed iframes. In the middle, the Vercel edge with 1,742 prerendered routes and four functions, beside a third-party CDN that serves the language runtimes. At the bottom, the build, which turns TypeScript content into the files the edge serves.">
+<svg viewBox="0 0 900 380" class="dg" role="img" aria-label="Three layers. At the top, the reader's browser, which holds Web Workers, WebAssembly runtimes and sandboxed iframes. In the middle, the Vercel edge with 1,742 prerendered routes and three functions, beside a third-party CDN that serves the language runtimes. At the bottom, the build, which turns TypeScript content into the files the edge serves.">
 <g class="rough">
 <rect x="30" y="16" width="840" height="100" rx="12" style="fill: var(--sheet-2); stroke: var(--line-soft); stroke-width: 2" />
 <rect x="470" y="42" width="120" height="56" rx="9" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 1.6" />
@@ -87,7 +87,7 @@ export const archOverview: Chapter = {
 <text class="sm" x="46" y="184">VERCEL EDGE</text>
 <text class="lbl" x="46" y="214">CDN cache + firewall</text>
 <text class="sm" x="350" y="210" text-anchor="middle">1,742 prerendered routes</text>
-<text class="sm" x="525" y="210" text-anchor="middle">4 functions</text>
+<text class="sm" x="525" y="210" text-anchor="middle">3 functions</text>
 <text class="sm" x="636" y="184">THIRD-PARTY CDN</text>
 <text class="lbl" x="636" y="210">jsDelivr</text>
 <text class="sm" x="636" y="232">Pyodide, sql.js, Ruby, PHP,</text>
@@ -155,13 +155,12 @@ export const archOverview: Chapter = {
 
 <h3>What the server still does</h3>
 <p>
-  Four route handlers under <code>app/api/</code> run as functions on request. <code>/api/tts</code>
-  turns chapter text into speech for the Listen button. <code>/api/weather</code> asks Open-Meteo for the
-  temperature in the sidebar clock. <code>/api/joke</code> fetches one programming joke for the progress
+  Three route handlers under <code>app/api/</code> run as functions on request. <code>/api/tts</code>
+  turns chapter text into speech for the Listen button. <code>/api/joke</code> fetches one programming joke for the progress
   page. <code>/api/client-error</code> writes browser errors to the function log when Sentry is not
   configured. Each one has a per-IP rate limit, held in memory in the function instance, and none of them
-  is on the path of reading a chapter or running code. If all four went down, the site would lose a
-  voice, a temperature and a joke.
+  is on the path of reading a chapter or running code. If all three went down, the site would lose a
+  voice and a joke.
 </p>
 
 <h3>What this chapter set covers</h3>

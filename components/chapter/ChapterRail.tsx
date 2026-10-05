@@ -93,6 +93,7 @@ export function ChapterRail({
                       <li key={c.id}>
                         <Link
                           href={`${basePath}/${c.id}`}
+                          prefetch={false}
                           aria-current={c.id === chapter.id ? "page" : undefined}
                           className={`${styles.railLink}${hidden ? ` ${styles.railHidden}` : ""}`}
                           onClick={onNavigate}

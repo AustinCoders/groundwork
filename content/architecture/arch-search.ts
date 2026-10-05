@@ -13,8 +13,8 @@ export const archSearch: Chapter = {
   body: `<h3>Two kinds of index</h3>
 <p>
   Search here has no server, no API key and no ranking. The build writes two kinds of index as
-  static files, and the chapter reader's search box scans them in memory — the rail for a written
-  chapter, the sidebar for a cover or an outline chapter that is still unwritten.
+  static files, and the chapter reader's search box scans them in memory, in the rail of a written
+  chapter.
 </p>
 <div class="table-scroll"><table>
 <thead><tr><th>Index</th><th>Route</th><th>One row per</th><th>Row holds</th></tr></thead>
@@ -100,10 +100,8 @@ export const archSearch: Chapter = {
 
 <p>
   A written chapter runs this search through <code>useChapterSearch</code>
-  (<code>components/chapter/useChapterSearch.ts</code>), a hook <code>TopicReader</code> calls; the
-  cover and an outline chapter still run their own copy of it inline, in <code>ReaderShell</code>,
-  the frame this reader replaced for everything that is not yet written. Both own the same shape of
-  state: a query string, a lazily fetched per-topic index, a lazily fetched global index, and a
+  (<code>components/chapter/useChapterSearch.ts</code>), a hook <code>TopicReader</code> calls. It
+  owns the whole state: a query string, a lazily fetched per-topic index, a lazily fetched global index, and a
   <code>cancelled</code> flag in the fetch effect's cleanup so a late response from a chapter you
   have since left cannot overwrite the current one. A failed fetch is swallowed. Until the topic
   index arrives, or for good if it never does, matching runs over the titles, short names and
@@ -177,7 +175,7 @@ export const archSearch: Chapter = {
 <div class="bx is-ref">
 <span class="ttl">What was given up</span>
 <p>
-  The sidebar once showed a hit count beside each chapter. Counting occurrences needs the
+  The reader's rail once showed a hit count beside each chapter. Counting occurrences needs the
   repetition that made up most of the index's weight, so it went when the index was compacted. The
   rail now shows <em>which</em> chapters match, not how often. An e2e test types a query, checks
   that the right chapters are marked, and checks that demo-script source is not matched.

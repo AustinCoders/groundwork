@@ -21,7 +21,7 @@ export function ChapterCard({
 
   return (
     <li className={onToggleRead ? styles.cardRow : undefined}>
-      <Link className={styles.card} href={href}>
+      <Link className={styles.card} href={href} prefetch={false}>
         <span className={styles.cardTop}>
           <span className={styles.cardNum}>{chapter.num}</span>
           <span className={styles.cardMin}>{minLabel}</span>

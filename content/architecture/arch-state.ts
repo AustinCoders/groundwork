@@ -13,7 +13,7 @@ export const archState: Chapter = {
   body: `<h3>Everything is in the browser</h3>
 <p>
   This site keeps nothing about its readers on a server. No file under <code>app/</code> uses
-  <code>"use server"</code>. Nothing reads or writes a cookie. The four functions under
+  <code>"use server"</code>. Nothing reads or writes a cookie. The three functions under
   <code>/api</code> keep no data between requests, apart from a rate-limit counter in memory. So
   everything the site remembers about you has to live in one of four places your browser already
   has.
@@ -92,7 +92,6 @@ export const archState: Chapter = {
 <tr><td><code>jsnotes:level</code></td><td>The last level you read, so topic links go straight to it</td></tr>
 <tr><td><code>jsnotes:theme</code>, <code>jsnotes:font</code></td><td>One of nine themes and seven fonts, read before paint by the theme-init script</td></tr>
 <tr><td><code>jsnotes:narration</code></td><td>Voice, rate and pitch</td></tr>
-<tr><td><code>jsnotes:clock-format</code>, <code>jsnotes:weather</code></td><td>12 or 24 hours, and the last weather reading with its time, reused for 30 minutes</td></tr>
 <tr><td><code>jsnotes:sound-enabled</code></td><td>Whether solving an exercise plays a sound</td></tr>
 </tbody>
 </table></div>
@@ -108,7 +107,7 @@ export const archState: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Area</th><th>Keys</th></tr></thead>
 <tbody>
-<tr><td>Reader and sidebar</td><td><code>jsnotes:zoom</code>, <code>jsnotes:reading-budget</code>, <code>jsnotes:sidebar-collapsed</code>, <code>jsnotes:sidebar-collapsed:workspace</code>, <code>jsnotes:recap-shown</code>, <code>jsnotes:last-seen-level</code></td></tr>
+<tr><td>Reader</td><td><code>jsnotes:zoom</code>, <code>jsnotes:reading-budget</code>, <code>jsnotes:last-seen-level</code></td></tr>
 <tr><td>Editor</td><td><code>jsnotes:editor-settings</code>, <code>jsnotes:editor-height</code>, <code>jsnotes:playground-live</code>, <code>jsnotes:lang:{exerciseId}</code></td></tr>
 <tr><td>Playground</td><td><code>groundwork:playground:project</code> (every open file), <code>groundwork:playground:runs</code> (the last 15 runs), <code>groundwork:playground:stdin</code></td></tr>
 <tr><td>Whiteboard</td><td><code>groundwork:boards</code> (the index), <code>groundwork:board:{id}</code> (one per board), <code>groundwork:boards:last</code>, <code>groundwork:boards:prefs</code></td></tr>
@@ -146,7 +145,7 @@ export const archState: Chapter = {
 <p>
   <code>progress</code> and <code>activity</code> share a single listener set. Every write calls
   <code>emitProgressChange()</code>, and every component that used <code>useProgressValue</code>
-  re-reads its snapshot. The sidebar count, the review badge and the streak all update the moment
+  re-reads its snapshot. The reading plan, the review badge and the streak all update the moment
   you mark a chapter, and nothing polls. The mock store and run history keep their own listener
   sets and cached snapshots. The <a href="/architecture/arch-rendering">rendering chapter</a>
   explains why snapshots must be primitives or cached objects.
@@ -173,13 +172,13 @@ export const archState: Chapter = {
   everything below the nearest <code>Suspense</code> boundary in the browser only. That is why
   <code>/practice</code> ships 27 KB of HTML. With the external-store approach,
   <code>/problems</code> prerenders the full unfiltered list, 276 KB of HTML, and applies your
-  filters straight after hydration. <code>/practice?id=</code>, the bare <code>/path</code>,
-  <code>/soon</code> and the old <code>/level?topic=</code> links do use
+  filters straight after hydration. <code>/practice?id=</code>, the bare <code>/path</code>
+  and the old <code>/level?topic=</code> links do use
   <code>useSearchParams</code> inside <code>Suspense</code>. Their HTML has nothing worth
   prerendering anyway — the bare <code>/path</code> only ever reads a topic and a level from the
-  query string to redirect on. For an outline topic, <code>/soon</code> rarely gets that far:
-  <code>next.config.ts</code> redirects its query string to the topic's own cover — a prerendered
-  page — before the client component mounts. A written topic's old <code>/path?topic=&amp;level=</code>
+  query string to redirect on. The old <code>/soon?topic=</code> links
+  never reach a client at all: <code>next.config.ts</code> redirects them to the topic's own cover or
+  level page, both prerendered, or to the home page. A written topic's old <code>/path?topic=&amp;level=</code>
   link is redirected by the same file straight to <code>/path/&lt;topic&gt;/&lt;level&gt;</code>, a
   prerendered page that reads neither <code>useSearchParams</code> nor any other request input.
 </p>

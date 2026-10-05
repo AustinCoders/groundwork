@@ -385,6 +385,17 @@ those before starting.
 
 ---
 
+## Left over from the topic redesign
+
+- `app/error.tsx` has no automated test; a throwing test route is needed (checked by hand on 2026-10-05).
+- The route-groups diagram in `content/architecture/arch-routes.ts` has a gap where `/soon` was.
+- Build-output figures in `arch-performance.ts` and `arch-health.ts` ("1,742 prerendered routes", "1,762 outputs", "1,746 static pages") disagree with each other and were not recomputed from a build.
+- The cover `ChapterCard` ignores `ready`, and `PartSection` totals mix written and outline chapters (TP-2).
+- No test for the cover's interview-book footer link (TP-2).
+- The Chapters-sheet accessibility state across the nine themes is unverified (TP-3).
+- No layout-shift check for the loading skeleton (TP-4).
+- The Chapters-sheet and keyboard test (`e2e/keyboard.spec.ts`) runs only on a Git chapter, not on a How-this-is-built chapter (TP-8).
+
 ## Sources
 
 Primary: [GitHub Octoverse 2025][octoverse] · [Stack Overflow Developer Survey 2025][so] ·

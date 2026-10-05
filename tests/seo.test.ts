@@ -167,9 +167,13 @@ describe("links into a topic", () => {
     }
   });
 
+  it("keeps every topic ready, because links and redirects no longer special-case a topic that is not", () => {
+    for (const t of topics()) expect(t.status, `${t.id} is not ready`).toBe("ready");
+  });
+
   it("sends a topic with chapters into the reader", () => {
     for (const t of topicsNavWithStats()) {
-      if (t.written === 0 || t.status !== "ready") continue;
+      if (t.written === 0) continue;
       expect(navHref(t, null), `${t.id} has chapters but links to /soon`).not.toContain("/soon");
     }
   });

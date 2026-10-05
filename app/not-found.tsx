@@ -1,12 +1,9 @@
 import Link from "next/link";
-import { Shell } from "@/components/Shell";
-import { Crumbs } from "@/components/Crumbs";
+import { PageFrame } from "@/components/frame/PageFrame";
 
 export default function NotFound() {
   return (
-    <Shell skipLabel="Skip to the content">
-      <Crumbs items={[{ label: "All topics", href: "/" }, { label: "Page not found" }]} />
-
+    <PageFrame title="Page not found" skipLabel="Skip to the content">
       <section className="sheet hero">
         <div className="soon-stamp" aria-hidden="true">
           404
@@ -26,6 +23,6 @@ export default function NotFound() {
           </Link>
         </div>
       </section>
-    </Shell>
+    </PageFrame>
   );
 }

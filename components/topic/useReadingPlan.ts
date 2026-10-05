@@ -3,7 +3,16 @@
 import { useMemo, useState } from "react";
 import { progress, store } from "@/lib/storage";
 import { useClientValue, useMounted, useProgressValue } from "@/lib/hooks";
-import type { Station } from "@/components/reader/CoverMap";
+
+export interface Station {
+  id: string;
+  num: string;
+  short: string;
+  subtitle: string;
+  minutes: number;
+  exercises: number;
+  ready: boolean;
+}
 
 const BUDGET_KEY = "jsnotes:reading-budget";
 export const BUDGET_STEPS = [10, 20, 30, 45, 60, 90];

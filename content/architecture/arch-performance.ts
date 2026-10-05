@@ -133,9 +133,10 @@ export const archPerformance: Chapter = {
 </p>
 <p>
   <strong>Prefetch is opt-out.</strong> Next prefetches every visible link's route, chunks
-  included. There are 21 <code>prefetch={false}</code> links across 8 files, 11 of them in the
-  sidebar shell. Without them, a link from a light page to the playground makes every visitor pay
-  for the editor.
+  included. There are 26 <code>prefetch={false}</code> links across 11 files, 4 of them in the
+  site drawer. Without them, a link from a light page to the playground makes every visitor pay
+  for the editor, and a page of chapter cards, such as a topic cover, the path page or the
+  system map, fires dozens of small requests as soon as it scrolls into view.
 </p>
 
 <figure>
@@ -215,7 +216,7 @@ export const archPerformance: Chapter = {
 <div class="bx is-prim">
 <span class="ttl">Two lessons that still hold</span>
 <p>
-  <strong>Importing one constant imports the module.</strong> The sidebar once shipped the whole
+  <strong>Importing one constant imports the module.</strong> A sidebar once shipped the whole
   syllabus to every page because a client component imported one string from the file that held
   it. Tree-shaking drops unused exports, not unused properties of an exported object.
 </p>

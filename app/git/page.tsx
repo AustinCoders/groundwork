@@ -4,6 +4,7 @@ import { SeriesLanding } from "@/components/series/SeriesLanding";
 import { GIT_CHAPTERS, GIT_HERO_FIGURE, GIT_PARTS } from "@/content/git-body";
 import { GIT_BASE, GIT_PROGRESS_PREFIX, gitCards, gitFacts } from "@/lib/gitSeries";
 import { pageMetadata } from "@/lib/metadata";
+import { frameTopic } from "@/lib/topics";
 
 export const metadata: Metadata = pageMetadata({
   title: "Git",
@@ -16,7 +17,7 @@ export default function GitPage() {
     <>
       <HashRedirect basePath={GIT_BASE} />
       <SeriesLanding
-        crumb="Git"
+        topic={frameTopic("git", GIT_BASE)}
         kicker="A working reference · fresher to senior"
         title="Git, from first commit to reflog rescue"
         lead="Most people learn Git as a list of commands to memorise, and that breaks the moment something goes wrong. This guide teaches the model underneath — commits are nodes in a graph, branches are labels pointing at them — and everything else follows from it."

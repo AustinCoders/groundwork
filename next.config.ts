@@ -48,7 +48,7 @@ const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-Frame-Options", value: "DENY" },
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self), interest-cohort=()" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
 ];
 
 const nextConfig: NextConfig = {
@@ -72,6 +72,17 @@ const nextConfig: NextConfig = {
         source: "/soon",
         has: [{ type: "query" as const, key: "topic", value: `(?<topic>${outlineIds})` }],
         destination: "/:topic",
+        permanent: true,
+      },
+      {
+        source: "/soon",
+        has: [{ type: "query" as const, key: "topic", value: `(?<topic>${pathIds})` }],
+        destination: "/level/:topic",
+        permanent: true,
+      },
+      {
+        source: "/soon",
+        destination: "/",
         permanent: true,
       },
       {

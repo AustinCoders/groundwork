@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { TocItem } from "./types";
 
-export function useActiveHeading(toc: TocItem[], barRef: React.RefObject<HTMLElement | null>) {
+export function useActiveHeading(toc: TocItem[]) {
   const [active, setActive] = useState<string | null>(null);
   const [pct, setPct] = useState(0);
 
@@ -14,7 +14,6 @@ export function useActiveHeading(toc: TocItem[], barRef: React.RefObject<HTMLEle
       const doc = document.documentElement;
       const max = doc.scrollHeight - doc.clientHeight;
       const frac = max > 0 ? Math.min(1, window.scrollY / max) : 0;
-      if (barRef.current) barRef.current.style.transform = `scaleX(${frac})`;
       setPct(Math.round(frac * 100));
       const line = Math.min(window.innerHeight * 0.3, 260);
       const atEnd = max > 0 && window.scrollY >= max - 4;
@@ -39,7 +38,7 @@ export function useActiveHeading(toc: TocItem[], barRef: React.RefObject<HTMLEle
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [toc, barRef]);
+  }, [toc]);
 
   return { active, pct };
 }

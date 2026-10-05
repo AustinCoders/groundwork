@@ -7,11 +7,10 @@ import { RouteFade } from "@/components/RouteFade";
 import { fontVariables } from "@/lib/fonts";
 import { THEME_INIT_SCRIPT } from "@/lib/themeInitScript";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
-import { TopicsReadyProvider } from "@/lib/topicReadiness";
 import { TopicsNavProvider } from "@/lib/topicNav";
 import { guidesNav } from "@/lib/guidesNav";
 import { NavTrail } from "@/components/NavTrail";
-import { topicsNavWithStats, topicStats } from "@/lib/topicStats";
+import { topicsNavWithStats } from "@/lib/topicStats";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -37,10 +36,6 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
-  const readyTopicIds = Object.entries(topicStats())
-    .filter(([, stat]) => stat.written > 0)
-    .map(([id]) => id);
-
   return (
     <html lang="en" data-theme="light" suppressHydrationWarning className={fontVariables}>
       <head>
@@ -49,9 +44,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <TopicsNavProvider topics={topicsNavWithStats()} guides={guidesNav()}>
-          <TopicsReadyProvider ids={readyTopicIds}>
-            <RouteFade>{children}</RouteFade>
-          </TopicsReadyProvider>
+          <RouteFade>{children}</RouteFade>
         </TopicsNavProvider>
         <ErrorReporter />
         <NavTrail />

@@ -92,7 +92,13 @@ function RoundTile({
 }) {
   const total = r.questionIds.length || 1;
   return (
-    <Link href={`/interview/${r.id}`} className={styles.tile} data-dim={dim || undefined} data-read={read || undefined}>
+    <Link
+      href={`/interview/${r.id}`}
+      prefetch={false}
+      className={styles.tile}
+      data-dim={dim || undefined}
+      data-read={read || undefined}
+    >
       <span className={styles.tileTop}>
         <span className={styles.tileCode}>{r.code}</span>
         {read && (

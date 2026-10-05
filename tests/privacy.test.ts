@@ -17,12 +17,6 @@ const UPSTREAMS = [
     service: "Vercel Web Analytics",
   },
   { file: "app/layout.tsx", signal: "@vercel/speed-insights", hosts: [], service: "Vercel Speed Insights" },
-  {
-    file: "app/api/weather/route.ts",
-    signal: "api.open-meteo.com",
-    hosts: ["api.open-meteo.com"],
-    service: "Open-Meteo",
-  },
   { file: "app/api/tts/route.ts", signal: "msedge-tts", hosts: [], service: "Microsoft" },
   { file: "lib/wasmAssets.ts", signal: "cdn.jsdelivr.net", hosts: ["cdn.jsdelivr.net"], service: "jsDelivr" },
   { file: "app/api/joke/route.ts", signal: "v2.jokeapi.dev", hosts: ["v2.jokeapi.dev"], service: "JokeAPI" },

@@ -14,7 +14,7 @@ function PathRedirect() {
     const topicId = searchParams.get("topic") || "js";
     const topic = findTopic(topicId);
 
-    if (!topic || !topic.levels || topic.status !== "ready" || topicStats()[topic.id]?.written === 0) {
+    if (!topic || !topic.levels || topicStats()[topic.id]?.written === 0) {
       router.replace(topic ? `/${topic.id}` : "/");
       return;
     }

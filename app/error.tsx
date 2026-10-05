@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { reportError } from "@/lib/errorTracking";
-import { Shell } from "@/components/Shell";
-import { Crumbs } from "@/components/Crumbs";
+import { PageFrame } from "@/components/frame/PageFrame";
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
@@ -13,9 +12,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   }, [error]);
 
   return (
-    <Shell skipLabel="Skip to the content">
-      <Crumbs items={[{ label: "All topics", href: "/" }, { label: "Something broke" }]} />
-
+    <PageFrame title="Something broke" skipLabel="Skip to the content">
       <section className="sheet hero">
         <div className="soon-stamp" aria-hidden="true">
           error
@@ -40,6 +37,6 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
           </p>
         )}
       </section>
-    </Shell>
+    </PageFrame>
   );
 }

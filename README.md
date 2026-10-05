@@ -57,7 +57,7 @@ A pre-commit hook runs eslint, prettier and the spell checker over staged files 
 
 ```
 app/          routes — one folder per topic, plus /practice /problems /review /progress
-components/   Shell (sidebar), reader/, practice/, and shared widgets
+components/   the page frames, reader/, practice/, and shared widgets
 content/      the notes themselves — chapters, exercises, interview rounds, topic metadata
 lib/          storage, content helpers, code runners, gamification, fonts
 tests/        content integrity — every chapter and exercise is checked structurally

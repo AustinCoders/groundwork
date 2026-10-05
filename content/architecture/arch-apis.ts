@@ -9,10 +9,10 @@ export const archApis: Chapter = {
   practice: [],
   ready: true,
   subtitle:
-    "Four route handlers run per request, and three families of JSON routes were run once, at build time. This chapter covers what each takes, what it caches and what the reader sees when it breaks.",
+    "Three route handlers run per request, and three families of JSON routes were run once, at build time. This chapter covers what each takes, what it caches and what the reader sees when it breaks.",
   body: `<h3>The whole list</h3>
 <p>
-  The site has 27 <code>route.ts</code> files. Four live under <code>app/api/</code> and run as
+  The site has 26 <code>route.ts</code> files. Three live under <code>app/api/</code> and run as
   functions, because each one reads something that only exists per request: a header, a query
   string or a body. The other 23 export <code>dynamic = "force-static"</code>. The build calls them
   and writes their responses to disk, so in production they behave like any other file.
@@ -21,7 +21,6 @@ export const archApis: Chapter = {
 <thead><tr><th>Route</th><th>Kind</th><th>Called by</th><th>If it fails</th></tr></thead>
 <tbody>
 <tr><td><code>/api/tts</code></td><td>Function</td><td>The Listen button</td><td>The narrator does not start; the chapter reads normally</td></tr>
-<tr><td><code>/api/weather</code></td><td>Function</td><td>The sidebar clock</td><td>The clock shows no temperature</td></tr>
 <tr><td><code>/api/joke</code></td><td>Function</td><td>The card on <code>/progress</code></td><td>A hardcoded joke, or a skeleton line</td></tr>
 <tr><td><code>/api/client-error</code></td><td>Function</td><td><code>ErrorReporter</code></td><td>The error is not logged</td></tr>
 <tr><td><code>/problems/{id}/cases</code></td><td>Static, 538 files</td><td>The playground</td><td>Only JavaScript is graded</td></tr>
@@ -35,61 +34,50 @@ export const archApis: Chapter = {
 </p>
 
 <figure>
-<svg viewBox="0 0 900 380" class="dg" role="img" aria-label="Four rows. The Listen button calls /api/tts, limited to 40 a minute, which calls Microsoft's Edge voices through msedge-tts. The sidebar clock calls /api/weather, limited to 20 a minute, which calls Open-Meteo. The progress page calls /api/joke, limited to 20 a minute, which calls JokeAPI. ErrorReporter posts to /api/client-error, limited to 20 a minute, which writes one line to the function log.">
+<svg viewBox="0 0 900 290" class="dg" role="img" aria-label="Three rows. The Listen button calls /api/tts, limited to 40 a minute, which calls Microsoft's Edge voices through msedge-tts. The progress page calls /api/joke, limited to 20 a minute, which calls JokeAPI. ErrorReporter posts to /api/client-error, limited to 20 a minute, which writes one line to the function log.">
 <g class="rough">
 <rect x="20" y="20" width="200" height="66" rx="10" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 1.8" />
 <rect x="20" y="110" width="200" height="66" rx="10" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 1.8" />
 <rect x="20" y="200" width="200" height="66" rx="10" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 1.8" />
-<rect x="20" y="290" width="200" height="66" rx="10" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 1.8" />
 <rect x="280" y="20" width="250" height="66" rx="10" style="fill: var(--dg-box-red); stroke: var(--red); stroke-width: 2" />
 <rect x="280" y="110" width="250" height="66" rx="10" style="fill: var(--dg-box-red); stroke: var(--red); stroke-width: 2" />
 <rect x="280" y="200" width="250" height="66" rx="10" style="fill: var(--dg-box-red); stroke: var(--red); stroke-width: 2" />
-<rect x="280" y="290" width="250" height="66" rx="10" style="fill: var(--dg-box-red); stroke: var(--red); stroke-width: 2" />
 <rect x="590" y="20" width="290" height="66" rx="10" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <rect x="590" y="110" width="290" height="66" rx="10" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <rect x="590" y="200" width="290" height="66" rx="10" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
-<rect x="590" y="290" width="290" height="66" rx="10" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <path class="ln" d="M220 53 H274" marker-end="url(#arrow)" />
 <path class="ln" d="M220 143 H274" marker-end="url(#arrow)" />
 <path class="ln" d="M220 233 H274" marker-end="url(#arrow)" />
-<path class="ln" d="M220 323 H274" marker-end="url(#arrow)" />
 <path class="ln" d="M530 53 H584" marker-end="url(#arrow)" />
 <path class="ln" d="M530 143 H584" marker-end="url(#arrow)" />
 <path class="ln" d="M530 233 H584" marker-end="url(#arrow)" />
-<path class="ln" d="M530 323 H584" marker-end="url(#arrow)" />
 </g>
 <text class="lbl" x="120" y="48" text-anchor="middle">Listen button</text>
 <text class="sm" x="120" y="70" text-anchor="middle">narration.ts</text>
-<text class="lbl" x="120" y="138" text-anchor="middle">Sidebar clock</text>
-<text class="sm" x="120" y="160" text-anchor="middle">ClockWeather</text>
-<text class="lbl" x="120" y="228" text-anchor="middle">/progress</text>
-<text class="sm" x="120" y="250" text-anchor="middle">JokeCard</text>
-<text class="lbl" x="120" y="318" text-anchor="middle">Uncaught error</text>
-<text class="sm" x="120" y="340" text-anchor="middle">ErrorReporter</text>
+<text class="lbl" x="120" y="138" text-anchor="middle">/progress</text>
+<text class="sm" x="120" y="160" text-anchor="middle">JokeCard</text>
+<text class="lbl" x="120" y="228" text-anchor="middle">Uncaught error</text>
+<text class="sm" x="120" y="250" text-anchor="middle">ErrorReporter</text>
 <text class="lbl rd" x="405" y="48" text-anchor="middle">/api/tts &middot; 40/min</text>
 <text class="sm" x="405" y="70" text-anchor="middle">GET, kept a year at the CDN</text>
-<text class="lbl rd" x="405" y="138" text-anchor="middle">/api/weather &middot; 20/min</text>
-<text class="sm" x="405" y="160" text-anchor="middle">rounded to 0.1 degree</text>
-<text class="lbl rd" x="405" y="228" text-anchor="middle">/api/joke &middot; 20/min</text>
-<text class="sm" x="405" y="250" text-anchor="middle">falls back to a fixed joke</text>
-<text class="lbl rd" x="405" y="318" text-anchor="middle">/api/client-error &middot; 20/min</text>
-<text class="sm" x="405" y="340" text-anchor="middle">4,000-byte body cap</text>
+<text class="lbl rd" x="405" y="138" text-anchor="middle">/api/joke &middot; 20/min</text>
+<text class="sm" x="405" y="160" text-anchor="middle">falls back to a fixed joke</text>
+<text class="lbl rd" x="405" y="228" text-anchor="middle">/api/client-error &middot; 20/min</text>
+<text class="sm" x="405" y="250" text-anchor="middle">4,000-byte body cap</text>
 <text class="lbl" x="735" y="48" text-anchor="middle">Microsoft Edge voices</text>
 <text class="sm" x="735" y="70" text-anchor="middle">msedge-tts over a WebSocket</text>
-<text class="lbl" x="735" y="138" text-anchor="middle">Open-Meteo</text>
-<text class="sm" x="735" y="160" text-anchor="middle">fetch data cache, 10 minutes</text>
-<text class="lbl" x="735" y="228" text-anchor="middle">JokeAPI</text>
-<text class="sm" x="735" y="250" text-anchor="middle">fetch data cache, 5 minutes</text>
-<text class="lbl" x="735" y="318" text-anchor="middle">Function log</text>
-<text class="sm" x="735" y="340" text-anchor="middle">one JSON line per error</text>
+<text class="lbl" x="735" y="138" text-anchor="middle">JokeAPI</text>
+<text class="sm" x="735" y="160" text-anchor="middle">fetch data cache, 5 minutes</text>
+<text class="lbl" x="735" y="228" text-anchor="middle">Function log</text>
+<text class="sm" x="735" y="250" text-anchor="middle">one JSON line per error</text>
 </svg>
 <figcaption>
-  The four functions, what calls each one, and what each one calls in turn. Every limit is per IP,
+  The three functions, what calls each one, and what each one calls in turn. Every limit is per IP,
   per minute, and per function instance.
 </figcaption>
 </figure>
 
-<h3>What the four share</h3>
+<h3>What the three share</h3>
 <p>
   Each one sets <code>runtime = "nodejs"</code> and starts by calling
   <code>overRateLimit(req, name, max)</code> from <code>lib/rateLimit.ts</code>. The limiter is a
@@ -140,24 +128,6 @@ export const archApis: Chapter = {
   without it. The narration e2e test stubs <code>/api/tts</code> with a fixture, so CI does not depend on it either.
 </p>
 </div>
-
-<h3>/api/weather</h3>
-<p>
-  <b>Inputs</b>: <code>lat</code> and <code>lon</code>, which must be finite numbers within ±90 and
-  ±180, or the answer is a 400. Both are rounded to one decimal place before the upstream call. That
-  is about 11 km of latitude, so everyone in a city shares one upstream URL and the location sent to
-  Open-Meteo is coarse. The <code>fetch</code> has <code>next: { revalidate: 600 }</code>, so Next's
-  data cache holds each grid square's reading for ten minutes. <b>Output</b>:
-  <code>{ temp, label, icon }</code>, with 28 WMO weather codes mapped to a label and an emoji, and
-  <code>Cache-Control: public, max-age=600</code>. Without <code>s-maxage</code>, that header is an
-  instruction to the browser, not the CDN.
-</p>
-<p>
-  <b>Failures</b>: any upstream problem becomes a 502, and the clock shows its "no weather" state.
-  The call only happens after you tap the clock and the browser's geolocation prompt succeeds. The
-  site's <code>Permissions-Policy</code> allows geolocation for this origin only. A good reading is
-  kept in <code>jsnotes:weather</code> for 30 minutes, so the endpoint is not called on every page.
-</p>
 
 <h3>/api/joke</h3>
 <p>

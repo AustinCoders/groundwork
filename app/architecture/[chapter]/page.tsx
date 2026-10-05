@@ -4,6 +4,7 @@ import { topicChapterMetadata, topicChapterParams } from "@/components/reader/to
 import { chapterMetas, chapters, notesHref } from "@/lib/content";
 import { ChapterView } from "@/components/series/ChapterView";
 import { withHeadingIds } from "@/lib/headingToc";
+import { frameTopic } from "@/lib/topics";
 import { ARCH_PARTS } from "@/lib/architectureParts";
 import type { SeriesCard } from "@/components/chapter/types";
 
@@ -38,6 +39,7 @@ export default async function Page({ params }: { params: Promise<{ chapter: stri
   }));
   return (
     <ChapterView
+      topic={frameTopic(TOPIC, notesHref(TOPIC))}
       seriesTitle="How this is built"
       homeLabel="The system map"
       parts={ARCH_PARTS}

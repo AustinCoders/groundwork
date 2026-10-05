@@ -143,7 +143,7 @@ export function TopicPath({
                   <div className={styles.stepBody}>
                     <div className={styles.stepMain}>
                       {entry.chapter ? (
-                        <Link className={styles.stepTitle} href={`${basePath}/${entry.chapter.id}`}>
+                        <Link className={styles.stepTitle} href={`${basePath}/${entry.chapter.id}`} prefetch={false}>
                           {section.title}
                         </Link>
                       ) : (
@@ -179,7 +179,7 @@ export function TopicPath({
                 </span>
                 <div className={styles.stepBody}>
                   <div className={styles.stepMain}>
-                    <Link className={styles.stepTitle} href={`${basePath}/${chapter.id}`}>
+                    <Link className={styles.stepTitle} href={`${basePath}/${chapter.id}`} prefetch={false}>
                       {chapter.title}
                     </Link>
                     <p className={styles.stepSub} title={chapter.subtitle}>
@@ -219,7 +219,7 @@ export function TopicPath({
                         {chapterExerciseList.map((ex) => {
                           const solved = mounted && progress.isExerciseSolved(ex.id);
                           return (
-                            <Link className="practice" href={problemHref(ex.id)} key={ex.id}>
+                            <Link className="practice" href={problemHref(ex.id)} prefetch={false} key={ex.id}>
                               <span className="practice__top">
                                 <span className="practice__title">{ex.title}</span>
                                 {solved && <span className="practice__tick">✓</span>}
@@ -252,7 +252,7 @@ export function TopicPath({
           {levelExerciseList.map((ex) => {
             const solved = mounted && progress.isExerciseSolved(ex.id);
             return (
-              <Link className="practice" href={problemHref(ex.id)} key={ex.id}>
+              <Link className="practice" href={problemHref(ex.id)} prefetch={false} key={ex.id}>
                 <span className="practice__top">
                   <span className="practice__title">{ex.title}</span>
                   {solved && <span className="practice__tick">✓</span>}

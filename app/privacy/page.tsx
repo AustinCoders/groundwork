@@ -7,7 +7,7 @@ import styles from "./privacy.module.css";
 export const metadata: Metadata = pageMetadata({
   title: "Privacy",
   description:
-    "No account and no cookies of our own. What stays in your browser, what leaves it, and which service receives it: page analytics, the weather lookup, the narrator, error reports and the language runtimes.",
+    "No account and no cookies of our own. What stays in your browser, what leaves it, and which service receives it: page analytics, the narrator, error reports and the language runtimes.",
   path: "/privacy",
 });
 
@@ -57,14 +57,6 @@ export default function PrivacyPage() {
               cookie.
             </li>
             <li>
-              <b>The weather, only when you ask for it.</b> Pressing &ldquo;add weather&rdquo; on the clock asks your
-              browser for your location. Your browser sends your exact coordinates to this site&rsquo;s{" "}
-              <code>/api/weather</code> in the address of the request, so they can appear in the host&rsquo;s request
-              logs. The server rounds them to one decimal place before asking Open-Meteo for the forecast, so Open-Meteo
-              sees only the rounded position. The answer stays in this browser until the next lookup, and the clock
-              reuses it for half an hour.
-            </li>
-            <li>
               <b>The narrator.</b> When a chapter is read aloud, the text being read is sent to this site&rsquo;s{" "}
               <code>/api/tts</code> a few paragraphs at a time, with your chosen voice, speed and pitch, and the server
               asks Microsoft&rsquo;s Edge read-aloud service for the audio. It is the chapter&rsquo;s own text, never
@@ -75,8 +67,7 @@ export default function PrivacyPage() {
               browser&rsquo;s user agent go to <code>/api/client-error</code> and into the host&rsquo;s logs. If error
               tracking with Sentry is switched on, the report goes to Sentry instead, with Sentry&rsquo;s option to send
               personal data turned off. Sentry then also receives timing traces for about one in ten page loads and page
-              changes, and an error report sent to it can include the addresses of recent requests and page changes,
-              which can include your exact weather coordinates.
+              changes, and an error report sent to it can include the addresses of recent requests and page changes.
             </li>
             <li>
               <b>Language runtimes.</b> Running Python, SQL, Lua, Ruby, PHP, C or C++ in the playground downloads that

@@ -78,7 +78,6 @@ test("exports a PNG and opens a share link as a new board", async ({ page, conte
 
 test("has its own header and remembers the page layout", async ({ page }) => {
   await canvas(page);
-  await expect(page.locator("#site-sidenav")).toHaveCount(0);
   await expect(page.locator("header")).toHaveCount(0);
   await expect(page.getByRole("heading", { level: 1, name: "Whiteboard" })).toHaveCount(1);
   await expect(page.getByRole("link", { name: /Home|Back to/ })).toBeVisible();

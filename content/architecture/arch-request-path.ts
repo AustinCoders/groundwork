@@ -9,7 +9,7 @@ export const archRequestPath: Chapter = {
   practice: [],
   ready: true,
   subtitle:
-    "Every page and every JSON file is already a file when you ask for it. Four handlers under /api are the only code that runs per request, plus one quiet exception.",
+    "Every page and every JSON file is already a file when you ask for it. Three handlers under /api are the only code that runs per request, plus one quiet exception.",
   body: `<h3>Four kinds of request</h3>
 <p>
   A request to this site ends up in one of four places. Most go to a file that the build already
@@ -19,7 +19,7 @@ export const archRequestPath: Chapter = {
 </p>
 
 <figure>
-<svg viewBox="0 0 900 400" class="dg" role="img" aria-label="The browser sends a request to the Vercel edge, which applies headers and redirects. From there it goes to a prerendered static file, to an on-demand render for an unknown chapter or problem slug, or to one of four functions under /api which call upstream services. Separately, the browser loads language runtimes straight from jsDelivr.">
+<svg viewBox="0 0 900 400" class="dg" role="img" aria-label="The browser sends a request to the Vercel edge, which applies headers and redirects. From there it goes to a prerendered static file, to an on-demand render for an unknown chapter or problem slug, or to one of three functions under /api which call upstream services. Separately, the browser loads language runtimes straight from jsDelivr.">
 <g class="rough">
 <rect x="20" y="160" width="130" height="70" rx="10" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 2" />
 <rect x="190" y="150" width="170" height="90" rx="10" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 2" />
@@ -45,9 +45,9 @@ export const archRequestPath: Chapter = {
 <text class="lbl" x="545" y="140" text-anchor="middle">On-demand render</text>
 <text class="sm" x="545" y="162" text-anchor="middle">an unknown chapter or problem slug</text>
 <text class="lbl rd" x="545" y="232" text-anchor="middle">Function</text>
-<text class="sm" x="545" y="254" text-anchor="middle">four route handlers under /api</text>
+<text class="sm" x="545" y="254" text-anchor="middle">three route handlers under /api</text>
 <text class="lbl" x="795" y="226" text-anchor="middle">Upstream</text>
-<text class="sm" x="795" y="246" text-anchor="middle">Edge voices, Open-Meteo,</text>
+<text class="sm" x="795" y="246" text-anchor="middle">Edge voices,</text>
 <text class="sm" x="795" y="264" text-anchor="middle">JokeAPI</text>
 <text class="lbl" x="190" y="340" text-anchor="middle">cdn.jsdelivr.net</text>
 <text class="sm" x="190" y="362" text-anchor="middle">Pyodide, sql.js, Lua, Ruby, PHP, clang</text>
@@ -66,7 +66,7 @@ export const archRequestPath: Chapter = {
   the build turns into routing rules:
 </p>
 <ul>
-<li><b>Headers on every path.</b> One rule, <code>/:path*</code>, attaches a Content-Security-Policy, <code>X-Frame-Options: DENY</code>, <code>nosniff</code>, a referrer policy and a permissions policy that only lets this site itself ask for geolocation. The CSP's <code>script-src</code> and <code>connect-src</code> lists are built from <code>lib/wasmAssets.ts</code>, so they allow the jsDelivr origin and nothing else.</li>
+<li><b>Headers on every path.</b> One rule, <code>/:path*</code>, attaches a Content-Security-Policy, <code>X-Frame-Options: DENY</code>, <code>nosniff</code>, a referrer policy and a permissions policy that turns off camera, microphone and geolocation. The CSP's <code>script-src</code> and <code>connect-src</code> lists are built from <code>lib/wasmAssets.ts</code>, so they allow the jsDelivr origin and nothing else.</li>
 <li><b>One redirect.</b> Requests for the old <code>groundwork-ivory-beta.vercel.app</code> host get a permanent redirect to <code>groundwork.austincoders.com</code>, with the path kept.</li>
 </ul>
 <p>
@@ -168,15 +168,14 @@ export const archRequestPath: Chapter = {
 <tr><td><code>/problems/{id}/cases</code></td><td>Switching a problem to a language other than JavaScript or SQL, or starting the debugger</td><td>Static file</td></tr>
 <tr><td><code>/mock/bank/{stage}</code></td><td>Pointing at or focusing the start button in the mock lobby, then starting; cached per stage in memory</td><td>Static file</td></tr>
 <tr><td><code>/api/tts</code></td><td>Pressing Listen, once per chunk of up to 700 characters</td><td>Function, then CDN-cached</td></tr>
-<tr><td><code>/api/weather</code></td><td>Tapping the sidebar clock and allowing location</td><td>Function</td></tr>
 <tr><td><code>/api/joke</code></td><td>Opening <code>/progress</code></td><td>Function</td></tr>
 <tr><td><code>/api/client-error</code></td><td>An uncaught error or rejection, at most five per page load, and only when no Sentry DSN is configured</td><td>Function</td></tr>
 <tr><td>Runtimes on <code>cdn.jsdelivr.net</code></td><td>First run of Python, SQL, Lua, Ruby, PHP, C or C++</td><td>Someone else's CDN</td></tr>
 </tbody>
 </table></div>
 <p>
-  Each of the four functions is an extra on top of a page that already works without it. If one
-  fails, the narrator does not start, the clock shows no temperature, a hardcoded joke appears, or
+  Each of the three functions is an extra on top of a page that already works without it. If one
+  fails, the narrator does not start, a hardcoded joke appears, or
   an error is not logged. No chapter depends on any of them. The <a href="/architecture/arch-apis">APIs
   chapter</a> goes through each one in detail.
 </p>`,

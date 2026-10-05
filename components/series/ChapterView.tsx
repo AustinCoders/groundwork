@@ -2,26 +2,32 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BackButton } from "@/components/practice/BackButton";
-import { SiteDrawer } from "@/components/SiteDrawer";
-import { TopIcon } from "@/components/practice/TopIcon";
-import { activateScripts, enhanceCodeBlocks, enhanceTables, enhanceTryBlocks } from "@/components/reader/enhancements";
+import { TopicFrame, type FrameTopic } from "@/components/topic/TopicFrame";
+import {
+  activateScripts,
+  enhanceCodeBlocks,
+  enhanceTables,
+  enhanceTryBlocks,
+  markNoSmooth,
+} from "@/components/reader/enhancements";
 import { makeScrollRegions } from "@/components/reader/scrollRegions";
 import { setupNarration } from "@/components/reader/narration";
 import { progress } from "@/lib/storage";
 import { useMounted, useProgressValue } from "@/lib/hooks";
 import { ChapterEnd } from "@/components/chapter/ChapterEnd";
+import { ChapterHeaderPager } from "@/components/chapter/ChapterHeaderPager";
 import { ChapterPager } from "@/components/chapter/ChapterPager";
 import { ChapterRail, useRailParts } from "@/components/chapter/ChapterRail";
 import { ChaptersSheet, ChaptersSheetButton } from "@/components/chapter/ChaptersSheet";
-import { DiagramDefs } from "@/components/chapter/DiagramDefs";
 import { TocCard } from "@/components/chapter/TocCard";
 import { useActiveHeading } from "@/components/chapter/useActiveHeading";
 import { useChapterKeys } from "@/components/chapter/useChapterKeys";
 import type { SeriesCard, SeriesPart, TocItem } from "@/components/chapter/types";
+import readerStyles from "@/components/topic/reader.module.css";
 import styles from "./chapter.module.css";
 
 export function ChapterView({
+  topic,
   seriesTitle,
   homeLabel,
   parts: PARTS,
@@ -33,6 +39,7 @@ export function ChapterView({
   chapters,
   diagrams,
 }: {
+  topic: FrameTopic;
   seriesTitle: string;
   homeLabel: string;
   parts: SeriesPart<string>[];
@@ -45,11 +52,8 @@ export function ChapterView({
   diagrams: number;
 }) {
   const mounted = useMounted();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
-  const barRef = useRef<HTMLDivElement>(null);
-  const closeMenu = useCallback(() => setMenuOpen(false), []);
   const closeRail = useCallback(() => setRailOpen(false), []);
 
   const index = chapters.findIndex((c) => c.id === chapter.id);
@@ -77,6 +81,7 @@ export function ChapterView({
     enhanceCodeBlocks(el);
     enhanceTables(el);
     enhanceTryBlocks(el);
+    markNoSmooth(el);
     const stopNarration = setupNarration(el.parentElement ?? el);
     const stopScrollRegions = makeScrollRegions(el);
     return () => {
@@ -85,7 +90,7 @@ export function ChapterView({
     };
   }, [chapter.id]);
 
-  const { active, pct } = useActiveHeading(toc, barRef);
+  const { active, pct } = useActiveHeading(toc);
 
   useChapterKeys({
     prevHref: prev && `${basePath}/${prev.id}`,
@@ -110,80 +115,38 @@ export function ChapterView({
   );
 
   return (
-    <>
-      <a className="skip-link" href={`#${chapter.id}`}>
-        Skip to the chapter
-      </a>
-      <DiagramDefs />
-      <div className={styles.page}>
-        <header className={styles.top}>
-          <div className={styles.topLeft}>
-            <BackButton variant="icon" className={styles.iconBtn} fallbackHref={basePath} fallbackLabel={homeLabel} />
-            <button
-              type="button"
-              className={styles.iconBtn}
-              aria-label="Menu"
-              aria-haspopup="dialog"
-              aria-expanded={menuOpen}
-              data-tip="Pages, theme and handwriting"
-              onClick={() => setMenuOpen(true)}
-            >
-              <TopIcon name="menu" />
-            </button>
-            <ChaptersSheetButton open={railOpen} onOpen={() => setRailOpen(true)} />
-            <nav className={styles.crumbs} aria-label="Breadcrumb">
-              <Link href={basePath}>{seriesTitle}</Link>
-              <span aria-hidden="true">/</span>
-              <span>{part?.title}</span>
-              <span aria-hidden="true">/</span>
-              <span aria-current="page">{chapter.num}</span>
-            </nav>
-          </div>
-          <div className={styles.topRight}>
-            {prev ? (
-              <Link
-                className={styles.iconBtn}
-                href={`${basePath}/${prev.id}`}
-                aria-label={`Previous: ${prev.title}`}
-                data-tip={`${prev.num} · ${prev.short || prev.title} — [`}
-              >
-                <TopIcon name="prev" />
-              </Link>
-            ) : (
-              <span className={`${styles.iconBtn} ${styles.off}`} aria-hidden="true">
-                <TopIcon name="prev" />
-              </span>
-            )}
-            <span className={styles.position}>
-              {index + 1} / {chapters.length}
-            </span>
-            {next ? (
-              <Link
-                className={styles.iconBtn}
-                href={`${basePath}/${next.id}`}
-                aria-label={`Next: ${next.title}`}
-                data-tip={`${next.num} · ${next.short || next.title} — ]`}
-              >
-                <TopIcon name="next" />
-              </Link>
-            ) : (
-              <span className={`${styles.iconBtn} ${styles.off}`} aria-hidden="true">
-                <TopIcon name="next" />
-              </span>
-            )}
-          </div>
-          <div className={styles.progress} aria-hidden="true">
-            <div ref={barRef} />
-          </div>
-        </header>
-
+    <TopicFrame
+      topic={topic}
+      back={{ href: basePath, label: seriesTitle }}
+      reading
+      layout="reader"
+      skip={{ label: "Skip to the chapter", href: `#${chapter.id}` }}
+      scan={chapter.id}
+      actions={
+        <>
+          <ChaptersSheetButton open={railOpen} onOpen={() => setRailOpen(true)} />
+          <nav className={styles.crumbs} aria-label="Breadcrumb">
+            <Link href={basePath}>{seriesTitle}</Link>
+            <span aria-hidden="true">/</span>
+            <span>{part?.title}</span>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{chapter.num}</span>
+          </nav>
+          <ChapterHeaderPager index={index} total={chapters.length} prev={prev} next={next} basePath={basePath} />
+        </>
+      }
+    >
+      <div className={`${styles.page} ${readerStyles.page}`}>
         <div className={styles.body}>
           <aside className={styles.left} id="arch-rail">
             {rail}
           </aside>
 
-          <main className={styles.main} id="main">
-            <article className={`chapter${isDone ? " is-done" : ""} ${styles.article}`} id={chapter.id}>
+          <div className={styles.main}>
+            <article
+              className={`chapter${isDone ? " is-done" : ""} ${styles.article} ${readerStyles.article}`}
+              id={chapter.id}
+            >
               <header className={styles.head}>
                 <p className={styles.kicker}>
                   Part {partIndex + 1} · {part?.title}
@@ -208,7 +171,7 @@ export function ChapterView({
               </header>
 
               {toc.length > 2 && (
-                <details className={styles.inlineToc}>
+                <details className={`${styles.inlineToc} ${readerStyles.inlineToc}`}>
                   <summary>On this page</summary>
                   <ol>
                     {toc.map((t) => (
@@ -237,7 +200,7 @@ export function ChapterView({
 
               <ChapterPager prev={prev} next={next} basePath={basePath} homeLabel={homeLabel} />
             </article>
-          </main>
+          </div>
 
           <TocCard toc={toc} active={active} pct={pct} read={mounted && isDone} onToggleRead={toggleRead} />
         </div>
@@ -246,7 +209,6 @@ export function ChapterView({
       <ChaptersSheet open={railOpen} onClose={closeRail}>
         {rail}
       </ChaptersSheet>
-      <SiteDrawer open={menuOpen} onClose={closeMenu} reading />
-    </>
+    </TopicFrame>
   );
 }

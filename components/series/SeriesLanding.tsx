@@ -1,20 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
-import { BackButton } from "@/components/practice/BackButton";
-import { SiteDrawer } from "@/components/SiteDrawer";
+import { useMemo } from "react";
+import { TopicFrame, type FrameTopic } from "@/components/topic/TopicFrame";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { progress } from "@/lib/storage";
 import { useMounted, useProgressValue } from "@/lib/hooks";
 import { ChapterCard } from "@/components/chapter/ChapterCard";
-import { DiagramDefs } from "@/components/chapter/DiagramDefs";
 import { PartSection } from "@/components/chapter/PartSection";
 import type { SeriesCard, SeriesPart } from "@/components/chapter/types";
 import styles from "./landing.module.css";
 
 export function SeriesLanding({
-  crumb,
+  topic,
   kicker,
   title,
   lead,
@@ -26,7 +24,7 @@ export function SeriesLanding({
   basePath,
   progressPrefix = "",
 }: {
-  crumb: string;
+  topic: FrameTopic;
   kicker: string;
   title: string;
   lead: string;
@@ -39,8 +37,6 @@ export function SeriesLanding({
   progressPrefix?: string;
 }) {
   const mounted = useMounted();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   const doneKey = useProgressValue(
     () =>
@@ -55,37 +51,21 @@ export function SeriesLanding({
   const totalMinutes = chapters.reduce((n, c) => n + c.minutes, 0);
 
   return (
-    <>
-      <a className="skip-link" href="#main">
-        Skip to the chapters
-      </a>
-      <DiagramDefs />
+    <TopicFrame
+      topic={topic}
+      reading
+      skip={{ label: "Skip to the chapters" }}
+      actions={
+        next ? (
+          <Link className="btn btn--primary" href={`${basePath}/${next.id}`}>
+            {mounted && done.size ? "Continue reading" : "Start reading"}
+            <TopIcon name="next" size={16} />
+          </Link>
+        ) : undefined
+      }
+    >
       <div className={styles.page}>
-        <header className={styles.top}>
-          <div className={styles.topLeft}>
-            <BackButton variant="icon" className={styles.iconBtn} fallbackHref="/" fallbackLabel="Home" />
-            <button
-              type="button"
-              className={styles.iconBtn}
-              aria-label="Menu"
-              aria-haspopup="dialog"
-              aria-expanded={menuOpen}
-              data-tip="Pages, theme and handwriting"
-              onClick={() => setMenuOpen(true)}
-            >
-              <TopIcon name="menu" />
-            </button>
-            <span className={styles.crumb}>{crumb}</span>
-          </div>
-          {next && (
-            <Link className={`${styles.btn} ${styles.primary}`} href={`${basePath}/${next.id}`}>
-              {mounted && done.size ? "Continue reading" : "Start reading"}
-              <TopIcon name="next" size={16} />
-            </Link>
-          )}
-        </header>
-
-        <main id="main" className={styles.main}>
+        <div className={styles.main}>
           <section className={styles.hero}>
             <p className={styles.kicker}>{kicker}</p>
             <h1 className={styles.title}>{title}</h1>
@@ -140,9 +120,8 @@ export function SeriesLanding({
               </PartSection>
             );
           })}
-        </main>
+        </div>
       </div>
-      <SiteDrawer open={menuOpen} onClose={closeMenu} />
-    </>
+    </TopicFrame>
   );
 }

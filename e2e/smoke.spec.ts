@@ -96,7 +96,39 @@ test("an outline topic's /soon link redirects to its outline landing, and a writ
   await expect(page.getByRole("link", { name: /R3 · JavaScript & TS/i })).toHaveAttribute("href", "/interview/r3");
 
   await page.goto("/soon?topic=js");
-  await page.waitForURL("**/level/js");
+  await page.waitForURL(/\/level\/js(\?|$)/);
+
+  await page.goto("/soon?topic=graphql");
+  await page.waitForURL(/\/graphql(\?|$)/);
+
+  await page.goto("/soon");
+  await expect(page).toHaveURL(/\/$/);
+  await page.goto("/soon?topic=nope");
+  await expect(page).toHaveURL(/^[^?#]*\/(\?|$)/);
+});
+
+test("the skip link's #main hash stays on the page instead of forwarding to a missing chapter", async ({ page }) => {
+  for (const path of ["/notes", "/git"]) {
+    await page.goto(path, { waitUntil: "networkidle" });
+    await page.keyboard.press("Tab");
+    const skip = page.locator("a.skip-link");
+    await expect(skip, path).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page, path).toHaveURL(new RegExp(`${path}#main$`));
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByRole("heading", { level: 1 }), path).toBeVisible();
+    expect(new URL(page.url()).pathname, path).toBe(path);
+  }
+});
+
+test("the not-found page renders in the page frame with a labelled back pill and one main", async ({ page }) => {
+  const response = await page.goto("/no-such-page");
+  expect(response?.status()).toBe(404);
+  const back = page.locator("header a.head-back");
+  await expect(back).toBeVisible();
+  await expect(back).toHaveAttribute("href", "/");
+  await expect(page.locator("main#main")).toHaveCount(1);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Nothing written on this page");
 });
 
 test("an outline topic's old /level and /path links redirect to its outline landing", async ({ page }) => {
@@ -121,6 +153,56 @@ test("the /path page's back pill falls back to the level picker", async ({ page 
   await expect(back).toBeVisible();
   await expect(back).toHaveAttribute("title", "JavaScript");
   await expect(back).toHaveAttribute("href", "/level/js");
+});
+
+test("git and architecture pages render in the topic frame with a labelled back pill", async ({ context }) => {
+  const cases = [
+    { path: "/git", title: "Home", href: "/" },
+    { path: "/git/merge", title: "Git", href: "/git" },
+    { path: "/architecture", title: "Home", href: "/" },
+    { path: "/architecture/arch-request-path", title: "How this is built", href: "/architecture" },
+  ];
+  for (const { path, title, href } of cases) {
+    const page = await context.newPage();
+    await page.goto(path);
+    const back = page.locator("header a.head-back");
+    await expect(back, path).toBeVisible();
+    await expect(back, path).toHaveAttribute("title", title);
+    await expect(back, path).toHaveAttribute("href", href);
+    await expectOneSetOfDiagramDefs(page);
+    await page.close();
+  }
+});
+
+test("the git and architecture landings start, then continue after the saved progress, and stay inside 390px", async ({
+  page,
+}) => {
+  const landings = [
+    { path: "/git", key: "git-", first: "/git/", start: /^Start reading/ },
+    { path: "/architecture", key: "", first: "/architecture/", start: /^Start reading/ },
+  ];
+  for (const { path, key, first, start } of landings) {
+    await page.goto(path);
+    await page.evaluate(() => localStorage.removeItem("jsnotes:progress"));
+    await page.reload();
+    const action = page.locator("header").getByRole("link", { name: start });
+    await expect(action, path).toHaveAttribute("href", new RegExp(`^${first}`));
+    const firstHref = (await action.getAttribute("href"))!;
+    const firstId = key + firstHref.slice(first.length);
+    await page.evaluate(
+      (id) => localStorage.setItem("jsnotes:progress", JSON.stringify({ chapters: { [id]: { at: 1, reviews: 0 } } })),
+      firstId
+    );
+    await page.reload();
+    const next = page.locator("header").getByRole("link", { name: /^Continue reading/ });
+    await expect(next, path).toBeVisible();
+    await expect(next, path).not.toHaveAttribute("href", firstHref);
+    await expect(page.locator("main").getByText(/\b1 (of \d+ read|read by you)/), path).toBeVisible();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.evaluate(() => localStorage.removeItem("jsnotes:progress"));
+  }
 });
 
 test("/path and /path?topic= redirect once the saved or default level is known", async ({ page }) => {
@@ -196,7 +278,6 @@ test("the /notes cover renders in the topic frame", async ({ page }) => {
   await expect(title).toHaveAttribute("href", "/notes");
   await expect(title).toHaveAttribute("aria-current", "page");
   await expect(title.locator("[aria-hidden=true]")).toHaveText("JS");
-  await expect(page.locator("#site-sidenav")).toHaveCount(0);
   await expectOneSetOfDiagramDefs(page);
 
   await page.getByRole("button", { name: "Menu", exact: true }).click();
@@ -221,11 +302,9 @@ test("the /notes cover renders in the topic frame", async ({ page }) => {
   await expect(menu).toHaveCount(0);
 
   await page.goto("/react");
-  await expect(page.locator("#site-sidenav")).toHaveCount(0);
   await expectOneSetOfDiagramDefs(page);
 
   await page.goto("/typescript");
-  await expect(page.locator("#site-sidenav")).toHaveCount(0);
 
   await page.goto("/notes#closures");
   await page.waitForURL("**/notes/closures");
@@ -308,7 +387,6 @@ test("an outline chapter shows its roadmap, a Meanwhile link, and prev/next scop
   page,
 }) => {
   await page.goto("/typescript/ts-setup-compiler");
-  await expect(page.locator("#site-sidenav")).toHaveCount(0);
   await expect(page.locator("[data-scrollbar]")).toHaveCount(1);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(/Setup/i);
   await expect(page.getByText("Not written yet.")).toBeVisible();
@@ -651,7 +729,6 @@ test("the playground has no sidebar, a site menu, and goes back where you came f
     .click();
   await page.waitForURL("**/practice?id=free");
 
-  await expect(page.locator(".site-sidenav")).toHaveCount(0);
   await page.getByRole("button", { name: "Menu" }).click();
   const drawer = page.getByRole("dialog", { name: /menu/ });
   await expect(
@@ -1359,10 +1436,7 @@ test("problems, the whiteboard, git and architecture take the theme's accent, an
       await page.goto(path);
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
       await expect(currentChapter, `${path} in ${theme}`).toHaveCSS("box-shadow", containing(accent));
-      await expect(page.locator("[class$='__progress'] > div"), `${path} in ${theme}`).toHaveCSS(
-        "background-color",
-        accent
-      );
+      await expect(page.locator("[data-scrollbar]"), `${path} in ${theme}`).toHaveCSS("background-color", accent);
       await expect(
         page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link"),
         `${path} in ${theme}`

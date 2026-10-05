@@ -91,7 +91,7 @@ export const archScaling: Chapter = {
 </tr>
 <tr>
   <td>Traffic on the pages themselves</td>
-  <td>Nothing. The build lists four dynamic routes, all under <code>/api/</code>. Every other route is a file on a CDN.</td>
+  <td>Nothing. The build lists three dynamic routes, all under <code>/api/</code>. Every other route is a file on a CDN.</td>
   <td>&mdash;</td>
 </tr>
 </tbody>
@@ -116,8 +116,8 @@ export const archScaling: Chapter = {
 <h3>At ten times, and at a hundred</h3>
 <p>
   <strong>Ten times the readers</strong> changes almost nothing. The pages are cached files. The
-  extra load falls on four functions, two of which cache their upstream: 10 minutes for weather and
-  5 for the joke. The first thing a reader would notice is the search index on a slow phone
+  extra load falls on three functions, and only the joke caches its upstream, for
+  5 minutes. The first thing a reader would notice is the search index on a slow phone
   connection, and that is a payload problem, not a capacity one.
 </p>
 <p>
