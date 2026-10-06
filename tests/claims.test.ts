@@ -134,7 +134,8 @@ describe("what the site says about itself", () => {
     );
     const source = read("app/interview/questions/QuestionBank.tsx");
     expect(source).toContain("questions.length} questions answered in depth, plus");
-    expect(source).toContain("{INTERVIEW_TOTAL_QUESTIONS - questions.length}");
+    expect(source).toContain("{totalQuestions - questions.length}");
+    expect(read("app/interview/questions/page.tsx")).toContain("totalQuestions={INTERVIEW_TOTAL_QUESTIONS}");
   });
 
   it("counts the Paper theme's custom properties and colour tokens in the design-system chapter", () => {

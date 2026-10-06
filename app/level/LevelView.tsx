@@ -4,7 +4,7 @@ import Link from "next/link";
 import { TopicFrame } from "@/components/topic/TopicFrame";
 import { Syllabus } from "@/components/Syllabus";
 import { formatSpan, plural } from "@/lib/format";
-import { notesHref } from "@/lib/content";
+import { notesHref } from "@/lib/topics";
 import { rememberLevel } from "@/lib/storage";
 import { useLastLevel } from "@/lib/hooks";
 import { accentVar } from "@/lib/accent";

@@ -43,6 +43,7 @@ export function TopicReader({
   toc,
   diagrams,
   exercises,
+  levelExerciseTotal,
 }: {
   topicId: string;
   topicName: string;
@@ -56,6 +57,7 @@ export function TopicReader({
   toc: TocItem[];
   diagrams: number;
   exercises: PracticeLink[];
+  levelExerciseTotal: number;
 }) {
   const mounted = useMounted();
   const [railOpen, setRailOpen] = useState(false);
@@ -222,7 +224,12 @@ export function TopicReader({
                 dangerouslySetInnerHTML={{ __html: html }}
               />
 
-              <PracticeStrip exercises={exercises} topicId={topicId} level={chapter.levels[0]} />
+              <PracticeStrip
+                exercises={exercises}
+                topicId={topicId}
+                level={chapter.levels[0]}
+                levelTotal={levelExerciseTotal}
+              />
 
               <ChapterEnd
                 num={chapter.num}

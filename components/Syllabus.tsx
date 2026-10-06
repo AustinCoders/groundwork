@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { levelRows } from "@/lib/levelRows";
-import { notesHref } from "@/lib/content";
+import { notesHref } from "@/lib/topics";
 import type { ChapterMeta, Level, Topic } from "@/content/types";
 import styles from "@/components/topic/level.module.css";
 

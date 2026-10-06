@@ -10,6 +10,7 @@ import {
   chapters,
   escapeHtml,
   exercisesForChapter,
+  exercisesForLevel,
   notesData,
   notesHref,
   syllabusSectionForChapter,
@@ -192,6 +193,7 @@ export function TopicChapterPage({ topicId, chapterId }: { topicId: string; chap
         toc={toc}
         diagrams={diagrams}
         exercises={exercises}
+        levelExerciseTotal={exercisesForLevel(cards[cardIndex].levels[0], topicId).length}
       />
     );
   }

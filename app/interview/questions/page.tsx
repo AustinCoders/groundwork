@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { QuestionBank } from "@/app/interview/questions/QuestionBank";
 import { bankQuestions, PARTS } from "@/lib/interviewBook";
+import { INTERVIEW_TOTAL_QUESTIONS } from "@/lib/interviewContent";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata: Metadata = pageMetadata({
@@ -11,5 +12,5 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function Page() {
-  return <QuestionBank questions={bankQuestions()} parts={PARTS} />;
+  return <QuestionBank questions={bankQuestions()} parts={PARTS} totalQuestions={INTERVIEW_TOTAL_QUESTIONS} />;
 }

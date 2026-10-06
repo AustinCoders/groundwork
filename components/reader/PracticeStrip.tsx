@@ -4,8 +4,6 @@ import Link from "next/link";
 import { progress } from "@/lib/storage";
 import { useProgressValue } from "@/lib/hooks";
 import { problemHref } from "@/lib/problemHref";
-import { exercisesForLevel } from "@/lib/content";
-import type { LevelId } from "@/content/types";
 import styles from "./practiceStrip.module.css";
 
 export interface PracticeLink {
@@ -19,10 +17,12 @@ export function PracticeStrip({
   exercises,
   topicId,
   level,
+  levelTotal = 0,
 }: {
   exercises: PracticeLink[];
   topicId?: string;
-  level?: LevelId;
+  level?: string;
+  levelTotal?: number;
 }) {
   const solvedKey = useProgressValue(
     () =>
@@ -35,8 +35,6 @@ export function PracticeStrip({
   const solved = solvedKey ? solvedKey.split(",") : [];
 
   if (!exercises.length) return null;
-
-  const levelTotal = topicId && level ? exercisesForLevel(level, topicId).length : 0;
 
   return (
     <div className="practice-strip" data-speech-exclude>
