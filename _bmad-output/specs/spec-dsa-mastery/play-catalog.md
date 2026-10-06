@@ -1,6 +1,6 @@
 # Play: the engine and one player per chapter
 
-This is the source for CAP-3. Evidence is in `_bmad-output/planning-artifacts/dsa-analysis-2026-09-30/code-and-ux.md` §3 and §8.4, and in `research.md` §3.
+This is the source for CAP-3 and CAP-8 (puzzles). Evidence is in `_bmad-output/planning-artifacts/dsa-analysis-2026-09-30/code-and-ux.md` §3 and §8.4, and in `research.md` §3.
 
 ## Engine
 
@@ -22,7 +22,7 @@ This is the source for CAP-3. Evidence is in `_bmad-output/planning-artifacts/ds
   - Back, Next, Play/Pause, Reset;
   - speed;
   - a labelled scrubber reading "Step n of N";
-  - preset and custom input;
+  - preset and a visible "Try your own input" control, which parses the reader's input within the tracer's size limit and says why when it rejects it;
   - predict the next step: it asks before revealing, using the check's choice UI;
   - a table view listing every frame.
 - **Views:** array cells, grid, graph (SVG), tree, forest, linked list, call stack, hash buckets, chips, variables and code. Code is an ordered list with the current line marked, not a `pre`.
@@ -92,3 +92,12 @@ At least one player per chapter. The first entry is the chapter's main player.
 | A9 design problems | LRU cache: hash map plus doubly linked list | buckets, linked list |
 | A10 advanced backtracking | N-Queens with pruning | grid, tree |
 | A11 interview strategy | From constraints to approach: a sample problem walked from the input size to a pattern and a complexity | chips, variables |
+
+## Puzzles (CAP-8)
+
+- Each chapter's registry entry declares at least one puzzle, built from that tracer's frames:
+  - **Order the steps:** the reader puts a shuffled list of the algorithm's steps (narration sentences from the frames) in order.
+  - **Pick the next step:** the reader sees a frame and chooses what happens next, from choices drawn from the next frames and common mistakes.
+- Puzzles use the check's choice and order components. Feedback is instant, with an explanation. They are retryable without limit, give no score, and write no read mark, XP, activity or review entry; solved puzzles are remembered in `groundwork:quiz`.
+- Each puzzle works by keyboard, is announced through a `role="status"` line, and states every item's state in text. Under reduced motion nothing animates.
+- Puzzle data loads lazily with its tracer, so a chapter page receives only its own puzzles.

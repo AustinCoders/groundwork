@@ -2,8 +2,8 @@
 id = 1
 type = "story"
 title = "Question model, loader and the binary-search pool"
-description = "Defines the question types (single, multi, order and predict), the fixed pattern vocabulary with one pattern record per chapter (signals, template, complexity), a server loader that gives a chapter page only its own pool plus a lazy per-chapter import for client pages such as review, integrity tests for every pool present, and binary search's pool of at least 8 with two placement-tagged questions, at least one authored trace question and its pattern record."
-verify = "The integrity tests pass, the loader returns only binary search's questions for its page, and that page's payload holds no other chapter's questions."
+description = "Defines the question types (single, multi, order and predict), the fixed pattern vocabulary with one pattern record per chapter (signals, template, complexity and interview-style tags: online assessment, phone screen, onsite round), a server loader that gives a chapter page only its own pool plus a lazy per-chapter import for client pages such as review, integrity tests for every pool present, and binary search's pool of at least 8 with two placement-tagged questions, at least two complexity questions beyond what a check needs, at least one authored trace question and its pattern record, with puzzle and complexity-round data kept lazy per chapter and out of the chapter page payload."
+verify = "The integrity tests pass including at least two complexity questions and a style tag on every pattern record, the loader returns only binary search's questions for its page, and that page's payload holds no other chapter's questions, puzzles or round data."
 covers = ["C1"]
 after = ["1.2"]
 hitl = false
@@ -13,8 +13,8 @@ risk = "medium"
 id = 2
 type = "story"
 title = "Check runner and store on binary search"
-description = "Replaces 1.3's stub Check island with a check runner that draws 5 from the pool with at least one trace and one recognise or complexity question and passes at 4, using a ChoiceList component later entries reuse, native choices, runner-scoped keys and aria-live feedback, showing explanations for every choice and a link to each missed question's section, a pass screen with the score and the review-in-3-days note, fresh draws on retry, a pass through setChapterDone, a mark-done-anyway path, free unmarking and a Check yourself offer on old marks, keeping results in the versioned groundwork:quiz store and listing that key in How this is built."
-verify = "On /dsa/dsa-binary-search a keyboard user passes and sees the score and the chapter due on /review after the first gap, misses and sees explanations, section links and a different draw on retry, and marks it done anyway and sees not checked, a seeded old mark shows read before checks, the store and draw-rule tests pass, and axe passes on the check in all nine themes."
+description = "Replaces 1.3's stub Check island with a check runner that draws 5 from the pool with at least one trace and one recognise or complexity question and passes at 4, using a ChoiceList component for choice questions and an OrderList component for order questions that later entries reuse, native choices, runner-scoped keys and aria-live feedback, showing explanations for every choice and a link to each missed question's section, a pass screen with the score and the review-in-3-days note, fresh draws on retry, a pass through setChapterDone, a mark-done-anyway path, free unmarking and a Check yourself offer on old marks, keeping results, including the ids of the questions missed, in the versioned groundwork:quiz store and listing that key in How this is built."
+verify = "On /dsa/dsa-binary-search a keyboard user passes and sees the score and the chapter due on /review after the first gap, misses and sees explanations, section links and a different draw on retry, answers an order question by keyboard, and marks it done anyway and sees not checked, a seeded old mark shows read before checks, the store keeps the missed question ids, the store and draw-rule tests pass, and axe passes on the check in all nine themes."
 covers = ["C2"]
 after = [1, "1.3"]
 hitl = false
@@ -70,21 +70,56 @@ risk = "medium"
 id = 7
 type = "story"
 title = "Placement flow, plan and Re-check"
-description = "Shows the three doors (start from the beginning, find my level, pick a level) to first-time readers on /dsa and /level/dsa through a Topic field rather than a topic id, runs the placement on a static, noindexed /dsa/placement route with no timer and at most 18 questions, shows the level and plan without a raw score, puts the plan in the cover aside with Continue, makes 1.3's next-chapter hook follow the plan so Continue, Up next and the path's next step skip tested-out chapters, offers retake and a reset that clears only the placement key, gives readers with DSA marks Re-check my level, stops level cards and the path writing jsnotes:level for quiz topics, and adds the routes to How this is built."
-verify = "An e2e test with a fixture bank takes the placement as a first-time reader, lands on the plan, sees Continue open the first allotted chapter, and finds jsnotes:progress, jsnotes:activity and jsnotes:level byte-identical; a reader with marks sees Re-check my level; axe passes on the placement and result screens in all nine themes."
+description = "Shows the three doors (start from the beginning, find my level, pick a level) to first-time readers on /dsa and /level/dsa through a Topic field rather than a topic id, runs the placement on a static, noindexed /dsa/placement route with no timer and at most 18 questions, shows the level and plan without a raw score, lists chapters below the reader's level under Revise earlier on the plan and result screen with nothing locked, puts the plan in the cover aside with Continue, makes 1.3's next-chapter hook follow the plan so Continue, Up next and the path's next step skip tested-out chapters, offers retake and a reset that clears only the placement key, gives readers with DSA marks Re-check my level, stops level cards and the path writing jsnotes:level for quiz topics, and adds the routes to How this is built."
+verify = "An e2e test with a fixture bank takes the placement as a first-time reader, lands on the plan, sees Continue open the first allotted chapter, and finds jsnotes:progress, jsnotes:activity and jsnotes:level byte-identical; a placed reader sees chapters below their level under Revise earlier and can open and mark one done; a reader with marks sees Re-check my level; axe passes on the placement and result screens in all nine themes."
 covers = ["C7"]
 after = [3, 4]
 hitl = false
 risk = "medium"
-unknown = "Only binary search has a pool until the level epics run, so the routing stage cannot fill from real content yet; the e2e uses a fixture bank."
+unknown = "Only binary search has a pool until the level epics run, so the routing stage cannot fill from real content yet; the e2e uses a fixture bank. The description is large, so if it does not fit one session the split point is the placement flow and plan first, and the three doors and Re-check second."
+
+[[entry]]
+id = 9
+type = "story"
+title = "End-of-chapter popup: Mark this chapter done?"
+description = "Adds a focus-trapped modal dialog on the chapter page that opens once when the reader reaches the end card of a chapter that is not done and asks Mark this chapter done?, where Yes scrolls to and opens the check at #check and Not yet closes it and records the dismissal for that chapter in groundwork:quiz for good, using 3.4's checked and not-checked states to know a chapter is done and never opening mid-reading, and listing the fields it adds to groundwork:quiz in How this is built."
+verify = "On /dsa/dsa-binary-search a keyboard user scrolling to the end card of a not-done chapter sees the popup open once, Yes opens the check, Not yet never brings it back for that chapter after a reload, Escape closes it and returns focus to where it was, and it never opens on a done chapter or when arriving at #check, with axe passing on the popup in all nine themes."
+covers = ["C8"]
+after = [2, 4]
+hitl = false
+risk = "medium"
+unknown = "Whether the end card is detected with an IntersectionObserver or a sentinel element; the builder picks the one that stays quiet under reduced motion and when jumping straight to the end."
+
+[[entry]]
+id = 10
+type = "story"
+title = "Complexity round at the end of a chapter"
+description = "Adds an optional round of 2 questions with skill complexity on a code sample from the chapter to its end card, reusing 3.2's ChoiceList, showing every explanation, never blocking mark done or counting toward the pass, keeping the last round result in groundwork:quiz with the ids of the questions answered wrong, which 7.7's shaky list reads, and listing the fields it adds to groundwork:quiz in How this is built."
+verify = "On /dsa/dsa-binary-search a keyboard user answers the 2-question round and sees explanations, marks the chapter done without opening the round, the wrong answer's question id is saved in the round result in groundwork:quiz, and the round writes nothing to jsnotes:progress, jsnotes:activity or XP."
+covers = ["C10"]
+after = [1, 2, 9]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 11
+type = "story"
+title = "Check badges: First check passed and A level checked"
+description = "Investigates how the site's existing badges are defined and reuses that mechanism to add First check passed (first pass on any chapter) and A level checked (every chapter of one level has a pass), earned through the check's pass and setChapterDone path with the chapter-level XP and streak unchanged."
+verify = "A vitest run shows the first pass on any chapter earns First check passed, passing the last chapter of a level earns A level checked, marking done anyway earns neither, and a pass raises XP and streak exactly as a read mark does."
+covers = ["C9"]
+after = [2]
+hitl = false
+risk = "low"
+unknown = "How the existing badge definitions are stored and where they render; the builder reads that code first and keeps the two new badges inside the same mechanism."
 
 [[entry]]
 id = 8
 type = "story"
 title = "Refactor sweep"
-description = "Cleans up what entries 1 to 7 and their reviews deferred, scoped from their build records when it starts, and takes cleanup only."
+description = "Cleans up what entries 1 to 7 and 9 to 11 and their reviews deferred, scoped from their build records when it starts, and takes cleanup only."
 verify = "npm run check, npm run build and npm run test:e2e pass, and every finding this epic deferred is fixed or moved to a named later entry."
-covers = ["C1", "C2", "C3", "C4", "C5", "C6", "C7"]
-after = [1, 2, 3, 4, 5, 6, 7]
+covers = ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10"]
+after = [1, 2, 3, 4, 5, 6, 7, 9, 10, 11]
 hitl = false
 risk = "low"

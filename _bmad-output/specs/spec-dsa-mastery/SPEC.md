@@ -37,6 +37,7 @@ This is both a pain to fix and a vision the owner wants: a DSA section that find
     - With no DSA placement and no `dsa-*` marks, `/dsa` offers the three choices.
     - The quiz has no timer, ends within 18 questions and has a "not sure yet" option.
     - It shows a level and the allotted chapters as the reader's plan on `/dsa`, and the chapters it credits show as tested out. After it, Continue, Up next and the path's next step follow the plan and skip tested-out chapters.
+    - Nothing is locked. A reader placed at a level can still open and mark done any earlier chapter, and the plan lists those under "Revise earlier".
     - Retake and reset to the beginning always work. Readers who already have DSA marks get "Re-check my level" on the cover, which never changes their marks.
     - The placement writes no read mark, XP, activity or review entry, and it does not change the global saved level.
 - **CAP-2**
@@ -47,11 +48,13 @@ This is both a pain to fix and a vision the owner wants: a DSA section that find
     - A miss shows each answer's explanation, and a retry draws fresh questions.
     - "Mark done anyway" marks it read and not checked. Unmarking stays free.
     - The cover, rail and path tell checked, not checked and tested out apart.
+    - When a reader reaches the end of a chapter that is not yet done, a popup asks "Mark this chapter done?". Yes opens the check. Not yet dismisses it for that chapter, and it does not return. It opens at most once per chapter, never mid-reading, and Escape closes it and returns focus.
+    - A pass earns XP, streak and activity as a read mark does today, and adds two badges: "First check passed" and "A level checked".
 - **CAP-3**
   - **intent:** In every DSA chapter a reader can play a visual of how that chapter's structure or algorithm works inside, at their own pace and on their own input.
   - **success:**
     - Every chapter embeds at least one player from the play catalog.
-    - Each player has back, next, play/pause, speed, a step scrubber and reset. It highlights the running code line with the variables in sync, accepts edited input within stated limits, and offers predict-the-next-step.
+    - Each player has back, next, play/pause, speed, a step scrubber and reset. It highlights the running code line with the variables in sync, offers predict-the-next-step, and has a "Try your own input" control that accepts edited input within stated limits and says why when it rejects one.
     - Each works by keyboard, narrates steps to screen readers, has a table view, never autoplays and honours reduced motion.
     - Each tracer is unit-tested so its final state equals the reference answer.
 - **CAP-4**
@@ -79,7 +82,28 @@ This is both a pain to fix and a vision the owner wants: a DSA section that find
     - A which-pattern drill mixes problem statements from the reader's done chapters.
     - A DSA chapter due in `/review` asks two of its check questions instead of self-rating. Its gap can step back, but XP never falls.
     - Every chapter has a why-it-works box and a common-mistakes box.
-    - A one-page DSA cheat sheet lists every pattern with its signals and complexity.
+    - A DSA cheat sheet has one page per pattern, with its signals, template and complexity and links to its chapter and player, plus an index of all patterns.
+    - A shaky list holds the questions a reader missed in checks, rounds and review. Review shows it with a link to each question's chapter section, and a question leaves it when the reader later answers it right.
+- **CAP-8**
+  - **intent:** Every DSA chapter has small puzzles beside its player, so a reader tests and deepens their understanding of how the algorithm works.
+  - **success:**
+    - Every chapter has at least one puzzle, either order-the-steps or pick-the-next-step, built from that chapter's tracer.
+    - Each is auto-graded with instant feedback and an explanation, and can be retried without limit.
+    - A puzzle never writes a read mark, XP, activity or review entry.
+    - Each works by keyboard, is announced to screen readers and gives every state in text.
+- **CAP-9**
+  - **intent:** Every DSA chapter ends with a short round on the time and space complexity of code from that chapter.
+  - **success:**
+    - The chapter's end card offers a round of 2 questions on a code sample from the chapter.
+    - The round is optional and never blocks mark done.
+    - A wrong answer goes to the shaky list.
+    - Every chapter's pool has at least 2 complexity questions.
+- **CAP-10**
+  - **intent:** A reader can revise DSA by interview style and pattern, from what they have done and got wrong.
+  - **success:**
+    - A revision list on `/dsa` groups the reader's done chapters, shaky questions and the site's existing exercises by interview style (for example online assessment, phone screen, onsite round) and by pattern.
+    - It names no companies.
+    - It is built from data already on the site and needs no network.
 
 ## Constraints
 
@@ -98,6 +122,7 @@ This is both a pain to fix and a vision the owner wants: a DSA section that find
 - **Keys and motion:**
   - Player and check keys are scoped to focus inside them, because the reader owns `n`, `p`, `t`, `[`, `]` and `/`.
   - Players never autoplay, pause on navigation and when the tab is hidden, and honour `prefers-reduced-motion`.
+- **Where the new state lives.** Popup dismissals, puzzle progress, complexity-round results and the shaky list live in `groundwork:quiz`, never in `jsnotes:progress`. A chapter page receives only its own puzzles and questions.
 - **No colour-only state.** Every visual state is also given as text. Faded states pass contrast in all nine themes.
 - **Styling rules.** Theme tokens only, no colour literals in modules, and no comments in source (AGENTS.md; `tests/theme-roles.test.ts`, `tests/theme-contract.test.ts`).
 - **The architecture chapters stay true.** Numbers stated in `content/architecture/` are asserted by `tests/claims.test.ts`. A story that adds pages, e2e tests, CSS modules, storage keys or routes updates those chapters in the same story.
@@ -107,7 +132,8 @@ This is both a pain to fix and a vision the owner wants: a DSA section that find
 ## Non-goals
 
 - A separate play hub or gallery page; players live inside chapters.
-- Accounts, server-side scores, certificates, leaderboards, company tags or timed tests.
+- Accounts, server-side scores, certificates, leaderboards or timed tests.
+- Company names on questions or lists, until the owner supplies sourced data. The owner lifted the company non-goal for the revision list only (2026-10-06).
 - Moving the other 17 topics onto the new reader; epic-topic-redesign owns that.
 - Advanced depth beyond curriculum.md: network flow, suffix arrays, Aho-Corasick, meet-in-the-middle and randomised algorithms. New exercises beyond the ones CAP-6 needs.
 
@@ -116,13 +142,20 @@ This is both a pain to fix and a vision the owner wants: a DSA section that find
 - On a 390px phone, a new reader:
   - opens `/dsa` and takes the placement in under 10 minutes;
   - lands on a plan and opens the first allotted chapter;
-  - plays its visual by keyboard and passes the check;
-  - sees the chapter marked done and scheduled for review.
-- All 42 chapters have a player and a question pool of at least 8.
+  - plays its visual by keyboard, solves its puzzle and, on reaching the chapter's end, answers the "Mark this chapter done?" popup with Yes;
+  - passes the check and sees the chapter marked done and scheduled for review;
+  - sees a missed question on the shaky list in `/review`.
+- All 42 chapters have a player, a puzzle, and a question pool of at least 8 that holds at least 2 complexity questions.
 - `npm run check`, `npm run build` and `npm run test:e2e` pass, with axe clean in all nine themes.
 
 ## Assumptions
 
 - The player is labelled "Play it", with a play icon, so it stays distinct from the Playground link.
 - The eight old inline demos are replaced by the new player, their scripts are removed, and the `#gt-*` e2e test is rewritten.
+- Puzzles reuse the check's choice and order components and the tracers' frames.
+- Real company names need sourced data that the repo does not have, so the revision list groups by interview style and pattern until the owner supplies sources.
 - `/level/dsa` shows the same three-door start card above its level cards. `/path?topic=dsa` shows check-aware ticks. Both stay on their current pages until epic-topic-redesign moves them.
+
+## Open questions
+
+- Should code examples also show in other languages than JavaScript, through a toggle that shows the same example in Python, Java and C++, with JavaScript staying the main language, in this release or a later one? Tracers are language-neutral, so it would affect only the code shown beside the player and in chapter examples. The owner has not answered.

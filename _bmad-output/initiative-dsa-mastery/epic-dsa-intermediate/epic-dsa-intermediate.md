@@ -2,7 +2,7 @@
 type: epic
 title: "Intermediate chapters, complete"
 parent: initiative-dsa-mastery
-covers: [CAP-2, CAP-3, CAP-5, CAP-6, CAP-7]
+covers: [CAP-2, CAP-3, CAP-5, CAP-6, CAP-7, CAP-8, CAP-9, CAP-10]
 after: []
 assignee: ""
 risk: high
@@ -16,7 +16,7 @@ The 19 intermediate chapters (I1–I19 in `curriculum.md`) are finished to one s
 
 ## Outcome
 
-A reader at the intermediate level can read, play and check every chapter in their plan. The intermediate part of the spec's success signal holds: every chapter has a player and a pool of at least 8.
+A reader at the intermediate level can read, play and check every chapter in their plan. The intermediate part of the spec's success signal holds: every chapter has a player, a puzzle and a pool of at least 8 that holds at least 2 complexity questions.
 
 ## Requirements
 
@@ -26,14 +26,18 @@ A reader at the intermediate level can read, play and check every chapter in the
 - R4 (CAP-3): every chapter embeds the players `play-catalog.md` lists for it, each with a tested tracer, presets, a parser and an input limit.
 - R5 (CAP-7): every chapter has a why-it-works box and a common-mistakes box.
 - R6 (CAP-6): a chapter's code, its player's code and its dry-run tables agree. A test compares each tracer's code with the chapter code block it names.
+- R7 (CAP-8): every chapter has at least one puzzle, order-the-steps or pick-the-next-step, built from its tracer and registered in the play registry, whose data loads lazily with the tracer.
+- R8 (CAP-9): every chapter's pool holds at least 2 questions with skill complexity, on a code sample from the chapter, for the end-of-chapter round.
+- R9 (CAP-10): every chapter's pattern record carries interview-style tags (online assessment, phone screen, onsite round) and names no company.
 
 ## Done when
 
 1. The curriculum test's allow-list holds no intermediate chapter.
 2. The pool integrity test shows every intermediate chapter with at least 8 questions, 2 placement-tagged, one authored trace question and a pattern record.
 3. The player registry lists a tracer for every intermediate chapter, and every tracer and code-match test passes.
-4. On /dsa/dsa-dp-1d, a keyboard user plays the player, passes the check and sees the chapter marked read.
-5. Built one story at a time on `feature/dsa-rebuild` with `npm run check`, `npm run build` and `npm run test:e2e` green after each; it reaches production only through the release merge (7.6).
+4. On /dsa/dsa-dp-1d, a keyboard user plays the player, solves its puzzle, passes the check and sees the chapter marked read.
+5. The pool integrity test shows every intermediate chapter with a registered puzzle, at least 2 complexity questions and interview-style tags in its pattern record.
+6. Built one story at a time on `feature/dsa-rebuild` with `npm run check`, `npm run build` and `npm run test:e2e` green after each; it reaches production only through the release merge (7.6).
 
 ## Boundaries
 
@@ -56,3 +60,5 @@ This epic covers the intermediate chapters' content, pools, pattern records and 
 - Waits on epic-dsa-checks because: pools follow 3.1's question model and pattern vocabulary, and each walk passes 3.2's check.
 - Waits on epic-dsa-beginner because: entry 1 follows the beginner sweep (4.8) for the shared registry, index, allow-list and counts.
 - Waits on initiative-groundwork-overhaul epic-topic-redesign because: the user chose topic redesign first (2026-09-30). The topic frame, reader, cover, level, path and outline layout this epic builds on come from its entries 1, 3, 4, 5, 7 and 8, and the nine-theme axe harness comes from epic-audit-fixes entry 3.
+- Decision (2026-10-06): the spec grew puzzles (CAP-8), the complexity round (CAP-9) and the revision list (CAP-10), so every chapter-content entry (1 to 11) now also registers one puzzle, adds 2 complexity questions and tags interview styles (R7, R8, R9), and the sweep checks none is missing. The machinery lives in epic-dsa-play-engine (2.8) and epic-dsa-checks (3.9 to 3.11); this epic supplies per-chapter content only.
+- Decision (2026-10-06): no new after entries were added; the puzzle (2.8), popup (3.9), round (3.10) and badge (3.11) machinery is reached through entry 1's wait on 4.8 and the epic-level waits above.

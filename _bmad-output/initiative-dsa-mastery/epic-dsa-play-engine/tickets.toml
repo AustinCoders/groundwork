@@ -58,20 +58,32 @@ risk = "medium"
 id = 6
 type = "story"
 title = "Presets, edited input and the table view"
-description = "Lets a reader pick a tracer's preset or edit its input through the parser and size limit each tracer declares, with the refusal reason shown in text, and adds a table view listing every frame's variables."
-verify = "On /dsa/dsa-binary-search an edited array replays correctly, an over-limit array is refused with its reason, the table view lists every step, and axe passes on the player under reduced motion in all nine themes."
+description = "Lets a reader pick a tracer's preset or edit its input through a visible \"Try your own input\" control that runs the parser and size limit each tracer declares and says in text why it rejects an input, and adds a table view listing every frame's variables."
+verify = "On /dsa/dsa-binary-search the visible \"Try your own input\" control replays an edited array correctly, an over-limit or malformed array is rejected with its reason shown in text, the table view lists every step, and axe passes on the player under reduced motion in all nine themes."
 covers = ["P4"]
 after = [5]
 hitl = false
 risk = "medium"
 
 [[entry]]
+id = 8
+type = "story"
+title = "Puzzles: order the steps and pick the next step"
+description = "Adds a Puzzle component that reuses 3.2's ChoiceList and OrderList to grade order-the-steps and pick-the-next-step puzzles built from a tracer's frames, registers at least one puzzle per tracer in the lazy registry so puzzle data loads with its tracer, records solved puzzles in groundwork:quiz, and never writes a read mark, XP, activity or review entry, and listing the fields it adds to groundwork:quiz in How this is built."
+verify = "On /dsa/dsa-binary-search a reader orders the steps and picks the next step by keyboard with instant feedback, retries without limit, the solved puzzle is remembered in groundwork:quiz with no progress, XP, activity or review write, every state is stated in text, and axe passes on the puzzle under reduced motion in all nine themes."
+covers = ["P5"]
+after = [1, "3.2", "3.5"]
+hitl = false
+risk = "medium"
+unknown = "Whether pick-the-next-step can be generated from every tracer's frames or some tracers need hand-written distractors; the builder checks this on binary search and the four graph and heap tracers first."
+
+[[entry]]
 id = 7
 type = "story"
 title = "Refactor sweep"
-description = "Cleans up what entries 1 to 6 and their reviews deferred, scoped from their build records when it starts, and takes cleanup only."
+description = "Cleans up what entries 1 to 6, entry 8 and their reviews deferred, scoped from their build records when it starts, and takes cleanup only."
 verify = "npm run check, npm run build and npm run test:e2e pass, and every finding this epic deferred is fixed or moved to a named later entry."
-covers = ["P1", "P2", "P3", "P4"]
-after = [1, 2, 3, 4, 5, 6]
+covers = ["P1", "P2", "P3", "P4", "P5"]
+after = [1, 2, 3, 4, 5, 6, 8]
 hitl = false
 risk = "low"

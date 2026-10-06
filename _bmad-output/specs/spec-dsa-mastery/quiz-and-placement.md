@@ -1,6 +1,6 @@
 # Checks, placement and review
 
-This file is the source for CAP-1, CAP-2 and CAP-7 (review and the pattern drill). The evidence behind it:
+This file is the source for CAP-1, CAP-2, CAP-7 (review, the pattern drill and the shaky list), CAP-9 (the complexity round) and CAP-10 (the revision list). The evidence behind it:
 - `_bmad-output/planning-artifacts/dsa-analysis-2026-09-30/code-and-ux.md` §2, §4, §8.1–§8.3;
 - `research.md` §1, §2 and §6.
 
@@ -32,6 +32,8 @@ This file is the source for CAP-1, CAP-2 and CAP-7 (review and the pattern drill
   - **Pass:** the chapter is marked read through `setChapterDone`, and the reader sees confetti, the score and a note that it comes back for review in 3 days.
   - **Miss:** the reader sees every explanation and a link to each section. Retry draws fresh questions. Retries are unlimited and have no cooldown.
   - **Mark done anyway:** the chapter is marked read and recorded as not checked. The plan and the review page show "not checked".
+- **End-of-chapter popup.** When the reader reaches the end card of a chapter that is not done, a modal dialog asks "Mark this chapter done?". Yes scrolls to and opens the check at `#check`. Not yet closes it and records the dismissal for that chapter in `groundwork:quiz`; it never opens again for that chapter. It is a focus-trapped dialog: Escape closes it and returns focus. It never opens mid-reading, on a done chapter, or when the reader arrived at `#check` on purpose.
+- **XP and badges.** A pass calls `setChapterDone`, which already feeds XP, streak and activity. The check adds two badge definitions: "First check passed" (first pass on any chapter) and "A level checked" (every chapter of one level has a pass).
 - **Existing read marks** stay done. They display as "read before checks" and offer an optional "Check yourself".
 - **Where the check appears:**
   - the chapter's end card, reachable at `#check`;
@@ -56,12 +58,17 @@ This file is the source for CAP-1, CAP-2 and CAP-7 (review and the pattern drill
   - Allotted chapters are every chapter at or above the level, plus the lower chapters the reader missed. They are ordered by prerequisites.
 - **Result screen:**
   - It shows the level, the allotted chapters and the tested-out chapters. It never shows a raw score.
-  - It offers Continue to the first allotted chapter, retake, and reset to the beginning.
+  - It offers Continue to the first allotted chapter, retake, and reset to the beginning. Chapters below the reader's level stay open and are listed as "Revise earlier".
   - After a placement, the cover's Continue, Up next and the path's next step follow the plan and skip tested-out chapters (user, 2026-09-30).
 - **Storage:**
   - Placement is stored in its own versioned key, `groundwork:dsa:placement`, holding mode, level, scores per stage, tested-out chapters, allotted chapters and the time taken.
   - It never writes `jsnotes:progress` and never sets `jsnotes:level`.
   - Tested-out chapters count as covered on the plan, but earn no XP and get no review entry.
+
+## Complexity round (CAP-9)
+
+- A chapter's end card offers a round of 2 questions with skill `complexity` on a short code sample from the chapter. The pool holds at least 2 such questions per chapter, beyond the ones a check may draw.
+- The round is optional, has no pass mark and never blocks mark done. Each answer shows its explanation. A wrong answer adds the question to the shaky list.
 
 ## Stores
 
@@ -71,7 +78,10 @@ This file is the source for CAP-1, CAP-2 and CAP-7 (review and the pattern drill
   - the last attempt time;
   - the pass time, or null;
   - whether it was marked without a pass;
-  - the question ids missed.
+  - the question ids missed;
+  - whether the end-of-chapter popup was dismissed;
+  - the last complexity-round result and the puzzles solved (CAP-8).
+  The same key holds the shaky list: question ids missed in checks, rounds and review, each removed when it is next answered right.
 - **The read mark** stays in `jsnotes:progress`.
 - **Reactivity.** Both stores are `useSyncExternalStore` stores with a snapshot cache and cross-tab events, following `lib/interviewConfidence.ts`.
 - **"How this is built"** (`arch-state.ts`) lists the new keys.
@@ -85,4 +95,11 @@ This file is the source for CAP-1, CAP-2 and CAP-7 (review and the pattern drill
   
   The gaps stay 3, 7, 21, 60 and 180 days. A DSA chapter's gap lives in `groundwork:quiz`, so the review count in `jsnotes:progress` only grows and XP never falls (user, 2026-09-30). Other topics keep self-rating.
 - **Which-pattern drill.** The drill uses the problem statements tagged by pattern in the placement and check banks. It mixes statements from the reader's done chapters, and the reader picks the pattern.
-- **Cheat sheet.** One page lists every pattern with its signals, its template and its complexity. It links each pattern to its chapter and player.
+- **Cheat sheet.** One page per pattern shows its signals, its template and its complexity, and links to its chapter and player. An index page lists every pattern.
+- **Shaky list.** `/review` shows it, grouped by chapter, with a link to the section that teaches each question and a button to answer it again.
+
+## Revision list (CAP-10)
+
+- `/dsa` offers a revision list. It groups three things the reader already has: done chapters, shaky questions and the site's existing exercises. Groups are by interview style (online assessment, phone screen, onsite round) and by pattern, using the pattern vocabulary and each chapter's pattern record.
+- Each chapter and exercise carries one or more style tags in its pattern record. The list names no company; company names wait for sourced data from the owner.
+- It reads only local data and needs no network.

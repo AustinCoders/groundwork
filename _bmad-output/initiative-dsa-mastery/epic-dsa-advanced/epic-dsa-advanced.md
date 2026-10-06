@@ -2,7 +2,7 @@
 type: epic
 title: "Advanced chapters, complete"
 parent: initiative-dsa-mastery
-covers: [CAP-2, CAP-3, CAP-5, CAP-6, CAP-7]
+covers: [CAP-2, CAP-3, CAP-5, CAP-6, CAP-7, CAP-8, CAP-9, CAP-10]
 after: []
 assignee: ""
 risk: high
@@ -26,6 +26,9 @@ A reader at the advanced level can read, play and check every chapter in their p
 - R4 (CAP-3): every chapter embeds the players `play-catalog.md` lists for it, each with a tested tracer, presets, a parser and an input limit.
 - R5 (CAP-7): every chapter has a why-it-works box and a common-mistakes box.
 - R6 (CAP-6): a chapter's code, its player's code and its dry-run tables agree. A test compares each tracer's code with the chapter code block it names.
+- R7 (CAP-8): every advanced chapter has at least one puzzle (order the steps or pick the next step) built from its tracer and registered in the play registry, with its data loaded lazily with the tracer.
+- R8 (CAP-9): every advanced chapter's pool holds at least 2 questions with skill complexity, written on a code sample from the chapter, for the end-card complexity round.
+- R9 (CAP-10): every advanced chapter's pattern record carries interview-style tags (online assessment, phone screen, onsite round) for the revision list, and names no company.
 
 ## Done when
 
@@ -33,7 +36,8 @@ A reader at the advanced level can read, play and check every chapter in their p
 2. The pool integrity test shows every advanced chapter with at least 8 questions, 2 placement-tagged, one authored trace question and a pattern record.
 3. The player registry lists a tracer for every advanced chapter, and every tracer and code-match test passes.
 4. On /dsa/dsa-graph-structure, a keyboard user plays the player, passes the check and sees the chapter marked read.
-5. Built one story at a time on `feature/dsa-rebuild` with `npm run check`, `npm run build` and `npm run test:e2e` green after each; it reaches production only through the release merge (7.6).
+5. Every advanced chapter has a registered puzzle, at least 2 complexity questions in its pool and style tags in its pattern record, and the pool integrity test and the puzzle registry test show it.
+6. Built one story at a time on `feature/dsa-rebuild` with `npm run check`, `npm run build` and `npm run test:e2e` green after each; it reaches production only through the release merge (7.6).
 
 ## Boundaries
 
@@ -41,7 +45,7 @@ This epic covers the advanced chapters' content, pools, pattern records and trac
 
 ## References
 
-- spec — _bmad-output/specs/spec-dsa-mastery/SPEC.md, CAP-2, CAP-3, CAP-5, CAP-6, CAP-7
+- spec — _bmad-output/specs/spec-dsa-mastery/SPEC.md, CAP-2, CAP-3, CAP-5, CAP-6, CAP-7, CAP-8, CAP-9, CAP-10
 - design — _bmad-output/specs/spec-dsa-mastery/curriculum.md, play-catalog.md (Players), quiz-and-placement.md (Question model)
 - analysis — _bmad-output/planning-artifacts/dsa-analysis-2026-09-30/content.md §2–§4, §7
 - model chapter — content/dsa/dsa-advanced-graph-algorithms.ts, the depth and arc the others are raised to
@@ -56,3 +60,7 @@ This epic covers the advanced chapters' content, pools, pattern records and trac
 - Waits on epic-dsa-checks because: pools follow 3.1's question model and pattern vocabulary, and each walk passes 3.2's check.
 - Waits on epic-dsa-intermediate because: entry 1 follows the intermediate sweep (5.12) for the same shared files.
 - Waits on initiative-groundwork-overhaul epic-topic-redesign because: the user chose topic redesign first (2026-09-30). The topic frame, reader, cover, level, path and outline layout this epic builds on come from its entries 1, 3, 4, 5, 7 and 8, and the nine-theme axe harness comes from epic-audit-fixes entry 3.
+- Decision (2026-10-06): the spec gained puzzles (CAP-8), the complexity round (CAP-9) and style tags for the revision list (CAP-10), so every chapter-content entry now also registers one puzzle, adds at least 2 complexity questions and style-tags its pattern record. Added R7, R8 and R9 and covered them from entries 1 to 7; ids, titles and after are unchanged.
+- Decision (2026-10-06): the Refactor sweep (8) covers R7 to R9 and its verify checks that no chapter lacks a puzzle or two complexity questions.
+- Decision (2026-10-06, owner to confirm): A11 interview strategy has no algorithm, but it has a constraints-to-approach tracer, so its puzzle orders the steps of an interview strategy from that tracer; if the owner prefers an exception for A11, drop its puzzle and keep the two complexity questions on the chapter's code sample.
+- Waits on epic-dsa-play-engine entry 8 and epic-dsa-checks entries 1 and 10 for the puzzle registry and the complexity pool model: these are already ordered through 2.7 and 3.8 ahead of entry 1, so no new after is added.

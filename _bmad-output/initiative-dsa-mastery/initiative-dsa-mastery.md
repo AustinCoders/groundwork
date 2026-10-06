@@ -2,7 +2,7 @@
 type: initiative
 title: "DSA that meets you at your level"
 parent: none
-covers: [CAP-1, CAP-2, CAP-3, CAP-4, CAP-5, CAP-6, CAP-7]
+covers: [CAP-1, CAP-2, CAP-3, CAP-4, CAP-5, CAP-6, CAP-7, CAP-8, CAP-9, CAP-10]
 after: []
 assignee: ""
 risk: high
@@ -15,7 +15,8 @@ risk: high
 The DSA section:
 - finds a reader's level and gives them a chapter plan;
 - lets them play how each chapter's structure or algorithm works inside;
-- checks their understanding before a chapter counts as done;
+- checks their understanding before a chapter counts as done, with an end-of-chapter popup, a complexity round and puzzles beside the player;
+- tracks what they got wrong in a shaky list and offers a revision list by interview style and pattern;
 - teaches beginner to advanced in depth, on the topic frame that epic-topic-redesign builds.
 
 The spec at `_bmad-output/specs/spec-dsa-mastery/SPEC.md` owns the capabilities, constraints and non-goals, with its companions `curriculum.md`, `play-catalog.md` and `quiz-and-placement.md`.
@@ -26,22 +27,26 @@ A reader can go from their first visit to `/dsa` to a checked chapter on a phone
 
 ## Done when
 
-1. The spec's success signal passes on production: the 390px walk from placement to a checked chapter, with all 42 chapters having a player and a pool of at least 8 questions.
-2. CAP-1 to CAP-7 are live on production for every reader, not behind a flag.
+1. The spec's success signal passes on production: the 390px walk from placement to a checked chapter, with all 42 chapters having a player, at least one puzzle, and a pool of at least 8 questions that holds at least 2 complexity questions.
+2. CAP-1 to CAP-10 are live on production for every reader, not behind a flag, owned as follows:
+   - CAP-1 (Revise earlier), CAP-4, CAP-5 and CAP-6 plus each chapter's puzzle, 2 complexity questions and style tags: epic-dsa-frame and the three level epics;
+   - CAP-3 ("Try your own input") and CAP-8 (puzzles): epic-dsa-play-engine;
+   - CAP-2 (end-of-chapter popup, XP, streak and the two badges) and CAP-9 (complexity round): epic-dsa-checks;
+   - CAP-7 (shaky list, per-pattern cheat sheet and index) and CAP-10 (revision list): epic-dsa-aids-release.
 3. Existing DSA read marks, XP, badges and review schedules are the same after release as before it.
-4. axe is clean in all nine themes at 1440 and 390 on the DSA cover, a chapter at each level, the placement, the pattern drill and the cheat sheet.
+4. axe is clean in all nine themes at 1440 and 390 on the DSA cover, a chapter at each level, the placement, the pattern drill, the cheat sheet index and a pattern page, the popup open, a puzzle, and the revision list.
 5. The other 17 topics, the Git guide and How this is built behave as before, and their e2e tests pass unchanged.
 
 ## Boundaries
 
-This initiative is the DSA section only. The spec's non-goals rule out the other topics' pages (epic-topic-redesign), accounts and a play hub.
+This initiative is the DSA section only. The spec's non-goals rule out the other topics' pages (epic-topic-redesign), accounts, a play hub, timed tests, leaderboards, certificates and company names on questions until the owner supplies sourced data. The other-language code toggle is an open question and is not planned.
 
 The epics follow the spec's capabilities:
 - the foundations on the topic frame;
-- the player;
-- the checks and placement;
+- the player and its puzzles;
+- the checks, placement, end-of-chapter popup, complexity round and badges;
 - one epic per level for the chapters;
-- the aids and the release.
+- the aids (shaky list, cheat sheet, revision list) and the release.
 
 Tracer path across epics: `/dsa/dsa-binary-search`, with its island (1.1), its player (2.1) and its check (3.1 and 3.2).
 
@@ -51,7 +56,7 @@ Touch points:
 - **`content/interview-data.ts`.** DSA chapter and exercise counts are derived. Owner: epic-dsa-frame (1.4).
 - **`/level/[topic]` and `/path`.** They gain DSA-only behaviour through Topic data, and stop writing `jsnotes:level` for quiz topics. Owner: epic-dsa-checks (3.7).
 - **`lib/mock/adaptive.ts`.** Its thresholds move to a shared lib, and the mock is unchanged. Owner: epic-dsa-checks (3.3).
-- **`app/review` and `lib/storage`.** A new DSA-only review function is added, and `markReviewed`, `dueAt` and `REVIEW_GAPS_DAYS` are untouched. Owner: epic-dsa-aids-release (7.1).
+- **`app/review` and `lib/storage`.** A new DSA-only review function is added, and `markReviewed`, `dueAt` and `REVIEW_GAPS_DAYS` are untouched. Owner: epic-dsa-aids-release (7.1, shaky list 7.7).
 - **`content/practice/dsa-*.ts`.** Exercises are moved and new ones written for the new chapters. Owner: the level epics.
 - **`content/types.ts`.** `Topic.completion` and `Chapter.prerequisites` are optional fields shared by all 18 topics. Owner: epic-dsa-frame (1.2).
 - **The shared enhancers, narration and smooth scrolling.** They skip `[data-island]`. Owner: epic-dsa-frame (1.1).
@@ -64,6 +69,8 @@ Decisions the epics share:
 - The tracer model and registry (play-catalog.md, Engine), owned by 2.1.
 - The question model and pattern vocabulary with per-chapter pattern records (quiz-and-placement.md, Question model), owned by 3.1.
 - The ChoiceList component, owned by 3.2.
+- The puzzle model and registry, built on the tracer frames and the check's choice and order components, owned by 2.8.
+- The shaky list and the popup dismissals, which live in groundwork:quiz, owned by the checks and aids-release epics (3.9, 3.10, 7.7).
 
 ## References
 
@@ -89,3 +96,14 @@ Decisions the epics share:
 - Decision (user, 2026-09-30): topic redesign comes first. This initiative starts after initiative-groundwork-overhaul's epic-topic-redesign is done. That epic in turn waits on epic-audit-fixes entries 2–5; entry 3 supplies the nine-theme axe harness.
 - Decision (agent, 2026-09-30): there is no platform-baseline epic. The repo, CI and deployment exist, and the topic frame comes from epic-topic-redesign.
 - Waits on initiative-groundwork-overhaul epic-topic-redesign because: DSA's pages, the outline layout, the level and path pages, and the parts this initiative extends all come from it. `tickets.py` cannot express a cross-initiative `after`, so the wait is recorded here and in each epic's Notes.
+- Decision (agent, 2026-10-06): the spec grew from CAP-1..CAP-7 to CAP-1..CAP-10, so `covers` now lists all ten. The initiative-level tickets.toml lists only epics and is unchanged; no new epic is added.
+- Decision (agent, 2026-10-06): ownership of the new and extended capabilities.
+  - CAP-8 puzzles: epic-dsa-play-engine (2.8).
+  - CAP-9 complexity round and the CAP-2 popup and badges: epic-dsa-checks (3.10, 3.9, 3.11).
+  - CAP-7 shaky list: epic-dsa-aids-release (7.7). The cheat sheet is one page per pattern plus an index (7.3).
+  - CAP-10 revision list: epic-dsa-aids-release (7.8).
+  - CAP-1 "Revise earlier" extends the placement flow (3.7); the CAP-3 "Try your own input" control belongs to the player.
+  - Per-chapter puzzle, 2 complexity questions and style tags: the three level epics, through each chapter story.
+- Decision (user, 2026-10-06): the company non-goal is lifted for the revision list only. Until the owner supplies sourced data it groups by interview style and pattern and names no company. Timed tests, leaderboards, accounts, server-side scores and certificates stay non-goals.
+- Decision (agent, 2026-10-06): the release gate (7.5) now also covers the popup, a puzzle and the shaky list in the 390px walk, and every chapter's puzzle and 2 complexity questions.
+- Open question (2026-10-06, owner has not answered): other-language code toggle (Python, Java, C++), this release or later. It is not planned in any epic.
