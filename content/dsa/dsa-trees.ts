@@ -6,6 +6,7 @@ export const dsaTrees: Chapter = {
   title: "Trees",
   short: "Trees",
   levels: ["intermediate"],
+  prerequisites: ["dsa-basic-recursion", "dsa-stacks-queues"],
   practice: [
     "ex-tree-max-depth",
     "ex-tree-same-tree",

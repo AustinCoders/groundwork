@@ -581,3 +581,5 @@ akshataustin
 jokeapi
 gstatic
 drillable
+tarjan
+kosaraju

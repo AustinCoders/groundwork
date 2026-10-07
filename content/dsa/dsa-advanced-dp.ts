@@ -6,6 +6,7 @@ export const dsaAdvancedDp: Chapter = {
   title: "Advanced DP",
   short: "Advanced DP",
   levels: ["advanced"],
+  prerequisites: ["dsa-dp-2d", "dsa-dp-state-machines"],
   practice: [
     "ex-travelling-salesman-bitmask",
     "ex-partition-k-equal-sum-subsets",

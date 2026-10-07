@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaBitManipulation: Chapter = {
   id: "dsa-bit-manipulation",
-  num: "I11",
+  num: "I15",
   title: "Bit manipulation",
   short: "Bit manipulation",
   levels: ["intermediate"],
+  prerequisites: ["dsa-complexity-analysis"],
   practice: [
     "ex-single-number",
     "ex-single-number-three-times",

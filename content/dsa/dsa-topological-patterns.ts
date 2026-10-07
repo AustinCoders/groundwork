@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaTopologicalPatterns: Chapter = {
   id: "dsa-topological-patterns",
-  num: "A11",
+  num: "I8",
   title: "Topological patterns",
   short: "Topological patterns",
-  levels: ["advanced"],
+  levels: ["intermediate"],
+  prerequisites: ["dsa-graph-problems"],
   practice: [
     "ex-course-schedule",
     "ex-course-schedule-ii",

@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaBinarySearch: Chapter = {
   id: "dsa-binary-search",
-  num: "B6",
+  num: "B8",
   title: "Binary search",
   short: "Binary search",
   levels: ["beginner"],
+  prerequisites: ["dsa-arrays-strings"],
   practice: [
     "ex-binary-search-classic",
     "ex-search-insert-position",

@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaTwoPointers: Chapter = {
   id: "dsa-two-pointers",
-  num: "B4",
+  num: "B6",
   title: "Two pointers",
   short: "Two pointers",
   levels: ["beginner"],
+  prerequisites: ["dsa-arrays-strings"],
   practice: [
     "ex-sort-colors",
     "ex-next-permutation",

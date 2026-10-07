@@ -6,6 +6,7 @@ export const dsaComplexityAnalysis: Chapter = {
   title: "Complexity analysis",
   short: "Complexity analysis",
   levels: ["beginner"],
+  prerequisites: [],
   practice: ["ex-classify-growth-rate", "ex-rewrite-nested-loop-linear", "ex-count-basic-operations"],
   ready: true,
   subtitle: "The one skill every interviewer is silently scoring, whether they say so or not.",

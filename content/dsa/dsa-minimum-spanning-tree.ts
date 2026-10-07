@@ -6,6 +6,7 @@ export const dsaMinimumSpanningTree: Chapter = {
   title: "Minimum Spanning Tree",
   short: "Minimum Spanning Tree",
   levels: ["advanced"],
+  prerequisites: ["dsa-union-find", "dsa-heaps-priority-queues"],
   practice: ["ex-min-cost-connect-all-points", "ex-connect-cities"],
   ready: true,
   subtitle:

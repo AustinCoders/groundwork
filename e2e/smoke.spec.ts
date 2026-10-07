@@ -398,6 +398,59 @@ test("an outline chapter shows its roadmap, a Meanwhile link, and prev/next scop
   await expect(pager.getByRole("link", { name: /Next/i })).toHaveAttribute("href", "/typescript/ts-basic-types");
 });
 
+test("the DSA cover lists all 42 chapters and an outline chapter renders its outline page", async ({ page }) => {
+  await page.goto("/dsa");
+  const outlineIds = [
+    "dsa-js-toolkit",
+    "dsa-prefix-sums",
+    "dsa-bst-operations",
+    "dsa-grid-bfs",
+    "dsa-dp-state-machines",
+    "dsa-math",
+    "dsa-graph-structure",
+    "dsa-sparse-table",
+  ];
+  for (const id of outlineIds) {
+    await expect(page.locator(`a[href="/dsa/${id}"]`).first(), id).toBeAttached();
+  }
+  const chapterLinkCount = await page
+    .locator('a[href^="/dsa/dsa-"]')
+    .evaluateAll((links) => new Set(links.map((a) => a.getAttribute("href"))).size);
+  expect(chapterLinkCount).toBe(42);
+
+  const order = await page.locator('main a[href^="/dsa/dsa-"]').evaluateAll((links) => {
+    const seen: string[] = [];
+    for (const a of links) {
+      const href = (a.getAttribute("href") ?? "").split(/[?#]/)[0];
+      if (!seen.includes(href)) seen.push(href);
+    }
+    return seen;
+  });
+  expect(order.slice(0, 5)).toEqual([
+    "/dsa/dsa-complexity-analysis",
+    "/dsa/dsa-js-toolkit",
+    "/dsa/dsa-arrays-strings",
+    "/dsa/dsa-prefix-sums",
+    "/dsa/dsa-hashing",
+  ]);
+  expect(order.indexOf("/dsa/dsa-basic-recursion")).toBeLessThan(order.indexOf("/dsa/dsa-sorting-algorithms"));
+  for (const id of ["dsa-tries", "dsa-monotonic-stack-queue", "dsa-topological-patterns"]) {
+    await expect(
+      page.locator(`section[aria-labelledby="part-intermediate"] a[href="/dsa/${id}"]`).first(),
+      `${id} under Intermediate`
+    ).toBeAttached();
+    await expect(
+      page.locator(`section[aria-labelledby="part-advanced"] a[href="/dsa/${id}"]`),
+      `${id} not under Advanced`
+    ).toHaveCount(0);
+  }
+
+  await page.goto("/dsa/dsa-math");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(/Math for interviews/i);
+  await expect(page.getByText("Not written yet.")).toBeVisible();
+  await expect(page.getByText(/modular inverse/i).first()).toBeVisible();
+});
+
 test("print shows only the chapter head and body, hiding the rail, contents, pager and end card", async ({ page }) => {
   await page.goto("/notes/setup-mental-model");
   await page.emulateMedia({ media: "print" });

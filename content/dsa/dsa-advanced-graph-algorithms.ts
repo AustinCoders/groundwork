@@ -6,6 +6,7 @@ export const dsaAdvancedGraphAlgorithms: Chapter = {
   title: "Advanced graph algorithms",
   short: "Advanced graph algorithms",
   levels: ["advanced"],
+  prerequisites: ["dsa-heaps-priority-queues", "dsa-grid-bfs", "dsa-topological-patterns"],
   practice: [
     "ex-network-delay-time",
     "ex-cheapest-flights-within-k-stops",

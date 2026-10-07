@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaLinkedLists: Chapter = {
   id: "dsa-linked-lists",
-  num: "B9",
+  num: "B12",
   title: "Linked lists",
   short: "Linked lists",
   levels: ["beginner"],
+  prerequisites: ["dsa-js-toolkit"],
   practice: [
     "ex-reverse-linked-list",
     "ex-merge-two-sorted-lists",

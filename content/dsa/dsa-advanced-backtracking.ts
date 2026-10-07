@@ -6,6 +6,7 @@ export const dsaAdvancedBacktracking: Chapter = {
   title: "Advanced backtracking",
   short: "Advanced backtracking",
   levels: ["advanced"],
+  prerequisites: ["dsa-backtracking"],
   practice: ["ex-n-queens-count", "ex-solve-n-queens", "ex-makesquare", "ex-solve-sudoku"],
   ready: true,
   subtitle: 'Same three lines as before — the advanced part is saying "no" earlier and storing state in bits.',

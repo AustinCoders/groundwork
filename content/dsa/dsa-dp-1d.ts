@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaDp1d: Chapter = {
   id: "dsa-dp-1d",
-  num: "I7",
+  num: "I10",
   title: "Dynamic programming: 1D",
   short: "DP: 1D",
   levels: ["intermediate"],
+  prerequisites: ["dsa-basic-recursion", "dsa-binary-search"],
   practice: [
     "ex-climbing-stairs",
     "ex-house-robber",

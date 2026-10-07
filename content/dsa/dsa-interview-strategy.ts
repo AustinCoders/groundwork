@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaInterviewStrategy: Chapter = {
   id: "dsa-interview-strategy",
-  num: "A12",
+  num: "A11",
   title: "Interview strategy",
   short: "Interview strategy",
   levels: ["advanced"],
+  prerequisites: ["dsa-complexity-analysis"],
   practice: ["ex-pick-approach-from-constraint", "ex-feasible-approaches-under-constraints"],
   ready: true,
   subtitle:

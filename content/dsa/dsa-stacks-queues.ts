@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaStacksQueues: Chapter = {
   id: "dsa-stacks-queues",
-  num: "B8",
+  num: "B11",
   title: "Stacks & queues",
   short: "Stacks & queues",
   levels: ["beginner"],
+  prerequisites: ["dsa-js-toolkit"],
   practice: [
     "ex-min-stack",
     "ex-queue-using-stacks",

@@ -181,7 +181,7 @@ export const archBuild: Chapter = {
 <span class="ttl">Build time is not the constraint</span>
 <p>
   Static generation is the only step that grows with the content, and it renders about 80 files a
-  second. Writing the 358 outlined chapters would not add a single route, because every outline already
+  second. Writing the 366 outlined chapters would not add a single route, because every outline already
   has its page; it would only make those pages longer. The build would get slower by seconds, not
   minutes. Deploy storage is a more
   likely limit: each deployment is large enough that a scheduled workflow prunes old ones.

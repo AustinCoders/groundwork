@@ -6,6 +6,7 @@ export const dsaSegmentFenwickTrees: Chapter = {
   title: "Segment trees & Fenwick trees",
   short: "Segment & Fenwick trees",
   levels: ["advanced"],
+  prerequisites: ["dsa-trees", "dsa-prefix-sums"],
   practice: [
     "ex-range-sum-query-mutable",
     "ex-fenwick-binary-indexed-tree",

@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaBasicRecursion: Chapter = {
   id: "dsa-basic-recursion",
-  num: "B10",
+  num: "B9",
   title: "Basic recursion",
   short: "Basic recursion",
   levels: ["beginner"],
+  prerequisites: ["dsa-complexity-analysis"],
   practice: ["ex-fibonacci-memoised", "ex-fast-power", "ex-generate-subsets", "ex-flatten-nested-array"],
   ready: true,
   subtitle: "Trees, backtracking, DP and divide-and-conquer are all recursion wearing a costume.",

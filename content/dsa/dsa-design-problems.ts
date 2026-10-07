@@ -6,6 +6,7 @@ export const dsaDesignProblems: Chapter = {
   title: "Design problems",
   short: "Design problems",
   levels: ["advanced"],
+  prerequisites: ["dsa-hashing", "dsa-linked-lists", "dsa-heaps-priority-queues"],
   practice: [
     "ex-lru-cache",
     "ex-design-hashmap",

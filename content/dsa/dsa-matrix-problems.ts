@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaMatrixProblems: Chapter = {
   id: "dsa-matrix-problems",
-  num: "I12",
+  num: "I16",
   title: "Matrix problems",
   short: "Matrix problems",
   levels: ["intermediate"],
+  prerequisites: ["dsa-prefix-sums"],
   practice: [
     "ex-spiral-matrix",
     "ex-rotate-image",

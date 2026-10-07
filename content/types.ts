@@ -30,6 +30,7 @@ export interface Topic {
   curriculumNotes?: string[] | null;
   levels?: Level[] | null;
   planned?: string[];
+  completion?: "read" | "quiz";
 }
 
 export interface TopicNav {
@@ -62,6 +63,7 @@ export interface Chapter {
   title: string;
   short: string;
   levels: LevelId[];
+  prerequisites?: string[];
   practice: string[];
   ready: boolean;
   subtitle: string;

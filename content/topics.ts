@@ -2477,12 +2477,13 @@ export const topics: TopicsData = {
       accent: "ink",
       tagline: "Patterns, not puzzle answers",
       status: "ready",
+      completion: "quiz",
       notes: "dsa.html",
       blurb:
         'Complexity you can estimate, every classic pattern from two pointers to segment trees, and the interview strategy to turn all of it into offers. Beginner through advanced, laid out the same way as the rest of the shelf — built for top-tier interview prep, not just "pass an easy problem."',
       curriculumNotes: [
         "This curriculum is deliberately pattern-first, not problem-first — every chapter is \"the shape of problem this solves,\" because that's what actually transfers to a problem you've never seen in an interview.",
-        "Trees and graphs each get two chapters (structure, then the harder problems built on it) because that split is where most intermediate candidates plateau.",
+        "Trees and graphs each get a structure chapter and a problems chapter, with the topics that depend on them (BSTs, grid BFS, topological sort, tries, the monotonic stack) placed in intermediate right after, because that split is where most intermediate candidates plateau.",
         "Interview strategy is its own advanced chapter, not an afterthought — knowing the patterns and communicating your thinking clearly under pressure are different skills, and top offers depend on both.",
       ],
       levels: [
@@ -2492,7 +2493,7 @@ export const topics: TopicsData = {
           mark: "1",
           tagline: "I can solve easy problems reliably.",
           blurb:
-            "Start with complexity analysis, then the toolkit every pattern is built from: arrays, hashing, two pointers, sliding window, binary search, stacks, linked lists and recursion.",
+            "Start with complexity analysis and the JavaScript toolkit, then what every pattern is built from: arrays, prefix sums, hashing, two pointers, sliding window, binary search, recursion, sorting, stacks and linked lists.",
           bullets: [
             "You know JavaScript's arrays, objects and functions comfortably",
             "You can solve some LeetCode Easy problems, slowly, by trial and error",
@@ -2507,9 +2508,32 @@ export const topics: TopicsData = {
               items: ["Big-O, time/space tradeoffs, analyzing your own code"],
             },
             {
+              title: "The JavaScript toolkit for DSA",
+              chapter: "dsa-js-toolkit",
+              items: [
+                "Map, Set and array operation costs",
+                "Comparators for sort",
+                "No built-in heap, deque or TreeMap, and what to do instead",
+                "The head-index queue",
+                "Recursion depth limits",
+                "String building",
+                "Typed arrays",
+              ],
+            },
+            {
               title: "Arrays & strings",
               chapter: "dsa-arrays-strings",
               items: ["Fundamentals, in-place operations, common gotchas"],
+            },
+            {
+              title: "Prefix sums and difference arrays",
+              chapter: "dsa-prefix-sums",
+              items: [
+                "Prefix array and range sums",
+                "Prefix sums with a hash map: subarray sum equals k, with negatives",
+                "Difference arrays",
+                "2D prefix sums",
+              ],
             },
             {
               title: "Hashing",
@@ -2532,6 +2556,11 @@ export const topics: TopicsData = {
               items: ["On sorted arrays, and on the answer itself"],
             },
             {
+              title: "Basic recursion",
+              chapter: "dsa-basic-recursion",
+              items: ["Base cases, the call stack, drawing a recursion tree"],
+            },
+            {
               title: "Sorting algorithms",
               chapter: "dsa-sorting-algorithms",
               items: ["How they work, when to use which, stability"],
@@ -2546,11 +2575,6 @@ export const topics: TopicsData = {
               chapter: "dsa-linked-lists",
               items: ["Traversal, reversal, fast/slow pointer tricks"],
             },
-            {
-              title: "Basic recursion",
-              chapter: "dsa-basic-recursion",
-              items: ["Base cases, the call stack, drawing a recursion tree"],
-            },
           ],
         },
         {
@@ -2559,7 +2583,7 @@ export const topics: TopicsData = {
           mark: "2",
           tagline: "I can solve mediums and recognize the pattern fast.",
           blurb:
-            "You have the toolkit. Now learn the structures and techniques that cover most real interview questions: trees, graphs, backtracking, DP, greedy and bit tricks.",
+            "You have the toolkit. Now learn the structures and techniques that cover most real interview questions: trees and BSTs, graphs and grid BFS, topological sort, backtracking, DP, greedy, tries, the monotonic stack, bit tricks and math.",
           bullets: [
             "Comfortable with two pointers, sliding window and basic recursion",
             "You can solve LeetCode Mediums, but slower than you'd like in a live interview",
@@ -2572,6 +2596,15 @@ export const topics: TopicsData = {
               title: "Trees",
               chapter: "dsa-trees",
               items: ["Binary trees, traversals (in/pre/post-order), BST properties"],
+            },
+            {
+              title: "BST operations and ordered data",
+              chapter: "dsa-bst-operations",
+              items: [
+                "Insert, delete, successor and kth smallest",
+                "BST iterator",
+                "No TreeMap in JavaScript: sorted array with binary search, and heaps",
+              ],
             },
             {
               title: "Tree problems in depth",
@@ -2589,9 +2622,19 @@ export const topics: TopicsData = {
               items: ["Adjacency list/matrix, BFS/DFS"],
             },
             {
+              title: "BFS on grids and implicit graphs",
+              chapter: "dsa-grid-bfs",
+              items: ["Direction arrays", "Distance layers", "Multi-source BFS", "Word-ladder style state graphs"],
+            },
+            {
               title: "Graph problems",
               chapter: "dsa-graph-problems",
               items: ["Connected components, cycle detection, bipartite checks"],
+            },
+            {
+              title: "Topological patterns",
+              chapter: "dsa-topological-patterns",
+              items: ["Kahn and DFS order, course scheduling, alien dictionary, longest path in a DAG"],
             },
             {
               title: "Backtracking",
@@ -2607,6 +2650,11 @@ export const topics: TopicsData = {
               title: "Dynamic programming: 2D",
               chapter: "dsa-dp-2d",
               items: ["Grid DP, the knapsack pattern"],
+            },
+            {
+              title: "DP state machines and the knapsack family",
+              chapter: "dsa-dp-state-machines",
+              items: ["Stock buy and sell series", "0/1, unbounded and bounded knapsack", "Subset sum and partition"],
             },
             {
               title: "Greedy algorithms",
@@ -2628,6 +2676,28 @@ export const topics: TopicsData = {
               chapter: "dsa-matrix-problems",
               items: ["Traversal patterns, rotation, spiral order"],
             },
+            {
+              title: "Tries",
+              chapter: "dsa-tries",
+              items: ["Implementation, word search / autocomplete-style problems"],
+            },
+            {
+              title: "Monotonic stack & queue in depth",
+              chapter: "dsa-monotonic-stack-queue",
+              items: ["Next-greater-element and sliding-window-maximum patterns"],
+            },
+            {
+              title: "Math for interviews",
+              chapter: "dsa-math",
+              items: [
+                "gcd and lcm",
+                "Modulo 1e9+7",
+                "BigInt and safe integers",
+                "Modular fast power",
+                "Sieve of Eratosthenes",
+                "nCr mod p and the modular inverse",
+              ],
+            },
           ],
         },
         {
@@ -2636,7 +2706,7 @@ export const topics: TopicsData = {
           mark: "3",
           tagline: "I can solve hards and design the efficient answer.",
           blurb:
-            "Advanced DP, union-find, the harder graph algorithms, tries and segment trees — plus the interview strategy that turns pattern knowledge into offers.",
+            "Advanced DP, union-find, shortest paths, spanning trees, SCC and bridges, segment trees and sparse tables — plus the interview strategy that turns pattern knowledge into offers.",
           bullets: [
             "You can already solve most Mediums within an interview window",
             "LeetCode Hards feel possible, not hopeless, but still take too long",
@@ -2648,7 +2718,7 @@ export const topics: TopicsData = {
             {
               title: "Advanced DP",
               chapter: "dsa-advanced-dp",
-              items: ["State machines, DP on trees, bitmask DP"],
+              items: ["DP on trees, bitmask DP, digit and interval DP"],
             },
             {
               title: "Union-Find (Disjoint Set)",
@@ -2658,7 +2728,7 @@ export const topics: TopicsData = {
             {
               title: "Advanced graph algorithms",
               chapter: "dsa-advanced-graph-algorithms",
-              items: ["Dijkstra, Bellman-Ford, topological sort"],
+              items: ["Dijkstra, Bellman-Ford, shortest paths"],
             },
             {
               title: "Minimum Spanning Tree",
@@ -2666,9 +2736,14 @@ export const topics: TopicsData = {
               items: ["Kruskal's and Prim's algorithms"],
             },
             {
-              title: "Tries",
-              chapter: "dsa-tries",
-              items: ["Implementation, word search / autocomplete-style problems"],
+              title: "Advanced graphs: SCC, bridges, Euler paths, LCA",
+              chapter: "dsa-graph-structure",
+              items: [
+                "Tarjan and Kosaraju for strongly connected components",
+                "Bridges and articulation points",
+                "Euler paths: reconstruct itinerary",
+                "LCA by binary lifting",
+              ],
             },
             {
               title: "Segment trees & Fenwick trees",
@@ -2676,14 +2751,14 @@ export const topics: TopicsData = {
               items: ["Range queries, point updates"],
             },
             {
+              title: "Sparse tables and range tricks",
+              chapter: "dsa-sparse-table",
+              items: ["Range minimum queries", "Binary lifting reuse", "Square-root decomposition"],
+            },
+            {
               title: "String algorithms",
               chapter: "dsa-string-algorithms",
               items: ["KMP, Rabin-Karp, longest-palindromic-substring techniques"],
-            },
-            {
-              title: "Monotonic stack & queue in depth",
-              chapter: "dsa-monotonic-stack-queue",
-              items: ["Next-greater-element and sliding-window-maximum patterns"],
             },
             {
               title: "Design problems",
@@ -2696,16 +2771,11 @@ export const topics: TopicsData = {
               items: ["Pruning strategies, constraint satisfaction"],
             },
             {
-              title: "Topological patterns",
-              chapter: "dsa-topological-patterns",
-              items: ["Course-scheduling-family problems"],
-            },
-            {
               title: "Interview strategy",
               chapter: "dsa-interview-strategy",
               items: [
                 "Approaching an unseen problem, thinking out loud, handling hints",
-                "Mock interview technique, company-round expectations",
+                "Practise the full round in the mock interview and the interview book",
               ],
             },
           ],

@@ -133,7 +133,7 @@ export const archRepoMap: Chapter = {
   notes.ts              &larr; barrel for JavaScript (served at /notes)
   js/                   &larr; 41 chapter files
   react-notes.ts, react/          &larr; 57
-  dsa-notes.ts, dsa/              &larr; 34
+  dsa-notes.ts, dsa/              &larr; 34 written, 8 outlined
   system-design-notes.ts, system-design/  &larr; 24
   architecture-notes.ts, architecture/    &larr; this topic
   html-notes.ts ... kubernetes-notes.ts   &larr; outlines only

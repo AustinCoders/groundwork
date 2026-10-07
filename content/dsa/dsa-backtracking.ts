@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaBacktracking: Chapter = {
   id: "dsa-backtracking",
-  num: "I6",
+  num: "I9",
   title: "Backtracking",
   short: "Backtracking",
   levels: ["intermediate"],
+  prerequisites: ["dsa-basic-recursion"],
   practice: [
     "ex-subsets-bitmask",
     "ex-permutations",

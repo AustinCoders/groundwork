@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaStringAlgorithms: Chapter = {
   id: "dsa-string-algorithms",
-  num: "A7",
+  num: "A8",
   title: "String algorithms",
   short: "String algorithms",
   levels: ["advanced"],
+  prerequisites: ["dsa-hashing", "dsa-prefix-sums"],
   practice: [
     "ex-implement-strstr",
     "ex-prefix-function",

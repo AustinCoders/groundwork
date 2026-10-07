@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaSortingAlgorithms: Chapter = {
   id: "dsa-sorting-algorithms",
-  num: "B7",
+  num: "B10",
   title: "Sorting algorithms",
   short: "Sorting algorithms",
   levels: ["beginner"],
+  prerequisites: ["dsa-basic-recursion"],
   practice: [
     "ex-merge-sort",
     "ex-quickselect-kth-largest",

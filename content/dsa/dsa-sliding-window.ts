@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaSlidingWindow: Chapter = {
   id: "dsa-sliding-window",
-  num: "B5",
+  num: "B7",
   title: "Sliding window",
   short: "Sliding window",
   levels: ["beginner"],
+  prerequisites: ["dsa-hashing", "dsa-two-pointers"],
   practice: [
     "ex-longest-substring-no-repeat",
     "ex-minimum-window-substring",

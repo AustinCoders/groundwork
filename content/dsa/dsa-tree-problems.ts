@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaTreeProblems: Chapter = {
   id: "dsa-tree-problems",
-  num: "I2",
+  num: "I3",
   title: "Tree problems in depth",
   short: "Tree problems in depth",
   levels: ["intermediate"],
+  prerequisites: ["dsa-trees"],
   practice: [
     "ex-tree-zigzag-level-order",
     "ex-tree-right-side-view",

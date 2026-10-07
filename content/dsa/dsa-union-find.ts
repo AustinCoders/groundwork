@@ -6,6 +6,7 @@ export const dsaUnionFind: Chapter = {
   title: "Union-Find (Disjoint Set)",
   short: "Union-Find",
   levels: ["advanced"],
+  prerequisites: ["dsa-graphs-representation-traversal"],
   practice: [
     "ex-number-of-connected-components",
     "ex-redundant-connection",

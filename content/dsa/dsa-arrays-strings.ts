@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaArraysStrings: Chapter = {
   id: "dsa-arrays-strings",
-  num: "B2",
+  num: "B3",
   title: "Arrays & strings",
   short: "Arrays & strings",
   levels: ["beginner"],
+  prerequisites: ["dsa-complexity-analysis", "dsa-js-toolkit"],
   practice: [
     "ex-best-time-to-buy-and-sell-stock",
     "ex-maximum-subarray",

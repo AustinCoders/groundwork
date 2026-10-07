@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaTries: Chapter = {
   id: "dsa-tries",
-  num: "A5",
+  num: "I17",
   title: "Tries",
   short: "Tries",
-  levels: ["advanced"],
+  levels: ["intermediate"],
+  prerequisites: ["dsa-trees", "dsa-hashing"],
   practice: ["ex-maximum-xor-of-two-numbers", "ex-implement-trie", "ex-add-and-search-words", "ex-word-search-ii"],
   ready: true,
   subtitle: "Store the string as a path, not a value — and every prefix question becomes a walk instead of a scan.",

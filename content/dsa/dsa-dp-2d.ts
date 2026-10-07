@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaDp2d: Chapter = {
   id: "dsa-dp-2d",
-  num: "I8",
+  num: "I11",
   title: "Dynamic programming: 2D",
   short: "DP: 2D",
   levels: ["intermediate"],
+  prerequisites: ["dsa-dp-1d"],
   practice: [
     "ex-unique-paths",
     "ex-unique-paths-ii",

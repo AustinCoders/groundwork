@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaMonotonicStackQueue: Chapter = {
   id: "dsa-monotonic-stack-queue",
-  num: "A8",
+  num: "I18",
   title: "Monotonic stack & queue in depth",
   short: "Monotonic stack & queue",
-  levels: ["advanced"],
+  levels: ["intermediate"],
+  prerequisites: ["dsa-stacks-queues", "dsa-sliding-window"],
   practice: [
     "ex-daily-temperatures",
     "ex-next-greater-element-i",

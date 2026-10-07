@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaHeapsPriorityQueues: Chapter = {
   id: "dsa-heaps-priority-queues",
-  num: "I3",
+  num: "I4",
   title: "Heaps & priority queues",
   short: "Heaps & priority queues",
   levels: ["intermediate"],
+  prerequisites: ["dsa-trees"],
   practice: [
     "ex-kth-largest-element",
     "ex-median-from-data-stream",

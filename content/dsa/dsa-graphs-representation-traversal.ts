@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaGraphsRepresentationTraversal: Chapter = {
   id: "dsa-graphs-representation-traversal",
-  num: "I4",
+  num: "I5",
   title: "Graphs: representation & traversal",
   short: "Graphs: representation",
   levels: ["intermediate"],
+  prerequisites: ["dsa-stacks-queues", "dsa-basic-recursion"],
   practice: [
     "ex-number-of-islands",
     "ex-max-area-of-island",

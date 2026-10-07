@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaHashing: Chapter = {
   id: "dsa-hashing",
-  num: "B3",
+  num: "B5",
   title: "Hashing",
   short: "Hashing",
   levels: ["beginner"],
+  prerequisites: ["dsa-arrays-strings"],
   practice: [
     "ex-two-sum",
     "ex-top-k-frequent",

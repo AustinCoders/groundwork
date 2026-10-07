@@ -70,7 +70,7 @@ export const archScaling: Chapter = {
   <td>Load the mock room's questions by category rather than all at once; paginate or virtualise <code>/problems</code> only if <code>content-visibility</code> stops being enough.</td>
 </tr>
 <tr>
-  <td>Writing the 358 outlined chapters</td>
+  <td>Writing the 366 outlined chapters</td>
   <td>Less than it looks. Outline chapters already prerender, so the page count does not move. Build time and deploy size grow with the body text, and the chapters written so far average about 15,400 characters of HTML.</td>
   <td>Nothing urgent. The whole static generation step takes 71 seconds on CI's 3 workers.</td>
 </tr>

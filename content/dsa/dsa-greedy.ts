@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaGreedy: Chapter = {
   id: "dsa-greedy",
-  num: "I9",
+  num: "I13",
   title: "Greedy algorithms",
   short: "Greedy algorithms",
   levels: ["intermediate"],
+  prerequisites: ["dsa-sorting-algorithms"],
   practice: ["ex-gas-station", "ex-jump-game", "ex-jump-game-ii", "ex-candy", "ex-partition-labels"],
   ready: true,
   subtitle: "The best DP alternative — when the locally best choice happens to be globally best too.",

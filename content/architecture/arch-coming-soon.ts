@@ -22,7 +22,7 @@ export const archComingSoon: Chapter = {
 <tbody>
 <tr><td>React</td><td><b>57</b></td><td>0</td><td>162</td></tr>
 <tr><td>JavaScript</td><td><b>41</b></td><td>0</td><td>99</td></tr>
-<tr><td>DSA in JS</td><td><b>34</b></td><td>0</td><td>277</td></tr>
+<tr><td>DSA in JS</td><td><b>34</b></td><td>8</td><td>277</td></tr>
 <tr><td>Interview book</td><td><b>27 rounds</b></td><td>&mdash;</td><td>420 questions, no exercises</td></tr>
 <tr><td>How this is built</td><td><b>26</b></td><td>0</td><td>0</td></tr>
 <tr><td>System Design</td><td><b>24</b></td><td>0</td><td>0</td></tr>
@@ -38,21 +38,21 @@ export const archComingSoon: Chapter = {
 </table></div>
 
 <p class="sub">
-  227 chapters written, 358 outlined. By chapter that is 39% of the plan; by topic it is 7 of 21.
+  227 chapters written, 366 outlined. By chapter that is 38% of the plan; by topic it is 7 of 21.
 </p>
 
 <figure>
-<svg viewBox="0 0 900 250" class="dg" role="img" aria-label="Two bars drawn to scale. Chapters: 227 written and 358 outlined. Exercises with tests: 277 in DSA, 162 in React, 99 in JavaScript, and none anywhere else.">
+<svg viewBox="0 0 900 250" class="dg" role="img" aria-label="Two bars drawn to scale. Chapters: 227 written and 366 outlined. Exercises with tests: 277 in DSA, 162 in React, 99 in JavaScript, and none anywhere else.">
 <g class="rough">
-<rect x="30" y="50" width="325.9" height="48" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 2" />
-<rect x="355.9" y="50" width="514.1" height="48" style="fill: var(--sheet); stroke: var(--line-soft); stroke-width: 2" />
+<rect x="30" y="50" width="321.5" height="48" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 2" />
+<rect x="351.5" y="50" width="518.5" height="48" style="fill: var(--sheet); stroke: var(--line-soft); stroke-width: 2" />
 <rect x="30" y="150" width="432.5" height="48" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 2" />
 <rect x="462.5" y="150" width="252.9" height="48" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 2" />
 <rect x="715.4" y="150" width="154.6" height="48" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 2" />
 </g>
 <text class="sm" x="30" y="38">CHAPTERS, TO SCALE</text>
-<text class="lbl" x="193" y="80" text-anchor="middle">227 written</text>
-<text class="lbl" x="612" y="80" text-anchor="middle">358 outlined</text>
+<text class="lbl" x="191" y="80" text-anchor="middle">227 written</text>
+<text class="lbl" x="611" y="80" text-anchor="middle">366 outlined</text>
 <text class="sm" x="30" y="138">EXERCISES WITH TESTS, BY TOPIC</text>
 <text class="lbl" x="246" y="180" text-anchor="middle">DSA 277</text>
 <text class="lbl" x="589" y="180" text-anchor="middle">React 162</text>
@@ -75,7 +75,7 @@ export const archComingSoon: Chapter = {
 </p>
 <p>
   What an outline does not get is attention from outside. Every outlined page is marked
-  <code>noindex</code> and left out of the sitemap, so search engines are not offered 358 pages with no
+  <code>noindex</code> and left out of the sitemap, so search engines are not offered 366 pages with no
   body; the commit that did this was titled "Stop offering 358 unwritten chapters to crawlers and
   readers". The cross-topic search leaves outlines out. In the site menu, a topic with nothing written sits
   under "Coming soon" in a muted style, and its link goes straight to the topic's own cover at

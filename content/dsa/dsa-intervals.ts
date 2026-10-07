@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaIntervals: Chapter = {
   id: "dsa-intervals",
-  num: "I10",
+  num: "I14",
   title: "Intervals",
   short: "Intervals",
   levels: ["intermediate"],
+  prerequisites: ["dsa-sorting-algorithms", "dsa-heaps-priority-queues"],
   practice: [
     "ex-merge-intervals",
     "ex-insert-interval",

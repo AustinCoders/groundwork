@@ -157,7 +157,7 @@ export const archContentModel: Chapter = {
   card — the syllabus section's items, plus a "Meanwhile" link to a related written topic — instead
   of a body, is marked <code>noindex</code>, has no Listen button and no "mark as read", is left out
   of the sitemap and the cross-topic search index, and counts no reading time. The
-  syllabus marks it with an open circle instead of a tick. It is why the site can show 585 chapters while honestly claiming 227.
+  syllabus marks it with an open circle instead of a tick. It is why the site can show 593 chapters while honestly claiming 227.
 </p>
 
 <h3>One interface in the middle</h3>

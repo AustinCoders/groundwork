@@ -2,10 +2,11 @@ import type { Chapter } from "../types";
 
 export const dsaGraphProblems: Chapter = {
   id: "dsa-graph-problems",
-  num: "I5",
+  num: "I7",
   title: "Graph problems",
   short: "Graph problems",
   levels: ["intermediate"],
+  prerequisites: ["dsa-graphs-representation-traversal", "dsa-grid-bfs"],
   practice: [
     "ex-pacific-atlantic-water-flow",
     "ex-word-ladder",
