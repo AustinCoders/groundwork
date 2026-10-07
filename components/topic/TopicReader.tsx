@@ -14,6 +14,7 @@ import { makeScrollRegions } from "@/components/reader/scrollRegions";
 import { setupNarration } from "@/components/reader/narration";
 import { PracticeStrip, type PracticeLink } from "@/components/reader/PracticeStrip";
 import { progress, REVIEW_GAPS_DAYS } from "@/lib/storage";
+import { requiresCheck, tickHref, type Completion } from "@/lib/completion";
 import { useMounted, useProgressValue } from "@/lib/hooks";
 import { ChapterEnd } from "@/components/chapter/ChapterEnd";
 import { ChapterHeaderPager } from "@/components/chapter/ChapterHeaderPager";
@@ -29,6 +30,7 @@ import type { SeriesCard, SeriesPart, TocItem } from "@/components/chapter/types
 import type { LevelId } from "@/content/types";
 import styles from "@/components/series/chapter.module.css";
 import { PlayIsland } from "@/components/play/PlayIsland";
+import { CheckIsland } from "@/components/check/CheckIsland";
 import type { BodySegment } from "@/lib/chapterIslands";
 import readerStyles from "./reader.module.css";
 
@@ -47,6 +49,7 @@ export function TopicReader({
   diagrams,
   exercises,
   levelExerciseTotal,
+  completion,
 }: {
   topicId: string;
   topicName: string;
@@ -62,6 +65,7 @@ export function TopicReader({
   diagrams: number;
   exercises: PracticeLink[];
   levelExerciseTotal: number;
+  completion?: Completion;
 }) {
   const mounted = useMounted();
   const [railOpen, setRailOpen] = useState(false);
@@ -86,6 +90,7 @@ export function TopicReader({
   const done = useMemo(() => new Set(doneKey ? doneKey.split(",") : []), [doneKey]);
   const isDone = done.has(chapter.id);
   const toggleRead = () => progress.setChapterDone(chapter.id, !isDone);
+  const tick = tickHref(completion, basePath, chapter.id, true, isDone);
 
   const reviews = useProgressValue(() => {
     const mark = progress.all().chapters[chapter.id];
@@ -253,6 +258,8 @@ export function TopicReader({
                 levelTotal={levelExerciseTotal}
               />
 
+              {requiresCheck(completion) && <CheckIsland />}
+
               <ChapterEnd
                 num={chapter.num}
                 read={mounted && isDone}
@@ -260,13 +267,21 @@ export function TopicReader({
                 total={chapters.length}
                 onToggleRead={toggleRead}
                 reviewDays={reviewDays}
+                tickHref={tick}
               />
 
               <ChapterPager prev={prev} next={next} basePath={basePath} homeLabel="The cover" />
             </article>
           </div>
 
-          <TocCard toc={toc} active={active} pct={pct} read={mounted && isDone} onToggleRead={toggleRead} />
+          <TocCard
+            toc={toc}
+            active={active}
+            pct={pct}
+            read={mounted && isDone}
+            onToggleRead={toggleRead}
+            tickHref={tick}
+          />
         </div>
       </div>
 

@@ -7,6 +7,7 @@ import { accentVar } from "@/lib/accent";
 import { formatSpan, plural } from "@/lib/format";
 import { problemHref } from "@/lib/problemHref";
 import { progress, rememberLevel } from "@/lib/storage";
+import { nextChapter, tickHref } from "@/lib/completion";
 import { useMounted, useProgressValue } from "@/lib/hooks";
 import type { LevelRow } from "@/lib/levelRows";
 import type { Level, Topic } from "@/content/types";
@@ -57,7 +58,7 @@ export function TopicPath({
 
   const doneCount = mounted ? done.size : 0;
   const pct = chapters.length ? (doneCount / chapters.length) * 100 : 0;
-  const next = mounted ? (chapters.find((ch) => !done.has(ch.id)) ?? null) : (chapters[0] ?? null);
+  const next = mounted ? nextChapter(topic.completion, chapters, done) : (chapters[0] ?? null);
 
   const continueHref = next ? `${basePath}/${next.id}` : basePath;
   const continueLabel = !mounted || doneCount === 0 ? "Start reading" : next ? `Continue — ${next.short}` : "Review";
@@ -165,6 +166,15 @@ export function TopicPath({
             const chapterExerciseList = chapterExercises[chapter.id] ?? [];
             const chapterDone = mounted && done.has(chapter.id);
             const checkClass = chapterDone ? `${styles.stepCheck} ${styles.stepCheckOn}` : styles.stepCheck;
+            const stepTick = tickHref(topic.completion, basePath, chapter.id, false, chapterDone);
+            const checkBody = (
+              <>
+                <span className={styles.stepCheckMark} data-role="check-mark" aria-hidden="true">
+                  {chapterDone ? "✓" : ""}
+                </span>
+                {chapterDone ? "Mark as unread" : "Mark as read"}
+              </>
+            );
 
             return (
               <li
@@ -197,17 +207,20 @@ export function TopicPath({
                           </span>
                         ))}
                       </div>
-                      <button
-                        type="button"
-                        className={checkClass}
-                        aria-pressed={chapterDone}
-                        onClick={() => progress.setChapterDone(chapter.id, !chapterDone)}
-                      >
-                        <span className={styles.stepCheckMark} data-role="check-mark" aria-hidden="true">
-                          {chapterDone ? "✓" : ""}
-                        </span>
-                        {chapterDone ? "Mark as unread" : "Mark as read"}
-                      </button>
+                      {stepTick ? (
+                        <Link className={checkClass} href={stepTick} prefetch={false}>
+                          {checkBody}
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          className={checkClass}
+                          aria-pressed={chapterDone}
+                          onClick={() => progress.setChapterDone(chapter.id, !chapterDone)}
+                        >
+                          {checkBody}
+                        </button>
+                      )}
                     </div>
                   </div>
                   {chapterExerciseList.length > 0 && (

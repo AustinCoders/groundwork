@@ -128,6 +128,13 @@ export const archRendering: Chapter = {
   takes the single-string path unchanged.
 </p>
 <p>
+  A topic whose <code>completion</code> is <code>"quiz"</code> gets a second server-rendered island,
+  <code>CheckIsland</code>, with <code>id="check"</code>, between the practice strip and the end card of
+  each written chapter. In that topic, while a chapter is unread, the end card's and the contents
+  card's Mark as read are links to it, and so are the ticks on the cover cards and the path steps,
+  which point at the chapter's page. A chapter that is already read keeps its toggle button. The <a href="/architecture/arch-state">state chapter</a> explains the policy behind that.
+</p>
+<p>
   The root layout works the same way. It computes the topic list, with each topic's written count, and the guides'
   chapter lists on the server, then hands them to a small client provider in
   <code>lib/topicNav.tsx</code>. The site drawer reads them from context and never imports the topic

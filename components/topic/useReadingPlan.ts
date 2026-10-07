@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { progress, store } from "@/lib/storage";
 import { useClientValue, useMounted, useProgressValue } from "@/lib/hooks";
+import { nextChapter, type Completion } from "@/lib/completion";
 
 export interface Station {
   id: string;
@@ -18,7 +19,7 @@ const BUDGET_KEY = "jsnotes:reading-budget";
 export const BUDGET_STEPS = [10, 20, 30, 45, 60, 90];
 const DEFAULT_BUDGET = 30;
 
-export function useReadingPlan(stations: Station[], topicId: string) {
+export function useReadingPlan(stations: Station[], topicId: string, completion?: Completion) {
   const mounted = useMounted();
   const savedBudget = useClientValue(() => {
     const value = store.get<number>(BUDGET_KEY, DEFAULT_BUDGET);
@@ -39,7 +40,7 @@ export function useReadingPlan(stations: Station[], topicId: string) {
     return set;
   }, [doneKey, readable]);
 
-  const next = useMemo(() => readable.find((s) => !done.has(s.id)) ?? null, [readable, done]);
+  const next = useMemo(() => nextChapter(completion, readable, done), [completion, readable, done]);
 
   const reach = useMemo(() => {
     const set = new Set<string>();

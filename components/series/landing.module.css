@@ -388,6 +388,12 @@ a.node:focus-visible {
     background 0.14s ease;
 }
 
+a.cardTick {
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+}
+
 .cardTick:hover {
   color: var(--success);
   border-color: var(--success);

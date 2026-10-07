@@ -415,7 +415,7 @@ test("the DSA cover lists all 42 chapters and an outline chapter renders its out
   }
   const chapterLinkCount = await page
     .locator('a[href^="/dsa/dsa-"]')
-    .evaluateAll((links) => new Set(links.map((a) => a.getAttribute("href"))).size);
+    .evaluateAll((links) => new Set(links.map((a) => (a.getAttribute("href") ?? "").split(/[?#]/)[0])).size);
   expect(chapterLinkCount).toBe(42);
 
   const order = await page.locator('main a[href^="/dsa/dsa-"]').evaluateAll((links) => {
@@ -449,6 +449,127 @@ test("the DSA cover lists all 42 chapters and an outline chapter renders its out
   await expect(page.getByRole("heading", { level: 1 })).toContainText(/Math for interviews/i);
   await expect(page.getByText("Not written yet.")).toBeVisible();
   await expect(page.getByText(/modular inverse/i).first()).toBeVisible();
+});
+
+test("in a quiz topic an unread chapter's tick links to its check and a read chapter keeps its toggle, while other topics keep their buttons", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/dsa/dsa-binary-search");
+  const stub = page.locator("#check");
+  await expect(stub).toHaveCount(1);
+  await expect(stub).toHaveAttribute("data-island", "check");
+  await expect(stub).toHaveAttribute("tabindex", "-1");
+  await expect(stub).toContainText("The chapter check is not built yet, so marking a chapter done is paused here");
+  await expect(stub.locator("h1, h2, h3, h4, h5, h6, button, a, input")).toHaveCount(0);
+  const endCard = page.getByRole("region", { name: "Finish" });
+  const endTick = endCard.getByRole("link", { name: "Mark as read" });
+  await expect(endTick).toHaveAttribute("href", "#check");
+  await expect(endCard.getByRole("button")).toHaveCount(0);
+  const contents = page.getByRole("complementary", { name: "On this page" });
+  await expect(contents.getByRole("link", { name: "Mark as read" })).toHaveAttribute("href", "#check");
+  await expect(contents.getByRole("button", { name: /Mark as read/ })).toHaveCount(0);
+  const stubBottom = await stub.evaluate((el) => el.getBoundingClientRect().bottom);
+  const endTop = await endCard.evaluate((el) => el.getBoundingClientRect().top);
+  expect(stubBottom).toBeLessThanOrEqual(endTop);
+  await endTick.click();
+  await expect(page).toHaveURL(/\/dsa\/dsa-binary-search#check$/);
+  await expect(endCard.getByText("Finished reading?")).toBeVisible();
+  await expect(endCard.getByText(/^0 of \d+ chapters read/)).toBeVisible();
+
+  await page.goto("/dsa");
+  const startHref = (await page.locator("header a.btn--primary").getAttribute("href"))!;
+  const firstId = startHref.replace("/dsa/", "");
+  const coverTick = page.locator(`a[href="${startHref}#check"]`);
+  await expect(coverTick).toHaveAttribute("aria-label", /^Mark .* read$/);
+  await expect(page.getByRole("button", { name: /^Mark .* read$/ })).toHaveCount(0);
+  const outlineIds = [
+    "dsa-js-toolkit",
+    "dsa-prefix-sums",
+    "dsa-bst-operations",
+    "dsa-grid-bfs",
+    "dsa-dp-state-machines",
+    "dsa-math",
+    "dsa-graph-structure",
+    "dsa-sparse-table",
+  ];
+  for (const id of outlineIds) {
+    await expect(page.locator(`a[href="/dsa/${id}#check"]`), `${id} has no tick`).toHaveCount(0);
+  }
+
+  await page.goto("/path/dsa/beginner");
+  const stepTick = page.locator(`[data-step="${firstId}"] a[href="${startHref}#check"]`);
+  await expect(stepTick).toContainText("Mark as read");
+  await expect(page.locator("#steps button")).toHaveCount(0);
+
+  await page.evaluate(
+    (id) => localStorage.setItem("jsnotes:progress", JSON.stringify({ chapters: { [id]: { at: 1, reviews: 0 } } })),
+    firstId
+  );
+  await page.reload();
+  const readStep = page.locator(`[data-step="${firstId}"]`);
+  await expect(readStep).toHaveAttribute("data-done", "true");
+  await expect(readStep.getByRole("button", { name: "Mark as unread", pressed: true })).toBeVisible();
+  await expect(readStep.locator('a[href$="#check"]')).toHaveCount(0);
+  await expect(page.locator('#steps a[href$="#check"]').first()).toBeVisible();
+  await expect(page.locator("#start-btn")).not.toHaveAttribute("href", startHref);
+  await expect(page.locator("#start-btn")).toContainText("Continue");
+
+  await page.goto("/dsa");
+  const next = page.locator("header a.btn--primary");
+  await expect(next).toHaveText("Continue →");
+  await expect(next).not.toHaveAttribute("href", startHref);
+  await expect(next).not.toHaveAttribute("href", "/review");
+  await expect(page.getByRole("button", { name: /^Mark .* unread$/, pressed: true })).toHaveCount(1);
+  await expect(page.locator(`a[href="${startHref}#check"]`)).toHaveCount(0);
+  await expect(page.locator('a[href$="#check"]').first()).toBeAttached();
+
+  await page.goto(startHref);
+  const readEnd = page.getByRole("region", { name: "Finish" });
+  await expect(readEnd.getByRole("button", { name: "Mark as unread", pressed: true })).toBeVisible();
+  await expect(readEnd.getByRole("link")).toHaveCount(0);
+  const readContents = page.getByRole("complementary", { name: "On this page" });
+  await expect(readContents.getByRole("button", { name: /Read/, pressed: true })).toBeVisible();
+  await expect(readContents.locator('a[href="#check"]')).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "Chapters" }).locator("a[aria-current=page]")).toContainText("✓");
+  await readEnd.getByRole("button", { name: "Mark as unread" }).click();
+  await expect(readEnd.getByRole("link", { name: "Mark as read" })).toHaveAttribute("href", "#check");
+  await expect(readContents.getByRole("link", { name: "Mark as read" })).toHaveAttribute("href", "#check");
+
+  for (const cover of ["/notes", "/react"]) {
+    await page.goto(cover);
+    await expect(page.locator('a[href$="#check"]'), cover).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /^Mark .* read$/ }).first(), cover).toBeVisible();
+    const chapterHref = (await page.locator("header a.btn--primary").getAttribute("href"))!;
+    await page.goto(chapterHref);
+    await expect(page.locator("#check"), chapterHref).toHaveCount(0);
+    await expect(page.locator('a[href$="#check"]'), chapterHref).toHaveCount(0);
+    await expect(
+      page.getByRole("region", { name: "Finish" }).getByRole("button", { name: "Mark as read" }),
+      chapterHref
+    ).toBeVisible();
+  }
+});
+
+test("the phone Chapters sheet shows a read DSA chapter's tick and none on the chapter being read", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/dsa/dsa-binary-search");
+  await page.evaluate(() =>
+    localStorage.setItem(
+      "jsnotes:progress",
+      JSON.stringify({ chapters: { "dsa-complexity-analysis": { at: 1, reviews: 0 } } })
+    )
+  );
+  await page.reload();
+  await page.getByRole("button", { name: "Chapters", exact: true }).click();
+  const sheet = page.getByRole("dialog", { name: "Chapters" });
+  await expect(sheet).toBeVisible();
+  await expect(sheet.locator('a[href="/dsa/dsa-complexity-analysis"]')).toContainText("✓");
+  const current = sheet.locator("a[aria-current=page]");
+  await expect(current).toHaveAttribute("href", "/dsa/dsa-binary-search");
+  await expect(current).not.toContainText("✓");
 });
 
 test("print shows only the chapter head and body, hiding the rail, contents, pager and end card", async ({ page }) => {

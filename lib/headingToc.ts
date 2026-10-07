@@ -15,7 +15,7 @@ function slug(text: string): string {
 
 export function withHeadingIds(html: string): { html: string; toc: TocItem[] } {
   const toc: TocItem[] = [];
-  const seen = new Set<string>(["chapters"]);
+  const seen = new Set<string>(["chapters", "check"]);
   const out = html.replace(/<h3(\s[^>]*)?>([\s\S]*?)<\/h3>/g, (_, attrs: string | undefined, inner: string) => {
     let id = slug(inner) || "section";
     while (seen.has(id)) id = `${id}-2`;

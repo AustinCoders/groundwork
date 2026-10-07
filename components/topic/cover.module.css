@@ -15,6 +15,13 @@
   min-width: 0;
 }
 
+.heroSide {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
 .kicker {
   margin: 0 0 8px;
   font-family: var(--font-mono);

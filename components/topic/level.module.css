@@ -638,6 +638,11 @@ a.stepTitle:hover {
     color 0.14s ease;
 }
 
+a.stepCheck {
+  line-height: normal;
+  text-decoration: none;
+}
+
 .stepCheck:hover {
   border-color: var(--accent, var(--primary));
 }

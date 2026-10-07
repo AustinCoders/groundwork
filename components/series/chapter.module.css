@@ -541,6 +541,13 @@
     transform 0.12s ease;
 }
 
+a.endBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
 .endBtn:hover {
   filter: brightness(1.08);
 }
@@ -776,6 +783,10 @@
     border-color 0.15s ease,
     background 0.2s ease,
     color 0.2s ease;
+}
+
+a.readBtn {
+  text-decoration: none;
 }
 
 .readBtn:not(.readBtnOn):hover {

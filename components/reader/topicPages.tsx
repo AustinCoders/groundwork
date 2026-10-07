@@ -60,6 +60,7 @@ export function TopicCoverPage({ topicId }: { topicId: string }) {
         relatedRoundHref={round ? `/interview/${roundId}` : null}
         relatedRoundLabel={round ? `${round.code} · ${round.navTitle}` : null}
         curriculumNotes={curriculumNotes(topicId)}
+        completion={t?.completion}
       />
     );
   }
@@ -197,6 +198,7 @@ export function TopicChapterPage({ topicId, chapterId }: { topicId: string; chap
         diagrams={diagrams}
         exercises={exercises}
         levelExerciseTotal={exercisesForLevel(cards[cardIndex].levels[0], topicId).length}
+        completion={t?.completion}
       />
     );
   }

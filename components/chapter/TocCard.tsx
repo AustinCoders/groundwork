@@ -11,13 +11,25 @@ export function TocCard({
   pct,
   read,
   onToggleRead,
+  tickHref,
 }: {
   toc: TocItem[];
   active: string | null;
   pct: number;
   read: boolean;
   onToggleRead: () => void;
+  tickHref?: string | null;
 }) {
+  const readClass = `${styles.readBtn}${read ? ` ${styles.readBtnOn}` : ""}`;
+  const readBody = (
+    <>
+      <span className={styles.readTick} aria-hidden="true">
+        {read ? "✓" : ""}
+      </span>
+      {read ? "Read" : "Mark as read"}
+    </>
+  );
+
   return (
     <aside className={styles.right} aria-label="On this page">
       <div className={styles.rightInner}>
@@ -61,17 +73,15 @@ export function TocCard({
             </ol>
           </section>
         )}
-        <button
-          type="button"
-          className={`${styles.readBtn}${read ? ` ${styles.readBtnOn}` : ""}`}
-          aria-pressed={read}
-          onClick={onToggleRead}
-        >
-          <span className={styles.readTick} aria-hidden="true">
-            {read ? "✓" : ""}
-          </span>
-          {read ? "Read" : "Mark as read"}
-        </button>
+        {tickHref ? (
+          <a className={readClass} href={tickHref}>
+            {readBody}
+          </a>
+        ) : (
+          <button type="button" className={readClass} aria-pressed={read} onClick={onToggleRead}>
+            {readBody}
+          </button>
+        )}
         <div className={styles.sideFoot}>
           <button
             type="button"

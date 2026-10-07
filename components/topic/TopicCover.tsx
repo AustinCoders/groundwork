@@ -8,6 +8,7 @@ import { ChapterCard } from "@/components/chapter/ChapterCard";
 import { PartSection } from "@/components/chapter/PartSection";
 import { BUDGET_STEPS, useReadingPlan, type Station } from "@/components/topic/useReadingPlan";
 import { progress } from "@/lib/storage";
+import { tickHref, type Completion } from "@/lib/completion";
 import { formatSpan, plural } from "@/lib/format";
 import type { SeriesCard, SeriesPart } from "@/components/chapter/types";
 import type { LevelId } from "@/content/types";
@@ -30,6 +31,8 @@ export function TopicCover({
   relatedRoundHref,
   relatedRoundLabel,
   curriculumNotes,
+  completion,
+  aside,
 }: {
   topicId: string;
   topicName: string;
@@ -42,6 +45,8 @@ export function TopicCover({
   relatedRoundHref: string | null;
   relatedRoundLabel: string | null;
   curriculumNotes: string[];
+  completion?: Completion;
+  aside?: React.ReactNode;
 }) {
   const stations: Station[] = useMemo(
     () =>
@@ -57,7 +62,7 @@ export function TopicCover({
     [cards]
   );
 
-  const plan = useReadingPlan(stations, topicId);
+  const plan = useReadingPlan(stations, topicId, completion);
   const written = cards.filter((c) => c.ready).length;
   const firstReadyId = cards.find((c) => c.ready)?.id;
   const totalExercises = cards.reduce((sum, c) => sum + c.exercises, 0);
@@ -117,54 +122,57 @@ export function TopicCover({
             </div>
           </div>
 
-          <aside className={styles.upNext} aria-label="Up next">
-            {plan.next ? (
-              <>
-                <span className={styles.upNextNum}>{plan.next.num}</span>
-                <h2 className={styles.upNextTitle}>{plan.next.short}</h2>
-                <p className={styles.upNextSub}>{plan.next.subtitle}</p>
-                <div className={styles.upNextMeta}>
-                  <span className="chip">{plan.next.minutes} min read</span>
-                  {plan.next.exercises > 0 && <span className="chip">{plural(plan.next.exercises, "exercise")}</span>}
-                </div>
-                <Link className="btn btn--primary" href={`${basePath}/${plan.next.id}`}>
-                  Open this chapter →
-                </Link>
-
-                <div className={styles.budget} role="group" aria-label="Reading time budget">
-                  <span className={styles.budgetQ}>I&apos;ve got</span>
-                  <div className={styles.budgetSteps}>
-                    {BUDGET_STEPS.map((step) => (
-                      <button
-                        key={step}
-                        type="button"
-                        className={styles.budgetStep}
-                        aria-pressed={plan.budget === step}
-                        onClick={() => plan.setBudget(step)}
-                      >
-                        {step}m
-                      </button>
-                    ))}
+          <div className={styles.heroSide}>
+            <aside className={styles.upNext} aria-label="Up next">
+              {plan.next ? (
+                <>
+                  <span className={styles.upNextNum}>{plan.next.num}</span>
+                  <h2 className={styles.upNextTitle}>{plan.next.short}</h2>
+                  <p className={styles.upNextSub}>{plan.next.subtitle}</p>
+                  <div className={styles.upNextMeta}>
+                    <span className="chip">{plan.next.minutes} min read</span>
+                    {plan.next.exercises > 0 && <span className="chip">{plural(plan.next.exercises, "exercise")}</span>}
                   </div>
-                  <span className={styles.budgetOut}>
-                    {plan.mounted
-                      ? plan.reach.size > 0
-                        ? `→ ${plural(plan.reach.size, "chapter")}, up to ${plan.lastInReach?.short}`
-                        : `→ not even ${plan.next.short} (${plan.next.minutes} min) fits`
-                      : "→ pick a run for tonight"}
-                  </span>
-                </div>
-              </>
-            ) : (
-              <>
-                <h2 className={styles.upNextTitle}>Every chapter read</h2>
-                <p className={styles.upNextSub}>The review page keeps it fresh from here.</p>
-                <Link className="btn btn--primary" href="/review">
-                  Go to review →
-                </Link>
-              </>
-            )}
-          </aside>
+                  <Link className="btn btn--primary" href={`${basePath}/${plan.next.id}`}>
+                    Open this chapter →
+                  </Link>
+
+                  <div className={styles.budget} role="group" aria-label="Reading time budget">
+                    <span className={styles.budgetQ}>I&apos;ve got</span>
+                    <div className={styles.budgetSteps}>
+                      {BUDGET_STEPS.map((step) => (
+                        <button
+                          key={step}
+                          type="button"
+                          className={styles.budgetStep}
+                          aria-pressed={plan.budget === step}
+                          onClick={() => plan.setBudget(step)}
+                        >
+                          {step}m
+                        </button>
+                      ))}
+                    </div>
+                    <span className={styles.budgetOut}>
+                      {plan.mounted
+                        ? plan.reach.size > 0
+                          ? `→ ${plural(plan.reach.size, "chapter")}, up to ${plan.lastInReach?.short}`
+                          : `→ not even ${plan.next.short} (${plan.next.minutes} min) fits`
+                        : "→ pick a run for tonight"}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className={styles.upNextTitle}>Every chapter read</h2>
+                  <p className={styles.upNextSub}>The review page keeps it fresh from here.</p>
+                  <Link className="btn btn--primary" href="/review">
+                    Go to review →
+                  </Link>
+                </>
+              )}
+            </aside>
+            {aside}
+          </div>
         </section>
 
         <div className={styles.parts} data-fx="up">
@@ -182,16 +190,21 @@ export function TopicCover({
                 read={read}
                 total={list.length}
               >
-                {list.map((c) => (
-                  <ChapterCard
-                    key={c.id}
-                    chapter={c}
-                    href={`${basePath}/${c.id}`}
-                    read={plan.mounted && plan.done.has(c.id)}
-                    exercises={c.exercises}
-                    onToggleRead={plan.mounted && c.ready ? () => toggleRead(c.id) : undefined}
-                  />
-                ))}
+                {list.map((c) => {
+                  const cardTick =
+                    plan.mounted && c.ready ? tickHref(completion, basePath, c.id, false, plan.done.has(c.id)) : null;
+                  return (
+                    <ChapterCard
+                      key={c.id}
+                      chapter={c}
+                      href={`${basePath}/${c.id}`}
+                      read={plan.mounted && plan.done.has(c.id)}
+                      exercises={c.exercises}
+                      tickHref={cardTick}
+                      onToggleRead={plan.mounted && c.ready && !cardTick ? () => toggleRead(c.id) : undefined}
+                    />
+                  );
+                })}
               </PartSection>
             );
           })}

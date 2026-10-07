@@ -9,6 +9,7 @@ export function ChapterEnd({
   total,
   onToggleRead,
   reviewDays,
+  tickHref,
 }: {
   num: string;
   read: boolean;
@@ -16,6 +17,7 @@ export function ChapterEnd({
   total: number;
   onToggleRead: () => void;
   reviewDays?: number;
+  tickHref?: string | null;
 }) {
   return (
     <section className={`${styles.end}${read ? ` ${styles.endDone}` : ""}`} aria-label="Finish" data-speech-exclude>
@@ -38,9 +40,15 @@ export function ChapterEnd({
           </span>
         </div>
       </div>
-      <button type="button" className={styles.endBtn} aria-pressed={read} onClick={onToggleRead}>
-        {read ? "Mark as unread" : "Mark as read"}
-      </button>
+      {tickHref ? (
+        <a className={styles.endBtn} href={tickHref}>
+          {read ? "Mark as unread" : "Mark as read"}
+        </a>
+      ) : (
+        <button type="button" className={styles.endBtn} aria-pressed={read} onClick={onToggleRead}>
+          {read ? "Mark as unread" : "Mark as read"}
+        </button>
+      )}
     </section>
   );
 }

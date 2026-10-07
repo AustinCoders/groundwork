@@ -8,6 +8,7 @@
   .page [aria-label="Meanwhile"],
   .page [aria-label="Chapter navigation"],
   .page [aria-label="Finish"],
+  .page [aria-label="Chapter check"],
   .page .inlineToc {
     display: none;
   }
@@ -119,6 +120,10 @@
   background: var(--sheet);
   border: 1px dashed var(--line);
   border-radius: 12px;
+}
+
+.checkIsland {
+  scroll-margin-top: calc(var(--bar-h) + 20px);
 }
 
 .islandKicker {

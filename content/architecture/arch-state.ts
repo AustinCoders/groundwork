@@ -141,6 +141,20 @@ export const archState: Chapter = {
   applies to everyone's history at once, with no migration.
 </p>
 
+<p>
+  Whether a tick marks a chapter read straight away is a topic setting, <code>Topic.completion</code>,
+  which is <code>"read"</code> unless set. <code>lib/completion.ts</code> has no runtime content imports and
+  answers it for every place that ticks a chapter and every place that picks the next one.
+  <code>tickHref</code> returns <code>null</code> for a <code>"read"</code> topic, and for a chapter that is
+  already read in any topic, so the usual button toggles the mark. For an unread chapter in a
+  <code>"quiz"</code> topic it returns a link to the chapter's <code>#check</code>, so a read chapter can
+  always be unmarked.
+  <code>nextChapter</code> is what Continue, Up next, the path's next step and the reading budget ask,
+  and it returns the first unread chapter. A server page passes <code>completion</code> down as a
+  string, because a function cannot cross into a client component. So far only the DSA topic is
+  <code>"quiz"</code>, and its check is not built yet, so those links land on a stub.
+</p>
+
 <h3>How components follow it</h3>
 <p>
   <code>progress</code> and <code>activity</code> share a single listener set. Every write calls
