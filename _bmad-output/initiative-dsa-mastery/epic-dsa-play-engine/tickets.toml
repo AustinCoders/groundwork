@@ -78,12 +78,24 @@ risk = "medium"
 unknown = "Whether pick-the-next-step can be generated from every tracer's frames or some tracers need hand-written distractors; the builder checks this on binary search and the four graph and heap tracers first."
 
 [[entry]]
+id = 9
+type = "story"
+title = "Per-language code in the player"
+description = "Moves the tracer model to stable code line ids with a per-language map, converts binary search and every tracer ported in 2.4 and 2.5 to JavaScript, Python, Java and C++, shows the Player's code panel in the language chosen with 1.6's switch with the highlight following the frame, keeps the current step when the language changes, renders 1.6's switch beside the Player, and extends the tracer tests to check every line id in every language."
+verify = "On /dsa/dsa-binary-search switching between JavaScript, Python, Java and C++ mid-run keeps the step, narration and variables unchanged while the highlighted code line follows the frame in each language, the switch is present beside the player and drives its code panel, the completeness and syntax tests pass for binary search and every tracer ported in 2.4 and 2.5, and the puzzle, generated trace question and predict-the-next-step tests still pass."
+covers = ["P6"]
+after = [1, 5, 8, "1.6", "3.6"]
+hitl = false
+risk = "medium"
+unknown = "Whether one line id can always map to the same logical statement in all four languages, since Python has no braces and Java and C++ need declarations; the builder checks this on binary search and the heap tracer first."
+
+[[entry]]
 id = 7
 type = "story"
 title = "Refactor sweep"
-description = "Cleans up what entries 1 to 6, entry 8 and their reviews deferred, scoped from their build records when it starts, and takes cleanup only."
+description = "Cleans up what entries 1 to 6, entries 8 and 9 and their reviews deferred, scoped from their build records when it starts, and takes cleanup only."
 verify = "npm run check, npm run build and npm run test:e2e pass, and every finding this epic deferred is fixed or moved to a named later entry."
-covers = ["P1", "P2", "P3", "P4", "P5"]
-after = [1, 2, 3, 4, 5, 6, 8]
+covers = ["P1", "P2", "P3", "P4", "P5", "P6"]
+after = [1, 2, 3, 4, 5, 6, 8, 9]
 hitl = false
 risk = "low"

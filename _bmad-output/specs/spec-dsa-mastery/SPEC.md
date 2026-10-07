@@ -4,6 +4,7 @@ companions:
   - curriculum.md
   - play-catalog.md
   - quiz-and-placement.md
+  - code-languages.md
   - ../../planning-artifacts/dsa-analysis-2026-09-30/content.md
   - ../../planning-artifacts/dsa-analysis-2026-09-30/code-and-ux.md
   - ../../planning-artifacts/dsa-analysis-2026-09-30/research.md
@@ -104,6 +105,15 @@ This is both a pain to fix and a vision the owner wants: a DSA section that find
     - A revision list on `/dsa` groups the reader's done chapters, shaky questions and the site's existing exercises by interview style (for example online assessment, phone screen, onsite round) and by pattern.
     - It names no companies.
     - It is built from data already on the site and needs no network.
+- **CAP-11**
+  - **intent:** A DSA reader can read a chapter's code and the player's code in Python, Java or C++ as well as JavaScript, chooses once and keeps it, and JavaScript stays the main language.
+  - **success:**
+    - Every DSA chapter and every player shows a language switch (JavaScript, Python, Java, C++). It defaults to JavaScript, persists across chapters and visits, and changes no other topic.
+    - Every code block in a DSA chapter and every player's code lines exist in all four languages and show in the chosen one.
+    - The player's highlighted line and variables stay in step with the run in every language, while steps, narration and results are identical in all four.
+    - Switching never reloads the page or resets a running player, a puzzle or a check.
+    - The switch works by keyboard, announces the change and states the language in text.
+    - A test fails when a code block or a tracer lacks a translation, or when a translation has a syntax error.
 
 ## Constraints
 
@@ -123,6 +133,7 @@ This is both a pain to fix and a vision the owner wants: a DSA section that find
   - Player and check keys are scoped to focus inside them, because the reader owns `n`, `p`, `t`, `[`, `]` and `/`.
   - Players never autoplay, pause on navigation and when the tab is hidden, and honour `prefers-reduced-motion`.
 - **Where the new state lives.** Popup dismissals, puzzle progress, complexity-round results and the shaky list live in `groundwork:quiz`, never in `jsnotes:progress`. A chapter page receives only its own puzzles and questions.
+- **Code languages are authored.** Translations are authored files, never machine-translated at runtime or fetched from a network. A chapter page loads only the chosen language's code lazily. The choice lives in `groundwork:dsa:lang`, never in a `jsnotes:*` key or the global level. The tracer stays language-neutral: code lines carry stable ids and each language maps them to its own lines.
 - **No colour-only state.** Every visual state is also given as text. Faded states pass contrast in all nine themes.
 - **Styling rules.** Theme tokens only, no colour literals in modules, and no comments in source (AGENTS.md; `tests/theme-roles.test.ts`, `tests/theme-contract.test.ts`).
 - **The architecture chapters stay true.** Numbers stated in `content/architecture/` are asserted by `tests/claims.test.ts`. A story that adds pages, e2e tests, CSS modules, storage keys or routes updates those chapters in the same story.
@@ -135,6 +146,7 @@ This is both a pain to fix and a vision the owner wants: a DSA section that find
 - Accounts, server-side scores, certificates, leaderboards or timed tests.
 - Company names on questions or lists, until the owner supplies sourced data. The owner lifted the company non-goal for the revision list only (2026-10-06).
 - Moving the other 17 topics onto the new reader; epic-topic-redesign owns that.
+- Translating exercises, their starter code and tests, or the Playground, and any language beyond Python, Java and C++ in this release.
 - Advanced depth beyond curriculum.md: network flow, suffix arrays, Aho-Corasick, meet-in-the-middle and randomised algorithms. New exercises beyond the ones CAP-6 needs.
 
 ## Success signal
@@ -146,6 +158,7 @@ This is both a pain to fix and a vision the owner wants: a DSA section that find
   - passes the check and sees the chapter marked done and scheduled for review;
   - sees a missed question on the shaky list in `/review`.
 - All 42 chapters have a player, a puzzle, and a question pool of at least 8 that holds at least 2 complexity questions.
+- Every chapter code block and every player's code exists in JavaScript, Python, Java and C++.
 - `npm run check`, `npm run build` and `npm run test:e2e` pass, with axe clean in all nine themes.
 
 ## Assumptions
@@ -153,9 +166,6 @@ This is both a pain to fix and a vision the owner wants: a DSA section that find
 - The player is labelled "Play it", with a play icon, so it stays distinct from the Playground link.
 - The eight old inline demos are replaced by the new player, their scripts are removed, and the `#gt-*` e2e test is rewritten.
 - Puzzles reuse the check's choice and order components and the tracers' frames.
+- Translation syntax is checked with the Lezer grammars the editor already ships for Python, Java and C++; the builder may choose a cheaper equivalent.
 - Real company names need sourced data that the repo does not have, so the revision list groups by interview style and pattern until the owner supplies sources.
 - `/level/dsa` shows the same three-door start card above its level cards. `/path?topic=dsa` shows check-aware ticks. Both stay on their current pages until epic-topic-redesign moves them.
-
-## Open questions
-
-- Should code examples also show in other languages than JavaScript, through a toggle that shows the same example in Python, Java and C++, with JavaScript staying the main language, in this release or a later one? Tracers are language-neutral, so it would affect only the code shown beside the player and in chapter examples. The owner has not answered.

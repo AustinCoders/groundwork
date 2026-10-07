@@ -2,7 +2,7 @@
 type: epic
 title: "Understanding aids and the release"
 parent: initiative-dsa-mastery
-covers: [CAP-4, CAP-7, CAP-10]
+covers: [CAP-4, CAP-7, CAP-10, CAP-11]
 after: []
 assignee: ""
 risk: medium
@@ -42,6 +42,7 @@ Readers remember and recognise what they read, and the rebuilt DSA section goes 
 - X6 (CAP-10): a revision list on `/dsa` groups the reader's done chapters, shaky questions and the site's existing exercises by interview style (online assessment, phone screen, onsite round) and by pattern.
   - It names no companies, because the repo holds no sourced company data.
   - It works from local data only, with no network call.
+- X7 (CAP-11, release): the code-language switch is verified across the whole section: every chapter code block and every tracer has Python, Java and C++ beside JavaScript, each translation parses with the editor's Lezer grammars, and switching language in the phone walk leaves a running player on its step. The cheat sheet's templates stay JavaScript.
 - X4 (CAP-4, release): completeness, nine themes, the phone walk and legacy parity pass. How this is built, the sitemap and the roadmap match. `main` is merged on the user's word.
 
 ## Done when
@@ -52,7 +53,8 @@ Readers remember and recognise what they read, and the rebuilt DSA section goes 
 4. The revision list on `/dsa` groups done chapters, shaky questions and exercises by interview style and pattern, names no company and works with the network blocked.
 5. The completeness test (a puzzle, two complexity questions and style tags in every chapter), the 390px walk with the popup, a puzzle and the shaky list, the nine-theme axe run and the legacy-progress check pass.
 6. After the user's merge, production serves the new `/dsa` and the walk passes there.
-7. Built one story at a time on `feature/dsa-rebuild` with `npm run check`, `npm run build` and `npm run test:e2e` green after each; it reaches production only through the release merge (7.6).
+7. The completeness test covers every chapter's code blocks and tracers in all four languages, the Lezer syntax test finds no error node, and switching language in the 390px walk keeps the player on its step.
+8. Built one story at a time on `feature/dsa-rebuild` with `npm run check`, `npm run build` and `npm run test:e2e` green after each; it reaches production only through the release merge (7.6).
 
 ## Boundaries
 
@@ -84,3 +86,4 @@ This epic covers the aids and the release. Company names stay out: the revision 
 - Decision (2026-10-06): entry 1 only saves the ids of wrong review answers in the review result; it no longer refers to a recorder that entry 7 builds. Entry 7 reads the check, round and review records and owns the shaky list and its /review display.
 - Decision (2026-10-06): entry 8 gives each existing exercise the style and pattern of its chapter's pattern record, because exercises carry no tags of their own; a seeded exercise must appear under its group.
 - Decision (2026-10-06): the release gate's walk also covers the revision list, Revise earlier, the First check passed badge and Try your own input; entries 5 and 7.7 of checks note where they may be split if one session is not enough.
+- Decision (2026-10-07): the cheat sheet's templates stay JavaScript only (the owner's CAP-11 scope excludes them), so the cheat sheet has no language switch. The release gate (entry 5) verifies the language switch (X7): completeness over every chapter's code blocks and tracers in all four languages, the Lezer syntax test, and a language switch in the 390px walk that leaves the player on its step. No new entry is added.

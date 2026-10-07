@@ -2,7 +2,7 @@
 type: epic
 title: "The Play it engine"
 parent: initiative-dsa-mastery
-covers: [CAP-3, CAP-5, CAP-8]
+covers: [CAP-3, CAP-5, CAP-8, CAP-11]
 after: []
 assignee: ""
 risk: high
@@ -25,6 +25,7 @@ In the tracer chapter and the eight chapters that had demos, a reader steps thro
 - P3 (CAP-3, CAP-5): the eight old demos become tracers and players and lose their inline scripts. Their code-line highlight works. The heap gets a real tree and union-find a real forest.
 - P4 (CAP-3): presets, a visible "Try your own input" control with a parser and size limit that says in text why it rejects an input, and a table view of every frame.
 - P5 (CAP-8): puzzles of kind order-the-steps and pick-the-next-step, built from each tracer's frames, auto-graded with instant feedback and an explanation, retryable without limit, working by keyboard, announced to screen readers and stated in text.
+- P6 (CAP-11): the tracer declares its code by stable line ids and each of JavaScript, Python, Java and C++ maps those ids to its own lines, so the run, frames, narration, variables and questions never depend on the language. The Player's code panel shows the language chosen with the chapter switch, the highlight follows the frame in every language, and changing language never resets a running player.
 
 ## Done when
 
@@ -33,7 +34,8 @@ In the tracer chapter and the eight chapters that had demos, a reader steps thro
 3. Every tracer suite passes. For each preset, the final frame equals the reference answer, every frame has narration, every `line` is within the code, and over-limit input is refused.
 4. axe shows no violations on a player under reduced motion in all nine themes, and no state is shown by colour alone.
 5. Every tracer registers at least one puzzle in the registry, so every chapter with a player has one. The puzzle component reuses the check's ChoiceList and an order component, solved puzzles are recorded in groundwork:quiz, and a puzzle never writes a read mark, XP, activity or review entry. axe shows no violations on a puzzle under reduced motion in all nine themes.
-6. Built one story at a time on `feature/dsa-rebuild` with `npm run check`, `npm run build` and `npm run test:e2e` green after each; it reaches production only through the release merge (7.6).
+6. Every tracer declares its code in JavaScript, Python, Java and C++ with a line-id map that covers every line id its frames use, the completeness and Lezer syntax tests pass, and on `/dsa/dsa-binary-search` switching language mid-run keeps the step and moves the highlight to the same logical line.
+7. Built one story at a time on `feature/dsa-rebuild` with `npm run check`, `npm run build` and `npm run test:e2e` green after each; it reaches production only through the release merge (7.6).
 
 ## Boundaries
 
@@ -57,3 +59,6 @@ This epic covers the engine, the views and the ported demos. Predict-the-next-st
 - Decision (2026-10-06): spec CAP-3 makes dry-run a visible "Try your own input" control that says why it rejects an input; entry 6's description and verify now name it and the text reason, with no new entry.
 - Decision (2026-10-06): puzzle data lives with its tracer in the registry so a chapter page loads only its own puzzles; solved puzzles and nothing else are stored in groundwork:quiz (spec constraint).
 - Decision (2026-10-06): entry 8 (puzzles) is built after 3.2 and 3.5 although epic 3 sits after epic 2 in table order, because it reuses 3.2's ChoiceList and OrderList and 3.5's frame-to-choice step; `after` enforces this and the level epics wait for it through the sweep 2.7.
+
+- Decision (2026-10-07): spec CAP-11 puts the language switch in this release, so entry 9 (ref 2.9) is appended, covering the new requirement P6, after 1.6 (the language store, switch and authoring format) and before the Refactor sweep, which now also comes after 9. Ids are not renumbered.
+- Decision (2026-10-07): 2.9 retrofits the tracers ported in 2.4 and 2.5 to stable line ids and four languages, so those ports need not know about languages; the level epics write new tracers with all four languages from the start.

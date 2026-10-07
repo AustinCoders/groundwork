@@ -2,7 +2,7 @@
 type: initiative
 title: "DSA that meets you at your level"
 parent: none
-covers: [CAP-1, CAP-2, CAP-3, CAP-4, CAP-5, CAP-6, CAP-7, CAP-8, CAP-9, CAP-10]
+covers: [CAP-1, CAP-2, CAP-3, CAP-4, CAP-5, CAP-6, CAP-7, CAP-8, CAP-9, CAP-10, CAP-11]
 after: []
 assignee: ""
 risk: high
@@ -28,18 +28,19 @@ A reader can go from their first visit to `/dsa` to a checked chapter on a phone
 ## Done when
 
 1. The spec's success signal passes on production: the 390px walk from placement to a checked chapter, with all 42 chapters having a player, at least one puzzle, and a pool of at least 8 questions that holds at least 2 complexity questions.
-2. CAP-1 to CAP-10 are live on production for every reader, not behind a flag, owned as follows:
+2. CAP-1 to CAP-11 are live on production for every reader, not behind a flag, owned as follows:
    - CAP-1 (Revise earlier), CAP-4, CAP-5 and CAP-6 plus each chapter's puzzle, 2 complexity questions and style tags: epic-dsa-frame and the three level epics;
    - CAP-3 ("Try your own input") and CAP-8 (puzzles): epic-dsa-play-engine;
    - CAP-2 (end-of-chapter popup, XP, streak and the two badges) and CAP-9 (complexity round): epic-dsa-checks;
-   - CAP-7 (shaky list, per-pattern cheat sheet and index) and CAP-10 (revision list): epic-dsa-aids-release.
+   - CAP-7 (shaky list, per-pattern cheat sheet and index) and CAP-10 (revision list): epic-dsa-aids-release;
+   - CAP-11 (code languages): the switch and per-language chapter code in epic-dsa-frame (1.6), per-language code in the player in epic-dsa-play-engine (2.9), every chapter's translations in the three level epics, and the completeness, syntax and 390px switch checks in epic-dsa-aids-release (7.5).
 3. Existing DSA read marks, XP, badges and review schedules are the same after release as before it.
 4. axe is clean in all nine themes at 1440 and 390 on the DSA cover, a chapter at each level, the placement, the pattern drill, the cheat sheet index and a pattern page, the popup open, a puzzle, and the revision list.
 5. The other 17 topics, the Git guide and How this is built behave as before, and their e2e tests pass unchanged.
 
 ## Boundaries
 
-This initiative is the DSA section only. The spec's non-goals rule out the other topics' pages (epic-topic-redesign), accounts, a play hub, timed tests, leaderboards, certificates and company names on questions until the owner supplies sourced data. The other-language code toggle is an open question and is not planned.
+This initiative is the DSA section only. The spec's non-goals rule out the other topics' pages (epic-topic-redesign), accounts, a play hub, timed tests, leaderboards, certificates and company names on questions until the owner supplies sourced data. Exercises, their starter code and tests, the Playground, check-question code samples, the cheat sheet's templates and any language beyond Python, Java and C++ are out of scope for CAP-11.
 
 The epics follow the spec's capabilities:
 - the foundations on the topic frame;
@@ -106,4 +107,8 @@ Decisions the epics share:
   - Per-chapter puzzle, 2 complexity questions and style tags: the three level epics, through each chapter story.
 - Decision (user, 2026-10-06): the company non-goal is lifted for the revision list only. Until the owner supplies sourced data it groups by interview style and pattern and names no company. Timed tests, leaderboards, accounts, server-side scores and certificates stay non-goals.
 - Decision (agent, 2026-10-06): the release gate (7.5) now also covers the popup, a puzzle and the shaky list in the 390px walk, and every chapter's puzzle and 2 complexity questions.
-- Open question (2026-10-06, owner has not answered): other-language code toggle (Python, Java, C++), this release or later. It is not planned in any epic.
+- Decision (2026-10-07): the language toggle is in this release (CAP-11, spec companion code-languages.md).
+  - Owner's answers: Python, Java and C++ beside JavaScript, which stays main and the default.
+  - Scope is chapter code plus the player's code panel; exercises, their starter code and tests, and the Playground are out of scope.
+  - Ownership: epic-dsa-frame 1.6 (switch, store, authoring format, tests) and epic-dsa-play-engine 2.9 (per-language player code); the three level epics deliver each chapter's translations; the release gate 7.5 verifies completeness, syntax and the switch in the 390px walk.
+  - `covers` now lists CAP-1 to CAP-11; no new epic is added.

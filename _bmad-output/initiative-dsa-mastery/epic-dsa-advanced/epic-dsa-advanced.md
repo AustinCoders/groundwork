@@ -2,7 +2,7 @@
 type: epic
 title: "Advanced chapters, complete"
 parent: initiative-dsa-mastery
-covers: [CAP-2, CAP-3, CAP-5, CAP-6, CAP-7, CAP-8, CAP-9, CAP-10]
+covers: [CAP-2, CAP-3, CAP-5, CAP-6, CAP-7, CAP-8, CAP-9, CAP-10, CAP-11]
 after: []
 assignee: ""
 risk: high
@@ -29,6 +29,7 @@ A reader at the advanced level can read, play and check every chapter in their p
 - R7 (CAP-8): every advanced chapter has at least one puzzle (order the steps or pick the next step) built from its tracer and registered in the play registry, with its data loaded lazily with the tracer.
 - R8 (CAP-9): every advanced chapter's pool holds at least 2 questions with skill complexity, written on a code sample from the chapter, for the end-card complexity round.
 - R9 (CAP-10): every advanced chapter's pattern record carries interview-style tags (online assessment, phone screen, onsite round) for the revision list, and names no company.
+- R10 (CAP-11): every advanced chapter's code blocks are data-code placeholders with Python, Java and C++ translations beside the JavaScript in `content/dsa/code/<chapter-id>.ts`, and every one of its tracers declares its code by stable line ids with all four languages mapping them, so the player's code and highlight follow the chosen language. Exercises and their starter code are out of scope.
 
 ## Done when
 
@@ -38,6 +39,7 @@ A reader at the advanced level can read, play and check every chapter in their p
 4. On /dsa/dsa-graph-structure, a keyboard user plays the player, passes the check and sees the chapter marked read.
 5. Every advanced chapter has a registered puzzle, at least 2 complexity questions in its pool and style tags in its pattern record, and the pool integrity test and the puzzle registry test show it.
 6. Built one story at a time on `feature/dsa-rebuild` with `npm run check`, `npm run build` and `npm run test:e2e` green after each; it reaches production only through the release merge (7.6).
+7. Every advanced chapter's code blocks and tracers exist in JavaScript, Python, Java and C++, and the language completeness and syntax tests pass for them.
 
 ## Boundaries
 
@@ -45,7 +47,7 @@ This epic covers the advanced chapters' content, pools, pattern records and trac
 
 ## References
 
-- spec — _bmad-output/specs/spec-dsa-mastery/SPEC.md, CAP-2, CAP-3, CAP-5, CAP-6, CAP-7, CAP-8, CAP-9, CAP-10
+- spec — _bmad-output/specs/spec-dsa-mastery/SPEC.md, CAP-2, CAP-3, CAP-5, CAP-6, CAP-7, CAP-8, CAP-9, CAP-10, CAP-11
 - design — _bmad-output/specs/spec-dsa-mastery/curriculum.md, play-catalog.md (Players), quiz-and-placement.md (Question model)
 - analysis — _bmad-output/planning-artifacts/dsa-analysis-2026-09-30/content.md §2–§4, §7
 - model chapter — content/dsa/dsa-advanced-graph-algorithms.ts, the depth and arc the others are raised to
@@ -64,3 +66,5 @@ This epic covers the advanced chapters' content, pools, pattern records and trac
 - Decision (2026-10-06): the Refactor sweep (8) covers R7 to R9 and its verify checks that no chapter lacks a puzzle or two complexity questions.
 - Decision (2026-10-06, owner to confirm): A11 interview strategy has no algorithm, but it has a constraints-to-approach tracer, so its puzzle orders the steps of an interview strategy from that tracer; if the owner prefers an exception for A11, drop its puzzle and keep the two complexity questions on the chapter's code sample.
 - Waits on epic-dsa-play-engine entry 8 and epic-dsa-checks entries 1 and 10 for the puzzle registry and the complexity pool model: these are already ordered through 2.7 and 3.8 ahead of entry 1, so no new after is added.
+- Decision (2026-10-07): the spec gained CAP-11 (code languages), so every chapter-content entry now also delivers its chapters' code blocks as data-code placeholders with Python, Java and C++ translations and its tracers' code in all four languages. Added R10 and covered it from entries 1 to 7 and the sweep; ids, titles and after are unchanged.
+- Decision (2026-10-07): the Refactor sweep (8) covers R10 and its verify checks that no chapter has a code block or tracer missing a language. The switch, store and loader come from 1.6 and 2.9, which are ordered ahead of entry 1 through 5.12, so no new after is added.

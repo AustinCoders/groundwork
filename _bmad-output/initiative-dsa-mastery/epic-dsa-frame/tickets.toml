@@ -44,12 +44,24 @@ hitl = false
 risk = "low"
 
 [[entry]]
+id = 6
+type = "story"
+title = "Language switch and per-language chapter code (tracer)"
+description = "Builds the groundwork:dsa:lang store, the switch component (a labelled button group with aria-pressed and a role=status announcement), the data-code placeholder island with a lazy per-chapter per-language import, the authoring format content/dsa/code/<chapter-id>.ts, the switch's place in the chapter header, and the completeness and Lezer syntax tests, proven end to end on binary search's code blocks, and lists the key in How this is built."
+verify = "On /dsa/dsa-binary-search switching to Python, Java and C++ and back changes the chapter's code blocks, a first visit with no groundwork:dsa:lang key shows JavaScript pressed and the JavaScript code, the choice survives a reload and shows on a second chapter, the switch works by keyboard alone with its role=status line reading Code shown in the chosen language and the language stated in text, a non-DSA topic page shows no switch and no jsnotes:* key or the global level changes, only the chosen language's code is in the page payload, the completeness and syntax tests pass and fail when a translation is removed or a syntax error is put in a fixture for each of the four grammars, and axe passes on the switch in all nine themes."
+covers = ["F5"]
+after = [1]
+hitl = false
+risk = "medium"
+unknown = "Whether the Lezer Python, Java and C++ grammars the editor ships can be imported in a unit test without the editor; if not, the syntax test uses the cheaper equivalent check the spec allows."
+
+[[entry]]
 id = 5
 type = "story"
 title = "Refactor sweep"
-description = "Cleans up what entries 1 to 4 and their reviews deferred, scoped from their build records when it starts, and takes cleanup only."
+description = "Cleans up what entries 1 to 4 and 6 and their reviews deferred, scoped from their build records when it starts, and takes cleanup only."
 verify = "npm run check, npm run build and npm run test:e2e pass, and every finding this epic deferred is fixed or moved to a named later entry."
-covers = ["F1", "F2", "F3", "F4"]
-after = [1, 2, 3, 4]
+covers = ["F1", "F2", "F3", "F4", "F5"]
+after = [1, 2, 3, 4, 6]
 hitl = false
 risk = "low"

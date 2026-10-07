@@ -1,6 +1,6 @@
 # Play: the engine and one player per chapter
 
-This is the source for CAP-3 and CAP-8 (puzzles). Evidence is in `_bmad-output/planning-artifacts/dsa-analysis-2026-09-30/code-and-ux.md` §3 and §8.4, and in `research.md` §3.
+This is the source for CAP-3 and CAP-8 (puzzles). Code languages (CAP-11) are in `code-languages.md`. Evidence is in `_bmad-output/planning-artifacts/dsa-analysis-2026-09-30/code-and-ux.md` §3 and §8.4, and in `research.md` §3.
 
 ## Engine
 
@@ -25,7 +25,7 @@ This is the source for CAP-3 and CAP-8 (puzzles). Evidence is in `_bmad-output/p
   - preset and a visible "Try your own input" control, which parses the reader's input within the tracer's size limit and says why when it rejects it;
   - predict the next step: it asks before revealing, using the check's choice UI;
   - a table view listing every frame.
-- **Views:** array cells, grid, graph (SVG), tree, forest, linked list, call stack, hash buckets, chips, variables and code. Code is an ordered list with the current line marked, not a `pre`.
+- **Views:** array cells, grid, graph (SVG), tree, forest, linked list, call stack, hash buckets, chips, variables and code. Code is an ordered list with the current line marked, not a `pre`. It shows in the reader's chosen language (see `code-languages.md`): the tracer's frames name stable line ids and each language maps them to its own lines.
 - **Accessibility and motion:**
   - Keys work only when focus is inside the player: ←/→ step, Space plays and pauses, Home and End jump to either end.
   - A `role="status"` line gives one narration sentence per step.
