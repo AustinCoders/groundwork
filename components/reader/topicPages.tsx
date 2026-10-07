@@ -1,3 +1,4 @@
+import { splitIslands } from "@/lib/chapterIslands";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { TopicReader } from "@/components/topic/TopicReader";
@@ -178,6 +179,7 @@ export function TopicChapterPage({ topicId, chapterId }: { topicId: string; chap
       level: ex.level,
     }));
     const cardIndex = cards.findIndex((c) => c.id === chapter.id);
+    const segments = splitIslands(html) ?? undefined;
 
     return (
       <TopicReader
@@ -189,7 +191,8 @@ export function TopicChapterPage({ topicId, chapterId }: { topicId: string; chap
         parts={parts}
         chapter={cards[cardIndex]}
         chapters={cards}
-        html={html}
+        html={segments ? "" : html}
+        segments={segments}
         toc={toc}
         diagrams={diagrams}
         exercises={exercises}

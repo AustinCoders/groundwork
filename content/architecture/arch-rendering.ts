@@ -117,6 +117,17 @@ export const archRendering: Chapter = {
   HTML, so those changes are safe.
 </p>
 <p>
+  A chapter can also mark a place for something interactive with a block-level
+  <code>&lt;div data-play="binary-search"&gt;&lt;/div&gt;</code>. For such a chapter,
+  <code>splitIslands</code> in <code>lib/chapterIslands.ts</code> cuts the body at each placeholder
+  into HTML segments and islands, and <code>TopicChapterPage</code> hands <code>TopicReader</code>
+  those segments instead of one string. The reader still renders the same <code>#chapters</code>
+  container, with the HTML segments written in as before and a server-rendered
+  <code>PlayIsland</code> in each place. The island carries <code>data-island</code>, and the
+  enhancers, narration and scroll regions skip anything inside it. A chapter without a placeholder
+  takes the single-string path unchanged.
+</p>
+<p>
   The root layout works the same way. It computes the topic list, with each topic's written count, and the guides'
   chapter lists on the server, then hands them to a small client provider in
   <code>lib/topicNav.tsx</code>. The site drawer reads them from context and never imports the topic

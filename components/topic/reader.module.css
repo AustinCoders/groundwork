@@ -107,3 +107,31 @@
   color: var(--primary);
   background: color-mix(in srgb, var(--ink) 6%, transparent);
 }
+
+.segment {
+  display: contents;
+}
+
+.island {
+  margin: 22px 0;
+  padding: 16px 18px;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+}
+
+.islandKicker {
+  margin: 0 0 6px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.islandText {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+}

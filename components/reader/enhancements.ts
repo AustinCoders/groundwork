@@ -38,8 +38,11 @@ function copyText(text: string): Promise<boolean> {
   return Promise.race([write, timeout]).then((copied) => copied || legacyCopy(text));
 }
 
+const ISLAND = "[data-island]";
+
 export function enhanceCodeBlocks(container: HTMLElement) {
   Array.from(container.querySelectorAll("pre")).forEach((pre) => {
+    if (pre.closest(ISLAND)) return;
     if (pre.parentElement?.classList.contains("codeblock")) return;
     const wrap = el("div", "codeblock");
     pre.parentNode?.insertBefore(wrap, pre);
@@ -66,6 +69,7 @@ export function enhanceCodeBlocks(container: HTMLElement) {
 
 export function enhanceTables(container: HTMLElement) {
   Array.from(container.querySelectorAll("table")).forEach((table) => {
+    if (table.closest(ISLAND)) return;
     if (table.parentElement?.classList.contains("table-scroll")) return;
     const wrap = el("div", "table-scroll");
     table.parentNode?.insertBefore(wrap, table);
@@ -75,12 +79,15 @@ export function enhanceTables(container: HTMLElement) {
 
 export function markNoSmooth(container: HTMLElement) {
   Array.from(container.querySelectorAll(".demo, .try, .chipset, canvas, input[type=range], [draggable=true]")).forEach(
-    (node) => node.setAttribute("data-no-smooth", "")
+    (node) => {
+      if (!node.closest(ISLAND)) node.setAttribute("data-no-smooth", "");
+    }
   );
 }
 
 export function activateScripts(container: HTMLElement) {
   Array.from(container.querySelectorAll("script")).forEach((old) => {
+    if (old.closest(ISLAND)) return;
     const fresh = document.createElement("script");
     Array.prototype.forEach.call(old.attributes, (attr: Attr) => {
       fresh.setAttribute(attr.name, attr.value);
@@ -92,7 +99,7 @@ export function activateScripts(container: HTMLElement) {
 
 export function enhanceTryBlocks(container: HTMLElement) {
   Array.from(container.querySelectorAll<HTMLElement>(".try")).forEach((block) => {
-    if (block.querySelector(".try__run")) return;
+    if (block.closest(ISLAND) || block.querySelector(".try__run")) return;
     const pre = block.querySelector("pre");
     if (!pre) return;
     const code = (pre as HTMLElement).innerText;

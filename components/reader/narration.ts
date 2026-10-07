@@ -1,7 +1,7 @@
 import { savedNarration } from "@/lib/storage";
 
 const SPEECH_EXCLUDE =
-  "pre, script, table, .demo, .try, .chipset, .chapter__foot, .practice-strip, [data-speech-exclude]";
+  "pre, script, table, .demo, .try, .chipset, .chapter__foot, .practice-strip, [data-speech-exclude], [data-island]";
 const SPEECH_SELECTOR = "h3, p, li, figcaption, .say, .warn, .sticky";
 
 const MAX_CHUNK_CHARS = 700;

@@ -27,6 +27,7 @@ const PAGES = [
   "/notes/basic-async",
   "/react",
   "/dsa",
+  "/dsa/dsa-binary-search",
   "/system-design",
   "/interview",
   "/interview/r1oa",

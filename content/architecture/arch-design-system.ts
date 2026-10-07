@@ -314,8 +314,8 @@ export const archDesignSystem: Chapter = {
 
 <h3>The checks</h3>
 <p>
-  <code>e2e/a11y.spec.ts</code> runs axe through <code>@axe-core/playwright</code> against 30
-  pages, including the home page, six chapters, the other three written topics' covers, the
+  <code>e2e/a11y.spec.ts</code> runs axe through <code>@axe-core/playwright</code> against 31
+  pages, including the home page, chapters from several topics, the other three written topics' covers, the
   playground, the problems list, the mock lobby, the whiteboard, the 404 page and this
   architecture section. One of them, <code>/level/typescript</code>, is the level picker of a
   topic that is only outlined, and another, <code>/typescript/ts-setup-compiler</code>, is that

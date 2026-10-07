@@ -28,6 +28,8 @@ import { useChapterKeys } from "@/components/chapter/useChapterKeys";
 import type { SeriesCard, SeriesPart, TocItem } from "@/components/chapter/types";
 import type { LevelId } from "@/content/types";
 import styles from "@/components/series/chapter.module.css";
+import { PlayIsland } from "@/components/play/PlayIsland";
+import type { BodySegment } from "@/lib/chapterIslands";
 import readerStyles from "./reader.module.css";
 
 export function TopicReader({
@@ -40,6 +42,7 @@ export function TopicReader({
   chapter,
   chapters,
   html,
+  segments,
   toc,
   diagrams,
   exercises,
@@ -54,6 +57,7 @@ export function TopicReader({
   chapter: SeriesCard<LevelId>;
   chapters: SeriesCard<LevelId>[];
   html: string;
+  segments?: BodySegment[];
   toc: TocItem[];
   diagrams: number;
   exercises: PracticeLink[];
@@ -216,13 +220,31 @@ export function TopicReader({
                 </details>
               )}
 
-              <div
-                id="chapters"
-                ref={bodyRef}
-                className={styles.content}
-                suppressHydrationWarning
-                dangerouslySetInnerHTML={{ __html: html }}
-              />
+              {segments ? (
+                <div key="segments" id="chapters" ref={bodyRef} className={styles.content} suppressHydrationWarning>
+                  {segments.map((segment, i) =>
+                    segment.kind === "island" ? (
+                      <PlayIsland key={i} id={segment.id} />
+                    ) : (
+                      <div
+                        key={i}
+                        className={readerStyles.segment}
+                        suppressHydrationWarning
+                        dangerouslySetInnerHTML={{ __html: segment.html }}
+                      />
+                    )
+                  )}
+                </div>
+              ) : (
+                <div
+                  key="html"
+                  id="chapters"
+                  ref={bodyRef}
+                  className={styles.content}
+                  suppressHydrationWarning
+                  dangerouslySetInnerHTML={{ __html: html }}
+                />
+              )}
 
               <PracticeStrip
                 exercises={exercises}

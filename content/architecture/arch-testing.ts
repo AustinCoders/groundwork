@@ -8,7 +8,7 @@ export const archTesting: Chapter = {
   levels: ["advanced"],
   practice: [],
   ready: true,
-  subtitle: "307 unit tests, 188 browser tests, and one test that checks what these pages say about the site.",
+  subtitle: "307 unit tests, 191 browser tests, and one test that checks what these pages say about the site.",
   body: `<h3>The shape of it</h3>
 <p>
   There are three layers of checking, each slower and more thorough than the one before:
@@ -76,7 +76,7 @@ export const archTesting: Chapter = {
   and then drifted.
 </p>
 
-<h3>Browser tests: 4 specs, 188 tests</h3>
+<h3>Browser tests: 4 specs, 191 tests</h3>
 <p>
   <code>playwright.config.ts</code> starts <code>npm run start</code> on port 3100. That is the
   production build, not the dev server, because dev mode double-invokes effects and serves
@@ -86,8 +86,8 @@ export const archTesting: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Spec</th><th>Tests</th><th>Covers</th></tr></thead>
 <tbody>
-<tr><td><code>smoke.spec.ts</code></td><td>94</td><td>23 routes load with no console error and no failed request; the playground fits at 1024, 768 and 390 pixels wide; 68 flows (narration, search, share links, stdin, the debugger, Lua and Python grading, the mock interview from lobby to debrief, the problems page filters, an unknown chapter slug returning a stored 404, the old <code>/soon</code> links redirecting to a cover, a level page or the home page, the 404 page in its frame, a written topic's reading plan, its Continue action and its reading-budget reach text, a written topic's path page scoped to its own steps, its back pill, its no-level and topic-only redirects, and marking a step read)</td></tr>
-<tr><td><code>a11y.spec.ts</code></td><td>80</td><td>axe with the WCAG 2.0 and 2.1 A and AA tags, and no rule disabled, over 30 pages and 12 states, in all 9 themes at 1440 and 390 pixels wide. The states are the site menu open, the reading menu on <code>/notes</code> with its Text size and Narrator folds open, and a reading budget picked on the JavaScript cover, at both widths; the Chapters sheet and the Filters sheet open, at 390 only; a mock round checked at up to five stages; and four seeded from saved progress: a chapter due for review, a chapter read on a path, a year of activity and two saved mock sessions</td></tr>
+<tr><td><code>smoke.spec.ts</code></td><td>95</td><td>23 routes load with no console error and no failed request; the playground fits at 1024, 768 and 390 pixels wide; 69 flows (narration, search, share links, stdin, the debugger, Lua and Python grading, the mock interview from lobby to debrief, the problems page filters, an unknown chapter slug returning a stored 404, the old <code>/soon</code> links redirecting to a cover, a level page or the home page, the 404 page in its frame, a written topic's reading plan, its Continue action and its reading-budget reach text, a written topic's path page scoped to its own steps, its back pill, its no-level and topic-only redirects, and marking a step read)</td></tr>
+<tr><td><code>a11y.spec.ts</code></td><td>82</td><td>axe with the WCAG 2.0 and 2.1 A and AA tags, and no rule disabled, over 31 pages and 12 states, in all 9 themes at 1440 and 390 pixels wide. The states are the site menu open, the reading menu on <code>/notes</code> with its Text size and Narrator folds open, and a reading budget picked on the JavaScript cover, at both widths; the Chapters sheet and the Filters sheet open, at 390 only; a mock round checked at up to five stages; and four seeded from saved progress: a chapter due for review, a chapter read on a path, a year of activity and two saved mock sessions</td></tr>
 <tr><td><code>whiteboard.spec.ts</code></td><td>6</td><td>Drawing, arrows that follow their shapes, undo, reload, PNG export, share links, templates, locking, grouping</td></tr>
 <tr><td><code>keyboard.spec.ts</code></td><td>8</td><td>At 390 pixels wide: the closed Chapters sheet stays out of the tab order; the open Chapters sheet, the site menu and the Filters sheet hold focus and hand it back on Escape; a wide table and a wide code block in a git chapter and in the interview book take focus and have names; the question drill and the mock brief leave Enter to a focused control; the playground's skip link lands in the editor</td></tr>
 </tbody>

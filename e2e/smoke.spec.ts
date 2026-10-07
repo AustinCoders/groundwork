@@ -1657,3 +1657,20 @@ test("the editor bar's selected language keeps its check mark and focus ring vis
   expect(shown.ring).toBe(shown.text);
   expect(contrastRatio(colourChannels(shown.check), colourChannels(behind))).toBeGreaterThanOrEqual(3);
 });
+
+test("the binary search chapter renders its play island and enhances the rest as before", async ({ page, request }) => {
+  const html = await (await request.get("/dsa/dsa-binary-search")).text();
+  expect(html).toContain('data-island="play"');
+  expect(html).toContain('data-play="binary-search"');
+  expect(html).toContain("not built yet");
+
+  const problems = collectProblems(page);
+  await page.goto("/dsa/dsa-binary-search");
+  const island = page.locator('[data-island="play"]');
+  await expect(island).toBeVisible();
+  await expect(island).toHaveAttribute("data-no-smooth", "");
+  await expect(island).toHaveAttribute("data-speech-exclude", "");
+  await expect(island.locator("button, .codeblock__copy, .table-scroll")).toHaveCount(0);
+  await expect(page.locator("#chapters .codeblock__copy").first()).toBeVisible();
+  expect(problems).toEqual([]);
+});

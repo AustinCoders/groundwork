@@ -69,7 +69,7 @@ export function makeScrollRegions(container: HTMLElement): () => void {
   const regions = [
     ...(container.matches(SCROLLERS) ? [container] : []),
     ...container.querySelectorAll<HTMLElement>(SCROLLERS),
-  ];
+  ].filter((region) => !region.closest("[data-island]"));
   const names = uniqueNames(regions);
   let watching = true;
   const update = () => {

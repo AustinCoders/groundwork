@@ -151,6 +151,8 @@ function lowerBound(nums, target) {
 <h3>See the range collapse</h3>
 <p>Watch the live range collapse. Ten candidates become one in four comparisons — and the count of comparisons is just how many times you can halve the array.</p>
 
+<div data-play="binary-search"></div>
+
 <div class="demo">
   <div class="demo__bar">Binary search — halving the search space</div>
   <div class="demo__body">
