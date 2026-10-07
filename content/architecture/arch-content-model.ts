@@ -72,11 +72,15 @@ export const archContentModel: Chapter = {
   round from its machine-coding round.
 </p>
 <p>
-  Reading time is not stored anywhere. <code>lib/content.ts</code> strips the tags from a body, counts
-  the words, divides by 180 and rounds, with a floor of two minutes — for a written chapter.
+  Reading time is not stored anywhere. <code>lib/content.ts</code> drops the code, scripts, styles and
+  diagrams from a body (everything inside <code>&lt;pre&gt;</code>, <code>&lt;script&gt;</code>,
+  <code>&lt;style&gt;</code> and <code>&lt;svg&gt;</code>), strips the remaining tags, counts the words,
+  divides by 180 and rounds, with a floor of two minutes — for a written chapter, so a code-heavy chapter
+  reads as long as its prose, not as long as its listings.
   <code>readTime()</code> and <code>chapterMetas()</code> both check <code>ready</code> first and
-  return zero for an outline chapter instead of flooring its empty body at two minutes. Every reading
-  time on the site follows that same rule.
+  return zero for an outline chapter instead of flooring its empty body at two minutes. Every chapter and
+  Git section follows that same rule. The interview book's round pages do not: <code>lib/interviewBook.ts</code>
+  counts the words of each round's own fields at 220 a minute, with a floor of one minute.
 </p>
 
 <h3>Two things that do not fit, and how they are made to</h3>
@@ -87,7 +91,11 @@ export const archContentModel: Chapter = {
   <code>lib/interviewContent.ts</code> converts each round into an ordinary <code>Chapter</code> by
   rendering those fields to HTML, so the reader, search and the sitemap never learn that it is different.
   The mock interview reads the raw rounds instead, because it needs the trap and the follow-ups as
-  separate fields to build a rubric.
+  separate fields to build a rubric. Two sentences quote the size of the DSA track as
+  placeholders in double braces, <code>dsa.chapters</code> and <code>dsa.exercises</code>, because this
+  file may not import <code>lib/content</code>. <code>lib/interviewCounts.ts</code> fills them on the
+  server from the written chapters and the exercises, and <code>tests/claims.test.ts</code> fails if a
+  number or a placeholder is left behind.
 </p>
 <p>
   <strong>The Git guide</strong> is one HTML string in <code>content/git-body.ts</code> with 16 sections.

@@ -1,6 +1,7 @@
 import { INTERVIEW_ROUNDS_RAW } from "@/content/interview-data";
 import type { InterviewCodeBlock, InterviewQuestionRaw, InterviewRoundRaw } from "@/content/interview-types";
 import { isBulkTitle } from "@/lib/interviewBulk";
+import { fillCounts } from "@/lib/interviewCounts";
 import type { StageId } from "@/lib/mock/types";
 
 export type BookPart = "before" | "technical" | "people" | "offer" | "staff" | "prep";
@@ -174,7 +175,7 @@ function toRound(r: InterviewRoundRaw): BookRound {
 let cache: BookRound[] | null = null;
 
 export function bookRounds(): BookRound[] {
-  if (!cache) cache = INTERVIEW_ROUNDS_RAW.map(toRound);
+  if (!cache) cache = fillCounts(INTERVIEW_ROUNDS_RAW.map(toRound));
   return cache;
 }
 

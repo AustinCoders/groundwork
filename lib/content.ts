@@ -116,8 +116,11 @@ export function exercisesForLevel(level: LevelId, topicId?: string | null): Exer
   return exercises().filter((ex) => levelChapterIds.indexOf(ex.chapter) !== -1);
 }
 
+const NON_PROSE_ELEMENTS = /<(script|pre|style|svg)(?=[\s>])[\s\S]*?<\/\1\s*>/gi;
+
 function minutesFor(body: string): number {
   const words = String(body || "")
+    .replace(NON_PROSE_ELEMENTS, " ")
     .replace(/<[^>]*>/g, " ")
     .split(/\s+/)
     .filter(Boolean).length;

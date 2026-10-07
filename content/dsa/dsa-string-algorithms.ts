@@ -326,9 +326,9 @@ function zFunction(s) {
   return z;
 }
 
-<span class="c">// substring search: glue with a separator that appears in neither string</span>
+<span class="c">// substring search: glue with a separator assumed to appear in neither string</span>
 function zSearch(text, pattern) {
-  const combined = pattern + " " + text;
+  const combined = pattern + "#" + text;
   const z = zFunction(combined);
   const hits = [];
   for (let i = pattern.length + 1; i &lt; combined.length; i++) {
@@ -337,10 +337,13 @@ function zSearch(text, pattern) {
   return hits;
 }</code></pre>
 <p class="sub">
-  The separator must be a character that cannot occur in either string,
-  otherwise a "match" could straddle the boundary and report a false hit.
-  <code>" "</code> is a safe default for arbitrary text; interviewers
-  often accept <code>"#"</code> with a stated assumption.
+  The separator must be a character that cannot occur in either string. If
+  it does, a prefix match can run across the boundary, <code>z[i]</code>
+  exceeds <code>pattern.length</code>, and the <code>===</code> test misses
+  a real hit: <code>zSearch("a#", "a")</code> returns <code>[]</code>.
+  This code uses <code>"#"</code>, so it assumes the strings hold no
+  <code>#</code> (lowercase letters, say); state that assumption out loud,
+  and pick another character if the input can contain one.
 </p>
 
 <h3>Manacher's algorithm: every palindrome, in O(n)</h3>
@@ -455,7 +458,7 @@ longestPalindrome("forgeeksskeegfor"); <span class="c">// "geeksskeeg"</span></c
 <span class="c">// Trick: the answer hinges on the longest palindromic PREFIX of s.</span>
 function shortestPalindrome(s) {
   const rev = s.split("").reverse().join("");
-  const fail = buildFailure(s + " " + rev);
+  const fail = buildFailure(s + "#" + rev);
   const overlap = fail[fail.length - 1]; <span class="c">// longest prefix of s that is a suffix of reverse(s)</span>
   return rev.slice(0, s.length - overlap) + s;
 }
@@ -466,6 +469,11 @@ function repeatedUnit(s) {
   const period = s.length - fail[s.length - 1];
   return s.length % period === 0 ? s.slice(0, period) : s;
 }</code></pre>
+<p class="sub">
+  As in <code>zSearch</code>, the <code>"#"</code> in <code>shortestPalindrome</code> must not occur in
+  <code>s</code>: if it does, the table's last entry can exceed <code>s.length</code> and the answer is
+  wrong, as <code>shortestPalindrome("a#a")</code> shows.
+</p>
 <p class="sub">
   <code>n - fail[n-1]</code> being the smallest period of a string is a
   genuinely useful identity — it's the whole answer to "Repeated Substring

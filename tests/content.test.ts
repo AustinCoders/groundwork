@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { chapters, exercises, notesData, readTime, topics, totalTime } from "@/lib/content";
+import { chapterMetas, chapters, exercises, htmlMinutes, notesData, readTime, topics, totalTime } from "@/lib/content";
+import { GIT_BODY_HTML, GIT_CHAPTERS } from "@/content/git-body";
 import { levels, notesHref } from "@/lib/topics";
+import { topicStats } from "@/lib/topicStats";
 
 const notesTopics = topics().filter((t) => t.levels);
 const topicIds = notesTopics.map((t) => t.id);
@@ -143,6 +145,77 @@ describe("reading time", () => {
       { ...exercises()[0], chapter: outlineChapter!.id },
     ];
     expect(syntheticExercises.filter((ex) => writtenIds.has(ex.chapter)).length).toBe(1);
+  });
+
+  const words = (html: string) => (html.replace(/<[^>]+>/g, " ").match(/\S+/g) ?? []).length;
+  const proseOf = (html: string) =>
+    ["pre", "script", "style", "svg"].reduce(
+      (rest, tag) => rest.replace(new RegExp(`<${tag}\\b[\\s\\S]*?</${tag}>`, "gi"), " "),
+      html
+    );
+
+  it("counts only prose in a written chapter: the sliding-window chapter reads as its prose alone", () => {
+    const slidingWindow = chapters("dsa").find((ch) => ch.id === "dsa-sliding-window");
+    expect(slidingWindow, "expected the sliding-window chapter").toBeDefined();
+    expect(slidingWindow!.ready).toBe(true);
+    const proseWords = words(proseOf(slidingWindow!.body));
+    const everyWord = words(slidingWindow!.body);
+    expect(everyWord, "the chapter holds code that is not prose").toBeGreaterThan(proseWords);
+    expect(readTime(slidingWindow!)).toBe(Math.max(2, Math.round(proseWords / 180)));
+    const meta = chapterMetas("dsa").find((ch) => ch.id === "dsa-sliding-window");
+    expect(meta?.readMinutes).toBe(readTime(slidingWindow!));
+  });
+
+  const everyWrittenBody = [
+    ...topics().flatMap((t) =>
+      chapters(t.id)
+        .filter((ch) => ch.ready)
+        .map((ch) => ({ name: `${t.id}/${ch.id}`, body: ch.body }))
+    ),
+    ...GIT_CHAPTERS.map((section) => ({ name: `git/${section.id}`, body: section.body })),
+  ];
+  const minutesOf = (html: string) => Math.max(2, Math.round(words(proseOf(html)) / 180));
+
+  it("matches the prose-only formula for every written chapter of every topic, and for the Git guide", () => {
+    expect(everyWrittenBody.length).toBeGreaterThan(200);
+    for (const { name, body } of everyWrittenBody) {
+      expect(htmlMinutes(body), `${name} reads ${htmlMinutes(body)} minutes, expected ${minutesOf(body)}`).toBe(
+        minutesOf(body)
+      );
+    }
+    for (const t of topics().filter((topic) => chapters(topic.id).length > 0)) {
+      for (const ch of chapters(t.id)) {
+        expect(readTime(ch), `${t.id}/${ch.id}`).toBe(ch.ready ? minutesOf(ch.body) : 0);
+      }
+    }
+    expect(htmlMinutes(GIT_BODY_HTML)).toBe(minutesOf(GIT_BODY_HTML));
+    expect(topicStats().git.minutes).toBe(minutesOf(GIT_BODY_HTML));
+  });
+
+  it("closes every <pre>, <script>, <style> and <svg> it opens in a written chapter", () => {
+    const withoutScriptText = (html: string) =>
+      html.replace(/(<script(?=[\s>])[^>]*>)[\s\S]*?(<\/script\s*>)/gi, "$1$2");
+    for (const { name, body } of everyWrittenBody) {
+      const outsideScripts = withoutScriptText(body);
+      for (const tag of ["pre", "script", "style", "svg"]) {
+        const opened = (outsideScripts.match(new RegExp(`<${tag}(?=[\\s>])`, "gi")) ?? []).length;
+        const closed = (outsideScripts.match(new RegExp(`</${tag}\\s*>`, "gi")) ?? []).length;
+        expect(closed, `${name} opens ${opened} <${tag}> and closes ${closed}`).toBe(opened);
+      }
+    }
+  });
+
+  it("drops code, scripts, styles and diagrams however they are cased or wrapped", () => {
+    const prose = Array.from({ length: 1800 }, (_, i) => `word${i}`).join(" ");
+    const noise = Array.from({ length: 9000 }, (_, i) => `noise${i}`).join(" ");
+    expect(htmlMinutes(`<p>${prose}</p>`)).toBe(10);
+    expect(htmlMinutes(`<p>${prose}</p><pre><code>${noise}</code></pre>`)).toBe(10);
+    expect(htmlMinutes(`<p>${prose}</p><PRE class="x">\n${noise}\n</PRE>`)).toBe(10);
+    expect(htmlMinutes(`<p>${prose}</p><script type="module">${noise}</script>`)).toBe(10);
+    expect(htmlMinutes(`<p>${prose}</p><style>${noise}</style>`)).toBe(10);
+    expect(htmlMinutes(`<p>${prose}</p><svg viewBox="0 0 9 9"><text>${noise}</text></svg>`)).toBe(10);
+    expect(htmlMinutes(`<p>${prose}</p><p>and <code>${noise}</code> inline</p>`)).toBeGreaterThan(10);
+    expect(htmlMinutes(`<pre>${noise}</pre>`)).toBe(2);
   });
 });
 

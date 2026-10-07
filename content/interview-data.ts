@@ -2475,7 +2475,7 @@ intro:'Your background shows no competitive programming, so this is your weakest
 pre:`<div class="note"><span class="lbl">If you have three days, not three weeks</span><p>Do not attempt breadth. Do the first four patterns only — hash map, two pointers, sliding window, stack — about eight problems each, until recognition is instant. Those four cover the large majority of mediums given to full-stack candidates. Add intervals as a fifth, because your booking-marketplace background means an interviewer may reach for it deliberately.</p></div>`,
 post:`<div class="prep">
 <span class="ttl">The DSA track on this site</span>
-<p>This round is ten questions: how to behave in the room, and the handful of patterns worth having cold. The patterns themselves are a whole track — <a href="/dsa">34 chapters and 245 exercises</a> — and this is the order to walk it.</p>
+<p>This round is ten questions: how to behave in the room, and the handful of patterns worth having cold. The patterns themselves are a whole track — <a href="/dsa">{{dsa.chapters}} chapters and {{dsa.exercises}} exercises</a> — and this is the order to walk it.</p>
 <ul>
 <li><a href="/dsa/dsa-interview-strategy">Interview strategy</a> and <a href="/dsa/dsa-complexity-analysis">Complexity analysis</a> — start here; they change how you answer everything else</li>
 <li>The patterns that carry most interviews: <a href="/dsa/dsa-hashing">Hashing</a>, <a href="/dsa/dsa-two-pointers">Two pointers</a>, <a href="/dsa/dsa-sliding-window">Sliding window</a>, <a href="/dsa/dsa-binary-search">Binary search</a></li>
@@ -4197,7 +4197,7 @@ a:`<div class="table-scroll"><table>
 </tbody></table></div>
 <p>Around 150 problems, done properly. <b>Properly</b> means: attempt for 25 minutes, then read the solution rather than grinding for two hours; write it yourself from scratch afterwards; and <b>redo it a week later from memory</b>. That last step is the one everybody skips and it is where the retention actually comes from.</p>
 <p>Four focused hours a week beats twenty unfocused ones. And do the last three weeks with a timer and a whiteboard, out loud, because solving in an IDE in silence trains a different skill than the one being tested.</p>`,
-note:`<p>You have a genuine advantage here that most candidates do not: <b>your own DSA track — 34 chapters and 245 exercises.</b> You wrote it. Working through your own material is faster than any external list, and it is already structured the way you think. Start there.</p>`
+note:`<p>You have a genuine advantage here that most candidates do not: <b>your own DSA track — {{dsa.chapters}} chapters and {{dsa.exercises}} exercises.</b> You wrote it. Working through your own material is faster than any external list, and it is already structured the way you think. Start there.</p>`
 },
 {
 q:'How to run a hard you have never seen',

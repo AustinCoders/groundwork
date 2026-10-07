@@ -80,9 +80,10 @@ export const archBuild: Chapter = {
 </p>
 <p>
   Nothing reads the content directly except <code>lib/content.ts</code>, which is also where derived
-  fields come from. The reading time shown on every chapter is computed there: tags are stripped,
-  the words are counted and divided by 180, and the result is rounded with a minimum of two
-  minutes.
+  fields come from. The reading time shown on every chapter is computed there: anything inside a
+  <code>&lt;script&gt;</code>, <code>&lt;pre&gt;</code>, <code>&lt;style&gt;</code> or
+  <code>&lt;svg&gt;</code> element is dropped, the remaining tags are stripped, the words are
+  counted and divided by 180, and the result is rounded with a minimum of two minutes.
 </p>
 
 <h3>Recording test cases for other languages</h3>

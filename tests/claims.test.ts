@@ -2,12 +2,14 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import sitemap from "@/app/sitemap";
+import { INTERVIEW_ROUNDS_RAW } from "@/content/interview-data";
+import { buildSearchIndex } from "@/components/reader/searchIndex";
 import { chapters, exercises, topics } from "@/lib/content";
 import { LANG_ORDER, LANGUAGES } from "@/lib/codeLanguages";
-import { bankQuestions } from "@/lib/interviewBook";
+import { bankQuestions, bookRounds } from "@/lib/interviewBook";
 import { INTERVIEW_TOTAL_QUESTIONS, INTERVIEW_TOTAL_ROUNDS } from "@/lib/interviewContent";
 import { THEME_ITEMS } from "@/lib/storage";
-import { siteStats } from "@/lib/topicStats";
+import { siteStats, topicStats } from "@/lib/topicStats";
 import { hasColourLiteral } from "./colour-literal";
 
 const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
@@ -156,6 +158,60 @@ describe("what the site says about itself", () => {
     expect(read("content/architecture/arch-overview.ts")).toContain(
       `<tr><td>Topics</td><td>${all.length} — ${writtenTopics} written, ${outlined} outlined, ${standalone} standalone</td></tr>`
     );
+  });
+});
+
+const dsaChapters = chapters("dsa");
+const dsaWritten = dsaChapters.filter((ch) => ch.ready).length;
+const dsaChapterIds = new Set(dsaChapters.map((ch) => ch.id));
+const dsaExerciseCount = exercises().filter((ex) => dsaChapterIds.has(ex.chapter)).length;
+const dsaTrack = `${dsaWritten} chapters and ${dsaExerciseCount} exercises`;
+const BRACED_TOKEN = /\{\{[^}]*\}\}/g;
+const CODE_SAMPLES = ["{{ user, setUser }}", "{{ github.ref }}"];
+const placeholdersIn = (value: unknown) =>
+  (JSON.stringify(value).match(BRACED_TOKEN) ?? []).filter((token) => !CODE_SAMPLES.includes(token));
+
+describe("what the interview book says about the DSA track", () => {
+  const rounds = bookRounds();
+  const round = (id: string) => rounds.find((r) => r.id === id);
+
+  it("counts something", () => {
+    expect(dsaWritten).toBeGreaterThan(0);
+    expect(dsaWritten).toBeLessThanOrEqual(dsaChapters.length);
+    expect(dsaExerciseCount).toBeGreaterThan(0);
+  });
+
+  it("agrees with the counts the DSA cover shows", () => {
+    expect(topicStats().dsa.written).toBe(dsaWritten);
+    expect(topicStats().dsa.exercises).toBe(dsaExerciseCount);
+  });
+
+  it("states the written chapters and the exercises in the DSA round", () => {
+    expect(round("r7")?.post).toContain(`<a href="/dsa">${dsaTrack}</a>`);
+  });
+
+  it("states them again in the hard DSA round's eight-week plan", () => {
+    const notes = (round("s1")?.questions ?? []).map((q) => q.note ?? "").join("");
+    expect(notes).toContain(`<b>your own DSA track — ${dsaTrack}.</b>`);
+  });
+
+  it("keeps the numbers out of the data, which holds placeholders instead", () => {
+    expect(JSON.stringify(INTERVIEW_ROUNDS_RAW)).not.toMatch(/\d+ chapters and \d+ exercises/);
+    const tokens = placeholdersIn(INTERVIEW_ROUNDS_RAW);
+    expect(tokens.length).toBeGreaterThanOrEqual(2);
+    expect(new Set(tokens)).toEqual(new Set(["{{dsa.chapters}}", "{{dsa.exercises}}"]));
+  });
+
+  it("leaves no {{...}} token in anything the pages render, apart from the book's own code samples", () => {
+    expect(placeholdersIn(rounds)).toEqual([]);
+    const searchable = buildSearchIndex("interview")
+      .map((entry) => entry.text)
+      .join(" ");
+    expect(
+      searchable.split(" ").filter((word) => word.startsWith("{{") && word.endsWith("}}")),
+      "a word of the interview search index is a {{...}} token"
+    ).toEqual([]);
+    expect(searchable).not.toMatch(/dsa\.(?:chapters|exercises)/);
   });
 });
 

@@ -1,4 +1,5 @@
 import { chapters } from "@/lib/content";
+import { fillCounts } from "@/lib/interviewCounts";
 
 const ENTITIES: Record<string, string> = {
   nbsp: " ",
@@ -41,7 +42,7 @@ export function compactWords(text: string): string {
 export function buildSearchIndex(topicId: string) {
   return chapters(topicId).map((ch) => ({
     id: ch.id,
-    text: compactWords(searchableText([ch.title, ch.short, ch.subtitle], String(ch.body || ""))),
+    text: compactWords(searchableText([ch.title, ch.short, ch.subtitle], fillCounts(String(ch.body || "")))),
   }));
 }
 
