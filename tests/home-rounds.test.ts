@@ -17,6 +17,8 @@ const round = (id: string, code: string, meta: [string, string][] = []) => ({
   code,
   navTitle: `Title ${id}`,
   meta,
+  minutes: 9,
+  counts: { questions: 12, followUps: 30, traps: 7, code: 2 },
 });
 const question = (
   roundId: string,
@@ -132,6 +134,11 @@ describe("homeRounds", () => {
     expect(out.map((r) => r.id)).toEqual(["r1", "r1oa"]);
   });
 
+  it("carries the round's real question, follow-up and reading-minute counts", () => {
+    const [first] = homeRounds([round("r2", "R2")], []);
+    expect(first).toMatchObject({ questions: 12, followUps: 30, minutes: 9 });
+  });
+
   it("builds the interview link and the title", () => {
     const [first] = homeRounds([round("r2", "R2")], []);
     expect(first).toMatchObject({ id: "r2", code: "R2", title: "Title r2", href: "/interview/r2" });
@@ -228,6 +235,13 @@ describe("the real interview book", () => {
 
   it("gives most rounds a real follow-up to push with next", () => {
     expect(rounds.filter((r) => r.followUp.length > 0).length).toBeGreaterThanOrEqual(Math.floor(rounds.length * 0.8));
+  });
+
+  it("has a positive question count and reading time for every round", () => {
+    for (const r of rounds) {
+      expect(r.questions, r.id).toBeGreaterThan(0);
+      expect(r.minutes, r.id).toBeGreaterThan(0);
+    }
   });
 
   it("stays under 12 KB as a prop", () => {

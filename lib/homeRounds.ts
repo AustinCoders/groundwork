@@ -1,6 +1,6 @@
 import type { BankQuestion, BookRound } from "@/lib/interviewBook";
 
-export type HomeStageId = "screening" | "technical" | "design" | "people";
+type HomeStageId = "screening" | "technical" | "design" | "people";
 
 export interface HomeRound {
   id: string;
@@ -12,6 +12,9 @@ export interface HomeRound {
   wrong: string;
   sample: string;
   followUp: string;
+  questions: number;
+  followUps: number;
+  minutes: number;
 }
 
 export const HOME_STAGES: { id: HomeStageId; label: string; last: number }[] = [
@@ -94,7 +97,7 @@ function failMode(round: Pick<BookRound, "meta">): string {
 }
 
 export function homeRounds(
-  rounds: Pick<BookRound, "id" | "code" | "navTitle" | "meta">[],
+  rounds: Pick<BookRound, "id" | "code" | "navTitle" | "meta" | "minutes" | "counts">[],
   questions: Pick<BankQuestion, "roundId" | "q" | "test" | "trap" | "fu">[]
 ): HomeRound[] {
   return rounds
@@ -111,6 +114,9 @@ export function homeRounds(
         wrong: truncate(plainText(first?.trap) || plainText(failMode(round)), WRONG_LIMIT),
         sample: truncate(plainText(first?.q), SAMPLE_LIMIT),
         followUp: truncate(plainText(first?.fu[0]), FOLLOW_UP_LIMIT),
+        questions: round.counts.questions,
+        followUps: round.counts.followUps,
+        minutes: round.minutes,
       };
     });
 }

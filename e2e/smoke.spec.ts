@@ -1240,60 +1240,59 @@ test("the home page reads as a landing page and every path leads somewhere real"
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
-test("the home interview book previews each round, follows the reader and links to the round", async ({ page }) => {
+test("the home interview book opens at the first round, follows the stages and rounds, and links to the round", async ({
+  page,
+}) => {
   await page.goto("/");
   const book = page.locator("#loop");
   await expect(book.getByRole("heading", { level: 2, name: /From the first call to the offer/ })).toBeVisible();
-  const preview = book.getByRole("region", { name: "Screening call" });
-  const shown = preview.locator("[data-active]");
-  await expect(shown).toContainText("Round 01 · R1");
-  await expect(shown).toContainText("What they are really testing");
-  await expect(shown).toContainText("The answer that loses the room");
-  await expect(shown).toContainText("A question you will get");
-  await expect(shown).toContainText("Tell me about yourself.");
+  const page1 = book.getByRole("region", { name: "Screening call" });
+  await expect(page1).toHaveAttribute("data-active", "true");
+  await expect(page1).toContainText("Round 01");
+  await expect(page1).toContainText("What they are really testing");
+  await expect(page1).toContainText("The answer that loses the room");
+  await expect(page1).toContainText("A question you will get");
+  await expect(page1).toContainText("Tell me about yourself.");
   await expect(book.getByRole("button", { name: /Round 01/ })).toHaveAttribute("aria-current", "true");
 
   await book.getByRole("tab", { name: /^02 Technical/ }).click();
   const machine = book.getByRole("button", { name: /Machine coding/ });
   await expect(machine).toHaveAttribute("aria-current", "true");
   await expect(book.getByRole("button", { name: /Round 01/ })).toHaveCount(0);
-  const machinePreview = book.getByRole("region", { name: "Machine coding" });
-  await expect(machinePreview.locator("[data-active]")).toContainText("Round 05 · R2");
-  await expect(machinePreview.locator("[data-active]")).toContainText("Data modelling");
+  const machinePage = book.getByRole("region", { name: "Machine coding" });
+  await expect(machinePage).toContainText("Round 05");
+  await expect(machinePage).toContainText("Data modelling");
 
   const react = book.getByRole("button", { name: /React & Next\.js/ });
   await react.focus();
   await page.keyboard.press("Enter");
   await expect(react).toHaveAttribute("aria-current", "true");
-  await expect(book.getByRole("region", { name: "React & Next.js" }).locator("[data-active]")).toContainText(
-    "Round 08 · R4"
-  );
+  await expect(book.getByRole("region", { name: "React & Next.js" })).toContainText("Round 08");
   await expect(book.getByRole("status")).toContainText("Round 08, React & Next.js");
 
-  await page.waitForTimeout(2000);
+  await settleScroll(page);
   await book.getByRole("tab", { name: /^04 People and offer/ }).click();
-  await page.evaluate(() => {
-    const row = [...document.querySelectorAll<HTMLElement>("#loop ol button")].find((el) =>
-      /Behavioural/.test(el.textContent ?? "")
-    );
-    if (!row) throw new Error("no Behavioural row");
-    const box = row.getBoundingClientRect();
-    window.scrollTo(0, box.top + window.scrollY + box.height / 2 - window.innerHeight / 2);
-  });
-  const behavioural = book.getByRole("button", { name: /Behavioural/ });
-  await expect(behavioural).toHaveAttribute("aria-current", "true");
-  await expect(book.getByRole("region", { name: /Behavioural/ }).locator("[data-active]")).toContainText("R11");
+  await expect(book.getByRole("button", { name: /Resume grilling/ })).toHaveAttribute("aria-current", "true");
+  await settleScroll(page);
+  const pin = await pinOf(page, "loop");
+  const rowTitles = await book.locator("ol button [class*='rowName']").allTextContents();
+  const followed: string[] = [];
+  for (let i = 0; i < rowTitles.length; i++) {
+    await scrollPin(page, "loop", 3 * pin.groupLength + ((i + 0.5) / rowTitles.length) * pin.groupLength);
+    followed.push((await book.locator("ol button[aria-current='true'] [class*='rowName']").textContent()) ?? "");
+  }
+  expect(followed, "scrolling the pinned book walks the stage's rounds in order").toEqual(rowTitles);
+  const title = followed[followed.length - 1].replace(/^Round \d+: /, "");
+  await expect(book.getByRole("region", { name: title })).toHaveAttribute("data-active", "true");
 
   await book
-    .getByRole("region", { name: /Behavioural/ })
+    .getByRole("region", { name: title })
     .getByRole("link", { name: /Read this round/ })
     .click();
-  await page.waitForURL("**/interview/r11");
+  await page.waitForURL(/\/interview\/r\d+/);
 });
 
-test("the home interview stage switcher lists only the chosen stage's rounds and previews its first", async ({
-  page,
-}) => {
+test("the home interview stage tabs list only the chosen stage's rounds and open on its first", async ({ page }) => {
   await page.goto("/");
   const book = page.locator("#loop");
   const stages = book.getByRole("tablist", { name: "Interview stages" });
@@ -1307,54 +1306,157 @@ test("the home interview stage switcher lists only the chosen stage's rounds and
   ];
   for (const { stage, rows: count, first } of expected) {
     await stages.getByRole("tab", { name: stage }).click();
+    await settleScroll(page);
     await expect(stages.getByRole("tab", { name: stage })).toHaveAttribute("aria-selected", "true");
     await expect(rows).toHaveCount(count);
     await expect(rows.first()).toContainText(first);
     await expect(rows.first()).toHaveAttribute("aria-current", "true");
     await expect(book.getByRole("region", { name: first })).toBeVisible();
   }
-  await expect(book.getByText("The offer", { exact: true })).toBeVisible();
-  await expect(book.getByRole("button", { name: /Next stage/ })).toHaveCount(0);
+  await expect(book.getByRole("tabpanel").getByText("The offer", { exact: true })).toBeVisible();
 
   await stages.getByRole("tab", { name: /^01 Screening/ }).click();
-  await expect(book.getByText("The offer", { exact: true })).toHaveCount(0);
-  await book.getByRole("button", { name: /Next stage/ }).click();
+  await settleScroll(page);
+  await expect(book.getByRole("tabpanel").getByText("The offer", { exact: true })).toHaveCount(0);
+  await stages.getByRole("tab", { name: /^01 Screening/ }).focus();
+  await page.keyboard.press("ArrowDown");
+  await settleScroll(page);
   await expect(stages.getByRole("tab", { name: /^02 Technical/ })).toHaveAttribute("aria-selected", "true");
+  await expect(stages.getByRole("tab", { name: /^02 Technical/ })).toBeFocused();
   await expect(rows.first()).toContainText("Machine coding");
 });
 
-test("a home interview preview never ends in the middle of a clause", async ({ page }) => {
+test("the home interview book is an open book: contents on the left, the round's page on the right, decoration hidden from assistive tech", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  const preview = "#loop [data-active] [class*='previewText'], #loop [data-active] [class*='previewSample']";
-  const texts = await page.locator(preview).allTextContents();
+  const book = page.locator("#loop");
+  const region = book.getByRole("region", { name: "Screening call" });
+  await region.scrollIntoViewIfNeeded();
+  for (const text of [
+    "A question you will get",
+    "The answer that loses the room",
+    "and the follow-up they push with",
+    "What they are really testing",
+  ])
+    await expect(region).toContainText(text);
+  await expect(region.getByRole("link", { name: /Read this round/ })).toBeVisible();
+  await expect(region.getByRole("list", { name: "This round in numbers" }).getByRole("listitem")).toHaveCount(3);
+  await expect(book.getByRole("heading", { level: 3, name: "Contents" })).toBeVisible();
+  const decoration = await book.evaluate((el) =>
+    [
+      ...el.querySelectorAll(
+        "[class*='stamp'], [class*='typing'], [class*='ribbon'], [class*='cover'], [class*='band'], [class*='spine'], [class*='stack'], [class*='contact']"
+      ),
+    ]
+      .filter((node) => !node.matches("a, button"))
+      .every((node) => node.closest("[aria-hidden='true']") !== null || node.getAttribute("aria-hidden") === "true")
+  );
+  expect(decoration, "stamp, typing dots, ribbon, cover and page edges are aria-hidden").toBe(true);
+  const tabs = await book.getByRole("tab").evaluateAll((all) => all.map((tab) => tab.getBoundingClientRect().left));
+  expect(
+    Math.max(...tabs) - Math.min(...tabs),
+    "the four stage tabs share one edge, the open one pulled out"
+  ).toBeLessThan(20);
+  const spread = await book.locator("[class*='spread']").first().boundingBox();
+  const pageBox = await region.boundingBox();
+  const contents = await book.getByRole("heading", { level: 3, name: "Contents" }).boundingBox();
+  expect(contents!.x + contents!.width, "contents sit on the left page").toBeLessThan(spread!.x + spread!.width / 2);
+  expect(pageBox!.x, "the round sits on the right page").toBeGreaterThan(spread!.x + spread!.width / 2 - 4);
+  const row = book.getByRole("button", { name: /Round 01/ });
+  await expect(row.locator("[class*='decides']")).toBeVisible();
+  const slim = await book
+    .locator("ol button:not([aria-current])")
+    .first()
+    .evaluate((el) => el.getBoundingClientRect().height);
+  const open = await row.evaluate((el) => el.getBoundingClientRect().height);
+  expect(open, "the active round shows what it decides, the others are slim rows").toBeGreaterThan(slim * 1.6);
+  await book.getByRole("button", { name: /Online assessment/ }).click();
+  await expect(book.getByRole("region", { name: "Online assessment" })).toHaveAttribute("data-active", "true");
+});
+
+test("under reduced motion the home interview book is a still spread: no page turn, strips or animation", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const book = page.locator("#loop");
+  await expect(book).not.toHaveAttribute("data-pinned", "");
+  await book.getByRole("button", { name: /Online assessment/ }).click();
+  const region = book.getByRole("region", { name: "Online assessment" });
+  await expect(region).toHaveAttribute("data-active", "true");
+  const names = await region
+    .locator("xpath=descendant-or-self::*")
+    .evaluateAll((all) => all.map((node) => getComputedStyle(node).animationName));
+  expect(new Set(names)).toEqual(new Set(["none"]));
+  const typing = await region
+    .locator("[class*='typing']")
+    .evaluateAll((all) => all.map((n) => getComputedStyle(n).display));
+  expect(new Set(typing)).toEqual(new Set(["none"]));
+  expect(await book.locator("[data-strip]").count(), "no page strips are built").toBe(0);
+  expect(await book.locator("[class*='slot']").count(), "only the current page is rendered").toBe(1);
+});
+
+test("every stage of the home interview book fits the view at 1280x720", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto("/");
+  const book = page.locator("#loop");
+  for (const stage of [/^01 /, /^02 /, /^03 /, /^04 /]) {
+    await book.getByRole("tab", { name: stage }).click();
+    await settleScroll(page);
+    const box = await page.evaluate(() => {
+      const stageBox = document.querySelector("#loop [data-stage]")!.getBoundingClientRect();
+      const tabs = [...document.querySelectorAll("#loop [role=tab]")].map((tab) => tab.getBoundingClientRect());
+      return {
+        top: stageBox.top,
+        bottom: stageBox.bottom,
+        view: innerHeight,
+        tabsInside: tabs.every((t) => t.top >= 0 && t.bottom <= innerHeight && t.right <= innerWidth),
+      };
+    });
+    expect(box.bottom, `${stage} book`).toBeLessThanOrEqual(box.view);
+    expect(box.top, `${stage} book`).toBeGreaterThanOrEqual(0);
+    expect(box.tabsInside, `${stage} tabs`).toBe(true);
+  }
+});
+
+test("a home interview page never ends in the middle of a clause", async ({ page }) => {
+  await page.goto("/");
+  const selector = "#loop article[data-active] [class*='sample'], #loop article[data-active] [class*='penText']";
+  const texts = await page.locator(selector).allTextContents();
   const stages = page.locator("#loop").getByRole("tablist", { name: "Interview stages" });
   for (const stage of [/^02 Technical/, /^03 Design and depth/, /^04 People and offer/]) {
     await stages.getByRole("tab", { name: stage }).click();
-    texts.push(...(await page.locator(preview).allTextContents()));
+    await settleScroll(page);
+    texts.push(...(await page.locator(selector).allTextContents()));
   }
-  expect(texts.length).toBeGreaterThanOrEqual(10);
+  expect(texts.length).toBeGreaterThanOrEqual(8);
   for (const text of texts.filter((text) => text.length > 100)) expect(text.trim(), text).toMatch(/[.!?…"'”’)\]]$/);
 });
 
-test("the home interview book fits a phone and keeps its preview in view", async ({ page }) => {
+test("the home interview book fits a phone as stacked pages with working tabs and rounds", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   const book = page.locator("#loop");
   await book.getByRole("button", { name: /Round 01/ }).scrollIntoViewIfNeeded();
   const fits = () =>
     page.evaluate(() => {
-      const inside = [...document.querySelectorAll<HTMLElement>("#loop ol, #loop [role=region]")].every((el) => {
+      const inside = [
+        ...document.querySelectorAll<HTMLElement>("#loop ol, #loop [role=region], #loop [role=tablist]"),
+      ].every((el) => {
         const box = el.getBoundingClientRect();
         return box.left >= 0 && box.right <= innerWidth;
       });
       return inside && document.documentElement.scrollWidth <= innerWidth;
     });
   expect(await fits()).toBe(true);
-  await page.evaluate(() => window.scrollBy(0, 250));
-  const region = book.getByRole("region");
-  await expect(region).toBeVisible();
-  const box = await region.boundingBox();
-  expect(box && box.y >= 0 && box.y < 120).toBe(true);
+  await book.getByRole("button", { name: /Online assessment/ }).click();
+  await expect(book.getByRole("region", { name: "Online assessment" })).toBeVisible();
+  await book.getByRole("tab", { name: /^03 Design and depth/ }).click();
+  await expect(book.getByRole("button", { name: /Databases & Redis/ })).toHaveAttribute("aria-current", "true");
+  await expect(book.getByRole("region", { name: "Databases & Redis" })).toBeVisible();
   expect(await fits()).toBe(true);
 });
 
@@ -1379,30 +1481,32 @@ test("the how-it-works stepper switches steps by click and by keyboard and shows
   await tabs.nth(1).click();
   await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
   await expect(how.getByRole("tabpanel")).toContainText("Prove it with real tests");
-  await expect(how.getByRole("tabpanel")).toContainText("4 / 4 passed");
+  await expect(how.locator("[data-stage]")).toContainText("4 / 4 passed");
 
   await tabs.nth(1).focus();
   await page.keyboard.press("ArrowDown");
   await expect(tabs.nth(2)).toHaveAttribute("aria-selected", "true");
   await expect(tabs.nth(2)).toBeFocused();
-  await expect(how.getByRole("tabpanel")).toContainText("Build me a debounce.");
+  await expect(how.getByRole("tabpanel")).toContainText("Then get asked the follow-up.");
+  await expect(how.locator("[data-stage]")).toContainText("Build me a debounce.");
   await page.keyboard.press("End");
   await expect(tabs.nth(3)).toHaveAttribute("aria-selected", "true");
-  await expect(how.getByRole("tabpanel")).toContainText("Read today. Back after 3 days, then 7 more, then 21.");
-  await expect(how.locator("[role=tabpanel] [data-on]")).toHaveCount(4);
+  await expect(how.getByRole("tabpanel")).toContainText("And it comes back before you forget.");
+  await expect(how.locator("[data-on]")).toHaveCount(4);
   await page.keyboard.press("ArrowRight");
   await expect(tabs.nth(0)).toHaveAttribute("aria-selected", "true");
   await page.keyboard.press("ArrowUp");
   await expect(tabs.nth(3)).toHaveAttribute("aria-selected", "true");
   await page.keyboard.press("Home");
   await expect(tabs.nth(0)).toHaveAttribute("aria-selected", "true");
-  await expect(how.getByRole("tabpanel")).toContainText("Syntax and values");
+  await expect(how.getByRole("tabpanel")).toContainText("Read a chapter that builds on the last one.");
 });
 
 test("the how-it-works stepper advances on its own and stops for good once the reader chooses a step", async ({
   page,
 }) => {
   await page.clock.install();
+  await page.setViewportSize({ width: 1000, height: 800 });
   await page.goto("/");
   const how = page.locator("#how");
   const tabs = how.getByRole("tab");
@@ -1425,6 +1529,7 @@ test("the how-it-works stepper waits while the reader hovers it and never moves 
   page,
 }) => {
   await page.clock.install();
+  await page.setViewportSize({ width: 1000, height: 800 });
   await page.goto("/");
   const how = page.locator("#how");
   const tabs = how.getByRole("tab");
@@ -1492,16 +1597,27 @@ test("at 1440x900 every home section's content fills its view without spilling i
     .locator("header")
     .first()
     .evaluate((el) => el.getBoundingClientRect().height);
+  await expect(page.locator("#how")).toHaveAttribute("data-pinned", "");
   for (const id of ["shelf", "practice", "how", "paths", "loop", "faq", "cta"]) {
     const room = await page.evaluate((target) => {
       const el = document.getElementById(target)!;
-      const kids = [...el.children].map((child) => child.getBoundingClientRect());
-      const top = Math.min(...kids.map((box) => box.top));
-      const bottom = Math.max(...kids.map((box) => box.bottom));
-      return { content: bottom - top, section: el.getBoundingClientRect().height };
+      const scene = el.querySelector("[data-scene-root]")!.getBoundingClientRect();
+      const stage = el.querySelector("[data-pin-box]")!.getBoundingClientRect();
+      return {
+        content: scene.height,
+        section: el.getBoundingClientRect().height,
+        stage: stage.height,
+        pinned: el.hasAttribute("data-pinned"),
+      };
     }, id);
     expect(room.content, `#${id} has real content`).toBeGreaterThan((900 - header) * 0.7);
-    expect(room.section, `#${id} is not stretched past its content`).toBeLessThanOrEqual(room.content + 170);
+    if (room.pinned) {
+      expect(room.section, `#${id} is a tall wrapper`).toBeGreaterThan(2 * (900 - header));
+      expect(Math.abs(room.stage - (900 - header)), `#${id} pinned stage is exactly one view`).toBeLessThanOrEqual(1);
+      expect(room.content, `#${id} content fits the pinned stage`).toBeLessThanOrEqual(room.stage);
+    } else {
+      expect(room.section, `#${id} is not stretched past its content`).toBeLessThanOrEqual(room.content + 170);
+    }
   }
 });
 
@@ -1512,7 +1628,7 @@ test("the home nav anchors land each section's top under the header", async ({ p
     .locator("header")
     .first()
     .evaluate((el) => el.getBoundingClientRect().height);
-  const nav = page.getByRole("navigation", { name: "Sections" });
+  const nav = page.getByRole("navigation", { name: "Sections", exact: true });
   await expect(nav.getByRole("link")).toHaveText([
     "Topics",
     "Practice",
@@ -1563,14 +1679,17 @@ test("every home scene after the hero has layered cards, a sticker and a handwri
       strokes: el.querySelectorAll("[data-note] svg path").length,
     }));
     expect(counts.stages, `#${id} has a stage`).toBeGreaterThan(0);
-    expect(counts.cards, `#${id} cards`).toBeGreaterThanOrEqual(3);
+    expect(counts.cards, `#${id} cards`).toBeGreaterThanOrEqual(id === "loop" ? 1 : 3);
     expect(counts.stickers, `#${id} stickers`).toBeGreaterThanOrEqual(1);
-    expect(counts.notes, `#${id} notes`).toBeGreaterThanOrEqual(1);
-    expect(counts.strokes, `#${id} curved strokes`).toBeGreaterThanOrEqual(2);
+    if (id !== "how" && id !== "loop") {
+      expect(counts.notes, `#${id} notes`).toBeGreaterThanOrEqual(1);
+      expect(counts.strokes, `#${id} curved strokes`).toBeGreaterThanOrEqual(2);
+    }
   }
   const hidden = await page.evaluate(() => {
     const bad: string[] = [];
     for (const el of document.querySelectorAll("main [aria-hidden='true']")) {
+      if (el.closest("[inert]")) continue;
       if (el.matches("a[href], button, input, select, textarea, [tabindex]:not([tabindex='-1'])")) bad.push(el.tagName);
       if (
         el.querySelector(
@@ -1605,7 +1724,7 @@ test("under reduced motion the home stage cards have no animation, no transition
     await page.locator(`#${id}`).scrollIntoViewIfNeeded();
     const stage = page.locator(`#${id} [data-stage]`).first();
     const before = await stage.evaluate((el) =>
-      [...el.querySelectorAll("[data-card], [data-sticker], [data-note]")].map((node) => {
+      [...el.querySelectorAll("[data-card], [data-sticker], [data-note], [data-spark]")].map((node) => {
         const style = getComputedStyle(node);
         return { animation: style.animationName, transition: style.transitionDuration, translate: style.translate };
       })
@@ -1616,7 +1735,7 @@ test("under reduced motion the home stage cards have no animation, no transition
       expect(piece.transition, `#${id} transition`).toMatch(/^0s(, 0s)*$/);
       expect(piece.translate, `#${id} parallax`).toBe("none");
     }
-    await expect(stage).not.toHaveAttribute("data-armed", "");
+    await expect(stage).not.toHaveAttribute("data-in", "");
     const box = await stage.boundingBox();
     await page.mouse.move(box!.x + box!.width * 0.2, box!.y + box!.height * 0.2);
     await page.mouse.move(box!.x + box!.width * 0.9, box!.y + box!.height * 0.9, { steps: 6 });
@@ -1641,13 +1760,18 @@ test("moving the pointer over a home stage shifts its cards by depth, and leavin
   await page.mouse.move(box!.x + box!.width * 0.5, box!.y + box!.height * 0.5);
   await page.mouse.move(box!.x + box!.width * 0.95, box!.y + box!.height * 0.9, { steps: 8 });
   await expect.poll(async () => (await translate()).join("|")).not.toBe(rest.join("|"));
-  const moved = await stage.evaluate((el) => ({
-    px: Number(getComputedStyle(el).getPropertyValue("--px")),
-    py: Number(getComputedStyle(el).getPropertyValue("--py")),
-  }));
-  expect(moved.px).toBeGreaterThan(0.5);
-  expect(moved.py).toBeGreaterThan(0.5);
-  expect(Math.abs(moved.px)).toBeLessThanOrEqual(1);
+  const shift = async () => {
+    const [a, b] = [rest, await translate()];
+    return Math.max(
+      ...a.map((value, k) => {
+        const [x1 = 0, y1 = 0] = value.split(" ").map((n) => parseFloat(n) || 0);
+        const [x2 = 0, y2 = 0] = b[k].split(" ").map((n) => parseFloat(n) || 0);
+        return Math.hypot(x2 - x1, y2 - y1);
+      })
+    );
+  };
+  await expect.poll(shift).toBeGreaterThan(3);
+  expect(await shift()).toBeLessThan(40);
   await page.mouse.move(2, 2);
   await expect.poll(async () => (await translate()).join("|"), { timeout: 4000 }).toBe(rest.join("|"));
 });
@@ -1668,6 +1792,307 @@ test("the home page never scrolls sideways at 375px or 1024px, and phones get a 
     .locator("#practice [data-card]")
     .evaluateAll((cards) => cards.filter((card) => getComputedStyle(card).display !== "none").length);
   expect(visibleCards).toBe(2);
+});
+
+async function settleScroll(page: Page) {
+  let last = -1;
+  await expect
+    .poll(async () => {
+      const now = await page.evaluate(() => window.scrollY);
+      const steady = now === last;
+      last = now;
+      return steady;
+    })
+    .toBe(true);
+  await page.waitForTimeout(120);
+}
+
+async function scrollSectionTo(page: Page, id: string, progress: number) {
+  await page.evaluate(
+    ([target, p]) => {
+      const el = document.getElementById(target as string)!;
+      const box = el.getBoundingClientRect();
+      const top = window.innerHeight - (p as number) * (window.innerHeight + box.height);
+      window.scrollTo(0, box.top + window.scrollY - top);
+    },
+    [id, progress] as const
+  );
+  await settleScroll(page);
+}
+
+const sceneVars = (page: Page, id: string) =>
+  page.locator(`#${id}`).evaluate((el) => ({
+    enter: el.getAttribute("data-enter") ?? "",
+    exit: el.getAttribute("data-exit") ?? "",
+  }));
+
+const cardOffsets = (page: Page, id: string) =>
+  page.locator(`#${id} [data-stage]`).evaluateAll((stages) =>
+    stages
+      .filter((stage) => stage.getBoundingClientRect().width > 0)
+      .flatMap((stage) => [...stage.querySelectorAll<HTMLElement>("[data-card]")])
+      .filter((card) => !card.closest("[hidden], [inert]") && getComputedStyle(card).display !== "none")
+      .map((card) => {
+        const [x = 0, y = x] = getComputedStyle(card)
+          .translate.split(" ")
+          .map((value) => parseFloat(value) || 0);
+        return Math.hypot(x, y);
+      })
+  );
+
+async function pinOf(page: Page, id: string) {
+  return page.evaluate((target) => {
+    const el = document.getElementById(target)!;
+    const header = document.querySelector("header")!.getBoundingClientRect().height;
+    const box = el.getBoundingClientRect();
+    const length = box.height - (innerHeight - header);
+    const groups = (el.dataset.pinGroups ?? "1").split(",").map(Number);
+    const hold = ((Number(el.dataset.pinHold) || 0) / 100) * innerHeight;
+    return { top: box.top + scrollY, header, length, groups, hold, groupLength: (length - hold) / groups.length };
+  }, id);
+}
+
+async function scrollPin(page: Page, id: string, along: number) {
+  const pin = await pinOf(page, id);
+  await page.evaluate((y) => window.scrollTo(0, y), pin.top - pin.header + along);
+  await settleScroll(page);
+  return pin;
+}
+
+const pinBoxTop = (page: Page, id: string) =>
+  page.locator(`#${id} [data-pin-box]`).evaluate((el) => Math.round(el.getBoundingClientRect().top));
+
+test("every home section is exactly at rest once a rail or nav link has landed on it", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const header = await page
+    .locator("header")
+    .first()
+    .evaluate((el) => el.getBoundingClientRect().height);
+  await scrollSectionTo(page, "shelf", 0.4);
+  const rail = page.getByRole("navigation", { name: "Page sections" });
+  for (const [name, id] of [
+    ["Practice", "practice"],
+    ["How it works", "how"],
+    ["Paths", "paths"],
+    ["Interview book", "loop"],
+    ["FAQ", "faq"],
+    ["Start here", "cta"],
+    ["Topics", "shelf"],
+  ]) {
+    await rail.getByRole("link", { name }).click();
+    await expect
+      .poll(() => page.evaluate((target) => document.getElementById(target)?.getBoundingClientRect().top ?? -1, id), {
+        timeout: 8000,
+      })
+      .toBeCloseTo(header, -1);
+    await settleScroll(page);
+    const vars = await sceneVars(page, id);
+    expect(Number(vars.enter), `#${id} enter`).toBe(1);
+    expect(Number(vars.exit), `#${id} exit`).toBe(0);
+    const offsets = await cardOffsets(page, id);
+    expect(offsets.length, `#${id} has cards`).toBeGreaterThan(id === "loop" ? 0 : 2);
+    for (const offset of offsets) expect(offset, `#${id} card offset at rest`).toBeLessThan(1);
+  }
+});
+
+test("a home section scrolled a quarter into view has its cards displaced and its headline part revealed", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  for (const id of ["practice", "how", "paths"]) {
+    const nearBottom = await page.evaluate((target) => {
+      const el = document.getElementById(target)!;
+      window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - innerHeight * 0.55);
+      return true;
+    }, id);
+    expect(nearBottom).toBe(true);
+    await settleScroll(page);
+    const vars = await sceneVars(page, id);
+    expect(Number(vars.enter), `#${id} enter on the way in`).toBeLessThan(1);
+    expect(Number(vars.enter), `#${id} enter on the way in`).toBeGreaterThan(0);
+    const offsets = await cardOffsets(page, id);
+    expect(Math.max(...offsets), `#${id} cards are displaced`).toBeGreaterThan(8);
+    if (id !== "practice") {
+      const words = await page
+        .locator(`#${id} h2 > span, #${id} h2 span`)
+        .evaluateAll((spans) => spans.map((span) => Number(getComputedStyle(span).opacity)).filter(Number.isFinite));
+      expect(Math.min(...words), `#${id} headline words are still arriving`).toBeLessThan(1);
+    }
+    await page.evaluate((target) => {
+      const el = document.getElementById(target)!;
+      const box = el.getBoundingClientRect();
+      window.scrollTo(0, box.bottom + window.scrollY - innerHeight * 0.45);
+    }, id);
+    await settleScroll(page);
+    const leaving = await sceneVars(page, id);
+    expect(Number(leaving.exit), `#${id} exit on the way out`).toBeGreaterThan(0);
+    const drift = await cardOffsets(page, id);
+    expect(Math.max(...drift), `#${id} cards drift apart on the way out`).toBeGreaterThan(20);
+  }
+});
+
+test("a long jump over several home sections leaves each one at rest when it is reached", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForTimeout(300);
+  await page.evaluate(() => {
+    const el = document.getElementById("how")!;
+    window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 64);
+  });
+  await settleScroll(page);
+  const vars = await sceneVars(page, "how");
+  expect([Number(vars.enter), Number(vars.exit)]).toEqual([1, 0]);
+});
+
+test("under reduced motion no scene variable is ever written and the connectors are fully drawn and static", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  for (const id of SCENE_SECTIONS) {
+    await scrollSectionTo(page, id, 0.3);
+    expect(await sceneVars(page, id), `#${id}`).toEqual({ enter: "", exit: "" });
+    await expect(page.locator(`#${id}`)).not.toHaveAttribute("data-live", "");
+  }
+  const connectors = page.locator("[data-connector]");
+  await expect(connectors).toHaveCount(6);
+  const still = await connectors.evaluateAll((all) =>
+    all.map((el) => ({
+      drawn: getComputedStyle(el.querySelector("path[class*='reveal']")!).strokeDashoffset,
+      rider: getComputedStyle(el.querySelector("[data-rider]")!).opacity,
+      label: getComputedStyle(el.querySelector("[class*='label']")!).opacity,
+      set: el.style.getPropertyValue("--d"),
+    }))
+  );
+  for (const link of still)
+    expect({ ...link, drawn: parseFloat(link.drawn) }).toEqual({ drawn: 0, rider: "0", label: "1", set: "" });
+  await expect(page.locator("[data-docked]")).toHaveCount(0);
+  const chips = await page
+    .locator("[data-chip]")
+    .evaluateAll((all) => all.map((chip) => getComputedStyle(chip).translate));
+  expect(new Set(chips)).toEqual(new Set(["none"]));
+});
+
+test("the home section rail lists the sections, follows the scroll, lands each one and stays out of the content", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const rail = page.getByRole("navigation", { name: "Page sections" });
+  await expect(rail).toBeHidden();
+  await scrollSectionTo(page, "shelf", 0.5);
+  await expect(rail).toBeVisible();
+  await expect(rail.getByRole("link")).toHaveText([
+    "01 Topics",
+    "02 Practice",
+    "03 How it works",
+    "04 Paths",
+    "05 Interview book",
+    "06 FAQ",
+    "07 Start here",
+  ]);
+  for (const [id, name] of [
+    ["shelf", "Topics"],
+    ["how", "How it works"],
+    ["faq", "FAQ"],
+  ]) {
+    await page.evaluate((target) => {
+      const el = document.getElementById(target)!;
+      window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 64);
+    }, id);
+    await expect(rail.getByRole("link", { name: new RegExp(name) })).toHaveAttribute("aria-current", "location");
+    await expect(rail.locator("[aria-current]")).toHaveCount(1);
+  }
+  await rail.getByRole("link", { name: /Paths/ }).click();
+  await expect
+    .poll(() => page.evaluate(() => document.getElementById("paths")!.getBoundingClientRect().top), { timeout: 8000 })
+    .toBeCloseTo(64, -1);
+  await rail.getByRole("link", { name: /Paths/ }).focus();
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Tab");
+  const label = rail.getByRole("link", { name: /Paths/ }).locator("span").last();
+  await expect(label).toHaveCSS("opacity", "1");
+  await page.setViewportSize({ width: 1100, height: 800 });
+  await expect(rail).toBeHidden();
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await scrollSectionTo(page, "practice", 0.5);
+  await expect(rail).toBeVisible();
+  const boxes = await page.evaluate(() => {
+    const railBox = document.querySelector("nav[aria-label='Page sections']")!.getBoundingClientRect();
+    const scene = document.querySelector("#practice [data-scene-root]")!.getBoundingClientRect();
+    const header = document.querySelector("header")!.getBoundingClientRect();
+    return { railRight: railBox.right, sceneLeft: scene.left, railTop: railBox.top, headerBottom: header.bottom };
+  });
+  expect(boxes.railRight, "the rail's dots sit in the left gutter").toBeLessThanOrEqual(boxes.sceneLeft);
+  expect(boxes.railTop, "the rail stays below the header").toBeGreaterThanOrEqual(boxes.headerBottom);
+});
+
+test("the home rail takes a keyboard focus ring and opens its label", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await scrollSectionTo(page, "practice", 0.5);
+  const link = page.getByRole("navigation", { name: "Page sections" }).getByRole("link", { name: /Paths/ });
+  await link.focus();
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Tab");
+  await expect(link).toBeFocused();
+  await expect(link.locator("span").last()).toHaveCSS("opacity", "1");
+  expect(await link.evaluate((el) => getComputedStyle(el).outlineStyle)).not.toBe("none");
+});
+
+test("home chips are decoration: hidden from assistive tech, never focusable, and every chip fact is in real text", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const report = await page.evaluate((ids) => {
+    const problems: string[] = [];
+    let chips = 0;
+    for (const id of ids) {
+      const section = document.getElementById(id)!;
+      const clone = section.cloneNode(true) as HTMLElement;
+      clone.querySelectorAll("[data-chip]").forEach((node) => node.remove());
+      const text = (clone.textContent ?? "").toLowerCase().replace(/\s+/g, " ");
+      const found = section.querySelectorAll<HTMLElement>("[data-chip]");
+      if (found.length < 2) problems.push(`#${id} has ${found.length} chips`);
+      found.forEach((chip) => {
+        chips++;
+        if (chip.getAttribute("aria-hidden") !== "true") problems.push(`#${id} chip is not aria-hidden`);
+        if (chip.matches("a, button, [tabindex]") || chip.querySelector("a, button, [tabindex]"))
+          problems.push(`#${id} chip is focusable`);
+        const fact = (chip.dataset.fact ?? "").toLowerCase();
+        if (!fact || !text.includes(fact)) problems.push(`#${id} chip fact "${fact}" is not in the section text`);
+      });
+    }
+    return { problems, chips };
+  }, SCENE_SECTIONS);
+  expect(report.problems).toEqual([]);
+  expect(report.chips).toBeGreaterThanOrEqual(18);
+});
+
+test("the home page does not scroll sideways at 375, 1024, 1440 or 1920px all the way down, and logs no errors", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  const problems = collectProblems(page);
+  for (const width of [375, 1024, 1440, 1920]) {
+    await page.setViewportSize({ width, height: width < 800 ? 800 : 900 });
+    await page.goto("/");
+    const total = await page.evaluate(() => document.documentElement.scrollHeight);
+    for (let y = 0; y < total; y += 450) {
+      await page.evaluate((to) => window.scrollTo(0, to), y);
+      await page.waitForTimeout(60);
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth),
+        `${width}px at ${y}`
+      ).toBeLessThanOrEqual(0);
+    }
+  }
+  expect(problems).toEqual([]);
 });
 
 test("the home practice section links to its four tools and shows numbers that match the rest of the page", async ({
@@ -2459,4 +2884,358 @@ test("the editor bar's selected language keeps its check mark and focus ring vis
   expect(shown.ringStyle).toBe("solid");
   expect(shown.ring).toBe(shown.text);
   expect(contrastRatio(colourChannels(shown.check), colourChannels(behind))).toBeGreaterThanOrEqual(3);
+});
+
+test("pinned home sections stay on screen while their steps play in order, then release", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  for (const [id, steps] of [
+    ["how", 4],
+    ["paths", 3],
+    ["loop", 4],
+  ] as const) {
+    await expect(page.locator(`#${id}`)).toHaveAttribute("data-pinned", "");
+    const header = await page
+      .locator("header")
+      .first()
+      .evaluate((el) => el.getBoundingClientRect().height);
+    const pin = await pinOf(page, id);
+    expect(pin.length, `#${id} adds scroll length`).toBeGreaterThan(900);
+    const seen: number[] = [];
+    for (const share of [0.02, 0.25, 0.5, 0.75, 0.97]) {
+      await scrollPin(page, id, pin.length * share);
+      expect(await pinBoxTop(page, id), `#${id} stays pinned at ${share}`).toBe(Math.round(header));
+      const selected = await page
+        .locator(`#${id} [role='tablist']`)
+        .first()
+        .getByRole("tab")
+        .evaluateAll((tabs) => tabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true"));
+      seen.push(selected);
+    }
+    expect(seen[0], `#${id} starts on the first step`).toBe(0);
+    expect(seen[seen.length - 1], `#${id} ends on the last step`).toBe(steps - 1);
+    expect(
+      [...seen].sort((a, b) => a - b),
+      `#${id} steps in order`
+    ).toEqual(seen);
+    await scrollPin(page, id, pin.length + 400);
+    expect(await pinBoxTop(page, id), `#${id} releases after the hold`).toBeLessThan(Math.round(header) - 100);
+    await scrollPin(page, id, -300);
+    expect(await pinBoxTop(page, id), `#${id} is not pinned before its start`).toBeGreaterThan(
+      Math.round(header) + 100
+    );
+  }
+});
+
+test("choosing a pinned step scrolls to it and keeps the scroll position, the tab and the content in agreement", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const how = page.locator("#how");
+  const tabs = how.getByRole("tablist", { name: "How it works" });
+  await tabs.getByRole("tab", { name: /Get asked/ }).click();
+  await settleScroll(page);
+  await expect(tabs.getByRole("tab", { name: /Get asked/ })).toHaveAttribute("aria-selected", "true");
+  const pin = await pinOf(page, "how");
+  const along = await page.evaluate((top) => scrollY - top, pin.top - pin.header);
+  expect(Math.floor(along / pin.groupLength), "the page sits inside the third step").toBe(2);
+  await expect(how.getByRole("tabpanel", { name: /Get asked/ })).toBeVisible();
+  await tabs.getByRole("tab", { name: /Get asked/ }).focus();
+  await page.keyboard.press("ArrowDown");
+  await settleScroll(page);
+  await expect(tabs.getByRole("tab", { name: /Keep/ })).toHaveAttribute("aria-selected", "true");
+  await expect(tabs.getByRole("tab", { name: /Keep/ })).toBeFocused();
+  expect(await page.evaluate((top) => scrollY - top, pin.top - pin.header)).toBeGreaterThan(3 * pin.groupLength);
+  await page.keyboard.press("Home");
+  await settleScroll(page);
+  await expect(tabs.getByRole("tab", { name: /Read/ })).toHaveAttribute("aria-selected", "true");
+  expect(await page.evaluate((top) => scrollY - top, pin.top - pin.header)).toBeLessThan(pin.groupLength);
+});
+
+test("every step of a pinned home section stays in the page, hidden but present", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const counts = await page.evaluate(() => ({
+    how: document.querySelectorAll("#how [role='tabpanel']").length,
+    paths: document.querySelectorAll("#paths [role='tabpanel']").length,
+    rounds: document.querySelectorAll("#loop [class*='rowBtn']").length,
+    bodiesWithText: [...document.querySelectorAll("#how [role='tabpanel'], #paths [role='tabpanel']")].every(
+      (panel) => (panel.textContent ?? "").trim().length > 20
+    ),
+  }));
+  expect(counts).toMatchObject({ how: 4, paths: 3, bodiesWithText: true });
+  expect(counts.rounds).toBeGreaterThanOrEqual(4);
+  const hidden = await page.locator("#how [role='tabpanel'][hidden]").count();
+  expect(hidden).toBe(3);
+});
+
+test("nothing pins at 1000px, on a phone or under reduced motion, and no section adds scroll length there", async ({
+  page,
+}) => {
+  for (const viewport of [
+    { width: 1000, height: 800 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/");
+    for (const id of ["how", "paths", "loop"]) {
+      await expect(page.locator(`#${id}`), `#${id} at ${viewport.width}`).not.toHaveAttribute("data-pinned", "");
+      const height = await page.locator(`#${id}`).evaluate((el) => el.getBoundingClientRect().height);
+      expect(height, `#${id} at ${viewport.width} keeps its natural length`).toBeLessThan(viewport.height * 2.6);
+    }
+  }
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  for (const id of ["how", "paths", "loop"]) {
+    await expect(page.locator(`#${id}`)).not.toHaveAttribute("data-pinned", "");
+    const height = await page.locator(`#${id}`).evaluate((el) => el.getBoundingClientRect().height);
+    expect(height, `#${id} under reduced motion keeps its natural length`).toBeLessThan(900 * 2);
+  }
+  await page.getByRole("tab", { name: /Run/ }).first().click();
+  await expect(page.locator("#how").getByRole("tab", { name: /Run/ })).toHaveAttribute("aria-selected", "true");
+});
+
+test("the pinned interview book turns its page as a bending leaf, scrubbed by the scroll and reversible", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(page.locator("#loop")).toHaveAttribute("data-pinned", "");
+  const itemLength = (await pinOf(page, "loop")).groupLength / 4;
+  const leaf = () =>
+    page.evaluate(() => {
+      const turning = document.querySelector<HTMLElement>("#loop [data-turn]");
+      const strips = [...document.querySelectorAll<HTMLElement>("#loop [data-strip]")];
+      return {
+        turning: turning !== null,
+        strips: strips.length,
+        first: strips[0]?.style.transform ?? "",
+        last: strips[strips.length - 1]?.style.transform ?? "",
+      };
+    });
+  await scrollPin(page, "loop", itemLength * 0.2);
+  expect((await leaf()).turning, "resting on the page").toBe(false);
+  await scrollPin(page, "loop", itemLength * 0.7);
+  const mid = await leaf();
+  expect(mid.turning, "mid-turn").toBe(true);
+  expect(mid.strips).toBeGreaterThanOrEqual(6);
+  expect(mid.first).toMatch(/^perspective\(\d+px\) translateZ\([\d.]+px\) rotateY\(-[\d.]+deg\)$/);
+  expect(mid.last, "the free edge bends relative to the strip before it").toMatch(/^rotateY\(-?[\d.]+deg\)$/);
+  await scrollPin(page, "loop", itemLength * 0.2);
+  expect((await leaf()).turning, "turned back").toBe(false);
+  await scrollPin(page, "loop", itemLength * 0.7);
+  expect((await leaf()).first, "the same scroll position gives the same bend").toBe(mid.first);
+  await scrollPin(page, "loop", itemLength * 1.1);
+  await expect(page.locator("#loop").getByRole("region", { name: "Online assessment" })).toBeVisible();
+});
+
+test("while the book turns a page its angle only ever moves one way with the scroll, frame by frame", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(page.locator("#loop")).toHaveAttribute("data-pinned", "");
+  await page.waitForTimeout(1500);
+  const pin = await pinOf(page, "loop");
+  await scrollPin(page, "loop", (pin.groupLength / 4) * 0.2);
+  await page.evaluate(() => {
+    const frames: { y: number; step: string; angle: number }[] = [];
+    (window as unknown as { frames: typeof frames }).frames = frames;
+    const read = () => {
+      const strip = document.querySelector<HTMLElement>("#loop [data-strip]");
+      const slot = strip?.closest<HTMLElement>("[data-step]");
+      const angle = Number(/rotateY\((-?[\d.]+)deg\)/.exec(strip?.style.transform ?? "")?.[1]);
+      if (slot && Number.isFinite(angle)) frames.push({ y: scrollY, step: slot.dataset.step ?? "", angle });
+      requestAnimationFrame(read);
+    };
+    requestAnimationFrame(read);
+  });
+  await page.mouse.move(720, 450);
+  for (let i = 0; i < 28; i++) {
+    await page.mouse.wheel(0, 40);
+    await page.waitForTimeout(32);
+  }
+  await page.waitForTimeout(600);
+  const frames = await page.evaluate(
+    () => (window as unknown as { frames: { y: number; step: string; angle: number }[] }).frames
+  );
+  expect(frames.length, "the turn was sampled").toBeGreaterThan(8);
+  const byStep = new Map<string, typeof frames>();
+  for (const frame of frames) byStep.set(frame.step, [...(byStep.get(frame.step) ?? []), frame]);
+  for (const [step, list] of byStep)
+    for (let k = 1; k < list.length; k++) {
+      expect(list[k].angle, `step ${step} frame ${k}`).toBeLessThanOrEqual(list[k - 1].angle + 0.05);
+      expect(Math.abs(list[k].angle - list[k - 1].angle), `step ${step} frame ${k} jump`).toBeLessThan(178);
+    }
+});
+
+test("the pinned how-it-works loop lights each station as the walker arrives and brings it home again", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const how = page.locator("#how");
+  await expect(how).toHaveAttribute("data-pinned", "");
+  const unit = (await pinOf(page, "how")).groupLength;
+  const state = () =>
+    page.evaluate(() => ({
+      lit: [...document.querySelectorAll("#how [data-corner]")].map((el) => !el.hasAttribute("data-off")),
+      walker: (() => {
+        const el = document.querySelector<HTMLElement>("#how [data-fx='walker']")!;
+        return { left: parseFloat(el.style.left), top: parseFloat(el.style.top), rotate: el.style.rotate };
+      })(),
+    }));
+  await scrollPin(page, "how", unit * 0.05);
+  const start = await state();
+  expect(start.lit, "nothing is lit before the walker arrives").toEqual([false, false, false, false]);
+  await scrollPin(page, "how", unit * 0.5);
+  expect((await state()).lit).toEqual([true, false, false, false]);
+  await scrollPin(page, "how", unit * 2.5);
+  const third = await state();
+  expect(third.lit).toEqual([true, true, true, false]);
+  expect(third.walker.left, "the walker is on the right of the loop").toBeGreaterThan(80);
+  expect(third.walker.top, "and at the bottom of it").toBeGreaterThan(80);
+  await scrollPin(page, "how", unit * 3.5);
+  expect((await state()).lit).toEqual([true, true, true, true]);
+  await scrollPin(page, "how", unit * 4);
+  const home = await state();
+  expect(Math.hypot(home.walker.left - start.walker.left, home.walker.top - start.walker.top)).toBeLessThan(6);
+  expect(home.walker.rotate).toMatch(/deg$/);
+  await scrollPin(page, "how", unit * 0.05);
+  expect((await state()).lit, "scrolling back un-lights them").toEqual([false, false, false, false]);
+  for (const station of ["Read", "Run", "Get asked", "Keep"])
+    await expect(how.getByRole("tab", { name: new RegExp(station) })).toBeVisible();
+});
+
+test("the home connectors link each section to the next: aria-hidden, one per pair, attached to the next badge", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const connectors = page.locator("[data-connector]");
+  await expect(connectors).toHaveCount(6);
+  await expect(page.locator("[data-connector]").first().locator("xpath=..")).toHaveAttribute("aria-hidden", "true");
+  const facts = await connectors.locator("[data-fact]").allTextContents();
+  expect(facts).toHaveLength(6);
+  expect(new Set(await connectors.evaluateAll((all) => all.map((el) => el.getAttribute("data-traveller")))).size).toBe(
+    6
+  );
+  const report = await page.evaluate(() => {
+    const out: string[] = [];
+    const ids = ["practice", "how", "paths", "loop", "faq", "cta"];
+    document.querySelectorAll<HTMLElement>("[data-connector]").forEach((el, i) => {
+      const style = getComputedStyle(el.parentElement!);
+      if (style.pointerEvents !== "none" || style.zIndex !== "-1")
+        out.push(`connector ${i} layer is not behind and inert`);
+      const path = el.querySelector<SVGPathElement>("path[class*='dash']")!;
+      const svg = el.querySelector("svg")!.getBoundingClientRect();
+      const end = path.getPointAtLength(path.getTotalLength());
+      const badge = document.querySelector(`#${ids[i]} [data-waypoint]`)!.getBoundingClientRect();
+      const dx = Math.abs(svg.left + end.x - (badge.left + badge.width / 2));
+      const dy = Math.abs(svg.top + end.y - badge.top);
+      if (dx > 3 || dy > 8) out.push(`connector ${i} ends ${dx.toFixed(0)},${dy.toFixed(0)} from the badge`);
+      if (el.querySelector("a, button, [tabindex]")) out.push(`connector ${i} holds a control`);
+    });
+    return out;
+  });
+  expect(report).toEqual([]);
+  await page.setViewportSize({ width: 1000, height: 800 });
+  await expect(connectors).toHaveCount(0);
+});
+
+test("a home connector is drawn by the scroll, its traveller docks in the next badge, and it lights it", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const connector = page.locator("[data-connector]").nth(1);
+  await expect(page.locator("[data-connector]")).toHaveCount(6);
+  const geometry = await connector.evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    return { top: box.top + scrollY, bottom: box.bottom + scrollY };
+  });
+  const progress = async () => Number(await connector.evaluate((el) => el.style.getPropertyValue("--d") || "NaN"));
+  await page.evaluate((y) => window.scrollTo(0, y), geometry.top - 900);
+  await settleScroll(page);
+  expect(await progress()).toBeLessThan(0.1);
+  await expect(page.locator("#how")).not.toHaveAttribute("data-docked", "");
+  await page.evaluate(
+    (g) => window.scrollTo(0, g.top - innerHeight * 0.9 + 0.5 * (g.bottom - g.top + innerHeight * 0.45)),
+    geometry
+  );
+  await settleScroll(page);
+  const mid = await progress();
+  expect(mid).toBeGreaterThan(0.2);
+  expect(mid).toBeLessThan(0.98);
+  const riding = await connector.evaluate((el) => Number(getComputedStyle(el.querySelector("[data-rider]")!).opacity));
+  expect(riding, "the traveller is out on the curve").toBeGreaterThan(0.5);
+  await page.evaluate((y) => window.scrollTo(0, y), geometry.bottom - 900 * 0.4);
+  await settleScroll(page);
+  expect(await progress()).toBeGreaterThanOrEqual(0.985);
+  await expect(page.locator("#how")).toHaveAttribute("data-docked", "");
+  expect(await connector.evaluate((el) => Number(getComputedStyle(el.querySelector("[data-rider]")!).opacity))).toBe(0);
+  const ripple = await page
+    .locator("#how [class*='eyebrowNo']")
+    .evaluate((el) => getComputedStyle(el, "::after").animationName);
+  expect(ripple).not.toBe("none");
+  await page.evaluate((y) => window.scrollTo(0, y), geometry.top - 900);
+  await settleScroll(page);
+  await expect(page.locator("#how")).not.toHaveAttribute("data-docked", "");
+});
+
+test("the home connectors never run through text", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(page.locator("[data-connector]")).toHaveCount(6);
+  const hits = await page.evaluate(() => {
+    const rects: { left: number; right: number; top: number; bottom: number; text: string }[] = [];
+    const walker = document.createTreeWalker(document.querySelector("main")!, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const parent = node.parentElement;
+      if (!parent || !node.textContent?.trim() || parent.closest("[hidden], [inert]")) continue;
+      const style = getComputedStyle(parent);
+      if (style.visibility === "hidden" || style.display === "none") continue;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      for (const box of range.getClientRects())
+        if (box.width > 1)
+          rects.push({
+            left: box.left,
+            right: box.right,
+            top: box.top + scrollY,
+            bottom: box.bottom + scrollY,
+            text: node.textContent.trim().slice(0, 24),
+          });
+    }
+    const found: string[] = [];
+    document.querySelectorAll("[data-connector]").forEach((el, i) => {
+      const path = el.querySelector<SVGPathElement>("path[class*='dash']")!;
+      const svg = el.querySelector("svg")!.getBoundingClientRect();
+      const total = path.getTotalLength();
+      for (let at = 0; at <= total; at += Math.max(1, total / 400)) {
+        const point = path.getPointAtLength(at);
+        const x = svg.left + point.x;
+        const y = svg.top + scrollY + point.y;
+        for (const box of rects)
+          if (x > box.left - 3 && x < box.right + 3 && y > box.top - 3 && y < box.bottom + 3)
+            found.push(`connector ${i} meets "${box.text}"`);
+      }
+    });
+    return [...new Set(found)];
+  });
+  expect(hits).toEqual([]);
+});
+
+test("the page's own scrollbar is hidden and reserves no gutter", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const root = await page.evaluate(() => ({
+    width: getComputedStyle(document.documentElement).scrollbarWidth,
+    reserved: window.innerWidth - document.documentElement.clientWidth,
+    scrolls: document.documentElement.scrollHeight > innerHeight,
+  }));
+  expect(root).toEqual({ width: "none", reserved: 0, scrolls: true });
 });

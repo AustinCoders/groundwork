@@ -1,9 +1,10 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Copy, Note, Scene, Spark, Stage, StageCard, Sticker, Tape } from "./Stage";
+import { Chip, Copy, Note, Scene, Spark, Stage, StageCard, Sticker, Tape } from "./Stage";
 import { accent, vars } from "./tone";
 import type { HomeViewProps } from "./types";
-import styles from "./scenes.module.css";
+import shared from "./stage.module.css";
+import styles from "./practice.module.css";
 
 const TOOLS = [
   { href: "/problems", name: "Problems", tone: "purple", mark: "⌘" },
@@ -78,7 +79,7 @@ export function PracticeScene({
       </Copy>
       <Stage tone="purple" className={styles.practiceStage}>
         <StageCard rot={-2.6} depth={-14} i={1} extra className={styles.pBoard}>
-          <div className={styles.winBar}>
+          <div className={shared.winBar}>
             <i />
             <i />
             <i />
@@ -116,18 +117,18 @@ export function PracticeScene({
         </StageCard>
         <StageCard rot={1.8} depth={12} i={0} className={styles.pEditor}>
           <Tape rot={-3} />
-          <div className={styles.winBar}>
+          <div className={shared.winBar}>
             <i />
             <i />
             <i />
             <em>counter.js</em>
-            <b className={styles.runMini}>▶ Run tests</b>
+            <b className={shared.runMini}>▶ Run tests</b>
           </div>
-          <div className={styles.code}>
-            <span className={styles.kw}>function</span> counter() {"{"}
+          <div className={shared.code}>
+            <span className={shared.kw}>function</span> counter() {"{"}
             {"\n  "}
-            <span className={styles.kw}>let</span> n = <span className={styles.num}>0</span>;{"\n  "}
-            <span className={styles.kw}>return</span> () =&gt; ++n;{"\n"}
+            <span className={shared.kw}>let</span> n = <span className={styles.num}>0</span>;{"\n  "}
+            <span className={shared.kw}>return</span> () =&gt; ++n;{"\n"}
             {"}"}
           </div>
           <ul className={styles.testList}>
@@ -155,7 +156,7 @@ export function PracticeScene({
             </span>
           </div>
           <p className={styles.bubble}>“Build me a debounce.”</p>
-          <p className={styles.followChip}>follow-up: “now let me cancel it.”</p>
+          <p className={shared.followChip}>follow-up: “now let me cancel it.”</p>
         </StageCard>
         <StageCard rot={2.4} depth={16} i={3} extra className={styles.pLangs}>
           <p className={styles.langKicker}>The Playground runs</p>
@@ -176,6 +177,15 @@ export function PracticeScene({
           go on, run it
         </Note>
         <Spark className={styles.pSpark} />
+        <Chip fact={String(stats.exercises)} rot={-3} depth={12} speed={50} className={styles.chipA}>
+          {stats.exercises} exercises
+        </Chip>
+        <Chip fact={String(interview.rounds)} rot={2} depth={-8} speed={-36} className={styles.chipB}>
+          {interview.rounds} rounds
+        </Chip>
+        <Chip fact={`${interview.questions}`} rot={-2} depth={18} speed={70} className={styles.chipC}>
+          {interview.questions}+ questions
+        </Chip>
       </Stage>
     </Scene>
   );

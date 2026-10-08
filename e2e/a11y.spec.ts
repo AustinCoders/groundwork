@@ -109,6 +109,20 @@ const STATES: State[] = [
     },
   },
   {
+    name: "the interview book with a round focused and its page showing",
+    path: "/",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const row = page.locator("#loop").getByRole("button", { name: /Online assessment/ });
+      await row.scrollIntoViewIfNeeded();
+      await row.click();
+      await row.focus();
+      await expect(row).toBeFocused();
+      await expect(page.locator("#loop").getByRole("region", { name: "Online assessment" })).toBeVisible();
+      await check("the interview book with a round focused and its page showing");
+    },
+  },
+  {
     name: "the interview book on its last stage",
     path: "/",
     viewports: VIEWPORTS,
@@ -117,7 +131,7 @@ const STATES: State[] = [
       await stage.scrollIntoViewIfNeeded();
       await stage.click();
       await expect(stage).toHaveAttribute("aria-selected", "true");
-      await expect(page.locator("#loop").getByText("The offer", { exact: true })).toBeVisible();
+      await expect(page.locator("#loop").getByRole("tabpanel").getByText("The offer", { exact: true })).toBeVisible();
       await check("the interview book on its last stage");
     },
   },
@@ -159,6 +173,59 @@ const STATES: State[] = [
     },
   },
   {
+    name: "the section rail with a focused link and its label open",
+    path: "/",
+    viewports: [WIDE],
+    visit: async (page, check) => {
+      await page.locator("#practice").scrollIntoViewIfNeeded();
+      const rail = page.getByRole("navigation", { name: "Page sections" });
+      await expect(rail).toBeVisible();
+      const link = rail.getByRole("link", { name: /How it works/ });
+      await link.focus();
+      await expect(link).toBeFocused();
+      await expect(link.locator("span").last()).toHaveCSS("opacity", "1");
+      await check("the section rail with a focused link and its label open");
+    },
+  },
+  {
+    name: "how it works pinned and scrolled to its last step",
+    path: "/",
+    viewports: [WIDE],
+    visit: async (page, check) => {
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+      await page.reload({ waitUntil: "networkidle" });
+      const how = page.locator("#how");
+      await expect(how).toHaveAttribute("data-pinned", "");
+      await how.getByRole("tab", { name: /Keep/ }).click();
+      await expect(how.getByRole("tab", { name: /Keep/ })).toHaveAttribute("aria-selected", "true");
+      await page.waitForTimeout(2500);
+      await page.addStyleTag({
+        content: `*, *::before, *::after { transition: none !important; animation: none !important; }
+          #practice [data-fx], #practice [data-fx] *, #paths [data-fx], #paths [data-fx] * { opacity: 1 !important; }`,
+      });
+      await check("how it works pinned and scrolled to its last step");
+    },
+  },
+  {
+    name: "the interview book pinned and scrolled to a later round",
+    path: "/",
+    viewports: [WIDE],
+    visit: async (page, check) => {
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+      await page.reload({ waitUntil: "networkidle" });
+      const book = page.locator("#loop");
+      await expect(book).toHaveAttribute("data-pinned", "");
+      await book.getByRole("tab", { name: /^04 People and offer/ }).click();
+      await expect(book.getByRole("tab", { name: /^04 People and offer/ })).toHaveAttribute("aria-selected", "true");
+      await page.waitForTimeout(2800);
+      await page.addStyleTag({
+        content: `*, *::before, *::after { transition: none !important; animation: none !important; }
+          #paths [data-fx], #paths [data-fx] *, #faq [data-fx], #faq [data-fx] * { opacity: 1 !important; }`,
+      });
+      await check("the interview book pinned and scrolled to a later round");
+    },
+  },
+  {
     name: "how it works on step 3",
     path: "/",
     viewports: VIEWPORTS,
@@ -167,7 +234,7 @@ const STATES: State[] = [
       await step.scrollIntoViewIfNeeded();
       await step.click();
       await expect(step).toHaveAttribute("aria-selected", "true");
-      await expect(page.locator("#how").getByRole("tabpanel")).toContainText("Build me a debounce.");
+      await expect(page.locator("#how").getByRole("tabpanel")).toContainText("Then get asked the follow-up.");
       await check("how it works on step 3");
     },
   },
@@ -180,7 +247,7 @@ const STATES: State[] = [
       await step.scrollIntoViewIfNeeded();
       await step.click();
       await expect(step).toHaveAttribute("aria-selected", "true");
-      await expect(page.locator("#how").getByRole("tabpanel")).toContainText("Read today. Back after 3 days");
+      await expect(page.locator("#how").getByRole("tabpanel")).toContainText("And it comes back before you forget.");
       await check("how it works on step 4");
     },
   },

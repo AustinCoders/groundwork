@@ -17,7 +17,9 @@ const CATEGORICAL_SELECTORS: Record<string, string[]> = {
     ".paperCode .codeBar > span:nth-child(3)",
     ".doodleStar",
   ],
-  "components/home/scenes.module.css": [".winBar i:nth-child(1)", ".winBar i:nth-child(2)", ".winBar i:nth-child(3)"],
+  "components/home/stage.module.css": [".winBar i:nth-child(1)", ".winBar i:nth-child(2)", ".winBar i:nth-child(3)"],
+  "components/home/how.module.css": ['.books rect[data-book="b"]', '.books rect[data-book="c"]'],
+  "components/home/interview.module.css": ['.tab[data-stage-id="people"]'],
   "app/progress/progress.module.css": [
     ".levelUp",
     ".chips span[data-lit]",

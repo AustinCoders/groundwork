@@ -17,7 +17,7 @@ export const archScaling: Chapter = {
 </p>
 
 <figure>
-<svg viewBox="0 0 900 320" class="dg" role="img" aria-label="Headroom against four limits. The JavaScript search index is at 89 percent of its 85 KB budget. Vercel storage for the whole team is at 103 percent of 10 GB. A problem page's script is at 60 percent of the 700 KB script budget, although that page is not budgeted. The home page's script is at 38 percent.">
+<svg viewBox="0 0 900 320" class="dg" role="img" aria-label="Headroom against four limits. The JavaScript search index is at 89 percent of its 85 KB budget. Vercel storage for the whole team is at 103 percent of 10 GB. A problem page's script is at 60 percent of the 700 KB script budget, although that page is not budgeted. The home page's script is at 40 percent.">
 <g class="rough">
 <rect x="320" y="30" width="480" height="28" rx="5" style="fill: var(--sheet); stroke: var(--line-soft); stroke-width: 1.6" />
 <rect x="320" y="30" width="427" height="28" rx="5" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
@@ -26,7 +26,7 @@ export const archScaling: Chapter = {
 <rect x="320" y="170" width="480" height="28" rx="5" style="fill: var(--sheet); stroke: var(--line-soft); stroke-width: 1.6" />
 <rect x="320" y="170" width="289" height="28" rx="5" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <rect x="320" y="240" width="480" height="28" rx="5" style="fill: var(--sheet); stroke: var(--line-soft); stroke-width: 1.6" />
-<rect x="320" y="240" width="185" height="28" rx="5" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 1.6" />
+<rect x="320" y="240" width="193" height="28" rx="5" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 1.6" />
 <path class="ln" d="M800 18 V282" style="stroke-dasharray: 6 5" />
 </g>
 <text class="lbl" x="20" y="44">JS search index</text>
@@ -36,11 +36,11 @@ export const archScaling: Chapter = {
 <text class="lbl" x="20" y="184">A problem page's script</text>
 <text class="sm" x="20" y="204">421,830 of 700,000 bytes, not budgeted</text>
 <text class="lbl" x="20" y="254">Home page script</text>
-<text class="sm" x="20" y="274">269,107 of 700,000 bytes, gzip</text>
+<text class="sm" x="20" y="274">281,561 of 700,000 bytes, gzip</text>
 <text class="sm" x="832" y="49">89%</text>
 <text class="sm rd" x="832" y="119">103%</text>
 <text class="sm" x="832" y="189">60%</text>
-<text class="sm" x="832" y="259">38%</text>
+<text class="sm" x="832" y="259">40%</text>
 <text class="sm" x="760" y="306">the limit</text>
 </svg>
 <figcaption>

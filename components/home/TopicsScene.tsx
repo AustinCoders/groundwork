@@ -3,10 +3,10 @@ import { useRef, useState, type ReactNode } from "react";
 import { formatSpan, plural } from "@/lib/format";
 import { TOPIC_CATEGORIES } from "@/lib/topicCategories";
 import type { HomeViewProps, ShelfCard } from "./types";
-import { Copy, Note, Scene, Spark, Stage, StageCard, Sticker, Tape } from "./Stage";
+import { Chip, Copy, Note, Scene, Spark, Stage, StageCard, Sticker, Tape } from "./Stage";
 import { accent } from "./tone";
 import { NARROW, useMedia } from "./useNarrow";
-import styles from "./scenes.module.css";
+import styles from "./topics.module.css";
 
 const READY_TAB = "ready";
 const FAN_ROTATIONS = [-2.2, 1.6, -1.2, 2, -1.7, 1.3, -1.9, 2.2, -0.9];
@@ -65,7 +65,7 @@ export function TopicsScene({
 
   return (
     <Scene>
-      <Copy className={styles.topicsCopy}>
+      <Copy>
         {head}
         <div
           className={styles.catList}
@@ -100,7 +100,7 @@ export function TopicsScene({
           Browse all topics <span aria-hidden="true">→</span>
         </button>
       </Copy>
-      <Stage live tone="blue" className={styles.topicsStage}>
+      <Stage live tone="blue">
         {entries.map((entry, i) => {
           const group = categories.find((category) => category.id === entry.id);
           const topics = group ? group.topics : ready;
@@ -177,6 +177,15 @@ export function TopicsScene({
           start anywhere
         </Note>
         <Spark className={styles.topicsSpark} />
+        <Chip fact={`${interview.questions}`} rot={-3} depth={12} speed={46} className={styles.chipA}>
+          {interview.questions}+ questions
+        </Chip>
+        <Chip fact={`${interview.rounds}`} rot={2} depth={-8} speed={-34} className={styles.chipB}>
+          {interview.rounds} rounds
+        </Chip>
+        <Chip fact={`${ready[0]?.exercises}`} rot={-2} depth={16} speed={62} className={styles.chipC}>
+          {plural(ready[0]?.exercises ?? 0, "exercise")}
+        </Chip>
       </Stage>
     </Scene>
   );

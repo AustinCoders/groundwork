@@ -3,14 +3,18 @@ import { accent, vars } from "./tone";
 import { useStage } from "./useStage";
 import styles from "./stage.module.css";
 
+const FLY_PATTERNS = 6;
+
 export function Scene({
   flip,
+  side,
   className,
   sceneRef,
   children,
   ...rest
 }: {
   flip?: boolean;
+  side?: "left" | "right";
   className?: string;
   sceneRef?: Ref<HTMLDivElement>;
   children: ReactNode;
@@ -20,7 +24,9 @@ export function Scene({
       {...rest}
       ref={sceneRef}
       className={className ? `${styles.scene} ${className}` : styles.scene}
+      data-scene-root
       data-flip={flip || undefined}
+      data-side={side ?? (flip ? "left" : "right")}
     >
       {children}
     </div>
@@ -28,7 +34,11 @@ export function Scene({
 }
 
 export function Copy({ className, children }: { className?: string; children: ReactNode }) {
-  return <div className={className ? `${styles.copy} ${className}` : styles.copy}>{children}</div>;
+  return (
+    <div className={className ? `${styles.copy} ${className}` : styles.copy} data-fx="copy">
+      {children}
+    </div>
+  );
 }
 
 export function Stage({
@@ -36,6 +46,7 @@ export function Stage({
   tone,
   className,
   hostClassName,
+  hostFx,
   height,
   sticky,
   children,
@@ -44,13 +55,18 @@ export function Stage({
   tone?: string;
   className?: string;
   hostClassName?: string;
+  hostFx?: string;
   height?: string;
   sticky?: boolean;
   children: ReactNode;
 }) {
   const ref = useStage<HTMLDivElement>();
   return (
-    <div className={hostClassName ? `${styles.host} ${hostClassName}` : styles.host} data-sticky={sticky || undefined}>
+    <div
+      className={hostClassName ? `${styles.host} ${hostClassName}` : styles.host}
+      data-sticky={sticky || undefined}
+      data-fx={hostFx}
+    >
       <div
         ref={ref}
         className={className ? `${styles.stage} ${className}` : styles.stage}
@@ -72,6 +88,7 @@ export function StageCard({
   extra,
   decor,
   still,
+  fx = "card",
   className,
   style,
   children,
@@ -84,6 +101,7 @@ export function StageCard({
   extra?: boolean;
   decor?: boolean;
   still?: boolean;
+  fx?: string;
   className?: string;
   style?: CSSProperties;
   children?: ReactNode;
@@ -92,12 +110,14 @@ export function StageCard({
   const Tag: ElementType = as ?? "div";
   return (
     <Tag
+      aria-hidden={decor ? true : undefined}
       {...rest}
       className={className ? `${styles.card} ${className}` : styles.card}
       data-card
+      data-fx={fx}
+      data-fly={i % FLY_PATTERNS}
       data-extra={extra || undefined}
       data-still={still || undefined}
-      aria-hidden={decor ? true : undefined}
       style={{ ...vars({ rot, depth, i, dir: i % 2 ? -1 : 1 }), ...style }}
     >
       {children}
@@ -135,6 +155,7 @@ export function Sticker({
     <span
       className={className ? `${styles.sticker} ${className}` : styles.sticker}
       data-sticker
+      data-fx="sticker"
       data-tone={tone}
       aria-hidden="true"
       style={vars({ rot, depth, i })}
@@ -163,6 +184,7 @@ export function Note({
     <span
       className={className ? `${styles.note} ${className}` : styles.note}
       data-note
+      data-fx="note"
       aria-hidden="true"
       style={vars({ rot, depth, i })}
     >
@@ -175,11 +197,41 @@ export function Note({
   );
 }
 
+export function Chip({
+  fact,
+  rot = 0,
+  depth = 10,
+  speed = 40,
+  className,
+  children,
+}: {
+  fact: string;
+  rot?: number;
+  depth?: number;
+  speed?: number;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <span
+      className={className ? `${styles.chip} ${className}` : styles.chip}
+      data-chip
+      data-fx="chip"
+      data-fact={fact}
+      aria-hidden="true"
+      style={vars({ rot, depth, speed })}
+    >
+      {children}
+    </span>
+  );
+}
+
 export function Spark({ className, depth = 8 }: { className?: string; depth?: number }) {
   return (
     <svg
       className={className ? `${styles.spark} ${className}` : styles.spark}
       data-spark
+      data-fx="spark"
       viewBox="0 0 24 24"
       aria-hidden="true"
       focusable="false"

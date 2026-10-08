@@ -66,7 +66,7 @@ export const archPerformance: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Page</th><th>Scripts</th><th>Raw</th><th>Gzip</th><th>HTML, gzip</th></tr></thead>
 <tbody>
-<tr><td>Home</td><td>19</td><td>841 KB</td><td>262 KB</td><td>30 KB</td></tr>
+<tr><td>Home</td><td>19</td><td>897 KB</td><td>282 KB</td><td>30 KB</td></tr>
 <tr><td>A chapter</td><td>15</td><td>810 KB</td><td>254 KB</td><td>33 KB</td></tr>
 <tr><td><code>/problems</code></td><td>14</td><td>810 KB</td><td>254 KB</td><td>33 KB</td></tr>
 <tr><td><code>/whiteboard</code></td><td>14</td><td>764 KB</td><td>240 KB</td><td>7 KB</td></tr>
@@ -75,7 +75,7 @@ export const archPerformance: Chapter = {
 </tbody>
 </table></div>
 <p>
-  The script budget measures bytes on the wire, so the home page uses about 38% of its 700,000.
+  The script budget measures bytes on the wire, so the home page uses about 40% of its 700,000.
   The two heaviest pages are the playground and the problem pages, which carry the code editor, and
   <strong>neither is on the Lighthouse URL list</strong>. They are guarded only by the Playwright
   tests, which check that they work, not how much they weigh.
@@ -180,7 +180,7 @@ export const archPerformance: Chapter = {
   <code>app/problems/problems.module.css</code>. The browser skips layout and paint for groups that
   are off screen and reserves 66 pixels for each, which is roughly a collapsed group header. The
   <code>auto</code> keyword makes it remember a group's real height once it has been drawn, so the
-  scrollbar stops jumping after the first pass. Since the latest change only the first group starts
+  page length stops jumping after the first pass. Since the latest change only the first group starts
   open, so most groups really are 66 pixels tall.
 </p>
 <p>

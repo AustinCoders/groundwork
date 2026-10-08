@@ -65,8 +65,9 @@ export const archDesignSystem: Chapter = {
   matches <code>[data-theme="light"]</code>, so a Paper preview inside another theme shows Paper.
   Its 56 colour tokens are the properties whose value is a colour (the colours and the shadows).
   Each of the other eight is a <code>[data-theme="&hellip;"]</code> block that restates exactly
-  those 56 and nothing else, and sets <code>color-scheme</code>, so native scrollbars and form
-  controls match.
+  those 56 and nothing else, and sets <code>color-scheme</code>, so the native scrollbars inside panels and the form
+  controls match. The page's own scrollbar is hidden on <code>html</code>, and the reading-progress
+  bar in the header is the only cue to where you are on the page.
 </p>
 <p>
   Anything computed from those colours lives once, in a shared <code>:root, [data-theme]</code>
@@ -259,7 +260,7 @@ export const archDesignSystem: Chapter = {
 <p>
   <code>globals.css</code> is about 7,900 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
-  one of 24 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
+  one of 33 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
   lines. The rule of thumb is that anything
   chapter HTML can contain goes in globals, because chapter bodies are strings that cannot import a
   module, and anything else goes in a module so it loads only with its page.
@@ -320,8 +321,8 @@ export const archDesignSystem: Chapter = {
   architecture section. One of them, <code>/level/typescript</code>, is the level picker of a
   topic that is only outlined, and another, <code>/typescript/ts-setup-compiler</code>, is that
   same topic's own outline chapter; <code>/level/typescript</code> stands in for <code>/soon</code>,
-  which redirects there while every topic is marked ready. It also runs against 22 states that a
-  plain page load does not show: 18 that open with a click, and 4 seeded in
+  which redirects there while every topic is marked ready. It also runs against 26 states that a
+  plain page load does not show: 22 that open with a click, and 4 seeded in
   <code>localStorage</code>. The clicks open the site menu, the reading menu on <code>/notes</code>
   with its Text size and Narrator folds open, a reading budget picked on the JavaScript cover's Up
   next card, the Topics fold with a category expanded, the home page's topic section on Languages,

@@ -1,8 +1,11 @@
 import { useEffect, useRef } from "react";
 import { pointerUnit } from "@/lib/stageMotion";
+import { setParallax } from "./fx";
 
 const REDUCED = "(prefers-reduced-motion: reduce)";
 const FINE_POINTER = "(hover: hover) and (pointer: fine)";
+const EASE = 0.18;
+const SETTLED = 0.002;
 
 export function useStage<T extends HTMLElement>() {
   const ref = useRef<T>(null);
@@ -15,20 +18,39 @@ export function useStage<T extends HTMLElement>() {
     let observer: IntersectionObserver | null = null;
     let frame = 0;
     let latest: PointerEvent | null = null;
+    const goal = { x: 0, y: 0 };
+    const now = { x: 0, y: 0 };
+
+    const glide = () => {
+      frame = 0;
+      if (latest) {
+        const box = stage.getBoundingClientRect();
+        goal.x = pointerUnit(latest.clientX, box.left, box.width);
+        goal.y = pointerUnit(latest.clientY, box.top, box.height);
+      }
+      now.x += (goal.x - now.x) * EASE;
+      now.y += (goal.y - now.y) * EASE;
+      const settled = Math.abs(goal.x - now.x) < SETTLED && Math.abs(goal.y - now.y) < SETTLED;
+      if (settled) {
+        now.x = goal.x;
+        now.y = goal.y;
+      }
+      setParallax(stage, now.x, now.y);
+      if (!settled || latest) frame = requestAnimationFrame(glide);
+    };
 
     const rest = () => {
-      stage.style.removeProperty("--px");
-      stage.style.removeProperty("--py");
+      latest = null;
+      goal.x = 0;
+      goal.y = 0;
+      if (!frame) frame = requestAnimationFrame(glide);
     };
 
     const arm = () => {
       observer?.disconnect();
       observer = null;
       stage.removeAttribute("data-in");
-      stage.removeAttribute("data-armed");
-      rest();
       if (reduced.matches) return;
-      stage.setAttribute("data-armed", "");
       if (!("IntersectionObserver" in window)) {
         stage.setAttribute("data-in", "");
         return;
@@ -44,37 +66,23 @@ export function useStage<T extends HTMLElement>() {
       observer.observe(stage);
     };
 
-    const apply = () => {
-      frame = 0;
-      if (!latest) return;
-      const box = stage.getBoundingClientRect();
-      stage.style.setProperty("--px", pointerUnit(latest.clientX, box.left, box.width).toFixed(3));
-      stage.style.setProperty("--py", pointerUnit(latest.clientY, box.top, box.height).toFixed(3));
-    };
-
     const onMove = (event: PointerEvent) => {
       if (event.pointerType !== "mouse" || reduced.matches || !fine.matches) return;
       latest = event;
-      if (!frame) frame = requestAnimationFrame(apply);
-    };
-
-    const onLeave = () => {
-      latest = null;
-      if (frame) cancelAnimationFrame(frame);
-      frame = 0;
-      rest();
+      if (!frame) frame = requestAnimationFrame(glide);
     };
 
     arm();
     reduced.addEventListener("change", arm);
     stage.addEventListener("pointermove", onMove);
-    stage.addEventListener("pointerleave", onLeave);
+    stage.addEventListener("pointerleave", rest);
     return () => {
       reduced.removeEventListener("change", arm);
       stage.removeEventListener("pointermove", onMove);
-      stage.removeEventListener("pointerleave", onLeave);
+      stage.removeEventListener("pointerleave", rest);
       observer?.disconnect();
       if (frame) cancelAnimationFrame(frame);
+      setParallax(stage, 0, 0);
     };
   }, []);
 

@@ -1,0 +1,508 @@
+div.pathsScene {
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  grid-template-areas:
+    "stage head"
+    "stage panel";
+  align-items: center;
+  row-gap: clamp(14px, 2.4vh, 26px);
+}
+
+.pathsHead {
+  grid-area: head;
+  align-self: end;
+}
+
+.pathPanel {
+  display: contents;
+}
+
+.pathPanel[hidden] {
+  display: none;
+}
+
+.pathsHost {
+  grid-area: stage;
+  grid-row: 1 / span 2;
+}
+
+.pathCopy {
+  grid-area: panel;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(8px, 1.4vh, 14px);
+  min-width: 0;
+}
+
+.pathTabs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pathTab {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: clamp(7px, 1.2vh, 12px) 18px;
+  font: inherit;
+  text-align: left;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1.5px solid var(--line);
+  border-left: 6px solid var(--line);
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.pathTab:hover {
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  border-left-color: color-mix(in srgb, var(--accent) 60%, var(--line));
+}
+
+.pathTab[aria-selected="true"] {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--accent) 12%, var(--sheet));
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+}
+
+.pathNo {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--accent) 62%, var(--ink));
+}
+
+.pathName {
+  font-family: var(--font-heading);
+  font-size: calc(clamp(20px, min(1.9vw, 3.2vh), 28px) * var(--ds, 1));
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.pathTitle {
+  margin: 0;
+  font-size: calc(clamp(24px, min(2.4vw, 3.8vh), 34px) * var(--ds, 1));
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+.pathTitle::before,
+.pathTitle::after {
+  content: none !important;
+}
+
+.pathPain {
+  max-width: 52ch;
+  margin: 0;
+  font-size: clamp(14.5px, 1.9vh, 16.5px);
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.pathGains .label,
+.label {
+  margin: 0 0 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.gains {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(5px, 1vh, 9px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gains li {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  font-size: clamp(14.5px, 1.9vh, 16.5px);
+  line-height: 1.35;
+}
+
+.gains li::before {
+  content: "✓";
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sheet);
+  background: color-mix(in srgb, var(--accent) 70%, var(--ink));
+  border-radius: 50%;
+}
+
+.pathStart {
+  composes: btn from "../../app/home.module.css";
+  margin-top: 4px;
+}
+
+.journey {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stopItem {
+  position: absolute;
+  top: calc(var(--sy) * 1%);
+  left: calc(var(--sx) * 1%);
+  width: 0;
+  height: 0;
+  margin: 0;
+}
+
+.pole {
+  position: absolute;
+  bottom: 0;
+  left: -1px;
+  width: 3px;
+  height: 38px;
+  background: var(--ink-soft);
+  border-radius: 2px;
+}
+
+.pole i {
+  position: absolute;
+  top: 0;
+  left: 3px;
+  width: 22px;
+  height: 14px;
+  background: var(--accent);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+.pole::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: -6px;
+  width: 15px;
+  height: 15px;
+  background: var(--paper);
+  border: 3px solid var(--accent);
+  border-radius: 50%;
+}
+
+.stopItem[data-off] .pole i {
+  background: var(--line);
+}
+
+.stopItem[data-off] .pole::after {
+  border-color: var(--line);
+}
+
+.stopItem .stopCard {
+  top: 50%;
+  width: clamp(150px, 15vw, 216px);
+  padding: 0;
+  background: var(--sheet);
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
+  transform: translateY(-50%);
+}
+
+.stopItem[data-side="right"] .stopCard {
+  left: 22px;
+}
+
+.stopItem[data-side="left"] .stopCard {
+  right: 22px;
+}
+
+.stopItem[data-off] .stopCard {
+  border-color: var(--line);
+}
+
+.stopItem[data-soon] .stopCard {
+  background: color-mix(in srgb, var(--sheet) 55%, var(--paper));
+  border-style: dashed;
+  border-color: var(--line);
+}
+
+.stop {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "mark name"
+    "mark sub"
+    "mark meta";
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 1px;
+  min-width: 0;
+  padding: 10px 12px;
+  color: var(--ink);
+  text-decoration: none;
+  border-radius: 16px;
+}
+
+a.stop:hover,
+a.stop:focus-visible {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.stopNo {
+  position: absolute;
+  top: 4px;
+  right: 10px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.stopMark {
+  grid-area: mark;
+  display: grid;
+  place-items: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--accent) 62%, var(--ink));
+  background: color-mix(in srgb, var(--accent) 16%, var(--sheet));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 11px;
+}
+
+.stopName {
+  grid-area: name;
+  align-self: end;
+  padding-right: 20px;
+  font-family: var(--font-heading);
+  font-size: calc(clamp(17px, 1.45vw, 22px) * var(--ds, 1));
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.stopSub {
+  grid-area: sub;
+  justify-self: start;
+  align-self: start;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+.stopMeta {
+  grid-area: meta;
+  font-size: 11.5px;
+  line-height: 1.25;
+  color: var(--ink-soft);
+}
+
+.stopSub[data-soon] {
+  padding: 1px 9px;
+  background: var(--mark);
+  color: var(--ink);
+  border-radius: 999px;
+}
+
+.stopItem[data-soon] .stopName,
+.stopItem[data-soon] .stopMark {
+  color: var(--ink-soft);
+}
+
+.stopItem[data-soon] .stopMark {
+  background: var(--sheet-2);
+  border-color: transparent;
+}
+
+.signpost {
+  position: absolute;
+  top: 46%;
+  right: 2%;
+  z-index: 1;
+  display: block;
+  width: 120px;
+  height: 80px;
+  color: var(--ink);
+}
+
+.signpost svg {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 120px;
+  height: 80px;
+  overflow: visible;
+  fill: var(--sheet);
+  stroke: var(--ink-soft);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.signpost b {
+  position: absolute;
+  top: 9px;
+  left: 24px;
+  max-width: 84px;
+  overflow: hidden;
+  font-family: var(--font-heading);
+  font-size: calc(15px * var(--ds, 1));
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree {
+  position: absolute;
+  top: 33%;
+  left: 6%;
+  z-index: 1;
+  width: 44px;
+  height: 60px;
+  overflow: visible;
+  fill: color-mix(in srgb, var(--success) 22%, var(--sheet));
+  stroke: var(--ink-soft);
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.pathsStage .hereFlag {
+  top: 0;
+  left: 54%;
+}
+
+.pathsStage .finishFlag {
+  right: 3%;
+  bottom: 0;
+}
+
+.pathsStage .pathsNote {
+  bottom: 0;
+  left: 6%;
+}
+
+.pathsSpark {
+  top: 8%;
+  right: 8%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pathTab,
+  .stop {
+    transition:
+      color 0.2s ease,
+      background 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .pathCopy {
+    animation: stepRise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+
+@media (max-width: 1080px) {
+  div.pathsScene {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "head"
+      "panel"
+      "stage";
+  }
+
+  .pathsHost {
+    grid-row: auto;
+  }
+
+  .pathTabs {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 720px) {
+  .pathCopy {
+    width: 100%;
+  }
+
+  .pathsStage .pathTrack,
+  .signpost,
+  .tree {
+    display: none;
+  }
+
+  .journey {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .journey > .stopItem {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: auto;
+  }
+
+  .stopItem .pole {
+    display: none;
+  }
+
+  .journey > .stopItem .stopCard {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    translate: none;
+  }
+
+  .pathsStage .hereFlag {
+    top: -4px;
+    right: auto;
+    left: 8px;
+  }
+
+  .pathsStage .finishFlag {
+    display: none;
+  }
+}
+
+@keyframes stepRise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+}
+
+.chipA {
+  top: 11%;
+  left: 3%;
+}
+
+.chipB {
+  top: 19%;
+  right: 3%;
+}
+
+.chipC {
+  top: 79%;
+  right: 3%;
+}
+
+:global([data-pinned]) .pathPanel[inert] > * {
+  opacity: 0;
+}

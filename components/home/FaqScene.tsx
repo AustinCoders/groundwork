@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { Copy, Note, Scene, Spark, Stage, StageCard, Sticker, Tape } from "./Stage";
-import styles from "./scenes.module.css";
+import { Chip, Copy, Note, Scene, Spark, Stage, StageCard, Sticker, Tape } from "./Stage";
+import shared from "./stage.module.css";
+import styles from "./faq.module.css";
 
 export interface Faq {
   q: string;
@@ -39,10 +40,10 @@ const NOTES = [
   { title: "Stays on this device", text: "Progress, streak and boards are saved in this browser.", tone: "success" },
 ];
 
-export function FaqScene({ head, faqs }: { head: ReactNode; faqs: Faq[] }) {
+export function FaqScene({ head, faqs, languages }: { head: ReactNode; faqs: Faq[]; languages: number }) {
   const [open, setOpen] = useState<number | null>(0);
   return (
-    <Scene className={styles.faqScene}>
+    <Scene side="left">
       <Copy className={styles.faqLead}>
         {head}
         <Stage tone="yellow" className={styles.faqStage} height="clamp(280px, 46vh, 440px)">
@@ -68,12 +69,21 @@ export function FaqScene({ head, faqs }: { head: ReactNode; faqs: Faq[] }) {
             nothing to sign
           </Note>
           <Spark className={styles.faqSpark} />
+          <Chip fact={String(languages)} rot={-3} depth={12} speed={44} className={styles.chipA}>
+            {languages} languages run
+          </Chip>
+          <Chip fact="no sign-up" rot={2} depth={-8} speed={-30} className={styles.chipB}>
+            no sign-up
+          </Chip>
+          <Chip fact="free" rot={-2} depth={16} speed={52} className={styles.chipC}>
+            free to use
+          </Chip>
         </Stage>
         <div className={styles.faqActions}>
-          <a href="#shelf" className={styles.btnPrimary}>
+          <a href="#shelf" className={shared.btnPrimary}>
             Pick a topic <span aria-hidden="true">→</span>
           </a>
-          <Link href="/interview" className={styles.btnGhost}>
+          <Link href="/interview" className={shared.btnGhost}>
             Prepare for an interview
           </Link>
         </div>

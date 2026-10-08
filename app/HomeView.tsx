@@ -4,16 +4,22 @@ import Link from "next/link";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { SiteDrawer } from "@/components/SiteDrawer";
 import { TopIcon } from "@/components/practice/TopIcon";
+import { Connectors, type Link as Hop } from "@/components/home/Connectors";
 import { CtaScene } from "@/components/home/CtaScene";
 import { FaqScene, type Faq } from "@/components/home/FaqScene";
-import { HowScene } from "@/components/home/HowScene";
+import { HOW_STEPS, HowScene } from "@/components/home/HowScene";
 import { InterviewScene } from "@/components/home/InterviewScene";
-import { PathsScene } from "@/components/home/PathsScene";
+import { PATH_COUNT, PathsScene } from "@/components/home/PathsScene";
 import { PracticeScene } from "@/components/home/PracticeScene";
+import { SectionRail } from "@/components/home/SectionRail";
 import { TopicsScene } from "@/components/home/TopicsScene";
+import { useSceneScroll } from "@/components/home/useSceneScroll";
 import { vars } from "@/components/home/tone";
 import type { HomeViewProps } from "@/components/home/types";
 import { plural } from "@/lib/format";
+import { HOME_STAGES } from "@/lib/homeRounds";
+import { PIN_HOLD_VH, pinLengthVh } from "@/lib/pinLengths";
+import type { ConnectorLive } from "@/lib/connector";
 import { prefersMotion } from "@/lib/dom";
 import { smoothScroll, useScrollFx } from "@/lib/scrollFx";
 import { computeStats } from "@/lib/gamification";
@@ -21,6 +27,8 @@ import { useProgressValue } from "@/lib/hooks";
 import { progress } from "@/lib/storage";
 import { SITE_NAME } from "@/lib/site";
 import styles from "./home.module.css";
+
+const HOME_LERP = 0.14;
 
 function listNames(names: string[]): string {
   if (names.length < 2) return names.join("");
@@ -222,7 +230,7 @@ function Words({ text }: { text: string }) {
     <>
       {text.split(" ").map((w, i, all) => (
         <Fragment key={i}>
-          <span className={styles.w} style={vars({ i })}>
+          <span className={styles.w} style={vars({ i })} data-fx="word">
             {w}
           </span>
           {i < all.length - 1 ? " " : null}
@@ -248,14 +256,21 @@ function Head({
   children: React.ReactNode;
 }) {
   return (
-    <div className={styles.head} data-fx="head">
-      <p className={styles.eyebrow}>
-        <span className={styles.eyebrowNo}>{no}</span> {label}
+    <div className={styles.head}>
+      <p className={styles.eyebrow} data-fx="eyebrow">
+        <span className={styles.eyebrowNo} data-waypoint={id.replace(/-h$/, "")}>
+          {no}
+        </span>{" "}
+        {label}
       </p>
       <h2 id={id} className={styles.h2} data-size={size}>
         {children}
       </h2>
-      {sub && <p className={styles.sub}>{sub}</p>}
+      {sub && (
+        <p className={styles.sub} data-fx="sub">
+          {sub}
+        </p>
+      )}
     </div>
   );
 }
@@ -270,8 +285,13 @@ export function HomeView({ stats, ready, soon, languages, interview, bookRounds 
   const pageRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const artRef = useRef<HTMLDivElement>(null);
+  const connectorsRef = useRef<ConnectorLive | null>(null);
   const hours = Math.round(stats.minutes / 60);
-  useScrollFx(pageRef, null, 0);
+  const stageCounts = HOME_STAGES.map((stage) => bookRounds.filter((round) => round.stage === stage.id).length).filter(
+    (count) => count > 0
+  );
+  useSceneScroll(pageRef, connectorsRef);
+  useScrollFx(pageRef, null, 0, HOME_LERP);
 
   useEffect(() => {
     let raf = 0;
@@ -338,12 +358,22 @@ export function HomeView({ stats, ready, soon, languages, interview, bookRounds 
     },
   ];
 
+  const hops: Hop[] = [
+    { label: "then practise it", fact: `${ready.length + 1} topics written`, traveller: "plane" },
+    { label: "see how it works", fact: `${stats.exercises} exercises`, traveller: "pencil" },
+    { label: "pick your path", fact: `${HOW_STEPS} steps`, traveller: "bookmark" },
+    { label: "meet the rounds", fact: `${PATH_COUNT} paths`, traveller: "compass" },
+    { label: "ask away", fact: `${interview.rounds} rounds`, traveller: "flag" },
+    { label: "go on", fact: `${faqs.length} answers`, traveller: "key" },
+  ];
+
   return (
     <>
       <a className="skip-link" href="#main">
         Skip to the content
       </a>
       <div className={styles.page} ref={pageRef}>
+        <Connectors liveRef={connectorsRef} links={hops} />
         <header className={styles.nav} data-scrolled={scrolled || undefined}>
           <button
             type="button"
@@ -377,6 +407,7 @@ export function HomeView({ stats, ready, soon, languages, interview, bookRounds 
           </a>
           <span className={styles.scrollBar} data-scrollbar aria-hidden="true" />
         </header>
+        <SectionRail />
 
         <main id="main">
           <section className={styles.hero} ref={heroRef} data-fx="heroOut" onPointerMove={onHeroMove}>
@@ -430,118 +461,157 @@ export function HomeView({ stats, ready, soon, languages, interview, bookRounds 
             </div>
           </section>
 
-          <section className={styles.section} id="shelf" aria-labelledby="shelf-h">
-            <TopicsScene
-              ready={ready}
-              soon={soon}
-              interview={interview}
-              onBrowse={() => {
-                smoothScroll.stop();
-                setMenuOpen(true);
-              }}
-              head={
-                <Head
-                  no="01"
-                  label="Topics"
-                  id="shelf-h"
-                  sub="What is written today comes first. Every other topic is laid out and fills in as its chapters are written."
-                >
-                  <Words text="Every topic a developer needs." />{" "}
-                  <span className={styles.hl}>
-                    <Words text="Pick a topic." />
-                  </span>
-                </Head>
-              }
-            />
+          <section className={styles.section} id="shelf" aria-labelledby="shelf-h" data-scene>
+            <div className={styles.pin} data-pin-box>
+              <TopicsScene
+                ready={ready}
+                soon={soon}
+                interview={interview}
+                onBrowse={() => {
+                  smoothScroll.stop();
+                  setMenuOpen(true);
+                }}
+                head={
+                  <Head
+                    no="01"
+                    label="Topics"
+                    id="shelf-h"
+                    sub="What is written today comes first. Every other topic is laid out and fills in as its chapters are written."
+                  >
+                    <Words text="Every topic a developer needs." />{" "}
+                    <span className={styles.hl}>
+                      <Words text="Pick a topic." />
+                    </span>
+                  </Head>
+                }
+              />
+            </div>
           </section>
 
-          <section className={styles.section} id="practice" aria-labelledby="practice-h">
-            <PracticeScene
-              stats={stats}
-              languages={languages}
-              interview={interview}
-              head={
-                <Head
-                  no="02"
-                  label="Practice"
-                  id="practice-h"
-                  sub="Four tools, all free, all in the browser. Nothing to install and nothing to sign up for."
-                >
-                  <Words text="Reading is half of it." />
-                </Head>
-              }
-            />
+          <section className={styles.section} id="practice" aria-labelledby="practice-h" data-scene>
+            <div className={styles.pin} data-pin-box>
+              <PracticeScene
+                stats={stats}
+                languages={languages}
+                interview={interview}
+                head={
+                  <Head
+                    no="02"
+                    label="Practice"
+                    id="practice-h"
+                    sub="Four tools, all free, all in the browser. Nothing to install and nothing to sign up for."
+                  >
+                    <Words text="Reading is half of it." />
+                  </Head>
+                }
+              />
+            </div>
           </section>
 
-          <section className={styles.section} id="how" aria-labelledby="how-h">
-            <HowScene
-              head={
-                <Head
-                  no="03"
-                  label="How it works"
-                  id="how-h"
-                  sub="Most prep is either too shallow or too scattered. Here, the explanation, the practice and the interview sit in one place, in the right order."
-                >
-                  <Words text="Read it. Run it. Get asked about it. Keep it." />
-                </Head>
-              }
-            />
+          <section
+            className={styles.section}
+            id="how"
+            aria-labelledby="how-h"
+            data-scene
+            data-pin-groups={Array(HOW_STEPS).fill(1).join(",")}
+            data-pin-hold={PIN_HOLD_VH}
+            style={vars({ "pin-d": pinLengthVh("how", HOW_STEPS) })}
+          >
+            <div className={styles.pin} data-pin-box>
+              <HowScene
+                head={
+                  <Head
+                    no="03"
+                    label="How it works"
+                    id="how-h"
+                    sub="Most prep is either too shallow or too scattered. Here, the explanation, the practice and the interview sit in one place, in the right order."
+                  >
+                    <Words text="Read it. Run it. Get asked about it. Keep it." />
+                  </Head>
+                }
+              />
+            </div>
           </section>
 
-          <section className={styles.section} id="paths" aria-labelledby="paths-h">
-            <PathsScene
-              ready={ready}
-              soon={soon}
-              head={
-                <Head no="04" label="Paths" id="paths-h" size="sm">
-                  <Words text="Where are you now? There is a path that starts there." />
-                </Head>
-              }
-            />
+          <section
+            className={styles.section}
+            id="paths"
+            aria-labelledby="paths-h"
+            data-scene
+            data-pin-groups={Array(PATH_COUNT).fill(1).join(",")}
+            data-pin-hold={PIN_HOLD_VH}
+            style={vars({ "pin-d": pinLengthVh("paths", PATH_COUNT) })}
+          >
+            <div className={styles.pin} data-pin-box>
+              <PathsScene
+                ready={ready}
+                soon={soon}
+                head={
+                  <Head no="04" label="Paths" id="paths-h" size="sm">
+                    <Words text="Where are you now? There is a path that starts there." />
+                  </Head>
+                }
+              />
+            </div>
           </section>
 
-          <section className={styles.section} id="loop" aria-labelledby="loop-h">
-            <InterviewScene
-              rounds={bookRounds}
-              head={
-                <Head
-                  no="05"
-                  label="The interview book"
-                  id="loop-h"
-                  size="sm"
-                  sub="Pick a stage, then a round, to see what it is really testing, the wrong answer that loses the room, and a question you will get."
-                >
-                  <Words text="From the first call to the offer, round by round." />
-                </Head>
-              }
-            />
+          <section
+            className={styles.section}
+            id="loop"
+            aria-labelledby="loop-h"
+            data-scene
+            data-pin-groups={stageCounts.join(",")}
+            data-pin-hold={PIN_HOLD_VH}
+            style={vars({ "pin-d": pinLengthVh("loop", stageCounts.length) })}
+          >
+            <div className={styles.pin} data-pin-box>
+              <InterviewScene
+                rounds={bookRounds}
+                head={
+                  <Head
+                    no="05"
+                    label="The interview book"
+                    id="loop-h"
+                    size="sm"
+                    sub="Pick a stage, then a round, to see what it is really testing, the wrong answer that loses the room, and a question you will get."
+                  >
+                    <Words text="From the first call to the offer, round by round." />
+                  </Head>
+                }
+              />
+            </div>
           </section>
 
-          <section className={styles.section} id="faq" aria-labelledby="faq-h">
-            <FaqScene
-              faqs={faqs}
-              head={
-                <Head
-                  no="06"
-                  label="FAQ"
-                  id="faq-h"
-                  size="lg"
-                  sub="Everything people ask before opening their first chapter."
-                >
-                  <Words text="Questions." />
-                </Head>
-              }
-            />
+          <section className={styles.section} id="faq" aria-labelledby="faq-h" data-scene>
+            <div className={styles.pin} data-pin-box>
+              <FaqScene
+                faqs={faqs}
+                languages={languages.runnable}
+                head={
+                  <Head
+                    no="06"
+                    label="FAQ"
+                    id="faq-h"
+                    size="lg"
+                    sub="Everything people ask before opening their first chapter."
+                  >
+                    <Words text="Questions." />
+                  </Head>
+                }
+              />
+            </div>
           </section>
 
-          <section className={styles.section} id="cta" aria-labelledby="cta-h">
-            <CtaScene
-              head={
-                <Head no="07" label="Start here" id="cta-h">
-                  <Words text="Ten minutes from now, you could understand one thing properly." />
-                </Head>
-              }
-            />
+          <section className={styles.section} id="cta" aria-labelledby="cta-h" data-scene>
+            <div className={styles.pin} data-pin-box>
+              <CtaScene
+                head={
+                  <Head no="07" label="Start here" id="cta-h">
+                    <Words text="Ten minutes from now, you could understand one thing properly." />
+                  </Head>
+                }
+              />
+            </div>
           </section>
         </main>
         <footer className={styles.foot}>

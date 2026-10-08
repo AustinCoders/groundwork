@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { useRef, useState, type ReactNode } from "react";
 import { formatSpan, plural } from "@/lib/format";
-import { Copy, Note, Scene, Spark, Stage, StageCard, Sticker, Tape } from "./Stage";
-import { accent } from "./tone";
+import { Chip, Copy, Note, Scene, Spark, Stage, StageCard, Sticker } from "./Stage";
+import { buildTrail, TRAIL_SPOTS } from "@/lib/trail";
+import { TrackSvg, Walker } from "./Track";
+import { accent, inWindow, stepAttrs, vars } from "./tone";
 import type { ShelfCard } from "./types";
-import styles from "./scenes.module.css";
+import { usePin } from "./usePin";
+import styles from "./paths.module.css";
 
 type JourneyStep = { topic: string } | { label: string; mark: string; href: string; sub: string; tone: string };
 
@@ -72,6 +75,8 @@ const PATHS: {
   },
 ];
 
+export const PATH_COUNT = PATHS.length;
+
 interface Stop {
   key: string;
   name: string;
@@ -82,12 +87,11 @@ interface Stop {
   href: string | null;
 }
 
-const STOP_ROTATIONS = [-2.6, 2.2, -1.8, 2.8, -2.2];
-const STOP_DEPTHS = [7, -6, 9, -7, 6];
-
 export function PathsScene({ head, ready, soon }: { head: ReactNode; ready: ShelfCard[]; soon: ShelfCard[] }) {
   const [active, setActive] = useState(0);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const { pinned, go } = usePin(sceneRef, (step) => setActive(step));
   const byId = new Map([...ready, ...soon].map((t) => [t.id, t]));
   const writtenIds = new Set(ready.map((t) => t.id));
 
@@ -126,6 +130,11 @@ export function PathsScene({ head, ready, soon }: { head: ReactNode; ready: Shel
     });
   }
 
+  function choose(next: number) {
+    if (pinned) go(next, 0);
+    else setActive(next);
+  }
+
   function onKey(e: React.KeyboardEvent) {
     const count = PATHS.length;
     const next =
@@ -140,12 +149,12 @@ export function PathsScene({ head, ready, soon }: { head: ReactNode; ready: Shel
               : -1;
     if (next < 0) return;
     e.preventDefault();
-    setActive(next);
+    choose(next);
     tabs.current[next]?.focus();
   }
 
   return (
-    <Scene className={styles.pathsScene}>
+    <Scene side="left" sceneRef={sceneRef} className={styles.pathsScene}>
       <Copy className={styles.pathsHead}>
         {head}
         <div className={styles.pathTabs} role="tablist" aria-label="Where are you now?" onKeyDown={onKey}>
@@ -163,7 +172,7 @@ export function PathsScene({ head, ready, soon }: { head: ReactNode; ready: Shel
               tabIndex={i === active ? 0 : -1}
               className={styles.pathTab}
               style={accent(p.tone)}
-              onClick={() => setActive(i)}
+              onClick={() => choose(i)}
             >
               <span className={styles.pathNo}>{String(i + 1).padStart(2, "0")}</span>
               <span className={styles.pathName}>{p.tag}</span>
@@ -173,7 +182,9 @@ export function PathsScene({ head, ready, soon }: { head: ReactNode; ready: Shel
       </Copy>
       {PATHS.map((p, i) => {
         const stops = stopsOf(p.steps);
+        const trail = buildTrail(stops.length);
         const first = stops.find((stop) => stop.href);
+        const lead = stops.find((stop) => stop.href && stop.sub.endsWith("chapters"));
         return (
           <div
             key={p.tag}
@@ -182,9 +193,12 @@ export function PathsScene({ head, ready, soon }: { head: ReactNode; ready: Shel
             id={`path-panel-${i}`}
             aria-labelledby={`path-tab-${i}`}
             style={accent(p.tone)}
-            hidden={i !== active}
+            {...stepAttrs(i, PATHS.length)}
+            hidden={!inWindow(i, active, pinned)}
+            inert={i !== active || undefined}
+            aria-hidden={i !== active || undefined}
           >
-            <div className={styles.pathCopy}>
+            <div className={styles.pathCopy} data-fx="part">
               <h3 className={styles.pathTitle}>{p.title}</h3>
               <p className={styles.pathPain}>{p.pain}</p>
               <div className={styles.pathGains}>
@@ -201,18 +215,11 @@ export function PathsScene({ head, ready, soon }: { head: ReactNode; ready: Shel
                 </Link>
               )}
             </div>
-            <Stage live tone={p.tone} className={styles.pathsStage} hostClassName={styles.pathsHost}>
-              <svg
-                className={styles.trail}
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-                aria-hidden="true"
-                focusable="false"
-              >
-                <path d="M24 12 C 52 6, 62 20, 74 25 S 26 36, 26 47 S 80 52, 73 63 S 52 80, 40 86" />
-              </svg>
+            <Stage live tone={p.tone} className={styles.pathsStage} hostClassName={styles.pathsHost} hostFx="part">
+              <TrackSvg trail={trail} tone={p.tone} className={styles.pathTrack} />
               <ol className={styles.journey} aria-label={`${p.tag}: the journey`}>
                 {stops.map((stop, k) => {
+                  const spot = TRAIL_SPOTS[k];
                   const body = (
                     <>
                       <span className={styles.stopNo} aria-hidden="true">
@@ -229,39 +236,73 @@ export function PathsScene({ head, ready, soon }: { head: ReactNode; ready: Shel
                     </>
                   );
                   return (
-                    <StageCard
-                      as="li"
-                      still
+                    <li
                       key={stop.key}
-                      i={k}
-                      rot={STOP_ROTATIONS[k % STOP_ROTATIONS.length]}
-                      depth={STOP_DEPTHS[k % STOP_DEPTHS.length]}
                       className={styles.stopItem}
                       data-stop={k + 1}
+                      data-side={spot.x < 50 ? "left" : "right"}
                       data-soon={!stop.href || undefined}
+                      data-fx="milestone"
+                      data-fx-at={trail.at[k]}
+                      style={vars({ sx: spot.x, sy: spot.y })}
                     >
-                      {k === 0 && <Tape rot={-4} />}
-                      {stop.href ? (
-                        <Link href={stop.href} prefetch={false} className={styles.stop}>
-                          {body}
-                        </Link>
-                      ) : (
-                        <span className={styles.stop}>{body}</span>
-                      )}
-                    </StageCard>
+                      <span className={styles.pole} aria-hidden="true">
+                        <i />
+                      </span>
+                      <StageCard
+                        still
+                        i={k}
+                        rot={k % 2 ? 1.6 : -1.6}
+                        depth={k % 2 ? -6 : 7}
+                        className={styles.stopCard}
+                      >
+                        {stop.href ? (
+                          <Link href={stop.href} prefetch={false} className={styles.stop}>
+                            {body}
+                          </Link>
+                        ) : (
+                          <span className={styles.stop}>{body}</span>
+                        )}
+                      </StageCard>
+                    </li>
                   );
                 })}
               </ol>
+              <Walker count={stops.length} className={styles.pathTrack} />
+              <span className={styles.signpost} aria-hidden="true">
+                <svg viewBox="0 0 120 80" focusable="false">
+                  <path d="M18 78 V6" />
+                  <path d="M18 8 H110 L118 19 L110 30 H18 Z" />
+                </svg>
+                <b>{stops[0]?.name}</b>
+              </span>
+              <svg className={styles.tree} viewBox="0 0 40 56" aria-hidden="true" focusable="false">
+                <path d="M20 54 V34" />
+                <path d="M20 4 L34 22 H26 L36 36 H4 L14 22 H6 Z" />
+              </svg>
               <Sticker rot={-6} depth={20} tone="success" className={styles.hereFlag}>
                 ⚑ you are here
               </Sticker>
-              <Sticker rot={6} depth={22} tone="primary" className={styles.finishFlag}>
+              <Sticker rot={5} depth={22} tone="primary" className={styles.finishFlag}>
                 ★ interview ready
               </Sticker>
               <Note arrow="ur" rot={-3} depth={16} className={styles.pathsNote}>
                 a few topics, then the rounds
               </Note>
               <Spark className={styles.pathsSpark} />
+              {lead && (
+                <>
+                  <Chip fact={lead.sub} rot={-3} depth={12} speed={48} className={styles.chipA}>
+                    {lead.sub}
+                  </Chip>
+                  <Chip fact={lead.meta.split(" · ")[0]} rot={2} depth={-8} speed={-34} className={styles.chipB}>
+                    {lead.meta.split(" · ")[0]}
+                  </Chip>
+                </>
+              )}
+              <Chip fact="interview round" rot={-2} depth={18} speed={64} className={styles.chipC}>
+                interview rounds inside
+              </Chip>
             </Stage>
           </div>
         );

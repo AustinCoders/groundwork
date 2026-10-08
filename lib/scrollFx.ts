@@ -5,8 +5,9 @@ import { useEffect } from "react";
 import { prefersMotion } from "@/lib/dom";
 
 let current: { scrollTo: (y: number, instant?: boolean) => void; stop: () => void; start: () => void } | null = null;
+const frameListeners = new Set<() => void>();
 
-function useSmoothScroll(anchorOffset: number) {
+function useSmoothScroll(anchorOffset: number, lerp: number) {
   useEffect(() => {
     if (!prefersMotion()) return;
     let dead = false;
@@ -15,7 +16,7 @@ function useSmoothScroll(anchorOffset: number) {
     import("lenis").then(({ default: Lenis }) => {
       if (dead) return;
       const l = new Lenis({
-        lerp: 0.085,
+        lerp,
         smoothWheel: true,
         anchors: { offset: anchorOffset },
         prevent: (node) => Boolean(node.closest("[role=dialog], textarea, .cm-editor, [data-no-smooth]")),
@@ -28,6 +29,7 @@ function useSmoothScroll(anchorOffset: number) {
       };
       const tick = (t: number) => {
         l.raf(t);
+        frameListeners.forEach((listener) => listener());
         loop = requestAnimationFrame(tick);
       };
       loop = requestAnimationFrame(tick);
@@ -38,11 +40,16 @@ function useSmoothScroll(anchorOffset: number) {
       lenis?.destroy();
       current = null;
     };
-  }, [anchorOffset]);
+  }, [anchorOffset, lerp]);
 }
 
-export function useScrollFx(root: React.RefObject<HTMLElement | null>, scan: unknown = null, anchorOffset = -64) {
-  useSmoothScroll(anchorOffset);
+export function useScrollFx(
+  root: React.RefObject<HTMLElement | null>,
+  scan: unknown = null,
+  anchorOffset = -64,
+  lerp = 0.085
+) {
+  useSmoothScroll(anchorOffset, lerp);
 
   useEffect(() => {
     const host = root.current;
@@ -121,5 +128,14 @@ export const smoothScroll = {
   },
   start() {
     current?.start();
+  },
+  active() {
+    return current !== null;
+  },
+  onFrame(listener: () => void) {
+    frameListeners.add(listener);
+    return () => {
+      frameListeners.delete(listener);
+    };
   },
 };

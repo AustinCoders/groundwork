@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { prefersMotion } from "@/lib/dom";
-import { Copy, Note, Scene, Spark, Stage, StageCard, Sticker, Tape } from "./Stage";
+import { buildLoop } from "@/lib/trail";
+import { Chip, Copy, Scene, Spark, Stage, StageCard, Sticker } from "./Stage";
+import { TrackSvg, Walker } from "./Track";
+import { usePin } from "./usePin";
 import { NARROW, useMedia } from "./useNarrow";
-import { vars } from "./tone";
-import styles from "./scenes.module.css";
+import { inWindow, stepAttrs } from "./tone";
+import styles from "./how.module.css";
 
 const STEPS = [
   {
@@ -32,221 +35,173 @@ const STEPS = [
   },
 ];
 
-const LAYERS = ["Syntax and values", "How code runs", "Core concepts", "Patterns", "Systems and scale"];
+export const HOW_STEPS = STEPS.length;
+
 const RUN_TESTS = ["returns a promise", "resolves in order", "rejects on the first failure", "handles an empty list"];
 const CHAT: { who: "them" | "you"; text: string }[] = [
   { who: "them", text: "Build me a debounce." },
-  { who: "you", text: "A timer, cleared on every call, fired after the wait." },
-  { who: "them", text: "Good. Now the first call fires at once. And how do I cancel it?" },
+  { who: "you", text: "A timer, cleared on every call." },
+  { who: "them", text: "Good. Now how do I cancel it?" },
 ];
 const REVIEW_DAYS = [0, 3, 10, 31];
 const AUTO_ADVANCE_MS = 5500;
+const CORNERS = ["tl", "tr", "br", "bl"] as const;
+const NOTES = [
+  "built from the bottom up",
+  "real tests, real feedback",
+  "the follow-up they push with next",
+  "comes back before you forget",
+];
+const LOOP = buildLoop();
 
 function ReadArt() {
   return (
-    <>
-      <StageCard rot={-3.4} depth={-14} i={1} className={styles.hChapter}>
-        <Tape rot={-5} />
-        <p className={styles.kicker}>A chapter · how code runs</p>
-        <p className={styles.chapterTitle}>
-          Code runs <mark>one line at a time</mark>, and each line can only use what came before it.
-        </p>
-        <span className={styles.paperLine} />
-        <span className={`${styles.paperLine} ${styles.short}`} />
-        <span className={`${styles.paperLine} ${styles.mid}`} />
-      </StageCard>
-      <StageCard rot={2.2} depth={12} i={0} className={styles.hLayers}>
-        <div className={styles.winBar}>
-          <i />
-          <i />
-          <i />
-          <em>the layers</em>
-        </div>
-        <div className={styles.layers}>
-          {LAYERS.map((t, i) => (
-            <span key={t} className={styles.layer} style={vars({ i })} data-top={i === 3 || undefined}>
-              <b>{String(i + 1).padStart(2, "0")}</b>
-              {t}
-              {i === 3 && <em>you are here</em>}
-            </span>
-          ))}
-        </div>
-        <small className={styles.demoNote}>Each layer only uses words from the ones below it.</small>
-      </StageCard>
-      <StageCard rot={-1.6} depth={-8} i={2} extra className={styles.hDone}>
-        <span className={styles.doneTick}>✓</span>
-        <span>
-          <b>Syntax and values</b>
-          <small>read · back for review soon</small>
-        </span>
-      </StageCard>
-      <Sticker rot={7} depth={20} tone="info" className={styles.hSticker}>
-        layer 4 of 5
-      </Sticker>
-      <Note arrow="ur" rot={-4} depth={16} className={styles.hNote}>
-        built from the bottom up
-      </Note>
-    </>
+    <svg className={styles.artSvg} viewBox="0 0 200 100" focusable="false">
+      <g className={styles.books}>
+        <rect data-book="a" x="12" y="68" width="94" height="16" rx="2" />
+        <rect data-book="b" x="22" y="52" width="78" height="16" rx="2" />
+        <rect data-book="c" x="16" y="36" width="86" height="16" rx="2" />
+        <path d="M24 68v16M94 68v16M32 52v16M88 52v16M26 36v16M92 36v16" />
+        <path className={styles.mark} d="M80 36v26l5-4 5 4V36z" />
+      </g>
+      <g className={styles.sheet}>
+        <rect x="116" y="12" width="76" height="76" rx="3" />
+        <path d="M124 24h58M124 33h44M124 42h52M124 60h30" />
+        <rect
+          className={styles.hl}
+          data-fx="bar"
+          data-fx-from="0.4"
+          data-fx-to="0.58"
+          x="122"
+          y="47"
+          width="62"
+          height="8"
+          rx="2"
+        />
+        <path d="M124 51h56" />
+        <path className={styles.layers} d="M158 82h26M162 77h22M166 72h18M170 67h14M174 62h10" />
+      </g>
+    </svg>
   );
 }
 
 function RunArt() {
   return (
-    <>
-      <StageCard rot={-2.8} depth={-14} i={1} className={styles.hCode}>
-        <div className={styles.winBar}>
-          <i />
-          <i />
-          <i />
-          <em>load.js</em>
-        </div>
-        <div className={styles.code}>
-          <span className={styles.kw}>async function</span> load(ids) {"{"}
-          {"\n  "}
-          <span className={styles.kw}>const</span> rows = <span className={styles.kw}>await</span>
-          {"\n    "}Promise.all(ids.map(get));{"\n  "}
-          <span className={styles.kw}>return</span> rows;{"\n"}
-          {"}"}
-        </div>
-      </StageCard>
-      <StageCard rot={1.6} depth={12} i={0} className={styles.hTests}>
-        <Tape rot={3} />
-        <div className={styles.winBar}>
-          <i />
-          <i />
-          <i />
-          <em>promises.test.js</em>
-          <b className={styles.runMini}>▶ Run tests</b>
-        </div>
-        <ul className={styles.runTests}>
-          {RUN_TESTS.map((t, k) => (
-            <li key={t} style={vars({ k })}>
-              <span className={styles.runMark}>
-                <b>○</b>
-                <i>✓</i>
-              </span>
-              {t}
-            </li>
-          ))}
-        </ul>
+    <div className={styles.term}>
+      <div className={styles.termBar}>
+        <i />
+        <i />
+        <i />
+        <em>promises.test.js</em>
+      </div>
+      <ul className={styles.tests}>
+        {RUN_TESTS.map((t, k) => (
+          <li key={t} data-fx="light" data-fx-from={0.42 + k * 0.07}>
+            <span className={styles.tick}>
+              <b>○</b>
+              <i>✓</i>
+            </span>
+            {t}
+          </li>
+        ))}
+      </ul>
+      <div className={styles.runFoot}>
         <span className={styles.runBar}>
-          <span />
+          <span data-fx="bar" data-fx-from="0.42" data-fx-to="0.7" />
         </span>
-        <strong className={styles.runBig}>4 / 4 passed</strong>
-      </StageCard>
-      <StageCard rot={-2} depth={-6} i={2} extra className={styles.hHint}>
-        <b>Failing?</b> Read the first red test, not the last.
-      </StageCard>
-      <Sticker rot={8} depth={22} tone="success" className={styles.hSticker}>
-        +25 XP
-      </Sticker>
-      <Note arrow="ur" rot={-3} depth={16} className={styles.hNote}>
-        graded in your browser
-      </Note>
-    </>
+        <strong className={styles.runBig} data-fx="reveal" data-fx-from="0.62" data-fx-rate="12">
+          4 / 4 passed
+        </strong>
+      </div>
+    </div>
   );
 }
 
 function AskedArt() {
   return (
-    <>
-      <StageCard rot={-2.6} depth={-14} i={1} className={styles.hRound}>
-        <Tape rot={4} />
-        <p className={styles.kicker}>Round 02 · machine coding</p>
-        <p className={styles.roundQ}>“Now make it work with two browser tabs open.”</p>
-        <p className={styles.followChip}>the follow-up they push with next →</p>
-      </StageCard>
-      <StageCard rot={1.8} depth={12} i={0} className={styles.hChat}>
-        <div className={styles.winBar}>
-          <i />
-          <i />
-          <i />
-          <em>the interviewer</em>
-        </div>
-        <div className={styles.chat}>
-          {CHAT.slice(0, 2).map((m, i) => (
-            <p key={m.text} data-who={m.who} style={vars({ i })}>
-              {m.text}
-            </p>
-          ))}
-          <div className={styles.chatLast}>
-            <span className={styles.typing}>
-              <i />
-              <i />
-              <i />
-            </span>
-            <p data-who={CHAT[2].who} style={vars({ i: 2 })}>
-              {CHAT[2].text}
-            </p>
-          </div>
-        </div>
-      </StageCard>
-      <StageCard rot={-1.8} depth={-8} i={2} extra className={styles.hTrap}>
-        <p className={styles.trapLabel}>The answer that loses the room</p>
-        <p>“Just call it on every keystroke.”</p>
-      </StageCard>
-      <Sticker rot={-7} depth={20} tone="caution" className={styles.hSticker}>
-        follow-up!
-      </Sticker>
-      <Note arrow="ur" rot={-3} depth={16} className={styles.hNote}>
-        every round shows it
-      </Note>
-    </>
+    <div className={styles.chat}>
+      <p data-who={CHAT[0].who} data-fx="reveal" data-fx-from="0.38" data-fx-rate="14">
+        {CHAT[0].text}
+      </p>
+      <p data-who={CHAT[1].who} data-fx="reveal" data-fx-from="0.46" data-fx-rate="14">
+        {CHAT[1].text}
+      </p>
+      <span className={styles.typing} data-fx="typing" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </span>
+      <p data-who={CHAT[2].who} data-fx="reveal" data-fx-from="0.62" data-fx-rate="14">
+        {CHAT[2].text}
+      </p>
+    </div>
   );
 }
 
 function KeepArt() {
   return (
-    <>
-      <StageCard rot={-2.4} depth={-14} i={1} className={styles.hDue}>
-        <Tape rot={-4} />
-        <p className={styles.kicker}>Due for review</p>
-        <ul className={styles.dueList}>
-          {["Syntax and values", "How code runs", "Core concepts"].map((t, k) => (
-            <li key={t} style={vars({ k })}>
-              <span aria-hidden="true">↻</span>
-              {t}
-            </li>
-          ))}
-        </ul>
-      </StageCard>
-      <StageCard rot={1.7} depth={12} i={0} className={styles.hCal}>
-        <div className={styles.winBar}>
-          <i />
-          <i />
-          <i />
-          <em>your review calendar</em>
-        </div>
-        <div className={styles.cal}>
-          {Array.from({ length: 35 }, (_, i) => {
-            const k = REVIEW_DAYS.indexOf(i);
-            return (
-              <span key={i} data-on={k >= 0 || undefined} style={k >= 0 ? vars({ k }) : undefined}>
-                {k >= 0 ? i : ""}
-              </span>
-            );
-          })}
-        </div>
-        <small className={styles.demoNote}>Read today. Back after 3 days, then 7 more, then 21.</small>
-      </StageCard>
-      <StageCard rot={-1.4} depth={-8} i={2} extra className={styles.hStreak}>
-        <span className={styles.flame}>↻</span>
-        <span>
-          <b>Comes back in 3 days</b>
-          <small>before it fades</small>
-        </span>
-      </StageCard>
-      <Sticker rot={6} depth={20} tone="primary" className={styles.hSticker}>
-        review due
-      </Sticker>
-      <Note arrow="ur" rot={-4} depth={16} className={styles.hNote}>
-        before you forget
-      </Note>
-    </>
+    <div className={styles.keep}>
+      <div className={styles.cal}>
+        {Array.from({ length: 35 }, (_, k) => {
+          const at = REVIEW_DAYS.indexOf(k);
+          return (
+            <span
+              key={k}
+              data-on={at >= 0 || undefined}
+              data-fx={at >= 0 ? "light" : undefined}
+              data-fx-from={at >= 0 ? 0.4 + at * 0.06 : undefined}
+            >
+              {at >= 0 ? k : ""}
+              {at >= 0 && (
+                <svg className={styles.pen} viewBox="0 0 24 24" focusable="false">
+                  <path
+                    d="M12 2.5C18 2 22.5 7 21.5 13 20.5 19 15 22.5 10 21.5 4.5 20.5 1.8 15 3 9.5 4 5 8 3 12.5 3.2"
+                    pathLength={1}
+                    data-fx="stroke"
+                    data-fx-from={0.42 + at * 0.06}
+                    data-fx-rate="9"
+                  />
+                </svg>
+              )}
+            </span>
+          );
+        })}
+      </div>
+      <p className={styles.toast} data-fx="reveal" data-fx-from="0.62" data-fx-rate="12">
+        <svg viewBox="0 0 16 16" focusable="false">
+          <path d="M8 2a4 4 0 0 0-4 4v3l-1.5 2.5h11L12 9V6a4 4 0 0 0-4-4zM6.5 13a1.5 1.5 0 0 0 3 0" />
+        </svg>
+        Comes back in 3 days
+      </p>
+    </div>
   );
 }
 
 const ARTS = [ReadArt, RunArt, AskedArt, KeepArt];
+
+function Station({ k }: { k: number }) {
+  const Art = ARTS[k];
+  return (
+    <li
+      className={styles.station}
+      data-corner={CORNERS[k]}
+      data-fx="milestone"
+      data-fx-shape="loop"
+      data-fx-at={LOOP.at[k]}
+    >
+      <span className={styles.badge}>{String(k + 1).padStart(2, "0")}</span>
+      <StageCard still i={k} rot={k % 2 ? 1.2 : -1.2} depth={k % 2 ? -5 : 6} className={styles.stationCard}>
+        <div className={styles.art} data-step={k}>
+          <Art />
+        </div>
+        <p className={styles.stationLine}>
+          <b>{STEPS[k].k}</b> {STEPS[k].line}
+        </p>
+      </StageCard>
+      <span className={styles.stationNote}>{NOTES[k]}</span>
+    </li>
+  );
+}
 
 export function HowScene({ head }: { head: ReactNode }) {
   const sceneRef = useRef<HTMLDivElement>(null);
@@ -259,6 +214,7 @@ export function HowScene({ head }: { head: ReactNode }) {
   const [tabVisible, setTabVisible] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
+  const { pinned, go } = usePin(sceneRef, (step) => setActive(step));
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -281,7 +237,7 @@ export function HowScene({ head }: { head: ReactNode }) {
     };
   }, []);
 
-  const running = motion && onScreen && tabVisible && !hovered && !focused && !chosen;
+  const running = motion && onScreen && tabVisible && !hovered && !focused && !chosen && !pinned;
 
   useEffect(() => {
     if (!running) return;
@@ -290,6 +246,10 @@ export function HowScene({ head }: { head: ReactNode }) {
   }, [running, active]);
 
   function choose(next: number) {
+    if (pinned) {
+      go(next, 0);
+      return;
+    }
     setChosen(true);
     setActive(next);
   }
@@ -349,34 +309,54 @@ export function HowScene({ head }: { head: ReactNode }) {
               <span className={styles.stepIdx}>{String(i + 1).padStart(2, "0")}</span>
               <span className={styles.stepName}>{s.k}</span>
               <span className={styles.stepLine}>{s.line}</span>
-              {running && i === active && <span className={styles.stepFill} aria-hidden="true" />}
+              {(running || pinned) && i === active && (
+                <span className={styles.stepFill} data-fx="fill" data-scrub={pinned || undefined} aria-hidden="true" />
+              )}
             </button>
           ))}
         </div>
       </Copy>
-      <Stage live tone="green" className={styles.howStage}>
-        {STEPS.map((s, i) => {
-          const Art = ARTS[i];
-          return (
-            <div
-              key={s.k}
-              className={styles.howPanel}
-              role="tabpanel"
-              id={`how-panel-${i}`}
-              aria-labelledby={`how-tab-${i}`}
-              hidden={i !== active}
-            >
-              <div className={styles.howArt} aria-hidden="true">
-                <Art />
-              </div>
-              <StageCard rot={-0.6} depth={6} i={3} className={styles.howCaption}>
-                <h3>{s.title}</h3>
-                <p>{s.body}</p>
-              </StageCard>
-              <Spark className={styles.hSpark} />
-            </div>
-          );
-        })}
+      <Stage live tone="green" className={styles.howStage} hostClassName={styles.howHost}>
+        <TrackSvg trail={LOOP} tone="green" shape="loop" className={styles.loopTrack} />
+        <ol className={styles.stations} aria-hidden="true">
+          {STEPS.map((s, k) => (
+            <Station key={s.k} k={k} />
+          ))}
+        </ol>
+        <Walker shape="loop" className={styles.loopTrack} />
+        <span className={styles.again} aria-hidden="true">
+          and round it goes again
+        </span>
+        {STEPS.map((s, i) => (
+          <StageCard
+            key={s.k}
+            fx="part"
+            rot={-0.4}
+            depth={6}
+            i={1 + i}
+            className={styles.howCaption}
+            {...stepAttrs(i, STEPS.length)}
+            role="tabpanel"
+            id={`how-panel-${i}`}
+            aria-labelledby={`how-tab-${i}`}
+            hidden={!inWindow(i, active, pinned)}
+            inert={i !== active || undefined}
+            aria-hidden={i !== active || undefined}
+          >
+            <h3>{s.title}</h3>
+            <p>{s.body}</p>
+          </StageCard>
+        ))}
+        <Sticker rot={7} depth={22} tone="success" className={styles.hSticker}>
+          +25 XP
+        </Sticker>
+        <Spark className={styles.hSpark} />
+        <Chip fact="4 / 4 passed" rot={-3} depth={12} speed={50} className={styles.chipA}>
+          4 / 4 passed
+        </Chip>
+        <Chip fact="back in 3 days" rot={2} depth={-8} speed={-36} className={styles.chipB}>
+          back in 3 days
+        </Chip>
       </Stage>
     </Scene>
   );
