@@ -1,6 +1,9 @@
+import type { ReactNode } from "react";
+import { Player } from "@/components/play/Player";
+import { loadTracer } from "@/lib/play/registry";
 import styles from "@/components/topic/reader.module.css";
 
-export function PlayIsland({ id }: { id: string }) {
+function Island({ id, children }: { id: string; children: ReactNode }) {
   return (
     <section
       className={styles.island}
@@ -11,7 +14,23 @@ export function PlayIsland({ id }: { id: string }) {
       aria-label="Play it"
     >
       <p className={styles.islandKicker}>Play it</p>
-      <p className={styles.islandText}>The step-by-step player for this chapter is not built yet.</p>
+      {children}
     </section>
+  );
+}
+
+export async function PlayIsland({ id }: { id: string }) {
+  const tracer = await loadTracer(id);
+  if (!tracer) {
+    return (
+      <Island id={id}>
+        <p className={styles.islandText}>There is no step-by-step player for this part of the chapter.</p>
+      </Island>
+    );
+  }
+  return (
+    <Island id={id}>
+      <Player title={tracer.title} lines={tracer.lines} frames={tracer.run(tracer.defaultInput)} />
+    </Island>
   );
 }

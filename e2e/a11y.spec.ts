@@ -91,6 +91,22 @@ const STATES: State[] = [
     },
   },
   {
+    name: "the binary search player stepped",
+    path: "/dsa/dsa-binary-search",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const player = page.getByRole("group", { name: "Binary search player" });
+      const next = player.getByRole("button", { name: "Next", exact: true });
+      for (let step = 0; step < 4; step++) await next.click();
+      await expect(player.getByRole("status")).toContainText("sorted[4] = 20 is not the target 31");
+      await check("a step that is mid-run");
+      await player.getByRole("button", { name: "Next", exact: true }).focus();
+      await page.keyboard.press("End");
+      await expect(player.getByRole("status")).toContainText("returns index 6");
+      await check("the last step");
+    },
+  },
+  {
     name: "the Chapters sheet open",
     path: "/notes/setup-mental-model",
     viewports: [PHONE],

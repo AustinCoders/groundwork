@@ -1,6 +1,7 @@
 import { splitIslands } from "@/lib/chapterIslands";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { PlayIsland } from "@/components/play/PlayIsland";
 import { TopicReader } from "@/components/topic/TopicReader";
 import { TopicOutlineChapter } from "@/components/topic/TopicOutlineChapter";
 import { TopicOutline, type OutlineLevel } from "@/components/topic/TopicOutline";
@@ -194,6 +195,9 @@ export function TopicChapterPage({ topicId, chapterId }: { topicId: string; chap
         chapters={cards}
         html={segments ? "" : html}
         segments={segments}
+        islands={segments?.map((segment, i) =>
+          segment.kind === "island" ? <PlayIsland key={i} id={segment.id} /> : null
+        )}
         toc={toc}
         diagrams={diagrams}
         exercises={exercises}

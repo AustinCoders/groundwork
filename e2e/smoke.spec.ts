@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { expect, test, type ConsoleMessage, type Page } from "@playwright/test";
+import { expect, test, type ConsoleMessage, type Locator, type Page } from "@playwright/test";
 import { practice } from "../content/practice";
 import { THEMES, themeColour } from "./themes";
 
@@ -1832,11 +1832,48 @@ test("the editor bar's selected language keeps its check mark and focus ring vis
   expect(contrastRatio(colourChannels(shown.check), colourChannels(behind))).toBeGreaterThanOrEqual(3);
 });
 
-test("the binary search chapter renders its play island and enhances the rest as before", async ({ page, request }) => {
+const FRAMES = 18;
+
+const bsPlayer = (page: Page) => page.getByRole("group", { name: "Binary search player" });
+const bsButton = (player: Locator, name: string) => player.getByRole("button", { name, exact: true });
+const bsStep = (n: number) => `Step ${n} of ${FRAMES}`;
+
+const readPlayer = (player: Locator) =>
+  player.evaluate((root) => ({
+    step: root.querySelector("label")!.textContent,
+    line: root.querySelector('li[aria-current="step"] code')!.textContent,
+    next:
+      [...root.querySelectorAll("ol li")]
+        .find((li) => li.firstElementChild?.textContent?.includes("next"))
+        ?.querySelector("code")?.textContent ?? null,
+    narration: root.querySelector('[role="status"]')!.textContent,
+    vars: Object.fromEntries(
+      [...root.querySelectorAll("dl > div")].map((row) => [
+        row.querySelector("dt")!.textContent,
+        row.querySelector("dd")!.textContent,
+      ])
+    ),
+    marks: [...root.querySelectorAll("ul li")].map((cell) => cell.lastElementChild!.textContent),
+    states: [...root.querySelectorAll("ul li")].map((cell) => cell.children[2].textContent),
+  }));
+
+test("the binary search chapter renders its first frame on the server and enhances the rest as before", async ({
+  page,
+  request,
+}) => {
   const html = await (await request.get("/dsa/dsa-binary-search")).text();
   expect(html).toContain('data-island="play"');
   expect(html).toContain('data-play="binary-search"');
-  expect(html).toContain("not built yet");
+  expect(html).toContain(bsStep(1));
+  expect(html).toContain("Search for 31 in a sorted array of 10 numbers.");
+  expect(html).toContain('aria-current="step"');
+  expect(html).toContain("<dl");
+  expect(html).not.toContain("player for this chapter is not built yet");
+  expect(html).not.toContain('id="bs-code"');
+  expect(html).toContain("not started");
+  expect(html).toContain("not set yet");
+  expect(html).toContain("function binarySearch(sorted, target) {");
+  expect(html).toContain("let lo = 0, hi = sorted.length - 1;");
 
   const problems = collectProblems(page);
   await page.goto("/dsa/dsa-binary-search");
@@ -1844,9 +1881,185 @@ test("the binary search chapter renders its play island and enhances the rest as
   await expect(island).toBeVisible();
   await expect(island).toHaveAttribute("data-no-smooth", "");
   await expect(island).toHaveAttribute("data-speech-exclude", "");
-  await expect(island.locator("button, .codeblock__copy, .table-scroll")).toHaveCount(0);
+  await expect(island.locator(".codeblock__copy, .table-scroll")).toHaveCount(0);
+  await expect(page.locator("#chapters script")).toHaveCount(0);
   await expect(page.locator("#chapters .codeblock__copy").first()).toBeVisible();
+  await expect(bsPlayer(page).getByRole("status")).toHaveText("Search for 31 in a sorted array of 10 numbers.");
   expect(problems).toEqual([]);
+});
+
+test("the binary search player steps by keyboard with the code, the marks and the narration in step", async ({
+  page,
+}) => {
+  await page.goto("/dsa/dsa-binary-search");
+  const player = bsPlayer(page);
+  await player.scrollIntoViewIfNeeded();
+  await bsButton(player, "Next").focus();
+  const before = await page.evaluate(() => ({ y: window.scrollY, path: location.pathname }));
+
+  await page.keyboard.press("ArrowRight");
+  let at = await readPlayer(player);
+  expect(at.step).toBe(bsStep(2));
+  expect(at.line).toBe("  let lo = 0, hi = sorted.length - 1;");
+  expect(at.vars).toMatchObject({ lo: "0", hi: "9", mid: "not set yet" });
+  expect(at.marks[0]).toBe("lo");
+  expect(at.marks[9]).toBe("hi");
+
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+  at = await readPlayer(player);
+  expect(at.step).toBe(bsStep(4));
+  expect(at.line).toContain("const mid = lo + Math.floor");
+  expect(at.next).toContain("if (sorted[mid] === target)");
+  expect(at.vars).toMatchObject({ lo: "0", hi: "9", mid: "4", "sorted[mid]": "20", target: "31" });
+  expect(at.marks[4]).toBe("mid");
+  expect(at.states[4]).toBe("checking");
+  expect(at.narration).toBe("mid is 4, the middle of the range, and sorted[4] is 20.");
+
+  await page.keyboard.press("ArrowLeft");
+  at = await readPlayer(player);
+  expect(at.step).toBe(bsStep(3));
+  expect(at.line).toContain("while (lo <= hi)");
+  expect(at.vars.mid).toBe("not set yet");
+  expect(at.marks[4]).toBe("");
+
+  for (let press = 0; press < 3; press++) await page.keyboard.press("ArrowRight");
+  at = await readPlayer(player);
+  expect(at.step).toBe(bsStep(6));
+  expect(at.line).toContain("if (sorted[mid] < target) lo = mid + 1;");
+  expect(at.vars).toMatchObject({ lo: "5", hi: "9", mid: "4" });
+  expect(at.narration).toBe("sorted[4] = 20 is smaller than 31, so the answer is to the right and lo becomes 5.");
+  expect(at.states.slice(0, 5)).toEqual(Array(5).fill("ruled out"));
+
+  await page.keyboard.press("End");
+  at = await readPlayer(player);
+  expect(at.step).toBe(bsStep(FRAMES));
+  expect(at.narration).toBe("sorted[6] = 31 equals the target, so the search returns index 6 after 4 comparisons.");
+  expect(at.states[6]).toBe("found");
+  await expect(bsButton(player, "Next")).toBeDisabled();
+  await page.keyboard.press("ArrowRight");
+  expect((await readPlayer(player)).step).toBe(bsStep(FRAMES));
+
+  await page.keyboard.press("Home");
+  at = await readPlayer(player);
+  expect(at.step).toBe(bsStep(1));
+  await expect(bsButton(player, "Back")).toBeDisabled();
+  await page.keyboard.press("ArrowLeft");
+  expect((await readPlayer(player)).step).toBe(bsStep(1));
+
+  const after = await page.evaluate(() => ({ y: window.scrollY, path: location.pathname }));
+  expect(after).toEqual(before);
+});
+
+test("the binary search player plays, pauses, scrubs, resets and stops itself", async ({ page }) => {
+  await page.clock.install();
+  await page.goto("/dsa/dsa-binary-search");
+  const player = bsPlayer(page);
+  const play = bsButton(player, "Play");
+  await expect(play).toHaveAttribute("aria-pressed", "false");
+  await player.scrollIntoViewIfNeeded();
+
+  await play.click();
+  const pause = bsButton(player, "Pause");
+  await expect(pause).toHaveAttribute("aria-pressed", "true");
+  await page.clock.runFor(1100);
+  expect((await readPlayer(player)).step).toBe(bsStep(2));
+  await page.clock.runFor(2200);
+  expect((await readPlayer(player)).step).toBe(bsStep(4));
+
+  await pause.press("Space");
+  await expect(bsButton(player, "Play")).toHaveAttribute("aria-pressed", "false");
+  await page.clock.runFor(5000);
+  expect((await readPlayer(player)).step).toBe(bsStep(4));
+
+  await player.getByRole("status").click();
+  const parked = await page.evaluate(() => ({ y: window.scrollY, path: location.pathname }));
+  await page.keyboard.press("Space");
+  await expect(bsButton(player, "Pause")).toHaveAttribute("aria-pressed", "true");
+  await page.keyboard.press("Space");
+  await expect(bsButton(player, "Play")).toHaveAttribute("aria-pressed", "false");
+  expect(await page.evaluate(() => ({ y: window.scrollY, path: location.pathname }))).toEqual(parked);
+  const repeated = await player.evaluate((root) => {
+    const event = new KeyboardEvent("keydown", { key: " ", repeat: true, bubbles: true, cancelable: true });
+    root.dispatchEvent(event);
+    return event.defaultPrevented;
+  });
+  expect(repeated).toBe(true);
+  await expect(bsButton(player, "Play")).toHaveAttribute("aria-pressed", "false");
+
+  await bsButton(player, "Fast").click();
+  await expect(bsButton(player, "Fast")).toHaveAttribute("aria-pressed", "true");
+  await bsButton(player, "Play").click();
+  await page.clock.runFor(500);
+  expect((await readPlayer(player)).step).toBe(bsStep(5));
+
+  await page.evaluate(() => {
+    Object.defineProperty(document, "hidden", { configurable: true, get: () => true });
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  await expect(bsButton(player, "Play")).toHaveAttribute("aria-pressed", "false");
+  await page.clock.runFor(3000);
+  expect((await readPlayer(player)).step).toBe(bsStep(5));
+  await page.evaluate(() => {
+    Object.defineProperty(document, "hidden", { configurable: true, get: () => false });
+  });
+
+  const range = player.getByRole("slider", { name: bsStep(5) });
+  await expect(range).toHaveAttribute("aria-valuetext", bsStep(5));
+  await range.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(player.getByRole("slider", { name: bsStep(6) })).toHaveAttribute("aria-valuetext", bsStep(6));
+  await player.getByRole("slider").fill("10");
+  expect((await readPlayer(player)).step).toBe(bsStep(10));
+  await player.getByRole("slider").press("Home");
+  expect((await readPlayer(player)).step).toBe(bsStep(1));
+  await player.getByRole("slider").press("End");
+  expect((await readPlayer(player)).step).toBe(bsStep(FRAMES));
+
+  await bsButton(player, "Play").click();
+  expect((await readPlayer(player)).step).toBe(bsStep(1));
+  await expect(bsButton(player, "Pause")).toHaveAttribute("aria-pressed", "true");
+  await page.clock.runFor(500 * (FRAMES + 2));
+  expect((await readPlayer(player)).step).toBe(bsStep(FRAMES));
+  await expect(bsButton(player, "Play")).toHaveAttribute("aria-pressed", "false");
+  await expect(bsButton(player, "Next")).toBeDisabled();
+
+  await bsButton(player, "Reset").click();
+  expect((await readPlayer(player)).step).toBe(bsStep(1));
+  await expect(bsButton(player, "Play")).toHaveAttribute("aria-pressed", "false");
+});
+
+test("the binary search player keeps its focus when a step button reaches an end", async ({ page }) => {
+  await page.goto("/dsa/dsa-binary-search");
+  const player = bsPlayer(page);
+  await bsButton(player, "Next").focus();
+  await page.keyboard.press("End");
+  await expect(bsButton(player, "Next")).toBeDisabled();
+  await expect(bsButton(player, "Play")).toBeFocused();
+  await page.keyboard.press("ArrowLeft");
+  expect((await readPlayer(player)).step).toBe(bsStep(FRAMES - 1));
+});
+
+test("the binary search player has no transition under reduced motion and still steps", async ({ page }) => {
+  const transitions = (player: Locator) =>
+    player.evaluate(
+      (root) =>
+        [root, ...root.querySelectorAll("*")].filter((el) => {
+          const style = getComputedStyle(el);
+          return (
+            style.transitionDuration.split(",").some((time) => parseFloat(time) > 0) || style.animationName !== "none"
+          );
+        }).length
+    );
+
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/dsa/dsa-binary-search");
+  expect(await transitions(bsPlayer(page))).toBeGreaterThan(0);
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  expect(await transitions(bsPlayer(page))).toBe(0);
+  await bsButton(bsPlayer(page), "Next").click();
+  expect((await readPlayer(bsPlayer(page))).step).toBe(bsStep(2));
 });
 
 const CODE_TOKENS = {

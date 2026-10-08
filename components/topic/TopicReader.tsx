@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { TopicFrame } from "@/components/topic/TopicFrame";
 import {
   activateScripts,
@@ -29,7 +29,6 @@ import { useChapterKeys } from "@/components/chapter/useChapterKeys";
 import type { SeriesCard, SeriesPart, TocItem } from "@/components/chapter/types";
 import type { LevelId } from "@/content/types";
 import styles from "@/components/series/chapter.module.css";
-import { PlayIsland } from "@/components/play/PlayIsland";
 import { CheckIsland } from "@/components/check/CheckIsland";
 import { CodeLanguageSwitch } from "@/components/dsa/CodeLanguageSwitch";
 import type { BodySegment } from "@/lib/chapterIslands";
@@ -46,6 +45,7 @@ export function TopicReader({
   chapters,
   html,
   segments,
+  islands,
   toc,
   diagrams,
   exercises,
@@ -63,6 +63,7 @@ export function TopicReader({
   chapters: SeriesCard<LevelId>[];
   html: string;
   segments?: BodySegment[];
+  islands?: ReactNode[];
   toc: TocItem[];
   diagrams: number;
   exercises: PracticeLink[];
@@ -233,7 +234,7 @@ export function TopicReader({
                 <div key="segments" id="chapters" ref={bodyRef} className={styles.content} suppressHydrationWarning>
                   {segments.map((segment, i) =>
                     segment.kind === "island" ? (
-                      <PlayIsland key={i} id={segment.id} />
+                      <Fragment key={i}>{islands?.[i]}</Fragment>
                     ) : (
                       <div
                         key={i}

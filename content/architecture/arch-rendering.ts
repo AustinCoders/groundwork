@@ -15,7 +15,7 @@ export const archRendering: Chapter = {
   A component is a server component unless it needs something only a browser has: state, an effect,
   an event handler, <code>localStorage</code>, or a measurement. Adding <code>"use client"</code> has
   a cost, because everything the file imports is bundled and shipped. Across <code>app/</code>,
-  <code>components/</code> and <code>lib/</code>, 80 files carry the directive. About a third belong
+  <code>components/</code> and <code>lib/</code>, 81 files carry the directive. About a third belong
   to the three big interactive surfaces: the playground, the whiteboard and the mock interview.
 </p>
 
@@ -122,10 +122,21 @@ export const archRendering: Chapter = {
   <code>splitIslands</code> in <code>lib/chapterIslands.ts</code> cuts the body at each placeholder
   into HTML segments and islands, and <code>TopicChapterPage</code> hands <code>TopicReader</code>
   those segments instead of one string. The reader still renders the same <code>#chapters</code>
-  container, with the HTML segments written in as before and a server-rendered
-  <code>PlayIsland</code> in each place. The island carries <code>data-island</code>, and the
-  enhancers, narration and scroll regions skip anything inside it. A chapter without a placeholder
-  takes the single-string path unchanged.
+  container, with the HTML segments written in as before and, in each island's place, the element
+  that <code>TopicChapterPage</code> rendered on the server and passed down in <code>islands</code>.
+  The island carries <code>data-island</code>, and the enhancers, narration and scroll regions skip
+  anything inside it. A chapter without a placeholder takes the single-string path unchanged.
+</p>
+<p>
+  The island is <code>PlayIsland</code>, an async server component. It asks the registry in
+  <code>lib/play/registry.ts</code>, which holds one dynamic <code>import()</code> per play id, for
+  that id's tracer, a pure function in <code>lib/play/</code> that records a whole run as a list of
+  frames. It runs the tracer once on the default input and hands the frames, the code lines and a
+  title to <code>Player</code>, the one client component in <code>components/play/</code>, as props.
+  The tracer is imported only on the server, so none of its code reaches the browser, and the first
+  frame is in the HTML before any JavaScript runs. The player only indexes into the frames, so back,
+  scrub and reset cost nothing. An id the registry does not know renders the island with a plain
+  sentence instead of a player.
 </p>
 <p>
   A chapter can also wrap a code block in a <code>div</code> whose <code>data-code</code> attribute names the block, with the JavaScript inside the <code>pre</code>, which is what the server renders and what shows by default. When the body contains one, <code>TopicChapterPage</code> passes <code>codeBlocks</code> and <code>TopicReader</code> shows a four-way language switch (<code>CodeLanguageSwitch</code>) in the chapter header. Choosing Python, Java or C++ dynamically imports that one language's file from <code>content/dsa/code/&lt;chapter-id&gt;/</code>, a map from block id to the HTML for the <code>&lt;code&gt;</code> element, and <code>applyCodeLanguage</code> rewrites only the marked blocks, so the page, the players and the checks are left alone. The choice is the <code>groundwork:dsa:lang</code> key. Every marked block must have a translation in all three languages, and each parses with the editor's grammars, which <code>tests/dsa-code-languages.test.ts</code> checks.

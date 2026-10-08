@@ -259,7 +259,7 @@ export const archDesignSystem: Chapter = {
 <p>
   <code>globals.css</code> is about 7,900 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
-  one of 22 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
+  one of 23 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
   lines. The rule of thumb is that anything
   chapter HTML can contain goes in globals, because chapter bodies are strings that cannot import a
   module, and anything else goes in a module so it loads only with its page.
@@ -320,11 +320,12 @@ export const archDesignSystem: Chapter = {
   architecture section. One of them, <code>/level/typescript</code>, is the level picker of a
   topic that is only outlined, and another, <code>/typescript/ts-setup-compiler</code>, is that
   same topic's own outline chapter; <code>/level/typescript</code> stands in for <code>/soon</code>,
-  which redirects there while every topic is marked ready. It also runs against 12 states that a
-  plain page load does not show: 8 that open with a click, and 4 seeded in
+  which redirects there while every topic is marked ready. It also runs against 13 states that a
+  plain page load does not show: 9 that open with a click, and 4 seeded in
   <code>localStorage</code>. The clicks open the site menu, the reading menu on <code>/notes</code>
   with its Text size and Narrator folds open, a reading budget picked on the JavaScript cover's Up
-  next card, the Chapters and Filters sheets, and a system design round in
+  next card, the Chapters and Filters sheets, the binary search chapter's player stepped to a
+  middle step and to its last, and a system design round in
   the mock interview, checked at the brief, a question, a follow-up, the rubric and the debrief.
   The seeds give a chapter due for review, a
   chapter marked read on a path, a year of activity on the progress page, and two saved mock
