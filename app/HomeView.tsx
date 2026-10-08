@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { SiteDrawer } from "@/components/SiteDrawer";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { formatSpan, plural } from "@/lib/format";
@@ -12,6 +12,8 @@ import { useProgressValue } from "@/lib/hooks";
 import { progress } from "@/lib/storage";
 import { SITE_NAME } from "@/lib/site";
 import { useGuidesNav } from "@/lib/topicNav";
+import { TOPIC_CATEGORIES } from "@/lib/topicCategories";
+import type { TopicCategoryId } from "@/content/types";
 import type { SiteStats } from "@/lib/topicStats";
 import styles from "./home.module.css";
 
@@ -21,6 +23,7 @@ export interface ShelfCard {
   mark: string;
   accent: string;
   tagline: string;
+  category: TopicCategoryId | null;
   href: string;
   chapters: number;
   exercises: number;
@@ -36,6 +39,11 @@ export interface HomeViewProps {
   interview: { rounds: number; questions: number };
 }
 
+function listNames(names: string[]): string {
+  if (names.length < 2) return names.join("");
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}
+
 const ACCENTS: Record<string, string> = { mint: "green" };
 
 function accent(name: string): React.CSSProperties {
@@ -49,16 +57,16 @@ const PERSONAS = [
     tone: "green",
     emoji: "🌱",
     title: "Going for your first job",
-    pain: "You can make things work, but closures, this and the event loop still feel like magic, and the online assessment scares you.",
+    pain: "You can make things work, but the ideas underneath still feel like magic, and the online assessment scares you.",
     gains: [
-      "Explain what happens before line 1 runs",
+      "Explain what your code does before it runs, line by line",
       "Solve array and string problems with a pattern, not luck",
       "Walk into the online assessment knowing its format",
     ],
     path: [
-      { label: "How your code actually runs", href: "/notes/execution-context" },
-      { label: "Closures, finally clear", href: "/notes/closures" },
-      { label: "Async and the event loop", href: "/notes/basic-async" },
+      { label: "JavaScript: how your code actually runs", href: "/notes/execution-context" },
+      { label: "JavaScript: closures, finally clear", href: "/notes/closures" },
+      { label: "JavaScript: async and the event loop", href: "/notes/basic-async" },
       { label: "Two pointers, the first real pattern", href: "/dsa/dsa-two-pointers" },
       { label: "The online assessment round", href: "/interview/r1oa" },
     ],
@@ -328,7 +336,7 @@ const STORY = [
   {
     k: "Read",
     title: "Read a chapter that builds on the last one.",
-    body: "Topics are layered bottom to top, so closures arrive after scope, and async after the event loop. You never skim past a word you do not know yet.",
+    body: "Every topic is layered bottom to top, so an idea only arrives after the ideas it rests on. You never skim past a word you do not know yet.",
   },
   {
     k: "Run",
@@ -347,7 +355,7 @@ const STORY = [
   },
 ];
 
-const LAYERS = ["What the engine does", "Execution context", "Scope", "Closures", "Async & the event loop"];
+const LAYERS = ["Syntax and values", "How code runs", "Core concepts", "Patterns", "Systems and scale"];
 const RUN_TESTS = ["returns a promise", "resolves in order", "rejects on the first failure", "handles an empty list"];
 const CHAT: { who: "them" | "you"; text: string }[] = [
   { who: "them", text: "Build me a debounce." },
@@ -697,6 +705,201 @@ function Journey({ children }: { children: React.ReactNode }) {
   );
 }
 
+const READY_TAB = "ready";
+
+const COMPACT_QUERY = "(max-width: 720px)";
+
+function useCompact(): boolean {
+  return useSyncExternalStore(
+    (cb) => {
+      const mq = window.matchMedia(COMPACT_QUERY);
+      mq.addEventListener("change", cb);
+      return () => mq.removeEventListener("change", cb);
+    },
+    () => window.matchMedia(COMPACT_QUERY).matches,
+    () => false
+  );
+}
+
+interface TopicCardProps {
+  href: string;
+  mark: string;
+  name: string;
+  tagline: string;
+  tone: string;
+  chip: string;
+  meta?: string;
+  soon?: boolean;
+}
+
+function TopicCard({ href, mark, name, tagline, tone, chip, meta, soon }: TopicCardProps) {
+  return (
+    <Link href={href} prefetch={false} className={styles.card} style={accent(tone)} data-soon={soon || undefined}>
+      <span className={styles.cardMark} aria-hidden="true">
+        {mark}
+      </span>
+      <span className={styles.cardName}>{name}</span>
+      <span className={styles.cardTag}>{tagline}</span>
+      {meta && <span className={styles.cardMeta}>{meta}</span>}
+      <span className={styles.cardFoot}>
+        <span className={styles.cardChip}>{chip}</span>
+        <span className={styles.cardGo} aria-hidden="true">
+          →
+        </span>
+      </span>
+    </Link>
+  );
+}
+
+function TopicShelf({
+  ready,
+  soon,
+  interview,
+}: {
+  ready: ShelfCard[];
+  soon: ShelfCard[];
+  interview: HomeViewProps["interview"];
+}) {
+  const [active, setActive] = useState<string>(READY_TAB);
+  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  const compact = useCompact();
+  const all = [...ready, ...soon];
+  const categories = TOPIC_CATEGORIES.map((category) => ({
+    ...category,
+    topics: all.filter((t) => t.category === category.id),
+  })).filter((category) => category.topics.length > 0);
+  const entries = [
+    { id: READY_TAB, label: "Ready now", count: ready.length + 1 },
+    ...categories.map((category) => ({ id: category.id, label: category.label, count: category.topics.length })),
+  ];
+  const index = Math.max(
+    0,
+    entries.findIndex((entry) => entry.id === active)
+  );
+  const readyIds = new Set(ready.map((t) => t.id));
+  const stats = (t: ShelfCard) => [t.exercises > 0 ? plural(t.exercises, "exercise") : "", formatSpan(t.minutes)];
+
+  function onKey(e: React.KeyboardEvent) {
+    const count = entries.length;
+    const next =
+      e.key === "ArrowDown" || e.key === "ArrowRight"
+        ? (index + 1) % count
+        : e.key === "ArrowUp" || e.key === "ArrowLeft"
+          ? (index - 1 + count) % count
+          : e.key === "Home"
+            ? 0
+            : e.key === "End"
+              ? count - 1
+              : -1;
+    if (next < 0) return;
+    e.preventDefault();
+    setActive(entries[next].id);
+    tabs.current[next]?.focus();
+  }
+
+  return (
+    <div className={styles.explorer}>
+      <div
+        className={styles.catList}
+        role="tablist"
+        aria-label="Topics"
+        aria-orientation={compact ? "horizontal" : "vertical"}
+        onKeyDown={onKey}
+      >
+        {entries.map((entry, i) => (
+          <button
+            key={entry.id}
+            ref={(el) => {
+              tabs.current[i] = el;
+            }}
+            type="button"
+            role="tab"
+            id={`shelf-tab-${entry.id}`}
+            aria-selected={i === index}
+            aria-controls={`shelf-panel-${entry.id}`}
+            tabIndex={i === index ? 0 : -1}
+            className={styles.catTab}
+            onClick={() => setActive(entry.id)}
+          >
+            <span>{entry.label}</span>
+            <span className={styles.catCount} aria-hidden="true">
+              {entry.count}
+            </span>
+          </button>
+        ))}
+      </div>
+      {entries.map((entry, i) => {
+        const group = categories.find((category) => category.id === entry.id);
+        const written = group ? group.topics.filter((t) => readyIds.has(t.id)).length : ready.length + 1;
+        const total = group ? group.topics.length : ready.length + 1;
+        return (
+          <div
+            key={entry.id}
+            className={styles.shelfPanel}
+            role="tabpanel"
+            id={`shelf-panel-${entry.id}`}
+            aria-labelledby={`shelf-tab-${entry.id}`}
+            hidden={i !== index}
+          >
+            <p className={styles.panelNote}>
+              {written} written
+              {total > written ? ` · ${total - written} coming soon` : ""}
+            </p>
+            <ul className={styles.cardGrid}>
+              {group ? (
+                group.topics.map((t) => {
+                  const isWritten = readyIds.has(t.id);
+                  return (
+                    <li key={t.id}>
+                      <TopicCard
+                        href={t.href}
+                        mark={t.mark}
+                        name={t.name}
+                        tagline={t.tagline}
+                        tone={t.accent}
+                        chip={isWritten ? plural(t.chapters, "chapter") : "Coming soon"}
+                        meta={isWritten ? stats(t).filter(Boolean).join(" · ") : undefined}
+                        soon={!isWritten}
+                      />
+                    </li>
+                  );
+                })
+              ) : (
+                <>
+                  {ready.map((t) => (
+                    <li key={t.id}>
+                      <TopicCard
+                        href={t.href}
+                        mark={t.mark}
+                        name={t.name}
+                        tagline={t.tagline}
+                        tone={t.accent}
+                        chip={plural(t.chapters, "chapter")}
+                        meta={stats(t).filter(Boolean).join(" · ")}
+                      />
+                    </li>
+                  ))}
+                  <li>
+                    <TopicCard
+                      href="/interview"
+                      mark="◎"
+                      name="Interview book"
+                      tagline="Every round, every question, the answer."
+                      tone="red"
+                      chip={plural(interview.rounds, "round")}
+                      meta={`${interview.questions}+ questions`}
+                    />
+                  </li>
+                </>
+              )}
+            </ul>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 const TOOLS = [
   { href: "/problems", tone: "purple", icon: "M8 9l-4 3 4 3M16 9l4 3-4 3", t: "Problems" },
   { href: "/practice?id=free", tone: "blue", icon: "M4 20h4L19 9l-4-4L4 16zM14 6l4 4", t: "Playground" },
@@ -771,6 +974,10 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
       link: { href: "/privacy", label: "What leaves, and where it goes →" },
     },
     {
+      q: "Which topics are written?",
+      a: `${listNames(ready.map((t) => t.name))} have chapters written today, next to the interview book. The rest of the shelf, from other languages to data, computer science and AI, is laid out as coming soon and fills in as chapters are written.`,
+    },
+    {
       q: "I only have a few weeks before my interview. Where do I start?",
       a: "Open the Interview book and read the round you have next. Each round tells you what it is really testing, so you can spend the time you have on the gaps that matter.",
     },
@@ -780,7 +987,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
     },
     {
       q: "Is this beginner friendly?",
-      a: "Yes, that is the point of the layering. Pick Beginner and the path starts with what the engine does before line 1 runs. If you already know it, pick a higher level and skip ahead.",
+      a: "Yes, that is the point of the layering. Pick a topic, then Beginner, and the path starts from the ground up, for example with what the engine does before line 1 runs in JavaScript. If you already know it, pick a higher level and skip ahead.",
     },
     {
       q: "How is the site itself built?",
@@ -811,7 +1018,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
           </button>
           <Link href="/" className={styles.brand} aria-label={`${SITE_NAME} home`}>
             <span className="brand__mark" aria-hidden="true">
-              JS
+              G
             </span>
             <span>{SITE_NAME}</span>
           </Link>
@@ -822,9 +1029,9 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             <a href="#shelf">Topics</a>
             <a href="#faq">FAQ</a>
           </nav>
-          <Link href="/level/js" className={`${styles.btn} ${styles.btnSmall}`}>
+          <a href="#shelf" className={`${styles.btn} ${styles.btnSmall}`}>
             Start reading
-          </Link>
+          </a>
           <span className={styles.scrollBar} data-scrollbar aria-hidden="true" />
         </header>
 
@@ -837,7 +1044,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                 written
               </p>
               <h1 className={styles.h1}>
-                Understand JavaScript properly.{" "}
+                Understand software properly.{" "}
                 <span className={styles.h1Accent}>
                   Walk into the interview ready.
                   <svg className={styles.underline} viewBox="0 0 400 24" preserveAspectRatio="none" aria-hidden="true">
@@ -846,13 +1053,14 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                 </span>
               </h1>
               <p className={styles.lead}>
-                Notes that never use a word before explaining it, exercises graded by real tests right in the page, and
-                an interview book that walks every round up to the offer.
+                Handwritten notes for software developers, from languages and the web to data, computer science and AI.
+                Nothing uses a word before it is explained, exercises are graded by real tests right in the page, and an
+                interview book walks every round up to the offer.
               </p>
               <div className={styles.actions}>
-                <Link href="/level/js" className={`${styles.btn} ${styles.btnBig}`}>
-                  Start with JavaScript <span className={styles.btnArrow}>→</span>
-                </Link>
+                <a href="#shelf" className={`${styles.btn} ${styles.btnBig}`}>
+                  Pick a topic <span className={styles.btnArrow}>→</span>
+                </a>
                 <Link href="/interview" className={`${styles.btn} ${styles.btnGhost} ${styles.btnBig}`}>
                   Prepare for an interview
                 </Link>
@@ -997,76 +1205,14 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             <div className={styles.head} data-fx="head">
               <p className={styles.eyebrow}>On the shelf</p>
               <h2 id="shelf-h" className={styles.h2}>
-                <Words text="Ready to read today." />
+                <Words text="Pick a topic." />
               </h2>
+              <p className={styles.sub}>
+                What is written today comes first. Every other topic is laid out and fills in as its chapters are
+                written.
+              </p>
             </div>
-            <div className={styles.shelf}>
-              {ready.map((t, i) => (
-                <Link
-                  key={t.id}
-                  href={t.href}
-                  className={styles.book}
-                  style={{ ...accent(t.accent), ...vars({ d: i % 3 }) }}
-                  data-fx="up"
-                  data-glow
-                >
-                  <span className={styles.bookTop}>
-                    <span className={styles.bookMark} aria-hidden="true">
-                      {t.mark}
-                    </span>
-                    <span className={styles.bookGo} aria-hidden="true">
-                      →
-                    </span>
-                  </span>
-                  <span className={styles.bookName}>{t.name}</span>
-                  <span className={styles.bookTag}>{t.tagline}</span>
-                  <span className={styles.bookMeta}>
-                    <span>{plural(t.chapters, "chapter")}</span>
-                    {t.exercises > 0 && <span>{plural(t.exercises, "exercise")}</span>}
-                    <span>{formatSpan(t.minutes)}</span>
-                  </span>
-                </Link>
-              ))}
-              <Link
-                href="/interview"
-                className={styles.book}
-                style={{ ...accent("red"), ...vars({ d: ready.length % 3 }) }}
-                data-fx="up"
-                data-glow
-              >
-                <span className={styles.bookTop}>
-                  <span className={styles.bookMark} aria-hidden="true">
-                    ◎
-                  </span>
-                  <span className={styles.bookGo} aria-hidden="true">
-                    →
-                  </span>
-                </span>
-                <span className={styles.bookName}>Interview book</span>
-                <span className={styles.bookTag}>Every round, every question, the answer.</span>
-                <span className={styles.bookMeta}>
-                  <span>{plural(interview.rounds, "round")}</span>
-                  <span>{interview.questions}+ questions</span>
-                </span>
-              </Link>
-            </div>
-            {soon.length > 0 && (
-              <div className={styles.soonWrap} data-fx="right">
-                <p className={styles.label}>Being written next</p>
-                <ul className={styles.soon}>
-                  {soon.map((t) => (
-                    <li key={t.id}>
-                      <Link href={t.href} prefetch={false} style={accent(t.accent)}>
-                        <span className={styles.soonMark} aria-hidden="true">
-                          {t.mark}
-                        </span>
-                        {t.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <TopicShelf ready={ready} soon={soon} interview={interview} />
           </section>
 
           <section className={styles.section} aria-labelledby="tools-h">
@@ -1158,9 +1304,9 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             </h2>
             <p className={styles.sub}>Open a chapter. No account, no card, no catch.</p>
             <div className={styles.actions}>
-              <Link href="/level/js" className={`${styles.btn} ${styles.btnBig}`}>
-                Start with JavaScript <span className={styles.btnArrow}>→</span>
-              </Link>
+              <a href="#shelf" className={`${styles.btn} ${styles.btnBig}`}>
+                Pick a topic <span className={styles.btnArrow}>→</span>
+              </a>
               <Link href="/problems" className={`${styles.btn} ${styles.btnGhost} ${styles.btnBig}`}>
                 Solve a problem
               </Link>
@@ -1178,7 +1324,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             <div>
               <p className={styles.footBrand}>
                 <span className="brand__mark" aria-hidden="true">
-                  JS
+                  G
                 </span>
                 {SITE_NAME}
               </p>

@@ -31,7 +31,7 @@ export default function Icon() {
           transform: "rotate(-4deg)",
         }}
       >
-        JS
+        G
       </div>
     </div>,
     size

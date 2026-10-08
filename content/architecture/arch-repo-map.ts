@@ -86,11 +86,13 @@ export const archRepoMap: Chapter = {
 
 <h3>Inside app/</h3>
 <p>
-  Twenty of the route folders are topics, and each has the same four things: <code>page.tsx</code> for
+  Thirty-one of the route folders are topics. Twenty of them have the same four things: <code>page.tsx</code> for
   the cover, <code>[chapter]/page.tsx</code>, <code>[chapter]/loading.tsx</code> for the skeleton, and
-  <code>search-index.json/route.ts</code>. Each of those files is a few lines that call into
-  <code>components/reader/topicPages.tsx</code>, so the twenty folders are copies of one shape rather than
-  twenty implementations. The architecture folder is the one without a <code>loading.tsx</code>.
+  <code>search-index.json/route.ts</code>. The other eleven, Python, Java, C++, Rust, Ruby, Go, MongoDB, DBMS,
+  Networks, Operating Systems and Claude and AI tools, have no chapters yet and hold only
+  <code>page.tsx</code>. Each of those files is a few lines that call into
+  <code>components/reader/topicPages.tsx</code>, so the folders are copies of one shape rather than
+  thirty-one implementations. The architecture folder is the one without a <code>loading.tsx</code>.
 </p>
 <p>
   The tools are different. <code>app/mock/</code> has 14 files besides its page: the lobby, the loop

@@ -71,7 +71,10 @@ export const archRoutes: Chapter = {
   <code>search-index.json/route.ts</code>. The pages are a few lines each and call
   <code>TopicCoverPage</code> and <code>TopicChapterPage</code> in
   <code>components/reader/topicPages.tsx</code>, where the real work is — including which frame a
-  cover gets. <code>app/notes/page.tsx</code> is no different from the other 19 folders.
+  cover gets. <code>app/notes/page.tsx</code> is no different from the other 19 chaptered folders. The 11 topics that have no chapters yet
+  (Python, Java, C++, Rust, Ruby, Go, MongoDB, DBMS, Networks, Operating Systems and Claude and AI tools) have only the cover:
+  it renders an outline with a &ldquo;Being planned&rdquo; note instead of a syllabus, is left out of the sitemap, and
+  has no chapter route or search index.
 </p>
 <p>
   A single <code>app/[topic]/[chapter]</code> route would have removed the repetition. What the explicit
@@ -83,7 +86,7 @@ export const archRoutes: Chapter = {
   <code>tests/content.test.ts</code> checks that no two topics resolve to the same one.
 </p>
 <p>
-  <code>generateStaticParams</code> returns every chapter id, written or not, so all 567 chapter pages are
+  <code>generateStaticParams</code> returns every chapter id, written or not, so all 586 chapter pages are
   prerendered, outlines included. Each <code>[chapter]</code> route also sets
   <code>export const dynamicParams = false</code>, so an id the build did not know about is a stored
   404 rather than a render. Git has the same setting on its single <code>[section]</code> route, one
@@ -152,7 +155,7 @@ export const archRoutes: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Route</th><th>What the server builds</th><th>What the browser adds</th></tr></thead>
 <tbody>
-<tr><td><code>/level/&lt;topic&gt;</code></td><td>19 pages, one per topic with levels. 5 render the three levels with chapter, minute and exercise counts; the other 14, which have nothing written, redirect to the topic's own cover instead</td><td>Your progress through each level, for the 5 that render</td></tr>
+<tr><td><code>/level/&lt;topic&gt;</code></td><td>30 pages, one per topic with levels. 5 render the three levels with chapter, minute and exercise counts; the other 25, which have nothing written, redirect to the topic's own cover instead</td><td>Your progress through each level, for the 5 that render</td></tr>
 <tr><td><code>/level?topic=</code></td><td>An empty page</td><td>A redirect to <code>/level/&lt;topic&gt;</code></td></tr>
 <tr><td><code>/path/&lt;topic&gt;/&lt;level&gt;</code></td><td>12 static pages: the 4 written topics (JavaScript, React, DSA, System Design) times their 3 levels. Each page's chapter metadata, exercise links and syllabus rows come from that one topic only, never the others</td><td>Which steps are read, the progress meter, and which step the primary button opens next</td></tr>
 <tr><td><code>/path?topic=&amp;level=</code></td><td>An empty page</td><td>With both a topic and a level, a redirect straight to <code>/path/&lt;topic&gt;/&lt;level&gt;</code> from <code>next.config.ts</code>, before any client code runs — unless the topic is a pinned outline one, in which case the outline redirect above still wins and sends it to the topic's own cover instead, level param or not; with only a topic, a client redirect once the saved or default level is known</td></tr>

@@ -23,7 +23,7 @@ export const archOverview: Chapter = {
 <p>
   Almost every choice in these chapters follows from one call made early: <strong>the content lives in
   the repository as TypeScript, and the whole site is rendered ahead of time</strong>. That is not the
-  obvious choice for a site whose last production build wrote out 1,742 routes, and it has a real cost:
+  obvious choice for a site whose latest production build wrote out 1,795 routes, and it has a real cost:
   fixing a typo means a deploy, and adding a problem means a build.
 </p>
 <p>
@@ -43,10 +43,10 @@ export const archOverview: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Measured today</th><th></th></tr></thead>
 <tbody>
-<tr><td>Prerendered routes</td><td>1,742 in the last production build of <code>main</code></td></tr>
+<tr><td>Prerendered routes</td><td>1,795 in a local production build of this branch, counted from <code>.next/prerender-manifest.json</code></td></tr>
 <tr><td>Server functions</td><td>3, all under <code>/api/</code></td></tr>
 <tr><td>Databases</td><td>0</td></tr>
-<tr><td>Topics</td><td>21 — 5 written, 14 outlined, 2 standalone</td></tr>
+<tr><td>Topics</td><td>32 — 5 written, 25 outlined, 2 standalone</td></tr>
 <tr><td>Written chapters</td><td>227, plus 358 outlines</td></tr>
 <tr><td>Exercises with tests</td><td>538</td></tr>
 <tr><td>Interview questions</td><td>420 across 27 rounds</td></tr>
@@ -63,7 +63,7 @@ export const archOverview: Chapter = {
 <h3>The three layers, and where work happens</h3>
 
 <figure>
-<svg viewBox="0 0 900 380" class="dg" role="img" aria-label="Three layers. At the top, the reader's browser, which holds Web Workers, WebAssembly runtimes and sandboxed iframes. In the middle, the Vercel edge with 1,742 prerendered routes and three functions, beside a third-party CDN that serves the language runtimes. At the bottom, the build, which turns TypeScript content into the files the edge serves.">
+<svg viewBox="0 0 900 380" class="dg" role="img" aria-label="Three layers. At the top, the reader's browser, which holds Web Workers, WebAssembly runtimes and sandboxed iframes. In the middle, the Vercel edge with 1,795 prerendered routes and three functions, beside a third-party CDN that serves the language runtimes. At the bottom, the build, which turns TypeScript content into the files the edge serves.">
 <g class="rough">
 <rect x="30" y="16" width="840" height="100" rx="12" style="fill: var(--sheet-2); stroke: var(--line-soft); stroke-width: 2" />
 <rect x="470" y="42" width="120" height="56" rx="9" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 1.6" />
@@ -86,7 +86,7 @@ export const archOverview: Chapter = {
 <text class="sm" x="799" y="75" text-anchor="middle">iframes</text>
 <text class="sm" x="46" y="184">VERCEL EDGE</text>
 <text class="lbl" x="46" y="214">CDN cache + firewall</text>
-<text class="sm" x="350" y="210" text-anchor="middle">1,742 prerendered routes</text>
+<text class="sm" x="350" y="210" text-anchor="middle">1,795 prerendered routes</text>
 <text class="sm" x="525" y="210" text-anchor="middle">3 functions</text>
 <text class="sm" x="636" y="184">THIRD-PARTY CDN</text>
 <text class="lbl" x="636" y="210">jsDelivr</text>
@@ -104,35 +104,35 @@ export const archOverview: Chapter = {
 </figcaption>
 </figure>
 
-<h3>What the 1,742 routes are</h3>
+<h3>What the 1,795 routes are</h3>
 <p>
-  A static site with that many routes sounds like a site with that many pages of prose. It is not. Just
-  under a third are reading pages. Most of the rest exist because every problem gets two routes: its own
+  A static site with that many routes sounds like a site with that many pages of prose. It is not. About
+  a third are reading pages. Most of the rest exist because every problem gets two routes: its own
   page, and a JSON file of test cases recorded from the JavaScript solution at build time.
 </p>
 
 <figure>
-<svg viewBox="0 0 900 200" class="dg" role="img" aria-label="A bar of 1,742 prerendered routes drawn to scale: 567 chapter pages, 538 problem pages, 538 case files, and 99 others.">
+<svg viewBox="0 0 900 200" class="dg" role="img" aria-label="A bar of 1,795 prerendered routes drawn to scale: 586 chapter pages, 538 problem pages, 538 case files, and 133 others.">
 <g class="rough">
-<rect x="30" y="56" width="273.4" height="52" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 2" />
-<rect x="303.4" y="56" width="259.4" height="52" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 2" />
-<rect x="562.8" y="56" width="259.4" height="52" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 2" />
-<rect x="822.3" y="56" width="47.7" height="52" style="fill: var(--line-soft); stroke: var(--ink); stroke-width: 2" />
-<path class="ln" d="M846 108 V138" />
+<rect x="30.0" y="56" width="274.2" height="52" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 2" />
+<rect x="304.2" y="56" width="251.8" height="52" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 2" />
+<rect x="556.0" y="56" width="251.8" height="52" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 2" />
+<rect x="807.8" y="56" width="62.2" height="52" style="fill: var(--line-soft); stroke: var(--ink); stroke-width: 2" />
+<path class="ln" d="M839 108 V138" />
 </g>
-<text class="sm" x="30" y="40">1,742 PRERENDERED ROUTES, TO SCALE</text>
-<text class="lbl" x="166.7" y="80" text-anchor="middle">567</text>
-<text class="sm" x="166.7" y="100" text-anchor="middle">chapter pages</text>
-<text class="lbl" x="433.1" y="80" text-anchor="middle">538</text>
-<text class="sm" x="433.1" y="100" text-anchor="middle">problem pages</text>
-<text class="lbl" x="692.5" y="80" text-anchor="middle">538</text>
-<text class="sm" x="692.5" y="100" text-anchor="middle">test-case JSON files</text>
-<text class="lbl" x="846" y="88" text-anchor="middle">99</text>
-<text class="sm" x="870" y="156" text-anchor="end">the other 99: 21 topic covers &middot; 21 search indexes &middot; 20 level pages &middot; 12 mock question banks</text>
-<text class="sm" x="870" y="178" text-anchor="end">9 share images &middot; 16 single pages, icons and metadata files</text>
+<text class="sm" x="30" y="40">1,795 PRERENDERED ROUTES, TO SCALE</text>
+<text class="lbl" x="167.1" y="80" text-anchor="middle">586</text>
+<text class="sm" x="167.1" y="100" text-anchor="middle">chapter pages</text>
+<text class="lbl" x="430.1" y="80" text-anchor="middle">538</text>
+<text class="sm" x="430.1" y="100" text-anchor="middle">problem pages</text>
+<text class="lbl" x="681.9" y="80" text-anchor="middle">538</text>
+<text class="sm" x="681.9" y="100" text-anchor="middle">test-case JSON files</text>
+<text class="lbl" x="839" y="88" text-anchor="middle">133</text>
+<text class="sm" x="870" y="156" text-anchor="end">the other 133: 32 topic covers &middot; 21 search indexes &middot; 30 level pages &middot; 12 path pages &middot; 12 mock question banks</text>
+<text class="sm" x="870" y="178" text-anchor="end">9 share images &middot; 17 single pages, icons and metadata files</text>
 </svg>
 <figcaption>
-  The 567 chapter pages include the outlines: an unwritten chapter still gets a page, marked
+  The 586 chapter pages include the outlines: an unwritten chapter still gets a page, marked
   <code>noindex</code> and left out of the sitemap. Counted from <code>.next/prerender-manifest.json</code>.
 </figcaption>
 </figure>

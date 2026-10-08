@@ -45,6 +45,7 @@ const PAGES = [
   "/whiteboard",
   "/progress",
   "/privacy",
+  "/python",
   "/git",
   "/git/merge",
   "/git/github",
@@ -62,6 +63,34 @@ const STATES: State[] = [
       await page.getByRole("button", { name: "Menu", exact: true }).click();
       await expect(page.getByRole("dialog", { name: /menu/ })).toBeVisible();
       await check("the site menu open");
+    },
+  },
+  {
+    name: "the Topics fold open with the Data category expanded",
+    path: "/review",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      const menu = page.getByRole("dialog", { name: /menu/ });
+      await menu.getByRole("button", { name: /Topics/ }).click();
+      const data = menu.getByRole("button", { name: /^Data · \d+$/ });
+      await data.click();
+      await expect(data).toHaveAttribute("aria-expanded", "true");
+      await expect(menu.getByRole("link", { name: /MongoDB/ })).toBeVisible();
+      await check("the Topics fold open with the Data category expanded");
+    },
+  },
+  {
+    name: "the topic section on Languages",
+    path: "/",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const languages = page.locator("#shelf").getByRole("tab", { name: /^Languages/ });
+      await languages.scrollIntoViewIfNeeded();
+      await languages.click();
+      await expect(languages).toHaveAttribute("aria-selected", "true");
+      await expect(page.locator("#shelf").getByRole("link", { name: /^Python/ })).toBeVisible();
+      await check("the topic section on Languages");
     },
   },
   {

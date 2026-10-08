@@ -105,7 +105,7 @@ export function PageFrame({
           </button>
           <Link href="/" className={styles.brand} aria-label={`${SITE_NAME} home`}>
             <span className="brand__mark" aria-hidden="true">
-              JS
+              G
             </span>
             <span className={styles.brandName}>{SITE_NAME}</span>
           </Link>

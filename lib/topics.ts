@@ -37,6 +37,7 @@ export function level(id: string, topicId?: string | null): Level | null {
 
 export function curriculumNotes(topicId?: string | null): string[] {
   const t = topicId && byId(topics(), topicId);
+  if (t && t.levels && t.levels.length === 0) return [];
   if (t && t.curriculumNotes) return t.curriculumNotes;
   return topicsData.curriculumNotes || [];
 }
@@ -84,6 +85,7 @@ export function topicsNav(): TopicNav[] {
     status: t.status,
     notes: t.notes,
     blurb: t.blurb,
+    category: t.category ?? null,
     levelIds: t.levels ? t.levels.map((l) => l.id) : null,
     written: 0,
   }));

@@ -13,19 +13,20 @@ A visual version of this file, with progress bars, is [`roadmap.html`](roadmap.h
 
 ## 0. Content — the half the engineering serves
 
-Measured today: **7 of 21 topics are written** — 227 chapters written in all, Git's 18 standalone
+Measured today: **7 of 32 topics are written** — 227 chapters written in all, Git's 18 standalone
 sections among them, and 358 still outlines.
 
 | Topic             | Written   | Exercises | Words | Cheat page |
 | ----------------- | --------- | --------- | ----- | ---------- |
 | JavaScript        | 41        | 99        | 54k   | yes        |
 | React             | 57        | 135       | 42k   | yes        |
-| DSA in JS         | 34        | 277       | 48k   | **no**     |
+| DSA               | 34        | 277       | 48k   | **no**     |
 | System Design     | 24        | **0**     | 61k   | **no**     |
 | Interview book    | 27 rounds | **0**     | 61k   | —          |
 | How this is built | 26        | —         | 7k    | —          |
 | Git               | 18        | **0**     | —     | yes        |
 | The other 14      | outline   | —         | —     | —          |
+| The new 11        | not begun | —         | —     | —          |
 
 **One correction.** The last version of this file said the interview book held 405 questions.
 Counted one question object at a time, it holds **230** across 27 rounds.
@@ -34,6 +35,13 @@ The fourteen outlines — Node 41, TypeScript 29, Next.js 29, Nest.js 26, CSS 25
 Testing 24, Web Security 24, Cloud & DevOps 24, Kubernetes 24, HTML 22, Docker 22, GraphQL 22,
 Redis 21 — were planned before anyone checked which of them readers are actually hired for. Section
 0.1 checks; section 0.2 turns the answer into an order.
+
+The site now covers software development in general rather than JavaScript alone, so the topic list is
+grouped into eight categories: Languages, Web, Backend and APIs, Data, Computer science, DevOps and
+cloud, Engineering practice, and AI. Eleven topics were added as coming-soon outlines with no
+chapter plan yet: Python, Java, C++, Rust, Ruby, Go, MongoDB, DBMS, Computer Networks, Operating
+Systems, and Claude and AI tools. Each has a cover that says it is being planned; what each one
+contains is a separate spec still to be written.
 
 There is still no engineering blocker on any of it. Adding a chapter means adding a file under
 `content/<topic>/`; routes, search index, sitemap, reading time and progress all follow from there.

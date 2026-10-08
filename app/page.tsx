@@ -24,6 +24,7 @@ export default function HomePage() {
     mark: t.mark,
     accent: t.accent,
     tagline: t.tagline,
+    category: t.category,
     href: hrefFor(t),
     chapters: perTopic[t.id]?.written || perTopic[t.id]?.planned || 0,
     exercises: perTopic[t.id]?.exercises ?? 0,

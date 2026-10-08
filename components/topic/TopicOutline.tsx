@@ -44,19 +44,22 @@ export function TopicOutline({
   written: number;
   planned: number;
   levels: OutlineLevel[];
-  relatedHref: string;
-  relatedLabel: string;
+  relatedHref: string | null;
+  relatedLabel: string | null;
   relatedRoundHref: string | null;
   relatedRoundLabel: string | null;
   curriculumNotes: string[];
 }) {
+  const planning = levels.length === 0;
   return (
     <TopicFrame topic={{ name: topicName, href: basePath, mark, accent }} skip={{ label: `Skip to ${topicName}` }}>
       <HashRedirect basePath={basePath} />
       <div className={styles.page} id="top">
         <section className={styles.hero} data-fx="stagger">
           <p className={styles.kicker}>
-            {written} of {plural(planned, "chapter")} written · {plural(levels.length, "level")} planned
+            {planning
+              ? "No chapters yet"
+              : `${written} of ${plural(planned, "chapter")} written · ${plural(levels.length, "level")} planned`}
           </p>
           <h1 className={styles.title}>{topicName}</h1>
           {tagline && <p className={styles.tagline}>{tagline}</p>}
@@ -64,50 +67,61 @@ export function TopicOutline({
           {blurb && <p className={styles.lead}>{blurb}</p>}
         </section>
 
-        <div className={styles.parts} data-fx="up">
-          {levels.map((level, i) => (
-            <section key={level.id} aria-labelledby={`part-${level.id}`}>
-              <div className={styles.partHead}>
-                <span className={styles.partNum}>Part {i + 1}</span>
-                <h2 id={`part-${level.id}`}>{level.name}</h2>
-                {level.tagline && <p className={styles.partQuote}>&ldquo;{level.tagline}&rdquo;</p>}
-                {level.blurb && <p>{level.blurb}</p>}
-              </div>
-              <ol className={styles.cards}>
-                {level.sections.map((section, si) =>
-                  section.href ? (
-                    <li key={si}>
-                      <Link className={styles.card} href={section.href}>
-                        {section.num && <span className={styles.cardNum}>{section.num}</span>}
-                        <span className={styles.cardTitle}>{section.title}</span>
-                      </Link>
-                    </li>
-                  ) : (
-                    <li key={si}>
-                      <span className={styles.card}>
-                        <span className={styles.cardTitle}>{section.title}</span>
-                      </span>
-                    </li>
-                  )
-                )}
-              </ol>
-            </section>
-          ))}
-        </div>
+        {planning && (
+          <section className={styles.planning} aria-labelledby="being-planned" data-fx="up">
+            <h2 id="being-planned">Being planned</h2>
+            <p>No chapters are written yet for {topicName}, and its syllabus has not been set.</p>
+          </section>
+        )}
 
-        <section className={styles.meanwhile} aria-label="Meanwhile">
-          <p className={styles.meanwhileKicker}>Meanwhile</p>
-          <Link className={styles.meanwhileLink} href={relatedHref}>
-            {relatedLabel} is written — start there
-          </Link>
-          {relatedRoundHref && relatedRoundLabel && (
-            <Link className={styles.meanwhileLink} href={relatedRoundHref}>
-              {relatedRoundLabel} covers this in the interview book
+        {!planning && (
+          <div className={styles.parts} data-fx="up">
+            {levels.map((level, i) => (
+              <section key={level.id} aria-labelledby={`part-${level.id}`}>
+                <div className={styles.partHead}>
+                  <span className={styles.partNum}>Part {i + 1}</span>
+                  <h2 id={`part-${level.id}`}>{level.name}</h2>
+                  {level.tagline && <p className={styles.partQuote}>&ldquo;{level.tagline}&rdquo;</p>}
+                  {level.blurb && <p>{level.blurb}</p>}
+                </div>
+                <ol className={styles.cards}>
+                  {level.sections.map((section, si) =>
+                    section.href ? (
+                      <li key={si}>
+                        <Link className={styles.card} href={section.href}>
+                          {section.num && <span className={styles.cardNum}>{section.num}</span>}
+                          <span className={styles.cardTitle}>{section.title}</span>
+                        </Link>
+                      </li>
+                    ) : (
+                      <li key={si}>
+                        <span className={styles.card}>
+                          <span className={styles.cardTitle}>{section.title}</span>
+                        </span>
+                      </li>
+                    )
+                  )}
+                </ol>
+              </section>
+            ))}
+          </div>
+        )}
+
+        {relatedHref && relatedLabel && (
+          <section className={styles.meanwhile} aria-label="Meanwhile">
+            <p className={styles.meanwhileKicker}>Meanwhile</p>
+            <Link className={styles.meanwhileLink} href={relatedHref}>
+              {relatedLabel} is written — start there
             </Link>
-          )}
-        </section>
+            {relatedRoundHref && relatedRoundLabel && (
+              <Link className={styles.meanwhileLink} href={relatedRoundHref}>
+                {relatedRoundLabel} covers this in the interview book
+              </Link>
+            )}
+          </section>
+        )}
 
-        {curriculumNotes.length > 0 && (
+        {!planning && curriculumNotes.length > 0 && (
           <div className={`sticky mint ${styles.notes}`}>
             <span className="ttl">Three honest notes</span>
             <ul>

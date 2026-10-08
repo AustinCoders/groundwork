@@ -8,7 +8,7 @@ export const archComingSoon: Chapter = {
   levels: ["beginner"],
   practice: [],
   ready: true,
-  subtitle: "Seven of twenty-one topics are written. The other fourteen say so rather than pretending.",
+  subtitle: "Seven of thirty-two topics are written. The other twenty-five say so rather than pretending.",
   body: `<h3>The honest count</h3>
 <p>
   The engineering on this site is ahead of the writing, and the site does not hide that. A topic with no
@@ -22,7 +22,7 @@ export const archComingSoon: Chapter = {
 <tbody>
 <tr><td>React</td><td><b>57</b></td><td>0</td><td>162</td></tr>
 <tr><td>JavaScript</td><td><b>41</b></td><td>0</td><td>99</td></tr>
-<tr><td>DSA in JS</td><td><b>34</b></td><td>0</td><td>277</td></tr>
+<tr><td>DSA</td><td><b>34</b></td><td>0</td><td>277</td></tr>
 <tr><td>Interview book</td><td><b>27 rounds</b></td><td>&mdash;</td><td>420 questions, no exercises</td></tr>
 <tr><td>How this is built</td><td><b>26</b></td><td>0</td><td>0</td></tr>
 <tr><td>System Design</td><td><b>24</b></td><td>0</td><td>0</td></tr>
@@ -34,11 +34,12 @@ export const archComingSoon: Chapter = {
 <tr><td>Testing, Web Security, Cloud &amp; DevOps, Kubernetes</td><td>0</td><td>24 each</td><td>0</td></tr>
 <tr><td>HTML, Docker, GraphQL</td><td>0</td><td>22 each</td><td>0</td></tr>
 <tr><td>Redis</td><td>0</td><td>21</td><td>0</td></tr>
+<tr><td>Python, Java, C++, Rust, Ruby, Go, MongoDB, DBMS, Networks, Operating Systems, Claude &amp; AI tools</td><td>0</td><td>None planned yet</td><td>0</td></tr>
 </tbody>
 </table></div>
 
 <p class="sub">
-  227 chapters written, 358 outlined. By chapter that is 39% of the plan; by topic it is 7 of 21.
+  227 chapters written, 358 outlined. By chapter that is 39% of the plan; by topic it is 7 of 32.
 </p>
 
 <figure>
@@ -135,9 +136,10 @@ export const archComingSoon: Chapter = {
   Every count on this page, and on the home page, comes from one of two functions in
   <code>lib/topicStats.ts</code>. <code>topicStats()</code> gives each topic its written, planned,
   exercise and minute totals; for Git, which has no chapters, it counts the guide's sections instead.
-  <code>siteStats()</code> adds those up. The two disagree on purpose in one place: the home page says 19
-  topics, not 21, because <code>onShelf()</code> in <code>lib/topicShelf.ts</code> leaves out the Interview
-  book and this topic, which are reached from the site menu's links rather than the topic shelf.
+  <code>siteStats()</code> adds those up. The topic total is one place where they disagree with the data on purpose:
+  <code>siteStats().topics</code> is 30, not 32, because <code>onShelf()</code> in
+  <code>lib/topicShelf.ts</code> leaves out the Interview book and this topic, which are reached from the site
+  menu's links rather than the topic shelf. The home page does not print that number; it lists the shelf topics by category.
 </p>
 <p>
   The prose is checked too. <code>tests/claims.test.ts</code> recomputes the written and outlined

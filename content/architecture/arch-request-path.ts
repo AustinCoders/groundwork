@@ -84,7 +84,7 @@ export const archRequestPath: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>What</th><th>Count</th><th>Made by</th></tr></thead>
 <tbody>
-<tr><td>Pages, as HTML plus an RSC payload</td><td>1,177</td><td><code>page.tsx</code> and <code>generateStaticParams</code></td></tr>
+<tr><td>Pages, as HTML plus an RSC payload</td><td>1,222</td><td><code>page.tsx</code> and <code>generateStaticParams</code></td></tr>
 <tr><td>Test cases for other languages</td><td>538</td><td><code>app/problems/[slug]/cases/route.ts</code></td></tr>
 <tr><td>Search indexes</td><td>21</td><td>20 per-topic routes plus one global route</td></tr>
 <tr><td>Mock interview question banks</td><td>12</td><td><code>app/mock/bank/[stage]/route.ts</code>, one per stage</td></tr>

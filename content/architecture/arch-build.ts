@@ -13,7 +13,7 @@ export const archBuild: Chapter = {
   body: `<h3>The pipeline</h3>
 
 <figure>
-<svg viewBox="0 0 900 420" class="dg" role="img" aria-label="Content TypeScript files feed lib/content.ts. From there the static generation step produces 1,177 pages, 538 test-case files recorded in node:vm, 21 search indexes, and the sitemap with nine Open Graph images. A prebuild step runs first and writes public/wasm. Static generation takes 21.5 of the build's 29.6 seconds.">
+<svg viewBox="0 0 900 420" class="dg" role="img" aria-label="Content TypeScript files feed lib/content.ts. From there the static generation step produces 1,222 pages, 538 test-case files recorded in node:vm, 21 search indexes, and the sitemap with nine Open Graph images. A prebuild step runs first and writes public/wasm. Static generation takes 21.5 of the build's 29.6 seconds.">
 <g class="rough">
 <rect x="20" y="150" width="150" height="90" rx="10" style="fill: var(--sheet); stroke: var(--ink); stroke-width: 2" />
 <rect x="210" y="160" width="160" height="70" rx="10" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 2" />
@@ -34,7 +34,7 @@ export const archBuild: Chapter = {
 <text class="sm" x="95" y="226" text-anchor="middle">a barrel per topic</text>
 <text class="lbl gr" x="290" y="192" text-anchor="middle">lib/content.ts</text>
 <text class="sm" x="290" y="214" text-anchor="middle">the only reader</text>
-<text class="lbl" x="560" y="46" text-anchor="middle">1,177 pages</text>
+<text class="lbl" x="560" y="46" text-anchor="middle">1,222 pages</text>
 <text class="sm" x="560" y="68" text-anchor="middle">generateStaticParams, 24 files</text>
 <text class="lbl" x="560" y="130" text-anchor="middle">538 test-case files</text>
 <text class="sm" x="560" y="152" text-anchor="middle">recordPolyglot inside node:vm</text>
@@ -165,7 +165,7 @@ export const archBuild: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Output</th><th>Count</th><th>Served how</th></tr></thead>
 <tbody>
-<tr><td>Pages (HTML and RSC)</td><td>1,177</td><td>Static, never revalidated</td></tr>
+<tr><td>Pages (HTML and RSC)</td><td>1,222</td><td>Static, never revalidated</td></tr>
 <tr><td>Static route handlers</td><td>571</td><td>Static JSON</td></tr>
 <tr><td>Metadata routes</td><td>14</td><td>Static</td></tr>
 <tr><td>JavaScript chunks</td><td>81</td><td>Hashed, under <code>/_next/static</code></td></tr>

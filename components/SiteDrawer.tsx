@@ -14,6 +14,7 @@ import { progress } from "@/lib/storage";
 import { FONT_ITEMS, THEME_ITEMS } from "@/lib/storage";
 import { SITE_NAME } from "@/lib/site";
 import { accentVar } from "@/lib/accent";
+import { groupByCategory, isReadable } from "@/lib/topicCategories";
 import { navHref, useGuidesNav, useTopicsNav, type GuideNav } from "@/lib/topicNav";
 import type { TopicNav } from "@/content/types";
 import styles from "./SiteDrawer.module.css";
@@ -201,7 +202,7 @@ function HitLink({ hit, here, onClose }: { hit: Hit; here: boolean; onClose: () 
 }
 
 function topicHit(t: TopicNav): Hit {
-  const ready = t.status === "ready" && t.written > 0;
+  const ready = isReadable(t);
   return {
     href: navHref(t, null),
     label: t.name,
@@ -212,30 +213,59 @@ function topicHit(t: TopicNav): Hit {
 }
 
 function TopicList({ topics, current, onClose }: { topics: TopicNav[]; current: string | null; onClose: () => void }) {
-  const ready = topics.filter((t) => t.status === "ready" && t.written > 0);
-  const soon = topics.filter((t) => !ready.includes(t));
+  const groups = groupByCategory(topics);
+  const listed = groups.flatMap((group) => group.topics);
+  const ready = listed.filter(isReadable).length;
+  const categoryOf = (topicId: string | null) => groups.find((group) => group.topics.some((t) => t.id === topicId));
+  const [openId, setOpenId] = useState<string | null>(() => (categoryOf(current) ?? groups[0])?.id ?? null);
+  const [seenCurrent, setSeenCurrent] = useState(current);
+  if (seenCurrent !== current) {
+    setSeenCurrent(current);
+    const here = categoryOf(current);
+    if (here) setOpenId(here.id);
+  }
   return (
     <nav aria-label="Topics" className={styles.topicNav}>
-      <p className={styles.groupLabel}>Ready to read · {ready.length}</p>
-      <ul className={styles.hits}>
-        {ready.map((t) => (
-          <li key={t.id}>
-            <HitLink hit={topicHit(t)} here={t.id === current} onClose={onClose} />
-          </li>
-        ))}
-      </ul>
-      {soon.length > 0 && (
-        <>
-          <p className={styles.groupLabel}>Coming soon · {soon.length}</p>
-          <ul className={`${styles.hits} ${styles.soon}`}>
-            {soon.map((t) => (
-              <li key={t.id}>
-                <HitLink hit={topicHit(t)} here={t.id === current} onClose={onClose} />
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+      <p className={styles.groupLabel}>
+        {ready} ready to read · {listed.length - ready} coming soon
+      </p>
+      {groups.map((group) => {
+        const open = group.id === openId;
+        return (
+          <section key={group.id} className={styles.topicGroup} data-open={open || undefined}>
+            <h3 className={styles.categoryLabel}>
+              <button
+                type="button"
+                id={`topic-group-${group.id}`}
+                className={styles.categoryHead}
+                aria-expanded={open}
+                aria-controls={`topic-panel-${group.id}`}
+                onClick={() => setOpenId(open ? null : group.id)}
+              >
+                <span>
+                  {group.label} · {group.topics.length}
+                </span>
+                <span className={styles.chevron} aria-hidden="true" />
+              </button>
+            </h3>
+            <div
+              id={`topic-panel-${group.id}`}
+              role="region"
+              aria-labelledby={`topic-group-${group.id}`}
+              hidden={!open}
+              inert={!open}
+            >
+              <ul className={styles.hits}>
+                {group.topics.map((t) => (
+                  <li key={t.id} className={isReadable(t) ? undefined : styles.soon}>
+                    <HitLink hit={topicHit(t)} here={t.id === current} onClose={onClose} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        );
+      })}
     </nav>
   );
 }
@@ -313,7 +343,7 @@ function DrawerBody({ onClose, reading }: { onClose: () => void; reading: boolea
   const fontName = plain(FONT_ITEMS.find((f) => f.value === font)?.label ?? "");
   const current = topics.find((t) => topicBases(t).some((b) => isUnder(pathname, b)))?.id ?? null;
   const currentName = topics.find((t) => t.id === current)?.name;
-  const readyCount = topics.filter((t) => t.status === "ready" && t.written > 0).length;
+  const readyCount = topics.filter(isReadable).length;
 
   const q = query.trim().toLowerCase();
   const hits: Hit[] = q
@@ -523,7 +553,7 @@ export function SiteDrawer({
           <div className={styles.head}>
             <Link href="/" className={styles.brand} onClick={onClose}>
               <span className="brand__mark" aria-hidden="true">
-                JS
+                G
               </span>
               <span>{SITE_NAME}</span>
             </Link>

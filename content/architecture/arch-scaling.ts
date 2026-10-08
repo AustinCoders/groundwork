@@ -66,7 +66,7 @@ export const archScaling: Chapter = {
 </tr>
 <tr>
   <td>Adding exercises</td>
-  <td>Three things grow together. Every exercise adds two prerendered pages, <code>/problems/[slug]</code> and its <code>/cases</code> page, which is 1,076 of today's 1,746. It adds a row to <code>/problems</code>, whose HTML is 283 KB for 538 problems. And it adds to the exercise-bank chunk the mock room loads whole, 1.70 MB raw today.</td>
+  <td>Three things grow together. Every exercise adds two prerendered pages, <code>/problems/[slug]</code> and its <code>/cases</code> page, which is 1,076 of today's 1,795. It adds a row to <code>/problems</code>, whose HTML is 283 KB for 538 problems. And it adds to the exercise-bank chunk the mock room loads whole, 1.70 MB raw today.</td>
   <td>Load the mock room's questions by category rather than all at once; paginate or virtualise <code>/problems</code> only if <code>content-visibility</code> stops being enough.</td>
 </tr>
 <tr>
@@ -100,7 +100,7 @@ export const archScaling: Chapter = {
 <h3>The two that are really about money</h3>
 <p>
   <strong>Storage</strong> is the limit this project has actually hit, twice. It is not a code
-  problem. A site that prerenders 1,746 pages ships all of them in every deployment, and the
+  problem. A site that prerenders 1,795 routes ships all of them in every deployment, and the
   prerendered folder of a local build alone is 198 MB. The project itself now holds 7
   deployments. The team's total still reads 10.32 GB of 10 GB, because the figure covers every
   project on the account. The daily job handles this project's share. Only a plan change or

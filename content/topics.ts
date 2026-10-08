@@ -500,6 +500,7 @@ export const topics: TopicsData = {
   topics: [
     {
       id: "js",
+      category: "languages",
       name: "JavaScript",
       mark: "JS",
       accent: "yellow",
@@ -514,6 +515,7 @@ export const topics: TopicsData = {
     },
     {
       id: "html",
+      category: "web",
       name: "HTML",
       mark: "</>",
       accent: "red",
@@ -693,6 +695,7 @@ export const topics: TopicsData = {
     },
     {
       id: "css",
+      category: "web",
       name: "CSS",
       mark: "{ }",
       accent: "mint",
@@ -887,6 +890,7 @@ export const topics: TopicsData = {
     },
     {
       id: "react",
+      category: "web",
       name: "React",
       mark: "⚛",
       accent: "blue",
@@ -1261,6 +1265,7 @@ export const topics: TopicsData = {
     },
     {
       id: "nextjs",
+      category: "web",
       name: "Next.js",
       mark: "N",
       accent: "ink",
@@ -1478,6 +1483,7 @@ export const topics: TopicsData = {
     },
     {
       id: "nestjs",
+      category: "backend",
       name: "Nest.js",
       mark: "Ne",
       accent: "red",
@@ -1677,6 +1683,7 @@ export const topics: TopicsData = {
     },
     {
       id: "typescript",
+      category: "languages",
       name: "TypeScript",
       mark: "TS",
       accent: "blue",
@@ -1904,7 +1911,86 @@ export const topics: TopicsData = {
       ],
     },
     {
+      id: "python",
+      category: "languages",
+      name: "Python",
+      mark: "Py",
+      accent: "blue",
+      tagline: "Readable code, batteries included",
+      status: "ready",
+      notes: "python.html",
+      blurb:
+        "The language from first script to production service: data types, functions, classes, the standard library and the tooling around it. It will also cover the parts interviews probe, such as iterators, generators and how the interpreter manages memory.",
+      levels: [],
+    },
+    {
+      id: "java",
+      category: "languages",
+      name: "Java",
+      mark: "Jv",
+      accent: "orange",
+      tagline: "Typed, object-oriented, everywhere",
+      status: "ready",
+      notes: "java.html",
+      blurb:
+        "Syntax, classes and interfaces, generics, collections and the streams API, then how the JVM runs your code. It will also cover concurrency and the memory model, which is where most Java interview questions end up.",
+      levels: [],
+    },
+    {
+      id: "cpp",
+      category: "languages",
+      name: "C++",
+      mark: "C++",
+      accent: "purple",
+      tagline: "Close to the machine, on purpose",
+      status: "ready",
+      notes: "cpp.html",
+      blurb:
+        "Types, pointers and references, classes, the standard library and how memory is owned and released. It will also cover templates, move semantics and the modern idioms that replace manual memory management.",
+      levels: [],
+    },
+    {
+      id: "rust",
+      category: "languages",
+      name: "Rust",
+      mark: "Rs",
+      accent: "orange",
+      tagline: "Memory safety without a garbage collector",
+      status: "ready",
+      notes: "rust.html",
+      blurb:
+        "Ownership, borrowing and lifetimes first, since everything else in Rust rests on them. It will then cover traits, error handling, iterators and concurrency, and how to read the compiler's complaints.",
+      levels: [],
+    },
+    {
+      id: "ruby",
+      category: "languages",
+      name: "Ruby",
+      mark: "Rb",
+      accent: "red",
+      tagline: "Expressive code that reads like prose",
+      status: "ready",
+      notes: "ruby.html",
+      blurb:
+        "Objects, blocks and the core library, then modules, metaprogramming and how Ruby resolves a method call. It will also cover the conventions that make a Rails codebase easy to read.",
+      levels: [],
+    },
+    {
+      id: "go",
+      category: "languages",
+      name: "Go",
+      mark: "Go",
+      accent: "teal",
+      tagline: "Small language, strong concurrency",
+      status: "ready",
+      notes: "go.html",
+      blurb:
+        "Types, slices and maps, interfaces, errors and packages, then goroutines and channels. It will also cover the standard library, testing and how to build and ship a small service.",
+      levels: [],
+    },
+    {
       id: "node",
+      category: "backend",
       name: "Node.js",
       mark: "No",
       accent: "mint",
@@ -2451,6 +2537,7 @@ export const topics: TopicsData = {
     },
     {
       id: "git",
+      category: "engineering",
       name: "Git",
       mark: "⑂",
       accent: "yellow",
@@ -2472,7 +2559,8 @@ export const topics: TopicsData = {
     },
     {
       id: "dsa",
-      name: "DSA in JS",
+      category: "cs",
+      name: "DSA",
       mark: "Σ",
       accent: "ink",
       tagline: "Patterns, not puzzle answers",
@@ -2714,6 +2802,7 @@ export const topics: TopicsData = {
     },
     {
       id: "docker",
+      category: "devops",
       name: "Docker",
       mark: "🐳",
       accent: "ink",
@@ -2893,6 +2982,7 @@ export const topics: TopicsData = {
     },
     {
       id: "databases",
+      category: "data",
       name: "SQL & Databases",
       mark: "DB",
       accent: "mint",
@@ -3085,7 +3175,34 @@ export const topics: TopicsData = {
       ],
     },
     {
+      id: "mongodb",
+      category: "data",
+      name: "MongoDB",
+      mark: "Mg",
+      accent: "green",
+      tagline: "Documents instead of rows",
+      status: "ready",
+      notes: "mongodb.html",
+      blurb:
+        "The document model, CRUD and querying, indexes and the aggregation pipeline. It will also cover schema design for documents, replication and sharding, and when a document store is the wrong choice.",
+      levels: [],
+    },
+    {
+      id: "dbms",
+      category: "data",
+      name: "DBMS",
+      mark: "DM",
+      accent: "purple",
+      tagline: "How a database works underneath",
+      status: "ready",
+      notes: "dbms.html",
+      blurb:
+        "The relational model, normalisation, transactions and the ACID guarantees, and how the engine stores and finds data. It will also cover isolation levels, locking and recovery, the theory behind every database on this shelf.",
+      levels: [],
+    },
+    {
       id: "system-design",
+      category: "cs",
       name: "System Design",
       mark: "SD",
       accent: "yellow",
@@ -3274,7 +3391,34 @@ export const topics: TopicsData = {
       ],
     },
     {
+      id: "networks",
+      category: "cs",
+      name: "Computer Networks",
+      mark: "Net",
+      accent: "teal",
+      tagline: "From a cable to a web request",
+      status: "ready",
+      notes: "networks.html",
+      blurb:
+        "The layers from the link up to the application, how IP addressing and routing move packets, and how TCP and UDP differ. It will also cover DNS, HTTP and TLS, so a request to a web page can be followed end to end.",
+      levels: [],
+    },
+    {
+      id: "os",
+      category: "cs",
+      name: "Operating Systems",
+      mark: "OS",
+      accent: "ink",
+      tagline: "What runs underneath your program",
+      status: "ready",
+      notes: "os.html",
+      blurb:
+        "Processes and threads, scheduling, memory management and virtual memory, and how files and devices are handled. It will also cover concurrency primitives and deadlocks, which is where interview questions on this subject concentrate.",
+      levels: [],
+    },
+    {
       id: "testing",
+      category: "engineering",
       name: "Testing",
       mark: "✓",
       accent: "mint",
@@ -3464,6 +3608,7 @@ export const topics: TopicsData = {
     },
     {
       id: "security",
+      category: "engineering",
       name: "Web Security",
       mark: "🔒",
       accent: "red",
@@ -3653,6 +3798,7 @@ export const topics: TopicsData = {
     },
     {
       id: "cloud-devops",
+      category: "devops",
       name: "Cloud & DevOps",
       mark: "☁",
       accent: "blue",
@@ -3842,6 +3988,7 @@ export const topics: TopicsData = {
     },
     {
       id: "graphql",
+      category: "backend",
       name: "GraphQL",
       mark: "◈",
       accent: "ink",
@@ -4021,6 +4168,7 @@ export const topics: TopicsData = {
     },
     {
       id: "redis",
+      category: "data",
       name: "Redis",
       mark: "◆",
       accent: "red",
@@ -4195,6 +4343,7 @@ export const topics: TopicsData = {
     },
     {
       id: "kubernetes",
+      category: "devops",
       name: "Kubernetes",
       mark: "☸",
       accent: "mint",
@@ -4381,6 +4530,19 @@ export const topics: TopicsData = {
           ],
         },
       ],
+    },
+    {
+      id: "ai",
+      category: "ai",
+      name: "Claude & AI tools",
+      mark: "AI",
+      accent: "purple",
+      tagline: "Working with models, not just prompting",
+      status: "ready",
+      notes: "ai.html",
+      blurb:
+        "How large language models are used in real software: prompting, tool use, retrieval and agents, and what to check before trusting their output. It will also cover Claude and the tools built around it for writing, reviewing and testing code.",
+      levels: [],
     },
   ],
 };

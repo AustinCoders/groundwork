@@ -15,9 +15,9 @@ export const archHealth: Chapter = {
 <thead><tr><th>Check</th><th>Result, latest CI run on <code>main</code></th></tr></thead>
 <tbody>
 <tr><td>TypeScript, ESLint, Prettier, cspell</td><td><span class="chip tone-yes">clean</span></td></tr>
-<tr><td>Vitest</td><td><span class="chip tone-yes">307 of 307</span></td></tr>
-<tr><td>Build</td><td><span class="chip tone-yes">1,746 static pages</span></td></tr>
-<tr><td>Playwright, 4 specs</td><td><span class="chip tone-yes">188 of 188</span></td></tr>
+<tr><td>Vitest</td><td><span class="chip tone-yes">367 of 367</span></td></tr>
+<tr><td>Build</td><td><span class="chip tone-yes">1,795 prerendered routes</span></td></tr>
+<tr><td>Playwright, 4 specs</td><td><span class="chip tone-yes">204 of 204</span></td></tr>
 <tr><td>Lighthouse budgets, 3 URLs, 3 runs each</td><td><span class="chip tone-yes">pass</span></td></tr>
 <tr><td><code>TODO</code>, <code>FIXME</code>, <code>HACK</code> in source</td><td><span class="chip tone-yes">0</span></td></tr>
 <tr><td><code>npm audit</code>, production dependencies</td><td><span class="chip tone-bad">1 critical, 1 high</span></td></tr>
@@ -60,20 +60,20 @@ export const archHealth: Chapter = {
 
 <h3>2. A few files carry most of the weight</h3>
 <p>
-  Line counts from <code>wc -l</code> as of 30 September 2026, for source outside
+  Line counts from <code>wc -l</code> as of 8 October 2026, for source outside
   <code>content/</code> and for the two largest content files:
 </p>
 
 <figure>
-<svg viewBox="0 0 900 350" class="dg" role="img" aria-label="Bar chart of the largest files by line count, as of 30 September 2026: app/globals.css 7,922; content/interview-data.ts 4,734; content/topics.ts 4,394; mock/mock.module.css 3,314; app/home.module.css 2,455; whiteboard/Board.tsx 1,852; PracticeWorkspace.tsx 1,735; interview/book.module.css 1,614.">
+<svg viewBox="0 0 900 350" class="dg" role="img" aria-label="Bar chart of the largest files by line count, as of 8 October 2026: app/globals.css 7,853; content/interview-data.ts 4,745; content/topics.ts 4,556; mock/mock.module.css 3,322; app/home.module.css 2,675; whiteboard/Board.tsx 1,852; PracticeWorkspace.tsx 1,752; interview/book.module.css 1,614.">
 <g class="rough">
 <rect x="245" y="24" width="396" height="22" rx="4" style="fill: var(--dg-box-red); stroke: var(--red); stroke-width: 1.6" />
-<rect x="245" y="62" width="237" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
-<rect x="245" y="100" width="220" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
-<rect x="245" y="138" width="166" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
-<rect x="245" y="176" width="123" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="62" width="239" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
+<rect x="245" y="100" width="230" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
+<rect x="245" y="138" width="168" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="176" width="135" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <rect x="245" y="214" width="93" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
-<rect x="245" y="252" width="87" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="252" width="88" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <rect x="245" y="290" width="81" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <path class="ln" d="M245 16 V320" />
 </g>
@@ -85,15 +85,15 @@ export const archHealth: Chapter = {
 <text class="lbl" x="232" y="231" text-anchor="end">whiteboard/Board.tsx</text>
 <text class="lbl" x="232" y="269" text-anchor="end">PracticeWorkspace.tsx</text>
 <text class="lbl" x="232" y="307" text-anchor="end">interview/book.module.css</text>
-<text class="sm" x="651" y="40">7,922</text>
-<text class="sm" x="492" y="78">4,734</text>
-<text class="sm" x="475" y="116">4,394</text>
-<text class="sm" x="421" y="154">3,314</text>
-<text class="sm" x="378" y="192">2,455</text>
+<text class="sm" x="651" y="40">7,853</text>
+<text class="sm" x="494" y="78">4,745</text>
+<text class="sm" x="485" y="116">4,556</text>
+<text class="sm" x="423" y="154">3,322</text>
+<text class="sm" x="390" y="192">2,675</text>
 <text class="sm" x="348" y="230">1,852</text>
-<text class="sm" x="342" y="268">1,735</text>
+<text class="sm" x="343" y="268">1,752</text>
 <text class="sm" x="336" y="306">1,614</text>
-<text class="sm" x="245" y="340">lines as of 30 September 2026, one bar length per line count</text>
+<text class="sm" x="245" y="340">lines as of 8 October 2026, one bar length per line count</text>
 </svg>
 <figcaption>
   One stylesheet is still the longest file, about two thirds longer than the next. The two yellow bars are content,
@@ -113,15 +113,15 @@ export const archHealth: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Component</th><th>Lines</th><th><code>useState</code></th><th><code>useEffect</code></th><th><code>useRef</code></th></tr></thead>
 <tbody>
-<tr><td><code>app/whiteboard/Board.tsx</code></td><td>1,851</td><td>24</td><td>15</td><td>24</td></tr>
-<tr><td><code>components/practice/PracticeWorkspace.tsx</code></td><td>1,735</td><td>26</td><td>8</td><td>12</td></tr>
-<tr><td><code>components/practice/CodeEditor.tsx</code></td><td>1,112</td><td>22</td><td>8</td><td>13</td></tr>
+<tr><td><code>app/whiteboard/Board.tsx</code></td><td>1,852</td><td>24</td><td>15</td><td>24</td></tr>
+<tr><td><code>components/practice/PracticeWorkspace.tsx</code></td><td>1,752</td><td>26</td><td>8</td><td>14</td></tr>
+<tr><td><code>components/practice/CodeEditor.tsx</code></td><td>1,118</td><td>22</td><td>8</td><td>13</td></tr>
 </tbody>
 </table></div>
 <p>
   None of them has a unit test. Only the Playwright suites cover them, which catch breakage but
   make a refactor slow to verify. The pure parts have already been pulled out and are
-  tested: <code>lib/whiteboard/model.ts</code> is 659 lines under 17 tests. The next useful split is
+  tested: <code>lib/whiteboard/model.ts</code> is 695 lines under 17 tests. The next useful split is
   the same move for the playground's file and run state.
 </p>
 
@@ -139,7 +139,7 @@ export const archHealth: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Where</th><th>Says</th><th>Is</th></tr></thead>
 <tbody>
-<tr><td><code>docs/ROADMAP.md</code></td><td>602 prerendered pages</td><td>1,746 static pages in the latest build</td></tr>
+<tr><td><code>docs/ROADMAP.md</code></td><td>602 prerendered pages</td><td>1,795 prerendered routes in a local build</td></tr>
 <tr><td><code>docs/ROADMAP.md</code>, section 6</td><td>A weekly cleanup keeping 5 and 5, with 24 hours of grace</td><td>Daily, keeping 3 and 2, with 6 hours</td></tr>
 <tr><td><code>docs/ROADMAP.md</code>, section 6</td><td><code>public/wasm/</code> is 18 MB</td><td>1.4 MB; the runtimes come from jsDelivr</td></tr>
 <tr><td><code>docs/ROADMAP.md</code>, section 7</td><td>No error service; <code>/git</code> shows crawlers 42 characters</td><td>Sentry is wired behind a DSN; <code>/git</code> renders its body on the server</td></tr>

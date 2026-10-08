@@ -1190,7 +1190,18 @@ test("the git guide has a chapter per section and old anchors still land", async
 test("the home page reads as a landing page and every path leads somewhere real", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("jsnotes:theme", JSON.stringify("lavender")));
   await page.goto("/");
-  for (const name of [/Read it. Run it/, /a path that starts there/i, /Ready to read today/, /Before you start/]) {
+  await expect(page.getByRole("heading", { level: 1 })).not.toContainText("Understand JavaScript properly");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Walk into the interview ready.");
+  await expect(page.getByRole("link", { name: /Start with JavaScript/ })).toHaveCount(0);
+  await expect(page.locator(".brand__mark").first()).toHaveText("G");
+  await expect(page.getByRole("link", { name: /Pick a topic/ }).first()).toHaveAttribute("href", "#shelf");
+  await expect(
+    page
+      .locator("#shelf")
+      .getByRole("link", { name: /JavaScript/ })
+      .first()
+  ).toBeVisible();
+  for (const name of [/Read it. Run it/, /a path that starts there/i, /Pick a topic/, /Before you start/]) {
     await expect(page.getByRole("heading", { level: 2, name })).toBeVisible();
   }
   const faq = page.locator("details", { hasText: "Do I need to sign up?" });
@@ -1252,6 +1263,230 @@ test("the privacy page is indexed, framed, and linked from the menu, the home pa
     "href",
     "/privacy"
   );
+});
+
+test("the sidebar groups topics into one-at-a-time category sections, with coming-soon topics after the ready ones", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  const menu = page.getByRole("dialog", { name: /menu/ });
+  await menu.getByRole("button", { name: /Topics/ }).click();
+  const topics = menu.getByRole("navigation", { name: "Topics" });
+  const heads = topics.getByRole("heading", { level: 3 }).getByRole("button");
+  await expect(heads).toHaveCount(8);
+  const labels = ["Languages", "Web", "Backend and APIs", "Data", "Computer science", "DevOps and cloud"];
+  for (const label of [...labels, "Engineering practice", "AI"]) {
+    await expect(topics.getByRole("button", { name: new RegExp(`^${label} · \\d+$`) })).toBeVisible();
+  }
+
+  const languagesHead = topics.getByRole("button", { name: /^Languages · \d+$/ });
+  const webHead = topics.getByRole("button", { name: /^Web · \d+$/ });
+  await expect(languagesHead).toHaveAttribute("aria-expanded", "true");
+  await expect(heads.and(page.locator("[aria-expanded=true]"))).toHaveCount(1);
+  await expect(webHead).toHaveAttribute("aria-expanded", "false");
+  await expect(topics.getByRole("link", { name: /Python/ })).toContainText("Soon");
+
+  const languages = topics.getByRole("region", { name: /^Languages/ });
+  await expect(languages.getByRole("link", { name: /^JavaScript/ })).toContainText("chapters");
+  const flat = (await languages.getByRole("link").allInnerTexts()).map((text) => text.replace(/\s+/g, " "));
+  expect(flat.findIndex((text) => text.includes("JavaScript"))).toBeLessThan(
+    flat.findIndex((text) => text.includes("Python"))
+  );
+
+  await webHead.focus();
+  await page.keyboard.press("Enter");
+  await expect(webHead).toHaveAttribute("aria-expanded", "true");
+  await expect(languagesHead).toHaveAttribute("aria-expanded", "false");
+  await expect(topics.getByRole("link", { name: /Python/ })).toHaveCount(0);
+  await expect(topics.getByRole("link", { name: /^React/ })).toBeVisible();
+  await expect(heads.and(page.locator("[aria-expanded=true]"))).toHaveCount(1);
+
+  await webHead.click();
+  await expect(webHead).toHaveAttribute("aria-expanded", "false");
+  await expect(heads.and(page.locator("[aria-expanded=true]"))).toHaveCount(0);
+
+  await topics.getByRole("button", { name: /^Computer science · \d+$/ }).click();
+  await expect(topics.getByRole("link", { name: /^DSA/ })).toBeVisible();
+  await expect(topics.getByText("DSA in JS")).toHaveCount(0);
+
+  await menu.getByRole("searchbox").fill("rust");
+  await expect(menu.getByRole("link", { name: /Rust/ })).toBeVisible();
+  await expect(menu.getByRole("link", { name: /Rust/ })).toContainText("Soon");
+});
+
+test("the sidebar opens the category of the topic you are reading", async ({ page }) => {
+  await page.goto("/dsa");
+  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  const menu = page.getByRole("dialog", { name: /menu/ });
+  await menu.getByRole("button", { name: /Topics/ }).click();
+  const topics = menu.getByRole("navigation", { name: "Topics" });
+  await expect(topics.getByRole("button", { name: /^Computer science · \d+$/ })).toHaveAttribute(
+    "aria-expanded",
+    "true"
+  );
+  await expect(topics.getByRole("button", { name: /^Languages · \d+$/ })).toHaveAttribute("aria-expanded", "false");
+  await expect(topics.locator("a[aria-current=page]")).toContainText("DSA");
+});
+
+test("the sidebar fits a 390px screen with every category listed", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 800 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  const menu = page.getByRole("dialog", { name: /menu/ });
+  await menu.getByRole("button", { name: /Topics/ }).click();
+  const topics = menu.getByRole("navigation", { name: "Topics" });
+  await expect(topics.getByRole("link", { name: /Python/ })).toBeVisible();
+  await topics.getByRole("button", { name: /^AI · \d+$/ }).click();
+  await expect(topics.getByRole("link", { name: /Claude/ })).toBeVisible();
+  const overflow = await menu.evaluate((el) => el.scrollWidth - el.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+});
+
+test("the home topic section opens on Ready now and lists categories you can move through with the arrow keys", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const shelf = page.locator("#shelf");
+  const tabs = shelf.getByRole("tablist", { name: "Topics" });
+  await expect(tabs.getByRole("tab")).toHaveCount(9);
+  const ready = tabs.getByRole("tab", { name: /^Ready now/ });
+  await expect(ready).toHaveAttribute("aria-selected", "true");
+  await expect(ready).toHaveAttribute("tabindex", "0");
+  await expect(tabs.getByRole("tab", { name: /^Languages/ })).toHaveAttribute("tabindex", "-1");
+  await expect(tabs).toHaveAttribute("aria-orientation", "vertical");
+
+  const panel = shelf.getByRole("tabpanel");
+  for (const name of ["JavaScript", "React", "Git", "DSA", "System Design", "Interview book"]) {
+    await expect(panel.getByRole("link", { name: new RegExp(`^${name}`) }), name).toBeVisible();
+  }
+  await expect(panel.getByRole("link", { name: /^JavaScript/ })).toContainText(/exercises/);
+  await expect(panel.getByRole("link", { name: /Python/ })).toHaveCount(0);
+
+  await tabs.getByRole("tab", { name: /^Languages/ }).click();
+  await expect(tabs.getByRole("tab", { name: /^Languages/ })).toHaveAttribute("aria-selected", "true");
+  const python = panel.getByRole("link", { name: /^Python/ });
+  await expect(python).toContainText("Coming soon");
+  await expect(panel.getByRole("link", { name: /^JavaScript/ })).toContainText(/\d+ chapters/);
+
+  await page.keyboard.press("ArrowDown");
+  await expect(tabs.getByRole("tab", { name: /^Web/ })).toBeFocused();
+  await expect(tabs.getByRole("tab", { name: /^Web/ })).toHaveAttribute("aria-selected", "true");
+  await expect(panel.getByRole("link", { name: /^React/ })).toBeVisible();
+  await page.keyboard.press("End");
+  await expect(tabs.getByRole("tab", { name: /^AI/ })).toBeFocused();
+  await page.keyboard.press("ArrowDown");
+  await expect(ready).toBeFocused();
+  await expect(ready).toHaveAttribute("aria-selected", "true");
+  await page.keyboard.press("ArrowUp");
+  await expect(tabs.getByRole("tab", { name: /^AI/ })).toBeFocused();
+  await page.keyboard.press("Home");
+  await expect(ready).toBeFocused();
+});
+
+test("a coming-soon card on the home page links to its outline page", async ({ page }) => {
+  await page.goto("/");
+  await page
+    .locator("#shelf")
+    .getByRole("tab", { name: /^Languages/ })
+    .click();
+  const python = page
+    .locator("#shelf")
+    .getByRole("tabpanel")
+    .getByRole("link", { name: /^Python/ });
+  await expect(python).toHaveAttribute("href", "/python");
+  await python.click();
+  await page.waitForURL("**/python");
+  await expect(page.getByRole("heading", { level: 2, name: "Being planned" })).toBeVisible();
+});
+
+test("the home category list scrolls inside its own row at 390px without scrolling the page", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const list = page.locator("#shelf").getByRole("tablist", { name: "Topics" });
+  await list.scrollIntoViewIfNeeded();
+  expect(await list.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+  await page.locator("#shelf").getByRole("tab", { name: /^AI/ }).click();
+  await expect(
+    page
+      .locator("#shelf")
+      .getByRole("tabpanel")
+      .getByRole("link", { name: /Claude/ })
+  ).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+  await page
+    .locator("#shelf")
+    .getByRole("tab", { name: /^Ready now/ })
+    .click();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+});
+
+test("a topic that is only being planned shows an outline with no syllabus, not a 404", async ({ page }) => {
+  for (const [path, name] of [
+    ["/python", "Python"],
+    ["/networks", "Computer Networks"],
+    ["/ai", "Claude & AI tools"],
+  ]) {
+    const response = await page.goto(path);
+    expect(response?.status(), path).toBe(200);
+    await expect(page.getByRole("heading", { level: 1 }), path).toHaveText(name);
+    await expect(page.getByRole("heading", { level: 2, name: "Being planned" }), path).toBeVisible();
+    await expect(page.getByRole("heading", { name: /^Beginner$/ }), path).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: /closures|event loop/i }), path).toHaveCount(0);
+    await expect(page.getByText("Three honest notes"), path).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Switch topic" }), path).toHaveAttribute("href", "/");
+    await expect(page.locator('meta[name="robots"][content*="noindex"]'), path).toHaveCount(1);
+  }
+
+  const sitemap = await page.request.get("/sitemap.xml");
+  const xml = await sitemap.text();
+  for (const id of ["python", "java", "cpp", "rust", "ruby", "go", "mongodb", "dbms", "networks", "os", "ai"]) {
+    expect(xml, `${id} must stay out of the sitemap`).not.toMatch(new RegExp(`/${id}</loc>`));
+  }
+});
+
+test("a planning cover points at a written neighbour, or says nothing", async ({ page }) => {
+  for (const [path, label] of [
+    ["/python", "DSA"],
+    ["/java", "DSA"],
+    ["/cpp", "DSA"],
+    ["/mongodb", "System Design"],
+    ["/networks", "System Design"],
+  ]) {
+    await page.goto(path);
+    const meanwhile = page.getByRole("region", { name: "Meanwhile" });
+    await expect(meanwhile.getByRole("link", { name: new RegExp(`^${label} is written`) }), path).toBeVisible();
+    await expect(meanwhile.getByText(/JavaScript is written/), path).toHaveCount(0);
+  }
+  for (const path of ["/rust", "/ruby", "/go", "/ai"]) {
+    await page.goto(path);
+    await expect(page.getByRole("heading", { level: 2, name: "Being planned" }), path).toBeVisible();
+    await expect(page.getByRole("region", { name: "Meanwhile" }), path).toHaveCount(0);
+  }
+});
+
+test("the home page ships every topic panel in its HTML, so coming-soon links exist without JavaScript", async ({
+  page,
+}) => {
+  const html = await (await page.request.get("/")).text();
+  for (const id of ["python", "rust", "networks", "ai"]) {
+    expect(html, `/${id} is missing from the home HTML`).toContain(`href="/${id}"`);
+  }
+  await page.goto("/");
+  const tabs = page.locator("#shelf").getByRole("tablist", { name: "Topics" });
+  for (const tab of await tabs.getByRole("tab").all()) {
+    const panelId = await tab.getAttribute("aria-controls");
+    expect(await page.locator(`#${panelId}`).count()).toBe(1);
+  }
+  await expect(page.locator("#shelf").getByRole("tabpanel")).toHaveCount(1);
+});
+
+test("the DSA topic is called DSA on its cover", async ({ page }) => {
+  await page.goto("/dsa");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("DSA");
+  await expect(page.getByRole("heading", { level: 1 })).not.toContainText("in JS");
+  await expect(page).toHaveTitle(/^DSA/);
 });
 
 test("the interview book hides answers in practice mode, remembers marks and drills them", async ({ page }) => {
@@ -1331,7 +1566,7 @@ test("review brings a due chapter back, and every section header has a way back"
 });
 
 test("the home page's primary action takes each theme's accent", async ({ page }) => {
-  const start = page.getByRole("link", { name: /Start with JavaScript/ }).first();
+  const start = page.getByRole("link", { name: /Pick a topic/ }).first();
   await page.goto("/");
   await expect(start).toHaveCSS("background-color", themeColour("light", "--primary"));
 

@@ -17,6 +17,8 @@ export interface Level {
   syllabus: SyllabusSection[];
 }
 
+export type TopicCategoryId = "languages" | "web" | "backend" | "data" | "cs" | "devops" | "engineering" | "ai";
+
 export interface Topic {
   id: string;
   name: string;
@@ -26,6 +28,7 @@ export interface Topic {
   status: "ready" | "soon";
   notes: string | null;
   blurb: string;
+  category?: TopicCategoryId;
 
   curriculumNotes?: string[] | null;
   levels?: Level[] | null;
@@ -41,6 +44,7 @@ export interface TopicNav {
   status: "ready" | "soon";
   notes: string | null;
   blurb: string;
+  category: TopicCategoryId | null;
   levelIds: LevelId[] | null;
   written: number;
 }
