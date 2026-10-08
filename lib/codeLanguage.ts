@@ -44,7 +44,7 @@ function read(): CodeLanguage {
 function subscribe(fn: () => void): () => void {
   listeners.add(fn);
   const onStorage = (e: StorageEvent) => {
-    if (e.key !== KEY) return;
+    if (e.key !== null && e.key !== KEY) return;
     unsaved = null;
     fn();
   };

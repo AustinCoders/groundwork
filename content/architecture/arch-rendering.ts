@@ -15,7 +15,7 @@ export const archRendering: Chapter = {
   A component is a server component unless it needs something only a browser has: state, an effect,
   an event handler, <code>localStorage</code>, or a measurement. Adding <code>"use client"</code> has
   a cost, because everything the file imports is bundled and shipped. Across <code>app/</code>,
-  <code>components/</code> and <code>lib/</code>, 81 files carry the directive. About a third belong
+  <code>components/</code> and <code>lib/</code>, 85 files carry the directive. About a third belong
   to the three big interactive surfaces: the playground, the whiteboard and the mock interview.
 </p>
 
@@ -145,11 +145,14 @@ export const archRendering: Chapter = {
   The questions behind a chapter check are data, kept apart from the chapter. <code>content/quiz-types.ts</code> holds only types: a <code>Question</code> that is a <code>single</code>, <code>multi</code>, <code>order</code> or <code>predict</code>, each tagged with its chapter, level, skill, pattern and the heading that teaches it, and a <code>PatternRecord</code> with a chapter's signals, template, time, space and interview styles. <code>lib/quiz.ts</code> holds the fixed vocabularies of patterns, skills and interview styles and the pure helpers that report problems in a pool, so a client component may import it. Each chapter's questions sit in their own file under <code>content/dsa/quiz/</code>, and <code>lib/quizPool.ts</code> keeps, like the play registry, one dynamic <code>import()</code> per chapter id behind <code>loadPool</code>, which gives <code>null</code> for an id it does not know. Nothing else imports the pool files, so a chapter page can load its own questions without carrying any other chapter's. <code>tests/dsa-quiz.test.ts</code> runs the helpers over every pool the registry lists, and each helper has a bad fixture that proves it fails.
 </p>
 <p>
-  A topic whose <code>completion</code> is <code>"quiz"</code> gets a second server-rendered island,
+  The check itself is plain logic and one store. <code>lib/checkDraw.ts</code> draws five questions with at least one trace and one recognise or complexity question, prefers questions the last draw did not hold so a retry differs whenever the pool allows, grades each kind exactly (a multi answer needs the exact set and an order answer the exact sequence) and passes at four of five. <code>lib/quizRecord.ts</code> holds the record transitions and <code>checkStatus</code>, which derives passed, not checked, read before checks or unread from the read mark and the record, so unmarking cannot leave a stale checked. <code>lib/quizStore.ts</code> keeps the records in <code>groundwork:quiz</code>, following the code-language store. A pass marks the chapter read through <code>progress.setChapterDone</code>, only when it is not already read, so a Check yourself pass on an old mark keeps that mark and its review clock. Marking a chapter unread from the reader, the cover or the path also clears its pass and not-checked flag but keeps its attempts, and Reset my progress clears the store. The runner stops the reader's plain-key shortcuts from reaching the page while focus is inside the check.
+</p>
+<p>
+  A topic whose <code>completion</code> is <code>"quiz"</code> gets a second island,
   <code>CheckIsland</code>, with <code>id="check"</code>, between the practice strip and the end card of
-  each written chapter. In that topic, while a chapter is unread, the end card's and the contents
+  each written chapter. It is an async server component: <code>topicPages.tsx</code> builds it, because <code>TopicReader</code> is a client component and cannot render one, and passes it in as a <code>check</code> node the same way as the play islands. <code>CheckIsland</code> calls <code>loadPool</code> and hands only that chapter's questions to the client <code>CheckRunner</code>, which draws nothing until the reader presses Start, so the cached server HTML holds only the start card. A chapter with no pool gets a sentence that its check is not written yet and a Mark as read button. In that topic, while a chapter with a check is unread, the end card's and the contents
   card's Mark as read are links to it, and so are the ticks on the cover cards and the path steps,
-  which point at the chapter's page. A chapter that is already read keeps its toggle button. The <a href="/architecture/arch-state">state chapter</a> explains the policy behind that.
+  which point at the chapter's page. The server pages pass the ids of the chapters that have a pool to the reader, the cover and the path as a plain list, because <code>lib/completion.ts</code> returns no link for a chapter with no check, which keeps its ordinary read toggle. A chapter that is already read keeps its toggle button. The <a href="/architecture/arch-state">state chapter</a> explains the policy behind that.
 </p>
 <p>
   The root layout works the same way. It computes the topic list, with each topic's written count, and the guides'

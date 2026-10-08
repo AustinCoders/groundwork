@@ -6,8 +6,9 @@ import { TopicFrame } from "@/components/topic/TopicFrame";
 import { accentVar } from "@/lib/accent";
 import { formatSpan, plural } from "@/lib/format";
 import { problemHref } from "@/lib/problemHref";
+import { quizStore } from "@/lib/quizStore";
 import { progress, rememberLevel } from "@/lib/storage";
-import { nextChapter, tickHref } from "@/lib/completion";
+import { nextChapter, requiresCheck, tickHref } from "@/lib/completion";
 import { useMounted, useProgressValue } from "@/lib/hooks";
 import type { LevelRow } from "@/lib/levelRows";
 import type { Level, Topic } from "@/content/types";
@@ -28,6 +29,7 @@ export function TopicPath({
   entries,
   chapterExercises,
   levelExerciseList,
+  checkChapterIds,
 }: {
   topic: Topic;
   level: Level;
@@ -35,6 +37,7 @@ export function TopicPath({
   entries: LevelRow[];
   chapterExercises: Record<string, ExerciseLink[]>;
   levelExerciseList: ExerciseLink[];
+  checkChapterIds?: string[];
 }) {
   const mounted = useMounted();
 
@@ -166,7 +169,14 @@ export function TopicPath({
             const chapterExerciseList = chapterExercises[chapter.id] ?? [];
             const chapterDone = mounted && done.has(chapter.id);
             const checkClass = chapterDone ? `${styles.stepCheck} ${styles.stepCheckOn}` : styles.stepCheck;
-            const stepTick = tickHref(topic.completion, basePath, chapter.id, false, chapterDone);
+            const stepTick = tickHref(
+              topic.completion,
+              basePath,
+              chapter.id,
+              false,
+              chapterDone,
+              (checkChapterIds ?? []).includes(chapter.id)
+            );
             const checkBody = (
               <>
                 <span className={styles.stepCheckMark} data-role="check-mark" aria-hidden="true">
@@ -216,7 +226,10 @@ export function TopicPath({
                           type="button"
                           className={checkClass}
                           aria-pressed={chapterDone}
-                          onClick={() => progress.setChapterDone(chapter.id, !chapterDone)}
+                          onClick={() => {
+                            if (chapterDone && requiresCheck(topic.completion)) quizStore.unmark(chapter.id);
+                            progress.setChapterDone(chapter.id, !chapterDone);
+                          }}
                         >
                           {checkBody}
                         </button>
@@ -283,7 +296,7 @@ export function TopicPath({
           <Link href="/">All topics</Link>
           <Link href={basePath}>{topic.name} notes</Link>
           <div className={styles.resetRow}>
-            <p className={styles.resetNote}>Clears every chapter and exercise on this device.</p>
+            <p className={styles.resetNote}>Clears every chapter, exercise and chapter check on this device.</p>
             <button
               type="button"
               className="btn"
@@ -291,6 +304,7 @@ export function TopicPath({
               onClick={() => {
                 if (!window.confirm("Clear every tick and solved exercise on this device?")) return;
                 progress.reset();
+                quizStore.clear();
               }}
             >
               Reset my progress

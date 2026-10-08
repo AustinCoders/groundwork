@@ -1,5 +1,15 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import {
+  CHAPTER_PATH,
+  answer,
+  answerFive,
+  checkAnswer,
+  currentQuestion,
+  island,
+  startCheck,
+  startOnOrderQuestion,
+} from "./check";
 import { THEMES } from "./themes";
 import type { ThemeValue } from "../lib/storage";
 
@@ -104,6 +114,80 @@ const STATES: State[] = [
       await page.keyboard.press("End");
       await expect(player.getByRole("status")).toContainText("returns index 6");
       await check("the last step");
+    },
+  },
+  {
+    name: "the chapter check's start card",
+    path: CHAPTER_PATH,
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await island(page).scrollIntoViewIfNeeded();
+      await expect(island(page).getByRole("button", { name: "Start the check" })).toBeVisible();
+      await check("the start card");
+    },
+  },
+  {
+    name: "a chapter read before checks",
+    path: CHAPTER_PATH,
+    viewports: VIEWPORTS,
+    seed: () => {
+      localStorage.setItem(
+        "jsnotes:progress",
+        JSON.stringify({ chapters: { "dsa-binary-search": { at: Date.now(), reviews: 0 } }, exercises: {} })
+      );
+    },
+    visit: async (page, check) => {
+      await island(page).scrollIntoViewIfNeeded();
+      await expect(island(page).getByText("Read before checks", { exact: true })).toBeVisible();
+      await check("the read before checks card");
+    },
+  },
+  {
+    name: "a chapter check answer explained",
+    path: CHAPTER_PATH,
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await startCheck(page);
+      await check("a question asked");
+      const question = await currentQuestion(page);
+      await answer(page, question, "wrong");
+      await check("a choice picked");
+      await checkAnswer(page, "wrong");
+      await check("an answer explained");
+    },
+  },
+  {
+    name: "the chapter check's miss screen",
+    path: CHAPTER_PATH,
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await startCheck(page);
+      await answerFive(page, () => "wrong");
+      await expect(island(page).getByRole("heading", { name: "Not yet" })).toBeVisible();
+      await check("the miss screen");
+    },
+  },
+  {
+    name: "the chapter check's pass screen",
+    path: CHAPTER_PATH,
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await startCheck(page);
+      await answerFive(page, () => "right");
+      await expect(island(page).getByRole("heading", { name: "Passed" })).toBeVisible();
+      await check("the pass screen");
+    },
+  },
+  {
+    name: "an order question in the chapter check",
+    path: CHAPTER_PATH,
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const question = await startOnOrderQuestion(page);
+      await check("an order question asked");
+      await answer(page, question, "right");
+      await checkAnswer(page, "right");
+      await check("an order question checked");
     },
   },
   {

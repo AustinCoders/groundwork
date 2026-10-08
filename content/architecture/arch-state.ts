@@ -9,7 +9,7 @@ export const archState: Chapter = {
   practice: [],
   ready: true,
   subtitle:
-    "Thirty-one localStorage keys, two sessionStorage keys, a query string and a URL hash. There are no accounts, no cookies and no database.",
+    "Thirty-two localStorage keys, two sessionStorage keys, a query string and a URL hash. There are no accounts, no cookies and no database.",
   body: `<h3>Everything is in the browser</h3>
 <p>
   This site keeps nothing about its readers on a server. No file under <code>app/</code> uses
@@ -59,7 +59,7 @@ export const archState: Chapter = {
 <text class="lbl" x="545" y="348" text-anchor="middle">Share links</text>
 <text class="sm" x="545" y="368" text-anchor="middle">#share= and #board=</text>
 <text class="lbl" x="792" y="68" text-anchor="middle">localStorage</text>
-<text class="sm" x="792" y="90" text-anchor="middle">31 keys or prefixes</text>
+<text class="sm" x="792" y="90" text-anchor="middle">32 keys or prefixes</text>
 <text class="sm" x="792" y="108" text-anchor="middle">one origin, one device</text>
 <text class="lbl" x="792" y="196" text-anchor="middle">sessionStorage</text>
 <text class="sm" x="792" y="216" text-anchor="middle">2 keys, one tab</text>
@@ -96,7 +96,7 @@ export const archState: Chapter = {
 </tbody>
 </table></div>
 
-<h3>The other twenty-two</h3>
+<h3>The other twenty-three</h3>
 <p>
   As features were added, each kept its own keys next to its own code. Newer ones use a
   <code>groundwork:</code> prefix. Most still go through <code>store</code>. The whiteboard has its
@@ -112,6 +112,7 @@ export const archState: Chapter = {
 <tr><td>Playground</td><td><code>groundwork:playground:project</code> (every open file), <code>groundwork:playground:runs</code> (the last 15 runs), <code>groundwork:playground:stdin</code></td></tr>
 <tr><td>Whiteboard</td><td><code>groundwork:boards</code> (the index), <code>groundwork:board:{id}</code> (one per board), <code>groundwork:boards:last</code>, <code>groundwork:boards:prefs</code></td></tr>
 <tr><td>DSA chapter code</td><td><code>groundwork:dsa:lang</code> (versioned: <code>{ v: 1, language }</code>, one of JavaScript, Python, Java or C++, with its own store, snapshot cache and cross-tab <code>storage</code> listener; read only by a chapter that has marked code blocks)</td></tr>
+<tr><td>Chapter check</td><td><code>groundwork:quiz</code> (versioned: <code>{ v: 1, chapters }</code>, one record per chapter with its attempts, best score, last attempt time, pass time, whether it was marked read without the check, and the ids missed in the latest attempt; it has its own store, snapshot cache and cross-tab <code>storage</code> listener, and a chapter's read mark stays in <code>jsnotes:progress</code>)</td></tr>
 <tr><td>Mock interview</td><td><code>groundwork:mock:config</code>, <code>groundwork:mock:current</code> (a loop in progress), <code>groundwork:mock:history</code> (last 50), <code>groundwork:mock:retry</code> (up to 60 questions to try again)</td></tr>
 </tbody>
 </table></div>
@@ -223,7 +224,7 @@ export const archState: Chapter = {
   Progress is the state worth syncing, and all of it goes through <code>progress</code> and
   <code>activity</code> in <code>lib/storage.ts</code>. An account-backed version would replace
   those two objects' reads and writes and keep the same <code>subscribe()</code>. No component
-  would change. The other twenty-nine keys are preferences and drafts that can stay per-device.
+  would change. The other thirty keys are preferences and drafts that can stay per-device.
 </p>
 </div>`,
 };

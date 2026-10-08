@@ -1,0 +1,435 @@
+.runner {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  color: var(--ink);
+}
+
+.fieldset {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  scroll-margin-top: calc(var(--bar-h) + 20px);
+}
+
+.fieldset:focus {
+  outline: none;
+}
+
+.fieldset:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 4px;
+}
+
+.legend {
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.prompt {
+  min-width: 0;
+  overflow-x: auto;
+  font-size: 16px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.prompt > :first-child {
+  margin-top: 0;
+}
+
+.prompt > :last-child {
+  margin-bottom: 0;
+}
+
+.prompt p {
+  margin: 0 0 10px;
+}
+
+.prompt pre {
+  width: max-content;
+  min-width: calc(100% - 38px);
+  margin: 10px 0;
+  overflow: visible;
+  font-size: 13.5px;
+  line-height: 1.55;
+  overflow-wrap: normal;
+}
+
+.prompt pre::before,
+.prompt pre::after {
+  content: none;
+}
+
+.prompt code {
+  overflow-wrap: anywhere;
+}
+
+.prompt pre code {
+  overflow-wrap: normal;
+}
+
+.hint {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.choices {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.choice {
+  min-width: 0;
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+}
+
+.choice[data-state="picked"] {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+
+.choice[data-state="right"] {
+  background: var(--success-soft);
+  border: 3px double var(--success);
+}
+
+.choice[data-state="wrong"] {
+  background: var(--danger-soft);
+  border: 3px dashed var(--danger);
+}
+
+.choiceLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.choiceInput {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 2px 0 0;
+  accent-color: var(--primary);
+}
+
+.choiceText {
+  min-width: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.choiceText code,
+.why code,
+.orderText code,
+.rightOrder code {
+  overflow-wrap: anywhere;
+}
+
+.why {
+  display: grid;
+  gap: 6px;
+  padding: 0 14px 12px 46px;
+  font-size: 15px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.tags {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.orderText .tags {
+  display: block;
+  margin-top: 4px;
+}
+
+.orderList {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.orderItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px 12px;
+  padding: 10px 14px;
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+}
+
+.orderItem[data-state="right"] {
+  background: var(--success-soft);
+  border: 3px double var(--success);
+}
+
+.orderItem[data-state="wrong"] {
+  background: var(--danger-soft);
+  border: 3px dashed var(--danger);
+}
+
+.orderPosition {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--sheet-2);
+  border: 1.5px solid var(--ink-soft);
+  border-radius: 50%;
+}
+
+.orderText {
+  min-width: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.orderButtons {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.moveButton,
+.primary,
+.secondary {
+  min-height: 44px;
+  padding: 6px 16px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.moveButton,
+.secondary {
+  color: var(--ink);
+  background: var(--btn-bg);
+  border: 1.5px solid var(--ink-soft);
+}
+
+.moveButton:hover:not(:disabled),
+.secondary:hover:not(:disabled) {
+  background: var(--btn-hover);
+}
+
+.primary {
+  color: var(--on-primary);
+  background: var(--primary);
+  border: 1.5px solid var(--primary);
+}
+
+.primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.moveButton:disabled,
+.primary:disabled,
+.secondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.rightOrder {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 22px;
+}
+
+.statusBlock {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+
+.best {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.status:focus {
+  outline: none;
+}
+
+.status:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.status {
+  display: inline-block;
+  justify-self: start;
+  margin: 0;
+  padding: 4px 12px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--sheet-2);
+  border: 1.5px solid var(--ink-soft);
+  border-radius: 999px;
+}
+
+.status[data-status="passed"] {
+  background: var(--success-soft);
+  border: 3px double var(--success);
+}
+
+.text {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.text:focus {
+  outline: none;
+}
+
+.text:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.verdict {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.verdict:empty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.verdict[data-verdict="Correct"] {
+  padding-left: 12px;
+  border-left: 5px solid var(--success);
+}
+
+.verdict[data-verdict="Not quite"] {
+  padding-left: 12px;
+  border-left: 5px dashed var(--danger);
+}
+
+.resultHeading {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 28px;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.resultHeading:focus {
+  outline: none;
+}
+
+.resultHeading:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 4px;
+}
+
+.score {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.missed {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.missedItem {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px;
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+}
+
+.rightChoice {
+  margin: 0;
+}
+
+.rightWhy {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink);
+}
+
+.sectionLink {
+  justify-self: start;
+  font-weight: 600;
+  color: var(--primary);
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .why {
+    padding-left: 14px;
+  }
+
+  .actions > button {
+    flex: 1 1 100%;
+  }
+
+  .orderButtons {
+    grid-column: 1 / -1;
+  }
+}

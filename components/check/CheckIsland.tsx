@@ -1,6 +1,9 @@
+import { loadPool } from "@/lib/quizPool";
 import styles from "@/components/topic/reader.module.css";
+import { CheckRunner } from "./CheckRunner";
 
-export function CheckIsland() {
+export async function CheckIsland({ chapterId, basePath }: { chapterId: string; basePath: string }) {
+  const pool = await loadPool(chapterId);
   return (
     <section
       id="check"
@@ -11,9 +14,7 @@ export function CheckIsland() {
       tabIndex={-1}
     >
       <p className={styles.islandKicker}>Check yourself</p>
-      <p className={styles.islandText}>
-        The chapter check is not built yet, so marking a chapter done is paused here until it is.
-      </p>
+      <CheckRunner key={chapterId} chapterId={chapterId} basePath={basePath} questions={pool?.questions ?? []} />
     </section>
   );
 }

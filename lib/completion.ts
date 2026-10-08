@@ -11,9 +11,10 @@ export function tickHref(
   basePath: string,
   chapterId: string,
   here = false,
-  done = false
+  done = false,
+  hasCheck = true
 ): string | null {
-  if (!requiresCheck(completion) || done) return null;
+  if (!requiresCheck(completion) || done || !hasCheck) return null;
   return here ? "#check" : `${basePath}/${chapterId}#check`;
 }
 

@@ -13,6 +13,7 @@ import {
 import { makeScrollRegions } from "@/components/reader/scrollRegions";
 import { setupNarration } from "@/components/reader/narration";
 import { PracticeStrip, type PracticeLink } from "@/components/reader/PracticeStrip";
+import { quizStore } from "@/lib/quizStore";
 import { progress, REVIEW_GAPS_DAYS } from "@/lib/storage";
 import { requiresCheck, tickHref, type Completion } from "@/lib/completion";
 import { useMounted, useProgressValue } from "@/lib/hooks";
@@ -29,7 +30,6 @@ import { useChapterKeys } from "@/components/chapter/useChapterKeys";
 import type { SeriesCard, SeriesPart, TocItem } from "@/components/chapter/types";
 import type { LevelId } from "@/content/types";
 import styles from "@/components/series/chapter.module.css";
-import { CheckIsland } from "@/components/check/CheckIsland";
 import { CodeLanguageSwitch } from "@/components/dsa/CodeLanguageSwitch";
 import type { BodySegment } from "@/lib/chapterIslands";
 import readerStyles from "./reader.module.css";
@@ -51,6 +51,8 @@ export function TopicReader({
   exercises,
   levelExerciseTotal,
   completion,
+  check,
+  checkChapterIds,
   codeBlocks,
 }: {
   topicId: string;
@@ -69,6 +71,8 @@ export function TopicReader({
   exercises: PracticeLink[];
   levelExerciseTotal: number;
   completion?: Completion;
+  check?: ReactNode;
+  checkChapterIds?: string[];
   codeBlocks?: boolean;
 }) {
   const mounted = useMounted();
@@ -93,8 +97,11 @@ export function TopicReader({
   );
   const done = useMemo(() => new Set(doneKey ? doneKey.split(",") : []), [doneKey]);
   const isDone = done.has(chapter.id);
-  const toggleRead = () => progress.setChapterDone(chapter.id, !isDone);
-  const tick = tickHref(completion, basePath, chapter.id, true, isDone);
+  const toggleRead = () => {
+    if (isDone && requiresCheck(completion)) quizStore.unmark(chapter.id);
+    progress.setChapterDone(chapter.id, !isDone);
+  };
+  const tick = tickHref(completion, basePath, chapter.id, true, isDone, (checkChapterIds ?? []).includes(chapter.id));
 
   const reviews = useProgressValue(() => {
     const mark = progress.all().chapters[chapter.id];
@@ -263,7 +270,7 @@ export function TopicReader({
                 levelTotal={levelExerciseTotal}
               />
 
-              {requiresCheck(completion) && <CheckIsland />}
+              {check}
 
               <ChapterEnd
                 num={chapter.num}

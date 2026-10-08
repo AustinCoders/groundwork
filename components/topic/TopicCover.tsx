@@ -7,8 +7,9 @@ import { HashRedirect } from "@/components/reader/HashRedirect";
 import { ChapterCard } from "@/components/chapter/ChapterCard";
 import { PartSection } from "@/components/chapter/PartSection";
 import { BUDGET_STEPS, useReadingPlan, type Station } from "@/components/topic/useReadingPlan";
+import { quizStore } from "@/lib/quizStore";
 import { progress } from "@/lib/storage";
-import { tickHref, type Completion } from "@/lib/completion";
+import { requiresCheck, tickHref, type Completion } from "@/lib/completion";
 import { formatSpan, plural } from "@/lib/format";
 import type { SeriesCard, SeriesPart } from "@/components/chapter/types";
 import type { LevelId } from "@/content/types";
@@ -32,6 +33,7 @@ export function TopicCover({
   relatedRoundLabel,
   curriculumNotes,
   completion,
+  checkChapterIds,
   aside,
 }: {
   topicId: string;
@@ -46,6 +48,7 @@ export function TopicCover({
   relatedRoundLabel: string | null;
   curriculumNotes: string[];
   completion?: Completion;
+  checkChapterIds?: string[];
   aside?: React.ReactNode;
 }) {
   const stations: Station[] = useMemo(
@@ -69,7 +72,11 @@ export function TopicCover({
   const dueCount = plan.mounted ? progress.dueForReview(plan.readable.map((s) => s.id)).length : 0;
   const totalMinutes = cards.reduce((sum, c) => sum + c.minutes, 0);
 
-  const toggleRead = (id: string) => progress.setChapterDone(id, !plan.done.has(id));
+  const toggleRead = (id: string) => {
+    const read = plan.done.has(id);
+    if (read && requiresCheck(completion)) quizStore.unmark(id);
+    progress.setChapterDone(id, !read);
+  };
 
   const continueHref = plan.next ? `${basePath}/${plan.next.id}` : "/review";
   const continueLabel = plan.next ? (plan.readCount === 0 ? "Start" : "Continue") : "Review";
@@ -192,7 +199,16 @@ export function TopicCover({
               >
                 {list.map((c) => {
                   const cardTick =
-                    plan.mounted && c.ready ? tickHref(completion, basePath, c.id, false, plan.done.has(c.id)) : null;
+                    plan.mounted && c.ready
+                      ? tickHref(
+                          completion,
+                          basePath,
+                          c.id,
+                          false,
+                          plan.done.has(c.id),
+                          (checkChapterIds ?? []).includes(c.id)
+                        )
+                      : null;
                   return (
                     <ChapterCard
                       key={c.id}

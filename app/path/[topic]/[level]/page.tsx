@@ -1,3 +1,4 @@
+import { poolChapterIds } from "@/lib/quizPool";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { TopicPath, type ExerciseLink } from "@/components/topic/TopicPath";
@@ -88,6 +89,7 @@ export default async function TopicPathPage({ params }: { params: Promise<{ topi
       entries={entries}
       chapterExercises={chapterExercises}
       levelExerciseList={levelExerciseList}
+      checkChapterIds={poolChapterIds()}
     />
   );
 }

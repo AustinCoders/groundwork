@@ -39,6 +39,19 @@ describe("tickHref", () => {
   });
 });
 
+describe("tickHref for a chapter with no check yet", () => {
+  it("is null in a quiz topic, so the read toggle stays", () => {
+    expect(tickHref("quiz", "/dsa", "dsa-hashing", true, false, false)).toBeNull();
+    expect(tickHref("quiz", "/dsa", "dsa-hashing", false, false, false)).toBeNull();
+    expect(tickHref("quiz", "/dsa", "dsa-hashing", false, true, false)).toBeNull();
+  });
+
+  it("still links when the chapter has a check", () => {
+    expect(tickHref("quiz", "/dsa", "dsa-binary-search", true, false, true)).toBe("#check");
+    expect(tickHref("quiz", "/dsa", "dsa-binary-search", false, false, true)).toBe("/dsa/dsa-binary-search#check");
+  });
+});
+
 describe("requiresCheck", () => {
   it("is true only for a quiz topic", () => {
     expect(requiresCheck("quiz")).toBe(true);

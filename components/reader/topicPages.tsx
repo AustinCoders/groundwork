@@ -1,6 +1,7 @@
 import { splitIslands } from "@/lib/chapterIslands";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { CheckIsland } from "@/components/check/CheckIsland";
 import { PlayIsland } from "@/components/play/PlayIsland";
 import { TopicReader } from "@/components/topic/TopicReader";
 import { TopicOutlineChapter } from "@/components/topic/TopicOutlineChapter";
@@ -17,6 +18,8 @@ import {
   notesHref,
   syllabusSectionForChapter,
 } from "@/lib/content";
+import { requiresCheck } from "@/lib/completion";
+import { poolChapterIds } from "@/lib/quizPool";
 import { pageMetadata } from "@/lib/metadata";
 import { curriculumNotes, levels, levelsNav, relatedInterviewRound, topic } from "@/lib/topics";
 import { relatedTopicId } from "@/lib/topicRelated";
@@ -62,6 +65,7 @@ export function TopicCoverPage({ topicId }: { topicId: string }) {
         relatedRoundLabel={round ? `${round.code} · ${round.navTitle}` : null}
         curriculumNotes={curriculumNotes(topicId)}
         completion={t?.completion}
+        checkChapterIds={poolChapterIds()}
       />
     );
   }
@@ -149,7 +153,7 @@ export function topicChapterMetadata(topicId: string, chapterId: string): Metada
   });
 }
 
-export function TopicChapterPage({ topicId, chapterId }: { topicId: string; chapterId: string }) {
+export async function TopicChapterPage({ topicId, chapterId }: { topicId: string; chapterId: string }) {
   const list = chapters(topicId);
   const index = list.findIndex((c) => c.id === chapterId);
   if (index === -1) notFound();
@@ -203,6 +207,8 @@ export function TopicChapterPage({ topicId, chapterId }: { topicId: string; chap
         exercises={exercises}
         levelExerciseTotal={exercisesForLevel(cards[cardIndex].levels[0], topicId).length}
         completion={t?.completion}
+        checkChapterIds={poolChapterIds()}
+        check={requiresCheck(t?.completion) ? <CheckIsland chapterId={chapter.id} basePath={basePath} /> : null}
         codeBlocks={chapter.body.includes('data-code="')}
       />
     );
