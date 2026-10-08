@@ -62,7 +62,9 @@ export function OrderList({
 
   return (
     <fieldset className={styles.fieldset} data-question={questionId} aria-describedby={promptId} tabIndex={-1}>
-      <legend className={styles.legend}>{legend}</legend>
+      <legend className={styles.legend} tabIndex={-1}>
+        {legend}
+      </legend>
       <RichHtml id={promptId} html={prompt} label={`Code in ${legend.toLowerCase()}`} className={styles.prompt} />
       <p className={styles.hint}>Put the steps in order with the Move up and Move down buttons.</p>
       <ol className={styles.orderList} role="list">

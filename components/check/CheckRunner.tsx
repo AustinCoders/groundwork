@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent } from "react";
 import type { Question } from "@/content/quiz-types";
 import { Confetti } from "@/components/practice/Confetti";
+import { ATTENTION_MS, arrivedAtCheck, passBannerText, sameGesture, startedMessage } from "@/lib/checkBanner";
 import {
   CHECK_SIZE,
   correctAnswer,
@@ -13,6 +14,7 @@ import {
   startingOrder,
   type Answer,
 } from "@/lib/checkDraw";
+import { onCheckRequest } from "@/lib/checkOpen";
 import { useMounted, useProgressValue } from "@/lib/hooks";
 import { checkStatus } from "@/lib/quizRecord";
 import { quizStore, useQuizRecord } from "@/lib/quizStore";
@@ -30,6 +32,7 @@ interface Asking {
   answers: Record<string, string[]>;
   checked: boolean;
   verdicts: Record<string, boolean>;
+  banner: boolean;
 }
 
 interface Result {
@@ -96,6 +99,11 @@ export function CheckRunner({
   const record = useQuizRecord(chapterId);
   const status = checkStatus(mounted && done, record);
   const [phase, setPhase] = useState<Phase>({ name: "start" });
+  const [attention, setAttention] = useState(0);
+  const phaseRef = useRef<Phase>({ name: "start" });
+  const openRef = useRef<() => void>(() => {});
+  const lastOpenedAt = useRef(0);
+  const legendTimer = useRef(0);
   const rootRef = useRef<HTMLDivElement>(null);
   const lastDraw = useRef<string[]>([]);
   const refocus = useRef<Refocus | null>(null);
@@ -120,9 +128,30 @@ export function CheckRunner({
     rootRef.current?.querySelector<HTMLElement>(REFOCUS_TARGET[target])?.focus();
   });
 
+  useEffect(() => () => window.clearTimeout(legendTimer.current), []);
+
+  useEffect(() => {
+    if (attention === 0) return;
+    const card = rootRef.current?.closest<HTMLElement>('[data-island="check"]');
+    if (!card) return;
+    card.classList.remove(styles.attention);
+    void card.offsetWidth;
+    card.classList.add(styles.attention);
+    const timer = setTimeout(() => card.classList.remove(styles.attention), ATTENTION_MS);
+    return () => {
+      clearTimeout(timer);
+      card.classList.remove(styles.attention);
+    };
+  }, [attention]);
+
   const view: Phase = phase.name === "result" && phase.passed && !done ? { name: "start" } : phase;
 
-  function begin() {
+  function show(next: Phase) {
+    phaseRef.current = next;
+    setPhase(next);
+  }
+
+  function begin(fromTick = false) {
     const drawn = drawCheck(questions, Math.random, lastDraw.current);
     lastDraw.current = drawn.map((question) => question.id);
     const answers: Record<string, string[]> = {};
@@ -135,25 +164,71 @@ export function CheckRunner({
             )
           : [];
     }
-    refocus.current = "question";
-    setPhase({ name: "asking", questions: drawn, index: 0, answers, checked: false, verdicts: {} });
+    refocus.current = fromTick ? null : "question";
+    show({ name: "asking", questions: drawn, index: 0, answers, checked: false, verdicts: {}, banner: fromTick });
+    if (fromTick) focusLegendSoon();
   }
+
+  function openFromTick() {
+    if (questions.length === 0 || progress.isChapterDone(chapterId)) return;
+    const current = phaseRef.current;
+    if (current.name === "asking") {
+      if (!current.banner) show({ ...current, banner: true });
+    } else {
+      begin(true);
+    }
+    setAttention((count) => count + 1);
+  }
+
+  function focusLegendSoon(retries = 10) {
+    window.clearTimeout(legendTimer.current);
+    legendTimer.current = window.setTimeout(
+      () => {
+        if (phaseRef.current.name !== "asking") return;
+        const legend = rootRef.current?.querySelector<HTMLElement>("legend");
+        if (legend) legend.focus({ preventScroll: true });
+        else if (retries > 0) focusLegendSoon(retries - 1);
+      },
+      retries === 10 ? 0 : 16
+    );
+  }
+
+  useEffect(() => {
+    openRef.current = openFromTick;
+  });
+
+  useEffect(() => {
+    const open = () => {
+      lastOpenedAt.current = Date.now();
+      openRef.current();
+    };
+    const forget = onCheckRequest(open);
+    const onHashChange = () => {
+      if (arrivedAtCheck(window.location.hash) && !sameGesture(Date.now(), lastOpenedAt.current)) open();
+    };
+    window.addEventListener("hashchange", onHashChange);
+    onHashChange();
+    return () => {
+      forget();
+      window.removeEventListener("hashchange", onHashChange);
+    };
+  }, []);
 
   function choose(question: Question, picked: string[]) {
     if (phase.name !== "asking") return;
-    setPhase({ ...phase, answers: { ...phase.answers, [question.id]: picked } });
+    show({ ...phase, answers: { ...phase.answers, [question.id]: picked } });
   }
 
   function checkAnswer(asking: Asking) {
     const question = asking.questions[asking.index];
     const right = gradeAnswer(question, answerOf(question, asking.answers[question.id]));
     refocus.current = "advance";
-    setPhase({ ...asking, checked: true, verdicts: { ...asking.verdicts, [question.id]: right } });
+    show({ ...asking, checked: true, verdicts: { ...asking.verdicts, [question.id]: right } });
   }
 
   function nextQuestion(asking: Asking) {
     refocus.current = "question";
-    setPhase({ ...asking, index: asking.index + 1, checked: false });
+    show({ ...asking, index: asking.index + 1, checked: false });
   }
 
   function finish(asking: Asking) {
@@ -170,7 +245,7 @@ export function CheckRunner({
         document.getElementById(question.section)?.textContent?.trim() || wordsOf(question.section);
     }
     refocus.current = "question";
-    setPhase({
+    show({
       name: "result",
       questions: asking.questions,
       verdicts: asking.verdicts,
@@ -186,7 +261,7 @@ export function CheckRunner({
     if (!progress.isChapterDone(chapterId)) progress.setChapterDone(chapterId, true);
     quizStore.recordMarkedAnyway(chapterId);
     refocus.current = "status";
-    setPhase({ name: "start" });
+    show({ name: "start" });
   }
 
   function markReadWithoutCheck() {
@@ -248,7 +323,7 @@ export function CheckRunner({
           </p>
         )}
         <div className={styles.actions}>
-          <button type="button" className={styles.primary} onClick={begin}>
+          <button type="button" className={styles.primary} onClick={() => begin()}>
             {readAlready ? "Check yourself" : "Start the check"}
           </button>
           {!readAlready && (
@@ -269,6 +344,16 @@ export function CheckRunner({
     const verdict = asking.checked ? (asking.verdicts[question.id] ? "Correct" : "Not quite") : "";
     body = (
       <>
+        {asking.banner && (
+          <div className={styles.banner} data-banner="">
+            <p className={styles.bannerText}>
+              {passBannerText(passMark(asking.questions.length), asking.questions.length)}
+            </p>
+            <button type="button" className={styles.secondary} onClick={markReadAnyway}>
+              Mark as read without the check
+            </button>
+          </div>
+        )}
         {question.kind === "order" ? (
           <OrderList
             key={question.id}
@@ -356,7 +441,7 @@ export function CheckRunner({
           <MissedList missed={missed} basePath={basePath} chapterId={chapterId} sectionTitles={result.sectionTitles} />
         )}
         <div className={styles.actions}>
-          <button type="button" className={styles.secondary} onClick={begin}>
+          <button type="button" className={styles.secondary} onClick={() => begin()}>
             Check again
           </button>
         </div>
@@ -377,7 +462,7 @@ export function CheckRunner({
         </p>
         <MissedList missed={missed} basePath={basePath} chapterId={chapterId} sectionTitles={result.sectionTitles} />
         <div className={styles.actions}>
-          <button type="button" className={styles.primary} onClick={begin}>
+          <button type="button" className={styles.primary} onClick={() => begin()}>
             Try again
           </button>
           {!done && (
@@ -390,8 +475,14 @@ export function CheckRunner({
     );
   }
 
+  const startedNote =
+    view.name === "asking" && view.banner ? startedMessage(passMark(view.questions.length), view.questions.length) : "";
+
   return (
     <div className={styles.runner} ref={rootRef}>
+      <p className="visually-hidden" role="status" aria-live="polite">
+        {startedNote}
+      </p>
       {body}
     </div>
   );

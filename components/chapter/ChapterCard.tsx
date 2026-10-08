@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { SeriesCard } from "./types";
+import { openCheckOnClick } from "@/lib/checkOpen";
 import { plural } from "@/lib/format";
 import styles from "@/components/series/landing.module.css";
 
@@ -38,7 +39,14 @@ export function ChapterCard({
         {chapter.subtitle && <span className={styles.cardSub}>{chapter.subtitle}</span>}
       </Link>
       {tickHref ? (
-        <Link className={styles.cardTick} href={tickHref} prefetch={false} aria-label={tickLabel} title={tickLabel}>
+        <Link
+          className={styles.cardTick}
+          href={tickHref}
+          prefetch={false}
+          aria-label={tickLabel}
+          title={tickLabel}
+          onClick={openCheckOnClick}
+        >
           ✓
         </Link>
       ) : (

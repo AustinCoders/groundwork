@@ -1,6 +1,7 @@
 "use client";
 
 import { TopIcon } from "@/components/practice/TopIcon";
+import { openCheckOnClick } from "@/lib/checkOpen";
 import { prefersMotion } from "@/lib/dom";
 import type { TocItem } from "./types";
 import styles from "@/components/series/chapter.module.css";
@@ -74,7 +75,7 @@ export function TocCard({
           </section>
         )}
         {tickHref ? (
-          <a className={readClass} href={tickHref}>
+          <a className={readClass} href={tickHref} onClick={openCheckOnClick}>
             {readBody}
           </a>
         ) : (

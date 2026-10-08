@@ -127,6 +127,20 @@ const STATES: State[] = [
     },
   },
   {
+    name: "the chapter check started from the tick",
+    path: CHAPTER_PATH,
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page.getByRole("region", { name: "Finish" }).getByRole("link", { name: "Mark as read" }).click();
+      await expect(island(page).locator("[data-banner]")).toBeVisible();
+      await expect(island(page).locator("fieldset[data-question]")).toBeVisible();
+      await expect
+        .poll(() => island(page).evaluate((card) => getComputedStyle(card).outlineStyle), { timeout: 5000 })
+        .toBe("none");
+      await check("the banner and the first question");
+    },
+  },
+  {
     name: "a chapter read before checks",
     path: CHAPTER_PATH,
     viewports: VIEWPORTS,

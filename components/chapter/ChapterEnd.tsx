@@ -1,5 +1,6 @@
 "use client";
 
+import { openCheckOnClick } from "@/lib/checkOpen";
 import styles from "@/components/series/chapter.module.css";
 
 export function ChapterEnd({
@@ -41,7 +42,7 @@ export function ChapterEnd({
         </div>
       </div>
       {tickHref ? (
-        <a className={styles.endBtn} href={tickHref}>
+        <a className={styles.endBtn} href={tickHref} onClick={openCheckOnClick}>
           {read ? "Mark as unread" : "Mark as read"}
         </a>
       ) : (

@@ -34,6 +34,15 @@
   color: var(--ink-soft);
 }
 
+.legend:focus {
+  outline: none;
+}
+
+.legend:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+
 .prompt {
   min-width: 0;
   overflow-x: auto;
@@ -420,7 +429,61 @@
   text-underline-offset: 3px;
 }
 
+.banner {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding: 12px 14px;
+  background: var(--primary-soft);
+  border: 1.5px solid var(--primary);
+  border-radius: 10px;
+}
+
+.bannerText {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.attention {
+  animation: attention 1.4s ease-out 1;
+}
+
+@keyframes attention {
+  0% {
+    outline: 3px solid transparent;
+    outline-offset: 0;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 45%, transparent);
+  }
+
+  25% {
+    outline: 3px solid var(--primary);
+    outline-offset: 4px;
+    box-shadow: 0 0 0 10px color-mix(in srgb, var(--primary) 22%, transparent);
+  }
+
+  100% {
+    outline: 3px solid transparent;
+    outline-offset: 8px;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 0%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .attention {
+    animation: none;
+    outline: 3px solid var(--ink);
+    outline-offset: 4px;
+  }
+}
+
 @media (max-width: 640px) {
+  .banner > button {
+    width: 100%;
+  }
+
   .why {
     padding-left: 14px;
   }

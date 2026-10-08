@@ -716,6 +716,281 @@ test("unmarking a checked chapter clears the pass but keeps the attempts", async
   const record = (await storedQuiz(page)).chapters[CHAPTER_ID];
   expect(record).toMatchObject({ attempts: 1, best: 5, passedAt: null, markedAnyway: false });
   expect((await readMarks(page)).chapters[CHAPTER_ID]).toBeUndefined();
+
+  await endCard.getByRole("link", { name: "Mark as read" }).click();
+  await expectCheckOpened(page);
+});
+
+const PASS_BANNER = "Pass the check, 4 of 5 right, and this chapter is marked read.";
+
+const cardAnimation = (page: Page) => island(page).evaluate((card) => getComputedStyle(card).animationName);
+
+const cardOutline = (page: Page) =>
+  island(page).evaluate((card) => {
+    const style = getComputedStyle(card);
+    return `${style.outlineStyle} ${style.outlineWidth}`;
+  });
+
+const endTick = (page: Page) =>
+  page.getByRole("region", { name: "Finish" }).getByRole("link", { name: "Mark as read" });
+
+async function setHashAndSettle(page: Page) {
+  await page.evaluate(
+    () =>
+      new Promise<void>((settled) => {
+        window.addEventListener(
+          "hashchange",
+          () => requestAnimationFrame(() => requestAnimationFrame(() => settled())),
+          { once: true }
+        );
+        location.hash = "#check";
+      })
+  );
+}
+
+const pickedState = (page: Page) =>
+  island(page).evaluate((card) => ({
+    picked: [...card.querySelectorAll<HTMLInputElement>("input:checked")].map((input) => input.value),
+    order: [...card.querySelectorAll("li[data-item]")].map((row) => row.getAttribute("data-item")),
+  }));
+
+async function expectCheckOpened(page: Page) {
+  const card = island(page);
+  await expect(card.locator("fieldset[data-question]")).toBeVisible();
+  await expect(card.getByRole("group", { name: "Question 1 of 5" })).toBeVisible();
+  await expect(card.locator("[data-banner]")).toContainText(PASS_BANNER);
+  await expect(
+    card.getByRole("status").filter({ hasText: "Check started. Answer 4 of 5 correctly to mark this chapter read." })
+  ).toHaveCount(1);
+  await expect(card.locator("legend")).toBeFocused();
+  await expect(page).toHaveURL(/#check$/);
+  await expect(card.getByRole("button", { name: "Start the check" })).toHaveCount(0);
+}
+
+test("the end card's Mark as read opens the check with a banner, question 1 and focus, even with the card in view", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(CHAPTER_PATH);
+  const endCard = page.getByRole("region", { name: "Finish" });
+  await endCard.scrollIntoViewIfNeeded();
+  await expect(island(page)).toBeInViewport();
+  await expect(island(page).locator("fieldset")).toHaveCount(0);
+  await endCard.getByRole("link", { name: "Mark as read" }).click();
+  await expectCheckOpened(page);
+  await expect.poll(() => cardAnimation(page)).not.toBe("none");
+  await expect.poll(() => cardAnimation(page), { timeout: 5000 }).toBe("none");
+  await expect(island(page)).toBeInViewport();
+});
+
+test("the contents card's Mark as read opens the check", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(CHAPTER_PATH);
+  await page.getByRole("complementary", { name: "On this page" }).getByRole("link", { name: "Mark as read" }).click();
+  await expectCheckOpened(page);
+});
+
+test("the cover and path ticks arrive at the chapter with the check started", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/dsa");
+  await page.locator(`a[href="${CHAPTER_PATH}#check"]`).click();
+  await expect(page).toHaveURL(new RegExp(`${CHAPTER_PATH}#check$`));
+  await expectCheckOpened(page);
+
+  await page.goto("/path/dsa/beginner");
+  await page.locator(`[data-step="${CHAPTER_ID}"] a[href="${CHAPTER_PATH}#check"]`).click();
+  await expect(page).toHaveURL(new RegExp(`${CHAPTER_PATH}#check$`));
+  await expectCheckOpened(page);
+});
+
+test("loading a chapter's #check address starts the check, and a read chapter or one without a check starts nothing", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(`${CHAPTER_PATH}#check`);
+  await expectCheckOpened(page);
+
+  await page.evaluate(
+    (id) =>
+      localStorage.setItem("jsnotes:progress", JSON.stringify({ chapters: { [id]: { at: Date.now(), reviews: 0 } } })),
+    CHAPTER_ID
+  );
+  await page.goto("/dsa");
+  await page.goto(CHAPTER_PATH);
+  await expect(island(page).getByRole("button", { name: "Check yourself" })).toBeVisible();
+  await setHashAndSettle(page);
+  await page.evaluate(() => window.dispatchEvent(new CustomEvent("groundwork:open-check")));
+  await expect(island(page).locator("fieldset")).toHaveCount(0);
+  await expect(island(page).locator("[data-banner]")).toHaveCount(0);
+  await expect(island(page).getByRole("button", { name: "Check yourself" })).toBeVisible();
+  await page.goto(`${CHAPTER_PATH}#check`);
+  await page.reload();
+  await expect(island(page).locator("fieldset")).toHaveCount(0);
+  await expect(
+    page.getByRole("region", { name: "Finish" }).getByRole("button", { name: "Mark as unread" })
+  ).toBeVisible();
+
+  await page.goto(`${UNCHECKED_CHAPTER_PATH}#check`);
+  await expect(island(page)).toContainText("The check for this chapter is not written yet");
+  await expect(island(page).locator("fieldset")).toHaveCount(0);
+  await page.evaluate(() => window.dispatchEvent(new CustomEvent("groundwork:open-check")));
+  await expect(island(page).locator("fieldset")).toHaveCount(0);
+  await page.getByRole("region", { name: "Finish" }).getByRole("button", { name: "Mark as read" }).click();
+  await expect(island(page).getByText("Marked as read. The check for this chapter is not written yet.")).toBeVisible();
+  await expect(island(page).locator("fieldset")).toHaveCount(0);
+});
+
+test("setting #check on an unread chapter that loaded without it starts the check", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(CHAPTER_PATH);
+  await expect(island(page).getByRole("button", { name: "Start the check" })).toBeVisible();
+  await setHashAndSettle(page);
+  await expectCheckOpened(page);
+});
+
+test("a tick click opens the check once, so the hash change that follows does not redraw it", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(CHAPTER_PATH);
+  await endTick(page).click();
+  await expectCheckOpened(page);
+  const first = await currentQuestion(page);
+  await page.evaluate(() => new Promise((done) => setTimeout(done, 800)));
+  expect((await currentQuestion(page)).id).toBe(first.id);
+  await expect(island(page).locator("fieldset")).toHaveCount(1);
+  await expect(island(page).locator("legend")).toBeFocused();
+});
+
+test("a second tick click mid-check replays the pulse and leaves the questions and answers alone", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(CHAPTER_PATH);
+  await endTick(page).click();
+  await expectCheckOpened(page);
+  const asked: string[] = [];
+  for (let at = 0; at < 2; at++) {
+    const question = await currentQuestion(page);
+    asked.push(question.id);
+    await answer(page, question, "right");
+    await checkAnswer(page, "right");
+    await advance(page);
+  }
+  const third = await currentQuestion(page);
+  asked.push(third.id);
+  await answer(page, third, "right");
+  const before = await pickedState(page);
+  expect(before.picked.length + before.order.length).toBeGreaterThan(0);
+  await expect.poll(() => cardAnimation(page), { timeout: 5000 }).toBe("none");
+
+  await endTick(page).click();
+  await expect.poll(() => cardAnimation(page)).not.toBe("none");
+  await expect(island(page).getByRole("group", { name: "Question 3 of 5" })).toBeVisible();
+  await expect(island(page).locator("fieldset[data-question]")).toHaveAttribute("data-question", third.id);
+  expect(await pickedState(page)).toEqual(before);
+  await expect(island(page).locator("[data-banner]")).toHaveCount(1);
+
+  await checkAnswer(page, "right");
+  await advance(page);
+  for (let at = 3; at < 5; at++) {
+    const question = await currentQuestion(page);
+    asked.push(question.id);
+    await answer(page, question, "right");
+    await checkAnswer(page, "right");
+    await advance(page);
+  }
+  expect(new Set(asked).size).toBe(5);
+  await expect(island(page).getByText("5 of 5", { exact: true })).toBeVisible();
+});
+
+test("a tick while the check runs without a banner shows the banner and keeps the draw and the answers", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(CHAPTER_PATH);
+  await startCheck(page);
+  await expect(island(page).locator("[data-banner]")).toHaveCount(0);
+  const question = await currentQuestion(page);
+  await answer(page, question, "right");
+  const before = await pickedState(page);
+  expect(before.picked.length + before.order.length).toBeGreaterThan(0);
+  await endTick(page).click();
+  await expect(island(page).locator("[data-banner]")).toContainText(PASS_BANNER);
+  await expect(island(page).locator("fieldset[data-question]")).toHaveAttribute("data-question", question.id);
+  await expect(island(page).getByRole("group", { name: "Question 1 of 5" })).toBeVisible();
+  expect(await pickedState(page)).toEqual(before);
+});
+
+test("a tick on the miss screen starts a fresh check with the banner", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(CHAPTER_PATH);
+  await startCheck(page);
+  await answerFive(page, () => "wrong");
+  await expect(island(page).getByRole("heading", { name: "Not yet" })).toBeVisible();
+  await endTick(page).click();
+  await expectCheckOpened(page);
+  await expect(island(page).getByRole("heading", { name: "Not yet" })).toHaveCount(0);
+});
+
+test("a modified or non-primary click on the tick does not start the check", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(CHAPTER_PATH);
+  const settled = () => page.evaluate(() => new Promise((done) => setTimeout(done, 600)));
+  for (const options of [
+    { modifiers: ["Control" as const] },
+    { modifiers: ["Shift" as const] },
+    { button: "middle" as const },
+  ]) {
+    await endTick(page).click({ ...options, noWaitAfter: true });
+    await settled();
+    await expect(island(page).locator("fieldset")).toHaveCount(0);
+    await expect(island(page).locator("[data-banner]")).toHaveCount(0);
+    expect(await cardAnimation(page)).toBe("none");
+    for (const other of page.context().pages()) if (other !== page) await other.close();
+  }
+  await expect(island(page).getByRole("button", { name: "Start the check" })).toBeVisible();
+});
+
+test("the banner's Mark as read without the check marks the chapter read as not checked", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(CHAPTER_PATH);
+  await page.getByRole("region", { name: "Finish" }).getByRole("link", { name: "Mark as read" }).click();
+  await expectCheckOpened(page);
+  await island(page).locator("[data-banner]").getByRole("button", { name: "Mark as read without the check" }).click();
+  await expect(island(page).getByText("Marked read, not checked")).toBeVisible();
+  await expect(island(page).locator("[data-banner]")).toHaveCount(0);
+  await expect(island(page).locator("fieldset")).toHaveCount(0);
+  expect((await readMarks(page)).chapters[CHAPTER_ID]).toMatchObject({ reviews: 0 });
+  expect((await storedQuiz(page)).chapters[CHAPTER_ID]).toMatchObject({ markedAnyway: true, passedAt: null });
+});
+
+test("the banner goes when the check ends, and a pass from the tick marks the chapter read", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(CHAPTER_PATH);
+  await page.getByRole("region", { name: "Finish" }).getByRole("link", { name: "Mark as read" }).click();
+  await expectCheckOpened(page);
+  await answerFive(page, () => "right");
+  await expect(island(page).getByRole("heading", { name: "Passed" })).toBeVisible();
+  await expect(island(page).locator("[data-banner]")).toHaveCount(0);
+  await expect(island(page).getByRole("status").filter({ hasText: "Check started" })).toHaveCount(0);
+  expect((await readMarks(page)).chapters[CHAPTER_ID]).toMatchObject({ reviews: 0 });
+});
+
+test("with reduced motion the tick still opens the check, with a static outline for a moment and no animation", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(CHAPTER_PATH);
+  await endTick(page).click();
+  await expect.poll(() => cardOutline(page)).toBe("solid 3px");
+  expect(await cardAnimation(page)).toBe("none");
+  const motion = await island(page).evaluate((card) => {
+    const style = getComputedStyle(card);
+    return { animation: style.animationName, transition: style.transitionDuration };
+  });
+  expect(motion.animation).toBe("none");
+  expect(motion.transition).toBe("0s");
+  await expect.poll(() => cardOutline(page), { timeout: 5000 }).toMatch(/^none /);
+  expect(await cardAnimation(page)).toBe("none");
+  await expectCheckOpened(page);
 });
 
 test("a miss shows every explanation and a link to each section, keeps the missed ids and retries on a fresh draw", async ({
