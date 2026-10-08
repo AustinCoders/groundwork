@@ -1,18 +1,36 @@
 import type { BankQuestion, BookRound } from "@/lib/interviewBook";
 
+export type HomeStageId = "screening" | "technical" | "design" | "people";
+
 export interface HomeRound {
   id: string;
   code: string;
   title: string;
   href: string;
+  stage: HomeStageId;
   tests: string;
   wrong: string;
   sample: string;
+  followUp: string;
+}
+
+export const HOME_STAGES: { id: HomeStageId; label: string; last: number }[] = [
+  { id: "screening", label: "Screening", last: 1 },
+  { id: "technical", label: "Technical", last: 5 },
+  { id: "design", label: "Design and depth", last: 9 },
+  { id: "people", label: "People and offer", last: Infinity },
+];
+
+export function stageOf(code: string): HomeStageId {
+  const number = Number(/^R(\d+)/.exec(code)?.[1]);
+  const found = HOME_STAGES.find((stage) => number <= stage.last);
+  return (found ?? HOME_STAGES[HOME_STAGES.length - 1]).id;
 }
 
 export const TESTS_LIMIT = 160;
 export const WRONG_LIMIT = 160;
 export const SAMPLE_LIMIT = 120;
+export const FOLLOW_UP_LIMIT = 110;
 
 const NAMED: Record<string, string> = {
   amp: "&",
@@ -47,11 +65,27 @@ export function plainText(html: string | null | undefined): string {
     .trim();
 }
 
+const SENTENCE_END = /[.!?]["'”’)\]]*(?=\s|$)/g;
+const ABBREVIATION = /(?:^|[\s(])(?:e\.g|i\.e|vs|approx)\.$/i;
+const MIN_SENTENCE_SHARE = 0.4;
+
+function lastSentenceEnd(text: string, limit: number): number {
+  let end = -1;
+  for (const match of text.matchAll(SENTENCE_END)) {
+    const stop = match.index + match[0].length;
+    if (stop > limit) break;
+    if (!ABBREVIATION.test(text.slice(0, match.index + 1))) end = stop;
+  }
+  return end;
+}
+
 export function truncate(text: string, limit: number): string {
   if (text.length <= limit) return text;
+  const sentence = lastSentenceEnd(text, limit);
+  if (sentence >= limit * MIN_SENTENCE_SHARE) return text.slice(0, sentence);
   const cut = text.slice(0, limit - 1);
   const space = cut.lastIndexOf(" ");
-  const head = space > limit * 0.6 ? cut.slice(0, space) : cut;
+  const head = space > limit * 0.5 ? cut.slice(0, space) : cut;
   return `${head.replace(/[\s,;:.\-–—]+$/, "")}…`;
 }
 
@@ -61,7 +95,7 @@ function failMode(round: Pick<BookRound, "meta">): string {
 
 export function homeRounds(
   rounds: Pick<BookRound, "id" | "code" | "navTitle" | "meta">[],
-  questions: Pick<BankQuestion, "roundId" | "q" | "test" | "trap">[]
+  questions: Pick<BankQuestion, "roundId" | "q" | "test" | "trap" | "fu">[]
 ): HomeRound[] {
   return rounds
     .filter((round) => /^R/.test(round.code))
@@ -72,9 +106,11 @@ export function homeRounds(
         code: round.code,
         title: round.navTitle,
         href: `/interview/${round.id}`,
+        stage: stageOf(round.code),
         tests: truncate(plainText(first?.test), TESTS_LIMIT),
         wrong: truncate(plainText(first?.trap) || plainText(failMode(round)), WRONG_LIMIT),
         sample: truncate(plainText(first?.q), SAMPLE_LIMIT),
+        followUp: truncate(plainText(first?.fu[0]), FOLLOW_UP_LIMIT),
       };
     });
 }

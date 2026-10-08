@@ -106,7 +106,7 @@ export const archRequestPath: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Route</th><th>HTML</th><th>First-load JS</th></tr></thead>
 <tbody>
-<tr><td>Home</td><td>60 KB</td><td>660 KB, 202 KB gzip, 13 files</td></tr>
+<tr><td>Home</td><td>186 KB</td><td>732 KB, 224 KB gzip, 18 files</td></tr>
 <tr><td>A chapter page</td><td>50 to 222 KB; the JavaScript topic averages 106 KB</td><td>681 KB, 210 KB gzip, 14 files</td></tr>
 <tr><td>A problem page</td><td>39 to 50 KB</td><td>1,182 KB, 373 KB gzip, 18 files</td></tr>
 <tr><td><code>/practice</code></td><td>27 KB</td><td>1,182 KB, 373 KB gzip, 18 files</td></tr>

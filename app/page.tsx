@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { HomeView } from "@/app/HomeView";
 import { INTERVIEW_TOTAL_QUESTIONS, INTERVIEW_TOTAL_ROUNDS } from "@/lib/interviewContent";
 import { LANG_ORDER, LANGUAGES } from "@/lib/codeLanguages";
-import { exercises } from "@/lib/content";
 import { homeRounds } from "@/lib/homeRounds";
 import { bankQuestions, bookRounds } from "@/lib/interviewBook";
 import { onShelf } from "@/lib/topicShelf";
@@ -17,6 +16,7 @@ function hrefFor(t: TopicNav): string {
 }
 
 export default function HomePage() {
+  const runnable = LANG_ORDER.filter((k) => LANGUAGES[k].runnable);
   const perTopic = topicStats();
   const all = topicsNavWithStats();
   const shelf = all.filter((t) => onShelf(t.id));
@@ -37,8 +37,7 @@ export default function HomePage() {
       stats={siteStats()}
       ready={shelf.filter((t) => t.written > 0).map(card)}
       soon={shelf.filter((t) => t.written === 0).map(card)}
-      problems={exercises().length}
-      languages={{ total: LANG_ORDER.length, runnable: LANG_ORDER.filter((k) => LANGUAGES[k].runnable).length }}
+      languages={{ total: LANG_ORDER.length, runnable: runnable.length, runs: runnable.map((k) => LANGUAGES[k].label) }}
       interview={{ rounds: INTERVIEW_TOTAL_ROUNDS, questions: INTERVIEW_TOTAL_QUESTIONS }}
       bookRounds={homeRounds(bookRounds(), bankQuestions())}
     />

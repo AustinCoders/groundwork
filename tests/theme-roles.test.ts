@@ -10,15 +10,6 @@ const ROLE_DECLARATION = /(?<![\w-])(--(?:on-)?(?:primary|mark|success|danger|ca
 
 const CATEGORICAL_SELECTORS: Record<string, string[]> = {
   "app/home.module.css": [
-    ".stageBar span:nth-child(1)",
-    ".stageBar span:nth-child(2)",
-    ".stageBar span:nth-child(3)",
-    '.step[data-state="past"]::before',
-    '.step[data-state="past"] .node',
-    '.step[data-state="active"] .node',
-    ".offerStep .node",
-    ".preview",
-    ".previewKicker",
     ".paperRound",
     ".followUp",
     ".paperCode .codeBar > span:nth-child(1)",
@@ -26,6 +17,7 @@ const CATEGORICAL_SELECTORS: Record<string, string[]> = {
     ".paperCode .codeBar > span:nth-child(3)",
     ".doodleStar",
   ],
+  "components/home/scenes.module.css": [".winBar i:nth-child(1)", ".winBar i:nth-child(2)", ".winBar i:nth-child(3)"],
   "app/progress/progress.module.css": [
     ".levelUp",
     ".chips span[data-lit]",

@@ -3,7 +3,7 @@ title: 'Home redesign: big type and motion bands for every section after the her
 type: 'feature'
 ticket: ''
 created: '2026-10-08'
-status: 'draft'
+status: 'blocked'
 route: 'full'
 route_source: 'auto'
 review: ''
@@ -14,7 +14,7 @@ followup_review_recommended: false
 context: ['{project-root}/AGENTS.md', '{project-root}/_bmad-output/implementation-artifacts/plan-home-interview-and-how-it-works-redesign.md']
 warnings: ['oversized']
 deferred: []
-baseline_revision: 'SET_AFTER_PREVIOUS_COMMIT'
+baseline_revision: '385ad2020401e0cbea9cf186614da0afba836257'
 ---
 
 <intent-contract>
@@ -91,6 +91,8 @@ baseline_revision: 'SET_AFTER_PREVIOUS_COMMIT'
 ## Implementation Notes
 
 ## Plan Change Log
+
+- 2026-10-08: superseded by `plan-home-scenes-redesign.md` before review. The owner asked for the hero's own scene style in every section instead of big type and bands. The unverified working tree from this plan is the starting point of the scenes plan.
 
 ## Review Triage Log
 

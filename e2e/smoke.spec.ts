@@ -1201,12 +1201,15 @@ test("the home page reads as a landing page and every path leads somewhere real"
       .getByRole("link", { name: /JavaScript/ })
       .first()
   ).toBeVisible();
-  for (const name of [/Read it. Run it/, /a path that starts there/i, /Pick a topic/, /Before you start/]) {
+  for (const name of [/Read it. Run it/, /a path that starts there/i, /Pick a topic/, /Questions\./]) {
     await expect(page.getByRole("heading", { level: 2, name })).toBeVisible();
   }
-  const faq = page.locator("details", { hasText: "Do I need to sign up?" });
-  await faq.locator("summary").click();
-  await expect(faq).toContainText("There is no account");
+  const signUp = page.locator("#faq").getByRole("button", { name: "Do I need to sign up?" });
+  await signUp.click();
+  await expect(signUp).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator("#faq").getByRole("region", { name: "Do I need to sign up?" })).toContainText(
+    "There is no account"
+  );
 
   await page.getByRole("button", { name: /Run tests/ }).click();
   await expect(page.getByText("3 / 3 passed", { exact: true })).toBeVisible();
@@ -1219,9 +1222,14 @@ test("the home page reads as a landing page and every path leads somewhere real"
   );
   await page.getByRole("button", { name: "Reset" }).click();
 
-  await page.getByRole("tab", { name: /Mid/ }).click();
-  await expect(page.getByRole("tab", { name: /Mid/ })).toHaveAttribute("aria-selected", "true");
-  await page.getByRole("tabpanel").getByRole("link", { name: "The machine coding round" }).click();
+  const prep = page.locator("#paths").getByRole("tab", { name: /Interview prep/ });
+  await prep.click();
+  await expect(prep).toHaveAttribute("aria-selected", "true");
+  await page
+    .locator("#paths")
+    .getByRole("tabpanel")
+    .getByRole("link", { name: /Machine coding/ })
+    .click();
   await page.waitForURL("**/interview/r2");
   await page.goBack();
   await page.getByRole("button", { name: "Menu" }).click();
@@ -1237,30 +1245,33 @@ test("the home interview book previews each round, follows the reader and links 
   const book = page.locator("#loop");
   await expect(book.getByRole("heading", { level: 2, name: /From the first call to the offer/ })).toBeVisible();
   const preview = book.getByRole("region", { name: "Screening call" });
-  await expect(preview).toContainText("Round 01 · R1");
-  await expect(preview).toContainText("What they are really testing");
-  await expect(preview).toContainText("The answer that loses the room");
-  await expect(preview).toContainText("A question you will get");
-  await expect(preview).toContainText("Tell me about yourself.");
+  const shown = preview.locator("[data-active]");
+  await expect(shown).toContainText("Round 01 · R1");
+  await expect(shown).toContainText("What they are really testing");
+  await expect(shown).toContainText("The answer that loses the room");
+  await expect(shown).toContainText("A question you will get");
+  await expect(shown).toContainText("Tell me about yourself.");
   await expect(book.getByRole("button", { name: /Round 01/ })).toHaveAttribute("aria-current", "true");
 
+  await book.getByRole("tab", { name: /^02 Technical/ }).click();
   const machine = book.getByRole("button", { name: /Machine coding/ });
-  await machine.scrollIntoViewIfNeeded();
-  await machine.click();
   await expect(machine).toHaveAttribute("aria-current", "true");
-  await expect(book.getByRole("button", { name: /Round 01/ })).not.toHaveAttribute("aria-current", "true");
+  await expect(book.getByRole("button", { name: /Round 01/ })).toHaveCount(0);
   const machinePreview = book.getByRole("region", { name: "Machine coding" });
-  await expect(machinePreview).toContainText("Round 05 · R2");
-  await expect(machinePreview).toContainText("Data modelling");
-  await expect(book.getByRole("status")).toContainText("Round 05, Machine coding");
+  await expect(machinePreview.locator("[data-active]")).toContainText("Round 05 · R2");
+  await expect(machinePreview.locator("[data-active]")).toContainText("Data modelling");
 
   const react = book.getByRole("button", { name: /React & Next\.js/ });
   await react.focus();
   await page.keyboard.press("Enter");
   await expect(react).toHaveAttribute("aria-current", "true");
-  await expect(book.getByRole("region", { name: "React & Next.js" })).toContainText("Round 08 · R4");
+  await expect(book.getByRole("region", { name: "React & Next.js" }).locator("[data-active]")).toContainText(
+    "Round 08 · R4"
+  );
+  await expect(book.getByRole("status")).toContainText("Round 08, React & Next.js");
 
   await page.waitForTimeout(2000);
+  await book.getByRole("tab", { name: /^04 People and offer/ }).click();
   await page.evaluate(() => {
     const row = [...document.querySelectorAll<HTMLElement>("#loop ol button")].find((el) =>
       /Behavioural/.test(el.textContent ?? "")
@@ -1271,13 +1282,58 @@ test("the home interview book previews each round, follows the reader and links 
   });
   const behavioural = book.getByRole("button", { name: /Behavioural/ });
   await expect(behavioural).toHaveAttribute("aria-current", "true");
-  await expect(book.getByRole("region", { name: /Behavioural/ })).toContainText("R11");
+  await expect(book.getByRole("region", { name: /Behavioural/ }).locator("[data-active]")).toContainText("R11");
 
   await book
     .getByRole("region", { name: /Behavioural/ })
     .getByRole("link", { name: /Read this round/ })
     .click();
   await page.waitForURL("**/interview/r11");
+});
+
+test("the home interview stage switcher lists only the chosen stage's rounds and previews its first", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const book = page.locator("#loop");
+  const stages = book.getByRole("tablist", { name: "Interview stages" });
+  await expect(stages.getByRole("tab")).toHaveCount(4);
+  const rows = book.getByRole("list").first().getByRole("button");
+  const expected = [
+    { stage: /^01 Screening/, rows: 4, first: "Screening call" },
+    { stage: /^02 Technical/, rows: 6, first: "Machine coding" },
+    { stage: /^03 Design and depth/, rows: 4, first: "Databases & Redis" },
+    { stage: /^04 People and offer/, rows: 6, first: "Resume grilling" },
+  ];
+  for (const { stage, rows: count, first } of expected) {
+    await stages.getByRole("tab", { name: stage }).click();
+    await expect(stages.getByRole("tab", { name: stage })).toHaveAttribute("aria-selected", "true");
+    await expect(rows).toHaveCount(count);
+    await expect(rows.first()).toContainText(first);
+    await expect(rows.first()).toHaveAttribute("aria-current", "true");
+    await expect(book.getByRole("region", { name: first })).toBeVisible();
+  }
+  await expect(book.getByText("The offer", { exact: true })).toBeVisible();
+  await expect(book.getByRole("button", { name: /Next stage/ })).toHaveCount(0);
+
+  await stages.getByRole("tab", { name: /^01 Screening/ }).click();
+  await expect(book.getByText("The offer", { exact: true })).toHaveCount(0);
+  await book.getByRole("button", { name: /Next stage/ }).click();
+  await expect(stages.getByRole("tab", { name: /^02 Technical/ })).toHaveAttribute("aria-selected", "true");
+  await expect(rows.first()).toContainText("Machine coding");
+});
+
+test("a home interview preview never ends in the middle of a clause", async ({ page }) => {
+  await page.goto("/");
+  const preview = "#loop [data-active] [class*='previewText'], #loop [data-active] [class*='previewSample']";
+  const texts = await page.locator(preview).allTextContents();
+  const stages = page.locator("#loop").getByRole("tablist", { name: "Interview stages" });
+  for (const stage of [/^02 Technical/, /^03 Design and depth/, /^04 People and offer/]) {
+    await stages.getByRole("tab", { name: stage }).click();
+    texts.push(...(await page.locator(preview).allTextContents()));
+  }
+  expect(texts.length).toBeGreaterThanOrEqual(10);
+  for (const text of texts.filter((text) => text.length > 100)) expect(text.trim(), text).toMatch(/[.!?…"'”’)\]]$/);
 });
 
 test("the home interview book fits a phone and keeps its preview in view", async ({ page }) => {
@@ -1294,7 +1350,7 @@ test("the home interview book fits a phone and keeps its preview in view", async
       return inside && document.documentElement.scrollWidth <= innerWidth;
     });
   expect(await fits()).toBe(true);
-  await page.evaluate(() => window.scrollBy(0, 700));
+  await page.evaluate(() => window.scrollBy(0, 250));
   const region = book.getByRole("region");
   await expect(region).toBeVisible();
   const box = await region.boundingBox();
@@ -1388,12 +1444,12 @@ test("the how-it-works stepper waits while the reader hovers it and never moves 
   await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
 });
 
-test("on medium and large screens each home section fills a view below the header, and the short ones leave no sliver of the next", async ({
+test("on medium and large screens no home section after the hero is shorter than the view below the header", async ({
   page,
 }) => {
-  const sections = ["how", "features", "who", "loop", "shelf", "tools", "compare", "faq", "cta"];
-  const fitting = ["how", "who", "faq", "cta"];
+  const sections = ["shelf", "practice", "how", "paths", "loop", "faq", "cta"];
   for (const viewport of [
+    { width: 1440, height: 900 },
     { width: 1280, height: 720 },
     { width: 820, height: 1100 },
   ]) {
@@ -1417,19 +1473,35 @@ test("on medium and large screens each home section fills a view below the heade
           )
         )
         .toBeLessThanOrEqual(1);
-      const box = await page.evaluate((target) => {
-        const el = document.getElementById(target)!;
-        const next = el.nextElementSibling ?? el.parentElement!.nextElementSibling;
-        return { height: el.getBoundingClientRect().height, nextTop: next ? next.getBoundingClientRect().top : null };
-      }, id);
-      const where = `#${id} at ${viewport.width}x${viewport.height}`;
-      expect(box.height, `${where} fills the view below the header`).toBeGreaterThanOrEqual(
-        viewport.height - header - 2
+      const height = await page.evaluate(
+        (target) => document.getElementById(target)!.getBoundingClientRect().height,
+        id
       );
-      if (viewport.width === 1280 && fitting.includes(id)) {
-        expect(box.nextTop, `${where} leaves the next section out of view`).toBeGreaterThanOrEqual(viewport.height - 2);
-      }
+      expect(
+        height,
+        `#${id} at ${viewport.width}x${viewport.height} fills the view below the header`
+      ).toBeGreaterThanOrEqual(viewport.height - header - 2);
     }
+  }
+});
+
+test("at 1440x900 every home section's content fills its view without spilling into the next", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const header = await page
+    .locator("header")
+    .first()
+    .evaluate((el) => el.getBoundingClientRect().height);
+  for (const id of ["shelf", "practice", "how", "paths", "loop", "faq", "cta"]) {
+    const room = await page.evaluate((target) => {
+      const el = document.getElementById(target)!;
+      const kids = [...el.children].map((child) => child.getBoundingClientRect());
+      const top = Math.min(...kids.map((box) => box.top));
+      const bottom = Math.max(...kids.map((box) => box.bottom));
+      return { content: bottom - top, section: el.getBoundingClientRect().height };
+    }, id);
+    expect(room.content, `#${id} has real content`).toBeGreaterThan((900 - header) * 0.7);
+    expect(room.section, `#${id} is not stretched past its content`).toBeLessThanOrEqual(room.content + 170);
   }
 });
 
@@ -1440,20 +1512,294 @@ test("the home nav anchors land each section's top under the header", async ({ p
     .locator("header")
     .first()
     .evaluate((el) => el.getBoundingClientRect().height);
+  const nav = page.getByRole("navigation", { name: "Sections" });
+  await expect(nav.getByRole("link")).toHaveText([
+    "Topics",
+    "Practice",
+    "How it works",
+    "Paths",
+    "Interview book",
+    "FAQ",
+  ]);
   for (const [name, id] of [
-    ["How it works", "how"],
-    ["Paths", "who"],
-    ["Interview loop", "loop"],
     ["Topics", "shelf"],
+    ["Practice", "practice"],
+    ["How it works", "how"],
+    ["Paths", "paths"],
+    ["Interview book", "loop"],
     ["FAQ", "faq"],
   ]) {
-    await page.getByRole("navigation", { name: "Sections" }).getByRole("link", { name }).click();
+    await nav.getByRole("link", { name }).click();
     await expect
       .poll(() => page.evaluate((target) => document.getElementById(target)?.getBoundingClientRect().top ?? -1, id), {
         timeout: 8000,
       })
       .toBeCloseTo(header, -1);
   }
+});
+
+test("the home page has the sections after the hero in order and none of the removed ones", async ({ page }) => {
+  await page.goto("/");
+  const ids = await page.evaluate(() => [...document.querySelectorAll("main > section")].map((el) => el.id));
+  expect(ids.slice(1)).toEqual(["shelf", "practice", "how", "paths", "loop", "faq", "cta"]);
+  for (const gone of ["features", "tools", "compare", "who"]) await expect(page.locator(`#${gone}`)).toHaveCount(0);
+  await expect(page.getByText("What you already tried, and what is different here.")).toHaveCount(0);
+  await expect(page.getByText("The usual way", { exact: true })).toHaveCount(0);
+});
+
+const SCENE_SECTIONS = ["shelf", "practice", "how", "paths", "loop", "faq", "cta"];
+
+test("every home scene after the hero has layered cards, a sticker and a handwritten note, and hides its decoration", async ({
+  page,
+}) => {
+  await page.goto("/");
+  for (const id of SCENE_SECTIONS) {
+    const section = page.locator(`#${id}`);
+    const counts = await section.evaluate((el) => ({
+      stages: el.querySelectorAll("[data-stage]").length,
+      cards: el.querySelectorAll("[data-card]").length,
+      stickers: el.querySelectorAll("[data-sticker]").length,
+      notes: el.querySelectorAll("[data-note]").length,
+      strokes: el.querySelectorAll("[data-note] svg path").length,
+    }));
+    expect(counts.stages, `#${id} has a stage`).toBeGreaterThan(0);
+    expect(counts.cards, `#${id} cards`).toBeGreaterThanOrEqual(3);
+    expect(counts.stickers, `#${id} stickers`).toBeGreaterThanOrEqual(1);
+    expect(counts.notes, `#${id} notes`).toBeGreaterThanOrEqual(1);
+    expect(counts.strokes, `#${id} curved strokes`).toBeGreaterThanOrEqual(2);
+  }
+  const hidden = await page.evaluate(() => {
+    const bad: string[] = [];
+    for (const el of document.querySelectorAll("main [aria-hidden='true']")) {
+      if (el.matches("a[href], button, input, select, textarea, [tabindex]:not([tabindex='-1'])")) bad.push(el.tagName);
+      if (
+        el.querySelector(
+          "a[href]:not([tabindex='-1']), button, input, select, textarea, [tabindex]:not([tabindex='-1'])"
+        )
+      )
+        bad.push(`${el.tagName} contains a control`);
+    }
+    return bad;
+  });
+  expect(hidden, "no control lives inside an aria-hidden layer").toEqual([]);
+  for (const id of ["practice", "faq", "cta"]) {
+    await expect(page.locator(`#${id} [data-stage]`).first()).toHaveAttribute("aria-hidden", "true");
+  }
+  for (const id of ["shelf", "how", "paths", "loop"]) {
+    const decor = await page
+      .locator(`#${id}`)
+      .evaluate((el) =>
+        [...el.querySelectorAll("[data-sticker], [data-note], [data-tape], [data-spark]")].every(
+          (node) => node.getAttribute("aria-hidden") === "true"
+        )
+      );
+    expect(decor, `#${id} decoration is aria-hidden`).toBe(true);
+  }
+});
+
+test("under reduced motion the home stage cards have no animation, no transition and no parallax", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  for (const id of SCENE_SECTIONS) {
+    await page.locator(`#${id}`).scrollIntoViewIfNeeded();
+    const stage = page.locator(`#${id} [data-stage]`).first();
+    const before = await stage.evaluate((el) =>
+      [...el.querySelectorAll("[data-card], [data-sticker], [data-note]")].map((node) => {
+        const style = getComputedStyle(node);
+        return { animation: style.animationName, transition: style.transitionDuration, translate: style.translate };
+      })
+    );
+    expect(before.length, `#${id} has stage pieces`).toBeGreaterThan(2);
+    for (const piece of before) {
+      expect(piece.animation, `#${id} animation`).toBe("none");
+      expect(piece.transition, `#${id} transition`).toMatch(/^0s(, 0s)*$/);
+      expect(piece.translate, `#${id} parallax`).toBe("none");
+    }
+    await expect(stage).not.toHaveAttribute("data-armed", "");
+    const box = await stage.boundingBox();
+    await page.mouse.move(box!.x + box!.width * 0.2, box!.y + box!.height * 0.2);
+    await page.mouse.move(box!.x + box!.width * 0.9, box!.y + box!.height * 0.9, { steps: 6 });
+    const after = await stage.evaluate((el) =>
+      [...el.querySelectorAll("[data-card]")].map((node) => getComputedStyle(node).translate)
+    );
+    expect(new Set(after), `#${id} still at rest after the pointer moves`).toEqual(new Set(["none"]));
+  }
+});
+
+test("moving the pointer over a home stage shifts its cards by depth, and leaving puts them back", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const stage = page.locator("#practice [data-stage]").first();
+  await stage.scrollIntoViewIfNeeded();
+  await expect(stage).toHaveAttribute("data-in", "");
+  const translate = () =>
+    stage.evaluate((el) => [...el.querySelectorAll("[data-card]")].map((node) => getComputedStyle(node).translate));
+  await page.waitForTimeout(1500);
+  const rest = await translate();
+  const box = await stage.boundingBox();
+  await page.mouse.move(box!.x + box!.width * 0.5, box!.y + box!.height * 0.5);
+  await page.mouse.move(box!.x + box!.width * 0.95, box!.y + box!.height * 0.9, { steps: 8 });
+  await expect.poll(async () => (await translate()).join("|")).not.toBe(rest.join("|"));
+  const moved = await stage.evaluate((el) => ({
+    px: Number(getComputedStyle(el).getPropertyValue("--px")),
+    py: Number(getComputedStyle(el).getPropertyValue("--py")),
+  }));
+  expect(moved.px).toBeGreaterThan(0.5);
+  expect(moved.py).toBeGreaterThan(0.5);
+  expect(Math.abs(moved.px)).toBeLessThanOrEqual(1);
+  await page.mouse.move(2, 2);
+  await expect.poll(async () => (await translate()).join("|"), { timeout: 4000 }).toBe(rest.join("|"));
+});
+
+test("the home page never scrolls sideways at 375px or 1024px, and phones get a compact stage", async ({ page }) => {
+  for (const width of [375, 1024]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/");
+    for (const id of SCENE_SECTIONS) await page.locator(`#${id}`).scrollIntoViewIfNeeded();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth),
+      `${width}px`
+    ).toBeLessThanOrEqual(0);
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const visibleCards = await page
+    .locator("#practice [data-card]")
+    .evaluateAll((cards) => cards.filter((card) => getComputedStyle(card).display !== "none").length);
+  expect(visibleCards).toBe(2);
+});
+
+test("the home practice section links to its four tools and shows numbers that match the rest of the page", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const practice = page.locator("#practice");
+  for (const [name, href] of [
+    [/Problems/, "/problems"],
+    [/Playground/, "/practice?id=free"],
+    [/Mock interviews/, "/mock"],
+    [/Whiteboard/, "/whiteboard"],
+  ] as const) {
+    await expect(practice.getByRole("link", { name }).first()).toHaveAttribute("href", href);
+  }
+  await expect(practice.getByRole("link")).toHaveCount(4);
+
+  const number = (scope: ReturnType<typeof page.locator>, label: RegExp) =>
+    scope.locator("dl > div", { hasText: label }).locator("dd").innerText();
+  const hero = page.locator("section").first();
+  const exercises = await number(hero, /runnable exercises/);
+  const questions = await number(hero, /interview questions/);
+  expect(await number(practice, /exercises graded/)).toBe(exercises);
+  expect(await number(practice, /interview questions answered/)).toBe(questions);
+  const runnable = await number(practice, /languages the editor runs/);
+  const rounds = await number(practice, /interview rounds/);
+  await expect(practice.getByRole("link", { name: /Problems/ })).toContainText(`${exercises} exercises`);
+  await expect(practice.getByRole("link", { name: /Playground/ })).toContainText(`${runnable} languages`);
+  await expect(page.locator("#shelf").getByRole("link", { name: /^Interview book/ })).toContainText(`${rounds} rounds`);
+  await expect(
+    page.locator("#faq").getByRole("region", { name: "Which languages can I run?", includeHidden: true })
+  ).toContainText(`${runnable} languages run inside your browser`);
+});
+
+test("each home path tab shows its journey, with unwritten topics as quiet chips and every link real", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const paths = page.locator("#paths");
+  const tabs = paths.getByRole("tab");
+  await expect(tabs).toHaveCount(3);
+  await expect(paths.getByRole("tabpanel")).toHaveCount(1);
+  const soonByPath = [2, 0, 1];
+  for (let i = 0; i < 3; i++) {
+    await tabs.nth(i).click();
+    await expect(tabs.nth(i)).toHaveAttribute("aria-selected", "true");
+    const panel = paths.getByRole("tabpanel");
+    await expect(panel).toHaveCount(1);
+    const journey = panel.getByRole("list", { name: /the journey$/ });
+    await expect(journey.getByRole("listitem")).toHaveCount(5);
+    await expect(panel.getByText("After this path you can")).toBeVisible();
+    await expect(panel.getByRole("listitem")).toHaveCount(5 + 3);
+    await expect(journey.getByText("soon", { exact: true })).toHaveCount(soonByPath[i]);
+    const links = await journey.getByRole("link").evaluateAll((els) => els.map((el) => el.getAttribute("href") ?? ""));
+    expect(links.length).toBe(5 - soonByPath[i]);
+    for (const href of links) {
+      expect(href, "a journey link points somewhere").toMatch(/^\//);
+      expect((await page.request.get(href)).status(), href).toBe(200);
+    }
+    await expect(panel.getByRole("link", { name: /Start this path/ })).toHaveAttribute("href", links[0]);
+  }
+  await tabs.nth(0).click();
+  const frontend = paths.getByRole("tabpanel");
+  for (const soon of ["TypeScript", "Next.js"]) {
+    await expect(frontend.getByRole("link", { name: new RegExp(soon) })).toHaveCount(0);
+    await expect(frontend.getByText(soon, { exact: true })).toBeVisible();
+  }
+  await tabs.nth(0).focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(tabs.nth(1)).toBeFocused();
+  await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
+  await page.keyboard.press("End");
+  await expect(tabs.nth(2)).toHaveAttribute("aria-selected", "true");
+  await page.keyboard.press("Home");
+  await expect(tabs.nth(0)).toHaveAttribute("aria-selected", "true");
+});
+
+test("the home FAQ answers why not videos, problem sites, docs or blog posts, and has no comparison table", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const faq = page.locator("#faq");
+  await expect(faq.getByRole("heading", { level: 2, name: "Questions." })).toBeVisible();
+  const question = "Why not just videos, problem sites, docs or blog posts?";
+  const button = faq.getByRole("button", { name: question });
+  await expect(button).toHaveCount(1);
+  await button.click();
+  await expect(button).toHaveAttribute("aria-expanded", "true");
+  const item = faq.getByRole("region", { name: question });
+  await expect(item).toBeVisible();
+  const contrasts = item.getByRole("listitem");
+  await expect(contrasts).toHaveCount(4);
+  for (const name of ["Video courses", "Grinding problem sites", "Official docs", "Interview blog posts"]) {
+    await expect(item).toContainText(name);
+  }
+  const share = await item.evaluate((el) => el.getBoundingClientRect().height / window.innerHeight);
+  expect(share, "the open comparison answer stays compact").toBeLessThan(0.45);
+  await expect(page.locator("#compare")).toHaveCount(0);
+  await expect(faq.getByRole("link", { name: /Pick a topic/ })).toHaveAttribute("href", "#shelf");
+  await expect(faq.getByRole("link", { name: /Prepare for an interview/ })).toHaveAttribute("href", "/interview");
+});
+
+test("the home FAQ opens one answer at a time, as real buttons with state in text", async ({ page }) => {
+  await page.goto("/");
+  const faq = page.locator("#faq");
+  const buttons = faq.getByRole("button", { expanded: true });
+  await expect(buttons).toHaveCount(1);
+  await expect(buttons.first()).toContainText("Is it really free?");
+  const second = faq.getByRole("button", { name: "Do I need to sign up?" });
+  const third = faq.getByRole("button", { name: "Which topics are written?" });
+  await second.click();
+  await expect(second).toHaveAttribute("aria-expanded", "true");
+  await expect(faq.getByRole("button", { expanded: true })).toHaveCount(1);
+  await third.click();
+  await expect(third).toHaveAttribute("aria-expanded", "true");
+  await expect(second).toHaveAttribute("aria-expanded", "false");
+  await expect(faq.getByRole("button", { expanded: true })).toHaveCount(1);
+  await expect(faq.getByRole("region", { name: "Which topics are written?" })).toBeVisible();
+  await expect(faq.getByRole("region", { name: "Do I need to sign up?" })).toHaveCount(0);
+  await third.click();
+  await expect(faq.getByRole("button", { expanded: true })).toHaveCount(0);
+  const html = await (await page.request.get("/")).text();
+  expect(html, "every answer ships in the HTML").toContain("There is no account");
+  const controlled = await faq
+    .getByRole("button")
+    .evaluateAll((els) =>
+      els
+        .filter((el) => el.hasAttribute("aria-controls"))
+        .map((el) => !!document.getElementById(el.getAttribute("aria-controls")!))
+    );
+  expect(controlled.length).toBeGreaterThanOrEqual(8);
+  expect(controlled.every(Boolean)).toBe(true);
 });
 
 test("the privacy page is indexed, framed, and linked from the menu, the home page, the FAQ and the footer", async ({
@@ -1473,15 +1819,13 @@ test("the privacy page is indexed, framed, and linked from the menu, the home pa
   await page.keyboard.press("Escape");
 
   await page.goto("/");
-  await expect(
-    page.locator("article", { hasText: "Nothing to sign up for" }).getByRole("link", { name: "The privacy page" })
-  ).toHaveAttribute("href", "/privacy");
-  const faq = page.locator("details", { hasText: "Do I need to sign up?" });
-  await faq.locator("summary").click();
-  await expect(faq).toContainText("anonymous page analytics");
-  await expect(faq.getByRole("link", { name: /What leaves/ })).toHaveAttribute("href", "/privacy");
-  const built = page.locator("details", { hasText: "How is the site itself built?" });
-  await built.locator("summary").click();
+  const faq = page.locator("#faq");
+  await faq.getByRole("button", { name: "Do I need to sign up?" }).click();
+  const signUp = faq.getByRole("region", { name: "Do I need to sign up?" });
+  await expect(signUp).toContainText("anonymous page analytics");
+  await expect(signUp.getByRole("link", { name: /What leaves/ })).toHaveAttribute("href", "/privacy");
+  await faq.getByRole("button", { name: "How is the site itself built?" }).click();
+  const built = faq.getByRole("region", { name: "How is the site itself built?" });
   await expect(built.getByRole("link", { name: /Read how it is built/ })).toHaveAttribute("href", "/architecture");
   await expect(page.getByRole("navigation", { name: "You" }).getByRole("link", { name: "Privacy" })).toHaveAttribute(
     "href",

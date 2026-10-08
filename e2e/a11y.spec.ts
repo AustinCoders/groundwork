@@ -98,12 +98,64 @@ const STATES: State[] = [
     path: "/",
     viewports: VIEWPORTS,
     visit: async (page, check) => {
+      const stage = page.locator("#loop").getByRole("tab", { name: /^02 Technical/ });
+      await stage.scrollIntoViewIfNeeded();
+      await stage.click();
       const row = page.locator("#loop").getByRole("button", { name: /React & Next\.js/ });
-      await row.scrollIntoViewIfNeeded();
       await row.click();
       await expect(row).toHaveAttribute("aria-current", "true");
       await expect(page.locator("#loop").getByRole("region", { name: "React & Next.js" })).toBeVisible();
       await check("the interview book on a later round");
+    },
+  },
+  {
+    name: "the interview book on its last stage",
+    path: "/",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const stage = page.locator("#loop").getByRole("tab", { name: /^04 People and offer/ });
+      await stage.scrollIntoViewIfNeeded();
+      await stage.click();
+      await expect(stage).toHaveAttribute("aria-selected", "true");
+      await expect(page.locator("#loop").getByText("The offer", { exact: true })).toBeVisible();
+      await check("the interview book on its last stage");
+    },
+  },
+  {
+    name: "the practice section with a row focused",
+    path: "/",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const row = page.locator("#practice").getByRole("link", { name: /Playground/ });
+      await row.scrollIntoViewIfNeeded();
+      await row.focus();
+      await expect(row).toBeFocused();
+      await check("the practice section with a row focused");
+    },
+  },
+  {
+    name: "a path tab with soon topics",
+    path: "/",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const tab = page.locator("#paths").getByRole("tab", { name: /Senior and system design/ });
+      await tab.scrollIntoViewIfNeeded();
+      await tab.click();
+      await expect(tab).toHaveAttribute("aria-selected", "true");
+      await expect(page.locator("#paths").getByRole("tabpanel").getByText("soon", { exact: true })).toBeVisible();
+      await check("a path tab with soon topics");
+    },
+  },
+  {
+    name: "the FAQ with the comparison answer open",
+    path: "/",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const item = page.locator("#faq").getByRole("button", { name: /Why not just videos/ });
+      await item.scrollIntoViewIfNeeded();
+      await item.click();
+      await expect(item).toHaveAttribute("aria-expanded", "true");
+      await check("the FAQ with the comparison answer open");
     },
   },
   {
@@ -117,6 +169,31 @@ const STATES: State[] = [
       await expect(step).toHaveAttribute("aria-selected", "true");
       await expect(page.locator("#how").getByRole("tabpanel")).toContainText("Build me a debounce.");
       await check("how it works on step 3");
+    },
+  },
+  {
+    name: "how it works on step 4",
+    path: "/",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const step = page.locator("#how").getByRole("tab", { name: /Keep/ });
+      await step.scrollIntoViewIfNeeded();
+      await step.click();
+      await expect(step).toHaveAttribute("aria-selected", "true");
+      await expect(page.locator("#how").getByRole("tabpanel")).toContainText("Read today. Back after 3 days");
+      await check("how it works on step 4");
+    },
+  },
+  {
+    name: "the topic section on the AI category",
+    path: "/",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const category = page.locator("#shelf").getByRole("tab", { name: /^AI/ });
+      await category.scrollIntoViewIfNeeded();
+      await category.click();
+      await expect(page.locator("#shelf").getByRole("link", { name: /^Claude/ })).toBeVisible();
+      await check("the topic section on the AI category");
     },
   },
   {
