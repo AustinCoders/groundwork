@@ -1,8 +1,6 @@
+import { LOWER_BELOW, RAISE_AT } from "@/lib/adaptiveThresholds";
 import { pickItems } from "@/lib/mock/loops";
 import type { LoopConfig, MockItem } from "@/lib/mock/types";
-
-export const RAISE_AT = 0.8;
-export const LOWER_BELOW = 0.45;
 
 export type Shift = "harder" | "easier";
 

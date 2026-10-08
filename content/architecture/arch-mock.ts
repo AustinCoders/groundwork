@@ -143,7 +143,9 @@ export const archMock: Chapter = {
   While building, every question after the first in a stage gets two alternates: one harder and
   one easier, chosen from the same pool and reserved so nothing else takes them. When the reader
   moves on, <code>shiftFor</code> reads the score just earned. At 0.8 or above the next question is
-  swapped for the harder alternate, and below 0.45 for the easier one. It only happens within a
+  swapped for the harder alternate, and below 0.45 for the easier one. Those two thresholds live in
+  <code>lib/adaptiveThresholds.ts</code>, which the DSA placement shares, so raising and lowering
+  mean the same thing in both. It only happens within a
   stage, and never in a retry round.
 </p>
 <p>

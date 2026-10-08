@@ -2320,7 +2320,7 @@ export const topics: TopicsData = {
               title: "Where a reader's state lives",
               chapter: "arch-state",
               items: [
-                "Thirty-one localStorage keys, two sessionStorage keys, a query string and a URL hash. There are no accounts, no cookies and no database.",
+                "Thirty-three localStorage keys, two sessionStorage keys, a query string and a URL hash. There are no accounts, no cookies and no database.",
               ],
             },
             {
