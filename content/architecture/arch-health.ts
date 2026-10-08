@@ -15,9 +15,9 @@ export const archHealth: Chapter = {
 <thead><tr><th>Check</th><th>Result, latest CI run on <code>main</code></th></tr></thead>
 <tbody>
 <tr><td>TypeScript, ESLint, Prettier, cspell</td><td><span class="chip tone-yes">clean</span></td></tr>
-<tr><td>Vitest</td><td><span class="chip tone-yes">367 of 367</span></td></tr>
+<tr><td>Vitest</td><td><span class="chip tone-yes">382 of 382</span></td></tr>
 <tr><td>Build</td><td><span class="chip tone-yes">1,795 prerendered routes</span></td></tr>
-<tr><td>Playwright, 4 specs</td><td><span class="chip tone-yes">204 of 204</span></td></tr>
+<tr><td>Playwright, 4 specs</td><td><span class="chip tone-yes">215 of 215</span></td></tr>
 <tr><td>Lighthouse budgets, 3 URLs, 3 runs each</td><td><span class="chip tone-yes">pass</span></td></tr>
 <tr><td><code>TODO</code>, <code>FIXME</code>, <code>HACK</code> in source</td><td><span class="chip tone-yes">0</span></td></tr>
 <tr><td><code>npm audit</code>, production dependencies</td><td><span class="chip tone-bad">1 critical, 1 high</span></td></tr>
@@ -65,13 +65,13 @@ export const archHealth: Chapter = {
 </p>
 
 <figure>
-<svg viewBox="0 0 900 350" class="dg" role="img" aria-label="Bar chart of the largest files by line count, as of 8 October 2026: app/globals.css 7,853; content/interview-data.ts 4,745; content/topics.ts 4,556; mock/mock.module.css 3,322; app/home.module.css 2,675; whiteboard/Board.tsx 1,852; PracticeWorkspace.tsx 1,752; interview/book.module.css 1,614.">
+<svg viewBox="0 0 900 350" class="dg" role="img" aria-label="Bar chart of the largest files by line count, as of 8 October 2026: app/globals.css 7,853; content/interview-data.ts 4,745; content/topics.ts 4,556; mock/mock.module.css 3,322; app/home.module.css 3,223; whiteboard/Board.tsx 1,852; PracticeWorkspace.tsx 1,752; interview/book.module.css 1,614.">
 <g class="rough">
 <rect x="245" y="24" width="396" height="22" rx="4" style="fill: var(--dg-box-red); stroke: var(--red); stroke-width: 1.6" />
 <rect x="245" y="62" width="239" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
 <rect x="245" y="100" width="230" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
 <rect x="245" y="138" width="168" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
-<rect x="245" y="176" width="135" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="176" width="163" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <rect x="245" y="214" width="93" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <rect x="245" y="252" width="88" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <rect x="245" y="290" width="81" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
@@ -89,7 +89,7 @@ export const archHealth: Chapter = {
 <text class="sm" x="494" y="78">4,745</text>
 <text class="sm" x="485" y="116">4,556</text>
 <text class="sm" x="423" y="154">3,322</text>
-<text class="sm" x="390" y="192">2,675</text>
+<text class="sm" x="418" y="192">3,223</text>
 <text class="sm" x="348" y="230">1,852</text>
 <text class="sm" x="343" y="268">1,752</text>
 <text class="sm" x="336" y="306">1,614</text>

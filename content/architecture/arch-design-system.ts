@@ -320,12 +320,12 @@ export const archDesignSystem: Chapter = {
   architecture section. One of them, <code>/level/typescript</code>, is the level picker of a
   topic that is only outlined, and another, <code>/typescript/ts-setup-compiler</code>, is that
   same topic's own outline chapter; <code>/level/typescript</code> stands in for <code>/soon</code>,
-  which redirects there while every topic is marked ready. It also runs against 14 states that a
-  plain page load does not show: 10 that open with a click, and 4 seeded in
+  which redirects there while every topic is marked ready. It also runs against 16 states that a
+  plain page load does not show: 12 that open with a click, and 4 seeded in
   <code>localStorage</code>. The clicks open the site menu, the reading menu on <code>/notes</code>
   with its Text size and Narrator folds open, a reading budget picked on the JavaScript cover's Up
   next card, the Topics fold with a category expanded, the home page's topic section on Languages,
-  the Chapters and Filters sheets, and a system design round in
+  its interview book on a later round and its how-it-works stepper on step 3, the Chapters and Filters sheets, and a system design round in
   the mock interview, checked at the brief, a question, a follow-up, the rubric and the debrief.
   The seeds give a chapter due for review, a
   chapter marked read on a path, a year of activity on the progress page, and two saved mock

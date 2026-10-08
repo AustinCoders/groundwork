@@ -11,9 +11,9 @@ import { computeStats } from "@/lib/gamification";
 import { useProgressValue } from "@/lib/hooks";
 import { progress } from "@/lib/storage";
 import { SITE_NAME } from "@/lib/site";
-import { useGuidesNav } from "@/lib/topicNav";
 import { TOPIC_CATEGORIES } from "@/lib/topicCategories";
 import type { TopicCategoryId } from "@/content/types";
+import type { HomeRound } from "@/lib/homeRounds";
 import type { SiteStats } from "@/lib/topicStats";
 import styles from "./home.module.css";
 
@@ -37,6 +37,7 @@ export interface HomeViewProps {
   problems: number;
   languages: { total: number; runnable: number };
   interview: { rounds: number; questions: number };
+  bookRounds: HomeRound[];
 }
 
 function listNames(names: string[]): string {
@@ -332,24 +333,32 @@ function HeroArt({ interview }: { interview: HomeViewProps["interview"] }) {
   );
 }
 
-const STORY = [
+const STEPS = [
   {
     k: "Read",
+    line: "Chapters layered bottom to top.",
+    chrome: "A chapter · how code runs",
     title: "Read a chapter that builds on the last one.",
     body: "Every topic is layered bottom to top, so an idea only arrives after the ideas it rests on. You never skim past a word you do not know yet.",
   },
   {
     k: "Run",
+    line: "Real tests, right in the page.",
+    chrome: "promises.test.js",
     title: "Prove it with real tests, right in the page.",
     body: "Chapters that need practice end in an editor. Your answer runs in your browser against real tests, and a pass is what counts.",
   },
   {
     k: "Get asked",
+    line: "The follow-up they push with next.",
+    chrome: "Round 02 · machine coding",
     title: "Then get asked the follow-up.",
     body: "The interview book shows how each round really goes: the question, the wrong answer that loses the room, and what they push with next.",
   },
   {
     k: "Keep",
+    line: "Spaced review before you forget.",
+    chrome: "Your review calendar",
     title: "And it comes back before you forget.",
     body: "Chapters you finish come back for review on a spaced schedule, so what you read in week one is still there on interview day.",
   },
@@ -363,20 +372,22 @@ const CHAT: { who: "them" | "you"; text: string }[] = [
   { who: "them", text: "Good. Now the first call fires at once. And how do I cancel it?" },
 ];
 const REVIEW_DAYS = [0, 3, 10, 31];
+const AUTO_ADVANCE_MS = 5500;
 
 function vars(v: Record<string, number>): React.CSSProperties {
   return Object.fromEntries(Object.entries(v).map(([k, n]) => [`--${k}`, n])) as React.CSSProperties;
 }
 
-function StoryVisual({ step }: { step: number }) {
+function StepDemo({ step }: { step: number }) {
   if (step === 0)
     return (
-      <div className={styles.vis} aria-hidden="true">
+      <div className={styles.demo}>
         <div className={styles.layers}>
           {LAYERS.map((t, i) => (
             <span key={t} className={styles.layer} style={vars({ i })} data-top={i === 3 || undefined}>
               <b>{String(i + 1).padStart(2, "0")}</b>
               {t}
+              {i === 3 && <em>you are here</em>}
             </span>
           ))}
         </div>
@@ -385,45 +396,61 @@ function StoryVisual({ step }: { step: number }) {
     );
   if (step === 1)
     return (
-      <div className={styles.vis} aria-hidden="true">
-        <div className={styles.visTests}>
+      <div className={styles.demo}>
+        <div className={styles.runHead}>
+          <span>4 tests</span>
+          <span className={styles.runPress}>▶ Run tests</span>
+        </div>
+        <div className={styles.runTests}>
           {RUN_TESTS.map((t, i) => (
             <span key={t} style={vars({ i })}>
-              <i>✓</i>
+              <span className={styles.runMark}>
+                <b>○</b>
+                <i>✓</i>
+              </span>
               {t}
             </span>
           ))}
         </div>
-        <span className={styles.visBar}>
+        <span className={styles.runBar}>
           <span />
         </span>
-        <strong className={styles.visBig}>4 / 4 passed</strong>
+        <strong className={styles.runBig}>4 / 4 passed</strong>
       </div>
     );
   if (step === 2)
     return (
-      <div className={styles.vis} aria-hidden="true">
+      <div className={styles.demo}>
         <div className={styles.chat}>
-          {CHAT.map((m, i) => (
+          {CHAT.slice(0, 2).map((m, i) => (
             <p key={m.text} data-who={m.who} style={vars({ i })}>
               {m.text}
             </p>
           ))}
-          <span className={styles.typing}>
-            <i />
-            <i />
-            <i />
-          </span>
+          <div className={styles.chatLast}>
+            <span className={styles.typing}>
+              <i />
+              <i />
+              <i />
+            </span>
+            <p data-who={CHAT[2].who} style={vars({ i: 2 })}>
+              {CHAT[2].text}
+            </p>
+          </div>
         </div>
         <small>Every round shows the follow-up they push with next.</small>
       </div>
     );
   return (
-    <div className={styles.vis} aria-hidden="true">
+    <div className={styles.demo}>
       <div className={styles.cal}>
         {Array.from({ length: 35 }, (_, i) => {
           const k = REVIEW_DAYS.indexOf(i);
-          return <span key={i} data-on={k >= 0 || undefined} style={k >= 0 ? vars({ k }) : undefined} />;
+          return (
+            <span key={i} data-on={k >= 0 || undefined} style={k >= 0 ? vars({ k }) : undefined}>
+              {k >= 0 ? i : ""}
+            </span>
+          );
         })}
       </div>
       <small>Read today. Back after 3 days, then 7 more, then 21.</small>
@@ -431,113 +458,139 @@ function StoryVisual({ step }: { step: number }) {
   );
 }
 
-function Story({ children }: { children: React.ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
+function HowStepper() {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  const compact = useCompact();
   const [active, setActive] = useState(0);
-  const activeRef = useRef(0);
+  const [chosen, setChosen] = useState(false);
+  const [motion, setMotion] = useState(false);
+  const [onScreen, setOnScreen] = useState(false);
+  const [tabVisible, setTabVisible] = useState(true);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      const r = el.getBoundingClientRect();
-      const total = r.height - window.innerHeight;
-      const prog = total > 0 ? Math.min(1, Math.max(0, -r.top / total)) : 1;
-      const x = prog * STORY.length;
-      const step = Math.min(STORY.length - 1, Math.floor(x));
-      const local = Math.min(1, Math.max(0, (x - step) * 1.35));
-      el.style.setProperty("--progress", prog.toFixed(4));
-      el.style.setProperty("--p", local.toFixed(4));
-      if (step !== activeRef.current) {
-        activeRef.current = step;
-        setActive(step);
-      }
-    };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncMotion = () => setMotion(prefersMotion());
+    const syncVisible = () => setTabVisible(document.visibilityState === "visible");
+    syncMotion();
+    syncVisible();
+    rootRef.current?.setAttribute("data-armed", "");
+    reduced.addEventListener("change", syncMotion);
+    document.addEventListener("visibilitychange", syncVisible);
+    const root = rootRef.current;
+    let observer: IntersectionObserver | null = null;
+    if (root && "IntersectionObserver" in window) {
+      observer = new IntersectionObserver(([entry]) => setOnScreen(entry.isIntersecting), { threshold: 0.3 });
+      observer.observe(root);
+    }
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      reduced.removeEventListener("change", syncMotion);
+      document.removeEventListener("visibilitychange", syncVisible);
+      observer?.disconnect();
     };
   }, []);
 
-  function jump(i: number) {
-    const el = ref.current;
-    if (!el) return;
-    const top = el.getBoundingClientRect().top + window.scrollY;
-    const total = el.offsetHeight - window.innerHeight;
-    const target = top + (total * (i + 0.55)) / STORY.length;
-    smoothScroll.to(target);
+  const running = motion && onScreen && tabVisible && !hovered && !focused && !chosen;
+
+  useEffect(() => {
+    if (!running) return;
+    const timer = setTimeout(() => setActive((current) => (current + 1) % STEPS.length), AUTO_ADVANCE_MS);
+    return () => clearTimeout(timer);
+  }, [running, active]);
+
+  function choose(next: number) {
+    setChosen(true);
+    setActive(next);
   }
 
-  const state = (i: number) => (i < active ? "past" : i === active ? "active" : "next");
+  function onKey(e: React.KeyboardEvent) {
+    const count = STEPS.length;
+    const next =
+      e.key === "ArrowDown" || e.key === "ArrowRight"
+        ? (active + 1) % count
+        : e.key === "ArrowUp" || e.key === "ArrowLeft"
+          ? (active - 1 + count) % count
+          : e.key === "Home"
+            ? 0
+            : e.key === "End"
+              ? count - 1
+              : -1;
+    if (next < 0) return;
+    e.preventDefault();
+    choose(next);
+    tabs.current[next]?.focus();
+  }
 
   return (
-    <>
-      <div className={styles.story} ref={ref} style={vars({ steps: STORY.length })}>
-        <div className={styles.pin}>
-          {children}
-          <div className={styles.pinGrid}>
-            <div className={styles.pinText}>
-              <div className={styles.rail} aria-label="Steps" role="group">
-                {STORY.map((s, i) => (
-                  <button
-                    key={s.k}
-                    type="button"
-                    aria-current={i === active ? "step" : undefined}
-                    className={styles.railStep}
-                    style={vars({ i })}
-                    onClick={() => jump(i)}
-                  >
-                    <span className={styles.railFill} />
-                    <b>
-                      {String(i + 1).padStart(2, "0")} · {s.k}
-                    </b>
-                  </button>
-                ))}
-              </div>
-              <div className={styles.pinCopy}>
-                {STORY.map((s, i) => (
-                  <article key={s.k} data-state={state(i)} aria-hidden={i !== active}>
-                    <span className={styles.bigNum} aria-hidden="true">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <h3>{s.title}</h3>
-                    <p>{s.body}</p>
-                  </article>
-                ))}
-              </div>
+    <div
+      className={styles.stepper}
+      ref={rootRef}
+      data-play={onScreen || undefined}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onFocus={() => setFocused(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) setFocused(false);
+      }}
+    >
+      <div
+        className={styles.stepTabs}
+        role="tablist"
+        aria-label="How it works"
+        aria-orientation={compact ? "horizontal" : "vertical"}
+        onKeyDown={onKey}
+      >
+        {STEPS.map((s, i) => (
+          <button
+            key={s.k}
+            ref={(el) => {
+              tabs.current[i] = el;
+            }}
+            type="button"
+            role="tab"
+            id={`how-tab-${i}`}
+            aria-selected={i === active}
+            aria-controls={`how-panel-${i}`}
+            tabIndex={i === active ? 0 : -1}
+            className={styles.stepTab}
+            onClick={() => choose(i)}
+          >
+            <span className={styles.stepIdx}>{String(i + 1).padStart(2, "0")}</span>
+            <span className={styles.stepName}>{s.k}</span>
+            <span className={styles.stepLine}>{s.line}</span>
+            {running && i === active && <span className={styles.stepFill} aria-hidden="true" />}
+          </button>
+        ))}
+      </div>
+      {STEPS.map((s, i) => (
+        <div
+          key={s.k}
+          className={styles.stagePanel}
+          role="tabpanel"
+          id={`how-panel-${i}`}
+          aria-labelledby={`how-tab-${i}`}
+          hidden={i !== active}
+        >
+          <div className={styles.stage}>
+            <div className={styles.stageBar} aria-hidden="true">
+              <span />
+              <span />
+              <span />
+              <em>{s.chrome}</em>
             </div>
-            <div className={styles.pinStage}>
-              {STORY.map((s, i) => (
-                <div key={s.k} className={styles.stageItem} data-state={state(i)}>
-                  <StoryVisual step={i} />
-                </div>
-              ))}
+            <div className={styles.stageBody} aria-hidden="true">
+              <StepDemo step={i} />
+            </div>
+            <div className={styles.stageCopy}>
+              <h3>{s.title}</h3>
+              <p>{s.body}</p>
             </div>
           </div>
         </div>
-      </div>
-      <ol className={styles.storyList}>
-        {STORY.map((s, i) => (
-          <li key={s.k} data-fx="up">
-            <span className={styles.storyKey}>
-              {String(i + 1).padStart(2, "0")} · {s.k}
-            </span>
-            <h3>{s.title}</h3>
-            <p>{s.body}</p>
-            <StoryVisual step={i} />
-          </li>
-        ))}
-      </ol>
-    </>
+      ))}
+    </div>
   );
 }
 
@@ -624,83 +677,157 @@ function Words({ text }: { text: string }) {
   );
 }
 
-function Journey({ children }: { children: React.ReactNode }) {
-  const guides = useGuidesNav();
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const pinRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLOListElement>(null);
-  const book = guides.find((g) => g.id === "interview");
-  const rounds = book?.groups[0]?.chapters ?? [];
+const NARROW_QUERY = "(max-width: 1080px)";
+
+function lineAt(): number {
+  return window.matchMedia(NARROW_QUERY).matches ? 0.72 : 0.5;
+}
+
+function InterviewBook({ rounds }: { rounds: HomeRound[] }) {
+  const [active, setActive] = useState(0);
+  const [announcement, setAnnouncement] = useState("");
+  const rows = useRef<(HTMLButtonElement | null)[]>([]);
+  const settling = useRef(false);
+  const settleTimer = useRef(0);
 
   useEffect(() => {
-    const wrap = wrapRef.current;
-    const pin = pinRef.current;
-    const track = trackRef.current;
-    if (!wrap || !pin || !track) return;
-    const wide = window.matchMedia("(min-width: 1081px)");
-    let dist = 0;
-    let raf = 0;
-    const measure = () => {
-      const on = wide.matches && prefersMotion();
-      wrap.dataset.pinned = on ? "true" : "false";
-      if (!on) {
-        wrap.style.height = "";
-        track.style.transform = "";
-        return;
-      }
-      dist = Math.max(0, track.scrollWidth - pin.clientWidth);
-      wrap.style.height = `${dist * 0.55 + window.innerHeight}px`;
-      update();
+    if (!("IntersectionObserver" in window)) return;
+    const narrow = window.matchMedia(NARROW_QUERY);
+    let observer: IntersectionObserver | null = null;
+    const observe = () => {
+      observer?.disconnect();
+      const line = lineAt();
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (settling.current) return;
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            const index = Number((entry.target as HTMLElement).dataset.index);
+            if (Number.isFinite(index)) setActive(index);
+          }
+        },
+        { rootMargin: `-${(line * 100 - 1.5).toFixed(1)}% 0px -${((1 - line) * 100 - 1.5).toFixed(1)}% 0px` }
+      );
+      rows.current.forEach((row) => row && observer?.observe(row));
     };
-    const update = () => {
-      raf = 0;
-      if (wrap.dataset.pinned !== "true") return;
-      const top = wrap.getBoundingClientRect().top;
-      const prog = dist > 0 ? Math.min(1, Math.max(0, -top / (dist * 0.55))) : 0;
-      track.style.transform = `translate3d(${(-prog * dist).toFixed(1)}px, 0, 0)`;
-      wrap.style.setProperty("--jp", prog.toFixed(4));
-    };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    measure();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", measure);
+    observe();
+    narrow.addEventListener("change", observe);
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", measure);
+      narrow.removeEventListener("change", observe);
+      observer?.disconnect();
+      window.clearTimeout(settleTimer.current);
     };
   }, [rounds.length]);
 
-  if (!rounds.length) return null;
+  function pickAtLine() {
+    const y = window.innerHeight * lineAt();
+    const index = rows.current.findIndex((row) => {
+      const rect = row?.getBoundingClientRect();
+      return rect !== undefined && rect.top <= y && rect.bottom >= y;
+    });
+    if (index >= 0) setActive(index);
+  }
+
+  function choose(index: number) {
+    const round = rounds[index];
+    const row = rows.current[index];
+    setActive(index);
+    setAnnouncement(
+      `Round ${String(index + 1).padStart(2, "0")}, ${round.title}.${round.tests ? ` It tests: ${round.tests}` : ""}`
+    );
+    if (!row) return;
+    const rect = row.getBoundingClientRect();
+    const instant = !prefersMotion();
+    settling.current = true;
+    window.clearTimeout(settleTimer.current);
+    settleTimer.current = window.setTimeout(
+      () => {
+        settling.current = false;
+        pickAtLine();
+      },
+      instant ? 200 : 1500
+    );
+    smoothScroll.to(Math.max(0, rect.top + window.scrollY + rect.height / 2 - window.innerHeight * lineAt()), instant);
+  }
+
+  const current = rounds[active] ?? rounds[0];
+  const number = String(active + 1).padStart(2, "0");
+
   return (
-    <div className={styles.sideWrap} ref={wrapRef}>
-      <div className={styles.sidePin} ref={pinRef}>
-        {children}
-        <span className={styles.sideProgress} aria-hidden="true">
-          <span />
-        </span>
-        <ol className={styles.track} ref={trackRef} aria-label="Interview rounds in order">
-          {rounds.map((r, i) => (
-            <li key={r.id} style={vars({ i })}>
-              <Link href={r.href} prefetch={false} className={styles.round} data-glow>
-                <span className={styles.roundNum}>{r.num}</span>
-                <span className={styles.roundStep}>Round {String(i + 1).padStart(2, "0")}</span>
-                <span className={styles.roundTitle}>{r.title}</span>
-                <span className={styles.roundGo} aria-hidden="true">
-                  Read it →
-                </span>
-              </Link>
-            </li>
-          ))}
-          <li className={styles.offer}>
-            <span className={styles.roundNum}>🎉</span>
-            <span className={styles.roundTitle}>The offer</span>
-            <span className={styles.roundStep}>and the number you negotiate</span>
+    <div className={styles.loop}>
+      <ol className={styles.timeline} aria-label="Interview rounds in order">
+        {rounds.map((round, i) => (
+          <li
+            key={round.id}
+            className={styles.step}
+            data-state={i < active ? "past" : i === active ? "active" : "next"}
+          >
+            <button
+              type="button"
+              className={styles.stepBtn}
+              ref={(el) => {
+                rows.current[i] = el;
+              }}
+              data-index={i}
+              aria-current={i === active ? "true" : undefined}
+              onClick={() => choose(i)}
+            >
+              <span className={styles.node} aria-hidden="true">
+                {round.code}
+              </span>
+              <span className={styles.stepText}>
+                <span className={styles.stepNum}>{`Round ${String(i + 1).padStart(2, "0")}`}</span>
+                <span className={styles.stepTitle}>{round.title}</span>
+              </span>
+            </button>
           </li>
-        </ol>
-      </div>
+        ))}
+        <li className={`${styles.step} ${styles.offerStep}`} data-state="next">
+          <span className={styles.stepRow}>
+            <span className={styles.node} aria-hidden="true">
+              🎉
+            </span>
+            <span className={styles.stepText}>
+              <span className={styles.stepNum}>and then</span>
+              <span className={styles.stepTitle}>The offer</span>
+            </span>
+          </span>
+        </li>
+      </ol>
+      {current && (
+        <div className={styles.preview} role="region" aria-labelledby="loop-preview-title">
+          <div className={styles.previewBody} key={current.id}>
+            <p className={styles.previewKicker}>{`Round ${number} · ${current.code}`}</p>
+            <h3 id="loop-preview-title" className={styles.previewTitle}>
+              {current.title}
+            </h3>
+            {current.tests && (
+              <div className={styles.previewBlock}>
+                <p className={styles.previewLabel}>What they are really testing</p>
+                <p className={styles.previewText}>{current.tests}</p>
+              </div>
+            )}
+            {current.wrong && (
+              <div className={`${styles.previewBlock} ${styles.previewWrong}`}>
+                <p className={styles.previewLabel}>The answer that loses the room</p>
+                <p className={styles.previewText}>{current.wrong}</p>
+              </div>
+            )}
+            {current.sample && (
+              <div className={styles.previewBlock}>
+                <p className={styles.previewLabel}>A question you will get</p>
+                <p className={styles.previewSample}>“{current.sample}”</p>
+              </div>
+            )}
+            <Link href={current.href} prefetch={false} className={`${styles.btn} ${styles.previewLink}`}>
+              Read this round <span className={styles.btnArrow}>→</span>
+            </Link>
+          </div>
+        </div>
+      )}
+      <p className="visually-hidden" role="status" aria-live="polite">
+        {announcement}
+      </p>
     </div>
   );
 }
@@ -907,7 +1034,7 @@ const TOOLS = [
   { href: "/whiteboard", tone: "teal", icon: "M3 5h18v12H3zM8 21h8M12 17v4", t: "Whiteboard" },
 ];
 
-export function HomeView({ stats, ready, soon, problems, languages, interview }: HomeViewProps) {
+export function HomeView({ stats, ready, soon, problems, languages, interview, bookRounds }: HomeViewProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const closeMenu = useCallback(() => {
@@ -918,7 +1045,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
   const heroRef = useRef<HTMLElement>(null);
   const artRef = useRef<HTMLDivElement>(null);
   const hours = Math.round(stats.minutes / 60);
-  useScrollFx(pageRef);
+  useScrollFx(pageRef, null, 0);
 
   useEffect(() => {
     let raf = 0;
@@ -1088,18 +1215,17 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
           </section>
 
           <section className={`${styles.section} ${styles.howSection}`} id="how" aria-labelledby="how-h">
-            <Story>
-              <div className={styles.head} data-fx="head">
-                <p className={styles.eyebrow}>How it works</p>
-                <h2 id="how-h" className={styles.h2}>
-                  <Words text="Read it. Run it. Get asked about it. Keep it." />
-                </h2>
-                <p className={styles.sub}>
-                  Most prep is either too shallow or too scattered. Here, the explanation, the practice and the
-                  interview sit in one place, in the right order.
-                </p>
-              </div>
-            </Story>
+            <div className={styles.head} data-fx="head">
+              <p className={styles.eyebrow}>How it works</p>
+              <h2 id="how-h" className={styles.h2}>
+                <Words text="Read it. Run it. Get asked about it. Keep it." />
+              </h2>
+              <p className={styles.sub}>
+                Most prep is either too shallow or too scattered. Here, the explanation, the practice and the interview
+                sit in one place, in the right order.
+              </p>
+            </div>
+            <HowStepper />
           </section>
 
           <section className={styles.section} id="features" aria-labelledby="feat-h">
@@ -1186,19 +1312,18 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             </div>
           </section>
 
-          <section className={styles.loopSection} id="loop" aria-labelledby="loop-h">
-            <Journey>
-              <div className={styles.head}>
-                <p className={styles.eyebrow}>The interview book</p>
-                <h2 id="loop-h" className={styles.h2}>
-                  <Words text="From the first call to the offer, round by round." />
-                </h2>
-                <p className={styles.sub}>
-                  What each round is really testing, the answer, the wrong answer that loses the room, and the
-                  follow-up. Pick any round to read it.
-                </p>
-              </div>
-            </Journey>
+          <section className={`${styles.section} ${styles.loopSection}`} id="loop" aria-labelledby="loop-h">
+            <div className={styles.head} data-fx="head">
+              <p className={styles.eyebrow}>The interview book</p>
+              <h2 id="loop-h" className={styles.h2}>
+                <Words text="From the first call to the offer, round by round." />
+              </h2>
+              <p className={styles.sub}>
+                Scroll the rounds in order, or pick one, to see what it is really testing, the wrong answer that loses
+                the room, and a question you will get. Then open it to read the whole round.
+              </p>
+            </div>
+            <InterviewBook rounds={bookRounds} />
           </section>
 
           <section className={styles.section} id="shelf" aria-labelledby="shelf-h">
@@ -1215,7 +1340,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             <TopicShelf ready={ready} soon={soon} interview={interview} />
           </section>
 
-          <section className={styles.section} aria-labelledby="tools-h">
+          <section className={styles.section} id="tools" aria-labelledby="tools-h">
             <div className={styles.head} data-fx="head">
               <p className={styles.eyebrow}>Practice tools</p>
               <h2 id="tools-h" className={styles.h2}>
@@ -1243,7 +1368,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             </div>
           </section>
 
-          <section className={styles.section} aria-labelledby="vs-h">
+          <section className={styles.section} id="compare" aria-labelledby="vs-h">
             <div className={styles.head} data-fx="head">
               <p className={styles.eyebrow}>Why not just…</p>
               <h2 id="vs-h" className={styles.h2}>
@@ -1298,18 +1423,20 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             </div>
           </section>
 
-          <section className={styles.cta} aria-labelledby="cta-h" data-fx="scale">
-            <h2 id="cta-h" className={styles.h2}>
-              <Words text="Ten minutes from now, you could understand one thing properly." />
-            </h2>
-            <p className={styles.sub}>Open a chapter. No account, no card, no catch.</p>
-            <div className={styles.actions}>
-              <a href="#shelf" className={`${styles.btn} ${styles.btnBig}`}>
-                Pick a topic <span className={styles.btnArrow}>→</span>
-              </a>
-              <Link href="/problems" className={`${styles.btn} ${styles.btnGhost} ${styles.btnBig}`}>
-                Solve a problem
-              </Link>
+          <section className={`${styles.section} ${styles.ctaSection}`} id="cta" aria-labelledby="cta-h">
+            <div className={styles.cta} data-fx="scale">
+              <h2 id="cta-h" className={styles.h2}>
+                <Words text="Ten minutes from now, you could understand one thing properly." />
+              </h2>
+              <p className={styles.sub}>Open a chapter. No account, no card, no catch.</p>
+              <div className={styles.actions}>
+                <a href="#shelf" className={`${styles.btn} ${styles.btnBig}`}>
+                  Pick a topic <span className={styles.btnArrow}>→</span>
+                </a>
+                <Link href="/problems" className={`${styles.btn} ${styles.btnGhost} ${styles.btnBig}`}>
+                  Solve a problem
+                </Link>
+              </div>
             </div>
           </section>
         </main>

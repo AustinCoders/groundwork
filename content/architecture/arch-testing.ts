@@ -8,7 +8,7 @@ export const archTesting: Chapter = {
   levels: ["advanced"],
   practice: [],
   ready: true,
-  subtitle: "367 unit tests, 204 browser tests, and one test that checks what these pages say about the site.",
+  subtitle: "382 unit tests, 215 browser tests, and one test that checks what these pages say about the site.",
   body: `<h3>The shape of it</h3>
 <p>
   There are three layers of checking, each slower and more thorough than the one before:
@@ -25,7 +25,7 @@ export const archTesting: Chapter = {
   on <code>main</code>.
 </p>
 
-<h3>Unit tests: 22 files, 367 tests</h3>
+<h3>Unit tests: 23 files, 382 tests</h3>
 <p>
   <code>vitest.config.ts</code> collects <code>tests/**/*.test.ts</code> and runs them in a Node
   environment with no DOM. No React component is rendered in a unit test. That is still a decision,
@@ -36,7 +36,7 @@ export const archTesting: Chapter = {
 <thead><tr><th>Area</th><th>Files</th><th>Tests</th><th>What they hold in place</th></tr></thead>
 <tbody>
 <tr><td>Mock interview</td><td><code>mock-engine</code>, <code>mock-session</code>, <code>mock-readiness</code>, <code>mock-guide</code>, <code>mock</code></td><td>74</td><td>How the interviewer adapts, how a session moves through its stages, the readiness score, and the coaching</td></tr>
-<tr><td>Content and SEO</td><td><code>content</code>, <code>seo</code>, <code>claims</code>, <code>search-index</code>, <code>privacy</code>, <code>next-config</code>, <code>client-bundle</code>, <code>topic-categories</code></td><td>114</td><td>Chapter integrity, the sitemap and robots rules, the site's claims about itself, the search budget, the privacy page's list of services, the pinned redirects, the client bundle, and the category of every topic</td></tr>
+<tr><td>Content and SEO</td><td><code>content</code>, <code>seo</code>, <code>claims</code>, <code>search-index</code>, <code>privacy</code>, <code>next-config</code>, <code>client-bundle</code>, <code>topic-categories</code>, <code>home-rounds</code></td><td>129</td><td>Chapter integrity, the sitemap and robots rules, the site's claims about itself, the search budget, the privacy page's list of services, the pinned redirects, the client bundle, the category of every topic, and the interview rounds the home page previews</td></tr>
 <tr><td>Playground</td><td><code>polyglot</code>, <code>debug-trace</code>, <code>wasm-assets</code>, <code>contrast</code></td><td>37</td><td>Grading across languages, the step-through tracer, pinned runtime versions, and the contrast of the editor, text and role colours in every theme</td></tr>
 <tr><td>Whiteboard</td><td><code>whiteboard-model</code></td><td>17</td><td>Geometry, history and <code>sanitizeEls</code></td></tr>
 <tr><td>Themes</td><td><code>theme-roles</code>, <code>theme-contract</code></td><td>115</td><td>Role tokens instead of fixed colours in every stylesheet, and a complete block for every theme</td></tr>
@@ -78,7 +78,7 @@ export const archTesting: Chapter = {
   and then drifted.
 </p>
 
-<h3>Browser tests: 4 specs, 204 tests</h3>
+<h3>Browser tests: 4 specs, 215 tests</h3>
 <p>
   <code>playwright.config.ts</code> starts <code>npm run start</code> on port 3100. That is the
   production build, not the dev server, because dev mode double-invokes effects and serves
@@ -88,8 +88,8 @@ export const archTesting: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Spec</th><th>Tests</th><th>Covers</th></tr></thead>
 <tbody>
-<tr><td><code>smoke.spec.ts</code></td><td>104</td><td>23 routes load with no console error and no failed request; the playground fits at 1024, 768 and 390 pixels wide; 78 flows (narration, search, share links, stdin, the debugger, Lua and Python grading, the mock interview from lobby to debrief, the problems page filters, an unknown chapter slug returning a stored 404, the old <code>/soon</code> links redirecting to a cover, a level page or the home page, the 404 page in its frame, a written topic's reading plan, its Continue action and its reading-budget reach text, a written topic's path page scoped to its own steps, its back pill, its no-level and topic-only redirects, and marking a step read)</td></tr>
-<tr><td><code>a11y.spec.ts</code></td><td>86</td><td>axe with the WCAG 2.0 and 2.1 A and AA tags, and no rule disabled, over 31 pages and 14 states, in all 9 themes at 1440 and 390 pixels wide. The states are the site menu open, the reading menu on <code>/notes</code> with its Text size and Narrator folds open, and a reading budget picked on the JavaScript cover, the Topics fold with a category expanded and the home page's topic section on Languages, at both widths; the Chapters sheet and the Filters sheet open, at 390 only; a mock round checked at up to five stages; and four seeded from saved progress: a chapter due for review, a chapter read on a path, a year of activity and two saved mock sessions</td></tr>
+<tr><td><code>smoke.spec.ts</code></td><td>111</td><td>23 routes load with no console error and no failed request; the playground fits at 1024, 768 and 390 pixels wide; 85 flows (narration, search, share links, stdin, the debugger, Lua and Python grading, the mock interview from lobby to debrief, the problems page filters, an unknown chapter slug returning a stored 404, the old <code>/soon</code> links redirecting to a cover, a level page or the home page, the 404 page in its frame, a written topic's reading plan, its Continue action and its reading-budget reach text, a written topic's path page scoped to its own steps, its back pill, its no-level and topic-only redirects, marking a step read, the home page's interview book and how-it-works stepper, and its sections each filling a view with the nav anchors landing under the header)</td></tr>
+<tr><td><code>a11y.spec.ts</code></td><td>90</td><td>axe with the WCAG 2.0 and 2.1 A and AA tags, and no rule disabled, over 31 pages and 16 states, in all 9 themes at 1440 and 390 pixels wide. The states are the site menu open, the reading menu on <code>/notes</code> with its Text size and Narrator folds open, and a reading budget picked on the JavaScript cover, the Topics fold with a category expanded and the home page's topic section on Languages, its interview book on a later round and its how-it-works stepper on step 3, at both widths; the Chapters sheet and the Filters sheet open, at 390 only; a mock round checked at up to five stages; and four seeded from saved progress: a chapter due for review, a chapter read on a path, a year of activity and two saved mock sessions</td></tr>
 <tr><td><code>whiteboard.spec.ts</code></td><td>6</td><td>Drawing, arrows that follow their shapes, undo, reload, PNG export, share links, templates, locking, grouping</td></tr>
 <tr><td><code>keyboard.spec.ts</code></td><td>8</td><td>At 390 pixels wide: the closed Chapters sheet stays out of the tab order; the open Chapters sheet, the site menu and the Filters sheet hold focus and hand it back on Escape; a wide table and a wide code block in a git chapter and in the interview book take focus and have names; the question drill and the mock brief leave Enter to a focused control; the playground's skip link lands in the editor</td></tr>
 </tbody>

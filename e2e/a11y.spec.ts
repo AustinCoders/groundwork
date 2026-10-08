@@ -94,6 +94,32 @@ const STATES: State[] = [
     },
   },
   {
+    name: "the interview book on a later round",
+    path: "/",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const row = page.locator("#loop").getByRole("button", { name: /React & Next\.js/ });
+      await row.scrollIntoViewIfNeeded();
+      await row.click();
+      await expect(row).toHaveAttribute("aria-current", "true");
+      await expect(page.locator("#loop").getByRole("region", { name: "React & Next.js" })).toBeVisible();
+      await check("the interview book on a later round");
+    },
+  },
+  {
+    name: "how it works on step 3",
+    path: "/",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const step = page.locator("#how").getByRole("tab", { name: /Get asked/ });
+      await step.scrollIntoViewIfNeeded();
+      await step.click();
+      await expect(step).toHaveAttribute("aria-selected", "true");
+      await expect(page.locator("#how").getByRole("tabpanel")).toContainText("Build me a debounce.");
+      await check("how it works on step 3");
+    },
+  },
+  {
     name: "the reading menu open",
     path: "/notes",
     viewports: VIEWPORTS,

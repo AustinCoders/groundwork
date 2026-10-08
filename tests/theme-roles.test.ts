@@ -10,10 +10,15 @@ const ROLE_DECLARATION = /(?<![\w-])(--(?:on-)?(?:primary|mark|success|danger|ca
 
 const CATEGORICAL_SELECTORS: Record<string, string[]> = {
   "app/home.module.css": [
-    ".round:hover",
-    ".roundNum",
-    ".roundGo",
-    ".offer",
+    ".stageBar span:nth-child(1)",
+    ".stageBar span:nth-child(2)",
+    ".stageBar span:nth-child(3)",
+    '.step[data-state="past"]::before',
+    '.step[data-state="past"] .node',
+    '.step[data-state="active"] .node',
+    ".offerStep .node",
+    ".preview",
+    ".previewKicker",
     ".paperRound",
     ".followUp",
     ".paperCode .codeBar > span:nth-child(1)",

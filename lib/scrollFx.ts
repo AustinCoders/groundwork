@@ -6,7 +6,7 @@ import { prefersMotion } from "@/lib/dom";
 
 let current: { scrollTo: (y: number, instant?: boolean) => void; stop: () => void; start: () => void } | null = null;
 
-function useSmoothScroll() {
+function useSmoothScroll(anchorOffset: number) {
   useEffect(() => {
     if (!prefersMotion()) return;
     let dead = false;
@@ -17,7 +17,7 @@ function useSmoothScroll() {
       const l = new Lenis({
         lerp: 0.085,
         smoothWheel: true,
-        anchors: { offset: -64 },
+        anchors: { offset: anchorOffset },
         prevent: (node) => Boolean(node.closest("[role=dialog], textarea, .cm-editor, [data-no-smooth]")),
       });
       lenis = l;
@@ -38,11 +38,11 @@ function useSmoothScroll() {
       lenis?.destroy();
       current = null;
     };
-  }, []);
+  }, [anchorOffset]);
 }
 
-export function useScrollFx(root: React.RefObject<HTMLElement | null>, scan: unknown = null) {
-  useSmoothScroll();
+export function useScrollFx(root: React.RefObject<HTMLElement | null>, scan: unknown = null, anchorOffset = -64) {
+  useSmoothScroll(anchorOffset);
 
   useEffect(() => {
     const host = root.current;

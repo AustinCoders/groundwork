@@ -1232,6 +1232,230 @@ test("the home page reads as a landing page and every path leads somewhere real"
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
+test("the home interview book previews each round, follows the reader and links to the round", async ({ page }) => {
+  await page.goto("/");
+  const book = page.locator("#loop");
+  await expect(book.getByRole("heading", { level: 2, name: /From the first call to the offer/ })).toBeVisible();
+  const preview = book.getByRole("region", { name: "Screening call" });
+  await expect(preview).toContainText("Round 01 · R1");
+  await expect(preview).toContainText("What they are really testing");
+  await expect(preview).toContainText("The answer that loses the room");
+  await expect(preview).toContainText("A question you will get");
+  await expect(preview).toContainText("Tell me about yourself.");
+  await expect(book.getByRole("button", { name: /Round 01/ })).toHaveAttribute("aria-current", "true");
+
+  const machine = book.getByRole("button", { name: /Machine coding/ });
+  await machine.scrollIntoViewIfNeeded();
+  await machine.click();
+  await expect(machine).toHaveAttribute("aria-current", "true");
+  await expect(book.getByRole("button", { name: /Round 01/ })).not.toHaveAttribute("aria-current", "true");
+  const machinePreview = book.getByRole("region", { name: "Machine coding" });
+  await expect(machinePreview).toContainText("Round 05 · R2");
+  await expect(machinePreview).toContainText("Data modelling");
+  await expect(book.getByRole("status")).toContainText("Round 05, Machine coding");
+
+  const react = book.getByRole("button", { name: /React & Next\.js/ });
+  await react.focus();
+  await page.keyboard.press("Enter");
+  await expect(react).toHaveAttribute("aria-current", "true");
+  await expect(book.getByRole("region", { name: "React & Next.js" })).toContainText("Round 08 · R4");
+
+  await page.waitForTimeout(2000);
+  await page.evaluate(() => {
+    const row = [...document.querySelectorAll<HTMLElement>("#loop ol button")].find((el) =>
+      /Behavioural/.test(el.textContent ?? "")
+    );
+    if (!row) throw new Error("no Behavioural row");
+    const box = row.getBoundingClientRect();
+    window.scrollTo(0, box.top + window.scrollY + box.height / 2 - window.innerHeight / 2);
+  });
+  const behavioural = book.getByRole("button", { name: /Behavioural/ });
+  await expect(behavioural).toHaveAttribute("aria-current", "true");
+  await expect(book.getByRole("region", { name: /Behavioural/ })).toContainText("R11");
+
+  await book
+    .getByRole("region", { name: /Behavioural/ })
+    .getByRole("link", { name: /Read this round/ })
+    .click();
+  await page.waitForURL("**/interview/r11");
+});
+
+test("the home interview book fits a phone and keeps its preview in view", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const book = page.locator("#loop");
+  await book.getByRole("button", { name: /Round 01/ }).scrollIntoViewIfNeeded();
+  const fits = () =>
+    page.evaluate(() => {
+      const inside = [...document.querySelectorAll<HTMLElement>("#loop ol, #loop [role=region]")].every((el) => {
+        const box = el.getBoundingClientRect();
+        return box.left >= 0 && box.right <= innerWidth;
+      });
+      return inside && document.documentElement.scrollWidth <= innerWidth;
+    });
+  expect(await fits()).toBe(true);
+  await page.evaluate(() => window.scrollBy(0, 700));
+  const region = book.getByRole("region");
+  await expect(region).toBeVisible();
+  const box = await region.boundingBox();
+  expect(box && box.y >= 0 && box.y < 120).toBe(true);
+  expect(await fits()).toBe(true);
+});
+
+test("the how-it-works stepper switches steps by click and by keyboard and shows each demo", async ({ page }) => {
+  await page.goto("/");
+  const how = page.locator("#how");
+  await expect(how.getByRole("heading", { level: 2, name: /Read it. Run it/ })).toBeVisible();
+  const tabs = how.getByRole("tab");
+  await expect(tabs).toHaveCount(4);
+  await expect(tabs.nth(0)).toHaveAttribute("aria-selected", "true");
+  await expect(how.getByRole("tabpanel")).toHaveCount(1);
+  await expect(how.getByRole("tabpanel")).toContainText("Read a chapter that builds on the last one.");
+  for (const copy of [
+    "Read a chapter that builds on the last one.",
+    "Prove it with real tests, right in the page.",
+    "Then get asked the follow-up.",
+    "And it comes back before you forget.",
+  ]) {
+    await expect(how.getByRole("heading", { level: 3, name: copy, includeHidden: true })).toHaveCount(1);
+  }
+
+  await tabs.nth(1).click();
+  await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
+  await expect(how.getByRole("tabpanel")).toContainText("Prove it with real tests");
+  await expect(how.getByRole("tabpanel")).toContainText("4 / 4 passed");
+
+  await tabs.nth(1).focus();
+  await page.keyboard.press("ArrowDown");
+  await expect(tabs.nth(2)).toHaveAttribute("aria-selected", "true");
+  await expect(tabs.nth(2)).toBeFocused();
+  await expect(how.getByRole("tabpanel")).toContainText("Build me a debounce.");
+  await page.keyboard.press("End");
+  await expect(tabs.nth(3)).toHaveAttribute("aria-selected", "true");
+  await expect(how.getByRole("tabpanel")).toContainText("Read today. Back after 3 days, then 7 more, then 21.");
+  await expect(how.locator("[role=tabpanel] [data-on]")).toHaveCount(4);
+  await page.keyboard.press("ArrowRight");
+  await expect(tabs.nth(0)).toHaveAttribute("aria-selected", "true");
+  await page.keyboard.press("ArrowUp");
+  await expect(tabs.nth(3)).toHaveAttribute("aria-selected", "true");
+  await page.keyboard.press("Home");
+  await expect(tabs.nth(0)).toHaveAttribute("aria-selected", "true");
+  await expect(how.getByRole("tabpanel")).toContainText("Syntax and values");
+});
+
+test("the how-it-works stepper advances on its own and stops for good once the reader chooses a step", async ({
+  page,
+}) => {
+  await page.clock.install();
+  await page.goto("/");
+  const how = page.locator("#how");
+  const tabs = how.getByRole("tab");
+  await how.getByRole("tablist").evaluate((el) => el.scrollIntoView({ block: "center" }));
+  await expect(how.locator("[class*='stepFill']")).toHaveCount(1);
+  await page.clock.runFor(5600);
+  await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
+  await page.clock.runFor(5500);
+  await expect(tabs.nth(2)).toHaveAttribute("aria-selected", "true");
+
+  await tabs.nth(0).click();
+  await expect(tabs.nth(0)).toHaveAttribute("aria-selected", "true");
+  await expect(how.locator("[class*='stepFill']")).toHaveCount(0);
+  await page.mouse.move(2, 2);
+  await page.clock.runFor(20000);
+  await expect(tabs.nth(0)).toHaveAttribute("aria-selected", "true");
+});
+
+test("the how-it-works stepper waits while the reader hovers it and never moves under reduced motion", async ({
+  page,
+}) => {
+  await page.clock.install();
+  await page.goto("/");
+  const how = page.locator("#how");
+  const tabs = how.getByRole("tab");
+  await how.getByRole("tablist").evaluate((el) => el.scrollIntoView({ block: "center" }));
+  await expect(how.locator("[class*='stepFill']")).toHaveCount(1);
+  await tabs.nth(3).hover();
+  await expect(how.locator("[class*='stepFill']")).toHaveCount(0);
+  await page.clock.runFor(20000);
+  await expect(tabs.nth(0)).toHaveAttribute("aria-selected", "true");
+  await page.mouse.move(2, 2);
+  await page.clock.runFor(5600);
+  await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(how.locator("[class*='stepFill']")).toHaveCount(0);
+  await page.clock.runFor(30000);
+  await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
+});
+
+test("on medium and large screens each home section fills a view below the header, and the short ones leave no sliver of the next", async ({
+  page,
+}) => {
+  const sections = ["how", "features", "who", "loop", "shelf", "tools", "compare", "faq", "cta"];
+  const fitting = ["how", "who", "faq", "cta"];
+  for (const viewport of [
+    { width: 1280, height: 720 },
+    { width: 820, height: 1100 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/");
+    const header = await page
+      .locator("header")
+      .first()
+      .evaluate((el) => el.getBoundingClientRect().height);
+    for (const id of sections) {
+      await expect
+        .poll(() =>
+          page.evaluate(
+            ([target, offset]) => {
+              const el = document.getElementById(target);
+              if (!el) throw new Error(`no section ${target}`);
+              window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - Number(offset));
+              return Math.abs(el.getBoundingClientRect().top - Number(offset));
+            },
+            [id, header] as const
+          )
+        )
+        .toBeLessThanOrEqual(1);
+      const box = await page.evaluate((target) => {
+        const el = document.getElementById(target)!;
+        const next = el.nextElementSibling ?? el.parentElement!.nextElementSibling;
+        return { height: el.getBoundingClientRect().height, nextTop: next ? next.getBoundingClientRect().top : null };
+      }, id);
+      const where = `#${id} at ${viewport.width}x${viewport.height}`;
+      expect(box.height, `${where} fills the view below the header`).toBeGreaterThanOrEqual(
+        viewport.height - header - 2
+      );
+      if (viewport.width === 1280 && fitting.includes(id)) {
+        expect(box.nextTop, `${where} leaves the next section out of view`).toBeGreaterThanOrEqual(viewport.height - 2);
+      }
+    }
+  }
+});
+
+test("the home nav anchors land each section's top under the header", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto("/");
+  const header = await page
+    .locator("header")
+    .first()
+    .evaluate((el) => el.getBoundingClientRect().height);
+  for (const [name, id] of [
+    ["How it works", "how"],
+    ["Paths", "who"],
+    ["Interview loop", "loop"],
+    ["Topics", "shelf"],
+    ["FAQ", "faq"],
+  ]) {
+    await page.getByRole("navigation", { name: "Sections" }).getByRole("link", { name }).click();
+    await expect
+      .poll(() => page.evaluate((target) => document.getElementById(target)?.getBoundingClientRect().top ?? -1, id), {
+        timeout: 8000,
+      })
+      .toBeCloseTo(header, -1);
+  }
+});
+
 test("the privacy page is indexed, framed, and linked from the menu, the home page, the FAQ and the footer", async ({
   page,
 }) => {

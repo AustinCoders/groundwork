@@ -3,6 +3,8 @@ import { HomeView } from "@/app/HomeView";
 import { INTERVIEW_TOTAL_QUESTIONS, INTERVIEW_TOTAL_ROUNDS } from "@/lib/interviewContent";
 import { LANG_ORDER, LANGUAGES } from "@/lib/codeLanguages";
 import { exercises } from "@/lib/content";
+import { homeRounds } from "@/lib/homeRounds";
+import { bankQuestions, bookRounds } from "@/lib/interviewBook";
 import { onShelf } from "@/lib/topicShelf";
 import type { TopicNav } from "@/content/types";
 import { siteStats, topicStats, topicsNavWithStats } from "@/lib/topicStats";
@@ -38,6 +40,7 @@ export default function HomePage() {
       problems={exercises().length}
       languages={{ total: LANG_ORDER.length, runnable: LANG_ORDER.filter((k) => LANGUAGES[k].runnable).length }}
       interview={{ rounds: INTERVIEW_TOTAL_ROUNDS, questions: INTERVIEW_TOTAL_QUESTIONS }}
+      bookRounds={homeRounds(bookRounds(), bankQuestions())}
     />
   );
 }
