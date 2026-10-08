@@ -57,7 +57,7 @@ export const dsaTwoPointers: Chapter = {
   </svg>
   <figcaption>sum too small → move left right; sum too big → move right left.</figcaption>
 </figure>
-<pre><code><span class="c">// Two Sum on a SORTED array — O(n) time, O(1) space</span>
+<div data-code="two-pointers-opposite-ends"><pre><code><span class="c">// Two Sum on a SORTED array — O(n) time, O(1) space</span>
 function twoSumSorted(nums, target) {
   let left = 0, right = nums.length - 1;
   while (left < right) {
@@ -67,7 +67,7 @@ function twoSumSorted(nums, target) {
     else right--;               <span class="c">// need smaller → drop the bigger end</span>
   }
   return [-1, -1];
-}</code></pre>
+}</code></pre></div>
 <p class="sub">
   Why this is correct, not just fast: because the array is sorted, moving
   <code>left</code> past the current value can never re-find a pair we

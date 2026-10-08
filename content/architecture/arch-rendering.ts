@@ -15,7 +15,7 @@ export const archRendering: Chapter = {
   A component is a server component unless it needs something only a browser has: state, an effect,
   an event handler, <code>localStorage</code>, or a measurement. Adding <code>"use client"</code> has
   a cost, because everything the file imports is bundled and shipped. Across <code>app/</code>,
-  <code>components/</code> and <code>lib/</code>, 78 files carry the directive. About a third belong
+  <code>components/</code> and <code>lib/</code>, 80 files carry the directive. About a third belong
   to the three big interactive surfaces: the playground, the whiteboard and the mock interview.
 </p>
 
@@ -126,6 +126,9 @@ export const archRendering: Chapter = {
   <code>PlayIsland</code> in each place. The island carries <code>data-island</code>, and the
   enhancers, narration and scroll regions skip anything inside it. A chapter without a placeholder
   takes the single-string path unchanged.
+</p>
+<p>
+  A chapter can also wrap a code block in a <code>div</code> whose <code>data-code</code> attribute names the block, with the JavaScript inside the <code>pre</code>, which is what the server renders and what shows by default. When the body contains one, <code>TopicChapterPage</code> passes <code>codeBlocks</code> and <code>TopicReader</code> shows a four-way language switch (<code>CodeLanguageSwitch</code>) in the chapter header. Choosing Python, Java or C++ dynamically imports that one language's file from <code>content/dsa/code/&lt;chapter-id&gt;/</code>, a map from block id to the HTML for the <code>&lt;code&gt;</code> element, and <code>applyCodeLanguage</code> rewrites only the marked blocks, so the page, the players and the checks are left alone. The choice is the <code>groundwork:dsa:lang</code> key. Every marked block must have a translation in all three languages, and each parses with the editor's grammars, which <code>tests/dsa-code-languages.test.ts</code> checks.
 </p>
 <p>
   A topic whose <code>completion</code> is <code>"quiz"</code> gets a second server-rendered island,

@@ -11,9 +11,9 @@ This is the source for CAP-11. Scope (owner, 2026-10-07): chapter code blocks an
 
 ## Authoring format
 
-- **Chapter code.** Each code block in a chapter body is a placeholder with a stable id, `<div data-code="binary-search-loop"></div>`. Its four translations live in `content/dsa/code/<chapter-id>.ts` as `{ id, javascript, python, java, cpp }`. The JavaScript version is the one the chapter's prose describes; the others are authored equivalents with the same structure and the same variable names where the language allows.
+- **Chapter code.** Each code block in a chapter body is `<div data-code="binary-search-classic"><pre><code>…JavaScript…</code></pre></div>`; the JavaScript inside is the version the chapter's prose describes and is what the server renders. The other three languages live in `content/dsa/code/<chapter-id>/<language>.ts` (`python`, `java`, `cpp`), each exporting `code: Record<blockId, html>` where the html is what goes inside `<code>` (comments in `<span class="c">`, markup escaped). Translations have the same structure and variable names as the JavaScript where the language allows.
 - **Tracer code.** A tracer declares its code lines by stable line ids. Each language gives its own lines and a map from line id to the line numbers it covers. A frame names a line id; the player highlights that id's lines in the chosen language. The run, frames, narration, variables and generated questions never depend on the language.
-- **Loading.** The server renders the chapter with the placeholder's JavaScript, and a client island swaps in the chosen language from a lazy per-chapter, per-language import, so a page ships only the language shown.
+- **Loading.** The server renders the chapter with the placeholder's JavaScript, and a client step swaps in the chosen language from a lazy per-language import, so a page fetches only the language shown and JavaScript fetches nothing.
 
 ## Tests
 

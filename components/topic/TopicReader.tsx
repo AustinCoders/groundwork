@@ -31,6 +31,7 @@ import type { LevelId } from "@/content/types";
 import styles from "@/components/series/chapter.module.css";
 import { PlayIsland } from "@/components/play/PlayIsland";
 import { CheckIsland } from "@/components/check/CheckIsland";
+import { CodeLanguageSwitch } from "@/components/dsa/CodeLanguageSwitch";
 import type { BodySegment } from "@/lib/chapterIslands";
 import readerStyles from "./reader.module.css";
 
@@ -50,6 +51,7 @@ export function TopicReader({
   exercises,
   levelExerciseTotal,
   completion,
+  codeBlocks,
 }: {
   topicId: string;
   topicName: string;
@@ -66,6 +68,7 @@ export function TopicReader({
   exercises: PracticeLink[];
   levelExerciseTotal: number;
   completion?: Completion;
+  codeBlocks?: boolean;
 }) {
   const mounted = useMounted();
   const [railOpen, setRailOpen] = useState(false);
@@ -209,6 +212,7 @@ export function TopicReader({
                   <button className={`${styles.chip} listenbtn`} type="button" data-listen={chapter.id}>
                     🔊 Listen
                   </button>
+                  {codeBlocks && <CodeLanguageSwitch chapterId={chapter.id} bodyRef={bodyRef} />}
                 </div>
               </header>
 

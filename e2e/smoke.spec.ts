@@ -1848,3 +1848,200 @@ test("the binary search chapter renders its play island and enhances the rest as
   await expect(page.locator("#chapters .codeblock__copy").first()).toBeVisible();
   expect(problems).toEqual([]);
 });
+
+const CODE_TOKENS = {
+  javascript: ["function binarySearch", "function minEatingSpeed", "function lowerBound"],
+  python: ["def binary_search", "def min_eating_speed", "def lower_bound"],
+  java: ["static int binarySearch", "static int minEatingSpeed", "static int lowerBound"],
+  cpp: [
+    "int binarySearch(const std::vector<int>&",
+    "int minEatingSpeed(const std::vector<int>&",
+    "int lowerBound(const std::vector<int>&",
+  ],
+} as const;
+
+async function expectCodeIn(page: Page, language: keyof typeof CODE_TOKENS) {
+  const blocks = page.locator("#chapters [data-code]");
+  await expect(blocks).toHaveCount(3);
+  for (const [index, token] of CODE_TOKENS[language].entries()) {
+    await expect(blocks.nth(index)).toContainText(token);
+    for (const other of Object.keys(CODE_TOKENS) as (keyof typeof CODE_TOKENS)[]) {
+      if (other !== language) await expect(blocks.nth(index)).not.toContainText(CODE_TOKENS[other][index]);
+    }
+  }
+}
+
+const jsnotesKeys = (page: Page) =>
+  page.evaluate(() =>
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith("jsnotes:"))
+      .sort()
+      .map((key) => `${key}=${localStorage.getItem(key)}`)
+  );
+
+test("a first visit to a DSA chapter shows JavaScript and the server sends no other language", async ({
+  page,
+  request,
+}) => {
+  const html = await (await request.get("/dsa/dsa-binary-search")).text();
+  expect(html).toContain("function binarySearch");
+  expect(html).not.toContain("def binary_search");
+  expect(html).not.toContain("static int binarySearch");
+  expect(html).not.toContain("std::vector");
+
+  const fetched: string[] = [];
+  page.on("request", (req) => {
+    if (/\/_next\/static\/chunks\/.*\.js/.test(req.url())) fetched.push(req.url());
+  });
+  await page.goto("/dsa/dsa-binary-search", { waitUntil: "networkidle" });
+
+  const group = page.getByRole("group", { name: "Code language" });
+  await expect(group).toContainText("Code: JavaScript");
+  await expect(group.getByRole("button", { name: "JavaScript" })).toHaveAttribute("aria-pressed", "true");
+  for (const name of ["Python", "Java", "C++"]) {
+    await expect(group.getByRole("button", { name, exact: true })).toHaveAttribute("aria-pressed", "false");
+  }
+  await expectCodeIn(page, "javascript");
+
+  const before = fetched.length;
+  await expectCodeIn(page, "javascript");
+  expect(fetched.length).toBe(before);
+  await group.getByRole("button", { name: "Python" }).click();
+  await expectCodeIn(page, "python");
+  expect(fetched.length).toBe(before + 1);
+  await group.getByRole("button", { name: "Java", exact: true }).click();
+  await expectCodeIn(page, "java");
+  expect(fetched.length).toBe(before + 2);
+});
+
+test("the language switch rewrites the chapter code, remembers its choice and touches no jsnotes key", async ({
+  page,
+}) => {
+  const problems = collectProblems(page);
+  await page.goto("/dsa/dsa-binary-search", { waitUntil: "networkidle" });
+  const group = page.getByRole("group", { name: "Code language" });
+  const status = page.getByRole("status").filter({ hasText: /^Code shown in/ });
+  const keysBefore = await jsnotesKeys(page);
+  const checkBefore = await page.locator("#chapters").evaluate((el) => el.querySelectorAll("[data-island]").length);
+
+  const steps = [
+    { name: "Python", language: "python", said: "Code shown in Python" },
+    { name: "Java", language: "java", said: "Code shown in Java" },
+    { name: "C++", language: "cpp", said: "Code shown in C++" },
+    { name: "JavaScript", language: "javascript", said: "Code shown in JavaScript" },
+  ] as const;
+  for (const step of steps) {
+    await group.getByRole("button", { name: step.name, exact: true }).click();
+    await expectCodeIn(page, step.language);
+    await expect(group.getByRole("button", { name: step.name, exact: true })).toHaveAttribute("aria-pressed", "true");
+    await expect(group).toContainText(`Code: ${step.name}`);
+    await expect(status).toHaveText(step.said);
+  }
+  expect(await page.locator("#chapters").evaluate((el) => el.querySelectorAll("[data-island]").length)).toBe(
+    checkBefore
+  );
+  expect(await jsnotesKeys(page)).toEqual(keysBefore);
+
+  await group.getByRole("button", { name: "Java", exact: true }).click();
+  await expectCodeIn(page, "java");
+  await page.reload({ waitUntil: "networkidle" });
+  await expect(
+    page.getByRole("group", { name: "Code language" }).getByRole("button", { name: "Java", exact: true })
+  ).toHaveAttribute("aria-pressed", "true");
+  await expectCodeIn(page, "java");
+
+  await page.goto("/dsa/dsa-two-pointers", { waitUntil: "networkidle" });
+  await expect(page.getByRole("group", { name: "Code language" })).toContainText("Code: Java");
+  await expect(page.locator("#chapters [data-code]")).toHaveCount(1);
+  await expect(page.locator("#chapters [data-code]")).toContainText("static int[] twoSumSorted");
+  await page.getByRole("group", { name: "Code language" }).getByRole("button", { name: "C++" }).click();
+  await expect(page.locator("#chapters [data-code]")).toContainText("std::vector<int> twoSumSorted");
+  await page.getByRole("group", { name: "Code language" }).getByRole("button", { name: "Python" }).click();
+  await expect(page.locator("#chapters [data-code]")).toContainText("def two_sum_sorted");
+
+  expect(await page.evaluate(() => localStorage.getItem("groundwork:dsa:lang"))).toBe(
+    JSON.stringify({ v: 1, language: "python" })
+  );
+  expect(problems).toEqual([]);
+});
+
+test("the language switch works by keyboard and a stale stored value falls back to JavaScript", async ({ page }) => {
+  await page.addInitScript(() =>
+    localStorage.setItem("groundwork:dsa:lang", JSON.stringify({ v: 1, language: "cobol" }))
+  );
+  await page.goto("/dsa/dsa-binary-search", { waitUntil: "networkidle" });
+  const group = page.getByRole("group", { name: "Code language" });
+  await expect(group.getByRole("button", { name: "JavaScript" })).toHaveAttribute("aria-pressed", "true");
+  await expectCodeIn(page, "javascript");
+
+  const python = group.getByRole("button", { name: "Python", exact: true });
+  await group.getByRole("button", { name: "JavaScript" }).focus();
+  await page.keyboard.press("Tab");
+  await expect(python).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expectCodeIn(page, "python");
+  await expect(page.getByRole("status").filter({ hasText: /^Code shown in/ })).toHaveText("Code shown in Python");
+
+  await page.keyboard.press("Tab");
+  await expect(group.getByRole("button", { name: "Java", exact: true })).toBeFocused();
+  await page.keyboard.press("Space");
+  await expectCodeIn(page, "java");
+  await expect(page.getByRole("status").filter({ hasText: /^Code shown in/ })).toHaveText("Code shown in Java");
+});
+
+test("a topic without marked code blocks shows no language switch and never reads its key", async ({ page }) => {
+  await page.addInitScript(() => {
+    const reads: string[] = [];
+    (window as unknown as { __reads: string[] }).__reads = reads;
+    const original = Storage.prototype.getItem;
+    Storage.prototype.getItem = function (key: string) {
+      reads.push(key);
+      return original.call(this, key);
+    };
+  });
+  for (const path of ["/notes/closures", "/dsa/dsa-hashing"]) {
+    await page.goto(path, { waitUntil: "networkidle" });
+    await expect(page.getByRole("group", { name: "Code language" })).toHaveCount(0);
+    expect(await page.evaluate(() => (window as unknown as { __reads: string[] }).__reads)).not.toContain(
+      "groundwork:dsa:lang"
+    );
+    expect(await page.evaluate(() => localStorage.getItem("groundwork:dsa:lang"))).toBeNull();
+  }
+});
+
+test("a slow language chunk that resolves after a newer choice does not overwrite it", async ({ page }) => {
+  let release: () => void = () => {};
+  const gate = new Promise<void>((resolve) => (release = resolve));
+  let delayed = 0;
+  await page.route(/\/_next\/static\/chunks\/.*\.js/, async (route) => {
+    const response = await route.fetch();
+    const body = await response.text();
+    if (body.includes("def binary_search")) {
+      delayed++;
+      await gate;
+    }
+    await route.fulfill({ response, body });
+  });
+  await page.goto("/dsa/dsa-binary-search", { waitUntil: "networkidle" });
+  const group = page.getByRole("group", { name: "Code language" });
+  await group.getByRole("button", { name: "Python" }).click();
+  await expect.poll(() => delayed).toBe(1);
+  await group.getByRole("button", { name: "JavaScript" }).click();
+  release();
+  await page.waitForTimeout(500);
+  await expectCodeIn(page, "javascript");
+  await expect(group.getByRole("button", { name: "JavaScript" })).toHaveAttribute("aria-pressed", "true");
+  await expect(group.getByRole("button", { name: "Python" })).toHaveAttribute("aria-pressed", "false");
+});
+
+test("the copy button copies the code in the chosen language", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/dsa/dsa-binary-search", { waitUntil: "networkidle" });
+  await page.getByRole("group", { name: "Code language" }).getByRole("button", { name: "Python" }).click();
+  await expectCodeIn(page, "python");
+  const block = page.locator("#chapters [data-code]").first();
+  await block.hover();
+  await block.locator(".codeblock__copy").click();
+  await expect(block.locator(".codeblock__copy")).toHaveText(/copied/);
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(/^def /);
+});

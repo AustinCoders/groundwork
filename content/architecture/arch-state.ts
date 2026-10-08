@@ -96,7 +96,7 @@ export const archState: Chapter = {
 </tbody>
 </table></div>
 
-<h3>The other twenty-one</h3>
+<h3>The other twenty-two</h3>
 <p>
   As features were added, each kept its own keys next to its own code. Newer ones use a
   <code>groundwork:</code> prefix. Most still go through <code>store</code>. The whiteboard has its
@@ -111,6 +111,7 @@ export const archState: Chapter = {
 <tr><td>Editor</td><td><code>jsnotes:editor-settings</code>, <code>jsnotes:editor-height</code>, <code>jsnotes:playground-live</code>, <code>jsnotes:lang:{exerciseId}</code></td></tr>
 <tr><td>Playground</td><td><code>groundwork:playground:project</code> (every open file), <code>groundwork:playground:runs</code> (the last 15 runs), <code>groundwork:playground:stdin</code></td></tr>
 <tr><td>Whiteboard</td><td><code>groundwork:boards</code> (the index), <code>groundwork:board:{id}</code> (one per board), <code>groundwork:boards:last</code>, <code>groundwork:boards:prefs</code></td></tr>
+<tr><td>DSA chapter code</td><td><code>groundwork:dsa:lang</code> (versioned: <code>{ v: 1, language }</code>, one of JavaScript, Python, Java or C++, with its own store, snapshot cache and cross-tab <code>storage</code> listener; read only by a chapter that has marked code blocks)</td></tr>
 <tr><td>Mock interview</td><td><code>groundwork:mock:config</code>, <code>groundwork:mock:current</code> (a loop in progress), <code>groundwork:mock:history</code> (last 50), <code>groundwork:mock:retry</code> (up to 60 questions to try again)</td></tr>
 </tbody>
 </table></div>

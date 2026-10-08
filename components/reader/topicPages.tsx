@@ -199,6 +199,7 @@ export function TopicChapterPage({ topicId, chapterId }: { topicId: string; chap
         exercises={exercises}
         levelExerciseTotal={exercisesForLevel(cards[cardIndex].levels[0], topicId).length}
         completion={t?.completion}
+        codeBlocks={chapter.body.includes('data-code="')}
       />
     );
   }

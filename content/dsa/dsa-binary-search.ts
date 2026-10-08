@@ -62,7 +62,7 @@ export const dsaBinarySearch: Chapter = {
 </figure>
 
 <h3>The template that avoids off-by-one bugs</h3>
-<pre><code>function binarySearch(sorted, target) {
+<div data-code="binary-search-classic"><pre><code>function binarySearch(sorted, target) {
   let lo = 0, hi = sorted.length - 1;
   while (lo <= hi) {              <span class="c">// note: <=, not <</span>
     const mid = lo + Math.floor((hi - lo) / 2); <span class="c">// avoids overflow, same as (lo+hi)>>1 in JS</span>
@@ -71,7 +71,7 @@ export const dsaBinarySearch: Chapter = {
     else hi = mid - 1;
   }
   return -1; <span class="c">// not found</span>
-}</code></pre>
+}</code></pre></div>
 <div class="warn">
   <span class="ttl">⚠ The two bugs that show up every time</span>
   <ul style="margin:6px 0 0">
@@ -105,7 +105,7 @@ export const dsaBinarySearch: Chapter = {
   monotonically, you can binary search over the range of possible answers
   instead of the input array.
 </p>
-<pre><code><span class="c">// minimum "speed" to eat all bananas within h hours — classic answer-space search</span>
+<div data-code="answer-search-bananas"><pre><code><span class="c">// minimum "speed" to eat all bananas within h hours — classic answer-space search</span>
 function minEatingSpeed(piles, h) {
   function hoursNeeded(speed) {
     let hours = 0;
@@ -120,7 +120,7 @@ function minEatingSpeed(piles, h) {
     else lo = mid + 1;                     <span class="c">// mid too slow — need bigger speed</span>
   }
   return lo;
-}</code></pre>
+}</code></pre></div>
 <p class="sub">
   The array here isn't even sorted — what's monotonic is the
   <em>relationship between speed and hours needed</em>: faster speed always
@@ -129,8 +129,8 @@ function minEatingSpeed(piles, h) {
 </p>
 
 <h3>Finding a boundary (first/last occurrence)</h3>
-<pre><code><span class="c">// leftmost index where nums[i] >= target — the building block for
-   "find first occurrence" and most boundary-search variants</span>
+<div data-code="lower-bound"><pre><code><span class="c">// leftmost index where nums[i] >= target — the building block for
+   // "find first occurrence" and most boundary-search variants</span>
 function lowerBound(nums, target) {
   let lo = 0, hi = nums.length; <span class="c">// note: hi = length, not length-1, here</span>
   while (lo < hi) {
@@ -139,7 +139,7 @@ function lowerBound(nums, target) {
     else hi = mid;
   }
   return lo;
-}</code></pre>
+}</code></pre></div>
 
 <div class="say">
   <span class="ttl">Say it like this →</span> "Even though the array isn't
