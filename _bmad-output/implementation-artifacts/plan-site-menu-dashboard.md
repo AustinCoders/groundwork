@@ -3,7 +3,7 @@ title: 'Site menu: a smart dashboard drawer on every page'
 type: 'feature'
 ticket: ''
 created: '2026-10-09'
-status: 'draft'
+status: 'built'
 route: 'full'
 route_source: 'auto'
 review: ''
@@ -14,7 +14,7 @@ followup_review_recommended: false
 context: ['{project-root}/AGENTS.md']
 warnings: ['oversized']
 deferred: []
-baseline_revision: 'SET_AT_START'
+baseline_revision: '3f6f6a6'
 ---
 
 <intent-contract>
@@ -86,7 +86,25 @@ baseline_revision: 'SET_AT_START'
 
 ## Implementation Notes
 
+Built as a dashboard drawer; status left for the owner to set.
+
+**What changed**
+- `components/SiteDrawer.tsx` is now a thin shell (portal, focus trap, Escape, scroll lock, Ctrl or Cmd plus K) around `DrawerBody`; the parts live in `components/menu/` (`ContinueCard`, `ProgressStrip`, `QuickActions`, `Topics`, `Settings`, `Shortcuts`, `Fold`, `MenuIcon`). One CSS module, `components/SiteDrawer.module.css`, rewritten.
+- Layout: a sticky header (brand, disabled "Sign in, coming soon" button with `aria-disabled`, close, then the labelled search with a Ctrl K or Cmd K chip), a taped hero Continue card with a progress ring and a "Pick up" button, a level badge with XP bar and three stat tiles, six tactile quick-action tiles (due badge on Review, "here" tag with `aria-current` on the current page), the topics as a single-open accordion with a category icon, a ready-count ring and a marker bar on the current category, the interview book and "How this is built" as folds, inline theme swatches (radiogroup with arrow keys, check badge on the current), a handwriting radiogroup, text size and Narrator when reading, a Keyboard shortcuts fold, and the footer. Entrance motion only under `prefers-reduced-motion: no-preference`. Hard offset shadows and edges use `light-dark()` so they do not glow in dark themes.
+- Continue data: existing browser data was not enough (nothing records the last chapter opened), so one small versioned key was added, `groundwork:resume` (`{v: 1, topic, topicName, chapter, num, title, href, index, total, at}`), written in an effect by `TopicReader` and `ChapterView`, read only in the drawer, validated by `parseResume`. `lib/continueCard.ts` falls back to "Start here" (the written topic with the most chapters) when the key is missing, malformed, or names a topic or guide chapter that is gone.
+- Ctrl or Cmd plus K: `lib/menuShortcut.ts`; `SiteDrawer` clicks the page's own Menu button (focusing it first, so Escape returns focus there) and focuses the search. It is ignored in inputs, textareas, selects, contenteditable and `.cm-editor`, and while another modal is open.
+- Dev-only "Ticket board": no trace was in `SiteDrawer` or the nav data (grep clean); the e2e asserts the menu has no "ticket" text.
+- Whiteboard: it has its own board menu, not the site menu; an "Elsewhere on Groundwork" row of site links was added to it (`app/whiteboard/BoardMenu.tsx`). Ctrl K does not open anything there.
+- Removed: the Theme and Handwriting folds, the old progress card, the "Go to" list, the `children` prop of `SiteDrawer` (unused).
+- `AppearancePicker` now exports `FONT_FAMILIES`.
+
+**Tests changed**: `e2e/smoke.spec.ts` (fold-based menu tests rewritten for inline swatches and text size; new tests for the dashboard, the Continue card and Ctrl or Cmd plus K), `e2e/a11y.spec.ts` (the Topics fold state became "the site menu open with the Data category expanded", a new "theme swatches focused" state, the reading menu opens Narrator and Keyboard shortcuts). New unit tests: `tests/continue-card.test.ts`, `tests/menu-shortcut.test.ts`.
+
+**Docs**: architecture chapters updated for the 85 client files, the new key (32 keys, "the other twenty-two"), the a11y states and test counts, the drawer description, and the line-count chart (smoke.spec.ts is now the second-longest file).
+
 ## Plan Change Log
+
+- Owner feedback mid-build asked for a bolder redesign: the first tidy version was replaced by the sticky header, hero Continue card, tactile tiles and category accordion with icons and rings.
 
 ## Review Triage Log
 
@@ -97,3 +115,7 @@ baseline_revision: 'SET_AT_START'
 
 **Manual checks (if no CLI):**
 - Open the menu on each page type at 390 and 1440 in dark, light and a handwriting theme; use search, a shortcut, the swatches and the Continue card.
+
+## Auto Run Result
+
+Built. Independent check in a clean copy: `npm run build` ok; `npm run check` 637 unit tests in 40 files (one pre-existing lint warning in `components/topic/useReadingPlan.ts`); full e2e 328 of 328 on the agent's run and 327 of 328 on the coordinator's (the home section rail landing test failed under load and passed 3 of 3 alone). Screenshots reviewed: menu on home (light, night) and a topic page at 390 (lavender). Known gap: `arch-testing.ts` and `arch-health.ts` still say 405 unit tests in 24 files, stale before this work and not asserted by a test.

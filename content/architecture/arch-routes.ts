@@ -269,8 +269,8 @@ export const archRoutes: Chapter = {
   commit "Playground and problems: no sidebar, a site menu drawer" took the old sidebar off them, and the
   whiteboard was built full-screen from the start. An editor, a list of 538 problems and an infinite
   canvas all want the width more than they want navigation that is always visible, so these pages use
-  <code>components/SiteDrawer.tsx</code> instead: a menu button that opens a drawer with seven links and
-  the shared <code>AppearancePicker</code>. <code>components/AppHeader.tsx</code> provides the thin
+  <code>components/SiteDrawer.tsx</code> instead: a menu button that opens a dashboard drawer with a Continue card, six
+  quick-action tiles, the topics, and inline theme and handwriting choices. <code>components/AppHeader.tsx</code> provides the thin
   header and a <code>BareShell</code> frame, which the whiteboard uses with the header turned off. The
   bare frame and <code>PageFrame</code> never meet on one page.
 </p>`,

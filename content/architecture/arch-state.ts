@@ -59,7 +59,7 @@ export const archState: Chapter = {
 <text class="lbl" x="545" y="348" text-anchor="middle">Share links</text>
 <text class="sm" x="545" y="368" text-anchor="middle">#share= and #board=</text>
 <text class="lbl" x="792" y="68" text-anchor="middle">localStorage</text>
-<text class="sm" x="792" y="90" text-anchor="middle">31 keys or prefixes</text>
+<text class="sm" x="792" y="90" text-anchor="middle">32 keys or prefixes</text>
 <text class="sm" x="792" y="108" text-anchor="middle">one origin, one device</text>
 <text class="lbl" x="792" y="196" text-anchor="middle">sessionStorage</text>
 <text class="sm" x="792" y="216" text-anchor="middle">2 keys, one tab</text>
@@ -96,7 +96,7 @@ export const archState: Chapter = {
 </tbody>
 </table></div>
 
-<h3>The other twenty-one</h3>
+<h3>The other twenty-two</h3>
 <p>
   As features were added, each kept its own keys next to its own code. Newer ones use a
   <code>groundwork:</code> prefix. Most still go through <code>store</code>. The whiteboard has its
@@ -107,7 +107,7 @@ export const archState: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Area</th><th>Keys</th></tr></thead>
 <tbody>
-<tr><td>Reader</td><td><code>jsnotes:zoom</code>, <code>jsnotes:reading-budget</code>, <code>jsnotes:last-seen-level</code></td></tr>
+<tr><td>Reader</td><td><code>jsnotes:zoom</code>, <code>jsnotes:reading-budget</code>, <code>jsnotes:last-seen-level</code>, <code>groundwork:resume</code> (the last chapter you opened, so the site menu can offer to continue there)</td></tr>
 <tr><td>Editor</td><td><code>jsnotes:editor-settings</code>, <code>jsnotes:editor-height</code>, <code>jsnotes:playground-live</code>, <code>jsnotes:lang:{exerciseId}</code></td></tr>
 <tr><td>Playground</td><td><code>groundwork:playground:project</code> (every open file), <code>groundwork:playground:runs</code> (the last 15 runs), <code>groundwork:playground:stdin</code></td></tr>
 <tr><td>Whiteboard</td><td><code>groundwork:boards</code> (the index), <code>groundwork:board:{id}</code> (one per board), <code>groundwork:boards:last</code>, <code>groundwork:boards:prefs</code></td></tr>

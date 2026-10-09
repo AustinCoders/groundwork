@@ -33,9 +33,9 @@
 
 .dash {
   fill: none;
-  stroke: color-mix(in srgb, var(--primary) 60%, var(--ink-soft));
-  stroke-width: 2.4;
-  stroke-dasharray: 3 9;
+  stroke: color-mix(in srgb, var(--primary) 75%, var(--ink));
+  stroke-width: 3.2;
+  stroke-dasharray: 4 9;
   stroke-linecap: round;
 }
 

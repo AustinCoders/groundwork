@@ -239,10 +239,12 @@ export const archDesignSystem: Chapter = {
   The practice playground, the problems list and the whiteboard are full-screen tools, and a
   frame would cost them height they need. They have no persistent chrome. Practice and problems
   open <code>components/SiteDrawer.tsx</code> from a menu button. It is a portal with
-  <code>role="dialog"</code> and <code>aria-modal</code>, seven links (home, playground, problems,
-  whiteboard, mock interview, review, progress) with <code>aria-current</code> on the current one,
-  and an <code>AppearancePicker</code>. It focuses its first control, holds Tab inside, closes on
-  Escape, locks scroll, and returns focus to whatever opened it. The whiteboard renders through
+  <code>role="dialog"</code> and <code>aria-modal</code>, laid out as a dashboard: a Continue card
+  from the one saved place in <code>groundwork:resume</code>, a progress strip, six quick-action
+  tiles with <code>aria-current</code> on the current one, the topics as a single-open accordion, inline
+  theme swatches and a handwriting choice, and a disabled Sign in placeholder. Ctrl or Cmd plus K opens it
+  with search focused from any page, except while typing in a field or the editor. It focuses its
+  first control, holds Tab inside, closes on Escape, locks scroll, and returns focus to whatever opened it. The whiteboard renders through
   <code>BareShell</code> with <code>header={false}</code> and has its own board menu drawer, which
   embeds the same <code>AppearancePicker</code>.
 </p>
@@ -259,7 +261,7 @@ export const archDesignSystem: Chapter = {
 
 <h3>CSS modules and globals.css</h3>
 <p>
-  <code>globals.css</code> is about 8,000 lines. It holds the tokens, the prose styles every
+  <code>globals.css</code> is about 8,200 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
   one of 34 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
   lines. The rule of thumb is that anything
@@ -322,11 +324,11 @@ export const archDesignSystem: Chapter = {
   architecture section. One of them, <code>/level/typescript</code>, is the level picker of a
   topic that is only outlined, and another, <code>/typescript/ts-setup-compiler</code>, is that
   same topic's own outline chapter; <code>/level/typescript</code> stands in for <code>/soon</code>,
-  which redirects there while every topic is marked ready. It also runs against 30 states that a
-  plain page load does not show: 26 that open with a click, and 4 seeded in
+  which redirects there while every topic is marked ready. It also runs against 31 states that a
+  plain page load does not show: 27 that open with a click, and 4 seeded in
   <code>localStorage</code>. The clicks open the site menu, the reading menu on <code>/notes</code>
-  with its Text size and Narrator folds open, a reading budget picked on the JavaScript cover's Up
-  next card, the Topics fold with a category expanded, the home page's topic section on Languages, with a legend row expanded and a station card open and with a search term typed,
+  with its Narrator and Keyboard shortcuts folds open, a reading budget picked on the JavaScript cover's Up
+  next card, the site menu with a category expanded and with the theme swatches focused, the home page's topic section on Languages, with a legend row expanded and a station card open and with a search term typed,
   its interview book on a later round and on its last stage, its practice section with a row focused, a path tab with unwritten topics, its FAQ with the comparison answer open and its how-it-works demo with a line opened, a failing run, every test passing, an answer checked and a chapter marked read, and its topic section on the AI category, the Chapters and Filters sheets, and a system design round in
   the mock interview, checked at the brief, a question, a follow-up, the rubric and the debrief.
   The seeds give a chapter due for review, a

@@ -14,6 +14,7 @@ import { makeScrollRegions } from "@/components/reader/scrollRegions";
 import { setupNarration } from "@/components/reader/narration";
 import { PracticeStrip, type PracticeLink } from "@/components/reader/PracticeStrip";
 import { progress, REVIEW_GAPS_DAYS } from "@/lib/storage";
+import { writeResume } from "@/lib/resume";
 import { useMounted, useProgressValue } from "@/lib/hooks";
 import { ChapterEnd } from "@/components/chapter/ChapterEnd";
 import { ChapterHeaderPager } from "@/components/chapter/ChapterHeaderPager";
@@ -104,6 +105,19 @@ export function TopicReader({
       stopScrollRegions();
     };
   }, [chapter.id]);
+
+  useEffect(() => {
+    writeResume({
+      topic: topicId,
+      topicName,
+      chapter: chapter.id,
+      num: chapter.num,
+      title: chapter.short ?? chapter.title,
+      href: `${basePath}/${chapter.id}`,
+      index: index + 1,
+      total: chapters.length,
+    });
+  }, [topicId, topicName, chapter.id, chapter.num, chapter.short, chapter.title, basePath, index, chapters.length]);
 
   const { active, pct } = useActiveHeading(toc);
 

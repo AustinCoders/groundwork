@@ -1199,6 +1199,32 @@
   color: var(--ink-soft);
 }
 
+.siteLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.siteLinks a {
+  padding: 6px 12px;
+  font-size: 13.5px;
+  color: var(--ink);
+  text-decoration: none;
+  background: var(--sheet-2);
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  transition: border-color 0.15s ease;
+}
+
+.siteLinks a:hover {
+  border-color: var(--line);
+}
+
+.siteLinks a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .newBoard {
   padding: 8px 10px;
   font: inherit;

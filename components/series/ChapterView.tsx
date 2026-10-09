@@ -13,6 +13,7 @@ import {
 import { makeScrollRegions } from "@/components/reader/scrollRegions";
 import { setupNarration } from "@/components/reader/narration";
 import { progress } from "@/lib/storage";
+import { writeResume } from "@/lib/resume";
 import { useMounted, useProgressValue } from "@/lib/hooks";
 import { ChapterEnd } from "@/components/chapter/ChapterEnd";
 import { ChapterHeaderPager } from "@/components/chapter/ChapterHeaderPager";
@@ -89,6 +90,19 @@ export function ChapterView({
       stopScrollRegions();
     };
   }, [chapter.id]);
+
+  useEffect(() => {
+    writeResume({
+      topic: basePath.replace(/^\//, ""),
+      topicName: topic.name,
+      chapter: chapter.id,
+      num: chapter.num,
+      title: chapter.short ?? chapter.title,
+      href: `${basePath}/${chapter.id}`,
+      index: index + 1,
+      total: chapters.length,
+    });
+  }, [basePath, topic.name, chapter.id, chapter.num, chapter.short, chapter.title, index, chapters.length]);
 
   const { active, pct } = useActiveHeading(toc);
 

@@ -1,13 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { BackButton } from "@/components/practice/BackButton";
 import { AppearancePicker } from "@/components/AppearancePicker";
+import { HOME_ACTION, QUICK_ACTIONS } from "@/components/menu/QuickActions";
 import { SITE_NAME } from "@/lib/site";
 import { Icon } from "./icons";
 import type { BoardMeta } from "@/lib/whiteboard/storage";
 import styles from "./whiteboard.module.css";
+
+const SITE_LINKS = [HOME_ACTION, ...QUICK_ACTIONS.filter((action) => action.href !== "/whiteboard")];
 
 export function BoardMenu({
   boards,
@@ -85,6 +89,19 @@ export function BoardMenu({
             <small>Copies a link. Whoever opens it gets their own copy of everything drawn so far.</small>
           </span>
         </button>
+
+        <section className={styles.drawerSection} aria-labelledby="wb-site">
+          <h2 id="wb-site" className={styles.menuH}>
+            Elsewhere on {SITE_NAME}
+          </h2>
+          <nav aria-label="Site" className={styles.siteLinks}>
+            {SITE_LINKS.map((link) => (
+              <Link key={link.href} href={link.href} prefetch={false}>
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        </section>
 
         <section className={styles.drawerSection} aria-labelledby="wb-boards">
           <h2 id="wb-boards" className={styles.menuH}>

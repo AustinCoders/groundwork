@@ -70,18 +70,30 @@ const STATES: State[] = [
     },
   },
   {
-    name: "the Topics fold open with the Data category expanded",
+    name: "the site menu open with the Data category expanded",
     path: "/review",
     viewports: VIEWPORTS,
     visit: async (page, check) => {
       await page.getByRole("button", { name: "Menu", exact: true }).click();
       const menu = page.getByRole("dialog", { name: /menu/ });
-      await menu.getByRole("button", { name: /Topics/ }).click();
       const data = menu.getByRole("button", { name: /^Data · \d+$/ });
       await data.click();
       await expect(data).toHaveAttribute("aria-expanded", "true");
       await expect(menu.getByRole("link", { name: /MongoDB/ })).toBeVisible();
-      await check("the Topics fold open with the Data category expanded");
+      await check("the site menu open with the Data category expanded");
+    },
+  },
+  {
+    name: "the site menu open with the theme swatches focused",
+    path: "/",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      const menu = page.getByRole("dialog", { name: /menu/ });
+      const swatches = menu.getByRole("radiogroup", { name: "Theme" });
+      await swatches.getByRole("radio", { checked: true }).focus();
+      await expect(swatches.getByRole("radio", { checked: true })).toBeFocused();
+      await check("the site menu open with the theme swatches focused");
     },
   },
   {
@@ -328,7 +340,7 @@ const STATES: State[] = [
       await page.getByRole("button", { name: "Menu", exact: true }).click();
       const menu = page.getByRole("dialog", { name: /menu/ });
       await expect(menu).toBeVisible();
-      for (const fold of [/Text size/, /Narrator/]) {
+      for (const fold of [/Narrator/, /Keyboard shortcuts/]) {
         const head = menu.getByRole("button", { name: fold });
         await head.click();
         await expect(head).toHaveAttribute("aria-expanded", "true");

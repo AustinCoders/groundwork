@@ -289,9 +289,6 @@ test("the /notes cover renders in the topic frame", async ({ page }) => {
 
   await page.getByRole("button", { name: "Menu", exact: true }).click();
   const menu = page.getByRole("dialog", { name: /menu/ });
-  const textSize = menu.getByRole("button", { name: /Text size/ });
-  await textSize.click();
-  await expect(textSize).toHaveAttribute("aria-expanded", "true");
   await menu.getByRole("button", { name: "Larger text" }).click();
   await expect(menu.locator("output")).toHaveText("110%");
   await expect
@@ -741,7 +738,6 @@ test("the playground has no sidebar, a site menu, and goes back where you came f
   await expect(
     drawer.getByRole("navigation", { name: "Site" }).getByRole("link", { name: "Whiteboard" })
   ).toBeVisible();
-  await drawer.getByRole("button", { name: /Theme/ }).click();
   await drawer.getByRole("radio", { name: "Kraft" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "kraft");
   await page.keyboard.press("Escape");
@@ -1131,12 +1127,11 @@ test("an architecture chapter has its own rail, contents and read marker", async
   await page.waitForURL("**/architecture/arch-build");
 });
 
-test("the site menu folds its sections and changes the text size everywhere", async ({ page }) => {
+test("the site menu folds the guides and changes the text size everywhere", async ({ page }) => {
   await page.goto("/architecture/arch-build");
   await page.getByRole("button", { name: "Menu" }).click();
   const menu = page.getByRole("dialog", { name: /menu/ });
   await expect(menu.getByRole("navigation", { name: "Site" }).getByRole("link", { name: "Whiteboard" })).toBeVisible();
-  await expect(menu.getByRole("button", { name: /Theme/ })).toHaveAttribute("aria-expanded", "false");
   const built = menu.getByRole("button", { name: /How this is built/ });
   await expect(built).toContainText("I2");
   await built.click();
@@ -1147,9 +1142,6 @@ test("the site menu folds its sections and changes the text size everywhere", as
   await expect(
     menu.getByRole("navigation", { name: "Topics" }).getByRole("link", { name: /Interview book/ })
   ).toHaveCount(0);
-  const textSize = menu.getByRole("button", { name: /Text size/ });
-  await textSize.click();
-  await expect(textSize).toHaveAttribute("aria-expanded", "true");
   await menu.getByRole("button", { name: "Larger text" }).click();
   await expect(menu.locator("output")).toHaveText("110%");
   await page.keyboard.press("Escape");
@@ -1160,8 +1152,101 @@ test("the site menu folds its sections and changes the text size everywhere", as
     .toBe("1.1");
   await page.getByRole("button", { name: "Menu" }).click();
   const problemsMenu = page.getByRole("dialog", { name: /menu/ });
-  await expect(problemsMenu.getByRole("button", { name: /Theme/ })).toHaveAttribute("aria-expanded", "false");
-  await expect(problemsMenu.getByRole("button", { name: /Text size/ })).toHaveCount(0);
+  await expect(problemsMenu.getByRole("radiogroup", { name: "Theme" })).toBeVisible();
+  await expect(problemsMenu.getByRole("button", { name: "Larger text" })).toHaveCount(0);
+});
+
+test("the site menu is a dashboard: continue, progress, quick actions, topics, settings and no developer entries", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    if (localStorage.getItem("seeded")) return;
+    localStorage.setItem("seeded", "1");
+    localStorage.setItem(
+      "jsnotes:progress",
+      JSON.stringify({ chapters: { a: { at: 1, reviews: 0 }, b: { at: 1, reviews: 0 } }, exercises: { x: true } })
+    );
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  const menu = page.getByRole("dialog", { name: /menu/ });
+  await expect(menu.getByText("Start here", { exact: true })).toBeVisible();
+
+  const progress = menu.getByRole("region", { name: /Level/ });
+  await expect(progress.getByRole("listitem").nth(1)).toHaveText(/^2\s*chapters read$/);
+  await expect(progress.getByRole("listitem").nth(2)).toHaveText(/^1\s*problem solved$/);
+  await expect(progress.getByRole("link", { name: /See all progress/ })).toHaveAttribute("href", "/progress");
+
+  const tiles = menu.getByRole("navigation", { name: "Site" });
+  for (const name of ["Problems", "Playground", "Mock interview", "Whiteboard"]) {
+    await expect(tiles.getByRole("link", { name })).toBeVisible();
+  }
+  await expect(tiles.getByRole("link", { name: /^Review, \d+ due$/ })).toBeVisible();
+  await expect(tiles.getByRole("link", { name: "Progress" })).toBeVisible();
+
+  const topics = menu.getByRole("navigation", { name: "Topics" });
+  const expanded = topics.locator("button[aria-expanded=true]");
+  await expect(expanded).toHaveCount(1);
+  await topics.getByRole("button", { name: /^Data · \d+$/ }).click();
+  await expect(expanded).toHaveCount(1);
+  await expect(expanded).toContainText("Data");
+
+  const sign = menu.getByRole("button", { name: "Sign in, coming soon" });
+  await expect(sign).toHaveAttribute("aria-disabled", "true");
+  await expect(menu.getByRole("link", { name: /Sign in/ })).toHaveCount(0);
+  await sign.click({ force: true });
+  await expect(menu).toBeVisible();
+
+  await expect(menu).not.toContainText(/ticket/i);
+
+  const themes = menu.getByRole("radiogroup", { name: "Theme" });
+  await themes.getByRole("radio", { name: "Forest" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "forest");
+  await expect(themes.getByRole("radio", { name: "Forest" })).toHaveAttribute("aria-checked", "true");
+  await expect(themes.getByRole("radio", { name: "Forest" })).toContainText("✓");
+  await menu.getByRole("radiogroup", { name: "Handwriting" }).getByRole("radio", { name: "Pen" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-font", "pen");
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "forest");
+  await expect(page.locator("html")).toHaveAttribute("data-font", "pen");
+});
+
+test("the Continue card picks up the last chapter read", async ({ page }) => {
+  await page.goto("/notes/basic-async");
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("groundwork:resume"))).not.toBeNull();
+  await page.goto("/review");
+  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  const card = page.getByRole("dialog", { name: /menu/ }).getByRole("region", { name: "Continue where you left off" });
+  await expect(card).toContainText(/chapter \d+ of \d+/);
+  await expect(card).toContainText("Last read today");
+  await card.getByRole("link").click();
+  await page.waitForURL("**/notes/basic-async");
+});
+
+test("Ctrl or Cmd plus K opens the menu with search focused, except inside a field or the editor", async ({ page }) => {
+  await page.goto("/problems", { waitUntil: "networkidle" });
+  const menuButton = page.getByRole("button", { name: "Menu", exact: true });
+  const menu = page.getByRole("dialog", { name: /menu/ });
+  await page.keyboard.press("ControlOrMeta+k");
+  await expect(menu).toBeVisible();
+  await expect(menu.getByRole("searchbox", { name: "Jump to a page or topic" })).toBeFocused();
+  await menu.getByRole("searchbox").fill("rust");
+  await expect(menu.getByRole("link", { name: /Rust/ })).toContainText("Soon");
+  await page.keyboard.press("Escape");
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveCount(0);
+  await expect(menuButton).toBeFocused();
+
+  await page.goto("/practice?id=free", { waitUntil: "networkidle" });
+  await page.locator(".cm-content").click();
+  await page.keyboard.press("ControlOrMeta+k");
+  await expect(menu).toHaveCount(0);
+
+  await page.goto("/mock", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  await menu.getByRole("searchbox").fill("x");
+  await page.keyboard.press("ControlOrMeta+k");
+  await expect(menu.getByRole("searchbox")).toBeFocused();
 });
 
 test("the git guide has a chapter per section and old anchors still land", async ({ page }) => {
@@ -1176,10 +1261,6 @@ test("the git guide has a chapter per section and old anchors still land", async
   await page.getByRole("button", { name: "Menu" }).click();
   const menu = page.getByRole("dialog", { name: /menu/ });
   await expect(menu.getByRole("navigation", { name: "Site" }).getByRole("link", { name: "Git" })).toHaveCount(0);
-  const topicsFold = menu.getByRole("button", { name: /Topics/ });
-  await expect(topicsFold).toHaveAttribute("aria-expanded", "false");
-  await expect(topicsFold).toContainText("Git");
-  await topicsFold.click();
   await expect(menu.getByRole("navigation", { name: "Topics" }).locator("a[aria-current=page]")).toContainText("Git");
   await menu.getByRole("searchbox").fill("white");
   await expect(menu.getByRole("link", { name: /Whiteboard/ })).toBeVisible();
@@ -2627,7 +2708,6 @@ test("the sidebar groups topics into one-at-a-time category sections, with comin
   await page.goto("/");
   await page.getByRole("button", { name: "Menu", exact: true }).click();
   const menu = page.getByRole("dialog", { name: /menu/ });
-  await menu.getByRole("button", { name: /Topics/ }).click();
   const topics = menu.getByRole("navigation", { name: "Topics" });
   const heads = topics.getByRole("heading", { level: 3 }).getByRole("button");
   await expect(heads).toHaveCount(8);
@@ -2675,7 +2755,6 @@ test("the sidebar opens the category of the topic you are reading", async ({ pag
   await page.goto("/dsa");
   await page.getByRole("button", { name: "Menu", exact: true }).click();
   const menu = page.getByRole("dialog", { name: /menu/ });
-  await menu.getByRole("button", { name: /Topics/ }).click();
   const topics = menu.getByRole("navigation", { name: "Topics" });
   await expect(topics.getByRole("button", { name: /^Computer science · \d+$/ })).toHaveAttribute(
     "aria-expanded",
@@ -2690,7 +2769,6 @@ test("the sidebar fits a 390px screen with every category listed", async ({ page
   await page.goto("/");
   await page.getByRole("button", { name: "Menu", exact: true }).click();
   const menu = page.getByRole("dialog", { name: /menu/ });
-  await menu.getByRole("button", { name: /Topics/ }).click();
   const topics = menu.getByRole("navigation", { name: "Topics" });
   await expect(topics.getByRole("link", { name: /Python/ })).toBeVisible();
   await topics.getByRole("button", { name: /^AI · \d+$/ }).click();
@@ -3573,7 +3651,6 @@ test("the theme picker shows each theme's accent, and the current theme's accent
 
   await page.getByRole("button", { name: "Menu", exact: true }).click();
   const drawer = page.getByRole("dialog", { name: /menu/ });
-  await drawer.getByRole("button", { name: /Theme/ }).click();
   const cards = drawer.getByRole("radiogroup", { name: "Theme" }).getByRole("radio");
   await expect(cards).toHaveCount(THEMES.length);
 
@@ -3587,7 +3664,7 @@ test("the theme picker shows each theme's accent, and the current theme's accent
   }
   const night = drawer.getByRole("radio", { name: "Night" });
   await expect(night).toHaveAttribute("aria-checked", "true");
-  await expect(night).toHaveCSS("border-color", themeColour("dark", "--primary"));
+  await expect(night).toContainText("✓");
 });
 
 test("review, the interview book, mock and progress take the theme's accent, not a fixed green or red", async ({
