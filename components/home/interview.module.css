@@ -5,6 +5,12 @@ div.bookScene {
   max-width: 1480px;
 }
 
+@media (min-width: 1280px) {
+  div.bookScene {
+    max-width: none;
+  }
+}
+
 .bookCopy {
   gap: clamp(10px, 1.8vh, 18px);
 }
@@ -15,7 +21,7 @@ div.bookScene {
 }
 
 .bookHost {
-  --stage-h: clamp(440px, calc(100svh - var(--nav-h, 64px) - 72px), 680px);
+  --stage-h: clamp(440px, calc(100svh - var(--nav-h, 64px) - 72px), 860px);
 }
 
 div.bookStage {
@@ -739,8 +745,11 @@ button.rowBtn:hover {
 
 .pen {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
   min-width: 0;
-  padding: 0.1em 0 1.5em;
+  padding: 0.1em 0 0.2em;
 }
 
 .penText {
@@ -757,9 +766,8 @@ button.rowBtn:hover {
 }
 
 .stamp {
-  position: absolute;
-  right: 0;
-  bottom: 0;
+  align-self: flex-end;
+  margin-right: 0.3em;
   padding: 0.05em 0.45em;
   font-family: var(--font-heading);
   font-size: 1.2em;
@@ -884,8 +892,8 @@ a.stampBtn:focus-visible {
 }
 
 .bookStage .chipB {
-  bottom: 0;
-  left: 34%;
+  bottom: 3%;
+  left: 8%;
 }
 
 .bookStage .bookSpark {
@@ -996,7 +1004,7 @@ a.stampBtn:focus-visible {
 @keyframes stampIn {
   from {
     opacity: 0;
-    scale: 1.7;
+    scale: 1.25;
     rotate: 6deg;
   }
 

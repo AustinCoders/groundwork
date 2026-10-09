@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { Chip, Copy, Note, Scene, Spark, Stage, StageCard, Sticker, Tape } from "./Stage";
+import { useMounted } from "./useMounted";
 import shared from "./stage.module.css";
 import styles from "./faq.module.css";
 
@@ -42,6 +43,7 @@ const NOTES = [
 
 export function FaqScene({ head, faqs, languages }: { head: ReactNode; faqs: Faq[]; languages: number }) {
   const [open, setOpen] = useState<number | null>(0);
+  const mounted = useMounted();
   return (
     <Scene side="left">
       <Copy className={styles.faqLead}>
@@ -111,7 +113,7 @@ export function FaqScene({ head, faqs, languages }: { head: ReactNode; faqs: Faq
                 role="region"
                 aria-labelledby={`faq-q-${i}`}
                 className={styles.faqPanel}
-                inert={!isOpen}
+                inert={mounted && !isOpen ? true : undefined}
               >
                 <div className={styles.faqPanelInner}>
                   <div className={styles.faqBody}>

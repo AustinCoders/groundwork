@@ -1,5 +1,5 @@
 import { useEffect, useState, type MouseEvent } from "react";
-import { prefersMotion } from "@/lib/dom";
+import { headerHeight, prefersMotion } from "@/lib/dom";
 import { smoothScroll } from "@/lib/scrollFx";
 import styles from "./rail.module.css";
 
@@ -17,8 +17,10 @@ function land(event: MouseEvent<HTMLAnchorElement>, id: string) {
   const section = document.getElementById(id);
   if (!section) return;
   event.preventDefault();
-  const header = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
-  smoothScroll.to(Math.max(0, section.getBoundingClientRect().top + window.scrollY - header), !prefersMotion());
+  window.history.replaceState(null, "", `#${id}`);
+  section.setAttribute("tabindex", "-1");
+  section.focus({ preventScroll: true });
+  smoothScroll.to(Math.max(0, section.getBoundingClientRect().top + window.scrollY - headerHeight()), !prefersMotion());
 }
 
 export function SectionRail() {

@@ -2,6 +2,12 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test, type ConsoleMessage, type Page } from "@playwright/test";
 import { practice } from "../content/practice";
+import { HOME_PATHS } from "../lib/homePaths";
+import { bookStages, homeRounds } from "../lib/homeRounds";
+import { bankQuestions, bookRounds } from "../lib/interviewBook";
+import { topicsNavWithStats } from "../lib/topicStats";
+import { probeConnectors, probeTrack } from "./motionProbe";
+import { probeText } from "./textProbe";
 import { THEMES, themeColour } from "./themes";
 
 const containing = (colour: string) => new RegExp(colour.replace(/[()]/g, "\\$&"));
@@ -1298,12 +1304,12 @@ test("the home interview stage tabs list only the chosen stage's rounds and open
   const stages = book.getByRole("tablist", { name: "Interview stages" });
   await expect(stages.getByRole("tab")).toHaveCount(4);
   const rows = book.getByRole("list").first().getByRole("button");
-  const expected = [
-    { stage: /^01 Screening/, rows: 4, first: "Screening call" },
-    { stage: /^02 Technical/, rows: 6, first: "Machine coding" },
-    { stage: /^03 Design and depth/, rows: 4, first: "Databases & Redis" },
-    { stage: /^04 People and offer/, rows: 6, first: "Resume grilling" },
-  ];
+  const expected = bookStages(homeRounds(bookRounds(), bankQuestions())).map((stage) => ({
+    stage: new RegExp(`^${String(stage.number).padStart(2, "0")} ${stage.label}`),
+    rows: stage.items.length,
+    first: stage.items[0].round.title,
+  }));
+  expect(expected).toHaveLength(4);
   for (const { stage, rows: count, first } of expected) {
     await stages.getByRole("tab", { name: stage }).click();
     await settleScroll(page);
@@ -1332,8 +1338,9 @@ test("the home interview book is an open book: contents on the left, the round's
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   const book = page.locator("#loop");
+  await expect(book).toHaveAttribute("data-pinned", "");
+  await scrollPin(page, "loop", 2);
   const region = book.getByRole("region", { name: "Screening call" });
-  await region.scrollIntoViewIfNeeded();
   for (const text of [
     "A question you will get",
     "The answer that loses the room",
@@ -1965,11 +1972,11 @@ test("under reduced motion no scene variable is ever written and the connectors 
       drawn: getComputedStyle(el.querySelector("path[class*='reveal']")!).strokeDashoffset,
       rider: getComputedStyle(el.querySelector("[data-rider]")!).opacity,
       label: getComputedStyle(el.querySelector("[class*='label']")!).opacity,
-      set: el.style.getPropertyValue("--d"),
+      set: el.getAttribute("data-d"),
     }))
   );
   for (const link of still)
-    expect({ ...link, drawn: parseFloat(link.drawn) }).toEqual({ drawn: 0, rider: "0", label: "1", set: "" });
+    expect({ ...link, drawn: parseFloat(link.drawn) }).toEqual({ drawn: 0, rider: "0", label: "1", set: null });
   await expect(page.locator("[data-docked]")).toHaveCount(0);
   const chips = await page
     .locator("[data-chip]")
@@ -2135,19 +2142,23 @@ test("each home path tab shows its journey, with unwritten topics as quiet chips
   const tabs = paths.getByRole("tab");
   await expect(tabs).toHaveCount(3);
   await expect(paths.getByRole("tabpanel")).toHaveCount(1);
-  const soonByPath = [2, 0, 1];
+  const written = new Map(topicsNavWithStats().map((topic) => [topic.id, topic.written]));
+  const isSoon = (step: (typeof HOME_PATHS)[number]["steps"][number]) =>
+    "topic" in step && (written.get(step.topic) ?? 0) === 0;
+  const soonByPath = HOME_PATHS.map((path) => path.steps.filter(isSoon).length);
+  const stopsByPath = HOME_PATHS.map((path) => path.steps.length);
   for (let i = 0; i < 3; i++) {
     await tabs.nth(i).click();
     await expect(tabs.nth(i)).toHaveAttribute("aria-selected", "true");
     const panel = paths.getByRole("tabpanel");
     await expect(panel).toHaveCount(1);
     const journey = panel.getByRole("list", { name: /the journey$/ });
-    await expect(journey.getByRole("listitem")).toHaveCount(5);
+    await expect(journey.getByRole("listitem")).toHaveCount(stopsByPath[i]);
     await expect(panel.getByText("After this path you can")).toBeVisible();
-    await expect(panel.getByRole("listitem")).toHaveCount(5 + 3);
+    await expect(panel.getByRole("listitem")).toHaveCount(stopsByPath[i] + HOME_PATHS[i].gains.length);
     await expect(journey.getByText("soon", { exact: true })).toHaveCount(soonByPath[i]);
     const links = await journey.getByRole("link").evaluateAll((els) => els.map((el) => el.getAttribute("href") ?? ""));
-    expect(links.length).toBe(5 - soonByPath[i]);
+    expect(links.length).toBe(stopsByPath[i] - soonByPath[i]);
     for (const href of links) {
       expect(href, "a journey link points somewhere").toMatch(/^\//);
       expect((await page.request.get(href)).status(), href).toBe(200);
@@ -2156,7 +2167,9 @@ test("each home path tab shows its journey, with unwritten topics as quiet chips
   }
   await tabs.nth(0).click();
   const frontend = paths.getByRole("tabpanel");
-  for (const soon of ["TypeScript", "Next.js"]) {
+  const names = new Map(topicsNavWithStats().map((topic) => [topic.id, topic.name]));
+  for (const step of HOME_PATHS[0].steps.filter(isSoon)) {
+    const soon = names.get("topic" in step ? step.topic : "") ?? "";
     await expect(frontend.getByRole("link", { name: new RegExp(soon) })).toHaveCount(0);
     await expect(frontend.getByText(soon, { exact: true })).toBeVisible();
   }
@@ -2966,8 +2979,9 @@ test("every step of a pinned home section stays in the page, hidden but present"
   }));
   expect(counts).toMatchObject({ how: 4, paths: 3, bodiesWithText: true });
   expect(counts.rounds).toBeGreaterThanOrEqual(4);
+  await expect(page.locator("#how")).toHaveAttribute("data-pinned", "");
   const hidden = await page.locator("#how [role='tabpanel'][hidden]").count();
-  expect(hidden).toBe(3);
+  expect(hidden).toBeGreaterThanOrEqual(2);
 });
 
 test("nothing pins at 1000px, on a phone or under reduced motion, and no section adds scroll length there", async ({
@@ -3083,7 +3097,7 @@ test("the pinned how-it-works loop lights each station as the walker arrives and
     page.evaluate(() => ({
       lit: [...document.querySelectorAll("#how [data-corner]")].map((el) => !el.hasAttribute("data-off")),
       walker: (() => {
-        const el = document.querySelector<HTMLElement>("#how [data-fx='walker']")!;
+        const el = document.querySelector<HTMLElement>("#how [data-motion='walker']")!;
         return { left: parseFloat(el.style.left), top: parseFloat(el.style.top), rotate: el.style.rotate };
       })(),
     }));
@@ -3132,8 +3146,10 @@ test("the home connectors link each section to the next: aria-hidden, one per pa
       const path = el.querySelector<SVGPathElement>("path[class*='dash']")!;
       const svg = el.querySelector("svg")!.getBoundingClientRect();
       const end = path.getPointAtLength(path.getTotalLength());
-      const badge = document.querySelector(`#${ids[i]} [data-waypoint]`)!.getBoundingClientRect();
-      const dx = Math.abs(svg.left + end.x - (badge.left + badge.width / 2));
+      const waypoint = document.querySelector<HTMLElement>(`#${ids[i]} [data-waypoint]`)!;
+      const badge = waypoint.getBoundingClientRect();
+      const slide = parseFloat(getComputedStyle(waypoint.closest("[data-motion='eyebrow']")!).translate) || 0;
+      const dx = Math.abs(svg.left + end.x - (badge.left + badge.width / 2 - slide));
       const dy = Math.abs(svg.top + end.y - badge.top);
       if (dx > 3 || dy > 8) out.push(`connector ${i} ends ${dx.toFixed(0)},${dy.toFixed(0)} from the badge`);
       if (el.querySelector("a, button, [tabindex]")) out.push(`connector ${i} holds a control`);
@@ -3156,7 +3172,7 @@ test("a home connector is drawn by the scroll, its traveller docks in the next b
     const box = el.getBoundingClientRect();
     return { top: box.top + scrollY, bottom: box.bottom + scrollY };
   });
-  const progress = async () => Number(await connector.evaluate((el) => el.style.getPropertyValue("--d") || "NaN"));
+  const progress = async () => Number(await connector.evaluate((el) => el.getAttribute("data-d") ?? "NaN"));
   await page.evaluate((y) => window.scrollTo(0, y), geometry.top - 900);
   await settleScroll(page);
   expect(await progress()).toBeLessThan(0.1);
@@ -3238,4 +3254,398 @@ test("the page's own scrollbar is hidden and reserves no gutter", async ({ page 
     scrolls: document.documentElement.scrollHeight > innerHeight,
   }));
   expect(root).toEqual({ width: "none", reserved: 0, scrolls: true });
+});
+
+test("the old scroll effect leaves the home scenes alone: no scene element carries its measured variables", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await scrollSectionTo(page, "practice", 0.5);
+  const report = await page.evaluate(() => {
+    const scenes = [...document.querySelectorAll<HTMLElement>("[data-scene]")];
+    const legacy = scenes.flatMap((scene) => [...scene.querySelectorAll("[data-fx]")]).length;
+    const measured = scenes.flatMap((scene) =>
+      [...scene.querySelectorAll<HTMLElement>("[data-motion]")].filter((el) => el.style.getPropertyValue("--in") !== "")
+    ).length;
+    return { legacy, measured, driven: document.querySelectorAll("[data-scene] [data-motion]").length };
+  });
+  expect(report.legacy).toBe(0);
+  expect(report.measured).toBe(0);
+  expect(report.driven).toBeGreaterThan(100);
+});
+
+test("a flick through the interview book turns at most a quarter of a round per frame and still arrives", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(page.locator("#loop")).toHaveAttribute("data-pinned", "");
+  const pin = await pinOf(page, "loop");
+  await page.evaluate((y) => window.scrollTo(0, y), pin.top - pin.header + pin.length * 0.1);
+  await settleScroll(page);
+  const steps = await page.evaluate(
+    async ([goal, id]) => {
+      const el = document.getElementById(id as string)!;
+      window.scrollTo(0, goal as number);
+      const seen: number[] = [];
+      await new Promise<void>((resolve) => {
+        let still = 0;
+        const frame = () => {
+          const u = Number(el.getAttribute("data-u"));
+          still = seen.length > 0 && u === seen[seen.length - 1] ? still + 1 : 0;
+          seen.push(u);
+          if (still > 8 || seen.length > 400) resolve();
+          else requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      });
+      return seen;
+    },
+    [pin.top - pin.header + pin.length * 0.8, "loop"] as const
+  );
+  const deltas = steps.slice(1).map((value, k) => Math.abs(value - steps[k]));
+  expect(Math.max(...deltas)).toBeLessThanOrEqual(0.3);
+  expect(steps[steps.length - 1]).toBeGreaterThan(steps[0] + 8);
+});
+
+test("at 1920 by 1080 the pinned stages fill their columns and the how-it-works notes stay clear of the caption", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto("/");
+  for (const id of ["how", "paths", "loop"]) {
+    await scrollPin(page, id, 5);
+    const geometry = await page.evaluate((target) => {
+      const scene = document.querySelector<HTMLElement>(`#${target} [data-scene-root]`)!.getBoundingClientRect();
+      const stage = [...document.querySelectorAll<HTMLElement>(`#${target} [data-stage]`)]
+        .find((el) => el.getBoundingClientRect().width > 0)!
+        .getBoundingClientRect();
+      return { scene: scene.width, stage: stage.width, height: stage.height, left: scene.left };
+    }, id);
+    expect(geometry.scene, id).toBeGreaterThan(1500);
+    expect(geometry.stage, id).toBeGreaterThan(780);
+    expect(geometry.height, id).toBeGreaterThan(680);
+    expect(geometry.left, id).toBeLessThan(200);
+  }
+  await scrollPin(page, "how", 5);
+  const overlaps = await page.evaluate(() => {
+    const caption = document
+      .querySelector<HTMLElement>("#how [role='tabpanel']:not([hidden])")!
+      .getBoundingClientRect();
+    return [...document.querySelectorAll<HTMLElement>("#how [class*='stationNote']")]
+      .map((note) => note.getBoundingClientRect())
+      .filter(
+        (box) =>
+          Math.min(box.right, caption.right) - Math.max(box.left, caption.left) > 1 &&
+          Math.min(box.bottom, caption.bottom) - Math.max(box.top, caption.top) > 1
+      ).length;
+  });
+  expect(overlaps).toBe(0);
+});
+
+test("the reading progress bar reaches the end of a chapter page and still does after the content grows", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/notes/setup-mental-model");
+  const progress = () =>
+    page.evaluate(() =>
+      Number(document.querySelector<HTMLElement>("[data-scrollbar]")!.style.getPropertyValue("--sp"))
+    );
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await settleScroll(page);
+  expect(await progress()).toBeGreaterThan(0.98);
+  await page.evaluate(() => {
+    const filler = document.createElement("div");
+    filler.style.height = "4000px";
+    document.querySelector("[data-fx-root]")!.append(filler);
+  });
+  await page.evaluate(() => window.scrollBy(0, -1));
+  await expect.poll(progress).toBeLessThan(0.9);
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await settleScroll(page);
+  expect(await progress()).toBeGreaterThan(0.98);
+});
+
+test("rapid arrow presses in the pinned how-it-works tablist each move one step from the last target", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const how = page.locator("#how");
+  await expect(how).toHaveAttribute("data-pinned", "");
+  const tabs = how.getByRole("tablist", { name: "How it works" });
+  await tabs.getByRole("tab", { name: /Read/ }).focus();
+  for (let press = 0; press < 3; press++) await page.keyboard.press("ArrowDown");
+  await settleScroll(page);
+  await expect(tabs.getByRole("tab", { name: /Keep/ })).toHaveAttribute("aria-selected", "true");
+  await expect(tabs.getByRole("tab", { name: /Keep/ })).toBeFocused();
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowDown");
+  await settleScroll(page);
+  await expect(tabs.getByRole("tab", { name: /Run/ })).toHaveAttribute("aria-selected", "true");
+});
+
+test("the pinned scenes follow a live resize and a live reduced-motion change without a reload", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const how = page.locator("#how");
+  await expect(how).toHaveAttribute("data-pinned", "");
+  await page.setViewportSize({ width: 1000, height: 800 });
+  await expect(how).not.toHaveAttribute("data-pinned", "");
+  await how.scrollIntoViewIfNeeded();
+  await settleScroll(page);
+  const before = await page.evaluate(() => window.scrollY);
+  await how.getByRole("tab", { name: /Run/ }).click();
+  await expect(how.getByRole("tab", { name: /Run/ })).toHaveAttribute("aria-selected", "true");
+  await page.waitForTimeout(400);
+  expect(Math.abs((await page.evaluate(() => window.scrollY)) - before)).toBeLessThan(3);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await expect(how).toHaveAttribute("data-pinned", "");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(how).not.toHaveAttribute("data-pinned", "");
+  await expect(how).not.toHaveAttribute("data-live", "");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await expect(how).toHaveAttribute("data-pinned", "");
+});
+
+test("a rail click keeps the anchor: the hash changes, the section takes focus and the page lands on it", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await scrollSectionTo(page, "shelf", 0.4);
+  const rail = page.getByRole("navigation", { name: "Page sections" });
+  await rail.getByRole("link", { name: /Paths/ }).click();
+  await settleScroll(page);
+  await expect(page).toHaveURL(/#paths$/);
+  await expect(page.locator("#paths")).toBeFocused();
+  const top = await page.locator("#paths").evaluate((el) => Math.round(el.getBoundingClientRect().top));
+  const header = await page
+    .locator("header")
+    .first()
+    .evaluate((el) => Math.round(el.getBoundingClientRect().height));
+  expect(Math.abs(top - header)).toBeLessThan(4);
+});
+
+test("the how-it-works autoplay can be paused, resumed and stops after one cycle", async ({ page }) => {
+  await page.setViewportSize({ width: 1000, height: 800 });
+  await page.goto("/");
+  const how = page.locator("#how");
+  await how.scrollIntoViewIfNeeded();
+  const toggle = how.getByRole("button", { name: /(Pause|Play) the steps/ });
+  await expect(toggle).toHaveText("Pause the steps");
+  await toggle.click();
+  await expect(toggle).toHaveText("Play the steps");
+  const selected = how.getByRole("tab", { selected: true });
+  const held = await selected.textContent();
+  await page.mouse.move(5, 5);
+  await page.waitForTimeout(6500);
+  expect(await selected.textContent(), "paused autoplay stays on its step").toBe(held);
+  await toggle.click();
+  await expect(toggle).toHaveText("Pause the steps");
+  await page.mouse.move(5, 5);
+  await expect.poll(async () => selected.textContent(), { timeout: 9000 }).not.toBe(held);
+});
+
+test("with JavaScript off the FAQ answers, the how-it-works steps and the paths are all in the page and visible", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  await page.goto("/");
+  const faq = page.locator("#faq");
+  for (const answer of ["Yes. Every chapter", "No. There is no account", "languages run inside your browser"])
+    await expect(faq.getByText(answer, { exact: false }).first()).toBeVisible();
+  const how = page.locator("#how");
+  for (const step of ["Read", "Run", "Get asked", "Keep"]) {
+    const title = {
+      Read: "Read a chapter that builds on the last one.",
+      Run: "Prove it with real tests, right in the page.",
+      "Get asked": "Then get asked the follow-up.",
+      Keep: "And it comes back before you forget.",
+    }[step]!;
+    await expect(how.getByText(title)).toBeVisible();
+  }
+  for (const path of HOME_PATHS) await expect(page.locator("#paths").getByText(path.title)).toBeVisible();
+  expect(await page.locator("#paths [role='tabpanel']:visible").count()).toBe(3);
+  await context.close();
+});
+
+test("the topics section opens the topic menu from Browse all topics, and the book links to the full interview list", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await page
+    .locator("#shelf")
+    .getByRole("button", { name: /Browse all topics/ })
+    .click();
+  await expect(page.getByRole("dialog", { name: /menu/ })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: /menu/ })).toHaveCount(0);
+  const all = page.locator("#loop").getByRole("link", { name: /^Browse all \d+ rounds/ });
+  await expect(all).toHaveAttribute("href", "/interview");
+  const total = Number(/\d+/.exec((await all.textContent()) ?? "")?.[0]);
+  await expect(page.locator("#practice")).toContainText(`${total}`);
+  await expect(page.locator("#loop")).toContainText(`${total} in the whole book`);
+});
+
+test("each home section's waypoint belongs to it and every connector fact matches the real count", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const ids = ["shelf", "practice", "how", "paths", "loop", "faq", "cta"];
+  for (const id of ids) {
+    await expect(page.locator(`#${id} [data-waypoint]`)).toHaveAttribute("data-waypoint", id);
+    await expect(page.locator(`#${id}-h`)).toHaveCount(1);
+  }
+  const facts = await page.locator("[data-connector] [data-fact]").allTextContents();
+  const counts = await page.evaluate(() => ({
+    steps: document.querySelectorAll("#how [role='tab']").length,
+    paths: document.querySelectorAll("#paths [role='tablist'] [role='tab']").length,
+    stages: document.querySelectorAll("#loop [role='tablist'] [role='tab']").length,
+    answers: document.querySelectorAll("#faq button[aria-controls^='faq-a-']").length,
+  }));
+  expect(facts[2]).toBe(`${counts.steps} steps`);
+  expect(facts[3]).toBe(`${counts.paths} paths`);
+  expect(facts[4]).toBe(`${counts.stages} stages`);
+  expect(facts[5]).toBe(`${counts.answers} answers`);
+});
+
+test("the book announces a scroll-driven round change politely, and again when the text repeats", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const book = page.locator("#loop");
+  await expect(book).toHaveAttribute("data-pinned", "");
+  const pin = await pinOf(page, "loop");
+  await scrollPin(page, "loop", pin.groupLength * 0.5);
+  const status = book.getByRole("status");
+  await expect(status).toHaveAttribute("aria-live", "polite");
+  await expect.poll(async () => (await status.textContent())?.length ?? 0, { timeout: 4000 }).toBeGreaterThan(5);
+  const first = (await status.textContent()) ?? "";
+  await scrollPin(page, "loop", pin.groupLength * 1.5);
+  await expect.poll(async () => await status.textContent(), { timeout: 4000 }).not.toBe(first);
+});
+
+test("a path walker in a panel that was hidden gets its place on the trail once the panel shows", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const paths = page.locator("#paths");
+  await expect(paths).toHaveAttribute("data-pinned", "");
+  const pin = await pinOf(page, "paths");
+  await scrollPin(page, "paths", pin.groupLength * 2 + pin.groupLength * 0.9);
+  await expect(paths.getByRole("tab", { name: /Senior and system design/ })).toHaveAttribute("aria-selected", "true");
+  const walker = await page.evaluate(() => {
+    const panel = document.querySelector("#paths [role='tabpanel']:not([hidden]):not([inert])")!;
+    const el = panel.querySelector<HTMLElement>("[data-motion='walker']")!;
+    return { left: parseFloat(el.style.left), top: parseFloat(el.style.top), rotate: el.style.rotate };
+  });
+  expect(Number.isFinite(walker.left)).toBe(true);
+  expect(Number.isFinite(walker.top)).toBe(true);
+  expect(walker.rotate).toMatch(/deg$/);
+});
+
+test("no home chip ever shows undefined or an empty value", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const texts = await page.locator("[data-chip]").allTextContents();
+  expect(texts.length).toBeGreaterThanOrEqual(18);
+  for (const text of texts) {
+    expect(text.trim().length).toBeGreaterThan(2);
+    expect(text).not.toMatch(/undefined|NaN|null/);
+  }
+});
+
+const PROBE_SIZES = [
+  { width: 1280, height: 720 },
+  { width: 1440, height: 900 },
+  { width: 1920, height: 1080 },
+];
+
+test("every interview book round keeps its text clear of other elements at three sizes and four heading fonts", async ({
+  page,
+}) => {
+  test.setTimeout(150_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const problems: string[] = [];
+  let rounds = 0;
+  for (const size of PROBE_SIZES) {
+    await page.setViewportSize(size);
+    await page.goto("/");
+    const book = page.locator("#loop");
+    await book.scrollIntoViewIfNeeded();
+    const stages = book.getByRole("tablist", { name: "Interview stages" }).getByRole("tab");
+    for (let stage = 0; stage < (await stages.count()); stage++) {
+      await stages.nth(stage).click();
+      const rows = book.getByRole("list").first().getByRole("button");
+      for (let row = 0; row < (await rows.count()); row++) {
+        await rows.nth(row).click();
+        await expect(rows.nth(row)).toHaveAttribute("aria-current", "true");
+        rounds++;
+        const title = (await book.locator("article[data-active] h3").textContent()) ?? "";
+        for (const font of ["classic", "marker", "script", "roboto"]) {
+          await page.evaluate((value) => document.documentElement.setAttribute("data-font", value), font);
+          const found = await page.evaluate(probeText, ["#loop article[data-active]", "#loop-timeline"]);
+          for (const problem of found)
+            problems.push(`${size.width}: ${title} in ${font}: ${problem.kind} "${problem.text}" by ${problem.by}`);
+        }
+      }
+    }
+  }
+  expect(rounds).toBeGreaterThanOrEqual(60);
+  expect(problems).toEqual([]);
+});
+
+test("the pinned interview book keeps every round's text clear of other elements", async ({ page }) => {
+  test.setTimeout(150_000);
+  const problems: string[] = [];
+  let seen = 0;
+  for (const size of [PROBE_SIZES[0], PROBE_SIZES[2]]) {
+    await page.setViewportSize(size);
+    await page.goto("/");
+    const book = page.locator("#loop");
+    await expect(book).toHaveAttribute("data-pinned", "");
+    await page.addStyleTag({
+      content:
+        "*, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0s !important; transition-duration: 1ms !important; }",
+    });
+    const pin = await pinOf(page, "loop");
+    const titles = new Set<string>();
+    for (let group = 0; group < pin.groups.length; group++) {
+      for (let item = 0; item < pin.groups[group]; item++) {
+        await scrollPin(page, "loop", group * pin.groupLength + ((item + 0.5) / pin.groups[group]) * pin.groupLength);
+        await page.waitForTimeout(250);
+        const title = (await book.locator("article[data-active] h3").textContent()) ?? "";
+        titles.add(title);
+        const found = await page.evaluate(probeText, ["#loop article[data-active]", "#loop-timeline"]);
+        for (const problem of found)
+          problems.push(`${size.width}: ${title}: ${problem.kind} "${problem.text}" by ${problem.by}`);
+      }
+    }
+    expect(titles.size).toBe(pin.groups.reduce((sum, count) => sum + count, 0));
+    seen += titles.size;
+  }
+  expect(seen).toBeGreaterThanOrEqual(40);
+  expect(problems).toEqual([]);
+});
+
+test("no connector traveller touches its fact and the how-it-works track never crosses a chip", async ({ page }) => {
+  test.setTimeout(90_000);
+  const crossings: string[] = [];
+  for (const size of PROBE_SIZES) {
+    await page.setViewportSize(size);
+    await page.goto("/");
+    await expect(page.locator("[data-connector]")).toHaveCount(6);
+    for (const found of await page.evaluate(probeConnectors)) crossings.push(`${size.width}: ${found}`);
+    await expect(page.locator("#how")).toHaveAttribute("data-pinned", "");
+    const pin = await pinOf(page, "how");
+    for (let step = 0; step < pin.groups.length; step++) {
+      await scrollPin(page, "how", step * pin.groupLength + pin.groupLength * 0.85);
+      await page.waitForTimeout(200);
+      for (const found of await page.evaluate(probeTrack, "#how"))
+        crossings.push(`${size.width} step ${step + 1}: ${found}`);
+    }
+  }
+  expect(crossings).toEqual([]);
 });

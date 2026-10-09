@@ -1,20 +1,28 @@
+import { unit } from "@/lib/math";
 import { bendLeaf, pageFlip, PERSPECTIVE, STRIPS, type Bend, type Flip } from "@/lib/pageFlip";
-import { buildLoop, buildTrail, drawProgress, loopProgress, trailPoint, walkerProgress, type Trail } from "@/lib/trail";
+import {
+  buildLoop,
+  buildTrail,
+  drawProgress,
+  loopProgress,
+  stageRatio,
+  trailPoint,
+  walkerProgress,
+  type Trail,
+} from "@/lib/trail";
 import {
   cardPose,
-  chipPose,
   noteInk,
   notePose,
   reveal,
   scaleFor,
   stepWindow,
   stickerPose,
-  unit,
   wordReveal,
   type CardInput,
   type Pose,
   type Scale,
-  type Window,
+  type StepWindow,
 } from "@/lib/pose";
 
 export interface FxInput {
@@ -36,12 +44,10 @@ type Kind =
   | "word"
   | "eyebrow"
   | "sub"
-  | "panel"
   | "part"
   | "reveal"
   | "light"
   | "bar"
-  | "slide"
   | "typing"
   | "fill"
   | "trail"
@@ -64,8 +70,6 @@ interface Item {
   from: number;
   to: number;
   rate: number;
-  dir: string;
-  total: number;
   card: CardInput;
   written: string;
   arrows: SVGPathElement[];
@@ -88,7 +92,7 @@ const LOOP = buildLoop();
 const parallax = new Map<HTMLElement, { x: number; y: number }>();
 const owners = new Map<HTMLElement, Fx>();
 const pose: Pose = { x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 };
-const win: Window = { ei: 1, eo: 0, lt: 1 };
+const win: StepWindow = { ei: 1, eo: 0, lt: 1 };
 const flip: Flip = { turned: 0, angle: 0, cast: 0, lift: 0, spine: 0, free: 0 };
 
 const number = (el: HTMLElement, name: string, fallback = 0): number => {
@@ -99,11 +103,11 @@ const number = (el: HTMLElement, name: string, fallback = 0): number => {
 
 function stageAspect(el: HTMLElement): number {
   const box = el.closest<HTMLElement>("[data-stage]")?.getBoundingClientRect();
-  return box && box.width > 0 ? box.height / box.width : 1;
+  return box ? stageRatio(box.width, box.height) : 0;
 }
 
 function read(el: HTMLElement): Item | null {
-  const kind = el.dataset.fx as Kind | undefined;
+  const kind = el.dataset.motion as Kind | undefined;
   if (!kind) return null;
   const holder = el.closest<HTMLElement>("[data-step]");
   const scene = el.closest<HTMLElement>("[data-scene-root]");
@@ -120,8 +124,6 @@ function read(el: HTMLElement): Item | null {
     from: Number(el.dataset.fxFrom) || 0,
     to: Number(el.dataset.fxTo) || 1,
     rate: Number(el.dataset.fxRate) || 6,
-    dir: el.dataset.fxDir ?? "right",
-    total: Number(el.dataset.fxTotal) || 1,
     card: {
       fly: Number(el.dataset.fly) || 0,
       still: el.hasAttribute("data-still"),
@@ -139,14 +141,22 @@ function read(el: HTMLElement): Item | null {
     trail:
       el.dataset.fxShape === "loop" ? LOOP : kind === "walker" ? buildTrail(Number(el.dataset.fxCount) || 0) : null,
     loop: el.dataset.fxShape === "loop",
-    aspect: stageAspect(el),
+    aspect: kind === "walker" ? stageAspect(el) : 1,
     at: Number(el.dataset.fxAt) || 0,
   };
 }
 
+export function release(fx: Fx) {
+  for (const item of fx.items) {
+    if (!item.stage) continue;
+    if (owners.get(item.stage) === fx) owners.delete(item.stage);
+    parallax.delete(item.stage);
+  }
+}
+
 export function collect(section: HTMLElement): Fx {
   const fx: Fx = { items: [], input: null };
-  section.querySelectorAll<HTMLElement>("[data-fx]").forEach((el) => {
+  section.querySelectorAll<HTMLElement>("[data-motion]").forEach((el) => {
     const item = read(el);
     if (item) fx.items.push(item);
   });
@@ -220,7 +230,7 @@ function one(item: Item, input: FxInput, scale: Scale, rest: Pose) {
       writePose(item, REST, stickerPose(pose, item.depth, scale, enter, exit, step, px, py));
       return;
     case "chip":
-      chipPose(pose, item.depth, item.speed, scale, enter, step, input.p, px, py);
+      stickerPose(pose, item.depth, scale, enter, 0, step, px, py, (0.5 - input.p) * item.speed);
       pose.y = Math.round(pose.y);
       pose.x = Math.round(pose.x);
       writePose(item, REST, pose);
@@ -269,13 +279,12 @@ function one(item: Item, input: FxInput, scale: Scale, rest: Pose) {
       });
       return;
     }
-    case "panel":
     case "part": {
       if (!scoped) return;
       const opacity = win.ei * (1 - win.eo);
-      const y = item.kind === "panel" ? (1 - win.ei) * 34 - win.eo * 44 : (1 - win.ei) * 30 - win.eo * 40;
+      const y = (1 - win.ei) * 30 - win.eo * 40;
       if (opacity >= 0.9995 && Math.abs(y) < 0.05) writeFade(item, 1, 0, 0);
-      else writeFade(item, opacity, y, item.kind === "panel" ? -win.eo * 1.4 : 0);
+      else writeFade(item, opacity, y, 0);
       return;
     }
     case "reveal": {
@@ -301,20 +310,10 @@ function one(item: Item, input: FxInput, scale: Scale, rest: Pose) {
       });
       return;
     }
-    case "slide": {
-      if (!scoped) return;
-      const opacity = win.ei * (1 - win.eo);
-      const along = (1 - win.ei) * (item.dir === "bottom" ? 45 : 55) - win.eo * 16;
-      put(item, `${opacity.toFixed(3)}|${along.toFixed(2)}`, () => {
-        item.el.style.opacity = opacity.toFixed(3);
-        item.el.style.translate = item.dir === "bottom" ? `0 ${along.toFixed(2)}%` : `${along.toFixed(2)}% 0`;
-      });
-      return;
-    }
     case "typing": {
       if (!scoped) return;
       const lt = win.lt;
-      const o = unit(Math.min((lt - 0.38) * 24, (0.6 - lt) * 24));
+      const o = unit(Math.min((lt - 0.3) * 24, (0.46 - lt) * 24));
       put(item, o.toFixed(3), () => {
         item.el.style.opacity = o.toFixed(3);
       });
@@ -338,6 +337,7 @@ function one(item: Item, input: FxInput, scale: Scale, rest: Pose) {
     case "walker": {
       if (!item.trail || !input.pinned || (!scoped && !item.loop)) return;
       const along = item.loop ? loopProgress(input.u, LOOP.at) : walkerProgress(unit(input.u - item.step));
+      if (item.aspect === 0) return;
       const spot = trailPoint(item.trail, along, item.aspect);
       put(item, `${spot.x.toFixed(2)}|${spot.y.toFixed(2)}|${spot.angle.toFixed(1)}`, () => {
         item.el.style.left = `${spot.x.toFixed(2)}%`;

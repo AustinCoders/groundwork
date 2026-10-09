@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Chip, Copy, Note, Scene, Spark, Stage, StageCard, Sticker, Tape } from "./Stage";
+import { NEXT_REVIEW } from "@/lib/homeHow";
+import { XP_STICKER } from "./tone";
 import shared from "./stage.module.css";
 import styles from "./cta.module.css";
 
@@ -49,12 +51,12 @@ export function CtaScene({ head }: { head: ReactNode }) {
         <StageCard rot={2.6} depth={14} i={3} extra className={styles.cReview}>
           <span className={shared.flame}>↻</span>
           <span>
-            <b>Comes back in 3 days</b>
+            <b>Comes back in {NEXT_REVIEW}</b>
             <small>so it stays</small>
           </span>
         </StageCard>
         <Sticker rot={8} depth={22} tone="success" className={styles.cXp}>
-          +25 XP
+          {XP_STICKER}
         </Sticker>
         <Note arrow="ur" rot={-5} depth={18} className={styles.cNote}>
           go on
@@ -63,8 +65,8 @@ export function CtaScene({ head }: { head: ReactNode }) {
         <Chip fact="ten minutes" rot={-3} depth={12} speed={50} className={styles.chipA}>
           10 minutes
         </Chip>
-        <Chip fact="back in 3 days" rot={2} depth={-8} speed={-36} className={styles.chipB}>
-          back in 3 days
+        <Chip fact={`back in ${NEXT_REVIEW}`} rot={2} depth={-8} speed={-36} className={styles.chipB}>
+          back in {NEXT_REVIEW}
         </Chip>
         <Chip fact="no card" rot={-2} depth={18} speed={66} className={styles.chipC}>
           no card

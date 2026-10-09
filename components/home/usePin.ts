@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
-import { prefersMotion } from "@/lib/dom";
+import { headerHeight, prefersMotion } from "@/lib/dom";
 import { pinOffset } from "@/lib/sceneScroll";
 import { smoothScroll } from "@/lib/scrollFx";
 
@@ -35,7 +35,7 @@ export function usePin(ref: RefObject<HTMLElement | null>, onStep: (group: numbe
       const section = ref.current?.closest<HTMLElement>("section");
       const groups = section?.dataset.pinGroups?.split(",").map(Number);
       if (!section || !groups) return;
-      const header = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+      const header = headerHeight();
       const box = section.getBoundingClientRect();
       const length = Math.max(0, box.height - (window.innerHeight - header));
       const hold = ((Number(section.dataset.pinHold) || 0) / 100) * window.innerHeight;

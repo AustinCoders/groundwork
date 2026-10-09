@@ -1,17 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
   cardPose,
-  chipPose,
   notePose,
   reveal,
   scaleFor,
   stepWindow,
   stickerPose,
-  unit,
   wordReveal,
   type CardInput,
   type Pose,
-  type Window,
+  type StepWindow,
 } from "@/lib/pose";
 
 const pose = (): Pose => ({ x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 });
@@ -108,6 +106,9 @@ describe("cardPose", () => {
 });
 
 describe("stickers, chips and notes", () => {
+  const chip = (depth: number, speed: number, p: number) =>
+    stickerPose(pose(), depth, wide, 1, 0, 1, 0, 0, (0.5 - p) * speed);
+
   it("pop in late, growing towards 1, and rest at 1", () => {
     expect(stickerPose(pose(), 20, wide, 1, 0, 1, 0, 0)).toMatchObject({ y: 0, scale: 1, opacity: 1 });
     expect(stickerPose(pose(), 20, wide, 0.3, 0, 1, 0, 0).opacity).toBe(0);
@@ -121,12 +122,12 @@ describe("stickers, chips and notes", () => {
   });
 
   it("drift with the section progress at their own speed, and are still when centred", () => {
-    expect(chipPose(pose(), 10, 50, wide, 1, 1, 0.5, 0, 0).y).toBe(0);
-    const early = chipPose(pose(), 10, 50, wide, 1, 1, 0.2, 0, 0).y;
-    const late = chipPose(pose(), 10, 50, wide, 1, 1, 0.8, 0, 0).y;
+    expect(chip(10, 50, 0.5).y).toBe(0);
+    const early = chip(10, 50, 0.2).y;
+    const late = chip(10, 50, 0.8).y;
     expect(early).toBeGreaterThan(0);
     expect(late).toBeCloseTo(-early, 9);
-    expect(chipPose(pose(), 10, -50, wide, 1, 1, 0.2, 0, 0).y).toBeCloseTo(-early, 9);
+    expect(chip(10, -50, 0.2).y).toBeCloseTo(-early, 9);
   });
 
   it("write their ink in after the cards, and rest settled", () => {
@@ -136,6 +137,10 @@ describe("stickers, chips and notes", () => {
 });
 
 describe("wordReveal", () => {
+  it("lets a heading of more than twelve words reach full opacity at rest", () => {
+    for (let index = 0; index < 40; index++) expect(wordReveal(1, index)).toBe(1);
+  });
+
   it("reveals words in sequence and finishes every word of a long headline by the time the section is entered", () => {
     expect(wordReveal(1, 10)).toBe(1);
     expect(wordReveal(0.4, 0)).toBeGreaterThan(wordReveal(0.4, 8));
@@ -144,7 +149,7 @@ describe("wordReveal", () => {
 });
 
 describe("stepWindow", () => {
-  const at = (u: number, index: number, lead = false, tail = false): Window =>
+  const at = (u: number, index: number, lead = false, tail = false): StepWindow =>
     stepWindow({ ei: 0, eo: 0, lt: 0 }, u, index, lead, tail);
 
   it("has a step fully in while it is the current one, and fully out once the next is current", () => {
@@ -188,6 +193,6 @@ describe("reveal and deck", () => {
   });
 
   it("reads a non-finite value as 0", () => {
-    expect(unit(Number.NaN)).toBe(0);
+    expect(reveal(Number.NaN, 0.06, 6)).toBe(0);
   });
 });

@@ -1,24 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SiteDrawer } from "@/components/SiteDrawer";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { Connectors, type Link as Hop } from "@/components/home/Connectors";
 import { CtaScene } from "@/components/home/CtaScene";
 import { FaqScene, type Faq } from "@/components/home/FaqScene";
-import { HOW_STEPS, HowScene } from "@/components/home/HowScene";
+import { HowScene } from "@/components/home/HowScene";
 import { InterviewScene } from "@/components/home/InterviewScene";
-import { PATH_COUNT, PathsScene } from "@/components/home/PathsScene";
+import { PathsScene } from "@/components/home/PathsScene";
 import { PracticeScene } from "@/components/home/PracticeScene";
 import { SectionRail } from "@/components/home/SectionRail";
 import { TopicsScene } from "@/components/home/TopicsScene";
 import { useSceneScroll } from "@/components/home/useSceneScroll";
-import { vars } from "@/components/home/tone";
+import { vars, XP_STICKER } from "@/components/home/tone";
 import type { HomeViewProps } from "@/components/home/types";
 import { plural } from "@/lib/format";
-import { HOME_STAGES } from "@/lib/homeRounds";
-import { PIN_HOLD_VH, pinLengthVh } from "@/lib/pinLengths";
+import { hopFacts } from "@/lib/homeFacts";
+import { HOW_STEPS } from "@/lib/homeHow";
+import { PATH_COUNT } from "@/lib/homePaths";
+import { bookStages } from "@/lib/homeRounds";
+import { PIN_HOLD_VH, PIN_TURN_CAP, pinLengthVh } from "@/lib/pinLengths";
 import type { ConnectorLive } from "@/lib/connector";
 import { prefersMotion } from "@/lib/dom";
 import { smoothScroll, useScrollFx } from "@/lib/scrollFx";
@@ -209,7 +212,7 @@ function HeroArt({ interview }: { interview: HomeViewProps["interview"] }) {
         <span className={styles.followUp}>the follow-up they push with next →</span>
       </div>
       <span className={styles.xp} aria-hidden="true">
-        +25 XP
+        {XP_STICKER}
       </span>
       <span className={styles.doodleNote} aria-hidden="true">
         go on, run it
@@ -230,7 +233,7 @@ function Words({ text }: { text: string }) {
     <>
       {text.split(" ").map((w, i, all) => (
         <Fragment key={i}>
-          <span className={styles.w} style={vars({ i })} data-fx="word">
+          <span className={styles.w} style={vars({ i })} data-motion="word">
             {w}
           </span>
           {i < all.length - 1 ? " " : null}
@@ -257,7 +260,7 @@ function Head({
 }) {
   return (
     <div className={styles.head}>
-      <p className={styles.eyebrow} data-fx="eyebrow">
+      <p className={styles.eyebrow} data-motion="eyebrow">
         <span className={styles.eyebrowNo} data-waypoint={id.replace(/-h$/, "")}>
           {no}
         </span>{" "}
@@ -267,7 +270,7 @@ function Head({
         {children}
       </h2>
       {sub && (
-        <p className={styles.sub} data-fx="sub">
+        <p className={styles.sub} data-motion="sub">
           {sub}
         </p>
       )}
@@ -287,9 +290,7 @@ export function HomeView({ stats, ready, soon, languages, interview, bookRounds 
   const artRef = useRef<HTMLDivElement>(null);
   const connectorsRef = useRef<ConnectorLive | null>(null);
   const hours = Math.round(stats.minutes / 60);
-  const stageCounts = HOME_STAGES.map((stage) => bookRounds.filter((round) => round.stage === stage.id).length).filter(
-    (count) => count > 0
-  );
+  const stageCounts = useMemo(() => bookStages(bookRounds).map((stage) => stage.items.length), [bookRounds]);
   useSceneScroll(pageRef, connectorsRef);
   useScrollFx(pageRef, null, 0, HOME_LERP);
 
@@ -320,52 +321,66 @@ export function HomeView({ stats, ready, soon, languages, interview, bookRounds 
     art.style.setProperty("--py", ((e.clientY - r.top) / r.height - 0.5).toFixed(3));
   }
 
-  const faqs: Faq[] = [
-    {
-      q: "Is it really free?",
-      a: "Yes. Every chapter, exercise, mock interview and the whiteboard are free. There is no paid tier hiding the good parts.",
-    },
-    {
-      q: "Why not just videos, problem sites, docs or blog posts?",
-      a: "Each is good at one thing. Here is where they fall short, and what is different on this site.",
-      contrasts: true,
-    },
-    {
-      q: "Do I need to sign up?",
-      a: "No. There is no account. Your progress, streak and boards are saved in this browser. Some things do leave it: anonymous page analytics, the text the narrator reads aloud, error reports, requests to a CDN for the playground's language runtimes, and the request logs every web host keeps.",
-      link: { href: "/privacy", label: "What leaves, and where it goes →" },
-    },
-    {
-      q: "Which topics are written?",
-      a: `${listNames(ready.map((t) => t.name))} have chapters written today, next to the interview book. The rest of the shelf, from other languages to data, computer science and AI, is laid out as coming soon and fills in as chapters are written.`,
-    },
-    {
-      q: "I only have a few weeks before my interview. Where do I start?",
-      a: "Open the Interview book and read the round you have next. Each round tells you what it is really testing, so you can spend the time you have on the gaps that matter.",
-    },
-    {
-      q: "Which languages can I run?",
-      a: `${languages.runnable} languages run inside your browser, including JavaScript, TypeScript, Python, SQL, C and C++. Another ${languages.total - languages.runnable}, like Java, Go and Rust, get syntax highlighting so you can still write your answers in them.`,
-    },
-    {
-      q: "Is this beginner friendly?",
-      a: "Yes, that is the point of the layering. Pick a topic, then Beginner, and the path starts from the ground up, for example with what the engine does before line 1 runs in JavaScript. If you already know it, pick a higher level and skip ahead.",
-    },
-    {
-      q: "How is the site itself built?",
-      a: "It is all written up, from the content model to the build and the tests, in How this is built.",
-      link: { href: "/architecture", label: "Read how it is built →" },
-    },
-  ];
+  const faqs = useMemo<Faq[]>(
+    () => [
+      {
+        q: "Is it really free?",
+        a: "Yes. Every chapter, exercise, mock interview and the whiteboard are free. There is no paid tier hiding the good parts.",
+      },
+      {
+        q: "Why not just videos, problem sites, docs or blog posts?",
+        a: "Each is good at one thing. Here is where they fall short, and what is different on this site.",
+        contrasts: true,
+      },
+      {
+        q: "Do I need to sign up?",
+        a: "No. There is no account. Your progress, streak and boards are saved in this browser. Some things do leave it: anonymous page analytics, the text the narrator reads aloud, error reports, requests to a CDN for the playground's language runtimes, and the request logs every web host keeps.",
+        link: { href: "/privacy", label: "What leaves, and where it goes →" },
+      },
+      {
+        q: "Which topics are written?",
+        a: `${listNames(ready.map((t) => t.name))} have chapters written today, next to the interview book. The rest of the shelf, from other languages to data, computer science and AI, is laid out as coming soon and fills in as chapters are written.`,
+      },
+      {
+        q: "I only have a few weeks before my interview. Where do I start?",
+        a: "Open the Interview book and read the round you have next. Each round tells you what it is really testing, so you can spend the time you have on the gaps that matter.",
+      },
+      {
+        q: "Which languages can I run?",
+        a: `${languages.runnable} languages run inside your browser, including JavaScript, TypeScript, Python, SQL, C and C++. Another ${languages.total - languages.runnable}, like Java, Go and Rust, get syntax highlighting so you can still write your answers in them.`,
+      },
+      {
+        q: "Is this beginner friendly?",
+        a: "Yes, that is the point of the layering. Pick a topic, then Beginner, and the path starts from the ground up, for example with what the engine does before line 1 runs in JavaScript. If you already know it, pick a higher level and skip ahead.",
+      },
+      {
+        q: "How is the site itself built?",
+        a: "It is all written up, from the content model to the build and the tests, in How this is built.",
+        link: { href: "/architecture", label: "Read how it is built →" },
+      },
+    ],
+    [ready, languages]
+  );
 
-  const hops: Hop[] = [
-    { label: "then practise it", fact: `${ready.length + 1} topics written`, traveller: "plane" },
-    { label: "see how it works", fact: `${stats.exercises} exercises`, traveller: "pencil" },
-    { label: "pick your path", fact: `${HOW_STEPS} steps`, traveller: "bookmark" },
-    { label: "meet the rounds", fact: `${PATH_COUNT} paths`, traveller: "compass" },
-    { label: "ask away", fact: `${interview.rounds} rounds`, traveller: "flag" },
-    { label: "go on", fact: `${faqs.length} answers`, traveller: "key" },
-  ];
+  const hops = useMemo<Hop[]>(() => {
+    const facts = hopFacts({
+      topics: ready.length + 1,
+      chapters: stats.writtenChapters,
+      steps: HOW_STEPS,
+      paths: PATH_COUNT,
+      stages: stageCounts.length,
+      answers: faqs.length,
+    });
+    const list: Omit<Hop, "fact">[] = [
+      { to: "practice", label: "then practise it", traveller: "plane" },
+      { to: "how", label: "see how it works", traveller: "pencil" },
+      { to: "paths", label: "pick your path", traveller: "bookmark" },
+      { to: "loop", label: "meet the rounds", traveller: "compass" },
+      { to: "faq", label: "ask away", traveller: "flag" },
+      { to: "cta", label: "go on", traveller: "key" },
+    ];
+    return list.map((hop, i) => ({ ...hop, fact: facts[i] }));
+  }, [ready.length, stats.writtenChapters, stageCounts.length, faqs.length]);
 
   return (
     <>
@@ -467,6 +482,7 @@ export function HomeView({ stats, ready, soon, languages, interview, bookRounds 
                 ready={ready}
                 soon={soon}
                 interview={interview}
+                exercises={stats.exercises}
                 onBrowse={() => {
                   smoothScroll.stop();
                   setMenuOpen(true);
@@ -476,7 +492,7 @@ export function HomeView({ stats, ready, soon, languages, interview, bookRounds 
                     no="01"
                     label="Topics"
                     id="shelf-h"
-                    sub="What is written today comes first. Every other topic is laid out and fills in as its chapters are written."
+                    sub={`What is written today comes first, ${plural(stats.exercises, "exercise")} so far. Every other topic is laid out and fills in as its chapters are written.`}
                   >
                     <Words text="Every topic a developer needs." />{" "}
                     <span className={styles.hl}>
@@ -562,18 +578,20 @@ export function HomeView({ stats, ready, soon, languages, interview, bookRounds 
             data-scene
             data-pin-groups={stageCounts.join(",")}
             data-pin-hold={PIN_HOLD_VH}
+            data-pin-cap={PIN_TURN_CAP}
             style={vars({ "pin-d": pinLengthVh("loop", stageCounts.length) })}
           >
             <div className={styles.pin} data-pin-box>
               <InterviewScene
                 rounds={bookRounds}
+                total={interview.rounds}
                 head={
                   <Head
                     no="05"
                     label="The interview book"
                     id="loop-h"
                     size="sm"
-                    sub="Pick a stage, then a round, to see what it is really testing, the wrong answer that loses the room, and a question you will get."
+                    sub={`Pick a stage, then a round, to see what it is really testing, the wrong answer that loses the room, and a question you will get. These are the ${bookRounds.length} core rounds of the ${interview.rounds} in the whole book.`}
                   >
                     <Words text="From the first call to the offer, round by round." />
                   </Head>

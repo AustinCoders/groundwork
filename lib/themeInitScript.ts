@@ -8,6 +8,8 @@ export const THEME_INIT_SCRIPT = `(function () {
     }
   }
 
+  document.documentElement.setAttribute("data-js", "");
+
   try {
     var savedTheme = readJSON("jsnotes:theme");
     var theme =

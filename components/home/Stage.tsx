@@ -5,6 +5,8 @@ import styles from "./stage.module.css";
 
 const FLY_PATTERNS = 6;
 
+type DataAttributes = { [key: `data-${string}`]: string | number | boolean | undefined };
+
 export function Scene({
   flip,
   side,
@@ -35,7 +37,7 @@ export function Scene({
 
 export function Copy({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <div className={className ? `${styles.copy} ${className}` : styles.copy} data-fx="copy">
+    <div className={className ? `${styles.copy} ${className}` : styles.copy} data-motion="copy">
       {children}
     </div>
   );
@@ -65,7 +67,7 @@ export function Stage({
     <div
       className={hostClassName ? `${styles.host} ${hostClassName}` : styles.host}
       data-sticky={sticky || undefined}
-      data-fx={hostFx}
+      data-motion={hostFx}
     >
       <div
         ref={ref}
@@ -105,8 +107,8 @@ export function StageCard({
   className?: string;
   style?: CSSProperties;
   children?: ReactNode;
-  [key: string]: unknown;
-}) {
+} & Omit<HTMLAttributes<HTMLElement>, "className" | "style" | "children"> &
+  DataAttributes) {
   const Tag: ElementType = as ?? "div";
   return (
     <Tag
@@ -114,7 +116,7 @@ export function StageCard({
       {...rest}
       className={className ? `${styles.card} ${className}` : styles.card}
       data-card
-      data-fx={fx}
+      data-motion={fx}
       data-fly={i % FLY_PATTERNS}
       data-extra={extra || undefined}
       data-still={still || undefined}
@@ -155,7 +157,7 @@ export function Sticker({
     <span
       className={className ? `${styles.sticker} ${className}` : styles.sticker}
       data-sticker
-      data-fx="sticker"
+      data-motion="sticker"
       data-tone={tone}
       aria-hidden="true"
       style={vars({ rot, depth, i })}
@@ -184,7 +186,7 @@ export function Note({
     <span
       className={className ? `${styles.note} ${className}` : styles.note}
       data-note
-      data-fx="note"
+      data-motion="note"
       aria-hidden="true"
       style={vars({ rot, depth, i })}
     >
@@ -216,7 +218,7 @@ export function Chip({
     <span
       className={className ? `${styles.chip} ${className}` : styles.chip}
       data-chip
-      data-fx="chip"
+      data-motion="chip"
       data-fact={fact}
       aria-hidden="true"
       style={vars({ rot, depth, speed })}
@@ -231,7 +233,7 @@ export function Spark({ className, depth = 8 }: { className?: string; depth?: nu
     <svg
       className={className ? `${styles.spark} ${className}` : styles.spark}
       data-spark
-      data-fx="spark"
+      data-motion="spark"
       viewBox="0 0 24 24"
       aria-hidden="true"
       focusable="false"

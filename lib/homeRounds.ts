@@ -24,6 +24,14 @@ export const HOME_STAGES: { id: HomeStageId; label: string; last: number }[] = [
   { id: "people", label: "People and offer", last: Infinity },
 ];
 
+export interface BookStage {
+  id: HomeStageId;
+  label: string;
+  number: number;
+  first: number;
+  items: { round: HomeRound; index: number }[];
+}
+
 export function stageOf(code: string): HomeStageId {
   const number = Number(/^R(\d+)/.exec(code)?.[1]);
   const found = HOME_STAGES.find((stage) => number <= stage.last);
@@ -61,9 +69,11 @@ function decode(text: string): string {
   });
 }
 
+const BLOCK_TAG = /<\/?(?:p|br|li|ul|ol|div|h[1-6]|tr|td|th|table|blockquote|pre|section|article)\b[^>]*>/gi;
+
 export function plainText(html: string | null | undefined): string {
   if (!html) return "";
-  return decode(html.replace(/<[^>]*>/g, " "))
+  return decode(html.replace(BLOCK_TAG, " ").replace(/<[^>]*>/g, ""))
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -93,7 +103,7 @@ export function truncate(text: string, limit: number): string {
 }
 
 function failMode(round: Pick<BookRound, "meta">): string {
-  return round.meta.find(([key]) => key === "Fail mode")?.[1] ?? "";
+  return round.meta?.find(([key]) => key === "Fail mode")?.[1] ?? "";
 }
 
 export function homeRounds(
@@ -113,10 +123,22 @@ export function homeRounds(
         tests: truncate(plainText(first?.test), TESTS_LIMIT),
         wrong: truncate(plainText(first?.trap) || plainText(failMode(round)), WRONG_LIMIT),
         sample: truncate(plainText(first?.q), SAMPLE_LIMIT),
-        followUp: truncate(plainText(first?.fu[0]), FOLLOW_UP_LIMIT),
-        questions: round.counts.questions,
-        followUps: round.counts.followUps,
-        minutes: round.minutes,
+        followUp: truncate(plainText(first?.fu?.[0]), FOLLOW_UP_LIMIT),
+        questions: round.counts?.questions ?? 0,
+        followUps: round.counts?.followUps ?? 0,
+        minutes: round.minutes ?? 0,
       };
     });
+}
+
+export function bookStages(rounds: HomeRound[]): BookStage[] {
+  return HOME_STAGES.map((stage) => ({
+    id: stage.id,
+    label: stage.label,
+    number: 0,
+    first: rounds.findIndex((round) => round.stage === stage.id),
+    items: rounds.flatMap((round, index) => (round.stage === stage.id ? [{ round, index }] : [])),
+  }))
+    .filter((stage) => stage.items.length > 0)
+    .map((stage, k) => ({ ...stage, number: k + 1 }));
 }

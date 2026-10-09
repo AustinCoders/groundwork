@@ -230,27 +230,33 @@
   }
 }
 
+@media (min-width: 1500px) {
+  .host {
+    --sz: 1.03;
+  }
+}
+
 @media (min-width: 1600px) {
-  .host {
-    --sz: 1.04;
-  }
-}
-
-@media (min-width: 1760px) {
-  .host {
-    --sz: 1.07;
-  }
-}
-
-@media (min-width: 1880px) {
   .host {
     --sz: 1.1;
   }
 }
 
+@media (min-width: 1700px) {
+  .host {
+    --sz: 1.17;
+  }
+}
+
+@media (min-width: 1800px) {
+  .host {
+    --sz: 1.23;
+  }
+}
+
 @media (min-width: 1280px) {
   .scene {
-    width: min(100% - 112px, clamp(1180px, 92vw, 1360px));
+    width: min(100% - 112px, clamp(1180px, 92vw, 1640px));
     max-width: none;
     padding-inline: 0;
   }

@@ -1,3 +1,5 @@
+import { smooth } from "@/lib/math";
+
 interface TrailSpot {
   x: number;
   y: number;
@@ -21,8 +23,8 @@ export interface Trail {
   d: string;
   spots: TrailSpot[];
   at: number[];
-  finishAt: number;
   length: number;
+  lengths: number[];
   cumulative: number[];
   curves: Pair[][];
 }
@@ -58,8 +60,8 @@ function assemble(curves: Pair[][], spots: TrailSpot[]): Trail {
     d,
     spots,
     at: cumulative.slice(1, 1 + spots.length),
-    finishAt: 1,
     length,
+    lengths,
     cumulative,
     curves,
   };
@@ -129,10 +131,6 @@ const ARRIVE = 0.4;
 const LEAVE = 0.72;
 const LAST_LEAVE = 0.6;
 
-function ease(t: number): number {
-  return t * t * (3 - 2 * t);
-}
-
 export function loopProgress(u: number, at: readonly number[]): number {
   const count = at.length;
   const x = Math.min(count, Math.max(0, Number.isFinite(u) ? u : 0));
@@ -140,13 +138,13 @@ export function loopProgress(u: number, at: readonly number[]): number {
   let begin = 0;
   for (let k = 0; k < count; k++) {
     const arrive = k + ARRIVE;
-    if (x < arrive) return from + (at[k] - from) * ease((x - begin) / (arrive - begin));
+    if (x < arrive) return from + (at[k] - from) * smooth((x - begin) / (arrive - begin));
     from = at[k];
     const leave = k === count - 1 ? k + LAST_LEAVE : k + LEAVE;
     if (x < leave) return from;
     begin = leave;
   }
-  return from + (1 - from) * ease((x - begin) / Math.max(1e-9, count - begin));
+  return from + (1 - from) * smooth((x - begin) / Math.max(1e-9, count - begin));
 }
 
 interface TrailStep {
@@ -171,8 +169,7 @@ export function trailPoint(trail: Trail, fraction: number, aspect: number): Trai
   let seen = 0;
   let at: Pair = curve[0];
   let t = 0;
-  const total = segmentLength(curve);
-  const goal = local * total;
+  const goal = local * trail.lengths[k];
   let last = curve[0];
   for (let i = 1; i <= SAMPLES; i++) {
     const next = bezier(curve, i / SAMPLES);
@@ -190,9 +187,13 @@ export function trailPoint(trail: Trail, fraction: number, aspect: number): Trai
   }
   const ahead = bezier(curve, Math.min(1, t + 0.01));
   const behind = bezier(curve, Math.max(0, t - 0.01));
-  const dx = (ahead[0] - behind[0]) * 1;
+  const dx = ahead[0] - behind[0];
   const dy = (ahead[1] - behind[1]) * aspect;
   return { x: at[0], y: at[1], angle: (Math.atan2(dy, dx) * 180) / Math.PI };
+}
+
+export function stageRatio(width: number, height: number): number {
+  return width > 0 && height > 0 ? height / width : 0;
 }
 
 export function walkerProgress(lt: number): number {

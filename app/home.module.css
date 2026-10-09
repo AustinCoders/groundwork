@@ -522,6 +522,10 @@
   line-height: 1.04;
   letter-spacing: -0.03em;
 }
+.section:focus {
+  outline: none;
+}
+
 .section {
   position: relative;
   display: flex;

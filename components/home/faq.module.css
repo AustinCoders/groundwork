@@ -280,3 +280,8 @@
 .faqStage .sticky[data-card] {
   --fy: 36;
 }
+
+:global(html:not([data-js])) .faqPanel {
+  grid-template-rows: 1fr;
+  visibility: visible;
+}

@@ -521,3 +521,12 @@
   top: 7%;
   left: 2%;
 }
+
+:global(html:not([data-js])) .shelfStage {
+  height: auto;
+}
+
+:global(html:not([data-js])) .fanPanel {
+  position: static;
+  margin-bottom: 24px;
+}

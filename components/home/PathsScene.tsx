@@ -1,152 +1,38 @@
 import Link from "next/link";
 import { useRef, useState, type ReactNode } from "react";
 import { formatSpan, plural } from "@/lib/format";
+import { HOME_PATHS, leadStop, PATH_COUNT, pathStops, startOf, type Stop } from "@/lib/homePaths";
+import { nextTab } from "@/lib/tablist";
 import { Chip, Copy, Note, Scene, Spark, Stage, StageCard, Sticker } from "./Stage";
 import { buildTrail, TRAIL_SPOTS } from "@/lib/trail";
 import { TrackSvg, Walker } from "./Track";
-import { accent, inWindow, stepAttrs, vars } from "./tone";
+import { accent, inWindow, panelAttrs, stepAttrs, vars } from "./tone";
+import { useMounted } from "./useMounted";
 import type { ShelfCard } from "./types";
 import { usePin } from "./usePin";
 import styles from "./paths.module.css";
 
-type JourneyStep = { topic: string } | { label: string; mark: string; href: string; sub: string; tone: string };
-
-const PATHS: {
-  tag: string;
-  title: string;
-  pain: string;
-  tone: string;
-  steps: JourneyStep[];
-  gains: string[];
-}[] = [
-  {
-    tag: "Frontend developer",
-    title: "Build interfaces, then explain them",
-    pain: "You can make a page work, but the ideas underneath still feel like magic, and a live widget round scares you.",
-    tone: "blue",
-    steps: [
-      { topic: "js" },
-      { topic: "typescript" },
-      { topic: "react" },
-      { topic: "nextjs" },
-      { label: "The frontend round", mark: "R4", href: "/interview/r4fe", sub: "interview round", tone: "red" },
-    ],
-    gains: [
-      "Explain what your code does before it runs, line by line",
-      "Say exactly why a component re-rendered, and stop it",
-      "Build a working widget live, under a clock",
-    ],
-  },
-  {
-    tag: "Interview prep",
-    title: "Patterns first, then every round",
-    pain: "You are good at the work and out of practice at the interview: puzzles with no theory, and rounds nobody explained.",
-    tone: "purple",
-    steps: [
-      { topic: "dsa" },
-      { label: "Online assessment", mark: "OA", href: "/interview/r1oa", sub: "interview round", tone: "red" },
-      { label: "Machine coding", mark: "R2", href: "/interview/r2", sub: "interview round", tone: "red" },
-      { topic: "system-design" },
-      { label: "Behavioural", mark: "R11", href: "/interview/r11", sub: "interview round", tone: "red" },
-    ],
-    gains: [
-      "Solve array and string problems with a pattern, not luck",
-      "Walk into the online assessment knowing its format",
-      "Talk through a cache or a queue without hand-waving",
-    ],
-  },
-  {
-    tag: "Senior and system design",
-    title: "Reason about the whole system",
-    pain: "The questions stop being about syntax. They are about trade-offs, failure, and proving you can lead without the title.",
-    tone: "orange",
-    steps: [
-      { topic: "react" },
-      { topic: "system-design" },
-      { topic: "databases" },
-      { label: "Distributed systems", mark: "S2", href: "/interview/s2", sub: "senior round", tone: "red" },
-      { label: "Staff behavioural", mark: "S4", href: "/interview/s4", sub: "senior round", tone: "red" },
-    ],
-    gains: [
-      "Reason about consensus, partitions and failure out loud",
-      "Explain the runtime under React, not just the API",
-      "Tell staff-level stories that survive the follow-up",
-    ],
-  },
-];
-
-export const PATH_COUNT = PATHS.length;
-
-interface Stop {
-  key: string;
-  name: string;
-  mark: string;
-  tone: string;
-  sub: string;
-  meta: string;
-  href: string | null;
-}
+const leadFact = (stop: Stop) => (stop.exercises > 0 ? plural(stop.exercises, "exercise") : formatSpan(stop.minutes));
 
 export function PathsScene({ head, ready, soon }: { head: ReactNode; ready: ShelfCard[]; soon: ShelfCard[] }) {
   const [active, setActive] = useState(0);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const sceneRef = useRef<HTMLDivElement>(null);
-  const { pinned, go } = usePin(sceneRef, (step) => setActive(step));
-  const byId = new Map([...ready, ...soon].map((t) => [t.id, t]));
-  const writtenIds = new Set(ready.map((t) => t.id));
-
-  function stopsOf(steps: JourneyStep[]): Stop[] {
-    return steps.flatMap((step): Stop[] => {
-      if (!("topic" in step))
-        return [
-          {
-            key: step.href,
-            name: step.label,
-            mark: step.mark,
-            tone: step.tone,
-            sub: step.sub,
-            meta: "what it tests, the trap, the follow-up",
-            href: step.href,
-          },
-        ];
-      const t = byId.get(step.topic);
-      if (!t) return [];
-      const written = writtenIds.has(t.id);
-      return [
-        {
-          key: t.id,
-          name: t.name,
-          mark: t.mark,
-          tone: t.accent,
-          sub: written ? plural(t.chapters, "chapter") : "soon",
-          meta: written
-            ? [t.exercises > 0 ? plural(t.exercises, "exercise") : "", formatSpan(t.minutes)]
-                .filter(Boolean)
-                .join(" · ")
-            : "laid out, chapters on the way",
-          href: written ? t.href : null,
-        },
-      ];
-    });
-  }
+  const mounted = useMounted();
+  const target = useRef(0);
+  const { pinned, go } = usePin(sceneRef, (step) => {
+    target.current = step;
+    setActive(step);
+  });
 
   function choose(next: number) {
+    target.current = next;
     if (pinned) go(next, 0);
     else setActive(next);
   }
 
   function onKey(e: React.KeyboardEvent) {
-    const count = PATHS.length;
-    const next =
-      e.key === "ArrowRight" || e.key === "ArrowDown"
-        ? (active + 1) % count
-        : e.key === "ArrowLeft" || e.key === "ArrowUp"
-          ? (active - 1 + count) % count
-          : e.key === "Home"
-            ? 0
-            : e.key === "End"
-              ? count - 1
-              : -1;
+    const next = nextTab(e.key, target.current, PATH_COUNT);
     if (next < 0) return;
     e.preventDefault();
     choose(next);
@@ -158,7 +44,7 @@ export function PathsScene({ head, ready, soon }: { head: ReactNode; ready: Shel
       <Copy className={styles.pathsHead}>
         {head}
         <div className={styles.pathTabs} role="tablist" aria-label="Where are you now?" onKeyDown={onKey}>
-          {PATHS.map((p, i) => (
+          {HOME_PATHS.map((p, i) => (
             <button
               key={p.tag}
               ref={(el) => {
@@ -180,11 +66,11 @@ export function PathsScene({ head, ready, soon }: { head: ReactNode; ready: Shel
           ))}
         </div>
       </Copy>
-      {PATHS.map((p, i) => {
-        const stops = stopsOf(p.steps);
+      {HOME_PATHS.map((p, i) => {
+        const stops = pathStops(p.steps, ready, soon);
         const trail = buildTrail(stops.length);
-        const first = stops.find((stop) => stop.href);
-        const lead = stops.find((stop) => stop.href && stop.sub.endsWith("chapters"));
+        const start = startOf(stops);
+        const lead = leadStop(stops);
         return (
           <div
             key={p.tag}
@@ -193,12 +79,10 @@ export function PathsScene({ head, ready, soon }: { head: ReactNode; ready: Shel
             id={`path-panel-${i}`}
             aria-labelledby={`path-tab-${i}`}
             style={accent(p.tone)}
-            {...stepAttrs(i, PATHS.length)}
-            hidden={!inWindow(i, active, pinned)}
-            inert={i !== active || undefined}
-            aria-hidden={i !== active || undefined}
+            {...stepAttrs(i, PATH_COUNT)}
+            {...panelAttrs(mounted, !inWindow(i, active, pinned), i !== active)}
           >
-            <div className={styles.pathCopy} data-fx="part">
+            <div className={styles.pathCopy} data-motion="part">
               <h3 className={styles.pathTitle}>{p.title}</h3>
               <p className={styles.pathPain}>{p.pain}</p>
               <div className={styles.pathGains}>
@@ -209,9 +93,9 @@ export function PathsScene({ head, ready, soon }: { head: ReactNode; ready: Shel
                   ))}
                 </ul>
               </div>
-              {first?.href && (
-                <Link href={first.href} prefetch={false} className={styles.pathStart}>
-                  Start this path <span aria-hidden="true">→</span>
+              {start?.stop.href && (
+                <Link href={start.stop.href} prefetch={false} className={styles.pathStart}>
+                  {start.label} <span aria-hidden="true">→</span>
                 </Link>
               )}
             </div>
@@ -242,7 +126,7 @@ export function PathsScene({ head, ready, soon }: { head: ReactNode; ready: Shel
                       data-stop={k + 1}
                       data-side={spot.x < 50 ? "left" : "right"}
                       data-soon={!stop.href || undefined}
-                      data-fx="milestone"
+                      data-motion="milestone"
                       data-fx-at={trail.at[k]}
                       style={vars({ sx: spot.x, sy: spot.y })}
                     >
@@ -295,8 +179,8 @@ export function PathsScene({ head, ready, soon }: { head: ReactNode; ready: Shel
                   <Chip fact={lead.sub} rot={-3} depth={12} speed={48} className={styles.chipA}>
                     {lead.sub}
                   </Chip>
-                  <Chip fact={lead.meta.split(" · ")[0]} rot={2} depth={-8} speed={-34} className={styles.chipB}>
-                    {lead.meta.split(" · ")[0]}
+                  <Chip fact={leadFact(lead)} rot={2} depth={-8} speed={-34} className={styles.chipB}>
+                    {leadFact(lead)}
                   </Chip>
                 </>
               )}

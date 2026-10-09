@@ -506,3 +506,15 @@ a.stop:focus-visible {
 :global([data-pinned]) .pathPanel[inert] > * {
   opacity: 0;
 }
+
+:global(html:not([data-js])) div.pathsScene {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+:global(html:not([data-js])) .pathPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}

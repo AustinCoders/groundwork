@@ -22,3 +22,11 @@ export function stepAttrs(index: number, count: number) {
 export function inWindow(index: number, active: number, pinned: boolean): boolean {
   return pinned ? Math.abs(index - active) <= 1 : index === active;
 }
+
+export const XP_STICKER = "+25 XP";
+
+export function panelAttrs(mounted: boolean, hide: boolean, inactive: boolean) {
+  return mounted
+    ? { hidden: hide, inert: inactive || undefined, "aria-hidden": inactive || undefined }
+    : { "data-panel-off": hide || undefined };
+}

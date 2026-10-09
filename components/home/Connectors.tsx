@@ -1,14 +1,16 @@
 import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
+import { WIDE } from "@/lib/breakpoints";
 import { buildConnector, type BuiltConnector, type ConnectorLive } from "@/lib/connector";
 import styles from "./connectors.module.css";
 
-const WIDE = "(min-width: 1081px)";
-const HOP = 6;
+const HOP = 22;
 const LAND = 3;
+const TIGHT = 90;
 
 type Traveller = "plane" | "pencil" | "bookmark" | "compass" | "flag" | "key";
 
 export interface Link {
+  to: string;
   label: string;
   fact: string;
   traveller: Traveller;
@@ -17,6 +19,38 @@ export interface Link {
 interface View {
   built: BuiltConnector;
   link: Link;
+}
+
+interface Place {
+  top: number;
+  bottom: number;
+  stageX: number;
+  badgeX: number;
+  badgeTop: number;
+}
+
+interface Shift {
+  x: number;
+  y: number;
+}
+
+function shiftOf(el: HTMLElement | null): Shift {
+  if (!el) return { x: 0, y: 0 };
+  const [x = "0", y = "0"] = getComputedStyle(el).translate.split(" ");
+  return { x: parseFloat(x) || 0, y: parseFloat(y) || 0 };
+}
+
+function sameView(a: View, b: View): boolean {
+  return (
+    a.link.to === b.link.to &&
+    a.link.label === b.link.label &&
+    a.link.fact === b.link.fact &&
+    a.built.d === b.built.d &&
+    a.built.left === b.built.left &&
+    a.built.top === b.built.top &&
+    a.built.width === b.built.width &&
+    a.built.height === b.built.height
+  );
 }
 
 const GLYPHS: Record<Traveller, ReactNode> = {
@@ -60,17 +94,19 @@ const GLYPHS: Record<Traveller, ReactNode> = {
   ),
 };
 
-function measure(host: HTMLElement): { measured: BuiltConnector[]; ids: string[]; height: number } | null {
+function measure(host: HTMLElement, links: Link[]): View[] | null {
   const sections = Array.from(host.querySelectorAll<HTMLElement>("[data-scene]"));
   if (sections.length < 2) return null;
   const scroll = window.scrollY;
-  const places = sections.map((section) => {
+  const places = new Map<string, Place>();
+  for (const section of sections) {
     const scene = section.querySelector<HTMLElement>("[data-scene-root]");
     const badge = section.querySelector<HTMLElement>("[data-waypoint]");
-    if (!scene || !badge) return null;
+    if (!scene || !badge) continue;
     const box = section.getBoundingClientRect();
     const sceneBox = scene.getBoundingClientRect();
     const badgeBox = badge.getBoundingClientRect();
+    const lift = shiftOf(badge.closest<HTMLElement>("[data-motion='eyebrow']"));
     const pinned = section.hasAttribute("data-pinned");
     const stage = pinned ? (section.querySelector("[data-pin-box]")?.getBoundingClientRect().height ?? 0) : 0;
     const wrapperTop = box.top + scroll;
@@ -81,39 +117,42 @@ function measure(host: HTMLElement): { measured: BuiltConnector[]; ids: string[]
       (stageEl) => stageEl.getBoundingClientRect().width > 0
     );
     const stageBox = visible?.getBoundingClientRect();
-    return {
-      id: section.id,
+    places.set(section.id, {
       top,
       bottom,
       stageX: stageBox ? stageBox.left + stageBox.width / 2 : sceneBox.left + sceneBox.width / 2,
-      badgeX: badgeBox.left + badgeBox.width / 2,
-      badgeTop: top + (badgeBox.top - sceneBox.top),
-    };
-  });
-  const measured: BuiltConnector[] = [];
-  const ids: string[] = [];
-  for (let i = 0; i + 1 < places.length; i++) {
-    const from = places[i];
-    const to = places[i + 1];
-    if (!from || !to) continue;
-    measured.push(
-      buildConnector({
+      badgeX: badgeBox.left + badgeBox.width / 2 - lift.x,
+      badgeTop: top + (badgeBox.top - lift.y - sceneBox.top),
+    });
+  }
+  const views: View[] = [];
+  const order = sections.map((section) => section.id);
+  for (const link of links) {
+    const to = places.get(link.to);
+    const from = places.get(order[order.indexOf(link.to) - 1] ?? "");
+    if (!to || !from) continue;
+    views.push({
+      link,
+      built: buildConnector({
         from: { x: from.stageX, y: from.bottom + HOP },
         to: { x: to.badgeX, y: to.badgeTop - LAND },
         gapTop: from.bottom,
         gapBottom: to.top,
-      })
-    );
-    ids.push(to.id);
+      }),
+    });
   }
-  return { measured, ids, height: document.documentElement.scrollHeight };
+  return views;
+}
+
+function releaseDocks(live: RefObject<ConnectorLive | null>) {
+  for (const item of live.current?.items ?? []) item.target.removeAttribute("data-docked");
+  live.current = null;
 }
 
 export function Connectors({ liveRef, links }: { liveRef: RefObject<ConnectorLive | null>; links: Link[] }) {
   const ref = useRef<HTMLDivElement>(null);
   const mask = useId();
   const [views, setViews] = useState<View[]>([]);
-  const [targets, setTargets] = useState<string[]>([]);
 
   useEffect(() => {
     const layer = ref.current;
@@ -121,20 +160,14 @@ export function Connectors({ liveRef, links }: { liveRef: RefObject<ConnectorLiv
     if (!layer || !host) return;
     const wide = window.matchMedia(WIDE);
     let frame = 0;
+    let disposed = false;
     const run = () => {
       frame = 0;
-      const next = wide.matches ? measure(host) : null;
-      const list = next ? next.measured.map((built, i) => ({ built, link: links[i] })).filter((view) => view.link) : [];
-      setViews((now) =>
-        now.length === list.length &&
-        now.every((view, i) => view.built.d === list[i].built.d && view.built.top === list[i].built.top)
-          ? now
-          : list
-      );
-      setTargets(next ? next.ids : []);
+      const list = (wide.matches ? measure(host, links) : null) ?? [];
+      setViews((now) => (now.length === list.length && now.every((view, i) => sameView(view, list[i])) ? now : list));
     };
     const queue = () => {
-      if (!frame) frame = requestAnimationFrame(run);
+      if (!frame && !disposed) frame = requestAnimationFrame(run);
     };
     const observer = new ResizeObserver(queue);
     observer.observe(host);
@@ -144,6 +177,7 @@ export function Connectors({ liveRef, links }: { liveRef: RefObject<ConnectorLiv
     void document.fonts?.ready.then(queue);
     queue();
     return () => {
+      disposed = true;
       cancelAnimationFrame(frame);
       observer.disconnect();
       window.removeEventListener("resize", queue);
@@ -153,24 +187,36 @@ export function Connectors({ liveRef, links }: { liveRef: RefObject<ConnectorLiv
 
   useEffect(() => {
     const layer = ref.current;
-    if (!layer || views.length === 0) {
-      liveRef.current = null;
-      return;
-    }
+    releaseDocks(liveRef);
+    if (!layer || views.length === 0) return;
     const els = Array.from(layer.querySelectorAll<HTMLElement>("[data-connector]"));
     liveRef.current = {
       items: els.flatMap((el, i) => {
-        const target = document.getElementById(targets[i] ?? "");
+        const target = document.getElementById(views[i]?.link.to ?? "");
         const built = views[i]?.built;
-        return target && built
-          ? [{ el, target, startY: built.top, endY: built.top + built.height, d: -1, docked: false }]
+        const reveal = el.querySelector<SVGElement>("[data-part='reveal']");
+        const label = el.querySelector<HTMLElement>("[data-part='label']");
+        const sparkle = el.querySelector<SVGElement>("[data-part='sparkle']");
+        const fact = el.querySelector<HTMLElement>("[data-fact]");
+        const rider = el.querySelector<SVGElement>("[data-rider]");
+        return target && built && reveal && label && sparkle && fact && rider
+          ? [
+              {
+                el,
+                parts: { reveal, label, sparkle, fact, rider },
+                target,
+                startY: built.top,
+                endY: built.top + built.height,
+                d: -1,
+                docked: false,
+              },
+            ]
           : [];
       }),
     };
-    return () => {
-      liveRef.current = null;
-    };
-  }, [views, targets, liveRef]);
+    window.dispatchEvent(new Event("scroll"));
+    return () => releaseDocks(liveRef);
+  }, [views, liveRef]);
 
   return (
     <div ref={ref} className={styles.layer} aria-hidden="true">
@@ -182,6 +228,7 @@ export function Connectors({ liveRef, links }: { liveRef: RefObject<ConnectorLiv
             className={styles.connector}
             data-connector
             data-traveller={link.traveller}
+            data-tight={built.height < TIGHT || undefined}
             style={{ left: built.left, top: built.top, width: built.width, height: built.height }}
           >
             <svg className={styles.svg} width={built.width} height={built.height} focusable="false">
@@ -194,15 +241,15 @@ export function Connectors({ liveRef, links }: { liveRef: RefObject<ConnectorLiv
                   width={built.width + 40}
                   height={built.height + 40}
                 >
-                  <path className={styles.reveal} d={built.d} pathLength={1} />
+                  <path className={styles.reveal} d={built.d} pathLength={1} data-part="reveal" />
                 </mask>
               </defs>
               <path className={styles.dash} d={built.d} mask={`url(#${mask}-${i})`} />
             </svg>
-            <span className={styles.label} style={{ left: built.swing.x, top: built.swing.y }}>
+            <span className={styles.label} style={{ left: built.swing.x, top: built.swing.y }} data-part="label">
               {link.label}
             </span>
-            <svg className={styles.sparkle} style={path} viewBox="0 0 24 24" focusable="false">
+            <svg className={styles.sparkle} style={path} viewBox="0 0 24 24" focusable="false" data-part="sparkle">
               <path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" />
             </svg>
             <span className={styles.fact} style={path} data-fact>

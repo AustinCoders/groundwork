@@ -4,8 +4,10 @@ import { formatSpan, plural } from "@/lib/format";
 import { TOPIC_CATEGORIES } from "@/lib/topicCategories";
 import type { HomeViewProps, ShelfCard } from "./types";
 import { Chip, Copy, Note, Scene, Spark, Stage, StageCard, Sticker, Tape } from "./Stage";
-import { accent } from "./tone";
-import { NARROW, useMedia } from "./useNarrow";
+import { accent, panelAttrs } from "./tone";
+import { NARROW } from "@/lib/breakpoints";
+import { useMounted } from "./useMounted";
+import { useMedia } from "./useNarrow";
 import styles from "./topics.module.css";
 
 const READY_TAB = "ready";
@@ -18,17 +20,20 @@ export function TopicsScene({
   ready,
   soon,
   interview,
+  exercises,
   onBrowse,
 }: {
   head: ReactNode;
   ready: ShelfCard[];
   soon: ShelfCard[];
   interview: HomeViewProps["interview"];
+  exercises: number;
   onBrowse: () => void;
 }) {
   const [active, setActive] = useState<string>(READY_TAB);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const narrow = useMedia(NARROW);
+  const mounted = useMounted();
   const all = [...ready, ...soon];
   const categories = TOPIC_CATEGORIES.map((category) => ({
     ...category,
@@ -100,7 +105,7 @@ export function TopicsScene({
           Browse all topics <span aria-hidden="true">→</span>
         </button>
       </Copy>
-      <Stage live tone="blue">
+      <Stage live tone="blue" className={styles.shelfStage}>
         {entries.map((entry, i) => {
           const group = categories.find((category) => category.id === entry.id);
           const topics = group ? group.topics : ready;
@@ -115,7 +120,7 @@ export function TopicsScene({
               role="tabpanel"
               id={`shelf-panel-${entry.id}`}
               aria-labelledby={`shelf-tab-${entry.id}`}
-              hidden={i !== index}
+              {...panelAttrs(mounted, i !== index, false)}
             >
               <p className={styles.panelNote}>
                 {written} written
@@ -183,9 +188,11 @@ export function TopicsScene({
         <Chip fact={`${interview.rounds}`} rot={2} depth={-8} speed={-34} className={styles.chipB}>
           {interview.rounds} rounds
         </Chip>
-        <Chip fact={`${ready[0]?.exercises}`} rot={-2} depth={16} speed={62} className={styles.chipC}>
-          {plural(ready[0]?.exercises ?? 0, "exercise")}
-        </Chip>
+        {exercises > 0 && (
+          <Chip fact={plural(exercises, "exercise")} rot={-2} depth={16} speed={62} className={styles.chipC}>
+            {plural(exercises, "exercise")}
+          </Chip>
+        )}
       </Stage>
     </Scene>
   );

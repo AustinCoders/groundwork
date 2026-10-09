@@ -70,6 +70,28 @@
   color: var(--ink-soft);
 }
 
+.autoplay {
+  align-self: flex-start;
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  background: var(--sheet);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.autoplay:hover {
+  border-color: var(--primary);
+}
+
+.autoplay:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .stepFill {
   position: absolute;
   right: 0;
@@ -91,7 +113,7 @@
 }
 
 .howHost {
-  --stage-h: clamp(480px, calc(100svh - var(--nav-h, 64px) - 90px), 700px);
+  --stage-h: clamp(480px, calc((100svh - var(--nav-h, 64px) - 90px) / var(--sz)), 720px);
 }
 
 .stations {
@@ -136,7 +158,7 @@
 .stationNote {
   position: absolute;
   z-index: 3;
-  max-width: 62%;
+  max-width: 52%;
   font-family: var(--font-heading);
   font-size: calc(clamp(15px, 1.25vw, 19px) * var(--ds, 1));
   line-height: 1.05;
@@ -156,6 +178,13 @@
   bottom: 100%;
   left: 4%;
   margin-bottom: 4px;
+}
+
+.station[data-corner="tr"] .stationNote,
+.station[data-corner="br"] .stationNote {
+  right: 4%;
+  left: auto;
+  text-align: right;
 }
 
 .badge {
@@ -219,7 +248,7 @@
 
 .art {
   position: relative;
-  aspect-ratio: 1.65;
+  aspect-ratio: 1.85;
   overflow: hidden;
   color: var(--ink);
   background: var(--sheet-2);
@@ -518,7 +547,7 @@
 .again {
   position: absolute;
   top: 50%;
-  left: 5.5%;
+  left: 7%;
   z-index: 3;
   font-family: var(--font-heading);
   font-size: calc(clamp(17px, 1.5vw, 22px) * var(--ds, 1));
@@ -570,13 +599,13 @@
 }
 
 .chipA {
-  top: 49%;
-  right: -1%;
+  top: 22%;
+  left: 43%;
 }
 
 .chipB {
-  bottom: 1%;
-  left: 40%;
+  right: 14%;
+  bottom: -6%;
 }
 
 :global([data-pinned]) .howCaption[inert] {
@@ -616,10 +645,6 @@
 
   .stepLine {
     font-size: 13.5px;
-  }
-
-  .art {
-    aspect-ratio: 1.85;
   }
 
   .stationNote {
@@ -748,4 +773,27 @@
     opacity: 0;
     scale: 1.9;
   }
+}
+
+:global(html:not([data-js])) .howStage {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: auto;
+}
+
+:global(html:not([data-js])) .howStage .howCaption {
+  position: static;
+  height: auto;
+  margin: 0;
+}
+
+:global(html:not([data-js])) .stations,
+:global(html:not([data-js])) .again,
+:global(html:not([data-js])) .loopTrack,
+:global(html:not([data-js])) .hSticker,
+:global(html:not([data-js])) .hSpark,
+:global(html:not([data-js])) .chipA,
+:global(html:not([data-js])) .chipB {
+  display: none;
 }

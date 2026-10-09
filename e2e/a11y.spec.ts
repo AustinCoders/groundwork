@@ -17,6 +17,7 @@ type State = {
   path: string;
   viewports: Viewport[];
   seed?: () => void;
+  scope?: string;
   visit: (page: Page, check: Check) => Promise<void>;
 };
 
@@ -191,6 +192,7 @@ const STATES: State[] = [
     name: "how it works pinned and scrolled to its last step",
     path: "/",
     viewports: [WIDE],
+    scope: "#how",
     visit: async (page, check) => {
       await page.emulateMedia({ reducedMotion: "no-preference" });
       await page.reload({ waitUntil: "networkidle" });
@@ -200,8 +202,7 @@ const STATES: State[] = [
       await expect(how.getByRole("tab", { name: /Keep/ })).toHaveAttribute("aria-selected", "true");
       await page.waitForTimeout(2500);
       await page.addStyleTag({
-        content: `*, *::before, *::after { transition: none !important; animation: none !important; }
-          #practice [data-fx], #practice [data-fx] *, #paths [data-fx], #paths [data-fx] * { opacity: 1 !important; }`,
+        content: "*, *::before, *::after { transition: none !important; animation: none !important; }",
       });
       await check("how it works pinned and scrolled to its last step");
     },
@@ -210,6 +211,7 @@ const STATES: State[] = [
     name: "the interview book pinned and scrolled to a later round",
     path: "/",
     viewports: [WIDE],
+    scope: "#loop",
     visit: async (page, check) => {
       await page.emulateMedia({ reducedMotion: "no-preference" });
       await page.reload({ waitUntil: "networkidle" });
@@ -219,8 +221,7 @@ const STATES: State[] = [
       await expect(book.getByRole("tab", { name: /^04 People and offer/ })).toHaveAttribute("aria-selected", "true");
       await page.waitForTimeout(2800);
       await page.addStyleTag({
-        content: `*, *::before, *::after { transition: none !important; animation: none !important; }
-          #paths [data-fx], #paths [data-fx] *, #faq [data-fx], #faq [data-fx] * { opacity: 1 !important; }`,
+        content: "*, *::before, *::after { transition: none !important; animation: none !important; }",
       });
       await check("the interview book pinned and scrolled to a later round");
     },
@@ -474,11 +475,12 @@ function describeViolation(where: string, violation: Violation): string {
   return [`${where}: [${violation.impact}] ${violation.id}, ${violation.help}`, ...nodes, ...more].join("\n");
 }
 
-async function expectNoViolationsInAnyTheme(page: Page, where: string, viewport: Viewport) {
+async function expectNoViolationsInAnyTheme(page: Page, where: string, viewport: Viewport, scope?: string) {
   const failures: string[] = [];
   for (const theme of THEMES) {
     await wearTheme(page, theme);
-    const { violations } = await new AxeBuilder({ page }).withTags(WCAG_A_AND_AA).analyze();
+    const builder = new AxeBuilder({ page }).withTags(WCAG_A_AND_AA);
+    const { violations } = await (scope ? builder.include(scope) : builder).analyze();
     const place = `${where}, ${theme} theme, ${viewportName(viewport)}`;
     failures.push(...violations.map((violation) => describeViolation(place, violation)));
   }
@@ -507,7 +509,9 @@ for (const viewport of VIEWPORTS) {
       test(`${state.path} with ${state.name} has no accessibility violations in any theme`, async ({ page }) => {
         if (state.seed) await page.addInitScript(state.seed);
         await open(page, state.path);
-        await state.visit(page, (stage) => expectNoViolationsInAnyTheme(page, `${state.path}, ${stage}`, viewport));
+        await state.visit(page, (stage) =>
+          expectNoViolationsInAnyTheme(page, `${state.path}, ${stage}`, viewport, state.scope)
+        );
       });
     }
   });

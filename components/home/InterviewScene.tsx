@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { plural } from "@/lib/format";
-import { HOME_STAGES, type HomeRound } from "@/lib/homeRounds";
+import { bookStages, type HomeRound } from "@/lib/homeRounds";
 import { STRIPS } from "@/lib/pageFlip";
-import { LeftSheet, RightSheet, roundNumber, type BookStage } from "./BookPages";
+import { nextTab } from "@/lib/tablist";
+import { LeftSheet, RightSheet, roundNumber } from "./BookPages";
 import { Chip, Copy, Scene, Spark, Stage, StageCard, Sticker } from "./Stage";
 import { stepAttrs, vars } from "./tone";
 import { usePin } from "./usePin";
@@ -13,18 +14,8 @@ const RIDE_BEHIND = 1;
 const RIDE_AHEAD = 2;
 const BLOCK_THIN = 3;
 const BLOCK_THICK = 14;
-
-function bookStages(rounds: HomeRound[]): BookStage[] {
-  return HOME_STAGES.map((stage) => ({
-    id: stage.id,
-    label: stage.label,
-    number: 0,
-    first: rounds.findIndex((round) => round.stage === stage.id),
-    items: rounds.flatMap((round, index) => (round.stage === stage.id ? [{ round, index }] : [])),
-  }))
-    .filter((stage) => stage.items.length > 0)
-    .map((stage, k) => ({ ...stage, number: k + 1 }));
-}
+const SPEAK_AFTER_MS = 450;
+const ZERO_WIDTH = "\u200b";
 
 function Strip({ i, front, back }: { i: number; front: ReactNode; back: ReactNode }) {
   return (
@@ -42,11 +33,15 @@ function Strip({ i, front, back }: { i: number; front: ReactNode; back: ReactNod
   );
 }
 
-export function InterviewScene({ head, rounds }: { head: ReactNode; rounds: HomeRound[] }) {
+export function InterviewScene({ head, rounds, total }: { head: ReactNode; rounds: HomeRound[]; total: number }) {
   const [active, setActive] = useState(0);
   const [announcement, setAnnouncement] = useState("");
   const sceneRef = useRef<HTMLDivElement>(null);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  const target = useRef(0);
+  const spoken = useRef(0);
+  const flip = useRef(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const stages = useMemo(() => bookStages(rounds), [rounds]);
   const stageAt = (index: number) =>
     Math.max(
@@ -56,33 +51,49 @@ export function InterviewScene({ head, rounds }: { head: ReactNode; rounds: Home
   const stageIndex = stageAt(active);
   const stage = stages[stageIndex];
   const lastStage = stages[stages.length - 1];
+
+  const roundSpeech = (index: number) => {
+    const round = rounds[index];
+    return `${roundNumber(index)}, ${round.title}.${round.tests ? ` It tests: ${round.tests}` : ""}`;
+  };
+  const speak = (text: string) => {
+    flip.current = !flip.current;
+    setAnnouncement(flip.current ? `${text}${ZERO_WIDTH}` : text);
+  };
+  const settle = (index: number) => {
+    target.current = index;
+    setActive(index);
+  };
   const { pinned, go } = usePin(sceneRef, (group, item) => {
     const first = stages[group]?.first;
-    if (first !== undefined) setActive(first + item);
+    if (first === undefined) return;
+    const index = first + item;
+    settle(index);
+    if (index === spoken.current) return;
+    spoken.current = index;
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => speak(roundSpeech(index)), SPEAK_AFTER_MS);
   });
 
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  if (!stage || rounds.length === 0) return null;
+
   function chooseStage(k: number) {
-    const target = stages[k];
-    if (!target) return;
+    const picked = stages[k];
+    if (!picked) return;
+    clearTimeout(timer.current);
+    spoken.current = picked.first;
+    target.current = picked.first;
     if (pinned) go(k, 0);
-    else setActive(target.first);
-    setAnnouncement(
-      `${target.label}: ${plural(target.items.length, "round")}. ${roundNumber(target.first)}, ${rounds[target.first].title}.`
+    else setActive(picked.first);
+    speak(
+      `${picked.label}: ${plural(picked.items.length, "round")}. ${roundNumber(picked.first)}, ${rounds[picked.first].title}.`
     );
   }
 
   function onTabKey(e: KeyboardEvent) {
-    const count = stages.length;
-    const next =
-      e.key === "ArrowRight" || e.key === "ArrowDown"
-        ? (stageIndex + 1) % count
-        : e.key === "ArrowLeft" || e.key === "ArrowUp"
-          ? (stageIndex - 1 + count) % count
-          : e.key === "Home"
-            ? 0
-            : e.key === "End"
-              ? count - 1
-              : -1;
+    const next = nextTab(e.key, stageAt(target.current), stages.length);
     if (next < 0) return;
     e.preventDefault();
     chooseStage(next);
@@ -90,10 +101,12 @@ export function InterviewScene({ head, rounds }: { head: ReactNode; rounds: Home
   }
 
   function choose(index: number) {
-    const round = rounds[index];
+    clearTimeout(timer.current);
+    spoken.current = index;
+    target.current = index;
     if (pinned) go(stageAt(index), index - stages[stageAt(index)].first);
     else setActive(index);
-    setAnnouncement(`${roundNumber(index)}, ${round.title}.${round.tests ? ` It tests: ${round.tests}` : ""}`);
+    speak(roundSpeech(index));
   }
 
   const from = pinned ? Math.max(0, active - RIDE_BEHIND) : active;
@@ -106,7 +119,7 @@ export function InterviewScene({ head, rounds }: { head: ReactNode; rounds: Home
       <Copy className={styles.bookCopy}>
         {head}
         <Link href="/interview" prefetch={false} className={styles.allRounds}>
-          Browse all {rounds.length} rounds <span aria-hidden="true">→</span>
+          Browse all {total} rounds <span aria-hidden="true">→</span>
         </Link>
       </Copy>
       <Stage live tone="red" className={styles.bookStage} hostClassName={styles.bookHost}>
@@ -155,8 +168,8 @@ export function InterviewScene({ head, rounds }: { head: ReactNode; rounds: Home
                       inert={index !== active}
                       style={{ zIndex: rounds.length - index }}
                     >
-                      <i className={styles.cast} data-fx="cast" aria-hidden="true" />
-                      <div className={styles.leaf} data-fx="leaf">
+                      <i className={styles.cast} data-motion="cast" aria-hidden="true" />
+                      <div className={styles.leaf} data-motion="leaf">
                         <div className={styles.flat} data-flat>
                           <div className={styles.leafFace}>{front(false)}</div>
                           {pinned && back && (
@@ -208,8 +221,8 @@ export function InterviewScene({ head, rounds }: { head: ReactNode; rounds: Home
           tests + traps
         </Sticker>
         <Spark className={styles.bookSpark} />
-        <Chip fact={`${rounds.length} rounds`} rot={-3} depth={12} speed={48} className={styles.chipA}>
-          {rounds.length} rounds
+        <Chip fact={`${rounds.length} core rounds`} rot={-3} depth={12} speed={48} className={styles.chipA}>
+          {rounds.length} core rounds
         </Chip>
         <Chip fact="follow-ups" rot={2} depth={-8} speed={-34} className={styles.chipB}>
           follow-ups included

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { bankQuestions, bookRounds } from "@/lib/interviewBook";
 import {
+  bookStages,
   HOME_STAGES,
   FOLLOW_UP_LIMIT,
   SAMPLE_LIMIT,
@@ -246,5 +247,63 @@ describe("the real interview book", () => {
 
   it("stays under 12 KB as a prop", () => {
     expect(JSON.stringify(rounds).length).toBeLessThan(12 * 1024);
+  });
+});
+
+describe("plainText joins", () => {
+  it("leaves no stray space before punctuation when an inline tag ends a word", () => {
+    expect(plainText("use <code>map</code>.")).toBe("use map.");
+    expect(plainText("<p>one</p><p>two</p>")).toBe("one two");
+    expect(plainText("a<br>b")).toBe("a b");
+  });
+});
+
+describe("homeRounds guards", () => {
+  it("copes with a question that has no follow-ups array and with a round that has no meta, counts or minutes", () => {
+    const bare = { id: "r2", code: "R2", navTitle: "T" } as unknown as Parameters<typeof homeRounds>[0][number];
+    const q = { roundId: "r2", q: "Why?", test: null, trap: null } as unknown as Parameters<
+      typeof homeRounds
+    >[1][number];
+    const [out] = homeRounds([bare], [q]);
+    expect(out).toMatchObject({ followUp: "", wrong: "", questions: 0, followUps: 0, minutes: 0, sample: "Why?" });
+  });
+
+  it("returns a round with empty text when the round has no question at all", () => {
+    const [out] = homeRounds([round("r9", "R9")], []);
+    expect(out).toMatchObject({ sample: "", tests: "", followUp: "" });
+  });
+});
+
+describe("bookStages", () => {
+  it("groups rounds into numbered stages in book order and drops empty stages", () => {
+    const rounds = homeRounds([round("r1", "R1"), round("r2", "R2"), round("r11", "R11")], []);
+    const stages = bookStages(rounds);
+    expect(stages.map((stage) => [stage.id, stage.number, stage.first, stage.items.length])).toEqual([
+      ["screening", 1, 0, 1],
+      ["technical", 2, 1, 1],
+      ["people", 3, 2, 1],
+    ]);
+  });
+
+  it("returns no stages for no rounds", () => {
+    expect(bookStages([])).toEqual([]);
+  });
+
+  it("covers the real book: every stage is used, in order, and counts add up", () => {
+    const real = homeRounds(bookRounds(), bankQuestions());
+    const stages = bookStages(real);
+    expect(stages.map((stage) => stage.id)).toEqual(HOME_STAGES.map((stage) => stage.id));
+    expect(stages.reduce((sum, stage) => sum + stage.items.length, 0)).toBe(real.length);
+    const order = real.map((r) => HOME_STAGES.findIndex((stage) => stage.id === r.stage));
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+  });
+
+  it("puts the real round codes in the stages the page promises", () => {
+    const real = homeRounds(bookRounds(), bankQuestions());
+    const byCode = (stage: string) => real.filter((r) => r.stage === stage).map((r) => r.code.split("·")[0]);
+    expect(new Set(byCode("screening"))).toEqual(new Set(["R1"]));
+    expect(new Set(byCode("technical"))).toEqual(new Set(["R2", "R3", "R4", "R5"]));
+    expect(new Set(byCode("design"))).toEqual(new Set(["R6", "R7", "R8", "R9"]));
+    expect(new Set(byCode("people"))).toEqual(new Set(["R10", "R11", "R12", "R13"]));
   });
 });

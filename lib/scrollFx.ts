@@ -7,6 +7,16 @@ import { prefersMotion } from "@/lib/dom";
 let current: { scrollTo: (y: number, instant?: boolean) => void; stop: () => void; start: () => void } | null = null;
 const frameListeners = new Set<() => void>();
 
+function runListener(listener: () => void) {
+  try {
+    listener();
+  } catch (error) {
+    queueMicrotask(() => {
+      throw error;
+    });
+  }
+}
+
 function useSmoothScroll(anchorOffset: number, lerp: number) {
   useEffect(() => {
     if (!prefersMotion()) return;
@@ -29,7 +39,7 @@ function useSmoothScroll(anchorOffset: number, lerp: number) {
       };
       const tick = (t: number) => {
         l.raf(t);
-        frameListeners.forEach((listener) => listener());
+        frameListeners.forEach(runListener);
         loop = requestAnimationFrame(tick);
       };
       loop = requestAnimationFrame(tick);
@@ -70,10 +80,11 @@ export function useScrollFx(
       el.style.setProperty("--out", clamp(-r.top / Math.max(1, r.height)).toFixed(3));
     };
 
+    let pageHeight = document.documentElement.scrollHeight;
     const frame = (all: boolean) => {
       const h = window.innerHeight;
       const y = window.scrollY;
-      const max = document.documentElement.scrollHeight - h;
+      const max = pageHeight - h;
       (all ? els : live).forEach((el) => measure(el, h, y, max));
       bar?.style.setProperty("--sp", (max > 0 ? y / max : 0).toFixed(4));
     };
@@ -89,6 +100,10 @@ export function useScrollFx(
       { rootMargin: "15% 0px 15% 0px" }
     );
     els.forEach((el) => io.observe(el));
+    const sizes = new ResizeObserver(() => {
+      pageHeight = document.documentElement.scrollHeight;
+    });
+    sizes.observe(host);
     frame(true);
 
     let raf = 0;
@@ -99,13 +114,17 @@ export function useScrollFx(
           frame(false);
         });
     };
-    const onResize = () => frame(true);
+    const onResize = () => {
+      pageHeight = document.documentElement.scrollHeight;
+      frame(true);
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
 
     return () => {
       cancelAnimationFrame(raf);
       io.disconnect();
+      sizes.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
       els.forEach((el) => {

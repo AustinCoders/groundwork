@@ -1,13 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  pinOffset,
-  pinStep,
-  readScene,
-  REST_BELOW,
-  virtualScroll,
-  type PinState,
-  type SceneState,
-} from "@/lib/sceneScroll";
+import { chase, pinOffset, pinStep, readScene, REST_BELOW, type PinState, type SceneState } from "@/lib/sceneScroll";
 
 const VIEWPORT = 900;
 const HEADER = 64;
@@ -216,31 +208,32 @@ describe("pinOffset", () => {
   });
 });
 
-describe("virtual scroll", () => {
-  const pins = [
-    { start: 1000, length: 400 },
-    { start: 3000, length: 600 },
-  ];
-
-  it("equals the real scroll until the first pin", () => {
-    expect(virtualScroll(0, pins)).toBe(0);
-    expect(virtualScroll(1000, pins)).toBe(1000);
+describe("chase", () => {
+  it("lands on the goal when it is within one limit, in either direction", () => {
+    expect(chase(100, 110, 20)).toBe(110);
+    expect(chase(100, 85, 20)).toBe(85);
+    expect(chase(100, 100, 0)).toBe(100);
   });
 
-  it("stands still while a pin runs, then moves on from where it stopped", () => {
-    expect(virtualScroll(1200, pins)).toBe(1000);
-    expect(virtualScroll(1400, pins)).toBe(1000);
-    expect(virtualScroll(1500, pins)).toBe(1100);
-    expect(virtualScroll(3300, pins)).toBe(2600);
-    expect(virtualScroll(4000, pins)).toBe(4000 - 1000);
+  it("moves at most one limit towards a far goal", () => {
+    expect(chase(100, 500, 20)).toBe(120);
+    expect(chase(100, -300, 20)).toBe(80);
   });
 
-  it("never runs backwards as the real scroll grows", () => {
-    let last = -1;
-    for (let y = 0; y < 5000; y += 13) {
-      const value = virtualScroll(y, pins);
-      expect(value).toBeGreaterThanOrEqual(last);
-      last = value;
+  it("reaches any goal in a bounded number of steps without overshooting", () => {
+    let shown = 0;
+    let steps = 0;
+    while (shown !== 1000 && steps < 1000) {
+      const next = chase(shown, 1000, 30);
+      expect(next).toBeLessThanOrEqual(1000);
+      expect(next).toBeGreaterThan(shown);
+      shown = next;
+      steps++;
     }
+    expect(steps).toBe(Math.ceil(1000 / 30));
+  });
+
+  it("jumps straight to the goal when nothing is shown yet", () => {
+    expect(chase(-1, 700, 20)).toBe(700);
   });
 });

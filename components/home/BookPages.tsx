@@ -1,17 +1,9 @@
 import Link from "next/link";
 import { memo } from "react";
 import { plural } from "@/lib/format";
-import type { HomeRound } from "@/lib/homeRounds";
+import type { BookStage, HomeRound } from "@/lib/homeRounds";
 import { Tape } from "./Stage";
 import styles from "./interview.module.css";
-
-export interface BookStage {
-  id: string;
-  label: string;
-  number: number;
-  first: number;
-  items: { round: HomeRound; index: number }[];
-}
 
 export const roundNumber = (index: number) => `Round ${String(index + 1).padStart(2, "0")}`;
 const folio = (index: number) => String(index + 1).padStart(2, "0");
@@ -149,10 +141,12 @@ export const RightSheet = memo(function RightSheet({
           <li>{plural(round.followUps, "follow-up")}</li>
           <li>{round.minutes} min read</li>
         </ul>
-        <blockquote className={styles.quote}>
-          <p className={styles.label}>A question you will get</p>
-          <p className={styles.sample}>“{round.sample}”</p>
-        </blockquote>
+        {round.sample && (
+          <blockquote className={styles.quote}>
+            <p className={styles.label}>A question you will get</p>
+            <p className={styles.sample}>“{round.sample}”</p>
+          </blockquote>
+        )}
         <div className={styles.work}>
           {round.wrong && (
             <div className={styles.pen}>

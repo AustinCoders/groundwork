@@ -15,5 +15,3 @@ export function useMedia(query: string): boolean {
     () => false
   );
 }
-
-export const NARROW = "(max-width: 1080px)";

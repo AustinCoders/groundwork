@@ -7856,3 +7856,7 @@ button.lc-icon-btn {
     justify-content: center;
   }
 }
+
+html[data-js] [data-panel-off] {
+  display: none;
+}

@@ -1,3 +1,5 @@
+import { smooth, unit } from "@/lib/math";
+
 export const REST_BELOW = 0.25;
 const ENTER_LAG = 1.5;
 
@@ -7,22 +9,13 @@ export interface SceneState {
   exit: number;
 }
 
-function unit(value: number): number {
-  if (!Number.isFinite(value)) return 0;
-  return Math.min(1, Math.max(0, value));
-}
-
-function ease(t: number): number {
-  return t * t * (3 - 2 * t);
-}
-
 export function readScene(out: SceneState, top: number, height: number, viewport: number, header: number): SceneState {
   const enterSpan = Math.max(1, viewport - header - REST_BELOW * viewport);
   const exitSpan = Math.max(1, viewport - header);
   const travelled = Math.min(header - top, viewport - top - height);
   out.p = unit((viewport - top) / Math.max(1, viewport + height));
-  out.enter = ease(unit((viewport - top) / enterSpan)) ** ENTER_LAG;
-  out.exit = ease(unit(travelled / exitSpan));
+  out.enter = smooth(unit((viewport - top) / enterSpan)) ** ENTER_LAG;
+  out.exit = smooth(unit(travelled / exitSpan));
   return out;
 }
 
@@ -31,11 +24,6 @@ export interface PinState {
   item: number;
   t: number;
   step: number;
-}
-
-interface PinRange {
-  start: number;
-  length: number;
 }
 
 export function pinStep(out: PinState, s: number, length: number, hold: number, groups: readonly number[]): PinState {
@@ -55,6 +43,11 @@ export function pinStep(out: PinState, s: number, length: number, hold: number, 
   return out;
 }
 
+export function chase(shown: number, goal: number, limit: number): number {
+  if (shown < 0 || Math.abs(goal - shown) <= limit) return goal;
+  return shown + Math.sign(goal - shown) * limit;
+}
+
 export function pinOffset(
   length: number,
   hold: number,
@@ -67,13 +60,4 @@ export function pinOffset(
   const groupLength = Math.max(1, length - hold) / count;
   const items = Math.max(1, groups[group] ?? 1);
   return group * groupLength + ((item + unit(at)) / items) * groupLength;
-}
-
-export function virtualScroll(scroll: number, pins: readonly PinRange[]): number {
-  let used = 0;
-  for (let i = 0; i < pins.length; i++) {
-    const pin = pins[i];
-    used += Math.min(Math.max(scroll - pin.start, 0), pin.length);
-  }
-  return scroll - used;
 }

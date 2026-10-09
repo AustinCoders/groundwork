@@ -3,18 +3,46 @@ title: 'Home scroll motion: scroll-scrubbed scenes, a wider layout, a section ra
 type: 'feature'
 ticket: ''
 created: '2026-10-08'
-status: 'in-progress'
+status: 'built'
 route: 'full'
 route_source: 'auto'
-review: ''
-review_source: ''
-lenses_ran: []
+review: 'thorough'
+review_source: 'auto'
+lenses_ran: ['blind-hunter', 'edge-case-hunter', 'verification-gap', 'intent-alignment']
 review_loop_iteration: 0
 followup_review_recommended: false
 context: ['{project-root}/AGENTS.md', '{project-root}/_bmad-output/implementation-artifacts/plan-home-scenes-redesign.md']
 warnings: ['oversized']
-deferred: []
-baseline_revision: '22e97c7bb6cdf9960fc72bfdde6986e48e75c7da'
+deferred:
+  - summary: >-
+      The pinned layout's connector paths are checked only at their endpoints; no test proves they never cross text between the endpoints.
+    evidence: |-
+      The text-collision walk runs under reduced motion only, where nothing is pinned. Add it for the pinned layout when connectors are next touched.
+    location: >-
+      e2e/smoke.spec.ts, components/home/Connectors.tsx
+    severity: low
+  - summary: >-
+      The pinned step-fill bar and the typing, stroke and reveal pieces of `fx.ts` have no DOM assertion.
+    evidence: |-
+      `pose.test.ts` covers the maths; add one assertion on the written transform at mid-step.
+    location: >-
+      components/home/fx.ts
+    severity: low
+  - summary: >-
+      The interview book is the heaviest section per frame, and a no-JavaScript visitor gets only the first round's page.
+    evidence: |-
+      Measured near 6.8 ms per frame at its worst in a production build; only the current and next two leaves are in the DOM while pinned. A lighter page-turn or a static no-JS contents list is a later polish.
+    location: >-
+      components/home/InterviewScene.tsx, components/home/BookPages.tsx
+    severity: low
+  - summary: >-
+      Unit-test totals in the architecture chapters were stale and asserted nowhere (the tests row of arch-testing).
+    evidence: |-
+      Derive and assert the figures in the frame sweep (1.5) of the DSA work.
+    location: >-
+      content/architecture/arch-testing.ts
+    severity: low
+baseline_revision: '49126c5b0e2ac37389ce57bab5484d10d097123f'
 ---
 
 <intent-contract>
@@ -66,11 +94,11 @@ baseline_revision: '22e97c7bb6cdf9960fc72bfdde6986e48e75c7da'
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `lib/sceneScroll.ts`, `tests/scene-scroll.test.ts` -- progress, enter, exit and rest mapping -- the testable core
-- [ ] the scrub hook and the CSS choreography for every scene (Topics, Practice, How it works, Paths, Interview, FAQ, CTA)
-- [ ] wider layout and viewport-scaled stages
-- [ ] section rail, floating chips, connectors
-- [ ] `e2e/smoke.spec.ts`, `e2e/a11y.spec.ts` -- the checks above; `content/architecture/*`; `.cspell/project-words.txt`
+- [x] `lib/sceneScroll.ts`, `tests/scene-scroll.test.ts` -- progress, enter, exit and rest mapping -- the testable core
+- [x] the scrub hook and the CSS choreography for every scene (Topics, Practice, How it works, Paths, Interview, FAQ, CTA)
+- [x] wider layout and viewport-scaled stages
+- [x] section rail, floating chips, connectors
+- [x] `e2e/smoke.spec.ts`, `e2e/a11y.spec.ts` -- the checks above; `content/architecture/*`; `.cspell/project-words.txt`
 
 **Acceptance Criteria:**
 - Given any section after the hero, when it scrolls into view, then its cards fly in from different directions and assemble as the scroll position advances, rest fully assembled when the section is centered or reached by an anchor, and drift apart as it leaves, with no hidden or clipped content at any point.
@@ -108,8 +136,36 @@ Part 1 of the split (see the Plan Change Log). This plan file is untracked (`git
 **Part 2 handover (what exists, where I stopped)**
 - Already built, wired, tested and passing, but not polished: connectors with travellers and docking (`components/home/Connectors.tsx`, `connectors.module.css`, `lib/connector.ts`, `tests/connector.test.ts`, the `--d` property in `useSceneScroll.ts`); the section rail (`SectionRail.tsx`, `rail.module.css`, hidden below 1280px); floating chips in every scene; the wider scene layout and the stepped stage zoom (`--sz`). Known gaps: 1920x1080 composition (large side margins around the pinned stages, the How station notes meet the centre caption), connector labels at 1280x720, the connectors' `--d` custom property (cheap now, but the one remaining custom-property write per frame), and the page-turn pace noted above.
 
+**Part 2 (done)**
+- Root cause of the part 1 per-frame cost: the scene system reused the attribute `data-fx`, which the old global scroll effect (`useScrollFx` in `lib/scrollFx.ts`) also selects. It measured about 140 scene elements every frame (getBoundingClientRect then three custom-property writes each, so a forced layout per element and inherited-property style recalcs). The scene attribute is now `data-motion` (`components/home/*`, `fx.ts`, `HomeView` words/eyebrow/sub; `heroOut` and `brand` keep `data-fx`). Style recalcs per frame in the FAQ section fell from 2.5 ms to 0.85 ms (dev build trace). `useScrollFx` also caches the page height (ResizeObserver) instead of reading `scrollHeight` every frame, and `fx.ts` only measures the stage aspect for walkers.
+- Connectors no longer write a custom property per frame: `lib/connector.ts` `connectorLook` (unit-tested) gives the dash offset, label, sparkle, fact and rider values and `useSceneScroll` writes them straight to the five parts; the connector carries `data-d` for tests. `HOP` 22px below the scene, facts distinct from the stage chips (227 chapters, 4 stages), labels hidden when a link is under 90px tall (`data-tight`), sparkle trails further behind, an initial scroll event repaints connectors after they are measured, and the IO callback now forces a repaint (a section entering range was left unpainted until the next scroll).
+- Layout: scene width up to `clamp(1180px, 92vw, 1640px)`, stage zoom steps 1.03/1.1/1.17/1.23 from 1500/1600/1700/1800px, How stage height divides by the zoom, the book scene lifts its 1480px cap from 1280px up and its stage may be 860px tall; 1920x1080 stages fill their columns.
+- How it works: station notes stay clear of the centre caption (right-hand notes right-aligned, 52% max width), station art is drawn earlier in each step (reveal windows moved about 0.18 earlier, typing dots 0.30 to 0.46) so the active station is never an empty card, art aspect 1.85, "and round it goes again" moved off the track, chip B moved out of the connector's way (also the book's chip B).
+- Book page-turn pace: `data-pin-cap` (`PIN_TURN_CAP` 0.25 of a round per frame) with the pure `chase` helper in `lib/sceneScroll.ts`; the hook keeps a shown scroll position per capped section and keeps painting until it catches up. A flick riffles instead of skipping leaves; slow scrolling is untouched.
+- Pinned a11y states: axe is now scoped to the pinned section (`scope` on the state) instead of injecting `opacity: 1` for neighbours.
+- No JavaScript: the server HTML keeps the first round's page and stage 1's contents list; the other stages' tabs and rounds need JavaScript (the "Browse all 20 rounds" link leads to the full list). Documented limit, not fixed.
+
+- Measured (production build, 1440x900, same instant 18px-per-frame scroll over the whole page): per-frame main-thread cost 5.9 ms before part 2 (5.87 and 5.99, style 2.67, script 0.69) and 4.0 to 4.1 ms after (style 1.17, script 0.42, layout 0.19); by section after: shelf 3.3, practice 3.2, how 3.0, paths 3.1, interview book 6.8, faq 2.7, cta 3.3 ms. Home script (gzip): 281,565 B before, 282,346 B after (+781 B); HTML gzip 30,425 to 30,489 B. The book is still the heaviest section (leaf strips and page swaps, 1.1 ms of script); I did not add `contain` to the pinned stages because paint containment would clip the leaves and the chips that overhang their stage.
+- Verified: `tsc` (in the scratch copy: the repo's own `.next/dev/types/routes.d.ts` was corrupted by a concurrent dev server and breaks `tsc` there until that dev server is restarted), eslint (the one old warning), comments, prettier, cspell, 547 unit tests, production build, full e2e in the scratch copy 269 of 269 (smoke 148, a11y 107, whiteboard 6, keyboard 8), axe clean in nine themes at 1440 and 390 including the pinned How and book states (now scoped to the pinned section). New tests: `connectorLook`, `chase`, `PIN_TURN_CAP`, and three e2e (legacy scroll effect leaves scenes alone, a flick turns at most a quarter round per frame, 1920x1080 stage fill and notes clear of the caption). The `hidden but present` e2e now waits for the pin. Architecture chapters: browser tests 269, smoke 148 and 122 flows.
+- Looked at: all seven scenes at rest at 1280x720 dark, 1440x900 dark and light, 1920x1080 dark and light and 390 dark and light; How, Paths and the book pinned at several steps; connectors at 10 to 100 percent drawn at 1280 and 1440; the rail with a focused link; the Topics and Practice entry frames. Overlap probe (`hits`) of connector parts against chips, stickers, notes, headings and buttons at 1280, 1440 and 1920: remaining reports are the trailing sparkle grazing a card edge or the next heading box.
+- Risks and gaps: the connectors are short at 1280x720 (60 to 230px), labels are hidden under 90px; stage zoom is stepped, not continuous; the book is the costliest section; without JavaScript the interview book shows round 1 and stage 1's contents only; the rail is hidden while the hero is the only section on screen by design.
+
+**Review patch list (progress)**
+- Item 1 done: `plainText` joins inline tags without a stray space, `homeRounds` guards `fu`, `meta`, `counts`, `minutes`; `RightSheet` renders the quote only when there is a sample; `InterviewScene` returns null without rounds/stages (unknown stage id falls back to the first stage); `bookStages` moved to `lib/homeRounds.ts` and shared with HomeView. Item 6 started: `lib/tablist.ts` `nextTab`, the book keeps a `target` ref. Item 11: debounced scroll announcements with a zero-width toggle. Item 13: the book says "20 core rounds", the link says all 27; `XP_STICKER` is one shared constant.
+- Items 8, 10, 14 (code) done: connectors take their links by destination id (`to`), merge views and targets into one state, compare geometry and text before re-rendering, guard the fonts callback, release `data-docked` when links go away and measure the badge without its eyebrow translate; HomeView memoises `faqs`, `hops`, `stageCounts` and derives the facts with `hopFacts` (plural). `lib/homePaths.ts` holds the path data, `pathStops` (clamped to the trail spots), `leadStop`, `startOf` ("Start with X" for a later stop) and `unresolvedSteps`; `lib/homeHow.ts` holds the How copy, `HOW_STEPS`, `REVIEW_DAYS`, `NEXT_REVIEW`. How has a Pause/Play control and stops after one cycle; "4 / 4 passed", "3 / 3 passed" and "3 days" derive from their lists.
+- Items 2, 3, 4, 5, 9 (code) done: Topics chip uses the site-wide exercise count (and the Topics sub-text now says it, so the chip fact is in real text); `frameListeners` run in a try/catch that rethrows asynchronously; fx owners/parallax are released on re-collect and cleanup, the mutation observer schedules a paint and watches `hidden`, walkers measure their stage lazily (aspect 0 means unknown), capped slots reset on repin, header and scene ResizeObservers and fonts.ready re-measure, heading words clamp their stagger at the 12th; `useStage` stops its loop when settled and clears on reduced motion; the rail click updates the hash and focuses the section. `pageHeader`/`headerHeight` in `lib/dom.ts` replace three `querySelector("header")` calls.
+- Item 12 done (code): `<html data-js>` is set by the theme init script; panels (How, Paths, Topics categories) render `data-panel-off` before mount (hidden by `html[data-js] [data-panel-off]` in globals.css) and `hidden`/`inert`/`aria-hidden` only after mount (`panelAttrs`, `useMounted`), FAQ answers get `inert` only after mount; `html:not([data-js])` rules in the module sheets lay the panels out stacked without JavaScript. The book's later rounds stay out of the server HTML (documented limit).
+- Tests added so far: `tablist`, `home-facts`, `home-paths`, `home-rounds` guards and stages, real-constant `pin-lengths`, and e2e for the scroll bar on a chapter page, rapid arrows, live resize and reduced-motion toggles, rail anchor, autoplay pause, JavaScript off, Browse all topics and the rounds link, waypoints and fact counts, book announcements; path and stage expectations in e2e now come from the data.
+- Item 17 done (code): removed fx kinds `panel` and `slide` with their `dir`/`total` fields, `virtualScroll`, `finishAt`, `chipPose` and `noteInk` duplication (one `stickerPose` with a lift, `notePose` calls `noteInk`); `lib/math.ts` holds `unit` and `smooth`; `pose.Window` is `StepWindow`; `trailPoint` uses cached curve lengths; `StageCard` takes typed props; PracticeScene tools carry their own text and chip; `lib/breakpoints.ts` and `REDUCED_MOTION` replace repeated query strings.
+- Review patch list finished. Gates: tsc (repo and scratch copy), eslint (the one old warning), comments, prettier, cspell, 570 unit tests in 34 files, production build, full e2e in the scratch copy 280 of 280 (smoke 159, a11y 107, whiteboard 6, keyboard 8) with axe clean in nine themes at 1440 and 390. Per-frame cost (same method, production, 1440x900): 3.9 to 4.1 ms after the review fixes against 4.0 to 4.1 before them (5.9 before part 2); interview book section 6.8 to 5.4 ms. Home script gzip 282,346 to 284,614 B (+2.3 KB: pause control, panel attributes, path and how data modules). One e2e that relied on a stale paint (the open-book test scrolled with `scrollIntoViewIfNeeded` and expected round 1 after the pin had moved on) now scrolls to the pin start; it was passing only because a section entering range was not repainted until the next scroll, which is fixed.
+- Skipped on purpose: Lenis lerp 0.14, connectors under reduced motion, per-frame allocation rework beyond `trailPoint`, the connector pinned text-collision test and the fill-bar assertion (all as instructed). The book's later rounds and their stage contents are still not in the no-JavaScript HTML (documented limit); a `useStage` e2e for the idle loop was not added.
+- Text-overlap fixes (after the review pass): the book's red "loses the room" stamp no longer floats over the wrong answer (it sits in the answer's own flow, its pop-in starts at 1.25 scale); the probe in `e2e/textProbe.ts` hit-tests every text run of the right page and the contents page (centre and both ends, pointer events forced on, clamped lines judged only where shown) and checks overflow clipping. It runs over all 20 rounds at 1280x720, 1440x900 and 1920x1080 in four heading fonts with reduced motion, and over every round of the pinned book at 1280x720 and 1920x1080 with animations run to their end. It found the stamp over text in 9 rounds; I could not reproduce the note itself covering the answer in the settled state (the answer column wraps before the note at every size and font), so the clipped lines seen in the pinned frame were most likely the left-to-right ink wipe that reveals the answer for 0.7 s.
+- How it works: the "4 / 4 passed" chip moved into the gap between the two top stations and the "back in 3 days" chip below the loop, so the track never crosses a chip at any step at 1280, 1440 and 1920 (`e2e/motionProbe.ts` `probeTrack`; the "+25 XP" sticker deliberately sits on the line and covers it). Connector facts were centred on the traveller's path point and touched it at every position: the fact now anchors at its left edge 32px from the point and the sparkle rides on the traveller's upper left instead of trailing it (`along` replaces `sparkleAt`/`factAt`), checked at every 3% of every connector at the three sizes (`probeConnectors`).
+- Gates after the overlap fixes: tsc, eslint (one old warning), comments, prettier, cspell, 570 unit tests, production build, full e2e in the scratch copy 283 of 283 (smoke 162, a11y 107, whiteboard 6, keyboard 8, axe clean in nine themes at 1440 and 390). Per-frame cost 3.8 to 4.0 ms (unchanged), home script gzip 284,599 B.
+
 ## Plan Change Log
 
+- 2026-10-08, PART 2 STARTS (baseline 49126c5 = part 1 committed). Scope for the part 2 agent: (a) the connectors: the earlier hand-drawn dashed curve and sparkle between consecutive sections, with a different traveller per link riding the curve and docking into the next section's number badge (a ring ripple, no blur or glow), a real-data fact chip and a handwritten label per link; (b) the section rail (left, from 1280px, dots with labels on hover and focus); (c) the floating real-data chips; (d) the wider layout and stage scaling, including 1920x1080 (large side margins around the pinned stages must go); (e) polish items found in part 1 review: in How it works the centre caption card overlaps the handwritten station notes ("built from the bottom up", "real tests, real feedback", "comes back before you forget") and the active station 03 (Get asked) shows an empty card (its bubbles and typing dots must be drawn when it is the active step), the connector labels at 1280x720, and the interview book's page-turn pace under a fast wheel (cap the angle change per frame so a flick never skips more than about one leaf; stage changes still riffle); (f) reduce per-frame style cost where cheap (the book is about 8.9 ms per frame at its worst): fewer animated layers, `contain: layout paint style` on the pinned stages, no box-shadow animation on moving pieces; (g) the part 1 gaps to close: round pages without JavaScript should keep the first round's page and a static contents list (document the limit if a larger fix is not worth it), and the pinned a11y states should be robust (do not rely on injecting opacity for neighbours if a cleaner approach exists). Everything else in this plan still applies.
 - 2026-10-08 (owner agreed to split): this plan runs in two parts so something can be committed in between. PART 1 (finish now, then verify and commit): the pinned scrollytelling mechanism with the short lengths, the smoothness and latency fixes, the redesigned Paths (winding trail with a walker), How it works (illustrated loop track), and the interview book (a real open book with curved page flips), the per-scene CSS module split, the page scrollbar hide, and the cleanup audit. PART 2 (a fresh agent after part 1 is committed): connectors with docking travellers, the section rail, floating chips, the wider layout, and any remaining polish. Anything of part 2 already started must be brought to a passing state or removed cleanly; nothing new from part 2 is started in part 1.
 
 - 2026-10-08 (owner, during the build): (1) the owner likes the new conversation-style interview scene but wants a scroll behaviour where a section stays on screen until all its steps have played, then lets the page continue; this OVERRIDES "never pin sections or add scroll heights" for the step sections (How it works, the interview book, Paths, optionally Topics): native sticky stage in a tall wrapper, step driven by scroll progress, full-viewport pinned view with no empty areas, no hijacking, fallbacks (below 1081px, reduced motion, no JavaScript, touch phones) without pinning, real controls scroll to the step. (2) The separate dashed connectors are replaced by one continuous route spine from the hero to the CTA with waypoint sockets, a travelling marker carrying a real fact, lit nodes and handwritten link labels. (3) The interview scene is redesigned as a live conversation (interviewer, candidate with a "loses the room" stamp, follow-up, a taped note, deck-style round switching, a journey strip). KEEP: all accessibility, performance, no-backdrop and token rules.
@@ -118,6 +174,23 @@ Part 1 of the split (see the Plan Change Log). This plan file is untracked (`git
 - 2026-10-08 (part 1 outcome): (1) the continuous route spine was dropped in favour of the earlier dashed connectors with travellers (part 2). (2) The page scrollbar is hidden on `html`, with the reading-progress bar as the only cue. (3) The three step scenes were redesigned beyond the original plan on owner request: Paths as a winding trail with a walker, How it works as an illustrated loop track, the interview book as an open book with bending page turns; pinned lengths were shortened to 30vh per step (32vh per book stage) with a 15vh hold. (4) The book shows only its current and next pages in the DOM; the shared walker and trail code lives in `Track.tsx`.
 
 ## Review Triage Log
+
+### 2026-10-09 — Review pass over the whole home work (scenes, scroll engine, connectors, rail, book)
+- lenses: blind-hunter, edge-case-hunter, verification-gap, intent-alignment (all four ran on the source diff `5e1f951..working tree`, CSS excluded; verification-gap also read the test diffs).
+- verdicts: about 60 findings after merging duplicates — high 0, medium 14, low 28, false or rejected 14, deferred 6.
+- patched (sent to the implementer as one list):
+  - `[medium]` empty `rounds` crashes `InterviewScene` and a null `fu` crashes the server render; the empty sample blockquote; a stray space in round text; the topics chip reads "undefined" and shows one topic's count as a site figure
+  - `[medium]` a throwing frame listener stops the shared rAF loop and with it Lenis site-wide; the cached page height of `useScrollFx` has no test on the other pages that use it
+  - `[medium]` `fx.ts` leaks detached DOM and Fx through module maps; new leaves stay unposed until the next scroll (the mutation observer never schedules a paint); a walker in a hidden panel keeps a frozen aspect; the book animates through intermediate rounds after a breakpoint change; stale offsets after font load or header change; headings over 12 words never reach full opacity; the pointer glide loop runs forever
+  - `[medium]` connector effect churn on every `HomeView` render, labels attached to the wrong link when a scene lacks a waypoint, a stale view when only `left` changes, `data-docked` left behind on narrow screens, `document.fonts.ready` after unmount, endpoints off by the mid-scroll badge translate
+  - `[medium]` accessibility: rail clicks skip native anchor behaviour; the How autoplay has no pause control (WCAG 2.2.2); round changes are not announced and identical text is not re-announced; rapid arrow keys compute from a lagging active step
+  - `[medium]` no hidden content without JavaScript (the plan's matrix): FAQ answers, inactive steps, panels and rounds were hidden or inert in the server HTML
+  - `[medium]` the page said two round counts (27 and 20); the book's stage cut-offs were hard-coded numbers
+  - `[low]` Paths trail spots can throw for a long path, the lead stop and exercise count were found by string tricks, "Start this path" may link to a later stop, hard-coded plurals, "3 / 3 passed" and "+25 XP" copies
+  - `[low]` duplicated math helpers, dead `fx.ts` kinds, test-only exports, an unenforced pin-length cap constant, loose `StageCard` typing, three different header lookups
+  - tests added for: the breakpoint and reduced-motion live change, rapid arrow keys, "Browse all topics" and the rounds link, `--sp` on a long page, connector facts against the data, the waypoint id rule, no-JavaScript visibility, pin lengths from the real constants
+- deferred (see frontmatter): a pinned-layout connector text-collision test, an assertion on the pinned step-fill bar, per-frame allocation beyond `trailPoint`, a full no-JavaScript render of all book rounds, brittle content-count expectations in a few e2e tests, and the book still being the heaviest section per frame.
+- rejected: "connectors ignore reduced motion" (verified static by test), "Lenis lerp 0.14 on the home page contradicts never change Lenis" (the owner asked for no lag; recorded as an accepted deviation), "FAQ regions add landmarks" (closed panels are `hidden`), "nav anchors land under the header" (covered by `scroll-margin-top` and the anchor e2e), "plan wording --enter/--exit/--p versus data attributes" (documented in the notes), and CSS-only visual qualities that no code surface asserts.
 
 ## Verification
 
@@ -128,3 +201,13 @@ Part 1 of the split (see the Plan Change Log). This plan file is untracked (`git
 
 **Manual checks (if no CLI):**
 - Scroll through the whole page in a real browser window at 1440x900 and look at it as a person would: smoothness, rhythm between sections, no jank, no stuck states; record a short frame sequence per section at 25, 50 and 75 percent progress.
+
+## Auto Run Result
+
+**Summary:** The home page now scrolls as a set of connected, hero-style scenes. Paths is a winding trail with a walker, How it works an illustrated loop track, and the interview book a real open book with bent page turns, ribbon, page-block thickness and index tabs; the three pin to the viewport for a short scroll (about 30vh per step plus a short hold) and step continuously with it, with no pinning below 1081px, under reduced motion, without JavaScript or on phones. Between sections a hand-drawn dashed curve carries a different traveller that docks into the next section's number badge; a section rail, floating real-data chips, a wider layout and stage zoom up to 1920px fill the page; the page scrollbar is hidden. The scene styles are split per scene, and the review's patch list is applied (leaks, a throwing frame listener, connector churn, accessibility, no-JavaScript visibility, one consistent round count, dead and duplicated code).
+
+**Review:** thorough (four lenses) over the whole home work; about 60 findings, patched in one list plus three late visible defects found in screenshots (the red stamp covering wrong-answer text in 9 book rounds, a chip crossed by the loop line, a traveller on its fact chip), each now covered by an overlap probe in e2e. Deferred items are in the frontmatter.
+
+**Verification:** in a clean copy of the tree: tsc (after a build), eslint (one old warning in `useReadingPlan.ts`), comments, prettier, cspell, 570 unit tests, production build, full e2e 283/283 with axe clean in nine themes at 1440 and 390. Production scroll over the whole page at 1440x900: p50 and p95 16.7 ms per frame. Per-frame main-thread cost about 3.9 ms (5.9 ms before part 2); home script 284.6 KB gzip (about +15 KB over the pre-scroll version); page height 10,930 px at 1440x900.
+
+**Residual risks:** the interview book is the heaviest section (about 5.4 ms per frame); a visitor without JavaScript sees only the first round's page and stage 1's contents; connectors are short at 1280x720; global `html` scrollbar hiding removes the visual scroll cue except the reading-progress bar; the Lenis lerp is 0.14 on the home page only.

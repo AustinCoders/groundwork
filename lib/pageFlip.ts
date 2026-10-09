@@ -1,3 +1,5 @@
+import { smooth, unit } from "@/lib/math";
+
 export const FLIP_FROM = 0.4;
 export const STRIPS = 6;
 export const PERSPECTIVE = 4800;
@@ -20,15 +22,6 @@ export interface Flip {
 export interface Bend {
   angles: number[];
   shade: number[];
-}
-
-function unit(value: number): number {
-  if (!Number.isFinite(value)) return 0;
-  return Math.min(1, Math.max(0, value));
-}
-
-function smooth(t: number): number {
-  return t * t * (3 - 2 * t);
 }
 
 export function pageFlip(out: Flip, u: number, step: number, last: boolean): Flip {

@@ -1,3 +1,6 @@
+import { PHONE_MAX, TABLET_MAX } from "@/lib/breakpoints";
+import { smooth, unit } from "@/lib/math";
+
 export interface Pose {
   x: number;
   y: number;
@@ -32,18 +35,9 @@ const FLY: readonly Fly[] = [
 
 const STILL_FLOOR = 0.4;
 
-export function unit(value: number): number {
-  if (!Number.isFinite(value)) return 0;
-  return value < 0 ? 0 : value > 1 ? 1 : value;
-}
-
-export function smooth(t: number): number {
-  return t * t * (3 - 2 * t);
-}
-
 export function scaleFor(width: number): Scale {
-  if (width <= 720) return { move: 0.3, drift: 0.18, tilt: 0, vw: width };
-  if (width <= 1080) return { move: 0.6, drift: 0.6, tilt: 1, vw: width };
+  if (width <= PHONE_MAX) return { move: 0.3, drift: 0.18, tilt: 0, vw: width };
+  if (width <= TABLET_MAX) return { move: 0.6, drift: 0.6, tilt: 1, vw: width };
   return { move: 1, drift: 1, tilt: 1, vw: width };
 }
 
@@ -92,35 +86,20 @@ export function stickerPose(
   exit: number,
   step: number,
   px: number,
-  py: number
+  py: number,
+  lift = 0
 ): Pose {
   const grown = unit((Math.min(enter, step) - 0.4) / 0.45);
   out.x = px * depth;
-  out.y = (1 - grown) * 16 * scale.move - exit * (40 + depth * 3) * scale.drift + py * depth;
+  out.y = (1 - grown) * 16 * scale.move - exit * (40 + depth * 3) * scale.drift + py * depth + lift;
   out.rotate = 0;
   out.scale = 1 - (1 - grown) * 0.55 + Math.sin(grown * Math.PI) * 0.08;
   out.opacity = grown * (1 - exit * 0.5);
   return out;
 }
 
-export function chipPose(
-  out: Pose,
-  depth: number,
-  speed: number,
-  scale: Scale,
-  enter: number,
-  step: number,
-  p: number,
-  px: number,
-  py: number
-): Pose {
-  const grown = unit((Math.min(enter, step) - 0.4) / 0.45);
-  out.x = px * depth;
-  out.y = (1 - grown) * 16 * scale.move + (0.5 - p) * speed + py * depth;
-  out.rotate = 0;
-  out.scale = 1 - (1 - grown) * 0.55 + Math.sin(grown * Math.PI) * 0.08;
-  out.opacity = grown;
-  return out;
+export function noteInk(enter: number, step: number): number {
+  return unit((Math.min(enter, step) - 0.55) / 0.4);
 }
 
 export function notePose(
@@ -133,7 +112,7 @@ export function notePose(
   px: number,
   py: number
 ): Pose {
-  const ink = unit((Math.min(enter, step) - 0.55) / 0.4);
+  const ink = noteInk(enter, step);
   out.x = px * depth;
   out.y = (1 - ink) * 10 * scale.move - exit * 50 * scale.drift + py * depth;
   out.rotate = 0;
@@ -142,21 +121,19 @@ export function notePose(
   return out;
 }
 
-export function noteInk(enter: number, step: number): number {
-  return unit((Math.min(enter, step) - 0.55) / 0.4);
-}
+const LAST_STAGGER = 11;
 
 export function wordReveal(enter: number, index: number): number {
-  return unit((enter - index * 0.045 - 0.05) * 2.2);
+  return unit((enter - Math.min(index, LAST_STAGGER) * 0.045 - 0.05) * 2.2);
 }
 
-export interface Window {
+export interface StepWindow {
   ei: number;
   eo: number;
   lt: number;
 }
 
-export function stepWindow(out: Window, u: number, index: number, lead: boolean, tail: boolean): Window {
+export function stepWindow(out: StepWindow, u: number, index: number, lead: boolean, tail: boolean): StepWindow {
   const into = Math.max(unit((u - index + 0.12) / 0.24), lead ? 1 : 0);
   const away = Math.min(unit((u - index - 0.88) / 0.24), tail ? 0 : 1);
   out.ei = smooth(into);

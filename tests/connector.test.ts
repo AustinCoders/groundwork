@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildConnector, connectorProgress, DOCK_AT } from "@/lib/connector";
+import { buildConnector, connectorLook, connectorProgress, DOCK_AT, type ConnectorLook } from "@/lib/connector";
 
 const geometry = { from: { x: 900, y: 1000 }, to: { x: 120, y: 1260 }, gapTop: 1000, gapBottom: 1230 };
 
@@ -76,5 +76,32 @@ describe("connectorProgress", () => {
 
   it("survives a non-finite scroll", () => {
     expect(draw(Number.NaN)).toBe(0);
+  });
+});
+
+describe("connectorLook", () => {
+  const look: ConnectorLook = { dash: 0, label: 0, sparkle: 0, turn: 0, along: 0, fact: 0, rider: 0 };
+
+  it("starts undrawn with nothing travelling and ends fully drawn with everything docked", () => {
+    expect(connectorLook(look, 0)).toMatchObject({ dash: 1, label: 0, sparkle: 0, fact: 0, rider: 0 });
+    expect(connectorLook(look, 1)).toMatchObject({ dash: 0, label: 1, fact: 0, rider: 0 });
+    expect(connectorLook(look, 1).sparkle).toBeCloseTo(0, 6);
+  });
+
+  it("rides the traveller along the whole curve and hides it once it docks", () => {
+    expect(connectorLook(look, 0.5)).toMatchObject({ along: 50, fact: 1, rider: 1 });
+    expect(connectorLook(look, DOCK_AT).rider).toBe(0);
+    expect(connectorLook(look, 0.99).rider).toBe(0);
+  });
+
+  it("shows the sparkle in the middle of the ride only", () => {
+    expect(connectorLook(look, 0.5).sparkle).toBe(1);
+    expect(connectorLook(look, 0.5).turn).toBe(270);
+  });
+
+  it("clamps out of range and non-finite progress", () => {
+    expect(connectorLook(look, -3).dash).toBe(1);
+    expect(connectorLook(look, 7).dash).toBe(0);
+    expect(connectorLook(look, Number.NaN).dash).toBe(1);
   });
 });

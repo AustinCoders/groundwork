@@ -26,7 +26,7 @@ export function TrackSvg({
     >
       <defs>
         <mask id={mask} maskUnits="userSpaceOnUse" x="-10" y="-10" width="120" height="120">
-          <path className={styles.reveal} d={trail.d} pathLength={1} data-fx="trail" data-fx-shape={shape} />
+          <path className={styles.reveal} d={trail.d} pathLength={1} data-motion="trail" data-fx-shape={shape} />
         </mask>
       </defs>
       <path className={styles.track} d={trail.d} />
@@ -39,7 +39,7 @@ export function Walker({ count, shape, className }: { count?: number; shape?: "l
   return (
     <span
       className={className ? `${styles.walker} ${className}` : styles.walker}
-      data-fx="walker"
+      data-motion="walker"
       data-fx-count={count}
       data-fx-shape={shape}
       aria-hidden="true"

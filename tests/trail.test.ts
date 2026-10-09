@@ -4,6 +4,7 @@ import {
   buildTrail,
   LOOP_SPOTS,
   loopProgress,
+  stageRatio,
   drawProgress,
   trailPoint,
   TRAIL_FINISH,
@@ -26,7 +27,6 @@ describe("buildTrail", () => {
     expect(trail.at).toHaveLength(5);
     expect(trail.at.every((share) => share > 0 && share < 1)).toBe(true);
     expect([...trail.at].sort((a, b) => a - b)).toEqual(trail.at);
-    expect(trail.finishAt).toBe(1);
   });
 
   it("snakes: neighbouring spots sit on opposite sides of the centre line", () => {
@@ -179,5 +179,22 @@ describe("loopProgress", () => {
     expect(loopProgress(-3, at)).toBe(0);
     expect(loopProgress(40, at)).toBeCloseTo(1, 9);
     expect(loopProgress(Number.NaN, at)).toBe(0);
+  });
+});
+
+describe("stageRatio", () => {
+  it("is the height over the width, and 0 (unknown) while the stage has no box, as in a hidden panel", () => {
+    expect(stageRatio(800, 600)).toBe(0.75);
+    expect(stageRatio(0, 600)).toBe(0);
+    expect(stageRatio(800, 0)).toBe(0);
+    expect(stageRatio(-1, 5)).toBe(0);
+  });
+});
+
+describe("trailPoint with a cached length", () => {
+  it("keeps one length per curve that adds up to the whole trail", () => {
+    const trail = buildTrail(5);
+    expect(trail.lengths).toHaveLength(trail.curves.length);
+    expect(trail.lengths.reduce((a, b) => a + b, 0)).toBeCloseTo(trail.length, 9);
   });
 });
