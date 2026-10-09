@@ -98,6 +98,21 @@ export function stickerPose(
   return out;
 }
 
+export function starPose(out: Pose, lag: number, scale: Scale, enter: number, exit: number): Pose {
+  const done = smooth(unit((enter - lag * 0.3) / 0.7));
+  const left = 1 - done;
+  out.x = 0;
+  out.y = 0 - exit * 12 * scale.drift;
+  out.rotate = 0;
+  out.scale = 1 - left * 0.5;
+  out.opacity = done * (1 - exit * 0.35);
+  return out;
+}
+
+export function edgeDraw(enter: number, lag: number): number {
+  return unit((enter - 0.4 - lag * 0.25) / 0.35);
+}
+
 export function noteInk(enter: number, step: number): number {
   return unit((Math.min(enter, step) - 0.55) / 0.4);
 }

@@ -21,6 +21,9 @@ type State = {
   visit: (page: Page, check: Check) => Promise<void>;
 };
 
+const stationText = (page: Page, id: string) =>
+  page.locator(`#shelf [data-id="${id}"] a > span:nth-of-type(${page.viewportSize()!.width > 1080 ? 2 : 3})`);
+
 const PAGES = [
   "/",
   "/notes",
@@ -90,8 +93,35 @@ const STATES: State[] = [
       await languages.scrollIntoViewIfNeeded();
       await languages.click();
       await expect(languages).toHaveAttribute("aria-selected", "true");
-      await expect(page.locator("#shelf").getByRole("link", { name: /^Python/ })).toBeVisible();
+      await expect(stationText(page, "python")).toBeVisible();
       await check("the topic section on Languages");
+    },
+  },
+  {
+    name: "the topic section with a legend row expanded and a star card open",
+    path: "/",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const data = page.locator("#shelf").getByRole("tab", { name: /^Data/ });
+      await data.scrollIntoViewIfNeeded();
+      await data.click();
+      if (page.viewportSize()!.width > 1080)
+        await expect(page.locator("#shelf").getByRole("link", { name: "Open Redis" })).toBeVisible();
+      await page.locator('#shelf [data-id="databases"] a').focus();
+      await expect(page.locator('#shelf [data-id="databases"] #shelf-card-databases')).toBeVisible();
+      await check("the topic section with a legend row expanded and a star card open");
+    },
+  },
+  {
+    name: "the topic section with a search term typed",
+    path: "/",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const field = page.locator("#shelf").getByLabel("Find a topic");
+      await field.scrollIntoViewIfNeeded();
+      await field.fill("script");
+      await expect(page.locator("#shelf").getByRole("status")).toHaveText(/matches/);
+      await check("the topic section with a search term typed");
     },
   },
   {
@@ -260,7 +290,7 @@ const STATES: State[] = [
       const category = page.locator("#shelf").getByRole("tab", { name: /^AI/ });
       await category.scrollIntoViewIfNeeded();
       await category.click();
-      await expect(page.locator("#shelf").getByRole("link", { name: /^Claude/ })).toBeVisible();
+      await expect(stationText(page, "ai")).toBeVisible();
       await check("the topic section on the AI category");
     },
   },

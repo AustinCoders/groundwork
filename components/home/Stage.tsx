@@ -51,6 +51,7 @@ export function Stage({
   hostFx,
   height,
   sticky,
+  pointer = true,
   children,
 }: {
   live?: boolean;
@@ -60,9 +61,10 @@ export function Stage({
   hostFx?: string;
   height?: string;
   sticky?: boolean;
+  pointer?: boolean;
   children: ReactNode;
 }) {
-  const ref = useStage<HTMLDivElement>();
+  const ref = useStage<HTMLDivElement>(pointer);
   return (
     <div
       className={hostClassName ? `${styles.host} ${hostClassName}` : styles.host}
@@ -144,6 +146,7 @@ export function Sticker({
   tone,
   i = 0,
   className,
+  style,
   children,
 }: {
   rot?: number;
@@ -151,6 +154,7 @@ export function Sticker({
   tone?: "success" | "primary" | "info" | "caution";
   i?: number;
   className?: string;
+  style?: CSSProperties;
   children: ReactNode;
 }) {
   return (
@@ -160,7 +164,7 @@ export function Sticker({
       data-motion="sticker"
       data-tone={tone}
       aria-hidden="true"
-      style={vars({ rot, depth, i })}
+      style={{ ...vars({ rot, depth, i }), ...style }}
     >
       {children}
     </span>
@@ -173,6 +177,7 @@ export function Note({
   depth = 14,
   i = 0,
   className,
+  style,
   children,
 }: {
   arrow?: "dr" | "dl" | "ur" | "ul";
@@ -180,6 +185,7 @@ export function Note({
   depth?: number;
   i?: number;
   className?: string;
+  style?: CSSProperties;
   children: ReactNode;
 }) {
   return (
@@ -188,7 +194,7 @@ export function Note({
       data-note
       data-motion="note"
       aria-hidden="true"
-      style={vars({ rot, depth, i })}
+      style={{ ...vars({ rot, depth, i }), ...style }}
     >
       {children}
       <svg className={styles.arrow} data-dir={arrow} viewBox="0 0 120 80" focusable="false">
@@ -205,6 +211,7 @@ export function Chip({
   depth = 10,
   speed = 40,
   className,
+  style,
   children,
 }: {
   fact: string;
@@ -212,6 +219,7 @@ export function Chip({
   depth?: number;
   speed?: number;
   className?: string;
+  style?: CSSProperties;
   children: ReactNode;
 }) {
   return (
@@ -221,14 +229,14 @@ export function Chip({
       data-motion="chip"
       data-fact={fact}
       aria-hidden="true"
-      style={vars({ rot, depth, speed })}
+      style={{ ...vars({ rot, depth, speed }), ...style }}
     >
       {children}
     </span>
   );
 }
 
-export function Spark({ className, depth = 8 }: { className?: string; depth?: number }) {
+export function Spark({ className, depth = 8, style }: { className?: string; depth?: number; style?: CSSProperties }) {
   return (
     <svg
       className={className ? `${styles.spark} ${className}` : styles.spark}
@@ -237,7 +245,7 @@ export function Spark({ className, depth = 8 }: { className?: string; depth?: nu
       viewBox="0 0 24 24"
       aria-hidden="true"
       focusable="false"
-      style={vars({ depth })}
+      style={{ ...vars({ depth }), ...style }}
     >
       <path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" />
     </svg>

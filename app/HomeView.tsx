@@ -488,13 +488,7 @@ export function HomeView({ stats, ready, soon, languages, interview, bookRounds 
                   setMenuOpen(true);
                 }}
                 head={
-                  <Head
-                    no="01"
-                    label="Topics"
-                    id="shelf-h"
-                    sub={`What is written today comes first, ${plural(stats.exercises, "exercise")} so far. Every other topic is laid out and fills in as its chapters are written.`}
-                  >
-                    <Words text="Every topic a developer needs." />{" "}
+                  <Head no="01" label="Topics" id="shelf-h" sub="Every topic a developer needs, on one map.">
                     <span className={styles.hl}>
                       <Words text="Pick a topic." />
                     </span>

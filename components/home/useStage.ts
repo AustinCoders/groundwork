@@ -7,7 +7,7 @@ const FINE_POINTER = "(hover: hover) and (pointer: fine)";
 const EASE = 0.18;
 const SETTLED = 0.002;
 
-export function useStage<T extends HTMLElement>() {
+export function useStage<T extends HTMLElement>(pointer = true) {
   const ref = useRef<T>(null);
 
   useEffect(() => {
@@ -66,7 +66,7 @@ export function useStage<T extends HTMLElement>() {
       observer = null;
       stage.removeAttribute("data-in");
       if (reduced.matches) {
-        clear();
+        if (pointer) clear();
         return;
       }
       if (!("IntersectionObserver" in window)) {
@@ -93,17 +93,20 @@ export function useStage<T extends HTMLElement>() {
 
     arm();
     reduced.addEventListener("change", arm);
-    stage.addEventListener("pointermove", onMove);
-    stage.addEventListener("pointerleave", rest);
+    if (pointer) {
+      stage.addEventListener("pointermove", onMove);
+      stage.addEventListener("pointerleave", rest);
+    }
     return () => {
       reduced.removeEventListener("change", arm);
+      observer?.disconnect();
+      if (!pointer) return;
       stage.removeEventListener("pointermove", onMove);
       stage.removeEventListener("pointerleave", rest);
-      observer?.disconnect();
       if (frame) cancelAnimationFrame(frame);
       setParallax(stage, 0, 0);
     };
-  }, []);
+  }, [pointer]);
 
   return ref;
 }

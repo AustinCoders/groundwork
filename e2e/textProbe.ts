@@ -36,7 +36,7 @@ export function probeText(roots: string[]): TextProblem[] {
           const y = box.top + box.height / 2;
           for (const x of [box.left + 2, box.left + box.width / 2, box.right - 2]) {
             const hit = document.elementFromPoint(x, y);
-            if (!hit || own.contains(hit) || hit.contains(own)) continue;
+            if (!hit || own.contains(hit) || hit.contains(own) || hidden(hit)) continue;
             problems.push({ kind: "covered", text: text.slice(0, 40), by: describe(hit) });
             break;
           }

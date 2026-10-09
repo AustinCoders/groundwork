@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   cardPose,
+  edgeDraw,
   notePose,
   reveal,
   scaleFor,
+  starPose,
   stepWindow,
   stickerPose,
   wordReveal,
@@ -194,5 +196,42 @@ describe("reveal and deck", () => {
 
   it("reads a non-finite value as 0", () => {
     expect(reveal(Number.NaN, 0.06, 6)).toBe(0);
+  });
+});
+
+describe("stations and lines of the topic map", () => {
+  it("rest exactly in place once the section has entered and is not leaving", () => {
+    expect(starPose(pose(), 0.4, wide, 1, 0)).toEqual({ x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 });
+  });
+
+  it("start small and invisible and arrive in order of their lag, without moving sideways", () => {
+    const start = starPose(pose(), 0, wide, 0, 0);
+    expect([start.x, start.y, start.scale, start.opacity]).toEqual([0, 0, 0.5, 0]);
+    const early = starPose(pose(), 0, wide, 0.5, 0);
+    const late = starPose(pose(), 1, wide, 0.5, 0);
+    expect(early.opacity).toBeGreaterThan(late.opacity);
+    expect(early.x).toBe(0);
+  });
+
+  it("rise monotonically with the section progress", () => {
+    let last = -1;
+    for (let enter = 0; enter <= 1.0001; enter += 0.02) {
+      const { opacity } = starPose(pose(), 0.5, wide, enter, 0);
+      expect(opacity).toBeGreaterThanOrEqual(last);
+      last = opacity;
+    }
+  });
+
+  it("drift up and dim a little on exit, never vanishing", () => {
+    const leaving = starPose(pose(), 0, wide, 1, 1);
+    expect(leaving.y).toBeLessThan(0);
+    expect(leaving.opacity).toBeGreaterThan(0.6);
+  });
+
+  it("draw a line after its stations start to arrive and have it fully drawn at rest", () => {
+    expect(edgeDraw(0.3, 0)).toBe(0);
+    expect(edgeDraw(1, 1)).toBe(1);
+    for (let lag = 0; lag <= 1; lag += 0.25) expect(edgeDraw(1, lag)).toBe(1);
+    expect(edgeDraw(0.7, 0)).toBeGreaterThan(edgeDraw(0.6, 0));
   });
 });

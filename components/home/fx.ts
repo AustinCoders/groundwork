@@ -12,10 +12,12 @@ import {
 } from "@/lib/trail";
 import {
   cardPose,
+  edgeDraw,
   noteInk,
   notePose,
   reveal,
   scaleFor,
+  starPose,
   stepWindow,
   stickerPose,
   wordReveal,
@@ -55,7 +57,9 @@ type Kind =
   | "milestone"
   | "leaf"
   | "cast"
-  | "stroke";
+  | "stroke"
+  | "star"
+  | "edge";
 
 interface Item {
   el: HTMLElement;
@@ -70,6 +74,7 @@ interface Item {
   from: number;
   to: number;
   rate: number;
+  lag: number;
   card: CardInput;
   written: string;
   arrows: SVGPathElement[];
@@ -124,6 +129,7 @@ function read(el: HTMLElement): Item | null {
     from: Number(el.dataset.fxFrom) || 0,
     to: Number(el.dataset.fxTo) || 1,
     rate: Number(el.dataset.fxRate) || 6,
+    lag: number(el, "--lag"),
     card: {
       fly: Number(el.dataset.fly) || 0,
       still: el.hasAttribute("data-still"),
@@ -225,6 +231,16 @@ function one(item: Item, input: FxInput, scale: Scale, rest: Pose) {
       rest.rotate = scale.tilt === 0 ? item.card.rot * 0.35 : item.card.rot;
       writePose(item, rest, cardPose(pose, item.card, scale, enter, exit, step, px, py));
       return;
+    case "star":
+      writePose(item, REST, starPose(pose, item.lag, scale, enter, exit));
+      return;
+    case "edge": {
+      const draw = edgeDraw(enter, item.lag);
+      put(item, draw.toFixed(3), () => {
+        item.el.style.strokeDashoffset = draw >= 0.9995 ? "" : (1 - draw).toFixed(3);
+      });
+      return;
+    }
     case "sticker":
     case "spark":
       writePose(item, REST, stickerPose(pose, item.depth, scale, enter, exit, step, px, py));

@@ -5,6 +5,7 @@ import { practice } from "../content/practice";
 import { HOME_PATHS } from "../lib/homePaths";
 import { bookStages, homeRounds } from "../lib/homeRounds";
 import { bankQuestions, bookRounds } from "../lib/interviewBook";
+import { TOPIC_CATEGORIES } from "../lib/topicCategories";
 import { topicsNavWithStats } from "../lib/topicStats";
 import { probeConnectors, probeTrack } from "./motionProbe";
 import { probeText } from "./textProbe";
@@ -1686,7 +1687,7 @@ test("every home scene after the hero has layered cards, a sticker and a handwri
       strokes: el.querySelectorAll("[data-note] svg path").length,
     }));
     expect(counts.stages, `#${id} has a stage`).toBeGreaterThan(0);
-    expect(counts.cards, `#${id} cards`).toBeGreaterThanOrEqual(id === "loop" ? 1 : 3);
+    expect(counts.cards, `#${id} cards`).toBeGreaterThanOrEqual(id === "loop" ? 1 : id === "shelf" ? 0 : 3);
     expect(counts.stickers, `#${id} stickers`).toBeGreaterThanOrEqual(1);
     if (id !== "how" && id !== "loop") {
       expect(counts.notes, `#${id} notes`).toBeGreaterThanOrEqual(1);
@@ -1736,7 +1737,7 @@ test("under reduced motion the home stage cards have no animation, no transition
         return { animation: style.animationName, transition: style.transitionDuration, translate: style.translate };
       })
     );
-    expect(before.length, `#${id} has stage pieces`).toBeGreaterThan(2);
+    expect(before.length, `#${id} has stage pieces`).toBeGreaterThan(id === "shelf" ? 1 : 2);
     for (const piece of before) {
       expect(piece.animation, `#${id} animation`).toBe("none");
       expect(piece.transition, `#${id} transition`).toMatch(/^0s(, 0s)*$/);
@@ -1749,7 +1750,9 @@ test("under reduced motion the home stage cards have no animation, no transition
     const after = await stage.evaluate((el) =>
       [...el.querySelectorAll("[data-card]")].map((node) => getComputedStyle(node).translate)
     );
-    expect(new Set(after), `#${id} still at rest after the pointer moves`).toEqual(new Set(["none"]));
+    expect(new Set(after), `#${id} still at rest after the pointer moves`).toEqual(
+      id === "shelf" ? new Set() : new Set(["none"])
+    );
   }
 });
 
@@ -1898,7 +1901,7 @@ test("every home section is exactly at rest once a rail or nav link has landed o
     expect(Number(vars.enter), `#${id} enter`).toBe(1);
     expect(Number(vars.exit), `#${id} exit`).toBe(0);
     const offsets = await cardOffsets(page, id);
-    expect(offsets.length, `#${id} has cards`).toBeGreaterThan(id === "loop" ? 0 : 2);
+    expect(offsets.length, `#${id} has cards`).toBeGreaterThan(id === "loop" ? 0 : id === "shelf" ? -1 : 2);
     for (const offset of offsets) expect(offset, `#${id} card offset at rest`).toBeLessThan(1);
   }
 });
@@ -2350,84 +2353,6 @@ test("the sidebar fits a 390px screen with every category listed", async ({ page
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
 });
 
-test("the home topic section opens on Ready now and lists categories you can move through with the arrow keys", async ({
-  page,
-}) => {
-  await page.goto("/");
-  const shelf = page.locator("#shelf");
-  const tabs = shelf.getByRole("tablist", { name: "Topics" });
-  await expect(tabs.getByRole("tab")).toHaveCount(9);
-  const ready = tabs.getByRole("tab", { name: /^Ready now/ });
-  await expect(ready).toHaveAttribute("aria-selected", "true");
-  await expect(ready).toHaveAttribute("tabindex", "0");
-  await expect(tabs.getByRole("tab", { name: /^Languages/ })).toHaveAttribute("tabindex", "-1");
-  await expect(tabs).toHaveAttribute("aria-orientation", "vertical");
-
-  const panel = shelf.getByRole("tabpanel");
-  for (const name of ["JavaScript", "React", "Git", "DSA", "System Design", "Interview book"]) {
-    await expect(panel.getByRole("link", { name: new RegExp(`^${name}`) }), name).toBeVisible();
-  }
-  await expect(panel.getByRole("link", { name: /^JavaScript/ })).toContainText(/exercises/);
-  await expect(panel.getByRole("link", { name: /Python/ })).toHaveCount(0);
-
-  await tabs.getByRole("tab", { name: /^Languages/ }).click();
-  await expect(tabs.getByRole("tab", { name: /^Languages/ })).toHaveAttribute("aria-selected", "true");
-  const python = panel.getByRole("link", { name: /^Python/ });
-  await expect(python).toContainText("Coming soon");
-  await expect(panel.getByRole("link", { name: /^JavaScript/ })).toContainText(/\d+ chapters/);
-
-  await page.keyboard.press("ArrowDown");
-  await expect(tabs.getByRole("tab", { name: /^Web/ })).toBeFocused();
-  await expect(tabs.getByRole("tab", { name: /^Web/ })).toHaveAttribute("aria-selected", "true");
-  await expect(panel.getByRole("link", { name: /^React/ })).toBeVisible();
-  await page.keyboard.press("End");
-  await expect(tabs.getByRole("tab", { name: /^AI/ })).toBeFocused();
-  await page.keyboard.press("ArrowDown");
-  await expect(ready).toBeFocused();
-  await expect(ready).toHaveAttribute("aria-selected", "true");
-  await page.keyboard.press("ArrowUp");
-  await expect(tabs.getByRole("tab", { name: /^AI/ })).toBeFocused();
-  await page.keyboard.press("Home");
-  await expect(ready).toBeFocused();
-});
-
-test("a coming-soon card on the home page links to its outline page", async ({ page }) => {
-  await page.goto("/");
-  await page
-    .locator("#shelf")
-    .getByRole("tab", { name: /^Languages/ })
-    .click();
-  const python = page
-    .locator("#shelf")
-    .getByRole("tabpanel")
-    .getByRole("link", { name: /^Python/ });
-  await expect(python).toHaveAttribute("href", "/python");
-  await python.click();
-  await page.waitForURL("**/python");
-  await expect(page.getByRole("heading", { level: 2, name: "Being planned" })).toBeVisible();
-});
-
-test("the home category list scrolls inside its own row at 390px without scrolling the page", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
-  const list = page.locator("#shelf").getByRole("tablist", { name: "Topics" });
-  await list.scrollIntoViewIfNeeded();
-  expect(await list.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
-  await page.locator("#shelf").getByRole("tab", { name: /^AI/ }).click();
-  await expect(
-    page
-      .locator("#shelf")
-      .getByRole("tabpanel")
-      .getByRole("link", { name: /Claude/ })
-  ).toBeVisible();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
-  await page
-    .locator("#shelf")
-    .getByRole("tab", { name: /^Ready now/ })
-    .click();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
-});
-
 test("a topic that is only being planned shows an outline with no syllabus, not a 404", async ({ page }) => {
   for (const [path, name] of [
     ["/python", "Python"],
@@ -2472,20 +2397,726 @@ test("a planning cover points at a written neighbour, or says nothing", async ({
   }
 });
 
-test("the home page ships every topic panel in its HTML, so coming-soon links exist without JavaScript", async ({
+const SHELF_TOPICS = topicsNavWithStats().filter((t) => t.id !== "interview" && t.id !== "architecture");
+const SHELF_WRITTEN = SHELF_TOPICS.filter((t) => t.written > 0);
+const SHELF_SIZES = [
+  { width: 1280, height: 720 },
+  { width: 1440, height: 900 },
+  { width: 1920, height: 1080 },
+];
+const star = (page: Page, id: string) => page.locator(`#shelf [data-id="${id}"]`);
+const tone = (page: Page, id: string) => star(page, id).getAttribute("data-tone");
+
+async function openShelf(page: Page, size = { width: 1440, height: 900 }, reduced = true) {
+  if (reduced) await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize(size);
+  await page.goto("/");
+  await page.evaluate(() => {
+    const top = document.getElementById("shelf")!.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo(0, top - 64);
+  });
+  await settleScroll(page);
+}
+
+test("the metro map shows every topic as a real station link, written ones large, coming-soon ones small, four interchanges", async ({
+  page,
+}) => {
+  await openShelf(page);
+  const shelf = page.locator("#shelf");
+  await expect(shelf.locator("[data-id]")).toHaveCount(SHELF_TOPICS.length + 1);
+  for (const t of SHELF_TOPICS) {
+    const link = star(page, t.id).locator("a");
+    const written = t.written > 0;
+    await expect(star(page, t.id), t.id).toHaveAttribute("data-kind", written ? "written" : "soon");
+    await expect(link, t.id).toHaveAttribute("href", written ? /^\/(level\/)?[a-z-]+/ : `/${t.id}`);
+    await expect(link, t.id).toHaveAccessibleName(
+      written
+        ? new RegExp(`^${t.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}, \\d+ chapters?, written$`)
+        : `${t.name}, coming soon`
+    );
+    await expect(link.locator(":scope > span").first(), t.id).toBeVisible();
+  }
+  await expect(star(page, "interview").locator("a")).toHaveAttribute("href", "/interview");
+  await expect(star(page, "interview").locator("a")).toContainText(/\d+ rounds/);
+  expect(await shelf.locator('[data-kind="written"]').count()).toBe(SHELF_WRITTEN.length + 1);
+  await expect(star(page, "python").locator("a")).toHaveAttribute("href", "/python");
+  const joined = await shelf
+    .locator("[data-join]")
+    .evaluateAll((nodes) => nodes.map((n) => (n as HTMLElement).dataset.id));
+  expect(joined.sort()).toEqual(["databases", "docker", "js", "typescript"]);
+  const lines = await shelf
+    .locator("g[data-line]")
+    .evaluateAll((nodes) => nodes.map((n) => n.getAttribute("data-line")));
+  expect(lines).toHaveLength(8);
+  const badges = await shelf
+    .locator('span[data-tone][aria-hidden="true"]')
+    .evaluateAll((nodes) => nodes.map((n) => (n.textContent ?? "").trim()));
+  expect(badges.sort()).toEqual(TOPIC_CATEGORIES.map((category) => category.label).sort());
+});
+
+test("focusing a station with the keyboard opens its taped card, brightens its lines, dims the rest and Escape puts it away", async ({
+  page,
+}) => {
+  await openShelf(page);
+  const js = star(page, "js");
+  const jsNav = SHELF_TOPICS.find((t) => t.id === "js")!;
+  await js.locator("a").focus();
+  await expect(js).toHaveAttribute("data-open", "");
+  const card = js.locator(`#shelf-card-js`);
+  await expect(card).toBeVisible();
+  await expect(js.locator("a")).toHaveAttribute("aria-describedby", "shelf-card-js-tag shelf-card-js-meta");
+  await expect(card).toContainText(jsNav.tagline);
+  await expect(card).toContainText(/\d+ chapters/);
+  await expect(card).toContainText(/\d+ exercises/);
+  await expect(card).toContainText("Open");
+  const lineTone = (id: string) => page.locator(`#shelf g[data-line="${id}"]`).getAttribute("data-tone");
+  await expect.poll(() => lineTone("languages")).toBe("bright");
+  await expect.poll(() => lineTone("web")).toBe("bright");
+  for (const id of ["backend", "data", "devops", "cs", "engineering", "ai"]) expect(await lineTone(id), id).toBe("dim");
+  const dimmed = await page.locator('#shelf g[data-line="data"]').evaluate((el) => getComputedStyle(el).opacity);
+  expect(Number(dimmed)).toBeCloseTo(0.35, 1);
+  await expect.poll(() => tone(page, "react")).toBe("bright");
+  await expect.poll(() => tone(page, "docker")).toBe("dim");
+  await page.keyboard.press("Escape");
+  await expect(js).not.toHaveAttribute("data-open", "");
+  await expect(card).toBeHidden();
+  expect(await lineTone("data")).toBe("base");
+
+  await star(page, "docker").locator("a").focus();
+  await expect(page.locator("#shelf g[data-train][data-on]")).toHaveAttribute("data-train", "devops");
+  await star(page, "typescript").locator("a").focus();
+  await expect(page.locator("#shelf g[data-train][data-on]")).toHaveAttribute("data-train", "languages");
+  await expect.poll(() => lineTone("backend")).toBe("bright");
+  await expect.poll(() => lineTone("languages")).toBe("bright");
+  expect(await lineTone("web")).toBe("dim");
+
+  await star(page, "rust").locator("a").focus();
+  const rust = star(page, "rust").locator("#shelf-card-rust");
+  await expect(rust).toBeVisible();
+  await expect(rust).toContainText("Coming soon");
+  await expect(rust).toContainText("Outline");
+});
+
+test("the Topics tablist opens on Ready now, moves with the arrow keys, brightens a line and dims the rest", async ({
+  page,
+}) => {
+  await openShelf(page);
+  const shelf = page.locator("#shelf");
+  const tabs = shelf.getByRole("tablist", { name: "Topics" });
+  await expect(tabs.getByRole("tab")).toHaveCount(9);
+  const ready = tabs.getByRole("tab", { name: /^Ready now/ });
+  await expect(ready).toHaveAttribute("aria-selected", "true");
+  await expect(ready).toHaveAttribute("tabindex", "0");
+  await expect(tabs.getByRole("tab", { name: /^Languages/ })).toHaveAttribute("tabindex", "-1");
+  await expect(tabs).toHaveAttribute("aria-orientation", "vertical");
+  await expect(shelf.getByRole("tabpanel")).toHaveCount(1);
+  for (const t of SHELF_WRITTEN) expect(await tone(page, t.id), t.id).toBe("bright");
+  expect(await tone(page, "interview")).toBe("bright");
+  expect(await tone(page, "python")).toBe("base");
+
+  await tabs.getByRole("tab", { name: /^Data/ }).click();
+  await page.mouse.move(2, 2);
+  await expect(tabs.getByRole("tab", { name: /^Data/ })).toHaveAttribute("aria-selected", "true");
+  for (const id of ["databases", "mongodb", "dbms", "redis"]) expect(await tone(page, id), id).toBe("bright");
+  for (const id of ["react", "python", "interview", "git"]) expect(await tone(page, id), id).toBe("dim");
+  const lines = await page
+    .locator("#shelf g[data-line]")
+    .evaluateAll((nodes) => nodes.map((n) => [n.getAttribute("data-line"), n.getAttribute("data-tone")]));
+  for (const [id, state] of lines) expect(state, `${id} line`).toBe(id === "data" ? "bright" : "dim");
+  await expect(shelf.getByRole("tabpanel")).toHaveAttribute("aria-labelledby", /shelf-tab-data/);
+
+  await page.keyboard.press("ArrowDown");
+  await expect(tabs.getByRole("tab", { name: /^Computer science/ })).toBeFocused();
+  expect(await tone(page, "dsa")).toBe("bright");
+  expect(await tone(page, "interview")).toBe("bright");
+  expect(await tone(page, "databases")).toBe("dim");
+  await page.keyboard.press("End");
+  await expect(tabs.getByRole("tab", { name: /^AI/ })).toBeFocused();
+  await page.keyboard.press("ArrowDown");
+  await expect(ready).toBeFocused();
+  await expect(ready).toHaveAttribute("aria-selected", "true");
+  await page.keyboard.press("ArrowUp");
+  await expect(tabs.getByRole("tab", { name: /^AI/ })).toBeFocused();
+  await page.keyboard.press("Home");
+  await expect(ready).toBeFocused();
+  expect(await tone(page, "js")).toBe("bright");
+});
+
+test("a coming-soon star on the home page links to its outline page", async ({ page }) => {
+  await openShelf(page);
+  const python = star(page, "python").locator("a");
+  await expect(python).toHaveAttribute("href", "/python");
+  await python.locator(":scope > span").first().click();
+  await page.waitForURL("**/python");
+  await expect(page.getByRole("heading", { level: 2, name: "Being planned" })).toBeVisible();
+});
+
+test("on a phone the topic section is the compact tabs and card list, with no map", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const shelf = page.locator("#shelf");
+  const list = shelf.getByRole("tablist", { name: "Topics" });
+  await list.scrollIntoViewIfNeeded();
+  expect(await list.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+  const shown = await shelf
+    .locator("[data-id]")
+    .evaluateAll((nodes) => nodes.filter((n) => n.getBoundingClientRect().height > 0).length);
+  expect(shown).toBe(SHELF_WRITTEN.length + 1);
+  expect(
+    await shelf
+      .locator("[data-id] a")
+      .first()
+      .evaluate((a) => getComputedStyle(a.querySelector("span")!).display)
+  ).toBe("none");
+  expect(
+    await shelf
+      .locator("svg path[data-motion='edge']")
+      .first()
+      .evaluate((p) => getComputedStyle(p.closest("svg")!).display)
+  ).toBe("none");
+  await shelf.getByRole("tab", { name: /^AI/ }).click();
+  await expect(shelf.getByRole("tabpanel").getByRole("link", { name: /^Claude/ })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+  await shelf.getByRole("tab", { name: /^Ready now/ }).click();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+});
+
+test("the topic section never scrolls sideways at 375, 1024 or 1920 pixels", async ({ page }) => {
+  for (const width of [375, 1024, 1920]) {
+    await page.setViewportSize({ width, height: width === 1920 ? 1080 : 800 });
+    await page.goto("/");
+    await page.locator("#shelf").scrollIntoViewIfNeeded();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth),
+      `${width}px`
+    ).toBeLessThanOrEqual(0);
+    const box = await page.locator("#shelf").evaluate((el) => {
+      const rect = el.getBoundingClientRect();
+      return { left: rect.left, right: rect.right };
+    });
+    expect(box.left).toBeGreaterThanOrEqual(-1);
+    expect(box.right).toBeLessThanOrEqual(width + 1);
+  }
+});
+
+test("no star label collides with another and an open card never covers another label, at three desktop sizes", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  for (const size of SHELF_SIZES) {
+    await openShelf(page, size);
+    const ids = await page
+      .locator("#shelf [data-id]")
+      .evaluateAll((nodes) => nodes.map((n) => (n as HTMLElement).dataset.id!));
+    const labels = await page.evaluate(() => {
+      const out: Record<string, { left: number; top: number; right: number; bottom: number }[]> = {};
+      for (const li of document.querySelectorAll<HTMLElement>("#shelf [data-id]")) {
+        const text = li.querySelector("a > span:nth-of-type(2)")!;
+        const range = document.createRange();
+        range.selectNodeContents(text);
+        out[li.dataset.id!] = [...range.getClientRects()].map((r) => ({
+          left: r.left,
+          top: r.top,
+          right: r.right,
+          bottom: r.bottom,
+        }));
+      }
+      return out;
+    });
+    const collide = (a: { left: number; top: number; right: number; bottom: number }, b: typeof a) =>
+      Math.min(a.right, b.right) - Math.max(a.left, b.left) > 0.5 &&
+      Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 0.5;
+    const problems: string[] = [];
+    for (let i = 0; i < ids.length; i++)
+      for (let j = i + 1; j < ids.length; j++)
+        for (const a of labels[ids[i]])
+          for (const b of labels[ids[j]]) if (collide(a, b)) problems.push(`${ids[i]} / ${ids[j]}`);
+    expect(problems, `labels at ${size.width}`).toEqual([]);
+
+    const lineProblems = await page.evaluate(() => {
+      const found: string[] = [];
+      for (const path of document.querySelectorAll<SVGPathElement>("#shelf path[data-motion='edge']")) {
+        const m = path.getScreenCTM()!;
+        const half = 4.5 * m.a - 0.5;
+        const line = path.closest("g")!.getAttribute("data-line");
+        const total = path.getTotalLength();
+        for (const li of document.querySelectorAll<HTMLElement>("#shelf [data-id]")) {
+          const range = document.createRange();
+          range.selectNodeContents(li.querySelector("a > span:nth-of-type(2)")!);
+          for (const r of range.getClientRects()) {
+            for (let at = 0; at <= total; at += 3) {
+              const p = path.getPointAtLength(at).matrixTransform(m);
+              if (p.x > r.left - half && p.x < r.right + half && p.y > r.top - half && p.y < r.bottom + half) {
+                found.push(`${li.dataset.id} text meets the ${line} line`);
+                break;
+              }
+            }
+          }
+        }
+      }
+      return [...new Set(found)];
+    });
+    expect(lineProblems, `lines at ${size.width}`).toEqual([]);
+
+    const stage = await page.locator("#shelf [data-stage]").evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+    });
+    for (const id of ids) {
+      await star(page, id).locator("a").focus();
+      await expect(star(page, id)).toHaveAttribute("data-open", "");
+      const report = await page.evaluate(
+        ([open, bounds]) => {
+          const card = document.querySelector<HTMLElement>(`#shelf-card-${open}`)!;
+          const box = card.getBoundingClientRect();
+          const found: string[] = [];
+          const stageBox = bounds as { left: number; top: number; right: number; bottom: number };
+          if (
+            box.left < stageBox.left - 1 ||
+            box.right > stageBox.right + 1 ||
+            box.top < stageBox.top - 1 ||
+            box.bottom > stageBox.bottom + 1
+          )
+            found.push("card leaves the stage");
+          for (const li of document.querySelectorAll<HTMLElement>("#shelf [data-id]")) {
+            if (li.dataset.id === open) continue;
+            const text = li.querySelector("a > span:nth-of-type(2)")!;
+            const range = document.createRange();
+            range.selectNodeContents(text);
+            for (const r of range.getClientRects()) {
+              for (const [x, y] of [
+                [r.left + 1, r.top + r.height / 2],
+                [r.left + r.width / 2, r.top + r.height / 2],
+                [r.right - 1, r.top + r.height / 2],
+              ]) {
+                const hit = document.elementFromPoint(x, y);
+                if (hit && card.contains(hit)) found.push(`covers ${li.dataset.id}`);
+              }
+            }
+          }
+          return found;
+        },
+        [id, stage] as const
+      );
+      expect(report, `${id} card at ${size.width}`).toEqual([]);
+    }
+  }
+});
+
+test("the whole topic section, both columns, keeps its text clear of other elements at three desktop sizes", async ({
+  page,
+}) => {
+  for (const size of SHELF_SIZES) {
+    await openShelf(page, size);
+    await page.getByRole("tab", { name: /^Languages/ }).click();
+    await page.mouse.move(2, 2);
+    await page.waitForTimeout(150);
+    const found = await page.evaluate(probeText, ["#shelf"]);
+    expect(found, `${size.width}x${size.height}`).toEqual([]);
+  }
+});
+
+test("both columns of the topic section fill the stage at three desktop sizes", async ({ page }) => {
+  for (const size of SHELF_SIZES) {
+    await openShelf(page, size);
+    const box = await page.evaluate(() => {
+      const rect = (el: Element) => el.getBoundingClientRect();
+      const copy = rect(document.querySelector("#shelf [data-motion='copy']")!);
+      const stage = rect(document.querySelector("#shelf [data-stage]")!);
+      const header = rect(document.querySelector("header")!).height;
+      return { copy: [copy.top, copy.bottom], stage: [stage.top, stage.bottom], header, view: window.innerHeight };
+    });
+    const label = `${size.width}x${size.height}`;
+    expect(box.copy[0], `${label} copy top`).toBeGreaterThanOrEqual(box.header - 2);
+    expect(box.copy[1], `${label} copy bottom`).toBeLessThanOrEqual(box.view);
+    expect(box.stage[1], `${label} stage bottom`).toBeLessThanOrEqual(box.view);
+    const copyHeight = box.copy[1] - box.copy[0];
+    const stageHeight = box.stage[1] - box.stage[0];
+    expect(copyHeight / stageHeight, `${label} column heights`).toBeGreaterThan(0.78);
+    expect(copyHeight / stageHeight, `${label} column heights`).toBeLessThan(1.22);
+    const middle = (pair: number[]) => (pair[0] + pair[1]) / 2;
+    expect(Math.abs(middle(box.copy) - middle(box.stage)), `${label} centres`).toBeLessThan(60);
+  }
+});
+
+test("under reduced motion the topic map is at rest: no twinkle, no moved station, every line drawn, the train parked", async ({
+  page,
+}) => {
+  await openShelf(page);
+  const state = await page.evaluate(() => {
+    const twinkles = [...document.querySelectorAll<HTMLElement>("#shelf [data-kind='written'] i")].map(
+      (el) => getComputedStyle(el).animationName
+    );
+    const moved = [...document.querySelectorAll<HTMLElement>("#shelf [data-id]")].filter(
+      (el) => el.style.translate !== "" || el.style.opacity !== ""
+    ).length;
+    const undrawn = [...document.querySelectorAll<SVGPathElement>("#shelf path[data-motion='edge']")].filter(
+      (el) => el.style.strokeDashoffset !== ""
+    ).length;
+    const train = document.querySelector<SVGGElement>("#shelf g[data-train][data-on]");
+    return {
+      twinkles,
+      moved,
+      undrawn,
+      trainTransition: train ? getComputedStyle(train).transitionDuration : "",
+      rolling: [...document.querySelectorAll("#shelf g[class*='rolling']")].map(
+        (el) => getComputedStyle(el).animationName
+      ),
+    };
+  });
+  expect(state.twinkles.length).toBeGreaterThan(3);
+  expect(new Set(state.twinkles)).toEqual(new Set(["none"]));
+  expect(new Set(state.rolling)).toEqual(new Set(["none"]));
+  expect(state.moved).toBe(0);
+  expect(state.undrawn).toBe(0);
+  expect(state.trainTransition).toMatch(/^0s/);
+  const train = page.locator("#shelf g[data-train][data-on]");
+  await expect(train).toHaveAttribute("data-train", "languages");
+  const before = await train.boundingBox();
+  await page.getByRole("tab", { name: /^Data/ }).click();
+  await expect(page.locator("#shelf g[data-train][data-on]")).toHaveAttribute("data-train", "data");
+  const parked = await page.locator("#shelf g[data-train][data-on]").boundingBox();
+  await page.waitForTimeout(1800);
+  const later = await page.locator("#shelf g[data-train][data-on]").boundingBox();
+  expect(parked!.x).toBeCloseTo(later!.x, 0);
+  expect(parked!.y).toBeCloseTo(later!.y, 0);
+  expect(Math.abs(parked!.x - before!.x) + Math.abs(parked!.y - before!.y)).toBeGreaterThan(20);
+});
+
+test("with motion on, stations assemble while scrolling in, written stations twinkle in opacity only and the map rests exactly", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await scrollSectionTo(page, "shelf", 0.18);
+  const early = await page.evaluate(() =>
+    [...document.querySelectorAll<HTMLElement>("#shelf [data-id]")].map((el) => ({
+      moved: el.style.scale !== "",
+      opacity: parseFloat(el.style.opacity || "1"),
+    }))
+  );
+  expect(early.filter((s) => s.moved).length).toBeGreaterThan(10);
+  expect(early.some((s) => s.opacity < 0.9)).toBe(true);
+  const drawing = await page.evaluate(() =>
+    [...document.querySelectorAll<SVGPathElement>("#shelf path[data-motion='edge']")].map(
+      (p) => p.style.strokeDashoffset
+    )
+  );
+  expect(drawing.some((value) => value !== "")).toBe(true);
+  await page.evaluate(() => {
+    const top = document.getElementById("shelf")!.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo(0, top - 64);
+  });
+  await settleScroll(page);
+  await expect
+    .poll(() =>
+      page
+        .locator("#shelf [data-kind='written'] i")
+        .first()
+        .evaluate((el) => getComputedStyle(el).animationName)
+    )
+    .toMatch(/twinkle$/);
+  const keyframes = await page.evaluate(() => {
+    const rules: string[] = [];
+    for (const sheet of document.styleSheets)
+      for (const rule of sheet.cssRules)
+        if (rule instanceof CSSKeyframesRule && rule.name.includes("twinkle")) rules.push(rule.cssText);
+    return rules.join(" ");
+  });
+  expect(keyframes).toContain("opacity");
+  expect(keyframes).not.toMatch(/scale|translate|rotate|transform/);
+  const rest = await page.evaluate(
+    () =>
+      [...document.querySelectorAll<HTMLElement>("#shelf [data-id]")].filter(
+        (el) => el.style.translate !== "" || el.style.scale !== ""
+      ).length
+  );
+  expect(rest).toBe(0);
+});
+
+test("moving the pointer over the metro map changes no element's box or transform, and attaches no pointer listener", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await page.evaluate(() => {
+    const top = document.getElementById("shelf")!.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo(0, top - 64);
+  });
+  await settleScroll(page);
+  await page.waitForTimeout(1500);
+  const measure = () =>
+    page.evaluate(() => {
+      const stage = document.querySelector("#shelf [data-stage]")!;
+      return [...stage.querySelectorAll("*")]
+        .filter((el) => !el.closest("g[data-train]") && !el.closest("[class*='twinkle']"))
+        .map((el) => {
+          const r = el.getBoundingClientRect();
+          const css = getComputedStyle(el);
+          return [r.left, r.top, r.width, r.height, css.translate, css.scale, css.rotate, css.transform].join("|");
+        });
+    });
+  const before = await measure();
+  expect(before.length).toBeGreaterThan(100);
+  const box = (await page.locator("#shelf [data-stage]").boundingBox())!;
+  await page.mouse.move(box.x + 4, box.y + 4);
+  for (const [fx, fy] of [
+    [0.9, 0.2],
+    [0.5, 0.5],
+    [0.1, 0.9],
+    [0.8, 0.8],
+  ])
+    await page.mouse.move(box.x + box.width * fx, box.y + box.height * fy, { steps: 8 });
+  await page.waitForTimeout(600);
+  expect(await measure()).toEqual(before);
+  await expect(page.locator("#shelf [data-stage]")).toHaveAttribute("data-in", "");
+});
+
+test("choosing a category in the legend brightens its line, dims the others and glides the train there", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await scrollSectionTo(page, "shelf", 0.5);
+  await page.waitForTimeout(1500);
+  const on = () => page.locator("#shelf g[data-train][data-on]");
+  await expect(on()).toHaveAttribute("data-train", "languages");
+  const js = await star(page, "js").locator("a > span").first().boundingBox();
+  const trainAtJs = (await on().boundingBox())!;
+  expect(Math.abs(trainAtJs.x + trainAtJs.width - js!.x)).toBeLessThan(60);
+  await page.getByRole("tab", { name: /^Computer science/ }).click();
+  await expect(on()).toHaveAttribute("data-train", "cs");
+  const early = (await on().boundingBox())!;
+  await page.waitForTimeout(2200);
+  const stopped = (await on().boundingBox())!;
+  expect(Math.abs(stopped.x - early.x)).toBeGreaterThan(8);
+  const dsa = (await star(page, "dsa").locator("a > span").first().boundingBox())!;
+  expect(Math.abs(stopped.x + stopped.width - dsa.x)).toBeLessThan(70);
+  await expect(page.locator('#shelf g[data-line="cs"]')).toHaveAttribute("data-tone", "bright");
+  await expect(page.locator('#shelf g[data-line="web"]')).toHaveAttribute("data-tone", "dim");
+  await page.getByRole("tab", { name: /^Ready now/ }).click();
+  await expect(on()).toHaveAttribute("data-train", "languages");
+  await expect(page.locator('#shelf g[data-line="web"]')).toHaveAttribute("data-tone", "base");
+});
+
+test("the legend rows say how much of each category is written, and the open row lists its topics as real links", async ({
+  page,
+}) => {
+  await openShelf(page);
+  const shelf = page.locator("#shelf");
+  const tabs = shelf.getByRole("tablist", { name: "Topics" });
+  await expect(tabs.getByRole("tab", { name: /^Ready now/ })).toHaveAccessibleName(
+    `Ready now ${SHELF_WRITTEN.length + 1} of ${SHELF_TOPICS.length + 1} written`
+  );
+  for (const [id, label] of [
+    ["languages", "Languages"],
+    ["data", "Data"],
+    ["ai", "AI"],
+  ]) {
+    const members = SHELF_TOPICS.filter((t) => t.category === id);
+    await expect(tabs.getByRole("tab", { name: new RegExp(`^${label}`) })).toHaveAccessibleName(
+      `${label} ${members.filter((t) => t.written > 0).length} of ${members.length} written`
+    );
+  }
+  const written = shelf.getByRole("list", { name: "Ready now topics" });
+  await expect(written.getByRole("link")).toHaveCount(SHELF_WRITTEN.length + 1);
+  await expect(written.getByRole("link", { name: "Open JavaScript" })).toHaveAttribute("href", "/level/js");
+  await expect(written.getByRole("link", { name: "Open Interview book" })).toHaveAttribute("href", "/interview");
+  await tabs.getByRole("tab", { name: /^Languages/ }).click();
+  const languages = shelf.getByRole("list", { name: "Languages topics" });
+  await expect(languages.getByRole("link")).toHaveCount(SHELF_TOPICS.filter((t) => t.category === "languages").length);
+  await expect(languages.getByRole("link", { name: "Open Python" })).toHaveAttribute("href", "/python");
+  await expect(languages.getByRole("link", { name: "Open JavaScript" })).toHaveAttribute("data-written", "true");
+  await expect(languages.getByRole("link", { name: "Open Python" })).not.toHaveAttribute("data-written", "true");
+  const rows = await page.evaluate(() => {
+    const tabs = [...document.querySelectorAll<HTMLElement>("#shelf [role=tab]")].map((t) => t.getBoundingClientRect());
+    const chips = document
+      .querySelector<HTMLElement>("#shelf ul[aria-label='Languages topics']")!
+      .getBoundingClientRect();
+    const active = document
+      .querySelector<HTMLElement>("#shelf [role=tab][aria-selected=true]")!
+      .getBoundingClientRect();
+    return {
+      chipsTop: chips.top,
+      activeBottom: active.bottom,
+      below: tabs.filter((t) => t.top >= chips.bottom - 1 && t.left < chips.left + 60).length,
+    };
+  });
+  expect(rows.chipsTop).toBeGreaterThanOrEqual(rows.activeBottom - 1);
+  expect(rows.below).toBeGreaterThan(0);
+});
+
+test("hovering or focusing a legend chip lights its star and card, and hovering a row previews its cluster", async ({
+  page,
+}) => {
+  await openShelf(page);
+  const shelf = page.locator("#shelf");
+  await shelf.getByRole("link", { name: "Open React" }).hover();
+  await expect(star(page, "react")).toHaveAttribute("data-open", "");
+  await expect(star(page, "react").locator("#shelf-card-react")).toBeVisible();
+  await page.mouse.move(2, 2);
+  await expect(star(page, "react")).not.toHaveAttribute("data-open", "");
+  await shelf.getByRole("link", { name: "Open DSA" }).focus();
+  await expect(star(page, "dsa")).toHaveAttribute("data-open", "");
+  await shelf.getByRole("link", { name: "Open DSA" }).blur();
+  await expect(star(page, "dsa")).not.toHaveAttribute("data-open", "");
+
+  await shelf.getByRole("tab", { name: /^Backend/ }).hover();
+  await expect.poll(() => tone(page, "node")).toBe("bright");
+  expect(await tone(page, "js")).toBe("dim");
+  await page.mouse.move(2, 2);
+  await expect.poll(() => tone(page, "js")).toBe("bright");
+  expect(await tone(page, "node")).toBe("base");
+  await shelf.getByRole("tab", { name: /^Backend/ }).click();
+  await page.mouse.move(2, 2);
+  expect(await tone(page, "node")).toBe("bright");
+  expect(await tone(page, "js")).toBe("dim");
+});
+
+test("the find-a-topic field is labelled, filters the legend and the map, opens a single match on Enter and clears", async ({
+  page,
+}) => {
+  await openShelf(page);
+  const shelf = page.locator("#shelf");
+  const field = shelf.getByLabel("Find a topic");
+  await expect(field).toBeVisible();
+  await expect(field).toHaveAttribute("type", "search");
+  await expect(shelf.getByRole("button", { name: "Clear search" })).toHaveCount(0);
+  await field.fill("rus");
+  await expect(shelf.getByRole("status")).toHaveText(/1 match, press Enter to open Rust/);
+  const results = shelf.getByRole("list", { name: "Matching topics" });
+  await expect(results.getByRole("link")).toHaveCount(1);
+  await expect(results.getByRole("link", { name: "Open Rust" })).toBeVisible();
+  expect(await tone(page, "rust")).toBe("bright");
+  for (const id of ["js", "react", "python", "docker"]) expect(await tone(page, id), id).toBe("dim");
+
+  await field.fill("");
+  await expect(results).toHaveCount(0);
+  expect(await tone(page, "js")).toBe("bright");
+  expect(await tone(page, "rust")).toBe("base");
+
+  await field.fill("script");
+  await expect(shelf.getByRole("status")).toHaveText(/matches/);
+  expect(await tone(page, "js")).toBe("bright");
+  expect(await tone(page, "typescript")).toBe("bright");
+  expect(await tone(page, "rust")).toBe("dim");
+  await field.press("Enter");
+  await expect(page).toHaveURL("/");
+  await field.press("Escape");
+  await expect(field).toHaveValue("");
+
+  await field.fill("zzzz");
+  await expect(shelf.getByRole("status")).toHaveText("No topic matches.");
+  await shelf.getByRole("button", { name: "Clear search" }).click();
+  await expect(field).toHaveValue("");
+  await expect(field).toBeFocused();
+  expect(await tone(page, "js")).toBe("bright");
+
+  await field.fill("rust");
+  await field.press("Enter");
+  await page.waitForURL("**/rust");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Rust");
+});
+
+test("search understands node js, c plus plus and aliases, opens the exact name on Enter and ArrowDown moves into the results", async ({
+  page,
+}) => {
+  await openShelf(page);
+  const shelf = page.locator("#shelf");
+  const field = shelf.getByLabel("Find a topic");
+  await field.fill("node js");
+  await expect(
+    shelf.getByRole("list", { name: "Matching topics" }).getByRole("link", { name: "Open Node.js" })
+  ).toBeVisible();
+  await field.fill("c plus plus");
+  await expect(
+    shelf.getByRole("list", { name: "Matching topics" }).getByRole("link", { name: "Open C++" })
+  ).toBeVisible();
+  await field.fill("k8s");
+  await expect(
+    shelf.getByRole("list", { name: "Matching topics" }).getByRole("link", { name: "Open Kubernetes" })
+  ).toBeVisible();
+  await field.fill("frontend");
+  await expect(
+    shelf.getByRole("list", { name: "Matching topics" }).getByRole("link", { name: "Open React" })
+  ).toBeVisible();
+  await field.press("ArrowDown");
+  await expect(shelf.getByRole("list", { name: "Matching topics" }).getByRole("link").first()).toBeFocused();
+  await field.fill("java");
+  await expect(shelf.getByRole("status")).toHaveText(/2 matches/);
+  await field.press("Enter");
+  await page.waitForURL("**/java");
+});
+
+test("search shows an empty state in the map, says when it is cleared, and choosing a category clears it", async ({
+  page,
+}) => {
+  await openShelf(page);
+  const shelf = page.locator("#shelf");
+  const field = shelf.getByLabel("Find a topic");
+  await field.fill("zzzz");
+  await expect(shelf.getByRole("tabpanel").getByText("No topic matches.")).toBeVisible();
+  await field.press("Escape");
+  await expect(field).toHaveValue("");
+  await expect(shelf.getByRole("status")).toHaveText("Search cleared.");
+  await expect(shelf.getByRole("tabpanel").getByText("No topic matches.")).toHaveCount(0);
+  await field.fill("rust");
+  expect(await tone(page, "rust")).toBe("bright");
+  await shelf.getByRole("tab", { name: /^Data/ }).click();
+  await page.mouse.move(2, 2);
+  await expect(field).toHaveValue("");
+  expect(await tone(page, "databases")).toBe("bright");
+  expect(await tone(page, "rust")).toBe("dim");
+});
+
+test("Escape dismisses a card opened from a legend chip while focus stays on the chip", async ({ page }) => {
+  await openShelf(page);
+  const chip = page.locator("#shelf").getByRole("link", { name: "Open React" });
+  await chip.focus();
+  await expect(star(page, "react")).toHaveAttribute("data-open", "");
+  await page.keyboard.press("Escape");
+  await expect(star(page, "react")).not.toHaveAttribute("data-open", "");
+  await expect(chip).toBeFocused();
+});
+
+test("a stage that turns the pointer off still marks itself in view, and does so only without reduced motion", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(page.locator("#shelf [data-stage]")).not.toHaveAttribute("data-in", "");
+  await page.locator("#shelf [data-stage]").scrollIntoViewIfNeeded();
+  await expect(page.locator("#shelf [data-stage]")).toHaveAttribute("data-in", "");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(page.locator("#shelf [data-stage]")).not.toHaveAttribute("data-in", "");
+});
+
+test("the Start here card links to a written topic with real facts", async ({ page }) => {
+  await openShelf(page);
+  const start = page.locator("#shelf").getByRole("link", { name: /^Start here/ });
+  await expect(start).toHaveAttribute("href", "/level/js");
+  await expect(start).toContainText("JavaScript");
+  await expect(start).toContainText(/\d+ chapters/);
+  await expect(start).toContainText(/\d+ exercises/);
+  await start.click();
+  await page.waitForURL("**/level/js");
+});
+
+test("the legend keeps its tablist keys, the Browse button and every topic link in the server HTML", async ({
   page,
 }) => {
   const html = await (await page.request.get("/")).text();
-  for (const id of ["python", "rust", "networks", "ai"]) {
-    expect(html, `/${id} is missing from the home HTML`).toContain(`href="/${id}"`);
-  }
-  await page.goto("/");
+  for (const t of SHELF_TOPICS)
+    expect(html, `/${t.id} is missing from the home HTML`).toContain(`id="shelf-card-${t.id}"`);
+  for (const id of ["python", "rust", "networks", "ai"]) expect(html).toContain(`href="/${id}"`);
+  expect(html).toContain("shelf-card-interview");
+  await openShelf(page);
   const tabs = page.locator("#shelf").getByRole("tablist", { name: "Topics" });
-  for (const tab of await tabs.getByRole("tab").all()) {
-    const panelId = await tab.getAttribute("aria-controls");
-    expect(await page.locator(`#${panelId}`).count()).toBe(1);
-  }
-  await expect(page.locator("#shelf").getByRole("tabpanel")).toHaveCount(1);
+  for (const tab of await tabs.getByRole("tab").all())
+    expect(await tab.getAttribute("aria-controls")).toBe("shelf-map");
+  await expect(page.locator("#shelf-map")).toHaveCount(1);
+  await expect(page.locator("#shelf").getByRole("button", { name: /Browse all topics/ })).toBeVisible();
+  await expect(page.locator("#shelf").getByRole("heading", { level: 2 })).toContainText("Pick a topic.");
 });
 
 test("the DSA topic is called DSA on its cover", async ({ page }) => {
