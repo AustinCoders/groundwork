@@ -44,23 +44,44 @@ div.bookStage .book {
 
 .contact {
   position: absolute;
-  right: 3%;
-  bottom: -4.5%;
-  left: 3%;
+  right: -6%;
+  bottom: -8%;
+  left: 0;
   z-index: -1;
-  height: 10%;
-  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--ink) 36%, transparent), transparent 68%);
-  filter: blur(6px);
+  height: 22%;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 50% 46% at 50% 22%,
+    color-mix(in srgb, var(--book-shadow) 78%, transparent),
+    color-mix(in srgb, var(--book-shadow) 26%, transparent) 55%,
+    transparent 100%
+  );
+}
+
+.desk {
+  position: absolute;
+  inset: -16% -10% -26%;
+  z-index: -2;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 54%,
+    color-mix(in srgb, var(--book-paper) 8%, transparent),
+    color-mix(in srgb, var(--book-paper) 3.5%, transparent) 52%,
+    transparent 74%
+  );
 }
 
 .tilt {
-  --m: clamp(7px, 1.6cqh, 13px);
-  --block-max: 14px;
-  --tb: 7px;
+  --m: clamp(8px, 2cqh, 15px);
+  --block-max: clamp(11px, 3.4cqh, 22px);
+  --tb: clamp(6px, 1.7cqh, 11px);
   --pw: calc(50cqw - var(--m) - var(--block-max));
+  --corner: clamp(8px, 1.7cqh, 12px);
+  --edge-a: var(--book-edge);
+  --edge-b: color-mix(in srgb, var(--book-paper-shade) 88%, var(--book-ink) 12%);
   position: absolute;
   inset: 0;
-  transform: perspective(2000px) rotateX(9deg) rotateZ(-0.5deg);
+  transform: perspective(2000px) rotateX(6deg) rotateZ(-0.4deg);
   transform-origin: 50% 100%;
 }
 
@@ -68,19 +89,54 @@ div.bookStage .book {
   position: absolute;
   inset: 0;
   background:
-    repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink) 6%, transparent) 0 1px, transparent 1px 3px),
     linear-gradient(
-      155deg,
-      color-mix(in srgb, var(--danger) 88%, var(--ink)),
-      color-mix(in srgb, var(--danger) 70%, var(--ink))
-    );
-  border-radius: clamp(10px, 2.6cqh, 18px);
+      90deg,
+      transparent calc(50% - 4px),
+      color-mix(in srgb, var(--book-cover-dark) 70%, transparent) calc(50% - 1px),
+      var(--book-cover-dark) 50%,
+      color-mix(in srgb, var(--book-cover-dark) 70%, transparent) calc(50% + 1px),
+      transparent calc(50% + 4px)
+    ),
+    linear-gradient(
+      140deg,
+      color-mix(in srgb, var(--book-cover-light) 75%, transparent),
+      transparent 32%,
+      transparent 68%,
+      color-mix(in srgb, var(--book-cover-dark) 60%, transparent)
+    ),
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--book-cover-dark) 24%, transparent) 0 1px,
+      transparent 1px 3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--book-cover-light) 16%, transparent) 0 1px,
+      transparent 1px 4px
+    ),
+    var(--book-cover);
+  border-radius: var(--corner);
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--ink) 38%, transparent),
-    inset 0 0 0 4px color-mix(in srgb, var(--danger) 55%, transparent),
-    inset 0 0 0 5px color-mix(in srgb, var(--ink) 22%, transparent),
-    0 5px 0 -1px color-mix(in srgb, var(--danger) 45%, var(--ink)),
-    var(--shadow-lg);
+    inset 1px 1px 0 color-mix(in srgb, var(--book-cover-light) 85%, transparent),
+    inset -1px -2px 0 var(--book-cover-dark),
+    0 1px 0 var(--book-cover-dark),
+    0 2px 0 var(--book-cover-dark),
+    0 3px 0 var(--book-cover-dark),
+    0 4px 0 color-mix(in srgb, var(--book-cover-dark) 60%, var(--book-shadow)),
+    0 5px 2px color-mix(in srgb, var(--book-shadow) 80%, transparent),
+    4px 14px 14px -8px var(--book-shadow),
+    12px 30px 36px -16px var(--book-shadow);
+}
+
+.cover::after {
+  content: "";
+  position: absolute;
+  inset: 0.6cqh;
+  border: 1px solid color-mix(in srgb, var(--book-gold) 78%, transparent);
+  border-radius: calc(var(--corner) - 3px);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--book-cover-dark) 85%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--book-cover-dark) 70%, transparent);
 }
 
 .spread {
@@ -96,41 +152,45 @@ div.bookStage .book {
 
 .stackL {
   top: 3px;
-  bottom: 2px;
-  left: calc(var(--block-max) - var(--tl) * 1px - 1px);
-  width: calc(var(--tl) * 1px + 6px);
-  background: repeating-linear-gradient(
-    to right,
-    color-mix(in srgb, var(--ink) 24%, transparent) 0 1px,
-    var(--sheet-2) 1px 3px
-  );
-  border-radius: 6px 0 0 6px;
+  bottom: var(--tb);
+  left: calc(var(--block-max) * (1 - var(--tl)) - 1px);
+  width: calc(var(--block-max) * var(--tl) + 6px);
+  background:
+    linear-gradient(to right, color-mix(in srgb, var(--book-paper) 40%, transparent), transparent 55%),
+    repeating-linear-gradient(to right, var(--edge-b) 0 1px, var(--edge-a) 1px 2px);
+  border-radius: 0.9em 0 0 0;
+  box-shadow: -2px 1px 4px -1px var(--book-shadow);
 }
 
 .stackR {
   top: 3px;
-  right: calc(var(--block-max) - var(--tr) * 1px - 1px);
-  bottom: 2px;
-  width: calc(var(--tr) * 1px + 6px);
-  background: repeating-linear-gradient(
-    to left,
-    color-mix(in srgb, var(--ink) 24%, transparent) 0 1px,
-    var(--sheet-2) 1px 3px
-  );
-  border-radius: 0 6px 6px 0;
+  right: calc(var(--block-max) * (1 - var(--tr)) - 1px);
+  bottom: var(--tb);
+  width: calc(var(--block-max) * var(--tr) + 6px);
+  background:
+    linear-gradient(to left, color-mix(in srgb, var(--book-shadow) 42%, transparent), transparent 75%),
+    repeating-linear-gradient(to left, var(--edge-b) 0 1px, var(--edge-a) 1px 2px);
+  border-radius: 0 0.9em 0 0;
+  box-shadow: 2px 1px 4px -1px var(--book-shadow);
 }
 
 .stackB {
-  right: calc(var(--block-max) - var(--tr) * 1px);
+  right: calc(var(--block-max) * (1 - var(--tr)) - 1px);
   bottom: 0;
-  left: calc(var(--block-max) - var(--tl) * 1px);
-  height: calc(var(--tb) + 4px);
-  background: repeating-linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--ink) 24%, transparent) 0 1px,
-    var(--sheet-2) 1px 3px
-  );
-  border-radius: 0 0 8px 8px;
+  left: calc(var(--block-max) * (1 - var(--tl)) - 1px);
+  height: calc(var(--tb) + 6px);
+  background:
+    linear-gradient(to bottom, color-mix(in srgb, var(--book-shadow) 38%, transparent), transparent 45%),
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--book-paper) 28%, transparent),
+      transparent 30%,
+      transparent 70%,
+      color-mix(in srgb, var(--book-shadow) 22%, transparent)
+    ),
+    repeating-linear-gradient(to bottom, var(--edge-b) 0 1px, var(--edge-a) 1px 2px);
+  border-radius: 0 0 0.9em 0.9em;
+  box-shadow: 0 3px 5px -2px var(--book-shadow);
 }
 
 .pageL,
@@ -162,42 +222,51 @@ div.bookStage .book {
   flex-direction: column;
   min-width: 0;
   padding: 2.4em 3em 2.3em 2.6em;
-  color: var(--ink);
+  color: var(--book-ink);
   background:
     linear-gradient(
-      to right,
-      color-mix(in srgb, var(--ink) 24%, transparent),
-      color-mix(in srgb, var(--ink) 9%, transparent) 5%,
-      transparent 20%
-    ),
-    repeating-radial-gradient(
-      circle at 23% 31%,
-      color-mix(in srgb, var(--ink) 2.5%, transparent) 0 1px,
-      transparent 1px 5px
-    ),
-    color-mix(in srgb, var(--mark) 5%, var(--sheet));
-  border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
-  border-radius: 0 0.9em 0.9em 0;
-  box-shadow: inset -0.2em 0 0.35em -0.15em color-mix(in srgb, var(--ink) 9%, transparent);
+        to right,
+        color-mix(in srgb, var(--book-ink) 62%, var(--book-paper-shade)),
+        color-mix(in srgb, var(--book-ink) 40%, var(--book-paper-shade)) 2px,
+        color-mix(in srgb, var(--book-paper-shade) 80%, transparent) 3px,
+        color-mix(in srgb, var(--book-paper-shade) 46%, transparent) 0.9em,
+        color-mix(in srgb, var(--book-paper-shade) 18%, transparent) 1.9em,
+        transparent 3.2em,
+        var(--book-paper) 4.8em,
+        transparent 8em
+      )
+      left top / 8.5em 100% no-repeat,
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--book-ink) 1.8%, transparent) 0 1px, transparent 1px 3px),
+    color-mix(in srgb, var(--book-paper) 96%, var(--book-edge));
+  border-radius: 0 0.5em 0.5em 0;
+  box-shadow:
+    inset 0 -1px 0 color-mix(in srgb, var(--book-paper-shade) 55%, transparent),
+    inset -1px 0 0 color-mix(in srgb, var(--book-paper-shade) 40%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--book-paper) 80%, transparent);
 }
 
 .face[data-side="left"] {
   padding: 2.4em 2.6em 2.3em 2.8em;
   background:
     linear-gradient(
-      to left,
-      color-mix(in srgb, var(--ink) 24%, transparent),
-      color-mix(in srgb, var(--ink) 9%, transparent) 5%,
-      transparent 20%
-    ),
-    repeating-radial-gradient(
-      circle at 71% 37%,
-      color-mix(in srgb, var(--ink) 2.5%, transparent) 0 1px,
-      transparent 1px 5px
-    ),
-    color-mix(in srgb, var(--mark) 5%, var(--sheet));
-  border-radius: 0.9em 0 0 0.9em;
-  box-shadow: inset 0.2em 0 0.35em -0.15em color-mix(in srgb, var(--ink) 9%, transparent);
+        to left,
+        color-mix(in srgb, var(--book-ink) 62%, var(--book-paper-shade)),
+        color-mix(in srgb, var(--book-ink) 40%, var(--book-paper-shade)) 2px,
+        color-mix(in srgb, var(--book-paper-shade) 80%, transparent) 3px,
+        color-mix(in srgb, var(--book-paper-shade) 46%, transparent) 0.9em,
+        color-mix(in srgb, var(--book-paper-shade) 18%, transparent) 1.9em,
+        transparent 3.2em,
+        var(--book-paper) 4.8em,
+        transparent 8em
+      )
+      right top / 8.5em 100% no-repeat,
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--book-ink) 1.8%, transparent) 0 1px, transparent 1px 3px),
+    color-mix(in srgb, var(--book-paper) 96%, var(--book-edge));
+  border-radius: 0.5em 0 0 0.5em;
+  box-shadow:
+    inset 0 -1px 0 color-mix(in srgb, var(--book-paper-shade) 55%, transparent),
+    inset 1px 0 0 color-mix(in srgb, var(--book-paper-shade) 40%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--book-paper) 80%, transparent);
 }
 
 .face::before {
@@ -206,14 +275,14 @@ div.bookStage .book {
   top: 1.5em;
   bottom: 1.5em;
   left: 1.8em;
-  border-left: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+  border-left: 1px solid color-mix(in srgb, var(--book-rule) 85%, transparent);
   pointer-events: none;
 }
 
 .face[data-side="left"]::before {
   right: 1.8em;
   left: auto;
-  border-right: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--book-rule) 85%, transparent);
   border-left: 0;
 }
 
@@ -229,8 +298,8 @@ div.bookStage .book {
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ink-soft);
-  border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  color: var(--book-ink-soft);
+  border-bottom: 1px solid var(--book-rule);
 }
 
 .face[data-side="left"] .runHead {
@@ -247,7 +316,7 @@ div.bookStage .book {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--ink-soft);
+  color: var(--book-ink-soft);
 }
 
 .face[data-side="left"] .pageNo {
@@ -304,7 +373,7 @@ div.bookStage .book {
   top: 0;
   bottom: 0;
   left: 0;
-  width: calc(var(--pw) / var(--n) + 0.8px);
+  width: calc(var(--pw) / var(--n) + 1.6px);
   transform-origin: left center;
   transform-style: preserve-3d;
 }
@@ -314,6 +383,8 @@ div.bookStage .book {
 }
 
 .clip {
+  --dim: color-mix(in srgb, var(--book-ink) 50%, var(--book-paper-shade));
+  background: color-mix(in srgb, var(--book-paper) 96%, var(--book-edge));
   position: absolute;
   inset: 0;
   overflow: hidden;
@@ -321,6 +392,7 @@ div.bookStage .book {
 }
 
 .clipBack {
+  --dim: color-mix(in srgb, var(--book-ink) 34%, var(--book-paper-shade));
   transform: rotateY(180deg);
 }
 
@@ -341,96 +413,111 @@ div.bookStage .book {
   inset: 0;
 }
 
-.shade {
+.shadeFrom,
+.shadeTo {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: color-mix(in srgb, var(--ink) 70%, var(--sheet-2));
   opacity: 0;
+}
+
+.shadeFrom {
+  background: linear-gradient(to right, var(--dim), transparent);
+}
+
+.shadeTo {
+  background: linear-gradient(to right, transparent, var(--dim));
+}
+
+.clipBack .shadeFrom {
+  background: linear-gradient(to left, var(--dim), transparent);
+}
+
+.clipBack .shadeTo {
+  background: linear-gradient(to left, transparent, var(--dim));
 }
 
 .cast {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(to right, color-mix(in srgb, var(--ink) 38%, transparent), transparent 62%);
-  border-radius: 0 0.9em 0.9em 0;
+  background: linear-gradient(to right, color-mix(in srgb, var(--book-shadow) 62%, transparent), transparent 62%);
+  border-radius: 0 0.5em 0.5em 0;
   opacity: 0;
+  transform-origin: left center;
 }
 
-.spine {
-  position: absolute;
-  top: 0;
-  bottom: var(--tb);
-  left: calc(50% - 0.9em);
-  z-index: 2;
-  width: 1.8em;
-  pointer-events: none;
-  background: linear-gradient(
-    to right,
-    transparent,
-    color-mix(in srgb, var(--ink) 18%, transparent) 40%,
-    color-mix(in srgb, var(--ink) 34%, transparent) 50%,
-    color-mix(in srgb, var(--ink) 18%, transparent) 60%,
-    transparent
-  );
-}
-
-.band {
-  position: absolute;
-  left: calc(50% - 1.5em);
-  z-index: 2;
-  width: 3em;
-  height: 0.9em;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--danger) 55%, var(--ink)) 0 0.25em,
-    color-mix(in srgb, var(--mark) 75%, var(--sheet)) 0.25em 0.5em
-  );
-  border-radius: 0.25em;
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 35%, transparent);
-}
-
-.bandTop {
-  top: -0.6em;
-}
-
-.bandBottom {
-  bottom: calc(var(--tb) - 0.4em);
+.castLeft {
+  right: 100%;
+  left: auto;
+  width: 100%;
+  background: linear-gradient(to left, color-mix(in srgb, var(--book-shadow) 62%, transparent), transparent 62%);
+  border-radius: 0.5em 0 0 0.5em;
+  transform-origin: right center;
 }
 
 .ribbon {
   position: absolute;
-  top: -0.4em;
-  left: 0.55em;
-  z-index: 4;
-  width: 1.15em;
-  height: calc(100% + 2.1em);
+  top: 0;
+  left: calc(50% - 0.14em);
+  z-index: 0;
+  width: 0.34em;
+  height: calc(100% - var(--tb));
   pointer-events: none;
   background:
-    linear-gradient(to bottom, color-mix(in srgb, var(--ink) 28%, transparent), transparent 9%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--book-ink) 60%, transparent), transparent 5em),
     linear-gradient(
       to right,
-      color-mix(in srgb, var(--ink) 20%, transparent),
-      transparent 35%,
-      color-mix(in srgb, var(--ink) 14%, transparent)
+      color-mix(in srgb, var(--book-ink) 45%, transparent),
+      transparent 45%,
+      color-mix(in srgb, var(--book-ink) 30%, transparent)
     ),
-    color-mix(in srgb, var(--danger) 82%, var(--sheet-2));
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 0.95em), 0 100%);
+    repeating-linear-gradient(45deg, color-mix(in srgb, var(--book-ink) 22%, transparent) 0 1px, transparent 1px 2px),
+    repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--book-paper) 14%, transparent) 0 1px,
+      transparent 1px 2px
+    ),
+    var(--book-ribbon);
+  filter: drop-shadow(1px 1px 1px color-mix(in srgb, var(--book-shadow) 75%, transparent));
+}
+
+.ribbon::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: -0.06em;
+  width: calc(100% + 0.12em);
+  height: calc(var(--tb) + var(--m) + 1.6em);
+  background:
+    linear-gradient(to bottom, color-mix(in srgb, var(--book-ink) 55%, transparent), transparent 0.7em),
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--book-ink) 34%, transparent),
+      color-mix(in srgb, var(--book-paper) 10%, transparent) 50%,
+      color-mix(in srgb, var(--book-ink) 28%, transparent)
+    ),
+    repeating-linear-gradient(45deg, color-mix(in srgb, var(--book-ink) 22%, transparent) 0 1px, transparent 1px 2px),
+    repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--book-paper) 14%, transparent) 0 1px,
+      transparent 1px 2px
+    ),
+    var(--book-ribbon);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 0.5em), 0 100%);
   transform-origin: 50% 0;
 }
 
 .tabs {
   position: absolute;
-  top: 6%;
-  right: calc(var(--m) * -0.6);
+  top: 5%;
+  right: calc(var(--block-max) * (1 - var(--tr)) - 2.3em);
   bottom: calc(6% + var(--tb));
   z-index: 3;
   display: flex;
   flex-direction: column;
-  gap: 0.4em;
-  width: 2.7em;
+  gap: 0.35em;
+  width: 2.6em;
 }
 
 .tab {
@@ -442,18 +529,24 @@ div.bookStage .book {
   justify-content: center;
   gap: 0.4em;
   min-height: 0;
-  padding: 0.4em 0;
+  padding: 0.4em 0 0.4em 0.3em;
   font-family: var(--font-heading);
   font-size: 1.1em;
   font-weight: 700;
   line-height: 1;
-  color: var(--ink);
+  color: var(--book-ink);
   white-space: nowrap;
   cursor: pointer;
-  background: color-mix(in srgb, var(--tone) 14%, var(--sheet));
-  border: 2px solid color-mix(in srgb, var(--tone) 78%, var(--line));
-  border-radius: 0.3em 0.85em 0.85em 0.3em;
-  box-shadow: 0.1em 0.12em 0.3em -0.1em color-mix(in srgb, var(--ink) 40%, transparent);
+  background:
+    linear-gradient(to right, color-mix(in srgb, var(--book-shadow) 30%, transparent), transparent 0.7em),
+    linear-gradient(to bottom, color-mix(in srgb, var(--book-paper) 35%, transparent), transparent 40%),
+    color-mix(in srgb, var(--tone) 34%, var(--book-paper));
+  border: 1px solid color-mix(in srgb, var(--tone) 45%, var(--book-cover-dark));
+  border-left: 0;
+  border-radius: 0 0.7em 0.7em 0;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--book-paper) 60%, transparent),
+    1px 2px 3px -1px var(--book-shadow);
   translate: 0 0;
 }
 
@@ -474,13 +567,21 @@ div.bookStage .book {
 }
 
 .tab:hover {
-  background: color-mix(in srgb, var(--tone) 22%, var(--sheet));
+  background:
+    linear-gradient(to right, color-mix(in srgb, var(--book-shadow) 30%, transparent), transparent 0.7em),
+    linear-gradient(to bottom, color-mix(in srgb, var(--book-paper) 35%, transparent), transparent 40%),
+    color-mix(in srgb, var(--tone) 44%, var(--book-paper));
 }
 
 .tab[aria-selected="true"] {
-  background: color-mix(in srgb, var(--tone) 28%, var(--sheet));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone) 78%, var(--line));
-  translate: 0.7em 0;
+  background:
+    linear-gradient(to right, color-mix(in srgb, var(--book-shadow) 30%, transparent), transparent 0.7em),
+    linear-gradient(to bottom, color-mix(in srgb, var(--book-paper) 35%, transparent), transparent 40%),
+    color-mix(in srgb, var(--tone) 50%, var(--book-paper));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--book-paper) 60%, transparent),
+    2px 3px 5px -1px var(--book-shadow);
+  translate: 0.6em 0;
 }
 
 .tabNo {
@@ -506,7 +607,7 @@ div.bookStage .book {
   flex-direction: column;
   gap: 0.25em;
   padding-bottom: 0.6em;
-  border-bottom: 2px double var(--line);
+  border-bottom: 2px double var(--book-rule);
 }
 
 .tocTitle {
@@ -529,7 +630,7 @@ div.bookStage .book {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--danger) 70%, var(--ink));
+  color: color-mix(in srgb, var(--book-pen) 70%, var(--book-ink));
 }
 
 .tocList {
@@ -560,7 +661,7 @@ div.bookStage .book {
   padding: 0.4em 0.6em;
   font: inherit;
   text-align: left;
-  color: var(--ink-soft);
+  color: var(--book-ink-soft);
   background: transparent;
   border: 0;
   border-radius: 0.5em;
@@ -571,14 +672,14 @@ button.rowBtn {
 }
 
 button.rowBtn:hover {
-  color: var(--ink);
-  background: color-mix(in srgb, var(--danger) 8%, transparent);
+  color: var(--book-ink);
+  background: color-mix(in srgb, var(--book-pen) 8%, transparent);
 }
 
 .row[data-state="active"] .rowBtn {
-  color: var(--ink);
-  background: color-mix(in srgb, var(--danger) 11%, var(--sheet));
-  box-shadow: inset 0.22em 0 0 color-mix(in srgb, var(--danger) 75%, var(--ink));
+  color: var(--book-ink);
+  background: color-mix(in srgb, var(--book-note) 48%, transparent);
+  box-shadow: inset 0.22em 0 0 color-mix(in srgb, var(--book-pen) 75%, var(--book-ink));
 }
 
 .code {
@@ -590,19 +691,19 @@ button.rowBtn:hover {
   font-family: var(--font-mono);
   font-size: 0.7em;
   font-weight: 700;
-  color: var(--ink);
-  background: var(--sheet-2);
-  border: 1.5px solid var(--line);
-  border-radius: 0.8em;
+  color: var(--book-ink);
+  background: color-mix(in srgb, var(--book-edge) 60%, transparent);
+  border: 1px solid var(--book-ink-soft);
+  border-radius: 0.25em;
 }
 
 .row[data-state="active"] .code {
-  background: color-mix(in srgb, var(--danger) 20%, var(--sheet));
-  border-color: color-mix(in srgb, var(--danger) 70%, var(--ink));
+  background: color-mix(in srgb, var(--book-pen) 14%, var(--book-edge));
+  border-color: color-mix(in srgb, var(--book-pen) 70%, var(--book-ink));
 }
 
 .row[data-state="past"] .code {
-  border-color: color-mix(in srgb, var(--danger) 45%, var(--line));
+  border-color: color-mix(in srgb, var(--book-pen) 45%, var(--book-rule));
 }
 
 .rowName {
@@ -619,7 +720,7 @@ button.rowBtn:hover {
   align-self: end;
   height: 0.2em;
   margin-bottom: 0.22em;
-  border-bottom: 2px dotted var(--line);
+  border-bottom: 2px dotted var(--book-rule);
 }
 
 .folio {
@@ -637,19 +738,19 @@ button.rowBtn:hover {
   font-family: var(--font-body);
   font-size: 0.92em;
   line-height: 1.35;
-  color: var(--ink-soft);
+  color: var(--book-ink-soft);
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   line-clamp: 3;
 }
 
 .offerRow .rowName {
-  color: var(--ink);
+  color: var(--book-ink);
 }
 
 .offerRow .code {
   font-size: 0.95em;
-  background: color-mix(in srgb, var(--mark) 55%, var(--sheet));
+  background: color-mix(in srgb, var(--book-note) 70%, var(--book-edge));
 }
 
 .page {
@@ -663,7 +764,7 @@ button.rowBtn:hover {
 
 .chapter {
   padding-bottom: 0.45em;
-  border-bottom: 2px double var(--line);
+  border-bottom: 2px double var(--book-rule);
 }
 
 .kicker {
@@ -673,7 +774,7 @@ button.rowBtn:hover {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--danger) 70%, var(--ink));
+  color: color-mix(in srgb, var(--book-pen) 70%, var(--book-ink));
 }
 
 .title {
@@ -691,22 +792,29 @@ button.rowBtn:hover {
 .facts {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45em;
   margin: 0;
-  padding: 0;
+  padding: 0.3em 0;
   list-style: none;
+  border-top: 1px solid var(--book-rule);
+  border-bottom: 1px solid var(--book-rule);
 }
 
 .facts li {
-  padding: 0.15em 0.7em;
+  margin: 0;
+  padding: 0 0.9em;
   font-family: var(--font-mono);
-  font-size: 0.68em;
+  font-size: 0.66em;
   font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   white-space: nowrap;
-  color: var(--ink);
-  background: var(--sheet-2);
-  border: 1px solid var(--line);
-  border-radius: 999px;
+  color: var(--book-ink);
+  border-left: 1px solid var(--book-rule);
+}
+
+.facts li:first-child {
+  padding-left: 0;
+  border-left: 0;
 }
 
 .label {
@@ -716,13 +824,13 @@ button.rowBtn:hover {
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--ink-soft);
+  color: var(--book-ink-soft);
 }
 
 .quote {
   margin: 0;
   padding: 0.05em 0 0.05em 0.9em;
-  border-left: 3px solid color-mix(in srgb, var(--primary) 55%, var(--line));
+  border-left: 3px solid color-mix(in srgb, var(--book-gold) 80%, var(--book-ink-soft));
 }
 
 .sample {
@@ -759,41 +867,78 @@ button.rowBtn:hover {
   font-family: var(--font-heading);
   font-size: 1.22em;
   line-height: 1.12;
-  color: color-mix(in srgb, var(--danger) 82%, var(--ink));
+  color: color-mix(in srgb, var(--book-pen) 82%, var(--book-ink));
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 6;
   line-clamp: 6;
 }
 
 .stamp {
+  position: relative;
   align-self: flex-end;
-  margin-right: 0.3em;
-  padding: 0.05em 0.45em;
-  font-family: var(--font-heading);
-  font-size: 1.2em;
+  margin-right: 0.4em;
+  padding: 0.2em 0.55em 0.16em;
+  font-family: var(--font-mono);
+  font-size: 0.74em;
+  font-weight: 700;
   line-height: 1.2;
-  color: color-mix(in srgb, var(--danger) 80%, var(--ink));
-  background: color-mix(in srgb, var(--sheet) 80%, transparent);
-  border: 2px solid color-mix(in srgb, var(--danger) 70%, var(--ink));
-  border-radius: 0.35em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--book-pen);
+  border: 2px solid var(--book-pen);
+  border-radius: 0.3em;
+  outline: 1px solid color-mix(in srgb, var(--book-pen) 80%, transparent);
+  outline-offset: 2px;
   opacity: 0;
   rotate: -8deg;
+}
+
+.stamp::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 11% 34%, var(--book-paper) 0 0.8px, transparent 1.4px),
+    radial-gradient(circle at 38% 78%, var(--book-paper) 0 0.7px, transparent 1.3px),
+    radial-gradient(circle at 64% 22%, var(--book-paper) 0 0.9px, transparent 1.5px),
+    radial-gradient(circle at 87% 66%, var(--book-paper) 0 0.8px, transparent 1.4px),
+    repeating-radial-gradient(
+      circle at 52% 40%,
+      color-mix(in srgb, var(--book-paper) 62%, transparent) 0 0.6px,
+      transparent 0.7px 4px
+    ),
+    repeating-radial-gradient(
+      circle at 18% 70%,
+      color-mix(in srgb, var(--book-paper) 52%, transparent) 0 0.5px,
+      transparent 0.6px 6px
+    );
 }
 
 .testing {
   position: relative;
   min-width: 0;
-  padding: 1.2em 0.8em 0.7em;
-  background: var(--mark);
-  border-radius: 0.25em;
-  box-shadow: var(--shadow-md);
+  padding: 1.3em 0.8em 0.7em;
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--book-paper) 24%, transparent),
+      transparent 24%,
+      transparent 76%,
+      color-mix(in srgb, var(--book-ink) 8%, transparent)
+    ),
+    var(--book-note);
+  border-radius: 0.1em 0.1em 0.55em 0.1em;
+  box-shadow:
+    0 1px 1px color-mix(in srgb, var(--book-shadow) 60%, transparent),
+    0.12em 0.5em 0.45em -0.3em var(--book-shadow);
   opacity: 0;
   rotate: 1.6deg;
 }
 
 .testing .label,
 .testing .testText {
-  color: var(--ink);
+  color: var(--book-ink);
 }
 
 .testText {
@@ -807,14 +952,53 @@ button.rowBtn:hover {
   line-clamp: 5;
 }
 
+.testing .tape,
+.stampBtn::before {
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--book-paper) 40%, transparent),
+      transparent 42%,
+      color-mix(in srgb, var(--book-ink) 7%, transparent)
+    ),
+    var(--book-tape), var(--book-tape);
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    97% 10%,
+    100% 20%,
+    97% 30%,
+    100% 40%,
+    97% 50%,
+    100% 60%,
+    97% 70%,
+    100% 80%,
+    97% 90%,
+    100% 100%,
+    0 100%,
+    3% 90%,
+    0 80%,
+    3% 70%,
+    0 60%,
+    3% 50%,
+    0 40%,
+    3% 30%,
+    0 20%,
+    3% 10%
+  );
+}
+
 .testing .tape {
-  top: -0.6em;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--book-ink) 12%, transparent);
+  top: -0.8em;
+  width: 4.4em;
+  height: 1.4em;
 }
 
 .footnote {
   margin-top: auto;
   padding-top: 0.5em;
-  border-top: 1.5px dashed var(--line);
+  border-top: 1.5px dashed var(--book-rule);
 }
 
 .followText {
@@ -839,45 +1023,47 @@ button.rowBtn:hover {
 .typing i {
   width: 0.45em;
   height: 0.45em;
-  background: var(--ink-soft);
+  background: var(--book-ink-soft);
   border-radius: 50%;
 }
 
 .stampBtn {
   position: relative;
   align-self: flex-start;
-  padding: 0.4em 1em;
+  padding: 0.45em 1.1em;
   font-family: var(--font-heading);
   font-size: 1.2em;
   font-weight: 700;
   line-height: 1.1;
-  color: var(--ink);
+  color: var(--book-ink);
   text-decoration: none;
   white-space: nowrap;
-  background: color-mix(in srgb, var(--primary) 14%, var(--sheet));
-  border: 2px solid color-mix(in srgb, var(--primary) 70%, var(--ink));
-  border-radius: 0.35em 0.6em 0.4em 0.6em;
-  box-shadow: 0.15em 0.15em 0 color-mix(in srgb, var(--primary) 32%, transparent);
+  background: var(--book-edge);
+  border: 1.5px solid var(--book-ink-soft);
+  border-radius: 0.2em;
+  box-shadow:
+    inset 0 0 0 2.5px var(--book-edge),
+    inset 0 0 0 3.5px color-mix(in srgb, var(--book-ink-soft) 70%, transparent),
+    0.08em 0.2em 0.3em -0.12em var(--book-shadow);
   rotate: -1.2deg;
 }
 
 .stampBtn::before {
   content: "";
   position: absolute;
-  top: -0.5em;
-  left: 0.8em;
-  width: 2.6em;
-  height: 0.8em;
-  background: var(--tape);
+  top: -0.6em;
+  left: 0.7em;
+  width: 2.8em;
+  height: 1em;
   rotate: -5deg;
 }
 
 a.stampBtn:hover {
-  background: color-mix(in srgb, var(--primary) 24%, var(--sheet));
+  background: color-mix(in srgb, var(--book-note) 45%, var(--book-edge));
 }
 
 a.stampBtn:focus-visible {
-  outline: 3px solid var(--ink);
+  outline: 3px solid var(--book-ink);
   outline-offset: 3px;
 }
 
@@ -925,7 +1111,7 @@ a.stampBtn:focus-visible {
     animation: swapIn 0.28s ease-out backwards;
   }
 
-  .face:has(.page[data-active]) .ribbon {
+  .ribbon::after {
     animation: swing 1.1s ease-out;
   }
 
@@ -1083,11 +1269,10 @@ a.stampBtn:focus-visible {
     container-type: normal;
   }
 
+  .desk,
   .contact,
   .cover,
   .stack,
-  .spine,
-  .band,
   .ribbon,
   .cast,
   .strips,
@@ -1108,7 +1293,26 @@ a.stampBtn:focus-visible {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    padding: 10px;
     font-size: 15px;
+    background:
+      linear-gradient(
+        140deg,
+        color-mix(in srgb, var(--book-cover-light) 70%, transparent),
+        transparent 34%,
+        color-mix(in srgb, var(--book-cover-dark) 50%, transparent)
+      ),
+      repeating-linear-gradient(
+        0deg,
+        color-mix(in srgb, var(--book-cover-dark) 22%, transparent) 0 1px,
+        transparent 1px 3px
+      ),
+      var(--book-cover);
+    border-radius: 16px;
+    box-shadow:
+      inset 1px 1px 0 color-mix(in srgb, var(--book-cover-light) 80%, transparent),
+      0 3px 0 var(--book-cover-dark),
+      0 12px 16px -10px var(--book-shadow);
   }
 
   .tabs {
@@ -1126,10 +1330,13 @@ a.stampBtn:focus-visible {
     font-size: 14px;
     text-align: center;
     white-space: normal;
+    background: color-mix(in srgb, var(--tone) 34%, var(--book-paper));
+    border-left: 1px solid color-mix(in srgb, var(--tone) 50%, var(--book-cover-dark));
     border-radius: 10px;
   }
 
   .tab[aria-selected="true"] {
+    background: color-mix(in srgb, var(--tone) 50%, var(--book-paper));
     translate: 0 -2px;
   }
 
@@ -1153,9 +1360,12 @@ a.stampBtn:focus-visible {
     position: relative;
     inset: auto;
     padding: 18px 16px 34px;
-    background: var(--sheet);
+    background: var(--book-paper);
+    border: 1px solid var(--book-rule);
     border-radius: 14px;
-    box-shadow: var(--shadow-md);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--book-paper) 70%, transparent),
+      0 6px 14px -8px var(--book-shadow);
   }
 
   .face::before,

@@ -58,14 +58,15 @@ export const archDesignSystem: Chapter = {
 
 <h3>Nine themes</h3>
 <p>
-  The <code>:root</code> block in <code>globals.css</code> defines 63 custom properties: paper and
+  The <code>:root</code> block in <code>globals.css</code> defines 78 custom properties: paper and
   sheet colours, ink, pencil, red and green, highlighter colours, sticky notes, code colours,
   diagram boxes, shadows, sizes, fonts, the editor's syntax colours, the categorical
-  <code>--c-*</code> colours and the role colours. That block is the Paper theme, and it also
+  <code>--c-*</code> colours, the role colours and the interview book's <code>--book-*</code> materials (cream paper
+  and dark ink, a cloth cover, a ribbon, a shadow, all kept in every theme and tinted by it). That block is the Paper theme, and it also
   matches <code>[data-theme="light"]</code>, so a Paper preview inside another theme shows Paper.
-  Its 56 colour tokens are the properties whose value is a colour (the colours and the shadows).
+  Its 71 colour tokens are the properties whose value is a colour (the colours and the shadows).
   Each of the other eight is a <code>[data-theme="&hellip;"]</code> block that restates exactly
-  those 56 and nothing else, and sets <code>color-scheme</code>, so the native scrollbars inside panels and the form
+  those 71 and nothing else, and sets <code>color-scheme</code>, so the native scrollbars inside panels and the form
   controls match. The page's own scrollbar is hidden on <code>html</code>, and the reading-progress
   bar in the header is the only cue to where you are on the page.
 </p>
@@ -258,7 +259,7 @@ export const archDesignSystem: Chapter = {
 
 <h3>CSS modules and globals.css</h3>
 <p>
-  <code>globals.css</code> is about 7,900 lines. It holds the tokens, the prose styles every
+  <code>globals.css</code> is about 8,000 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
   one of 34 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
   lines. The rule of thumb is that anything
@@ -373,7 +374,7 @@ export const archDesignSystem: Chapter = {
 <span class="ttl">What a new theme costs</span>
 <p>
   Adding a theme takes one <code>[data-theme="&hellip;"]</code> block in <code>globals.css</code>
-  that restates the 56 colour tokens, the seven roles included, and one entry in
+  that restates the 71 colour tokens, the seven roles included, and one entry in
   <code>THEME_ITEMS</code> in <code>lib/storage.ts</code>. The <code>ThemeValue</code> type, both
   pickers and the e2e accent tests all come from that list. A dark theme may also join the
   <code>[data-theme="dark"]</code> override selectors that swap the heading underline and the

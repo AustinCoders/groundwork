@@ -59,6 +59,7 @@ interface Item {
   written: string;
   arrows: SVGPathElement[];
   shades: HTMLElement[];
+  veils: HTMLElement[];
   strips: HTMLElement[];
   flat: HTMLElement | null;
   bend: Bend;
@@ -116,9 +117,10 @@ function read(el: HTMLElement): Item | null {
     written: "",
     arrows: kind === "note" ? Array.from(el.querySelectorAll<SVGPathElement>("svg path")) : [],
     shades: kind === "leaf" ? Array.from(el.querySelectorAll<HTMLElement>("[data-shade]")) : [],
+    veils: kind === "leaf" ? Array.from(el.querySelectorAll<HTMLElement>("[data-veil]")) : [],
     strips: kind === "leaf" ? Array.from(el.querySelectorAll<HTMLElement>("[data-strip]")) : [],
     flat: kind === "leaf" ? el.querySelector<HTMLElement>("[data-flat]") : null,
-    bend: { angles: Array(STRIPS).fill(0), shade: Array(STRIPS).fill(0) },
+    bend: { angles: Array(STRIPS).fill(0), shade: Array(STRIPS).fill(0), veil: Array(STRIPS).fill(0) },
     trail: kind === "walker" ? buildTrail(Number(el.dataset.fxCount) || 0) : null,
     aspect: kind === "walker" ? stageAspect(el) : 1,
     at: Number(el.dataset.fxAt) || 0,
@@ -320,8 +322,13 @@ function one(item: Item, input: FxInput, scale: Scale, rest: Pose) {
               i === 0
                 ? `perspective(${PERSPECTIVE}px) translateZ(${flip.lift.toFixed(1)}px) rotateY(${item.bend.angles[0].toFixed(2)}deg)`
                 : `rotateY(${item.bend.angles[i].toFixed(2)}deg)`;
-          for (let i = 0; i < item.shades.length; i++)
-            item.shades[i].style.opacity = item.bend.shade[i >> 1].toFixed(3);
+          for (let i = 0; i < item.shades.length; i++) {
+            const strip = i >> 2;
+            const edge = i & 1 ? Math.min(strip + 1, count - 1) : strip;
+            item.shades[i].style.opacity = item.bend.shade[edge].toFixed(3);
+          }
+          for (let i = 0; i < item.veils.length; i++)
+            item.veils[i].style.opacity = (1 - item.bend.veil[i >> 1]).toFixed(3);
         });
         return;
       }
@@ -340,8 +347,11 @@ function one(item: Item, input: FxInput, scale: Scale, rest: Pose) {
     case "cast": {
       if (!scoped) return;
       pageFlip(flip, input.u, item.step, item.tail);
-      put(item, flip.cast.toFixed(3), () => {
+      const facing = Math.cos((flip.free * Math.PI) / 180);
+      const reach = item.el.dataset.cast === "left" ? Math.max(0, -facing) : Math.max(0, facing);
+      put(item, `${flip.cast.toFixed(3)}|${reach.toFixed(3)}`, () => {
         item.el.style.opacity = flip.cast.toFixed(3);
+        item.el.style.transform = `scaleX(${reach.toFixed(3)})`;
       });
       return;
     }
@@ -375,6 +385,7 @@ export function clearFx(fx: Fx) {
     s.strokeDashoffset = "";
     for (const path of item.arrows) path.style.strokeDashoffset = "";
     for (const shade of item.shades) shade.style.opacity = "";
+    for (const veil of item.veils) veil.style.opacity = "";
     for (const strip of item.strips) strip.style.transform = "";
     if (item.flat) item.flat.style.transform = "";
     item.written = "";

@@ -5,7 +5,7 @@ const blank = (): Flip => ({ turned: 0, angle: 0, cast: 0, lift: 0, spine: 0, fr
 const at = (u: number, step = 3, last = false) => pageFlip(blank(), u, step, last);
 const mid = 3 + FLIP_FROM + (1 - FLIP_FROM) / 2;
 const bent = (u: number, count = STRIPS): Bend =>
-  bendLeaf({ angles: Array(count).fill(0), shade: Array(count).fill(0) }, at(u), count);
+  bendLeaf({ angles: Array(count).fill(0), shade: Array(count).fill(0), veil: Array(count).fill(0) }, at(u), count);
 const absolute = (bend: Bend) => {
   let sum = 0;
   return bend.angles.map((angle) => (sum += angle));
@@ -54,7 +54,7 @@ describe("pageFlip", () => {
   it("lifts and casts the most shadow mid-flip and none at either rest", () => {
     expect(at(mid).cast).toBeGreaterThan(at(3.5).cast);
     expect(at(mid).cast).toBeGreaterThan(at(3.95).cast);
-    expect(at(mid).lift).toBeGreaterThan(5);
+    expect(at(mid).lift).toBeGreaterThan(3);
   });
 
   it("survives non-finite progress", () => {
@@ -70,21 +70,31 @@ describe("bendLeaf", () => {
     expect(Math.max(...bent(4).shade)).toBeCloseTo(0, 9);
   });
 
-  it("curls mid-turn: the spine edge leads and the free edge trails", () => {
+  it("curls mid-turn: the free edge leads and the edge at the spine trails", () => {
     const angles = absolute(bent(mid));
-    expect(angles[0]).toBeLessThan(angles[angles.length - 1]);
-    for (let i = 1; i < angles.length; i++) expect(angles[i]).toBeGreaterThanOrEqual(angles[i - 1]);
+    expect(angles[0]).toBeGreaterThan(angles[angles.length - 1]);
+    for (let i = 1; i < angles.length; i++) expect(angles[i]).toBeLessThanOrEqual(angles[i - 1]);
   });
 
-  it("curls more toward the free edge than near the spine", () => {
+  it("bends evenly along the leaf, every strip turning a little more than the one before", () => {
     const { angles } = bent(mid);
-    expect(angles[angles.length - 1]).toBeGreaterThan(angles[1]);
+    for (let i = 2; i < angles.length; i++) expect(angles[i]).toBeCloseTo(angles[1], 8);
   });
 
   it("shades the strips that face away more than the ones that face the viewer", () => {
     const { shade } = bent(3 + FLIP_FROM + 0.08);
-    expect(shade[0]).toBeGreaterThanOrEqual(shade[shade.length - 1]);
+    expect(shade[shade.length - 1]).toBeGreaterThanOrEqual(shade[0]);
     expect(Math.max(...shade)).toBeLessThanOrEqual(0.3);
+  });
+
+  it("dims the text only slightly as a strip nears edge-on, and keeps it fully legible when the strip is flat", () => {
+    const flat = bent(3.2).veil;
+    expect(Math.max(...flat)).toBeCloseTo(0, 9);
+    const edgeOn = bent(mid).veil;
+    expect(Math.max(...edgeOn)).toBeGreaterThan(0.15);
+    expect(Math.max(...edgeOn)).toBeLessThanOrEqual(0.2);
+    const turned = bent(4).veil;
+    expect(Math.max(...turned)).toBeCloseTo(0, 9);
   });
 
   it("copes with a single strip", () => {

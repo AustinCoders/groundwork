@@ -12,8 +12,8 @@ import styles from "./interview.module.css";
 
 const RIDE_BEHIND = 1;
 const RIDE_AHEAD = 2;
-const BLOCK_THIN = 3;
-const BLOCK_THICK = 14;
+const BLOCK_THIN = 0.2;
+const BLOCK_THICK = 1;
 const SPEAK_AFTER_MS = 450;
 const ZERO_WIDTH = "\u200b";
 
@@ -21,12 +21,18 @@ function Strip({ i, front, back }: { i: number; front: ReactNode; back: ReactNod
   return (
     <div className={styles.strip} data-strip style={vars({ i })}>
       <div className={styles.clip}>
-        <div className={styles.inner}>{front}</div>
-        <i className={styles.shade} data-shade aria-hidden="true" />
+        <div className={styles.inner} data-veil>
+          {front}
+        </div>
+        <i className={styles.shadeFrom} data-shade aria-hidden="true" />
+        <i className={styles.shadeTo} data-shade aria-hidden="true" />
       </div>
       <div className={`${styles.clip} ${styles.clipBack}`}>
-        <div className={styles.inner}>{back}</div>
-        <i className={styles.shade} data-shade aria-hidden="true" />
+        <div className={styles.inner} data-veil>
+          {back}
+        </div>
+        <i className={styles.shadeFrom} data-shade aria-hidden="true" />
+        <i className={styles.shadeTo} data-shade aria-hidden="true" />
       </div>
       {i < STRIPS - 1 && <Strip i={i + 1} front={front} back={back} />}
     </div>
@@ -124,6 +130,7 @@ export function InterviewScene({ head, rounds, total }: { head: ReactNode; round
       </Copy>
       <Stage live tone="red" className={styles.bookStage} hostClassName={styles.bookHost}>
         <StageCard still depth={3} i={0} className={styles.book}>
+          <i className={styles.desk} aria-hidden="true" />
           <i className={styles.contact} aria-hidden="true" />
           <div className={styles.tilt}>
             <div className={styles.cover} aria-hidden="true" />
@@ -169,6 +176,12 @@ export function InterviewScene({ head, rounds, total }: { head: ReactNode; round
                       style={{ zIndex: rounds.length - index }}
                     >
                       <i className={styles.cast} data-motion="cast" aria-hidden="true" />
+                      <i
+                        className={`${styles.cast} ${styles.castLeft}`}
+                        data-motion="cast"
+                        data-cast="left"
+                        aria-hidden="true"
+                      />
                       <div className={styles.leaf} data-motion="leaf">
                         <div className={styles.flat} data-flat>
                           <div className={styles.leafFace}>{front(false)}</div>
@@ -188,9 +201,7 @@ export function InterviewScene({ head, rounds, total }: { head: ReactNode; round
                   );
                 })}
               </div>
-              <i className={styles.spine} aria-hidden="true" />
-              <i className={`${styles.band} ${styles.bandTop}`} aria-hidden="true" />
-              <i className={`${styles.band} ${styles.bandBottom}`} aria-hidden="true" />
+              <i key={active} className={styles.ribbon} aria-hidden="true" />
               <div className={styles.tabs} role="tablist" aria-label="Interview stages" onKeyDown={onTabKey}>
                 {stages.map((s, k) => (
                   <button

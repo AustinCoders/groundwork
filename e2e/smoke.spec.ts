@@ -1356,7 +1356,7 @@ test("the home interview book is an open book: contents on the left, the round's
   const decoration = await book.evaluate((el) =>
     [
       ...el.querySelectorAll(
-        "[class*='stamp'], [class*='typing'], [class*='ribbon'], [class*='cover'], [class*='band'], [class*='spine'], [class*='stack'], [class*='contact']"
+        "[class*='stamp'], [class*='typing'], [class*='ribbon'], [class*='cover'], [class*='stack'], [class*='contact']"
       ),
     ]
       .filter((node) => !node.matches("a, button"))
@@ -2276,8 +2276,12 @@ test("a long jump over several home sections leaves each one at rest when it is 
     window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 64);
   });
   await settleScroll(page);
-  const vars = await sceneVars(page, "how");
-  expect([Number(vars.enter), Number(vars.exit)]).toEqual([1, 0]);
+  await expect
+    .poll(async () => {
+      const vars = await sceneVars(page, "how");
+      return [Number(vars.enter), Number(vars.exit)];
+    })
+    .toEqual([1, 0]);
 });
 
 test("under reduced motion no scene variable is ever written and the connectors are fully drawn and static", async ({
@@ -4032,6 +4036,221 @@ test("while the book turns a page its angle only ever moves one way with the scr
       expect(list[k].angle, `step ${step} frame ${k}`).toBeLessThanOrEqual(list[k - 1].angle + 0.05);
       expect(Math.abs(list[k].angle - list[k - 1].angle), `step ${step} frame ${k} jump`).toBeLessThan(178);
     }
+});
+
+const FLIP_SHARES = [0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95];
+
+test("the home book has no headband, and its one ribbon stays put through a page turn, never on a leaf", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(page.locator("#loop")).toHaveAttribute("data-pinned", "");
+  const itemLength = (await pinOf(page, "loop")).groupLength / 4;
+  const furniture = () =>
+    page.evaluate(() => {
+      const box = (selector: string) => {
+        const rect = document.querySelector(`#loop ${selector}`)?.getBoundingClientRect();
+        return rect ? [rect.left, rect.top, rect.width, rect.height].map((n) => Math.round(n)) : [];
+      };
+      return {
+        bands: document.querySelectorAll("#loop [class*='band']").length,
+        ribbons: document.querySelectorAll("#loop [class*='ribbon']").length,
+        onLeaf: document.querySelectorAll("#loop [data-motion='leaf'] [class*='ribbon']").length,
+        position: box("[class*='ribbon']"),
+      };
+    });
+  await scrollPin(page, "loop", itemLength * 1.2);
+  const rest = await furniture();
+  expect(rest.bands, "no headband at rest").toBe(0);
+  for (const share of FLIP_SHARES) {
+    await scrollPin(page, "loop", itemLength * (1 + share));
+    const now = await furniture();
+    expect(now.bands, `a headband at ${share}`).toBe(0);
+    expect(now.ribbons, `ribbons at ${share}`).toBe(1);
+    expect(now.onLeaf, `the ribbon on a leaf at ${share}`).toBe(0);
+    expect(now.position, `the ribbon stays put at ${share}`).toEqual(rest.position);
+  }
+});
+
+test("a turning home book leaf never grows wider than its bend allows and its text stays visible while it folds", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(page.locator("#loop")).toHaveAttribute("data-pinned", "");
+  const itemLength = (await pinOf(page, "loop")).groupLength / 4;
+  let sawEdgeOn = false;
+  for (const share of FLIP_SHARES) {
+    await scrollPin(page, "loop", itemLength * (1 + share));
+    const frame = await page.evaluate(() => {
+      const strips = [...document.querySelectorAll<HTMLElement>("#loop [data-strip]")];
+      if (strips.length === 0) return null;
+      let turned = 0;
+      const angles = strips.map((strip) => {
+        turned += Number(/rotateY\((-?[\d.]+)deg\)/.exec(strip.style.transform)?.[1] ?? 0);
+        return turned;
+      });
+      const page = document.querySelector("#loop [class*='leaves']")!.getBoundingClientRect().width;
+      let along = 0;
+      const reach = [0];
+      for (const angle of angles) reach.push((along += (page / strips.length) * Math.cos((angle * Math.PI) / 180)));
+      const rects = strips.map((strip) => strip.getBoundingClientRect());
+      const leaves = document.querySelector("#loop [class*='leaves']")!.getBoundingClientRect();
+      const veils = strips.map((strip, i) => {
+        const visible = Math.cos((angles[i] * Math.PI) / 180) >= 0 ? 0 : 1;
+        const layers = strip.querySelectorAll<HTMLElement>(":scope > [class*='clip'] > [data-veil]");
+        return {
+          facing: Math.abs(Math.cos((angles[i] * Math.PI) / 180)),
+          veil: 1 - Number(layers[visible]?.style.opacity),
+        };
+      });
+      return {
+        page,
+        allowed: Math.max(...reach) - Math.min(...reach),
+        measured: Math.max(...rects.map((r) => r.right)) - Math.min(...rects.map((r) => r.left)),
+        above: leaves.top - Math.min(...rects.map((r) => r.top)),
+        below: Math.max(...rects.map((r) => r.bottom)) - leaves.bottom,
+        veils,
+      };
+    });
+    if (!frame) continue;
+    expect(frame.measured, `leaf width at ${share}`).toBeLessThanOrEqual(frame.allowed * 1.15 + 12);
+    expect(frame.measured, `leaf wider than the page at ${share}`).toBeLessThanOrEqual(frame.page + 12);
+    expect(frame.above, `the leaf rises above the page block at ${share}`).toBeLessThanOrEqual(14);
+    expect(frame.below, `the leaf drops below the page block at ${share}`).toBeLessThanOrEqual(14);
+    if (frame.allowed < frame.page * 0.3) sawEdgeOn = true;
+    for (const { veil } of frame.veils)
+      expect(veil, `a folding strip hides its text at ${share}`).toBeLessThanOrEqual(0.25);
+  }
+  expect(sawEdgeOn, "the leaf passes through a thin, nearly edge-on pose").toBe(true);
+});
+
+test("the gutter of the home book is a fold, never a solid coloured strip wider than 5px, at rest and through a turn", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(page.locator("#loop")).toHaveAttribute("data-pinned", "");
+  const itemLength = (await pinOf(page, "loop")).groupLength / 4;
+  for (const share of [0.2, ...FLIP_SHARES]) {
+    await scrollPin(page, "loop", itemLength * (1 + share));
+    const spread = await page.locator("#loop [class*='spread']").first().boundingBox();
+    const shot = (await page.screenshot({ clip: spread! })).toString("base64");
+    const strips = await page.evaluate(
+      async ([data, width]) => {
+        const image = new Image();
+        image.src = `data:image/png;base64,${data}`;
+        await image.decode();
+        const canvas = document.createElement("canvas");
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(image, 0, 0);
+        const pixels = ctx.getImageData(0, 0, image.width, image.height).data;
+        const scale = image.width / (width as number);
+        const inset = Math.round(0.2 * image.height);
+        const rows = image.height - 2 * inset;
+        const from = Math.round(image.width / 2 - 0.06 * image.width);
+        const to = Math.round(image.width / 2 + 0.06 * image.width);
+        const solid: boolean[] = [];
+        for (let x = from; x < to; x++) {
+          let saturated = 0;
+          for (let y = inset; y < image.height - inset; y++) {
+            const i = (y * image.width + x) * 4;
+            if (
+              Math.max(pixels[i], pixels[i + 1], pixels[i + 2]) - Math.min(pixels[i], pixels[i + 1], pixels[i + 2]) >
+              75
+            )
+              saturated++;
+          }
+          solid.push(saturated > 0.6 * rows);
+        }
+        let widest = 0;
+        let run = 0;
+        for (const on of solid) {
+          run = on ? run + 1 : 0;
+          widest = Math.max(widest, run);
+        }
+        return widest / scale;
+      },
+      [shot, spread!.width] as const
+    );
+    expect(strips, `widest solid saturated strip in the gutter at ${share}`).toBeLessThanOrEqual(5);
+  }
+});
+
+test("no thin dark vertical line cuts across the home book while a page turns", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(page.locator("#loop")).toHaveAttribute("data-pinned", "");
+  const itemLength = (await pinOf(page, "loop")).groupLength / 4;
+  for (const share of FLIP_SHARES) {
+    await scrollPin(page, "loop", itemLength * (1 + share));
+    const book = page.locator("#loop [class*='tilt']").first();
+    const box = (await book.boundingBox())!;
+    const spread = await page.evaluate(() => {
+      const rect = (selector: string) => document.querySelector(`#loop ${selector}`)!.getBoundingClientRect();
+      const ribbon = rect("[class*='ribbon']");
+      const strips = [...document.querySelectorAll("#loop [data-strip]")].map((strip) => strip.getBoundingClientRect());
+      return {
+        ribbonLeft: ribbon.left,
+        ribbonRight: ribbon.right,
+        leafLeft: strips.length ? Math.min(...strips.map((r) => r.left)) : null,
+        leafRight: strips.length ? Math.max(...strips.map((r) => r.right)) : null,
+      };
+    });
+    if (spread.leafLeft === null || spread.leafRight === null) continue;
+    const shot = (await page.screenshot({ clip: box })).toString("base64");
+    const lines = await page.evaluate(
+      async ([data, ribbonLeft, ribbonRight, left, width, leafLeft, leafRight]) => {
+        const image = new Image();
+        image.src = `data:image/png;base64,${data}`;
+        await image.decode();
+        const canvas = document.createElement("canvas");
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(image, 0, 0);
+        const pixels = ctx.getImageData(0, 0, image.width, image.height).data;
+        const scale = image.width / (width as number);
+        const light = (x: number, y: number) => {
+          const i = (y * image.width + x) * 4;
+          return 0.299 * pixels[i] + 0.587 * pixels[i + 1] + 0.114 * pixels[i + 2];
+        };
+        const from = Math.round(((ribbonLeft as number) - (left as number) - 3) * scale);
+        const to = Math.round(((ribbonRight as number) - (left as number) + 5) * scale);
+        const inset = Math.round(0.2 * image.height);
+        const rows = image.height - 2 * inset;
+        const found: number[] = [];
+        for (
+          let x = Math.round(((leafLeft as number) - (left as number) + 14) * scale);
+          x < Math.round(((leafRight as number) - (left as number) - 4) * scale);
+          x++
+        ) {
+          if (x >= from && x <= to) continue;
+          let dark = 0;
+          for (let y = inset; y < image.height - inset; y++) {
+            const here = light(x, y);
+            if (here < light(x - 4, y) - 28 && here < light(x + 4, y) - 28) dark++;
+          }
+          if (dark > 0.6 * rows) found.push(x);
+        }
+        return { found };
+      },
+      [
+        shot,
+        spread.ribbonLeft,
+        spread.ribbonRight,
+        box.x,
+        box.width,
+        box.height,
+        spread.leafLeft,
+        spread.leafRight,
+      ] as const
+    );
+    expect(lines.found, `thin dark vertical lines at ${share}`).toEqual([]);
+  }
 });
 
 test("the home connectors link each section to the next: aria-hidden, one per pair, attached to the next badge", async ({

@@ -8,6 +8,7 @@ import { chase, pinStep, readScene, type PinState, type SceneState } from "@/lib
 
 const STEPS = 1000;
 const PRECISE = 10000;
+const SETTLE_MS = 140;
 
 interface Slot {
   el: HTMLElement;
@@ -83,6 +84,7 @@ function attach(host: HTMLElement, connectors: RefObject<ConnectorLive | null>):
   let viewportWidth = window.innerWidth;
   let raf = 0;
   let settling = false;
+  let idle = 0;
 
   const setPinned = () => {
     for (const slot of slots) {
@@ -191,10 +193,6 @@ function attach(host: HTMLElement, connectors: RefObject<ConnectorLive | null>):
     if (settling) raf = requestAnimationFrame(tick);
   };
 
-  const schedule = () => {
-    if (!raf && !smoothScroll.active()) raf = requestAnimationFrame(tick);
-  };
-
   const follow = () => {
     const y = window.scrollY;
     if (y === seen && !settling) return;
@@ -202,6 +200,19 @@ function attach(host: HTMLElement, connectors: RefObject<ConnectorLive | null>):
     viewport = window.innerHeight;
     viewportWidth = window.innerWidth;
     paint(near);
+  };
+
+  const settleSoon = () => {
+    window.clearTimeout(idle);
+    idle = window.setTimeout(() => {
+      seen = -1;
+      follow();
+    }, SETTLE_MS);
+  };
+
+  const schedule = () => {
+    settleSoon();
+    if (!raf && !smoothScroll.active()) raf = requestAnimationFrame(tick);
   };
 
   const resize = () => {
@@ -261,16 +272,19 @@ function attach(host: HTMLElement, connectors: RefObject<ConnectorLive | null>):
   wide.addEventListener("change", rePin);
   const unfollow = smoothScroll.onFrame(follow);
   window.addEventListener("scroll", schedule, { passive: true });
+  window.addEventListener("scrollend", settleSoon);
   window.addEventListener("resize", resize);
   return () => {
     disposed = true;
     cancelAnimationFrame(raf);
+    window.clearTimeout(idle);
     unfollow();
     observer.disconnect();
     mutations.disconnect();
     sizes.disconnect();
     wide.removeEventListener("change", rePin);
     window.removeEventListener("scroll", schedule);
+    window.removeEventListener("scrollend", settleSoon);
     window.removeEventListener("resize", resize);
     for (const item of connectors.current?.items ?? []) {
       item.el.removeAttribute("data-d");

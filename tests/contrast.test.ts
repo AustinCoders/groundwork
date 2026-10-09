@@ -256,3 +256,76 @@ describe("text on the role tints", () => {
     }
   });
 });
+
+describe("text on the interview book's paper", () => {
+  const BOOK = ["--book-ink", "--book-ink-soft", "--book-pen"] as const;
+  const withBook = blocks().filter((b) => declaration(b.body, "--book-paper") && declaration(b.body, "--sheet"));
+  const hex = (theme: { body: string }, token: string) => hexToRgb(declaration(theme.body, token)!);
+  const mix = (top: Rgb, share: number, under: Rgb): Rgb =>
+    [0, 1, 2].map((i) => share * top[i] + (1 - share) * under[i]) as Rgb;
+
+  function expectRatio(theme: { selector: string }, what: string, fg: Rgb, bg: Rgb) {
+    const ratio = contrast(fg, bg);
+    expect(ratio, `${theme.selector} ${what} is ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+  }
+
+  it("is defined by every theme", () => {
+    expect(withBook.length).toBe(THEME_ITEMS.length);
+    for (const theme of withBook)
+      for (const token of [
+        "--book-paper",
+        "--book-paper-shade",
+        "--book-ink",
+        "--book-ink-soft",
+        "--book-rule",
+        "--book-cover",
+        "--book-cover-dark",
+        "--book-cover-light",
+        "--book-edge",
+        "--book-ribbon",
+        "--book-gold",
+        "--book-shadow",
+        "--book-pen",
+        "--book-note",
+        "--book-tape",
+      ])
+        expect(declaration(theme.body, token), `${theme.selector} is missing ${token}`).toBeTruthy();
+  });
+
+  it("keeps ink and soft ink at WCAG AA on the paper and on the page edge colour, and pen red on the paper, in every theme", () => {
+    for (const theme of withBook) {
+      for (const token of BOOK)
+        expectRatio(theme, `${token} on --book-paper`, hex(theme, token), hex(theme, "--book-paper"));
+      for (const token of ["--book-ink", "--book-ink-soft"])
+        expectRatio(theme, `${token} on --book-edge`, hex(theme, token), hex(theme, "--book-edge"));
+    }
+  });
+
+  it("keeps ink on the sticky note and on the highlighted contents row, in every theme", () => {
+    for (const theme of withBook) {
+      const highlighted = mix(hex(theme, "--book-note"), 0.48, hex(theme, "--book-paper"));
+      expectRatio(theme, "--book-ink on the note", hex(theme, "--book-ink"), hex(theme, "--book-note"));
+      expectRatio(theme, "--book-ink on the highlighted row", hex(theme, "--book-ink"), highlighted);
+      expectRatio(theme, "--book-ink-soft on the highlighted row", hex(theme, "--book-ink-soft"), highlighted);
+    }
+  });
+
+  it("keeps ink on every thumb-index tab, in every theme", () => {
+    for (const theme of withBook)
+      for (const tone of ["--c-teal", "--c-blue", "--c-purple", "--c-orange"])
+        for (const share of [0.34, 0.44, 0.5])
+          expectRatio(
+            theme,
+            `--book-ink on a ${tone} tab at ${share}`,
+            hex(theme, "--book-ink"),
+            mix(hex(theme, tone), share, hex(theme, "--book-paper"))
+          );
+  });
+
+  it("keeps the cover distinct from the paper in every theme", () => {
+    for (const theme of withBook) {
+      const ratio = contrast(hex(theme, "--book-cover"), hex(theme, "--book-paper"));
+      expect(ratio, `${theme.selector} cover against paper is ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4);
+    }
+  });
+});

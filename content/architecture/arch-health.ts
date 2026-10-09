@@ -17,7 +17,7 @@ export const archHealth: Chapter = {
 <tr><td>TypeScript, ESLint, Prettier, cspell</td><td><span class="chip tone-yes">clean</span></td></tr>
 <tr><td>Vitest</td><td><span class="chip tone-yes">405 of 405</span></td></tr>
 <tr><td>Build</td><td><span class="chip tone-yes">1,795 prerendered routes</span></td></tr>
-<tr><td>Playwright, 4 specs</td><td><span class="chip tone-yes">319 of 319</span></td></tr>
+<tr><td>Playwright, 4 specs</td><td><span class="chip tone-yes">323 of 323</span></td></tr>
 <tr><td>Lighthouse budgets, 3 URLs, 3 runs each</td><td><span class="chip tone-yes">pass</span></td></tr>
 <tr><td><code>TODO</code>, <code>FIXME</code>, <code>HACK</code> in source</td><td><span class="chip tone-yes">0</span></td></tr>
 <tr><td><code>npm audit</code>, production dependencies</td><td><span class="chip tone-bad">1 critical, 1 high</span></td></tr>
@@ -102,7 +102,7 @@ export const archHealth: Chapter = {
 </figure>
 
 <p>
-  <strong><code>app/globals.css</code>, about 7,900 lines</strong>, is the largest single piece of debt.
+  <strong><code>app/globals.css</code>, about 8,000 lines</strong>, is the largest single piece of debt.
   The newer parts of the site (the mock interview, the whiteboard and the problems page) use CSS
   modules, and the older reader and playground styles still live in the global sheet. Every page
   downloads all of it, and nothing tells you which rules are dead.

@@ -121,7 +121,6 @@ export const RightSheet = memo(function RightSheet({
   const live = on && !copy;
   return (
     <div className={styles.face} data-side="right" aria-hidden={copy || undefined}>
-      <i className={styles.ribbon} aria-hidden="true" />
       <p className={styles.runHead}>{`${stageLabel} · ${round.code}`}</p>
       <article
         className={styles.page}
