@@ -219,25 +219,6 @@ const STATES: State[] = [
     },
   },
   {
-    name: "how it works pinned and scrolled to its last step",
-    path: "/",
-    viewports: [WIDE],
-    scope: "#how",
-    visit: async (page, check) => {
-      await page.emulateMedia({ reducedMotion: "no-preference" });
-      await page.reload({ waitUntil: "networkidle" });
-      const how = page.locator("#how");
-      await expect(how).toHaveAttribute("data-pinned", "");
-      await how.getByRole("tab", { name: /Keep/ }).click();
-      await expect(how.getByRole("tab", { name: /Keep/ })).toHaveAttribute("aria-selected", "true");
-      await page.waitForTimeout(2500);
-      await page.addStyleTag({
-        content: "*, *::before, *::after { transition: none !important; animation: none !important; }",
-      });
-      await check("how it works pinned and scrolled to its last step");
-    },
-  },
-  {
     name: "the interview book pinned and scrolled to a later round",
     path: "/",
     viewports: [WIDE],
@@ -257,29 +238,74 @@ const STATES: State[] = [
     },
   },
   {
-    name: "how it works on step 3",
+    name: "how it works with a line opened on the first step",
     path: "/",
     viewports: VIEWPORTS,
     visit: async (page, check) => {
-      const step = page.locator("#how").getByRole("tab", { name: /Get asked/ });
-      await step.scrollIntoViewIfNeeded();
-      await step.click();
-      await expect(step).toHaveAttribute("aria-selected", "true");
-      await expect(page.locator("#how").getByRole("tabpanel")).toContainText("Then get asked the follow-up.");
-      await check("how it works on step 3");
+      const how = page.locator("#how");
+      const line = how.getByRole("button", { name: /Calling a function opens a small workspace/ });
+      await line.scrollIntoViewIfNeeded();
+      await line.click();
+      await expect(line).toHaveAttribute("aria-pressed", "true");
+      await check("how it works with a line opened on the first step");
     },
   },
   {
-    name: "how it works on step 4",
+    name: "how it works with a failing test run",
     path: "/",
     viewports: VIEWPORTS,
     visit: async (page, check) => {
-      const step = page.locator("#how").getByRole("tab", { name: /Keep/ });
-      await step.scrollIntoViewIfNeeded();
-      await step.click();
-      await expect(step).toHaveAttribute("aria-selected", "true");
-      await expect(page.locator("#how").getByRole("tabpanel")).toContainText("And it comes back before you forget.");
-      await check("how it works on step 4");
+      const how = page.locator("#how");
+      await how.getByRole("tab", { name: /Run/ }).scrollIntoViewIfNeeded();
+      await how.getByRole("tab", { name: /Run/ }).click();
+      await how.getByRole("button", { name: "Run tests" }).click();
+      await expect(how.getByRole("status")).toHaveText("2 / 3 passed");
+      await expect(how.getByText("expected 2, received 4")).toBeVisible();
+      await check("how it works with a failing test run");
+    },
+  },
+  {
+    name: "how it works with every test passing",
+    path: "/",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const how = page.locator("#how");
+      await how.getByRole("tab", { name: /Run/ }).scrollIntoViewIfNeeded();
+      await how.getByRole("tab", { name: /Run/ }).click();
+      await how.getByRole("button", { name: "Run tests" }).click();
+      await how.getByLabel("Closure").check();
+      await how.getByRole("button", { name: "Run tests" }).click();
+      await expect(how.getByRole("status")).toHaveText("3 / 3 passed");
+      await check("how it works with every test passing");
+    },
+  },
+  {
+    name: "how it works with an answer checked and the follow-up shown",
+    path: "/",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const how = page.locator("#how");
+      await how.getByRole("tab", { name: /Get asked/ }).scrollIntoViewIfNeeded();
+      await how.getByRole("tab", { name: /Get asked/ }).click();
+      await how.getByRole("button", { name: "3", exact: true }).click();
+      await expect(how.getByText("Hmm. Walk me through")).toBeVisible();
+      await check("how it works with a wrong answer checked and the follow-up shown");
+      await how.getByRole("button", { name: /^1/ }).click();
+      await expect(how.getByText("Good. Now, when does that n finally get cleaned up?")).toBeVisible();
+      await check("how it works with the right answer checked and the follow-up shown");
+    },
+  },
+  {
+    name: "how it works with a chapter marked read and its review days lit",
+    path: "/",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const how = page.locator("#how");
+      await how.getByRole("tab", { name: /Keep/ }).scrollIntoViewIfNeeded();
+      await how.getByRole("tab", { name: /Keep/ }).click();
+      await how.getByRole("button", { name: "Mark as read today" }).click();
+      await expect(how.getByText("in 31 days")).toBeVisible();
+      await check("how it works with a chapter marked read and its review days lit");
     },
   },
   {

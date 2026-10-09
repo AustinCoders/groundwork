@@ -1,33 +1,52 @@
 import { plural } from "@/lib/format";
+import { REVIEW_GAPS_DAYS } from "@/lib/storage";
 
-export const REVIEW_DAYS = [0, 3, 10, 31];
-export const NEXT_REVIEW = plural(REVIEW_DAYS[1], "day");
+export const NEXT_REVIEW = plural(REVIEW_GAPS_DAYS[0], "day");
 
 export const HOW_STEP_COPY = [
   {
     k: "Read",
     line: "Chapters layered bottom to top.",
     title: "Read a chapter that builds on the last one.",
-    body: "Every topic is layered bottom to top, so an idea only arrives after the ideas it rests on. You never skim past a word you do not know yet.",
   },
   {
     k: "Run",
     line: "Real tests, right in the page.",
     title: "Prove it with real tests, right in the page.",
-    body: "Chapters that need practice end in an editor. Your answer runs in your browser against real tests, and a pass is what counts.",
   },
   {
     k: "Get asked",
     line: "The follow-up they push with next.",
     title: "Then get asked the follow-up.",
-    body: "The interview book shows how each round really goes: the question, the wrong answer that loses the room, and what they push with next.",
   },
   {
     k: "Keep",
     line: "Spaced review before you forget.",
     title: "And it comes back before you forget.",
-    body: "Chapters you finish come back for review on a spaced schedule, so what you read in week one is still there on interview day.",
   },
 ];
 
 export const HOW_STEPS = HOW_STEP_COPY.length;
+
+export const LAYERS = ["Syntax and values", "How code runs", "Core concepts", "Patterns", "Systems and scale"] as const;
+
+export const READ_LINES = [
+  {
+    line: "The engine reads your file from the top, one line at a time.",
+    layer: 0,
+    plain:
+      "The engine is the program inside your browser that understands JavaScript. It starts at line 1 and does what each line says, in order. A line is made of values, like numbers and words, and names that point to them.",
+  },
+  {
+    line: "Calling a function opens a small workspace that is thrown away when the call ends.",
+    layer: 1,
+    plain:
+      "Every call gets a fresh workspace for its own names. When the function hands back its answer, the workspace usually goes away, and every name inside it goes with it.",
+  },
+  {
+    line: "A closure is a function that keeps its workspace alive after the call ends.",
+    layer: 2,
+    plain:
+      "If an inner function still uses a name from the workspace around it, the engine keeps that workspace. That is how a counter remembers n between calls. Step 2 puts it to the test.",
+  },
+] as const;

@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildLoop,
   buildTrail,
-  LOOP_SPOTS,
-  loopProgress,
   stageRatio,
   drawProgress,
   trailPoint,
@@ -107,78 +104,6 @@ describe("walker and draw progress", () => {
   it("has the walker at the finish by the point a step is landed on, and the path drawn ahead of it", () => {
     expect(walkerProgress(0.8)).toBe(1);
     for (let lt = 0; lt <= 1; lt += 0.05) expect(drawProgress(lt)).toBeGreaterThanOrEqual(walkerProgress(lt));
-  });
-});
-
-describe("buildLoop", () => {
-  const loop = buildLoop();
-
-  it("is a closed track: it ends where it starts", () => {
-    const start = loop.curves[0][0];
-    const end = loop.curves[loop.curves.length - 1][3];
-    expect(Math.hypot(start[0] - end[0], start[1] - end[1])).toBeLessThan(1e-9);
-  });
-
-  it("starts on the left edge and reaches the four stations in order, each after the last", () => {
-    expect(loop.spots).toHaveLength(LOOP_SPOTS.length);
-    expect(loop.at).toHaveLength(4);
-    expect(loop.at[0]).toBeGreaterThan(0);
-    for (let k = 1; k < loop.at.length; k++) expect(loop.at[k]).toBeGreaterThan(loop.at[k - 1]);
-    expect(loop.at[3]).toBeLessThan(1);
-    expect(loop.cumulative[loop.cumulative.length - 1]).toBeCloseTo(1, 9);
-  });
-
-  it("puts the walker exactly on each station when it arrives", () => {
-    loop.at.forEach((fraction, k) => {
-      const spot = trailPoint(loop, fraction, 1);
-      expect(spot.x).toBeCloseTo(LOOP_SPOTS[k].x, 3);
-      expect(spot.y).toBeCloseTo(LOOP_SPOTS[k].y, 3);
-    });
-  });
-
-  it("stays inside the stage", () => {
-    for (let f = 0; f <= 1; f += 0.01) {
-      const spot = trailPoint(loop, f, 1);
-      expect(spot.x).toBeGreaterThan(0);
-      expect(spot.x).toBeLessThan(100);
-      expect(spot.y).toBeGreaterThan(0);
-      expect(spot.y).toBeLessThan(100);
-    }
-  });
-});
-
-describe("loopProgress", () => {
-  const { at } = buildLoop();
-
-  it("starts at the start, ends back at the start of the lap and never runs backwards", () => {
-    expect(loopProgress(0, at)).toBe(0);
-    expect(loopProgress(4, at)).toBeCloseTo(1, 9);
-    let last = -1;
-    for (let u = 0; u <= 4; u += 0.005) {
-      const f = loopProgress(u, at);
-      expect(f).toBeGreaterThanOrEqual(last);
-      last = f;
-    }
-  });
-
-  it("waits on a station while its step plays, then moves on to the next", () => {
-    for (let k = 0; k < 4; k++) {
-      expect(loopProgress(k + 0.45, at)).toBeCloseTo(at[k], 9);
-      expect(loopProgress(k + 0.55, at)).toBeCloseTo(at[k], 9);
-    }
-    expect(loopProgress(1.1, at)).toBeGreaterThan(at[0]);
-    expect(loopProgress(1.1, at)).toBeLessThan(at[1]);
-  });
-
-  it("goes back to the start after the last station", () => {
-    expect(loopProgress(3.7, at)).toBeGreaterThan(at[3]);
-    expect(loopProgress(3.99, at)).toBeGreaterThan(0.97);
-  });
-
-  it("clamps outside the steps and survives non-finite input", () => {
-    expect(loopProgress(-3, at)).toBe(0);
-    expect(loopProgress(40, at)).toBeCloseTo(1, 9);
-    expect(loopProgress(Number.NaN, at)).toBe(0);
   });
 });
 

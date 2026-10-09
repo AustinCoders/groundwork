@@ -518,15 +518,7 @@ export function HomeView({ stats, ready, soon, languages, interview, bookRounds 
             </div>
           </section>
 
-          <section
-            className={styles.section}
-            id="how"
-            aria-labelledby="how-h"
-            data-scene
-            data-pin-groups={Array(HOW_STEPS).fill(1).join(",")}
-            data-pin-hold={PIN_HOLD_VH}
-            style={vars({ "pin-d": pinLengthVh("how", HOW_STEPS) })}
-          >
+          <section className={styles.section} id="how" aria-labelledby="how-h" data-scene>
             <div className={styles.pin} data-pin-box>
               <HowScene
                 head={

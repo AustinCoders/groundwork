@@ -145,7 +145,6 @@ export function wordReveal(enter: number, index: number): number {
 export interface StepWindow {
   ei: number;
   eo: number;
-  lt: number;
 }
 
 export function stepWindow(out: StepWindow, u: number, index: number, lead: boolean, tail: boolean): StepWindow {
@@ -153,10 +152,5 @@ export function stepWindow(out: StepWindow, u: number, index: number, lead: bool
   const away = Math.min(unit((u - index - 0.88) / 0.24), tail ? 0 : 1);
   out.ei = smooth(into);
   out.eo = smooth(away);
-  out.lt = Math.max(unit(u - index), lead ? 1 : 0);
   return out;
-}
-
-export function reveal(lt: number, from: number, rate: number): number {
-  return unit((lt - from) * rate);
 }

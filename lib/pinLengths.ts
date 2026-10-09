@@ -2,7 +2,7 @@ export const PIN_HOLD_VH = 15;
 const PIN_STEP_CAP_VH = 40;
 const PIN_TOTAL_CAP_VH = 250;
 
-export const PIN_STEP_VH = { how: 30, paths: 30, loop: 32 } as const;
+export const PIN_STEP_VH = { paths: 30, loop: 32 } as const;
 
 type PinnedSection = keyof typeof PIN_STEP_VH;
 

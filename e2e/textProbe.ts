@@ -62,3 +62,31 @@ export function probeText(roots: string[]): TextProblem[] {
   style.remove();
   return problems;
 }
+
+export function probeFit(benchSelector: string): string[] {
+  const problems: string[] = [];
+  const bench = document.querySelector(benchSelector);
+  const panel = bench?.querySelector("[role='tabpanel']:not([hidden])");
+  if (!bench || !panel) return [`no active panel in ${benchSelector}`];
+  const frame = bench.getBoundingClientRect();
+  const seen = new Set<string>();
+  for (const el of panel.querySelectorAll("*")) {
+    const css = getComputedStyle(el);
+    if (css.display === "none" || css.visibility === "hidden" || el.closest(".visually-hidden")) continue;
+    const box = el.getBoundingClientRect();
+    if (box.width < 1 || box.height < 1) continue;
+    const name = `${el.tagName.toLowerCase()}.${String(el.className).split(" ")[0].replace(/^.*__/, "")}`;
+    const out = [
+      box.bottom > frame.bottom - 1 && `${Math.round(box.bottom - frame.bottom)}px below`,
+      box.right > frame.right - 1 && `${Math.round(box.right - frame.right)}px right of`,
+      box.left < frame.left + 1 && `${Math.round(frame.left - box.left)}px left of`,
+      box.top < frame.top + 1 && `${Math.round(frame.top - box.top)}px above`,
+    ].filter(Boolean);
+    if (out.length && !seen.has(name)) {
+      seen.add(name);
+      problems.push(`${name} is ${out.join(" and ")} the card edge`);
+    }
+  }
+  if (panel.scrollWidth > panel.clientWidth + 1) problems.push("the panel scrolls sideways");
+  return problems;
+}

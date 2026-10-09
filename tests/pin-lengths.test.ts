@@ -1,12 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { HOW_STEPS } from "@/lib/homeHow";
 import { PATH_COUNT } from "@/lib/homePaths";
 import { bookStages, homeRounds } from "@/lib/homeRounds";
 import { bankQuestions, bookRounds } from "@/lib/interviewBook";
 import { PIN_HOLD_VH, PIN_STEP_VH, PIN_TURN_CAP, pinLengthVh } from "@/lib/pinLengths";
 
 const REAL = {
-  how: HOW_STEPS,
   paths: PATH_COUNT,
   loop: bookStages(homeRounds(bookRounds(), bankQuestions())).length,
 } as const;
@@ -19,9 +17,8 @@ describe("pinned section lengths with the real step counts", () => {
     expect(PIN_HOLD_VH).toBeLessThanOrEqual(15);
   });
 
-  it("gives every step at most about 40vh, and the single-step sections 30vh", () => {
+  it("gives every step at most about 40vh, and Paths 30vh", () => {
     for (const [name, vh] of Object.entries(PIN_STEP_VH)) expect(vh, name).toBeLessThanOrEqual(STEP_CAP);
-    expect(PIN_STEP_VH.how).toBeLessThanOrEqual(30);
     expect(PIN_STEP_VH.paths).toBeLessThanOrEqual(30);
   });
 

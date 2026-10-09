@@ -24,28 +24,3 @@ export function probeConnectors(): string[] {
   });
   return problems;
 }
-
-export function probeTrack(section: string): string[] {
-  const problems: string[] = [];
-  const chips = [...document.querySelectorAll<HTMLElement>(`${section} [data-chip]`)];
-  const paths = [
-    ...document.querySelectorAll<SVGPathElement>(
-      `${section} svg path[class*='dash'], ${section} svg path[class*='reveal']`
-    ),
-  ];
-  for (const path of paths) {
-    const matrix = path.getScreenCTM();
-    if (!matrix) continue;
-    const length = path.getTotalLength();
-    for (let at = 0; at <= length; at += 4) {
-      const point = path.getPointAtLength(at).matrixTransform(matrix);
-      for (const chip of chips) {
-        const box = chip.getBoundingClientRect();
-        if (box.width < 2 || Number(getComputedStyle(chip).opacity) < 0.3) continue;
-        if (point.x > box.left - 1 && point.x < box.right + 1 && point.y > box.top - 1 && point.y < box.bottom + 1)
-          problems.push(`the track crosses "${(chip.textContent ?? "").trim().slice(0, 24)}"`);
-      }
-    }
-  }
-  return [...new Set(problems)];
-}

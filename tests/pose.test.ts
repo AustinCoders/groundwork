@@ -3,7 +3,6 @@ import {
   cardPose,
   edgeDraw,
   notePose,
-  reveal,
   scaleFor,
   starPose,
   stepWindow,
@@ -152,7 +151,7 @@ describe("wordReveal", () => {
 
 describe("stepWindow", () => {
   const at = (u: number, index: number, lead = false, tail = false): StepWindow =>
-    stepWindow({ ei: 0, eo: 0, lt: 0 }, u, index, lead, tail);
+    stepWindow({ ei: 0, eo: 0 }, u, index, lead, tail);
 
   it("has a step fully in while it is the current one, and fully out once the next is current", () => {
     expect(at(2.5, 2)).toMatchObject({ ei: 1, eo: 0 });
@@ -175,27 +174,8 @@ describe("stepWindow", () => {
   });
 
   it("holds the first step fully in at the start and the last step fully in through the hold", () => {
-    expect(at(0, 0, true)).toMatchObject({ ei: 1, eo: 0, lt: 1 });
+    expect(at(0, 0, true)).toMatchObject({ ei: 1, eo: 0 });
     expect(at(4, 3, false, true).eo).toBe(0);
-    expect(at(0, 0, true).lt).toBe(1);
-  });
-
-  it("gives progress through the step as lt", () => {
-    expect(at(2.25, 2).lt).toBeCloseTo(0.25, 6);
-    expect(at(1.5, 2).lt).toBe(0);
-    expect(at(4, 2).lt).toBe(1);
-  });
-});
-
-describe("reveal and deck", () => {
-  it("reveals a part of the conversation over a short run of the step", () => {
-    expect(reveal(0.05, 0.06, 6)).toBe(0);
-    expect(reveal(0.1, 0.06, 6)).toBeCloseTo(0.24, 6);
-    expect(reveal(0.3, 0.06, 6)).toBe(1);
-  });
-
-  it("reads a non-finite value as 0", () => {
-    expect(reveal(Number.NaN, 0.06, 6)).toBe(0);
   });
 });
 

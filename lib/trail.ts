@@ -1,5 +1,3 @@
-import { smooth } from "@/lib/math";
-
 interface TrailSpot {
   x: number;
   y: number;
@@ -83,68 +81,6 @@ export function buildTrail(count: number): Trail {
     ]);
   }
   return assemble(curves, spots);
-}
-
-export const LOOP_SPOTS: readonly TrailSpot[] = [
-  { x: 9, y: 12 },
-  { x: 91, y: 12 },
-  { x: 91, y: 88 },
-  { x: 9, y: 88 },
-];
-
-const LOOP_BOW = 9;
-const LOOP_REACH = 0.3;
-
-function split(c: Pair[]): [Pair[], Pair[]] {
-  const mid = (p: Pair, q: Pair): Pair => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
-  const ab = mid(c[0], c[1]);
-  const bc = mid(c[1], c[2]);
-  const cd = mid(c[2], c[3]);
-  const abc = mid(ab, bc);
-  const bcd = mid(bc, cd);
-  const middle = mid(abc, bcd);
-  return [
-    [c[0], ab, abc, middle],
-    [middle, bcd, cd, c[3]],
-  ];
-}
-
-export function buildLoop(): Trail {
-  const edges: Pair[][] = LOOP_SPOTS.map((a, i) => {
-    const b = LOOP_SPOTS[(i + 1) % LOOP_SPOTS.length];
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const nx = Math.sign(dy) * LOOP_BOW * 0.8;
-    const ny = -Math.sign(dx) * LOOP_BOW;
-    return [
-      [a.x, a.y],
-      [a.x + dx * LOOP_REACH + nx, a.y + dy * LOOP_REACH + ny],
-      [b.x - dx * LOOP_REACH + nx, b.y - dy * LOOP_REACH + ny],
-      [b.x, b.y],
-    ];
-  });
-  const [before, after] = split(edges[edges.length - 1]);
-  return assemble([after, ...edges.slice(0, -1), before], [...LOOP_SPOTS]);
-}
-
-const ARRIVE = 0.4;
-const LEAVE = 0.72;
-const LAST_LEAVE = 0.6;
-
-export function loopProgress(u: number, at: readonly number[]): number {
-  const count = at.length;
-  const x = Math.min(count, Math.max(0, Number.isFinite(u) ? u : 0));
-  let from = 0;
-  let begin = 0;
-  for (let k = 0; k < count; k++) {
-    const arrive = k + ARRIVE;
-    if (x < arrive) return from + (at[k] - from) * smooth((x - begin) / (arrive - begin));
-    from = at[k];
-    const leave = k === count - 1 ? k + LAST_LEAVE : k + LEAVE;
-    if (x < leave) return from;
-    begin = leave;
-  }
-  return from + (1 - from) * smooth((x - begin) / Math.max(1e-9, count - begin));
 }
 
 interface TrailStep {

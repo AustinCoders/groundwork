@@ -13,6 +13,32 @@ const STOPS = [
   { id: "cta", label: "Start here" },
 ];
 
+const SETTLED_FRAMES = 10;
+const GIVE_UP_MS = 3000;
+const CLOSE_ENOUGH = 3;
+
+function targetOf(section: HTMLElement): number {
+  return Math.max(0, section.getBoundingClientRect().top + window.scrollY - headerHeight());
+}
+
+function correctAfterLanding(section: HTMLElement, target: number) {
+  const started = performance.now();
+  let last = -1;
+  let still = 0;
+  const watch = () => {
+    const y = window.scrollY;
+    still = y === last ? still + 1 : 0;
+    last = y;
+    if (still >= SETTLED_FRAMES) {
+      const wanted = targetOf(section);
+      if (Math.abs(y - target) <= CLOSE_ENOUGH && Math.abs(wanted - y) > 1) smoothScroll.to(wanted, !prefersMotion());
+      return;
+    }
+    if (performance.now() - started < GIVE_UP_MS) requestAnimationFrame(watch);
+  };
+  requestAnimationFrame(watch);
+}
+
 function land(event: MouseEvent<HTMLAnchorElement>, id: string) {
   const section = document.getElementById(id);
   if (!section) return;
@@ -20,7 +46,9 @@ function land(event: MouseEvent<HTMLAnchorElement>, id: string) {
   window.history.replaceState(null, "", `#${id}`);
   section.setAttribute("tabindex", "-1");
   section.focus({ preventScroll: true });
-  smoothScroll.to(Math.max(0, section.getBoundingClientRect().top + window.scrollY - headerHeight()), !prefersMotion());
+  const target = targetOf(section);
+  smoothScroll.to(target, !prefersMotion());
+  correctAfterLanding(section, target);
 }
 
 export function SectionRail() {

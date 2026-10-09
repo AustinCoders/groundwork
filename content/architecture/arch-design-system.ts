@@ -321,12 +321,12 @@ export const archDesignSystem: Chapter = {
   architecture section. One of them, <code>/level/typescript</code>, is the level picker of a
   topic that is only outlined, and another, <code>/typescript/ts-setup-compiler</code>, is that
   same topic's own outline chapter; <code>/level/typescript</code> stands in for <code>/soon</code>,
-  which redirects there while every topic is marked ready. It also runs against 28 states that a
-  plain page load does not show: 24 that open with a click, and 4 seeded in
+  which redirects there while every topic is marked ready. It also runs against 30 states that a
+  plain page load does not show: 26 that open with a click, and 4 seeded in
   <code>localStorage</code>. The clicks open the site menu, the reading menu on <code>/notes</code>
   with its Text size and Narrator folds open, a reading budget picked on the JavaScript cover's Up
   next card, the Topics fold with a category expanded, the home page's topic section on Languages, with a legend row expanded and a station card open and with a search term typed,
-  its interview book on a later round and on its last stage, its practice section with a row focused, a path tab with unwritten topics, its FAQ with the comparison answer open and its how-it-works stepper on steps 3 and 4, and its topic section on the AI category, the Chapters and Filters sheets, and a system design round in
+  its interview book on a later round and on its last stage, its practice section with a row focused, a path tab with unwritten topics, its FAQ with the comparison answer open and its how-it-works demo with a line opened, a failing run, every test passing, an answer checked and a chapter marked read, and its topic section on the AI category, the Chapters and Filters sheets, and a system design round in
   the mock interview, checked at the brief, a question, a follow-up, the rubric and the debrief.
   The seeds give a chapter due for review, a
   chapter marked read on a path, a year of activity on the progress page, and two saved mock

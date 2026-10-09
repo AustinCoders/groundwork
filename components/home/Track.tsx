@@ -3,17 +3,7 @@ import { accent } from "./tone";
 import type { Trail } from "@/lib/trail";
 import styles from "./track.module.css";
 
-export function TrackSvg({
-  trail,
-  tone,
-  shape,
-  className,
-}: {
-  trail: Trail;
-  tone: string;
-  shape?: "loop";
-  className?: string;
-}) {
+export function TrackSvg({ trail, tone, className }: { trail: Trail; tone: string; className?: string }) {
   const mask = useId();
   return (
     <svg
@@ -26,7 +16,7 @@ export function TrackSvg({
     >
       <defs>
         <mask id={mask} maskUnits="userSpaceOnUse" x="-10" y="-10" width="120" height="120">
-          <path className={styles.reveal} d={trail.d} pathLength={1} data-motion="trail" data-fx-shape={shape} />
+          <path className={styles.reveal} d={trail.d} pathLength={1} data-motion="trail" />
         </mask>
       </defs>
       <path className={styles.track} d={trail.d} />
@@ -35,13 +25,12 @@ export function TrackSvg({
   );
 }
 
-export function Walker({ count, shape, className }: { count?: number; shape?: "loop"; className?: string }) {
+export function Walker({ count, className }: { count?: number; className?: string }) {
   return (
     <span
       className={className ? `${styles.walker} ${className}` : styles.walker}
       data-motion="walker"
       data-fx-count={count}
-      data-fx-shape={shape}
       aria-hidden="true"
     >
       <svg viewBox="0 0 32 32" focusable="false">

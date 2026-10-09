@@ -46,11 +46,6 @@
   top: 5%;
 }
 
-.walker[data-fx-shape="loop"] {
-  left: 3.6%;
-  top: 50%;
-}
-
 .walker svg {
   width: 100%;
   height: 100%;

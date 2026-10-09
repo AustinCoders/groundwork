@@ -58,7 +58,7 @@ function attach(host: HTMLElement, connectors: RefObject<ConnectorLive | null>):
     step: -1,
     fx: { items: [], input: null },
     dirty: true,
-    input: { enter: 1, exit: 0, p: 0.5, u: 0, t: 0, pinned: false },
+    input: { enter: 1, exit: 0, p: 0.5, u: 0, pinned: false },
   }));
   if (slots.length === 0 || !("IntersectionObserver" in window)) return () => {};
 
@@ -138,7 +138,6 @@ function attach(host: HTMLElement, connectors: RefObject<ConnectorLive | null>):
         pinStep(pin, along, length, holdLength, slot.groups);
         const u = pin.step + pin.t;
         slot.input.u = u;
-        slot.input.t = pin.t;
         const rounded = Math.round(u * STEPS);
         if (rounded !== slot.u) slot.el.setAttribute("data-u", String(rounded / STEPS));
         slot.u = rounded;

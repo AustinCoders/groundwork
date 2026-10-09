@@ -1,21 +1,11 @@
 import { unit } from "@/lib/math";
 import { bendLeaf, pageFlip, PERSPECTIVE, STRIPS, type Bend, type Flip } from "@/lib/pageFlip";
-import {
-  buildLoop,
-  buildTrail,
-  drawProgress,
-  loopProgress,
-  stageRatio,
-  trailPoint,
-  walkerProgress,
-  type Trail,
-} from "@/lib/trail";
+import { buildTrail, drawProgress, stageRatio, trailPoint, walkerProgress, type Trail } from "@/lib/trail";
 import {
   cardPose,
   edgeDraw,
   noteInk,
   notePose,
-  reveal,
   scaleFor,
   starPose,
   stepWindow,
@@ -32,7 +22,6 @@ export interface FxInput {
   exit: number;
   p: number;
   u: number;
-  t: number;
   pinned: boolean;
 }
 
@@ -47,17 +36,11 @@ type Kind =
   | "eyebrow"
   | "sub"
   | "part"
-  | "reveal"
-  | "light"
-  | "bar"
-  | "typing"
-  | "fill"
   | "trail"
   | "walker"
   | "milestone"
   | "leaf"
   | "cast"
-  | "stroke"
   | "star"
   | "edge";
 
@@ -71,9 +54,6 @@ interface Item {
   depth: number;
   speed: number;
   index: number;
-  from: number;
-  to: number;
-  rate: number;
   lag: number;
   card: CardInput;
   written: string;
@@ -83,7 +63,6 @@ interface Item {
   flat: HTMLElement | null;
   bend: Bend;
   trail: Trail | null;
-  loop: boolean;
   aspect: number;
   at: number;
 }
@@ -93,11 +72,10 @@ export interface Fx {
   input: FxInput | null;
 }
 
-const LOOP = buildLoop();
 const parallax = new Map<HTMLElement, { x: number; y: number }>();
 const owners = new Map<HTMLElement, Fx>();
 const pose: Pose = { x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 };
-const win: StepWindow = { ei: 1, eo: 0, lt: 1 };
+const win: StepWindow = { ei: 1, eo: 0 };
 const flip: Flip = { turned: 0, angle: 0, cast: 0, lift: 0, spine: 0, free: 0 };
 
 const number = (el: HTMLElement, name: string, fallback = 0): number => {
@@ -126,9 +104,6 @@ function read(el: HTMLElement): Item | null {
     depth: number(el, "--depth"),
     speed: number(el, "--speed", 40),
     index: number(el, "--i"),
-    from: Number(el.dataset.fxFrom) || 0,
-    to: Number(el.dataset.fxTo) || 1,
-    rate: Number(el.dataset.fxRate) || 6,
     lag: number(el, "--lag"),
     card: {
       fly: Number(el.dataset.fly) || 0,
@@ -144,9 +119,7 @@ function read(el: HTMLElement): Item | null {
     strips: kind === "leaf" ? Array.from(el.querySelectorAll<HTMLElement>("[data-strip]")) : [],
     flat: kind === "leaf" ? el.querySelector<HTMLElement>("[data-flat]") : null,
     bend: { angles: Array(STRIPS).fill(0), shade: Array(STRIPS).fill(0) },
-    trail:
-      el.dataset.fxShape === "loop" ? LOOP : kind === "walker" ? buildTrail(Number(el.dataset.fxCount) || 0) : null,
-    loop: el.dataset.fxShape === "loop",
+    trail: kind === "walker" ? buildTrail(Number(el.dataset.fxCount) || 0) : null,
     aspect: kind === "walker" ? stageAspect(el) : 1,
     at: Number(el.dataset.fxAt) || 0,
   };
@@ -303,56 +276,17 @@ function one(item: Item, input: FxInput, scale: Scale, rest: Pose) {
       else writeFade(item, opacity, y, 0);
       return;
     }
-    case "reveal": {
-      if (!scoped) return;
-      const k = reveal(win.lt, item.from, item.rate);
-      writeFade(item, k, (1 - k) * 14, 0, 0.94 + k * 0.06);
-      return;
-    }
-    case "light": {
-      if (!scoped) return;
-      const off = win.lt < item.from;
-      put(item, off ? "off" : "on", () => {
-        if (off) item.el.setAttribute("data-off", "");
-        else item.el.removeAttribute("data-off");
-      });
-      return;
-    }
-    case "bar": {
-      if (!scoped) return;
-      const b = unit((win.lt - item.from) / (item.to - item.from));
-      put(item, b.toFixed(3), () => {
-        item.el.style.transform = `scaleX(${b.toFixed(3)})`;
-      });
-      return;
-    }
-    case "typing": {
-      if (!scoped) return;
-      const lt = win.lt;
-      const o = unit(Math.min((lt - 0.3) * 24, (0.46 - lt) * 24));
-      put(item, o.toFixed(3), () => {
-        item.el.style.opacity = o.toFixed(3);
-      });
-      return;
-    }
-    case "fill": {
-      if (!input.pinned) return;
-      put(item, input.t.toFixed(3), () => {
-        item.el.style.transform = `scaleX(${input.t.toFixed(3)})`;
-      });
-      return;
-    }
     case "trail": {
-      if (!scoped && !(item.loop && input.pinned)) return;
-      const draw = item.loop ? loopProgress(input.u, LOOP.at) : drawProgress(unit(input.u - item.step));
+      if (!scoped) return;
+      const draw = drawProgress(unit(input.u - item.step));
       put(item, draw.toFixed(3), () => {
         item.el.style.strokeDashoffset = draw >= 0.9995 ? "" : String(1 - draw);
       });
       return;
     }
     case "walker": {
-      if (!item.trail || !input.pinned || (!scoped && !item.loop)) return;
-      const along = item.loop ? loopProgress(input.u, LOOP.at) : walkerProgress(unit(input.u - item.step));
+      if (!item.trail || !input.pinned || !scoped) return;
+      const along = walkerProgress(unit(input.u - item.step));
       if (item.aspect === 0) return;
       const spot = trailPoint(item.trail, along, item.aspect);
       put(item, `${spot.x.toFixed(2)}|${spot.y.toFixed(2)}|${spot.angle.toFixed(1)}`, () => {
@@ -363,20 +297,12 @@ function one(item: Item, input: FxInput, scale: Scale, rest: Pose) {
       return;
     }
     case "milestone": {
-      if (!input.pinned || (!scoped && !item.loop)) return;
-      const along = item.loop ? loopProgress(input.u, LOOP.at) : walkerProgress(unit(input.u - item.step));
+      if (!input.pinned || !scoped) return;
+      const along = walkerProgress(unit(input.u - item.step));
       const off = along < item.at - 0.004;
       put(item, off ? "off" : "on", () => {
         if (off) item.el.setAttribute("data-off", "");
         else item.el.removeAttribute("data-off");
-      });
-      return;
-    }
-    case "stroke": {
-      if (!scoped) return;
-      const k = reveal(win.lt, item.from, item.rate);
-      put(item, k.toFixed(3), () => {
-        item.el.style.strokeDashoffset = k >= 0.9995 ? "" : (1 - k).toFixed(3);
       });
       return;
     }

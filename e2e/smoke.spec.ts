@@ -7,8 +7,8 @@ import { bookStages, homeRounds } from "../lib/homeRounds";
 import { bankQuestions, bookRounds } from "../lib/interviewBook";
 import { TOPIC_CATEGORIES } from "../lib/topicCategories";
 import { topicsNavWithStats } from "../lib/topicStats";
-import { probeConnectors, probeTrack } from "./motionProbe";
-import { probeText } from "./textProbe";
+import { probeConnectors } from "./motionProbe";
+import { probeFit, probeText } from "./textProbe";
 import { THEMES, themeColour } from "./themes";
 
 const containing = (colour: string) => new RegExp(colour.replace(/[()]/g, "\\$&"));
@@ -1218,16 +1218,17 @@ test("the home page reads as a landing page and every path leads somewhere real"
     "There is no account"
   );
 
-  await page.getByRole("button", { name: /Run tests/ }).click();
-  await expect(page.getByText("3 / 3 passed", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Break it" }).click();
-  await page.getByRole("button", { name: /Run tests/ }).click();
-  await expect(page.getByText("1 / 3 passed", { exact: true })).toBeVisible();
+  const hero = page.locator("main > section").first();
+  await hero.getByRole("button", { name: /Run tests/ }).click();
+  await expect(hero.getByText("3 / 3 passed", { exact: true })).toBeVisible();
+  await hero.getByRole("button", { name: "Break it" }).click();
+  await hero.getByRole("button", { name: /Run tests/ }).click();
+  await expect(hero.getByText("1 / 3 passed", { exact: true })).toBeVisible();
   await expect(page.locator("[class*='__editor'][data-state='fail']")).toHaveCSS(
     "box-shadow",
     containing(themeColour("lavender", "--danger"))
   );
-  await page.getByRole("button", { name: "Reset" }).click();
+  await hero.getByRole("button", { name: "Reset" }).click();
 
   const prep = page.locator("#paths").getByRole("tab", { name: /Interview prep/ });
   await prep.click();
@@ -1468,93 +1469,410 @@ test("the home interview book fits a phone as stacked pages with working tabs an
   expect(await fits()).toBe(true);
 });
 
-test("the how-it-works stepper switches steps by click and by keyboard and shows each demo", async ({ page }) => {
+async function openHow(page: Page) {
   await page.goto("/");
   const how = page.locator("#how");
+  await expect(how.locator("[role='tabpanel'][hidden]")).toHaveCount(3);
+  await how.scrollIntoViewIfNeeded();
+  return how;
+}
+
+const HOW_TRIED = (n: number) => new RegExp(`^${n} of 4 tried$`);
+
+test("the how-it-works ladder is a tablist that works by mouse and by keyboard", async ({ page }) => {
+  const how = await openHow(page);
   await expect(how.getByRole("heading", { level: 2, name: /Read it. Run it/ })).toBeVisible();
-  const tabs = how.getByRole("tab");
+  const tabs = how.getByRole("tablist", { name: "How it works" }).getByRole("tab");
   await expect(tabs).toHaveCount(4);
   await expect(tabs.nth(0)).toHaveAttribute("aria-selected", "true");
-  await expect(how.getByRole("tabpanel")).toHaveCount(1);
+  await expect(tabs.nth(0)).toHaveAttribute("tabindex", "0");
+  await expect(tabs.nth(1)).toHaveAttribute("tabindex", "-1");
+  await expect(how.locator("[role='tabpanel']:not([hidden])")).toHaveCount(1);
   await expect(how.getByRole("tabpanel")).toContainText("Read a chapter that builds on the last one.");
-  for (const copy of [
-    "Read a chapter that builds on the last one.",
-    "Prove it with real tests, right in the page.",
-    "Then get asked the follow-up.",
-    "And it comes back before you forget.",
-  ]) {
-    await expect(how.getByRole("heading", { level: 3, name: copy, includeHidden: true })).toHaveCount(1);
-  }
+  await expect(how.getByText("A small demo. Nothing you do here is saved.")).toBeVisible();
 
   await tabs.nth(1).click();
   await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
-  await expect(how.getByRole("tabpanel")).toContainText("Prove it with real tests");
-  await expect(how.locator("[data-stage]")).toContainText("4 / 4 passed");
+  await expect(how.getByRole("tabpanel")).toContainText("Prove it with real tests, right in the page.");
+  await expect(how.locator("[role='tabpanel']:not([hidden])")).toHaveCount(1);
 
   await tabs.nth(1).focus();
   await page.keyboard.press("ArrowDown");
   await expect(tabs.nth(2)).toHaveAttribute("aria-selected", "true");
   await expect(tabs.nth(2)).toBeFocused();
   await expect(how.getByRole("tabpanel")).toContainText("Then get asked the follow-up.");
-  await expect(how.locator("[data-stage]")).toContainText("Build me a debounce.");
   await page.keyboard.press("End");
   await expect(tabs.nth(3)).toHaveAttribute("aria-selected", "true");
   await expect(how.getByRole("tabpanel")).toContainText("And it comes back before you forget.");
-  await expect(how.locator("[data-on]")).toHaveCount(4);
   await page.keyboard.press("ArrowRight");
   await expect(tabs.nth(0)).toHaveAttribute("aria-selected", "true");
   await page.keyboard.press("ArrowUp");
   await expect(tabs.nth(3)).toHaveAttribute("aria-selected", "true");
+  await page.keyboard.press("ArrowLeft");
+  await expect(tabs.nth(2)).toHaveAttribute("aria-selected", "true");
   await page.keyboard.press("Home");
   await expect(tabs.nth(0)).toHaveAttribute("aria-selected", "true");
   await expect(how.getByRole("tabpanel")).toContainText("Read a chapter that builds on the last one.");
 });
 
-test("the how-it-works stepper advances on its own and stops for good once the reader chooses a step", async ({
-  page,
-}) => {
-  await page.clock.install();
-  await page.setViewportSize({ width: 1000, height: 800 });
-  await page.goto("/");
-  const how = page.locator("#how");
+test("Next step walks the ladder and the last step offers the way back", async ({ page }) => {
+  const how = await openHow(page);
   const tabs = how.getByRole("tab");
-  await how.getByRole("tablist").evaluate((el) => el.scrollIntoView({ block: "center" }));
-  await expect(how.locator("[class*='stepFill']")).toHaveCount(1);
-  await page.clock.runFor(5600);
-  await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
-  await page.clock.runFor(5500);
-  await expect(tabs.nth(2)).toHaveAttribute("aria-selected", "true");
-
-  await tabs.nth(0).click();
-  await expect(tabs.nth(0)).toHaveAttribute("aria-selected", "true");
-  await expect(how.locator("[class*='stepFill']")).toHaveCount(0);
-  await page.mouse.move(2, 2);
-  await page.clock.runFor(20000);
+  const next = how.getByRole("button", { name: /^Next step/ });
+  for (const index of [1, 2, 3]) {
+    await next.click();
+    await expect(tabs.nth(index)).toHaveAttribute("aria-selected", "true");
+  }
+  await expect(how.getByRole("button", { name: /^Back to the start/ })).toBeVisible();
+  await how.getByRole("button", { name: /^Back to the start/ }).click();
   await expect(tabs.nth(0)).toHaveAttribute("aria-selected", "true");
 });
 
-test("the how-it-works stepper waits while the reader hovers it and never moves under reduced motion", async ({
+test("the Read step opens a plain-words breakdown per line and lights the layer it rests on", async ({ page }) => {
+  const how = await openHow(page);
+  await expect(how.getByText(HOW_TRIED(0))).toBeVisible();
+  const lines = how.getByRole("button", { name: /^(The engine reads|Calling a function|A closure is)/ });
+  await expect(lines).toHaveCount(3);
+  await expect(how.getByText("The code behind these three lines")).toBeVisible();
+  await lines.nth(0).click();
+  await expect(lines.nth(0)).toHaveAttribute("aria-pressed", "true");
+  await expect(how.getByText("It starts at line 1 and does what each line says")).toBeVisible();
+  await expect(how.getByText("Rests on Syntax and values.")).toBeVisible();
+  await expect(how.getByText(HOW_TRIED(0))).toBeVisible();
+  await expect(how.locator("[class*='layers'] li[data-state='rests']")).toHaveText("Syntax and values");
+  await lines.nth(2).click();
+  await expect(lines.nth(0)).toHaveAttribute("aria-pressed", "false");
+  await expect(how.getByText("Rests on Core concepts, built on how code runs and syntax and values.")).toBeVisible();
+  await expect(how.locator("[class*='layers'] li[data-state='rests']")).toHaveText("Core concepts");
+  await expect(how.locator("[class*='layers'] li[data-state='below']")).toHaveCount(2);
+  await expect(how.getByText(HOW_TRIED(1))).toBeVisible();
+  await expect(how.getByRole("tab", { name: /Read/ })).toContainText("tried");
+  await lines.nth(2).click();
+  await expect(how.getByText("The code behind these three lines")).toBeVisible();
+});
+
+test("the Run step runs real functions: a broken one fails with expected and received, the closure passes", async ({
   page,
 }) => {
-  await page.clock.install();
-  await page.setViewportSize({ width: 1000, height: 800 });
+  const how = await openHow(page);
+  await how.getByRole("tab", { name: /Run/ }).click();
+  const status = how.getByRole("status");
+  await expect(status).toHaveText("Not run yet");
+  await expect(how.getByLabel("Shared counter")).toBeChecked();
+  await how.getByRole("button", { name: "Run tests" }).click();
+  await expect(status).toHaveText("2 / 3 passed");
+  await expect(how.getByText("expected 2, received 4")).toBeVisible();
+  await expect(how.getByText(HOW_TRIED(0))).toBeVisible();
+  await how.getByRole("button", { name: "Run tests" }).click();
+  await expect(status).toHaveText("2 / 3 passed");
+  await expect(how.getByText("expected 2, received 4")).toHaveCount(1);
+
+  await how.getByLabel("Off by one").check();
+  await expect(status).toHaveText("Not run yet");
+  await how.getByRole("button", { name: "Run tests" }).click();
+  await expect(status).toHaveText("2 / 3 passed");
+  await expect(how.getByText("expected 1, then 2, received 0, then 1")).toBeVisible();
+
+  await how.getByLabel("Closure").check();
+  await how.getByRole("button", { name: "Run tests" }).click();
+  await expect(status).toHaveText("3 / 3 passed");
+  await expect(how.getByText(/expected/)).toHaveCount(0);
+  await expect(how.getByText(HOW_TRIED(1))).toBeVisible();
+  await expect(how.getByRole("tab", { name: /Run/ })).toContainText("tried");
+});
+
+test("a passing run without a failing one first does not count as tried", async ({ page }) => {
+  const how = await openHow(page);
+  await how.getByRole("tab", { name: /Run/ }).click();
+  await how.getByLabel("Closure").check();
+  await how.getByRole("button", { name: "Run tests" }).click();
+  await expect(how.getByRole("status")).toHaveText("3 / 3 passed");
+  await expect(how.getByText(HOW_TRIED(0))).toBeVisible();
+});
+
+test("the Get asked step checks every answer and brings the interviewer's follow-up after a typing indicator", async ({
+  page,
+}) => {
+  const how = await openHow(page);
+  await how.getByRole("tab", { name: /Get asked/ }).click();
+  const panel = how.getByRole("tabpanel");
+  await expect(panel).toContainText("function counter() { let n = 0; return () => ++n; }");
+  await panel.getByRole("button", { name: "3", exact: true }).click();
+  await expect(panel).toContainText("Checked: that is what you would see if every counter shared one n");
+  await expect(panel.getByText("Hmm. Walk me through what n is the second time counter() runs.")).toBeVisible();
+  await expect(panel.getByText("What they are really testing.")).toBeVisible();
+  await expect(how.getByText(HOW_TRIED(1))).toBeVisible();
+  await expect(panel.locator("[class*='typingDots']")).toBeVisible();
+  await expect(panel.locator("[class*='followUp']")).toHaveCSS("opacity", "1", { timeout: 4000 });
+  await expect(panel.locator("[class*='typingDots']")).toBeHidden();
+  await panel.getByRole("button", { name: /^1/ }).click();
+  await expect(panel).toContainText("Checked: counter() builds a brand-new n each time it is called");
+  await expect(panel.getByText("Good. Now, when does that n finally get cleaned up?")).toBeVisible();
+  await expect(panel).not.toContainText("Walk me through");
+  await expect(panel.locator("[class*='option'][data-result='right']")).toHaveCount(1);
+  await expect(panel.locator("[class*='option'][data-result='wrong']")).toHaveCount(0);
+  expect(await panel.textContent()).not.toMatch(/verified/i);
+});
+
+test("the Keep step lights the real review days relative to today and writes nothing", async ({ page }) => {
+  const how = await openHow(page);
+  await how.getByRole("tab", { name: /Keep/ }).click();
+  const panel = how.getByRole("tabpanel");
+  await expect(panel.locator("[class*='calendar'] [data-lit]")).toHaveCount(0);
+  await panel.getByRole("button", { name: "Mark as read today" }).click();
+  await expect(panel.getByRole("button", { name: "Marked as read today" })).toBeDisabled();
+  const gaps = [0, 3, 10, 31, 91, 271];
+  const days = panel.locator("ol[class*='schedule'] li");
+  await expect(days).toHaveCount(6);
+  const labels = await days.locator("b").allTextContents();
+  expect(labels).toEqual(["today", "in 3 days", "in 10 days", "in 31 days", "in 91 days", "in 271 days"]);
+  const dates = await page.evaluate(
+    (offsets) =>
+      offsets.map((offset) => {
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset).toLocaleDateString(undefined, {
+          weekday: "short",
+          day: "numeric",
+          month: "short",
+        });
+      }),
+    gaps
+  );
+  for (let i = 0; i < gaps.length; i++) await expect(days.nth(i)).toContainText(dates[i]);
+  await expect(panel.locator("[class*='calendar'] [data-lit]")).toHaveCount(4);
+  await expect(panel).toContainText("review 2, 7 days later");
+  await expect(how.getByText(HOW_TRIED(1))).toBeVisible();
+});
+
+test("Reset demo returns every step to its start and clears the ticks", async ({ page }) => {
+  const how = await openHow(page);
+  const lines = how.getByRole("button", { name: /^(The engine reads|Calling a function)/ });
+  await lines.nth(0).click();
+  await lines.nth(1).click();
+  await how.getByRole("tab", { name: /Run/ }).click();
+  await how.getByRole("button", { name: "Run tests" }).click();
+  await how.getByLabel("Closure").check();
+  await how.getByRole("button", { name: "Run tests" }).click();
+  await how.getByRole("tab", { name: /Get asked/ }).click();
+  await how.getByRole("button", { name: /^1/ }).click();
+  await how.getByRole("tab", { name: /Keep/ }).click();
+  await how.getByRole("button", { name: "Mark as read today" }).click();
+  await expect(how.getByText(HOW_TRIED(4))).toBeVisible();
+  await expect(how.locator("[role='tab'][data-done]")).toHaveCount(4);
+  await expect(how.getByRole("link", { name: /^Pick a topic/ })).toHaveAttribute("href", "#shelf");
+  await expect(how.getByRole("button", { name: /^(Next step|Back to the start)/ })).toHaveCount(0);
+
+  await how.getByRole("button", { name: "Reset demo" }).click();
+  await expect(how.getByText(HOW_TRIED(0))).toBeVisible();
+  await expect(how.getByRole("link", { name: /^Pick a topic/ })).toHaveCount(0);
+  await expect(how.getByRole("button", { name: /^Next step/ })).toBeVisible();
+  await expect(how.locator("[role='tab'][data-done]")).toHaveCount(0);
+  await expect(how.getByRole("tab", { name: /Read/ })).toHaveAttribute("aria-selected", "true");
+  await expect(how.getByText("The code behind these three lines")).toBeVisible();
+  await how.getByRole("tab", { name: /Run/ }).click();
+  await expect(how.getByRole("status")).toHaveText("Not run yet");
+  await expect(how.getByLabel("Shared counter")).toBeChecked();
+  await how.getByRole("tab", { name: /Get asked/ }).click();
+  await expect(how.getByText("Take your time.")).toBeVisible();
+  await how.getByRole("tab", { name: /Keep/ }).click();
+  await expect(how.getByRole("button", { name: "Mark as read today" })).toBeEnabled();
+  await expect(how.locator("[class*='calendar'] [data-lit]")).toHaveCount(0);
+});
+
+test("using every step of the how-it-works demo writes nothing to storage", async ({ page }) => {
+  const how = await openHow(page);
+  const snapshot = () =>
+    page.evaluate(() =>
+      JSON.stringify(
+        Object.keys(localStorage)
+          .sort()
+          .map((key) => [key, localStorage.getItem(key)])
+      )
+    );
+  const before = await snapshot();
+  const lines = how.getByRole("button", { name: /^(The engine reads|Calling a function)/ });
+  await lines.nth(0).click();
+  await lines.nth(1).click();
+  await how.getByRole("tab", { name: /Run/ }).click();
+  await how.getByRole("button", { name: "Run tests" }).click();
+  await how.getByLabel("Closure").check();
+  await how.getByRole("button", { name: "Run tests" }).click();
+  await how.getByRole("tab", { name: /Get asked/ }).click();
+  await how.getByRole("button", { name: "3", exact: true }).click();
+  await how.getByRole("tab", { name: /Keep/ }).click();
+  await how.getByRole("button", { name: "Mark as read today" }).click();
+  await how.getByRole("button", { name: "Reset demo" }).click();
+  expect(await snapshot()).toBe(before);
+  const keys = await page.evaluate(() => Object.keys(localStorage));
+  expect(keys.filter((key) => /^(jsnotes|groundwork):(progress|activity)/.test(key))).toEqual([]);
+});
+
+test("without JavaScript every how-it-works step shows its final state, stacked", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
   await page.goto("/");
   const how = page.locator("#how");
-  const tabs = how.getByRole("tab");
-  await how.getByRole("tablist").evaluate((el) => el.scrollIntoView({ block: "center" }));
-  await expect(how.locator("[class*='stepFill']")).toHaveCount(1);
-  await tabs.nth(3).hover();
-  await expect(how.locator("[class*='stepFill']")).toHaveCount(0);
-  await page.clock.runFor(20000);
-  await expect(tabs.nth(0)).toHaveAttribute("aria-selected", "true");
-  await page.mouse.move(2, 2);
-  await page.clock.runFor(5600);
-  await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
+  await expect(how.getByRole("heading", { level: 2, name: /Read it. Run it/ })).toBeVisible();
+  const panels = how.getByRole("tabpanel");
+  await expect(panels).toHaveCount(4);
+  for (let i = 0; i < 4; i++) await expect(panels.nth(i)).toBeVisible();
+  await expect(how.getByRole("tablist")).toBeHidden();
+  await expect(panels.nth(0)).toContainText("It starts at line 1 and does what each line says");
+  await expect(panels.nth(0)).toContainText("Rests on Core concepts, built on how code runs and syntax and values.");
+  await expect(panels.nth(1)).toContainText("3 / 3 passed");
+  await expect(panels.nth(1)).toContainText("let n = 0;");
+  await expect(panels.nth(1).getByRole("button")).toHaveCount(0);
+  await expect(panels.nth(2)).toContainText("Good. Now, when does that n finally get cleaned up?");
+  await expect(panels.nth(2)).toContainText("What they are really testing.");
+  await expect(panels.nth(3)).toContainText("in 271 days");
+  await expect(panels.nth(3).locator("[class*='calendar'] [data-lit]")).toHaveCount(4);
+  await expect(how.getByRole("button", { name: "Run tests" })).toHaveCount(0);
+  await expect(how.locator("li[data-result='idle']:visible")).toHaveCount(0);
+  await expect(how.locator("[class*='liveOnly']:visible")).toHaveCount(0);
+  await context.close();
+});
 
+test("the how-it-works section is one view tall and its content fits the view at 1280x720 and 1440x900", async ({
+  page,
+}) => {
+  for (const size of [PROBE_SIZES[0], PROBE_SIZES[1]]) {
+    await page.setViewportSize(size);
+    await page.goto("/");
+    const how = page.locator("#how");
+    await expect(how.locator("[role='tabpanel'][hidden]")).toHaveCount(3);
+    const header = await page
+      .locator("header")
+      .first()
+      .evaluate((el) => el.getBoundingClientRect().height);
+    const box = await how.evaluate((el) => ({
+      section: el.getBoundingClientRect().height,
+      scene: el.querySelector("[data-scene-root]")!.getBoundingClientRect().height,
+    }));
+    expect(box.section, `${size.width}x${size.height} section`).toBeGreaterThanOrEqual(size.height - header - 2);
+    expect(box.scene, `${size.width}x${size.height} content`).toBeLessThanOrEqual(size.height - header);
+  }
+});
+
+const HOW_FONTS = ["classic", "marker", "script", "roboto"];
+
+async function eachHowState(page: Page, visit: (label: string) => Promise<void>) {
+  const how = page.locator("#how");
+  const tab = (name: RegExp) => how.getByRole("tab", { name });
+  const run = () => how.getByRole("button", { name: "Run tests" }).click();
+  await tab(/Read/).click();
+  await visit("read, nothing open");
+  const lines = how.getByRole("button", { name: /^(The engine reads|Calling a function|A closure is)/ });
+  for (let i = 0; i < 3; i++) {
+    await lines.nth(i).click();
+    await visit(`read, line ${i + 1} open`);
+  }
+  await tab(/Run/).click();
+  await visit("run, not run yet");
+  for (const label of ["Shared counter", "Off by one", "Closure"]) {
+    await how.getByLabel(label).check();
+    await visit(`run, ${label} picked`);
+    await run();
+    await visit(`run, ${label} run`);
+  }
+  await tab(/Get asked/).click();
+  await visit("asked, no answer");
+  for (const option of ["1", "3", "0", "undefined"]) {
+    await how.getByRole("button", { name: option, exact: true }).click();
+    await visit(`asked, ${option} chosen`);
+  }
+  await tab(/Keep/).click();
+  await visit("keep, not marked");
+  await how.getByRole("button", { name: "Mark as read today" }).click();
+  await visit("keep, marked");
+}
+
+test("no text in any how-it-works step state is covered, clipped or outside its card, at three sizes and four fonts", async ({
+  page,
+}) => {
+  test.setTimeout(240_000);
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(how.locator("[class*='stepFill']")).toHaveCount(0);
-  await page.clock.runFor(30000);
-  await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
+  const problems: string[] = [];
+  let states = 0;
+  for (const size of PROBE_SIZES) {
+    await page.setViewportSize(size);
+    await page.goto("/");
+    await expect(page.locator("#how [role='tabpanel'][hidden]")).toHaveCount(3);
+    await page.locator("#how").scrollIntoViewIfNeeded();
+    for (const font of HOW_FONTS) {
+      await page.evaluate((value) => document.documentElement.setAttribute("data-font", value), font);
+      await page.getByRole("button", { name: "Reset demo" }).click();
+      await eachHowState(page, async (label) => {
+        states++;
+        const found = await page.evaluate(probeText, [
+          "#how [role='tabpanel']:not([hidden])",
+          "#how [class*='ladderBox']",
+        ]);
+        for (const problem of found)
+          problems.push(
+            `${size.width}x${size.height} ${font} ${label}: ${problem.kind} "${problem.text}" by ${problem.by}`
+          );
+        for (const message of await page.evaluate(probeFit, "#how [class*='bench']"))
+          problems.push(`${size.width}x${size.height} ${font} ${label}: ${message}`);
+      });
+    }
+  }
+  expect(states).toBeGreaterThanOrEqual(3 * 4 * 18);
+  expect(problems).toEqual([]);
+});
+
+test("the how-it-works steps never scroll the page sideways at 375, 1024 and 1920 and stay inside their card", async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const problems: string[] = [];
+  for (const size of [
+    { width: 375, height: 800 },
+    { width: 1024, height: 800 },
+    { width: 1920, height: 1080 },
+  ]) {
+    await page.setViewportSize(size);
+    await page.goto("/");
+    await expect(page.locator("#how [role='tabpanel'][hidden]")).toHaveCount(3);
+    await page.locator("#how").scrollIntoViewIfNeeded();
+    await eachHowState(page, async (label) => {
+      const over = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      if (over > 0) problems.push(`${size.width} ${label}: the page is ${over}px wider than the view`);
+      for (const message of await page.evaluate(probeFit, "#how [class*='bench']"))
+        problems.push(`${size.width} ${label}: ${message}`);
+    });
+  }
+  expect(problems).toEqual([]);
+});
+
+test("under reduced motion the how-it-works steps have no animation and no typing indicator", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const how = await openHow(page);
+  const animated = () =>
+    how.evaluate((root) =>
+      [...root.querySelectorAll<HTMLElement>("*")]
+        .filter((el) => getComputedStyle(el).animationName !== "none" && el.getClientRects().length > 0)
+        .map((el) => `${el.tagName.toLowerCase()}.${String(el.className).split(" ")[0]}`)
+    );
+  expect(await animated()).toEqual([]);
+  await how.getByRole("tab", { name: /Run/ }).click();
+  await how.getByRole("button", { name: "Run tests" }).click();
+  await expect(how.getByRole("status")).toHaveText("2 / 3 passed");
+  expect(await animated()).toEqual([]);
+  await how.getByRole("tab", { name: /Get asked/ }).click();
+  await how.getByRole("button", { name: "3", exact: true }).click();
+  await expect(how.locator("[class*='followUp']")).toHaveCSS("opacity", "1");
+  await expect(how.locator("[class*='typingDots']")).toBeHidden();
+  expect(await animated()).toEqual([]);
+  await how.getByRole("tab", { name: /Keep/ }).click();
+  await how.getByRole("button", { name: "Mark as read today" }).click();
+  await expect(how.locator("[class*='schedule'] li").first()).toBeVisible();
+  expect(await animated()).toEqual([]);
+  const transitions = await how
+    .getByRole("tab")
+    .first()
+    .evaluate((el) => getComputedStyle(el).transitionDuration);
+  expect(transitions).toMatch(/^0s(, 0s)*$/);
 });
 
 test("on medium and large screens no home section after the hero is shorter than the view below the header", async ({
@@ -1605,7 +1923,8 @@ test("at 1440x900 every home section's content fills its view without spilling i
     .locator("header")
     .first()
     .evaluate((el) => el.getBoundingClientRect().height);
-  await expect(page.locator("#how")).toHaveAttribute("data-pinned", "");
+  await expect(page.locator("#paths")).toHaveAttribute("data-pinned", "");
+  await expect(page.locator("#how")).not.toHaveAttribute("data-pinned");
   for (const id of ["shelf", "practice", "how", "paths", "loop", "faq", "cta"]) {
     const room = await page.evaluate((target) => {
       const el = document.getElementById(target)!;
@@ -1687,9 +2006,11 @@ test("every home scene after the hero has layered cards, a sticker and a handwri
       strokes: el.querySelectorAll("[data-note] svg path").length,
     }));
     expect(counts.stages, `#${id} has a stage`).toBeGreaterThan(0);
-    expect(counts.cards, `#${id} cards`).toBeGreaterThanOrEqual(id === "loop" ? 1 : id === "shelf" ? 0 : 3);
+    expect(counts.cards, `#${id} cards`).toBeGreaterThanOrEqual(
+      id === "loop" ? 1 : id === "shelf" || id === "how" ? 0 : 3
+    );
     expect(counts.stickers, `#${id} stickers`).toBeGreaterThanOrEqual(1);
-    if (id !== "how" && id !== "loop") {
+    if (id !== "loop") {
       expect(counts.notes, `#${id} notes`).toBeGreaterThanOrEqual(1);
       expect(counts.strokes, `#${id} curved strokes`).toBeGreaterThanOrEqual(2);
     }
@@ -1751,7 +2072,7 @@ test("under reduced motion the home stage cards have no animation, no transition
       [...el.querySelectorAll("[data-card]")].map((node) => getComputedStyle(node).translate)
     );
     expect(new Set(after), `#${id} still at rest after the pointer moves`).toEqual(
-      id === "shelf" ? new Set() : new Set(["none"])
+      id === "shelf" || id === "how" ? new Set() : new Set(["none"])
     );
   }
 });
@@ -1901,7 +2222,9 @@ test("every home section is exactly at rest once a rail or nav link has landed o
     expect(Number(vars.enter), `#${id} enter`).toBe(1);
     expect(Number(vars.exit), `#${id} exit`).toBe(0);
     const offsets = await cardOffsets(page, id);
-    expect(offsets.length, `#${id} has cards`).toBeGreaterThan(id === "loop" ? 0 : id === "shelf" ? -1 : 2);
+    expect(offsets.length, `#${id} has cards`).toBeGreaterThan(
+      id === "loop" ? 0 : id === "shelf" || id === "how" ? -1 : 2
+    );
     for (const offset of offsets) expect(offset, `#${id} card offset at rest`).toBeLessThan(1);
   }
 });
@@ -1911,7 +2234,7 @@ test("a home section scrolled a quarter into view has its cards displaced and it
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  for (const id of ["practice", "how", "paths"]) {
+  for (const id of ["practice", "paths"]) {
     const nearBottom = await page.evaluate((target) => {
       const el = document.getElementById(target)!;
       window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - innerHeight * 0.55);
@@ -2039,6 +2362,26 @@ test("the home section rail lists the sections, follows the scroll, lands each o
   });
   expect(boxes.railRight, "the rail's dots sit in the left gutter").toBeLessThanOrEqual(boxes.sceneLeft);
   expect(boxes.railTop, "the rail stays below the header").toBeGreaterThanOrEqual(boxes.headerBottom);
+});
+
+test("a rail landing corrects itself when the layout above shifts after the click", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await scrollSectionTo(page, "shelf", 0.4);
+  const rail = page.getByRole("navigation", { name: "Page sections" });
+  const header = await page
+    .locator("header")
+    .first()
+    .evaluate((el) => el.getBoundingClientRect().height);
+  await rail.getByRole("link", { name: /Paths/ }).click();
+  await page.evaluate(() => {
+    const spacer = document.createElement("div");
+    spacer.style.height = "60px";
+    document.getElementById("practice")!.prepend(spacer);
+  });
+  await expect
+    .poll(() => page.evaluate(() => document.getElementById("paths")!.getBoundingClientRect().top), { timeout: 8000 })
+    .toBeCloseTo(header, -1);
 });
 
 test("the home rail takes a keyboard focus ring and opens its label", async ({ page }) => {
@@ -3534,7 +3877,6 @@ test("pinned home sections stay on screen while their steps play in order, then 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   for (const [id, steps] of [
-    ["how", 4],
     ["paths", 3],
     ["loop", 4],
   ] as const) {
@@ -3571,33 +3913,9 @@ test("pinned home sections stay on screen while their steps play in order, then 
   }
 });
 
-test("choosing a pinned step scrolls to it and keeps the scroll position, the tab and the content in agreement", async ({
+test("every step of pinned Paths and every panel of the how-it-works demo stays in the page, hidden but present", async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
-  const how = page.locator("#how");
-  const tabs = how.getByRole("tablist", { name: "How it works" });
-  await tabs.getByRole("tab", { name: /Get asked/ }).click();
-  await settleScroll(page);
-  await expect(tabs.getByRole("tab", { name: /Get asked/ })).toHaveAttribute("aria-selected", "true");
-  const pin = await pinOf(page, "how");
-  const along = await page.evaluate((top) => scrollY - top, pin.top - pin.header);
-  expect(Math.floor(along / pin.groupLength), "the page sits inside the third step").toBe(2);
-  await expect(how.getByRole("tabpanel", { name: /Get asked/ })).toBeVisible();
-  await tabs.getByRole("tab", { name: /Get asked/ }).focus();
-  await page.keyboard.press("ArrowDown");
-  await settleScroll(page);
-  await expect(tabs.getByRole("tab", { name: /Keep/ })).toHaveAttribute("aria-selected", "true");
-  await expect(tabs.getByRole("tab", { name: /Keep/ })).toBeFocused();
-  expect(await page.evaluate((top) => scrollY - top, pin.top - pin.header)).toBeGreaterThan(3 * pin.groupLength);
-  await page.keyboard.press("Home");
-  await settleScroll(page);
-  await expect(tabs.getByRole("tab", { name: /Read/ })).toHaveAttribute("aria-selected", "true");
-  expect(await page.evaluate((top) => scrollY - top, pin.top - pin.header)).toBeLessThan(pin.groupLength);
-});
-
-test("every step of a pinned home section stays in the page, hidden but present", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   const counts = await page.evaluate(() => ({
@@ -3610,9 +3928,9 @@ test("every step of a pinned home section stays in the page, hidden but present"
   }));
   expect(counts).toMatchObject({ how: 4, paths: 3, bodiesWithText: true });
   expect(counts.rounds).toBeGreaterThanOrEqual(4);
-  await expect(page.locator("#how")).toHaveAttribute("data-pinned", "");
-  const hidden = await page.locator("#how [role='tabpanel'][hidden]").count();
-  expect(hidden).toBeGreaterThanOrEqual(2);
+  await expect(page.locator("#paths")).toHaveAttribute("data-pinned", "");
+  await expect(page.locator("#how [role='tabpanel'][hidden]")).toHaveCount(3);
+  await expect(page.locator("#how [role='tabpanel'][inert]")).toHaveCount(3);
 });
 
 test("nothing pins at 1000px, on a phone or under reduced motion, and no section adds scroll length there", async ({
@@ -3714,44 +4032,6 @@ test("while the book turns a page its angle only ever moves one way with the scr
       expect(list[k].angle, `step ${step} frame ${k}`).toBeLessThanOrEqual(list[k - 1].angle + 0.05);
       expect(Math.abs(list[k].angle - list[k - 1].angle), `step ${step} frame ${k} jump`).toBeLessThan(178);
     }
-});
-
-test("the pinned how-it-works loop lights each station as the walker arrives and brings it home again", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
-  const how = page.locator("#how");
-  await expect(how).toHaveAttribute("data-pinned", "");
-  const unit = (await pinOf(page, "how")).groupLength;
-  const state = () =>
-    page.evaluate(() => ({
-      lit: [...document.querySelectorAll("#how [data-corner]")].map((el) => !el.hasAttribute("data-off")),
-      walker: (() => {
-        const el = document.querySelector<HTMLElement>("#how [data-motion='walker']")!;
-        return { left: parseFloat(el.style.left), top: parseFloat(el.style.top), rotate: el.style.rotate };
-      })(),
-    }));
-  await scrollPin(page, "how", unit * 0.05);
-  const start = await state();
-  expect(start.lit, "nothing is lit before the walker arrives").toEqual([false, false, false, false]);
-  await scrollPin(page, "how", unit * 0.5);
-  expect((await state()).lit).toEqual([true, false, false, false]);
-  await scrollPin(page, "how", unit * 2.5);
-  const third = await state();
-  expect(third.lit).toEqual([true, true, true, false]);
-  expect(third.walker.left, "the walker is on the right of the loop").toBeGreaterThan(80);
-  expect(third.walker.top, "and at the bottom of it").toBeGreaterThan(80);
-  await scrollPin(page, "how", unit * 3.5);
-  expect((await state()).lit).toEqual([true, true, true, true]);
-  await scrollPin(page, "how", unit * 4);
-  const home = await state();
-  expect(Math.hypot(home.walker.left - start.walker.left, home.walker.top - start.walker.top)).toBeLessThan(6);
-  expect(home.walker.rotate).toMatch(/deg$/);
-  await scrollPin(page, "how", unit * 0.05);
-  expect((await state()).lit, "scrolling back un-lights them").toEqual([false, false, false, false]);
-  for (const station of ["Read", "Run", "Get asked", "Keep"])
-    await expect(how.getByRole("tab", { name: new RegExp(station) })).toBeVisible();
 });
 
 test("the home connectors link each section to the next: aria-hidden, one per pair, attached to the next badge", async ({
@@ -3940,39 +4220,30 @@ test("a flick through the interview book turns at most a quarter of a round per 
   expect(steps[steps.length - 1]).toBeGreaterThan(steps[0] + 8);
 });
 
-test("at 1920 by 1080 the pinned stages fill their columns and the how-it-works notes stay clear of the caption", async ({
-  page,
-}) => {
+test("at 1920 by 1080 the stages fill their columns", async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto("/");
-  for (const id of ["how", "paths", "loop"]) {
-    await scrollPin(page, id, 5);
-    const geometry = await page.evaluate((target) => {
+  const geometryOf = (id: string) =>
+    page.evaluate((target) => {
       const scene = document.querySelector<HTMLElement>(`#${target} [data-scene-root]`)!.getBoundingClientRect();
       const stage = [...document.querySelectorAll<HTMLElement>(`#${target} [data-stage]`)]
         .find((el) => el.getBoundingClientRect().width > 0)!
         .getBoundingClientRect();
       return { scene: scene.width, stage: stage.width, height: stage.height, left: scene.left };
     }, id);
+  const checked = [];
+  for (const id of ["paths", "loop"]) {
+    await scrollPin(page, id, 5);
+    checked.push([id, await geometryOf(id)] as const);
+  }
+  await page.locator("#how").scrollIntoViewIfNeeded();
+  checked.push(["how", await geometryOf("how")] as const);
+  for (const [id, geometry] of checked) {
     expect(geometry.scene, id).toBeGreaterThan(1500);
     expect(geometry.stage, id).toBeGreaterThan(780);
     expect(geometry.height, id).toBeGreaterThan(680);
     expect(geometry.left, id).toBeLessThan(200);
   }
-  await scrollPin(page, "how", 5);
-  const overlaps = await page.evaluate(() => {
-    const caption = document
-      .querySelector<HTMLElement>("#how [role='tabpanel']:not([hidden])")!
-      .getBoundingClientRect();
-    return [...document.querySelectorAll<HTMLElement>("#how [class*='stationNote']")]
-      .map((note) => note.getBoundingClientRect())
-      .filter(
-        (box) =>
-          Math.min(box.right, caption.right) - Math.max(box.left, caption.left) > 1 &&
-          Math.min(box.bottom, caption.bottom) - Math.max(box.top, caption.top) > 1
-      ).length;
-  });
-  expect(overlaps).toBe(0);
 });
 
 test("the reading progress bar reaches the end of a chapter page and still does after the content grows", async ({
@@ -3999,46 +4270,40 @@ test("the reading progress bar reaches the end of a chapter page and still does 
   expect(await progress()).toBeGreaterThan(0.98);
 });
 
-test("rapid arrow presses in the pinned how-it-works tablist each move one step from the last target", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
-  const how = page.locator("#how");
-  await expect(how).toHaveAttribute("data-pinned", "");
+test("rapid arrow presses in the how-it-works tablist each move one step from the last", async ({ page }) => {
+  const how = await openHow(page);
   const tabs = how.getByRole("tablist", { name: "How it works" });
   await tabs.getByRole("tab", { name: /Read/ }).focus();
   for (let press = 0; press < 3; press++) await page.keyboard.press("ArrowDown");
-  await settleScroll(page);
   await expect(tabs.getByRole("tab", { name: /Keep/ })).toHaveAttribute("aria-selected", "true");
   await expect(tabs.getByRole("tab", { name: /Keep/ })).toBeFocused();
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("ArrowDown");
-  await settleScroll(page);
   await expect(tabs.getByRole("tab", { name: /Run/ })).toHaveAttribute("aria-selected", "true");
 });
 
 test("the pinned scenes follow a live resize and a live reduced-motion change without a reload", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  const how = page.locator("#how");
-  await expect(how).toHaveAttribute("data-pinned", "");
+  const paths = page.locator("#paths");
+  await expect(paths).toHaveAttribute("data-pinned", "");
   await page.setViewportSize({ width: 1000, height: 800 });
-  await expect(how).not.toHaveAttribute("data-pinned", "");
-  await how.scrollIntoViewIfNeeded();
+  await expect(paths).not.toHaveAttribute("data-pinned", "");
+  const second = paths.getByRole("tab").nth(1);
+  await second.scrollIntoViewIfNeeded();
   await settleScroll(page);
   const before = await page.evaluate(() => window.scrollY);
-  await how.getByRole("tab", { name: /Run/ }).click();
-  await expect(how.getByRole("tab", { name: /Run/ })).toHaveAttribute("aria-selected", "true");
+  await second.click();
+  await expect(second).toHaveAttribute("aria-selected", "true");
   await page.waitForTimeout(400);
   expect(Math.abs((await page.evaluate(() => window.scrollY)) - before)).toBeLessThan(3);
   await page.setViewportSize({ width: 1440, height: 900 });
-  await expect(how).toHaveAttribute("data-pinned", "");
+  await expect(paths).toHaveAttribute("data-pinned", "");
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(how).not.toHaveAttribute("data-pinned", "");
-  await expect(how).not.toHaveAttribute("data-live", "");
+  await expect(paths).not.toHaveAttribute("data-pinned", "");
+  await expect(paths).not.toHaveAttribute("data-live", "");
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await expect(how).toHaveAttribute("data-pinned", "");
+  await expect(paths).toHaveAttribute("data-pinned", "");
 });
 
 test("a rail click keeps the anchor: the hash changes, the section takes focus and the page lands on it", async ({
@@ -4058,26 +4323,6 @@ test("a rail click keeps the anchor: the hash changes, the section takes focus a
     .first()
     .evaluate((el) => Math.round(el.getBoundingClientRect().height));
   expect(Math.abs(top - header)).toBeLessThan(4);
-});
-
-test("the how-it-works autoplay can be paused, resumed and stops after one cycle", async ({ page }) => {
-  await page.setViewportSize({ width: 1000, height: 800 });
-  await page.goto("/");
-  const how = page.locator("#how");
-  await how.scrollIntoViewIfNeeded();
-  const toggle = how.getByRole("button", { name: /(Pause|Play) the steps/ });
-  await expect(toggle).toHaveText("Pause the steps");
-  await toggle.click();
-  await expect(toggle).toHaveText("Play the steps");
-  const selected = how.getByRole("tab", { selected: true });
-  const held = await selected.textContent();
-  await page.mouse.move(5, 5);
-  await page.waitForTimeout(6500);
-  expect(await selected.textContent(), "paused autoplay stays on its step").toBe(held);
-  await toggle.click();
-  await expect(toggle).toHaveText("Pause the steps");
-  await page.mouse.move(5, 5);
-  await expect.poll(async () => selected.textContent(), { timeout: 9000 }).not.toBe(held);
 });
 
 test("with JavaScript off the FAQ answers, the how-it-works steps and the paths are all in the page and visible", async ({
@@ -4261,7 +4506,7 @@ test("the pinned interview book keeps every round's text clear of other elements
   expect(problems).toEqual([]);
 });
 
-test("no connector traveller touches its fact and the how-it-works track never crosses a chip", async ({ page }) => {
+test("no connector traveller touches its fact", async ({ page }) => {
   test.setTimeout(90_000);
   const crossings: string[] = [];
   for (const size of PROBE_SIZES) {
@@ -4269,14 +4514,6 @@ test("no connector traveller touches its fact and the how-it-works track never c
     await page.goto("/");
     await expect(page.locator("[data-connector]")).toHaveCount(6);
     for (const found of await page.evaluate(probeConnectors)) crossings.push(`${size.width}: ${found}`);
-    await expect(page.locator("#how")).toHaveAttribute("data-pinned", "");
-    const pin = await pinOf(page, "how");
-    for (let step = 0; step < pin.groups.length; step++) {
-      await scrollPin(page, "how", step * pin.groupLength + pin.groupLength * 0.85);
-      await page.waitForTimeout(200);
-      for (const found of await page.evaluate(probeTrack, "#how"))
-        crossings.push(`${size.width} step ${step + 1}: ${found}`);
-    }
   }
   expect(crossings).toEqual([]);
 });
