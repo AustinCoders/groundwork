@@ -8,7 +8,7 @@ export const archDesignSystem: Chapter = {
   levels: ["intermediate"],
   practice: [],
   ready: true,
-  subtitle: "Nine themes and seven fonts as CSS variables, two page frames, and the checks that keep them readable.",
+  subtitle: "Nine themes and eight fonts as CSS variables, two page frames, and the checks that keep them readable.",
   body: `<h3>Tokens, not components</h3>
 <p>
   There is no component library here. The design system is a set of CSS custom properties in
@@ -161,12 +161,12 @@ export const archDesignSystem: Chapter = {
   topic's colour, which is why the accent role is not called <code>--accent</code>.
 </p>
 
-<h3>Seven fonts</h3>
+<h3>Eight fonts</h3>
 <p>
-  <code>lib/fonts.ts</code> loads 13 families through <code>next/font/google</code>, which serves
+  <code>lib/fonts.ts</code> loads 15 families through <code>next/font/google</code>, which serves
   them from the site's own origin and exposes each as a variable such as
   <code>--font-caveat</code>. Only the default pair, Caveat and Kalam, is preloaded, with
-  <code>display: "optional"</code>, so a slow font never causes a layout shift. The other eleven
+  <code>display: "optional"</code>, so a slow font never causes a layout shift. The other thirteen
   set <code>preload: false</code> and download only when a <code>data-font</code> rule starts
   using them.
 </p>
@@ -177,13 +177,14 @@ export const archDesignSystem: Chapter = {
 <tr><td><code>marker</code></td><td>Marker</td><td>Patrick Hand</td><td>Shadows Into Light</td></tr>
 <tr><td><code>sketch</code></td><td>Sketch</td><td>Architects Daughter</td><td>Reenie Beanie</td></tr>
 <tr><td><code>pen</code></td><td>Pen</td><td>Gochi Hand</td><td>Neucha</td></tr>
+<tr><td><code>chalk</code></td><td>Chalk</td><td>Permanent Marker</td><td>Indie Flower</td></tr>
 <tr><td><code>script</code></td><td>Script</td><td>Dancing Script</td><td>Handlee</td></tr>
 <tr><td><code>serif</code></td><td>Reading</td><td>Literata</td><td>Literata</td></tr>
 <tr><td><code>roboto</code></td><td>Roboto</td><td>Roboto</td><td>Roboto</td></tr>
 </tbody>
 </table></div>
 <p>
-  Five of the seven are handwriting. Reading and Roboto exist for people who find handwriting hard
+  Six of the eight are handwriting. Reading and Roboto exist for people who find handwriting hard
   to read for long, and they are the reason the picker's heading says "Handwriting" but its options
   do not all fit the name. JetBrains Mono stays the <code>--font-mono</code> for code blocks in
   every font.

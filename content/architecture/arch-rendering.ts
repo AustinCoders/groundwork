@@ -210,7 +210,7 @@ export const archRendering: Chapter = {
   <code>lib/themeInitScript.ts</code>. It reads <code>jsnotes:theme</code> and
   <code>jsnotes:font</code>, falls back to <code>prefers-color-scheme</code>, and sets
   <code>data-theme</code> and <code>data-font</code> on the root element. There are nine themes and
-  seven fonts. <code>&lt;html&gt;</code> has <code>suppressHydrationWarning</code> because those
+  eight fonts. <code>&lt;html&gt;</code> has <code>suppressHydrationWarning</code> because those
   attributes will legitimately differ from the server's. The script sits in
   <code>&lt;body&gt;</code>, as the Script docs ask, and Next moves it into the head.
 </p>

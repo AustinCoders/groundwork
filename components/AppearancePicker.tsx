@@ -9,6 +9,7 @@ export const FONT_FAMILIES: Record<FontValue, string> = {
   marker: "var(--font-patrick-hand), cursive",
   sketch: "var(--font-architects-daughter), cursive",
   pen: "var(--font-gochi-hand), cursive",
+  chalk: "var(--font-permanent-marker), cursive",
   script: "var(--font-dancing-script), cursive",
   serif: "var(--font-literata), Georgia, serif",
   roboto: "var(--font-roboto), system-ui, sans-serif",

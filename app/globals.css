@@ -155,6 +155,12 @@ html[data-font="pen"] {
   --font-code: var(--font-body);
 }
 
+html[data-font="chalk"] {
+  --font-heading: var(--font-permanent-marker), "Comic Sans MS", cursive;
+  --font-body: var(--font-indie-flower), "Comic Sans MS", cursive;
+  --font-code: var(--font-body);
+}
+
 html[data-font="script"] {
   --font-heading: var(--font-dancing-script), "Comic Sans MS", cursive;
   --font-body: var(--font-handlee), "Comic Sans MS", cursive;

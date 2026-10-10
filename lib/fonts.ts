@@ -4,11 +4,13 @@ import {
   Dancing_Script,
   Gochi_Hand,
   Handlee,
+  Indie_Flower,
   JetBrains_Mono,
   Kalam,
   Literata,
   Neucha,
   Patrick_Hand,
+  Permanent_Marker,
   Reenie_Beanie,
   Roboto,
   Shadows_Into_Light,
@@ -64,6 +66,18 @@ export const gochiHand = Gochi_Hand({
   preload: false,
 });
 export const neucha = Neucha({ subsets: ["latin"], weight: "400", variable: "--font-neucha", preload: false });
+export const permanentMarker = Permanent_Marker({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-permanent-marker",
+  preload: false,
+});
+export const indieFlower = Indie_Flower({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-indie-flower",
+  preload: false,
+});
 export const dancingScript = Dancing_Script({
   subsets: ["latin"],
   weight: ["600", "700"],
@@ -95,6 +109,8 @@ export const fontVariables = [
   reenieBeanie.variable,
   gochiHand.variable,
   neucha.variable,
+  permanentMarker.variable,
+  indieFlower.variable,
   dancingScript.variable,
   handlee.variable,
   literata.variable,

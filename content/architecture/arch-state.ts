@@ -90,7 +90,7 @@ export const archState: Chapter = {
 <tr><td><code>jsnotes:activity</code></td><td>A count per local calendar day, <code>"2026-09-25": 3</code></td></tr>
 <tr><td><code>jsnotes:code:{id}</code>, <code>jsnotes:code:{id}:{lang}</code></td><td>Unsaved editor text per exercise; JavaScript has no suffix</td></tr>
 <tr><td><code>jsnotes:level</code></td><td>The last level you read, so topic links go straight to it</td></tr>
-<tr><td><code>jsnotes:theme</code>, <code>jsnotes:font</code></td><td>One of nine themes and seven fonts, read before paint by the theme-init script</td></tr>
+<tr><td><code>jsnotes:theme</code>, <code>jsnotes:font</code></td><td>One of nine themes and eight fonts, read before paint by the theme-init script</td></tr>
 <tr><td><code>jsnotes:narration</code></td><td>Voice, rate and pitch</td></tr>
 <tr><td><code>jsnotes:sound-enabled</code></td><td>Whether solving an exercise plays a sound</td></tr>
 </tbody>

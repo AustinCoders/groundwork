@@ -46,39 +46,6 @@ export function HitLink({ hit, here, onClose }: { hit: Hit; here: boolean; onClo
   );
 }
 
-const CATEGORY_ACCENT: Record<string, string> = {
-  languages: "blue",
-  web: "orange",
-  backend: "teal",
-  data: "green",
-  cs: "purple",
-  devops: "red",
-  engineering: "yellow",
-  ai: "purple",
-};
-
-const MINI_RADIUS = 11;
-const MINI_LENGTH = 2 * Math.PI * MINI_RADIUS;
-
-function MiniRing({ ready, total }: { ready: number; total: number }) {
-  return (
-    <span className={styles.miniRing} aria-hidden="true">
-      <svg viewBox="0 0 28 28" width="28" height="28">
-        <circle className={styles.ringTrack} cx="14" cy="14" r={MINI_RADIUS} />
-        <circle
-          className={styles.ringFill}
-          cx="14"
-          cy="14"
-          r={MINI_RADIUS}
-          strokeDasharray={MINI_LENGTH}
-          strokeDashoffset={MINI_LENGTH * (1 - ready / total)}
-        />
-      </svg>
-      <span>{ready}</span>
-    </span>
-  );
-}
-
 export function TopicList({
   topics,
   current,
@@ -107,7 +74,6 @@ export function TopicList({
             className={styles.topicGroup}
             data-open={open || undefined}
             data-here={group.id === categoryOf(current)?.id || undefined}
-            style={{ "--accent": accentVar(CATEGORY_ACCENT[group.id] ?? "ink") } as React.CSSProperties}
           >
             <h3 className={styles.categoryLabel}>
               <button
@@ -119,12 +85,16 @@ export function TopicList({
                 onClick={() => setOpenId(open ? null : group.id)}
               >
                 <span className={styles.categoryIcon} aria-hidden="true">
-                  <MenuIcon name={group.id} size={17} />
+                  <MenuIcon name={group.id} size={20} />
                 </span>
-                <span className={styles.categoryName}>
-                  {group.label} · {group.topics.length}
+                <span className={styles.categoryText}>
+                  <span className={styles.categoryName}>
+                    {group.label} · {group.topics.length}
+                  </span>
+                  <span className={styles.written} aria-hidden="true">
+                    {group.topics.filter(isReadable).length} of {group.topics.length} written
+                  </span>
                 </span>
-                <MiniRing ready={group.topics.filter(isReadable).length} total={group.topics.length} />
                 <span className={styles.chevron} aria-hidden="true" />
               </button>
             </h3>

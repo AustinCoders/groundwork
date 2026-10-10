@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { useFontChoice, useThemeChoice } from "@/components/ThemeFontPicker";
 import { FONT_FAMILIES } from "@/components/AppearancePicker";
+import { Eyebrow } from "@/components/menu/Eyebrow";
 import { Fold } from "@/components/menu/Fold";
 import { NarrationSettings } from "@/components/reader/NarrationSettings";
 import { ZOOM_STEPS, useReaderZoom } from "@/lib/readerZoom";
@@ -84,12 +85,15 @@ export function ThemeSwatches() {
               ))}
             </span>
           </span>
-          {checked && (
-            <span className={styles.badge} aria-hidden="true">
-              ✓
-            </span>
-          )}
-          <span className={styles.choiceName}>{plain(THEME_ITEMS.find((t) => t.value === value)?.label ?? value)}</span>
+          <span className={styles.choiceName}>
+            {plain(THEME_ITEMS.find((t) => t.value === value)?.label ?? value)}
+            {checked && (
+              <span className={styles.check} aria-hidden="true">
+                {" "}
+                ✓
+              </span>
+            )}
+          </span>
         </>
       )}
     </Choice>
@@ -106,16 +110,11 @@ export function FontChoice() {
       value={font}
       onChange={choose}
     >
-      {(value, checked) => (
+      {(value) => (
         <>
           <span className={styles.sample} style={{ fontFamily: FONT_FAMILIES[value] }} aria-hidden="true">
             Aa
           </span>
-          {checked && (
-            <span className={styles.badge} aria-hidden="true">
-              ✓
-            </span>
-          )}
           <span className={styles.choiceName}>{plain(FONT_ITEMS.find((f) => f.value === value)?.label ?? value)}</span>
         </>
       )}
@@ -156,12 +155,11 @@ export function Settings({
   onToggle: (id: string, open: boolean) => void;
 }) {
   return (
-    <section className={styles.settings} aria-labelledby="menu-settings">
-      <div className={styles.sectionHead}>
-        <h2 className={styles.sectionH} id="menu-settings">
-          <span className={styles.marker}>Make it yours</span>
-        </h2>
-      </div>
+    <section className={styles.block} aria-labelledby="menu-settings">
+      <Eyebrow no="05">Look and feel</Eyebrow>
+      <h2 className={styles.h2} id="menu-settings">
+        Make it yours.
+      </h2>
       <div className={styles.setting}>
         <p className={styles.settingLabel}>Theme</p>
         <ThemeSwatches />

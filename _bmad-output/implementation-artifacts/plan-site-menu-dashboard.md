@@ -102,6 +102,12 @@ Built as a dashboard drawer; status left for the owner to set.
 
 **Docs**: architecture chapters updated for the 85 client files, the new key (32 keys, "the other twenty-two"), the a11y states and test counts, the drawer description, and the line-count chart (smoke.spec.ts is now the second-longest file).
 
+**Round 3: the drawer in the home page's language (after the owner said the dashboard look felt foreign)**
+- Studied `app/home.module.css`, `components/home/stage.module.css` and `legend.module.css`, then rebuilt the drawer in that vocabulary. Removed: hard offset coloured shadows, pastel icon chips, the level badge and ring, the three stat cards, the tile grid, the heavy block button, the grid-paper background and the sticker-border treatments.
+- Now: numbered mono eyebrows ("01 CONTINUE WHERE YOU LEFT OFF" with a primary number pill and a dashed rule, `Eyebrow.tsx`); heading-font bold display headings ("Level 3", "Pick a topic.", "Make it yours."); one taped paper card (sheet, 1px line, soft `--shadow-lg`, `--tape`) for Continue with the home primary button; a thin trail line for progress plus a home-style stat row (heading-font numbers, dashed top rule); quick actions as plain rows with a leading stroke icon, heading-font names and dashed separators, a `--mark` sticker for the Review due count and a `--mark` highlight plus "here" tag for the current page; topics as flat dashed-separated rows (category icon, heading-font name, "1 of 8 written", chevron) with the current category in the home accent; pill search; theme swatches and handwriting pills with the primary border or fill for the current choice; the header is paper with a hairline and soft shadow like the home nav.
+- Only three treatments are used: the taped paper card, flat dashed-separated rows on paper, and pills or stickers. All names, roles and aria-labels the e2e uses are unchanged.
+- Typography (owner review): six rem tokens on the drawer root (display 1.75, heading 1.375, control 1, body 0.9375, meta 0.8125, kicker 0.75), nothing under 12px, weights 400 and 700 only, the mono face only for the one eyebrow kicker per section, one display moment (the Continue title); row and category names are body size, stat numbers are small. `tests/menu-type.test.ts` scans `SiteDrawer.module.css` for sizes outside the scale, weights other than 400 and 700, and mono outside `.eyebrow`. Checked visually at 1440, 390 and 320 in Caveat/Kalam, Roboto, Reading (serif) and Marker.
+
 ## Plan Change Log
 
 - Owner feedback mid-build asked for a bolder redesign: the first tidy version was replaced by the sticky header, hero Continue card, tactile tiles and category accordion with icons and rings.
@@ -119,3 +125,7 @@ Built as a dashboard drawer; status left for the owner to set.
 ## Auto Run Result
 
 Built. Independent check in a clean copy: `npm run build` ok; `npm run check` 637 unit tests in 40 files (one pre-existing lint warning in `components/topic/useReadingPlan.ts`); full e2e 328 of 328 on the agent's run and 327 of 328 on the coordinator's (the home section rail landing test failed under load and passed 3 of 3 alone). Screenshots reviewed: menu on home (light, night) and a topic page at 390 (lavender). Known gap: `arch-testing.ts` and `arch-health.ts` still say 405 unit tests in 24 files, stale before this work and not asserted by a test.
+
+### Follow-up round (coordinator)
+
+Home-matching redesign and type scale (`--t-*` tokens, `tests/menu-type.test.ts`) verified in a clean copy: 641 unit tests, build ok, full e2e 328 of 328. Owner follow-ups applied after that: the Chalk handwriting style is back (Permanent Marker and Indie Flower, eight styles in all; `lib/fonts.ts`, `lib/storage.ts`, `globals.css`, `AppearancePicker.tsx`, the design-system, rendering and state chapters); the drawer's handwriting choice is a tile grid with a large sample, as in the owner's screenshot; row, category, fold and hit titles use the heading font like the home titles, at `--t-title` (1.25rem, 1rem for Reading and Roboto). Re-verified: `npm run check` 641 tests, and 138 menu, drawer, font and theme e2e tests pass; full e2e passed before the title-size tweak.

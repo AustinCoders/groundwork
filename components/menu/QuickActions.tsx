@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MenuIcon, type MenuIconName } from "@/components/menu/MenuIcon";
-import { accentVar } from "@/lib/accent";
+import { Eyebrow } from "@/components/menu/Eyebrow";
 import type { MenuStats } from "@/components/menu/ProgressStrip";
 import styles from "../SiteDrawer.module.css";
 
@@ -76,48 +76,55 @@ export function isUnder(pathname: string, base: string): boolean {
 export function QuickActions({ stats, onClose }: { stats: MenuStats | null; onClose: () => void }) {
   const pathname = usePathname();
   return (
-    <nav aria-label="Site">
-      <ul className={styles.tiles}>
-        {QUICK_ACTIONS.map((action) => {
-          const due = action.href === "/review" ? (stats?.due ?? 0) : 0;
-          const here = isUnder(pathname, action.href.split("?")[0]);
-          const hintId = `menu-hint-${action.icon}`;
-          return (
-            <li key={action.href}>
-              <Link
-                href={action.href}
-                className={styles.tile}
-                aria-current={here ? "page" : undefined}
-                aria-label={due > 0 ? `${action.label}, ${due} due` : action.label}
-                aria-describedby={hintId}
-                onClick={onClose}
-                prefetch={false}
-                style={{ "--accent": accentVar(action.accent) } as React.CSSProperties}
-              >
-                <span className={styles.tileTop}>
-                  <span className={styles.tileIcon} aria-hidden="true">
-                    <MenuIcon name={action.icon} />
+    <section className={styles.block} aria-labelledby="menu-go">
+      <Eyebrow no="03" id="menu-go">
+        Go to
+      </Eyebrow>
+      <nav aria-label="Site">
+        <ul className={styles.rows}>
+          {QUICK_ACTIONS.map((action) => {
+            const due = action.href === "/review" ? (stats?.due ?? 0) : 0;
+            const here = isUnder(pathname, action.href.split("?")[0]);
+            const hintId = `menu-hint-${action.icon}`;
+            return (
+              <li key={action.href}>
+                <Link
+                  href={action.href}
+                  className={styles.row}
+                  aria-current={here ? "page" : undefined}
+                  aria-label={due > 0 ? `${action.label}, ${due} due` : action.label}
+                  aria-describedby={hintId}
+                  onClick={onClose}
+                  prefetch={false}
+                >
+                  <span className={styles.rowIcon} aria-hidden="true">
+                    <MenuIcon name={action.icon} size={22} />
                   </span>
+                  <span className={styles.rowText}>
+                    <span className={styles.rowName}>{action.label}</span>
+                    <span className={styles.rowHint} id={hintId}>
+                      {action.hint}
+                    </span>
+                  </span>
+                  {due > 0 && !here && (
+                    <span className={styles.sticker} aria-hidden="true">
+                      {due} due
+                    </span>
+                  )}
                   {here && (
                     <span className={styles.here} aria-hidden="true">
                       here
                     </span>
                   )}
-                  {!here && due > 0 && (
-                    <span className={styles.due} aria-hidden="true">
-                      {due} due
-                    </span>
-                  )}
-                </span>
-                <span className={styles.tileName}>{action.label}</span>
-                <span className={styles.tileHint} id={hintId}>
-                  {action.hint}
-                </span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+                  <span className={styles.rowArrow} aria-hidden="true">
+                    →
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    </section>
   );
 }

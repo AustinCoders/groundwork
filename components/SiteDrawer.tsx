@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal, flushSync } from "react-dom";
 import { FocusTrap } from "@/components/FocusTrap";
 import { ContinueCard } from "@/components/menu/ContinueCard";
+import { Eyebrow } from "@/components/menu/Eyebrow";
 import { Fold } from "@/components/menu/Fold";
 import { MenuIcon } from "@/components/menu/MenuIcon";
 import { ProgressStrip, useMenuStats } from "@/components/menu/ProgressStrip";
@@ -174,15 +175,14 @@ function DrawerBody({
           <ContinueCard card={card} onClose={onClose} />
           <ProgressStrip stats={stats} onClose={onClose} />
           <QuickActions stats={stats} onClose={onClose} />
-          <section aria-labelledby="menu-topics">
-            <div className={styles.sectionHead}>
-              <h2 className={styles.sectionH} id="menu-topics">
-                <span className={styles.marker}>Topics</span>
-              </h2>
-              <span className={styles.sectionCount}>
-                {readyCount} to read · {topics.length - readyCount} soon
-              </span>
-            </div>
+          <section className={styles.block} aria-labelledby="menu-topics">
+            <Eyebrow no="04">Topics</Eyebrow>
+            <h2 className={styles.h2} id="menu-topics">
+              Pick a topic.
+            </h2>
+            <p className={styles.sub}>
+              {readyCount} to read, {topics.length - readyCount} coming soon.
+            </p>
             <TopicList topics={topics} current={current} onClose={onClose} />
             <div className={styles.folds}>
               {guides.map((g) => {
