@@ -32,22 +32,6 @@
   box-shadow: 0 6px 20px -18px var(--ink);
 }
 
-.iconBtn {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  color: var(--ink);
-  background: transparent;
-  border: 0;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.iconBtn:hover {
-  background: var(--sheet-2);
-}
-
 .brand {
   display: inline-flex;
   align-items: center;
@@ -1088,7 +1072,6 @@
 }
 
 .btn:focus-visible,
-.iconBtn:focus-visible,
 .brand:focus-visible,
 .navLinks a:focus-visible,
 .linkBtn:focus-visible,

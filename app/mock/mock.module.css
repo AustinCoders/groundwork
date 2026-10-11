@@ -2271,22 +2271,6 @@
   border-bottom: 1px solid var(--line);
 }
 
-.iconBtn {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  color: var(--ink);
-  background: transparent;
-  border: 0;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.iconBtn:hover {
-  background: var(--sheet-2);
-}
-
 .brand {
   display: inline-flex;
   align-items: center;
@@ -3213,7 +3197,6 @@
   font-size: clamp(30px, 4vw, 46px);
 }
 
-.iconBtn:focus-visible,
 .brand:focus-visible,
 .topLink:focus-visible,
 .nextSteps a:focus-visible {
@@ -3319,4 +3302,11 @@
 
 .page[data-room] .scrollBar {
   display: none;
+}
+
+@media (max-width: 520px) {
+  .topTitle,
+  .topLink {
+    display: none;
+  }
 }

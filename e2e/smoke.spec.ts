@@ -289,6 +289,8 @@ test("the /notes cover renders in the topic frame", async ({ page }) => {
 
   await page.getByRole("button", { name: "Menu", exact: true }).click();
   const menu = page.getByRole("dialog", { name: /menu/ });
+  await expect(menu.getByRole("button", { name: "Larger text" })).toBeHidden();
+  await menu.getByRole("button", { name: /Appearance/ }).click();
   await menu.getByRole("button", { name: "Larger text" }).click();
   await expect(menu.locator("output")).toHaveText("110%");
   await expect
@@ -738,6 +740,7 @@ test("the playground has no sidebar, a site menu, and goes back where you came f
   await expect(
     drawer.getByRole("navigation", { name: "Site" }).getByRole("link", { name: "Whiteboard" })
   ).toBeVisible();
+  await drawer.getByRole("button", { name: /Appearance/ }).click();
   await drawer.getByRole("radio", { name: "Kraft" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "kraft");
   await page.keyboard.press("Escape");
@@ -1127,14 +1130,14 @@ test("an architecture chapter has its own rail, contents and read marker", async
   await page.waitForURL("**/architecture/arch-build");
 });
 
-test("the site menu folds the guides and changes the text size everywhere", async ({ page }) => {
+test("the site menu lists the guides beside the topics and changes the text size everywhere", async ({ page }) => {
   await page.goto("/architecture/arch-build");
   await page.getByRole("button", { name: "Menu" }).click();
   const menu = page.getByRole("dialog", { name: /menu/ });
   await expect(menu.getByRole("navigation", { name: "Site" }).getByRole("link", { name: "Whiteboard" })).toBeVisible();
   const built = menu.getByRole("button", { name: /How this is built/ });
   await expect(built).toContainText("I2");
-  await built.click();
+  await expect(built).toHaveAttribute("aria-expanded", "true");
   await expect(
     menu.getByRole("navigation", { name: "How this is built" }).locator("a[aria-current=page]")
   ).toContainText("The build");
@@ -1142,6 +1145,10 @@ test("the site menu folds the guides and changes the text size everywhere", asyn
   await expect(
     menu.getByRole("navigation", { name: "Topics" }).getByRole("link", { name: /Interview book/ })
   ).toHaveCount(0);
+  await menu.getByRole("button", { name: /Interview book/ }).click();
+  await expect(built).toHaveAttribute("aria-expanded", "false");
+  await expect(menu.getByRole("navigation", { name: "Interview book" }).getByRole("link").first()).toBeVisible();
+  await menu.getByRole("button", { name: /Appearance/ }).click();
   await menu.getByRole("button", { name: "Larger text" }).click();
   await expect(menu.locator("output")).toHaveText("110%");
   await page.keyboard.press("Escape");
@@ -1152,11 +1159,12 @@ test("the site menu folds the guides and changes the text size everywhere", asyn
     .toBe("1.1");
   await page.getByRole("button", { name: "Menu" }).click();
   const problemsMenu = page.getByRole("dialog", { name: /menu/ });
+  await problemsMenu.getByRole("button", { name: /Appearance/ }).click();
   await expect(problemsMenu.getByRole("radiogroup", { name: "Theme" })).toBeVisible();
   await expect(problemsMenu.getByRole("button", { name: "Larger text" })).toHaveCount(0);
 });
 
-test("the site menu is a dashboard: continue, progress, quick actions, topics, settings and no developer entries", async ({
+test("the site menu has four numbered sections: continue, go to, topics and a closed appearance fold", async ({
   page,
 }) => {
   await page.addInitScript(() => {
@@ -1167,17 +1175,21 @@ test("the site menu is a dashboard: continue, progress, quick actions, topics, s
       JSON.stringify({ chapters: { a: { at: 1, reviews: 0 }, b: { at: 1, reviews: 0 } }, exercises: { x: true } })
     );
   });
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  const menuButton = page.getByRole("button", { name: "Menu", exact: true });
+  await expect(menuButton).toContainText("Menu");
+  await expect(menuButton).toHaveAttribute("aria-haspopup", "dialog");
+  await menuButton.click();
   const menu = page.getByRole("dialog", { name: /menu/ });
   await expect(menu.getByText("Start here", { exact: true })).toBeVisible();
+  await expect(menu.getByRole("heading", { level: 2 })).toHaveText([/Start here/, /Go to/, /Topics/, /Appearance/]);
 
-  const progress = menu.getByRole("region", { name: /Level/ });
-  await expect(progress.getByRole("listitem").nth(1)).toHaveText(/^2\s*chapters read$/);
-  await expect(progress.getByRole("listitem").nth(2)).toHaveText(/^1\s*problem solved$/);
-  await expect(progress.getByRole("link", { name: /See all progress/ })).toHaveAttribute("href", "/progress");
+  const standing = menu.getByRole("link", { name: /^Level \d+ · 2 chapters read · \d+ day streak/ });
+  await expect(standing).toHaveAttribute("href", "/progress");
 
   const tiles = menu.getByRole("navigation", { name: "Site" });
+  await expect(tiles.getByRole("link")).toHaveCount(6);
   for (const name of ["Problems", "Playground", "Mock interview", "Whiteboard"]) {
     await expect(tiles.getByRole("link", { name })).toBeVisible();
   }
@@ -1185,6 +1197,9 @@ test("the site menu is a dashboard: continue, progress, quick actions, topics, s
   await expect(tiles.getByRole("link", { name: "Progress" })).toBeVisible();
 
   const topics = menu.getByRole("navigation", { name: "Topics" });
+  const topicsHeading = menu.getByRole("heading", { name: /Topics/ });
+  const box = await topicsHeading.boundingBox();
+  expect(box!.y + box!.height).toBeLessThan(900);
   const expanded = topics.locator("button[aria-expanded=true]");
   await expect(expanded).toHaveCount(1);
   await topics.getByRole("button", { name: /^Data · \d+$/ }).click();
@@ -1199,16 +1214,44 @@ test("the site menu is a dashboard: continue, progress, quick actions, topics, s
 
   await expect(menu).not.toContainText(/ticket/i);
 
+  const appearance = menu.getByRole("button", { name: /Appearance/ });
+  await expect(appearance).toHaveAttribute("aria-expanded", "false");
+  await expect(menu.getByRole("radiogroup", { name: "Theme" })).toBeHidden();
+  await appearance.click();
+  await expect(appearance).toHaveAttribute("aria-expanded", "true");
   const themes = menu.getByRole("radiogroup", { name: "Theme" });
   await themes.getByRole("radio", { name: "Forest" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "forest");
   await expect(themes.getByRole("radio", { name: "Forest" })).toHaveAttribute("aria-checked", "true");
   await expect(themes.getByRole("radio", { name: "Forest" })).toContainText("✓");
+  await expect(appearance).toContainText("Forest");
   await menu.getByRole("radiogroup", { name: "Handwriting" }).getByRole("radio", { name: "Pen" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-font", "pen");
+  await expect(appearance).toContainText("Pen");
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "forest");
   await expect(page.locator("html")).toHaveAttribute("data-font", "pen");
+});
+
+test("the Menu pill and the chapters entry stay readable and unclipped at 320, 390 and 1440", async ({ page }) => {
+  for (const width of [320, 390, 1440]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/notes/setup-mental-model");
+    const pill = page.getByRole("button", { name: "Menu", exact: true });
+    await expect(pill).toBeVisible();
+    await expect(pill).toContainText("Menu");
+    const at = (await pill.boundingBox())!;
+    expect(at.x).toBeGreaterThanOrEqual(0);
+    expect(at.x + at.width).toBeLessThanOrEqual(width);
+    if (width < 900) {
+      expect(at.height).toBeGreaterThanOrEqual(44);
+      const chapters = page.getByRole("button", { name: "Chapters", exact: true });
+      await expect(chapters).toBeVisible();
+      const reach = (await chapters.boundingBox())!;
+      expect(reach.x + reach.width).toBeLessThanOrEqual(width);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+  }
 });
 
 test("the Continue card picks up the last chapter read", async ({ page }) => {
@@ -1219,7 +1262,7 @@ test("the Continue card picks up the last chapter read", async ({ page }) => {
   const card = page.getByRole("dialog", { name: /menu/ }).getByRole("region", { name: "Continue where you left off" });
   await expect(card).toContainText(/chapter \d+ of \d+/);
   await expect(card).toContainText("Last read today");
-  await card.getByRole("link").click();
+  await card.getByRole("link", { name: /chapter \d+ of \d+/ }).click();
   await page.waitForURL("**/notes/basic-async");
 });
 
@@ -3651,6 +3694,7 @@ test("the theme picker shows each theme's accent, and the current theme's accent
 
   await page.getByRole("button", { name: "Menu", exact: true }).click();
   const drawer = page.getByRole("dialog", { name: /menu/ });
+  await drawer.getByRole("button", { name: /Appearance/ }).click();
   const cards = drawer.getByRole("radiogroup", { name: "Theme" }).getByRole("radio");
   await expect(cards).toHaveCount(THEMES.length);
 

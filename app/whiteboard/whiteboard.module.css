@@ -762,6 +762,18 @@
   cursor: pointer;
 }
 
+.menuLabelled {
+  display: inline-flex;
+  gap: 6px;
+  width: auto;
+  padding: 0 12px 0 8px;
+  font-family: var(--font-heading);
+  font-size: 17px;
+  font-weight: 700;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+}
+
 .menuBtn:hover,
 .menuBtn[aria-expanded="true"] {
   background: color-mix(in srgb, var(--ink) 9%, transparent);

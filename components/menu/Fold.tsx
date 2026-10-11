@@ -1,6 +1,7 @@
 "use client";
 
 import { MenuIcon, type MenuIconName } from "@/components/menu/MenuIcon";
+import { kit } from "@/components/ui/MenuKit";
 import styles from "../SiteDrawer.module.css";
 
 export function Fold({
@@ -30,12 +31,16 @@ export function Fold({
           aria-controls={`fold-${id}`}
           onClick={() => onToggle(id, !open)}
         >
-          <span className={styles.foldIcon} aria-hidden="true">
-            <MenuIcon name={icon} size={17} />
+          <span className={styles.rowIcon} aria-hidden="true">
+            <MenuIcon name={icon} size={20} />
           </span>
-          <span className={styles.foldTitle}>{title}</span>
-          {summary && <span className={styles.foldSummary}>{summary}</span>}
-          <span className={styles.chevron} aria-hidden="true" />
+          <span className={kit.title}>{title}</span>
+          {summary && (
+            <span className={kit.meta} aria-hidden="true">
+              {summary}
+            </span>
+          )}
+          <span className={kit.chevron} aria-hidden="true" />
         </button>
       </h3>
       <div className={styles.foldPanel} id={`fold-${id}`} role="region" aria-label={title} inert={!open}>

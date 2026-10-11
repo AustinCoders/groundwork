@@ -1,17 +1,38 @@
 "use client";
 
 import Link from "next/link";
-import { Eyebrow } from "@/components/menu/Eyebrow";
+import type { MenuStats } from "@/components/menu/menuStats";
+import { Eyebrow } from "@/components/ui/MenuKit";
 import type { ContinueCard as Card } from "@/lib/continueCard";
 import styles from "../SiteDrawer.module.css";
 
-export function ContinueCard({ card, onClose }: { card: Card; onClose: () => void }) {
+const plural = (count: number, one: string, many: string) => (count === 1 ? one : many);
+
+function Standing({ stats, onClose }: { stats: MenuStats; onClose: () => void }) {
+  return (
+    <Link href="/progress" className={styles.standing} onClick={onClose} prefetch={false}>
+      <span>
+        Level {stats.level} · {stats.chaptersRead} {plural(stats.chaptersRead, "chapter", "chapters")} read ·{" "}
+        {stats.streak} day streak
+      </span>
+      <span aria-hidden="true">→</span>
+    </Link>
+  );
+}
+
+export function ContinueCard({ card, stats, onClose }: { card: Card; stats: MenuStats | null; onClose: () => void }) {
   if (!card) return null;
   const resume = card.kind === "resume";
   return (
     <section className={styles.block} aria-labelledby="menu-continue">
       <Eyebrow no="01" id="menu-continue">
-        {resume ? "Continue where you left off" : "Start here"}
+        {resume ? (
+          <>
+            Continue<span className="visually-hidden"> where you left off</span>
+          </>
+        ) : (
+          "Start here"
+        )}
       </Eyebrow>
       <div className={styles.paper}>
         <span className={styles.tape} aria-hidden="true" />
@@ -33,6 +54,7 @@ export function ContinueCard({ card, onClose }: { card: Card; onClose: () => voi
             <span aria-hidden="true">→</span>
           </span>
         </Link>
+        {stats && <Standing stats={stats} onClose={onClose} />}
       </div>
     </section>
   );

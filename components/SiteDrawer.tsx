@@ -5,25 +5,23 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal, flushSync } from "react-dom";
 import { FocusTrap } from "@/components/FocusTrap";
+import { Appearance } from "@/components/menu/Appearance";
 import { ContinueCard } from "@/components/menu/ContinueCard";
-import { Eyebrow } from "@/components/menu/Eyebrow";
-import { Fold } from "@/components/menu/Fold";
 import { MenuIcon } from "@/components/menu/MenuIcon";
-import { ProgressStrip, useMenuStats } from "@/components/menu/ProgressStrip";
+import { useMenuStats } from "@/components/menu/menuStats";
 import { HOME_ACTION, QUICK_ACTIONS, QuickActions, isUnder } from "@/components/menu/QuickActions";
-import { Settings } from "@/components/menu/Settings";
-import { Shortcuts, useShortcutLabel } from "@/components/menu/Shortcuts";
-import { GuideList, HitLink, TopicList, topicHit, type Hit } from "@/components/menu/Topics";
+import { useShortcutLabel } from "@/components/menu/Shortcuts";
+import { HitLink, TopicsSection, topicHit, type Hit } from "@/components/menu/Topics";
+import { ClearButton, CloseButton, KeyHint, SearchPill, kit } from "@/components/ui/MenuKit";
 import { continueCard } from "@/lib/continueCard";
 import { isEditableTarget, isMenuShortcut } from "@/lib/menuShortcut";
 import { readResume } from "@/lib/resume";
-import { isReadable } from "@/lib/topicCategories";
 import { useGuidesNav, useTopicsNav } from "@/lib/topicNav";
 import { SITE_NAME } from "@/lib/site";
 import type { TopicNav } from "@/content/types";
 import styles from "./SiteDrawer.module.css";
 
-const MENU_BUTTON = 'button[aria-haspopup="dialog"][aria-label="Menu"]';
+const MENU_BUTTON = "button[data-menu-button]";
 
 function topicBases(t: TopicNav): string[] {
   return [`/${(t.notes || "notes.html").replace(/\.html$/, "")}`, `/level/${t.id}`];
@@ -86,7 +84,6 @@ function DrawerBody({
   }
 
   const current = topics.find((t) => topicBases(t).some((b) => isUnder(pathname, b)))?.id ?? null;
-  const readyCount = topics.filter(isReadable).length;
 
   const q = query.trim().toLowerCase();
   const hits: Hit[] = q
@@ -95,14 +92,13 @@ function DrawerBody({
           href: l.href,
           label: l.label,
           mark: l.mark,
-          accent: l.accent,
           meta: "Page",
         })),
         ...topics.map(topicHit),
         ...guides.flatMap((g) => [
-          { href: g.href, label: g.name, mark: g.mark, accent: g.accent, meta: `${g.total} chapters` },
+          { href: g.href, label: g.name, mark: g.mark, meta: `${g.total} chapters` },
           ...g.groups.flatMap((grp) =>
-            grp.chapters.map((c) => ({ href: c.href, label: c.title, mark: g.mark, accent: g.accent, meta: g.name }))
+            grp.chapters.map((c) => ({ href: c.href, label: c.title, mark: c.num, meta: g.name }))
           ),
         ]),
       ].filter((h) => h.label.toLowerCase().includes(q))
@@ -130,11 +126,18 @@ function DrawerBody({
     <>
       <div className={styles.sticky}>
         {header}
-        <div className={styles.search}>
+        <SearchPill
+          trailing={
+            query ? (
+              <ClearButton label="Clear the search" onClear={() => setQuery("")} />
+            ) : (
+              <KeyHint>{shortcut}</KeyHint>
+            )
+          }
+        >
           <label htmlFor="menu-search" className="visually-hidden">
             Jump to a page or topic
           </label>
-          <MenuIcon name="search" size={16} />
           <input
             id="menu-search"
             ref={searchRef}
@@ -145,21 +148,12 @@ function DrawerBody({
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onSearchKey}
           />
-          {query ? (
-            <button type="button" className={styles.clear} aria-label="Clear the search" onClick={() => setQuery("")}>
-              ×
-            </button>
-          ) : (
-            <kbd className={styles.hint} aria-hidden="true">
-              {shortcut}
-            </kbd>
-          )}
-        </div>
+        </SearchPill>
       </div>
       {q ? (
         <section className={styles.results} aria-label="Results" ref={results}>
           {hits.length ? (
-            <ul className={styles.hits}>
+            <ul className={kit.rows}>
               {hits.map((h) => (
                 <li key={h.href + h.label}>
                   <HitLink hit={h} here={false} onClose={onClose} />
@@ -172,39 +166,10 @@ function DrawerBody({
         </section>
       ) : (
         <>
-          <ContinueCard card={card} onClose={onClose} />
-          <ProgressStrip stats={stats} onClose={onClose} />
+          <ContinueCard card={card} stats={stats} onClose={onClose} />
           <QuickActions stats={stats} onClose={onClose} />
-          <section className={styles.block} aria-labelledby="menu-topics">
-            <Eyebrow no="04">Topics</Eyebrow>
-            <h2 className={styles.h2} id="menu-topics">
-              Pick a topic.
-            </h2>
-            <p className={styles.sub}>
-              {readyCount} to read, {topics.length - readyCount} coming soon.
-            </p>
-            <TopicList topics={topics} current={current} onClose={onClose} />
-            <div className={styles.folds}>
-              {guides.map((g) => {
-                const here = g.groups.flatMap((grp) => grp.chapters).find((c) => c.href === pathname);
-                return (
-                  <Fold
-                    key={g.id}
-                    id={g.id}
-                    icon={g.id === "interview" ? "interview" : "architecture"}
-                    title={g.name}
-                    summary={here ? here.num : `${g.total} chapters`}
-                    open={open.has(g.id)}
-                    onToggle={toggle}
-                  >
-                    <GuideList guide={g} pathname={pathname} onClose={onClose} />
-                  </Fold>
-                );
-              })}
-            </div>
-          </section>
-          <Settings reading={reading} open={open} onToggle={toggle} />
-          <Shortcuts reading={reading} open={open.has("shortcuts")} onToggle={toggle} />
+          <TopicsSection topics={topics} guides={guides} current={current} pathname={pathname} onClose={onClose} />
+          <Appearance reading={reading} open={open} onToggle={toggle} />
         </>
       )}
     </>
@@ -283,9 +248,7 @@ export function SiteDrawer({
                   <span className={styles.brandName}>{SITE_NAME}</span>
                 </Link>
                 <SignIn />
-                <button type="button" className={styles.close} aria-label="Close the menu" onClick={onClose}>
-                  ×
-                </button>
+                <CloseButton label="Close the menu" onClose={onClose} />
               </div>
             }
             onClose={onClose}
@@ -308,7 +271,7 @@ export function SiteDrawer({
               </button>
             )}
             <p className={styles.footNote}>
-              Your progress stays in this browser, and nothing here needs an account.{" "}
+              Your progress stays in this browser; no account needed.{" "}
               <Link href="/architecture" onClick={onClose}>
                 How this is built
               </Link>{" "}

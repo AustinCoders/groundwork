@@ -3,7 +3,9 @@
 import { useEffect } from "react";
 import { FocusTrap } from "@/components/FocusTrap";
 import { TopIcon } from "@/components/practice/TopIcon";
-import styles from "@/components/series/chapter.module.css";
+import { CloseButton } from "@/components/ui/MenuKit";
+import chapterStyles from "@/components/series/chapter.module.css";
+import styles from "./rail.module.css";
 
 const SHEET_ID = "chapters-sheet";
 
@@ -11,7 +13,7 @@ export function ChaptersSheetButton({ open, onOpen }: { open: boolean; onOpen: (
   return (
     <button
       type="button"
-      className={`${styles.btn} ${styles.railBtn}`}
+      className={`${chapterStyles.btn} ${chapterStyles.railBtn}`}
       aria-expanded={open}
       aria-controls={SHEET_ID}
       onClick={onOpen}
@@ -51,9 +53,7 @@ export function ChaptersSheet({
         <div className={styles.sheet} id={SHEET_ID} role="dialog" aria-modal="true" aria-label="Chapters">
           <div className={styles.sheetHead}>
             <p className={styles.sheetTitle}>Chapters</p>
-            <button type="button" className={styles.iconBtn} aria-label="Close chapters" onClick={onClose}>
-              ×
-            </button>
+            <CloseButton label="Close chapters" onClose={onClose} />
           </div>
           {children}
         </div>

@@ -90,6 +90,7 @@ const STATES: State[] = [
     visit: async (page, check) => {
       await page.getByRole("button", { name: "Menu", exact: true }).click();
       const menu = page.getByRole("dialog", { name: /menu/ });
+      await menu.getByRole("button", { name: /Appearance/ }).click();
       const swatches = menu.getByRole("radiogroup", { name: "Theme" });
       await swatches.getByRole("radio", { checked: true }).focus();
       await expect(swatches.getByRole("radio", { checked: true })).toBeFocused();
@@ -340,7 +341,7 @@ const STATES: State[] = [
       await page.getByRole("button", { name: "Menu", exact: true }).click();
       const menu = page.getByRole("dialog", { name: /menu/ });
       await expect(menu).toBeVisible();
-      for (const fold of [/Narrator/, /Keyboard shortcuts/]) {
+      for (const fold of [/Appearance/, /Narrator/, /Keyboard shortcuts/]) {
         const head = menu.getByRole("button", { name: fold });
         await head.click();
         await expect(head).toHaveAttribute("aria-expanded", "true");

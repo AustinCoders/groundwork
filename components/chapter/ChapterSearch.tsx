@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { RefObject } from "react";
+import { ClearButton, KeyHint, SearchPill, kit } from "@/components/ui/MenuKit";
 import type { ChapterSearchMatch } from "./useChapterSearch";
-import styles from "@/components/series/chapter.module.css";
+import styles from "./rail.module.css";
 
 export function ChapterSearch({
   value,
@@ -31,29 +32,30 @@ export function ChapterSearch({
   const clear = () => onChange("");
 
   return (
-    <div className={styles.searchWrap}>
-      <input
-        id={id}
-        ref={inputRef}
-        className={styles.searchInput}
-        type="search"
-        placeholder="Search…"
-        aria-label="Search the notes"
-        autoComplete="off"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") clear();
-          if (e.key === "Enter" && matches.size) {
-            e.preventDefault();
-            const first = chapterIds.find((id) => matches.has(id));
-            if (first) {
-              clear();
-              router.push(`${basePath}/${first}`);
+    <div className={styles.search}>
+      <SearchPill trailing={value ? <ClearButton label="Clear the search" onClear={clear} /> : <KeyHint>/</KeyHint>}>
+        <input
+          id={id}
+          ref={inputRef}
+          type="search"
+          placeholder="Search this topic"
+          aria-label="Search the notes"
+          autoComplete="off"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") clear();
+            if (e.key === "Enter" && matches.size) {
+              e.preventDefault();
+              const first = chapterIds.find((id) => matches.has(id));
+              if (first) {
+                clear();
+                router.push(`${basePath}/${first}`);
+              }
             }
-          }
-        }}
-      />
+          }}
+        />
+      </SearchPill>
       <p className={styles.searchCount} id={`${id}-count`} aria-live="polite">
         {searching
           ? matches.size === 0
@@ -63,13 +65,13 @@ export function ChapterSearch({
       </p>
       {otherMatches.length > 0 && (
         <div className={styles.searchOther}>
-          <p className={styles.searchOtherTitle}>In other topics</p>
-          <ol className={styles.railList}>
+          <p className={styles.partLabel}>In other topics</p>
+          <ol className={kit.rows}>
             {otherMatches.map((m) => (
               <li key={m.id}>
-                <Link href={m.href} className={styles.railLink} onClick={clear}>
-                  <span className={styles.railNum}>{m.num}</span>
-                  <span className={styles.railTitle}>{m.short}</span>
+                <Link href={m.href} className={kit.row} onClick={clear}>
+                  <span className={kit.code}>{m.num}</span>
+                  <span className={kit.title}>{m.short}</span>
                 </Link>
               </li>
             ))}

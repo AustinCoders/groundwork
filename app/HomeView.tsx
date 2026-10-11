@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { MenuButton } from "@/components/MenuButton";
 import { SiteDrawer } from "@/components/SiteDrawer";
-import { TopIcon } from "@/components/practice/TopIcon";
 import { Connectors, type Link as Hop } from "@/components/home/Connectors";
 import { CtaScene } from "@/components/home/CtaScene";
 import { FaqScene, type Faq } from "@/components/home/FaqScene";
@@ -390,19 +390,13 @@ export function HomeView({ stats, ready, soon, languages, interview, bookRounds 
       <div className={styles.page} ref={pageRef}>
         <Connectors liveRef={connectorsRef} links={hops} />
         <header className={styles.nav} data-scrolled={scrolled || undefined}>
-          <button
-            type="button"
-            className={styles.iconBtn}
-            aria-label="Menu"
-            aria-haspopup="dialog"
-            aria-expanded={menuOpen}
-            onClick={() => {
+          <MenuButton
+            open={menuOpen}
+            onOpen={() => {
               smoothScroll.stop();
               setMenuOpen(true);
             }}
-          >
-            <TopIcon name="menu" />
-          </button>
+          />
           <Link href="/" className={styles.brand} aria-label={`${SITE_NAME} home`}>
             <span className="brand__mark" aria-hidden="true">
               G

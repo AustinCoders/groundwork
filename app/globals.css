@@ -97,6 +97,21 @@
   --book-tape: rgba(226, 212, 160, 0.6);
 }
 
+:root {
+  --t-display: 1.75rem;
+  --t-heading: 1.375rem;
+  --t-control: 1rem;
+  --t-title: 1.25rem;
+  --t-body: 0.9375rem;
+  --t-meta: 0.8125rem;
+  --t-kicker: 0.75rem;
+}
+
+html[data-font="serif"],
+html[data-font="roboto"] {
+  --t-title: 1rem;
+}
+
 :root,
 [data-theme] {
   --c-red: var(--red);

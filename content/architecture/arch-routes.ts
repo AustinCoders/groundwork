@@ -258,7 +258,7 @@ export const archRoutes: Chapter = {
 
 <p>
   <code>components/frame/PageFrame.tsx</code> is the frame nearly every page uses: a sticky header with a
-  labelled back pill, a menu button for the site drawer, the brand and the page title. Home, review,
+  labelled back pill, a labelled Menu pill for the site drawer, the brand and the page title. Home, review,
   progress, privacy, the not-found and error pages render it directly.
   <code>components/topic/TopicFrame.tsx</code> is a thin wrapper over it for a topic: the topic's mark
   and name linking back to its cover. Every topic cover and chapter, written or outlined, the level and
@@ -269,8 +269,8 @@ export const archRoutes: Chapter = {
   commit "Playground and problems: no sidebar, a site menu drawer" took the old sidebar off them, and the
   whiteboard was built full-screen from the start. An editor, a list of 538 problems and an infinite
   canvas all want the width more than they want navigation that is always visible, so these pages use
-  <code>components/SiteDrawer.tsx</code> instead: a menu button that opens a dashboard drawer with a Continue card, six
-  quick-action tiles, the topics, and inline theme and handwriting choices. <code>components/AppHeader.tsx</code> provides the thin
+  <code>components/SiteDrawer.tsx</code> instead: a Menu pill that opens a four-section drawer with a Continue card, six
+  Go to rows, the topics, and a closed Appearance fold with the theme and handwriting choices. <code>components/AppHeader.tsx</code> provides the thin
   header and a <code>BareShell</code> frame, which the whiteboard uses with the header turned off. The
   bare frame and <code>PageFrame</code> never meet on one page.
 </p>`,

@@ -186,7 +186,7 @@ export function BoardMenu({
       <button
         ref={toggleRef}
         type="button"
-        className={styles.menuBtn}
+        className={`${styles.menuBtn} ${styles.menuLabelled}`}
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-label="Boards and export"
@@ -194,6 +194,7 @@ export function BoardMenu({
         onClick={() => setOpen((o) => !o)}
       >
         <Icon name="menu" />
+        <span aria-hidden="true">Boards</span>
       </button>
       <input
         className={styles.boardName}

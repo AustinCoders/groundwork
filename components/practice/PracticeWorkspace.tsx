@@ -12,6 +12,7 @@ import { ShortcutHelp } from "@/components/practice/ShortcutHelp";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { NewFileDialog, RenameFileDialog } from "@/components/practice/FileDialogs";
 import { ConfirmDialog } from "@/components/Modal";
+import { MenuButton } from "@/components/MenuButton";
 import { SiteDrawer } from "@/components/SiteDrawer";
 import { Dropdown } from "@/components/ui/select";
 import { isLanguage, LANG_ORDER, LANGUAGES, type LanguageKey } from "@/lib/codeLanguages";
@@ -833,17 +834,7 @@ export function PracticeWorkspace({
           <div className="pg-head">
             <span className="lc-topbar__group">
               <BackButton variant="icon" className="lc-icon-btn" fallbackHref="/" fallbackLabel="Home" />
-              <button
-                type="button"
-                className="lc-icon-btn"
-                aria-label="Menu"
-                aria-haspopup="dialog"
-                aria-expanded={menuOpen}
-                data-tip="Pages, theme and handwriting"
-                onClick={() => setMenuOpen(true)}
-              >
-                <TopIcon name="menu" />
-              </button>
+              <MenuButton open={menuOpen} onOpen={() => setMenuOpen(true)} />
             </span>
             <h1 className="pg-head__title">
               <span aria-hidden="true">✎</span> Playground
@@ -890,17 +881,7 @@ export function PracticeWorkspace({
               fallbackHref={chapter ? chapter.href : "/problems"}
               fallbackLabel={chapter ? `Back to ${chapter.short}` : "All problems"}
             />
-            <button
-              type="button"
-              className="lc-icon-btn"
-              aria-label="Menu"
-              aria-haspopup="dialog"
-              aria-expanded={menuOpen}
-              data-tip="Pages, theme and handwriting"
-              onClick={() => setMenuOpen(true)}
-            >
-              <TopIcon name="menu" />
-            </button>
+            <MenuButton open={menuOpen} onOpen={() => setMenuOpen(true)} />
             <span className="lc-topbar__divider" aria-hidden="true" />
             <Link className="lc-icon-btn" href="/problems" data-tip="All problems" aria-label="Problem list">
               <TopIcon name="list" />

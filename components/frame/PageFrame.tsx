@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
+import { MenuButton } from "@/components/MenuButton";
 import { SiteDrawer } from "@/components/SiteDrawer";
 import { BackButton } from "@/components/practice/BackButton";
-import { TopIcon } from "@/components/practice/TopIcon";
 import { DiagramDefs } from "@/components/chapter/DiagramDefs";
 import { accentVar } from "@/lib/accent";
 import { SITE_NAME } from "@/lib/site";
@@ -90,19 +90,13 @@ export function PageFrame({
         <span className={styles.scrollBar} data-scrollbar aria-hidden="true" />
         <header className={styles.top}>
           <BackButton variant="bar" className="head-back" fallbackHref={back.href} fallbackLabel={back.label} />
-          <button
-            type="button"
-            className={styles.iconBtn}
-            aria-label="Menu"
-            aria-haspopup="dialog"
-            aria-expanded={menuOpen}
-            onClick={() => {
+          <MenuButton
+            open={menuOpen}
+            onOpen={() => {
               smoothScroll.stop();
               setMenuOpen(true);
             }}
-          >
-            <TopIcon name="menu" />
-          </button>
+          />
           <Link href="/" className={styles.brand} aria-label={`${SITE_NAME} home`}>
             <span className="brand__mark" aria-hidden="true">
               G

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { BackButton } from "@/components/practice/BackButton";
 import { FocusTrap } from "@/components/FocusTrap";
+import { MenuButton } from "@/components/MenuButton";
 import { SiteDrawer } from "@/components/SiteDrawer";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { progress } from "@/lib/storage";
@@ -375,17 +376,7 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
         <header className={styles.top}>
           <div className={styles.topLeft}>
             <BackButton variant="icon" className={styles.iconBtn} fallbackHref="/" fallbackLabel="Home" />
-            <button
-              type="button"
-              className={styles.iconBtn}
-              aria-label="Menu"
-              aria-haspopup="dialog"
-              aria-expanded={menuOpen}
-              data-tip="Pages, theme and handwriting"
-              onClick={() => setMenuOpen(true)}
-            >
-              <TopIcon name="menu" />
-            </button>
+            <MenuButton open={menuOpen} onOpen={() => setMenuOpen(true)} />
             <h1 className={styles.title}>Problems</h1>
           </div>
           <label className={styles.search}>
