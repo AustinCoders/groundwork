@@ -12,11 +12,11 @@ export const archPlayground: Chapter = {
   body: `<h3>One component, three jobs</h3>
 <p>
   The playground, every problem page and the mock interview room all render the same component,
-  <code>components/practice/PracticeWorkspace.tsx</code>. At 1,735 lines it is the second-largest component in
+  <code>components/practice/PracticeWorkspace.tsx</code>. At about 1,800 lines it is the second-largest component in
   the repository, after the whiteboard, and it decides its shape from two flags. With <code>isFree</code> set and no interview it
   is the playground: a project of files, a Live switch, share links and run history. Without it, it is
   a problem page, with a brief on the left (Description, Tests and Hints tabs), a Submit button and
-  the solved state. Inside the mock interview it drops the navigation, the saved code and the
+  the solved state, stamped on the page with a pill to the next problem. Inside the mock interview it drops the navigation, the saved code and the
   debugger.
 </p>
 <p>

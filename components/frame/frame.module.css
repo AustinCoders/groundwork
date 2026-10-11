@@ -148,6 +148,79 @@ a.title:hover {
   padding: 0;
 }
 
+.topTool {
+  position: relative;
+  gap: 10px;
+}
+
+.topTool .brandName {
+  display: none;
+}
+
+.topTool .sep {
+  height: 24px;
+}
+
+.topTool .actions {
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  margin-left: auto;
+}
+
+.topTool :global(.head-back) {
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
+
+.topTool :global(.back-btn__label) {
+  display: none;
+}
+
+@media (min-width: 1700px) {
+  .topTool :global(.back-btn__label) {
+    display: inline;
+  }
+
+  .topTool :global(.head-back) {
+    width: auto;
+    padding: 0 14px 0 11px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .topTool {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: var(--header-h);
+    padding-block: 8px;
+  }
+}
+
+@media (min-width: 1001px) {
+  .topTool {
+    flex: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .topTool .sep {
+    display: none;
+  }
+}
+
+@media (max-width: 1200px) {
+  .topPlayground {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: var(--header-h);
+    padding-block: 8px;
+  }
+}
+
 .brand:focus-visible,
 a.title:focus-visible,
 .links a:focus-visible {

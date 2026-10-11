@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
-import { Crumbs } from "@/components/Crumbs";
+import { FrameHeader } from "@/components/frame/FrameHeader";
+import { Underlined } from "@/components/topic/TopicKit";
 import { useScrollRegions } from "@/components/reader/scrollRegions";
-import { BackButton } from "@/components/practice/BackButton";
 import { CodeEditor, type CodeEditorHandle } from "@/components/practice/CodeEditor";
 import { Confetti } from "@/components/practice/Confetti";
 import { EditorSkeleton } from "@/components/practice/EditorSkeleton";
@@ -12,7 +12,6 @@ import { ShortcutHelp } from "@/components/practice/ShortcutHelp";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { NewFileDialog, RenameFileDialog } from "@/components/practice/FileDialogs";
 import { ConfirmDialog } from "@/components/Modal";
-import { MenuButton } from "@/components/MenuButton";
 import { SiteDrawer } from "@/components/SiteDrawer";
 import { Dropdown } from "@/components/ui/select";
 import { isLanguage, LANG_ORDER, LANGUAGES, type LanguageKey } from "@/lib/codeLanguages";
@@ -55,6 +54,7 @@ import { isSoundEnabled, playSolvedDing, setSoundEnabled } from "@/lib/sound";
 import { code as codeStore, progress, store } from "@/lib/storage";
 import type { ChapterLink, NeighbourLink } from "@/app/practice/PracticeClient";
 import { problemHref } from "@/lib/problemHref";
+import styles from "./workbench.module.css";
 
 const polyglotCache = new Map<string, Promise<Polyglot>>();
 
@@ -67,6 +67,16 @@ function loadPolyglot(id: string): Promise<Polyglot> {
     polyglotCache.set(id, p);
   }
   return p;
+}
+
+function TitleTail({ title }: { title: string }) {
+  const cut = title.lastIndexOf(" ");
+  if (cut < 0) return <Underlined>{title}</Underlined>;
+  return (
+    <>
+      {title.slice(0, cut)} <Underlined>{title.slice(cut + 1)}</Underlined>
+    </>
+  );
 }
 
 const MARKS: Record<string, string> = { log: "›", info: "i", warn: "!", error: "✕", system: "·" };
@@ -87,7 +97,7 @@ function ResizeHandle({ height, onResize }: { height: number; onResize: (next: n
 
   return (
     <div
-      className="resize-handle"
+      className={styles.resize}
       role="separator"
       aria-orientation="horizontal"
       aria-label="Resize the editor"
@@ -112,7 +122,7 @@ function ResizeHandle({ height, onResize }: { height: number; onResize: (next: n
         if (e.key === "ArrowDown") onResize(clamp(height + 20));
       }}
     >
-      <span className="resize-handle__grip" aria-hidden="true" />
+      <span className={styles.grip} aria-hidden="true" />
     </div>
   );
 }
@@ -205,6 +215,7 @@ export function PracticeWorkspace({
   const pageFrameRef = useRef<HTMLIFrameElement | null>(null);
   const briefPanel = useRef<HTMLDivElement>(null);
   const consolePanel = useRef<HTMLDivElement>(null);
+  const outputPanel = useRef<HTMLDivElement>(null);
   const [problems, setProblems] = useState<EditorProblem[]>([]);
   const [consoleLines, setConsoleLines] = useState<RunnerOutputEntry[]>([]);
   const [consolePhase, setConsolePhase] = useState<"idle" | "running" | "compiling" | "ran" | "cleared">("idle");
@@ -243,6 +254,10 @@ export function PracticeWorkspace({
   const [briefTab, setBriefTab] = useState<"description" | "tests" | "hints">("description");
   useScrollRegions(briefPanel, `${exercise.id}:${briefTab}`);
   useScrollRegions(consolePanel, consoleLines);
+  useScrollRegions(
+    outputPanel,
+    `${activeTab}:${consoleLines.length}:${testResults?.length ?? "none"}:${problems.length}:${runs.length}:${debugRun ? 1 : 0}`
+  );
   const [dialog, setDialog] = useState<
     | { kind: "new" }
     | { kind: "rename"; id: string }
@@ -802,6 +817,7 @@ export function PracticeWorkspace({
   }
 
   const playground = isFree && !interview;
+  const mode = playground ? "playground" : interview ? "interview" : "exercise";
   const runnable = Boolean(LANGUAGES[currentLang].runnable);
   const errored = consoleLines.some((l) => l.kind === "error");
   const templates = templatesFor(currentLang);
@@ -826,234 +842,252 @@ export function PracticeWorkspace({
       .join("\n");
   }
 
+  const actions = (
+    <>
+      {playground && ["javascript", "typescript", "html", "css"].includes(currentLang) && (
+        <button
+          type="button"
+          className={styles.tool}
+          aria-label="Live"
+          aria-pressed={live}
+          data-tip="Run as you type"
+          onClick={toggleLive}
+        >
+          <TopIcon name="live" size={16} /> <span className={styles.toolLabel}>Live</span>
+        </button>
+      )}
+      {playground && (
+        <button
+          type="button"
+          className={styles.tool}
+          data-tip="Copy a link to these files"
+          aria-label={shareState === "copied" ? "Link copied" : "Share a link to these files"}
+          onClick={() => void share()}
+        >
+          <TopIcon name="link" size={16} />{" "}
+          <span className={shareState === "idle" ? styles.toolLabel : undefined}>
+            {shareState === "copied"
+              ? "Link copied"
+              : shareState === "failed"
+                ? "Could not copy"
+                : shareState === "too-big"
+                  ? "Too big for a link"
+                  : "Share"}
+          </span>
+        </button>
+      )}
+      {playground && templates.length > 1 && (
+        <span className={styles.examples}>
+          <Dropdown
+            items={templates.map((t) => ({ value: t.name, label: t.name }))}
+            value=""
+            placeholder="Examples"
+            onChange={loadTemplate}
+            ariaLabel="Load an example"
+            compact
+          />
+        </span>
+      )}
+      <button
+        className={styles.run}
+        type="button"
+        title="Run the code (⌘/Ctrl + Enter)"
+        aria-label="Run the code"
+        onClick={() => runCode(false)}
+      >
+        <span aria-hidden="true">▶</span> Run
+      </button>
+      {(currentLang === "javascript" || currentLang === "typescript" || currentLang === "python") &&
+        !isComponent &&
+        !interview && (
+          <button
+            className={styles.tool}
+            type="button"
+            aria-label="Debug"
+            data-tip={isFree ? "Step through line by line" : "Step through on the first test"}
+            onClick={() => void debugCode()}
+          >
+            <TopIcon name="debug" size={16} /> <span className={styles.toolLabel}>Debug</span>
+          </button>
+        )}
+      {!isFree && exercise.tests.length > 0 && (
+        <button
+          className={styles.submit}
+          type="button"
+          style={{ display: showsTestButton ? undefined : "none" }}
+          title="Submit — run every test"
+          aria-label="Submit"
+          onClick={() => runCode(true)}
+        >
+          <span aria-hidden="true">☁</span> Submit
+        </button>
+      )}
+      {!playground && (
+        <>
+          <button
+            className={styles.icon}
+            type="button"
+            data-tip={soundOn ? "Mute the solved sound" : "Unmute the solved sound"}
+            aria-label={soundOn ? "Mute the solved sound" : "Unmute the solved sound"}
+            aria-pressed={!soundOn}
+            onClick={toggleSound}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 9h4l5-4v14l-5-4H4z" />
+              {soundOn ? (
+                <path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" />
+              ) : (
+                <path d="M17 9l5 6M22 9l-5 6" />
+              )}
+            </svg>
+          </button>
+          <button
+            className={`${styles.icon} ${styles.keys}`}
+            type="button"
+            data-tip="Keyboard shortcuts — ?"
+            aria-label="Keyboard shortcuts"
+            onClick={() => setShortcutsOpen(true)}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="2.5" y="6" width="19" height="12" rx="2" />
+              <path d="M6 10h.01M9.5 10h.01M13 10h.01M16.5 10h.01M7 14h10" />
+            </svg>
+          </button>
+        </>
+      )}
+    </>
+  );
+
+  const exerciseNav = (
+    <>
+      <span className={styles.nav}>
+        <Link className={styles.icon} href="/problems" data-tip="All problems" aria-label="Problem list">
+          <TopIcon name="list" />
+        </Link>
+        {!isFree && prev ? (
+          <Link
+            className={styles.icon}
+            href={problemHref(prev.id)}
+            data-tip={`Previous: ${prev.title}`}
+            aria-label={`Previous problem: ${prev.title}`}
+          >
+            <TopIcon name="prev" />
+          </Link>
+        ) : (
+          <span className={`${styles.icon} ${styles.off}`} aria-hidden="true">
+            <TopIcon name="prev" />
+          </span>
+        )}
+        {!isFree && next ? (
+          <Link
+            className={styles.icon}
+            href={problemHref(next.id)}
+            data-tip={`Next: ${next.title}`}
+            aria-label={`Next problem: ${next.title}`}
+          >
+            <TopIcon name="next" />
+          </Link>
+        ) : (
+          <span className={`${styles.icon} ${styles.off}`} aria-hidden="true">
+            <TopIcon name="next" />
+          </span>
+        )}
+      </span>
+      <span className={styles.title}>
+        <span className={styles.titleText}>{exercise.title}</span>
+        <span className={styles.level} data-level={exercise.level}>
+          {exercise.level}
+        </span>
+        {solved && <span className={styles.solvedChip}>solved ✓</span>}
+      </span>
+    </>
+  );
+
+  const playgroundMiddle = (
+    <>
+      <h1 className={styles.pgTitle}>
+        <span className={styles.pgMark} aria-hidden="true">
+          ✎
+        </span>
+        <span className={styles.pgName}>Playground</span>
+      </h1>
+      <div className={styles.langs} role="group" aria-label="Quick language">
+        <span className={styles.langsScroll}>
+          {QUICK_LANGS.map((key) => (
+            <button
+              key={key}
+              type="button"
+              className={styles.lang}
+              aria-pressed={currentLang === key}
+              onClick={() => editorRef.current?.setLanguage(key)}
+            >
+              {LANGUAGES[key].label}
+            </button>
+          ))}
+        </span>
+        <span className={`${styles.more}${QUICK_LANGS.includes(currentLang) ? "" : ` ${styles.moreCurrent}`}`}>
+          <Dropdown
+            items={LANG_ORDER.map((key) => ({
+              value: key,
+              label: LANGUAGES[key].label,
+              short: QUICK_LANGS.includes(key) ? "More" : LANGUAGES[key].label,
+              group: LANGUAGES[key].runnable ? "Runs here" : "Write only",
+            }))}
+            value={currentLang}
+            placeholder="More"
+            onChange={(key) => editorRef.current?.setLanguage(key as LanguageKey)}
+            ariaLabel="Language"
+            columns={4}
+            compact
+          />
+        </span>
+      </div>
+    </>
+  );
+
   return (
     <>
       <Confetti fire={justSolved} />
-      <div className={`lc-topbar${playground ? " lc-topbar--playground" : ""}`}>
-        {playground ? (
-          <div className="pg-head">
-            <span className="lc-topbar__group">
-              <BackButton variant="icon" className="lc-icon-btn" fallbackHref="/" fallbackLabel="Home" />
-              <MenuButton open={menuOpen} onOpen={() => setMenuOpen(true)} />
-            </span>
-            <h1 className="pg-head__title">
-              <span aria-hidden="true">✎</span> Playground
-            </h1>
-            <div className="pg-langs" role="group" aria-label="Quick language">
-              <span className="pg-langs__scroll">
-                {QUICK_LANGS.map((key) => (
-                  <button
-                    key={key}
-                    type="button"
-                    className="pg-lang"
-                    aria-pressed={currentLang === key}
-                    onClick={() => editorRef.current?.setLanguage(key)}
-                  >
-                    {LANGUAGES[key].label}
-                  </button>
-                ))}
-              </span>
-              <span className={`pg-more${QUICK_LANGS.includes(currentLang) ? "" : " is-current"}`}>
-                <Dropdown
-                  items={LANG_ORDER.map((key) => ({
-                    value: key,
-                    label: LANGUAGES[key].label,
-                    short: QUICK_LANGS.includes(key) ? "More" : LANGUAGES[key].label,
-                    group: LANGUAGES[key].runnable ? "Runs here" : "Write only",
-                  }))}
-                  value={currentLang}
-                  placeholder="More"
-                  onChange={(key) => editorRef.current?.setLanguage(key as LanguageKey)}
-                  ariaLabel="Language"
-                  columns={4}
-                  compact
-                />
-              </span>
-            </div>
-          </div>
-        ) : interview ? (
-          <div />
-        ) : (
-          <div className="lc-topbar__nav">
-            <BackButton
-              variant="icon"
-              className="lc-icon-btn"
-              fallbackHref={chapter ? chapter.href : "/problems"}
-              fallbackLabel={chapter ? `Back to ${chapter.short}` : "All problems"}
-            />
-            <MenuButton open={menuOpen} onOpen={() => setMenuOpen(true)} />
-            <span className="lc-topbar__divider" aria-hidden="true" />
-            <Link className="lc-icon-btn" href="/problems" data-tip="All problems" aria-label="Problem list">
-              <TopIcon name="list" />
-            </Link>
-            <span className="lc-topbar__divider" aria-hidden="true" />
-            {!isFree && prev ? (
-              <Link
-                className="lc-icon-btn"
-                href={problemHref(prev.id)}
-                data-tip={`Previous: ${prev.title}`}
-                aria-label={`Previous problem: ${prev.title}`}
-              >
-                <TopIcon name="prev" />
-              </Link>
-            ) : (
-              <span className="lc-icon-btn is-disabled" aria-hidden="true">
-                <TopIcon name="prev" />
-              </span>
-            )}
-            {!isFree && next ? (
-              <Link
-                className="lc-icon-btn"
-                href={problemHref(next.id)}
-                data-tip={`Next: ${next.title}`}
-                aria-label={`Next problem: ${next.title}`}
-              >
-                <TopIcon name="next" />
-              </Link>
-            ) : (
-              <span className="lc-icon-btn is-disabled" aria-hidden="true">
-                <TopIcon name="next" />
-              </span>
-            )}
-            <span className="lc-topbar__title">
-              <span>{exercise.title}</span>
-              <span className={`tag tag--${exercise.level}`}>{exercise.level}</span>
-              {solved && <span className="tag tag--done">solved ✓</span>}
-            </span>
-          </div>
-        )}
-        <div className="lc-topbar__actions">
-          {playground && ["javascript", "typescript", "html", "css"].includes(currentLang) && (
-            <button
-              type="button"
-              className="btn live-btn"
-              aria-label="Live"
-              aria-pressed={live}
-              data-tip="Run as you type"
-              onClick={toggleLive}
-            >
-              <TopIcon name="live" size={16} /> <span className="pg-btn__label">Live</span>
-            </button>
-          )}
-          {playground && (
-            <button
-              type="button"
-              className="btn"
-              data-tip="Copy a link to these files"
-              aria-label={shareState === "copied" ? "Link copied" : "Share a link to these files"}
-              onClick={() => void share()}
-            >
-              <TopIcon name="link" size={16} />{" "}
-              <span className={shareState === "idle" ? "pg-btn__label" : undefined}>
-                {shareState === "copied"
-                  ? "Link copied"
-                  : shareState === "failed"
-                    ? "Could not copy"
-                    : shareState === "too-big"
-                      ? "Too big for a link"
-                      : "Share"}
-              </span>
-            </button>
-          )}
-          {playground && templates.length > 1 && (
-            <Dropdown
-              items={templates.map((t) => ({ value: t.name, label: t.name }))}
-              value=""
-              placeholder="Examples"
-              onChange={loadTemplate}
-              ariaLabel="Load an example"
-              compact
-            />
-          )}
-          <button
-            className="btn btn--run pg-run"
-            type="button"
-            title="Run the code (⌘/Ctrl + Enter)"
-            aria-label="Run the code"
-            onClick={() => runCode(false)}
-          >
-            ▶ Run
-          </button>
-          {(currentLang === "javascript" || currentLang === "typescript" || currentLang === "python") &&
-            !isComponent &&
-            !interview && (
-              <button
-                className="btn"
-                type="button"
-                aria-label="Debug"
-                data-tip={isFree ? "Step through line by line" : "Step through on the first test"}
-                onClick={() => void debugCode()}
-              >
-                <TopIcon name="debug" size={16} /> <span className="pg-btn__label">Debug</span>
-              </button>
-            )}
-          {!isFree && exercise.tests.length > 0 && (
-            <button
-              className="btn btn--test"
-              type="button"
-              style={{ display: showsTestButton ? undefined : "none" }}
-              title="Submit — run every test"
-              aria-label="Submit"
-              onClick={() => runCode(true)}
-            >
-              ☁ Submit
-            </button>
-          )}
-          {!playground && (
-            <>
-              <button
-                className="lc-icon-btn"
-                type="button"
-                data-tip={soundOn ? "Mute the solved sound" : "Unmute the solved sound"}
-                aria-label={soundOn ? "Mute the solved sound" : "Unmute the solved sound"}
-                aria-pressed={!soundOn}
-                onClick={toggleSound}
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  width="18"
-                  height="18"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M4 9h4l5-4v14l-5-4H4z" />
-                  {soundOn ? (
-                    <path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" />
-                  ) : (
-                    <path d="M17 9l5 6M22 9l-5 6" />
-                  )}
-                </svg>
-              </button>
-              <button
-                className="lc-icon-btn"
-                type="button"
-                data-tip="Keyboard shortcuts — ?"
-                aria-label="Keyboard shortcuts"
-                onClick={() => setShortcutsOpen(true)}
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  width="18"
-                  height="18"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <rect x="2.5" y="6" width="19" height="12" rx="2" />
-                  <path d="M6 10h.01M9.5 10h.01M13 10h.01M16.5 10h.01M7 14h10" />
-                </svg>
-              </button>
-            </>
-          )}
+      {interview ? (
+        <div className={styles.strip}>
+          <div className={styles.stripActions}>{actions}</div>
         </div>
-      </div>
+      ) : (
+        <FrameHeader
+          tool={playground ? "playground" : "exercise"}
+          back={
+            playground
+              ? { href: "/", label: "Home" }
+              : chapter
+                ? { href: chapter.href, label: `Back to ${chapter.short}` }
+                : { href: "/problems", label: "All problems" }
+          }
+          onMenu={() => setMenuOpen(true)}
+          menuOpen={menuOpen}
+          middle={playground ? playgroundMiddle : exerciseNav}
+          actions={actions}
+        />
+      )}
 
       <ShortcutHelp open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <SiteDrawer open={menuOpen} onClose={closeMenu} />
@@ -1084,10 +1118,10 @@ export function PracticeWorkspace({
           ) : null;
         })()}
 
-      <div className={`practice-layout${playground ? " practice-layout--playground" : ""}`}>
+      <div className={styles.layout} data-mode={mode}>
         {!playground && (
-          <aside className="brief" id="brief">
-            <div className="brief__tabs" role="tablist" aria-label="Problem panel">
+          <aside className={styles.brief} id="brief">
+            <div className={styles.briefTabs} role="tablist" aria-label="Problem panel">
               {(
                 [
                   ["description", "Description", null],
@@ -1112,15 +1146,16 @@ export function PracticeWorkspace({
                   id={`brief-tab-${id}`}
                   aria-selected={briefTab === id}
                   aria-controls="brief-panel"
-                  className={`brief__tab${briefTab === id ? " is-active" : ""}`}
+                  className={styles.briefTab}
                   onClick={() => setBriefTab(id)}
                 >
                   {label}
                   {count !== null && (
                     <span
-                      className={`brief__count${
-                        id === "tests" && testResults ? (testResults.every((r) => r.ok) ? " is-pass" : " is-fail") : ""
-                      }`}
+                      className={styles.count}
+                      data-state={
+                        id === "tests" && testResults ? (testResults.every((r) => r.ok) ? "pass" : "fail") : undefined
+                      }
                     >
                       {count}
                     </span>
@@ -1130,27 +1165,28 @@ export function PracticeWorkspace({
             </div>
             <div
               ref={briefPanel}
-              className="brief__scroll"
+              className={styles.briefScroll}
+              tabIndex={0}
               key={briefTab}
               role="tabpanel"
               id="brief-panel"
               aria-labelledby={`brief-tab-${briefTab}`}
             >
               {briefTab === "tests" && (
-                <ol className="brief__tests">
+                <ol className={styles.briefTests}>
                   {exercise.tests.map((t) => {
                     const r = testResults?.find((x) => x.name === t.name);
                     return (
-                      <li key={t.name} className={r ? (r.ok ? "is-pass" : "is-fail") : undefined}>
-                        <p className="brief__test-name">
-                          <span className="brief__test-mark" aria-hidden="true">
+                      <li key={t.name} data-state={r ? (r.ok ? "pass" : "fail") : undefined}>
+                        <p className={styles.testName}>
+                          <span className={styles.testMark} aria-hidden="true">
                             {r ? (r.ok ? "✓" : "✕") : "○"}
                           </span>
                           {t.name}
                           {r && <span className="visually-hidden">{r.ok ? " (passed)" : " (failed)"}</span>}
                         </p>
-                        {r && !r.ok && r.message && <p className="brief__test-why">{r.message}</p>}
-                        <pre className="brief__test-code" data-scroll-region={`Test: ${t.name}`}>
+                        {r && !r.ok && r.message && <p className={styles.testWhy}>{r.message}</p>}
+                        <pre className={styles.testCode} data-scroll-region={`Test: ${t.name}`}>
                           <code>{t.body}</code>
                         </pre>
                       </li>
@@ -1161,95 +1197,109 @@ export function PracticeWorkspace({
               {briefTab === "description" && (
                 <>
                   {!interview && (
-                    <Crumbs
-                      items={[
-                        { label: "All topics", href: "/" },
-                        {
-                          label: chapter ? chapter.topic.name : "JavaScript",
-                          href: chapter ? chapter.topic.href : "/notes",
-                        },
-                        { label: chapter ? chapter.short : "Playground" },
-                      ]}
-                    />
+                    <nav className={styles.crumbs} id="crumbs" aria-label="Breadcrumb">
+                      <Link href="/">All topics</Link>
+                      <span aria-hidden="true">›</span>
+                      <Link href={chapter ? chapter.topic.href : "/notes"}>
+                        {chapter ? chapter.topic.name : "JavaScript"}
+                      </Link>
+                      <span aria-hidden="true">›</span>
+                      <span>{chapter ? `${chapter.num} ${chapter.short}` : "Playground"}</span>
+                    </nav>
                   )}
-                  <h1 id="ex-title">{exercise.title}</h1>
-                  <div className="brief__meta" id="ex-meta">
+                  <h1 className={styles.briefTitle} id="ex-title">
+                    <TitleTail title={exercise.title} />
+                  </h1>
+                  <div className={styles.meta} id="ex-meta">
                     {isFree ? (
-                      <span className="tag">no tests · nothing to pass</span>
+                      <span className={styles.chip}>no tests · nothing to pass</span>
                     ) : (
                       <>
-                        <span className={`tag tag--${exercise.level}`}>{exercise.level}</span>
+                        <span className={styles.chip} data-level={exercise.level}>
+                          {exercise.level}
+                        </span>
                         {chapter && (
-                          <span className="tag">
+                          <span className={styles.chip}>
                             layer {chapter.num} · {chapter.short}
                           </span>
                         )}
-                        <span className="tag">
+                        <span className={styles.chip}>
                           {exercise.tests.length} {exercise.tests.length === 1 ? "test" : "tests"}
                         </span>
-                        {solved && !interview && <span className="tag tag--done">solved ✓</span>}
+                        {solved && !interview && <span className={`${styles.chip} ${styles.chipDone}`}>solved ✓</span>}
                       </>
                     )}
                   </div>
                   <div
-                    className="brief__body"
+                    className={styles.briefBody}
                     id="ex-body"
                     suppressHydrationWarning
                     dangerouslySetInnerHTML={{ __html: exercise.brief }}
                   />
+                  {!interview && !isFree && chapter && (
+                    <p className={styles.briefFoot}>
+                      <span className={styles.briefFootTitle}>Stuck on the idea?</span>
+                      <Link className={styles.briefFootLink} href={chapter.href}>
+                        Read {chapter.num} {chapter.short} first <span aria-hidden="true">→</span>
+                      </Link>
+                    </p>
+                  )}
                 </>
               )}
 
               {briefTab === "hints" && (
-                <div className="brief__section" id="hint-section">
-                  <h2>Stuck?</h2>
-                  <p className="brief__lead">
+                <div className={styles.hints} id="hint-section">
+                  <h2 className={styles.hintsTitle}>Stuck?</h2>
+                  <p className={styles.hintsLead}>
                     Hints come one at a time, each a little more direct. The solution replaces your code.
                   </p>
                   <div id="hint-list">
                     {exercise.hints.slice(0, hintsShown).map((hint, i) => (
-                      <div className="hint" key={i}>
-                        <span className="hint__num">hint {i + 1}</span>
+                      <div className={styles.hint} key={i}>
+                        <span className={styles.hintTape} aria-hidden="true" />
+                        <span className={styles.hintNum}>hint {i + 1}</span>
                         <span dangerouslySetInnerHTML={{ __html: hint }} />
                       </div>
                     ))}
                   </div>
-                  {!isFree && exercise.hints.length > 0 && (
-                    <button
-                      className="btn"
-                      id="hint-btn"
-                      type="button"
-                      disabled={hintsShown >= exercise.hints.length}
-                      onClick={() => setHintsShown((n) => Math.min(exercise.hints.length, n + 1))}
-                    >
-                      {hintsShown >= exercise.hints.length
-                        ? "That was the last hint"
-                        : hintsShown === 0
-                          ? "Show a hint"
-                          : `Another hint (${exercise.hints.length - hintsShown} left)`}
-                    </button>
-                  )}{" "}
-                  {exercise.solution && (
-                    <button
-                      className="btn"
-                      id="solution-btn"
-                      type="button"
-                      onClick={() =>
-                        ask(
-                          "Show the solution?",
-                          <p>It replaces what you have written, and your version is not kept.</p>,
-                          "Show solution",
-                          () => {
-                            editorRef.current?.setValue(exercise.solution!);
-                            editorRef.current?.focus();
-                            setSawSolution(true);
-                          }
-                        )
-                      }
-                    >
-                      Show the solution
-                    </button>
-                  )}
+                  <div className={styles.hintActions}>
+                    {!isFree && exercise.hints.length > 0 && (
+                      <button
+                        className={styles.pill}
+                        id="hint-btn"
+                        type="button"
+                        disabled={hintsShown >= exercise.hints.length}
+                        onClick={() => setHintsShown((n) => Math.min(exercise.hints.length, n + 1))}
+                      >
+                        {hintsShown >= exercise.hints.length
+                          ? "That was the last hint"
+                          : hintsShown === 0
+                            ? "Show a hint"
+                            : `Another hint (${exercise.hints.length - hintsShown} left)`}
+                      </button>
+                    )}
+                    {exercise.solution && (
+                      <button
+                        className={styles.pill}
+                        id="solution-btn"
+                        type="button"
+                        onClick={() =>
+                          ask(
+                            "Show the solution?",
+                            <p>It replaces what you have written, and your version is not kept.</p>,
+                            "Show solution",
+                            () => {
+                              editorRef.current?.setValue(exercise.solution!);
+                              editorRef.current?.focus();
+                              setSawSolution(true);
+                            }
+                          )
+                        }
+                      >
+                        Show the solution
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -1257,7 +1307,7 @@ export function PracticeWorkspace({
         )}
 
         <div
-          className="workbench"
+          className={styles.workbench}
           id="editor"
           tabIndex={-1}
           onFocus={(e) => {
@@ -1499,7 +1549,7 @@ export function PracticeWorkspace({
               </button>
             </div>
 
-            <div className="panel__body">
+            <div className="panel__body" ref={outputPanel} data-scroll-region="Output">
               {debugRun && (
                 <div
                   className={`panel__view${activeTab === "debug" ? " is-active" : ""}`}
@@ -1523,20 +1573,32 @@ export function PracticeWorkspace({
                 role="tabpanel"
               >
                 {consoleLines.length === 0 ? (
-                  <p className="panel__empty">
-                    {consolePhase === "compiling" ? (
-                      "Compiling…"
-                    ) : consolePhase === "cleared" ? (
-                      "Cleared. Run something."
-                    ) : consolePhase === "ran" ? (
-                      "Ran with no output — nothing was logged."
-                    ) : (
-                      <>
-                        Nothing yet — press <b>Run</b> or <kbd>⌘/Ctrl</kbd> + <kbd>Enter</kbd>, and whatever you log
-                        shows up here.
-                      </>
-                    )}
-                  </p>
+                  <div className={styles.empty} data-phase={consolePhase}>
+                    <p className={styles.emptyTitle}>
+                      {consolePhase === "compiling"
+                        ? "Compiling…"
+                        : consolePhase === "cleared"
+                          ? "Cleared."
+                          : consolePhase === "ran"
+                            ? "Ran, and nothing was logged."
+                            : "Nothing yet."}
+                    </p>
+                    <p className={styles.emptyText}>
+                      {consolePhase === "compiling" ? (
+                        "Turning TypeScript into JavaScript first."
+                      ) : consolePhase === "cleared" ? (
+                        "Run something and it lands here."
+                      ) : consolePhase === "ran" ? (
+                        <>
+                          Add a <code>console.log</code> and run again.
+                        </>
+                      ) : (
+                        <>
+                          Press <b>Run</b> or <kbd>⌘/Ctrl</kbd> + <kbd>Enter</kbd>, and whatever you log shows up here.
+                        </>
+                      )}
+                    </p>
+                  </div>
                 ) : (
                   consoleLines.map((entry, i) =>
                     entry.kind === "table" ? (
@@ -1695,16 +1757,46 @@ export function PracticeWorkspace({
                 role="tabpanel"
               >
                 {!testResults ? (
-                  <p className="panel__empty">Submit to see how you did.</p>
+                  <div className={styles.empty}>
+                    <p className={styles.emptyTitle}>No results yet.</p>
+                    <p className={styles.emptyText}>
+                      Press <b>Submit</b> and every test runs against your code.
+                    </p>
+                  </div>
                 ) : testResults.length === 0 ? (
-                  <p className="panel__empty">No test results — did the code crash before it got there?</p>
+                  <div className={styles.empty}>
+                    <p className={styles.emptyTitle}>No test results.</p>
+                    <p className={styles.emptyText}>Did the code crash before it got there? Check the Console.</p>
+                  </div>
                 ) : (
                   <>
-                    <div className={`verdict verdict--${testResults.every((r) => r.ok) ? "pass" : "fail"}`}>
-                      {testResults.every((r) => r.ok)
-                        ? `All ${testResults.length} tests pass — nicely done.`
-                        : `${testResults.filter((r) => r.ok).length} of ${testResults.length} passing. Keep going.`}
-                    </div>
+                    {testResults.every((r) => r.ok) ? (
+                      <div className={styles.verdict} data-verdict="pass" role="status">
+                        <span className={styles.stamp} aria-hidden="true">
+                          <b>Solved</b>
+                          <small>
+                            {testResults.length}/{testResults.length}
+                          </small>
+                        </span>
+                        <div className={styles.verdictText}>
+                          <p className={styles.verdictTitle}>All {testResults.length} tests pass — nicely done.</p>
+                          <p className={styles.verdictSub}>Saved to your progress.</p>
+                        </div>
+                        {next && (
+                          <Link className={styles.nextPill} href={problemHref(next.id)}>
+                            Next: {next.title} <span aria-hidden="true">→</span>
+                          </Link>
+                        )}
+                      </div>
+                    ) : (
+                      <div className={styles.verdict} data-verdict="fail" role="status">
+                        <div className={styles.verdictText}>
+                          <p className={styles.verdictTitle}>
+                            {testResults.filter((r) => r.ok).length} of {testResults.length} passing. Keep going.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                     {skippedHere > 0 && (
                       <p className="test__note">
                         {skippedHere} more {skippedHere === 1 ? "test checks" : "tests check"} a property of the answer

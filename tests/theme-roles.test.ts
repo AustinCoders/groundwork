@@ -27,7 +27,6 @@ const CATEGORICAL_SELECTORS: Record<string, string[]> = {
   ],
   "app/mock/mock.module.css": [".avatar", '.avatar[data-tone="sharp"]', '.avatar[data-tone="calm"]'],
   "app/mock/guide.module.css": [".avatar", '.avatar[data-tone="sharp"]'],
-  "app/problems/problems.module.css": [".page", ".sheetRoot"],
   "app/whiteboard/whiteboard.module.css": [".paperMargin", ".laser", ".laserGlow", '.swatch[data-value="none"]'],
   "components/series/landing.module.css": [".page"],
 };
@@ -89,7 +88,6 @@ const GLOBAL_CATEGORICAL_SELECTORS = [
   ".tag--intermediate",
   ".tag--advanced",
   ".soon-stamp",
-  ".hint",
   ".ed__tl--red",
   ".ed__tl--yellow",
   ".ed__tl--green",

@@ -1,27 +1,20 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
-import { MenuButton } from "@/components/MenuButton";
 import { SiteDrawer } from "@/components/SiteDrawer";
-import { BackButton } from "@/components/practice/BackButton";
 import { DiagramDefs } from "@/components/chapter/DiagramDefs";
-import { accentVar } from "@/lib/accent";
-import { SITE_NAME } from "@/lib/site";
+import { FrameHeader, type FrameLink } from "@/components/frame/FrameHeader";
 import { smoothScroll, useScrollFx } from "@/lib/scrollFx";
 import styles from "./frame.module.css";
-
-export interface FrameLink {
-  href: string;
-  label: string;
-}
 
 export type FrameLayout = "page" | "reader";
 
 export type FrameScan = string | number | null;
 
 const HOME: FrameLink = { href: "/", label: "Home" };
+
+export type { FrameLink };
 
 export function PageFrame({
   title,
@@ -61,25 +54,6 @@ export function PageFrame({
   const pageRef = useRef<HTMLDivElement>(null);
   useScrollFx(pageRef, `${pathname}:${String(scan)}`);
 
-  const chip = mark ? (
-    <span
-      className={styles.mark}
-      style={accent ? ({ "--accent": accentVar(accent) } as React.CSSProperties) : undefined}
-      aria-hidden="true"
-    >
-      {mark}
-    </span>
-  ) : null;
-  const titleClass = mark ? `${styles.title} ${styles.titleMarked}` : styles.title;
-  const titleContent = mark ? (
-    <>
-      {chip}
-      <span className={styles.titleText}>{title}</span>
-    </>
-  ) : (
-    title
-  );
-
   return (
     <>
       <a className="skip-link" href={skipHref}>
@@ -88,40 +62,20 @@ export function PageFrame({
       {reading && <DiagramDefs />}
       <div className={styles.page} ref={pageRef}>
         <span className={styles.scrollBar} data-scrollbar aria-hidden="true" />
-        <header className={styles.top}>
-          <BackButton variant="bar" className="head-back" fallbackHref={back.href} fallbackLabel={back.label} />
-          <MenuButton
-            open={menuOpen}
-            onOpen={() => {
-              smoothScroll.stop();
-              setMenuOpen(true);
-            }}
-          />
-          <Link href="/" className={styles.brand} aria-label={`${SITE_NAME} home`}>
-            <span className="brand__mark" aria-hidden="true">
-              G
-            </span>
-            <span className={styles.brandName}>{SITE_NAME}</span>
-          </Link>
-          <span className={styles.sep} aria-hidden="true" />
-          {titleHref ? (
-            <Link href={titleHref} className={titleClass} aria-current={pathname === titleHref ? "page" : undefined}>
-              {titleContent}
-            </Link>
-          ) : (
-            <span className={titleClass}>{titleContent}</span>
-          )}
-          {links.length > 0 && (
-            <nav className={styles.links} aria-label="Related pages">
-              {links.map((l) => (
-                <Link key={l.href} href={l.href} aria-current={pathname === l.href ? "page" : undefined}>
-                  {l.label}
-                </Link>
-              ))}
-            </nav>
-          )}
-          {actions && <div className={styles.actions}>{actions}</div>}
-        </header>
+        <FrameHeader
+          back={back}
+          onMenu={() => {
+            smoothScroll.stop();
+            setMenuOpen(true);
+          }}
+          menuOpen={menuOpen}
+          title={title}
+          titleHref={titleHref}
+          mark={mark}
+          accent={accent}
+          links={links}
+          actions={actions}
+        />
         <main id="main" className={layout === "reader" ? `${styles.main} ${styles.mainReader}` : styles.main}>
           {children}
         </main>

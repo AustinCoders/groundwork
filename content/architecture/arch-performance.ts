@@ -175,13 +175,13 @@ export const archPerformance: Chapter = {
 <h3>Skipping what the reader cannot see</h3>
 <p>
   <strong>The problems page.</strong> <code>/problems</code> lists all 538 problems in 130 groups,
-  one per chapter. Its HTML is 283 KB before compression. Every group has
-  <code>content-visibility: auto</code> and <code>contain-intrinsic-size: auto 66px</code> in
+  one per chapter. Its HTML is 267 KB before compression. Every group has
+  <code>content-visibility: auto</code> and <code>contain-intrinsic-size: auto 52px</code> in
   <code>app/problems/problems.module.css</code>. The browser skips layout and paint for groups that
-  are off screen and reserves 66 pixels for each, which is roughly a collapsed group header. The
+  are off screen and reserves 52 pixels for each, which is roughly a collapsed group header. The
   <code>auto</code> keyword makes it remember a group's real height once it has been drawn, so the
   page length stops jumping after the first pass. Since the latest change only the first group starts
-  open, so most groups really are 66 pixels tall.
+  open, so most groups really are 52 pixels tall.
 </p>
 <p>
   <strong>The whiteboard.</strong> <code>Board.tsx</code> culls. When a board holds more than 150

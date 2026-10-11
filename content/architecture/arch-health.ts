@@ -15,9 +15,9 @@ export const archHealth: Chapter = {
 <thead><tr><th>Check</th><th>Result, latest CI run on <code>main</code></th></tr></thead>
 <tbody>
 <tr><td>TypeScript, ESLint, Prettier, cspell</td><td><span class="chip tone-yes">clean</span></td></tr>
-<tr><td>Vitest</td><td><span class="chip tone-yes">405 of 405</span></td></tr>
+<tr><td>Vitest</td><td><span class="chip tone-yes">757 of 757</span></td></tr>
 <tr><td>Build</td><td><span class="chip tone-yes">1,795 prerendered routes</span></td></tr>
-<tr><td>Playwright, 6 specs</td><td><span class="chip tone-yes">386 of 386</span></td></tr>
+<tr><td>Playwright, 7 specs</td><td><span class="chip tone-yes">410 of 410</span></td></tr>
 <tr><td>Lighthouse budgets, 3 URLs, 3 runs each</td><td><span class="chip tone-yes">pass</span></td></tr>
 <tr><td><code>TODO</code>, <code>FIXME</code>, <code>HACK</code> in source</td><td><span class="chip tone-yes">0</span></td></tr>
 <tr><td><code>npm audit</code>, production dependencies</td><td><span class="chip tone-bad">1 critical, 1 high</span></td></tr>
@@ -60,21 +60,21 @@ export const archHealth: Chapter = {
 
 <h3>2. A few files carry most of the weight</h3>
 <p>
-  Line counts from <code>wc -l</code> as of 8 October 2026, for source outside
+  Line counts from <code>wc -l</code> as of 11 October 2026, for source outside
   <code>content/</code> and for the two largest content files:
 </p>
 
 <figure>
-<svg viewBox="0 0 900 350" class="dg" role="img" aria-label="Bar chart of the largest files by line count, as of 8 October 2026: app/globals.css 8,429; smoke.spec.ts 4,819; content/interview-data.ts 4,745; content/topics.ts 4,556; mock/mock.module.css 3,322; whiteboard/Board.tsx 1,852; PracticeWorkspace.tsx 1,752; whiteboard/whiteboard.module.css 1,636.">
+<svg viewBox="0 0 900 350" class="dg" role="img" aria-label="Bar chart of the largest files by line count, as of 11 October 2026: app/globals.css 7,277; smoke.spec.ts 4,991; content/interview-data.ts 4,745; content/topics.ts 4,556; mock/mock.module.css 3,312; whiteboard/Board.tsx 1,852; PracticeWorkspace.tsx 1,825; whiteboard/whiteboard.module.css 1,636.">
 <g class="rough">
 <rect x="245" y="24" width="425" height="22" rx="4" style="fill: var(--dg-box-red); stroke: var(--red); stroke-width: 1.6" />
-<rect x="245" y="62" width="243" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
-<rect x="245" y="100" width="239" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
-<rect x="245" y="138" width="230" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
-<rect x="245" y="176" width="168" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
-<rect x="245" y="214" width="93" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
-<rect x="245" y="252" width="88" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
-<rect x="245" y="290" width="82" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="62" width="292" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="100" width="277" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
+<rect x="245" y="138" width="266" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
+<rect x="245" y="176" width="193" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="214" width="108" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="252" width="107" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="290" width="96" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <path class="ln" d="M245 16 V320" />
 </g>
 <text class="lbl" x="232" y="41" text-anchor="end">app/globals.css</text>
@@ -85,26 +85,26 @@ export const archHealth: Chapter = {
 <text class="lbl" x="232" y="231" text-anchor="end">whiteboard/Board.tsx</text>
 <text class="lbl" x="232" y="269" text-anchor="end">PracticeWorkspace.tsx</text>
 <text class="lbl" x="232" y="307" text-anchor="end">whiteboard/whiteboard.module.css</text>
-<text class="sm" x="680" y="40">8,429</text>
-<text class="sm" x="498" y="78">4,819</text>
-<text class="sm" x="494" y="116">4,745</text>
-<text class="sm" x="485" y="154">4,556</text>
-<text class="sm" x="423" y="192">3,322</text>
-<text class="sm" x="348" y="230">1,852</text>
-<text class="sm" x="343" y="268">1,752</text>
-<text class="sm" x="337" y="306">1,636</text>
-<text class="sm" x="245" y="340">lines as of 8 October 2026, one bar length per line count</text>
+<text class="sm" x="680" y="40">7,277</text>
+<text class="sm" x="547" y="78">4,991</text>
+<text class="sm" x="532" y="116">4,745</text>
+<text class="sm" x="521" y="154">4,556</text>
+<text class="sm" x="448" y="192">3,312</text>
+<text class="sm" x="363" y="230">1,852</text>
+<text class="sm" x="362" y="268">1,825</text>
+<text class="sm" x="351" y="306">1,636</text>
+<text class="sm" x="245" y="340">lines as of 11 October 2026, one bar length per line count</text>
 </svg>
 <figcaption>
-  One stylesheet is still the longest file, about two thirds longer than the next. The two yellow bars are content,
+  One stylesheet is still the longest file, about half as long again as the next. The two yellow bars are content,
   which is expected to be long. The rest are components and their styles.
 </figcaption>
 </figure>
 
 <p>
-  <strong><code>app/globals.css</code>, about 8,400 lines</strong>, is the largest single piece of debt.
+  <strong><code>app/globals.css</code>, about 7,300 lines</strong>, is the largest single piece of debt.
   The newer parts of the site (the mock interview, the whiteboard and the problems page) use CSS
-  modules, and the older reader and playground styles still live in the global sheet. Every page
+  modules, and the older reader and editor styles still live in the global sheet. Every page
   downloads all of it, and nothing tells you which rules are dead.
 </p>
 <p>
@@ -114,7 +114,7 @@ export const archHealth: Chapter = {
 <thead><tr><th>Component</th><th>Lines</th><th><code>useState</code></th><th><code>useEffect</code></th><th><code>useRef</code></th></tr></thead>
 <tbody>
 <tr><td><code>app/whiteboard/Board.tsx</code></td><td>1,852</td><td>24</td><td>15</td><td>24</td></tr>
-<tr><td><code>components/practice/PracticeWorkspace.tsx</code></td><td>1,752</td><td>26</td><td>8</td><td>14</td></tr>
+<tr><td><code>components/practice/PracticeWorkspace.tsx</code></td><td>1,825</td><td>26</td><td>8</td><td>15</td></tr>
 <tr><td><code>components/practice/CodeEditor.tsx</code></td><td>1,118</td><td>22</td><td>8</td><td>13</td></tr>
 </tbody>
 </table></div>

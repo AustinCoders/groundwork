@@ -3,15 +3,33 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { BackButton } from "@/components/practice/BackButton";
 import { FocusTrap } from "@/components/FocusTrap";
-import { MenuButton } from "@/components/MenuButton";
-import { SiteDrawer } from "@/components/SiteDrawer";
+import { PageFrame, type FrameLink } from "@/components/frame/PageFrame";
+import { Copy, Note, Scene, Stage, StageCard, Sticker, Tape } from "@/components/home/Stage";
+import {
+  Actions,
+  Band,
+  CardKicker,
+  Chips,
+  Facts,
+  Foot,
+  FootLink,
+  Heading,
+  Kicker,
+  Lead,
+  ProgressMeter,
+  Toggle,
+  ToggleGroup,
+  TopicPage,
+  Underlined,
+  topicKit,
+} from "@/components/topic/TopicKit";
+import { ClearButton, CloseButton, KeyHint, SearchPill, kit } from "@/components/ui/MenuKit";
 import { TopIcon } from "@/components/practice/TopIcon";
-import { progress } from "@/lib/storage";
-import { useMounted, useProgressValue } from "@/lib/hooks";
 import { plural } from "@/lib/format";
+import { useMounted, useProgressValue } from "@/lib/hooks";
 import { problemHref } from "@/lib/problemHref";
+import { progress } from "@/lib/storage";
 import styles from "./problems.module.css";
 
 export interface ProblemRow {
@@ -44,6 +62,17 @@ const SORTS: { value: Sort; label: string }[] = [
   { value: "level", label: "Difficulty" },
   { value: "title", label: "Title A–Z" },
   { value: "tests", label: "Most tests" },
+];
+const STATUSES: [Status, string][] = [
+  ["all", "Any"],
+  ["todo", "Unsolved"],
+  ["solved", "Solved"],
+];
+
+const LINKS: FrameLink[] = [
+  { href: "/problems", label: "Problems" },
+  { href: "/practice", label: "Playground" },
+  { href: "/mock", label: "Mock interview" },
 ];
 
 interface Filters {
@@ -104,54 +133,14 @@ function useFilters(): [Filters, (patch: Partial<Filters>) => void] {
   return [filters, update];
 }
 
-function Ring({ done, total }: { done: number; total: number }) {
-  const r = 34;
-  const c = 2 * Math.PI * r;
-  const frac = total ? done / total : 0;
-  return (
-    <svg className={styles.ring} viewBox="0 0 84 84" aria-hidden="true">
-      <circle cx="42" cy="42" r={r} className={styles.ringTrack} />
-      <circle
-        cx="42"
-        cy="42"
-        r={r}
-        className={styles.ringFill}
-        opacity={frac ? 1 : 0}
-        strokeDasharray={`${c * frac} ${c}`}
-        transform="rotate(-90 42 42)"
-      />
-    </svg>
-  );
-}
-
-function Check({ done }: { done: boolean }) {
-  return (
-    <span className={`${styles.check}${done ? ` ${styles.checkDone}` : ""}`} aria-hidden="true">
-      {done && (
-        <svg viewBox="0 0 24 24" width="12" height="12">
-          <path
-            d="M5 12.5l4.5 4.5L19 7"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      )}
-    </span>
-  );
-}
-
 export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total: number }) {
   const mounted = useMounted();
   const router = useRouter();
   const [filters, update] = useFilters();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [opened, setOpened] = useState<{ q: string; ids: Set<string> } | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
-  const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const filtersButtonRef = useRef<HTMLButtonElement>(null);
 
   const solvedKey = useProgressValue(
     () =>
@@ -239,7 +228,12 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
     return out;
   }, [groups, solved]);
 
+  const totalTests = useMemo(
+    () => groups.reduce((sum, g) => sum + g.problems.reduce((n, p) => n + p.tests, 0), 0),
+    [groups]
+  );
   const nextUp = useMemo(() => flat.find((p) => !solved.has(p.id)) ?? null, [flat, solved]);
+  const solvedCount = mounted ? solved.size : 0;
 
   const activeCount =
     (filters.topic !== "all" ? 1 : 0) + filters.levels.length + (filters.status !== "all" ? 1 : 0) + (q ? 1 : 0);
@@ -260,7 +254,10 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
   useEffect(() => {
     if (!sheetOpen) return;
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setSheetOpen(false);
+      if (e.key === "Escape") {
+        setSheetOpen(false);
+        filtersButtonRef.current?.focus();
+      }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -275,6 +272,10 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
 
   function toggleLevel(l: Level) {
     update({ levels: filters.levels.includes(l) ? filters.levels.filter((x) => x !== l) : [...filters.levels, l] });
+  }
+
+  function clearFilters() {
+    update({ q: "", topic: "all", levels: [], status: "all" });
   }
 
   const openIds = useMemo(() => {
@@ -294,234 +295,238 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
 
   const filterPanel = (
     <>
-      <section className={styles.facet} aria-labelledby="pf-topic">
-        <h2 id="pf-topic" className={styles.facetH}>
-          Topic
-        </h2>
-        <ul className={styles.facetList}>
-          {[{ id: "all", name: "All topics" }, ...topics].map((t) => (
-            <li key={t.id}>
-              <button
-                type="button"
-                aria-pressed={filters.topic === t.id}
-                className={styles.facetBtn}
-                onClick={() => update({ topic: t.id })}
-              >
-                <span>{t.name}</span>
-                <span className={styles.count}>{counts.topic[t.id] ?? 0}</span>
-              </button>
-            </li>
+      <ToggleGroup label="Topic" lead="Topic">
+        {[{ id: "all", name: "All topics" }, ...topics].map((t) => (
+          <Toggle key={t.id} pressed={filters.topic === t.id} onClick={() => update({ topic: t.id })}>
+            {t.name} <span className={styles.count}>{counts.topic[t.id] ?? 0}</span>
+          </Toggle>
+        ))}
+      </ToggleGroup>
+      <ToggleGroup label="Difficulty" lead="Difficulty">
+        {LEVELS.map((l) => (
+          <Toggle key={l} pressed={filters.levels.includes(l)} onClick={() => toggleLevel(l)}>
+            <span className={styles.levelName} data-level={l}>
+              {l}
+            </span>{" "}
+            <span className={styles.count}>{counts.level[l] ?? 0}</span>
+          </Toggle>
+        ))}
+      </ToggleGroup>
+      <ToggleGroup label="Status" lead="Status">
+        {STATUSES.map(([s, label]) => (
+          <Toggle key={s} pressed={filters.status === s} onClick={() => update({ status: s })}>
+            {label} <span className={styles.count}>{mounted ? counts.status[s] : "–"}</span>
+          </Toggle>
+        ))}
+      </ToggleGroup>
+    </>
+  );
+
+  const sortAndView = (
+    <>
+      <label className={styles.sort}>
+        <span>Sort</span>
+        <select value={filters.sort} onChange={(e) => update({ sort: e.target.value as Sort })}>
+          {SORTS.map((s) => (
+            <option key={s.value} value={s.value}>
+              {s.label}
+            </option>
           ))}
-        </ul>
-      </section>
-      <section className={styles.facet} aria-labelledby="pf-level">
-        <h2 id="pf-level" className={styles.facetH}>
-          Difficulty
-        </h2>
-        <ul className={styles.facetList}>
-          {LEVELS.map((l) => (
-            <li key={l}>
-              <button
-                type="button"
-                aria-pressed={filters.levels.includes(l)}
-                className={`${styles.facetBtn} ${styles.facetCheck}`}
-                data-level={l}
-                onClick={() => toggleLevel(l)}
-              >
-                <span className={styles.box} aria-hidden="true" />
-                <span className={styles.levelName}>{l}</span>
-                <span className={styles.count}>{counts.level[l] ?? 0}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
-      <section className={styles.facet} aria-labelledby="pf-status">
-        <h2 id="pf-status" className={styles.facetH}>
-          Status
-        </h2>
-        <div className={styles.seg} role="group" aria-labelledby="pf-status">
-          {(
-            [
-              ["all", "Any"],
-              ["todo", "Unsolved"],
-              ["solved", "Solved"],
-            ] as [Status, string][]
-          ).map(([s, label]) => (
-            <button key={s} type="button" aria-pressed={filters.status === s} onClick={() => update({ status: s })}>
-              {label}
-              <span className={styles.count}>{mounted ? counts.status[s] : "–"}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-      {activeCount > 0 && (
+        </select>
+      </label>
+      <div className={styles.viewSeg} role="group" aria-label="Layout">
         <button
           type="button"
-          className={styles.clear}
-          onClick={() => update({ q: "", topic: "all", levels: [], status: "all" })}
+          aria-pressed={filters.view === "grouped"}
+          onClick={() => update({ view: "grouped" })}
+          aria-label="Group by pattern"
         >
-          Clear {plural(activeCount, "filter")}
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <path
+              d="M4 5h16M4 5v4h16V5M6 13h14M6 17h14M6 21h14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+          </svg>
+          <span>By pattern</span>
         </button>
-      )}
+        <button
+          type="button"
+          aria-pressed={filters.view === "list"}
+          onClick={() => update({ view: "list" })}
+          aria-label="One list"
+        >
+          <TopIcon name="list" size={16} />
+          <span>One list</span>
+        </button>
+      </div>
     </>
   );
 
   return (
-    <>
-      <a className="skip-link" href="#problem-list">
-        Skip to the problems
-      </a>
-      <div className={styles.page}>
-        <header className={styles.top}>
-          <div className={styles.topLeft}>
-            <BackButton variant="icon" className={styles.iconBtn} fallbackHref="/" fallbackLabel="Home" />
-            <MenuButton open={menuOpen} onOpen={() => setMenuOpen(true)} />
-            <h1 className={styles.title}>Problems</h1>
-          </div>
-          <label className={styles.search}>
-            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-              <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" strokeWidth="2" />
-              <path d="M20 20l-4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-            <input
-              ref={searchRef}
-              type="search"
-              placeholder="Search problems, patterns, topics"
-              aria-label="Search problems"
-              autoComplete="off"
-              value={filters.q}
-              onChange={(e) => update({ q: e.target.value })}
-            />
-            <kbd aria-hidden="true">/</kbd>
-          </label>
-          <div className={styles.topRight}>
-            <button type="button" className={styles.btn} onClick={randomProblem} disabled={!shown}>
-              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                <path
-                  d="M4 7h3.5c2 0 3 1 4.5 3.5S14.5 17 16.5 17H20M16 3.5L20 7l-4 3.5M4 17h3.5c1.2 0 2-.4 2.8-1.2M14.2 8.2c.7-.8 1.5-1.2 2.3-1.2H20M16 13.5l4 3.5-4 3.5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span>Random</span>
-            </button>
-            <Link className={styles.btn} href="/practice?id=free" prefetch={false}>
-              <TopIcon name="command" size={16} />
-              <span>Playground</span>
-            </Link>
-          </div>
-        </header>
-
-        <div className={styles.body}>
-          <aside className={styles.side} aria-label="Filters">
-            {filterPanel}
-          </aside>
-
-          <main className={styles.main} id="main">
-            <section className={styles.stats} aria-label="Your progress">
-              <div className={styles.ringBox}>
-                <Ring done={mounted ? solved.size : 0} total={total} />
-                <div className={styles.ringText}>
-                  <strong>{mounted ? solved.size : 0}</strong>
-                  <span>of {total}</span>
-                </div>
-              </div>
-              <div className={styles.levels}>
-                <p className={styles.kicker}>Solved by difficulty</p>
-                {LEVELS.map((l) => {
-                  const s = byLevel[l];
-                  const done = mounted ? s.done : 0;
-                  return (
-                    <div key={l} className={styles.levelRow} data-level={l}>
-                      <span className={styles.levelName}>{l}</span>
-                      <span className={styles.bar} aria-hidden="true">
-                        <span style={{ width: `${s.total ? (done / s.total) * 100 : 0}%` }} />
-                      </span>
-                      <span className={styles.levelNum}>
-                        {done}/{s.total}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className={styles.next}>
-                <p className={styles.kicker}>{solved.size && mounted ? "Pick up where you left off" : "Start here"}</p>
+    <PageFrame
+      title="Problems"
+      titleHref="/problems"
+      mark="{ }"
+      accent="blue"
+      links={LINKS}
+      layout="reader"
+      skipLabel="Skip to the problems"
+      skipHref="#problem-list"
+      scan={`${filters.view}:${filters.topic}`}
+    >
+      <TopicPage accent="blue">
+        <Scene className={topicKit.hero}>
+          <Copy>
+            <Kicker mark="{ }">
+              {plural(total, "problem")} · {plural(topics.length, "topic")} · {plural(totalTests, "test")}
+            </Kicker>
+            <Heading>
+              Pick a problem, make the <Underlined>tests pass</Underlined>
+            </Heading>
+            <Lead>
+              Every problem runs in your browser and is graded by real tests. They are grouped by the pattern each one
+              teaches, so you learn the shape of the answer, not just this one answer. Nothing is sent anywhere; your
+              ticks live on this device.
+            </Lead>
+            <Actions>
+              <Link className={topicKit.btn} href="#problem-list">
+                Jump to the list <span aria-hidden="true">↓</span>
+              </Link>
+              <button type="button" className={topicKit.btnGhost} onClick={randomProblem} disabled={!shown}>
+                Random problem
+              </button>
+            </Actions>
+            <Chips>
+              {LEVELS.map((l) => (
+                <span key={l} className={topicKit.chip}>
+                  {byLevel[l].total} {l}
+                </span>
+              ))}
+            </Chips>
+          </Copy>
+          <Stage live hostClassName={topicKit.stageHost} className={styles.stage}>
+            <StageCard as="aside" aria-label="Up next" rot={-1.4} depth={-10} i={0} still className={styles.upNext}>
+              <Tape rot={-5} />
+              <div className={mounted ? undefined : topicKit.pending}>
+                <CardKicker>{solvedCount ? "Pick up where you left off" : "Start here"}</CardKicker>
                 {nextUp ? (
                   <>
-                    <p className={styles.nextTitle}>{nextUp.title}</p>
-                    <p className={styles.nextMeta}>
-                      {groupOf.get(nextUp.chapter)?.title} · {nextUp.level}
+                    <p className={styles.upNextTitle}>{nextUp.title}</p>
+                    <p className={styles.upNextMeta}>
+                      {groupOf.get(nextUp.chapter)?.title} · {nextUp.level} · {plural(nextUp.tests, "test")}
                     </p>
-                    <Link className={`${styles.btn} ${styles.primary}`} href={problemHref(nextUp.id)}>
-                      Solve it
-                      <TopIcon name="next" size={16} />
+                    <Link className={`${topicKit.btn} ${styles.solveIt}`} href={problemHref(nextUp.id)}>
+                      Solve it <span aria-hidden="true">→</span>
                     </Link>
                   </>
                 ) : (
-                  <p className={styles.nextMeta}>Everything here is solved. Try other filters.</p>
+                  <p className={styles.upNextMeta}>Everything in view is solved. Try other filters.</p>
                 )}
               </div>
-            </section>
-
-            <div className={styles.toolbar}>
-              <button
-                type="button"
-                className={`${styles.btn} ${styles.filterBtn}`}
-                aria-expanded={sheetOpen}
-                aria-controls="problem-filters"
-                onClick={() => setSheetOpen(true)}
-              >
-                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                  <path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-                Filters
-                {activeCount > 0 && <span className={styles.badge}>{activeCount}</span>}
-              </button>
-              <p className={styles.showing} role="status">
-                {shown === total ? `All ${total} problems` : `${shown} of ${total} problems`}
-              </p>
-              <label className={styles.sort}>
-                <span>Sort</span>
-                <select value={filters.sort} onChange={(e) => update({ sort: e.target.value as Sort })}>
-                  {SORTS.map((s) => (
-                    <option key={s.value} value={s.value}>
-                      {s.label}
-                    </option>
+            </StageCard>
+            <StageCard
+              as="aside"
+              aria-label="The problems in numbers"
+              rot={3}
+              depth={16}
+              i={1}
+              still
+              className={styles.numbers}
+            >
+              <Tape rot={4} />
+              <Facts
+                items={[
+                  { value: total, label: "problems" },
+                  { value: topics.length, label: "topics" },
+                  { value: totalTests, label: "tests" },
+                ]}
+              />
+            </StageCard>
+            <StageCard rot={-2} depth={12} i={2} still className={styles.progress}>
+              <div className={mounted ? undefined : topicKit.pending}>
+                <CardKicker>Your progress</CardKicker>
+                <ProgressMeter done={solvedCount} total={total} label={`${solvedCount} / ${total} solved`} />
+                <ul className={styles.levels}>
+                  {LEVELS.map((l) => (
+                    <li key={l} data-level={l}>
+                      <span>{l}</span>
+                      <b>
+                        {mounted ? byLevel[l].done : 0}/{byLevel[l].total}
+                      </b>
+                    </li>
                   ))}
-                </select>
-              </label>
-              <div className={styles.viewSeg} role="group" aria-label="Layout">
-                <button
-                  type="button"
-                  aria-pressed={filters.view === "grouped"}
-                  onClick={() => update({ view: "grouped" })}
-                  data-tip="By pattern"
-                  aria-label="Group by pattern"
-                >
-                  <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                    <path
-                      d="M4 5h16M4 5v4h16V5M6 13h14M6 17h14M6 21h14"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={filters.view === "list"}
-                  onClick={() => update({ view: "list" })}
-                  data-tip="One list"
-                  aria-label="One list"
-                >
-                  <TopIcon name="list" size={16} />
-                </button>
+                </ul>
               </div>
+            </StageCard>
+            <Note arrow="ur" rot={-4} depth={14} className={styles.redNote}>
+              red first, then green
+            </Note>
+            <Sticker rot={-6} depth={20} tone="primary" className={styles.stageSticker}>
+              ★ run in your browser
+            </Sticker>
+          </Stage>
+        </Scene>
+
+        <Band
+          no="01"
+          id="find-title"
+          label="Find one"
+          title="Search it, filter it, or let it pick"
+          count={plural(total, "problem")}
+        >
+          <div className={styles.tools}>
+            <SearchPill
+              trailing={
+                filters.q ? (
+                  <ClearButton label="Clear the search" onClear={() => update({ q: "" })} />
+                ) : (
+                  <KeyHint>/</KeyHint>
+                )
+              }
+            >
+              <input
+                ref={searchRef}
+                type="search"
+                placeholder="Search problems, patterns, topics"
+                aria-label="Search problems"
+                autoComplete="off"
+                value={filters.q}
+                onChange={(e) => update({ q: e.target.value })}
+              />
+            </SearchPill>
+            <aside className={styles.filters} aria-label="Filters">
+              {filterPanel}
+              {activeCount > 0 && (
+                <button type="button" className={styles.clear} onClick={clearFilters}>
+                  Clear {plural(activeCount, "filter")}
+                </button>
+              )}
+            </aside>
+          </div>
+
+          <div className={styles.bar}>
+            <button
+              ref={filtersButtonRef}
+              type="button"
+              className={styles.filterBtn}
+              aria-expanded={sheetOpen}
+              aria-controls="problem-filters"
+              onClick={() => setSheetOpen(true)}
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              Filters
+              {activeCount > 0 && <span className={styles.badge}>{activeCount}</span>}
+            </button>
+            <p className={styles.showing} role="status">
+              {shown === total ? `All ${total} problems` : `${shown} of ${total} problems`}
+            </p>
+            <div className={styles.barEnd}>
+              {sortAndView}
               {filters.view === "grouped" && visible.length > 1 && (
                 <button
                   type="button"
@@ -532,89 +537,83 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
                 </button>
               )}
             </div>
+          </div>
 
-            <div id="problem-list">
-              {shown === 0 ? (
-                <div className={styles.empty}>
-                  <p className={styles.emptyTitle}>No problems match</p>
-                  <p>Try a shorter search, or clear the filters.</p>
-                  <button
-                    type="button"
-                    className={styles.btn}
-                    onClick={() => update({ q: "", topic: "all", levels: [], status: "all" })}
-                  >
-                    Clear filters
-                  </button>
-                </div>
-              ) : filters.view === "list" ? (
-                <ol className={styles.rows}>
-                  {flat.map((p, i) => (
-                    <ProblemItem
-                      key={p.id}
-                      p={p}
-                      n={i + 1}
-                      done={solved.has(p.id)}
-                      pattern={groupOf.get(p.chapter)?.title}
-                    />
-                  ))}
-                </ol>
-              ) : (
-                visible.map((g) => {
-                  const all = groupOf.get(g.chapter)!.problems;
-                  const done = mounted ? all.filter((p) => solved.has(p.id)).length : 0;
-                  const open = openIds.has(g.chapter);
-                  return (
-                    <section className={styles.group} key={g.chapter} aria-labelledby={`g-${g.chapter}`}>
-                      <div className={styles.groupHead}>
-                        <h2 className={styles.groupH}>
-                          <button
-                            type="button"
-                            className={styles.groupToggle}
-                            aria-expanded={open}
-                            aria-controls={`gl-${g.chapter}`}
-                            onClick={() => toggleGroup(g.chapter)}
-                          >
-                            <span className={styles.chevron} aria-hidden="true" />
-                            <span className={styles.groupNum} aria-hidden="true">
-                              {g.num}
-                            </span>
-                            <span className={styles.groupText}>
-                              <span id={`g-${g.chapter}`} className={styles.groupTitle}>
-                                {g.title}
-                              </span>
-                              <span className={styles.groupMeta}>
-                                {g.topicName} · {plural(g.problems.length, "problem")}
-                              </span>
-                            </span>
-                          </button>
-                        </h2>
-                        <span className={styles.groupProgress} title={`${done} of ${all.length} solved`}>
-                          <span className={styles.bar} aria-hidden="true">
-                            <span style={{ width: `${(done / all.length) * 100}%` }} />
-                          </span>
-                          <span className={styles.levelNum}>
-                            {done}/{all.length}
-                          </span>
+          <div id="problem-list" className={styles.list}>
+            {shown === 0 ? (
+              <div className={styles.empty}>
+                <p className={styles.emptyTitle}>No problems match</p>
+                <p className={styles.emptyText}>Try a shorter search, or clear the filters.</p>
+                <button type="button" className={topicKit.btnGhost} onClick={clearFilters}>
+                  Clear filters
+                </button>
+              </div>
+            ) : filters.view === "list" ? (
+              <ol className={kit.rows}>
+                {flat.map((p, i) => (
+                  <ProblemItem
+                    key={p.id}
+                    p={p}
+                    n={i + 1}
+                    done={solved.has(p.id)}
+                    ready={mounted}
+                    pattern={groupOf.get(p.chapter)?.title}
+                  />
+                ))}
+              </ol>
+            ) : (
+              visible.map((g) => {
+                const all = groupOf.get(g.chapter)!.problems;
+                const done = mounted ? all.filter((p) => solved.has(p.id)).length : 0;
+                const open = openIds.has(g.chapter);
+                return (
+                  <section className={styles.group} key={g.chapter} aria-label={g.title}>
+                    <h2 className={styles.groupHead}>
+                      <button
+                        type="button"
+                        className={`${kit.eyebrow} ${kit.eyebrowToggle}`}
+                        aria-expanded={open}
+                        aria-controls={`gl-${g.chapter}`}
+                        onClick={() => toggleGroup(g.chapter)}
+                      >
+                        <span className={kit.eyebrowNo} aria-hidden="true">
+                          {g.num}
                         </span>
-                        <Link className={styles.linkBtn} href={g.chapterHref} prefetch={false}>
-                          Read
-                        </Link>
-                      </div>
-                      {open && (
-                        <ol className={styles.rows} id={`gl-${g.chapter}`}>
+                        <span className={kit.eyebrowText}>{g.title}</span>
+                        <span className={kit.eyebrowRule} aria-hidden="true" />
+                        <span className={`${kit.eyebrowCount} ${styles.groupTopic}`}>{g.topicName}</span>
+                        <span className={kit.eyebrowCount}>
+                          {done}/{all.length}
+                          <span className="visually-hidden"> solved</span>
+                        </span>
+                        <span className={kit.chevron} aria-hidden="true" />
+                      </button>
+                    </h2>
+                    {open && (
+                      <div id={`gl-${g.chapter}`} className={styles.groupBody}>
+                        <ol className={kit.rows}>
                           {g.problems.map((p) => (
-                            <ProblemItem key={p.id} p={p} done={solved.has(p.id)} />
+                            <ProblemItem key={p.id} p={p} done={solved.has(p.id)} ready={mounted} />
                           ))}
                         </ol>
-                      )}
-                    </section>
-                  );
-                })
-              )}
-            </div>
-          </main>
-        </div>
-      </div>
+                        <Link className={styles.readLink} href={g.chapterHref} prefetch={false}>
+                          Read the chapter first <span aria-hidden="true">→</span>
+                        </Link>
+                      </div>
+                    )}
+                  </section>
+                );
+              })
+            )}
+          </div>
+        </Band>
+
+        <Foot>
+          <FootLink href="/practice">Playground</FootLink>
+          <FootLink href="/mock">Mock interview</FootLink>
+          <FootLink href="/">All topics</FootLink>
+        </Foot>
+      </TopicPage>
 
       {sheetOpen && (
         <div className={styles.sheetRoot}>
@@ -623,20 +622,30 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
             <div className={styles.sheet} id="problem-filters" role="dialog" aria-modal="true" aria-label="Filters">
               <div className={styles.sheetHead}>
                 <p className={styles.sheetTitle}>Filters</p>
-                <button
-                  type="button"
-                  className={styles.iconBtn}
-                  aria-label="Close filters"
-                  onClick={() => setSheetOpen(false)}
-                >
-                  ×
-                </button>
+                <CloseButton
+                  label="Close filters"
+                  onClose={() => {
+                    setSheetOpen(false);
+                    filtersButtonRef.current?.focus();
+                  }}
+                />
               </div>
-              {filterPanel}
+              <div className={styles.sheetBody}>
+                {filterPanel}
+                <div className={styles.sheetSort}>{sortAndView}</div>
+                {activeCount > 0 && (
+                  <button type="button" className={styles.clear} onClick={clearFilters}>
+                    Clear {plural(activeCount, "filter")}
+                  </button>
+                )}
+              </div>
               <button
                 type="button"
-                className={`${styles.btn} ${styles.primary} ${styles.sheetDone}`}
-                onClick={() => setSheetOpen(false)}
+                className={`${topicKit.btn} ${styles.sheetDone}`}
+                onClick={() => {
+                  setSheetOpen(false);
+                  filtersButtonRef.current?.focus();
+                }}
               >
                 Show {plural(shown, "problem")}
               </button>
@@ -644,27 +653,40 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
           </FocusTrap>
         </div>
       )}
-      <SiteDrawer open={menuOpen} onClose={closeMenu} />
-    </>
+    </PageFrame>
   );
 }
 
-function ProblemItem({ p, n, done, pattern }: { p: ProblemRow; n?: number; done: boolean; pattern?: string }) {
+function ProblemItem({
+  p,
+  n,
+  done,
+  ready,
+  pattern,
+}: {
+  p: ProblemRow;
+  n?: number;
+  done: boolean;
+  ready: boolean;
+  pattern?: string;
+}) {
   return (
-    <li className={styles.row}>
-      <Link className={styles.rowLink} href={problemHref(p.id)} prefetch={false}>
-        <Check done={done} />
-        {n !== undefined && <span className={styles.rowNum}>{n}</span>}
-        <span className={styles.rowTitle}>
-          <span>{p.title}</span>
+    <li>
+      <Link className={`${kit.row} ${styles.row}`} href={problemHref(p.id)} prefetch={false}>
+        <span className={ready ? styles.tick : `${styles.tick} ${topicKit.pending}`} data-done={done || undefined}>
+          {done ? "✓" : ""}
+        </span>
+        {n !== undefined && <span className={kit.code}>{n}</span>}
+        <span className={styles.rowText}>
+          <span className={kit.title}>{p.title}</span>
           {pattern && <span className={styles.rowPattern}>{pattern}</span>}
         </span>
         <span className={styles.level} data-level={p.level}>
           {p.level}
         </span>
-        <span className={styles.rowTests}>{plural(p.tests, "test")}</span>
-        <span className={styles.rowGo} aria-hidden="true">
-          <TopIcon name="next" size={16} />
+        <span className={styles.tests}>{plural(p.tests, "test")}</span>
+        <span className={styles.go} aria-hidden="true">
+          →
         </span>
         {done && <span className="visually-hidden">(solved)</span>}
       </Link>

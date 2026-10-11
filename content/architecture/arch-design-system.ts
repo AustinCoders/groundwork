@@ -237,9 +237,12 @@ export const archDesignSystem: Chapter = {
   <code>@radix-ui/react-focus-scope</code>.
 </p>
 <p>
-  The practice playground, the problems list and the whiteboard are full-screen tools, and a
-  frame would cost them height they need. They have no persistent chrome. Practice and problems
-  open <code>components/SiteDrawer.tsx</code> from the same Menu pill. It is a portal with
+  The playground and the problem pages are tools, so they keep the full height of the window, but they
+  wear the same header: <code>components/frame/FrameHeader.tsx</code> is the header that
+  <code>PageFrame</code> renders, taken out so the tools can use it with a back pill that shrinks to an
+  icon, no brand name and a row that wraps on narrow screens. The problems list is a page in
+  <code>PageFrame</code> like the interview question bank. The whiteboard is the one tool with its own
+  chrome and board menu. Every other page opens <code>components/SiteDrawer.tsx</code> from the same Menu pill. It is a portal with
   <code>role="dialog"</code> and <code>aria-modal</code>, laid out as four numbered sections in the
   home page's vocabulary: a Continue card from the one saved place in <code>groundwork:resume</code>
   with the level and streak as one quiet line, six Go to rows with <code>aria-current</code> on the
@@ -271,6 +274,22 @@ export const archDesignSystem: Chapter = {
   page has hydrated, so the label of a button never changes under the reader.
 </p>
 
+<h3>The workbench pages</h3>
+<p>
+  The playground and the problem pages share one shell, <code>components/practice/workbench.module.css</code>,
+  and the same <code>PracticeWorkspace</code>. The page is a paper background with a header and a grid
+  whose padding is one token-sized gap, so the room under the header, at the sides and at the bottom is
+  the same at every width. The playground fills the window at all sizes; a problem page fills it from
+  1001 pixels up and stacks below it, description first. The description panel is a card with a mono
+  breadcrumb, the title in the heading font with the hand underline, chips for level and tests, and
+  hints that arrive as taped sticky notes. The console's empty states speak in the home voice, and a
+  passing submit stamps the page: a rotated rubber stamp, the words, and a pill to the next problem.
+  The editor window, the output tabs, the status bar, the palette and the dialogs keep their global
+  classes and are restyled in place on the same type scale, so nothing under 12 pixels appears in the
+  chrome. Their colours stay on the <code>--ide-*</code> tokens, which are themselves aliases of the
+  theme's sheet, line and ink.
+</p>
+
 <h3>Modals</h3>
 <p>
   <code>components/Modal.tsx</code> is built on the native <code>&lt;dialog&gt;</code> element,
@@ -283,9 +302,9 @@ export const archDesignSystem: Chapter = {
 
 <h3>CSS modules and globals.css</h3>
 <p>
-  <code>globals.css</code> is about 8,400 lines. It holds the tokens, the prose styles every
+  <code>globals.css</code> is about 7,300 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
-  one of 41 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
+  one of 42 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
   lines. The rule of thumb is that anything
   chapter HTML can contain goes in globals, because chapter bodies are strings that cannot import a
   module, and anything else goes in a module so it loads only with its page.
@@ -326,8 +345,9 @@ export const archDesignSystem: Chapter = {
   Tooltips are pure CSS. An element with a <code>data-tip</code> attribute gets an
   <code>::after</code> whose content is <code>attr(data-tip)</code>, drawn in the sheet colour on
   ink, and it shows on <code>:hover</code> and on <code>:focus-visible</code>, so keyboard users see
-  it too. It appears after a 0.35 s delay and hides at once. The attribute appears 37 times across
-  the playground, the problems page, the whiteboard and the architecture index.
+  it too. It appears after a 0.35 s delay and hides at once. The attribute appears 31 times across
+  the playground, the whiteboard and the architecture index, and the playground's tooltips are off
+  under 721 pixels and on touch screens, where a tooltip that cannot be hovered only widens the page.
 </p>
 <p>
   Reduced motion is handled at two levels. A global
@@ -346,7 +366,7 @@ export const archDesignSystem: Chapter = {
   architecture section. One of them, <code>/level/typescript</code>, is the level picker of a
   topic that is only outlined, and another, <code>/typescript/ts-setup-compiler</code>, is that
   same topic's own outline chapter; <code>/level/typescript</code> stands in for <code>/soon</code>,
-  which redirects there while every topic is marked ready. It also runs against 40 states that a plain page load does not show: 35 that open with a click, and 5 seeded in
+  which redirects there while every topic is marked ready. It also runs against 45 states that a plain page load does not show: 40 that open with a click, and 5 seeded in
   <code>localStorage</code>. The clicks open the site menu, the reading menu on <code>/notes</code>
   with its Appearance, Narrator and Keyboard shortcuts folds open, a reading budget picked on the JavaScript cover's Up
   next card, the Advanced level picked on the level picker, the site menu with a category expanded and with the theme swatches focused, the home page's topic section on Languages, with a legend row expanded and a station card open and with a search term typed,

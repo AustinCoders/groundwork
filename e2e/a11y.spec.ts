@@ -437,6 +437,72 @@ const STATES: State[] = [
     },
   },
   {
+    name: "a topic and a level picked, and the first pattern open",
+    path: "/problems?topic=dsa&level=advanced",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await expect(page.getByRole("status").first()).toHaveText(/\d+ of \d+ problems/);
+      await check("a topic and a level picked, and the first pattern open");
+    },
+  },
+  {
+    name: "no problem matching the search",
+    path: "/problems?q=zzzz-no-such-problem",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await expect(page.getByText("No problems match")).toBeVisible();
+      await check("no problem matching the search");
+    },
+  },
+  {
+    name: "the playground after a run that logged and threw",
+    path: "/practice?id=free",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const editor = page.locator(".cm-content");
+      await editor.click();
+      await page.keyboard.press("ControlOrMeta+a");
+      await page.keyboard.type("console.log('hi', [1, 2, 3]);\nconsole.warn('careful');\nthrow new Error('boom');\n");
+      await page.getByRole("button", { name: "Run the code" }).click();
+      await expect(page.locator(".run-status")).toContainText("error");
+      await check("the playground after a run that logged and threw");
+      await page.getByRole("button", { name: "Debug" }).click();
+      await expect(page.getByRole("tab", { name: /^Debug/ })).toHaveAttribute("aria-selected", "true");
+      await check("the playground with the debugger open");
+    },
+  },
+  {
+    name: "the playground with the new file dialog open",
+    path: "/practice?id=free",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page.getByRole("button", { name: "New file" }).click();
+      await expect(page.getByRole("dialog", { name: "New file" })).toBeVisible();
+      await check("the playground with the new file dialog open");
+    },
+  },
+  {
+    name: "an exercise with its hints shown and a failing then a passing submit",
+    path: "/problems/ex-two-sum",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page.getByRole("tab", { name: /Hints/ }).click();
+      await page.getByRole("button", { name: "Show a hint" }).click();
+      await check("an exercise with a hint shown");
+      await page.getByRole("button", { name: "Submit" }).click();
+      await expect(page.locator("[data-verdict='fail']")).toBeVisible({ timeout: 30_000 });
+      await check("an exercise with failing tests");
+      await page.getByRole("button", { name: "Show the solution" }).click();
+      await page
+        .getByRole("dialog", { name: "Show the solution?" })
+        .getByRole("button", { name: "Show solution" })
+        .click();
+      await page.getByRole("button", { name: "Submit" }).click();
+      await expect(page.locator("[data-verdict='pass']")).toBeVisible({ timeout: 30_000 });
+      await check("an exercise with every test passing");
+    },
+  },
+  {
     name: "the interview landing with progress and the question of the day revealed",
     path: "/interview",
     viewports: VIEWPORTS,

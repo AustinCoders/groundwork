@@ -498,6 +498,7 @@ test("every topic hero scene is one balanced screen under the header, with the n
     { path: "/interview", full: true },
     { path: "/interview/questions", full: true },
     { path: "/architecture", full: true },
+    { path: "/problems", full: true },
     { path: "/path/js/beginner", full: false },
     { path: "/notes", full: false },
   ];
@@ -732,7 +733,7 @@ test("a component exercise renders a preview and runs its tests in the sandbox",
   await page.getByRole("button", { name: "Run the code" }).click();
   await expect(page.frameLocator("iframe.preview-frame").getByText("Count: 0")).toBeVisible();
   await page.getByRole("button", { name: "Submit" }).click();
-  await expect(page.locator(".verdict--fail")).toBeVisible();
+  await expect(page.locator("[data-verdict='fail']")).toBeVisible();
 
   await page.evaluate(
     ([key, code]) => localStorage.setItem(key, JSON.stringify(code)),
@@ -740,7 +741,7 @@ test("a component exercise renders a preview and runs its tests in the sandbox",
   );
   await page.reload();
   await page.getByRole("button", { name: "Submit" }).click();
-  await expect(page.locator(".verdict--pass")).toContainText(`All ${exercise.tests.length} tests pass`);
+  await expect(page.locator("[data-verdict='pass']")).toContainText(`All ${exercise.tests.length} tests pass`);
 
   expect(problems).toEqual([]);
 });
@@ -1059,7 +1060,7 @@ test("lua runs in the browser and is graded against a problem's tests", async ({
     "function twoSum(nums, target)\n  local seen = {}\n  for i, n in ipairs(nums) do\n    if seen[target - n] ~= nil then return {seen[target - n], i - 1} end\n    seen[n] = i - 1\n  end\n  return {}\nend\n"
   );
   await page.getByRole("button", { name: "Submit" }).click();
-  await expect(page.locator(".verdict")).toContainText("All 7 tests pass", { timeout: 60_000 });
+  await expect(page.locator("[data-verdict]")).toContainText("All 7 tests pass", { timeout: 60_000 });
 });
 
 test("python can be stepped through too", async ({ page }) => {
@@ -1138,15 +1139,15 @@ test("the mock lobby shows how ready you are and what to practise next", async (
 });
 
 for (const [width, maxBar] of [
-  [1024, 80],
-  [768, 80],
-  [390, 130],
+  [1024, 130],
+  [768, 130],
+  [390, 190],
 ] as const) {
   test(`the playground fits a ${width}px screen`, async ({ page }) => {
     await page.setViewportSize({ width, height: 844 });
     await page.goto("/practice?id=free");
     await expect(page.locator(".cm-content")).toBeVisible();
-    const bar = await page.locator(".lc-topbar").boundingBox();
+    const bar = await page.locator("header").first().boundingBox();
     expect(bar!.height).toBeLessThanOrEqual(maxBar);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
     await expect(page.getByRole("button", { name: "Run the code" })).toBeVisible();
@@ -4063,7 +4064,7 @@ test("a passed and a failed test keep their state colours where success is not g
   await expect(page.locator("html")).toHaveAttribute("data-theme", "lavender");
   await expect(editor).toContainText("function twoSum(nums, target)");
   await page.getByRole("button", { name: "Submit" }).click();
-  await expect(page.locator(".verdict--fail")).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator("[data-verdict='fail']")).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".test--fail .test__mark").first()).toHaveCSS("color", themeColour("lavender", "--danger"));
   await expect(testsCount).toHaveCSS("color", themeColour("lavender", "--ink"));
 
@@ -4075,7 +4076,7 @@ test("a passed and a failed test keep their state colours where success is not g
   await page.getByRole("button", { name: "Show the solution" }).click();
   await page.getByRole("dialog", { name: "Show the solution?" }).getByRole("button", { name: "Show solution" }).click();
   await page.getByRole("button", { name: "Submit" }).click();
-  await expect(page.locator(".verdict--pass")).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator("[data-verdict='pass']")).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".test--pass .test__mark").first()).toHaveCSS("color", themeColour("forest", "--success"));
   await expect(testsCount).toHaveCSS("color", themeColour("forest", "--ink"));
 });
