@@ -668,6 +668,46 @@ const STATES: State[] = [
     },
   },
   {
+    name: "the mock loop planner at its review step",
+    path: "/mock",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      const card = (group: string, name: RegExp) =>
+        page.getByRole("group", { name: group }).getByRole("button", { name });
+      await check("the first step of the planner");
+      await card("Loop style", /^Amazon-style/).click();
+      await card("Role", /^Frontend/).click();
+      await card("Experience", /^5–7 years/).click();
+      await card("Length", /^Standard/).click();
+      await expect(page.getByRole("heading", { name: "Your loop" })).toBeVisible();
+      await check("the loop, round by round");
+    },
+  },
+  {
+    name: "the mock single round picker",
+    path: "/mock",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page.getByRole("tab", { name: "Single round" }).click();
+      await page.getByRole("button", { name: /^System design/ }).click();
+      await check("the single round picker");
+    },
+  },
+  {
+    name: "a mock design round on the whiteboard",
+    path: "/mock",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page.getByRole("tab", { name: "Single round" }).click();
+      await page.getByRole("button", { name: /^System design/ }).click();
+      await page.getByRole("button", { name: /^Start System design/ }).click();
+      await page.getByRole("button", { name: "Walk in" }).click();
+      await page.getByRole("tab", { name: /Whiteboard/ }).click();
+      await page.getByRole("button", { name: "+ Client" }).click();
+      await check("the whiteboard beside the question");
+    },
+  },
+  {
     name: "a system design mock round",
     path: "/mock",
     viewports: VIEWPORTS,

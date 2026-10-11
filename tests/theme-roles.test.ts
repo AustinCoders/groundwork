@@ -25,8 +25,6 @@ const CATEGORICAL_SELECTORS: Record<string, string[]> = {
     ".badge[data-earned]",
     ".badge[data-earned] .medal",
   ],
-  "app/mock/mock.module.css": [".avatar", '.avatar[data-tone="sharp"]', '.avatar[data-tone="calm"]'],
-  "app/mock/guide.module.css": [".avatar", '.avatar[data-tone="sharp"]'],
   "app/whiteboard/whiteboard.module.css": [".paperMargin", ".laser", ".laserGlow", '.swatch[data-value="none"]'],
   "components/series/landing.module.css": [".page"],
 };

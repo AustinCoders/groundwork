@@ -38,7 +38,7 @@ export function FrameHeader({
   links?: FrameLink[];
   middle?: ReactNode;
   actions?: ReactNode;
-  tool?: "exercise" | "playground";
+  tool?: "exercise" | "playground" | "room";
   className?: string;
 }) {
   const pathname = usePathname();

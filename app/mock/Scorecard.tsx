@@ -2,7 +2,21 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { COMPETENCY_LABEL } from "@/app/mock/Lobby";
+import { Copy, Note, Scene, Stage, StageCard, Sticker, Tape } from "@/components/home/Stage";
+import {
+  Actions,
+  Band,
+  CardKicker,
+  Chips,
+  Foot,
+  FootLink,
+  Heading,
+  Kicker,
+  TopicPage,
+  Underlined,
+  topicKit,
+} from "@/components/topic/TopicKit";
+import { COMPETENCY_LABEL } from "@/app/mock/options";
 import { useScrollRegions } from "@/components/reader/scrollRegions";
 import {
   competencyProfile,
@@ -19,7 +33,8 @@ import type { Competency, StageId, StageInfo, TalkItem } from "@/lib/mock/types"
 import { formatClock } from "@/lib/mockSession";
 import { BoardView } from "@/app/mock/Whiteboard";
 import { COMPETENCY_PLAN } from "@/lib/mock/guide";
-import styles from "./mock.module.css";
+import kit from "./mockKit.module.css";
+import styles from "./scorecard.module.css";
 
 const HIRE_BAR = 0.65;
 const STRONG_BAR = 0.8;
@@ -47,17 +62,17 @@ function plain(html: string): string {
 
 function Bar({ value, marks = false }: { value: number; marks?: boolean }) {
   return (
-    <div className={styles.bar}>
-      <div className={`${styles.barTrack}${marks ? ` ${styles.withMarks}` : ""}`}>
-        <span className={styles.barFill} style={{ width: `${Math.round(value * 100)}%` }} />
+    <div className={kit.bar}>
+      <div className={kit.barTrack}>
+        <span className={kit.barFill} data-band={band(value)} style={{ width: `${Math.round(value * 100)}%` }} />
         {marks && (
           <>
-            <span className={styles.threshold} style={{ left: `${HIRE_BAR * 100}%` }} aria-hidden="true" />
-            <span className={styles.threshold} style={{ left: `${STRONG_BAR * 100}%` }} aria-hidden="true" />
+            <span className={kit.threshold} style={{ left: `${HIRE_BAR * 100}%` }} aria-hidden="true" />
+            <span className={kit.threshold} style={{ left: `${STRONG_BAR * 100}%` }} aria-hidden="true" />
           </>
         )}
       </div>
-      <span className={styles.barValue}>{Math.round(value * 100)}%</span>
+      <span className={kit.barValue}>{Math.round(value * 100)}%</span>
     </div>
   );
 }
@@ -92,8 +107,16 @@ export function Scorecard({
     .filter(([, v]) => v < STRONG_BAR)
     .sort((a, b) => a[1] - b[1])
     .slice(0, 2);
+  const scored = results
+    .filter((r) => r.scores.length > 0)
+    .map((r) => ({ stage: r.stage, score: stageScore(r) }))
+    .sort((a, b) => b.score - a.score);
+  const best = scored[0];
+  const worst = scored.length > 1 ? scored[scored.length - 1] : null;
+  const percent = Math.round(decision.score * 100);
+  const verdictWord = VERDICT_LABEL[decision.verdict];
 
-  const rounds = useRef<HTMLElement>(null);
+  const rounds = useRef<HTMLDivElement>(null);
   useScrollRegions(rounds, session);
 
   async function copyDebrief() {
@@ -107,59 +130,100 @@ export function Scorecard({
   }
 
   return (
-    <>
-      <section className={styles.panel} aria-labelledby="debrief-h">
-        <div className={styles.verdictSheet}>
-          <div>
-            <p className={styles.eyebrow}>{kind} debrief</p>
-            <h1 id="debrief-h" className={styles.headline}>
-              {session.mode === "loop"
-                ? decision.headline
-                : `${Math.round(decision.score * 100)}% — ${VERDICT_LABEL[decision.verdict].toLowerCase()} territory`}
-            </h1>
-            <div className={styles.facts}>
-              <span>{Math.round(decision.score * 100)}% weighted</span>
-              <span>
-                {answered.length}/{session.questions.length} answered
-              </span>
-              <span>{duration((session.finishedAt ?? session.startedAt) - session.startedAt)}</span>
-              {timedOut > 0 && <span>{timedOut} over time</span>}
-              {skipped > 0 && <span>{skipped} skipped</span>}
+    <TopicPage accent="blue">
+      <Scene className={topicKit.hero}>
+        <Copy>
+          <Kicker mark="Q">{kind} debrief</Kicker>
+          <Heading id="debrief-h">
+            {session.mode === "loop" ? (
+              decision.headline
+            ) : (
+              <>
+                <Underlined>{percent}%</Underlined> — {verdictWord.toLowerCase()} territory
+              </>
+            )}
+          </Heading>
+          {decision.reasons.length + pace.notes.length > 0 && (
+            <ul className={styles.reasons}>
+              {decision.reasons.map((r) => (
+                <li key={r}>{r}</li>
+              ))}
+              {pace.notes.map((r) => (
+                <li key={r}>{r}</li>
+              ))}
+            </ul>
+          )}
+          {endedEarly && (
+            <p className={styles.early}>
+              Ended early — unasked rounds are left out of the decision rather than counted as zeros, which flatters the
+              result.
+            </p>
+          )}
+          <Chips>
+            <span className={topicKit.chip}>{percent}% weighted</span>
+            <span className={topicKit.chip}>
+              {answered.length}/{session.questions.length} answered
+            </span>
+            <span className={topicKit.chip}>
+              {duration((session.finishedAt ?? session.startedAt) - session.startedAt)}
+            </span>
+            {timedOut > 0 && <span className={topicKit.chip}>{timedOut} over time</span>}
+            {skipped > 0 && <span className={topicKit.chip}>{skipped} skipped</span>}
+          </Chips>
+          <Actions>
+            <a className={topicKit.btn} href="#rounds">
+              Read the full debrief <span aria-hidden="true">↓</span>
+            </a>
+          </Actions>
+        </Copy>
+        <Stage live hostClassName={topicKit.stageHost} className={styles.stage}>
+          <StageCard rot={-1.6} depth={-6} i={0} still className={styles.stampCard}>
+            <Tape rot={-4} />
+            <div
+              className={styles.stamp}
+              data-verdict={decision.verdict}
+              role="img"
+              aria-label={`Verdict: ${verdictWord}`}
+            >
+              <div>
+                <div className={styles.stampWord}>{verdictWord}</div>
+                <div className={styles.stampScore}>{percent}%</div>
+              </div>
             </div>
-            {decision.reasons.length + pace.notes.length > 0 && (
-              <ul className={styles.reasons}>
-                {decision.reasons.map((r) => (
-                  <li key={r}>{r}</li>
-                ))}
-                {pace.notes.map((r) => (
-                  <li key={r}>{r}</li>
-                ))}
-              </ul>
-            )}
-            {endedEarly && (
-              <p className="sub">
-                Ended early — unasked rounds are left out of the decision rather than counted as zeros, which flatters
-                the result.
-              </p>
-            )}
-          </div>
-          <div
-            className={styles.stamp}
-            data-verdict={decision.verdict}
-            role="img"
-            aria-label={`Verdict: ${VERDICT_LABEL[decision.verdict]}`}
+            <p className={styles.stampNote}>
+              {session.mode === "loop" ? decision.headline : `${kind} score, weighted by core rounds`}
+            </p>
+          </StageCard>
+          {best && (
+            <StageCard decor extra rot={2.4} depth={14} i={1} className={styles.bestCard}>
+              <CardKicker>{worst ? "Strongest round" : "Your round"}</CardKicker>
+              <p className={styles.cardTitle}>{title(best.stage)}</p>
+              <p className={styles.cardScore}>{Math.round(best.score * 100)}%</p>
+            </StageCard>
+          )}
+          {worst && (
+            <StageCard decor extra rot={-2} depth={10} i={2} className={styles.worstCard}>
+              <CardKicker>Weakest round</CardKicker>
+              <p className={styles.cardTitle}>{title(worst.stage)}</p>
+              <p className={styles.cardScore}>{Math.round(worst.score * 100)}%</p>
+            </StageCard>
+          )}
+          <Sticker
+            rot={-6}
+            depth={18}
+            tone={decision.verdict === "no-hire" || decision.verdict === "lean-no" ? "caution" : "success"}
+            className={styles.sticker}
           >
-            <div>
-              <div className={styles.stampWord}>{VERDICT_LABEL[decision.verdict]}</div>
-              <div className={styles.stampScore}>{Math.round(decision.score * 100)}%</div>
-            </div>
-          </div>
-        </div>
-      </section>
+            you marked it yourself
+          </Sticker>
+          <Note arrow="ul" rot={-3} depth={12} className={styles.note}>
+            marked like a committee
+          </Note>
+        </Stage>
+      </Scene>
 
-      <div className={styles.split}>
-        <section ref={rounds} className={styles.panel} aria-labelledby="rounds-h" data-fx="left">
-          <h2 id="rounds-h">Round by round</h2>
+      <Band no="01" id="rounds-h" sectionId="rounds" label="The rounds" title="Round by round">
+        <div ref={rounds}>
           <div className="table-scroll">
             <table className={styles.stageTable}>
               <thead>
@@ -178,17 +242,18 @@ export function Scorecard({
                   return (
                     <tr key={r.stage}>
                       <td>
-                        {title(r.stage)} {r.core && <span className={styles.coreBadge}>core</span>}
-                        <div className={styles.hint}>
+                        <span className={styles.roundName}>{title(r.stage)}</span>{" "}
+                        {r.core && <span className={kit.coreBadge}>core</span>}
+                        <div className={styles.roundCount}>
                           {r.scores.length} of {session.questions.filter((q) => q.stage === r.stage).length} answered
                         </div>
                       </td>
                       <td className={styles.barCell}>
-                        {has ? <Bar value={score} /> : <span className="sub">not reached</span>}
+                        {has ? <Bar value={score} /> : <span className={styles.roundCount}>not reached</span>}
                       </td>
                       <td>
                         {has && (
-                          <span className={styles.verdictChip} data-verdict={verdictFor(score)}>
+                          <span className={kit.verdictChip} data-verdict={verdictFor(score)}>
                             {VERDICT_LABEL[verdictFor(score)]}
                           </span>
                         )}
@@ -199,37 +264,37 @@ export function Scorecard({
               </tbody>
             </table>
           </div>
-        </section>
+        </div>
+      </Band>
 
-        <section className={styles.panel} aria-labelledby="profile-h" data-fx="right">
-          <h2 id="profile-h">What it says about you</h2>
-          <dl className={styles.profile}>
-            {(Object.entries(profile) as [Competency, number][])
-              .sort((a, b) => b[1] - a[1])
-              .map(([c, v]) => (
-                <div key={c}>
-                  <dt>{COMPETENCY_LABEL[c]}</dt>
-                  <dd>
-                    <Bar value={v} marks />
-                  </dd>
-                </div>
-              ))}
-          </dl>
-          <p className={styles.legend}>
-            <span>
-              ┆ dashed lines: hire at {Math.round(HIRE_BAR * 100)}%, strong hire at {Math.round(STRONG_BAR * 100)}%
-            </span>
-          </p>
-        </section>
-      </div>
+      <Band no="02" id="profile-h" label="The skills" title="What it says about you">
+        <dl className={styles.profile}>
+          {(Object.entries(profile) as [Competency, number][])
+            .sort((a, b) => b[1] - a[1])
+            .map(([c, v]) => (
+              <div key={c}>
+                <dt>{COMPETENCY_LABEL[c]}</dt>
+                <dd>
+                  <Bar value={v} marks />
+                </dd>
+              </div>
+            ))}
+        </dl>
+        <p className={styles.legend}>
+          ┆ dashed lines: hire at {Math.round(HIRE_BAR * 100)}%, strong hire at {Math.round(STRONG_BAR * 100)}%
+        </p>
+      </Band>
 
       {focus.length > 0 && (
-        <section className={styles.panel} aria-labelledby="next-h" data-fx="up">
-          <p className={styles.eyebrow}>before the real one</p>
-          <h2 id="next-h">What to work on next</h2>
+        <Band no="03" id="next-h" label="Before the real one" title="What to work on next">
           <div className={styles.nextGrid}>
-            {focus.map(([c, v]) => (
-              <article key={c} className={styles.nextCard}>
+            {focus.map(([c, v], i) => (
+              <article
+                key={c}
+                className={`${kit.sticky} ${styles.nextCard}`}
+                style={{ "--tilt": `${[-0.8, 0.8][i % 2]}deg` } as React.CSSProperties}
+              >
+                <span className={kit.tape} aria-hidden="true" />
                 <div className={styles.nextTop}>
                   <b>{COMPETENCY_LABEL[c]}</b>
                   <span className={styles.qScore} data-band={band(v)}>
@@ -247,11 +312,10 @@ export function Scorecard({
               </article>
             ))}
           </div>
-        </section>
+        </Band>
       )}
 
-      <section className={styles.panel} aria-labelledby="qs-h" data-fx="up">
-        <h2 id="qs-h">Every question</h2>
+      <Band no={focus.length > 0 ? "04" : "03"} id="qs-h" label="The detail" title="Every question">
         <ol className={styles.qList}>
           {session.questions.map((q, i) => {
             const score = q.score;
@@ -265,7 +329,7 @@ export function Scorecard({
                       {talk ? plain(talk.prompt) : q.item.kind === "coding" ? q.item.title : ""}
                     </span>
                     {score === null ? (
-                      <span className={styles.hint}>not asked</span>
+                      <span className={styles.qMeta}>not asked</span>
                     ) : (
                       <span className={styles.qScore} data-band={band(score)}>
                         {q.skipped ? "skipped" : `${Math.round(score * 100)}%`}
@@ -273,7 +337,7 @@ export function Scorecard({
                     )}
                   </summary>
                   <div className={styles.qBody}>
-                    <span className={styles.hint}>
+                    <span className={styles.qMeta}>
                       {title(q.stage)}
                       {answerSeconds(q) !== null ? ` · answered in ${formatClock(answerSeconds(q)!)}` : ""}
                       {q.timedOut ? " · over time" : ""}
@@ -282,7 +346,7 @@ export function Scorecard({
                     {q.notes.trim() && <div className={styles.yours}>{q.notes.trim()}</div>}
                     {q.board && q.board.shapes.length > 0 && <BoardView board={q.board} />}
                     {talk && score !== null && !q.skipped && (
-                      <ul className={styles.reasons} style={{ margin: 0 }}>
+                      <ul className={styles.marksList}>
                         {rubricFor(talk, Boolean(q.followUp)).map((c) => (
                           <li key={c.id}>
                             {c.label}: <b>{MARK_WORD[(q.marks[c.id] ?? 0) as Mark]}</b>
@@ -291,12 +355,12 @@ export function Scorecard({
                       </ul>
                     )}
                     {q.item.kind === "coding" && q.coding && (
-                      <p className={styles.hint}>
+                      <p className={styles.qMeta}>
                         {q.coding.passed}/{q.coding.total} tests · {q.coding.hintsUsed} hints
                         {q.coding.sawSolution ? " · saw the solution" : ""}
                       </p>
                     )}
-                    <p style={{ margin: 0 }}>
+                    <p className={styles.qLink}>
                       <Link href={q.item.href}>
                         {q.item.kind === "coding" ? "Solve it properly" : "Read the full answer"} →
                       </Link>
@@ -307,23 +371,23 @@ export function Scorecard({
             );
           })}
         </ol>
-      </section>
+      </Band>
 
-      <section className={styles.panel} aria-label="What next" data-fx="scale">
-        <div className={styles.startBar} style={{ borderTop: 0, paddingTop: 0 }}>
+      <section className={styles.next} aria-label="What next">
+        <div className={styles.nextBar}>
           {retryCount > 0 && (
-            <button type="button" className="btn btn--primary" onClick={onRetry}>
+            <button type="button" className={kit.btn} onClick={onRetry}>
               Retry the weak ones ({retryCount})
             </button>
           )}
-          <button type="button" className={retryCount > 0 ? "btn" : "btn btn--primary"} onClick={onAgain}>
+          <button type="button" className={retryCount > 0 ? `${kit.btn} ${kit.btnGhost}` : kit.btn} onClick={onAgain}>
             Same {session.mode === "loop" ? "loop" : "round"}, new questions
           </button>
-          <button type="button" className="btn btn--ghost" onClick={onNew}>
+          <button type="button" className={`${kit.btn} ${kit.btnQuiet}`} onClick={onNew}>
             Plan something else
           </button>
           <span className={styles.spacer} />
-          <button type="button" className="btn" onClick={copyDebrief}>
+          <button type="button" className={`${kit.btn} ${kit.btnGhost}`} onClick={copyDebrief}>
             {copied === "done" ? "Copied ✓" : copied === "failed" ? "Could not copy" : "Copy the debrief"}
           </button>
           <span className="visually-hidden" aria-live="polite">
@@ -331,6 +395,13 @@ export function Scorecard({
           </span>
         </div>
       </section>
-    </>
+
+      <Foot>
+        <FootLink href="/mock">Mock interview</FootLink>
+        <FootLink href="/interview">Interview book</FootLink>
+        <FootLink href="/progress">Progress</FootLink>
+        <FootLink href="/">All topics</FootLink>
+      </Foot>
+    </TopicPage>
   );
 }

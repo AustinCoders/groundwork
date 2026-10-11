@@ -85,6 +85,7 @@
 }
 
 .band {
+  scroll-margin-top: var(--header-h, 60px);
   margin-top: clamp(64px, 9vw, 128px);
 }
 

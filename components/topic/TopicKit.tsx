@@ -25,6 +25,7 @@ export function Wrap({ className, children }: { className?: string; children: Re
 export function Band({
   no,
   id,
+  sectionId,
   label,
   title,
   sub,
@@ -34,6 +35,7 @@ export function Band({
 }: {
   no: string;
   id: string;
+  sectionId?: string;
   label: string;
   title: ReactNode;
   sub?: ReactNode;
@@ -42,7 +44,7 @@ export function Band({
   children?: ReactNode;
 }) {
   return (
-    <section className={t.band} aria-labelledby={id}>
+    <section className={t.band} aria-labelledby={id} id={sectionId}>
       <Wrap>
         <div className={t.bandHead}>
           <Eyebrow no={no} count={count} as="p">

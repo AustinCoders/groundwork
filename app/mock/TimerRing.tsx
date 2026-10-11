@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useNow } from "@/app/mock/useStageBanks";
 import { formatClock } from "@/lib/mockSession";
-import styles from "./mock.module.css";
+import styles from "./room.module.css";
 
 const R = 44;
 const CIRCUMFERENCE = 2 * Math.PI * R;
@@ -66,12 +66,4 @@ export function InlineTimer({ startedAt, seconds }: { startedAt: number; seconds
       {left <= 0 ? `+${formatClock(-left)}` : formatClock(left)}
     </span>
   );
-}
-
-export function Elapsed({ since, until }: { since: number; until: number | null }) {
-  const now = useNow(until === null);
-  const s = Math.max(0, Math.floor(((until ?? now) - since) / 1000));
-  const h = Math.floor(s / 3600);
-  const text = h ? `${h}:${formatClock(s % 3600).padStart(5, "0")}` : formatClock(s);
-  return <span className={styles.clock}>{text}</span>;
 }

@@ -499,6 +499,7 @@ test("every topic hero scene is one balanced screen under the header, with the n
     { path: "/interview/questions", full: true },
     { path: "/architecture", full: true },
     { path: "/problems", full: true },
+    { path: "/mock", full: true },
     { path: "/path/js/beginner", full: false },
     { path: "/notes", full: false },
   ];
@@ -3868,11 +3869,6 @@ test("review, the interview book, mock and progress take the theme's accent, not
       await expect(action(), `${path} in ${theme}`).toHaveCSS("background-color", themeColour(theme, "--primary"));
       if (onAccent)
         await expect(action(), `${path} in ${theme}`).toHaveCSS("color", themeColour(theme, "--on-primary"));
-      if (path === "/mock")
-        await expect(page.locator("#plan").getByText("start here", { exact: true }), `${path} in ${theme}`).toHaveCSS(
-          "color",
-          themeColour(theme, "--ink-soft")
-        );
     }
   }
 });

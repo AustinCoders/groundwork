@@ -47,8 +47,17 @@
 }
 
 .layout[data-mode="interview"] {
-  grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
-  padding: 14px 0 0;
+  grid-template-columns: minmax(0, clamp(300px, 26vw, 420px)) minmax(0, 1fr);
+  padding: 0;
+}
+
+@media (min-width: 1001px) {
+  .layout[data-mode="interview"] {
+    flex: 1 1 auto;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+  }
 }
 
 .layout[data-mode="exercise"] {
@@ -71,12 +80,6 @@
   }
 }
 
-@media (max-width: 720px) {
-  .layout[data-mode="interview"] {
-    padding-inline: 0;
-  }
-}
-
 .workbench {
   display: flex;
   flex-direction: column;
@@ -85,6 +88,7 @@
 }
 
 .layout[data-mode="playground"] > .workbench,
+.layout[data-mode="interview"] > .workbench,
 .layout[data-mode="exercise"] > .workbench {
   min-height: 0;
 }
@@ -94,6 +98,7 @@
 }
 
 @media (min-width: 1001px) {
+  .layout[data-mode="interview"] > .workbench,
   .layout[data-mode="exercise"] > .workbench {
     height: 100%;
   }
@@ -116,11 +121,13 @@
 }
 
 @media (min-width: 1001px) {
+  .layout[data-mode="interview"] > .workbench > :global(.ed),
   .layout[data-mode="exercise"] > .workbench > :global(.ed) {
     flex: 1 1 0;
     min-height: 0;
   }
 
+  .layout[data-mode="interview"] > .workbench > :global(.panel),
   .layout[data-mode="exercise"] > .workbench > :global(.panel) {
     flex: 0 0 clamp(200px, 34%, 420px);
     display: flex;
@@ -128,17 +135,24 @@
     min-height: 0;
   }
 
+  .layout[data-mode="interview"] > .workbench > .resize,
   .layout[data-mode="exercise"] > .workbench > .resize {
     display: none;
   }
+
+  .layout[data-mode="interview"] > .workbench > :global(.panel) {
+    flex-basis: clamp(150px, 26%, 320px);
+  }
 }
 
+.layout[data-mode="interview"] > .workbench > :global(.preview-panel),
 .layout[data-mode="exercise"] > .workbench > :global(.preview-panel) {
   flex: 0 0 auto;
   min-height: auto;
 }
 
 .layout[data-mode="playground"] > .workbench :global(.ed__body),
+.layout[data-mode="interview"] > .workbench :global(.ed__body),
 .layout[data-mode="exercise"] > .workbench :global(.ed__body) {
   flex: 1 1 auto;
 }
@@ -148,12 +162,14 @@
 }
 
 @media (min-width: 1001px) {
+  .layout[data-mode="interview"] > .workbench :global(.ed__cm),
   .layout[data-mode="exercise"] > .workbench :global(.ed__cm) {
     height: 100%;
   }
 }
 
 .layout[data-mode="playground"] > .workbench :global(.panel__body),
+.layout[data-mode="interview"] > .workbench :global(.panel__body),
 .layout[data-mode="exercise"] > .workbench :global(.panel__body) {
   flex: 1 1 auto;
   min-height: 0;
@@ -161,6 +177,7 @@
 }
 
 @media (max-width: 1000px) {
+  .layout[data-mode="interview"] > .workbench :global(.panel__body),
   .layout[data-mode="exercise"] > .workbench :global(.panel__body) {
     max-height: 320px;
   }
@@ -687,15 +704,12 @@
 }
 
 .layout[data-mode="interview"] > .brief {
-  position: sticky;
-  top: 16px;
-  max-height: calc(100dvh - 32px);
+  min-height: 0;
 }
 
-@media (max-width: 1000px) {
+@media (min-width: 1001px) {
   .layout[data-mode="interview"] > .brief {
-    position: static;
-    max-height: none;
+    height: 100%;
   }
 }
 

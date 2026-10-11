@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "./mock.module.css";
+import styles from "./plan.module.css";
 
 export type IconName =
   | "frontend"

@@ -1,0 +1,476 @@
+.top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(20px, 2.4vw, 32px);
+  padding-top: 12px;
+}
+
+@media (min-width: 721px) {
+  .top {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1.1fr);
+  }
+}
+
+.gaugeCard,
+.streakCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 24px 24px 20px;
+}
+
+.gaugeCard {
+  align-items: center;
+  justify-content: center;
+}
+
+.nextUp {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 26px 24px 22px;
+  rotate: 0.8deg;
+}
+
+.nextUp > button {
+  margin-top: auto;
+}
+
+.nextStage {
+  font-family: var(--font-heading);
+  font-size: var(--t-heading);
+  line-height: 1.2;
+}
+
+.gauge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 128px;
+  height: 128px;
+}
+
+.gauge svg {
+  position: absolute;
+  inset: 0;
+}
+
+.gaugeTrack {
+  fill: none;
+  stroke: var(--sheet-2);
+  stroke-width: 12;
+}
+
+.gaugeEmpty .gaugeTrack {
+  stroke: var(--line);
+  stroke-dasharray: 3 7;
+  stroke-linecap: round;
+  stroke-width: 6;
+}
+
+.gaugeFill {
+  fill: none;
+  stroke: var(--primary);
+  stroke-linecap: round;
+  stroke-width: 12;
+}
+
+.gaugeFill[data-band="not-yet"] {
+  stroke: var(--danger);
+}
+
+.gaugeFill[data-band="getting-there"] {
+  stroke: var(--caution);
+}
+
+.gaugeFill[data-band="ready"],
+.gaugeFill[data-band="strong"] {
+  stroke: var(--success);
+}
+
+.gaugeNum {
+  position: relative;
+  margin-top: -10px;
+  font-family: var(--font-heading);
+  font-size: var(--t-display);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.gaugeBand {
+  position: absolute;
+  bottom: 30px;
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.num {
+  font-family: var(--font-heading);
+  font-size: var(--t-display);
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--ink);
+}
+
+.tileLabel {
+  font-size: var(--t-body);
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.tileLabel b {
+  color: var(--ink);
+}
+
+.streakDots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.streakDot {
+  width: 14px;
+  height: 14px;
+  border: 1.5px dashed var(--line);
+  border-radius: 50%;
+}
+
+.streakDot[data-on] {
+  background: var(--primary);
+  border: 1.5px solid var(--primary);
+}
+
+.sub {
+  margin: clamp(28px, 4vw, 44px) 0 10px;
+  padding: 0;
+  font-family: var(--font-heading);
+  font-size: var(--t-heading);
+  font-weight: 700;
+  line-height: 1.2;
+  border: 0;
+}
+
+.compList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.compRow {
+  display: grid;
+  grid-template-columns: minmax(7rem, 1fr) 4rem 4.4rem 130px;
+  align-items: center;
+  gap: 4px 16px;
+  margin: 0;
+  padding: 10px 6px;
+  border-top: 1.5px dashed var(--line);
+}
+
+.compRow:last-child {
+  border-bottom: 1.5px dashed var(--line);
+}
+
+.compRow::before {
+  content: none;
+}
+
+.compName {
+  font-family: var(--font-heading);
+  font-size: var(--t-title);
+  line-height: 1.2;
+}
+
+.compScore {
+  font-family: var(--font-mono);
+  font-size: var(--t-meta);
+  font-weight: 700;
+  color: var(--ink);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  padding: 2px 8px;
+  background: var(--sheet-2);
+  border-radius: 999px;
+}
+
+.compScore[data-band="not-yet"] {
+  background: var(--danger-soft);
+}
+
+.compScore[data-band="getting-there"] {
+  background: var(--caution-soft);
+}
+
+.compScore[data-band="ready"],
+.compScore[data-band="strong"] {
+  background: var(--success-soft);
+}
+
+.compDelta {
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.compDelta[data-dir="up"] {
+  color: color-mix(in srgb, var(--success) 65%, var(--ink));
+}
+
+.compDelta[data-dir="down"] {
+  color: color-mix(in srgb, var(--danger) 70%, var(--ink));
+}
+
+.trend,
+.trendWide {
+  display: block;
+  width: 120px;
+  height: 34px;
+  overflow: visible;
+}
+
+.trendWide {
+  width: 100%;
+  max-width: 220px;
+  height: 48px;
+  margin-top: 6px;
+}
+
+.trendBar {
+  stroke: var(--line);
+  stroke-dasharray: 3 3;
+  stroke-width: 1.5;
+}
+
+.trendLine {
+  fill: none;
+  stroke: var(--primary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.trendDot {
+  fill: var(--primary);
+}
+
+.once {
+  font-size: var(--t-meta);
+  color: var(--ink-soft);
+}
+
+.heat {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 3px;
+  font-size: var(--t-meta);
+}
+
+.heat th,
+.heat td {
+  border: 0;
+}
+
+.heat th {
+  padding: 4px 8px;
+  background: transparent;
+  font-weight: 400;
+  text-align: left;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.heat thead th {
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  text-align: center;
+}
+
+.heat tbody th {
+  font-family: var(--font-heading);
+  font-size: var(--t-body);
+  color: var(--ink);
+}
+
+.heat td {
+  min-width: 52px;
+  padding: 6px 8px;
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  text-align: center;
+  color: var(--ink);
+  background: var(--sheet-2);
+  border-radius: 8px;
+}
+
+.heat td[data-band="not-yet"] {
+  background: var(--danger-soft);
+}
+
+.heat td[data-band="getting-there"] {
+  background: var(--caution-soft);
+}
+
+.heat td[data-band="ready"],
+.heat td[data-band="strong"] {
+  background: var(--success-soft);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: clamp(16px, 2vw, 28px);
+  margin-bottom: 8px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+  padding: 0 0 0 16px;
+  border-left: 3px dashed var(--line);
+}
+
+.history {
+  display: flex;
+  flex-direction: column;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.historyRow {
+  display: grid;
+  grid-template-columns: 4.2rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 16px;
+  margin: 0;
+  padding: 10px 6px;
+  border-top: 1.5px dashed var(--line);
+}
+
+.historyRow:last-child {
+  border-bottom: 1.5px dashed var(--line);
+}
+
+.historyRow::before {
+  content: none;
+}
+
+.historyDate {
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+}
+
+.historyWhat {
+  font-size: var(--t-control);
+  line-height: 1.4;
+}
+
+.historyScore {
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+}
+
+.empty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px clamp(24px, 4vw, 56px);
+  max-width: 880px;
+  padding: 26px clamp(20px, 3vw, 36px);
+  background: var(--sheet);
+  border: 1.5px dashed var(--line);
+  border-radius: 20px;
+}
+
+.emptyText {
+  flex: 1 1 320px;
+  font-size: var(--t-control);
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.emptyText p {
+  margin: 0;
+}
+
+.emptyTitle {
+  margin: 0 0 6px;
+  font-family: var(--font-heading);
+  font-size: var(--t-heading);
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+@media (max-width: 720px) {
+  .compRow {
+    grid-template-columns: minmax(0, 1fr) 4rem 4rem;
+  }
+
+  .compRow > svg,
+  .compRow > .once {
+    grid-column: 1 / -1;
+  }
+
+  .nextUp {
+    rotate: 0deg;
+  }
+
+  .historyRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .historyDate {
+    grid-column: 1 / -1;
+  }
+}
+
+.heat
+  tbody
+  tr:nth-child(even)
+  td:not(:global(.tone-yes)):not(:global(.tone-no)):not(:global(.tone-warn)):not(:global(.tone-bad)) {
+  background: var(--sheet-2);
+}
+
+.heat
+  tbody
+  tr:nth-child(even)
+  td[data-band="not-yet"]:not(:global(.tone-yes)):not(:global(.tone-no)):not(:global(.tone-warn)):not(
+    :global(.tone-bad)
+  ) {
+  background: var(--danger-soft);
+}
+
+.heat
+  tbody
+  tr:nth-child(even)
+  td[data-band="getting-there"]:not(:global(.tone-yes)):not(:global(.tone-no)):not(:global(.tone-warn)):not(
+    :global(.tone-bad)
+  ) {
+  background: var(--caution-soft);
+}
+
+.heat
+  tbody
+  tr:nth-child(even)
+  td[data-band="ready"]:not(:global(.tone-yes)):not(:global(.tone-no)):not(:global(.tone-warn)):not(:global(.tone-bad)),
+.heat
+  tbody
+  tr:nth-child(even)
+  td[data-band="strong"]:not(:global(.tone-yes)):not(:global(.tone-no)):not(:global(.tone-warn)):not(
+    :global(.tone-bad)
+  ) {
+  background: var(--success-soft);
+}
