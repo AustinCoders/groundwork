@@ -29,7 +29,10 @@ const PAGES = [
   "/notes",
   "/notes/setup-mental-model",
   "/notes/basic-async",
+  "/notes/types-values",
   "/react",
+  "/react/react-interview-bank",
+  "/dsa/dsa-complexity-analysis",
   "/dsa",
   "/system-design",
   "/interview",
@@ -57,6 +60,7 @@ const PAGES = [
   "/git/github",
   "/architecture",
   "/architecture/arch-request-path",
+  "/interview/r1",
   "/no-such-page",
 ];
 
@@ -361,6 +365,38 @@ const STATES: State[] = [
     },
   },
   {
+    name: "a chapter marked read",
+    path: "/notes/closures",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page.getByRole("region", { name: "Finish" }).getByRole("button", { name: "Mark as read" }).click();
+      await expect(page.getByRole("button", { name: "Mark as unread" })).toBeVisible();
+      await check("a chapter marked read");
+    },
+  },
+  {
+    name: "the inline contents open",
+    path: "/notes/closures",
+    viewports: [PHONE],
+    visit: async (page, check) => {
+      await page.locator("summary", { hasText: "On this page" }).click();
+      await check("the inline contents open");
+    },
+  },
+  {
+    name: "a try-it block run",
+    path: "/notes/types-values",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page
+        .getByRole("button", { name: /Run this/ })
+        .first()
+        .click();
+      await expect(page.locator(".prose .demo__term").first()).toBeVisible();
+      await check("a try-it block run");
+    },
+  },
+  {
     name: "the Chapters sheet open",
     path: "/notes/setup-mental-model",
     viewports: [PHONE],
@@ -398,6 +434,72 @@ const STATES: State[] = [
       await page.getByRole("button", { name: "Filters", exact: true }).click();
       await expect(page.getByRole("dialog", { name: "Filters" })).toBeVisible();
       await check("the Filters sheet open");
+    },
+  },
+  {
+    name: "the interview landing with progress and the question of the day revealed",
+    path: "/interview",
+    viewports: VIEWPORTS,
+    seed: () => {
+      localStorage.setItem(
+        "jsnotes:progress",
+        JSON.stringify({ chapters: { scout: { at: Date.now(), reviews: 0 }, r1: { at: Date.now(), reviews: 0 } } })
+      );
+      localStorage.setItem(
+        "groundwork:interview:confidence",
+        JSON.stringify({ "r1-1": "knew", "r1-2": "shaky", "r1-3": "blank" })
+      );
+    },
+    visit: async (page, check) => {
+      await page.getByRole("button", { name: /reveal what they test/ }).click();
+      await expect(page.getByText("What they are really testing:")).toBeVisible();
+      await check("the interview landing with progress and the question of the day revealed");
+    },
+  },
+  {
+    name: "a round in practice mode with an answer shown and a question marked",
+    path: "/interview/r3",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page.getByRole("button", { name: "Practise", exact: true }).click();
+      const first = page.locator("section[id^='r3-']").first();
+      await first.getByRole("button", { name: "Show the answer" }).click();
+      await first.getByRole("button", { name: "Shaky" }).click();
+      await expect(first.getByRole("button", { name: "Shaky" })).toHaveAttribute("aria-pressed", "true");
+      await check("a round in practice mode with an answer shown and a question marked");
+    },
+  },
+  {
+    name: "the question bank with a question opened and the filters used",
+    path: "/interview/questions",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page.getByRole("button", { name: "Has a trap" }).click();
+      await page.getByRole("searchbox", { name: "Search questions" }).fill("notice");
+      await page.locator("main ol li button").first().click();
+      await expect(page.locator("main ol li button[aria-expanded=true]")).toHaveCount(1);
+      await check("the question bank with a question opened and the filters used");
+    },
+  },
+  {
+    name: "the question bank with nothing matching",
+    path: "/interview/questions",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page.getByRole("searchbox", { name: "Search questions" }).fill("xylophone");
+      await expect(page.getByText("Nothing matches")).toBeVisible();
+      await check("the question bank with nothing matching");
+    },
+  },
+  {
+    name: "the flashcard drill with the answer revealed",
+    path: "/interview/questions",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page.getByRole("button", { name: /Drill \d+ as flashcards/ }).click();
+      await page.getByRole("button", { name: /Reveal/ }).click();
+      await expect(page.getByRole("group", { name: "How did you do?" })).toBeVisible();
+      await check("the flashcard drill with the answer revealed");
     },
   },
   {

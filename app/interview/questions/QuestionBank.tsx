@@ -2,11 +2,37 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { BookShell } from "@/app/interview/BookShell";
+import { BookFrame } from "@/app/interview/BookFrame";
+import { followUpsHtml, sayHtml, trapHtml } from "@/app/interview/answerHtml";
+import { Chip, Copy, Note, Scene, Stage, StageCard, Sticker, Tape } from "@/components/home/Stage";
+import { Prose } from "@/components/chapter/ChapterKit";
+import type { FrameTopic } from "@/components/topic/TopicFrame";
+import {
+  Actions,
+  Band,
+  Button,
+  CardKicker,
+  Chips,
+  Foot,
+  FootLink,
+  Heading,
+  Kicker,
+  Lead,
+  Toggle,
+  ToggleGroup,
+  TopicPage,
+  Underlined,
+  Wrap,
+  topicKit,
+} from "@/components/topic/TopicKit";
+import { ClearButton, SearchPill, kit } from "@/components/ui/MenuKit";
+import { plural } from "@/lib/format";
+import { useMounted } from "@/lib/hooks";
 import { confidence, CONFIDENCE_LABEL, useConfidence, type Confidence } from "@/lib/interviewConfidence";
 import type { BankQuestion, BookPart } from "@/lib/interviewBook";
+import { plainText, truncate } from "@/lib/homeRounds";
 import { shortcutShouldStepAside } from "@/lib/shortcuts";
-import styles from "../book.module.css";
+import styles from "./bank.module.css";
 
 type Status = "all" | "unmarked" | "shaky" | "knew";
 
@@ -18,6 +44,8 @@ const STATUS: [Status, string][] = [
 ];
 
 const CONF: Confidence[] = ["knew", "shaky", "blank"];
+const DECK_SIZE = 20;
+const SAMPLE_LIMIT = 110;
 
 function plain(html: string): string {
   return html
@@ -71,8 +99,8 @@ function Drill({ deck, onExit }: { deck: BankQuestion[]; onExit: () => void }) {
   if (!q) {
     return (
       <section className={styles.drill} aria-label="Drill finished">
-        <p className={styles.eyebrow}>Deck done</p>
-        <h2 className={styles.h2}>
+        <CardKicker>Deck done</CardKicker>
+        <h2 className={styles.doneTitle}>
           {deck.length} {deck.length === 1 ? "card" : "cards"} through.
         </h2>
         <div className={styles.tally}>
@@ -83,15 +111,17 @@ function Drill({ deck, onExit }: { deck: BankQuestion[]; onExit: () => void }) {
             </div>
           ))}
         </div>
-        <p className={styles.lead}>
+        <p className={styles.doneNote}>
           The shaky and blank ones stay marked. Filter by &ldquo;Shaky or blank&rdquo; and drill them again tomorrow.
         </p>
-        <button type="button" className={styles.btn} onClick={onExit}>
+        <button type="button" className={styles.primary} onClick={onExit}>
           Back to the bank
         </button>
       </section>
     );
   }
+
+  const back = [q.say ? sayHtml(q.say) : "", q.trap ? trapHtml(q.trap) : "", followUpsHtml(q.fu)].join("");
 
   return (
     <section className={styles.drill} aria-label="Flashcard drill">
@@ -102,51 +132,33 @@ function Drill({ deck, onExit }: { deck: BankQuestion[]; onExit: () => void }) {
         <span className={styles.drillBar}>
           <span style={{ width: `${(i / deck.length) * 100}%` }} />
         </span>
-        <button type="button" className={styles.linkBtn} onClick={onExit}>
+        <button type="button" className={styles.stop} onClick={onExit}>
           Stop
         </button>
       </div>
       <article className={styles.card} key={q.id} data-open={open || undefined}>
-        <span className={styles.cardRound}>
+        <Tape rot={-3} />
+        <p className={styles.cardRound}>
           {q.roundCode} · {q.roundTitle}
           {conf[q.id] && <em> · last time: {CONFIDENCE_LABEL[conf[q.id]]}</em>}
-        </span>
-        <h2 className={styles.cardQ} dangerouslySetInnerHTML={{ __html: q.q }} />
+        </p>
+        <h2 className={styles.cardQ}>
+          <span dangerouslySetInnerHTML={{ __html: q.q }} />
+        </h2>
         {!open ? (
-          <button type="button" className={styles.btn} onClick={() => setOpen(true)}>
+          <button type="button" className={styles.primary} onClick={() => setOpen(true)}>
             Reveal <kbd>space</kbd>
           </button>
         ) : (
           <div className={styles.cardBack}>
             {q.test && (
-              <div className={styles.testBox}>
-                <span className={styles.boxLabel}>What they are really testing</span>
-                <div dangerouslySetInnerHTML={{ __html: q.test }} />
-              </div>
+              <p className={styles.test}>
+                <b>What they are really testing</b>
+                <span dangerouslySetInnerHTML={{ __html: q.test }} />
+              </p>
             )}
-            {q.say && (
-              <div className={styles.sayBox}>
-                <span className={styles.boxLabel}>Say it like this</span>
-                <div dangerouslySetInnerHTML={{ __html: q.say }} />
-              </div>
-            )}
-            {q.trap && (
-              <div className={styles.trapBox}>
-                <span className={styles.boxLabel}>The answer that loses the room</span>
-                <div dangerouslySetInnerHTML={{ __html: q.trap }} />
-              </div>
-            )}
-            {q.fu.length > 0 && (
-              <div className={styles.fuBox}>
-                <span className={styles.boxLabel}>They will push with</span>
-                <ol>
-                  {q.fu.map((f) => (
-                    <li key={f} dangerouslySetInnerHTML={{ __html: f }} />
-                  ))}
-                </ol>
-              </div>
-            )}
-            <Link href={`/interview/${q.roundId}#${q.id}`} className={styles.textLink} target="_blank">
+            {back && <Prose html={back} className="interview-body" />}
+            <Link href={`/interview/${q.roundId}#${q.id}`} className={styles.fullLink} target="_blank">
               Full answer{q.hasCode ? " and code" : ""} in the round →
             </Link>
             <div className={styles.confRow} role="group" aria-label="How did you do?">
@@ -165,14 +177,17 @@ function Drill({ deck, onExit }: { deck: BankQuestion[]; onExit: () => void }) {
 }
 
 export function QuestionBank({
+  topic,
   questions,
   parts,
   totalQuestions,
 }: {
+  topic: FrameTopic;
   questions: BankQuestion[];
   parts: { id: BookPart; title: string }[];
   totalQuestions: number;
 }) {
+  const mounted = useMounted();
   const conf = useConfidence();
   const [query, setQuery] = useState("");
   const [part, setPart] = useState<BookPart | "all">("all");
@@ -209,113 +224,176 @@ export function QuestionBank({
 
   const knew = questions.filter((q) => conf[q.id] === "knew").length;
   const shaky = questions.filter((q) => conf[q.id] === "shaky" || conf[q.id] === "blank").length;
+  const filtered = Boolean(words.length) || part !== "all" || status !== "all" || onlyTraps;
+  const sample = questions[0];
+
+  function clearFilters() {
+    setQuery("");
+    setPart("all");
+    setStatus("all");
+    setOnlyTraps(false);
+  }
+
+  if (deck) {
+    return (
+      <BookFrame topic={topic} scan="drill">
+        <TopicPage accent={topic.accent}>
+          <Wrap>
+            <h1 className="visually-hidden">Flashcard drill</h1>
+            <div className={styles.drillWrap}>
+              <Drill deck={deck} onExit={() => setDeck(null)} />
+            </div>
+          </Wrap>
+        </TopicPage>
+      </BookFrame>
+    );
+  }
 
   return (
-    <BookShell scan={`${deck ? "drill" : "list"}`}>
-      <header className={styles.bankHero} data-fx="stagger">
-        <p className={styles.eyebrow}>Question bank</p>
-        <h1 className={styles.roundTitle}>Every question, in one place.</h1>
-        <p className={styles.lead}>
-          {questions.length} questions answered in depth, plus {totalQuestions - questions.length} more as rapid-fire
-          follow-ups and prep guides — {totalQuestions} in all. Search them, filter them, or drill the{" "}
-          {questions.length} in depth as flashcards: read the question, say your answer out loud, reveal, and mark
-          yourself honestly.
-        </p>
-        <div className={styles.bankStats}>
-          <span>
-            <b>{knew}</b> knew it
-          </span>
-          <span>
-            <b>{shaky}</b> shaky or blank
-          </span>
-          <span>
-            <b>{questions.length - knew - shaky}</b> not tried
-          </span>
-        </div>
-      </header>
+    <BookFrame topic={topic} scan="list">
+      <TopicPage accent={topic.accent}>
+        <Scene className={topicKit.hero}>
+          <Copy>
+            <Kicker mark={topic.mark}>
+              {plural(questions.length, "question")} in depth · {totalQuestions} in all
+            </Kicker>
+            <Heading>
+              Every question, in <Underlined>one place</Underlined>
+            </Heading>
+            <Lead>
+              {questions.length} questions answered in depth, plus {totalQuestions - questions.length} more as
+              rapid-fire follow-ups and prep guides. Search them, filter them, or drill them as flashcards: read the
+              question, say your answer out loud, reveal, and mark yourself honestly.
+            </Lead>
+            <Actions>
+              <Button href="#bank-title">
+                Jump to the questions <span aria-hidden="true">↓</span>
+              </Button>
+              <Button ghost href="/interview">
+                Back to the rounds
+              </Button>
+            </Actions>
+            <div className={mounted ? undefined : topicKit.pending}>
+              <Chips>
+                <span className={topicKit.chip}>{knew} knew it</span>
+                <span className={topicKit.chip}>{shaky} shaky or blank</span>
+                <span className={topicKit.chip}>{questions.length - knew - shaky} not tried</span>
+              </Chips>
+            </div>
+          </Copy>
+          <Stage hostClassName={topicKit.stageHost} className={styles.stage}>
+            <StageCard decor rot={4} depth={-14} i={0} still className={styles.under} />
+            <StageCard decor rot={-2} depth={-8} i={1} still className={styles.under2} />
+            <StageCard decor rot={-1.2} depth={8} i={2} still className={styles.flash}>
+              <Tape rot={-5} />
+              <p className={styles.flashKicker}>
+                Flashcard · {sample?.roundCode} {sample?.roundTitle}
+              </p>
+              <p className={styles.flashQ}>
+                <span>{sample ? truncate(plainText(sample.q), SAMPLE_LIMIT) : ""}</span>
+              </p>
+              <div className={styles.flashRow}>
+                <span className={styles.flashReveal}>
+                  Reveal <kbd>space</kbd>
+                </span>
+                <span className={styles.flashMarks}>
+                  <i data-c="knew">1</i>
+                  <i data-c="shaky">2</i>
+                  <i data-c="blank">3</i>
+                </span>
+              </div>
+            </StageCard>
+            <Chip fact="drill" rot={3} depth={14} className={styles.flashChip}>
+              {DECK_SIZE} cards a round
+            </Chip>
+            <Note arrow="dl" rot={-4} depth={14} className={styles.flashNote}>
+              say it out loud first
+            </Note>
+            <Sticker rot={-6} depth={20} tone="primary" className={styles.flashSticker}>
+              ★ mark it honestly
+            </Sticker>
+          </Stage>
+        </Scene>
 
-      {deck ? (
-        <Drill deck={deck} onExit={() => setDeck(null)} />
-      ) : (
-        <>
-          <div className={styles.bankTools} data-fx="up">
-            <label className={styles.search}>
-              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style={{ margin: 0 }}>
-                <path
-                  d="M11 18a7 7 0 100-14 7 7 0 000 14zM20 20l-4-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
+        <Band
+          no="01"
+          id="bank-title"
+          label="Search and filter"
+          title="Find the one that scares you"
+          count={plural(questions.length, "question")}
+        >
+          <div className={styles.tools}>
+            <SearchPill
+              trailing={query ? <ClearButton label="Clear the search" onClear={() => setQuery("")} /> : undefined}
+            >
               <input
                 type="search"
                 value={query}
                 placeholder="Search questions, e.g. closures, cache, notice period"
                 aria-label="Search questions"
+                autoComplete="off"
                 onChange={(e) => setQuery(e.target.value)}
               />
-            </label>
-            <div className={styles.chips} role="group" aria-label="Part of the book">
-              <button type="button" aria-pressed={part === "all"} onClick={() => setPart("all")}>
+            </SearchPill>
+            <ToggleGroup label="Part of the book">
+              <Toggle pressed={part === "all"} onClick={() => setPart("all")}>
                 Every part
-              </button>
+              </Toggle>
               {parts.map((p) => (
-                <button key={p.id} type="button" aria-pressed={part === p.id} onClick={() => setPart(p.id)}>
+                <Toggle key={p.id} pressed={part === p.id} onClick={() => setPart(p.id)}>
                   {p.title}
-                </button>
+                </Toggle>
               ))}
-            </div>
-            <div className={styles.chips} role="group" aria-label="Your marks">
+            </ToggleGroup>
+            <ToggleGroup label="Your marks">
               {STATUS.map(([id, label]) => (
-                <button key={id} type="button" aria-pressed={status === id} onClick={() => setStatus(id)}>
+                <Toggle key={id} pressed={status === id} onClick={() => setStatus(id)}>
                   {label}
-                </button>
+                </Toggle>
               ))}
-              <button type="button" aria-pressed={onlyTraps} onClick={() => setOnlyTraps((v) => !v)}>
+              <Toggle pressed={onlyTraps} onClick={() => setOnlyTraps((v) => !v)}>
                 Has a trap
-              </button>
-            </div>
-            <div className={styles.bankBar}>
-              <span>
+              </Toggle>
+            </ToggleGroup>
+            <div className={styles.bar}>
+              <span aria-live="polite">
                 {list.length} of {questions.length}
               </span>
               <button
                 type="button"
-                className={styles.btn}
+                className={styles.primary}
                 disabled={!list.length}
-                onClick={() => setDeck(shuffle(list).slice(0, 20))}
+                onClick={() => setDeck(shuffle(list).slice(0, DECK_SIZE))}
               >
-                Drill {Math.min(20, list.length)} as flashcards →
+                Drill {Math.min(DECK_SIZE, list.length)} as flashcards →
               </button>
             </div>
           </div>
 
-          <ol className={styles.bankList}>
+          <ol className={`${kit.rows} ${styles.list}`}>
             {list.map((q) => {
               const open = openId === q.id;
               return (
-                <li key={q.id} className={styles.bankItem} data-mark={conf[q.id]}>
+                <li key={q.id} data-mark={conf[q.id]}>
                   <button
                     type="button"
-                    className={styles.bankQ}
+                    className={`${kit.row} ${styles.item}`}
                     aria-expanded={open}
                     onClick={() => setOpenId(open ? null : q.id)}
                   >
-                    <span className={styles.bankCode}>{q.roundCode}</span>
-                    <span className={styles.bankText} dangerouslySetInnerHTML={{ __html: q.q }} />
-                    <span className={styles.bankTags}>
+                    <span className={kit.code}>{q.roundCode}</span>
+                    <span className={`${kit.title} ${styles.text}`} dangerouslySetInnerHTML={{ __html: q.q }} />
+                    <span className={styles.tags}>
                       {q.trap && <span data-t="trap">trap</span>}
                       {q.hasCode && <span data-t="code">code</span>}
                       {q.fu.length > 0 && <span>{q.fu.length} follow-ups</span>}
                     </span>
                   </button>
                   {open && (
-                    <div className={styles.bankMore}>
+                    <div className={styles.more}>
                       {q.test && (
-                        <p>
-                          <b>What they test: </b>
+                        <p className={styles.test}>
+                          <b>What they test</b>
                           <span dangerouslySetInnerHTML={{ __html: q.test }} />
                         </p>
                       )}
@@ -331,7 +409,7 @@ export function QuestionBank({
                             {CONFIDENCE_LABEL[c]}
                           </button>
                         ))}
-                        <Link href={`/interview/${q.roundId}#${q.id}`} className={styles.textLink}>
+                        <Link href={`/interview/${q.roundId}#${q.id}`} className={styles.fullLink}>
                           Read the answer in {q.roundTitle} →
                         </Link>
                       </div>
@@ -341,9 +419,24 @@ export function QuestionBank({
               );
             })}
           </ol>
-          {!list.length && <p className={styles.empty}>Nothing matches. Try fewer words or another filter.</p>}
-        </>
-      )}
-    </BookShell>
+          {!list.length && (
+            <div className={styles.empty}>
+              <p>Nothing matches. Try fewer words or another filter.</p>
+              {filtered && (
+                <button type="button" className={styles.ghost} onClick={clearFilters}>
+                  Clear the filters
+                </button>
+              )}
+            </div>
+          )}
+        </Band>
+
+        <Foot>
+          <FootLink href="/interview">All rounds</FootLink>
+          <FootLink href="/mock">Mock interview</FootLink>
+          <FootLink href="/">All topics</FootLink>
+        </Foot>
+      </TopicPage>
+    </BookFrame>
   );
 }

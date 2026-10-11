@@ -7,6 +7,7 @@ import {
   Actions,
   Band,
   Button,
+  CardKicker,
   Facts,
   Foot,
   FootLink,
@@ -14,6 +15,8 @@ import {
   Kicker,
   Lead,
   List,
+  ProgressMeter,
+  ProgressRing,
   Row,
   TopicPage,
   Underlined,
@@ -26,7 +29,6 @@ import { progress, rememberLevel } from "@/lib/storage";
 import { useMounted, useProgressValue } from "@/lib/hooks";
 import type { LevelRow } from "@/lib/levelRows";
 import type { Level, Topic } from "@/content/types";
-import type { CSSProperties } from "react";
 import styles from "./path.module.css";
 
 export interface ExerciseLink {
@@ -73,7 +75,6 @@ export function TopicPath({
   }, [doneKey, chapters]);
 
   const doneCount = mounted ? done.size : 0;
-  const pct = chapters.length ? (doneCount / chapters.length) * 100 : 0;
   const next = mounted ? (chapters.find((ch) => !done.has(ch.id)) ?? null) : (chapters[0] ?? null);
 
   const continueHref = next ? `${basePath}/${next.id}` : basePath;
@@ -126,24 +127,18 @@ export function TopicPath({
           <Stage live hostClassName={topicKit.stageHost} className={styles.stage}>
             <StageCard rot={-1.6} depth={-10} i={0} still className={`${styles.progress}`}>
               <Tape rot={-5} />
-              <p className={styles.cardKicker}>Your progress</p>
-              <div className={styles.ring} style={{ "--sweep": pct } as CSSProperties} aria-hidden="true">
-                <span className={styles.ringFace}>
-                  <strong>{doneCount}</strong>
-                  <small>of {chapters.length}</small>
-                </span>
-              </div>
-              <div className={styles.meter}>
-                <div className={styles.meterTrack}>
-                  <div className={styles.meterFill} id="path-meter-fill" style={{ width: `${pct}%` }} />
-                </div>
-                <span className={styles.meterLabel} id="path-meter-label">
-                  {doneCount} / {chapters.length} done
-                </span>
-              </div>
+              <CardKicker>Your progress</CardKicker>
+              <ProgressRing done={doneCount} total={chapters.length} />
+              <ProgressMeter
+                done={doneCount}
+                total={chapters.length}
+                label={`${doneCount} / ${chapters.length} done`}
+                fillId="path-meter-fill"
+                labelId="path-meter-label"
+              />
             </StageCard>
             <StageCard rot={2.2} depth={12} i={1} className={styles.next}>
-              <p className={styles.cardKicker}>{next ? "Up next" : "All read"}</p>
+              <CardKicker>{next ? "Up next" : "All read"}</CardKicker>
               {next ? (
                 <>
                   <p className={styles.nextTitle}>{next.short}</p>

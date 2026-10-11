@@ -96,6 +96,7 @@
 }
 
 .h2 {
+  scroll-margin-top: calc(var(--header-h, 60px) + 24px);
   max-width: 18ch;
   margin: 0;
   padding: 0 0 0.08em;
@@ -592,4 +593,137 @@ a.chip:hover {
   color: var(--on-primary);
   background: var(--primary);
   border: 1.5px solid var(--primary);
+}
+
+.cardKicker {
+  margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--primary) 70%, var(--ink));
+}
+
+.ring {
+  display: grid;
+  place-items: center;
+  width: min(100%, 190px);
+  aspect-ratio: 1;
+  margin: 4px auto 14px;
+  background: conic-gradient(var(--primary) calc(var(--sweep, 0) * 1%), var(--sheet-2) 0);
+  border-radius: 50%;
+}
+
+.ringFace {
+  display: grid;
+  place-content: center;
+  width: 82%;
+  aspect-ratio: 1;
+  text-align: center;
+  background: var(--sheet);
+  border-radius: 50%;
+}
+
+.ringFace strong {
+  font-family: var(--font-heading);
+  font-size: var(--t-section);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ringFace small {
+  font-size: var(--t-meta);
+  color: var(--ink-soft);
+}
+
+.meter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.meterTrack {
+  flex: 1;
+  height: 8px;
+  overflow: hidden;
+  background: var(--sheet-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.meterFill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: inherit;
+  transition: width 0.3s ease;
+}
+
+.meterLabel {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meterFill {
+    transition: none;
+  }
+}
+
+:global(html[data-js]) .pending {
+  visibility: hidden;
+}
+
+@media (scripting: enabled) {
+  .pending {
+    visibility: hidden;
+  }
+}
+
+.toggles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggles > span {
+  margin-right: 6px;
+  font-size: var(--t-body);
+  color: var(--ink-soft);
+}
+
+.toggle {
+  min-height: 40px;
+  padding: 0 16px;
+  font: inherit;
+  font-size: var(--t-body);
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.toggle:hover {
+  border-color: var(--ink-soft);
+}
+
+.toggle[aria-pressed="true"] {
+  font-weight: 700;
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+
+.toggle:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .toggle {
+    min-height: 44px;
+  }
 }

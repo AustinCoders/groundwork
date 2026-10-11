@@ -38,6 +38,7 @@ export function ChapterRail({
   matchInfo = null,
   searching = false,
   navListId = "nav-list",
+  label = "Chapters",
 }: {
   parts: SeriesPart<string>[];
   chapters: SeriesCard<string>[];
@@ -53,6 +54,7 @@ export function ChapterRail({
   matchInfo?: Set<string> | null;
   searching?: boolean;
   navListId?: string;
+  label?: string;
 }) {
   const effectiveOpenParts = searching ? new Set(parts.map((p) => p.level)) : openParts;
   const rail = useRef<HTMLElement>(null);
@@ -66,7 +68,7 @@ export function ChapterRail({
   }, [chapter.id]);
 
   return (
-    <nav ref={rail} className={styles.rail} aria-label="Chapters">
+    <nav ref={rail} className={styles.rail} aria-label={label}>
       {search}
       <Link className={styles.cover} href={basePath} onClick={onNavigate}>
         <TopIcon name="prev" size={15} />

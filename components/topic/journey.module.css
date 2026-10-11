@@ -45,6 +45,14 @@
   background: linear-gradient(transparent 58%, color-mix(in srgb, var(--mark) 80%, transparent) 58%);
 }
 
+.stationBlurb {
+  max-width: 62ch;
+  margin: 10px 0 0;
+  font-size: var(--t-body);
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
 .stationAside {
   display: flex;
   flex-wrap: wrap;

@@ -12,77 +12,6 @@
   width: 58%;
 }
 
-.cardKicker {
-  margin: 0 0 10px;
-  font-family: var(--font-mono);
-  font-size: var(--t-kicker);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--primary) 70%, var(--ink));
-}
-
-.ring {
-  display: grid;
-  place-items: center;
-  width: min(100%, 190px);
-  aspect-ratio: 1;
-  margin: 4px auto 14px;
-  background: conic-gradient(var(--primary) calc(var(--sweep, 0) * 1%), var(--sheet-2) 0);
-  border-radius: 50%;
-}
-
-.ringFace {
-  display: grid;
-  place-content: center;
-  width: 82%;
-  aspect-ratio: 1;
-  text-align: center;
-  background: var(--sheet);
-  border-radius: 50%;
-}
-
-.ringFace strong {
-  font-family: var(--font-heading);
-  font-size: var(--t-section);
-  font-weight: 700;
-  line-height: 1;
-}
-
-.ringFace small {
-  font-size: var(--t-meta);
-  color: var(--ink-soft);
-}
-
-.meter {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.meterTrack {
-  flex: 1;
-  height: 8px;
-  overflow: hidden;
-  background: var(--sheet-2);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-}
-
-.meterFill {
-  height: 100%;
-  background: var(--primary);
-  border-radius: inherit;
-  transition: width 0.3s ease;
-}
-
-.meterLabel {
-  flex: none;
-  font-family: var(--font-mono);
-  font-size: var(--t-kicker);
-  color: var(--ink-soft);
-  white-space: nowrap;
-}
-
 .next {
   padding: 18px 20px 20px;
   background: color-mix(in srgb, var(--mark) 36%, var(--sheet));
@@ -256,8 +185,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .stepCheck,
-  .caret,
-  .meterFill {
+  .caret {
     transition: none;
   }
 }

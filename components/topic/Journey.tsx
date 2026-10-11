@@ -134,6 +134,7 @@ export function Station({
   no,
   name,
   quote,
+  blurb,
   chips,
   mark,
   id,
@@ -141,6 +142,7 @@ export function Station({
   no: string;
   name: string;
   quote?: string;
+  blurb?: string;
   chips?: string[];
   mark?: string;
   id?: string;
@@ -159,6 +161,7 @@ export function Station({
             <span>&ldquo;{quote}&rdquo;</span>
           </p>
         )}
+        {blurb && <p className={j.stationBlurb}>{blurb}</p>}
       </div>
       <div className={j.stationAside}>
         {mark && (

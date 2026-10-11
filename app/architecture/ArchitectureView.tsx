@@ -1,12 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { ARCH_PARTS as PARTS } from "@/lib/architectureParts";
-import { useMemo, useState } from "react";
-import { TopicFrame, type FrameTopic } from "@/components/topic/TopicFrame";
+import { useMemo } from "react";
+import { Copy, Note, Scene, Stage, StageCard, Sticker, Tape } from "@/components/home/Stage";
 import { TopIcon } from "@/components/practice/TopIcon";
-import { progress } from "@/lib/storage";
+import { Check, Journey, JourneyStop, Station, StopHead } from "@/components/topic/Journey";
+import {
+  Actions,
+  Band,
+  Button,
+  CardKicker,
+  Chips,
+  Facts,
+  Foot,
+  FootLink,
+  Heading,
+  Kicker,
+  Lead,
+  List,
+  Row,
+  TopicPage,
+  Underlined,
+  topicKit,
+} from "@/components/topic/TopicKit";
+import { TopicFrame, type FrameTopic } from "@/components/topic/TopicFrame";
+import { ARCH_PARTS as PARTS } from "@/lib/architectureParts";
+import { formatSpan, plural } from "@/lib/format";
 import { useMounted, useProgressValue } from "@/lib/hooks";
+import { progress } from "@/lib/storage";
 import type { RepoStats } from "@/lib/repoStats";
 import styles from "./architecture.module.css";
 
@@ -96,8 +117,17 @@ const LANES: Lane[] = [
   },
 ];
 
+const HERO_LANES = ["build", "edge", "browser", "around"];
+const PREVIEW_NODES = 4;
+
 function formatNumber(n: number): string {
   return n.toLocaleString("en-US");
+}
+
+function splitTitle(title: string): [string, string] {
+  const words = title.split(" ");
+  const tail = Math.min(2, words.length - 1);
+  return [words.slice(0, words.length - tail).join(" "), words.slice(words.length - tail).join(" ")];
 }
 
 export function ArchitectureView({
@@ -120,7 +150,6 @@ export function ArchitectureView({
   exercises: number;
 }) {
   const mounted = useMounted();
-  const [focus, setFocus] = useState<string | null>(null);
   const byId = useMemo(() => new Map(chapters.map((c) => [c.id, c])), [chapters]);
 
   const doneKey = useProgressValue(
@@ -134,159 +163,219 @@ export function ArchitectureView({
   const done = useMemo(() => new Set(doneKey ? doneKey.split(",") : []), [doneKey]);
   const next = chapters.find((c) => !done.has(c.id)) ?? chapters[0];
   const totalMinutes = chapters.reduce((n, c) => n + c.minutes, 0);
+  const started = mounted && done.size > 0;
+  const [titleLead, titleTail] = splitTitle(title);
 
-  const facts: [string, string][] = [
-    [formatNumber(stats.pages), "page routes"],
-    [formatNumber(stats.routeHandlers), `route handlers, ${stats.apiFunctions} under /api`],
-    [formatNumber(stats.codeLines), `lines of app code in ${formatNumber(stats.codeFiles)} files`],
-    [formatNumber(stats.contentLines), "lines of written content"],
-    [`${stats.runnableLanguages} of ${stats.languages}`, "languages run in the browser"],
-    [formatNumber(exercises), "exercises with tests"],
-    [`${stats.dependencies} + ${stats.devDependencies}`, "dependencies + dev tools"],
-    [`${stats.unitTestFiles} + ${stats.e2eSpecs}`, "unit test files + browser specs"],
+  const facts: { value: string; label: string }[] = [
+    { value: formatNumber(stats.pages), label: "page routes" },
+    { value: formatNumber(stats.routeHandlers), label: `route handlers, ${stats.apiFunctions} under /api` },
+    { value: formatNumber(stats.codeLines), label: `lines of app code in ${formatNumber(stats.codeFiles)} files` },
+    { value: formatNumber(stats.contentLines), label: "lines of written content" },
+    { value: `${stats.runnableLanguages} of ${stats.languages}`, label: "languages run in the browser" },
+    { value: formatNumber(exercises), label: "exercises with tests" },
+    { value: `${stats.dependencies} + ${stats.devDependencies}`, label: "dependencies + dev tools" },
+    { value: `${stats.unitTestFiles} + ${stats.e2eSpecs}`, label: "unit test files + browser specs" },
   ];
+  const half = Math.ceil(facts.length / 2);
 
   return (
     <TopicFrame
       topic={topic}
       reading
+      layout="reader"
       skip={{ label: "Skip to the architecture" }}
       actions={
         <Link className="btn btn--primary" href={`${basePath}/${next.id}`}>
-          {mounted && done.size ? "Continue reading" : "Start reading"}
+          {started ? "Continue reading" : "Start reading"}
           <TopIcon name="next" size={16} />
         </Link>
       }
     >
-      <div className={styles.page}>
-        <div className={styles.main}>
-          <section className={styles.hero}>
-            <p className={styles.kicker}>A design review of the site you are reading</p>
-            <h1 className={styles.title}>{title}</h1>
-            <p className={styles.lead}>{lead}</p>
-            <div className={styles.heroMeta}>
-              <span>{chapters.length} chapters</span>
-              <span>
+      <TopicPage accent={topic.accent}>
+        <Scene className={topicKit.hero}>
+          <Copy>
+            <Kicker mark={topic.mark}>A design review of the site you are reading</Kicker>
+            <Heading>
+              {titleLead} <Underlined>{titleTail}</Underlined>
+            </Heading>
+            <Lead>{lead}</Lead>
+            <div className={mounted ? undefined : topicKit.pending}>
+              <Actions>
+                <Button href={`${basePath}/${next.id}`}>
+                  {started ? "Continue with" : "Start here:"} {next.short || next.title}{" "}
+                  <span aria-hidden="true">→</span>
+                </Button>
+                <Button ghost href="#map-title">
+                  The system on one page
+                </Button>
+              </Actions>
+            </div>
+            <Chips>
+              <span className={topicKit.chip}>{plural(chapters.length, "chapter")}</span>
+              <span className={topicKit.chip}>
                 about {totalMinutes >= 90 ? `${Math.round(totalMinutes / 60)} hours` : `${totalMinutes} minutes`} of
                 reading
               </span>
-              <span>{written} chapters written across the site</span>
-              {mounted && <span>{done.size} read by you</span>}
-            </div>
-          </section>
+              <span className={topicKit.chip}>{written} chapters written across the site</span>
+              {mounted && <span className={topicKit.chip}>{done.size} read by you</span>}
+            </Chips>
+          </Copy>
+          <Stage hostClassName={topicKit.stageHost} className={styles.stage}>
+            <svg className={styles.flow} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M30 34 C 40 34, 44 30, 56 30" />
+              <path d="M70 47 C 66 58, 40 54, 30 67" />
+              <path d="M82 47 C 90 58, 88 62, 82 66" />
+            </svg>
+            {HERO_LANES.map((id, i) => {
+              const lane = LANES.find((l) => l.id === id)!;
+              return (
+                <StageCard
+                  key={id}
+                  decor
+                  rot={[-1.4, 2, -1.8, 2.6][i]}
+                  depth={[-10, 12, -6, 16][i]}
+                  i={i}
+                  still
+                  className={`${styles.lane} ${styles[`lane_${id}`]}`}
+                >
+                  {i === 0 && <Tape rot={-5} />}
+                  <CardKicker>
+                    {String(i + 1).padStart(2, "0")} · {lane.when}
+                  </CardKicker>
+                  <p className={styles.laneName}>{lane.title}</p>
+                  <p className={styles.laneChips}>
+                    {lane.nodes.slice(0, PREVIEW_NODES).map((n) => (
+                      <span key={n.chapter}>{n.label}</span>
+                    ))}
+                  </p>
+                </StageCard>
+              );
+            })}
+            <Note arrow="dr" rot={-4} depth={14} className={styles.flowNote}>
+              build, deploy, request, run
+            </Note>
+            <Sticker rot={-6} depth={20} tone="success" className={styles.flowSticker}>
+              ✓ every number measured
+            </Sticker>
+          </Stage>
+        </Scene>
 
-          <section className={styles.facts} aria-label="Measured at build time">
-            {facts.map(([n, label]) => (
-              <div key={label} className={styles.fact}>
-                <strong>{n}</strong>
-                <span>{label}</span>
-              </div>
-            ))}
-            <p className={styles.factsNote}>Counted from the repository during the build that made this page.</p>
+        <Band
+          no="01"
+          id="facts-title"
+          label="Measured at build time"
+          title="The site, counted"
+          sub="Counted from the repository during the build that made this page, including the unflattering ones."
+          count={plural(facts.length, "number")}
+        >
+          <section className={styles.measured} aria-label="Measured at build time">
+            <Tape rot={-3} />
+            <Facts items={facts.slice(0, half)} />
+            <Facts items={facts.slice(half)} />
           </section>
+        </Band>
 
-          <section className={styles.mapWrap} aria-labelledby="map-h">
-            <div className={styles.sectionHead}>
-              <h2 id="map-h">The system on one page</h2>
-              <p>Pick any box to read the chapter behind it.</p>
+        <Band
+          no="02"
+          id="map-title"
+          label="The system on one page"
+          title="Pick any box"
+          sub="Every row is a chapter. Read the ones behind the part you care about first."
+          count={plural(
+            LANES.reduce((n, l) => n + l.nodes.length, 0),
+            "box"
+          )}
+        >
+          {LANES.map((lane, li) => (
+            <div key={lane.id} className={topicKit.level}>
+              <Station
+                no={String(li + 1).padStart(2, "0")}
+                name={lane.title}
+                id={`lane-${lane.id}`}
+                blurb={lane.when}
+                chips={[plural(lane.nodes.length, "chapter")]}
+              />
+              <List columns>
+                {lane.nodes.map((n) => {
+                  const ch = byId.get(n.chapter);
+                  return (
+                    <Row
+                      key={n.chapter}
+                      code={ch?.num}
+                      title={n.label}
+                      sub={n.note}
+                      href={ch ? `${basePath}/${ch.id}` : null}
+                      done={mounted && ch ? done.has(ch.id) : false}
+                    />
+                  );
+                })}
+              </List>
             </div>
-            <div className={styles.map} data-focus={focus ?? undefined}>
-              {LANES.map((lane) => (
-                <div key={lane.id} className={styles.lane} data-lane={lane.id}>
-                  <div className={styles.laneHead}>
-                    <span className={styles.laneTitle}>{lane.title}</span>
-                    <span className={styles.laneWhen}>{lane.when}</span>
-                  </div>
-                  <ul className={styles.nodes}>
-                    {lane.nodes.map((n) => {
-                      const ch = byId.get(n.chapter);
-                      const body = (
-                        <>
-                          <span className={styles.nodeLabel}>
-                            {n.label}
-                            {ch && mounted && done.has(ch.id) && (
-                              <span className={styles.nodeDone} aria-label="read">
-                                ✓
-                              </span>
-                            )}
-                          </span>
-                          <span className={styles.nodeNote}>{n.note}</span>
-                          {ch && <span className={styles.nodeNum}>{ch.num}</span>}
-                        </>
-                      );
-                      return (
-                        <li key={n.chapter} data-dim={focus && focus !== lane.id ? true : undefined}>
-                          {ch ? (
-                            <Link
-                              className={styles.node}
-                              href={`${basePath}/${ch.id}`}
-                              prefetch={false}
-                              onMouseEnter={() => setFocus(lane.id)}
-                              onMouseLeave={() => setFocus(null)}
-                              onFocus={() => setFocus(lane.id)}
-                              onBlur={() => setFocus(null)}
-                            >
-                              {body}
-                            </Link>
-                          ) : (
-                            <span className={styles.node}>{body}</span>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ))}
-              <div className={styles.flow} aria-hidden="true">
-                <span>build</span>
-                <span>deploy</span>
-                <span>request</span>
-                <span>run</span>
-              </div>
-            </div>
-          </section>
+          ))}
+        </Band>
 
+        <Band
+          no="03"
+          id="order-title"
+          label="Read it in order"
+          title="Three parts, one trail"
+          sub="From what the site is made of, to how a request runs, to how it holds up."
+          count={plural(chapters.length, "chapter")}
+        >
           {PARTS.map((part, pi) => {
             const list = chapters.filter((c) => c.level === part.level);
             if (!list.length) return null;
             const read = mounted ? list.filter((c) => done.has(c.id)).length : 0;
             return (
-              <section key={part.level} className={styles.part} aria-labelledby={`part-${part.level}`}>
-                <div className={styles.partHead}>
-                  <span className={styles.partNum}>Part {pi + 1}</span>
-                  <h2 id={`part-${part.level}`}>{part.title}</h2>
-                  <p>{part.blurb}</p>
-                  <span className={styles.partProgress}>
-                    <span className={styles.bar} aria-hidden="true">
-                      <span style={{ width: `${(read / list.length) * 100}%` }} />
-                    </span>
-                    {read}/{list.length} read
-                  </span>
-                </div>
-                <ol className={styles.cards}>
-                  {list.map((c) => (
-                    <li key={c.id}>
-                      <Link className={styles.card} href={`${basePath}/${c.id}`} prefetch={false}>
-                        <span className={styles.cardTop}>
-                          <span className={styles.cardNum}>{c.num}</span>
-                          <span className={styles.cardMin}>{c.minutes} min</span>
-                          {mounted && done.has(c.id) && (
-                            <span className={styles.cardDone} aria-label="read">
-                              ✓
-                            </span>
-                          )}
-                        </span>
-                        <span className={styles.cardTitle}>{c.title}</span>
-                        <span className={styles.cardSub}>{c.subtitle}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ol>
-              </section>
+              <div key={part.level} className={topicKit.level}>
+                <Station
+                  no={String(pi + 1).padStart(2, "0")}
+                  name={part.title}
+                  id={`part-${part.level}`}
+                  blurb={part.blurb}
+                  chips={[plural(list.length, "chapter"), `${read} / ${list.length} read`]}
+                />
+                <Journey
+                  count={list.length}
+                  slot={150}
+                  walked={read / list.length}
+                  label={`${part.title}: every chapter`}
+                >
+                  {list.map((c) => {
+                    const isRead = mounted && done.has(c.id);
+                    const isNext = started && c.id === next.id;
+                    return (
+                      <JourneyStop
+                        key={c.id}
+                        state={isRead ? "done" : isNext ? "next" : "todo"}
+                        sticker={isNext ? "▸ pick up here" : undefined}
+                      >
+                        <StopHead
+                          code={c.num}
+                          title={c.title}
+                          sub={c.subtitle}
+                          href={`${basePath}/${c.id}`}
+                          end={
+                            <>
+                              <span className={topicKit.chip}>{formatSpan(c.minutes)}</span>
+                              {isRead && <Check />}
+                            </>
+                          }
+                        />
+                      </JourneyStop>
+                    );
+                  })}
+                </Journey>
+              </div>
             );
           })}
-        </div>
-      </div>
+        </Band>
+
+        <Foot>
+          <FootLink href="/">All topics</FootLink>
+          <FootLink href={`${basePath}/${chapters[0].id}`}>Start at the first chapter</FootLink>
+        </Foot>
+      </TopicPage>
     </TopicFrame>
   );
 }

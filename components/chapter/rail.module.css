@@ -266,6 +266,43 @@
   background: linear-gradient(transparent 58%, color-mix(in srgb, var(--mark) 80%, transparent) 58%);
 }
 
+.tocDense .tocText {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.tocMark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  font-size: var(--t-kicker);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.tocMark[data-mark="knew"] {
+  color: var(--on-primary);
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.tocMark[data-mark="shaky"] {
+  background: var(--caution-soft);
+  border-color: var(--caution);
+}
+
+.tocMark[data-mark="blank"] {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+}
+
 .readBtn {
   font-size: var(--t-control);
   display: flex;

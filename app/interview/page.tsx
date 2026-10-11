@@ -3,6 +3,7 @@ import { topicCoverMetadata } from "@/components/reader/topicPages";
 import { InterviewLanding } from "@/app/interview/InterviewLanding";
 import { INTERVIEW_TOTAL_QUESTIONS } from "@/lib/interviewContent";
 import { bankQuestions, bookRounds, PARTS, roundCards } from "@/lib/interviewBook";
+import { frameTopic } from "@/lib/topics";
 
 export function generateMetadata(): Metadata {
   return topicCoverMetadata("interview");
@@ -13,6 +14,7 @@ export default function Page() {
   const bank = bankQuestions();
   return (
     <InterviewLanding
+      topic={frameTopic("interview", "/interview")}
       rounds={roundCards()}
       parts={PARTS}
       daily={bank

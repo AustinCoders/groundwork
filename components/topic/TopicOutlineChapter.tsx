@@ -3,15 +3,21 @@
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { TopicFrame } from "@/components/topic/TopicFrame";
-import { ChapterHeaderPager } from "@/components/chapter/ChapterHeaderPager";
-import { ChapterPager } from "@/components/chapter/ChapterPager";
+import {
+  ChapterCrumbs,
+  ChapterEndScene,
+  ChapterHeaderPager,
+  ChapterHero,
+  ReaderAside,
+  ReaderLayout,
+  ReadingColumn,
+} from "@/components/chapter/ChapterKit";
 import { ChapterRail, useRailParts } from "@/components/chapter/ChapterRail";
 import { ChaptersSheet, ChaptersSheetButton } from "@/components/chapter/ChaptersSheet";
 import { useChapterKeys } from "@/components/chapter/useChapterKeys";
 import { Eyebrow, kit } from "@/components/ui/MenuKit";
 import type { SeriesCard, SeriesPart } from "@/components/chapter/types";
 import type { LevelId } from "@/content/types";
-import styles from "@/components/series/chapter.module.css";
 import readerStyles from "./reader.module.css";
 
 const NO_DONE = new Set<string>();
@@ -86,79 +92,66 @@ export function TopicOutlineChapter({
       actions={
         <>
           <ChaptersSheetButton open={railOpen} onOpen={() => setRailOpen(true)} />
-          <nav className={styles.crumbs} aria-label="Breadcrumb">
-            <Link href={basePath}>{topicName}</Link>
-            <span aria-hidden="true">/</span>
-            <span>{part?.title}</span>
-            <span aria-hidden="true">/</span>
-            <span aria-current="page">{chapter.num}</span>
-          </nav>
+          <ChapterCrumbs href={basePath} label={topicName} part={part?.title} num={chapter.num} />
           <ChapterHeaderPager index={index} total={chapters.length} prev={prev} next={next} basePath={basePath} />
         </>
       }
     >
-      <div className={`${styles.page} ${readerStyles.page}`}>
-        <div className={styles.body}>
-          <aside className={styles.left}>{rail}</aside>
-
-          <main className={styles.main}>
-            <article className={`${styles.article} ${readerStyles.article}`} id={chapter.id}>
-              <header className={styles.head}>
-                <p className={styles.kicker}>
-                  Part {partIndex + 1} · {part?.title}
-                </p>
-                <div className={styles.titleRow}>
-                  <span className={styles.badge} aria-hidden="true">
-                    {chapter.num}
-                  </span>
-                  <h1 className={styles.title}>{chapter.title}</h1>
-                </div>
-                <p className={readerStyles.status}>Not written yet.</p>
-              </header>
-
-              <section className={readerStyles.roadmap} aria-labelledby={`${chapter.id}-roadmap`}>
-                <Eyebrow no="01" as="p">
-                  This chapter will cover
-                </Eyebrow>
-                <h2 id={`${chapter.id}-roadmap`} className={readerStyles.roadmapTitle}>
-                  {sectionTitle}
-                </h2>
-                <ul className={readerStyles.roadmapList}>
-                  {items.map((item, i) => (
-                    <li key={i} dangerouslySetInnerHTML={{ __html: item }} />
-                  ))}
-                </ul>
-              </section>
-
-              <ChapterPager prev={prev} next={next} basePath={basePath} homeLabel="The cover" />
-            </article>
-          </main>
-
-          <aside className={styles.right} aria-label="Meanwhile">
-            <div className={styles.rightInner}>
-              <section className={readerStyles.meanwhile}>
-                <Eyebrow no="01" as="p">
-                  Meanwhile
-                </Eyebrow>
-                <ul className={kit.rows}>
+      <ReaderLayout
+        accent={accent}
+        rail={rail}
+        aside={
+          <ReaderAside label="Meanwhile">
+            <section className={readerStyles.meanwhile}>
+              <Eyebrow no="01" as="p">
+                Meanwhile
+              </Eyebrow>
+              <ul className={kit.rows}>
+                <li>
+                  <Link className={kit.row} href={relatedHref}>
+                    <span className={kit.title}>{relatedLabel} is written, start there</span>
+                  </Link>
+                </li>
+                {relatedRoundHref && relatedRoundLabel && (
                   <li>
-                    <Link className={kit.row} href={relatedHref}>
-                      <span className={kit.title}>{relatedLabel} is written, start there</span>
+                    <Link className={kit.row} href={relatedRoundHref}>
+                      <span className={kit.title}>{relatedRoundLabel} covers this in the interview book</span>
                     </Link>
                   </li>
-                  {relatedRoundHref && relatedRoundLabel && (
-                    <li>
-                      <Link className={kit.row} href={relatedRoundHref}>
-                        <span className={kit.title}>{relatedRoundLabel} covers this in the interview book</span>
-                      </Link>
-                    </li>
-                  )}
-                </ul>
-              </section>
-            </div>
-          </aside>
-        </div>
-      </div>
+                )}
+              </ul>
+            </section>
+          </ReaderAside>
+        }
+      >
+        <ReadingColumn id={chapter.id}>
+          <ChapterHero
+            mark={mark}
+            num={chapter.num}
+            partLabel={`Part ${partIndex + 1} · ${part?.title}`}
+            title={chapter.title}
+            facts={[]}
+            position={{ index: index + 1, total: chapters.length }}
+            status="Not written yet."
+          />
+
+          <section className={readerStyles.roadmap} aria-labelledby={`${chapter.id}-roadmap`}>
+            <Eyebrow no="01" as="p">
+              This chapter will cover
+            </Eyebrow>
+            <h2 id={`${chapter.id}-roadmap`} className={readerStyles.roadmapTitle}>
+              {sectionTitle}
+            </h2>
+            <ul className={readerStyles.roadmapList}>
+              {items.map((item, i) => (
+                <li key={i} dangerouslySetInnerHTML={{ __html: item }} />
+              ))}
+            </ul>
+          </section>
+
+          <ChapterEndScene num={chapter.num} prev={prev} next={next} basePath={basePath} homeLabel="The cover" />
+        </ReadingColumn>
+      </ReaderLayout>
 
       <ChaptersSheet open={railOpen} onClose={closeRail}>
         <ChapterRail

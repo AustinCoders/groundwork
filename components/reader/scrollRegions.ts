@@ -1,6 +1,6 @@
 import { useEffect, type RefObject } from "react";
 
-const SCROLLERS = "pre, .table-scroll, [data-scroll-region], .loop-code";
+const SCROLLERS = "pre, .table-scroll, figure, [data-scroll-region], .loop-code";
 const regionsWeMarked = new WeakSet<Element>();
 
 function textOf(node: Element | null | undefined): string {
@@ -23,6 +23,7 @@ function baseName(region: HTMLElement): string {
   if (region.matches(".table-scroll")) {
     return named("Table", textOf(region.querySelector("caption")) || textOf(headingBefore(region)));
   }
+  if (region.matches("figure")) return named("Diagram", textOf(region.querySelector("figcaption")));
   const block = region.parentElement?.classList.contains("codeblock") ? region.parentElement : region;
   const label = block.previousElementSibling?.classList.contains("codelabel") ? block.previousElementSibling : null;
   return named("Code", textOf(label) || textOf(headingBefore(region)));

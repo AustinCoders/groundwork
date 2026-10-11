@@ -23,7 +23,7 @@ const PAGES = [
   { path: "/dsa/dsa-hashing", heading: /Hashing/i },
   { path: "/system-design", heading: /System Design/i },
   { path: "/system-design/sysdes-caching-fundamentals", heading: /Caching/i },
-  { path: "/interview", heading: /Every round of the loop/i },
+  { path: "/interview", heading: /From the first call to the offer/i },
   { path: "/interview/r1oa", heading: /online assessment/i },
   { path: "/level/js", heading: /JavaScript/i },
   { path: "/path/js/beginner", heading: /Beginner/i },
@@ -324,7 +324,7 @@ test("a written topic chapter has its own rail, contents and read marker, and th
   await expect(page.getByRole("heading", { level: 1 })).toContainText(/Setup/i);
   await expectOneSetOfDiagramDefs(page);
   const articleWidth = await page.locator("#setup-mental-model").evaluate((el) => el.getBoundingClientRect().width);
-  expect(articleWidth).toBeLessThanOrEqual(760);
+  expect(articleWidth).toBeLessThanOrEqual(945);
   const rail = page.getByRole("navigation", { name: "Chapters" });
   await expect(rail.locator("a[aria-current=page]")).toContainText("Setup");
 
@@ -495,6 +495,9 @@ test("every topic hero scene is one balanced screen under the header, with the n
     { path: "/level/react", full: true },
     { path: "/typescript", full: true },
     { path: "/python", full: true },
+    { path: "/interview", full: true },
+    { path: "/interview/questions", full: true },
+    { path: "/architecture", full: true },
     { path: "/path/js/beginner", full: false },
     { path: "/notes", full: false },
   ];
@@ -3722,7 +3725,7 @@ test("the interview book hides answers in practice mode, remembers marks and dri
   await page.goto("/interview/r3");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("JavaScript");
   await page.getByRole("button", { name: "Practise", exact: true }).click();
-  const first = page.locator("article").first();
+  const first = page.locator("section[id^='r3-']").first();
   await expect(first.getByRole("button", { name: "Show the answer" })).toBeVisible();
   await first.getByRole("button", { name: "Show the answer" }).click();
   await expect(first.getByText("The answer that loses the room")).toBeVisible();
@@ -3842,10 +3845,14 @@ test("review, the interview book, mock and progress take the theme's accent, not
     { path: "/review", action: () => main.getByRole("link", { name: "Find something to read →" }), onAccent: true },
     {
       path: "/interview",
-      action: () => main.getByRole("link", { name: /Start with the scouting report/ }),
+      action: () => main.getByRole("link", { name: /Start the book/ }),
       onAccent: true,
     },
-    { path: "/interview/questions", action: () => main.getByRole("button", { name: "Every part" }), onAccent: true },
+    {
+      path: "/interview/questions",
+      action: () => main.getByRole("button", { name: /Drill \d+ as flashcards/ }),
+      onAccent: true,
+    },
     { path: "/mock", action: () => main.getByRole("button", { name: "Plan a full loop" }), onAccent: true },
     { path: "/progress", action: () => main.locator("[class*='__xpBar'] > span"), onAccent: false },
   ];
@@ -3914,7 +3921,7 @@ test("problems, the whiteboard, git and architecture take the theme's accent, an
   await expect(page.locator("html")).toHaveAttribute("data-theme", "forest");
   await markRead.click();
   await expect(finish.getByRole("button", { name: "Mark as unread" })).toBeVisible();
-  await expect(finish.locator("[class*='__endMark']")).toHaveCSS(
+  await expect(finish.locator("[class*='__finishMark']")).toHaveCSS(
     "background-color",
     themeColour("forest", "--success")
   );

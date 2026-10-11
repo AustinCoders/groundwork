@@ -3,6 +3,7 @@ import { QuestionBank } from "@/app/interview/questions/QuestionBank";
 import { bankQuestions, PARTS } from "@/lib/interviewBook";
 import { INTERVIEW_TOTAL_QUESTIONS } from "@/lib/interviewContent";
 import { pageMetadata } from "@/lib/metadata";
+import { frameTopic } from "@/lib/topics";
 
 export const metadata: Metadata = pageMetadata({
   title: "Interview question bank",
@@ -12,5 +13,12 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function Page() {
-  return <QuestionBank questions={bankQuestions()} parts={PARTS} totalQuestions={INTERVIEW_TOTAL_QUESTIONS} />;
+  return (
+    <QuestionBank
+      topic={frameTopic("interview", "/interview")}
+      questions={bankQuestions()}
+      parts={PARTS}
+      totalQuestions={INTERVIEW_TOTAL_QUESTIONS}
+    />
+  );
 }

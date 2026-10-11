@@ -9,9 +9,7 @@
 .page h1::before,
 .page h1::after,
 .page h2::before,
-.page h2::after,
-.page h3::before,
-.page h3::after {
+.page h2::after {
   content: none !important;
 }
 

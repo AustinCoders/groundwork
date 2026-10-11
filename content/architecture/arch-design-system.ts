@@ -263,6 +263,13 @@ export const archDesignSystem: Chapter = {
   topic needs no CSS. None of these pages uses the scroll reveal, because a reveal leaves blocks
   part-transparent mid-scroll and in a stitched screenshot.
 </p>
+<p>
+  The interview book (the landing, the question bank and every round) and this architecture section's
+  index are the same family. A round is a chapter in the chapter kit, with a rounds rail, the questions
+  as numbered sections and the answer inside the shared prose layer; the landing and the index reuse
+  the topic kit's trails, stations and rows. Anything that depends on saved progress is hidden until the
+  page has hydrated, so the label of a button never changes under the reader.
+</p>
 
 <h3>Modals</h3>
 <p>
@@ -276,9 +283,9 @@ export const archDesignSystem: Chapter = {
 
 <h3>CSS modules and globals.css</h3>
 <p>
-  <code>globals.css</code> is about 8,200 lines. It holds the tokens, the prose styles every
+  <code>globals.css</code> is about 8,400 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
-  one of 40 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
+  one of 41 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
   lines. The rule of thumb is that anything
   chapter HTML can contain goes in globals, because chapter bodies are strings that cannot import a
   module, and anything else goes in a module so it loads only with its page.
@@ -333,22 +340,21 @@ export const archDesignSystem: Chapter = {
 
 <h3>The checks</h3>
 <p>
-  <code>e2e/a11y.spec.ts</code> runs axe through <code>@axe-core/playwright</code> against 33
-  pages, including the home page, the outline cover of a topic that is only being planned, six chapters, the other three written topics' covers, the
-  playground, the problems list, the mock lobby, the whiteboard, the 404 page and this
+  <code>e2e/a11y.spec.ts</code> runs axe through <code>@axe-core/playwright</code> against 37
+  pages, including the home page, the outline cover of a topic that is only being planned, nine chapters, the other three written topics' covers, the
+  playground, the problems list, the mock lobby, the whiteboard, the 404 page, the interview book's screening round and this
   architecture section. One of them, <code>/level/typescript</code>, is the level picker of a
   topic that is only outlined, and another, <code>/typescript/ts-setup-compiler</code>, is that
   same topic's own outline chapter; <code>/level/typescript</code> stands in for <code>/soon</code>,
-  which redirects there while every topic is marked ready. It also runs against 32 states that a
-  plain page load does not show: 28 that open with a click, and 4 seeded in
+  which redirects there while every topic is marked ready. It also runs against 40 states that a plain page load does not show: 35 that open with a click, and 5 seeded in
   <code>localStorage</code>. The clicks open the site menu, the reading menu on <code>/notes</code>
   with its Appearance, Narrator and Keyboard shortcuts folds open, a reading budget picked on the JavaScript cover's Up
   next card, the Advanced level picked on the level picker, the site menu with a category expanded and with the theme swatches focused, the home page's topic section on Languages, with a legend row expanded and a station card open and with a search term typed,
-  its interview book on a later round and on its last stage, its practice section with a row focused, a path tab with unwritten topics, its FAQ with the comparison answer open and its how-it-works demo with a line opened, a failing run, every test passing, an answer checked and a chapter marked read, and its topic section on the AI category, the Chapters and Filters sheets, and a system design round in
-  the mock interview, checked at the brief, a question, a follow-up, the rubric and the debrief.
+  its interview book on a later round and on its last stage, its practice section with a row focused, a path tab with unwritten topics, its FAQ with the comparison answer open and its how-it-works demo with a line opened, a failing run, every test passing, an answer checked and a chapter marked read, and its topic section on the AI category, a chapter marked read, a try-it block run, the phone's inline contents, the Chapters and Filters sheets, a system design round in
+  the mock interview, checked at the brief, a question, a follow-up, the rubric and the debrief, an interview round in practice mode with an answer shown and a question marked, the question bank with a question opened and the filters used and with nothing matching, and the flashcard drill with the answer revealed.
   The seeds give a chapter due for review, a
-  chapter marked read on a path, a year of activity on the progress page, and two saved mock
-  sessions. Each page and state is
+  chapter marked read on a path, a year of activity on the progress page, two saved mock
+  sessions, and the interview landing with two rounds read, three questions marked and the question of the day revealed. Each page and state is
   checked in all 9 themes, at 1440 and 390 pixels wide, except the two sheets, which
   only open on a narrow screen and are checked at 390. One helper sets the theme the way the theme
   picker does, runs axe with the WCAG 2.0 and 2.1 A and AA tags, and fails on any violation, naming

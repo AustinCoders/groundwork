@@ -25,22 +25,11 @@ const CATEGORICAL_SELECTORS: Record<string, string[]> = {
     ".badge[data-earned]",
     ".badge[data-earned] .medal",
   ],
-  "app/interview/book.module.css": [
-    ".companies span[data-hot]",
-    ".testBox",
-    ".testBox .boxLabel",
-    ".sayBox",
-    ".sayBox .boxLabel",
-    ".trapBox",
-    ".trapBox .boxLabel",
-    '.bankTags span[data-t="trap"]',
-  ],
   "app/mock/mock.module.css": [".avatar", '.avatar[data-tone="sharp"]', '.avatar[data-tone="calm"]'],
   "app/mock/guide.module.css": [".avatar", '.avatar[data-tone="sharp"]'],
   "app/problems/problems.module.css": [".page", ".sheetRoot"],
   "app/whiteboard/whiteboard.module.css": [".paperMargin", ".laser", ".laserGlow", '.swatch[data-value="none"]'],
   "components/series/landing.module.css": [".page"],
-  "app/architecture/architecture.module.css": [".page"],
 };
 
 function filesUnder(dirs: string[], name: RegExp): string[] {
@@ -84,8 +73,8 @@ const GLOBAL_CATEGORICAL_SELECTORS = [
   ".tone-yes",
   ".tone-warn",
   ".tone-bad",
-  ".bx.is-prim",
-  ".bx.is-ref",
+  ".prose .sticky",
+  ".prose .sticky.mint",
   ".unit.is-pair",
   ".stat-card--a .stat-card__icon",
   ".stat-card--c .stat-card__icon",

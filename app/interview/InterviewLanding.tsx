@@ -2,12 +2,35 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { BookShell } from "@/app/interview/BookShell";
+import { BookFrame } from "@/app/interview/BookFrame";
+import { Copy, Note, Scene, Stage, StageCard, Sticker, Tape } from "@/components/home/Stage";
+import { Check, Journey, JourneyStop, Station, StopHead } from "@/components/topic/Journey";
+import {
+  Actions,
+  Band,
+  Button,
+  CardKicker,
+  Chips,
+  Facts,
+  Foot,
+  FootLink,
+  Heading,
+  Kicker,
+  Lead,
+  ProgressMeter,
+  Toggle,
+  ToggleGroup,
+  TopicPage,
+  Underlined,
+  topicKit,
+} from "@/components/topic/TopicKit";
+import type { FrameTopic } from "@/components/topic/TopicFrame";
 import { useConfidence } from "@/lib/interviewConfidence";
+import { formatSpan, plural } from "@/lib/format";
 import { useMounted, useProgressValue } from "@/lib/hooks";
 import { progress } from "@/lib/storage";
 import type { BookPart, RoundCard } from "@/lib/interviewBook";
-import styles from "./book.module.css";
+import styles from "./landing.module.css";
 
 export interface DailyQuestion {
   id: string;
@@ -25,48 +48,55 @@ const COMPANIES: [string, string][] = [
   ["agency", "Agency"],
 ];
 
+const STEPS: [string, string][] = [
+  ["Read the round", "Before each interview, read the round you have next. Start with who is across the table."],
+  ["Practise, do not skim", "Switch a round to practice mode. Answers stay hidden until you have said yours."],
+  ["Mark it honestly", "Knew it, shaky or blank. The question bank brings the shaky ones back until they stick."],
+  ["Then get pushed", "Run the round as a mock interview, with a clock and the follow-ups, before the real one."],
+];
+
 function dayIndex(n: number): number {
   const d = new Date();
   const key = d.getFullYear() * 400 + d.getMonth() * 32 + d.getDate();
   return (key * 2654435761) % n;
 }
 
-function QuestionOfTheDay({ pool }: { pool: DailyQuestion[] }) {
-  const mounted = useMounted();
+function QuestionOfTheDay({ pool, mounted }: { pool: DailyQuestion[]; mounted: boolean }) {
   const [shift, setShift] = useState(0);
   const [open, setOpen] = useState(false);
   if (!pool.length) return null;
   const q = pool[(mounted ? dayIndex(pool.length) + shift : shift) % pool.length];
   return (
-    <aside className={styles.daily} aria-label="Question of the day">
+    <div className={mounted ? styles.dailyBody : `${styles.dailyBody} ${topicKit.pending}`}>
       <div className={styles.dailyTop}>
-        <span className={styles.dailyTag}>{shift === 0 ? "Question of the day" : "Another one"}</span>
+        <CardKicker>{shift === 0 ? "Question of the day" : "Another one"}</CardKicker>
         <span className={styles.dailyRound}>
           {q.roundCode} · {q.roundTitle}
         </span>
       </div>
-      <p className={styles.dailyQ} dangerouslySetInnerHTML={{ __html: q.q }} />
-      {q.test && (
-        <div className={styles.dailyReveal} data-open={open || undefined}>
-          {open ? (
+      <p className={styles.dailyQ}>
+        <span dangerouslySetInnerHTML={{ __html: q.q }} />
+      </p>
+      <div className={styles.dailyReveal}>
+        {q.test &&
+          (open ? (
             <p>
               <b>What they are really testing: </b>
               <span dangerouslySetInnerHTML={{ __html: q.test }} />
             </p>
           ) : (
-            <button type="button" className={styles.ghostBtn} onClick={() => setOpen(true)}>
+            <button type="button" className={styles.reveal} onClick={() => setOpen(true)}>
               Think about it, then reveal what they test
             </button>
-          )}
-        </div>
-      )}
+          ))}
+      </div>
       <div className={styles.dailyFoot}>
-        <Link href={`/interview/${q.roundId}#${q.id}`} className={styles.textLink}>
+        <Link href={`/interview/${q.roundId}#${q.id}`} className={styles.dailyLink}>
           Read the full answer →
         </Link>
         <button
           type="button"
-          className={styles.linkBtn}
+          className={styles.another}
           onClick={() => {
             setShift((s) => s + 1);
             setOpen(false);
@@ -75,72 +105,40 @@ function QuestionOfTheDay({ pool }: { pool: DailyQuestion[] }) {
           Another
         </button>
       </div>
-    </aside>
+    </div>
   );
 }
 
-function RoundTile({
-  r,
-  read,
-  marks,
-  dim,
-}: {
-  r: RoundCard;
-  read: boolean;
-  marks: { knew: number; shaky: number; blank: number };
-  dim: boolean;
-}) {
-  const total = r.questionIds.length || 1;
+function ConfidenceBar({ marks, total }: { marks: { knew: number; shaky: number; blank: number }; total: number }) {
+  if (marks.knew + marks.shaky + marks.blank === 0) return null;
   return (
-    <Link
-      href={`/interview/${r.id}`}
-      prefetch={false}
-      className={styles.tile}
-      data-dim={dim || undefined}
-      data-read={read || undefined}
+    <span
+      className={styles.confBar}
+      role="img"
+      aria-label={`${marks.knew} knew, ${marks.shaky} shaky, ${marks.blank} blank`}
     >
-      <span className={styles.tileTop}>
-        <span className={styles.tileCode}>{r.code}</span>
-        {read && (
-          <span className={styles.readBadge} aria-label="Read">
-            ✓ read
-          </span>
-        )}
-      </span>
-      <span className={styles.tileTitle}>{r.navTitle}</span>
-      {r.decides && (
-        <span className={styles.tileDecides}>
-          <b>Decides:</b> <span dangerouslySetInnerHTML={{ __html: r.decides }} />
-        </span>
-      )}
-      <span className={styles.tileMeta}>
-        <span>{r.guide ? `${r.sections} sections` : `${r.counts.questions} questions`}</span>
-        {r.counts.followUps > 0 && <span>{r.counts.followUps} follow-ups</span>}
-        <span>{r.minutes} min</span>
-      </span>
-      {marks.knew + marks.shaky + marks.blank > 0 && (
-        <span className={styles.confBar} aria-label={`${marks.knew} knew, ${marks.shaky} shaky, ${marks.blank} blank`}>
-          <span data-c="knew" style={{ width: `${(marks.knew / total) * 100}%` }} />
-          <span data-c="shaky" style={{ width: `${(marks.shaky / total) * 100}%` }} />
-          <span data-c="blank" style={{ width: `${(marks.blank / total) * 100}%` }} />
-        </span>
-      )}
-    </Link>
+      <span data-c="knew" style={{ width: `${(marks.knew / total) * 100}%` }} />
+      <span data-c="shaky" style={{ width: `${(marks.shaky / total) * 100}%` }} />
+      <span data-c="blank" style={{ width: `${(marks.blank / total) * 100}%` }} />
+    </span>
   );
 }
 
 export function InterviewLanding({
+  topic,
   rounds,
   parts,
   daily,
   totals,
 }: {
+  topic: FrameTopic;
   rounds: RoundCard[];
   parts: { id: BookPart; title: string; blurb: string }[];
   daily: DailyQuestion[];
   totals: { rounds: number; questions: number; followUps: number; traps: number };
 }) {
   const [company, setCompany] = useState<string | null>(null);
+  const mounted = useMounted();
   const conf = useConfidence();
   const readKey = useProgressValue(
     () =>
@@ -161,166 +159,233 @@ export function InterviewLanding({
     return m;
   };
   const allMarks = Object.values(conf);
+  const knew = allMarks.filter((c) => c === "knew").length;
   const shaky = allMarks.filter((c) => c !== "knew").length;
   const firstUnread = rounds.find((r) => !read.has(r.id));
+  const totalMinutes = rounds.reduce((sum, r) => sum + r.minutes, 0);
+  const started = read.size > 0;
 
   return (
-    <BookShell scan={company}>
-      <section className={styles.hero}>
-        <div className={styles.heroCopy} data-fx="stagger">
-          <p className={styles.kicker}>
-            <span className={styles.dot} aria-hidden="true" /> {totals.rounds} rounds · {totals.questions}+ questions ·{" "}
-            {totals.followUps} follow-ups
-          </p>
-          <h1 className={styles.h1}>
-            Every round of the loop, <span className={styles.accent}>and the answer that gets you through it.</span>
-          </h1>
-          <p className={styles.lead}>
-            Not a list of questions. For each round: who sits across the table, what they are really testing, the answer
-            and the code, the words to say, the answer that loses the room, and the follow-up they push with next.
-          </p>
-          <div className={styles.actions}>
-            <Link href={`/interview/${firstUnread?.id ?? rounds[0]?.id}`} className={styles.btn}>
-              {read.size ? `Continue: ${firstUnread?.navTitle ?? "start again"}` : "Start with the scouting report"}{" "}
-              <span aria-hidden="true">→</span>
-            </Link>
-            <Link href="/interview/questions" className={`${styles.btn} ${styles.btnGhost}`}>
-              Drill the question bank
-            </Link>
-          </div>
-          <dl className={styles.stats}>
-            <div>
-              <dt>rounds</dt>
-              <dd>{totals.rounds}</dd>
+    <BookFrame topic={topic} scan={company}>
+      <TopicPage accent={topic.accent}>
+        <Scene className={topicKit.hero}>
+          <Copy>
+            <Kicker mark={topic.mark}>
+              {plural(totals.rounds, "round")} · {plural(totals.questions, "question")} · about{" "}
+              {formatSpan(totalMinutes)}
+            </Kicker>
+            <Heading>
+              From the first call to <Underlined>the offer</Underlined>
+            </Heading>
+            <Lead>
+              Not a list of questions. For each round: who sits across the table, what they are really testing, the
+              answer and the code, the words to say, the answer that loses the room, and the follow-up they push with
+              next.
+            </Lead>
+            <div className={mounted ? undefined : topicKit.pending}>
+              <Actions>
+                <Button href={`/interview/${firstUnread?.id ?? rounds[0]?.id}`}>
+                  {started ? `Continue: ${firstUnread?.navTitle ?? "start again"}` : "Start the book"}{" "}
+                  <span aria-hidden="true">→</span>
+                </Button>
+                <Button ghost href="/interview/questions">
+                  Browse all {totals.questions} questions
+                </Button>
+              </Actions>
             </div>
-            <div>
-              <dt>questions answered</dt>
-              <dd>{totals.questions}+</dd>
-            </div>
-            <div>
-              <dt>follow-ups</dt>
-              <dd>{totals.followUps}</dd>
-            </div>
-            <div>
-              <dt>traps named</dt>
-              <dd>{totals.traps}</dd>
-            </div>
-          </dl>
-        </div>
-        <div data-fx="right">
-          <QuestionOfTheDay pool={daily} />
-        </div>
-      </section>
-
-      {(read.size > 0 || allMarks.length > 0) && (
-        <section className={styles.progressBand} aria-label="Your progress" data-fx="up">
-          <div>
-            <b>{read.size}</b>
-            <span>of {rounds.length} rounds read</span>
-          </div>
-          <div>
-            <b>{allMarks.filter((c) => c === "knew").length}</b>
-            <span>answers you knew</span>
-          </div>
-          <div>
-            <b>{shaky}</b>
-            <span>shaky or blank</span>
-          </div>
-          {shaky > 0 && (
-            <Link href="/interview/questions?filter=shaky" className={styles.btn}>
-              Drill the shaky ones →
-            </Link>
-          )}
-        </section>
-      )}
-
-      <section className={styles.howUse} aria-labelledby="how-h" data-fx="stagger">
-        <h2 id="how-h" className="visually-hidden">
-          How to use this book
-        </h2>
-        {[
-          [
-            "Read the round",
-            "Before each interview, read the round you have next. Start with who is across the table.",
-          ],
-          ["Practise, do not skim", "Switch a round to practice mode. Answers stay hidden until you have said yours."],
-          [
-            "Mark it honestly",
-            "Knew it, shaky or blank. The question bank brings the shaky ones back until they stick.",
-          ],
-          [
-            "Then get pushed",
-            "Run the round as a mock interview, with a clock and the follow-ups, before the real one.",
-          ],
-        ].map(([t, b], i) => (
-          <div key={t}>
-            <span className={styles.howNum}>{String(i + 1).padStart(2, "0")}</span>
-            <b>{t}</b>
-            <p>{b}</p>
-          </div>
-        ))}
-      </section>
-
-      <section className={styles.mapHead} aria-labelledby="map-h">
-        <div data-fx="stagger">
-          <p className={styles.eyebrow}>The loop, in order</p>
-          <h2 id="map-h" className={styles.h2}>
-            Every round you will meet.
-          </h2>
-        </div>
-        <div className={styles.filter} role="group" aria-label="Show the rounds for">
-          <span>Interviewing at</span>
-          <button type="button" aria-pressed={company === null} onClick={() => setCompany(null)}>
-            Anywhere
-          </button>
-          {COMPANIES.map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              aria-pressed={company === id}
-              onClick={() => setCompany(company === id ? null : id)}
+            <Chips>
+              <span className={topicKit.chip}>{plural(totals.followUps, "follow-up")}</span>
+              <span className={topicKit.chip}>{plural(totals.traps, "trap")} named</span>
+              <span className={topicKit.chip}>{parts.length} parts</span>
+            </Chips>
+          </Copy>
+          <Stage live hostClassName={topicKit.stageHost} className={styles.stage}>
+            <StageCard
+              as="aside"
+              aria-label="Question of the day"
+              rot={-1.4}
+              depth={-10}
+              i={0}
+              still
+              className={styles.daily}
             >
-              {label}
-            </button>
-          ))}
-        </div>
-      </section>
+              <Tape rot={-5} />
+              <QuestionOfTheDay pool={daily} mounted={mounted} />
+            </StageCard>
+            <StageCard
+              as="aside"
+              aria-label="The book in numbers"
+              rot={3}
+              depth={16}
+              i={1}
+              still
+              className={styles.numbers}
+            >
+              <Tape rot={4} />
+              <Facts
+                items={[
+                  { value: totals.rounds, label: "rounds" },
+                  { value: totals.followUps, label: "follow-ups" },
+                  { value: totals.traps, label: "traps named" },
+                ]}
+              />
+            </StageCard>
+            <StageCard rot={-2} depth={12} i={2} still className={styles.progress}>
+              <div className={mounted ? undefined : topicKit.pending}>
+                <CardKicker>Your progress</CardKicker>
+                <ProgressMeter
+                  done={read.size}
+                  total={rounds.length}
+                  label={`${read.size} / ${rounds.length} rounds read`}
+                />
+                <p className={styles.marks}>
+                  {allMarks.length > 0 ? (
+                    <>
+                      {knew} knew it · {shaky} shaky or blank
+                    </>
+                  ) : (
+                    "Mark questions to see them here."
+                  )}
+                </p>
+                {shaky > 0 && (
+                  <Link href="/interview/questions?filter=shaky" className={styles.dailyLink}>
+                    Drill the shaky ones →
+                  </Link>
+                )}
+              </div>
+            </StageCard>
+            <Note arrow="ur" rot={-4} depth={14} className={styles.sayNote}>
+              say it out loud first
+            </Note>
+            <Sticker rot={-6} depth={20} tone="primary" className={styles.stageSticker}>
+              ★ answer · code · follow-up
+            </Sticker>
+          </Stage>
+        </Scene>
 
-      {parts.map((p, pi) => {
-        const list = rounds.filter((r) => r.part === p.id);
-        if (!list.length) return null;
-        return (
-          <section key={p.id} className={styles.part} aria-labelledby={`part-${p.id}`}>
-            <div className={styles.partHead} data-fx="left">
-              <span className={styles.partNum}>Part {pi + 1}</span>
-              <h3 id={`part-${p.id}`}>{p.title}</h3>
-              <p>{p.blurb}</p>
-            </div>
-            <div className={styles.tiles} data-fx="stagger">
-              {list.map((r) => {
-                const hot = !company || !r.companies.length || r.companies.some((c) => c.name === company && c.hot);
-                return <RoundTile key={r.id} r={r} read={read.has(r.id)} marks={marksFor(r)} dim={!hot} />;
-              })}
-            </div>
-          </section>
-        );
-      })}
+        <Band
+          no="01"
+          id="how-title"
+          label="How to use it"
+          title="Read it like a loop, not a list"
+          count={plural(STEPS.length, "step")}
+        >
+          <ol className={styles.steps}>
+            {STEPS.map(([title, body], i) => (
+              <li key={title} className={styles.step}>
+                <span className={styles.stepNo} aria-hidden="true">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h3 className={styles.stepTitle}>{title}</h3>
+                <p className={styles.stepBody}>{body}</p>
+              </li>
+            ))}
+          </ol>
+        </Band>
 
-      <section className={styles.cta} data-fx="scale">
-        <h2 className={styles.h2}>Reading is not the same as saying it.</h2>
-        <p className={styles.lead}>
-          Once a round feels solid, run it as a timed mock interview. The follow-ups are where a prepared answer runs
-          out.
-        </p>
-        <div className={styles.actions}>
-          <Link href="/mock" className={styles.btn} prefetch={false}>
-            Start a mock interview <span aria-hidden="true">→</span>
-          </Link>
-          <Link href="/interview/questions" className={`${styles.btn} ${styles.btnGhost}`}>
-            Flashcard drill
-          </Link>
-        </div>
-      </section>
-    </BookShell>
+        <Band
+          no="02"
+          id="map-title"
+          label="The loop, in order"
+          title="Every round you will meet"
+          sub="Each stop is one round: read it, mark yourself, move on. The ones you have read are ticked."
+          count={plural(rounds.length, "round")}
+        >
+          <div className={styles.filter}>
+            <ToggleGroup label="Show the rounds for" lead="Interviewing at">
+              <Toggle pressed={company === null} onClick={() => setCompany(null)}>
+                Anywhere
+              </Toggle>
+              {COMPANIES.map(([id, label]) => (
+                <Toggle key={id} pressed={company === id} onClick={() => setCompany(company === id ? null : id)}>
+                  {label}
+                </Toggle>
+              ))}
+            </ToggleGroup>
+          </div>
+          {parts.map((p, pi) => {
+            const list = rounds.filter((r) => r.part === p.id);
+            if (!list.length) return null;
+            const readHere = list.filter((r) => read.has(r.id)).length;
+            const minutes = list.reduce((sum, r) => sum + r.minutes, 0);
+            return (
+              <div key={p.id} className={topicKit.level}>
+                <Station
+                  no={String(pi + 1).padStart(2, "0")}
+                  name={p.title}
+                  id={`part-${p.id}`}
+                  blurb={p.blurb}
+                  chips={[
+                    plural(list.length, "round"),
+                    formatSpan(minutes),
+                    ...(readHere > 0 ? [`${readHere} / ${list.length} read`] : []),
+                  ]}
+                />
+                <Journey
+                  count={list.length}
+                  slot={178}
+                  walked={readHere / list.length}
+                  label={`${p.title}: every round`}
+                >
+                  {list.map((r) => {
+                    const hot = !company || !r.companies.length || r.companies.some((c) => c.name === company && c.hot);
+                    const marks = marksFor(r);
+                    const isRead = read.has(r.id);
+                    const isNext = started && r.id === firstUnread?.id;
+                    return (
+                      <JourneyStop
+                        key={r.id}
+                        state={isRead ? "done" : isNext ? "next" : "todo"}
+                        sticker={isNext ? "▸ pick up here" : undefined}
+                        data={{ "data-dim": hot ? undefined : "" }}
+                      >
+                        <StopHead
+                          code={r.code}
+                          title={r.navTitle}
+                          href={`/interview/${r.id}`}
+                          sub={r.decides ?? undefined}
+                          rawSub
+                          end={isRead ? <Check /> : undefined}
+                        />
+                        <p className={styles.stopMeta}>
+                          <span>{r.guide ? `${r.sections} sections` : plural(r.counts.questions, "question")}</span>
+                          {r.counts.followUps > 0 && <span>{plural(r.counts.followUps, "follow-up")}</span>}
+                          <span>{r.minutes} min</span>
+                          {!hot && <span>not hot at this kind of company</span>}
+                        </p>
+                        <ConfidenceBar marks={marks} total={r.questionIds.length || 1} />
+                      </JourneyStop>
+                    );
+                  })}
+                </Journey>
+              </div>
+            );
+          })}
+        </Band>
+
+        <Band
+          no="03"
+          id="say-title"
+          label="Then say it"
+          title="Reading is not the same as saying it."
+          sub="Once a round feels solid, run it as a timed mock interview. The follow-ups are where a prepared answer runs out."
+        >
+          <Actions>
+            <Button href="/mock">
+              Start a mock interview <span aria-hidden="true">→</span>
+            </Button>
+            <Button ghost href="/interview/questions">
+              Flashcard drill
+            </Button>
+          </Actions>
+        </Band>
+
+        <Foot>
+          <FootLink href="/">All topics</FootLink>
+          <FootLink href="/mock">Mock interview</FootLink>
+          <FootLink href="/interview/questions">Question bank</FootLink>
+        </Foot>
+      </TopicPage>
+    </BookFrame>
   );
 }

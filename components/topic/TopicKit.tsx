@@ -260,3 +260,62 @@ export function Row({
     </li>
   );
 }
+
+export function CardKicker({ children }: { children: ReactNode }) {
+  return <p className={t.cardKicker}>{children}</p>;
+}
+
+export function ProgressRing({ done, total }: { done: number; total: number }) {
+  const pct = total ? (done / total) * 100 : 0;
+  return (
+    <div className={t.ring} style={{ "--sweep": pct } as CSSProperties} aria-hidden="true">
+      <span className={t.ringFace}>
+        <strong>{done}</strong>
+        <small>of {total}</small>
+      </span>
+    </div>
+  );
+}
+
+export function ProgressMeter({
+  done,
+  total,
+  label,
+  fillId,
+  labelId,
+}: {
+  done: number;
+  total: number;
+  label: string;
+  fillId?: string;
+  labelId?: string;
+}) {
+  const pct = total ? (done / total) * 100 : 0;
+  return (
+    <div className={t.meter}>
+      <div className={t.meterTrack}>
+        <div className={t.meterFill} id={fillId} style={{ width: `${pct}%` }} />
+      </div>
+      <span className={t.meterLabel} id={labelId}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+export function ToggleGroup({ label, lead, children }: { label: string; lead?: string; children: ReactNode }) {
+  return (
+    <div className={t.toggles} role="group" aria-label={label}>
+      {lead && <span>{lead}</span>}
+      {children}
+    </div>
+  );
+}
+
+export function Toggle({ pressed, onClick, children }: { pressed: boolean; onClick: () => void; children: ReactNode }) {
+  return (
+    <button type="button" className={t.toggle} aria-pressed={pressed} onClick={onClick}>
+      {children}
+    </button>
+  );
+}

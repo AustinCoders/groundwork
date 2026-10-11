@@ -14,6 +14,10 @@ const SURFACES = {
   "the path page": "components/topic/path.module.css",
   "the topic cover": "components/topic/cover.module.css",
   "the outline chapter": "components/topic/reader.module.css",
+  "the interview landing": "app/interview/landing.module.css",
+  "the question bank": "app/interview/questions/bank.module.css",
+  "the interview round": "app/interview/[chapter]/round.module.css",
+  "the architecture landing": "app/architecture/architecture.module.css",
 } as const;
 
 const TOKENS = [
@@ -62,6 +66,18 @@ const MONO_USERS = [
   ".meterLabel",
   ".budgetStep",
   ".factsTitle",
+  ".dailyRound",
+  ".meta dt",
+  ".qNo",
+  ".qMark",
+  ".test b",
+  ".flashKicker",
+  ".flashMarks i",
+  ".flashReveal kbd,\n.primary kbd,\n.confRow kbd",
+  ".drillTop",
+  ".cardRound",
+  ".tags span",
+  ".laneChips span",
 ];
 
 describe("the topic pages share the menu type scale", () => {
@@ -109,6 +125,11 @@ describe("the topic pages share the menu type scale", () => {
       "components/topic/TopicCover.tsx",
       "components/topic/TopicOutline.tsx",
       "components/topic/TopicKit.tsx",
+      "app/interview/InterviewLanding.tsx",
+      "app/interview/BookFrame.tsx",
+      "app/interview/[chapter]/RoundView.tsx",
+      "app/interview/questions/QuestionBank.tsx",
+      "app/architecture/ArchitectureView.tsx",
     ]) {
       expect(read(file), file).not.toContain("data-fx");
     }
