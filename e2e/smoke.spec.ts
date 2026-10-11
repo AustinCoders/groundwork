@@ -30,7 +30,7 @@ const PAGES = [
   { path: "/practice?id=free", heading: /Playground/i },
   { path: "/problems", heading: /problem/i },
   { path: "/problems/ex-accounts-merge", heading: /Accounts Merge/i },
-  { path: "/review", heading: /look at again|still fresh|comes back here/i },
+  { path: "/review", heading: /due today|nothing to review/i },
   { path: "/mock", heading: /mock interview/i },
   { path: "/progress", heading: /progress/i },
   { path: "/privacy", heading: /Privacy/ },
@@ -500,6 +500,7 @@ test("every topic hero scene is one balanced screen under the header, with the n
     { path: "/architecture", full: true },
     { path: "/problems", full: true },
     { path: "/mock", full: true },
+    { path: "/review", full: true },
     { path: "/path/js/beginner", full: false },
     { path: "/notes", full: false },
   ];
@@ -3763,14 +3764,10 @@ test("review brings a due chapter back, and every section header has a way back"
   });
   await page.reload();
   await expect(page.getByRole("heading", { level: 1 })).toContainText("1 chapter");
-  await page.getByRole("button", { name: "Start the session →" }).click();
-  await page.getByRole("button", { name: "✓ I still had it" }).click();
+  await page.getByRole("button", { name: "Start reviewing" }).click();
+  await page.getByRole("button", { name: "I remember" }).click();
   await expect(page.getByText("Session done.")).toBeVisible();
   await page.getByRole("button", { name: "Back to review" }).click();
-  await page
-    .getByRole("button", { name: "✓ I still had it" })
-    .waitFor({ state: "detached" })
-    .catch(() => {});
   await expect(page.getByText("still fresh")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Coming back soon" })).toBeVisible();
 

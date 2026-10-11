@@ -586,6 +586,108 @@ const STATES: State[] = [
     },
   },
   {
+    name: "reviews due with one marked again, a schedule and a recent review",
+    path: "/review",
+    viewports: VIEWPORTS,
+    seed: () => {
+      const day = 86_400_000;
+      const at = (days: number, reviews: number) => ({ at: Date.now() - days * day, reviews });
+      localStorage.setItem(
+        "jsnotes:progress",
+        JSON.stringify({
+          chapters: {
+            closures: at(5, 0),
+            scope: at(9, 1),
+            "basic-async": at(4, 0),
+            "var-let-const": at(1, 0),
+            "dom-events": at(2, 1),
+            "objects-deep": at(10, 2),
+            "modern-js": at(30, 5),
+          },
+          exercises: {},
+        })
+      );
+    },
+    visit: async (page, check) => {
+      await expect(page.getByRole("heading", { level: 1 })).toContainText("3 chapters are due today");
+      await page
+        .getByRole("button", { name: /^Again/ })
+        .first()
+        .click();
+      await expect(page.getByText("still due, read it again")).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Coming back soon" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Recently reviewed" })).toBeVisible();
+      await check("reviews due with one marked again, a schedule and a recent review");
+    },
+  },
+  {
+    name: "the review session",
+    path: "/review",
+    viewports: VIEWPORTS,
+    seed: () => {
+      const day = 86_400_000;
+      localStorage.setItem(
+        "jsnotes:progress",
+        JSON.stringify({
+          chapters: {
+            closures: { at: Date.now() - 5 * day, reviews: 0 },
+            scope: { at: Date.now() - 9 * day, reviews: 1 },
+          },
+          exercises: {},
+        })
+      );
+    },
+    visit: async (page, check) => {
+      await page.getByRole("button", { name: "Start reviewing" }).click();
+      await expect(page.getByRole("region", { name: "Review session" })).toBeVisible();
+      await check("the review session");
+      await page.getByRole("button", { name: "I remember" }).click();
+      await page.getByRole("button", { name: "Again" }).click();
+      await expect(page.getByText("Session done.")).toBeVisible();
+      await check("the review session done");
+    },
+  },
+  {
+    name: "the last review remembered, with the all-done stamp",
+    path: "/review",
+    viewports: VIEWPORTS,
+    seed: () => {
+      const day = 86_400_000;
+      localStorage.setItem(
+        "jsnotes:progress",
+        JSON.stringify({
+          chapters: {
+            closures: { at: Date.now() - 5 * day, reviews: 0 },
+            "var-let-const": { at: Date.now() - day, reviews: 0 },
+          },
+          exercises: {},
+        })
+      );
+    },
+    visit: async (page, check) => {
+      await page.getByRole("button", { name: "I remember" }).click();
+      await expect(page.getByText("You are caught up.")).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1 })).toContainText("Nothing is due today");
+      await check("the last review remembered, with the all-done stamp");
+    },
+  },
+  {
+    name: "nothing due but chapters scheduled",
+    path: "/review",
+    viewports: VIEWPORTS,
+    seed: () => {
+      const day = 86_400_000;
+      localStorage.setItem(
+        "jsnotes:progress",
+        JSON.stringify({ chapters: { "var-let-const": { at: Date.now() - day, reviews: 0 } }, exercises: {} })
+      );
+    },
+    visit: async (page, check) => {
+      await expect(page.getByRole("heading", { name: "Coming back soon" })).toBeVisible();
+      await check("nothing due but chapters scheduled");
+    },
+  },
+  {
     name: "the advanced level picked",
     path: "/level/js",
     viewports: VIEWPORTS,

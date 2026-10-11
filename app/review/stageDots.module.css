@@ -1,0 +1,24 @@
+.dots {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+}
+
+.dots i {
+  width: 18px;
+  height: 8px;
+  background: var(--sheet-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.dots i[data-on] {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.dots i[data-now] {
+  background: var(--mark);
+  border-color: var(--ink-soft);
+}

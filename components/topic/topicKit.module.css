@@ -544,6 +544,10 @@ a.chip:hover {
 }
 
 @media (max-width: 720px) {
+  a.chip {
+    min-height: 44px;
+  }
+
   .actions .btn,
   .actions .btnGhost {
     flex: 1 1 auto;

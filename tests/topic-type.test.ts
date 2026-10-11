@@ -29,6 +29,10 @@ const SURFACES = {
   "the mock guide": "app/mock/guide.module.css",
   "the mock room": "app/mock/room.module.css",
   "the mock scorecard": "app/mock/scorecard.module.css",
+  "the review hero": "app/review/review.module.css",
+  "the review bands": "app/review/bands.module.css",
+  "the review session": "app/review/session.module.css",
+  "the review stage dots": "app/review/stageDots.module.css",
 } as const;
 
 const TOKENS = [
@@ -141,6 +145,8 @@ const MONO_USERS = [
   ".qNum",
   ".qScore",
   ".qMeta",
+  ".num",
+  ".barNum,\n.barDay",
 ];
 
 describe("the topic pages share the menu type scale", () => {
@@ -202,6 +208,10 @@ describe("the topic pages share the menu type scale", () => {
       "app/mock/Readiness.tsx",
       "app/mock/Room.tsx",
       "app/mock/Scorecard.tsx",
+      "app/review/ReviewView.tsx",
+      "app/review/ReviewHero.tsx",
+      "app/review/ReviewBands.tsx",
+      "app/review/ReviewSession.tsx",
       "components/practice/PracticeWorkspace.tsx",
       "components/frame/FrameHeader.tsx",
     ]) {
