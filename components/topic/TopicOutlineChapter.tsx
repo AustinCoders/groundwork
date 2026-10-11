@@ -8,6 +8,7 @@ import { ChapterPager } from "@/components/chapter/ChapterPager";
 import { ChapterRail, useRailParts } from "@/components/chapter/ChapterRail";
 import { ChaptersSheet, ChaptersSheetButton } from "@/components/chapter/ChaptersSheet";
 import { useChapterKeys } from "@/components/chapter/useChapterKeys";
+import { Eyebrow, kit } from "@/components/ui/MenuKit";
 import type { SeriesCard, SeriesPart } from "@/components/chapter/types";
 import type { LevelId } from "@/content/types";
 import styles from "@/components/series/chapter.module.css";
@@ -116,7 +117,9 @@ export function TopicOutlineChapter({
               </header>
 
               <section className={readerStyles.roadmap} aria-labelledby={`${chapter.id}-roadmap`}>
-                <p className={readerStyles.roadmapKicker}>This chapter will cover</p>
+                <Eyebrow no="01" as="p">
+                  This chapter will cover
+                </Eyebrow>
                 <h2 id={`${chapter.id}-roadmap`} className={readerStyles.roadmapTitle}>
                   {sectionTitle}
                 </h2>
@@ -134,15 +137,23 @@ export function TopicOutlineChapter({
           <aside className={styles.right} aria-label="Meanwhile">
             <div className={styles.rightInner}>
               <section className={readerStyles.meanwhile}>
-                <p className={readerStyles.meanwhileKicker}>Meanwhile</p>
-                <Link className={readerStyles.meanwhileLink} href={relatedHref}>
-                  {relatedLabel} is written — start there
-                </Link>
-                {relatedRoundHref && relatedRoundLabel && (
-                  <Link className={readerStyles.meanwhileLink} href={relatedRoundHref}>
-                    {relatedRoundLabel} covers this in the interview book
-                  </Link>
-                )}
+                <Eyebrow no="01" as="p">
+                  Meanwhile
+                </Eyebrow>
+                <ul className={kit.rows}>
+                  <li>
+                    <Link className={kit.row} href={relatedHref}>
+                      <span className={kit.title}>{relatedLabel} is written, start there</span>
+                    </Link>
+                  </li>
+                  {relatedRoundHref && relatedRoundLabel && (
+                    <li>
+                      <Link className={kit.row} href={relatedRoundHref}>
+                        <span className={kit.title}>{relatedRoundLabel} covers this in the interview book</span>
+                      </Link>
+                    </li>
+                  )}
+                </ul>
               </section>
             </div>
           </aside>

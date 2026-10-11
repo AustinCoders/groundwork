@@ -1,6 +1,26 @@
+"use client";
+
 import Link from "next/link";
+import { Copy, Note, Scene, Stage, StageCard, Tape } from "@/components/home/Stage";
 import { TopicFrame } from "@/components/topic/TopicFrame";
 import { HashRedirect } from "@/components/reader/HashRedirect";
+import {
+  Actions,
+  Band,
+  Button,
+  Facts,
+  Foot,
+  FootLink,
+  Heading,
+  Kicker,
+  Lead,
+  Notes,
+  Tagline,
+  TopicPage,
+  Underlined,
+  topicKit,
+} from "@/components/topic/TopicKit";
+import { Journey, JourneyStop, SoonTag, Station, StopHead } from "@/components/topic/Journey";
 import { plural } from "@/lib/format";
 import type { LevelId } from "@/content/types";
 import styles from "./outline.module.css";
@@ -18,6 +38,8 @@ export interface OutlineLevel {
   blurb: string;
   sections: OutlineSection[];
 }
+
+const pad = (n: number) => String(n).padStart(2, "0");
 
 export function TopicOutline({
   topicName,
@@ -51,91 +73,157 @@ export function TopicOutline({
   curriculumNotes: string[];
 }) {
   const planning = levels.length === 0;
-  return (
-    <TopicFrame topic={{ name: topicName, href: basePath, mark, accent }} skip={{ label: `Skip to ${topicName}` }}>
-      <HashRedirect basePath={basePath} />
-      <div className={styles.page} id="top">
-        <section className={styles.hero} data-fx="stagger">
-          <p className={styles.kicker}>
-            {planning
-              ? "No chapters yet"
-              : `${written} of ${plural(planned, "chapter")} written · ${plural(levels.length, "level")} planned`}
-          </p>
-          <h1 className={styles.title}>{topicName}</h1>
-          {tagline && <p className={styles.tagline}>{tagline}</p>}
-          <span className={styles.pill}>Not written yet</span>
-          {blurb && <p className={styles.lead}>{blurb}</p>}
-        </section>
+  const hasMeanwhile = Boolean(relatedHref && relatedLabel);
+  const bands = (planning ? 0 : 1) + (hasMeanwhile ? 1 : 0);
 
-        {planning && (
-          <section className={styles.planning} aria-labelledby="being-planned" data-fx="up">
-            <h2 id="being-planned">Being planned</h2>
-            <p>No chapters are written yet for {topicName}, and its syllabus has not been set.</p>
-          </section>
-        )}
+  return (
+    <TopicFrame
+      topic={{ name: topicName, href: basePath, mark, accent }}
+      layout="reader"
+      skip={{ label: `Skip to ${topicName}` }}
+    >
+      <HashRedirect basePath={basePath} />
+      <TopicPage accent={accent} id="top">
+        <Scene className={topicKit.hero}>
+          <Copy>
+            <Kicker mark={mark} dashed>
+              {planning
+                ? "No chapters yet"
+                : `${written} of ${plural(planned, "chapter")} written · ${plural(levels.length, "level")} planned`}
+            </Kicker>
+            <Heading>
+              <Underlined>{topicName}</Underlined>
+            </Heading>
+            {tagline && <Tagline>{tagline}</Tagline>}
+            <p className={styles.pill}>Not written yet</p>
+            {blurb && <Lead>{blurb}</Lead>}
+            <Actions>
+              <Button href="/#shelf">Browse written topics</Button>
+            </Actions>
+          </Copy>
+          <Stage live hostClassName={topicKit.stageHost} className={styles.stage}>
+            <StageCard rot={-1.4} depth={-8} i={0} still className={styles.draft} aria-labelledby="draft-title">
+              <Tape rot={-5} />
+              {planning ? (
+                <>
+                  <h2 className={styles.draftTitle} id="being-planned">
+                    Being planned
+                  </h2>
+                  <p className={styles.draftText} id="draft-title">
+                    No chapters are written yet for {topicName}, and its syllabus has not been set.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className={styles.cardKicker} id="draft-title">
+                    The plan
+                  </p>
+                  <Facts
+                    items={[
+                      { value: planned, label: planned === 1 ? "chapter planned" : "chapters planned" },
+                      { value: levels.length, label: levels.length === 1 ? "level" : "levels" },
+                      { value: written, label: written === 1 ? "chapter written" : "chapters written" },
+                    ]}
+                  />
+                </>
+              )}
+            </StageCard>
+            <StageCard decor rot={3} depth={14} i={1} className={styles.ghost}>
+              <span className={styles.ghostLine} />
+              <span className={styles.ghostLine} />
+              <span className={styles.ghostLine} />
+            </StageCard>
+            <StageCard decor rot={-2.4} depth={-12} i={2} extra className={`${styles.ghost} ${styles.ghostTwo}`}>
+              <span className={styles.ghostLine} />
+              <span className={styles.ghostLine} />
+            </StageCard>
+            <span className={`${styles.stamp} ${styles.stampSticker}`} aria-hidden="true">
+              sketch only
+            </span>
+            <Note arrow="dr" rot={-4} depth={14} className={styles.outlineNote}>
+              coming, one chapter at a time
+            </Note>
+          </Stage>
+        </Scene>
 
         {!planning && (
-          <div className={styles.parts} data-fx="up">
+          <Band
+            no="01"
+            id="plan-title"
+            label="The plan"
+            title="What is planned, level by level"
+            sub="Every stop below is an outline for now. Open one to see what it will cover."
+            count={plural(planned, "chapter")}
+          >
             {levels.map((level, i) => (
-              <section key={level.id} aria-labelledby={`part-${level.id}`}>
-                <div className={styles.partHead}>
-                  <span className={styles.partNum}>Part {i + 1}</span>
-                  <h2 id={`part-${level.id}`}>{level.name}</h2>
-                  {level.tagline && <p className={styles.partQuote}>&ldquo;{level.tagline}&rdquo;</p>}
-                  {level.blurb && <p>{level.blurb}</p>}
-                </div>
-                <ol className={styles.cards}>
-                  {level.sections.map((section, si) =>
-                    section.href ? (
-                      <li key={si}>
-                        <Link className={styles.card} href={section.href}>
-                          {section.num && <span className={styles.cardNum}>{section.num}</span>}
-                          <span className={styles.cardTitle}>{section.title}</span>
-                        </Link>
-                      </li>
-                    ) : (
-                      <li key={si}>
-                        <span className={styles.card}>
-                          <span className={styles.cardTitle}>{section.title}</span>
-                        </span>
-                      </li>
-                    )
-                  )}
-                </ol>
-              </section>
+              <div key={level.id} className={styles.level}>
+                <Station
+                  no={pad(i + 1)}
+                  name={level.name}
+                  id={`part-${level.id}`}
+                  quote={level.tagline || undefined}
+                  chips={[plural(level.sections.length, "section")]}
+                />
+                <Journey count={level.sections.length} slot={76} label={`${level.name}: planned sections`}>
+                  {level.sections.map((section, si) => (
+                    <JourneyStop key={si} state="soon">
+                      <StopHead
+                        code={section.num ?? undefined}
+                        title={section.title}
+                        href={section.href}
+                        end={<SoonTag />}
+                      />
+                    </JourneyStop>
+                  ))}
+                </Journey>
+              </div>
             ))}
-          </div>
+          </Band>
         )}
 
-        {relatedHref && relatedLabel && (
-          <section className={styles.meanwhile} aria-label="Meanwhile">
-            <p className={styles.meanwhileKicker}>Meanwhile</p>
-            <Link className={styles.meanwhileLink} href={relatedHref}>
-              {relatedLabel} is written — start there
-            </Link>
-            {relatedRoundHref && relatedRoundLabel && (
-              <Link className={styles.meanwhileLink} href={relatedRoundHref}>
-                {relatedRoundLabel} covers this in the interview book
-              </Link>
-            )}
-          </section>
-        )}
-
-        {!planning && curriculumNotes.length > 0 && (
-          <div className={`sticky mint ${styles.notes}`}>
-            <span className="ttl">Three honest notes</span>
-            <ul>
-              {curriculumNotes.map((note, i) => (
-                <li key={i}>{note}</li>
-              ))}
+        {hasMeanwhile && (
+          <Band
+            no={pad((planning ? 0 : 1) + 1)}
+            id="meanwhile-title"
+            label="Read this first"
+            title="Meanwhile"
+            sub="Nothing here is written yet, but these are."
+          >
+            <ul className={styles.signs}>
+              <li>
+                <Link className={styles.sign} href={relatedHref!} prefetch={false}>
+                  <span className={styles.signText}>
+                    <span className={styles.signTitle}>{relatedLabel} is written, start there</span>
+                    <span className={styles.signSub}>The nearest topic with real chapters.</span>
+                  </span>
+                  <span className={styles.signArrow} aria-hidden="true">
+                    →
+                  </span>
+                </Link>
+              </li>
+              {relatedRoundHref && relatedRoundLabel && (
+                <li>
+                  <Link className={styles.sign} href={relatedRoundHref} prefetch={false}>
+                    <span className={styles.signText}>
+                      <span className={styles.signTitle}>{relatedRoundLabel} covers this in the interview book</span>
+                      <span className={styles.signSub}>Practise it as interview rounds.</span>
+                    </span>
+                    <span className={styles.signArrow} aria-hidden="true">
+                      →
+                    </span>
+                  </Link>
+                </li>
+              )}
             </ul>
-          </div>
+          </Band>
         )}
 
-        <footer className={styles.footer}>
-          <Link href="/">Switch topic</Link>
-        </footer>
-      </div>
+        {!planning && curriculumNotes.length > 0 && <Notes no={pad(bands + 1)} notes={curriculumNotes} />}
+
+        <Foot>
+          <FootLink href="/">Switch topic</FootLink>
+        </Foot>
+      </TopicPage>
     </TopicFrame>
   );
 }

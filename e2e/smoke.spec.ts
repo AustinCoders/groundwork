@@ -435,17 +435,140 @@ test("old /level?topic= links still land", async ({ page }) => {
   await expect(page.locator("h1")).toContainText(/System Design/i);
 });
 
-test("the saved level gets a 'Your level' mark on its own card, not the others", async ({ page }) => {
+test("topic pages are one calm family and never leave content part-transparent while scrolling", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  for (const path of ["/level/js", "/path/js/beginner", "/notes", "/typescript", "/python"]) {
+    await page.goto(path);
+    await expect(page.getByRole("heading", { level: 1 }), path).toBeVisible();
+    await expect(page.locator("main [data-fx]"), path).toHaveCount(0);
+    await expect(page.locator("main section h2").first(), path).toBeVisible();
+    const faded = await page.evaluate(async () => {
+      const found: string[] = [];
+      const height = document.documentElement.scrollHeight;
+      for (let y = 0; y < height; y += 500) {
+        window.scrollTo(0, y);
+        await new Promise((resolve) => setTimeout(resolve, 60));
+        for (const el of document.querySelectorAll("main h2, main li, main summary")) {
+          const rect = el.getBoundingClientRect();
+          if (rect.bottom < 0 || rect.top > window.innerHeight) continue;
+          if (Number(getComputedStyle(el).opacity) < 1) found.push(el.tagName + "@" + y);
+        }
+      }
+      return found;
+    });
+    expect(faded, path).toEqual([]);
+  }
+});
+
+test("the saved level is preselected and marked 'Your level', and picking another swaps the stage", async ({
+  page,
+}) => {
   await page.addInitScript(() => localStorage.setItem("jsnotes:level", JSON.stringify("intermediate")));
   await page.goto("/level/js");
 
-  const intermediate = page.locator("#level-grid a", { hasText: "Intermediate" });
-  const beginner = page.locator("#level-grid a", { hasText: "Beginner" });
-  const advanced = page.locator("#level-grid a", { hasText: "Advanced" });
+  const group = page.getByRole("group", { name: "Pick your level" });
+  const intermediate = group.getByRole("radio", { name: /Intermediate/ });
+  const beginner = group.getByRole("radio", { name: /Beginner/ });
+  const advanced = group.getByRole("radio", { name: /Advanced/ });
 
-  await expect(intermediate.getByText("Your level")).toBeVisible();
-  await expect(beginner.getByText("Your level")).toHaveCount(0);
-  await expect(advanced.getByText("Your level")).toHaveCount(0);
+  await expect(intermediate).toBeChecked();
+  await expect(group.getByText("Your level", { exact: true })).toHaveCount(1);
+  await expect(
+    group.locator("label", { hasText: "Intermediate" }).getByText("Your level", { exact: true })
+  ).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Intermediate" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Show me this path/ })).toHaveAttribute("href", "/path/js/intermediate");
+
+  await advanced.check();
+  await expect(advanced).toBeChecked();
+  await expect(beginner).not.toBeChecked();
+  await expect(page.getByRole("heading", { level: 2, name: "Advanced" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Show me this path/ })).toHaveAttribute("href", "/path/js/advanced");
+  await expect(page.getByRole("link", { name: /Show me this path/ })).toHaveCount(1);
+});
+
+test("every topic hero scene is one balanced screen under the header, with the next section out of view", async ({
+  page,
+}) => {
+  const cases = [
+    { path: "/level/js", full: true },
+    { path: "/level/react", full: true },
+    { path: "/typescript", full: true },
+    { path: "/python", full: true },
+    { path: "/path/js/beginner", full: false },
+    { path: "/notes", full: false },
+  ];
+  const sizes = [
+    { width: 1280, height: 720 },
+    { width: 1366, height: 768 },
+    { width: 1440, height: 900 },
+    { width: 1920, height: 1080 },
+    { width: 2316, height: 1068 },
+  ];
+  for (const size of sizes) {
+    await page.setViewportSize(size);
+    for (const { path, full } of cases) {
+      if (!full && size.width !== 1440 && size.width !== 1280) continue;
+      await page.goto(path);
+      const label = `${path} at ${size.width}x${size.height}`;
+      await expect(page.locator("[data-scene-root]").first(), label).toBeVisible();
+      await page.evaluate(() => document.fonts.ready);
+      await page.waitForTimeout(300);
+      const m = await page.evaluate(() => {
+        const hero = document.querySelector("[data-scene-root]")!;
+        const header = document.querySelector("header")!.getBoundingClientRect().bottom;
+        const box = hero.getBoundingClientRect();
+        let top = Infinity;
+        let bottom = -Infinity;
+        for (const el of hero.querySelectorAll("*")) {
+          const r = el.getBoundingClientRect();
+          if (r.width === 0 || r.height === 0 || getComputedStyle(el).visibility === "hidden") continue;
+          top = Math.min(top, r.top);
+          bottom = Math.max(bottom, r.bottom);
+        }
+        const next = [...document.querySelectorAll("main section")]
+          .map((section) => section.querySelector("p")?.getBoundingClientRect().top ?? Infinity)
+          .find((value) => value > box.bottom - 1);
+        return { above: top - header, below: box.bottom - bottom, heroBottom: box.bottom, next: next ?? Infinity };
+      });
+      const need = Math.min(96, Math.max(48, 0.08 * size.height));
+      expect(m.above, `${label}: gap under the header`).toBeGreaterThanOrEqual(need - 1);
+      expect(Math.abs(m.above - m.below), `${label}: space above and below`).toBeLessThanOrEqual(
+        0.25 * Math.max(m.above, m.below) + 2
+      );
+      expect(m.heroBottom, `${label}: hero height`).toBeLessThanOrEqual(Math.min(size.height, 960) + 4);
+      expect(m.heroBottom, `${label}: hero height`).toBeGreaterThanOrEqual(Math.min(size.height, 960) - 2);
+      expect(m.next, `${label}: next section starts below the first screen`).toBeGreaterThanOrEqual(size.height);
+    }
+  }
+});
+
+test("the level picker's radio group works from the keyboard and the stage keeps its size", async ({ page }) => {
+  await page.goto("/level/js");
+  const group = page.getByRole("group", { name: "Pick your level" });
+  const stage = page.locator("[data-stage]");
+  const before = await stage.boundingBox();
+
+  await group.getByRole("radio", { name: /Beginner/ }).focus();
+  await page.keyboard.press("ArrowDown");
+  await expect(group.getByRole("radio", { name: /Intermediate/ })).toBeChecked();
+  await page.keyboard.press("ArrowDown");
+  await expect(group.getByRole("radio", { name: /Advanced/ })).toBeChecked();
+
+  const after = await stage.boundingBox();
+  expect(Math.abs((after?.height ?? 0) - (before?.height ?? 0))).toBeLessThan(2);
+});
+
+test("the full syllabus is one winding trail per level with written and soon stops", async ({ page }) => {
+  await page.goto("/level/js");
+  const syllabus = page.locator("#syllabus");
+  await expect(syllabus.getByRole("list", { name: /Beginner: every section/ }).getByRole("listitem")).toHaveCount(17);
+  await expect(syllabus.getByRole("link", { name: /Setup & mental model/ })).toHaveAttribute(
+    "href",
+    "/notes/setup-mental-model"
+  );
+  await page.goto("/level/git");
+  await expect(page.locator("#syllabus").getByText("soon").first()).toBeVisible();
 });
 
 test("narration plays a chapter", async ({ page }) => {
@@ -3810,9 +3933,9 @@ test("topic covers and chapters, level, path and the playground take the theme's
   const inBodyLink = page.locator("#closures").getByRole("link", { name: "the outer reference" });
   const currentChapter = page.getByRole("navigation", { name: "Chapters" }).locator('a[aria-current="page"]');
   const run = page.getByRole("button", { name: "Run the code" });
-  const writtenRow = page.locator("[class*='__itemReady'] [class*='__itemCheck']").first();
-  const levelCta = page.locator("[class*='__cardCta']").first();
-  const levelListCode = page.locator("[class*='__cardList'] code").first();
+  const writtenRow = page.locator("#syllabus [class*='__check']").first();
+  const levelCta = page.getByRole("link", { name: /Show me this path/ });
+  const levelListCode = page.locator("[class*='__whoList'] code").first();
   const pathMeter = page.locator("#path-meter-fill");
   const doneStepCheck = page.locator('[data-step="setup-mental-model"][data-done="true"] [data-role="check-mark"]');
   const meanwhileLink = page.getByRole("link", { name: /JavaScript is written/i });
@@ -3843,8 +3966,9 @@ test("topic covers and chapters, level, path and the playground take the theme's
 
     await page.goto("/level/js");
     await expect(writtenRow, `/level/js in ${theme}`).toHaveCSS("background-color", accent);
-    await expect(levelCta, `/level/js in ${theme}`).toHaveCSS("color", accent);
-    await expect(levelListCode, `/level/js in ${theme}`).toHaveCSS("color", themeColour(theme, "--ink-soft"));
+    await expect(levelCta, `/level/js in ${theme}`).toHaveCSS("background-color", accent);
+    await expect(levelCta, `/level/js in ${theme}`).toHaveCSS("color", onAccent);
+    await expect(levelListCode, `/level/js in ${theme}`).toHaveCSS("color", themeColour(theme, "--ink"));
 
     await page.evaluate(() =>
       localStorage.setItem(
@@ -3859,7 +3983,7 @@ test("topic covers and chapters, level, path and the playground take the theme's
 
     await page.goto("/typescript");
     await meanwhileLink.hover();
-    await expect(meanwhileLink, `/typescript in ${theme}`).toHaveCSS("color", accent);
+    await expect(meanwhileLink, `/typescript in ${theme}`).toHaveCSS("border-top-color", accent);
   }
 });
 

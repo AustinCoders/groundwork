@@ -1,0 +1,263 @@
+.stage {
+  --stage-h: clamp(440px, 54vh, 520px);
+}
+
+.progress {
+  padding: 22px 24px 20px;
+}
+
+.progress.main {
+  top: 6%;
+  left: 0;
+  width: 58%;
+}
+
+.cardKicker {
+  margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--primary) 70%, var(--ink));
+}
+
+.ring {
+  display: grid;
+  place-items: center;
+  width: min(100%, 190px);
+  aspect-ratio: 1;
+  margin: 4px auto 14px;
+  background: conic-gradient(var(--primary) calc(var(--sweep, 0) * 1%), var(--sheet-2) 0);
+  border-radius: 50%;
+}
+
+.ringFace {
+  display: grid;
+  place-content: center;
+  width: 82%;
+  aspect-ratio: 1;
+  text-align: center;
+  background: var(--sheet);
+  border-radius: 50%;
+}
+
+.ringFace strong {
+  font-family: var(--font-heading);
+  font-size: var(--t-section);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ringFace small {
+  font-size: var(--t-meta);
+  color: var(--ink-soft);
+}
+
+.meter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.meterTrack {
+  flex: 1;
+  height: 8px;
+  overflow: hidden;
+  background: var(--sheet-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.meterFill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: inherit;
+  transition: width 0.3s ease;
+}
+
+.meterLabel {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.next {
+  padding: 18px 20px 20px;
+  background: color-mix(in srgb, var(--mark) 36%, var(--sheet));
+}
+
+.nextTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--t-heading);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.nextSub {
+  margin: 6px 0 0;
+  font-size: var(--t-body);
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.facts {
+  padding: 16px 18px 10px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 8px;
+}
+
+.stepRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 10px;
+}
+
+.stepCheck {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0 14px 0 10px;
+  font-family: inherit;
+  font-size: var(--t-body);
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.stepCheck:hover {
+  background: var(--sheet-2);
+  border-color: var(--primary);
+}
+
+.stepCheck:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.stepCheckOn {
+  color: var(--ink-soft);
+  background: transparent;
+}
+
+.stepCheckMark {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  font-size: var(--t-kicker);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink-soft);
+  border: 1.5px dashed var(--line);
+  border-radius: 50%;
+}
+
+.stepCheckOn .stepCheckMark {
+  color: var(--on-primary);
+  background: var(--primary);
+  border: 1.5px solid var(--primary);
+}
+
+.exerciseDetails {
+  margin-top: 4px;
+  min-width: 0;
+}
+
+.exerciseDetails > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--primary) 70%, var(--ink));
+  cursor: pointer;
+  list-style: none;
+}
+
+.exerciseDetails > summary::-webkit-details-marker {
+  display: none;
+}
+
+.exerciseDetails > summary:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.exerciseDetails[open] > summary .caret {
+  rotate: 180deg;
+}
+
+.caret {
+  display: inline-block;
+  transition: rotate 0.2s ease;
+}
+
+.resetNote {
+  flex: 1 1 100%;
+  max-width: 48ch;
+  margin: 0;
+  font-size: var(--t-meta);
+  color: var(--ink-soft);
+}
+
+@media (min-width: 721px) {
+  .stage .progress {
+    top: 6%;
+    left: 0;
+    z-index: 2;
+    width: 54%;
+  }
+
+  .stage .next {
+    right: 0;
+    bottom: 4%;
+    z-index: 4;
+    width: 50%;
+  }
+
+  .stage .facts {
+    top: 0;
+    right: 0;
+    z-index: 3;
+    width: 40%;
+  }
+
+  .stage .pathNote {
+    top: 0;
+    left: 4%;
+  }
+
+  .stage .pathSticker {
+    bottom: 2%;
+    left: 6%;
+    z-index: 8;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stepCheck,
+  .caret,
+  .meterFill {
+    transition: none;
+  }
+}

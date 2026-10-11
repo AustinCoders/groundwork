@@ -37,6 +37,7 @@ const PAGES = [
   "/interview/r7",
   "/interview/questions",
   "/level/js",
+  "/level/react",
   "/path/js/beginner",
   "/path?topic=typescript&level=beginner",
   "/level/typescript",
@@ -50,6 +51,7 @@ const PAGES = [
   "/progress",
   "/privacy",
   "/python",
+  "/typescript",
   "/git",
   "/git/merge",
   "/git/github",
@@ -413,6 +415,16 @@ const STATES: State[] = [
       await expect(page.getByRole("heading", { level: 1 })).toContainText("1 chapter");
       await expect(page.getByRole("heading", { name: "Due now" })).toBeVisible();
       await check("a chapter due");
+    },
+  },
+  {
+    name: "the advanced level picked",
+    path: "/level/js",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await page.getByRole("radio", { name: /Advanced/ }).check();
+      await expect(page.getByRole("heading", { level: 2, name: "Advanced" })).toBeVisible();
+      await check("the advanced level picked");
     },
   },
   {

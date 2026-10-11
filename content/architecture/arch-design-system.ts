@@ -247,11 +247,21 @@ export const archDesignSystem: Chapter = {
   holding the theme swatches and handwriting tiles (and, on reading pages, text size, narrator and
   shortcuts), plus a disabled Sign in placeholder. The chapter sidebar is built from the same kit,
   <code>components/ui/MenuKit.tsx</code>, so both surfaces share the numbered kicker, search pill,
-  dashed rows and highlighter. The seven type sizes are tokens on <code>:root</code>. Ctrl or Cmd plus K opens it
+  dashed rows and highlighter. The seven type sizes are tokens on <code>:root</code>, with two more, a hero and a lead size, for the topic pages. Ctrl or Cmd plus K opens it
   with search focused from any page, except while typing in a field or the editor. It focuses its
   first control, holds Tab inside, closes on Escape, locks scroll, and returns focus to whatever opened it. The whiteboard renders through
   <code>BareShell</code> with <code>header={false}</code> and has its own board menu drawer, which
   embeds the same <code>AppearancePicker</code>.
+</p>
+
+<h3>Topic pages</h3>
+<p>
+  The level picker, the reading path, the topic cover and the outline pages of unwritten topics are
+  one family, built from <code>components/topic/TopicKit.tsx</code>: a numbered kicker, a hero with a
+  display heading and one taped card, a dashed trail of numbered steps, flat dashed rows, single-open
+  folds for the syllabus and a notes card. The page's accent comes from the topic's data, so a new
+  topic needs no CSS. None of these pages uses the scroll reveal, because a reveal leaves blocks
+  part-transparent mid-scroll and in a stitched screenshot.
 </p>
 
 <h3>Modals</h3>
@@ -268,7 +278,7 @@ export const archDesignSystem: Chapter = {
 <p>
   <code>globals.css</code> is about 8,200 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
-  one of 37 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
+  one of 40 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
   lines. The rule of thumb is that anything
   chapter HTML can contain goes in globals, because chapter bodies are strings that cannot import a
   module, and anything else goes in a module so it loads only with its page.
@@ -323,17 +333,17 @@ export const archDesignSystem: Chapter = {
 
 <h3>The checks</h3>
 <p>
-  <code>e2e/a11y.spec.ts</code> runs axe through <code>@axe-core/playwright</code> against 31
+  <code>e2e/a11y.spec.ts</code> runs axe through <code>@axe-core/playwright</code> against 33
   pages, including the home page, the outline cover of a topic that is only being planned, six chapters, the other three written topics' covers, the
   playground, the problems list, the mock lobby, the whiteboard, the 404 page and this
   architecture section. One of them, <code>/level/typescript</code>, is the level picker of a
   topic that is only outlined, and another, <code>/typescript/ts-setup-compiler</code>, is that
   same topic's own outline chapter; <code>/level/typescript</code> stands in for <code>/soon</code>,
-  which redirects there while every topic is marked ready. It also runs against 31 states that a
-  plain page load does not show: 27 that open with a click, and 4 seeded in
+  which redirects there while every topic is marked ready. It also runs against 32 states that a
+  plain page load does not show: 28 that open with a click, and 4 seeded in
   <code>localStorage</code>. The clicks open the site menu, the reading menu on <code>/notes</code>
   with its Appearance, Narrator and Keyboard shortcuts folds open, a reading budget picked on the JavaScript cover's Up
-  next card, the site menu with a category expanded and with the theme swatches focused, the home page's topic section on Languages, with a legend row expanded and a station card open and with a search term typed,
+  next card, the Advanced level picked on the level picker, the site menu with a category expanded and with the theme swatches focused, the home page's topic section on Languages, with a legend row expanded and a station card open and with a search term typed,
   its interview book on a later round and on its last stage, its practice section with a row focused, a path tab with unwritten topics, its FAQ with the comparison answer open and its how-it-works demo with a line opened, a failing run, every test passing, an answer checked and a chapter marked read, and its topic section on the AI category, the Chapters and Filters sheets, and a system design round in
   the mock interview, checked at the brief, a question, a follow-up, the rubric and the debrief.
   The seeds give a chapter due for review, a

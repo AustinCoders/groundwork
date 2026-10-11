@@ -105,11 +105,22 @@
   --t-body: 0.9375rem;
   --t-meta: 0.8125rem;
   --t-kicker: 0.75rem;
+  --t-hero: clamp(2.5rem, min(5.4vw, 8svh), 5rem);
+  --t-section: clamp(2.125rem, 3.8vw, 3.5rem);
+  --t-hero-fit: clamp(2.25rem, min(5vw, 7svh), 5rem);
+  --t-lead: 1.125rem;
 }
 
 html[data-font="serif"],
 html[data-font="roboto"] {
   --t-title: 1rem;
+}
+
+html[data-font="serif"],
+html[data-font="roboto"],
+html[data-font="chalk"],
+html[data-font="marker"] {
+  --t-hero: clamp(2.25rem, min(4.4vw, 7svh), 4.25rem);
 }
 
 :root,
