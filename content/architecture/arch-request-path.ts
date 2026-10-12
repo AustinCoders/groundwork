@@ -84,7 +84,7 @@ export const archRequestPath: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>What</th><th>Count</th><th>Made by</th></tr></thead>
 <tbody>
-<tr><td>Pages, as HTML plus an RSC payload</td><td>1,177</td><td><code>page.tsx</code> and <code>generateStaticParams</code></td></tr>
+<tr><td>Pages, as HTML plus an RSC payload</td><td>1,222</td><td><code>page.tsx</code> and <code>generateStaticParams</code></td></tr>
 <tr><td>Test cases for other languages</td><td>538</td><td><code>app/problems/[slug]/cases/route.ts</code></td></tr>
 <tr><td>Search indexes</td><td>21</td><td>20 per-topic routes plus one global route</td></tr>
 <tr><td>Mock interview question banks</td><td>12</td><td><code>app/mock/bank/[stage]/route.ts</code>, one per stage</td></tr>
@@ -106,7 +106,7 @@ export const archRequestPath: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Route</th><th>HTML</th><th>First-load JS</th></tr></thead>
 <tbody>
-<tr><td>Home</td><td>60 KB</td><td>660 KB, 202 KB gzip, 13 files</td></tr>
+<tr><td>Home</td><td>186 KB</td><td>732 KB, 224 KB gzip, 18 files</td></tr>
 <tr><td>A chapter page</td><td>50 to 222 KB; the JavaScript topic averages 106 KB</td><td>681 KB, 210 KB gzip, 14 files</td></tr>
 <tr><td>A problem page</td><td>39 to 50 KB</td><td>1,182 KB, 373 KB gzip, 18 files</td></tr>
 <tr><td><code>/practice</code></td><td>27 KB</td><td>1,182 KB, 373 KB gzip, 18 files</td></tr>

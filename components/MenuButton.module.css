@@ -1,0 +1,55 @@
+.pill {
+  font-family: var(--font-heading);
+  font-size: var(--t-title);
+  font-weight: 700;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px 0 12px;
+  line-height: 1;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.pill span {
+  padding-bottom: 0.1em;
+}
+
+.pill:hover {
+  background: var(--sheet-2);
+  transform: translateY(-1px);
+}
+
+.pill:active {
+  transform: none;
+}
+
+.pill:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .pill {
+    height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pill {
+    transition: none;
+  }
+
+  .pill:hover {
+    transform: none;
+  }
+}

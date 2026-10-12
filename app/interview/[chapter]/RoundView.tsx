@@ -1,15 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { BookShell } from "@/app/interview/BookShell";
+import { useCallback, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { BookFrame } from "@/app/interview/BookFrame";
+import { answerHtml, followUpsHtml } from "@/app/interview/answerHtml";
+import {
+  ChapterCrumbs,
+  ChapterEndScene,
+  ChapterHeaderPager,
+  ChapterHero,
+  ChapterInlineToc,
+  Prose,
+  ReaderLayout,
+  ReadingColumn,
+} from "@/components/chapter/ChapterKit";
+import { ChapterRail, useRailParts } from "@/components/chapter/ChapterRail";
+import { ChapterSearch } from "@/components/chapter/ChapterSearch";
+import { ChaptersSheet, ChaptersSheetButton } from "@/components/chapter/ChaptersSheet";
+import { TocCard } from "@/components/chapter/TocCard";
+import { useActiveHeading } from "@/components/chapter/useActiveHeading";
+import { useChapterKeys } from "@/components/chapter/useChapterKeys";
+import { useChapterSearch } from "@/components/chapter/useChapterSearch";
+import type { SeriesCard, SeriesPart } from "@/components/chapter/types";
 import { useScrollRegions } from "@/components/reader/scrollRegions";
+import type { FrameTopic } from "@/components/topic/TopicFrame";
+import { plainText, truncate } from "@/lib/homeRounds";
 import { confidence, CONFIDENCE_LABEL, useConfidence, type Confidence } from "@/lib/interviewConfidence";
-import { useProgressValue } from "@/lib/hooks";
+import { useMounted, useProgressValue } from "@/lib/hooks";
 import { progress, store } from "@/lib/storage";
-import { smoothScroll } from "@/lib/scrollFx";
+import { plural } from "@/lib/format";
 import type { BookQuestion, BookRound } from "@/lib/interviewBook";
-import styles from "../book.module.css";
+import styles from "./round.module.css";
 
 type Mode = "read" | "practise";
 const MODE_KEY = "groundwork:interview:mode";
@@ -31,25 +52,10 @@ function setMode(m: Mode) {
   modeListeners.forEach((fn) => fn());
 }
 
-export interface RoundLink {
-  id: string;
-  code: string;
-  navTitle: string;
-}
-
 const CONF: Confidence[] = ["knew", "shaky", "blank"];
+const LEARN_LIMIT = 70;
 
-function Html({ html, className }: { html: string; className?: string }) {
-  return <div className={className} dangerouslySetInnerHTML={{ __html: html }} />;
-}
-
-function Prose({ html }: { html: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useScrollRegions(ref, html);
-  return <div ref={ref} className={`interview-body ${styles.prose}`} dangerouslySetInnerHTML={{ __html: html }} />;
-}
-
-function QuestionCard({
+function QuestionSection({
   q,
   code,
   mode,
@@ -64,75 +70,44 @@ function QuestionCard({
   const hidden = mode === "practise" && !shown && !q.bulk;
   const card = useRef<HTMLElement>(null);
   useScrollRegions(card, hidden);
-  const hasAnswer = q.a || q.code.length || q.say || q.trap || q.note || q.after;
+  const hasAnswer = Boolean(q.a || q.code.length || q.say || q.trap || q.note || q.after);
+  const body = hidden ? followUpsHtml(q.fu) : answerHtml(q);
 
   return (
-    <article ref={card} className={styles.qCard} id={q.id} data-mark={mark} data-fx="up">
+    <section ref={card} className={styles.q} id={q.id} data-mark={mark} aria-labelledby={`${q.id}-q`}>
       <header className={styles.qHead}>
-        <span className={styles.qNum}>
+        <span className={styles.qNo}>
           {code}.{q.n}
         </span>
-        <h2 className={styles.qTitle} dangerouslySetInnerHTML={{ __html: q.q }} />
+        <span className={styles.qRule} aria-hidden="true" />
+        {mark && (
+          <span className={styles.qMark} data-mark={mark}>
+            {CONFIDENCE_LABEL[mark]}
+          </span>
+        )}
       </header>
+      <h2 className={styles.qTitle} id={`${q.id}-q`}>
+        <span className={styles.qText} dangerouslySetInnerHTML={{ __html: q.q }} />
+      </h2>
 
       {q.test && (
-        <div className={styles.testBox}>
-          <span className={styles.boxLabel}>What they are really testing</span>
-          <Html html={q.test} />
-        </div>
+        <p className={styles.test}>
+          <b>What they are really testing</b>
+          <span dangerouslySetInnerHTML={{ __html: q.test }} />
+        </p>
       )}
 
-      {hasAnswer &&
-        (hidden ? (
-          <div className={styles.hiddenAnswer}>
-            <p>Say your answer out loud first. Then check it.</p>
-            <button type="button" className={styles.btn} onClick={() => setShown(true)}>
-              Show the answer
-            </button>
-          </div>
-        ) : (
-          <div className={`interview-body ${styles.answer}`}>
-            <div className="qbody">
-              {q.a && <Html html={q.a} />}
-              {q.code.map((b, i) => (
-                <div key={i}>
-                  {b.label && <div className="codelabel">{b.label}</div>}
-                  <pre>
-                    <code dangerouslySetInnerHTML={{ __html: b.code }} />
-                  </pre>
-                </div>
-              ))}
-              {q.say && (
-                <div className={styles.sayBox}>
-                  <span className={styles.boxLabel}>Say it like this</span>
-                  <Html html={q.say} />
-                </div>
-              )}
-              {q.trap && (
-                <div className={styles.trapBox}>
-                  <span className={styles.boxLabel}>The answer that loses the room</span>
-                  <Html html={q.trap} />
-                </div>
-              )}
-              {q.note && (
-                <div className={styles.noteBox}>
-                  <span className={styles.boxLabel}>2026 note</span>
-                  <Html html={q.note} />
-                </div>
-              )}
-              {q.after && <Html html={q.after} />}
-            </div>
-          </div>
-        ))}
-
-      {q.fu.length > 0 && (
-        <div className={styles.fuBox}>
-          <span className={styles.boxLabel}>They will push with</span>
-          <ol>
-            {q.fu.map((f) => (
-              <li key={f} dangerouslySetInnerHTML={{ __html: f }} />
-            ))}
-          </ol>
+      {hasAnswer && hidden && (
+        <div className={styles.hiddenAnswer}>
+          <p>Say your answer out loud first. Then check it.</p>
+          <button type="button" className={styles.hiddenGo} onClick={() => setShown(true)}>
+            Show the answer
+          </button>
+        </div>
+      )}
+      {body && (
+        <div className={styles.answer}>
+          <Prose html={body} className="interview-body" />
         </div>
       )}
 
@@ -152,176 +127,268 @@ function QuestionCard({
           ))}
         </div>
       )}
-    </article>
+    </section>
   );
 }
 
 export function RoundView({
+  topic,
   round,
+  partIndex,
   partTitle,
-  prev,
-  next,
+  parts,
+  cards,
 }: {
+  topic: FrameTopic;
   round: BookRound;
+  partIndex: number;
   partTitle: string;
-  prev: RoundLink | null;
-  next: RoundLink | null;
+  parts: SeriesPart<string>[];
+  cards: SeriesCard<string>[];
 }) {
+  const mounted = useMounted();
   const mode = useSyncExternalStore(subscribeMode, readMode, () => "read" as Mode);
   const conf = useConfidence();
-  const done = useProgressValue(() => progress.isChapterDone(round.id), false);
-  const [active, setActive] = useState<string | null>(null);
+  const [railOpen, setRailOpen] = useState(false);
+  const sheetSearchInputRef = useRef<HTMLInputElement>(null);
+  const closeRail = useCallback(() => setRailOpen(false), []);
+
+  const index = cards.findIndex((c) => c.id === round.id);
+  const card = cards[index];
+  const prev = cards[index - 1];
+  const next = cards[index + 1];
+  const basePath = topic.href;
+
+  const doneKey = useProgressValue(
+    () =>
+      cards
+        .filter((c) => progress.isChapterDone(c.id))
+        .map((c) => c.id)
+        .join(","),
+    ""
+  );
+  const done = useMemo(() => new Set(doneKey ? doneKey.split(",") : []), [doneKey]);
+  const isDone = done.has(round.id);
+  const toggleRead = () => progress.setChapterDone(round.id, !isDone);
+
   const questions = round.questions;
-  const marked = questions.filter((q) => conf[q.id]).length;
   const real = questions.filter((q) => !q.bulk).length;
+  const marked = questions.filter((q) => conf[q.id]).length;
+  const toc = useMemo(() => questions.map((q) => ({ id: q.id, text: truncate(plainText(q.q), 120) })), [questions]);
+  const marks = useMemo(() => Object.fromEntries(questions.map((q) => [q.id, conf[q.id]])), [questions, conf]);
+  const { active, pct } = useActiveHeading(toc);
 
-  useEffect(() => {
-    const els = questions.map((q) => document.getElementById(q.id)).filter((e): e is HTMLElement => Boolean(e));
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) setActive(e.target.id);
-        });
-      },
-      { rootMargin: "-30% 0px -60% 0px" }
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, [questions]);
+  const search = useChapterSearch({ topicId: "interview", basePath, chapters: cards });
+  useChapterKeys({
+    prevHref: prev && `${basePath}/${prev.id}`,
+    nextHref: next && `${basePath}/${next.id}`,
+    onSlash: () => {
+      search.searchInputRef.current?.focus();
+      search.searchInputRef.current?.select();
+    },
+  });
+  const { openParts, togglePart } = useRailParts(card);
 
-  function jump(id: string) {
-    const el = document.getElementById(id);
-    if (el) smoothScroll.to(el.getBoundingClientRect().top + window.scrollY - 90);
-  }
+  const rail = (extra: { navListId?: string; search: React.ReactNode }) => (
+    <ChapterRail
+      label="Rounds"
+      parts={parts}
+      chapters={cards}
+      chapter={card}
+      basePath={basePath}
+      homeLabel="The book"
+      done={done}
+      mounted={mounted}
+      openParts={openParts}
+      onTogglePart={togglePart}
+      onNavigate={closeRail}
+      searching={search.searching}
+      matchInfo={search.matches}
+      navListId={extra.navListId}
+      search={extra.search}
+    />
+  );
+
+  const facts = round.guide
+    ? [plural(questions.length, "section"), `${round.minutes} min read`]
+    : [
+        plural(real, "question"),
+        plural(round.counts.followUps, "follow-up"),
+        ...(round.counts.traps ? [plural(round.counts.traps, "trap")] : []),
+        `${round.minutes} min read`,
+      ];
 
   return (
-    <BookShell scan={mode}>
-      <nav className={styles.crumbs} aria-label="Breadcrumb">
-        <Link href="/interview">Interview book</Link>
-        <span aria-hidden="true">/</span>
-        <span>{partTitle}</span>
-      </nav>
+    <BookFrame
+      topic={topic}
+      scan={`${round.id}:${mode}`}
+      withLinks={false}
+      skipHref={`#${round.id}`}
+      actions={
+        <>
+          <ChaptersSheetButton label="Rounds" open={railOpen} onOpen={() => setRailOpen(true)} />
+          <ChapterCrumbs href={basePath} label={topic.name} part={partTitle} num={round.code} />
+          <ChapterHeaderPager index={index} total={cards.length} prev={prev} next={next} basePath={basePath} />
+        </>
+      }
+    >
+      <ReaderLayout
+        accent={topic.accent}
+        rail={rail({
+          search: (
+            <ChapterSearch
+              value={search.query}
+              onChange={search.setQuery}
+              matches={search.matches}
+              otherMatches={search.otherMatches}
+              chapterIds={cards.map((c) => c.id)}
+              basePath={basePath}
+              inputRef={search.searchInputRef}
+            />
+          ),
+        })}
+        aside={
+          <TocCard
+            label="In this round"
+            item="Question"
+            unit="rounds"
+            toc={toc}
+            active={active}
+            pct={pct}
+            marks={marks}
+            read={mounted && isDone}
+            onToggleRead={toggleRead}
+          />
+        }
+      >
+        <ReadingColumn id={round.id} read={isDone}>
+          <ChapterHero
+            mark={topic.mark}
+            num={round.code}
+            partLabel={`Part ${partIndex + 1} · ${partTitle}`}
+            title={round.title}
+            subtitleHtml={round.intro ?? undefined}
+            facts={facts}
+            learn={questions.map((q) => truncate(plainText(q.q), LEARN_LIMIT))}
+            learnLabel="In this round"
+            minutes={round.minutes}
+            position={{ index: index + 1, total: cards.length }}
+            read={mounted && isDone}
+          />
 
-      <header className={styles.roundHero} data-fx="stagger">
-        <span className={styles.roundCode}>{round.code}</span>
-        <h1 className={styles.roundTitle}>{round.title}</h1>
-        {round.intro && <p className={styles.roundIntro} dangerouslySetInnerHTML={{ __html: round.intro }} />}
-        {round.meta.length > 0 && (
-          <dl className={styles.metaGrid}>
-            {round.meta.map(([k, v]) => (
-              <div key={k}>
-                <dt>{k}</dt>
-                <dd dangerouslySetInnerHTML={{ __html: v }} />
-              </div>
-            ))}
-          </dl>
-        )}
-        <div className={styles.roundBar}>
-          {round.companies.length > 0 && (
-            <span className={styles.companies}>
-              {round.companies.map((c) => (
-                <span key={c.name} data-hot={c.hot || undefined}>
-                  {c.name}
-                </span>
-              ))}
-            </span>
+          {(round.meta.length > 0 || round.companies.length > 0 || round.mockStage) && (
+            <section className={styles.glance} aria-label="This round at a glance">
+              {round.meta.length > 0 && (
+                <dl className={styles.meta}>
+                  {round.meta.map(([k, v]) => (
+                    <div key={k} className={styles.metaCell}>
+                      <dt>{k}</dt>
+                      <dd dangerouslySetInnerHTML={{ __html: v }} />
+                    </div>
+                  ))}
+                </dl>
+              )}
+              {(round.companies.length > 0 || round.mockStage) && (
+                <div className={styles.glanceFoot}>
+                  {round.companies.length > 0 && (
+                    <div className={styles.companiesRow}>
+                      <span className={styles.companiesLabel}>Asked at</span>
+                      <ul className={styles.companies} aria-label="Asked at">
+                        {round.companies.map((c) => (
+                          <li key={c.name}>
+                            <span className={styles.company} data-hot={c.hot || undefined}>
+                              {c.name}
+                              {!c.hot && <span className="visually-hidden"> (less often)</span>}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {round.mockStage && (
+                    <Link href="/mock" className={styles.mockLink} prefetch={false}>
+                      Practise this round as a mock →
+                    </Link>
+                  )}
+                </div>
+              )}
+            </section>
           )}
-          <span className={styles.roundFacts}>
-            {round.guide ? `${questions.length} sections` : `${real} questions · ${round.counts.followUps} follow-ups`}{" "}
-            · {round.minutes} min read
-          </span>
-        </div>
-      </header>
 
-      <div className={styles.roundLayout}>
-        <aside className={styles.rail} aria-label="In this round">
-          <div className={styles.modeSwitch} role="group" aria-label="Mode">
-            <button type="button" aria-pressed={mode === "read"} onClick={() => setMode("read")}>
-              Read
-            </button>
-            <button type="button" aria-pressed={mode === "practise"} onClick={() => setMode("practise")}>
-              Practise
-            </button>
-          </div>
-          <p className={styles.modeNote}>
-            {mode === "practise" ? "Answers stay hidden until you have said yours." : "Everything open, top to bottom."}
-          </p>
-          <ol className={styles.railList}>
-            {questions.map((q) => (
-              <li key={q.id}>
-                <button
-                  type="button"
-                  aria-current={active === q.id ? "true" : undefined}
-                  data-mark={conf[q.id]}
-                  onClick={() => jump(q.id)}
-                >
-                  <span className={styles.railNum}>{q.n}</span>
-                  <span className={styles.railText} dangerouslySetInnerHTML={{ __html: q.q }} />
-                </button>
-              </li>
-            ))}
-          </ol>
-          {!round.guide && (
-            <p className={styles.railStat}>
-              {marked} of {real} marked
-            </p>
-          )}
-          {round.mockStage && (
-            <Link href="/mock" className={styles.mockLink} prefetch={false}>
-              Practise this round as a mock →
-            </Link>
-          )}
-        </aside>
-
-        <div className={styles.roundBody}>
-          {round.pre && <Prose html={round.pre} />}
-          {questions.map((q) => (
-            <QuestionCard key={q.id} q={q} code={round.code} mode={mode} mark={conf[q.id]} />
-          ))}
-          {round.post && <Prose html={round.post} />}
-
-          <div className={styles.doneRow} data-fx="up">
-            <label className={styles.doneCheck}>
-              <input
-                type="checkbox"
-                checked={done}
-                onChange={(e) => progress.setChapterDone(round.id, e.target.checked)}
-              />
-              I have read this round
-            </label>
-            {marked > 0 && (
-              <button
-                type="button"
-                className={styles.linkBtn}
-                onClick={() => confidence.clear(questions.map((q) => q.id))}
-              >
-                Clear my marks
+          <div className={styles.mode}>
+            <div className={styles.modeSwitch} role="group" aria-label="Mode">
+              <button type="button" aria-pressed={mode === "read"} onClick={() => setMode("read")}>
+                Read
               </button>
-            )}
+              <button type="button" aria-pressed={mode === "practise"} onClick={() => setMode("practise")}>
+                Practise
+              </button>
+            </div>
+            <p className={styles.modeNote}>
+              {mode === "practise"
+                ? "Answers stay hidden until you have said yours."
+                : "Everything open, top to bottom."}
+            </p>
           </div>
 
-          <nav className={styles.pager} aria-label="Rounds">
-            {prev ? (
-              <Link href={`/interview/${prev.id}`} className={styles.pageCard}>
-                <span>← Previous</span>
-                <b>
-                  {prev.code} · {prev.navTitle}
-                </b>
-              </Link>
-            ) : (
-              <span />
-            )}
-            {next && (
-              <Link href={`/interview/${next.id}`} className={`${styles.pageCard} ${styles.pageNext}`}>
-                <span>Next →</span>
-                <b>
-                  {next.code} · {next.navTitle}
-                </b>
-              </Link>
-            )}
-          </nav>
-        </div>
-      </div>
-    </BookShell>
+          {toc.length > 0 && <ChapterInlineToc toc={toc} />}
+
+          {round.pre && <Prose html={round.pre} className="interview-body" />}
+          {questions.map((q) => (
+            <QuestionSection key={q.id} q={q} code={round.code} mode={mode} mark={conf[q.id]} />
+          ))}
+          {round.post && <Prose html={round.post} className="interview-body" />}
+
+          <ChapterEndScene
+            num={round.code}
+            unit="round"
+            navLabel="Rounds"
+            finish={{
+              num: round.code,
+              read: mounted && isDone,
+              readCount: mounted ? done.size : 0,
+              total: cards.length,
+              onToggleRead: toggleRead,
+              unit: "round",
+              scope: "in this book",
+              doneLabel: "Round read",
+              todoLabel: "Finished this round?",
+              aside:
+                marked > 0 ? (
+                  <button
+                    type="button"
+                    className={styles.clearMarks}
+                    onClick={() => confidence.clear(questions.map((q) => q.id))}
+                  >
+                    Clear my marks
+                  </button>
+                ) : undefined,
+            }}
+            prev={prev}
+            next={next}
+            basePath={basePath}
+            homeLabel="The interview book"
+          />
+        </ReadingColumn>
+      </ReaderLayout>
+
+      <ChaptersSheet label="Rounds" open={railOpen} onClose={closeRail}>
+        {rail({
+          navListId: "nav-list-sheet",
+          search: (
+            <ChapterSearch
+              id="search-sheet"
+              value={search.query}
+              onChange={search.setQuery}
+              matches={search.matches}
+              otherMatches={search.otherMatches}
+              chapterIds={cards.map((c) => c.id)}
+              basePath={basePath}
+              inputRef={sheetSearchInputRef}
+            />
+          ),
+        })}
+      </ChaptersSheet>
+    </BookFrame>
   );
 }

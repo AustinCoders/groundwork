@@ -1,9 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect } from "react";
 import { reportError } from "@/lib/errorTracking";
 import { PageFrame } from "@/components/frame/PageFrame";
+import { LostScene } from "@/components/frame/LostScene";
+import { Button, Underlined, topicKit } from "@/components/topic/TopicKit";
+import styles from "@/components/frame/lost.module.css";
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
@@ -12,31 +14,51 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   }, [error]);
 
   return (
-    <PageFrame title="Something broke" skipLabel="Skip to the content">
-      <section className="sheet hero">
-        <div className="soon-stamp" aria-hidden="true">
-          error
-        </div>
-        <span className="hero__kicker">that didn&apos;t load</span>
-        <h1>This page hit an error</h1>
-        <p className="hero__lead">
-          Nothing you did caused it, and nothing you&apos;ve read is lost — your progress is saved in this browser. Try
-          loading the page again, or head back to the shelf.
-        </p>
-        <div className="hero__actions">
-          <button className="btn btn--primary btn--big" type="button" onClick={reset}>
-            Try again
-          </button>
-          <Link className="btn btn--big" href="/">
-            Back to all topics
-          </Link>
-        </div>
+    <PageFrame title="Something broke" skipLabel="Skip to the content" layout="reader">
+      <LostScene
+        accent="red"
+        mark="!"
+        kicker="that didn't load"
+        heading={
+          <>
+            This page hit an <Underlined>error</Underlined>
+          </>
+        }
+        lead="Nothing you did caused it. Try loading the page again, or head back to the shelf."
+        actions={
+          <>
+            <button type="button" className={topicKit.btn} onClick={reset}>
+              Try again
+            </button>
+            <Button ghost href="/">
+              Back to all topics
+            </Button>
+          </>
+        }
+        stamp="error"
+        stampNote="this page failed to load"
+        stampTone="alert"
+        sticker="✓ nothing lost"
+        sideKicker="Your progress"
+        remark="saved in this browser"
+        moreKicker="Still stuck?"
+        more={
+          <p>
+            Write to{" "}
+            <a className={styles.mail} href="mailto:help@austincoders.com">
+              help@austincoders.com
+            </a>
+            {error.digest ? " and include the reference code." : " and say what you were doing."}
+          </p>
+        }
+      >
+        <p>Everything you have read is saved in this browser, so none of it is lost.</p>
         {error.digest && (
-          <p className="sub" style={{ marginTop: 18 }}>
+          <p className={styles.digest}>
             Reference code: <code>{error.digest}</code>
           </p>
         )}
-      </section>
+      </LostScene>
     </PageFrame>
   );
 }

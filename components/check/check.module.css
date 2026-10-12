@@ -6,7 +6,7 @@
   color: var(--ink);
 }
 
-.fieldset {
+.runner .fieldset {
   display: grid;
   gap: 12px;
   min-width: 0;
@@ -16,83 +16,83 @@
   scroll-margin-top: calc(var(--bar-h) + 20px);
 }
 
-.fieldset:focus {
+.runner .fieldset:focus {
   outline: none;
 }
 
-.fieldset:focus-visible {
+.runner .fieldset:focus-visible {
   outline: 3px solid var(--primary);
   outline-offset: 4px;
 }
 
-.legend {
+.runner .legend {
   padding: 0;
   font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-size: var(--t-kicker);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-soft);
 }
 
-.legend:focus {
+.runner .legend:focus {
   outline: none;
 }
 
-.legend:focus-visible {
+.runner .legend:focus-visible {
   outline: 3px solid var(--primary);
   outline-offset: 3px;
 }
 
-.prompt {
+.runner .prompt {
   min-width: 0;
   overflow-x: auto;
-  font-size: 16px;
+  font-size: var(--t-control);
   line-height: 1.55;
   overflow-wrap: anywhere;
 }
 
-.prompt > :first-child {
+.runner .prompt > :first-child {
   margin-top: 0;
 }
 
-.prompt > :last-child {
+.runner .prompt > :last-child {
   margin-bottom: 0;
 }
 
-.prompt p {
+.runner .prompt p {
   margin: 0 0 10px;
 }
 
-.prompt pre {
+.runner .prompt pre {
   width: max-content;
   min-width: calc(100% - 38px);
   margin: 10px 0;
   overflow: visible;
-  font-size: 13.5px;
+  font-size: var(--t-meta);
   line-height: 1.55;
   overflow-wrap: normal;
 }
 
-.prompt pre::before,
-.prompt pre::after {
+.runner .prompt pre::before,
+.runner .prompt pre::after {
   content: none;
 }
 
-.prompt code {
+.runner .prompt code {
   overflow-wrap: anywhere;
 }
 
-.prompt pre code {
+.runner .prompt pre code {
   overflow-wrap: normal;
 }
 
-.hint {
+.runner .hint {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--t-body);
   color: var(--ink-soft);
 }
 
-.choices {
+.runner .choices {
   display: grid;
   gap: 8px;
   margin: 0;
@@ -100,29 +100,30 @@
   list-style: none;
 }
 
-.choice {
+.runner .choice {
+  margin: 0;
   min-width: 0;
   background: var(--sheet);
   border: 1.5px solid var(--line);
   border-radius: 10px;
 }
 
-.choice[data-state="picked"] {
+.runner .choice[data-state="picked"] {
   background: var(--primary-soft);
   border-color: var(--primary);
 }
 
-.choice[data-state="right"] {
+.runner .choice[data-state="right"] {
   background: var(--success-soft);
   border: 3px double var(--success);
 }
 
-.choice[data-state="wrong"] {
+.runner .choice[data-state="wrong"] {
   background: var(--danger-soft);
   border: 3px dashed var(--danger);
 }
 
-.choiceLabel {
+.runner .choiceLabel {
   display: flex;
   align-items: flex-start;
   gap: 12px;
@@ -131,7 +132,7 @@
   cursor: pointer;
 }
 
-.choiceInput {
+.runner .choiceInput {
   flex: none;
   width: 20px;
   height: 20px;
@@ -139,45 +140,45 @@
   accent-color: var(--primary);
 }
 
-.choiceText {
+.runner .choiceText {
   min-width: 0;
-  font-size: 16px;
+  font-size: var(--t-control);
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
 
-.choiceText code,
-.why code,
-.orderText code,
-.rightOrder code {
+.runner .choiceText code,
+.runner .why code,
+.runner .orderText code,
+.runner .rightOrder code {
   overflow-wrap: anywhere;
 }
 
-.why {
+.runner .why {
   display: grid;
   gap: 6px;
   padding: 0 14px 12px 46px;
-  font-size: 15px;
+  font-size: var(--t-body);
   line-height: 1.55;
   overflow-wrap: anywhere;
 }
 
-.tags {
+.runner .tags {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--t-kicker);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ink);
 }
 
-.orderText .tags {
+.runner .orderText .tags {
   display: block;
   margin-top: 4px;
 }
 
-.orderList {
+.runner .orderList {
   display: grid;
   gap: 8px;
   margin: 0;
@@ -185,7 +186,8 @@
   list-style: none;
 }
 
-.orderItem {
+.runner .orderItem {
+  margin: 0;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 8px 12px;
@@ -195,23 +197,23 @@
   border-radius: 10px;
 }
 
-.orderItem[data-state="right"] {
+.runner .orderItem[data-state="right"] {
   background: var(--success-soft);
   border: 3px double var(--success);
 }
 
-.orderItem[data-state="wrong"] {
+.runner .orderItem[data-state="wrong"] {
   background: var(--danger-soft);
   border: 3px dashed var(--danger);
 }
 
-.orderPosition {
+.runner .orderPosition {
   display: grid;
   place-items: center;
   width: 28px;
   height: 28px;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: var(--t-meta);
   font-weight: 700;
   color: var(--ink);
   background: var(--sheet-2);
@@ -219,96 +221,96 @@
   border-radius: 50%;
 }
 
-.orderText {
+.runner .orderText {
   min-width: 0;
-  font-size: 16px;
+  font-size: var(--t-control);
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
 
-.orderButtons {
+.runner .orderButtons {
   grid-column: 2;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.moveButton,
-.primary,
-.secondary {
+.runner .moveButton,
+.runner .primary,
+.runner .secondary {
   min-height: 44px;
   padding: 6px 16px;
   font: inherit;
-  font-size: 15px;
-  font-weight: 600;
-  border-radius: 10px;
+  font-size: var(--t-body);
+  font-weight: 700;
+  border-radius: 12px;
   cursor: pointer;
 }
 
-.moveButton,
-.secondary {
+.runner .moveButton,
+.runner .secondary {
   color: var(--ink);
-  background: var(--btn-bg);
-  border: 1.5px solid var(--ink-soft);
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
 }
 
-.moveButton:hover:not(:disabled),
-.secondary:hover:not(:disabled) {
-  background: var(--btn-hover);
+.runner .moveButton:hover:not(:disabled),
+.runner .secondary:hover:not(:disabled) {
+  border-color: var(--ink-soft);
 }
 
-.primary {
+.runner .primary {
   color: var(--on-primary);
   background: var(--primary);
   border: 1.5px solid var(--primary);
 }
 
-.primary:hover:not(:disabled) {
+.runner .primary:hover:not(:disabled) {
   filter: brightness(1.08);
 }
 
-.moveButton:disabled,
-.primary:disabled,
-.secondary:disabled {
+.runner .moveButton:disabled,
+.runner .primary:disabled,
+.runner .secondary:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
 
-.rightOrder {
+.runner .rightOrder {
   display: grid;
   gap: 4px;
   margin: 0;
   padding-left: 22px;
 }
 
-.statusBlock {
+.runner .statusBlock {
   display: grid;
   gap: 6px;
   justify-items: start;
 }
 
-.best {
+.runner .best {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--t-body);
   color: var(--ink-soft);
 }
 
-.status:focus {
+.runner .status:focus {
   outline: none;
 }
 
-.status:focus-visible {
+.runner .status:focus-visible {
   outline: 3px solid var(--primary);
   outline-offset: 3px;
 }
 
-.status {
+.runner .status {
   display: inline-block;
   justify-self: start;
   margin: 0;
   padding: 4px 12px;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: var(--t-meta);
   font-weight: 700;
   color: var(--ink);
   background: var(--sheet-2);
@@ -316,39 +318,39 @@
   border-radius: 999px;
 }
 
-.status[data-status="passed"] {
+.runner .status[data-status="passed"] {
   background: var(--success-soft);
   border: 3px double var(--success);
 }
 
-.text {
+.runner .text {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--t-control);
   line-height: 1.55;
 }
 
-.text:focus {
+.runner .text:focus {
   outline: none;
 }
 
-.text:focus-visible {
+.runner .text:focus-visible {
   outline: 3px solid var(--primary);
   outline-offset: 3px;
 }
 
-.actions {
+.runner .actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
 }
 
-.verdict {
+.runner .verdict {
   margin: 0;
-  font-size: 17px;
+  font-size: var(--t-control);
   font-weight: 700;
 }
 
-.verdict:empty {
+.runner .verdict:empty {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -360,41 +362,41 @@
   border: 0;
 }
 
-.verdict[data-verdict="Correct"] {
+.runner .verdict[data-verdict="Correct"] {
   padding-left: 12px;
   border-left: 5px solid var(--success);
 }
 
-.verdict[data-verdict="Not quite"] {
+.runner .verdict[data-verdict="Not quite"] {
   padding-left: 12px;
   border-left: 5px dashed var(--danger);
 }
 
-.resultHeading {
+.runner .resultHeading {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: 28px;
+  font-size: var(--t-display);
   line-height: 1.2;
   color: var(--ink);
 }
 
-.resultHeading:focus {
+.runner .resultHeading:focus {
   outline: none;
 }
 
-.resultHeading:focus-visible {
+.runner .resultHeading:focus-visible {
   outline: 3px solid var(--primary);
   outline-offset: 4px;
 }
 
-.score {
+.runner .score {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 22px;
+  font-size: var(--t-heading);
   font-weight: 700;
 }
 
-.missed {
+.runner .missed {
   display: grid;
   gap: 14px;
   margin: 0;
@@ -402,7 +404,8 @@
   list-style: none;
 }
 
-.missedItem {
+.runner .missedItem {
+  margin: 0;
   display: grid;
   gap: 10px;
   min-width: 0;
@@ -412,24 +415,24 @@
   border-radius: 10px;
 }
 
-.rightChoice {
+.runner .rightChoice {
   margin: 0;
 }
 
-.rightWhy {
+.runner .rightWhy {
   display: block;
   margin-top: 4px;
   color: var(--ink);
 }
 
-.sectionLink {
+.runner .sectionLink {
   justify-self: start;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--primary);
   text-underline-offset: 3px;
 }
 
-.banner {
+.runner .banner {
   display: grid;
   gap: 10px;
   justify-items: start;
@@ -439,10 +442,10 @@
   border-radius: 10px;
 }
 
-.bannerText {
+.runner .bannerText {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--t-control);
+  font-weight: 700;
   line-height: 1.5;
   color: var(--ink);
 }
@@ -480,19 +483,19 @@
 }
 
 @media (max-width: 640px) {
-  .banner > button {
+  .runner .banner > button {
     width: 100%;
   }
 
-  .why {
+  .runner .why {
     padding-left: 14px;
   }
 
-  .actions > button {
+  .runner .actions > button {
     flex: 1 1 100%;
   }
 
-  .orderButtons {
+  .runner .orderButtons {
     grid-column: 1 / -1;
   }
 }

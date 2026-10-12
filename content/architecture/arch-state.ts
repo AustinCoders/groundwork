@@ -9,7 +9,7 @@ export const archState: Chapter = {
   practice: [],
   ready: true,
   subtitle:
-    "Thirty-three localStorage keys, two sessionStorage keys, a query string and a URL hash. There are no accounts, no cookies and no database.",
+    "Thirty-six localStorage keys, two sessionStorage keys, a query string and a URL hash. There are no accounts, no cookies and no database.",
   body: `<h3>Everything is in the browser</h3>
 <p>
   This site keeps nothing about its readers on a server. No file under <code>app/</code> uses
@@ -59,7 +59,7 @@ export const archState: Chapter = {
 <text class="lbl" x="545" y="348" text-anchor="middle">Share links</text>
 <text class="sm" x="545" y="368" text-anchor="middle">#share= and #board=</text>
 <text class="lbl" x="792" y="68" text-anchor="middle">localStorage</text>
-<text class="sm" x="792" y="90" text-anchor="middle">33 keys or prefixes</text>
+<text class="sm" x="792" y="90" text-anchor="middle">36 keys or prefixes</text>
 <text class="sm" x="792" y="108" text-anchor="middle">one origin, one device</text>
 <text class="lbl" x="792" y="196" text-anchor="middle">sessionStorage</text>
 <text class="sm" x="792" y="216" text-anchor="middle">2 keys, one tab</text>
@@ -90,13 +90,13 @@ export const archState: Chapter = {
 <tr><td><code>jsnotes:activity</code></td><td>A count per local calendar day, <code>"2026-09-25": 3</code></td></tr>
 <tr><td><code>jsnotes:code:{id}</code>, <code>jsnotes:code:{id}:{lang}</code></td><td>Unsaved editor text per exercise; JavaScript has no suffix</td></tr>
 <tr><td><code>jsnotes:level</code></td><td>The last level you read, so topic links go straight to it</td></tr>
-<tr><td><code>jsnotes:theme</code>, <code>jsnotes:font</code></td><td>One of nine themes and seven fonts, read before paint by the theme-init script</td></tr>
+<tr><td><code>jsnotes:theme</code>, <code>jsnotes:font</code></td><td>One of nine themes and eight fonts, read before paint by the theme-init script</td></tr>
 <tr><td><code>jsnotes:narration</code></td><td>Voice, rate and pitch</td></tr>
 <tr><td><code>jsnotes:sound-enabled</code></td><td>Whether solving an exercise plays a sound</td></tr>
 </tbody>
 </table></div>
 
-<h3>The other twenty-three</h3>
+<h3>The other twenty-six</h3>
 <p>
   As features were added, each kept its own keys next to its own code. Newer ones use a
   <code>groundwork:</code> prefix. Most still go through <code>store</code>. The whiteboard has its
@@ -107,10 +107,11 @@ export const archState: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Area</th><th>Keys</th></tr></thead>
 <tbody>
-<tr><td>Reader</td><td><code>jsnotes:zoom</code>, <code>jsnotes:reading-budget</code>, <code>jsnotes:last-seen-level</code></td></tr>
+<tr><td>Reader</td><td><code>jsnotes:zoom</code>, <code>jsnotes:reading-budget</code>, <code>jsnotes:last-seen-level</code>, <code>groundwork:resume</code> (the last chapter you opened, so the site menu can offer to continue there)</td></tr>
 <tr><td>Editor</td><td><code>jsnotes:editor-settings</code>, <code>jsnotes:editor-height</code>, <code>jsnotes:playground-live</code>, <code>jsnotes:lang:{exerciseId}</code></td></tr>
 <tr><td>Playground</td><td><code>groundwork:playground:project</code> (every open file), <code>groundwork:playground:runs</code> (the last 15 runs), <code>groundwork:playground:stdin</code></td></tr>
 <tr><td>Whiteboard</td><td><code>groundwork:boards</code> (the index), <code>groundwork:board:{id}</code> (one per board), <code>groundwork:boards:last</code>, <code>groundwork:boards:prefs</code></td></tr>
+<tr><td>Tour</td><td><code>groundwork:tour</code> (<code>{ v: 1, seen: true, at }</code>, written when the first-visit tour is skipped or finished, so it never offers itself again; a missing or malformed value counts as not seen)</td></tr>
 <tr><td>DSA chapter code</td><td><code>groundwork:dsa:lang</code> (versioned: <code>{ v: 1, language }</code>, one of JavaScript, Python, Java or C++, with its own store, snapshot cache and cross-tab <code>storage</code> listener; read only by a chapter that has marked code blocks)</td></tr>
 <tr><td>Chapter check</td><td><code>groundwork:quiz</code> (versioned: <code>{ v: 1, chapters }</code>, one record per chapter with its attempts, best score, last attempt time, pass time, whether it was marked read without the check, and the ids missed in the latest attempt; it has its own store, snapshot cache and cross-tab <code>storage</code> listener, and a chapter's read mark stays in <code>jsnotes:progress</code>)</td></tr>
 <tr><td>DSA placement</td><td><code>groundwork:dsa:placement</code> (versioned: <code>{ v: 1, record }</code>, one record with how the reader was placed, their level, a score for each stage, the chapters tested out and the chapters allotted, when it was taken and how many seconds it took; absent means not placed yet, and a stale version or junk reads as absent; it has its own store, snapshot cache and cross-tab <code>storage</code> listener, an in-memory copy when a write fails, and it never writes <code>jsnotes:progress</code> or <code>jsnotes:level</code>)</td></tr>
@@ -155,7 +156,7 @@ export const archState: Chapter = {
   <code>nextChapter</code> is what Continue, Up next, the path's next step and the reading budget ask,
   and it returns the first unread chapter. A server page passes <code>completion</code> down as a
   string, because a function cannot cross into a client component. So far only the DSA topic is
-  <code>"quiz"</code>, and its check is not built yet, so those links land on a stub.
+  <code>"quiz"</code>, and the link lands on that chapter's check.
 </p>
 
 <h3>How components follow it</h3>

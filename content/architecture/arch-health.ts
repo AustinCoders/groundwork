@@ -15,9 +15,9 @@ export const archHealth: Chapter = {
 <thead><tr><th>Check</th><th>Result, latest CI run on <code>main</code></th></tr></thead>
 <tbody>
 <tr><td>TypeScript, ESLint, Prettier, cspell</td><td><span class="chip tone-yes">clean</span></td></tr>
-<tr><td>Vitest</td><td><span class="chip tone-yes">307 of 307</span></td></tr>
-<tr><td>Build</td><td><span class="chip tone-yes">1,746 static pages</span></td></tr>
-<tr><td>Playwright, 4 specs</td><td><span class="chip tone-yes">251 of 251</span></td></tr>
+<tr><td>Vitest</td><td><span class="chip tone-yes">1298 of 1298</span></td></tr>
+<tr><td>Build</td><td><span class="chip tone-yes">1,803 prerendered routes</span></td></tr>
+<tr><td>Playwright, 12 specs</td><td><span class="chip tone-yes">564 of 564</span></td></tr>
 <tr><td>Lighthouse budgets, 3 URLs, 3 runs each</td><td><span class="chip tone-yes">pass</span></td></tr>
 <tr><td><code>TODO</code>, <code>FIXME</code>, <code>HACK</code> in source</td><td><span class="chip tone-yes">0</span></td></tr>
 <tr><td><code>npm audit</code>, production dependencies</td><td><span class="chip tone-bad">1 critical, 1 high</span></td></tr>
@@ -60,51 +60,48 @@ export const archHealth: Chapter = {
 
 <h3>2. A few files carry most of the weight</h3>
 <p>
-  Line counts from <code>wc -l</code> as of 30 September 2026, for source outside
+  Line counts from <code>wc -l</code> as of 11 October 2026, for source outside
   <code>content/</code> and for the two largest content files:
 </p>
 
 <figure>
-<svg viewBox="0 0 900 350" class="dg" role="img" aria-label="Bar chart of the largest files by line count, as of 30 September 2026: app/globals.css 7,922; content/interview-data.ts 4,734; content/topics.ts 4,394; mock/mock.module.css 3,314; app/home.module.css 2,455; whiteboard/Board.tsx 1,852; PracticeWorkspace.tsx 1,735; interview/book.module.css 1,614.">
+<svg viewBox="0 0 900 312" class="dg" role="img" aria-label="Bar chart of the largest files by line count, as of 11 October 2026: app/globals.css 7,277; smoke.spec.ts 6,510; content/interview-data.ts 4,745; content/topics.ts 4,556; whiteboard/Board.tsx 1,852; PracticeWorkspace.tsx 1,825; whiteboard/whiteboard.module.css 1,636.">
 <g class="rough">
-<rect x="245" y="24" width="396" height="22" rx="4" style="fill: var(--dg-box-red); stroke: var(--red); stroke-width: 1.6" />
-<rect x="245" y="62" width="237" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
-<rect x="245" y="100" width="220" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
-<rect x="245" y="138" width="166" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
-<rect x="245" y="176" width="123" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
-<rect x="245" y="214" width="93" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
-<rect x="245" y="252" width="87" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
-<rect x="245" y="290" width="81" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
-<path class="ln" d="M245 16 V320" />
+<rect x="245" y="24" width="425" height="22" rx="4" style="fill: var(--dg-box-red); stroke: var(--red); stroke-width: 1.6" />
+<rect x="245" y="62" width="380" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="100" width="277" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
+<rect x="245" y="138" width="266" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
+<rect x="245" y="176" width="108" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="214" width="107" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="252" width="96" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<path class="ln" d="M245 16 V282" />
 </g>
 <text class="lbl" x="232" y="41" text-anchor="end">app/globals.css</text>
-<text class="lbl" x="232" y="79" text-anchor="end">content/interview-data.ts</text>
-<text class="lbl" x="232" y="117" text-anchor="end">content/topics.ts</text>
-<text class="lbl" x="232" y="155" text-anchor="end">mock/mock.module.css</text>
-<text class="lbl" x="232" y="193" text-anchor="end">app/home.module.css</text>
-<text class="lbl" x="232" y="231" text-anchor="end">whiteboard/Board.tsx</text>
-<text class="lbl" x="232" y="269" text-anchor="end">PracticeWorkspace.tsx</text>
-<text class="lbl" x="232" y="307" text-anchor="end">interview/book.module.css</text>
-<text class="sm" x="651" y="40">7,922</text>
-<text class="sm" x="492" y="78">4,734</text>
-<text class="sm" x="475" y="116">4,394</text>
-<text class="sm" x="421" y="154">3,314</text>
-<text class="sm" x="378" y="192">2,455</text>
-<text class="sm" x="348" y="230">1,852</text>
-<text class="sm" x="342" y="268">1,735</text>
-<text class="sm" x="336" y="306">1,614</text>
-<text class="sm" x="245" y="340">lines as of 30 September 2026, one bar length per line count</text>
+<text class="lbl" x="232" y="79" text-anchor="end">smoke.spec.ts</text>
+<text class="lbl" x="232" y="117" text-anchor="end">content/interview-data.ts</text>
+<text class="lbl" x="232" y="155" text-anchor="end">content/topics.ts</text>
+<text class="lbl" x="232" y="193" text-anchor="end">whiteboard/Board.tsx</text>
+<text class="lbl" x="232" y="231" text-anchor="end">PracticeWorkspace.tsx</text>
+<text class="lbl" x="232" y="269" text-anchor="end">whiteboard/whiteboard.module.css</text>
+<text class="sm" x="680" y="40">7,277</text>
+<text class="sm" x="635" y="78">6,510</text>
+<text class="sm" x="532" y="116">4,745</text>
+<text class="sm" x="521" y="154">4,556</text>
+<text class="sm" x="363" y="192">1,852</text>
+<text class="sm" x="362" y="230">1,825</text>
+<text class="sm" x="351" y="268">1,636</text>
+<text class="sm" x="245" y="302">lines as of 11 October 2026, one bar length per line count</text>
 </svg>
 <figcaption>
-  One stylesheet is still the longest file, about two thirds longer than the next. The two yellow bars are content,
+  One stylesheet is still the longest file, about half as long again as the next. The two yellow bars are content,
   which is expected to be long. The rest are components and their styles.
 </figcaption>
 </figure>
 
 <p>
-  <strong><code>app/globals.css</code>, about 7,900 lines</strong>, is the largest single piece of debt.
+  <strong><code>app/globals.css</code>, about 7,300 lines</strong>, is the largest single piece of debt.
   The newer parts of the site (the mock interview, the whiteboard and the problems page) use CSS
-  modules, and the older reader and playground styles still live in the global sheet. Every page
+  modules, and the older reader and editor styles still live in the global sheet. Every page
   downloads all of it, and nothing tells you which rules are dead.
 </p>
 <p>
@@ -113,15 +110,15 @@ export const archHealth: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Component</th><th>Lines</th><th><code>useState</code></th><th><code>useEffect</code></th><th><code>useRef</code></th></tr></thead>
 <tbody>
-<tr><td><code>app/whiteboard/Board.tsx</code></td><td>1,851</td><td>24</td><td>15</td><td>24</td></tr>
-<tr><td><code>components/practice/PracticeWorkspace.tsx</code></td><td>1,735</td><td>26</td><td>8</td><td>12</td></tr>
-<tr><td><code>components/practice/CodeEditor.tsx</code></td><td>1,112</td><td>22</td><td>8</td><td>13</td></tr>
+<tr><td><code>app/whiteboard/Board.tsx</code></td><td>1,852</td><td>24</td><td>15</td><td>24</td></tr>
+<tr><td><code>components/practice/PracticeWorkspace.tsx</code></td><td>1,825</td><td>26</td><td>8</td><td>15</td></tr>
+<tr><td><code>components/practice/CodeEditor.tsx</code></td><td>1,118</td><td>22</td><td>8</td><td>13</td></tr>
 </tbody>
 </table></div>
 <p>
   None of them has a unit test. Only the Playwright suites cover them, which catch breakage but
   make a refactor slow to verify. The pure parts have already been pulled out and are
-  tested: <code>lib/whiteboard/model.ts</code> is 659 lines under 17 tests. The next useful split is
+  tested: <code>lib/whiteboard/model.ts</code> is 695 lines under 17 tests. The next useful split is
   the same move for the playground's file and run state.
 </p>
 
@@ -139,7 +136,7 @@ export const archHealth: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Where</th><th>Says</th><th>Is</th></tr></thead>
 <tbody>
-<tr><td><code>docs/ROADMAP.md</code></td><td>602 prerendered pages</td><td>1,746 static pages in the latest build</td></tr>
+<tr><td><code>docs/ROADMAP.md</code></td><td>602 prerendered pages</td><td>1,803 prerendered routes in a local build</td></tr>
 <tr><td><code>docs/ROADMAP.md</code>, section 6</td><td>A weekly cleanup keeping 5 and 5, with 24 hours of grace</td><td>Daily, keeping 3 and 2, with 6 hours</td></tr>
 <tr><td><code>docs/ROADMAP.md</code>, section 6</td><td><code>public/wasm/</code> is 18 MB</td><td>1.4 MB; the runtimes come from jsDelivr</td></tr>
 <tr><td><code>docs/ROADMAP.md</code>, section 7</td><td>No error service; <code>/git</code> shows crawlers 42 characters</td><td>Sentry is wired behind a DSN; <code>/git</code> renders its body on the server</td></tr>

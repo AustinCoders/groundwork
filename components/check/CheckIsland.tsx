@@ -1,6 +1,7 @@
 import { loadPool } from "@/lib/quizPool";
+import { Eyebrow } from "@/components/ui/MenuKit";
 import styles from "@/components/topic/reader.module.css";
-import { CheckRunner } from "./CheckRunner";
+import { CheckRunner } from "./CheckRunnerLoader";
 
 export async function CheckIsland({ chapterId, basePath }: { chapterId: string; basePath: string }) {
   const pool = await loadPool(chapterId);
@@ -13,7 +14,9 @@ export async function CheckIsland({ chapterId, basePath }: { chapterId: string; 
       aria-label="Chapter check"
       tabIndex={-1}
     >
-      <p className={styles.islandKicker}>Check yourself</p>
+      <Eyebrow no="✓" as="p">
+        Check yourself
+      </Eyebrow>
       <CheckRunner key={chapterId} chapterId={chapterId} basePath={basePath} questions={pool?.questions ?? []} />
     </section>
   );

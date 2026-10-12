@@ -86,11 +86,13 @@ export const archRepoMap: Chapter = {
 
 <h3>Inside app/</h3>
 <p>
-  Twenty of the route folders are topics, and each has the same four things: <code>page.tsx</code> for
+  Thirty-one of the route folders are topics. Twenty of them have the same four things: <code>page.tsx</code> for
   the cover, <code>[chapter]/page.tsx</code>, <code>[chapter]/loading.tsx</code> for the skeleton, and
-  <code>search-index.json/route.ts</code>. Each of those files is a few lines that call into
-  <code>components/reader/topicPages.tsx</code>, so the twenty folders are copies of one shape rather than
-  twenty implementations. The architecture folder is the one without a <code>loading.tsx</code>.
+  <code>search-index.json/route.ts</code>. The other eleven, Python, Java, C++, Rust, Ruby, Go, MongoDB, DBMS,
+  Networks, Operating Systems and Claude and AI tools, have no chapters yet and hold only
+  <code>page.tsx</code>. Each of those files is a few lines that call into
+  <code>components/reader/topicPages.tsx</code>, so the folders are copies of one shape rather than
+  thirty-one implementations. The architecture folder is the one without a <code>loading.tsx</code>.
 </p>
 <p>
   The tools are different. <code>app/mock/</code> has 14 files besides its page: the lobby, the loop
@@ -105,11 +107,11 @@ export const archRepoMap: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Where</th><th>What</th></tr></thead>
 <tbody>
-<tr><td><code>components/frame/PageFrame.tsx</code>, <code>components/topic/TopicFrame.tsx</code></td><td>The frame every page but the full-screen tools uses: a sticky header with a back pill, and a menu button</td></tr>
+<tr><td><code>components/frame/PageFrame.tsx</code>, <code>components/frame/FrameHeader.tsx</code>, <code>components/topic/TopicFrame.tsx</code></td><td>The frame every page but the whiteboard uses, and its header (a back pill, a menu button, the brand), which the playground and the problem pages reuse around their full-height shell</td></tr>
 <tr><td><code>components/SiteDrawer.tsx</code>, <code>AppHeader.tsx</code></td><td>The slide-in menu every frame opens, and the header of the full-screen tools</td></tr>
 <tr><td><code>components/Modal.tsx</code>, <code>AppearancePicker.tsx</code></td><td>Dialogs on the native <code>&lt;dialog&gt;</code> element, and the theme and handwriting picker shared by the playground and the whiteboard</td></tr>
 <tr><td><code>components/reader/</code></td><td>11 files: the helpers a chapter page leans on, such as search indexing, narration, the reader's DOM enhancements and the practice strip</td></tr>
-<tr><td><code>components/practice/</code></td><td>10 files, led by <code>PracticeWorkspace.tsx</code> at 1,735 lines and <code>CodeEditor.tsx</code> at 1,112</td></tr>
+<tr><td><code>components/practice/</code></td><td>11 files, led by <code>PracticeWorkspace.tsx</code> at about 1,800 lines and <code>CodeEditor.tsx</code> at about 1,100, with <code>workbench.module.css</code> holding the page shell</td></tr>
 <tr><td><code>lib/polyglot/</code></td><td>Records test cases from JavaScript solutions and grades other languages against them</td></tr>
 <tr><td><code>lib/mock/</code></td><td>12 files: loops, pacing, scoring, readiness and the session reducer of the mock interview</td></tr>
 <tr><td><code>lib/whiteboard/</code></td><td>The board's element model, geometry, export and storage</td></tr>

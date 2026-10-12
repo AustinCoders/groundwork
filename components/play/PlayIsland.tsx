@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
-import { Player } from "@/components/play/Player";
+import { Player } from "@/components/play/PlayerLoader";
 import { loadTracer } from "@/lib/play/registry";
+import { Eyebrow } from "@/components/ui/MenuKit";
 import styles from "@/components/topic/reader.module.css";
 
 function Island({ id, children }: { id: string; children: ReactNode }) {
@@ -13,7 +14,9 @@ function Island({ id, children }: { id: string; children: ReactNode }) {
       data-speech-exclude=""
       aria-label="Play it"
     >
-      <p className={styles.islandKicker}>Play it</p>
+      <Eyebrow no="▶" as="p">
+        Play it
+      </Eyebrow>
       {children}
     </section>
   );

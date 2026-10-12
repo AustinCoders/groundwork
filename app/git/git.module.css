@@ -1,0 +1,129 @@
+.figure {
+  min-width: 0;
+}
+
+.figure figure {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+}
+
+.figure svg {
+  overflow: visible;
+}
+
+.figure :global(.dg .lbl) {
+  font-size: var(--t-heading);
+}
+
+.figure :global(.dg .sm) {
+  font-size: var(--t-control);
+}
+
+.figure figcaption {
+  margin-top: 12px;
+  font-size: var(--t-body);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  text-align: left;
+  text-wrap: pretty;
+}
+
+.startTitle {
+  display: block;
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--t-display);
+  font-weight: 700;
+  line-height: 1.12;
+  color: var(--ink);
+  text-decoration: none;
+  text-wrap: balance;
+}
+
+.startTitle:hover {
+  color: var(--primary);
+}
+
+.startTitle:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.startSub {
+  margin: 8px 0 0;
+  font-size: var(--t-body);
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.startMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+@media (max-width: 720px) {
+  .figure :global(.dg .lbl) {
+    font-size: var(--t-display);
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    transform: scale(1.1);
+  }
+
+  .figure :global(.dg .lbl[x="836"]) {
+    text-anchor: end;
+    transform-origin: 100% 100%;
+    transform: translateY(-34px) scale(1.1);
+  }
+
+  .figure :global(.dg .sm) {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .figure :global(.dg .lbl) {
+    transform: scale(1.5);
+  }
+
+  .figure :global(.dg .lbl[x="836"]) {
+    transform: translateY(-64px) scale(1.5);
+  }
+
+  .figure :global(.dg .lbl[x="500"]) {
+    transform-origin: 50% 0;
+    transform: translateY(30px) scale(1.5);
+  }
+}
+
+@media (min-width: 1081px) and (max-height: 960px) {
+  .hero [data-facts] > div {
+    padding-block: 5px;
+  }
+}
+
+@media (min-width: 1081px) and (max-height: 820px) {
+  .figure figcaption,
+  .hero [data-note] {
+    display: none;
+  }
+
+  .hero [data-stage][data-layout] {
+    padding-bottom: 16px;
+  }
+
+  .hero [data-facts] > div {
+    padding-block: 4px;
+  }
+}
+
+@media (min-width: 1081px) {
+  .hero[data-scene-root] {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  }
+}

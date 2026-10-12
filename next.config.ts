@@ -22,6 +22,17 @@ export const PINNED_OUTLINE_TOPIC_IDS = [
   "graphql",
   "redis",
   "kubernetes",
+  "python",
+  "java",
+  "cpp",
+  "rust",
+  "ruby",
+  "go",
+  "mongodb",
+  "dbms",
+  "networks",
+  "os",
+  "ai",
 ];
 
 const runtimeOrigins = wasmOrigins().join(" ");

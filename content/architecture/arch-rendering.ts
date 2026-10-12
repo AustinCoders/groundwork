@@ -15,7 +15,7 @@ export const archRendering: Chapter = {
   A component is a server component unless it needs something only a browser has: state, an effect,
   an event handler, <code>localStorage</code>, or a measurement. Adding <code>"use client"</code> has
   a cost, because everything the file imports is bundled and shipped. Across <code>app/</code>,
-  <code>components/</code> and <code>lib/</code>, 87 files carry the directive. About a third belong
+  <code>components/</code> and <code>lib/</code>, 111 files carry the directive. About a third belong
   to the three big interactive surfaces: the playground, the whiteboard and the mock interview.
 </p>
 
@@ -251,7 +251,7 @@ export const archRendering: Chapter = {
   <code>lib/themeInitScript.ts</code>. It reads <code>jsnotes:theme</code> and
   <code>jsnotes:font</code>, falls back to <code>prefers-color-scheme</code>, and sets
   <code>data-theme</code> and <code>data-font</code> on the root element. There are nine themes and
-  seven fonts. <code>&lt;html&gt;</code> has <code>suppressHydrationWarning</code> because those
+  eight fonts. <code>&lt;html&gt;</code> has <code>suppressHydrationWarning</code> because those
   attributes will legitimately differ from the server's. The script sits in
   <code>&lt;body&gt;</code>, as the Script docs ask, and Next moves it into the head.
 </p>

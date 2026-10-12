@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { Elapsed, InlineTimer, TimerRing } from "@/app/mock/TimerRing";
+import { InlineTimer, TimerRing } from "@/app/mock/TimerRing";
 import { MINUTES_PER_CODING, MINUTES_PER_TALK } from "@/lib/mock/loops";
 import { codingScore, rubricFor, talkScore, type CriterionId, type Mark } from "@/lib/mock/scoring";
 import { currentQuestion, stagePosition, type Action, type Session, type SessionQuestion } from "@/lib/mock/session";
@@ -15,13 +15,25 @@ import { STAGE_GUIDE } from "@/lib/mock/guide";
 import { BoardView, Whiteboard } from "@/app/mock/Whiteboard";
 import { useScrollRegions } from "@/components/reader/scrollRegions";
 import { EMPTY_BOARD } from "@/lib/mock/board";
-import styles from "./mock.module.css";
+import kit from "./mockKit.module.css";
+import styles from "./room.module.css";
 
 const FOLLOW_UP_SECONDS = 90;
+const SHORT_PROMPT = 90;
+
+function isShort(html: string): boolean {
+  return html.replace(/<[^>]*>/g, "").length <= SHORT_PROMPT;
+}
 
 const PracticeWorkspace = dynamic(
   () => import("@/components/practice/PracticeWorkspace").then((m) => m.PracticeWorkspace),
-  { loading: () => <p className="sub">Loading the editor…</p> }
+  {
+    loading: () => (
+      <p className={styles.loading} role="status">
+        Loading the editor…
+      </p>
+    ),
+  }
 );
 
 const LEVEL_LABEL: Record<Seniority, string> = { junior: "2–3 years", mid: "5–7 years", senior: "10+ years" };
@@ -34,42 +46,16 @@ const MARKS: [Mark, string][] = [
 
 type Dispatch = (a: Action) => void;
 
-function Rail({ session, stages, onEnd }: { session: Session; stages: Record<StageId, StageInfo>; onEnd: () => void }) {
-  const { stageIndex } = stagePosition(session);
+function Avatar({ persona, big = false }: { persona: Persona; big?: boolean }) {
   return (
-    <div className={styles.rail}>
-      <ol className={styles.railStages} aria-label="Rounds in this interview">
-        {session.plan.map((p, i) => {
-          const qs = session.questions.filter((q) => q.stage === p.stage);
-          const done = qs.filter((q) => q.score !== null).length;
-          const state = i < stageIndex ? "done" : i === stageIndex ? "current" : "next";
-          return (
-            <li
-              key={p.stage}
-              className={styles.railStage}
-              data-state={state}
-              aria-current={state === "current" ? "step" : undefined}
-            >
-              <span className={styles.railBar}>
-                <span className={styles.railFill} style={{ width: `${qs.length ? (done / qs.length) * 100 : 0}%` }} />
-              </span>
-              <span className={styles.railName}>{stages[p.stage]?.title}</span>
-            </li>
-          );
-        })}
-      </ol>
-      <Elapsed since={session.startedAt} until={session.finishedAt} />
-      <button
-        type="button"
-        className="btn btn--ghost"
-        onClick={() => {
-          if (window.confirm("End the interview here? It will be scored on what you have answered so far.")) onEnd();
-        }}
-      >
-        End
-      </button>
-    </div>
+    <span className={kit.avatar} data-tone={persona.tone} data-big={big || undefined} aria-hidden="true">
+      {persona.initials}
+    </span>
   );
+}
+
+function Hint({ children }: { children: React.ReactNode }) {
+  return <span className={kit.keys}>{children}</span>;
 }
 
 function StageBrief({ session, info, dispatch }: { session: Session; info: StageInfo; dispatch: Dispatch }) {
@@ -78,97 +64,102 @@ function StageBrief({ session, info, dispatch }: { session: Session; info: Stage
   const persona = personaFor(info.id, session.config);
   const guide = STAGE_GUIDE[info.id];
   return (
-    <section className={`${styles.panel} ${styles.briefPanel}`} aria-labelledby="stage-title">
-      <div className={styles.brief}>
-        <div className={styles.briefMain}>
-          <p className={styles.eyebrow}>
-            {session.plan.length > 1 ? `Round ${stageIndex + 1} of ${session.plan.length}` : "One round"}
-            {info.code ? ` · ${info.code}` : ""}
-          </p>
-          <h2 id="stage-title" className={styles.briefTitle}>
-            {info.title}
-          </h2>
-          <p className={styles.briefPitch}>{guide.pitch}</p>
-          <dl className={styles.briefFacts}>
-            {info.decides && (
-              <div>
-                <dt>What it decides</dt>
-                <dd>{info.decides}</dd>
-              </div>
-            )}
-            {info.failMode && (
-              <div className={styles.fail}>
-                <dt>How it is usually lost</dt>
-                <dd>{info.failMode}</dd>
-              </div>
-            )}
-          </dl>
-          <div className={styles.briefShape}>
-            <p className={styles.eyebrow}>shape of a strong answer</p>
+    <div className={styles.briefGrid}>
+      <section className={`${styles.pane} ${styles.briefMain}`} aria-labelledby="stage-title">
+        <div className={styles.scroll} data-scroll-region="Round briefing">
+          <div className={styles.briefBody}>
+            <p className={kit.label}>
+              {session.plan.length > 1 ? `Round ${stageIndex + 1} of ${session.plan.length}` : "One round"}
+              {info.code ? ` · ${info.code}` : ""}
+            </p>
+            <h2 id="stage-title" className={styles.briefTitle}>
+              {info.title}
+            </h2>
+            <p className={styles.briefPitch}>
+              <span className={kit.highlight}>{guide.pitch}</span>
+            </p>
+            <dl className={styles.briefFacts}>
+              {info.decides && (
+                <div>
+                  <dt>What it decides</dt>
+                  <dd>{info.decides}</dd>
+                </div>
+              )}
+              {info.failMode && (
+                <div>
+                  <dt>How it is usually lost</dt>
+                  <dd>{info.failMode}</dd>
+                </div>
+              )}
+            </dl>
+            <p className={kit.label}>Shape of a strong answer</p>
             <ol className={styles.shape}>
               {guide.shape.map((step) => (
                 <li key={step}>{step}</li>
               ))}
             </ol>
-          </div>
-          <div className={styles.briefTips}>
-            <div>
-              <p className={styles.eyebrow}>do this</p>
-              <ul className={styles.tipList}>
-                {guide.tips.map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <p className={styles.eyebrow}>where marks are lost</p>
-              <ul className={`${styles.tipList} ${styles.tipBad}`}>
-                {guide.markedDown.map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
+            <div className={styles.briefTips}>
+              <div className={kit.sticky} data-tone="mint">
+                <p className={kit.label}>Do this</p>
+                <ul className={styles.tipList}>
+                  {guide.tips.map((t) => (
+                    <li key={t}>{t}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className={kit.sticky} data-tone="rose">
+                <p className={kit.label}>Where marks are lost</p>
+                <ul className={`${styles.tipList} ${styles.tipBad}`}>
+                  {guide.markedDown.map((t) => (
+                    <li key={t}>{t}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </div>
-        <div className={styles.briefSide}>
-          <div className={styles.personaCard}>
-            <Avatar persona={persona} big />
-            <b className={styles.personaName}>{persona.name}</b>
-            <span className={styles.personaRole}>{persona.role}</span>
-            {info.who && <span className={styles.personaWho}>Usually run by: {info.who}</span>}
-          </div>
-          <div className={styles.briefNumbers}>
-            <div>
-              <b>{plan?.questions}</b>
-              <span>{info.kind === "coding" ? "problems, graded by tests" : "questions, out loud"}</span>
-            </div>
-            <div>
-              <b>{plan?.minutes}</b>
-              <span>minutes, about</span>
-            </div>
-          </div>
-          {plan?.core && (
-            <p className={styles.coreNote}>
-              <span className={styles.coreBadge}>core round</span> A no-hire here sinks the loop, whatever the other
-              rounds say.
-            </p>
-          )}
+        <div className={styles.paneFoot}>
           <div className={styles.actions}>
             <button
               type="button"
-              className={`btn btn--primary ${styles.walkIn}`}
+              className={`${kit.btn} ${styles.walkInBtn}`}
               autoFocus
               onClick={() => dispatch({ type: "enter", at: Date.now() })}
             >
               Walk in
             </button>
-            <span className={styles.hint}>
+            <Hint>
               <kbd>Enter</kbd>
-            </span>
+            </Hint>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+      <aside className={styles.briefSide} aria-label="Who you are meeting">
+        <div className={`${kit.paper} ${styles.personaCard}`}>
+          <span className={kit.tape} aria-hidden="true" />
+          <Avatar persona={persona} big />
+          <b className={styles.personaName}>{persona.name}</b>
+          <span className={styles.personaRole}>{persona.role}</span>
+          {info.who && <span className={styles.personaWho}>Usually run by: {info.who}</span>}
+        </div>
+        <div className={styles.briefNumbers}>
+          <div>
+            <b>{plan?.questions}</b>
+            <span>{info.kind === "coding" ? "problems, graded by tests" : "questions, out loud"}</span>
+          </div>
+          <div>
+            <b>{plan?.minutes}</b>
+            <span>minutes, about</span>
+          </div>
+        </div>
+        {plan?.core && (
+          <p className={styles.coreNote}>
+            <span className={kit.coreBadge}>core round</span> A no-hire here sinks the loop, whatever the other rounds
+            say.
+          </p>
+        )}
+      </aside>
+    </div>
   );
 }
 
@@ -176,7 +167,7 @@ function Coach({ stage }: { stage: StageId }) {
   const guide = STAGE_GUIDE[stage];
   return (
     <div className={styles.coach}>
-      <p className={styles.eyebrow}>shape of a strong answer</p>
+      <p className={kit.label}>Shape of a strong answer</p>
       <ol className={styles.shape} data-compact>
         {guide.shape.map((step) => (
           <li key={step}>{step}</li>
@@ -199,11 +190,11 @@ function QuestionHead({ q, session, info }: { q: SessionQuestion; session: Sessi
   const item = q.item as TalkItem;
   return (
     <div className={styles.qHead}>
-      <span className={styles.eyebrow}>
+      <span className={kit.label}>
         {info.title} · {inStage} of {ofStage}
       </span>
-      <span className="tag">{item.originTitle}</span>
-      {item.level !== "any" && <span className="tag">{LEVEL_LABEL[item.level]}</span>}
+      <span className={styles.tag}>{item.originTitle}</span>
+      {item.level !== "any" && <span className={styles.tag}>{LEVEL_LABEL[item.level]}</span>}
       {q.adapted && (
         <span className={styles.shiftTag} data-shift={q.adapted}>
           {q.adapted === "harder" ? "↑ raised the bar" : "↓ back to basics"}
@@ -213,17 +204,19 @@ function QuestionHead({ q, session, info }: { q: SessionQuestion; session: Sessi
   );
 }
 
-function Avatar({ persona, big = false }: { persona: Persona; big?: boolean }) {
+function Said({
+  persona,
+  aside,
+  featured,
+  children,
+}: {
+  persona: Persona;
+  aside?: boolean;
+  featured?: boolean;
+  children: React.ReactNode;
+}) {
   return (
-    <span className={styles.avatar} data-tone={persona.tone} data-big={big || undefined} aria-hidden="true">
-      {persona.initials}
-    </span>
-  );
-}
-
-function Said({ persona, aside, children }: { persona: Persona; aside?: boolean; children: React.ReactNode }) {
-  return (
-    <div className={styles.said} data-aside={aside || undefined}>
+    <div className={styles.said} data-aside={aside || undefined} data-featured={featured || undefined}>
       <Avatar persona={persona} />
       <div className={styles.saidBody}>
         <span className={styles.saidWho}>
@@ -253,11 +246,11 @@ function AgainstPanel({ item, q, seniority }: { item: TalkItem; q: SessionQuesti
   return (
     <div ref={panel} className={`${styles.against} interview-body`}>
       <div>
-        <span className={styles.notesLabel}>What you jotted</span>
+        <span className={kit.label}>What you jotted</span>
         <div className={styles.yours}>{q.notes.trim()}</div>
         {q.followUp && q.followUpNotes.trim() && (
           <>
-            <span className={styles.notesLabel}>…and when they pushed</span>
+            <span className={kit.label}>…and when they pushed</span>
             <div className={styles.yours}>{q.followUpNotes.trim()}</div>
           </>
         )}
@@ -272,12 +265,12 @@ function AgainstPanel({ item, q, seniority }: { item: TalkItem; q: SessionQuesti
 
       {rung && (
         <div className={styles.ladderRung}>
-          <span className={styles.eyebrow}>The bar at {rung.label}</span>
+          <span className={kit.label}>The bar at {rung.label}</span>
           <p dangerouslySetInnerHTML={{ __html: rung.bar }} />
           <p>
             <i dangerouslySetInnerHTML={{ __html: rung.script }} />
           </p>
-          <p className="sub" dangerouslySetInnerHTML={{ __html: rung.why }} />
+          <p className={styles.quiet} dangerouslySetInnerHTML={{ __html: rung.why }} />
         </div>
       )}
 
@@ -309,7 +302,7 @@ function AgainstPanel({ item, q, seniority }: { item: TalkItem; q: SessionQuesti
         </div>
       )}
 
-      <p>
+      <p className={styles.readLink}>
         <Link href={item.href} target="_blank" rel="noopener">
           Read it where it is written up ↗
         </Link>
@@ -326,62 +319,68 @@ function Rubric({ q, dispatch }: { q: SessionQuestion; dispatch: Dispatch }) {
   const complete = marked === criteria.length;
 
   return (
-    <aside className={styles.rubric} aria-labelledby="rubric-h">
-      <div className={styles.rubricHead}>
-        <h3 id="rubric-h">Mark it honestly</h3>
-        <span className={styles.hint}>
+    <aside className={`${styles.pane} ${styles.rubric}`} aria-labelledby="rubric-h">
+      <div className={styles.paneHead}>
+        <h3 id="rubric-h" className={styles.paneTitle}>
+          Mark it honestly
+        </h3>
+        <Hint>
           <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd>
-        </span>
+        </Hint>
       </div>
-      {criteria.map((c) => (
-        <div key={c.id} className={styles.criterion} role="group" aria-label={c.label}>
-          <span className={styles.criterionLabel}>
-            {c.label}
-            <span className={styles.weight}>×{c.weight}</span>
-          </span>
-          <span className={styles.criterionHint}>{c.hint}</span>
-          <div className={styles.marks}>
-            {MARKS.map(([m, label]) => (
-              <button
-                key={label}
-                type="button"
-                className={styles.mark}
-                data-mark={String(m)}
-                aria-pressed={q.marks[c.id] === m}
-                onClick={() => dispatch({ type: "mark", criterion: c.id, mark: m })}
-              >
-                {label}
-              </button>
-            ))}
+      <div className={styles.scroll} data-scroll-region="Rubric">
+        {criteria.map((c) => (
+          <div key={c.id} className={styles.criterion} role="group" aria-label={c.label}>
+            <span className={styles.criterionLabel}>
+              {c.label}
+              <span className={styles.weight}>×{c.weight}</span>
+            </span>
+            <span className={styles.criterionHint}>{c.hint}</span>
+            <div className={styles.marks}>
+              {MARKS.map(([m, label]) => (
+                <button
+                  key={label}
+                  type="button"
+                  className={styles.mark}
+                  data-mark={String(m)}
+                  aria-pressed={q.marks[c.id] === m}
+                  onClick={() => dispatch({ type: "mark", criterion: c.id, mark: m })}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className={styles.paneFoot}>
+        <div className={styles.meter}>
+          <div className={styles.meterLabel}>
+            <span>
+              {marked} of {criteria.length} marked
+            </span>
+            <span>{Math.round(score * 100)}%</span>
+          </div>
+          <div className={styles.meterTrack}>
+            <span className={styles.meterFill} style={{ width: `${score * 100}%` }} />
           </div>
         </div>
-      ))}
-      <div className={styles.meter}>
-        <div className={styles.meterLabel}>
-          <span>
-            {marked} of {criteria.length} marked
-          </span>
-          <span>{Math.round(score * 100)}%</span>
+        <div className={styles.actions}>
+          <button
+            type="button"
+            className={kit.btn}
+            disabled={!complete}
+            onClick={() => dispatch({ type: "next", at: Date.now() })}
+          >
+            Next question
+          </button>
+          {!complete && <Hint>mark every line first</Hint>}
+          {complete && (
+            <Hint>
+              <kbd>Enter</kbd>
+            </Hint>
+          )}
         </div>
-        <div className={styles.meterTrack}>
-          <span className={styles.meterFill} style={{ width: `${score * 100}%` }} />
-        </div>
-      </div>
-      <div className={styles.actions}>
-        <button
-          type="button"
-          className="btn btn--primary"
-          disabled={!complete}
-          onClick={() => dispatch({ type: "next", at: Date.now() })}
-        >
-          Next question
-        </button>
-        {!complete && <span className={styles.hint}>mark every line first</span>}
-        {complete && (
-          <span className={styles.hint}>
-            <kbd>Enter</kbd>
-          </span>
-        )}
       </div>
     </aside>
   );
@@ -407,35 +406,50 @@ function TalkQuestion({
   const expireFollowUp = useCallback(() => dispatch({ type: "followup-answered" }), [dispatch]);
 
   if (session.step === "answer") {
+    const onBoard = padView === "board" && q.stage === "design";
     return (
-      <section className={styles.panel} aria-labelledby="q-prompt">
-        <QuestionHead q={q} session={session} info={info} />
-        <div className={styles.chat} role="log" aria-label={`Interview with ${persona.name}`}>
-          {inStage === 1 && (
-            <Said persona={persona} aside>
-              {opener(persona, q.stage, session.startedAt + session.cursor)}
-            </Said>
-          )}
-          {q.adapted && (
-            <Said persona={persona} aside>
-              {shiftRemark(q.adapted, persona)}
-            </Said>
-          )}
-          <Said persona={persona}>
-            <h2 id="q-prompt" className={styles.prompt} dangerouslySetInnerHTML={{ __html: item.prompt }} />
-          </Said>
-        </div>
-        <div className={styles.answerArea}>
-          <div>
-            {q.stage === "design" && (
-              <div className={styles.padTabs} role="tablist" aria-label="Answer with">
+      <div className={styles.split}>
+        <section className={styles.pane} aria-labelledby="q-prompt">
+          <div className={styles.paneHead}>
+            <QuestionHead q={q} session={session} info={info} />
+          </div>
+          <div className={styles.scroll} data-scroll-region="The interview">
+            <div className={styles.chat} role="log" aria-label={`Interview with ${persona.name}`}>
+              {inStage === 1 && (
+                <Said persona={persona} aside>
+                  {opener(persona, q.stage, session.startedAt + session.cursor)}
+                </Said>
+              )}
+              {q.adapted && (
+                <Said persona={persona} aside>
+                  {shiftRemark(q.adapted, persona)}
+                </Said>
+              )}
+              <Said persona={persona} featured>
+                <h2
+                  id="q-prompt"
+                  className={styles.prompt}
+                  data-short={isShort(item.prompt) || undefined}
+                  dangerouslySetInnerHTML={{ __html: item.prompt }}
+                />
+              </Said>
+            </div>
+          </div>
+          <div className={styles.paneFoot}>
+            <Coach stage={q.stage} />
+          </div>
+        </section>
+        <section className={styles.pane} aria-label="Your answer">
+          <div className={styles.paneHead}>
+            {q.stage === "design" ? (
+              <div className={styles.pads} role="tablist" aria-label="Answer with">
                 {(["notes", "board"] as const).map((pad) => (
                   <button
                     key={pad}
                     type="button"
                     role="tab"
                     aria-selected={padView === pad}
-                    className={styles.padTab}
+                    className={styles.pad}
                     onClick={() => setPadView(pad)}
                   >
                     {pad === "notes"
@@ -444,67 +458,98 @@ function TalkQuestion({
                   </button>
                 ))}
               </div>
-            )}
-            {padView === "board" && q.stage === "design" ? (
-              <Whiteboard board={q.board ?? EMPTY_BOARD} onChange={(board) => dispatch({ type: "board", board })} />
             ) : (
-              <>
+              <label className={styles.notesLabel} htmlFor="mock-notes">
+                Say it out loud. Jot the skeleton here if it helps — it is kept for the review.
+              </label>
+            )}
+            <span className={styles.spacer} />
+            {q.startedAt !== null && <TimerRing startedAt={q.startedAt} seconds={seconds} onExpire={expire} />}
+          </div>
+          {onBoard ? (
+            <div className={styles.scroll} data-scroll-region="Whiteboard">
+              <Whiteboard board={q.board ?? EMPTY_BOARD} onChange={(board) => dispatch({ type: "board", board })} />
+            </div>
+          ) : (
+            <div className={styles.padBody}>
+              {q.stage === "design" && (
                 <label className={styles.notesLabel} htmlFor="mock-notes">
                   Say it out loud. Jot the skeleton here if it helps — it is kept for the review.
                 </label>
-                <textarea
-                  id="mock-notes"
-                  className={styles.notes}
-                  value={q.notes}
-                  autoFocus
-                  onChange={(e) => dispatch({ type: "notes", text: e.target.value })}
-                />
-              </>
-            )}
+              )}
+              <textarea
+                id="mock-notes"
+                className={styles.notes}
+                value={q.notes}
+                autoFocus
+                onChange={(e) => dispatch({ type: "notes", text: e.target.value })}
+              />
+            </div>
+          )}
+          <div className={styles.paneFoot}>
+            <div className={styles.actions}>
+              <button
+                type="button"
+                className={kit.btn}
+                onClick={() => dispatch({ type: "answered", at: Date.now(), timedOut: false })}
+              >
+                I&apos;ve answered
+              </button>
+              <button
+                type="button"
+                className={`${kit.btn} ${kit.btnQuiet}`}
+                onClick={() => dispatch({ type: "skip", at: Date.now() })}
+              >
+                Skip — I don&apos;t know
+              </button>
+              <Hint>
+                <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd> when you are done
+              </Hint>
+            </div>
           </div>
-          <div className={styles.side}>
-            {q.startedAt !== null && <TimerRing startedAt={q.startedAt} seconds={seconds} onExpire={expire} />}
-            <Coach stage={q.stage} />
-          </div>
-        </div>
-        <div className={styles.actions}>
-          <button
-            type="button"
-            className="btn btn--primary"
-            onClick={() => dispatch({ type: "answered", at: Date.now(), timedOut: false })}
-          >
-            I&apos;ve answered
-          </button>
-          <button type="button" className="btn btn--ghost" onClick={() => dispatch({ type: "skip", at: Date.now() })}>
-            Skip — I don&apos;t know
-          </button>
-          <span className={styles.hint}>
-            <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd> when you are done
-          </span>
-        </div>
-      </section>
+        </section>
+      </div>
     );
   }
 
   if (session.step === "followup" && q.followUp) {
     return (
-      <section className={styles.panel} aria-labelledby="q-push">
-        <QuestionHead q={q} session={session} info={info} />
-        <div className={styles.chat} role="log" aria-label={`Interview with ${persona.name}`}>
-          <Said persona={persona}>
-            <p className={styles.saidQuiet} dangerouslySetInnerHTML={{ __html: item.prompt }} />
-          </Said>
-          <YouSaid text={q.notes} />
-          <Said persona={persona}>
-            <span className={styles.pushWho}>Follow-up</span>
-            <p id="q-push" className={styles.pushText} dangerouslySetInnerHTML={{ __html: q.followUp }} />
-          </Said>
-        </div>
-        <div className={styles.answerArea}>
-          <div>
+      <div className={styles.split}>
+        <section className={styles.pane} aria-labelledby="q-push">
+          <div className={styles.paneHead}>
+            <QuestionHead q={q} session={session} info={info} />
+          </div>
+          <div className={styles.scroll} data-scroll-region="The interview">
+            <div className={styles.chat} role="log" aria-label={`Interview with ${persona.name}`}>
+              <Said persona={persona}>
+                <p className={styles.saidQuiet} dangerouslySetInnerHTML={{ __html: item.prompt }} />
+              </Said>
+              <YouSaid text={q.notes} />
+              <Said persona={persona}>
+                <div className={kit.sticky}>
+                  <span className={kit.tape} aria-hidden="true" />
+                  <span className={styles.pushWho}>Follow-up</span>
+                  <p id="q-push" className={styles.pushText} dangerouslySetInnerHTML={{ __html: q.followUp }} />
+                </div>
+              </Said>
+            </div>
+          </div>
+        </section>
+        <section className={styles.pane} aria-label="Your answer">
+          <div className={styles.paneHead}>
             <label className={styles.notesLabel} htmlFor="mock-followup">
               A follow-up is where a prepared answer runs out. Take the question, not the one you wish they had asked.
             </label>
+            <span className={styles.spacer} />
+            {q.startedAt !== null && (
+              <TimerRing
+                startedAt={q.answeredAt ?? q.startedAt}
+                seconds={FOLLOW_UP_SECONDS}
+                onExpire={expireFollowUp}
+              />
+            )}
+          </div>
+          <div className={styles.padBody}>
             <textarea
               id="mock-followup"
               className={styles.notes}
@@ -513,45 +558,50 @@ function TalkQuestion({
               onChange={(e) => dispatch({ type: "followup-notes", text: e.target.value })}
             />
           </div>
-          {q.startedAt !== null && (
-            <TimerRing startedAt={q.answeredAt ?? q.startedAt} seconds={FOLLOW_UP_SECONDS} onExpire={expireFollowUp} />
-          )}
-        </div>
-        <div className={styles.actions}>
-          <button type="button" className="btn btn--primary" onClick={() => dispatch({ type: "followup-answered" })}>
-            Answered — show me
-          </button>
-          <span className={styles.hint}>
-            <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd>
-          </span>
-        </div>
-      </section>
+          <div className={styles.paneFoot}>
+            <div className={styles.actions}>
+              <button type="button" className={kit.btn} onClick={() => dispatch({ type: "followup-answered" })}>
+                Answered — show me
+              </button>
+              <Hint>
+                <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd>
+              </Hint>
+            </div>
+          </div>
+        </section>
+      </div>
     );
   }
 
   return (
-    <section className={styles.panel} aria-labelledby="q-review">
-      <QuestionHead q={q} session={session} info={info} />
-      <h2
-        id="q-review"
-        className={styles.prompt}
-        style={{ fontSize: 26 }}
-        dangerouslySetInnerHTML={{ __html: item.prompt }}
-      />
-      {q.timedOut && (
-        <p className="warn">The clock ran out before you finished. In the room they would have moved on.</p>
-      )}
-      {q.board && q.board.shapes.length > 0 && (
-        <figure className={styles.boardFigure}>
-          <BoardView board={q.board} />
-          <figcaption className={styles.hint}>Your whiteboard</figcaption>
-        </figure>
-      )}
-      <div className={styles.review}>
-        <AgainstPanel item={item} q={q} seniority={session.config.seniority} />
-        <Rubric q={q} dispatch={dispatch} />
-      </div>
-    </section>
+    <div className={styles.split}>
+      <section className={styles.pane} aria-labelledby="q-review">
+        <div className={styles.paneHead}>
+          <QuestionHead q={q} session={session} info={info} />
+        </div>
+        <div className={styles.scroll} data-scroll-region="The model answer">
+          <div className={styles.reviewQuote}>
+            <h2
+              id="q-review"
+              className={styles.prompt}
+              data-short={isShort(item.prompt) || undefined}
+              dangerouslySetInnerHTML={{ __html: item.prompt }}
+            />
+          </div>
+          {q.timedOut && (
+            <p className="warn">The clock ran out before you finished. In the room they would have moved on.</p>
+          )}
+          {q.board && q.board.shapes.length > 0 && (
+            <figure className={styles.boardFigure}>
+              <BoardView board={q.board} />
+              <figcaption className={kit.keys}>Your whiteboard</figcaption>
+            </figure>
+          )}
+          <AgainstPanel item={item} q={q} seniority={session.config.seniority} />
+        </div>
+      </section>
+      <Rubric q={q} dispatch={dispatch} />
+    </div>
   );
 }
 
@@ -608,78 +658,84 @@ function CodingQuestion({
   if (session.step === "review") {
     const score = outcome ? codingScore(outcome) : 0;
     return (
-      <section className={styles.panel} aria-labelledby="c-review">
-        <p className={styles.eyebrow}>
-          {info.title} · {inStage} of {ofStage}
-        </p>
-        <h2 id="c-review" className={styles.codingTitle}>
-          {item.title}
-        </h2>
-        {q.timedOut && <p className="warn">You went over the time for this problem.</p>}
-        <div className={styles.outcome} style={{ marginTop: 16 }}>
-          <div className={styles.recordTile}>
-            <span className={styles.recordNum}>
-              {outcome?.passed ?? 0}/{outcome?.total ?? item.tests}
-            </span>
-            <span className={styles.recordLabel}>tests passing when you submitted</span>
-          </div>
-          <div className={styles.recordTile}>
-            <span className={styles.recordNum}>{outcome?.hintsUsed ?? 0}</span>
-            <span className={styles.recordLabel}>hints opened · −5% each, up to −15%</span>
-          </div>
-          <div className={styles.recordTile}>
-            <span className={styles.recordNum}>{outcome?.sawSolution ? "yes" : "no"}</span>
-            <span className={styles.recordLabel}>looked at the solution · caps it at 30%</span>
-          </div>
-        </div>
-        {!outcome?.total || (outcome && outcome.passed === 0 && !outcome.sawSolution) ? (
-          <p className="sub">
-            Nothing passed — if you never pressed <b>Submit</b> in the editor, the tests never ran. Run them before you
-            move on next time; an interviewer only sees what works.
+      <div className={styles.outcomeWrap}>
+        <section className={`${kit.paper} ${styles.outcomeCard}`} aria-labelledby="c-review">
+          <span className={kit.tape} aria-hidden="true" />
+          <p className={kit.label}>
+            {info.title} · {inStage} of {ofStage}
           </p>
-        ) : null}
-        <div className={styles.meter} style={{ maxWidth: 420 }}>
-          <div className={styles.meterLabel}>
-            <span>score</span>
-            <span>{Math.round(score * 100)}%</span>
+          <h2 id="c-review" className={styles.codingTitle}>
+            {item.title}
+          </h2>
+          {q.timedOut && <p className="warn">You went over the time for this problem.</p>}
+          <div className={styles.outcome}>
+            <div className={styles.outcomeTile}>
+              <span className={styles.outcomeNum}>
+                {outcome?.passed ?? 0}/{outcome?.total ?? item.tests}
+              </span>
+              <span className={styles.outcomeLabel}>tests passing when you submitted</span>
+            </div>
+            <div className={styles.outcomeTile}>
+              <span className={styles.outcomeNum}>{outcome?.hintsUsed ?? 0}</span>
+              <span className={styles.outcomeLabel}>hints opened · −5% each, up to −15%</span>
+            </div>
+            <div className={styles.outcomeTile}>
+              <span className={styles.outcomeNum}>{outcome?.sawSolution ? "yes" : "no"}</span>
+              <span className={styles.outcomeLabel}>looked at the solution · caps it at 30%</span>
+            </div>
           </div>
-          <div className={styles.meterTrack}>
-            <span className={styles.meterFill} style={{ width: `${score * 100}%` }} />
+          {!outcome?.total || (outcome && outcome.passed === 0 && !outcome.sawSolution) ? (
+            <p className={styles.quiet}>
+              Nothing passed — if you never pressed <b>Submit</b> in the editor, the tests never ran. Run them before
+              you move on next time; an interviewer only sees what works.
+            </p>
+          ) : null}
+          <div className={styles.meter}>
+            <div className={styles.meterLabel}>
+              <span>score</span>
+              <span>{Math.round(score * 100)}%</span>
+            </div>
+            <div className={styles.meterTrack}>
+              <span className={styles.meterFill} style={{ width: `${score * 100}%` }} />
+            </div>
           </div>
-        </div>
-        <div className={styles.actions}>
-          <button
-            type="button"
-            className="btn btn--primary"
-            autoFocus
-            onClick={() => dispatch({ type: "next", at: Date.now() })}
-          >
-            Next question
-          </button>
-          <Link className="btn btn--ghost" href={item.href} target="_blank" rel="noopener">
-            Open the problem on its own ↗
-          </Link>
-        </div>
-      </section>
+          <div className={styles.actions}>
+            <button
+              type="button"
+              className={kit.btn}
+              autoFocus
+              onClick={() => dispatch({ type: "next", at: Date.now() })}
+            >
+              Next question
+            </button>
+            <Link className={`${kit.btn} ${kit.btnGhost}`} href={item.href} target="_blank" rel="noopener">
+              Open the problem on its own ↗
+            </Link>
+          </div>
+        </section>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className={styles.codingRoom}>
       <div className={styles.codingHead}>
-        <div>
-          <p className={styles.eyebrow}>
+        <div className={styles.codingWho}>
+          <p className={kit.label}>
             {info.title} · {inStage} of {ofStage}
           </p>
           <span className={styles.codingTitle}>{item.title}</span>
+          <p className={styles.codingNote}>
+            Press <b>Submit</b> in the editor to run the tests — what is passing when you hand it in is your score.
+          </p>
         </div>
-        <span className="tag">{item.level}</span>
-        <span className="tag">{item.tests} tests</span>
+        <span className={styles.tag}>{item.level}</span>
+        <span className={styles.tag}>{item.tests} tests</span>
         <span className={styles.spacer} />
         {q.startedAt !== null && <InlineTimer startedAt={q.startedAt} seconds={seconds} />}
         <button
           type="button"
-          className="btn btn--primary"
+          className={kit.btn}
           onClick={() =>
             dispatch({
               type: "coding-submit",
@@ -690,13 +746,14 @@ function CodingQuestion({
         >
           Hand it in
         </button>
-        <button type="button" className="btn btn--ghost" onClick={() => dispatch({ type: "skip", at: Date.now() })}>
+        <button
+          type="button"
+          className={`${kit.btn} ${kit.btnQuiet}`}
+          onClick={() => dispatch({ type: "skip", at: Date.now() })}
+        >
           Skip
         </button>
       </div>
-      <p className="sub" style={{ marginTop: 0 }}>
-        Press <b>Submit</b> in the editor to run the tests — what is passing when you hand it in is your score.
-      </p>
       <div className={styles.workspace}>
         {exercise ? (
           <PracticeWorkspace
@@ -712,10 +769,12 @@ function CodingQuestion({
         ) : error ? (
           <p className="warn">This problem could not be loaded. Skip it and carry on.</p>
         ) : (
-          <p className="sub">Loading the editor…</p>
+          <p className={styles.loading} role="status">
+            Loading the editor…
+          </p>
         )}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -723,15 +782,15 @@ export function Room({
   session,
   stages,
   dispatch,
-  onEnd,
 }: {
   session: Session;
   stages: Record<StageId, StageInfo>;
   dispatch: Dispatch;
-  onEnd: () => void;
 }) {
   const q = currentQuestion(session);
   const info = q ? stages[q.stage] : null;
+  const root = useRef<HTMLDivElement>(null);
+  useScrollRegions(root, `${q?.item.id}:${session.step}`);
 
   const firstUnmarked = useMemo(() => {
     if (!q || q.item.kind !== "talk" || session.step !== "review") return null;
@@ -779,8 +838,7 @@ export function Room({
   if (!q || !info) return null;
 
   return (
-    <>
-      <Rail session={session} stages={stages} onEnd={onEnd} />
+    <div className={styles.room} ref={root} data-step={session.step} data-kind={q.item.kind}>
       {session.step === "brief" ? (
         <StageBrief session={session} info={info} dispatch={dispatch} />
       ) : q.item.kind === "talk" ? (
@@ -788,6 +846,6 @@ export function Room({
       ) : (
         <CodingQuestion session={session} q={q} info={info} dispatch={dispatch} />
       )}
-    </>
+    </div>
   );
 }

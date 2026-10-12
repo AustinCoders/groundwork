@@ -1,14 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import Link from "next/link";
 import { SiteDrawer } from "@/components/SiteDrawer";
-import { TopIcon } from "@/components/practice/TopIcon";
-import { BackButton } from "@/components/practice/BackButton";
-import { SITE_NAME } from "@/lib/site";
+import { FrameHeader, type FrameLink } from "@/components/frame/FrameHeader";
 import { smoothScroll, useScrollFx } from "@/lib/scrollFx";
-import styles from "./mock.module.css";
+import styles from "./shell.module.css";
 import { Lobby } from "@/app/mock/Lobby";
+import { RoomActions, RoomRail } from "@/app/mock/RoomBar";
 import dynamic from "next/dynamic";
 import { loadRoom, loadScorecard } from "@/app/mock/preload";
 import { fetchStages } from "@/app/mock/useStageBanks";
@@ -20,11 +18,21 @@ import type { StageId, StageInfo } from "@/lib/mock/types";
 
 type Screen = "lobby" | "room" | "scorecard";
 
+const LINKS: FrameLink[] = [{ href: "/interview", label: "Interview book" }];
+
 const Room = dynamic(() => loadRoom().then((m) => m.Room), {
-  loading: () => <p className="sub">Setting up the room…</p>,
+  loading: () => (
+    <p className={styles.loading} role="status">
+      Setting up the room…
+    </p>
+  ),
 });
 const Scorecard = dynamic(() => loadScorecard().then((m) => m.Scorecard), {
-  loading: () => <p className="sub">Writing up the debrief…</p>,
+  loading: () => (
+    <p className={styles.loading} role="status">
+      Writing up the debrief…
+    </p>
+  ),
 });
 
 function newId(): string {
@@ -165,41 +173,22 @@ export function MockApp({ catalog }: { catalog: MockCatalog }) {
       </a>
       <div className={styles.page} ref={pageRef} data-room={inRoom ? "true" : undefined}>
         <span className={styles.scrollBar} data-scrollbar aria-hidden="true" />
-        <header className={styles.top}>
-          <BackButton variant="bar" className="head-back" fallbackHref="/" fallbackLabel="Home" />
-          <button
-            type="button"
-            className={styles.iconBtn}
-            aria-label="Menu"
-            aria-haspopup="dialog"
-            aria-expanded={menuOpen}
-            onClick={() => {
-              smoothScroll.stop();
-              setMenuOpen(true);
-            }}
-          >
-            <TopIcon name="menu" />
-          </button>
-          <Link href="/" className={styles.brand} aria-label={`${SITE_NAME} home`}>
-            <span className="brand__mark" aria-hidden="true">
-              JS
-            </span>
-            <span className={styles.brandName}>{SITE_NAME}</span>
-          </Link>
-          <span className={styles.topSep} aria-hidden="true" />
-          <span className={styles.topTitle}>Mock interview</span>
-          <span className={styles.spacer} />
-          {inRoom ? (
-            <span className={styles.topLive}>
-              <span className={styles.liveDot} aria-hidden="true" /> In the room
-            </span>
-          ) : (
-            <Link href="/interview" className={styles.topLink}>
-              Interview book
-            </Link>
-          )}
-        </header>
-        <main id="main" className={styles.main}>
+        <FrameHeader
+          back={{ href: "/", label: "Home" }}
+          onMenu={() => {
+            smoothScroll.stop();
+            setMenuOpen(true);
+          }}
+          menuOpen={menuOpen}
+          title="Mock interview"
+          mark="Q"
+          accent="blue"
+          tool={inRoom ? "room" : undefined}
+          middle={inRoom ? <RoomRail session={session} stages={stages} /> : undefined}
+          links={inRoom ? [] : LINKS}
+          actions={inRoom ? <RoomActions session={session} onEnd={endEarly} /> : undefined}
+        />
+        <main id="main" className={styles.main} data-no-smooth={inRoom ? "" : undefined}>
           {error && <p className="warn">{error}</p>}
 
           {screen === "lobby" && (
@@ -214,7 +203,7 @@ export function MockApp({ catalog }: { catalog: MockCatalog }) {
             />
           )}
 
-          {inRoom && <Room session={session} stages={stages} dispatch={dispatch} onEnd={endEarly} />}
+          {inRoom && <Room session={session} stages={stages} dispatch={dispatch} />}
 
           {screen === "scorecard" && session && (
             <Scorecard

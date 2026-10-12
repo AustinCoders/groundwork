@@ -4,11 +4,12 @@ import { useFontChoice, useThemeChoice } from "@/components/ThemeFontPicker";
 import { FONT_ITEMS, THEME_ITEMS, type FontValue } from "@/lib/storage";
 import styles from "./AppearancePicker.module.css";
 
-const FONT_FAMILIES: Record<FontValue, string> = {
+export const FONT_FAMILIES: Record<FontValue, string> = {
   classic: "var(--font-caveat), cursive",
   marker: "var(--font-patrick-hand), cursive",
   sketch: "var(--font-architects-daughter), cursive",
   pen: "var(--font-gochi-hand), cursive",
+  chalk: "var(--font-permanent-marker), cursive",
   script: "var(--font-dancing-script), cursive",
   serif: "var(--font-literata), Georgia, serif",
   roboto: "var(--font-roboto), system-ui, sans-serif",

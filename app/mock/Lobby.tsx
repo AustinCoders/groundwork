@@ -4,12 +4,10 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import { fetchStages, prefetchStages, whenIdle } from "@/app/mock/useStageBanks";
 import { loadRoom } from "@/app/mock/preload";
 import { planLoop, STAGE_RULES } from "@/lib/mock/loops";
-import { buildSession, stagePosition, type Session, type SessionMode } from "@/lib/mock/session";
-import { competencyProfile, VERDICT_LABEL } from "@/lib/mock/scoring";
-import { RETIRE_AT, RETRY_BELOW, type HistoryEntry, type RetryEntry } from "@/lib/mock/storage";
-import { STYLES, styleOf } from "@/lib/mock/styles";
+import { buildSession, type Session, type SessionMode } from "@/lib/mock/session";
+import type { HistoryEntry, RetryEntry } from "@/lib/mock/storage";
+import { STYLES } from "@/lib/mock/styles";
 import type {
-  Competency,
   CompanyType,
   Intensity,
   LoopConfig,
@@ -21,28 +19,21 @@ import type {
 } from "@/lib/mock/types";
 import type { MockCatalog } from "@/lib/mock/bank";
 import { store } from "@/lib/storage";
-import { subscribeNever } from "@/lib/hooks";
-import { ChoiceCards } from "@/app/mock/ChoiceCards";
+import { useMounted, subscribeNever } from "@/lib/hooks";
+import { Band, Foot, FootLink, TopicPage } from "@/components/topic/TopicKit";
+import { DrillPanel } from "@/app/mock/DrillPanel";
+import { LobbyHero } from "@/app/mock/LobbyHero";
 import { LoopWizard } from "@/app/mock/LoopWizard";
 import { ReadinessBoard } from "@/app/mock/Readiness";
-import { LOBBY_STEPS, STAGE_GUIDE } from "@/lib/mock/guide";
-import { personaFor } from "@/lib/mock/persona";
+import { RetryPanel } from "@/app/mock/RetryPanel";
+import { LOBBY_STEPS } from "@/lib/mock/guide";
 import { COMPANIES, INTENSITIES, LEVELS, ROLES } from "@/app/mock/options";
 import { HowScored, MockFaq, RoundsDecoded, SampleDebrief } from "@/app/mock/LobbyGuide";
 import { smoothScroll } from "@/lib/scrollFx";
-import styles from "./mock.module.css";
+import styles from "./plan.module.css";
+import lobby from "./lobby.module.css";
 
 const CONFIG_KEY = "groundwork:mock:config";
-
-export const COMPETENCY_LABEL: Record<Competency, string> = {
-  coding: "Coding",
-  javascript: "JavaScript",
-  frontend: "Frontend",
-  backend: "Backend",
-  design: "System design",
-  behaviour: "Behaviour",
-  negotiation: "Negotiation",
-};
 
 const DEFAULT_CONFIG: LoopConfig = { role: "fullstack", seniority: "mid", company: "product", intensity: "standard" };
 
@@ -88,137 +79,11 @@ function newSeed(): number {
   return Math.floor(Math.random() * 2 ** 31) || 1;
 }
 
-function Sparkline({ values }: { values: number[] }) {
-  if (values.length < 2) return null;
-  const w = 200;
-  const h = 46;
-  const pad = 4;
-  const x = (i: number) => pad + (i * (w - pad * 2)) / (values.length - 1);
-  const y = (v: number) => h - pad - v * (h - pad * 2);
-  const line = values.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
-  const area = `${line} L${x(values.length - 1).toFixed(1)} ${h - pad} L${x(0).toFixed(1)} ${h - pad} Z`;
-  const last = values[values.length - 1];
-  return (
-    <svg
-      className={styles.spark}
-      viewBox={`0 0 ${w} ${h}`}
-      preserveAspectRatio="none"
-      role="img"
-      aria-label={`Loop scores, oldest to newest: ${values.map((v) => Math.round(v * 100) + "%").join(", ")}`}
-    >
-      <line className={styles.sparkBar} x1={pad} x2={w - pad} y1={y(0.65)} y2={y(0.65)} />
-      <path className={styles.sparkArea} d={area} />
-      <path className={styles.sparkLine} d={line} />
-      <circle className={styles.sparkDot} cx={x(values.length - 1)} cy={y(last)} r={4} />
-    </svg>
-  );
-}
-
-function Record({ history }: { history: HistoryEntry[] }) {
-  const loops = history.filter((h) => h.mode === "loop");
-  if (!history.length) return null;
-
-  const profile = competencyProfile(
-    history.flatMap((h) =>
-      h.stages.map((s) => ({
-        stage: s.stage,
-        competency: STAGE_RULES[s.stage].competency,
-        core: s.core,
-        scores: s.scores,
-      }))
-    )
-  );
-  const weakest = (Object.entries(profile) as [Competency, number][]).sort((a, b) => a[1] - b[1])[0];
-  const recent = [...history].reverse().slice(0, 6);
-  const hires = loops.filter((h) => h.verdict === "hire" || h.verdict === "strong-hire").length;
-
-  return (
-    <section className={styles.panel} aria-labelledby="mock-record">
-      <h2 id="mock-record">Your record</h2>
-      <div className={styles.record}>
-        <div className={styles.recordTile}>
-          <span className={styles.recordNum}>{loops.length}</span>
-          <span className={styles.recordLabel}>
-            full {loops.length === 1 ? "loop" : "loops"}, {hires} ending in an offer
-          </span>
-        </div>
-        {loops.length > 0 && (
-          <div className={styles.recordTile}>
-            <span className={styles.recordNum}>{Math.round(loops[loops.length - 1].score * 100)}%</span>
-            <span className={styles.recordLabel}>last loop · dashed line is the hire bar</span>
-            <Sparkline values={loops.slice(-12).map((h) => h.score)} />
-          </div>
-        )}
-        {weakest && (
-          <div className={styles.recordTile}>
-            <span className={styles.recordNum}>{Math.round(weakest[1] * 100)}%</span>
-            <span className={styles.recordLabel}>
-              weakest area across everything: <b>{COMPETENCY_LABEL[weakest[0]]}</b>
-            </span>
-          </div>
-        )}
-      </div>
-      <ul className={styles.history}>
-        {recent.map((h) => (
-          <li key={h.id} className={styles.historyRow}>
-            <span className={styles.historyDate}>
-              {new Date(h.finishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-            </span>
-            <span>
-              {h.mode === "loop"
-                ? `${ROLES.find(([r]) => r === h.config.role)?.[1]} · ${LEVELS.find(([l]) => l === h.config.seniority)?.[1]} · ${styleOf(h.config.style)?.name ?? COMPANIES.find(([c]) => c === h.config.company)?.[1]}`
-                : h.mode === "retry"
-                  ? "Retry round"
-                  : "Single round"}{" "}
-              <span className={styles.mono}>· {Math.round(h.score * 100)}%</span>
-            </span>
-            <span className={styles.verdictChip} data-verdict={h.verdict}>
-              {VERDICT_LABEL[h.verdict]}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-function HeroPreview() {
-  return (
-    <div className={styles.preview} aria-hidden="true">
-      <div className={styles.previewCard}>
-        <div className={styles.previewHead}>
-          <span className={styles.avatar} data-tone="calm">
-            PR
-          </span>
-          <span>
-            <b>Priya</b>
-            <small>Principal engineer · System design</small>
-          </span>
-          <span className={styles.previewClock}>
-            <svg viewBox="0 0 44 44" width="44" height="44">
-              <circle cx="22" cy="22" r="18" className={styles.previewRingTrack} />
-              <circle cx="22" cy="22" r="18" className={styles.previewRingFill} />
-            </svg>
-            <em>6:12</em>
-          </span>
-        </div>
-        <p className={styles.previewAsk}>Design a URL shortener that handles 10,000 writes a second.</p>
-        <p className={styles.previewYou}>
-          Before I draw anything: reads or writes heavier? And how long do links live?
-        </p>
-        <p className={styles.previewPush}>
-          <span>Follow-up</span> Good. Now two users shorten the same URL at once. What happens?
-        </p>
-      </div>
-      <div className={styles.previewRubric}>
-        <span data-mark="1">✓ Answered what they were testing</span>
-        <span data-mark="0.5">~ Named the trade-off</span>
-        <span data-mark="1">✓ Held up when pushed</span>
-      </div>
-      <span className={styles.previewStamp}>Hire</span>
-    </div>
-  );
-}
+const MODES: [SessionMode, string][] = [
+  ["loop", "Full loop"],
+  ["drill", "Single round"],
+  ["retry", "Retry weak answers"],
+];
 
 export function Lobby({
   catalog,
@@ -237,6 +102,7 @@ export function Lobby({
   onResume: () => void;
   onDiscard: () => void;
 }) {
+  const mounted = useMounted();
   const stages = useMemo(
     () => Object.fromEntries(catalog.stages.map((s) => [s.id, s])) as Record<StageId, StageInfo>,
     [catalog.stages]
@@ -247,16 +113,25 @@ export function Lobby({
   const [picked, setPicked] = useState<LoopConfig | null>(null);
   const config = picked ?? stored;
   const [drillStage, setDrillStage] = useState<StageId>("javascript");
+  const [drillCount, setDrillCount] = useState(5);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function scrollToPlan() {
+    const plan = document.getElementById("plan");
+    if (plan) smoothScroll.to(plan.getBoundingClientRect().top + window.scrollY - 60);
+  }
 
   function practise(stage: StageId) {
     setDrillStage(stage);
     setMode("drill");
-    const plan = document.getElementById("plan");
-    if (plan) smoothScroll.to(plan.getBoundingClientRect().top + window.scrollY - 80);
+    scrollToPlan();
   }
-  const [drillCount, setDrillCount] = useState(5);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  function goPlan(which: SessionMode) {
+    setMode(which);
+    scrollToPlan();
+  }
 
   function setConfig(patch: Partial<LoopConfig>) {
     const next = { ...config, ...patch };
@@ -282,7 +157,6 @@ export function Lobby({
 
   const warmRoom = () => whenIdle(() => void loadRoom().catch(() => {}));
   const warmLoop = () => prefetchStages(plan.map((p) => p.stage));
-  const warmDrill = () => prefetchStages([drillStage]);
 
   async function start(which: SessionMode) {
     setBusy(true);
@@ -320,274 +194,126 @@ export function Lobby({
     }
   }
 
-  const resumeInfo = inProgress ? stagePosition(inProgress) : null;
   const talkCount = catalog.stages.filter((s) => s.kind === "talk").reduce((n, s) => n + s.available, 0);
   const codeCount = catalog.stages.filter((s) => s.kind === "coding").reduce((n, s) => n + s.available, 0);
 
-  function goPlan(which: SessionMode) {
-    setMode(which);
-    document.getElementById("plan")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
   return (
-    <>
-      <section className={styles.hero} aria-labelledby="mock-title">
-        <div className={styles.heroCopy}>
-          <p className={styles.kicker}>
-            <span className={styles.liveDot} aria-hidden="true" /> Timed · scored · follow-ups included
-          </p>
-          <h1 id="mock-title" className={styles.h1}>
-            A mock interview <span className={styles.h1Accent}>that pushes back.</span>
-          </h1>
-          <p className={styles.lead}>
-            The whole loop, round by round: the recruiter, coding graded by real tests, the deep dives, system design,
-            behaviour and the number. Answer out loud against a clock, get pushed the way real interviewers push, and
-            leave with a debrief that decides like a hiring committee.
-          </p>
-          <div className={styles.heroActions}>
-            <button type="button" className="btn btn--primary" onClick={() => goPlan("loop")}>
-              Plan a full loop
-            </button>
-            <button type="button" className="btn" onClick={() => goPlan("drill")}>
-              Practise one round
-            </button>
-          </div>
-          <dl className={styles.heroStats}>
-            <div>
-              <dt>rounds</dt>
-              <dd>{catalog.stages.length}</dd>
-            </div>
-            <div>
-              <dt>questions with model answers</dt>
-              <dd>{talkCount}</dd>
-            </div>
-            <div>
-              <dt>coding problems with tests</dt>
-              <dd>{codeCount}</dd>
-            </div>
-          </dl>
-        </div>
-        <HeroPreview />
-      </section>
+    <TopicPage accent="blue">
+      <LobbyHero
+        stages={stages}
+        rounds={catalog.stages.length}
+        questions={talkCount}
+        problems={codeCount}
+        inProgress={inProgress}
+        history={history}
+        onResume={onResume}
+        onDiscard={onDiscard}
+        onPlan={goPlan}
+      />
 
-      <ol className={styles.howSteps} aria-label="How a mock works" data-fx="stagger">
-        {LOBBY_STEPS.map((s, i) => (
-          <li key={s.title}>
-            <span className={styles.howNum}>{String(i + 1).padStart(2, "0")}</span>
-            <b>{s.title}</b>
-            <span>{s.body}</span>
-          </li>
-        ))}
-      </ol>
+      <Band
+        no="01"
+        id="how-title"
+        label="How a mock works"
+        title="Four steps, then the debrief"
+        sub="No microphone, nothing recorded: you answer out loud to yourself, against a clock, the way you would in the room."
+      >
+        <ol className={lobby.steps} aria-label="How a mock works">
+          {LOBBY_STEPS.map((s, i) => (
+            <li key={s.title} className={lobby.step}>
+              <span className={lobby.stepNo} aria-hidden="true">
+                {i + 1}
+              </span>
+              <b className={lobby.stepTitle}>{s.title}</b>
+              <span className={lobby.stepBody}>{s.body}</span>
+            </li>
+          ))}
+        </ol>
+      </Band>
 
-      {inProgress && resumeInfo && (
-        <div className={styles.resume} role="status">
-          <div>
-            <strong>You left an interview half-way.</strong>
-            <div>
-              {stages[inProgress.plan[resumeInfo.stageIndex]?.stage]?.title}, stage {resumeInfo.stageIndex + 1} of{" "}
-              {inProgress.plan.length} · question {inProgress.cursor + 1} of {inProgress.questions.length}
-            </div>
-          </div>
-          <span className={styles.spacer} />
-          <button type="button" className="btn btn--primary" onClick={onResume}>
-            Walk back in
-          </button>
-          <button type="button" className="btn btn--ghost" onClick={onDiscard}>
-            Throw it away
-          </button>
+      <Band
+        no="02"
+        id="plan-title"
+        sectionId="plan"
+        label="Start here"
+        title="What do you want to practise?"
+        count={`${catalog.stages.length} rounds`}
+      >
+        <div className={styles.modes} role="tablist" aria-label="Kind of practice">
+          {MODES.map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              id={`mode-${id}`}
+              aria-controls="mode-panel"
+              aria-selected={mode === id}
+              className={styles.mode}
+              onClick={() => setMode(id)}
+            >
+              {label}
+              {id === "retry" && mounted && retry.length > 0 && (
+                <span className={styles.modeCount}>{retry.length}</span>
+              )}
+            </button>
+          ))}
         </div>
-      )}
+        <div role="tabpanel" id="mode-panel" aria-labelledby={`mode-${mode}`}>
+          {mode === "loop" && (
+            <LoopWizard
+              config={config}
+              onChange={setConfig}
+              plan={plan}
+              stages={stages}
+              hotFor={catalog.hotFor}
+              busy={busy}
+              error={error}
+              onStart={() => start("loop")}
+              onReview={warmRoom}
+              onStartIntent={warmLoop}
+            />
+          )}
+          {mode === "drill" && (
+            <DrillPanel
+              catalog={catalog.stages}
+              stages={stages}
+              config={config}
+              drillStage={drillStage}
+              drillQuestions={drillQuestions}
+              drillIsCoding={drillIsCoding}
+              busy={busy}
+              error={error}
+              onPick={setDrillStage}
+              onCount={setDrillCount}
+              onLevel={(seniority) => setConfig({ seniority })}
+              onStart={() => start("drill")}
+            />
+          )}
+          {mode === "retry" && (
+            <RetryPanel retry={retry} stages={stages} busy={busy} error={error} onStart={() => start("retry")} />
+          )}
+        </div>
+      </Band>
 
       <ReadinessBoard
+        no="03"
         history={history}
         available={catalog.stages.map((s) => s.id)}
         stageTitle={(id) => stages[id]?.title ?? id}
         onPractise={practise}
       />
 
-      <div id="plan" className={styles.planHead} data-fx="up">
-        <div>
-          <p className={styles.eyebrow}>start here</p>
-          <h2 className={styles.sectionTitle}>What do you want to practise?</h2>
-        </div>
-        <div className={styles.modes} role="tablist" aria-label="Kind of practice">
-          <button
-            type="button"
-            role="tab"
-            className={styles.mode}
-            aria-selected={mode === "loop"}
-            onClick={() => setMode("loop")}
-          >
-            Full loop
-          </button>
-          <button
-            type="button"
-            role="tab"
-            className={styles.mode}
-            aria-selected={mode === "drill"}
-            onClick={() => setMode("drill")}
-          >
-            Single round
-          </button>
-          <button
-            type="button"
-            role="tab"
-            className={styles.mode}
-            aria-selected={mode === "retry"}
-            onClick={() => setMode("retry")}
-          >
-            Retry weak answers
-            {retry.length > 0 && <span className={styles.modeCount}>{retry.length}</span>}
-          </button>
-        </div>
-      </div>
+      <RoundsDecoded no="04" stages={catalog.stages} config={config} onPractise={practise} />
+      <HowScored no="05" />
+      <SampleDebrief no="06" />
+      <MockFaq no="07" />
 
-      {mode === "loop" && (
-        <LoopWizard
-          config={config}
-          onChange={setConfig}
-          plan={plan}
-          stages={stages}
-          hotFor={catalog.hotFor}
-          busy={busy}
-          error={error}
-          onStart={() => start("loop")}
-          onReview={warmRoom}
-          onStartIntent={warmLoop}
-        />
-      )}
-
-      {mode === "drill" && (
-        <section className={styles.panel} aria-labelledby="mock-drill">
-          <p className={styles.eyebrow}>one round, properly</p>
-          <h2 id="mock-drill">Pick the room</h2>
-          <div className={styles.rounds}>
-            {catalog.stages.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                className={styles.roundCard}
-                aria-pressed={drillStage === s.id}
-                onClick={() => setDrillStage(s.id)}
-              >
-                <span className={styles.mapTitle}>{s.title}</span>
-                <span className={styles.roundTop}>
-                  <span className={styles.avatar} data-tone={personaFor(s.id, config).tone} aria-hidden="true">
-                    {personaFor(s.id, config).initials}
-                  </span>
-                  <span className={styles.kindTag} data-kind={s.kind}>
-                    {s.kind === "coding" ? "code" : "talk"}
-                  </span>
-                </span>
-                <span className={styles.roundPitch}>{STAGE_GUIDE[s.id].pitch}</span>
-                <span className={styles.mapMeta}>
-                  {s.code && <span>{s.code}</span>}
-                  <span>{s.available} in the bank</span>
-                </span>
-              </button>
-            ))}
-          </div>
-          <div className={styles.drillSettings}>
-            <div>
-              <p className={styles.eyebrow}>how many</p>
-              <ChoiceCards
-                compact
-                label="How many questions"
-                value={String(drillQuestions)}
-                onChoose={(v) => setDrillCount(Number(v))}
-                options={(drillIsCoding ? [1, 2, 3] : [3, 5, 8]).map((n) => ({
-                  value: String(n),
-                  name: String(n),
-                  detail: drillIsCoding ? (n === 1 ? "problem" : "problems") : "questions",
-                }))}
-              />
-            </div>
-            <div>
-              <p className={styles.eyebrow}>pitched at</p>
-              <ChoiceCards
-                compact
-                label="Experience"
-                value={config.seniority}
-                onChoose={(seniority) => setConfig({ seniority })}
-                options={LEVELS.map(([value, name, detail]) => ({
-                  value,
-                  name,
-                  detail,
-                  icon: value === "junior" ? "level-1" : value === "mid" ? "level-2" : "level-3",
-                }))}
-              />
-            </div>
-          </div>
-          <div className={styles.startBar}>
-            <button
-              type="button"
-              className="btn btn--primary"
-              disabled={busy}
-              onPointerEnter={() => {
-                warmRoom();
-                warmDrill();
-              }}
-              onFocus={() => {
-                warmRoom();
-                warmDrill();
-              }}
-              onClick={() => start("drill")}
-            >
-              {busy ? "Setting up the room…" : `Start ${stages[drillStage].title}`}
-            </button>
-            <p className={styles.startNote}>
-              <b>How it is lost:</b> {stages[drillStage].failMode || "—"}
-            </p>
-          </div>
-          {error && <p className="warn">{error}</p>}
-        </section>
-      )}
-
-      {mode === "retry" && (
-        <section className={styles.panel} aria-labelledby="mock-retry">
-          <p className={styles.eyebrow}>the ones that got away</p>
-          <h2 id="mock-retry">Retry weak answers</h2>
-          {retry.length === 0 ? (
-            <p className="sub">
-              Nothing here yet. Any question you score under {Math.round(RETRY_BELOW * 100)}% on lands in this list, and
-              comes off it once you answer it well.
-            </p>
-          ) : (
-            <>
-              <p className="sub">
-                The next {Math.min(10, retry.length)} of {retry.length}, most recent first. Score{" "}
-                {Math.round(RETIRE_AT * 100)}% or better and it comes off the list.
-              </p>
-              <ul className={styles.retryList}>
-                {retry.slice(0, 10).map((r) => (
-                  <li key={r.id} className={styles.retryItem}>
-                    <span className={styles.retryTitle}>{r.title}</span>
-                    <span className={styles.retryMeta}>
-                      {stages[r.stage]?.title} · {Math.round(r.score * 100)}%
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <div className={styles.startBar}>
-                <button type="button" className="btn btn--primary" disabled={busy} onClick={() => start("retry")}>
-                  {busy ? "Setting up the room…" : "Retry these"}
-                </button>
-              </div>
-            </>
-          )}
-          {error && <p className="warn">{error}</p>}
-        </section>
-      )}
-
-      <div data-fx="up">
-        <Record history={history} />
-      </div>
-
-      <RoundsDecoded stages={catalog.stages} config={config} onPractise={practise} />
-      <HowScored />
-      <SampleDebrief />
-      <MockFaq />
-    </>
+      <Foot>
+        <FootLink href="/interview">Interview book</FootLink>
+        <FootLink href="/problems">Problems</FootLink>
+        <FootLink href="/practice">Playground</FootLink>
+        <FootLink href="/">All topics</FootLink>
+      </Foot>
+    </TopicPage>
   );
 }

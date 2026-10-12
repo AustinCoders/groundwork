@@ -36,7 +36,7 @@ import { dsaInterviewStrategy } from "./dsa/dsa-interview-strategy";
 
 export const dsaNotes: NotesFile = {
   meta: {
-    title: "DSA in JS — the whole map",
+    title: "DSA — the whole map",
     subtitle: "42 sections across three levels — beginner through advanced. 34 are written; the other 8 are outlined.",
     lead: "Pick a level and you'll get these sections in the order that makes sense, from the first pointer trick to segment trees and interview strategy.",
     author: "Akshat",

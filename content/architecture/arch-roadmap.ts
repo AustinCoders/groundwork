@@ -123,7 +123,7 @@ export const archRoadmap: Chapter = {
 
 <h3>The larger plan is content</h3>
 <p>
-  The roadmap is clear that the pressure is on the writing, not the system. Seven of 21 topics are
+  The roadmap is clear that the pressure is on the writing, not the system. Seven of 32 topics are
   written, counting Git's standalone guide. The engineering above runs alongside the writing
   rather than ahead of it. Section 0.2 of the roadmap orders the rest by what the job market asks
   for:

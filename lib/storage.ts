@@ -208,13 +208,14 @@ export const THEME_ITEMS = [
 ] as const satisfies readonly { value: string; label: string }[];
 
 export type ThemeValue = (typeof THEME_ITEMS)[number]["value"];
-export type FontValue = "classic" | "marker" | "sketch" | "pen" | "script" | "serif" | "roboto";
+export type FontValue = "classic" | "marker" | "sketch" | "pen" | "chalk" | "script" | "serif" | "roboto";
 
 export const FONT_ITEMS: { value: FontValue; label: string }[] = [
   { value: "classic", label: "✎ Classic" },
   { value: "marker", label: "✎ Marker" },
   { value: "sketch", label: "✎ Sketch" },
   { value: "pen", label: "✎ Pen" },
+  { value: "chalk", label: "✎ Chalk" },
   { value: "script", label: "✎ Script" },
   { value: "serif", label: "Aa Reading" },
   { value: "roboto", label: "Aa Roboto" },

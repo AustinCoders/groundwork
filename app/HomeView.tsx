@@ -1,137 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { MenuButton } from "@/components/MenuButton";
 import { SiteDrawer } from "@/components/SiteDrawer";
-import { TopIcon } from "@/components/practice/TopIcon";
-import { formatSpan, plural } from "@/lib/format";
+import { Connectors, type Link as Hop } from "@/components/home/Connectors";
+import { CtaScene } from "@/components/home/CtaScene";
+import { FaqScene, type Faq } from "@/components/home/FaqScene";
+import { HowScene } from "@/components/home/HowScene";
+import { InterviewScene } from "@/components/home/InterviewScene";
+import { PathsScene } from "@/components/home/PathsScene";
+import { PracticeScene } from "@/components/home/PracticeScene";
+import { SectionRail } from "@/components/home/SectionRail";
+import { TopicsScene } from "@/components/home/TopicsScene";
+import { useSceneScroll } from "@/components/home/useSceneScroll";
+import { vars, XP_STICKER } from "@/components/home/tone";
+import type { HomeViewProps } from "@/components/home/types";
+import { plural } from "@/lib/format";
+import { hopFacts } from "@/lib/homeFacts";
+import { HOW_STEPS } from "@/lib/homeHow";
+import { PATH_COUNT } from "@/lib/homePaths";
+import { bookStages } from "@/lib/homeRounds";
+import { PIN_HOLD_VH, PIN_TURN_CAP, pinLengthVh } from "@/lib/pinLengths";
+import type { ConnectorLive } from "@/lib/connector";
 import { prefersMotion } from "@/lib/dom";
 import { smoothScroll, useScrollFx } from "@/lib/scrollFx";
 import { computeStats } from "@/lib/gamification";
 import { useProgressValue } from "@/lib/hooks";
 import { progress } from "@/lib/storage";
 import { SITE_NAME } from "@/lib/site";
-import { useGuidesNav } from "@/lib/topicNav";
-import type { SiteStats } from "@/lib/topicStats";
 import styles from "./home.module.css";
 
-export interface ShelfCard {
-  id: string;
-  name: string;
-  mark: string;
-  accent: string;
-  tagline: string;
-  href: string;
-  chapters: number;
-  exercises: number;
-  minutes: number;
-}
+const HOME_LERP = 0.14;
 
-export interface HomeViewProps {
-  stats: SiteStats;
-  ready: ShelfCard[];
-  soon: ShelfCard[];
-  problems: number;
-  languages: { total: number; runnable: number };
-  interview: { rounds: number; questions: number };
-}
-
-const ACCENTS: Record<string, string> = { mint: "green" };
-
-function accent(name: string): React.CSSProperties {
-  const token = ACCENTS[name] ?? name;
-  return { "--accent": token === "ink" ? "var(--ink)" : `var(--c-${token})` } as React.CSSProperties;
-}
-
-const PERSONAS = [
-  {
-    tag: "Fresher",
-    tone: "green",
-    emoji: "🌱",
-    title: "Going for your first job",
-    pain: "You can make things work, but closures, this and the event loop still feel like magic, and the online assessment scares you.",
-    gains: [
-      "Explain what happens before line 1 runs",
-      "Solve array and string problems with a pattern, not luck",
-      "Walk into the online assessment knowing its format",
-    ],
-    path: [
-      { label: "How your code actually runs", href: "/notes/execution-context" },
-      { label: "Closures, finally clear", href: "/notes/closures" },
-      { label: "Async and the event loop", href: "/notes/basic-async" },
-      { label: "Two pointers, the first real pattern", href: "/dsa/dsa-two-pointers" },
-      { label: "The online assessment round", href: "/interview/r1oa" },
-    ],
-  },
-  {
-    tag: "Mid",
-    tone: "yellow",
-    emoji: "🚀",
-    title: "Switching after 2–5 years",
-    pain: "You ship features every week, then freeze when someone asks why React re-rendered, or to build a widget live in 90 minutes.",
-    gains: [
-      "Say exactly why a component re-rendered, and stop it",
-      "Build a working widget live, under a clock",
-      "Talk through a cache or a queue without hand-waving",
-    ],
-    path: [
-      { label: "Why React re-renders, and memo", href: "/react/react-memoisation" },
-      { label: "Async, properly", href: "/notes/async-properly" },
-      { label: "The machine coding round", href: "/interview/r2" },
-      { label: "Caching fundamentals", href: "/system-design/sysdes-caching-fundamentals" },
-      { label: "The system design round", href: "/interview/r8" },
-    ],
-  },
-  {
-    tag: "Senior",
-    tone: "red",
-    emoji: "🏔️",
-    title: "Aiming at the ₹50L bar",
-    pain: "The questions stop being about syntax. It is distributed systems, runtime internals, and proving you can lead without the title.",
-    gains: [
-      "Reason about consensus, partitions and failure out loud",
-      "Explain the runtime under React, not just the API",
-      "Tell staff-level stories that survive the follow-up",
-    ],
-    path: [
-      { label: "What changes at ₹50L", href: "/interview/s0" },
-      { label: "React Fiber, the engine underneath", href: "/react/react-fiber" },
-      { label: "Distributed consensus", href: "/system-design/sysdes-distributed-consensus" },
-      { label: "Distributed systems design round", href: "/interview/s2" },
-      { label: "Behavioural at staff level", href: "/interview/s4" },
-    ],
-  },
-];
-
-const COMPARE = [
-  {
-    them: "Video courses",
-    gap: "You watch someone else type. Nothing checks that you understood, and you cannot search a video.",
-    us: "Every idea is written down, searchable, and followed by an exercise graded by real tests.",
-  },
-  {
-    them: "Grinding problem sites",
-    gap: "Hundreds of puzzles with no theory behind them, so a new twist breaks you.",
-    us: "Problems are grouped by the pattern they teach, and each pattern has a chapter that explains it.",
-  },
-  {
-    them: "Official docs",
-    gap: "Complete and correct, but written for people who already know what they are looking for.",
-    us: "Layered bottom to top: nothing uses a word that has not been explained yet.",
-  },
-  {
-    them: "Interview blog posts",
-    gap: "A list of questions with one-line answers, and nothing about how the round actually runs.",
-    us: "Every round in order, what it is really testing, the wrong answer that loses the room, and the follow-up.",
-  },
-];
-
-function Icon({ d, size = 22 }: { d: string; size?: number }) {
-  return (
-    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" style={{ margin: 0 }}>
-      <path d={d} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+function listNames(names: string[]): string {
+  if (names.length < 2) return names.join("");
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }
 
 const GOOD_CODE = `function counter() {
@@ -308,7 +212,7 @@ function HeroArt({ interview }: { interview: HomeViewProps["interview"] }) {
         <span className={styles.followUp}>the follow-up they push with next →</span>
       </div>
       <span className={styles.xp} aria-hidden="true">
-        +25 XP
+        {XP_STICKER}
       </span>
       <span className={styles.doodleNote} aria-hidden="true">
         go on, run it
@@ -324,289 +228,12 @@ function HeroArt({ interview }: { interview: HomeViewProps["interview"] }) {
   );
 }
 
-const STORY = [
-  {
-    k: "Read",
-    title: "Read a chapter that builds on the last one.",
-    body: "Topics are layered bottom to top, so closures arrive after scope, and async after the event loop. You never skim past a word you do not know yet.",
-  },
-  {
-    k: "Run",
-    title: "Prove it with real tests, right in the page.",
-    body: "Chapters that need practice end in an editor. Your answer runs in your browser against real tests, and a pass is what counts.",
-  },
-  {
-    k: "Get asked",
-    title: "Then get asked the follow-up.",
-    body: "The interview book shows how each round really goes: the question, the wrong answer that loses the room, and what they push with next.",
-  },
-  {
-    k: "Keep",
-    title: "And it comes back before you forget.",
-    body: "Chapters you finish come back for review on a spaced schedule, so what you read in week one is still there on interview day.",
-  },
-];
-
-const LAYERS = ["What the engine does", "Execution context", "Scope", "Closures", "Async & the event loop"];
-const RUN_TESTS = ["returns a promise", "resolves in order", "rejects on the first failure", "handles an empty list"];
-const CHAT: { who: "them" | "you"; text: string }[] = [
-  { who: "them", text: "Build me a debounce." },
-  { who: "you", text: "A timer, cleared on every call, fired after the wait." },
-  { who: "them", text: "Good. Now the first call fires at once. And how do I cancel it?" },
-];
-const REVIEW_DAYS = [0, 3, 10, 31];
-
-function vars(v: Record<string, number>): React.CSSProperties {
-  return Object.fromEntries(Object.entries(v).map(([k, n]) => [`--${k}`, n])) as React.CSSProperties;
-}
-
-function StoryVisual({ step }: { step: number }) {
-  if (step === 0)
-    return (
-      <div className={styles.vis} aria-hidden="true">
-        <div className={styles.layers}>
-          {LAYERS.map((t, i) => (
-            <span key={t} className={styles.layer} style={vars({ i })} data-top={i === 3 || undefined}>
-              <b>{String(i + 1).padStart(2, "0")}</b>
-              {t}
-            </span>
-          ))}
-        </div>
-        <small>Each layer only uses words from the ones below it.</small>
-      </div>
-    );
-  if (step === 1)
-    return (
-      <div className={styles.vis} aria-hidden="true">
-        <div className={styles.visTests}>
-          {RUN_TESTS.map((t, i) => (
-            <span key={t} style={vars({ i })}>
-              <i>✓</i>
-              {t}
-            </span>
-          ))}
-        </div>
-        <span className={styles.visBar}>
-          <span />
-        </span>
-        <strong className={styles.visBig}>4 / 4 passed</strong>
-      </div>
-    );
-  if (step === 2)
-    return (
-      <div className={styles.vis} aria-hidden="true">
-        <div className={styles.chat}>
-          {CHAT.map((m, i) => (
-            <p key={m.text} data-who={m.who} style={vars({ i })}>
-              {m.text}
-            </p>
-          ))}
-          <span className={styles.typing}>
-            <i />
-            <i />
-            <i />
-          </span>
-        </div>
-        <small>Every round shows the follow-up they push with next.</small>
-      </div>
-    );
-  return (
-    <div className={styles.vis} aria-hidden="true">
-      <div className={styles.cal}>
-        {Array.from({ length: 35 }, (_, i) => {
-          const k = REVIEW_DAYS.indexOf(i);
-          return <span key={i} data-on={k >= 0 || undefined} style={k >= 0 ? vars({ k }) : undefined} />;
-        })}
-      </div>
-      <small>Read today. Back after 3 days, then 7 more, then 21.</small>
-    </div>
-  );
-}
-
-function Story({ children }: { children: React.ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(0);
-  const activeRef = useRef(0);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      const r = el.getBoundingClientRect();
-      const total = r.height - window.innerHeight;
-      const prog = total > 0 ? Math.min(1, Math.max(0, -r.top / total)) : 1;
-      const x = prog * STORY.length;
-      const step = Math.min(STORY.length - 1, Math.floor(x));
-      const local = Math.min(1, Math.max(0, (x - step) * 1.35));
-      el.style.setProperty("--progress", prog.toFixed(4));
-      el.style.setProperty("--p", local.toFixed(4));
-      if (step !== activeRef.current) {
-        activeRef.current = step;
-        setActive(step);
-      }
-    };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, []);
-
-  function jump(i: number) {
-    const el = ref.current;
-    if (!el) return;
-    const top = el.getBoundingClientRect().top + window.scrollY;
-    const total = el.offsetHeight - window.innerHeight;
-    const target = top + (total * (i + 0.55)) / STORY.length;
-    smoothScroll.to(target);
-  }
-
-  const state = (i: number) => (i < active ? "past" : i === active ? "active" : "next");
-
-  return (
-    <>
-      <div className={styles.story} ref={ref} style={vars({ steps: STORY.length })}>
-        <div className={styles.pin}>
-          {children}
-          <div className={styles.pinGrid}>
-            <div className={styles.pinText}>
-              <div className={styles.rail} aria-label="Steps" role="group">
-                {STORY.map((s, i) => (
-                  <button
-                    key={s.k}
-                    type="button"
-                    aria-current={i === active ? "step" : undefined}
-                    className={styles.railStep}
-                    style={vars({ i })}
-                    onClick={() => jump(i)}
-                  >
-                    <span className={styles.railFill} />
-                    <b>
-                      {String(i + 1).padStart(2, "0")} · {s.k}
-                    </b>
-                  </button>
-                ))}
-              </div>
-              <div className={styles.pinCopy}>
-                {STORY.map((s, i) => (
-                  <article key={s.k} data-state={state(i)} aria-hidden={i !== active}>
-                    <span className={styles.bigNum} aria-hidden="true">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <h3>{s.title}</h3>
-                    <p>{s.body}</p>
-                  </article>
-                ))}
-              </div>
-            </div>
-            <div className={styles.pinStage}>
-              {STORY.map((s, i) => (
-                <div key={s.k} className={styles.stageItem} data-state={state(i)}>
-                  <StoryVisual step={i} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-      <ol className={styles.storyList}>
-        {STORY.map((s, i) => (
-          <li key={s.k} data-fx="up">
-            <span className={styles.storyKey}>
-              {String(i + 1).padStart(2, "0")} · {s.k}
-            </span>
-            <h3>{s.title}</h3>
-            <p>{s.body}</p>
-            <StoryVisual step={i} />
-          </li>
-        ))}
-      </ol>
-    </>
-  );
-}
-
-function PathTabs() {
-  const [active, setActive] = useState(0);
-  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
-  const p = PERSONAS[active];
-  function onKey(e: React.KeyboardEvent) {
-    const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
-    if (!step) return;
-    e.preventDefault();
-    const next = (active + step + PERSONAS.length) % PERSONAS.length;
-    setActive(next);
-    tabs.current[next]?.focus();
-  }
-  return (
-    <div className={styles.paths} style={accent(p.tone)}>
-      <div className={styles.tabs} role="tablist" aria-label="Where are you now?" onKeyDown={onKey}>
-        {PERSONAS.map((x, i) => (
-          <button
-            key={x.tag}
-            ref={(el) => {
-              tabs.current[i] = el;
-            }}
-            type="button"
-            role="tab"
-            id={`path-tab-${i}`}
-            aria-selected={i === active}
-            aria-controls="path-panel"
-            tabIndex={i === active ? 0 : -1}
-            className={styles.tab}
-            style={accent(x.tone)}
-            onClick={() => setActive(i)}
-          >
-            <span aria-hidden="true">{x.emoji}</span>
-            <span>
-              <b>{x.tag}</b>
-              <small>{x.title}</small>
-            </span>
-          </button>
-        ))}
-      </div>
-      <div className={styles.panel} role="tabpanel" id="path-panel" aria-labelledby={`path-tab-${active}`} key={active}>
-        <div>
-          <h3>{p.title}</h3>
-          <p className={styles.muted}>{p.pain}</p>
-          <p className={styles.label}>After this path you can</p>
-          <ul className={styles.gains}>
-            {p.gains.map((g) => (
-              <li key={g}>{g}</li>
-            ))}
-          </ul>
-          <Link href={p.path[0].href} className={styles.btn}>
-            Start this path <span className={styles.btnArrow}>→</span>
-          </Link>
-        </div>
-        <ol className={styles.road}>
-          {p.path.map((step, i) => (
-            <li key={step.href} style={{ "--i": i } as React.CSSProperties}>
-              <Link href={step.href} prefetch={false}>
-                <span className={styles.roadNum}>{i + 1}</span>
-                <span>{step.label}</span>
-              </Link>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </div>
-  );
-}
-
 function Words({ text }: { text: string }) {
   return (
     <>
       {text.split(" ").map((w, i, all) => (
         <Fragment key={i}>
-          <span className={styles.w} style={vars({ i })}>
+          <span className={styles.w} style={vars({ i })} data-motion="word">
             {w}
           </span>
           {i < all.length - 1 ? " " : null}
@@ -616,95 +243,42 @@ function Words({ text }: { text: string }) {
   );
 }
 
-function Journey({ children }: { children: React.ReactNode }) {
-  const guides = useGuidesNav();
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const pinRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLOListElement>(null);
-  const book = guides.find((g) => g.id === "interview");
-  const rounds = book?.groups[0]?.chapters ?? [];
-
-  useEffect(() => {
-    const wrap = wrapRef.current;
-    const pin = pinRef.current;
-    const track = trackRef.current;
-    if (!wrap || !pin || !track) return;
-    const wide = window.matchMedia("(min-width: 1081px)");
-    let dist = 0;
-    let raf = 0;
-    const measure = () => {
-      const on = wide.matches && prefersMotion();
-      wrap.dataset.pinned = on ? "true" : "false";
-      if (!on) {
-        wrap.style.height = "";
-        track.style.transform = "";
-        return;
-      }
-      dist = Math.max(0, track.scrollWidth - pin.clientWidth);
-      wrap.style.height = `${dist * 0.55 + window.innerHeight}px`;
-      update();
-    };
-    const update = () => {
-      raf = 0;
-      if (wrap.dataset.pinned !== "true") return;
-      const top = wrap.getBoundingClientRect().top;
-      const prog = dist > 0 ? Math.min(1, Math.max(0, -top / (dist * 0.55))) : 0;
-      track.style.transform = `translate3d(${(-prog * dist).toFixed(1)}px, 0, 0)`;
-      wrap.style.setProperty("--jp", prog.toFixed(4));
-    };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    measure();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", measure);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", measure);
-    };
-  }, [rounds.length]);
-
-  if (!rounds.length) return null;
+function Head({
+  no,
+  label,
+  id,
+  sub,
+  size = "md",
+  children,
+}: {
+  no: string;
+  label: string;
+  id: string;
+  sub?: React.ReactNode;
+  size?: "sm" | "md" | "lg";
+  children: React.ReactNode;
+}) {
   return (
-    <div className={styles.sideWrap} ref={wrapRef}>
-      <div className={styles.sidePin} ref={pinRef}>
+    <div className={styles.head}>
+      <p className={styles.eyebrow} data-motion="eyebrow">
+        <span className={styles.eyebrowNo} data-waypoint={id.replace(/-h$/, "")}>
+          {no}
+        </span>{" "}
+        {label}
+      </p>
+      <h2 id={id} className={styles.h2} data-size={size}>
         {children}
-        <span className={styles.sideProgress} aria-hidden="true">
-          <span />
-        </span>
-        <ol className={styles.track} ref={trackRef} aria-label="Interview rounds in order">
-          {rounds.map((r, i) => (
-            <li key={r.id} style={vars({ i })}>
-              <Link href={r.href} prefetch={false} className={styles.round} data-glow>
-                <span className={styles.roundNum}>{r.num}</span>
-                <span className={styles.roundStep}>Round {String(i + 1).padStart(2, "0")}</span>
-                <span className={styles.roundTitle}>{r.title}</span>
-                <span className={styles.roundGo} aria-hidden="true">
-                  Read it →
-                </span>
-              </Link>
-            </li>
-          ))}
-          <li className={styles.offer}>
-            <span className={styles.roundNum}>🎉</span>
-            <span className={styles.roundTitle}>The offer</span>
-            <span className={styles.roundStep}>and the number you negotiate</span>
-          </li>
-        </ol>
-      </div>
+      </h2>
+      {sub && (
+        <p className={styles.sub} data-motion="sub">
+          {sub}
+        </p>
+      )}
     </div>
   );
 }
 
-const TOOLS = [
-  { href: "/problems", tone: "purple", icon: "M8 9l-4 3 4 3M16 9l4 3-4 3", t: "Problems" },
-  { href: "/practice?id=free", tone: "blue", icon: "M4 20h4L19 9l-4-4L4 16zM14 6l4 4", t: "Playground" },
-  { href: "/mock", tone: "orange", icon: "M12 7v5l3 2M12 21a9 9 0 110-18 9 9 0 010 18z", t: "Mock interview" },
-  { href: "/whiteboard", tone: "teal", icon: "M3 5h18v12H3zM8 21h8M12 17v4", t: "Whiteboard" },
-];
-
-export function HomeView({ stats, ready, soon, problems, languages, interview }: HomeViewProps) {
+export function HomeView({ stats, ready, soon, languages, interview, bookRounds }: HomeViewProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const closeMenu = useCallback(() => {
@@ -714,8 +288,11 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
   const pageRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const artRef = useRef<HTMLDivElement>(null);
+  const connectorsRef = useRef<ConnectorLive | null>(null);
   const hours = Math.round(stats.minutes / 60);
-  useScrollFx(pageRef);
+  const stageCounts = useMemo(() => bookStages(bookRounds).map((stage) => stage.items.length), [bookRounds]);
+  useSceneScroll(pageRef, connectorsRef);
+  useScrollFx(pageRef, null, 0, HOME_LERP);
 
   useEffect(() => {
     let raf = 0;
@@ -744,89 +321,102 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
     art.style.setProperty("--py", ((e.clientY - r.top) / r.height - 0.5).toFixed(3));
   }
 
-  function onGlow(e: React.PointerEvent) {
-    if (e.pointerType !== "mouse") return;
-    const card = (e.target as Element).closest<HTMLElement>("[data-glow]");
-    if (!card) return;
-    const r = card.getBoundingClientRect();
-    card.style.setProperty("--mx", `${e.clientX - r.left}px`);
-    card.style.setProperty("--my", `${e.clientY - r.top}px`);
-  }
+  const faqs = useMemo<Faq[]>(
+    () => [
+      {
+        q: "Is it really free?",
+        a: "Yes. Every chapter, exercise, mock interview and the whiteboard are free. There is no paid tier hiding the good parts.",
+      },
+      {
+        q: "Why not just videos, problem sites, docs or blog posts?",
+        a: "Each is good at one thing. Here is where they fall short, and what is different on this site.",
+        contrasts: true,
+      },
+      {
+        q: "Do I need to sign up?",
+        a: "No. There is no account. Your progress, streak and boards are saved in this browser. Some things do leave it: anonymous page analytics, the text the narrator reads aloud, error reports, requests to a CDN for the playground's language runtimes, and the request logs every web host keeps.",
+        link: { href: "/privacy", label: "What leaves, and where it goes →" },
+      },
+      {
+        q: "Which topics are written?",
+        a: `${listNames(ready.map((t) => t.name))} have chapters written today, next to the interview book. The rest of the shelf, from other languages to data, computer science and AI, is laid out as coming soon and fills in as chapters are written.`,
+      },
+      {
+        q: "I only have a few weeks before my interview. Where do I start?",
+        a: "Open the Interview book and read the round you have next. Each round tells you what it is really testing, so you can spend the time you have on the gaps that matter.",
+      },
+      {
+        q: "Which languages can I run?",
+        a: `${languages.runnable} languages run inside your browser, including JavaScript, TypeScript, Python, SQL, C and C++. Another ${languages.total - languages.runnable}, like Java, Go and Rust, get syntax highlighting so you can still write your answers in them.`,
+      },
+      {
+        q: "Is this beginner friendly?",
+        a: "Yes, that is the point of the layering. Pick a topic, then Beginner, and the path starts from the ground up, for example with what the engine does before line 1 runs in JavaScript. If you already know it, pick a higher level and skip ahead.",
+      },
+      {
+        q: "How is the site itself built?",
+        a: "It is all written up, from the content model to the build and the tests, in How this is built.",
+        link: { href: "/architecture", label: "Read how it is built →" },
+      },
+    ],
+    [ready, languages]
+  );
 
-  const toolText: Record<string, string> = {
-    Problems: `${problems} problems grouped by the pattern each one teaches.`,
-    Playground: `A full editor with a debugger. Try anything in ${languages.runnable} languages.`,
-    "Mock interview": "A timed loop for your role and level, with a debrief at the end.",
-    Whiteboard: "Sketch a system design with templates and arrows that stay stuck.",
-  };
-
-  const faqs: { q: string; a: string; link?: { href: string; label: string } }[] = [
-    {
-      q: "Is it really free?",
-      a: "Yes. Every chapter, exercise, mock interview and the whiteboard are free. There is no paid tier hiding the good parts.",
-    },
-    {
-      q: "Do I need to sign up?",
-      a: "No. There is no account. Your progress, streak and boards are saved in this browser. Some things do leave it: anonymous page analytics, the text the narrator reads aloud, error reports, requests to a CDN for the playground's language runtimes, and the request logs every web host keeps.",
-      link: { href: "/privacy", label: "What leaves, and where it goes →" },
-    },
-    {
-      q: "I only have a few weeks before my interview. Where do I start?",
-      a: "Open the Interview book and read the round you have next. Each round tells you what it is really testing, so you can spend the time you have on the gaps that matter.",
-    },
-    {
-      q: "Which languages can I run?",
-      a: `${languages.runnable} languages run inside your browser, including JavaScript, TypeScript, Python, SQL, C and C++. Another ${languages.total - languages.runnable}, like Java, Go and Rust, get syntax highlighting so you can still write your answers in them.`,
-    },
-    {
-      q: "Is this beginner friendly?",
-      a: "Yes, that is the point of the layering. Pick Beginner and the path starts with what the engine does before line 1 runs. If you already know it, pick a higher level and skip ahead.",
-    },
-    {
-      q: "How is the site itself built?",
-      a: "It is all written up, from the content model to the build and the tests, in How this is built.",
-      link: { href: "/architecture", label: "Read how it is built →" },
-    },
-  ];
+  const hops = useMemo<Hop[]>(() => {
+    const facts = hopFacts({
+      topics: ready.length + 1,
+      chapters: stats.writtenChapters,
+      steps: HOW_STEPS,
+      paths: PATH_COUNT,
+      stages: stageCounts.length,
+      answers: faqs.length,
+    });
+    const list: Omit<Hop, "fact">[] = [
+      { to: "practice", label: "then practise it", traveller: "plane" },
+      { to: "how", label: "see how it works", traveller: "pencil" },
+      { to: "paths", label: "pick your path", traveller: "bookmark" },
+      { to: "loop", label: "meet the rounds", traveller: "compass" },
+      { to: "faq", label: "ask away", traveller: "flag" },
+      { to: "cta", label: "go on", traveller: "key" },
+    ];
+    return list.map((hop, i) => ({ ...hop, fact: facts[i] }));
+  }, [ready.length, stats.writtenChapters, stageCounts.length, faqs.length]);
 
   return (
     <>
       <a className="skip-link" href="#main">
         Skip to the content
       </a>
-      <div className={styles.page} ref={pageRef} onPointerMove={onGlow}>
+      <div className={styles.page} ref={pageRef}>
+        <Connectors liveRef={connectorsRef} links={hops} />
         <header className={styles.nav} data-scrolled={scrolled || undefined}>
-          <button
-            type="button"
-            className={styles.iconBtn}
-            aria-label="Menu"
-            aria-haspopup="dialog"
-            aria-expanded={menuOpen}
-            onClick={() => {
+          <MenuButton
+            open={menuOpen}
+            onOpen={() => {
               smoothScroll.stop();
               setMenuOpen(true);
             }}
-          >
-            <TopIcon name="menu" />
-          </button>
+          />
           <Link href="/" className={styles.brand} aria-label={`${SITE_NAME} home`}>
             <span className="brand__mark" aria-hidden="true">
-              JS
+              G
             </span>
             <span>{SITE_NAME}</span>
           </Link>
           <nav className={styles.navLinks} aria-label="Sections">
-            <a href="#how">How it works</a>
-            <a href="#who">Paths</a>
-            <a href="#loop">Interview loop</a>
             <a href="#shelf">Topics</a>
+            <a href="#practice">Practice</a>
+            <a href="#how">How it works</a>
+            <a href="#paths">Paths</a>
+            <a href="#loop">Interview book</a>
             <a href="#faq">FAQ</a>
           </nav>
-          <Link href="/level/js" className={`${styles.btn} ${styles.btnSmall}`}>
+          <a href="#shelf" className={`${styles.btn} ${styles.btnSmall}`}>
             Start reading
-          </Link>
+          </a>
           <span className={styles.scrollBar} data-scrollbar aria-hidden="true" />
         </header>
+        <SectionRail />
 
         <main id="main">
           <section className={styles.hero} ref={heroRef} data-fx="heroOut" onPointerMove={onHeroMove}>
@@ -837,7 +427,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                 written
               </p>
               <h1 className={styles.h1}>
-                Understand JavaScript properly.{" "}
+                Understand software properly.{" "}
                 <span className={styles.h1Accent}>
                   Walk into the interview ready.
                   <svg className={styles.underline} viewBox="0 0 400 24" preserveAspectRatio="none" aria-hidden="true">
@@ -846,13 +436,14 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
                 </span>
               </h1>
               <p className={styles.lead}>
-                Notes that never use a word before explaining it, exercises graded by real tests right in the page, and
-                an interview book that walks every round up to the offer.
+                Handwritten notes for software developers, from languages and the web to data, computer science and AI.
+                Nothing uses a word before it is explained, exercises are graded by real tests right in the page, and an
+                interview book walks every round up to the offer.
               </p>
               <div className={styles.actions}>
-                <Link href="/level/js" className={`${styles.btn} ${styles.btnBig}`}>
-                  Start with JavaScript <span className={styles.btnArrow}>→</span>
-                </Link>
+                <a href="#shelf" className={`${styles.btn} ${styles.btnBig}`}>
+                  Pick a topic <span className={styles.btnArrow}>→</span>
+                </a>
                 <Link href="/interview" className={`${styles.btn} ${styles.btnGhost} ${styles.btnBig}`}>
                   Prepare for an interview
                 </Link>
@@ -879,295 +470,148 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             </div>
           </section>
 
-          <section className={`${styles.section} ${styles.howSection}`} id="how" aria-labelledby="how-h">
-            <Story>
-              <div className={styles.head} data-fx="head">
-                <p className={styles.eyebrow}>How it works</p>
-                <h2 id="how-h" className={styles.h2}>
-                  <Words text="Read it. Run it. Get asked about it. Keep it." />
-                </h2>
-                <p className={styles.sub}>
-                  Most prep is either too shallow or too scattered. Here, the explanation, the practice and the
-                  interview sit in one place, in the right order.
-                </p>
-              </div>
-            </Story>
-          </section>
-
-          <section className={styles.section} id="features" aria-labelledby="feat-h">
-            <div className={styles.head} data-fx="head">
-              <p className={styles.eyebrow}>Everything in one place</p>
-              <h2 id="feat-h" className={styles.h2}>
-                <Words text="Built for the way interviews actually go." />
-              </h2>
-            </div>
-            <div className={styles.bento}>
-              <article className={`${styles.cell} ${styles.cellWide}`} style={accent("green")} data-fx="left" data-glow>
-                <span className={styles.cellIcon}>
-                  <Icon d="M8 9l-4 3 4 3M16 9l4 3-4 3M13.5 6l-3 12" />
-                </span>
-                <h3>{problems} exercises, graded for real</h3>
-                <p>
-                  An editor that knows {languages.total} languages and runs {languages.runnable} of them inside your
-                  browser. No install, no server, no waiting.
-                </p>
-                <div className={styles.langs} aria-hidden="true">
-                  {["JS", "TS", "Python", "SQL", "C++", "C", "Ruby", "PHP", "Lua", "HTML", "CSS"].map((l) => (
-                    <span key={l}>{l}</span>
-                  ))}
-                </div>
-              </article>
-              <article
-                className={styles.cell}
-                style={{ ...accent("red"), ...vars({ d: 1 }) }}
-                data-fx="right"
-                data-glow
-              >
-                <span className={styles.cellIcon}>
-                  <Icon d="M12 21a9 9 0 100-18 9 9 0 000 18zM12 16a4 4 0 100-8 4 4 0 000 8zM12 12h.01" />
-                </span>
-                <h3>{interview.rounds} interview rounds</h3>
-                <p>From the screening call to the offer number, with {interview.questions}+ questions answered.</p>
-              </article>
-              <article className={styles.cell} style={accent("orange")} data-fx="flip" data-glow>
-                <span className={styles.cellIcon}>
-                  <Icon d="M12 7v5l3 2M12 21a9 9 0 110-18 9 9 0 010 18z" />
-                </span>
-                <h3>Mock interviews</h3>
-                <p>A timer, follow-ups, a rubric and a hiring-committee style debrief.</p>
-              </article>
-              <article
-                className={styles.cell}
-                style={{ ...accent("teal"), ...vars({ d: 1 }) }}
-                data-fx="flip"
-                data-glow
-              >
-                <span className={styles.cellIcon}>
-                  <Icon d="M3 5h18v12H3zM8 21h8M12 17v4M7 9h4M7 13h7" />
-                </span>
-                <h3>A real whiteboard</h3>
-                <p>Arrows that stay attached, sticky notes and system design templates.</p>
-              </article>
-              <article
-                className={`${styles.cell} ${styles.cellWide}`}
-                style={{ ...accent("purple"), ...vars({ d: 2 }) }}
-                data-fx="right"
-                data-glow
-              >
-                <span className={styles.cellIcon}>
-                  <Icon d="M4 12a8 8 0 0113.7-5.6L20 9M20 4v5h-5M20 12a8 8 0 01-13.7 5.6L4 15M4 20v-5h5" />
-                </span>
-                <h3>Nothing to sign up for</h3>
-                <p>
-                  Progress, streaks, XP and your whiteboards live in this browser, with no account and no paid tier
-                  hiding the good parts. <Link href="/privacy">The privacy page</Link> lists what does leave it.
-                </p>
-              </article>
-            </div>
-          </section>
-
-          <section className={styles.section} id="who" aria-labelledby="who-h">
-            <div className={styles.head} data-fx="head">
-              <p className={styles.eyebrow}>Paths</p>
-              <h2 id="who-h" className={styles.h2}>
-                <Words text="Where are you now? There is a path that starts there." />
-              </h2>
-            </div>
-            <div data-fx="scale">
-              <PathTabs />
-            </div>
-          </section>
-
-          <section className={styles.loopSection} id="loop" aria-labelledby="loop-h">
-            <Journey>
-              <div className={styles.head}>
-                <p className={styles.eyebrow}>The interview book</p>
-                <h2 id="loop-h" className={styles.h2}>
-                  <Words text="From the first call to the offer, round by round." />
-                </h2>
-                <p className={styles.sub}>
-                  What each round is really testing, the answer, the wrong answer that loses the room, and the
-                  follow-up. Pick any round to read it.
-                </p>
-              </div>
-            </Journey>
-          </section>
-
-          <section className={styles.section} id="shelf" aria-labelledby="shelf-h">
-            <div className={styles.head} data-fx="head">
-              <p className={styles.eyebrow}>On the shelf</p>
-              <h2 id="shelf-h" className={styles.h2}>
-                <Words text="Ready to read today." />
-              </h2>
-            </div>
-            <div className={styles.shelf}>
-              {ready.map((t, i) => (
-                <Link
-                  key={t.id}
-                  href={t.href}
-                  className={styles.book}
-                  style={{ ...accent(t.accent), ...vars({ d: i % 3 }) }}
-                  data-fx="up"
-                  data-glow
-                >
-                  <span className={styles.bookTop}>
-                    <span className={styles.bookMark} aria-hidden="true">
-                      {t.mark}
+          <section className={styles.section} id="shelf" aria-labelledby="shelf-h" data-scene>
+            <div className={styles.pin} data-pin-box>
+              <TopicsScene
+                ready={ready}
+                soon={soon}
+                interview={interview}
+                exercises={stats.exercises}
+                onBrowse={() => {
+                  smoothScroll.stop();
+                  setMenuOpen(true);
+                }}
+                head={
+                  <Head no="01" label="Topics" id="shelf-h" sub="Every topic a developer needs, on one map.">
+                    <span className={styles.hl}>
+                      <Words text="Pick a topic." />
                     </span>
-                    <span className={styles.bookGo} aria-hidden="true">
-                      →
-                    </span>
-                  </span>
-                  <span className={styles.bookName}>{t.name}</span>
-                  <span className={styles.bookTag}>{t.tagline}</span>
-                  <span className={styles.bookMeta}>
-                    <span>{plural(t.chapters, "chapter")}</span>
-                    {t.exercises > 0 && <span>{plural(t.exercises, "exercise")}</span>}
-                    <span>{formatSpan(t.minutes)}</span>
-                  </span>
-                </Link>
-              ))}
-              <Link
-                href="/interview"
-                className={styles.book}
-                style={{ ...accent("red"), ...vars({ d: ready.length % 3 }) }}
-                data-fx="up"
-                data-glow
-              >
-                <span className={styles.bookTop}>
-                  <span className={styles.bookMark} aria-hidden="true">
-                    ◎
-                  </span>
-                  <span className={styles.bookGo} aria-hidden="true">
-                    →
-                  </span>
-                </span>
-                <span className={styles.bookName}>Interview book</span>
-                <span className={styles.bookTag}>Every round, every question, the answer.</span>
-                <span className={styles.bookMeta}>
-                  <span>{plural(interview.rounds, "round")}</span>
-                  <span>{interview.questions}+ questions</span>
-                </span>
-              </Link>
-            </div>
-            {soon.length > 0 && (
-              <div className={styles.soonWrap} data-fx="right">
-                <p className={styles.label}>Being written next</p>
-                <ul className={styles.soon}>
-                  {soon.map((t) => (
-                    <li key={t.id}>
-                      <Link href={t.href} prefetch={false} style={accent(t.accent)}>
-                        <span className={styles.soonMark} aria-hidden="true">
-                          {t.mark}
-                        </span>
-                        {t.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </section>
-
-          <section className={styles.section} aria-labelledby="tools-h">
-            <div className={styles.head} data-fx="head">
-              <p className={styles.eyebrow}>Practice tools</p>
-              <h2 id="tools-h" className={styles.h2}>
-                <Words text="Reading is half of it." />
-              </h2>
-            </div>
-            <div className={styles.tools}>
-              {TOOLS.map((x, i) => (
-                <Link
-                  key={x.href}
-                  href={x.href}
-                  className={styles.tool}
-                  data-glow
-                  style={{ ...accent(x.tone), ...vars({ d: i }) }}
-                  prefetch={false}
-                  data-fx="flip"
-                >
-                  <span className={styles.cellIcon}>
-                    <Icon d={x.icon} />
-                  </span>
-                  <strong>{x.t}</strong>
-                  <span>{toolText[x.t]}</span>
-                </Link>
-              ))}
+                  </Head>
+                }
+              />
             </div>
           </section>
 
-          <section className={styles.section} aria-labelledby="vs-h">
-            <div className={styles.head} data-fx="head">
-              <p className={styles.eyebrow}>Why not just…</p>
-              <h2 id="vs-h" className={styles.h2}>
-                <Words text="What you already tried, and what is different here." />
-              </h2>
-            </div>
-            <div className={styles.compare} data-fx="compare">
-              <div className={styles.compareHead} aria-hidden="true">
-                <span />
-                <span>The usual way</span>
-                <span>{SITE_NAME}</span>
-              </div>
-              {COMPARE.map((c, i) => (
-                <div key={c.them} className={styles.compareRow} style={vars({ r: i })}>
-                  <h3>{c.them}</h3>
-                  <p className={styles.them}>
-                    <span aria-hidden="true">✗</span> {c.gap}
-                  </p>
-                  <p className={styles.us}>
-                    <span aria-hidden="true">✓</span> {c.us}
-                  </p>
-                </div>
-              ))}
+          <section className={styles.section} id="practice" aria-labelledby="practice-h" data-scene>
+            <div className={styles.pin} data-pin-box>
+              <PracticeScene
+                stats={stats}
+                languages={languages}
+                interview={interview}
+                head={
+                  <Head
+                    no="02"
+                    label="Practice"
+                    id="practice-h"
+                    sub="Four tools, all free, all in the browser. Nothing to install and nothing to sign up for."
+                  >
+                    <Words text="Reading is half of it." />
+                  </Head>
+                }
+              />
             </div>
           </section>
 
-          <section className={styles.section} id="faq" aria-labelledby="faq-h">
-            <div className={styles.faqGrid}>
-              <div className={styles.head} data-fx="head">
-                <p className={styles.eyebrow}>Questions</p>
-                <h2 id="faq-h" className={styles.h2}>
-                  <Words text="Before you start." />
-                </h2>
-                <p className={styles.sub}>Everything people ask before opening their first chapter.</p>
-              </div>
-              <div className={styles.faq}>
-                {faqs.map((f, i) => (
-                  <details key={f.q} className={styles.faqItem} data-fx="right" style={vars({ d: i * 0.6 })}>
-                    <summary>{f.q}</summary>
-                    <p>
-                      {f.a}
-                      {f.link && (
-                        <>
-                          {" "}
-                          <Link href={f.link.href}>{f.link.label}</Link>
-                        </>
-                      )}
-                    </p>
-                  </details>
-                ))}
-              </div>
+          <section className={styles.section} id="how" aria-labelledby="how-h" data-scene>
+            <div className={styles.pin} data-pin-box>
+              <HowScene
+                head={
+                  <Head
+                    no="03"
+                    label="How it works"
+                    id="how-h"
+                    sub="Most prep is either too shallow or too scattered. Here, the explanation, the practice and the interview sit in one place, in the right order."
+                  >
+                    <Words text="Read it. Run it. Get asked about it. Keep it." />
+                  </Head>
+                }
+              />
             </div>
           </section>
 
-          <section className={styles.cta} aria-labelledby="cta-h" data-fx="scale">
-            <h2 id="cta-h" className={styles.h2}>
-              <Words text="Ten minutes from now, you could understand one thing properly." />
-            </h2>
-            <p className={styles.sub}>Open a chapter. No account, no card, no catch.</p>
-            <div className={styles.actions}>
-              <Link href="/level/js" className={`${styles.btn} ${styles.btnBig}`}>
-                Start with JavaScript <span className={styles.btnArrow}>→</span>
-              </Link>
-              <Link href="/problems" className={`${styles.btn} ${styles.btnGhost} ${styles.btnBig}`}>
-                Solve a problem
-              </Link>
+          <section
+            className={styles.section}
+            id="paths"
+            aria-labelledby="paths-h"
+            data-scene
+            data-pin-groups={Array(PATH_COUNT).fill(1).join(",")}
+            data-pin-hold={PIN_HOLD_VH}
+            style={vars({ "pin-d": pinLengthVh("paths", PATH_COUNT) })}
+          >
+            <div className={styles.pin} data-pin-box>
+              <PathsScene
+                ready={ready}
+                soon={soon}
+                head={
+                  <Head no="04" label="Paths" id="paths-h" size="sm">
+                    <Words text="Where are you now? There is a path that starts there." />
+                  </Head>
+                }
+              />
+            </div>
+          </section>
+
+          <section
+            className={styles.section}
+            id="loop"
+            aria-labelledby="loop-h"
+            data-scene
+            data-pin-groups={stageCounts.join(",")}
+            data-pin-hold={PIN_HOLD_VH}
+            data-pin-cap={PIN_TURN_CAP}
+            style={vars({ "pin-d": pinLengthVh("loop", stageCounts.length) })}
+          >
+            <div className={styles.pin} data-pin-box>
+              <InterviewScene
+                rounds={bookRounds}
+                total={interview.rounds}
+                head={
+                  <Head
+                    no="05"
+                    label="The interview book"
+                    id="loop-h"
+                    size="sm"
+                    sub={`Pick a stage, then a round, to see what it is really testing, the wrong answer that loses the room, and a question you will get. These are the ${bookRounds.length} core rounds of the ${interview.rounds} in the whole book.`}
+                  >
+                    <Words text="From the first call to the offer, round by round." />
+                  </Head>
+                }
+              />
+            </div>
+          </section>
+
+          <section className={styles.section} id="faq" aria-labelledby="faq-h" data-scene>
+            <div className={styles.pin} data-pin-box>
+              <FaqScene
+                faqs={faqs}
+                languages={languages.runnable}
+                head={
+                  <Head
+                    no="06"
+                    label="FAQ"
+                    id="faq-h"
+                    size="lg"
+                    sub="Everything people ask before opening their first chapter."
+                  >
+                    <Words text="Questions." />
+                  </Head>
+                }
+              />
+            </div>
+          </section>
+
+          <section className={styles.section} id="cta" aria-labelledby="cta-h" data-scene>
+            <div className={styles.pin} data-pin-box>
+              <CtaScene
+                head={
+                  <Head no="07" label="Start here" id="cta-h">
+                    <Words text="Ten minutes from now, you could understand one thing properly." />
+                  </Head>
+                }
+              />
             </div>
           </section>
         </main>
-
         <footer className={styles.foot}>
           <svg className={styles.bigBrand} viewBox="0 0 1000 190" aria-hidden="true" focusable="false" data-fx="brand">
             <text x="500" y="150" textAnchor="middle">
@@ -1178,7 +622,7 @@ export function HomeView({ stats, ready, soon, problems, languages, interview }:
             <div>
               <p className={styles.footBrand}>
                 <span className="brand__mark" aria-hidden="true">
-                  JS
+                  G
                 </span>
                 {SITE_NAME}
               </p>

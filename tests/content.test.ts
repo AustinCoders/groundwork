@@ -4,7 +4,7 @@ import { GIT_BODY_HTML, GIT_CHAPTERS } from "@/content/git-body";
 import { levels, notesHref } from "@/lib/topics";
 import { topicStats } from "@/lib/topicStats";
 
-const notesTopics = topics().filter((t) => t.levels);
+const notesTopics = topics().filter((t) => t.levels?.length);
 const topicIds = notesTopics.map((t) => t.id);
 const allChapters = topicIds.flatMap((id) => chapters(id).map((ch) => ({ topicId: id, ch })));
 const exerciseIds = new Set(exercises().map((ex) => ex.id));

@@ -1,6 +1,6 @@
 # Groundwork
 
-Handwritten web-dev notes, in public — [groundwork.austincoders.com](https://groundwork.austincoders.com)
+Handwritten notes for software developers, in public — [groundwork.austincoders.com](https://groundwork.austincoders.com)
 
 Notes written while learning, layered bottom to top so nothing uses a word that has not been
 explained yet. Every topic opens as a reading path for the level you are at, and every layer that

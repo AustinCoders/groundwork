@@ -6,7 +6,8 @@ import { COMPANIES, hours, INTENSITIES, LEVELS, ROLES } from "@/app/mock/options
 import { loopMinutes, planLoop } from "@/lib/mock/loops";
 import { STYLE_ORDER, STYLES, styleOf } from "@/lib/mock/styles";
 import type { CompanyType, LoopConfig, PlannedStage, StageId, StageInfo, StyleId } from "@/lib/mock/types";
-import styles from "./mock.module.css";
+import kit from "./mockKit.module.css";
+import styles from "./plan.module.css";
 
 type StepId = "style" | "role" | "level" | "company" | "length" | "review";
 
@@ -63,29 +64,32 @@ export function LoopMap({
 }) {
   return (
     <ol className={styles.map} aria-label="The loop, in order">
-      {plan.map((p) => {
+      {plan.map((p, i) => {
         const info = stages[p.stage];
         return (
           <li key={p.stage} className={styles.mapStage} data-core={p.core}>
-            <span className={styles.mapTitle}>{info.title}</span>
+            <span className={styles.mapNo} aria-hidden="true">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <span className={styles.mapMain}>
+              <span className={styles.mapTitle}>{info.title}</span>
+              <span className={styles.mapReason}>{p.reason}</span>
+            </span>
             <span className={styles.mapMeta}>
-              <span className={styles.kindTag} data-kind={info.kind}>
+              <span className={kit.kindTag} data-kind={info.kind}>
                 {info.kind === "coding" ? "code" : "talk"}
               </span>
-              <span className={styles.nowrap}>
-                {p.questions} {p.questions === 1 ? "question" : "questions"} · {p.minutes} min
-              </span>
               {veto.includes(p.stage) ? (
-                <span className={styles.coreBadge} data-veto="true">
+                <span className={kit.coreBadge} data-veto="true">
                   veto
                 </span>
               ) : p.core ? (
-                <span className={styles.coreBadge}>core</span>
-              ) : (
-                <span aria-hidden="true" />
-              )}
+                <span className={kit.coreBadge}>core</span>
+              ) : null}
+              <span className={styles.mapCount}>
+                {p.questions} {p.questions === 1 ? "question" : "questions"} · {p.minutes} min
+              </span>
             </span>
-            <p className={styles.mapReason}>{p.reason}</p>
           </li>
         );
       })}
@@ -178,11 +182,9 @@ export function LoopWizard({
   const totalQuestions = plan.reduce((n, p) => n + p.questions, 0);
 
   return (
-    <section className={styles.panel} aria-labelledby="wizard-q">
+    <section aria-labelledby="wizard-q">
       <div className={styles.wizard} data-review={stepId === "review" || undefined}>
         <div className={styles.wizardMain}>
-          <p className={styles.eyebrow}>plan the loop</p>
-
           <ol className={styles.stepper} aria-label="Steps">
             {steps.map((id, i) => {
               const label = STEP_LABEL[id];
@@ -289,16 +291,21 @@ export function LoopWizard({
 
             {step < REVIEW && (
               <div className={styles.stepNav}>
-                <button type="button" className="btn btn--ghost" disabled={step === 0} onClick={() => goTo(step - 1)}>
+                <button
+                  type="button"
+                  className={`${kit.btn} ${kit.btnGhost}`}
+                  disabled={step === 0}
+                  onClick={() => goTo(step - 1)}
+                >
                   ← Back
                 </button>
                 <span className={styles.spacer} />
                 {isAnswered(stepId) ? (
-                  <button type="button" className="btn" onClick={() => goTo(nextStep)}>
+                  <button type="button" className={kit.btn} onClick={() => goTo(nextStep)}>
                     {nextStep === REVIEW ? "See the loop →" : `Next: ${STEP_LABEL[steps[nextStep]]} →`}
                   </button>
                 ) : (
-                  <button type="button" className="btn" disabled>
+                  <button type="button" className={kit.btn} disabled>
                     Choose one to go on
                   </button>
                 )}
@@ -321,7 +328,7 @@ export function LoopWizard({
                 <div className={styles.startBar}>
                   <button
                     type="button"
-                    className="btn btn--primary"
+                    className={kit.btn}
                     disabled={busy}
                     onPointerEnter={onStartIntent}
                     onFocus={onStartIntent}
@@ -341,7 +348,8 @@ export function LoopWizard({
         </div>
         {stepId !== "review" && (
           <aside className={styles.livePlan} aria-label="Your loop so far">
-            <p className={styles.eyebrow}>your loop so far</p>
+            <span className={kit.tape} aria-hidden="true" />
+            <p className={kit.label}>Your loop so far</p>
             <p className={styles.liveTotals}>
               <b>{plan.length}</b> rounds · <b>{totalQuestions}</b> questions · about <b>{hours(totalMinutes)}</b>
             </p>

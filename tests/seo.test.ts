@@ -159,6 +159,20 @@ describe("topic cover metadata", () => {
   });
 });
 
+describe("a topic that is only being planned", () => {
+  it("describes itself with its blurb, not with a chapter count", () => {
+    const planning = topics().filter((t) => t.levels && t.levels.length === 0);
+    expect(planning.length).toBeGreaterThan(0);
+    for (const t of planning) {
+      const description = String(topicCoverMetadata(t.id).description);
+      expect(description, `${t.id} drops its blurb`).toContain(t.blurb);
+      expect(description, `${t.id} counts planned chapters`).not.toContain("0 chapters planned");
+      expect(description, `${t.id} leaks undefined`).not.toContain("undefined");
+      expect(description, `${t.id} has stray whitespace`).toBe(description.trim());
+    }
+  });
+});
+
 describe("links into a topic", () => {
   it("sends a topic with nothing written to its own outline landing rather than an empty reading path", () => {
     for (const t of topicsNavWithStats()) {

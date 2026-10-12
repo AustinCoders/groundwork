@@ -2,8 +2,29 @@
 
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
+import { Copy, Scene } from "@/components/home/Stage";
+import { Card, Compose, Remark, Tag } from "@/components/topic/Compose";
 import { TopicFrame } from "@/components/topic/TopicFrame";
-import { accentVar } from "@/lib/accent";
+import {
+  Actions,
+  Band,
+  Button,
+  CardKicker,
+  Facts,
+  Foot,
+  FootLink,
+  Heading,
+  Kicker,
+  Lead,
+  List,
+  ProgressMeter,
+  ProgressRing,
+  Row,
+  TopicPage,
+  Underlined,
+  topicKit,
+} from "@/components/topic/TopicKit";
+import { Journey, JourneyStop, SoonTag, StopHead } from "@/components/topic/Journey";
 import { formatSpan, plural } from "@/lib/format";
 import { problemHref } from "@/lib/problemHref";
 import { quizStore } from "@/lib/quizStore";
@@ -12,7 +33,7 @@ import { nextChapter, requiresCheck, tickHref } from "@/lib/completion";
 import { useMounted, useProgressValue } from "@/lib/hooks";
 import type { LevelRow } from "@/lib/levelRows";
 import type { Level, Topic } from "@/content/types";
-import styles from "./level.module.css";
+import styles from "./path.module.css";
 
 export interface ExerciseLink {
   id: string;
@@ -60,258 +81,244 @@ export function TopicPath({
   }, [doneKey, chapters]);
 
   const doneCount = mounted ? done.size : 0;
-  const pct = chapters.length ? (doneCount / chapters.length) * 100 : 0;
   const next = mounted ? nextChapter(topic.completion, chapters, done) : (chapters[0] ?? null);
 
   const continueHref = next ? `${basePath}/${next.id}` : basePath;
   const continueLabel = !mounted || doneCount === 0 ? "Start reading" : next ? `Continue — ${next.short}` : "Review";
   const totalMinutes = chapters.reduce((sum, ch) => sum + ch.readMinutes, 0);
+  const chaptersLeft = chapters.length - doneCount;
+  const nextIndex = next ? entries.findIndex((entry) => entry.ready && entry.chapter.id === next.id) : entries.length;
+  const walked = entries.length ? Math.min(1, Math.max(0, nextIndex / entries.length)) : 0;
+
+  const exerciseRows = (list: ExerciseLink[], withChapter: boolean) =>
+    list.map((ex) => (
+      <Row
+        key={ex.id}
+        title={ex.title}
+        sub={`${withChapter && ex.chapterShort ? `${ex.chapterShort} · ` : ""}${plural(ex.testCount, "test")}${withChapter ? "" : ` · ${ex.level}`}`}
+        href={problemHref(ex.id)}
+        done={mounted && progress.isExerciseSolved(ex.id)}
+      />
+    ));
 
   return (
     <TopicFrame
       topic={{ name: topic.name, href: basePath, mark: topic.mark, accent: topic.accent }}
       back={{ href: `/level/${topic.id}`, label: topic.name }}
       skip={{ label: "Skip to the path" }}
+      layout="reader"
     >
-      <div className={styles.page} style={{ "--accent": accentVar(topic.accent) } as React.CSSProperties}>
-        <div className={styles.heroRow} data-fx="stagger">
-          <section className={styles.hero}>
-            <p className={styles.kicker} id="path-kicker">
-              <span className={styles.kickerMark} aria-hidden="true">
-                {topic.mark}
-              </span>
+      <TopicPage accent={topic.accent}>
+        <Scene className={topicKit.hero}>
+          <Copy>
+            <Kicker mark={topic.mark} id="path-kicker">
               Step 2 of 2 · your path
-            </p>
-            <h1 className={styles.title} id="path-title">
-              {topic.name} — {level.name}
-            </h1>
-            <p className={styles.lead} id="path-blurb">
-              {level.blurb}
-            </p>
-
-            <div className={styles.meter}>
-              <div className={styles.meterTrack}>
-                <div className={styles.meterFill} id="path-meter-fill" style={{ width: `${pct}%` }} />
-              </div>
-              <span className={styles.meterLabel} id="path-meter-label">
-                {doneCount} / {chapters.length} done
-              </span>
-            </div>
-
-            <div className={styles.heroActions}>
-              <Link className="btn btn--primary btn--big" id="start-btn" href={continueHref}>
-                {continueLabel} →
-              </Link>
-              <Link className="btn btn--big" id="change-level" href={`/level/${topic.id}`}>
+            </Kicker>
+            <Heading id="path-title">
+              {topic.name}, <Underlined>{level.name}</Underlined>
+            </Heading>
+            <Lead id="path-blurb">{level.blurb}</Lead>
+            <Actions>
+              <Button id="start-btn" href={continueHref}>
+                {continueLabel} <span aria-hidden="true">→</span>
+              </Button>
+              <Button ghost id="change-level" href={`/level/${topic.id}`}>
                 <span aria-hidden="true">⇄</span> Change level
-              </Link>
-              <Link className="btn btn--big" id="all-chapters" href={basePath}>
+              </Button>
+              <Button ghost id="all-chapters" href={basePath}>
                 All chapters
-              </Link>
-            </div>
-          </section>
+              </Button>
+            </Actions>
+          </Copy>
+          <Compose live layout="rail">
+            <Card at="a" tilt={-1} taped>
+              <CardKicker>Your progress</CardKicker>
+              <ProgressRing done={doneCount} total={chapters.length} />
+              <ProgressMeter
+                done={doneCount}
+                total={chapters.length}
+                label={`${doneCount} / ${chapters.length} done`}
+                fillId="path-meter-fill"
+                labelId="path-meter-label"
+              />
+              <Remark>tick them off as you read</Remark>
+            </Card>
+            <Card as="aside" aria-label={`${topic.name} ${level.name} path in numbers`} at="b" tilt={1}>
+              <Tag tone="success">
+                {chaptersLeft === 0 && chapters.length > 0 ? "★ path complete" : "⚑ you are here"}
+              </Tag>
+              <CardKicker>The path in numbers</CardKicker>
+              <Facts
+                items={[
+                  { value: chaptersLeft, label: chaptersLeft === 1 ? "chapter left" : "chapters left" },
+                  { value: formatSpan(totalMinutes), label: "of reading" },
+                  {
+                    value: levelExerciseList.length,
+                    label: levelExerciseList.length === 1 ? "exercise" : "exercises",
+                  },
+                ]}
+              />
+            </Card>
+            <Card at="c" tone="note" tilt={1}>
+              <CardKicker>{next ? "Up next" : "All read"}</CardKicker>
+              {next ? (
+                <>
+                  <p className={styles.nextTitle}>{next.short}</p>
+                  <p className={styles.nextSub}>
+                    {next.readMinutes} min read
+                    {(chapterExercises[next.id] ?? []).length > 0
+                      ? ` · ${plural(chapterExercises[next.id].length, "exercise")}`
+                      : ""}
+                  </p>
+                </>
+              ) : (
+                <p className={styles.nextSub}>Every chapter on this path is ticked off.</p>
+              )}
+            </Card>
+          </Compose>
+        </Scene>
 
-          <aside className={styles.statPanel} aria-label={`${topic.name} ${level.name} path in numbers`}>
-            <div className={styles.statRow}>
-              <span className={styles.statNum}>{chapters.length - doneCount}</span>
-              <span className={styles.statLabel}>{plural(chapters.length - doneCount, "chapter")} left</span>
-            </div>
-            <div className={styles.statRow}>
-              <span className={styles.statNum}>{formatSpan(totalMinutes)}</span>
-              <span className={styles.statLabel}>of reading in this path</span>
-            </div>
-            <div className={styles.statRow}>
-              <span className={styles.statNum}>{levelExerciseList.length}</span>
-              <span className={styles.statLabel}>{plural(levelExerciseList.length, "exercise")} to practice</span>
-            </div>
-          </aside>
-        </div>
+        <Band
+          no="01"
+          id="steps-title"
+          label="The way"
+          title="The order I'd read them in"
+          sub={`About ${formatSpan(totalMinutes)} of reading. Tick off what you've read, it is remembered on this device.`}
+          subId="path-note"
+          count={plural(chapters.length, "chapter")}
+        >
+          <Journey count={entries.length} slot={170} walked={walked} label="The reading path" id="steps">
+            {entries.map((entry, i) => {
+              if (!entry.ready) {
+                const section = entry.section;
+                return (
+                  <JourneyStop key={`planned-${i}`} state="soon">
+                    <StopHead
+                      code={entry.chapter?.num}
+                      title={section.title}
+                      sub={section.items.join(" · ")}
+                      href={entry.chapter ? `${basePath}/${entry.chapter.id}` : null}
+                      end={<SoonTag>coming soon</SoonTag>}
+                    />
+                  </JourneyStop>
+                );
+              }
 
-        <div className={styles.sectionHead} data-fx="up">
-          <h2 className={styles.sectionTitle}>The order I&apos;d read them in</h2>
-          <p className={styles.sectionNote} id="path-note">
-            {plural(chapters.length, "chapter")}, about {formatSpan(totalMinutes)} of reading. Tick off what you&apos;ve
-            read — it is remembered on this device.
-          </p>
-        </div>
-
-        <ol className={styles.path} id="steps" data-fx="up">
-          {entries.map((entry, i) => {
-            if (!entry.ready) {
-              const section = entry.section;
-              return (
-                <li className={styles.step} key={`planned-${i}`}>
-                  <span className={styles.stepNode} aria-hidden="true">
-                    ○
-                  </span>
-                  <div className={styles.stepBody}>
-                    <div className={styles.stepMain}>
-                      {entry.chapter ? (
-                        <Link className={styles.stepTitle} href={`${basePath}/${entry.chapter.id}`} prefetch={false}>
-                          {section.title}
-                        </Link>
-                      ) : (
-                        <span className={styles.stepTitle}>{section.title}</span>
-                      )}
-                      <p className={styles.stepSub} title={section.items.join(" · ")}>
-                        {section.items.join(" · ")}
-                      </p>
-                      <div className={styles.stepMeta}>
-                        <span className="tag tag--soon">coming soon</span>
-                      </div>
-                    </div>
-                  </div>
-                </li>
+              const chapter = entry.chapter;
+              const chapterExerciseList = chapterExercises[chapter.id] ?? [];
+              const chapterDone = mounted && done.has(chapter.id);
+              const isNext = next?.id === chapter.id;
+              const stepTick = tickHref(
+                topic.completion,
+                basePath,
+                chapter.id,
+                false,
+                chapterDone,
+                (checkChapterIds ?? []).includes(chapter.id)
               );
-            }
+              const checkClass = chapterDone ? `${styles.stepCheck} ${styles.stepCheckOn}` : styles.stepCheck;
+              const checkBody = (
+                <>
+                  <span className={styles.stepCheckMark} data-role="check-mark" aria-hidden="true">
+                    {chapterDone ? "✓" : ""}
+                  </span>
+                  {chapterDone ? "Mark as unread" : "Mark as read"}
+                </>
+              );
 
-            const chapter = entry.chapter;
-            const chapterExerciseList = chapterExercises[chapter.id] ?? [];
-            const chapterDone = mounted && done.has(chapter.id);
-            const checkClass = chapterDone ? `${styles.stepCheck} ${styles.stepCheckOn}` : styles.stepCheck;
-            const stepTick = tickHref(
-              topic.completion,
-              basePath,
-              chapter.id,
-              false,
-              chapterDone,
-              (checkChapterIds ?? []).includes(chapter.id)
-            );
-            const checkBody = (
-              <>
-                <span className={styles.stepCheckMark} data-role="check-mark" aria-hidden="true">
-                  {chapterDone ? "✓" : ""}
-                </span>
-                {chapterDone ? "Mark as unread" : "Mark as read"}
-              </>
-            );
-
-            return (
-              <li
-                className={styles.step}
-                id={`step-${chapter.id}`}
-                data-step={chapter.id}
-                data-done={chapterDone ? "true" : "false"}
-                key={chapter.id}
-              >
-                <span className={styles.stepNode} aria-hidden="true">
-                  {chapter.num}
-                </span>
-                <div className={styles.stepBody}>
-                  <div className={styles.stepMain}>
-                    <Link className={styles.stepTitle} href={`${basePath}/${chapter.id}`} prefetch={false}>
-                      {chapter.title}
-                    </Link>
-                    <p className={styles.stepSub} title={chapter.subtitle}>
-                      {chapter.subtitle}
-                    </p>
-                    <div className={styles.stepRow}>
-                      <div className={styles.stepMeta}>
-                        <span className="tag">{chapter.readMinutes} min read</span>
-                        {chapterExerciseList.length > 0 && (
-                          <span className="tag">{plural(chapterExerciseList.length, "exercise")}</span>
-                        )}
-                        {(chapter.levels || []).map((l) => (
-                          <span key={l} className={`tag tag--${l}`}>
-                            {l}
-                          </span>
-                        ))}
-                      </div>
-                      {stepTick ? (
-                        <Link className={checkClass} href={stepTick} prefetch={false}>
-                          {checkBody}
-                        </Link>
-                      ) : (
-                        <button
-                          type="button"
-                          className={checkClass}
-                          aria-pressed={chapterDone}
-                          onClick={() => {
-                            if (chapterDone && requiresCheck(topic.completion)) quizStore.unmark(chapter.id);
-                            progress.setChapterDone(chapter.id, !chapterDone);
-                          }}
-                        >
-                          {checkBody}
-                        </button>
+              return (
+                <JourneyStop
+                  key={chapter.id}
+                  id={`step-${chapter.id}`}
+                  state={chapterDone ? "done" : isNext ? "next" : "todo"}
+                  sticker={isNext ? "⚑ you are here" : undefined}
+                  data={{ "data-step": chapter.id, "data-done": chapterDone ? "true" : "false" }}
+                >
+                  <StopHead
+                    code={chapter.num}
+                    title={chapter.title}
+                    sub={chapter.subtitle}
+                    href={`${basePath}/${chapter.id}`}
+                  />
+                  <div className={styles.stepRow}>
+                    <div className={styles.tags}>
+                      <span className={topicKit.chip}>{chapter.readMinutes} min read</span>
+                      {chapterExerciseList.length > 0 && (
+                        <span className={topicKit.chip}>{plural(chapterExerciseList.length, "exercise")}</span>
                       )}
                     </div>
+                    {stepTick ? (
+                      <Link className={checkClass} href={stepTick} prefetch={false}>
+                        {checkBody}
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        className={checkClass}
+                        aria-pressed={chapterDone}
+                        onClick={() => {
+                          if (chapterDone && requiresCheck(topic.completion)) quizStore.unmark(chapter.id);
+                          progress.setChapterDone(chapter.id, !chapterDone);
+                        }}
+                      >
+                        {checkBody}
+                      </button>
+                    )}
                   </div>
                   {chapterExerciseList.length > 0 && (
-                    <details className={styles.exerciseDetails} open={mounted && next?.id === chapter.id}>
+                    <details className={styles.exerciseDetails} open={mounted && isNext}>
                       <summary>
-                        {plural(chapterExerciseList.length, "exercise")} <span aria-hidden="true">▾</span>
+                        {plural(chapterExerciseList.length, "exercise")}{" "}
+                        <span className={styles.caret} aria-hidden="true">
+                          ▾
+                        </span>
                       </summary>
-                      <div className="practice-list">
-                        {chapterExerciseList.map((ex) => {
-                          const solved = mounted && progress.isExerciseSolved(ex.id);
-                          return (
-                            <Link className="practice" href={problemHref(ex.id)} prefetch={false} key={ex.id}>
-                              <span className="practice__top">
-                                <span className="practice__title">{ex.title}</span>
-                                {solved && <span className="practice__tick">✓</span>}
-                              </span>
-                              <span className="practice__meta">
-                                {plural(ex.testCount, "test")} · {ex.level}
-                              </span>
-                            </Link>
-                          );
-                        })}
-                      </div>
+                      <List>{exerciseRows(chapterExerciseList, false)}</List>
                     </details>
                   )}
-                </div>
-              </li>
-            );
-          })}
-        </ol>
+                </JourneyStop>
+              );
+            })}
+          </Journey>
+        </Band>
 
-        <div className={styles.sectionHead} data-fx="up">
-          <h2 className={styles.sectionTitle}>Practice at this level</h2>
-          <p className={styles.sectionNote}>Every exercise opens in the editor with tests you can run.</p>
-        </div>
-        <div className="practice-list" id="practice-list">
-          {!levelExerciseList.length && (
-            <p className={styles.sectionNote}>
-              No exercises tagged for this level yet — the ones on each chapter above still work.
-            </p>
+        <Band
+          no="02"
+          id="practice-title"
+          label="Practice"
+          title="Practice at this level"
+          sub={
+            levelExerciseList.length
+              ? "Every exercise opens in the editor with tests you can run."
+              : "No exercises tagged for this level yet. The ones on each chapter above still work."
+          }
+          count={plural(levelExerciseList.length, "exercise")}
+        >
+          {levelExerciseList.length > 0 && (
+            <List columns id="practice-list">
+              {exerciseRows(levelExerciseList, true)}
+            </List>
           )}
-          {levelExerciseList.map((ex) => {
-            const solved = mounted && progress.isExerciseSolved(ex.id);
-            return (
-              <Link className="practice" href={problemHref(ex.id)} prefetch={false} key={ex.id}>
-                <span className="practice__top">
-                  <span className="practice__title">{ex.title}</span>
-                  {solved && <span className="practice__tick">✓</span>}
-                </span>
-                <span className="practice__meta">
-                  {ex.chapterShort ? `${ex.chapterShort} · ` : ""}
-                  {plural(ex.testCount, "test")}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
+        </Band>
 
-        <footer className={styles.footer}>
-          <Link href="/">All topics</Link>
-          <Link href={basePath}>{topic.name} notes</Link>
-          <div className={styles.resetRow}>
-            <p className={styles.resetNote}>Clears every chapter, exercise and chapter check on this device.</p>
-            <button
-              type="button"
-              className="btn"
-              id="reset-progress"
-              onClick={() => {
-                if (!window.confirm("Clear every tick and solved exercise on this device?")) return;
-                progress.reset();
-                quizStore.clear();
-              }}
-            >
-              Reset my progress
-            </button>
-          </div>
-        </footer>
-      </div>
+        <Foot>
+          <FootLink href="/">All topics</FootLink>
+          <FootLink href={basePath}>{topic.name} notes</FootLink>
+          <button
+            type="button"
+            className={topicKit.btnGhost}
+            id="reset-progress"
+            onClick={() => {
+              if (!window.confirm("Clear every tick and solved exercise on this device?")) return;
+              progress.reset();
+              quizStore.clear();
+            }}
+          >
+            Reset my progress
+          </button>
+          <p className={styles.resetNote}>Clears every chapter, exercise and chapter check on this device.</p>
+        </Foot>
+      </TopicPage>
     </TopicFrame>
   );
 }

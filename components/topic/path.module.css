@@ -1,0 +1,138 @@
+.nextTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--t-heading);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.nextSub {
+  margin: 6px 0 0;
+  font-size: var(--t-body);
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 8px;
+}
+
+.stepRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 10px;
+}
+
+.stepCheck {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0 14px 0 10px;
+  font-family: inherit;
+  font-size: var(--t-body);
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+a.stepCheck {
+  text-decoration: none;
+}
+
+.stepCheck:hover {
+  background: var(--sheet-2);
+  border-color: var(--primary);
+}
+
+.stepCheck:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.stepCheckOn {
+  color: var(--ink-soft);
+  background: transparent;
+}
+
+.stepCheckMark {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  font-size: var(--t-kicker);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink-soft);
+  border: 1.5px dashed var(--line);
+  border-radius: 50%;
+}
+
+.stepCheckOn .stepCheckMark {
+  color: var(--on-primary);
+  background: var(--primary);
+  border: 1.5px solid var(--primary);
+}
+
+.exerciseDetails {
+  margin-top: 4px;
+  min-width: 0;
+}
+
+.exerciseDetails > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--primary) 70%, var(--ink));
+  cursor: pointer;
+  list-style: none;
+}
+
+.exerciseDetails > summary::-webkit-details-marker {
+  display: none;
+}
+
+.exerciseDetails > summary:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.exerciseDetails[open] > summary .caret {
+  rotate: 180deg;
+}
+
+.caret {
+  display: inline-block;
+  transition: rotate 0.2s ease;
+}
+
+.resetNote {
+  flex: 1 1 100%;
+  max-width: 48ch;
+  margin: 0;
+  font-size: var(--t-meta);
+  color: var(--ink-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stepCheck,
+  .caret {
+    transition: none;
+  }
+}

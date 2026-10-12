@@ -8,7 +8,7 @@ export const archDesignSystem: Chapter = {
   levels: ["intermediate"],
   practice: [],
   ready: true,
-  subtitle: "Nine themes and seven fonts as CSS variables, two page frames, and the checks that keep them readable.",
+  subtitle: "Nine themes and eight fonts as CSS variables, two page frames, and the checks that keep them readable.",
   body: `<h3>Tokens, not components</h3>
 <p>
   There is no component library here. The design system is a set of CSS custom properties in
@@ -58,15 +58,17 @@ export const archDesignSystem: Chapter = {
 
 <h3>Nine themes</h3>
 <p>
-  The <code>:root</code> block in <code>globals.css</code> defines 63 custom properties: paper and
+  The <code>:root</code> block in <code>globals.css</code> defines 78 custom properties: paper and
   sheet colours, ink, pencil, red and green, highlighter colours, sticky notes, code colours,
   diagram boxes, shadows, sizes, fonts, the editor's syntax colours, the categorical
-  <code>--c-*</code> colours and the role colours. That block is the Paper theme, and it also
+  <code>--c-*</code> colours, the role colours and the interview book's <code>--book-*</code> materials (cream paper
+  and dark ink, a cloth cover, a ribbon, a shadow, all kept in every theme and tinted by it). That block is the Paper theme, and it also
   matches <code>[data-theme="light"]</code>, so a Paper preview inside another theme shows Paper.
-  Its 56 colour tokens are the properties whose value is a colour (the colours and the shadows).
+  Its 71 colour tokens are the properties whose value is a colour (the colours and the shadows).
   Each of the other eight is a <code>[data-theme="&hellip;"]</code> block that restates exactly
-  those 56 and nothing else, and sets <code>color-scheme</code>, so native scrollbars and form
-  controls match.
+  those 71 and nothing else, and sets <code>color-scheme</code>, so the native scrollbars inside panels and the form
+  controls match. The page's own scrollbar is hidden on <code>html</code>, and the reading-progress
+  bar in the header is the only cue to where you are on the page.
 </p>
 <p>
   Anything computed from those colours lives once, in a shared <code>:root, [data-theme]</code>
@@ -133,7 +135,7 @@ export const archDesignSystem: Chapter = {
   and the interview book's cards and pills. The visualisers' current-step highlight follows the
   theme's marker. Some uses outside the chapters stay categorical too, such as the problem
   hint, the progress page's achievements, the home page's interview-story reds,
-  the book's test, say and trap boxes, the mock interviewers' avatars, the editor's window dots,
+  the book's test, say and trap boxes, the editor's window dots,
   the problem levels, the lanes of the architecture map, and the whiteboard's ruled margin and
   laser. <code>tests/theme-roles.test.ts</code> finds every CSS module under <code>app/</code> and
   <code>components/</code>, the global rules in <code>app/globals.css</code> and
@@ -159,12 +161,12 @@ export const archDesignSystem: Chapter = {
   topic's colour, which is why the accent role is not called <code>--accent</code>.
 </p>
 
-<h3>Seven fonts</h3>
+<h3>Eight fonts</h3>
 <p>
-  <code>lib/fonts.ts</code> loads 13 families through <code>next/font/google</code>, which serves
+  <code>lib/fonts.ts</code> loads 15 families through <code>next/font/google</code>, which serves
   them from the site's own origin and exposes each as a variable such as
   <code>--font-caveat</code>. Only the default pair, Caveat and Kalam, is preloaded, with
-  <code>display: "optional"</code>, so a slow font never causes a layout shift. The other eleven
+  <code>display: "optional"</code>, so a slow font never causes a layout shift. The other thirteen
   set <code>preload: false</code> and download only when a <code>data-font</code> rule starts
   using them.
 </p>
@@ -175,13 +177,14 @@ export const archDesignSystem: Chapter = {
 <tr><td><code>marker</code></td><td>Marker</td><td>Patrick Hand</td><td>Shadows Into Light</td></tr>
 <tr><td><code>sketch</code></td><td>Sketch</td><td>Architects Daughter</td><td>Reenie Beanie</td></tr>
 <tr><td><code>pen</code></td><td>Pen</td><td>Gochi Hand</td><td>Neucha</td></tr>
+<tr><td><code>chalk</code></td><td>Chalk</td><td>Permanent Marker</td><td>Indie Flower</td></tr>
 <tr><td><code>script</code></td><td>Script</td><td>Dancing Script</td><td>Handlee</td></tr>
 <tr><td><code>serif</code></td><td>Reading</td><td>Literata</td><td>Literata</td></tr>
 <tr><td><code>roboto</code></td><td>Roboto</td><td>Roboto</td><td>Roboto</td></tr>
 </tbody>
 </table></div>
 <p>
-  Five of the seven are handwriting. Reading and Roboto exist for people who find handwriting hard
+  Six of the eight are handwriting. Reading and Roboto exist for people who find handwriting hard
   to read for long, and they are the reason the picker's heading says "Handwriting" but its options
   do not all fit the name. JetBrains Mono stays the <code>--font-mono</code> for code blocks in
   every font.
@@ -223,7 +226,7 @@ export const archDesignSystem: Chapter = {
 <h3>Page frames</h3>
 <p>
   Almost every page renders in <code>components/frame/PageFrame.tsx</code>: a sticky header with a
-  labelled back pill, a menu button that opens the site drawer, the brand and the page title. Home,
+  labelled back pill, a labelled Menu pill (<code>components/MenuButton.tsx</code>) that opens the site drawer, the brand and the page title. Home,
   review, progress, privacy, the 404 page and the error page render it directly.
   <code>components/topic/TopicFrame.tsx</code> fills it in for a topic, with the topic's mark beside
   a title that links to its cover. A page that sets <code>reading</code> also gets the drawer's text
@@ -234,15 +237,107 @@ export const archDesignSystem: Chapter = {
   <code>@radix-ui/react-focus-scope</code>.
 </p>
 <p>
-  The practice playground, the problems list and the whiteboard are full-screen tools, and a
-  frame would cost them height they need. They have no persistent chrome. Practice and problems
-  open <code>components/SiteDrawer.tsx</code> from a menu button. It is a portal with
-  <code>role="dialog"</code> and <code>aria-modal</code>, seven links (home, playground, problems,
-  whiteboard, mock interview, review, progress) with <code>aria-current</code> on the current one,
-  and an <code>AppearancePicker</code>. It focuses its first control, holds Tab inside, closes on
-  Escape, locks scroll, and returns focus to whatever opened it. The whiteboard renders through
+  The playground and the problem pages are tools, so they keep the full height of the window, but they
+  wear the same header: <code>components/frame/FrameHeader.tsx</code> is the header that
+  <code>PageFrame</code> renders, taken out so the tools can use it with a back pill that shrinks to an
+  icon, no brand name and a row that wraps on narrow screens. The problems list is a page in
+  <code>PageFrame</code> like the interview question bank. The whiteboard is the one tool with its own
+  chrome and board menu. Every other page opens <code>components/SiteDrawer.tsx</code> from the same Menu pill. It is a portal with
+  <code>role="dialog"</code> and <code>aria-modal</code>, laid out as four numbered sections in the
+  home page's vocabulary: a Continue card from the one saved place in <code>groundwork:resume</code>
+  with the level and streak as one quiet line, six Go to rows with <code>aria-current</code> on the
+  current one, the topics and the two guides as a single-open accordion, and a closed Appearance fold
+  holding the theme swatches and handwriting tiles (and, on reading pages, text size, narrator and
+  shortcuts), plus a disabled Sign in placeholder and, in its foot, a Take the tour row. That row opens the first-visit tour: a lazy-loaded
+  prompt and five-slide dialog built from the same stage kit, shown once on the home page and topic pages after the page has loaded, never on a chapter. The chapter sidebar is built from the same kit,
+  <code>components/ui/MenuKit.tsx</code>, so both surfaces share the numbered kicker, search pill,
+  dashed rows and highlighter. The seven type sizes are tokens on <code>:root</code>, with two more, a hero and a lead size, for the topic pages. Ctrl or Cmd plus K opens it
+  with search focused from any page, except while typing in a field or the editor. It focuses its
+  first control, holds Tab inside, closes on Escape, locks scroll, and returns focus to whatever opened it. The whiteboard renders through
   <code>BareShell</code> with <code>header={false}</code> and has its own board menu drawer, which
   embeds the same <code>AppearancePicker</code>.
+</p>
+
+<h3>Topic pages</h3>
+<p>
+  The level picker, the reading path, the topic cover and the outline pages of unwritten topics are
+  one family, built from <code>components/topic/TopicKit.tsx</code>: a numbered kicker, a hero with a
+  display heading and one taped card, a dashed trail of numbered steps, flat dashed rows, single-open
+  folds for the syllabus and a notes card. The page's accent comes from the topic's data, so a new
+  topic needs no CSS. None of these pages uses the scroll reveal, because a reveal leaves blocks
+  part-transparent mid-scroll and in a stitched screenshot.
+</p>
+<p>
+  The interview book (the landing, the question bank and every round) and this architecture section's
+  index are the same family. A round is a chapter in the chapter kit, with a rounds rail, the questions
+  as numbered sections and the answer inside the shared prose layer; the landing and the index reuse
+  the topic kit's trails, stations and rows. Anything that depends on saved progress is hidden until the
+  page has hydrated, so the label of a button never changes under the reader.
+</p>
+
+<h3>The workbench pages</h3>
+<p>
+  The playground and the problem pages share one shell, <code>components/practice/workbench.module.css</code>,
+  and the same <code>PracticeWorkspace</code>. The page is a paper background with a header and a grid
+  whose padding is one token-sized gap, so the room under the header, at the sides and at the bottom is
+  the same at every width. The playground fills the window at all sizes; a problem page fills it from
+  1001 pixels up and stacks below it, description first. The description panel is a card with a mono
+  breadcrumb, the title in the heading font with the hand underline, chips for level and tests, and
+  hints that arrive as taped sticky notes. The console's empty states speak in the home voice, and a
+  passing submit stamps the page: a rotated rubber stamp, the words, and a pill to the next problem.
+  The editor window, the output tabs, the status bar, the palette and the dialogs keep their global
+  classes and are restyled in place on the same type scale, so nothing under 12 pixels appears in the
+  chrome. Their colours stay on the <code>--ide-*</code> tokens, which are themselves aliases of the
+  theme's sheet, line and ink.
+</p>
+
+<h3>The mock interview pages</h3>
+<p>
+  The lobby and the debrief are scene pages built from the same kits as the topic pages: a one-screen hero
+  with a composed stage, then numbered bands. The lobby's stage shows a sample exchange and one card that
+  depends on saved state (the round left half-way, the last result, or a first-time note), which stays hidden
+  until the page hydrates. The room is a tool, like the playground: from 1001 pixels up the page does not
+  scroll, the header carries the round rail, the clock and End, and two panes (the interviewer and the answer, or the
+  model answer and the rubric) scroll inside themselves. The coding round reuses the exercise layout. The
+  whiteboard keeps its own styles in <code>app/mock/mock.module.css</code>, which holds nothing else.
+</p>
+
+<h3>The review page</h3>
+<p>
+  <code>/review</code> is one scene page on the same kits. The hero puts the count of chapters due today in the
+  heading, with a taped card for the chapter due first (or the one that comes back next), a numbers card and a
+  sticky of the review gaps drawn from <code>REVIEW_GAPS_DAYS</code>. Everything that depends on saved progress is
+  hidden until the page hydrates. The bands that follow exist only when there is something to show: the due
+  list with I remember and Again, the schedule grouped by day beside a two-week forecast, the latest reviews, and
+  an honest start for a reader who has read nothing. Clearing the list gives a stamp that turns in with
+  transform alone, so nothing is ever part-transparent. The scheduling maths stays in <code>lib/storage.ts</code>.
+</p>
+
+<h3>The progress page</h3>
+<p>
+  <code>/progress</code> is the same kind of scene page. The hero puts the level and the XP still to go in the
+  heading, with a taped level card and meter, a numbers card, and a sticky for the nearest badge that is not
+  earned yet. A level up shows as a stamp on the level card and is announced once. The bands that follow are what to
+  do next (the review, the topic furthest along, the weak interview answers), the year of activity as a heatmap
+  that scrolls inside its own card, one row with a meter for each topic, the interview book with the marks you gave,
+  and the badge wall, where earned badges are stuck on and the rest show how far away they are. Every number comes
+  from <code>computeStats</code>, <code>earnedBadges</code> and <code>recentActivity</code> in
+  <code>lib/gamification.ts</code>, which this page only reads, and everything that depends on saved progress is
+  hidden until the page hydrates.
+</p>
+
+<h3>The Git landing, privacy and the pages that fail</h3>
+<p>
+  <code>/git</code> is a topic cover. The hero asks what Git is really doing, with the commit graph on a taped
+  card, a numbers card from <code>gitFacts()</code> and a note that points at the first chapter, composed in the
+  kit's <code>banner</code> layout. Below it come three ways in, the four parts as winding trails with a tick on every
+  chapter you have read, and three honest notes. <code>/privacy</code> keeps its words and puts each section in a
+  numbered band with the prose layer inside a paper panel, under a hero whose first card is the contents. The 404 page and
+  <code>app/error.tsx</code> share <code>components/frame/LostScene.tsx</code>: a taped stamp card, a card of
+  places to go and a note, with a retry pill on the error page and its reference code in a small mono line.
+  <code>app/global-error.tsx</code> replaces the whole layout, so it carries its own
+  stylesheet in <code>components/frame/globalErrorCss.ts</code>, with light and dark palettes whose contrast
+  <code>tests/global-error.test.ts</code> measures.
 </p>
 
 <h3>Modals</h3>
@@ -257,9 +352,9 @@ export const archDesignSystem: Chapter = {
 
 <h3>CSS modules and globals.css</h3>
 <p>
-  <code>globals.css</code> is about 7,900 lines. It holds the tokens, the prose styles every
+  <code>globals.css</code> is about 7,300 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
-  one of 24 CSS modules, the largest being <code>app/mock/mock.module.css</code> at about 3,300
+  one of 59 CSS modules, the largest being <code>app/whiteboard/whiteboard.module.css</code> at about 1,600
   lines. The rule of thumb is that anything
   chapter HTML can contain goes in globals, because chapter bodies are strings that cannot import a
   module, and anything else goes in a module so it loads only with its page.
@@ -300,8 +395,9 @@ export const archDesignSystem: Chapter = {
   Tooltips are pure CSS. An element with a <code>data-tip</code> attribute gets an
   <code>::after</code> whose content is <code>attr(data-tip)</code>, drawn in the sheet colour on
   ink, and it shows on <code>:hover</code> and on <code>:focus-visible</code>, so keyboard users see
-  it too. It appears after a 0.35 s delay and hides at once. The attribute appears 37 times across
-  the playground, the problems page, the whiteboard and the architecture index.
+  it too. It appears after a 0.35 s delay and hides at once. The attribute appears 31 times across
+  the playground, the whiteboard and the architecture index, and the playground's tooltips are off
+  under 721 pixels and on touch screens, where a tooltip that cannot be hovered only widens the page.
 </p>
 <p>
   Reduced motion is handled at two levels. A global
@@ -314,22 +410,21 @@ export const archDesignSystem: Chapter = {
 
 <h3>The checks</h3>
 <p>
-  <code>e2e/a11y.spec.ts</code> runs axe through <code>@axe-core/playwright</code> against 31
-  pages, including the home page, chapters from several topics, the other three written topics' covers, the
-  playground, the problems list, the mock lobby, the whiteboard, the 404 page and this
+  <code>e2e/a11y.spec.ts</code> runs axe through <code>@axe-core/playwright</code> against 38
+  pages, including the home page, the outline cover of a topic that is only being planned, ten chapters, one of them a DSA chapter with a player and a check, the other three written topics' covers, the
+  playground, the problems list, the mock lobby, the whiteboard, the 404 page, the interview book's screening round and this
   architecture section. One of them, <code>/level/typescript</code>, is the level picker of a
   topic that is only outlined, and another, <code>/typescript/ts-setup-compiler</code>, is that
   same topic's own outline chapter; <code>/level/typescript</code> stands in for <code>/soon</code>,
-  which redirects there while every topic is marked ready. It also runs against 20 states that a
-  plain page load does not show: 15 that open with a click, and 5 seeded in
+  which redirects there while every topic is marked ready. It also runs against 65 states that a plain page load does not show: 52 that open with a click, and 13 seeded in
   <code>localStorage</code>. The clicks open the site menu, the reading menu on <code>/notes</code>
-  with its Text size and Narrator folds open, a reading budget picked on the JavaScript cover's Up
-  next card, the Chapters and Filters sheets, the binary search chapter's player stepped to a
-  middle step and to its last, the chapter check's start card, the check started from a tick, a checked answer with its explanations, its miss and pass screens and an order question, and a system design round in
-  the mock interview, checked at the brief, a question, a follow-up, the rubric and the debrief.
+  with its Appearance, Narrator and Keyboard shortcuts folds open, a reading budget picked on the JavaScript cover's Up
+  next card, the Advanced level picked on the level picker, the site menu with a category expanded and with the theme swatches focused, the first-visit tour prompt and each of its five slides on the home page, the home page's topic section on Languages, with a legend row expanded and a station card open and with a search term typed,
+  its interview book on a later round and on its last stage, its practice section with a row focused, a path tab with unwritten topics, its FAQ with the comparison answer open and its how-it-works demo with a line opened, a failing run, every test passing, an answer checked and a chapter marked read, and its topic section on the AI category, a chapter marked read, a try-it block run, the phone's inline contents, the binary search chapter's player stepped to a middle step and to its last, the chapter check's start card, the check started from a tick, a checked answer with its explanations, its miss and pass screens and an order question, the Chapters and Filters sheets, the mock loop planner at its review step and the single round picker, a system design round in
+  the mock interview, checked at the brief, a question, a follow-up, the rubric and the debrief, a design round on the whiteboard tab, an interview round in practice mode with an answer shown and a question marked, the question bank with a question opened and the filters used and with nothing matching, and the flashcard drill with the answer revealed.
   The seeds give a chapter due for review, a
-  chapter read before checks, a chapter marked read on a path, a year of activity on the progress page, and two saved mock
-  sessions. Each page and state is
+  chapter read before checks, a chapter marked read on a path, a year of activity on the progress page, two saved mock
+  sessions, and the interview landing with two rounds read, three questions marked and the question of the day revealed. Each page and state is
   checked in all 9 themes, at 1440 and 390 pixels wide, except the two sheets, which
   only open on a narrow screen and are checked at 390. One helper sets the theme the way the theme
   picker does, runs axe with the WCAG 2.0 and 2.1 A and AA tags, and fails on any violation, naming
@@ -372,7 +467,7 @@ export const archDesignSystem: Chapter = {
 <span class="ttl">What a new theme costs</span>
 <p>
   Adding a theme takes one <code>[data-theme="&hellip;"]</code> block in <code>globals.css</code>
-  that restates the 56 colour tokens, the seven roles included, and one entry in
+  that restates the 71 colour tokens, the seven roles included, and one entry in
   <code>THEME_ITEMS</code> in <code>lib/storage.ts</code>. The <code>ThemeValue</code> type, both
   pickers and the e2e accent tests all come from that list. A dark theme may also join the
   <code>[data-theme="dark"]</code> override selectors that swap the heading underline and the

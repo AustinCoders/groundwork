@@ -1,21 +1,23 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { Band } from "@/components/topic/TopicKit";
 import { STAGE_GUIDE } from "@/lib/mock/guide";
 import { personaFor } from "@/lib/mock/persona";
 import { rubricFor, VERDICT_LABEL, type Verdict } from "@/lib/mock/scoring";
 import { RETIRE_AT, RETRY_BELOW } from "@/lib/mock/storage";
 import type { LoopConfig, StageId, StageInfo, TalkItem } from "@/lib/mock/types";
+import kit from "./mockKit.module.css";
 import styles from "./guide.module.css";
 
 const CRITERIA = rubricFor({ testing: "-", trap: "-", say: "-" } as TalkItem, true);
 const TOTAL_WEIGHT = CRITERIA.reduce((n, c) => n + c.weight, 0);
 
-const BANDS: { verdict: Verdict; from: number; to: number; tone: string }[] = [
-  { verdict: "no-hire", from: 0, to: 45, tone: "red" },
-  { verdict: "lean-no", from: 45, to: 65, tone: "orange" },
-  { verdict: "hire", from: 65, to: 80, tone: "green" },
-  { verdict: "strong-hire", from: 80, to: 100, tone: "teal" },
+const BANDS: { verdict: Verdict; from: number; to: number }[] = [
+  { verdict: "no-hire", from: 0, to: 45 },
+  { verdict: "lean-no", from: 45, to: 65 },
+  { verdict: "hire", from: 65, to: 80 },
+  { verdict: "strong-hire", from: 80, to: 100 },
 ];
 
 const LOOP_RULES = [
@@ -50,15 +52,13 @@ function bandOf(score: number) {
   return BANDS.find((b) => score >= b.from && score < b.to) ?? BANDS[BANDS.length - 1];
 }
 
-function tone(name: string): React.CSSProperties {
-  return { "--tone": `var(--c-${name})` } as React.CSSProperties;
-}
-
 export function RoundsDecoded({
+  no,
   stages,
   config,
   onPractise,
 }: {
+  no: string;
   stages: StageInfo[];
   config: LoopConfig;
   onPractise: (stage: StageId) => void;
@@ -81,18 +81,15 @@ export function RoundsDecoded({
   }
 
   return (
-    <section className={styles.block} id="rounds" aria-labelledby="rounds-h">
-      <div className={styles.head} data-fx="stagger">
-        <p className={styles.eyebrow}>Know the room</p>
-        <h2 id="rounds-h" className={styles.title}>
-          Every round, decoded.
-        </h2>
-        <p className={styles.sub}>
-          Who sits across the table, what they are actually deciding, the shape of an answer that passes and what gets
-          marked down. Read it before you walk in.
-        </p>
-      </div>
-      <div className={styles.decoder} data-fx="up">
+    <Band
+      no={no}
+      id="rounds-h"
+      sectionId="rounds"
+      label="Know the room"
+      title="Every round, decoded."
+      sub="Who sits across the table, what they are actually deciding, the shape of an answer that passes and what gets marked down. Read it before you walk in."
+    >
+      <div className={styles.decoder}>
         <div className={styles.roundList} role="tablist" aria-label="Rounds" aria-orientation="vertical">
           {stages.map((x, i) => (
             <button
@@ -112,24 +109,25 @@ export function RoundsDecoded({
             >
               <span className={styles.roundCode}>{x.code || String(i + 1).padStart(2, "0")}</span>
               <span className={styles.roundName}>{x.title}</span>
-              <span className={styles.roundKind} data-kind={x.kind}>
+              <span className={kit.kindTag} data-kind={x.kind}>
                 {x.kind === "coding" ? "code" : "talk"}
               </span>
             </button>
           ))}
         </div>
         <article
-          className={styles.roundPanel}
+          className={`${kit.paper} ${styles.roundPanel}`}
           role="tabpanel"
           id="round-panel"
           aria-labelledby={`round-tab-${s.id}`}
           key={s.id}
         >
+          <span className={kit.tape} aria-hidden="true" />
           <header className={styles.panelTop}>
-            <span className={styles.avatar} data-tone={who.tone} aria-hidden="true">
+            <span className={kit.avatar} data-tone={who.tone} aria-hidden="true">
               {who.initials}
             </span>
-            <div>
+            <div className={styles.panelHead}>
               <p className={styles.panelWho}>
                 {who.name} · {who.role}
               </p>
@@ -137,7 +135,9 @@ export function RoundsDecoded({
             </div>
             <span className={styles.panelCount}>{s.available} questions</span>
           </header>
-          <p className={styles.pitch}>{guide.pitch}</p>
+          <p className={styles.pitch}>
+            <span className={kit.highlight}>{guide.pitch}</span>
+          </p>
           <dl className={styles.facts}>
             {s.who && (
               <div>
@@ -152,24 +152,24 @@ export function RoundsDecoded({
               </div>
             )}
           </dl>
-          <p className={styles.label}>The shape of an answer that passes</p>
+          <p className={kit.label}>The shape of an answer that passes</p>
           <ol className={styles.shape}>
             {guide.shape.map((step) => (
               <li key={step}>{step}</li>
             ))}
           </ol>
           <div className={styles.twoCol}>
-            <div>
-              <p className={styles.label}>Do this</p>
+            <div className={kit.sticky} data-tone="mint">
+              <p className={kit.label}>Do this</p>
               <ul className={styles.tips}>
                 {guide.tips.map((t) => (
                   <li key={t}>{t}</li>
                 ))}
               </ul>
             </div>
-            <div>
-              <p className={styles.label}>Marked down for</p>
-              <ul className={styles.marked}>
+            <div className={kit.sticky} data-tone="rose">
+              <p className={kit.label}>Marked down for</p>
+              <ul className={`${styles.tips} ${styles.marked}`}>
                 {guide.markedDown.map((t) => (
                   <li key={t}>{t}</li>
                 ))}
@@ -177,48 +177,48 @@ export function RoundsDecoded({
               </ul>
             </div>
           </div>
-          <button type="button" className={styles.practise} onClick={() => onPractise(s.id)}>
+          <button type="button" className={`${kit.btn} ${styles.practise}`} onClick={() => onPractise(s.id)}>
             Practise {s.title} <span aria-hidden="true">→</span>
           </button>
         </article>
       </div>
-    </section>
+    </Band>
   );
 }
 
-export function HowScored() {
+export function HowScored({ no }: { no: string }) {
   return (
-    <section className={styles.block} id="scoring" aria-labelledby="scoring-h">
-      <div className={styles.head} data-fx="stagger">
-        <p className={styles.eyebrow}>How you are scored</p>
-        <h2 id="scoring-h" className={styles.title}>
-          The rubric is the same one the room uses.
-        </h2>
-        <p className={styles.sub}>
-          After each spoken answer you mark yourself against the model answer on five things. Coding rounds are marked
-          by the tests, less a little for every hint you open.
-        </p>
-      </div>
-      <div className={styles.rubric} data-fx="stagger">
+    <Band
+      no={no}
+      id="scoring-h"
+      sectionId="scoring"
+      label="How you are scored"
+      title="The rubric is the same one the room uses."
+      sub="After each spoken answer you mark yourself against the model answer on five things. Coding rounds are marked by the tests, less a little for every hint you open."
+    >
+      <ol className={styles.rubric}>
         {CRITERIA.map((c, i) => (
-          <div key={c.id} className={styles.criterion}>
-            <span className={styles.critNum}>{String(i + 1).padStart(2, "0")}</span>
-            <div>
+          <li key={c.id} className={styles.criterion}>
+            <span className={styles.critNum} aria-hidden="true">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <div className={styles.critText}>
               <b>{c.label}</b>
               <p>{c.hint}</p>
             </div>
             <span className={styles.weight}>
-              <span className={styles.weightBar}>
+              <span className={styles.weightBar} aria-hidden="true">
                 <span style={{ width: `${(c.weight / 3) * 100}%` }} />
               </span>
               {Math.round((c.weight / TOTAL_WEIGHT) * 100)}%
             </span>
-          </div>
+          </li>
         ))}
-      </div>
-      <div className={styles.scale} data-fx="up" aria-label="Score to verdict">
+      </ol>
+      <h3 className={styles.subHead}>From score to verdict</h3>
+      <div className={styles.scale} aria-label="Score to verdict">
         {BANDS.map((b) => (
-          <div key={b.verdict} className={styles.band} style={{ ...tone(b.tone), flexGrow: b.to - b.from }}>
+          <div key={b.verdict} className={styles.band} data-verdict={b.verdict} style={{ flexGrow: b.to - b.from }}>
             <b>{VERDICT_LABEL[b.verdict]}</b>
             <span>
               {b.from}
@@ -227,29 +227,30 @@ export function HowScored() {
           </div>
         ))}
       </div>
-      <p className={styles.label}>Then the committee decides the loop</p>
-      <div className={styles.rules} data-fx="stagger">
-        {LOOP_RULES.map((r) => (
-          <div key={r.title} className={styles.rule}>
+      <h3 className={styles.subHead}>Then the committee decides the loop</h3>
+      <div className={styles.rules}>
+        {LOOP_RULES.map((r, i) => (
+          <div
+            key={r.title}
+            className={`${kit.sticky} ${styles.rule}`}
+            style={{ "--tilt": `${[-1, 0.8, -0.6, 1][i % 4]}deg` } as React.CSSProperties}
+          >
+            <span className={kit.tape} aria-hidden="true" />
             <b>{r.title}</b>
             <p>{r.body}</p>
           </div>
         ))}
       </div>
-    </section>
+    </Band>
   );
 }
 
-export function SampleDebrief() {
+export function SampleDebrief({ no }: { no: string }) {
   return (
-    <section className={styles.block} id="debrief" aria-labelledby="debrief-h">
+    <Band no={no} id="debrief-h" sectionId="debrief" label="What you leave with" title="A debrief, not just a score.">
       <div className={styles.split}>
-        <div className={styles.head} data-fx="stagger">
-          <p className={styles.eyebrow}>What you leave with</p>
-          <h2 id="debrief-h" className={styles.title}>
-            A debrief, not just a score.
-          </h2>
-          <p className={styles.sub}>
+        <div className={styles.splitCopy}>
+          <p className={styles.lead}>
             Every loop ends the way a real one does: a verdict, the level it would land at, the reasons a committee
             would give, and exactly what to study next. Weak answers go on a retry list until you nail them.
           </p>
@@ -260,25 +261,23 @@ export function SampleDebrief() {
             <li>Your trend across every loop you have run</li>
           </ul>
         </div>
-        <figure className={styles.sheet} data-fx="right" aria-label="A sample debrief">
+        <figure className={`${kit.paper} ${styles.sheet}`} aria-label="A sample debrief">
+          <span className={kit.tape} aria-hidden="true" />
           <span className={styles.sampleTag}>Sample</span>
-          <p className={styles.sheetKicker}>Full-stack · mid-level · product company</p>
+          <p className={kit.label}>Full-stack · mid-level · product company</p>
           <p className={styles.verdict}>
             Hire<span>, at mid-level</span>
           </p>
           <ul className={styles.bars}>
-            {SAMPLE_ROUNDS.map(([name, score], i) => {
-              const b = bandOf(score);
-              return (
-                <li key={name} style={{ ...tone(b.tone), "--i": i } as React.CSSProperties}>
-                  <span>{name}</span>
-                  <span className={styles.bar}>
-                    <span style={{ width: `${score}%` }} />
-                  </span>
-                  <b>{score}%</b>
-                </li>
-              );
-            })}
+            {SAMPLE_ROUNDS.map(([name, score]) => (
+              <li key={name} data-verdict={bandOf(score).verdict}>
+                <span>{name}</span>
+                <span className={styles.bar}>
+                  <span style={{ width: `${score}%` }} />
+                </span>
+                <b>{score}%</b>
+              </li>
+            ))}
           </ul>
           <div className={styles.reasons}>
             <p>
@@ -291,55 +290,48 @@ export function SampleDebrief() {
           </div>
         </figure>
       </div>
-    </section>
+    </Band>
   );
 }
 
-export function MockFaq() {
-  const faqs = [
-    {
-      q: "Do I need a microphone?",
-      a: "No. Nothing is recorded. You answer out loud to yourself, as you would in the room, and can jot the skeleton in the notes box. Saying it out loud is the practice.",
-    },
-    {
-      q: "Who marks my answers?",
-      a: "You do, against the model answer and the five-point rubric, right after you answer. Coding and machine coding rounds are marked by real tests running in your browser.",
-    },
-    {
-      q: "How long does a loop take?",
-      a: "Pick Quick, Standard or Full. The planner shows every round and the total time before you start, and a single round takes about as long as one real one.",
-    },
-    {
-      q: "Can I stop half-way?",
-      a: "Yes. The interview saves as you go. Come back later and walk straight back in to the question you left on, or throw it away and start fresh.",
-    },
-    {
-      q: "What happens to weak answers?",
-      a: `Anything you score under ${Math.round(RETRY_BELOW * 100)}% lands on your retry list. Score ${Math.round(RETIRE_AT * 100)}% or better on it later and it comes off.`,
-    },
-    {
-      q: "Is any of this sent anywhere?",
-      a: "No. Your loops, scores and notes stay in this browser. There is no account and nothing to sign up for.",
-    },
-  ];
+const FAQS = [
+  {
+    q: "Do I need a microphone?",
+    a: "No. Nothing is recorded. You answer out loud to yourself, as you would in the room, and can jot the skeleton in the notes box. Saying it out loud is the practice.",
+  },
+  {
+    q: "Who marks my answers?",
+    a: "You do, against the model answer and the five-point rubric, right after you answer. Coding and machine coding rounds are marked by real tests running in your browser.",
+  },
+  {
+    q: "How long does a loop take?",
+    a: "Pick Quick, Standard or Full. The planner shows every round and the total time before you start, and a single round takes about as long as one real one.",
+  },
+  {
+    q: "Can I stop half-way?",
+    a: "Yes. The interview saves as you go. Come back later and walk straight back in to the question you left on, or throw it away and start fresh.",
+  },
+  {
+    q: "What happens to weak answers?",
+    a: `Anything you score under ${Math.round(RETRY_BELOW * 100)}% lands on your retry list. Score ${Math.round(RETIRE_AT * 100)}% or better on it later and it comes off.`,
+  },
+  {
+    q: "Is any of this sent anywhere?",
+    a: "No. Your loops, scores and notes stay in this browser. There is no account and nothing to sign up for.",
+  },
+];
+
+export function MockFaq({ no }: { no: string }) {
   return (
-    <section className={styles.block} id="faq" aria-labelledby="mock-faq-h">
-      <div className={styles.faqGrid}>
-        <div className={styles.head} data-fx="stagger">
-          <p className={styles.eyebrow}>Before you walk in</p>
-          <h2 id="mock-faq-h" className={styles.title}>
-            Questions people ask first.
-          </h2>
-        </div>
-        <div className={styles.faq} data-fx="stagger">
-          {faqs.map((f) => (
-            <details key={f.q} className={styles.faqItem}>
-              <summary>{f.q}</summary>
-              <p>{f.a}</p>
-            </details>
-          ))}
-        </div>
+    <Band no={no} id="mock-faq-h" sectionId="faq" label="Before you walk in" title="Questions people ask first.">
+      <div className={styles.faq}>
+        {FAQS.map((f) => (
+          <details key={f.q} className={styles.faqItem}>
+            <summary>{f.q}</summary>
+            <p>{f.a}</p>
+          </details>
+        ))}
       </div>
-    </section>
+    </Band>
   );
 }

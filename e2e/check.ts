@@ -18,7 +18,14 @@ export const island = (page: Page): Locator => page.locator("#check");
 
 const fieldset = (page: Page): Locator => island(page).locator("fieldset[data-question]");
 
+export async function hydrated(target: Locator) {
+  await expect
+    .poll(() => target.evaluate((element) => Object.keys(element).some((key) => key.startsWith("__reactProps"))))
+    .toBe(true);
+}
+
 export async function press(page: Page, target: Locator, key = "Enter") {
+  await hydrated(target);
   await target.focus();
   await page.keyboard.press(key);
 }

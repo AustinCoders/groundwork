@@ -1,0 +1,154 @@
+.layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  display: none;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.connector {
+  position: absolute;
+}
+
+.connector[data-tight] .label {
+  display: none;
+}
+
+.svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.reveal {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 12;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+.dash {
+  fill: none;
+  stroke: color-mix(in srgb, var(--primary) 75%, var(--ink));
+  stroke-width: 3.2;
+  stroke-dasharray: 4 9;
+  stroke-linecap: round;
+}
+
+.label {
+  position: absolute;
+  margin-left: -20px;
+  font-family: var(--font-heading);
+  font-size: calc(clamp(18px, 1.5vw, 22px) * var(--ds, 1));
+  line-height: 1;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--primary) 70%, var(--ink));
+  rotate: -3deg;
+  translate: 0 10px;
+}
+
+.sparkle,
+.fact,
+.rider {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.sparkle {
+  width: 22px;
+  height: 22px;
+  fill: var(--mark);
+  stroke: var(--ink-soft);
+  stroke-width: 0.8;
+  stroke-linejoin: round;
+  offset-rotate: 0deg;
+  opacity: 0;
+  translate: calc(-50% - 26px) calc(-50% - 28px);
+}
+
+.fact {
+  padding: 3px 11px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: var(--shadow-md);
+  offset-rotate: 0deg;
+  opacity: 0;
+  offset-anchor: left center;
+  translate: 32px 0;
+}
+
+.rider {
+  width: 30px;
+  height: 30px;
+  overflow: visible;
+  offset-rotate: auto;
+  opacity: 0;
+  translate: -50% -50%;
+}
+
+.rider path,
+.rider circle {
+  stroke: var(--ink);
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.rider .paper {
+  fill: var(--sheet);
+  stroke: color-mix(in srgb, var(--primary) 70%, var(--ink));
+}
+
+.rider .line {
+  fill: none;
+}
+
+.rider .wood {
+  fill: var(--mark);
+}
+
+.rider .tip {
+  fill: var(--ink-soft);
+}
+
+.rider .ribbon {
+  fill: var(--primary);
+}
+
+.rider .hole {
+  fill: var(--paper);
+}
+
+.rider .north {
+  fill: var(--danger);
+}
+
+.rider .south {
+  fill: var(--ink-soft);
+}
+
+.rider .cloth {
+  fill: color-mix(in srgb, var(--info) 80%, var(--sheet));
+}
+
+.rider .keyRing {
+  fill: var(--mark);
+}
+
+@media (min-width: 1081px) {
+  .layer {
+    display: block;
+  }
+}

@@ -17,7 +17,7 @@ export const archScaling: Chapter = {
 </p>
 
 <figure>
-<svg viewBox="0 0 900 320" class="dg" role="img" aria-label="Headroom against four limits. The JavaScript search index is at 89 percent of its 85 KB budget. Vercel storage for the whole team is at 103 percent of 10 GB. A problem page's script is at 60 percent of the 700 KB script budget, although that page is not budgeted. The home page's script is at 35 percent.">
+<svg viewBox="0 0 900 320" class="dg" role="img" aria-label="Headroom against four limits. The JavaScript search index is at 89 percent of its 85 KB budget. Vercel storage for the whole team is at 103 percent of 10 GB. A problem page's script is at 60 percent of the 700 KB script budget, although that page is not budgeted. The home page's script is at 41 percent.">
 <g class="rough">
 <rect x="320" y="30" width="480" height="28" rx="5" style="fill: var(--sheet); stroke: var(--line-soft); stroke-width: 1.6" />
 <rect x="320" y="30" width="427" height="28" rx="5" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
@@ -26,7 +26,7 @@ export const archScaling: Chapter = {
 <rect x="320" y="170" width="480" height="28" rx="5" style="fill: var(--sheet); stroke: var(--line-soft); stroke-width: 1.6" />
 <rect x="320" y="170" width="289" height="28" rx="5" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <rect x="320" y="240" width="480" height="28" rx="5" style="fill: var(--sheet); stroke: var(--line-soft); stroke-width: 1.6" />
-<rect x="320" y="240" width="169" height="28" rx="5" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 1.6" />
+<rect x="320" y="240" width="195" height="28" rx="5" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 1.6" />
 <path class="ln" d="M800 18 V282" style="stroke-dasharray: 6 5" />
 </g>
 <text class="lbl" x="20" y="44">JS search index</text>
@@ -36,11 +36,11 @@ export const archScaling: Chapter = {
 <text class="lbl" x="20" y="184">A problem page's script</text>
 <text class="sm" x="20" y="204">421,830 of 700,000 bytes, not budgeted</text>
 <text class="lbl" x="20" y="254">Home page script</text>
-<text class="sm" x="20" y="274">246,769 of 700,000 bytes, gzip</text>
+<text class="sm" x="20" y="274">284,768 of 700,000 bytes, gzip</text>
 <text class="sm" x="832" y="49">89%</text>
 <text class="sm rd" x="832" y="119">103%</text>
 <text class="sm" x="832" y="189">60%</text>
-<text class="sm" x="832" y="259">35%</text>
+<text class="sm" x="832" y="259">41%</text>
 <text class="sm" x="760" y="306">the limit</text>
 </svg>
 <figcaption>
@@ -66,7 +66,7 @@ export const archScaling: Chapter = {
 </tr>
 <tr>
   <td>Adding exercises</td>
-  <td>Three things grow together. Every exercise adds two prerendered pages, <code>/problems/[slug]</code> and its <code>/cases</code> page, which is 1,076 of today's 1,746. It adds a row to <code>/problems</code>, whose HTML is 283 KB for 538 problems. And it adds to the exercise-bank chunk the mock room loads whole, 1.70 MB raw today.</td>
+  <td>Three things grow together. Every exercise adds two prerendered pages, <code>/problems/[slug]</code> and its <code>/cases</code> page, which is 1,076 of today's 1,803. It adds a row to <code>/problems</code>, whose HTML is 283 KB for 538 problems. And it adds to the exercise-bank chunk the mock room loads whole, 1.70 MB raw today.</td>
   <td>Load the mock room's questions by category rather than all at once; paginate or virtualise <code>/problems</code> only if <code>content-visibility</code> stops being enough.</td>
 </tr>
 <tr>
@@ -100,7 +100,7 @@ export const archScaling: Chapter = {
 <h3>The two that are really about money</h3>
 <p>
   <strong>Storage</strong> is the limit this project has actually hit, twice. It is not a code
-  problem. A site that prerenders 1,746 pages ships all of them in every deployment, and the
+  problem. A site that prerenders 1,803 routes ships all of them in every deployment, and the
   prerendered folder of a local build alone is 198 MB. The project itself now holds 7
   deployments. The team's total still reads 10.32 GB of 10 GB, because the figure covers every
   project on the account. The daily job handles this project's share. Only a plan change or

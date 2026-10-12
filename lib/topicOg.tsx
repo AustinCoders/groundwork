@@ -14,14 +14,14 @@ const isLatin = (s: string) => /^[\x20-\x7e]+$/.test(s);
 
 export function topicOgImage(topicId: string, headline: string) {
   const t = topic(topicId);
-  if (!t) return ogCard({ mark: "?", kicker: "Groundwork", sub: "web dev", headline });
+  if (!t) return ogCard({ mark: "?", kicker: "Groundwork", sub: "for developers", headline });
 
   const written = chapters(topicId).filter((c) => c.ready).length;
-  const exercises = t.levels ? topicExerciseCount(t) : 0;
+  const exercises = t.levels?.length ? topicExerciseCount(t) : 0;
 
   const chips = [
     written ? plural(written, "chapter") : null,
-    t.levels ? "beginner → advanced" : null,
+    t.levels?.length ? "beginner → advanced" : null,
     exercises ? plural(exercises, "exercise") : null,
   ].filter((c): c is string => Boolean(c));
 

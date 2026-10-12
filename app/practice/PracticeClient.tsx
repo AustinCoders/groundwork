@@ -4,6 +4,7 @@ import { Suspense, useEffect } from "react";
 import { PracticeWorkspace } from "@/components/practice/PracticeWorkspace";
 import { FREE_EXERCISE, type PracticeExercise } from "@/lib/practiceFree";
 import { problemHref } from "@/lib/problemHref";
+import styles from "@/components/practice/workbench.module.css";
 
 export interface ChapterLink {
   id: string;
@@ -28,7 +29,7 @@ export interface PracticeClientProps {
 export default function PracticeClient({ exercise, chapter = null, prev = null, next = null }: PracticeClientProps) {
   if (exercise) return <PracticeBody exercise={exercise} isFree={false} chapter={chapter} prev={prev} next={next} />;
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<PracticeBody exercise={FREE_EXERCISE} isFree chapter={null} prev={null} next={null} />}>
       <PracticeFromQuery />
     </Suspense>
   );
@@ -70,7 +71,7 @@ function PracticeBody({
       <a className="skip-link" href="#editor">
         Skip to the editor
       </a>
-      <main className="bare-main" id="main">
+      <main className={styles.page} id="main">
         <PracticeWorkspace
           key={exercise.id}
           exercise={exercise}

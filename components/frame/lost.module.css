@@ -1,0 +1,119 @@
+.stampCard {
+  justify-content: center;
+}
+
+.stamp {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--t-hero);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--danger) 70%, var(--ink));
+  text-align: center;
+}
+
+.stampNote {
+  margin: 12px 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: var(--t-control);
+  line-height: 1.55;
+}
+
+.body p {
+  margin: 0;
+}
+
+.key {
+  display: inline-block;
+  padding: 1px 8px;
+  font-family: var(--font-mono);
+  font-size: var(--t-meta);
+  white-space: nowrap;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.digest {
+  font-family: var(--font-mono);
+  font-size: var(--t-meta);
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.links li {
+  margin: 0;
+  padding: 0;
+  border-top: 1.5px dashed var(--line);
+}
+
+.links li:first-child {
+  border-top: 0;
+}
+
+.links a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-heading);
+  font-size: var(--t-title);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.links a:hover {
+  color: var(--primary);
+}
+
+.links a:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.mail {
+  color: var(--ink);
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+.blank {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.blank span {
+  display: block;
+  height: 0;
+  border-top: 2px dashed color-mix(in srgb, var(--ink-soft) 40%, var(--line));
+}
+
+.blank span:nth-child(2) {
+  width: 78%;
+}
+
+.blank span:nth-child(3) {
+  width: 52%;
+}

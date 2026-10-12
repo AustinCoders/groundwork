@@ -1,4 +1,4 @@
-import type { CompanyType, Intensity, Role, Seniority } from "@/lib/mock/types";
+import type { Competency, CompanyType, Intensity, Role, Seniority } from "@/lib/mock/types";
 
 export const ROLES: [Role, string, string][] = [
   ["frontend", "Frontend", "React and the browser"],
@@ -31,3 +31,13 @@ export function hours(min: number): string {
   const m = min % 60;
   return m ? `${h} h ${m} min` : `${h} h`;
 }
+
+export const COMPETENCY_LABEL: Record<Competency, string> = {
+  coding: "Coding",
+  javascript: "JavaScript",
+  frontend: "Frontend",
+  backend: "Backend",
+  design: "System design",
+  behaviour: "Behaviour",
+  negotiation: "Negotiation",
+};

@@ -22,7 +22,7 @@ import { requiresCheck } from "@/lib/completion";
 import { poolChapterIds } from "@/lib/quizPool";
 import { pageMetadata } from "@/lib/metadata";
 import { curriculumNotes, levels, levelsNav, relatedInterviewRound, topic } from "@/lib/topics";
-import { relatedTopicId } from "@/lib/topicRelated";
+import { plannedRelatedTopicId, relatedTopicId } from "@/lib/topicRelated";
 import { topicStats } from "@/lib/topicStats";
 import { plural } from "@/lib/format";
 import { withHeadingIds } from "@/lib/headingToc";
@@ -85,9 +85,9 @@ export function TopicCoverPage({ topicId }: { topicId: string }) {
       href: s.chapter ? `${basePath}/${s.chapter}` : null,
     })),
   }));
-  const relTopicId = relatedTopicId(topicId);
-  const relTopic = topic(relTopicId);
-  const relRoundId = relatedInterviewRound(relTopicId);
+  const relTopicId = plannedRelatedTopicId(topicId);
+  const relTopic = relTopicId ? topic(relTopicId) : null;
+  const relRoundId = relTopicId ? relatedInterviewRound(relTopicId) : null;
   const relRound = relRoundId ? bookRound(relRoundId) : null;
 
   return (
@@ -101,8 +101,8 @@ export function TopicCoverPage({ topicId }: { topicId: string }) {
       written={stats?.written ?? 0}
       planned={stats?.planned ?? metas.length}
       levels={levelsList}
-      relatedHref={notesHref(relTopicId)}
-      relatedLabel={relTopic?.name || notesData(relTopicId).meta.title}
+      relatedHref={relTopicId ? notesHref(relTopicId) : null}
+      relatedLabel={relTopicId ? relTopic?.name || notesData(relTopicId).meta.title : null}
       relatedRoundHref={relRound ? `/interview/${relRoundId}` : null}
       relatedRoundLabel={relRound ? `${relRound.code} · ${relRound.navTitle}` : null}
       curriculumNotes={curriculumNotes(topicId)}
@@ -123,7 +123,9 @@ export function topicCoverMetadata(topicId: string): Metadata {
 
   const description = written
     ? `${data.meta.subtitle} ${plural(written, "chapter")} written, free to read.`
-    : `${data.meta.subtitle} Still an outline — ${plural(all.length, "chapter")} planned.`;
+    : all.length
+      ? `${data.meta.subtitle} Still an outline — ${plural(all.length, "chapter")} planned.`
+      : `${t?.blurb ?? ""} Still being planned — no chapters yet.`.trim();
 
   return pageMetadata({
     title: name,

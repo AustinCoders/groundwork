@@ -19,7 +19,7 @@ export function AppHeader({ title, fallbackHref = "/", fallbackLabel = "Home", c
       <BackButton variant="bar" fallbackHref={fallbackHref} fallbackLabel={fallbackLabel} />
       <Link className={styles.brand} href="/" aria-label={`${SITE_NAME} home`} prefetch={false}>
         <span className="brand__mark" aria-hidden="true">
-          JS
+          G
         </span>
       </Link>
       <h1 className={styles.title}>{title}</h1>
