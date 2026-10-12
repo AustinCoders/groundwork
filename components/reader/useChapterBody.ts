@@ -24,7 +24,9 @@ export function useChapterBody(chapterId: string) {
     markNoSmooth(el);
     const stopNarration = setupNarration(el.closest("article") ?? el);
     const stopScrollRegions = makeScrollRegions(el);
+    el.setAttribute("data-enhanced", "");
     return () => {
+      el.removeAttribute("data-enhanced");
       stopNarration();
       stopScrollRegions();
     };

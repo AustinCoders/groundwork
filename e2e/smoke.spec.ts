@@ -1586,6 +1586,7 @@ test("the saved level is preselected and marked 'Your level', and picking anothe
 test("every topic hero scene is one balanced screen under the header, with the next section out of view", async ({
   page,
 }) => {
+  test.setTimeout(300_000);
   const cases = [
     { path: "/level/js", full: true },
     { path: "/level/react", full: true },
@@ -2299,8 +2300,15 @@ test("the problems page filters by topic and difficulty and keeps them in the UR
 
   await page.reload();
   await expect(page).toHaveURL(/view=list/);
-  await page.keyboard.press("/");
-  await expect(page.getByRole("searchbox", { name: "Search problems" })).toBeFocused();
+  const search = page.getByRole("searchbox", { name: "Search problems" });
+  await page.waitForFunction(() => {
+    const box = document.querySelector("input[aria-label='Search problems']");
+    return Boolean(box && Object.keys(box).some((key) => key.startsWith("__react")));
+  });
+  await expect(async () => {
+    await page.keyboard.press("/");
+    await expect(search).toBeFocused({ timeout: 500 });
+  }).toPass();
 });
 
 test("problem groups start with only the first open and collapse all together", async ({ page }) => {

@@ -52,19 +52,35 @@
 
 @media (min-width: 1101px) {
   .prompt {
+    right: 88px;
+    left: auto;
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "title actions"
+      "text actions";
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    gap: 14px;
-    width: min(960px, calc(100vw - 48px));
-    padding: 10px 16px;
+    column-gap: 16px;
+    row-gap: 2px;
+    width: min(600px, 42vw);
+    padding: 12px 16px;
   }
 
   .promptTape {
     display: none;
   }
 
+  .promptTitle {
+    grid-area: title;
+  }
+
+  .promptText {
+    grid-area: text;
+    line-height: 1.35;
+  }
+
   .promptActions {
+    grid-area: actions;
     margin-top: 0;
     flex-wrap: nowrap;
   }
