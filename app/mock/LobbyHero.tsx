@@ -1,6 +1,7 @@
 "use client";
 
-import { Copy, Note, Scene, Stage, StageCard, Sticker, Tape } from "@/components/home/Stage";
+import { Copy, Scene } from "@/components/home/Stage";
+import { Card, Column, Compose, Remark, Tag } from "@/components/topic/Compose";
 import { Actions, CardKicker, Chips, Heading, Kicker, Lead, Underlined, topicKit } from "@/components/topic/TopicKit";
 import { useMounted } from "@/lib/hooks";
 import { stagePosition, type Session } from "@/lib/mock/session";
@@ -29,8 +30,7 @@ function PickUp({
   const position = inProgress ? stagePosition(inProgress) : null;
   const stage = inProgress && position ? stages[inProgress.plan[position.stageIndex]?.stage] : null;
   return (
-    <StageCard as="aside" aria-label="Pick up" rot={1.2} depth={14} i={3} still className={styles.pickUp}>
-      <Tape rot={3} />
+    <Card as="aside" aria-label="Pick up" at="c" tilt={-1}>
       <div className={mounted ? styles.pickBody : `${styles.pickBody} ${topicKit.pending}`}>
         {inProgress && position ? (
           <div role="status">
@@ -71,7 +71,7 @@ function PickUp({
           </>
         )}
       </div>
-    </StageCard>
+    </Card>
   );
 }
 
@@ -122,9 +122,9 @@ export function LobbyHero({
           <span className={topicKit.chip}>{problems} coding problems with tests</span>
         </Chips>
       </Copy>
-      <Stage live hostClassName={topicKit.stageHost} className={styles.stage}>
-        <StageCard decor rot={-1.6} depth={-8} i={0} className={styles.preview}>
-          <Tape rot={-4} />
+      <Compose live layout="trio">
+        <Card decor at="a" tilt={-1} taped>
+          <Tag tone="success">★ Hire</Tag>
           <div className={styles.previewHead}>
             <span className={kit.avatar} data-tone="calm">
               PR
@@ -152,19 +152,22 @@ export function LobbyHero({
             <span className={kit.highlight}>Design a URL shortener that handles 10,000 writes a second.</span>
           </p>
           <p className={styles.you}>Before I draw anything: reads or writes heavier? And how long do links live?</p>
-        </StageCard>
-        <StageCard decor extra rot={2.4} depth={14} i={1} className={styles.push}>
-          <CardKicker>Follow-up</CardKicker>
-          <p>Good. Now two users shorten the same URL at once. What happens?</p>
-        </StageCard>
-        <StageCard decor extra rot={-2} depth={10} i={2} className={styles.rubric}>
-          <CardKicker>You mark yourself</CardKicker>
-          <ul>
-            <li>Answered what they were testing</li>
-            <li>Named the trade-off</li>
-            <li>Held up when pushed</li>
-          </ul>
-        </StageCard>
+        </Card>
+        <Column at="b">
+          <Card decor extra tone="alert" tilt={1}>
+            <CardKicker>Follow-up</CardKicker>
+            <p className={styles.push}>Good. Now two users shorten the same URL at once. What happens?</p>
+          </Card>
+          <Card decor extra tone="note" tilt={1}>
+            <CardKicker>You mark yourself</CardKicker>
+            <ul className={styles.rubric}>
+              <li>Answered what they were testing</li>
+              <li>Named the trade-off</li>
+              <li>Held up when pushed</li>
+            </ul>
+            <Remark>pushed, then scored</Remark>
+          </Card>
+        </Column>
         <PickUp
           inProgress={inProgress}
           stages={stages}
@@ -172,13 +175,7 @@ export function LobbyHero({
           onResume={onResume}
           onDiscard={onDiscard}
         />
-        <Sticker rot={-8} depth={20} tone="success" className={styles.stamp}>
-          ★ Hire
-        </Sticker>
-        <Note arrow="dl" rot={-3} depth={12} className={styles.note}>
-          pushed, then scored
-        </Note>
-      </Stage>
+      </Compose>
     </Scene>
   );
 }

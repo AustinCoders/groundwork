@@ -2,10 +2,6 @@
   flex: 1;
 }
 
-.stage {
-  --stage-h: clamp(440px, 54vh, 520px);
-}
-
 .reasons {
   display: flex;
   flex-direction: column;
@@ -46,7 +42,7 @@
   flex-direction: column;
   align-items: center;
   gap: 14px;
-  padding: 34px 26px 24px;
+  justify-content: center;
 }
 
 .stamp {
@@ -98,15 +94,6 @@
   color: var(--ink-soft);
 }
 
-.bestCard,
-.worstCard {
-  padding: 16px 18px;
-}
-
-.worstCard {
-  background: color-mix(in srgb, var(--mark) 36%, var(--sheet));
-}
-
 .cardTitle {
   margin: 0;
   font-family: var(--font-heading);
@@ -119,52 +106,6 @@
   font-family: var(--font-mono);
   font-size: var(--t-body);
   color: var(--ink-soft);
-}
-
-@media (min-width: 721px) {
-  .stage .stampCard {
-    top: 3%;
-    left: 4%;
-    z-index: 2;
-    width: 56%;
-  }
-
-  .stage .bestCard {
-    top: 4%;
-    right: 0;
-    z-index: 3;
-    width: 36%;
-  }
-
-  .stage .worstCard {
-    top: 40%;
-    right: 2%;
-    z-index: 4;
-    width: 36%;
-  }
-
-  .stage .sticker {
-    bottom: 5%;
-    left: 6%;
-    z-index: 8;
-  }
-
-  .stage .note {
-    right: 6%;
-    bottom: 4%;
-  }
-}
-
-@media (max-width: 1080px) {
-  .stage {
-    --stage-h: clamp(520px, 80vw, 600px);
-  }
-}
-
-@media (max-width: 720px) {
-  .stage {
-    --stage-h: auto;
-  }
 }
 
 .stageTable {

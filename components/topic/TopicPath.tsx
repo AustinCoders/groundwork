@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { Copy, Note, Scene, Stage, StageCard, Sticker, Tape } from "@/components/home/Stage";
+import { Copy, Scene } from "@/components/home/Stage";
+import { Card, Compose, Remark, Tag } from "@/components/topic/Compose";
 import { TopicFrame } from "@/components/topic/TopicFrame";
 import {
   Actions,
@@ -124,9 +125,8 @@ export function TopicPath({
               </Button>
             </Actions>
           </Copy>
-          <Stage live hostClassName={topicKit.stageHost} className={styles.stage}>
-            <StageCard rot={-1.6} depth={-10} i={0} still className={`${styles.progress}`}>
-              <Tape rot={-5} />
+          <Compose live layout="rail">
+            <Card at="a" tilt={-1} taped>
               <CardKicker>Your progress</CardKicker>
               <ProgressRing done={doneCount} total={chapters.length} />
               <ProgressMeter
@@ -136,8 +136,25 @@ export function TopicPath({
                 fillId="path-meter-fill"
                 labelId="path-meter-label"
               />
-            </StageCard>
-            <StageCard rot={2.2} depth={12} i={1} className={styles.next}>
+              <Remark>tick them off as you read</Remark>
+            </Card>
+            <Card as="aside" aria-label={`${topic.name} ${level.name} path in numbers`} at="b" tilt={1}>
+              <Tag tone="success">
+                {chaptersLeft === 0 && chapters.length > 0 ? "★ path complete" : "⚑ you are here"}
+              </Tag>
+              <CardKicker>The path in numbers</CardKicker>
+              <Facts
+                items={[
+                  { value: chaptersLeft, label: chaptersLeft === 1 ? "chapter left" : "chapters left" },
+                  { value: formatSpan(totalMinutes), label: "of reading" },
+                  {
+                    value: levelExerciseList.length,
+                    label: levelExerciseList.length === 1 ? "exercise" : "exercises",
+                  },
+                ]}
+              />
+            </Card>
+            <Card at="c" tone="note" tilt={1}>
               <CardKicker>{next ? "Up next" : "All read"}</CardKicker>
               {next ? (
                 <>
@@ -152,33 +169,8 @@ export function TopicPath({
               ) : (
                 <p className={styles.nextSub}>Every chapter on this path is ticked off.</p>
               )}
-            </StageCard>
-            <StageCard
-              as="aside"
-              aria-label={`${topic.name} ${level.name} path in numbers`}
-              rot={3}
-              depth={16}
-              i={2}
-              className={styles.facts}
-            >
-              <Facts
-                items={[
-                  { value: chaptersLeft, label: chaptersLeft === 1 ? "chapter left" : "chapters left" },
-                  { value: formatSpan(totalMinutes), label: "of reading" },
-                  {
-                    value: levelExerciseList.length,
-                    label: levelExerciseList.length === 1 ? "exercise" : "exercises",
-                  },
-                ]}
-              />
-            </StageCard>
-            <Note arrow="dr" rot={-4} depth={14} className={styles.pathNote}>
-              tick them off as you read
-            </Note>
-            <Sticker rot={-6} depth={20} tone="success" className={styles.pathSticker}>
-              {chaptersLeft === 0 && chapters.length > 0 ? "★ path complete" : "⚑ you are here"}
-            </Sticker>
-          </Stage>
+            </Card>
+          </Compose>
         </Scene>
 
         <Band

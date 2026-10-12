@@ -329,3 +329,104 @@ describe("text on the interview book's paper", () => {
     }
   });
 });
+
+describe("the stage surfaces", () => {
+  const withTheme = blocks().filter((b) => declaration(b.body, "--sheet") && declaration(b.body, "--ink"));
+  const shared = blocks().find((b) => declaration(b.body, "--note"));
+
+  function splitArguments(text: string): string[] {
+    const parts: string[] = [];
+    let depth = 0;
+    let start = 0;
+    for (let i = 0; i < text.length; i += 1) {
+      if (text[i] === "(") depth += 1;
+      else if (text[i] === ")") depth -= 1;
+      else if (text[i] === "," && depth === 0) {
+        parts.push(text.slice(start, i).trim());
+        start = i + 1;
+      }
+    }
+    parts.push(text.slice(start).trim());
+    return parts;
+  }
+
+  function mixColours(top: Rgb, share: number, under: Rgb): Rgb {
+    return [0, 1, 2].map((i) => share * top[i] + (1 - share) * under[i]) as Rgb;
+  }
+
+  function resolve(value: string, theme: { body: string }): Rgb {
+    const text = value.trim();
+    if (text.startsWith("#")) return hexToRgb(text);
+    const call = /^([\w-]+)\(([\s\S]*)\)$/.exec(text);
+    if (!call) throw new Error(`cannot read the colour ${text}`);
+    const [, name, inner] = call;
+    const args = splitArguments(inner);
+    if (name === "var") {
+      const token = args[0];
+      const found = declaration(theme.body, token) ?? declaration(shared!.body, token);
+      if (!found) throw new Error(`${token} is not declared`);
+      return resolve(found, theme);
+    }
+    if (name === "rgb" || name === "rgba") {
+      const [r, g, b, a] = parseRgba(text);
+      return composite([r, g, b, a], resolve("var(--sheet)", theme));
+    }
+    if (name === "light-dark") {
+      const scheme = declaration(theme.body, "color-scheme");
+      return resolve(scheme === "dark" ? args[1] : args[0], theme);
+    }
+    if (name === "color-mix") {
+      const [first, second] = args.slice(1);
+      const [firstColour, firstShare] = first.split(/\s+(?=[\d.]+%$)/);
+      const [secondColour, secondShare] = second.split(/\s+(?=[\d.]+%$)/);
+      const share = firstShare ? parseFloat(firstShare) / 100 : 1 - parseFloat(secondShare ?? "50") / 100;
+      return mixColours(resolve(firstColour, theme), share, resolve(secondColour, theme));
+    }
+    throw new Error(`cannot read the function ${name}`);
+  }
+
+  const surface = (theme: { body: string }, token: string) => resolve(`var(${token})`, theme);
+  const spread = ([r, g, b]: Rgb) => Math.max(r, g, b) - Math.min(r, g, b);
+  const isDark = (theme: { body: string }) => declaration(theme.body, "color-scheme") === "dark";
+
+  it("declares the note, sticker and marker once, in the shared block", () => {
+    expect(shared, "no shared block declares --note").toBeTruthy();
+    for (const token of ["--note", "--sticker", "--marker"])
+      expect(declaration(shared!.body, token), `${token} is missing from the shared block`).toBeTruthy();
+    expect(withTheme.length).toBe(THEME_ITEMS.length);
+  });
+
+  it("keeps ink and soft ink at WCAG AA on a note card in every theme", () => {
+    for (const theme of withTheme)
+      for (const text of ["--ink", "--ink-soft"]) {
+        const ratio = contrast(surface(theme, text), surface(theme, "--note"));
+        expect(ratio, `${theme.selector} ${text} is ${ratio.toFixed(2)}:1 on a note card`).toBeGreaterThanOrEqual(4.5);
+      }
+  });
+
+  it("keeps ink at WCAG AA on a sticker in every theme", () => {
+    for (const theme of withTheme) {
+      const ratio = contrast(surface(theme, "--ink"), surface(theme, "--sticker"));
+      expect(ratio, `${theme.selector} ink is ${ratio.toFixed(2)}:1 on a sticker`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("keeps text readable even where a highlight stroke crosses a descender, in every theme", () => {
+    for (const theme of withTheme) {
+      const ratio = contrast(surface(theme, "--ink"), surface(theme, "--marker"));
+      expect(ratio, `${theme.selector} ink is ${ratio.toFixed(2)}:1 on the highlight stroke`).toBeGreaterThanOrEqual(
+        4.5
+      );
+    }
+  });
+
+  it("keeps the dark themes' notes and stickers restrained, not olive, and their tape cool", () => {
+    for (const theme of withTheme.filter(isDark)) {
+      const base = spread(surface(theme, "--sheet"));
+      expect(spread(surface(theme, "--note")) - base, `${theme.selector} note is tinted`).toBeLessThanOrEqual(12);
+      expect(spread(surface(theme, "--sticker")) - base, `${theme.selector} sticker is tinted`).toBeLessThanOrEqual(34);
+      const [r, g, b] = surface(theme, "--tape");
+      expect((r + g) / 2 - b, `${theme.selector} tape is warm`).toBeLessThan(30);
+    }
+  });
+});

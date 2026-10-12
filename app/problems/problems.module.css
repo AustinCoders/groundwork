@@ -1,19 +1,8 @@
-.stage {
-  --stage-h: clamp(440px, 54vh, 520px);
-}
-
-.upNext {
-  padding: 24px 26px 22px;
-}
-
 .upNextTitle {
   margin: 0;
   font-family: var(--font-heading);
   font-size: var(--t-heading);
   line-height: 1.2;
-  background: linear-gradient(transparent 62%, color-mix(in srgb, var(--mark) 80%, transparent) 62%);
-  background-repeat: no-repeat;
-  box-decoration-break: clone;
 }
 
 .upNextMeta {
@@ -27,15 +16,6 @@
   height: 46px;
   padding: 0 22px;
   font-size: var(--t-control);
-}
-
-.numbers {
-  padding: 18px 20px 8px;
-}
-
-.progress {
-  padding: 16px 18px 14px;
-  background: color-mix(in srgb, var(--mark) 36%, var(--sheet));
 }
 
 .levels {
@@ -67,52 +47,6 @@
   font-size: var(--t-kicker);
   font-weight: 400;
   color: var(--ink-soft);
-}
-
-@media (min-width: 721px) {
-  .stage .upNext {
-    top: 4%;
-    left: 0;
-    z-index: 2;
-    width: 62%;
-  }
-
-  .stage .numbers {
-    top: 0;
-    right: 0;
-    z-index: 3;
-    width: 35%;
-  }
-
-  .stage .progress {
-    right: 1%;
-    bottom: 2%;
-    z-index: 4;
-    width: 44%;
-  }
-
-  .stage .redNote {
-    bottom: 5%;
-    left: 6%;
-  }
-
-  .stage .stageSticker {
-    top: 40%;
-    right: 3%;
-    z-index: 8;
-  }
-}
-
-@media (max-width: 1080px) {
-  .stage {
-    --stage-h: clamp(540px, 82vw, 640px);
-  }
-}
-
-@media (max-width: 720px) {
-  .stage {
-    --stage-h: auto;
-  }
 }
 
 .tools {

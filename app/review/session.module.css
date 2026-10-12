@@ -146,34 +146,6 @@
   text-align: center;
 }
 
-.stamp {
-  display: grid;
-  place-content: center;
-  width: 132px;
-  height: 132px;
-  color: color-mix(in srgb, var(--success) 70%, var(--ink));
-  background: color-mix(in srgb, var(--success) 8%, var(--sheet));
-  border: 5px double var(--success);
-  border-radius: 50%;
-  rotate: -9deg;
-}
-
-.stamp b {
-  font-family: var(--font-heading);
-  font-size: var(--t-title);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.stamp small {
-  margin-top: 4px;
-  font-family: var(--font-mono);
-  font-size: var(--t-kicker);
-  line-height: 1;
-}
-
 .doneTitle {
   margin: 0;
   padding: 0;
@@ -190,19 +162,6 @@
   font-size: var(--t-lead);
   line-height: 1.55;
   color: var(--ink-soft);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .stamp {
-    animation: stampIn 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
-  }
-}
-
-@keyframes stampIn {
-  from {
-    scale: 1.7;
-    rotate: -26deg;
-  }
 }
 
 @media (max-width: 720px) {

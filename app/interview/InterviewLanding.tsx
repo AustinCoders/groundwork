@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { BookFrame } from "@/app/interview/BookFrame";
-import { Copy, Note, Scene, Stage, StageCard, Sticker, Tape } from "@/components/home/Stage";
+import { Copy, Scene } from "@/components/home/Stage";
+import { Card, Compose, Remark, Tag } from "@/components/topic/Compose";
 import { Check, Journey, JourneyStop, Station, StopHead } from "@/components/topic/Journey";
 import {
   Actions,
@@ -199,29 +200,13 @@ export function InterviewLanding({
               <span className={topicKit.chip}>{parts.length} parts</span>
             </Chips>
           </Copy>
-          <Stage live hostClassName={topicKit.stageHost} className={styles.stage}>
-            <StageCard
-              as="aside"
-              aria-label="Question of the day"
-              rot={-1.4}
-              depth={-10}
-              i={0}
-              still
-              className={styles.daily}
-            >
-              <Tape rot={-5} />
+          <Compose live layout="trio">
+            <Card as="aside" aria-label="Question of the day" at="a" tilt={-1} taped>
               <QuestionOfTheDay pool={daily} mounted={mounted} />
-            </StageCard>
-            <StageCard
-              as="aside"
-              aria-label="The book in numbers"
-              rot={3}
-              depth={16}
-              i={1}
-              still
-              className={styles.numbers}
-            >
-              <Tape rot={4} />
+            </Card>
+            <Card as="aside" aria-label="The book in numbers" at="b" tilt={1}>
+              <Tag tone="primary">★ answer · code · follow-up</Tag>
+              <CardKicker>The book in numbers</CardKicker>
               <Facts
                 items={[
                   { value: totals.rounds, label: "rounds" },
@@ -229,8 +214,8 @@ export function InterviewLanding({
                   { value: totals.traps, label: "traps named" },
                 ]}
               />
-            </StageCard>
-            <StageCard rot={-2} depth={12} i={2} still className={styles.progress}>
+            </Card>
+            <Card at="c" tone="note" tilt={-1}>
               <div className={mounted ? undefined : topicKit.pending}>
                 <CardKicker>Your progress</CardKicker>
                 <ProgressMeter
@@ -253,14 +238,9 @@ export function InterviewLanding({
                   </Link>
                 )}
               </div>
-            </StageCard>
-            <Note arrow="ur" rot={-4} depth={14} className={styles.sayNote}>
-              say it out loud first
-            </Note>
-            <Sticker rot={-6} depth={20} tone="primary" className={styles.stageSticker}>
-              ★ answer · code · follow-up
-            </Sticker>
-          </Stage>
+              <Remark>say it out loud, then mark it</Remark>
+            </Card>
+          </Compose>
         </Scene>
 
         <Band

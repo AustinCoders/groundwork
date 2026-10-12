@@ -1,22 +1,3 @@
-.stage {
-  --stage-h: clamp(440px, 54vh, 520px);
-}
-
-.progress {
-  padding: 22px 24px 20px;
-}
-
-.progress.main {
-  top: 6%;
-  left: 0;
-  width: 58%;
-}
-
-.next {
-  padding: 18px 20px 20px;
-  background: color-mix(in srgb, var(--mark) 36%, var(--sheet));
-}
-
 .nextTitle {
   margin: 0;
   font-family: var(--font-heading);
@@ -30,10 +11,6 @@
   font-size: var(--t-body);
   line-height: 1.45;
   color: var(--ink);
-}
-
-.facts {
-  padding: 16px 18px 10px;
 }
 
 .tags {
@@ -147,40 +124,6 @@
   margin: 0;
   font-size: var(--t-meta);
   color: var(--ink-soft);
-}
-
-@media (min-width: 721px) {
-  .stage .progress {
-    top: 6%;
-    left: 0;
-    z-index: 2;
-    width: 54%;
-  }
-
-  .stage .next {
-    right: 0;
-    bottom: 4%;
-    z-index: 4;
-    width: 50%;
-  }
-
-  .stage .facts {
-    top: 0;
-    right: 0;
-    z-index: 3;
-    width: 40%;
-  }
-
-  .stage .pathNote {
-    top: 0;
-    left: 4%;
-  }
-
-  .stage .pathSticker {
-    bottom: 2%;
-    left: 6%;
-    z-index: 8;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

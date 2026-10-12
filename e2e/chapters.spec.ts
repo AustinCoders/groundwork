@@ -264,7 +264,9 @@ test("a wide diagram scrolls inside its card on a phone and the page does not", 
 test("an outline chapter uses the same page and says it is not written yet", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/typescript/ts-setup-compiler");
-  await expect(page.locator("article.chapter > header [class*='__learn'][data-draft]")).toBeVisible();
+  await expect(
+    page.locator("article.chapter > header [class*='__heroStage'] [data-card][data-tone='draft']")
+  ).toBeVisible();
   await expect(page.getByText("Not written yet.")).toBeVisible();
   await expect(page.locator("article.chapter")).toBeVisible();
 });

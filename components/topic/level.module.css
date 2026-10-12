@@ -102,17 +102,18 @@
   font-size: var(--t-kicker);
   font-weight: 700;
   color: var(--ink);
-  background: var(--mark);
+  background: var(--note);
   border-radius: 9px;
 }
 
 .pickStage {
+  --rail: 1.7fr;
   --stage-h: clamp(560px, 66vh, 640px);
 }
 
 @media (min-width: 1081px) and (min-height: 700px) {
   .pickStage {
-    --stage-h: clamp(420px, calc((var(--hero-room) - 46px) / var(--sz)), 640px);
+    --stage-h: clamp(420px, var(--hero-room), 700px);
   }
 }
 
@@ -152,19 +153,32 @@
   }
 
   .main {
-    padding: 16px 20px 18px;
+    --card-pad: 22px 20px 18px;
   }
 
   .cardName {
     font-size: var(--t-display);
   }
 
-  .go {
-    margin-top: 6px;
+  .goRow {
+    padding-top: 8px;
+  }
+
+  .cardChips {
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .cardChips span {
+    padding: 2px 9px;
+  }
+
+  .cardLabel {
+    margin-top: 10px;
   }
 
   .who {
-    padding: 12px 16px 14px;
+    --card-pad: 12px 16px 14px;
   }
 
   .whoList {
@@ -172,7 +186,7 @@
   }
 
   .facts {
-    padding: 12px 16px 6px;
+    --card-pad: 12px 16px 6px;
   }
 }
 
@@ -188,10 +202,6 @@
 .pick:has(input[value="intermediate"]:checked) .panel[data-level="intermediate"],
 .pick:has(input[value="advanced"]:checked) .panel[data-level="advanced"] {
   display: contents;
-}
-
-.main {
-  padding: 22px 24px 24px;
 }
 
 .cardKicker {
@@ -226,7 +236,8 @@
 }
 
 .cardQuote span {
-  background: linear-gradient(transparent 58%, color-mix(in srgb, var(--mark) 80%, transparent) 58%);
+  background: linear-gradient(var(--marker), var(--marker)) 0 100% / 100% 0.3em no-repeat;
+  box-decoration-break: clone;
 }
 
 .cardChips {
@@ -264,7 +275,6 @@
 
 .cardChapters {
   display: flex;
-  max-width: 62%;
   flex-direction: column;
   margin: 0;
   padding: 0;
@@ -313,13 +323,9 @@
   color: var(--ink-soft);
 }
 
-.go {
-  margin-top: 14px;
-}
-
-.who {
-  padding: 18px 20px 20px;
-  background: color-mix(in srgb, var(--mark) 36%, var(--sheet));
+.goRow {
+  margin-top: auto;
+  padding-top: 14px;
 }
 
 .whoList {
@@ -360,10 +366,6 @@
   color: var(--ink);
 }
 
-.facts {
-  padding: 18px 20px 14px;
-}
-
 .factsTitle {
   margin: 0 0 4px;
   font-family: var(--font-mono);
@@ -371,40 +373,6 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: color-mix(in srgb, var(--primary) 70%, var(--ink));
-}
-
-@media (min-width: 721px) {
-  .pickStage .main {
-    top: 6%;
-    left: 0;
-    z-index: 2;
-    width: 68%;
-  }
-
-  .pickStage .who {
-    right: 0;
-    bottom: 3%;
-    z-index: 4;
-    width: 42%;
-  }
-
-  .pickStage .facts {
-    top: 0;
-    right: 0;
-    z-index: 3;
-    width: 36%;
-  }
-
-  .pickStage .pickNote {
-    top: 0;
-    left: 3%;
-  }
-
-  .pickStage .pickSticker {
-    top: 3%;
-    left: 49%;
-    z-index: 8;
-  }
 }
 
 @media (max-width: 720px) {
@@ -415,7 +383,7 @@
   .main,
   .who,
   .facts {
-    padding-inline: 18px;
+    --card-pad: 20px 18px 20px;
   }
 }
 
@@ -432,6 +400,6 @@
   }
 
   .main {
-    padding: 18px 22px 20px;
+    --card-pad: 22px 22px 20px;
   }
 }

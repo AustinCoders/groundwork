@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Copy, Note, Scene, Stage, StageCard, Sticker, Tape } from "@/components/home/Stage";
+import { Copy, Scene } from "@/components/home/Stage";
+import { Card, Compose, Remark, Tag } from "@/components/topic/Compose";
 import {
   Actions,
   Button,
@@ -32,16 +33,7 @@ export interface ReviewNumbers {
 function Next({ loaded, featured, now }: { loaded: boolean; featured: ReviewRow | null; now: number }) {
   const isDue = featured !== null && featured.due !== null && featured.due <= now;
   return (
-    <StageCard
-      as="aside"
-      aria-label="Next up"
-      rot={-1.4}
-      depth={-6}
-      i={0}
-      still
-      className={loaded ? styles.next : `${styles.next} ${topicKit.pending}`}
-    >
-      <Tape rot={-4} />
+    <Card as="aside" aria-label="Next up" at="a" tilt={-1} taped className={loaded ? undefined : topicKit.pending}>
       {featured ? (
         <>
           <CardKicker>{isDue ? "Due first" : "Comes back next"}</CardKicker>
@@ -66,21 +58,15 @@ function Next({ loaded, featured, now }: { loaded: boolean; featured: ReviewRow 
           <p className={styles.nextMeta}>{GAP_LABELS[0]} later it comes back here, just before you would forget it.</p>
         </>
       )}
-    </StageCard>
+    </Card>
   );
 }
 
 function Numbers({ loaded, numbers }: { loaded: boolean; numbers: ReviewNumbers }) {
+  const sticker = stickerFor(numbers);
   return (
-    <StageCard
-      as="aside"
-      aria-label="Your numbers"
-      rot={1.8}
-      depth={14}
-      i={1}
-      still
-      className={loaded ? styles.numbers : `${styles.numbers} ${topicKit.pending}`}
-    >
+    <Card as="aside" aria-label="Your numbers" at="b" tilt={1} className={loaded ? undefined : topicKit.pending}>
+      <Tag tone={sticker.tone}>{sticker.text}</Tag>
       <CardKicker>Your numbers</CardKicker>
       <Facts
         items={[
@@ -90,7 +76,7 @@ function Numbers({ loaded, numbers }: { loaded: boolean; numbers: ReviewNumbers 
           { value: numbers.kept, label: "kept for good" },
         ]}
       />
-    </StageCard>
+    </Card>
   );
 }
 
@@ -118,7 +104,6 @@ export function ReviewHero({
   onStart: () => void;
 }) {
   const { due, read } = numbers;
-  const sticker = stickerFor(numbers);
   const pending = loaded ? undefined : topicKit.pending;
   return (
     <Scene className={topicKit.hero}>
@@ -173,10 +158,10 @@ export function ReviewHero({
           </Chips>
         </div>
       </Copy>
-      <Stage live hostClassName={topicKit.stageHost} className={styles.stage}>
+      <Compose live layout="trio">
         <Next loaded={loaded} featured={featured} now={now} />
         <Numbers loaded={loaded} numbers={numbers} />
-        <StageCard decor extra rot={-2} depth={10} i={2} className={styles.spacing}>
+        <Card decor extra at="c" tone="note" tilt={-1}>
           <CardKicker>Gaps grow</CardKicker>
           <ol className={styles.steps}>
             {REVIEW_GAPS_DAYS.map((days, k) => (
@@ -189,19 +174,9 @@ export function ReviewHero({
               </li>
             ))}
           </ol>
-        </StageCard>
-        <Sticker
-          rot={-7}
-          depth={20}
-          tone={sticker.tone}
-          className={loaded ? styles.sticker : `${styles.sticker} ${topicKit.pending}`}
-        >
-          {sticker.text}
-        </Sticker>
-        <Note arrow="dl" rot={-3} depth={12} className={styles.note}>
-          just before you forget
-        </Note>
-      </Stage>
+          <Remark>back just before you forget</Remark>
+        </Card>
+      </Compose>
     </Scene>
   );
 }

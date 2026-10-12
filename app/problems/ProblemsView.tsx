@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { FocusTrap } from "@/components/FocusTrap";
 import { PageFrame, type FrameLink } from "@/components/frame/PageFrame";
-import { Copy, Note, Scene, Stage, StageCard, Sticker, Tape } from "@/components/home/Stage";
+import { Copy, Scene } from "@/components/home/Stage";
+import { Card, Compose, Remark, Tag } from "@/components/topic/Compose";
 import {
   Actions,
   Band,
@@ -407,14 +408,15 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
               ))}
             </Chips>
           </Copy>
-          <Stage live hostClassName={topicKit.stageHost} className={styles.stage}>
-            <StageCard as="aside" aria-label="Up next" rot={-1.4} depth={-10} i={0} still className={styles.upNext}>
-              <Tape rot={-5} />
+          <Compose live layout="trio">
+            <Card as="aside" aria-label="Up next" at="a" tilt={-1} taped>
               <div className={mounted ? undefined : topicKit.pending}>
                 <CardKicker>{solvedCount ? "Pick up where you left off" : "Start here"}</CardKicker>
                 {nextUp ? (
                   <>
-                    <p className={styles.upNextTitle}>{nextUp.title}</p>
+                    <p className={styles.upNextTitle}>
+                      <span className={topicKit.highlight}>{nextUp.title}</span>
+                    </p>
                     <p className={styles.upNextMeta}>
                       {groupOf.get(nextUp.chapter)?.title} · {nextUp.level} · {plural(nextUp.tests, "test")}
                     </p>
@@ -426,17 +428,10 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
                   <p className={styles.upNextMeta}>Everything in view is solved. Try other filters.</p>
                 )}
               </div>
-            </StageCard>
-            <StageCard
-              as="aside"
-              aria-label="The problems in numbers"
-              rot={3}
-              depth={16}
-              i={1}
-              still
-              className={styles.numbers}
-            >
-              <Tape rot={4} />
+            </Card>
+            <Card as="aside" aria-label="The problems in numbers" at="b" tilt={1}>
+              <Tag tone="primary">★ run in your browser</Tag>
+              <CardKicker>In numbers</CardKicker>
               <Facts
                 items={[
                   { value: total, label: "problems" },
@@ -444,8 +439,9 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
                   { value: totalTests, label: "tests" },
                 ]}
               />
-            </StageCard>
-            <StageCard rot={-2} depth={12} i={2} still className={styles.progress}>
+              <Remark>red first, then green</Remark>
+            </Card>
+            <Card at="c" tone="note" tilt={-1}>
               <div className={mounted ? undefined : topicKit.pending}>
                 <CardKicker>Your progress</CardKicker>
                 <ProgressMeter done={solvedCount} total={total} label={`${solvedCount} / ${total} solved`} />
@@ -460,14 +456,8 @@ export function ProblemsView({ groups, total }: { groups: CategoryGroup[]; total
                   ))}
                 </ul>
               </div>
-            </StageCard>
-            <Note arrow="ur" rot={-4} depth={14} className={styles.redNote}>
-              red first, then green
-            </Note>
-            <Sticker rot={-6} depth={20} tone="primary" className={styles.stageSticker}>
-              ★ run in your browser
-            </Sticker>
-          </Stage>
+            </Card>
+          </Compose>
         </Scene>
 
         <Band

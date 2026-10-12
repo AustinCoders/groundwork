@@ -2,15 +2,6 @@
   margin-top: clamp(40px, 6vw, 80px);
 }
 
-.stage {
-  --stage-h: clamp(380px, 48vh, 480px);
-}
-
-.draft {
-  padding: 24px 26px 26px;
-  border-style: dashed;
-}
-
 .cardKicker {
   margin: 0 0 10px;
   font-family: var(--font-mono);
@@ -42,13 +33,6 @@
   color: var(--ink-soft);
 }
 
-.ghost {
-  padding: 18px 20px;
-  background: color-mix(in srgb, var(--sheet) 60%, var(--paper));
-  border-style: dashed;
-  box-shadow: none;
-}
-
 .ghostLine {
   display: block;
   width: 92%;
@@ -67,21 +51,6 @@
   width: 78%;
 }
 
-.stamp {
-  position: absolute;
-  padding: 8px 18px;
-  font-family: var(--font-mono);
-  font-size: var(--t-control);
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--danger) 70%, var(--ink));
-  border: 3px double color-mix(in srgb, var(--danger) 70%, var(--ink));
-  border-radius: 8px;
-  opacity: 0.85;
-  rotate: -8deg;
-}
-
 .pill {
   align-self: flex-start;
   margin: clamp(14px, 2vh, 20px) 0 0;
@@ -90,10 +59,10 @@
   font-size: var(--t-meta);
   font-weight: 700;
   color: var(--ink);
-  background: var(--mark);
+  background: var(--note);
   border-radius: 9px;
   box-shadow: var(--shadow-md);
-  rotate: -2deg;
+  rotate: -1.2deg;
 }
 
 .signs {
@@ -185,47 +154,6 @@
   color: var(--on-primary);
   background: var(--primary);
   border-radius: 50%;
-}
-
-@media (min-width: 721px) {
-  .stage .draft {
-    top: 8%;
-    left: 0;
-    z-index: 3;
-    width: 72%;
-  }
-
-  .stage .ghost {
-    top: 0;
-    right: 0;
-    z-index: 1;
-    width: 46%;
-  }
-
-  .stage .ghostTwo {
-    top: auto;
-    right: 4%;
-    bottom: 0;
-    z-index: 2;
-    width: 40%;
-  }
-
-  .stage .stampSticker {
-    right: 8%;
-    bottom: 12%;
-    z-index: 8;
-  }
-
-  .stage .outlineNote {
-    top: 0;
-    left: 6%;
-  }
-}
-
-@media (max-width: 720px) {
-  .stamp {
-    display: none;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

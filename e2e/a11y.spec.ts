@@ -739,6 +739,70 @@ const STATES: State[] = [
     },
   },
   {
+    name: "a new reader on the progress page",
+    path: "/progress",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await expect(page.getByRole("heading", { level: 1 })).toContainText("Level 1, 25 XP to go.");
+      await expect(page.getByRole("heading", { name: "The badge wall" })).toBeVisible();
+      await check("a new reader on the progress page");
+    },
+  },
+  {
+    name: "a heavy reader with a level up, badges and marked answers",
+    path: "/progress",
+    viewports: VIEWPORTS,
+    seed: () => {
+      const day = 86_400_000;
+      const now = Date.now();
+      const ids = [
+        "setup-mental-model",
+        "execution-context",
+        "var-let-const",
+        "scope",
+        "single-thread",
+        "in-the-browser",
+        "types-values",
+        "strings-numbers-math",
+        "operators-flow",
+        "functions-basics",
+        "objects-arrays-basics",
+        "this-keyword",
+        "closures",
+        "dom-events",
+        "basic-async",
+        "errors-tools",
+        "scope-functions",
+        "objects-deep",
+        "prototypes-oop",
+        "async-properly",
+      ];
+      const chapters: Record<string, { at: number; reviews: number }> = {};
+      ids.forEach((id, k) => (chapters[id] = { at: now - (k + 1) * day, reviews: k % 4 }));
+      const exercises: Record<string, true> = {};
+      for (let k = 0; k < 30; k++) exercises[`seed-${k}`] = true;
+      const log: Record<string, number> = {};
+      for (let ago = 0; ago < 120; ago++) {
+        const date = new Date(now - ago * day);
+        const key = [date.getFullYear(), date.getMonth() + 1, date.getDate()]
+          .map((part) => String(part).padStart(2, "0"))
+          .join("-");
+        log[key] = (ago % 7) + 1;
+      }
+      const marks = ["knew", "shaky", "blank", "knew"];
+      const confidence: Record<string, string> = {};
+      for (let k = 0; k < 24; k++) confidence[`q${k}`] = marks[k % 4];
+      localStorage.setItem("jsnotes:progress", JSON.stringify({ chapters, exercises }));
+      localStorage.setItem("jsnotes:activity", JSON.stringify(log));
+      localStorage.setItem("groundwork:interview:confidence", JSON.stringify(confidence));
+    },
+    visit: async (page, check) => {
+      await expect(page.getByRole("status").filter({ hasText: "Level up" })).toHaveCount(1);
+      await expect(page.getByText("weak ones")).toBeVisible();
+      await check("a heavy reader with a level up, badges and marked answers");
+    },
+  },
+  {
     name: "two saved mock sessions",
     path: "/mock",
     viewports: VIEWPORTS,

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useId, type CSSProperties, type ReactNode, type Ref } from "react";
-import { Note, Sticker, Tape } from "@/components/home/Stage";
+import { Tape } from "@/components/home/Stage";
+import { Card, Compose, Remark, Tag } from "@/components/topic/Compose";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { Underlined, Kicker, topicKit } from "@/components/topic/TopicKit";
 import { Eyebrow, kit } from "@/components/ui/MenuKit";
@@ -229,39 +230,36 @@ export function ChapterHero({
       </div>
       {(shown.length > 0 || status) && (
         <div className={styles.heroStage} aria-hidden="true" data-speech-exclude>
-          <div className={styles.learn} data-draft={status ? "" : undefined}>
-            <Tape rot={-3} />
-            <p className={styles.learnKicker}>{status ? "Sketch only" : learnLabel}</p>
-            {status ? (
-              <div className={styles.ghost}>
-                <span />
-                <span />
-                <span />
-              </div>
-            ) : (
-              <ul className={styles.learnList}>
-                {shown.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            )}
-            {more > 0 && <p className={styles.learnMore}>and {more} more</p>}
-          </div>
-          {position && (
-            <Sticker tone="primary" rot={5} depth={0} className={styles.placeSticker}>
-              {position.index} of {position.total}
-            </Sticker>
-          )}
-          {minutes ? (
-            <Note arrow="dr" rot={-4} depth={0} className={styles.timeNote}>
-              about {minutes} min
-            </Note>
-          ) : null}
-          {read && (
-            <Sticker tone="success" rot={-7} depth={0} className={styles.readSticker}>
-              read ✓
-            </Sticker>
-          )}
+          <Compose layout="stack">
+            <Card at="a" tone={status ? "draft" : "paper"} tilt={1}>
+              {position && (
+                <Tag tone="primary">
+                  {position.index} of {position.total}
+                </Tag>
+              )}
+              <p className={styles.learnKicker}>{status ? "Sketch only" : learnLabel}</p>
+              {status ? (
+                <div className={styles.ghost}>
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              ) : (
+                <ul className={styles.learnList}>
+                  {shown.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              )}
+              {more > 0 && <p className={styles.learnMore}>and {more} more</p>}
+              {read && (
+                <Tag tone="success" corner="bottom">
+                  read ✓
+                </Tag>
+              )}
+              {minutes ? <Remark>about {minutes} min</Remark> : null}
+            </Card>
+          </Compose>
         </div>
       )}
     </header>

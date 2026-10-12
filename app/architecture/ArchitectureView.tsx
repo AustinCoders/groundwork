@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { Copy, Note, Scene, Stage, StageCard, Sticker, Tape } from "@/components/home/Stage";
+import { Copy, Scene, Tape } from "@/components/home/Stage";
+import { Card, Compose, Join, Remark, Tag, type JoinTo, type Slot } from "@/components/topic/Compose";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { Check, Journey, JourneyStop, Station, StopHead } from "@/components/topic/Journey";
 import {
@@ -117,7 +118,12 @@ const LANES: Lane[] = [
   },
 ];
 
-const HERO_LANES = ["build", "edge", "browser", "around"];
+const HERO_LANES: { id: string; at: Slot; join?: JoinTo }[] = [
+  { id: "build", at: "a", join: "right" },
+  { id: "edge", at: "b", join: "down" },
+  { id: "browser", at: "c", join: "left" },
+  { id: "around", at: "d" },
+];
 const PREVIEW_NODES = 4;
 
 function formatNumber(n: number): string {
@@ -220,25 +226,12 @@ export function ArchitectureView({
               {mounted && <span className={topicKit.chip}>{done.size} read by you</span>}
             </Chips>
           </Copy>
-          <Stage hostClassName={topicKit.stageHost} className={styles.stage}>
-            <svg className={styles.flow} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M30 34 C 40 34, 44 30, 56 30" />
-              <path d="M70 47 C 66 58, 40 54, 30 67" />
-              <path d="M82 47 C 90 58, 88 62, 82 66" />
-            </svg>
-            {HERO_LANES.map((id, i) => {
+          <Compose layout="loop">
+            {HERO_LANES.map(({ id, at, join }, i) => {
               const lane = LANES.find((l) => l.id === id)!;
               return (
-                <StageCard
-                  key={id}
-                  decor
-                  rot={[-1.4, 2, -1.8, 2.6][i]}
-                  depth={[-10, 12, -6, 16][i]}
-                  i={i}
-                  still
-                  className={`${styles.lane} ${styles[`lane_${id}`]}`}
-                >
-                  {i === 0 && <Tape rot={-5} />}
+                <Card key={id} decor at={at} taped={i === 0}>
+                  {i === 1 && <Tag tone="success">✓ every number measured</Tag>}
                   <CardKicker>
                     {String(i + 1).padStart(2, "0")} · {lane.when}
                   </CardKicker>
@@ -248,16 +241,12 @@ export function ArchitectureView({
                       <span key={n.chapter}>{n.label}</span>
                     ))}
                   </p>
-                </StageCard>
+                  {join && <Join to={join} />}
+                  {i === HERO_LANES.length - 1 && <Remark>build, deploy, request, run</Remark>}
+                </Card>
               );
             })}
-            <Note arrow="dr" rot={-4} depth={14} className={styles.flowNote}>
-              build, deploy, request, run
-            </Note>
-            <Sticker rot={-6} depth={20} tone="success" className={styles.flowSticker}>
-              ✓ every number measured
-            </Sticker>
-          </Stage>
+          </Compose>
         </Scene>
 
         <Band

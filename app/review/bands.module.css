@@ -81,36 +81,6 @@ a.act {
   padding: clamp(24px, 3vw, 36px);
 }
 
-.stamp {
-  display: grid;
-  flex: none;
-  place-content: center;
-  width: 132px;
-  height: 132px;
-  text-align: center;
-  color: color-mix(in srgb, var(--success) 70%, var(--ink));
-  background: color-mix(in srgb, var(--success) 8%, var(--sheet));
-  border: 5px double var(--success);
-  border-radius: 50%;
-  rotate: -9deg;
-}
-
-.stamp b {
-  font-family: var(--font-heading);
-  font-size: var(--t-title);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.stamp small {
-  margin-top: 4px;
-  font-family: var(--font-mono);
-  font-size: var(--t-kicker);
-  line-height: 1;
-}
-
 .doneText {
   display: flex;
   flex-direction: column;
@@ -242,40 +212,6 @@ a.act {
   align-self: flex-start;
 }
 
-.start {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(20px, 3vw, 44px);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.startStep {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-}
-
-.startStep::before {
-  content: none;
-}
-
-.startStep:not(:last-child)::after {
-  content: "";
-  position: absolute;
-  top: 28px;
-  left: 68px;
-  width: calc(100% + clamp(20px, 3vw, 44px) - 84px);
-  height: 0;
-  border-top: 3px dashed color-mix(in srgb, var(--accent, var(--primary)) 30%, var(--line));
-}
-
-.startNo,
 .gapNo {
   display: grid;
   place-items: center;
@@ -289,19 +225,6 @@ a.act {
   background: var(--sheet);
   border: 2.5px solid var(--accent, var(--primary));
   border-radius: 50%;
-}
-
-.startTitle {
-  font-family: var(--font-heading);
-  font-size: var(--t-heading);
-  font-weight: 700;
-  line-height: 1.15;
-}
-
-.startBody {
-  font-size: var(--t-control);
-  line-height: 1.55;
-  color: var(--ink-soft);
 }
 
 .startActions {
@@ -379,30 +302,6 @@ a.act {
     position: relative;
     top: auto;
   }
-
-  .start {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .startStep {
-    padding-left: 76px;
-  }
-
-  .startStep:not(:last-child)::after {
-    top: 60px;
-    bottom: -20px;
-    left: 27px;
-    width: 0;
-    height: auto;
-    border-top: 0;
-    border-left: 3px dashed color-mix(in srgb, var(--accent, var(--primary)) 30%, var(--line));
-  }
-
-  .startNo {
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
 }
 
 @media (max-width: 720px) {
@@ -477,18 +376,5 @@ a.act {
     position: absolute;
     top: 0;
     left: 0;
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .stamp {
-    animation: stampIn 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
-  }
-}
-
-@keyframes stampIn {
-  from {
-    scale: 1.7;
-    rotate: -26deg;
   }
 }

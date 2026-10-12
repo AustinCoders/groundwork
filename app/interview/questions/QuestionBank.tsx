@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BookFrame } from "@/app/interview/BookFrame";
 import { followUpsHtml, sayHtml, trapHtml } from "@/app/interview/answerHtml";
-import { Chip, Copy, Note, Scene, Stage, StageCard, Sticker, Tape } from "@/components/home/Stage";
+import { Copy, Scene, Tape } from "@/components/home/Stage";
+import { Card, Compose, Deck, Remark, Tag } from "@/components/topic/Compose";
 import { Prose } from "@/components/chapter/ChapterKit";
 import type { FrameTopic } from "@/components/topic/TopicFrame";
 import {
@@ -281,38 +282,35 @@ export function QuestionBank({
               </Chips>
             </div>
           </Copy>
-          <Stage hostClassName={topicKit.stageHost} className={styles.stage}>
-            <StageCard decor rot={4} depth={-14} i={0} still className={styles.under} />
-            <StageCard decor rot={-2} depth={-8} i={1} still className={styles.under2} />
-            <StageCard decor rot={-1.2} depth={8} i={2} still className={styles.flash}>
-              <Tape rot={-5} />
-              <p className={styles.flashKicker}>
-                Flashcard · {sample?.roundCode} {sample?.roundTitle}
-              </p>
-              <p className={styles.flashQ}>
-                <span>{sample ? truncate(plainText(sample.q), SAMPLE_LIMIT) : ""}</span>
-              </p>
-              <div className={styles.flashRow}>
-                <span className={styles.flashReveal}>
-                  Reveal <kbd>space</kbd>
-                </span>
-                <span className={styles.flashMarks}>
-                  <i data-c="knew">1</i>
-                  <i data-c="shaky">2</i>
-                  <i data-c="blank">3</i>
-                </span>
-              </div>
-            </StageCard>
-            <Chip fact="drill" rot={3} depth={14} className={styles.flashChip}>
-              {DECK_SIZE} cards a round
-            </Chip>
-            <Note arrow="dl" rot={-4} depth={14} className={styles.flashNote}>
-              say it out loud first
-            </Note>
-            <Sticker rot={-6} depth={20} tone="primary" className={styles.flashSticker}>
-              ★ mark it honestly
-            </Sticker>
-          </Stage>
+          <Compose layout="stack">
+            <Deck at="a">
+              <Card decor at="a" tilt={-1} taped>
+                <Tag tone="primary">★ mark it honestly</Tag>
+                <p className={styles.flashKicker}>
+                  <span>
+                    Flashcard · {sample?.roundCode} {sample?.roundTitle}
+                  </span>
+                  <span className={styles.flashCount}>{DECK_SIZE} cards a round</span>
+                </p>
+                <p className={styles.flashQ}>
+                  <span className={topicKit.highlight}>
+                    {sample ? truncate(plainText(sample.q), SAMPLE_LIMIT) : ""}
+                  </span>
+                </p>
+                <div className={styles.flashRow}>
+                  <span className={styles.flashReveal}>
+                    Reveal <kbd>space</kbd>
+                  </span>
+                  <span className={styles.flashMarks}>
+                    <i data-c="knew">1</i>
+                    <i data-c="shaky">2</i>
+                    <i data-c="blank">3</i>
+                  </span>
+                </div>
+                <Remark>say it out loud first</Remark>
+              </Card>
+            </Deck>
+          </Compose>
         </Scene>
 
         <Band

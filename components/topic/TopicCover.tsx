@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { TopicFrame } from "@/components/topic/TopicFrame";
 import { HashRedirect } from "@/components/reader/HashRedirect";
-import { Copy, Note, Scene, Stage, StageCard, Sticker, Tape } from "@/components/home/Stage";
+import { Copy, Scene } from "@/components/home/Stage";
+import { Card, Compose, Remark, Tag } from "@/components/topic/Compose";
 import {
   Actions,
   Band,
@@ -145,17 +146,21 @@ export function TopicCover({
               )}
             </Chips>
           </Copy>
-          <Stage live hostClassName={topicKit.stageHost} className={styles.stage}>
+          <Compose live layout="stack">
             {plan.next ? (
               <>
-                <StageCard rot={-1.4} depth={-10} i={0} still className={styles.upNext} aria-label="Up next">
-                  <Tape rot={-5} />
+                <Card at="a" tilt={-1} taped aria-label="Up next">
+                  <Tag tone="success">
+                    {plan.mounted && plan.readCount > 0 ? `★ ${plan.readCount} read` : "★ free to read"}
+                  </Tag>
                   <p className={styles.cardKicker}>Up next</p>
                   <div className={styles.upNextHead}>
                     <span className={styles.upNextNum} aria-hidden="true">
                       {plan.next.num}
                     </span>
-                    <h2 className={styles.upNextTitle}>{plan.next.short}</h2>
+                    <h2 className={styles.upNextTitle}>
+                      <span className={topicKit.highlight}>{plan.next.short}</span>
+                    </h2>
                   </div>
                   <p className={styles.upNextSub}>{plan.next.subtitle}</p>
                   <div className={styles.upNextMeta}>
@@ -169,8 +174,8 @@ export function TopicCover({
                       Open this chapter <span aria-hidden="true">→</span>
                     </Button>
                   </div>
-                </StageCard>
-                <StageCard rot={2.2} depth={12} i={1} still className={styles.budget}>
+                </Card>
+                <Card at="b" tone="note" tilt={1}>
                   <div role="group" aria-label="Reading time budget">
                     <p className={styles.budgetQ}>I&apos;ve got</p>
                     <div className={styles.budgetSteps}>
@@ -194,11 +199,14 @@ export function TopicCover({
                         : "→ pick a run for tonight"}
                     </p>
                   </div>
-                </StageCard>
+                  <Remark>what fits tonight?</Remark>
+                </Card>
               </>
             ) : (
-              <StageCard rot={-1.4} depth={-10} i={0} still className={styles.upNext} aria-label="Up next">
-                <Tape rot={-5} />
+              <Card at="a" tilt={-1} taped aria-label="Up next">
+                <Tag tone="success">
+                  {plan.mounted && plan.readCount > 0 ? `★ ${plan.readCount} read` : "★ free to read"}
+                </Tag>
                 <h2 className={styles.upNextTitle}>Every chapter read</h2>
                 <p className={styles.upNextSub}>The review page keeps it fresh from here.</p>
                 <div className={styles.upNextGo}>
@@ -206,15 +214,9 @@ export function TopicCover({
                     Go to review <span aria-hidden="true">→</span>
                   </Button>
                 </div>
-              </StageCard>
+              </Card>
             )}
-            <Note arrow="dl" rot={-4} depth={14} className={styles.coverNote}>
-              what fits tonight?
-            </Note>
-            <Sticker rot={-6} depth={20} tone="success" className={styles.coverSticker}>
-              {plan.mounted && plan.readCount > 0 ? `★ ${plan.readCount} read` : "★ free to read"}
-            </Sticker>
-          </Stage>
+          </Compose>
         </Scene>
 
         <Band

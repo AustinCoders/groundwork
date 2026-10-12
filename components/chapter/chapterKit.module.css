@@ -110,24 +110,7 @@
 }
 
 .heroStage {
-  position: relative;
   max-width: 30rem;
-  padding: 1.6rem 0.4rem 1.3rem;
-}
-
-.learn {
-  position: relative;
-  padding: 1.7rem 1.5rem 1.3rem;
-  background: var(--sheet);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  box-shadow: var(--shadow-lg);
-  rotate: 1.2deg;
-}
-
-.learn[data-draft] {
-  border-style: dashed;
-  box-shadow: none;
 }
 
 .learnKicker {
@@ -199,25 +182,6 @@
 
 .ghost span:nth-child(3) {
   width: 58%;
-}
-
-.heroStage .placeSticker {
-  top: 0.2rem;
-  right: -0.4rem;
-  left: auto;
-}
-
-.heroStage .readSticker {
-  right: 0.6rem;
-  bottom: 0.2rem;
-  left: auto;
-  top: auto;
-}
-
-.heroStage .timeNote {
-  top: -0.9rem;
-  left: 0.2rem;
-  font-size: var(--t-title);
 }
 
 .inlineToc {

@@ -32,7 +32,7 @@ const PAGES = [
   { path: "/problems/ex-accounts-merge", heading: /Accounts Merge/i },
   { path: "/review", heading: /due today|nothing to review/i },
   { path: "/mock", heading: /mock interview/i },
-  { path: "/progress", heading: /progress/i },
+  { path: "/progress", heading: /Level \d+/ },
   { path: "/privacy", heading: /Privacy/ },
   { path: "/git", heading: /Git/i },
   { path: "/architecture", heading: /How this site is built/i },
@@ -501,6 +501,7 @@ test("every topic hero scene is one balanced screen under the header, with the n
     { path: "/problems", full: true },
     { path: "/mock", full: true },
     { path: "/review", full: true },
+    { path: "/progress", full: true },
     { path: "/path/js/beginner", full: false },
     { path: "/notes", full: false },
   ];
@@ -3772,7 +3773,7 @@ test("review brings a due chapter back, and every section header has a way back"
   await expect(page.getByRole("heading", { name: "Coming back soon" })).toBeVisible();
 
   await page.goto("/progress");
-  await expect(page.getByRole("heading", { name: "By topic" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Topic by topic" })).toBeVisible();
 
   for (const path of [
     "/review",
@@ -3853,7 +3854,7 @@ test("review, the interview book, mock and progress take the theme's accent, not
       onAccent: true,
     },
     { path: "/mock", action: () => main.getByRole("button", { name: "Plan a full loop" }), onAccent: true },
-    { path: "/progress", action: () => main.locator("[class*='__xpBar'] > span"), onAccent: false },
+    { path: "/progress", action: () => main.locator("[class*='__meterFill']").first(), onAccent: false },
   ];
 
   for (const theme of THEMES) {

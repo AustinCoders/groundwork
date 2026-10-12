@@ -1,7 +1,3 @@
-.stage {
-  --stage-h: clamp(440px, 54vh, 540px);
-}
-
 .cardKicker {
   margin: 0 0 10px;
   font-family: var(--font-mono);
@@ -9,10 +5,6 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: color-mix(in srgb, var(--primary) 70%, var(--ink));
-}
-
-.upNext {
-  padding: 22px 24px 24px;
 }
 
 .upNextHead {
@@ -46,7 +38,6 @@
   font-weight: 700;
   line-height: 1.15;
   border: 0;
-  background: linear-gradient(transparent 62%, color-mix(in srgb, var(--mark) 80%, transparent) 62%);
 }
 
 .upNextTitle::before,
@@ -70,11 +61,6 @@
 
 .upNextGo {
   margin-top: 16px;
-}
-
-.budget {
-  padding: 16px 18px 18px;
-  background: color-mix(in srgb, var(--mark) 36%, var(--sheet));
 }
 
 .budgetQ {
@@ -295,33 +281,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-}
-
-@media (min-width: 721px) {
-  .stage .upNext {
-    top: 6%;
-    left: 0;
-    z-index: 2;
-    width: 70%;
-  }
-
-  .stage .budget {
-    right: 0;
-    bottom: 3%;
-    z-index: 4;
-    width: 52%;
-  }
-
-  .stage .coverNote {
-    top: 0;
-    right: 6%;
-  }
-
-  .stage .coverSticker {
-    bottom: 4%;
-    left: 6%;
-    z-index: 8;
-  }
 }
 
 @media (min-width: 1100px) {

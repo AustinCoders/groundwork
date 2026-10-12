@@ -222,7 +222,7 @@
   font-size: 15px;
   line-height: 1.1;
   color: var(--ink);
-  background: var(--mark);
+  background: var(--sticker);
   box-shadow: var(--shadow-md);
   rotate: 5deg;
 }

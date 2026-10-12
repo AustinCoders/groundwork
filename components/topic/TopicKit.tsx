@@ -153,7 +153,7 @@ export function Button({
 
 export function Facts({ items }: { items: { value: string | number; label: string }[] }) {
   return (
-    <dl className={t.facts}>
+    <dl className={t.facts} data-facts>
       {items.map((item) => (
         <div className={t.fact} key={item.label}>
           <dt>{item.label}</dt>
@@ -263,6 +263,43 @@ export function Row({
   );
 }
 
+export function Steps({ label, count, children }: { label: string; count: number; children: ReactNode }) {
+  return (
+    <ol className={t.steps} aria-label={label} style={{ "--count": count } as CSSProperties}>
+      {children}
+    </ol>
+  );
+}
+
+export function Step({
+  no,
+  title,
+  body,
+  href,
+  action,
+}: {
+  no: number | string;
+  title: string;
+  body: string;
+  href?: string;
+  action?: string;
+}) {
+  return (
+    <li className={t.step}>
+      <span className={t.stepNo} aria-hidden="true">
+        {no}
+      </span>
+      <b className={t.stepTitle}>{title}</b>
+      <span className={t.stepBody}>{body}</span>
+      {href && action && (
+        <Link href={href} className={t.stepLink} prefetch={false}>
+          {action}
+        </Link>
+      )}
+    </li>
+  );
+}
+
 export function CardKicker({ children }: { children: ReactNode }) {
   return <p className={t.cardKicker}>{children}</p>;
 }
@@ -270,7 +307,7 @@ export function CardKicker({ children }: { children: ReactNode }) {
 export function ProgressRing({ done, total }: { done: number; total: number }) {
   const pct = total ? (done / total) * 100 : 0;
   return (
-    <div className={t.ring} style={{ "--sweep": pct } as CSSProperties} aria-hidden="true">
+    <div className={t.ring} data-ring style={{ "--sweep": pct } as CSSProperties} aria-hidden="true">
       <span className={t.ringFace}>
         <strong>{done}</strong>
         <small>of {total}</small>

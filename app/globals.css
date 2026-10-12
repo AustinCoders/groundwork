@@ -157,6 +157,13 @@ html[data-font="marker"] {
   --caution-soft: color-mix(in srgb, var(--caution) 16%, var(--sheet));
   --info-soft: color-mix(in srgb, var(--info) 16%, var(--sheet));
 
+  --note: light-dark(
+    color-mix(in srgb, var(--mark) 32%, var(--sheet)),
+    color-mix(in srgb, var(--caution) 8%, var(--sheet))
+  );
+  --sticker: light-dark(var(--mark), color-mix(in srgb, var(--caution) 16%, var(--sheet)));
+  --marker: light-dark(var(--mark), color-mix(in srgb, var(--primary) 34%, var(--sheet)));
+
   --ide-bg: var(--sheet-2);
   --ide-bg-elevated: var(--sheet);
   --ide-gutter: var(--sheet-2);
@@ -240,7 +247,7 @@ html[data-font="roboto"] {
   --hl-yellow: rgba(255, 224, 92, 0.28);
   --hl-mint: rgba(110, 231, 183, 0.22);
   --hl-pink: rgba(255, 150, 180, 0.22);
-  --tape: rgba(226, 206, 130, 0.22);
+  --tape: rgba(196, 212, 240, 0.2);
   --hole: #0d0f13;
 
   --sticky-bg: rgba(255, 224, 92, 0.13);

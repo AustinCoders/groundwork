@@ -1,18 +1,9 @@
-.stage {
-  --stage-h: clamp(420px, 52vh, 520px);
-}
-
-.under,
-.under2,
-.flash {
-  padding: 0;
-}
-
-.flash {
-  padding: 26px 26px 22px;
-}
-
 .flashKicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
   margin: 0 0 14px;
   font-family: var(--font-mono);
   font-size: var(--t-kicker);
@@ -28,9 +19,13 @@
   line-height: 1.25;
 }
 
-.flashQ span {
-  background: linear-gradient(transparent 62%, color-mix(in srgb, var(--mark) 80%, transparent) 62%);
-  box-decoration-break: clone;
+.flashCount {
+  padding: 2px 10px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
 }
 
 .flashRow {
@@ -527,63 +522,7 @@ li[data-mark="blank"] > .item::before {
   outline-offset: 2px;
 }
 
-@media (min-width: 721px) {
-  .stage .under {
-    top: 8%;
-    left: 8%;
-    z-index: 0;
-    width: 74%;
-    height: 66%;
-  }
-
-  .stage .under2 {
-    top: 5%;
-    left: 4%;
-    z-index: 1;
-    width: 74%;
-    height: 66%;
-  }
-
-  .stage .flash {
-    top: 10%;
-    left: 0;
-    z-index: 2;
-    width: 80%;
-  }
-
-  .stage .flashChip {
-    right: 1%;
-    bottom: 12%;
-  }
-
-  .stage .flashNote {
-    top: 0;
-    right: 8%;
-  }
-
-  .stage .flashSticker {
-    bottom: 6%;
-    left: 10%;
-    z-index: 8;
-  }
-}
-
-@media (max-width: 1080px) {
-  .stage {
-    --stage-h: clamp(420px, 70vw, 520px);
-  }
-}
-
 @media (max-width: 720px) {
-  .stage {
-    --stage-h: auto;
-  }
-
-  .under,
-  .under2 {
-    display: none;
-  }
-
   .item {
     flex-wrap: wrap;
   }

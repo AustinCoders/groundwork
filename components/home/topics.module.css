@@ -725,7 +725,7 @@
   }
 
   .cardChip[data-soon] {
-    background: var(--mark);
+    background: var(--sticker);
     border: 1px dashed color-mix(in srgb, var(--ink) 40%, transparent);
   }
 

@@ -312,6 +312,19 @@ export const archDesignSystem: Chapter = {
   transform alone, so nothing is ever part-transparent. The scheduling maths stays in <code>lib/storage.ts</code>.
 </p>
 
+<h3>The progress page</h3>
+<p>
+  <code>/progress</code> is the same kind of scene page. The hero puts the level and the XP still to go in the
+  heading, with a taped level card and meter, a numbers card, and a sticky for the nearest badge that is not
+  earned yet. A level up shows as a stamp on the level card and is announced once. The bands that follow are what to
+  do next (the review, the topic furthest along, the weak interview answers), the year of activity as a heatmap
+  that scrolls inside its own card, one row with a meter for each topic, the interview book with the marks you gave,
+  and the badge wall, where earned badges are stuck on and the rest show how far away they are. Every number comes
+  from <code>computeStats</code>, <code>earnedBadges</code> and <code>recentActivity</code> in
+  <code>lib/gamification.ts</code>, which this page only reads, and everything that depends on saved progress is
+  hidden until the page hydrates.
+</p>
+
 <h3>Modals</h3>
 <p>
   <code>components/Modal.tsx</code> is built on the native <code>&lt;dialog&gt;</code> element,
@@ -326,7 +339,7 @@ export const archDesignSystem: Chapter = {
 <p>
   <code>globals.css</code> is about 7,300 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
-  one of 53 CSS modules, the largest being <code>app/whiteboard/whiteboard.module.css</code> at about 1,600
+  one of 55 CSS modules, the largest being <code>app/whiteboard/whiteboard.module.css</code> at about 1,600
   lines. The rule of thumb is that anything
   chapter HTML can contain goes in globals, because chapter bodies are strings that cannot import a
   module, and anything else goes in a module so it loads only with its page.
@@ -388,7 +401,7 @@ export const archDesignSystem: Chapter = {
   architecture section. One of them, <code>/level/typescript</code>, is the level picker of a
   topic that is only outlined, and another, <code>/typescript/ts-setup-compiler</code>, is that
   same topic's own outline chapter; <code>/level/typescript</code> stands in for <code>/soon</code>,
-  which redirects there while every topic is marked ready. It also runs against 52 states that a plain page load does not show: 43 that open with a click, and 9 seeded in
+  which redirects there while every topic is marked ready. It also runs against 54 states that a plain page load does not show: 44 that open with a click, and 10 seeded in
   <code>localStorage</code>. The clicks open the site menu, the reading menu on <code>/notes</code>
   with its Appearance, Narrator and Keyboard shortcuts folds open, a reading budget picked on the JavaScript cover's Up
   next card, the Advanced level picked on the level picker, the site menu with a category expanded and with the theme swatches focused, the home page's topic section on Languages, with a legend row expanded and a station card open and with a search term typed,

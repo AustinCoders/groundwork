@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Copy, Note, Scene, Stage, StageCard, Tape } from "@/components/home/Stage";
+import { Copy, Scene } from "@/components/home/Stage";
+import { Card, Compose, Remark, Tag } from "@/components/topic/Compose";
 import { TopicFrame } from "@/components/topic/TopicFrame";
 import { HashRedirect } from "@/components/reader/HashRedirect";
 import {
@@ -101,9 +102,8 @@ export function TopicOutline({
               <Button href="/#shelf">Browse written topics</Button>
             </Actions>
           </Copy>
-          <Stage live hostClassName={topicKit.stageHost} className={styles.stage}>
-            <StageCard rot={-1.4} depth={-8} i={0} still className={styles.draft} aria-labelledby="draft-title">
-              <Tape rot={-5} />
+          <Compose live layout="trio">
+            <Card at="a" tone="draft" tilt={-1} taped aria-labelledby="draft-title">
               {planning ? (
                 <>
                   <h2 className={styles.draftTitle} id="being-planned">
@@ -127,23 +127,19 @@ export function TopicOutline({
                   />
                 </>
               )}
-            </StageCard>
-            <StageCard decor rot={3} depth={14} i={1} className={styles.ghost}>
+            </Card>
+            <Card decor at="b" tone="ghost" tilt={1}>
+              <Tag tone="caution">sketch only</Tag>
               <span className={styles.ghostLine} />
               <span className={styles.ghostLine} />
               <span className={styles.ghostLine} />
-            </StageCard>
-            <StageCard decor rot={-2.4} depth={-12} i={2} extra className={`${styles.ghost} ${styles.ghostTwo}`}>
+            </Card>
+            <Card decor extra at="c" tone="ghost" tilt={-1}>
               <span className={styles.ghostLine} />
               <span className={styles.ghostLine} />
-            </StageCard>
-            <span className={`${styles.stamp} ${styles.stampSticker}`} aria-hidden="true">
-              sketch only
-            </span>
-            <Note arrow="dr" rot={-4} depth={14} className={styles.outlineNote}>
-              coming, one chapter at a time
-            </Note>
-          </Stage>
+              <Remark>coming, one chapter at a time</Remark>
+            </Card>
+          </Compose>
         </Scene>
 
         {!planning && (

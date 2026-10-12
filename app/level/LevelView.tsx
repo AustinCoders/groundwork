@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Copy, Note, Scene, Stage, StageCard, Sticker, Tape } from "@/components/home/Stage";
+import { Copy, Scene } from "@/components/home/Stage";
+import { Card, Compose, Remark, Tag } from "@/components/topic/Compose";
 import { TopicFrame } from "@/components/topic/TopicFrame";
 import {
-  Actions,
   Band,
   Facts,
   Foot,
@@ -114,19 +114,15 @@ export function LevelView({ topic, levels, perLevel, chapterById, curriculumNote
               })}
             </fieldset>
           </Copy>
-          <Stage
-            live
-            hostClassName={topicKit.stageHost}
-            className={`${styles.pickStage} ${mounted ? "" : styles.pending}`}
-          >
+          <Compose live fixed layout="rail" className={`${styles.pickStage} ${mounted ? "" : styles.pending}`}>
             {levels.map((level, i) => {
               const stat = perLevel[level.id] ?? NO_STAT;
               const rows = levelRows(level, chapterById);
               const preview = rows.slice(0, PREVIEW);
               return (
                 <div key={level.id} className={styles.panel} data-level={level.id}>
-                  <StageCard rot={-1.2} depth={-10} i={0} still className={styles.main}>
-                    <Tape rot={-5} />
+                  <Card at="a" tilt={-1} taped className={styles.main}>
+                    {savedLevel === level.id && <Tag tone="primary">★ your level</Tag>}
                     <p className={styles.cardKicker}>
                       Part {i + 1} · {plural(rows.length, "section")}
                     </p>
@@ -160,42 +156,30 @@ export function LevelView({ topic, levels, perLevel, chapterById, curriculumNote
                     {rows.length > PREVIEW && (
                       <p className={styles.more}>and {rows.length - PREVIEW} more stops below</p>
                     )}
-                    <Actions>
+                    <div className={styles.goRow}>
                       <Link
-                        className={`${topicKit.btn} ${styles.go}`}
+                        className={topicKit.btn}
                         href={`/path/${topic.id}/${level.id}`}
                         prefetch={false}
                         onClick={() => rememberLevel(level.id)}
                       >
                         Show me this path <span aria-hidden="true">→</span>
                       </Link>
-                    </Actions>
-                  </StageCard>
-                  <StageCard rot={2.4} depth={12} i={1} still className={styles.who}>
+                    </div>
+                    <Remark>not sure? start at Beginner</Remark>
+                  </Card>
+                  <Card at="c" tone="note" tilt={1} className={styles.who}>
                     <p className={styles.cardKicker}>This is you if</p>
                     <ul className={styles.whoList}>
                       {level.bullets.map((b, k) => (
                         <li key={k} dangerouslySetInnerHTML={{ __html: b }} />
                       ))}
                     </ul>
-                  </StageCard>
-                  {savedLevel === level.id && (
-                    <Sticker rot={-6} depth={20} tone="primary" className={styles.pickSticker}>
-                      ★ your level
-                    </Sticker>
-                  )}
+                  </Card>
                 </div>
               );
             })}
-            <StageCard
-              as="aside"
-              aria-label={`${topic.name} in numbers`}
-              rot={3}
-              depth={16}
-              i={2}
-              className={styles.facts}
-            >
-              <Tape rot={4} />
+            <Card as="aside" aria-label={`${topic.name} in numbers`} at="b" tilt={1} className={styles.facts}>
               <Facts
                 items={[
                   { value: totals.chapters, label: totals.chapters === 1 ? "chapter written" : "chapters written" },
@@ -203,11 +187,8 @@ export function LevelView({ topic, levels, perLevel, chapterById, curriculumNote
                   { value: totals.exercises, label: totals.exercises === 1 ? "exercise" : "exercises" },
                 ]}
               />
-            </StageCard>
-            <Note arrow="dr" rot={-4} depth={14} className={styles.pickNote}>
-              not sure? start at Beginner
-            </Note>
-          </Stage>
+            </Card>
+          </Compose>
         </Scene>
 
         <Band

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { Copy, Note, Scene, Stage, StageCard, Sticker, Tape } from "@/components/home/Stage";
+import { Copy, Scene } from "@/components/home/Stage";
+import { Card, Column, Compose, Remark, Tag } from "@/components/topic/Compose";
 import {
   Actions,
   Band,
@@ -113,6 +114,7 @@ export function Scorecard({
     .sort((a, b) => b.score - a.score);
   const best = scored[0];
   const worst = scored.length > 1 ? scored[scored.length - 1] : null;
+  const stickerTone = decision.verdict === "no-hire" || decision.verdict === "lean-no" ? "caution" : "success";
   const percent = Math.round(decision.score * 100);
   const verdictWord = VERDICT_LABEL[decision.verdict];
 
@@ -176,9 +178,9 @@ export function Scorecard({
             </a>
           </Actions>
         </Copy>
-        <Stage live hostClassName={topicKit.stageHost} className={styles.stage}>
-          <StageCard rot={-1.6} depth={-6} i={0} still className={styles.stampCard}>
-            <Tape rot={-4} />
+        <Compose live layout={best ? "duo" : "stack"}>
+          <Card at="a" tilt={-1} taped className={styles.stampCard}>
+            {!best && <Tag tone={stickerTone}>you marked it yourself</Tag>}
             <div
               className={styles.stamp}
               data-verdict={decision.verdict}
@@ -193,33 +195,26 @@ export function Scorecard({
             <p className={styles.stampNote}>
               {session.mode === "loop" ? decision.headline : `${kind} score, weighted by core rounds`}
             </p>
-          </StageCard>
+            <Remark>marked like a committee</Remark>
+          </Card>
           {best && (
-            <StageCard decor extra rot={2.4} depth={14} i={1} className={styles.bestCard}>
-              <CardKicker>{worst ? "Strongest round" : "Your round"}</CardKicker>
-              <p className={styles.cardTitle}>{title(best.stage)}</p>
-              <p className={styles.cardScore}>{Math.round(best.score * 100)}%</p>
-            </StageCard>
+            <Column at="b">
+              <Card decor extra tilt={1}>
+                <Tag tone={stickerTone}>you marked it yourself</Tag>
+                <CardKicker>{worst ? "Strongest round" : "Your round"}</CardKicker>
+                <p className={styles.cardTitle}>{title(best.stage)}</p>
+                <p className={styles.cardScore}>{Math.round(best.score * 100)}%</p>
+              </Card>
+              {worst && (
+                <Card decor extra tone="note" tilt={1}>
+                  <CardKicker>Weakest round</CardKicker>
+                  <p className={styles.cardTitle}>{title(worst.stage)}</p>
+                  <p className={styles.cardScore}>{Math.round(worst.score * 100)}%</p>
+                </Card>
+              )}
+            </Column>
           )}
-          {worst && (
-            <StageCard decor extra rot={-2} depth={10} i={2} className={styles.worstCard}>
-              <CardKicker>Weakest round</CardKicker>
-              <p className={styles.cardTitle}>{title(worst.stage)}</p>
-              <p className={styles.cardScore}>{Math.round(worst.score * 100)}%</p>
-            </StageCard>
-          )}
-          <Sticker
-            rot={-6}
-            depth={18}
-            tone={decision.verdict === "no-hire" || decision.verdict === "lean-no" ? "caution" : "success"}
-            className={styles.sticker}
-          >
-            you marked it yourself
-          </Sticker>
-          <Note arrow="ul" rot={-3} depth={12} className={styles.note}>
-            marked like a committee
-          </Note>
-        </Stage>
+        </Compose>
       </Scene>
 
       <Band no="01" id="rounds-h" sectionId="rounds" label="The rounds" title="Round by round">

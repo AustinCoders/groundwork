@@ -313,7 +313,7 @@ a.stop:focus-visible {
 
 .stopSub[data-soon] {
   padding: 1px 9px;
-  background: var(--mark);
+  background: var(--sticker);
   color: var(--ink);
   border-radius: 999px;
 }

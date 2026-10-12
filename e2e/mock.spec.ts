@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { probeComposition } from "./composeProbe";
 
 const SIZES = [
   { width: 1001, height: 700 },
@@ -212,6 +213,7 @@ test("the debrief stamp and bars come from the marks, and every section has its 
     await page.getByRole("button", { name: "Next question" }).click();
   }
   await expect(page.getByRole("img", { name: "Verdict: No hire" })).toBeVisible();
+  expect(await page.evaluate(probeComposition)).toEqual([]);
   await expect(page.getByRole("heading", { name: "Round by round" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "What to work on next" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Every question" })).toBeVisible();

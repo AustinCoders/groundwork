@@ -82,7 +82,7 @@
   line-height: 1.25;
   color: var(--ink);
   white-space: nowrap;
-  background: var(--mark);
+  background: var(--sticker);
   border-radius: 9px;
   box-shadow: var(--shadow-md);
   rotate: calc(var(--rot, 6) * 1deg);
@@ -452,8 +452,8 @@
 
 .chapterTitle mark {
   color: inherit;
-  background: color-mix(in srgb, var(--mark) 80%, transparent);
-  border-radius: 3px;
+  background: linear-gradient(var(--marker), var(--marker)) 0 100% / 100% 0.3em no-repeat;
+  box-decoration-break: clone;
 }
 
 .followChip {

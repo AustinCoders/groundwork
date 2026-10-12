@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, type CSSProperties } from "react";
 import { Tape } from "@/components/home/Stage";
 import { kit as menuKit } from "@/components/ui/MenuKit";
-import { Band, Button, CardKicker, List, topicKit } from "@/components/topic/TopicKit";
+import { Band, Button, CardKicker, List, Step, Steps, topicKit } from "@/components/topic/TopicKit";
 import { plural } from "@/lib/format";
 import { REVIEW_GAPS_DAYS } from "@/lib/storage";
 import { agoLabel, dayHeading, GAP_LABELS, groupByDay, lateness, whenLabel, type ReviewRow } from "./reviewModel";
@@ -64,7 +64,7 @@ export function DueBand({
       {cleared ? (
         <div className={`${kit.paper} ${styles.doneCard}`} role="status">
           <Tape rot={-3} />
-          <span className={styles.stamp} aria-hidden="true">
+          <span className={kit.stamp} aria-hidden="true">
             <b>All done</b>
             <small>{plural(clearedNow, "review")}</small>
           </span>
@@ -264,17 +264,11 @@ export function StartBand({ no }: { no: string }) {
   ];
   return (
     <Band no={no} id="start-h" sectionId="start" label="How it starts" title="Reviews begin with a chapter you finish">
-      <ol className={styles.start} aria-label="How reviews begin">
+      <Steps label="How reviews begin" count={steps.length}>
         {steps.map(([title, body], k) => (
-          <li key={title} className={styles.startStep}>
-            <span className={styles.startNo} aria-hidden="true">
-              {k + 1}
-            </span>
-            <b className={styles.startTitle}>{title}</b>
-            <span className={styles.startBody}>{body}</span>
-          </li>
+          <Step key={title} no={k + 1} title={title} body={body} />
         ))}
-      </ol>
+      </Steps>
       <div className={styles.startActions}>
         <Button href="/">Browse the topics →</Button>
       </div>

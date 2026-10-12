@@ -31,7 +31,7 @@ export function ReviewSession({
       <Wrap className={styles.wrap}>
         <section className={`${kit.paper} ${styles.card} ${styles.done}`} aria-live="polite">
           <Tape rot={-3} />
-          <span className={styles.stamp} aria-hidden="true">
+          <span className={kit.stamp} aria-hidden="true">
             <b>Done</b>
             <small>for now</small>
           </span>

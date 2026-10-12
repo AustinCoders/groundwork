@@ -91,7 +91,7 @@
   font-size: var(--t-kicker);
   font-weight: 700;
   color: var(--ink);
-  background: var(--mark);
+  background: var(--sticker);
   border: 1.5px solid var(--ink);
   border-radius: 50%;
 }
@@ -277,7 +277,7 @@
   position: relative;
   padding: 18px 20px;
   color: var(--ink);
-  background: color-mix(in srgb, var(--mark) 36%, var(--sheet));
+  background: var(--note);
   border: 1px solid var(--line);
   border-radius: 6px 6px 16px 6px;
   box-shadow: var(--shadow-md);
@@ -292,8 +292,38 @@
 }
 
 .highlight {
-  background: linear-gradient(transparent 62%, color-mix(in srgb, var(--mark) 80%, transparent) 62%);
+  background: linear-gradient(var(--marker), var(--marker)) 0 100% / 100% 0.3em no-repeat;
   box-decoration-break: clone;
+}
+
+.stamp {
+  display: grid;
+  flex: none;
+  place-content: center;
+  width: 132px;
+  height: 132px;
+  text-align: center;
+  color: color-mix(in srgb, var(--success) 70%, var(--ink));
+  background: color-mix(in srgb, var(--success) 8%, var(--sheet));
+  border: 5px double var(--success);
+  border-radius: 50%;
+  rotate: -9deg;
+}
+
+.stamp b {
+  font-family: var(--font-heading);
+  font-size: var(--t-title);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.stamp small {
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  line-height: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -309,5 +339,18 @@
 @media print {
   .tape {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stamp {
+    animation: stampIn 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+  }
+}
+
+@keyframes stampIn {
+  from {
+    scale: 1.7;
+    rotate: -26deg;
   }
 }

@@ -33,6 +33,8 @@ const SURFACES = {
   "the review bands": "app/review/bands.module.css",
   "the review session": "app/review/session.module.css",
   "the review stage dots": "app/review/stageDots.module.css",
+  "the progress hero": "app/progress/progress.module.css",
+  "the progress bands": "app/progress/bands.module.css",
 } as const;
 
 const TOKENS = [
@@ -53,6 +55,7 @@ const TOKENS = [
 const MONO_USERS = [
   ".kicker",
   ".cardKicker",
+  ".fact dd",
   ".meterLabel",
   ".chip",
   ".foldNo",
@@ -212,6 +215,9 @@ describe("the topic pages share the menu type scale", () => {
       "app/review/ReviewHero.tsx",
       "app/review/ReviewBands.tsx",
       "app/review/ReviewSession.tsx",
+      "app/progress/ProgressView.tsx",
+      "app/progress/ProgressHero.tsx",
+      "app/progress/ProgressBands.tsx",
       "components/practice/PracticeWorkspace.tsx",
       "components/frame/FrameHeader.tsx",
     ]) {

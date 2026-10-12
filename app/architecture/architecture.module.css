@@ -1,30 +1,3 @@
-.stage {
-  --stage-h: clamp(440px, 54vh, 540px);
-}
-
-.flow {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  pointer-events: none;
-}
-
-.flow path {
-  fill: none;
-  stroke: color-mix(in srgb, var(--accent, var(--primary)) 40%, var(--line));
-  stroke-width: 4;
-  stroke-linecap: round;
-  stroke-dasharray: 8 12;
-  vector-effect: non-scaling-stroke;
-}
-
-.lane {
-  padding: 16px 18px 18px;
-}
-
 .laneName {
   margin: 0;
   font-family: var(--font-heading);
@@ -50,10 +23,6 @@
   border-radius: 999px;
 }
 
-.lane_build {
-  background: color-mix(in srgb, var(--mark) 30%, var(--sheet));
-}
-
 .measured {
   position: relative;
   display: grid;
@@ -66,62 +35,7 @@
   box-shadow: var(--shadow-lg);
 }
 
-@media (min-width: 721px) {
-  .stage .lane_build {
-    top: 0;
-    left: 0;
-    z-index: 2;
-    width: 46%;
-  }
-
-  .stage .lane_edge {
-    top: 9%;
-    right: 0;
-    z-index: 3;
-    width: 46%;
-  }
-
-  .stage .lane_browser {
-    bottom: 0;
-    left: 3%;
-    z-index: 2;
-    width: 46%;
-  }
-
-  .stage .lane_around {
-    right: 2%;
-    bottom: 2%;
-    z-index: 4;
-    width: 44%;
-  }
-
-  .stage .flowNote {
-    top: -2%;
-    right: 10%;
-  }
-
-  .stage .flowSticker {
-    top: 47%;
-    left: 40%;
-    z-index: 8;
-  }
-}
-
-@media (max-width: 1080px) {
-  .stage {
-    --stage-h: clamp(520px, 78vw, 620px);
-  }
-}
-
 @media (max-width: 720px) {
-  .stage {
-    --stage-h: auto;
-  }
-
-  .flow {
-    display: none;
-  }
-
   .measured {
     grid-template-columns: minmax(0, 1fr);
   }

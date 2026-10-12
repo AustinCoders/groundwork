@@ -857,8 +857,8 @@
 
 .paperTitle mark {
   color: inherit;
-  background: color-mix(in srgb, var(--mark) 80%, transparent);
-  border-radius: 3px;
+  background: linear-gradient(var(--marker), var(--marker)) 0 100% / 100% 0.3em no-repeat;
+  box-decoration-break: clone;
 }
 
 .lineLong,
@@ -960,7 +960,7 @@
   font-size: 13px;
   font-weight: 700;
   color: var(--ink);
-  background: var(--mark);
+  background: var(--sticker);
   border-radius: 8px;
   box-shadow: var(--shadow-md);
   rotate: 7deg;
