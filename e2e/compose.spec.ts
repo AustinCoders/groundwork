@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { FONT_ITEMS, type FontValue, type ThemeValue } from "../lib/storage";
 import { probeComposition } from "./composeProbe";
+import { failToLoad } from "./failToLoad";
 import { THEMES } from "./themes";
 
 const PAGES = [
@@ -15,6 +16,9 @@ const PAGES = [
   "/path/js/beginner",
   "/dsa",
   "/go",
+  "/git",
+  "/privacy",
+  "/no-such-page",
   "/notes/closures",
 ];
 
@@ -116,7 +120,7 @@ test("the stages hold their rules in all nine themes", async ({ page }) => {
   const problems: string[] = [];
   for (const theme of THEMES) {
     await page.addInitScript((value) => localStorage.setItem("jsnotes:theme", JSON.stringify(value)), theme);
-    for (const path of ["/progress", "/mock", "/architecture", "/level/js"]) {
+    for (const path of ["/progress", "/mock", "/architecture", "/level/js", "/git", "/no-such-page"]) {
       const found = await composed(page, path);
       problems.push(...found.map((line) => `${theme} ${line}`));
     }
@@ -130,7 +134,16 @@ test("the stages hold their rules in every font", async ({ page }) => {
   const problems: string[] = [];
   for (const { value } of FONT_ITEMS) {
     await page.addInitScript((font) => localStorage.setItem("jsnotes:font", JSON.stringify(font)), value);
-    for (const path of ["/progress", "/review", "/mock", "/architecture", "/level/js", "/path/js/beginner"]) {
+    for (const path of [
+      "/progress",
+      "/review",
+      "/mock",
+      "/architecture",
+      "/level/js",
+      "/path/js/beginner",
+      "/git",
+      "/no-such-page",
+    ]) {
       const found = await composed(page, path);
       problems.push(...found.map((line) => `${value} ${line}`));
     }
@@ -199,7 +212,7 @@ test("tape is neutral in the dark themes", async ({ page }) => {
 test("the numbers cards are real tables on every page that has one", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await wear(page, "dark", "classic", true);
-  for (const path of ["/progress", "/review", "/problems", "/interview", "/path/js/beginner", "/level/js"]) {
+  for (const path of ["/progress", "/review", "/problems", "/interview", "/path/js/beginner", "/level/js", "/git"]) {
     await page.goto(path);
     await settle(page);
     const tables = await page.locator("[data-stage] [data-facts]").count();
@@ -224,4 +237,26 @@ test("the hero stages draw no old absolute offsets", async ({ page }) => {
     );
     expect(offsets, path).toEqual([]);
   }
+});
+
+test("the error scene keeps the stage rules at desktop, tablet and phone sizes in Night and light", async ({
+  browser,
+  baseURL,
+}) => {
+  test.setTimeout(180_000);
+  const problems: string[] = [];
+  for (const theme of ["dark", "light"] as const) {
+    for (const size of [...DESKTOP, TABLET, ...PHONES]) {
+      const context = await browser.newContext({ viewport: size, baseURL });
+      const page = await context.newPage();
+      await wear(page, theme, "classic", false);
+      await failToLoad(page);
+      await expect(page.locator("[data-stage][data-layout]").first()).toBeVisible();
+      await settle(page);
+      const found = await page.evaluate(probeComposition);
+      problems.push(...found.map((line) => `${theme} ${size.width}x${size.height} ${line}`));
+      await context.close();
+    }
+  }
+  expect(problems).toEqual([]);
 });

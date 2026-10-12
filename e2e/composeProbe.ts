@@ -188,7 +188,14 @@ export function probeComposition(): string[] {
       const column = cards.map((el) => el.getBoundingClientRect());
       if (column.some((r) => Math.abs(r.left - column[0].left) > 8))
         found.push(`${label}: phone cards are not one column`);
-    } else if (a && b && layout !== "stack") {
+    } else if (layout === "banner" && a && b && c) {
+      const across = c.left - b.right;
+      if (across < 6) found.push(`${label}: columns touch`);
+      level(b, c, "second-row tops", "top");
+      level(b, c, "bottom edges", "bottom");
+      const below = b.top - a.bottom;
+      if (below < 6 || Math.abs(below - across) > 12) found.push(`${label}: gutters are uneven`);
+    } else if (a && b && layout !== "stack" && layout !== "banner") {
       const across = b.left - a.right;
       if (across < 6) found.push(`${label}: columns touch`);
       level(a, b, "first-row tops", "top");

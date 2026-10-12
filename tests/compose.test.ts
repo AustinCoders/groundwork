@@ -21,6 +21,9 @@ const HEROES: { file: string; css: string[] }[] = [
   { file: "components/topic/TopicCover.tsx", css: ["components/topic/cover.module.css"] },
   { file: "components/topic/TopicOutline.tsx", css: ["components/topic/outline.module.css"] },
   { file: "components/chapter/ChapterKit.tsx", css: ["components/chapter/chapterKit.module.css"] },
+  { file: "app/git/GitView.tsx", css: ["app/git/git.module.css"] },
+  { file: "app/privacy/PrivacyHero.tsx", css: ["app/privacy/privacy.module.css"] },
+  { file: "components/frame/LostScene.tsx", css: ["components/frame/lost.module.css"] },
 ];
 
 function union(name: string): string[] {

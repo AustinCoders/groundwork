@@ -35,6 +35,9 @@ const SURFACES = {
   "the review stage dots": "app/review/stageDots.module.css",
   "the progress hero": "app/progress/progress.module.css",
   "the progress bands": "app/progress/bands.module.css",
+  "the git landing": "app/git/git.module.css",
+  "the privacy page": "app/privacy/privacy.module.css",
+  "the not-found and error scene": "components/frame/lost.module.css",
 } as const;
 
 const TOKENS = [
@@ -150,6 +153,9 @@ const MONO_USERS = [
   ".qMeta",
   ".num",
   ".barNum,\n.barDay",
+  ".stampNote",
+  ".key",
+  ".digest",
 ];
 
 describe("the topic pages share the menu type scale", () => {
@@ -220,6 +226,12 @@ describe("the topic pages share the menu type scale", () => {
       "app/progress/ProgressBands.tsx",
       "components/practice/PracticeWorkspace.tsx",
       "components/frame/FrameHeader.tsx",
+      "app/git/GitView.tsx",
+      "app/privacy/PrivacyHero.tsx",
+      "app/privacy/PrivacySection.tsx",
+      "components/frame/LostScene.tsx",
+      "app/not-found.tsx",
+      "app/error.tsx",
     ]) {
       expect(read(file), file).not.toContain("data-fx");
     }

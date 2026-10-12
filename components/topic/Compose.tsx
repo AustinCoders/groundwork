@@ -1,7 +1,7 @@
 import type { CSSProperties, ElementType, HTMLAttributes, ReactNode } from "react";
 import c from "./compose.module.css";
 
-export type Layout = "trio" | "rail" | "duo" | "quad" | "loop" | "stack";
+export type Layout = "trio" | "rail" | "duo" | "quad" | "loop" | "stack" | "banner";
 export type Slot = "a" | "b" | "c" | "d";
 export type Tone = "paper" | "note" | "alert" | "draft" | "ghost";
 export type Tilt = -1 | 0 | 1;

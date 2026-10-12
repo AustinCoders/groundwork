@@ -325,6 +325,20 @@ export const archDesignSystem: Chapter = {
   hidden until the page hydrates.
 </p>
 
+<h3>The Git landing, privacy and the pages that fail</h3>
+<p>
+  <code>/git</code> is a topic cover. The hero asks what Git is really doing, with the commit graph on a taped
+  card, a numbers card from <code>gitFacts()</code> and a note that points at the first chapter, composed in the
+  kit's <code>banner</code> layout. Below it come three ways in, the four parts as winding trails with a tick on every
+  chapter you have read, and three honest notes. <code>/privacy</code> keeps its words and puts each section in a
+  numbered band with the prose layer inside a paper panel, under a hero whose first card is the contents. The 404 page and
+  <code>app/error.tsx</code> share <code>components/frame/LostScene.tsx</code>: a taped stamp card, a card of
+  places to go and a note, with a retry pill on the error page and its reference code in a small mono line.
+  <code>app/global-error.tsx</code> replaces the whole layout, so it carries its own
+  stylesheet in <code>components/frame/globalErrorCss.ts</code>, with light and dark palettes whose contrast
+  <code>tests/global-error.test.ts</code> measures.
+</p>
+
 <h3>Modals</h3>
 <p>
   <code>components/Modal.tsx</code> is built on the native <code>&lt;dialog&gt;</code> element,
@@ -339,7 +353,7 @@ export const archDesignSystem: Chapter = {
 <p>
   <code>globals.css</code> is about 7,300 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
-  one of 55 CSS modules, the largest being <code>app/whiteboard/whiteboard.module.css</code> at about 1,600
+  one of 56 CSS modules, the largest being <code>app/whiteboard/whiteboard.module.css</code> at about 1,600
   lines. The rule of thumb is that anything
   chapter HTML can contain goes in globals, because chapter bodies are strings that cannot import a
   module, and anything else goes in a module so it loads only with its page.
@@ -401,7 +415,7 @@ export const archDesignSystem: Chapter = {
   architecture section. One of them, <code>/level/typescript</code>, is the level picker of a
   topic that is only outlined, and another, <code>/typescript/ts-setup-compiler</code>, is that
   same topic's own outline chapter; <code>/level/typescript</code> stands in for <code>/soon</code>,
-  which redirects there while every topic is marked ready. It also runs against 54 states that a plain page load does not show: 44 that open with a click, and 10 seeded in
+  which redirects there while every topic is marked ready. It also runs against 55 states that a plain page load does not show: 45 that open with a click, and 10 seeded in
   <code>localStorage</code>. The clicks open the site menu, the reading menu on <code>/notes</code>
   with its Appearance, Narrator and Keyboard shortcuts folds open, a reading budget picked on the JavaScript cover's Up
   next card, the Advanced level picked on the level picker, the site menu with a category expanded and with the theme swatches focused, the home page's topic section on Languages, with a legend row expanded and a station card open and with a search term typed,

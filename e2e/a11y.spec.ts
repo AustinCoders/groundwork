@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { failToLoad } from "./failToLoad";
 import { THEMES } from "./themes";
 import type { ThemeValue } from "../lib/storage";
 
@@ -65,6 +66,15 @@ const PAGES = [
 ];
 
 const STATES: State[] = [
+  {
+    name: "the error page after a page fails to load",
+    path: "/privacy",
+    viewports: VIEWPORTS,
+    visit: async (page, check) => {
+      await failToLoad(page);
+      await check("the error page after a page fails to load");
+    },
+  },
   {
     name: "the site menu open",
     path: "/review",

@@ -7,6 +7,7 @@ import { bookStages, homeRounds } from "../lib/homeRounds";
 import { bankQuestions, bookRounds } from "../lib/interviewBook";
 import { TOPIC_CATEGORIES } from "../lib/topicCategories";
 import { topicsNavWithStats } from "../lib/topicStats";
+import { CHUNKS, failToLoad } from "./failToLoad";
 import { probeConnectors } from "./motionProbe";
 import { probeFit, probeText } from "./textProbe";
 import { THEMES, themeColour } from "./themes";
@@ -136,6 +137,85 @@ test("the not-found page renders in the page frame with a labelled back pill and
   await expect(back).toHaveAttribute("href", "/");
   await expect(page.locator("main#main")).toHaveCount(1);
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Nothing written on this page");
+  await expect(page.getByRole("link", { name: /^Back to all topics/ })).toHaveAttribute("href", "/");
+  await expect(page.getByRole("link", { name: "Open the DSA notes" })).toHaveAttribute("href", "/dsa");
+  await expect(page.locator("main [data-stage] [data-tape]")).toHaveCount(1);
+  await expect(page.locator("main")).toContainText("Menu pill");
+  await expect(page.locator("main kbd")).toHaveText(/Ctrl K|⌘K/);
+});
+
+test("a page that fails to load shows the error scene, which offers a retry and the way home", async ({ page }) => {
+  await failToLoad(page);
+  await expect(page.locator("header a.head-back")).toBeVisible();
+  await expect(page.locator("main#main")).toHaveCount(1);
+  await expect(page.locator("main [data-stage] [data-tape]")).toHaveCount(1);
+  await expect(page.getByRole("link", { name: "Back to all topics" })).toHaveAttribute("href", "/");
+  await expect(page.getByRole("link", { name: /help@austincoders.com/ })).toHaveAttribute(
+    "href",
+    "mailto:help@austincoders.com"
+  );
+  await expect(page.locator("main")).toContainText("saved in this browser");
+  await expect(page.getByRole("button", { name: "Try again" })).toBeEnabled();
+  await page.unroute(CHUNKS);
+  await page.getByRole("link", { name: "Back to all topics" }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("heading", { level: 1 })).not.toContainText("This page hit an error");
+  await expect(page.locator("main#main")).toHaveCount(1);
+});
+
+test("the git landing never shows the wrong start before hydration, and shows the read ticks after", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("jsnotes:progress", JSON.stringify({ chapters: { "git-model": { at: 1, reviews: 0 } } }));
+    const seen: string[] = [];
+    (window as unknown as { __seen: string[] }).__seen = seen;
+    const tick = () => {
+      for (const link of document.querySelectorAll("main a")) {
+        const text = link.textContent ?? "";
+        const box = link.getBoundingClientRect();
+        if (
+          /Start with the first chapter/.test(text) &&
+          box.width > 0 &&
+          getComputedStyle(link).visibility !== "hidden"
+        )
+          seen.push(text);
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  await page.goto("/git");
+  await expect(page.getByRole("link", { name: /^Continue with/ })).toBeVisible();
+  await page.waitForTimeout(400);
+  expect(await page.evaluate(() => (window as unknown as { __seen: string[] }).__seen)).toEqual([]);
+  const foundations = page.getByRole("region", { name: "Foundations" });
+  await expect(foundations).toContainText("1 / 5 read");
+  await expect(foundations.getByRole("listitem").filter({ has: page.locator("a[href='/git/model']") })).toContainText(
+    "✓"
+  );
+  await expect(page.getByText("▸ pick up here")).toHaveCount(1);
+});
+
+test("the privacy page lists five numbered sections, each reachable from the contents card", async ({ page }) => {
+  await page.goto("/privacy");
+  const toc = page.getByRole("navigation", { name: "On this page" });
+  await expect(toc.getByRole("link")).toHaveCount(5);
+  for (const name of [
+    "No account",
+    "What stays in this browser",
+    "What leaves it",
+    "What never leaves",
+    "Who runs this site",
+  ]) {
+    await expect(page.getByRole("region", { name })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name })).toHaveCount(1);
+  }
+  await toc.getByRole("link", { name: /What leaves it/ }).click();
+  await expect(page).toHaveURL(/#leaves$/);
+  await expect(page.getByRole("region", { name: "What leaves it" }).getByRole("listitem")).toHaveCount(5);
+  await expect(page.locator("main .prose").first()).toBeVisible();
+  await expect(page.getByText("Last updated 30 September 2026")).toBeVisible();
 });
 
 test("an outline topic's old /level and /path links redirect to its outline landing", async ({ page }) => {
@@ -502,6 +582,9 @@ test("every topic hero scene is one balanced screen under the header, with the n
     { path: "/mock", full: true },
     { path: "/review", full: true },
     { path: "/progress", full: true },
+    { path: "/git", full: true },
+    { path: "/privacy", full: true },
+    { path: "/no-such-page", full: true },
     { path: "/path/js/beginner", full: false },
     { path: "/notes", full: false },
   ];
@@ -3925,8 +4008,8 @@ test("problems, the whiteboard, git and architecture take the theme's accent, an
 
   await page.goto("/git");
   const together = page.getByRole("region", { name: "Working together" });
-  await expect(together.locator("a[href='/git/merge']").getByLabel("read", { exact: true })).toBeVisible();
-  await expect(together).toContainText(/\b1\/\d+ read/);
+  await expect(together.getByRole("listitem").filter({ has: page.locator("a[href='/git/merge']") })).toContainText("✓");
+  await expect(together).toContainText(/1 \/ \d+ read/);
 });
 
 test("topic covers and chapters, level, path and the playground take the theme's accent", async ({ page }) => {

@@ -584,3 +584,5 @@ drillable
 scenepin
 scenestep
 unstub
+Segoe
+Consolas

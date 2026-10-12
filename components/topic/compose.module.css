@@ -37,6 +37,13 @@
   grid-template-areas: "a b";
 }
 
+.compose[data-layout="banner"] {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  grid-template-areas:
+    "a a"
+    "b c";
+}
+
 .compose[data-layout="quad"] {
   grid-template-areas:
     "a b"
