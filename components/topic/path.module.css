@@ -97,6 +97,25 @@ a.stepCheck {
   min-width: 0;
 }
 
+.exerciseDetails {
+  interpolate-size: allow-keywords;
+}
+
+@supports selector(::details-content) {
+  .exerciseDetails::details-content {
+    block-size: 0;
+    overflow: clip;
+    overflow-clip-margin: 6px;
+    transition:
+      block-size 0.28s ease,
+      content-visibility 0.28s allow-discrete;
+  }
+
+  .exerciseDetails[open]::details-content {
+    block-size: auto;
+  }
+}
+
 .exerciseDetails > summary {
   display: inline-flex;
   align-items: center;
@@ -139,7 +158,8 @@ a.stepCheck {
 
 @media (prefers-reduced-motion: reduce) {
   .stepCheck,
-  .caret {
+  .caret,
+  .exerciseDetails::details-content {
     transition: none;
   }
 }
