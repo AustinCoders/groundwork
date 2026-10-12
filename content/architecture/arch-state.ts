@@ -9,7 +9,7 @@ export const archState: Chapter = {
   practice: [],
   ready: true,
   subtitle:
-    "Thirty-one localStorage keys, two sessionStorage keys, a query string and a URL hash. There are no accounts, no cookies and no database.",
+    "Thirty-two localStorage keys, two sessionStorage keys, a query string and a URL hash. There are no accounts, no cookies and no database.",
   body: `<h3>Everything is in the browser</h3>
 <p>
   This site keeps nothing about its readers on a server. No file under <code>app/</code> uses
@@ -59,7 +59,7 @@ export const archState: Chapter = {
 <text class="lbl" x="545" y="348" text-anchor="middle">Share links</text>
 <text class="sm" x="545" y="368" text-anchor="middle">#share= and #board=</text>
 <text class="lbl" x="792" y="68" text-anchor="middle">localStorage</text>
-<text class="sm" x="792" y="90" text-anchor="middle">32 keys or prefixes</text>
+<text class="sm" x="792" y="90" text-anchor="middle">33 keys or prefixes</text>
 <text class="sm" x="792" y="108" text-anchor="middle">one origin, one device</text>
 <text class="lbl" x="792" y="196" text-anchor="middle">sessionStorage</text>
 <text class="sm" x="792" y="216" text-anchor="middle">2 keys, one tab</text>
@@ -96,7 +96,7 @@ export const archState: Chapter = {
 </tbody>
 </table></div>
 
-<h3>The other twenty-two</h3>
+<h3>The other twenty-three</h3>
 <p>
   As features were added, each kept its own keys next to its own code. Newer ones use a
   <code>groundwork:</code> prefix. Most still go through <code>store</code>. The whiteboard has its
@@ -111,6 +111,7 @@ export const archState: Chapter = {
 <tr><td>Editor</td><td><code>jsnotes:editor-settings</code>, <code>jsnotes:editor-height</code>, <code>jsnotes:playground-live</code>, <code>jsnotes:lang:{exerciseId}</code></td></tr>
 <tr><td>Playground</td><td><code>groundwork:playground:project</code> (every open file), <code>groundwork:playground:runs</code> (the last 15 runs), <code>groundwork:playground:stdin</code></td></tr>
 <tr><td>Whiteboard</td><td><code>groundwork:boards</code> (the index), <code>groundwork:board:{id}</code> (one per board), <code>groundwork:boards:last</code>, <code>groundwork:boards:prefs</code></td></tr>
+<tr><td>Tour</td><td><code>groundwork:tour</code> (<code>{ v: 1, seen: true, at }</code>, written when the first-visit tour is skipped or finished, so it never offers itself again; a missing or malformed value counts as not seen)</td></tr>
 <tr><td>Mock interview</td><td><code>groundwork:mock:config</code>, <code>groundwork:mock:current</code> (a loop in progress), <code>groundwork:mock:history</code> (last 50), <code>groundwork:mock:retry</code> (up to 60 questions to try again)</td></tr>
 </tbody>
 </table></div>

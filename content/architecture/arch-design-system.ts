@@ -248,7 +248,8 @@ export const archDesignSystem: Chapter = {
   with the level and streak as one quiet line, six Go to rows with <code>aria-current</code> on the
   current one, the topics and the two guides as a single-open accordion, and a closed Appearance fold
   holding the theme swatches and handwriting tiles (and, on reading pages, text size, narrator and
-  shortcuts), plus a disabled Sign in placeholder. The chapter sidebar is built from the same kit,
+  shortcuts), plus a disabled Sign in placeholder and, in its foot, a Take the tour row. That row opens the first-visit tour: a lazy-loaded
+  prompt and five-slide dialog built from the same stage kit, shown once on the home page and topic pages after the page has loaded, never on a chapter. The chapter sidebar is built from the same kit,
   <code>components/ui/MenuKit.tsx</code>, so both surfaces share the numbered kicker, search pill,
   dashed rows and highlighter. The seven type sizes are tokens on <code>:root</code>, with two more, a hero and a lead size, for the topic pages. Ctrl or Cmd plus K opens it
   with search focused from any page, except while typing in a field or the editor. It focuses its
@@ -353,7 +354,7 @@ export const archDesignSystem: Chapter = {
 <p>
   <code>globals.css</code> is about 7,300 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
-  one of 56 CSS modules, the largest being <code>app/whiteboard/whiteboard.module.css</code> at about 1,600
+  one of 57 CSS modules, the largest being <code>app/whiteboard/whiteboard.module.css</code> at about 1,600
   lines. The rule of thumb is that anything
   chapter HTML can contain goes in globals, because chapter bodies are strings that cannot import a
   module, and anything else goes in a module so it loads only with its page.
@@ -415,10 +416,10 @@ export const archDesignSystem: Chapter = {
   architecture section. One of them, <code>/level/typescript</code>, is the level picker of a
   topic that is only outlined, and another, <code>/typescript/ts-setup-compiler</code>, is that
   same topic's own outline chapter; <code>/level/typescript</code> stands in for <code>/soon</code>,
-  which redirects there while every topic is marked ready. It also runs against 55 states that a plain page load does not show: 45 that open with a click, and 10 seeded in
+  which redirects there while every topic is marked ready. It also runs against 57 states that a plain page load does not show: 45 that open with a click, and 12 seeded in
   <code>localStorage</code>. The clicks open the site menu, the reading menu on <code>/notes</code>
   with its Appearance, Narrator and Keyboard shortcuts folds open, a reading budget picked on the JavaScript cover's Up
-  next card, the Advanced level picked on the level picker, the site menu with a category expanded and with the theme swatches focused, the home page's topic section on Languages, with a legend row expanded and a station card open and with a search term typed,
+  next card, the Advanced level picked on the level picker, the site menu with a category expanded and with the theme swatches focused, the first-visit tour prompt and each of its five slides on the home page, the home page's topic section on Languages, with a legend row expanded and a station card open and with a search term typed,
   its interview book on a later round and on its last stage, its practice section with a row focused, a path tab with unwritten topics, its FAQ with the comparison answer open and its how-it-works demo with a line opened, a failing run, every test passing, an answer checked and a chapter marked read, and its topic section on the AI category, a chapter marked read, a try-it block run, the phone's inline contents, the Chapters and Filters sheets, the mock loop planner at its review step and the single round picker, a system design round in
   the mock interview, checked at the brief, a question, a follow-up, the rubric and the debrief, a design round on the whiteboard tab, an interview round in practice mode with an answer shown and a question marked, the question bank with a question opened and the filters used and with nothing matching, and the flashcard drill with the answer revealed.
   The seeds give a chapter due for review, a

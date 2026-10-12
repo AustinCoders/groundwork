@@ -12,6 +12,7 @@ import { useMenuStats } from "@/components/menu/menuStats";
 import { HOME_ACTION, QUICK_ACTIONS, QuickActions, isUnder } from "@/components/menu/QuickActions";
 import { useShortcutLabel } from "@/components/menu/Shortcuts";
 import { HitLink, TopicsSection, topicHit, type Hit } from "@/components/menu/Topics";
+import { TOUR_OPEN_EVENT } from "@/components/tour/tourRules";
 import { ClearButton, CloseButton, KeyHint, SearchPill, kit } from "@/components/ui/MenuKit";
 import { continueCard } from "@/lib/continueCard";
 import { isEditableTarget, isMenuShortcut } from "@/lib/menuShortcut";
@@ -257,6 +258,17 @@ export function SiteDrawer({
             searchOnOpen={searchOnOpen}
           />
           <div className={styles.foot}>
+            <button
+              type="button"
+              className={styles.action}
+              onClick={() => {
+                onClose();
+                setTimeout(() => window.dispatchEvent(new Event(TOUR_OPEN_EVENT)), 0);
+              }}
+            >
+              <MenuIcon name="tour" size={16} />
+              Take the tour
+            </button>
             {reading && (
               <button
                 type="button"

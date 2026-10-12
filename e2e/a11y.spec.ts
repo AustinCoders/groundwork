@@ -114,6 +114,33 @@ const STATES: State[] = [
     },
   },
   {
+    name: "the first-visit tour prompt",
+    path: "/",
+    viewports: VIEWPORTS,
+    seed: () => localStorage.removeItem("groundwork:tour"),
+    scope: "[data-tour-prompt]",
+    visit: async (page, check) => {
+      await expect(page.getByRole("region", { name: "First visit tour" })).toBeVisible({ timeout: 15_000 });
+      await check("the first-visit tour prompt");
+    },
+  },
+  {
+    name: "each slide of the first-visit tour",
+    path: "/",
+    viewports: VIEWPORTS,
+    seed: () => localStorage.removeItem("groundwork:tour"),
+    scope: "[data-tour-dialog]",
+    visit: async (page, check) => {
+      await page.getByRole("button", { name: "Start the tour" }).click({ timeout: 15_000 });
+      await expect(page.getByRole("dialog", { name: "Tour of Groundwork" })).toBeVisible();
+      for (let slide = 1; slide <= 5; slide++) {
+        await expect(page.getByRole("status").filter({ hasText: `Step ${slide} of 5` })).toBeAttached();
+        await check(`tour slide ${slide}`);
+        await page.keyboard.press("ArrowRight");
+      }
+    },
+  },
+  {
     name: "the topic section on Languages",
     path: "/",
     viewports: VIEWPORTS,

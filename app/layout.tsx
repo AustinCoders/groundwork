@@ -10,6 +10,8 @@ import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { TopicsNavProvider } from "@/lib/topicNav";
 import { guidesNav } from "@/lib/guidesNav";
 import { NavTrail } from "@/components/NavTrail";
+import { coverPaths } from "@/components/tour/tourRules";
+import { TourTrigger } from "@/components/tour/TourTrigger";
 import { topicsNavWithStats } from "@/lib/topicStats";
 import "./globals.css";
 
@@ -36,6 +38,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  const topics = topicsNavWithStats();
+  const guides = guidesNav();
   return (
     <html lang="en" data-theme="light" suppressHydrationWarning className={fontVariables}>
       <head>
@@ -43,8 +47,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body>
         <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-        <TopicsNavProvider topics={topicsNavWithStats()} guides={guidesNav()}>
+        <TopicsNavProvider topics={topics} guides={guides}>
           <RouteFade>{children}</RouteFade>
+          <TourTrigger
+            covers={coverPaths(
+              topics,
+              guides.map((guide) => guide.id)
+            )}
+          />
         </TopicsNavProvider>
         <ErrorReporter />
         <NavTrail />
