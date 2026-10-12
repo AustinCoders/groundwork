@@ -8,7 +8,7 @@ export const archTesting: Chapter = {
   levels: ["advanced"],
   practice: [],
   ready: true,
-  subtitle: "984 unit tests, 15 browser tests, and one test that checks what these pages say about the site.",
+  subtitle: "984 unit tests, 16 browser tests, and one test that checks what these pages say about the site.",
   body: `<h3>The shape of it</h3>
 <p>
   There are three layers of checking, each slower than the one before:
@@ -78,7 +78,7 @@ export const archTesting: Chapter = {
   and then drifted.
 </p>
 
-<h3>Browser tests: one smoke spec, 15 tests</h3>
+<h3>Browser tests: one smoke spec, 16 tests</h3>
 <p>
   <code>playwright.config.ts</code> starts <code>npm run start</code> on port 3100. That is the
   production build, not the dev server, because dev mode double-invokes effects and serves
@@ -89,7 +89,7 @@ export const archTesting: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Spec</th><th>Tests</th><th>Covers</th></tr></thead>
 <tbody>
-<tr><td><code>smoke.spec.ts</code></td><td>15</td><td>8 pages load with their heading and no console error; 7 flows (the home page with its heading and the Menu pill, the Menu opening and closing on Escape, a topic cover and its level picker link, a chapter with its rail and no sideways scroll at 390 pixels wide, the playground running a JavaScript snippet, an exercise page running code and grading a submission, and unknown URLs returning a real 404)</td></tr>
+<tr><td><code>smoke.spec.ts</code></td><td>16</td><td>8 pages load with their heading and no console error; 8 flows (the home page with its heading and the Menu pill, the Menu opening and closing on Escape, a topic cover and its level picker link, a chapter with its rail and no sideways scroll at 390 pixels wide, the path trail with every exercise list open and no stop covering another, the playground running a JavaScript snippet, an exercise page running code and grading a submission, and unknown URLs returning a real 404)</td></tr>
 </tbody>
 </table></div>
 <p>

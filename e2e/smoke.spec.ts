@@ -46,6 +46,38 @@ async function sidewaysOverflow(page: Page) {
   return page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
 }
 
+async function trailProblems(page: Page, wide: boolean) {
+  return page.evaluate((isWide) => {
+    const problems: string[] = [];
+    const stops = [...document.querySelectorAll<HTMLElement>("#steps > li[data-step]")];
+    const legs = [...document.querySelectorAll<HTMLElement>("#steps > li[data-kind]")];
+    const lead = document.querySelector("#path-note")!.getBoundingClientRect();
+    const hit = (a: DOMRect, b: DOMRect) =>
+      a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+    const cards = stops.map((stop) => stop.querySelector(":scope > div")!.getBoundingClientRect());
+    cards.forEach((card, i) => {
+      if (hit(card, lead)) problems.push(`card ${i} covers the lead paragraph`);
+      for (let k = i + 1; k < cards.length; k++) if (hit(card, cards[k])) problems.push(`card ${i} covers card ${k}`);
+    });
+    if (!isWide) return problems;
+    stops.forEach((stop, i) => {
+      const box = stop.getBoundingClientRect();
+      const pole = stop.querySelector(":scope > span")!.getBoundingClientRect();
+      const inside =
+        pole.top >= box.top - 1 &&
+        pole.bottom <= box.bottom + 1 &&
+        pole.left >= box.left - 1 &&
+        pole.right <= box.right + 1;
+      if (!inside) problems.push(`flag pole ${i} leaves its stop`);
+      const middle = (box.top + box.bottom) / 2;
+      const leg = legs[i + 1]?.querySelector("svg")?.getBoundingClientRect();
+      if (leg && Math.abs(leg.top - middle) > 2)
+        problems.push(`trail after stop ${i} starts ${leg.top - middle}px off its pole`);
+    });
+    return problems;
+  }, wide);
+}
+
 test("the home page loads with its heading and the Menu pill", async ({ page }) => {
   const problems = collectProblems(page);
   const response = await page.goto("/", { waitUntil: "networkidle" });
@@ -88,6 +120,31 @@ test("a chapter opens with its title and rail, and does not scroll sideways at 3
 
   await page.setViewportSize({ width: 390, height: 844 });
   await hydrated(page.locator(".prose[data-enhanced]"));
+  await expect.poll(() => sidewaysOverflow(page)).toBeLessThanOrEqual(0);
+  expect(problems).toEqual([]);
+});
+
+test("the path trail keeps every stop clear of the others with every exercise list open", async ({ page }) => {
+  const problems = collectProblems(page);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/path/dsa/beginner", { waitUntil: "networkidle" });
+  const steps = page.locator("#steps");
+  await hydrated(steps.getByRole("button", { name: "Mark as read" }).first());
+  const lists = steps.locator("details");
+  await expect(steps.locator("details[open]")).toHaveCount(1);
+  const total = await lists.count();
+  expect(total).toBeGreaterThan(3);
+  for (let i = 0; i < total; i++) {
+    const list = lists.nth(i);
+    if ((await list.getAttribute("open")) === null) await list.locator("summary").click();
+  }
+  await expect(steps.locator("details[open]")).toHaveCount(total);
+  await page.evaluate(() => document.fonts.ready);
+  await expect.poll(() => trailProblems(page, true)).toEqual([]);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(() => trailProblems(page, false)).toEqual([]);
   await expect.poll(() => sidewaysOverflow(page)).toBeLessThanOrEqual(0);
   expect(problems).toEqual([]);
 });

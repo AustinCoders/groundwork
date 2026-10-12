@@ -1,27 +1,34 @@
 import Link from "next/link";
-import { useId, type CSSProperties, type ReactNode } from "react";
+import { Children, cloneElement, isValidElement, type CSSProperties, type ReactElement, type ReactNode } from "react";
 import j from "./journey.module.css";
 
-const LEFT = 36;
-const RIGHT = 64;
+type LinkKind = "lead" | "link" | "tail";
 
-type Pair = [number, number];
-
-export function windingPath(count: number): string {
-  const points: Pair[] = [[50, 0]];
-  for (let i = 0; i < count; i++) points.push([i % 2 === 0 ? LEFT : RIGHT, ((i + 0.5) / count) * 100]);
-  points.push([50, 100]);
-  let d = `M${points[0][0]} ${points[0][1]}`;
-  for (let i = 1; i < points.length; i++) {
-    const [ax, ay] = points[i - 1];
-    const [bx, by] = points[i];
-    const h = (by - ay) * 0.55;
-    d += ` C${ax} ${ay + h} ${bx} ${by - h} ${bx} ${by}`;
-  }
-  return d;
-}
+const CURVES: Record<LinkKind, string> = {
+  lead: "M50 0 C50 55 36 45 36 100",
+  link: "M36 0 C36 55 64 45 64 100",
+  tail: "M36 0 C36 55 50 45 50 100",
+};
 
 export type StopState = "done" | "next" | "todo" | "soon";
+
+function TrailLink({ kind, row, flipped, walked }: { kind: LinkKind; row: number; flipped: boolean; walked: boolean }) {
+  return (
+    <li
+      className={j.leg}
+      aria-hidden="true"
+      data-kind={kind}
+      data-flipped={flipped ? "true" : undefined}
+      data-walked={walked ? "true" : undefined}
+      style={{ gridRow: `${row} / span 2` }}
+    >
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false">
+        <path className={j.track} d={CURVES[kind]} />
+        <path className={j.walked} d={CURVES[kind]} />
+      </svg>
+    </li>
+  );
+}
 
 export function Journey({
   count,
@@ -38,23 +45,28 @@ export function Journey({
   id?: string;
   children: ReactNode;
 }) {
-  const mask = useId();
-  const d = windingPath(count);
+  const stops = Children.toArray(children).filter(isValidElement) as ReactElement<{ index?: number }>[];
+  const walkedStops = walked > 0 ? Math.round(walked * count) : 0;
+  const last = stops.length - 1;
+  const trail: ReactNode[] = [];
+  if (last >= 0) trail.push(<TrailLink key="lead" kind="lead" row={1} flipped={false} walked={walkedStops >= 1} />);
+  stops.forEach((stop, i) => {
+    trail.push(cloneElement(stop, { index: i }));
+    const isTail = i === last;
+    trail.push(
+      <TrailLink
+        key={`link-${i}`}
+        kind={isTail ? "tail" : "link"}
+        row={isTail ? 2 * i + 1 : 2 * i + 2}
+        flipped={i % 2 === 1}
+        walked={walkedStops >= i + 1}
+      />
+    );
+  });
   return (
-    <div className={j.journeyWrap} style={{ "--slot": `${slot}px`, "--n": count } as CSSProperties}>
-      <svg className={j.trail} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-        <defs>
-          <mask id={mask} maskUnits="userSpaceOnUse" x="-10" y="-10" width="120" height="120">
-            <path className={j.reveal} d={d} pathLength={1} style={{ strokeDasharray: `${walked} 1` }} />
-          </mask>
-        </defs>
-        <path className={j.track} d={d} />
-        <path className={j.walked} d={d} mask={`url(#${mask})`} />
-      </svg>
-      <ol className={j.journey} aria-label={label} id={id}>
-        {children}
-      </ol>
-    </div>
+    <ol className={j.journey} aria-label={label} id={id} style={{ "--slot": `${slot}px` } as CSSProperties}>
+      {trail}
+    </ol>
   );
 }
 
@@ -63,16 +75,25 @@ export function JourneyStop({
   id,
   data,
   sticker,
+  index = 0,
   children,
 }: {
   state?: StopState;
   id?: string;
   data?: Record<string, string | undefined>;
   sticker?: string;
+  index?: number;
   children: ReactNode;
 }) {
   return (
-    <li className={j.stop} data-state={state} id={id} {...data}>
+    <li
+      className={j.stop}
+      data-state={state}
+      data-side={index % 2 === 0 ? "left" : "right"}
+      id={id}
+      style={{ gridRow: `${2 * index + 1} / span 2` }}
+      {...data}
+    >
       <span className={j.pole} aria-hidden="true">
         <i />
       </span>
