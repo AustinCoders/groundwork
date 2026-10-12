@@ -241,12 +241,28 @@ a.title:focus-visible,
     display: none;
   }
 
+  .top {
+    gap: 8px;
+  }
+
   .actions {
+    flex: 0 1 auto;
     gap: 6px;
+    min-width: 0;
   }
 
   .actions :global(.btn) {
-    white-space: nowrap;
+    gap: 5px;
+    padding-inline: 10px;
+    line-height: 1.2;
+    text-align: center;
+  }
+}
+
+@media (max-width: 400px) {
+  .actions :global(.btn) {
+    padding-block: 4px;
+    font-size: 14px;
   }
 }
 

@@ -22,6 +22,7 @@ interface Slot {
   hold: number;
   cap: number;
   shown: number;
+  chasedAt: number;
   pinned: boolean;
   u: number;
   step: number;
@@ -54,6 +55,7 @@ function attach(host: HTMLElement, connectors: RefObject<ConnectorLive | null>):
     hold: Number(el.dataset.pinHold) || 0,
     cap: Number(el.dataset.pinCap) || 0,
     shown: -1,
+    chasedAt: -1,
     pinned: false,
     u: -1,
     step: -1,
@@ -133,7 +135,11 @@ function attach(host: HTMLElement, connectors: RefObject<ConnectorLive | null>):
         let along = Math.min(Math.max(offset - slot.top, 0), length);
         if (slot.cap > 0) {
           const limit = (Math.max(1, length - holdLength) / (slot.groups.length * slot.densest)) * slot.cap;
-          slot.shown = chase(slot.shown, along, limit);
+          const frameAt = Number(document.timeline.currentTime ?? -1);
+          if (slot.shown < 0 || frameAt < 0 || frameAt !== slot.chasedAt) {
+            slot.shown = chase(slot.shown, along, limit);
+            slot.chasedAt = frameAt;
+          }
           if (slot.shown !== along) settling = true;
           along = slot.shown;
         }

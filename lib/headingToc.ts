@@ -13,25 +13,36 @@ function slug(text: string): string {
     .slice(0, 60);
 }
 
+const TABLE = /(<div class="table-scroll">\s*)?(<table(?:\s[^>]*)?>[\s\S]*?<\/table>)/g;
+
+function scrollTables(html: string): string {
+  return html.replace(TABLE, (whole, wrapped: string | undefined, table: string) =>
+    wrapped ? whole : `<div class="table-scroll">${table}</div>`
+  );
+}
+
 export function withHeadingIds(html: string): { html: string; toc: TocItem[] } {
   const toc: TocItem[] = [];
   const seen = new Set<string>(["chapters"]);
-  const out = html.replace(/<h3(\s[^>]*)?>([\s\S]*?)<\/h3>/g, (_, attrs: string | undefined, inner: string) => {
-    let id = slug(inner) || "section";
-    while (seen.has(id)) id = `${id}-2`;
-    seen.add(id);
-    const text = inner
-      .replace(/<[^>]+>/g, "")
-      .replace(/&amp;/g, "&")
-      .replace(/&rarr;/g, "→")
-      .replace(/&mdash;/g, "—")
-      .replace(/&middot;/g, "·")
-      .replace(/&[a-z]+;/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-    toc.push({ id, text });
-    const rest = (attrs ?? "").replace(/\sid="[^"]*"/, "");
-    return `<h3 id="${id}"${rest}>${inner}</h3>`;
-  });
+  const out = scrollTables(html).replace(
+    /<h3(\s[^>]*)?>([\s\S]*?)<\/h3>/g,
+    (_, attrs: string | undefined, inner: string) => {
+      let id = slug(inner) || "section";
+      while (seen.has(id)) id = `${id}-2`;
+      seen.add(id);
+      const text = inner
+        .replace(/<[^>]+>/g, "")
+        .replace(/&amp;/g, "&")
+        .replace(/&rarr;/g, "→")
+        .replace(/&mdash;/g, "—")
+        .replace(/&middot;/g, "·")
+        .replace(/&[a-z]+;/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      toc.push({ id, text });
+      const rest = (attrs ?? "").replace(/\sid="[^"]*"/, "");
+      return `<h3 id="${id}"${rest}>${inner}</h3>`;
+    }
+  );
   return { html: out, toc };
 }

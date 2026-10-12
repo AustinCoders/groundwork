@@ -30,7 +30,7 @@ const SAMPLE = [
 
 async function hydrated(page: Page) {
   await page.waitForFunction(() => {
-    const body = document.querySelector(".prose");
+    const body = document.querySelector(".prose[data-enhanced]");
     return Boolean(body && Object.keys(body).some((key) => key.startsWith("__react")));
   });
 }
