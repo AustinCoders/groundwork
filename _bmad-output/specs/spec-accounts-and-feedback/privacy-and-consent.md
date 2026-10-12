@@ -22,15 +22,15 @@ Phone number, date of birth, exact location or IP address stored with a profile,
 - No cookies for tracking; the auth session uses the library's storage, listed on the privacy page. No third-party trackers, session replay or fingerprinting; Vercel Web Analytics and Speed Insights stay as described today.
 - No personal data in logs, Sentry, analytics events or URLs; the feedback route logs only status and timing.
 - Minors: a reader who states an age under 18 is not asked for profile fields beyond what sign-in needs, and feedback is not linked to a profile. Confirm the legal threshold for India (DPDP Act) and the EU with the owner's adviser.
-- Rights: export (a JSON file of every stored field) and deletion (account, profile, synced records, votes and linked feedback removed or anonymised within 30 days) are in the profile screen and tested; a feedback comment can be deleted by its author while signed in; anonymous feedback is deleted on request to the privacy-page contact address, quoting the reference id or email shown, within 30 days.
-- Retention: feedback is kept while it is useful and anonymised after 24 months (email removed, comment unpublished) unless deleted sooner on request; rate-limit hashes 24 hours; deleted accounts leave no personal data behind.
+- Rights: export (a JSON file of every stored field) and deletion (account, profile, synced records, votes and linked feedback removed or anonymised within 30 days) are in the profile screen and tested; a feedback comment can be deleted by its author while signed in; anonymous feedback is deleted on request to the privacy-page contact address (help@austincoders.com), quoting the reference id or email shown, within 30 days.
+- Retention: feedback is kept while it is useful and anonymised after 24 months (email removed, comment unpublished) unless deleted sooner on request to help@austincoders.com; rate-limit hashes 24 hours; deleted accounts leave no personal data behind.
 - Marketing mail needs a separate opt-in that this spec does not include.
 - Region: data is stored in Mumbai or the nearest available region (A4) and the privacy page names it, with a note that hosting and mail subprocessors may process it elsewhere; the owner accepts the standard data processing terms of Supabase and Vercel before launch.
 - Visibility: feedback is private to the owner by default; a comment is shown publicly only if its author ticked permission and the owner approved it, without name or email; vote counts are public and voter identity is not (A5). Profile data feeds only owner insights (A7).
 
 ## Consent text (shown beside the feedback form)
 
-> Your feedback is private: only the site owner reads it. We keep the text, the page, and a random id from this browser so one vote counts once. Tick "reply" and we keep your email to answer you; tick "show publicly" and we may show your comment, without your name or email, after review. Ask us to delete it any time at the contact address on the privacy page. Data is stored in India (Mumbai) or the nearest available region.
+> Your feedback is private: only the site owner reads it. We keep the text, the page, and a random id from this browser so one vote counts once. Tick "reply" and we keep your email to answer you; tick "show publicly" and we may show your comment, without your name or email, after review. Ask us to delete it any time at help@austincoders.com (the address on the privacy page), quoting the reference id shown after you send. Data is stored in India (Mumbai) or the nearest available region.
 
 ## Security
 

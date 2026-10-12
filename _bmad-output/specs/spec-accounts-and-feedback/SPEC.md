@@ -19,7 +19,7 @@ The owner wants to learn who reads Groundwork and what is unclear or wrong, and 
 
 - **CAP-1**
   - **intent:** A reader can leave feedback without an account: a helpful or unclear vote with an optional comment on a chapter, a report of a wrong quiz or check answer, a general feedback form and a feature request, leaving an email only if they want a reply.
-  - **success:** On a chapter, a check question and a general form, a signed-out reader submits feedback with no email and the owner sees it with its page, question id and time; a second vote on the same chapter from the same browser replaces the first; the form asks for an email only when the reader ticks that they want a reply.
+  - **success:** On a chapter, a check question and a general form, a signed-out reader submits feedback with no email and the owner sees it with its page, question id and time; a second vote on the same chapter from the same browser replaces the first; the form asks for an email only when the reader ticks that they want a reply; the confirmation shows a reference id, and a request to help@austincoders.com quoting it (or the email) deletes that feedback within 30 days.
 - **CAP-2**
   - **intent:** A reader can sign in with an email link, Google or GitHub, stay signed in across visits and sign out, and the site works exactly as before for a reader who never does.
   - **success:** A new reader signs in by each method and out again; with no account every feature that works today still works, and no page is blocked or redirected because of sign-in.
@@ -83,7 +83,4 @@ Proceeded under without the owner's answer; each is overturned by one new entry 
 - The owner is the only admin at first and moderation is manual.
 - Email links use Supabase's built-in mail in development and a transactional provider on the owner's domain in production.
 - Anonymous and signed-in feedback share one table, told apart by whether an account id is present.
-
-## Open Questions
-
-- Which contact address does the privacy page publish for deletion and reply requests? Needed before phase 0 launches.
+- The contact address for deletion and reply requests is help@austincoders.com, already published on the privacy page; no new mailbox is needed.
