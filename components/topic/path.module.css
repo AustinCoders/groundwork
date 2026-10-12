@@ -13,6 +13,13 @@
   color: var(--ink);
 }
 
+.stateSummary {
+  margin: 8px 0 0;
+  font-size: var(--t-meta);
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+
 .tags {
   display: flex;
   flex-wrap: wrap;

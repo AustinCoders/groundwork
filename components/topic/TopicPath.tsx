@@ -25,10 +25,13 @@ import {
   topicKit,
 } from "@/components/topic/TopicKit";
 import { Journey, JourneyStop, SoonTag, StopHead } from "@/components/topic/Journey";
+import type { ChapterState } from "@/lib/chapterState";
+import { countStates, STATE_TEXT, summarizeStates } from "@/lib/chapterState";
 import { formatSpan, plural } from "@/lib/format";
 import { problemHref } from "@/lib/problemHref";
 import { quizStore } from "@/lib/quizStore";
 import { progress, rememberLevel } from "@/lib/storage";
+import { useChapterStates } from "@/lib/useChapterStates";
 import { nextChapter, requiresCheck, tickHref } from "@/lib/completion";
 import { useMounted, useProgressValue } from "@/lib/hooks";
 import type { LevelRow } from "@/lib/levelRows";
@@ -80,6 +83,15 @@ export function TopicPath({
     return set;
   }, [doneKey, chapters]);
 
+  const states = useChapterStates(topic.completion, chapters, checkChapterIds, done);
+  const stateSummary = mounted
+    ? summarizeStates(
+        countStates(
+          chapters.map((ch) => ch.id),
+          states
+        )
+      )
+    : "";
   const doneCount = mounted ? done.size : 0;
   const next = mounted ? nextChapter(topic.completion, chapters, done) : (chapters[0] ?? null);
 
@@ -141,6 +153,7 @@ export function TopicPath({
                 fillId="path-meter-fill"
                 labelId="path-meter-label"
               />
+              {stateSummary && <p className={styles.stateSummary}>{stateSummary}</p>}
               <Remark>tick them off as you read</Remark>
             </Card>
             <Card as="aside" aria-label={`${topic.name} ${level.name} path in numbers`} at="b" tilt={1}>
@@ -245,6 +258,11 @@ export function TopicPath({
                       <span className={topicKit.chip}>{chapter.readMinutes} min read</span>
                       {chapterExerciseList.length > 0 && (
                         <span className={topicKit.chip}>{plural(chapterExerciseList.length, "exercise")}</span>
+                      )}
+                      {mounted && states.get(chapter.id) && (
+                        <span className={topicKit.chip} data-state={states.get(chapter.id)}>
+                          {STATE_TEXT[states.get(chapter.id) as ChapterState]}
+                        </span>
                       )}
                     </div>
                     {stepTick ? (

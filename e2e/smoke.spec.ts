@@ -6518,3 +6518,132 @@ test("no connector traveller touches its fact", async ({ page }) => {
   }
   expect(crossings).toEqual([]);
 });
+
+const TESTED_OUT_ID = "dsa-hashing";
+const AGGREGATE_STATE = /\d+ (checked|not checked|read before checks)/;
+
+async function seedCheckStates(
+  page: Page,
+  seed: { read: boolean; quiz: Record<string, unknown> | null; testedOut: boolean }
+) {
+  await page.evaluate(
+    ({ chapterId, testedOutId, read, quiz, testedOut }) => {
+      localStorage.clear();
+      localStorage.setItem("groundwork:tour", JSON.stringify({ v: 1, seen: true, at: 0 }));
+      if (read)
+        localStorage.setItem(
+          "jsnotes:progress",
+          JSON.stringify({ chapters: { [chapterId]: { at: Date.now(), reviews: 0 } }, exercises: {} })
+        );
+      if (quiz) localStorage.setItem("groundwork:quiz", JSON.stringify({ v: 1, chapters: { [chapterId]: quiz } }));
+      if (testedOut)
+        localStorage.setItem(
+          "groundwork:dsa:placement",
+          JSON.stringify({
+            v: 1,
+            record: {
+              mode: "quiz",
+              level: "intermediate",
+              stages: [{ id: "route", correct: 5, asked: 6 }],
+              testedOut: [testedOutId, "dsa-ghost-chapter"],
+              allotted: [],
+              takenAt: Date.now(),
+              seconds: 60,
+            },
+          })
+        );
+    },
+    { chapterId: CHAPTER_ID, testedOutId: TESTED_OUT_ID, ...seed }
+  );
+}
+
+test("the rail, cover and path tell checked, not checked, read before checks and tested out apart in text", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const passed = { attempts: 1, best: 5, lastAt: 5, passedAt: 5, markedAnyway: false, missed: [] };
+  const anyway = { attempts: 0, best: 0, lastAt: null, passedAt: null, markedAnyway: true, missed: [] };
+  const cases = [
+    { name: "checked", read: true, quiz: passed },
+    { name: "not checked", read: true, quiz: anyway },
+    { name: "read before checks", read: true, quiz: null },
+    { name: "none", read: false, quiz: passed },
+  ];
+  for (const { name, read, quiz } of cases) {
+    await page.goto(CHAPTER_PATH);
+    await seedCheckStates(page, { read, quiz, testedOut: true });
+
+    await page.goto(CHAPTER_PATH);
+    const rail = page.getByRole("navigation", { name: "Chapters" }).first();
+    const railState = rail.locator(`a[href="${CHAPTER_PATH}"] [data-state]`);
+    const railTested = rail.locator(`a[href="/dsa/${TESTED_OUT_ID}"] [data-state]`);
+    await expect(railTested).toHaveText("tested out");
+
+    await page.goto("/dsa");
+    const entry = page.locator("li", { has: page.locator(`a[href="${CHAPTER_PATH}"]`) }).first();
+    const coverTested = page.locator("li", { has: page.locator(`a[href="/dsa/${TESTED_OUT_ID}"]`) }).first();
+    await expect(coverTested.locator("[data-state]")).toHaveText("tested out");
+
+    await page.goto("/path/dsa/beginner");
+    const step = page.locator(`[data-step="${CHAPTER_ID}"]`);
+    const stepTested = page.locator(`[data-step="${TESTED_OUT_ID}"]`);
+    await expect(stepTested.locator("[data-state]")).toHaveText("tested out");
+
+    if (name === "none") {
+      await expect(step.locator("[data-state]"), "a stale pass without a read mark shows nothing").toHaveCount(0);
+      await page.goto(CHAPTER_PATH);
+      await expect(railState).toHaveCount(0);
+      await page.goto("/dsa");
+      await expect(entry.locator("[data-state]")).toHaveCount(0);
+      await expect(page.locator("body")).not.toContainText(AGGREGATE_STATE);
+      await page.goto("/path/dsa/beginner");
+      await expect(page.locator("body")).not.toContainText(AGGREGATE_STATE);
+      continue;
+    }
+    await expect(step.locator("[data-state]")).toHaveText(name);
+    await page.goto("/dsa");
+    await expect(entry.locator("[data-state]")).toHaveText(name);
+    await expect(page.locator("body")).toContainText(new RegExp(`(?<!\\d)1 ${name}\\b`));
+    await page.goto(CHAPTER_PATH);
+    await expect(railState).toHaveText(name);
+  }
+});
+
+test("a topic that does not ask for checks shows no check states", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/notes/closures");
+  await page.evaluate(() =>
+    localStorage.setItem(
+      "jsnotes:progress",
+      JSON.stringify({ chapters: { closures: { at: Date.now(), reviews: 0 } }, exercises: {} })
+    )
+  );
+  await page.reload();
+  const rail = page.getByRole("navigation", { name: "Chapters" }).first();
+  await expect(rail.getByLabel("read", { exact: true }).first()).toBeVisible();
+  await expect(rail).not.toContainText(/checked|tested out|read before checks/);
+  await page.goto("/notes");
+  await expect(page.getByText("1 / ", { exact: false }).first()).toBeVisible();
+  await expect(page.locator("body")).not.toContainText(AGGREGATE_STATE);
+  await expect(page.locator("body")).not.toContainText("tested out");
+  await page.goto("/path/js/beginner");
+  await expect(page.locator("body")).not.toContainText(AGGREGATE_STATE);
+});
+
+test("the phone Chapters sheet tells a chapter's check state in text", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(CHAPTER_PATH);
+  await seedCheckStates(page, {
+    read: true,
+    quiz: { attempts: 0, best: 0, lastAt: null, passedAt: null, markedAnyway: true, missed: [] },
+    testedOut: true,
+  });
+  await page.reload();
+  await page
+    .getByRole("button", { name: /Chapters/ })
+    .first()
+    .click();
+  const sheet = page.getByRole("dialog").first();
+  await expect(sheet.locator(`a[href="${CHAPTER_PATH}"] [data-state]`)).toHaveText("not checked");
+  await expect(sheet.locator(`a[href="/dsa/${TESTED_OUT_ID}"] [data-state]`)).toHaveText("tested out");
+});

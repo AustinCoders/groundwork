@@ -23,9 +23,11 @@ import {
 } from "@/components/topic/TopicKit";
 import { SoonTag } from "@/components/topic/Journey";
 import { BUDGET_STEPS, useReadingPlan, type Station } from "@/components/topic/useReadingPlan";
+import { countStates, STATE_ORDER, STATE_TEXT, summarizeStates } from "@/lib/chapterState";
 import { openCheckOnClick } from "@/lib/checkOpen";
 import { quizStore } from "@/lib/quizStore";
 import { progress } from "@/lib/storage";
+import { useChapterStates } from "@/lib/useChapterStates";
 import { requiresCheck, tickHref, type Completion } from "@/lib/completion";
 import { formatSpan, plural } from "@/lib/format";
 import type { SeriesCard, SeriesPart } from "@/components/chapter/types";
@@ -83,6 +85,12 @@ export function TopicCover({
   );
 
   const plan = useReadingPlan(stations, topicId, completion);
+  const states = useChapterStates(completion, plan.readable, checkChapterIds, plan.done);
+  const stateTotals = countStates(
+    plan.readable.map((s) => s.id),
+    states
+  );
+  const nextState = plan.next ? states.get(plan.next.id) : undefined;
   const written = cards.filter((c) => c.ready).length;
   const firstReadyId = cards.find((c) => c.ready)?.id;
   const totalExercises = cards.reduce((sum, c) => sum + c.exercises, 0);
@@ -152,6 +160,15 @@ export function TopicCover({
                   ? "every chapter read"
                   : `${formatSpan(plan.mounted ? plan.minutesLeft : totalMinutes)} left`}
               </span>
+              {plan.mounted &&
+                STATE_ORDER.map(
+                  (state) =>
+                    stateTotals[state] > 0 && (
+                      <span key={state} className={topicKit.chip}>
+                        {stateTotals[state]} {STATE_TEXT[state]}
+                      </span>
+                    )
+                )}
               {plan.mounted && dueCount > 0 && (
                 <Link className={topicKit.chip} href="/review">
                   {plural(dueCount, "chapter")} due for review →
@@ -181,6 +198,7 @@ export function TopicCover({
                     {plan.next.exercises > 0 && (
                       <span className={topicKit.chip}>{plural(plan.next.exercises, "exercise")}</span>
                     )}
+                    {plan.mounted && nextState && <span className={topicKit.chip}>{STATE_TEXT[nextState]}</span>}
                   </div>
                   <div className={styles.upNextGo}>
                     <Button href={`${basePath}/${plan.next.id}`}>
@@ -250,6 +268,14 @@ export function TopicCover({
               <div key={ci} className={styles.column}>
                 {column.map(({ part, index, list }) => {
                   const read = plan.mounted ? list.filter((c) => plan.done.has(c.id)).length : 0;
+                  const partStates = plan.mounted
+                    ? summarizeStates(
+                        countStates(
+                          list.map((c) => c.id),
+                          states
+                        )
+                      )
+                    : "";
                   return (
                     <section key={part.level} aria-labelledby={`part-${part.level}`}>
                       <header className={styles.partHead}>
@@ -261,7 +287,7 @@ export function TopicCover({
                         </h3>
                         <span className={styles.partRule} aria-hidden="true" />
                         <span className={styles.partCount}>
-                          {read}/{list.length} read
+                          {read}/{list.length} read{partStates && ` · ${partStates}`}
                         </span>
                       </header>
                       {part.blurb && <p className={styles.partBlurb}>{part.blurb}</p>}
@@ -272,6 +298,7 @@ export function TopicCover({
                           const meta = c.exercises
                             ? `${c.minutes} min · ${plural(c.exercises, "exercise")}`
                             : `${c.minutes} min`;
+                          const state = plan.mounted ? states.get(c.id) : undefined;
                           const tickLabel = isRead ? `Mark ${name} unread` : `Mark ${name} read`;
                           const entryTick = plan.mounted
                             ? tickHref(
@@ -290,6 +317,11 @@ export function TopicCover({
                                 <span className={styles.entryMain}>
                                   <span className={styles.entryTitle}>{c.title}</span>
                                   {c.subtitle && <span className={styles.entrySub}>{c.subtitle}</span>}
+                                  {state && (
+                                    <span className={styles.entryState} data-state={state}>
+                                      {STATE_TEXT[state]}
+                                    </span>
+                                  )}
                                 </span>
                                 {c.ready ? <span className={styles.entryMeta}>{meta}</span> : <SoonTag />}
                               </Link>

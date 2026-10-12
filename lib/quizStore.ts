@@ -108,3 +108,7 @@ export function useQuizRecord(chapterId: string): QuizRecord | undefined {
     () => undefined
   );
 }
+
+export function useQuizRecords(): QuizRecords {
+  return useSyncExternalStore(subscribeQuiz, read, () => EMPTY);
+}

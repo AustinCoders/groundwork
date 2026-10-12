@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { EyebrowToggle, kit } from "@/components/ui/MenuKit";
+import { STATE_TEXT, type ChapterState } from "@/lib/chapterState";
 import type { SeriesCard, SeriesPart } from "./types";
 import styles from "./rail.module.css";
 
@@ -31,6 +32,7 @@ export function ChapterRail({
   homeLabel,
   done,
   mounted,
+  states,
   openParts,
   onTogglePart,
   onNavigate,
@@ -47,6 +49,7 @@ export function ChapterRail({
   homeLabel: string;
   done: Set<string>;
   mounted: boolean;
+  states?: ReadonlyMap<string, ChapterState>;
   openParts: Set<string>;
   onTogglePart: (level: string) => void;
   onNavigate: () => void;
@@ -108,7 +111,14 @@ export function ChapterRail({
                             onClick={onNavigate}
                           >
                             <span className={kit.code}>{c.num}</span>
-                            <span className={kit.title}>{c.short || c.title}</span>
+                            <span className={styles.main}>
+                              <span className={kit.title}>{c.short || c.title}</span>
+                              {mounted && states?.get(c.id) && (
+                                <span className={styles.state} data-state={states.get(c.id)}>
+                                  {STATE_TEXT[states.get(c.id) as ChapterState]}
+                                </span>
+                              )}
+                            </span>
                             {mounted && done.has(c.id) && (
                               <span className={styles.done} aria-label="read">
                                 ✓

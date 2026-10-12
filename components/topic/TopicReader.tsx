@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { TopicFrame } from "@/components/topic/TopicFrame";
 import { useChapterBody } from "@/components/reader/useChapterBody";
 import { quizStore } from "@/lib/quizStore";
+import { useChapterStates } from "@/lib/useChapterStates";
 import { progress, REVIEW_GAPS_DAYS } from "@/lib/storage";
 import { requiresCheck, tickHref, type Completion } from "@/lib/completion";
 import { writeResume } from "@/lib/resume";
@@ -99,6 +100,7 @@ export function TopicReader({
     ""
   );
   const done = useMemo(() => new Set(doneKey ? doneKey.split(",") : []), [doneKey]);
+  const states = useChapterStates(completion, chapters, checkChapterIds, done);
   const isDone = done.has(chapter.id);
   const toggleRead = () => {
     if (isDone && requiresCheck(completion)) quizStore.unmark(chapter.id);
@@ -149,6 +151,7 @@ export function TopicReader({
       homeLabel="The cover"
       done={done}
       mounted={mounted}
+      states={states}
       openParts={openParts}
       onTogglePart={togglePart}
       onNavigate={closeRail}

@@ -184,7 +184,9 @@
 }
 
 .partCount {
-  flex: none;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-family: var(--font-mono);
   font-size: var(--t-kicker);
   color: var(--ink-soft);
@@ -268,6 +270,13 @@
   font-size: var(--t-meta);
   line-height: 1.4;
   color: var(--ink-soft);
+}
+
+.entryState {
+  font-size: var(--t-meta);
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--ink);
 }
 
 .entryMeta {
