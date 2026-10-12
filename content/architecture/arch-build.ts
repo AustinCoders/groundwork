@@ -59,7 +59,7 @@ export const archBuild: Chapter = {
 <ol>
 <li><b>prebuild.</b> <code>scripts/copy-wasm-assets.mjs</code> copies the 46 TypeScript declaration files listed in <code>lib/tsLibFiles.json</code> into <code>public/wasm/typescript-lib/</code>. The editor's type checker needs them. Then <code>scripts/build-react-sandbox.mjs</code> uses esbuild to bundle <code>lib/reactSandbox/runtime.ts</code> into a minified ES2020 script, <code>public/wasm/react-sandbox.js</code>, which is 205 KB. The React exercises run inside it.</li>
 <li><b>Compile.</b> Turbopack bundles the app. In the last production build's trace this took 2.2 seconds.</li>
-<li><b>Type check.</b> <code>tsc</code> runs inside <code>next build</code> and took 2.8 seconds. In CI, <code>npx next typegen</code> runs first, because the global <code>PageProps</code> and <code>LayoutProps</code> helper types have to exist on disk before a separate <code>tsc --noEmit</code> can check <code>app/</code>.</li>
+<li><b>Type check.</b> <code>tsc</code> runs inside <code>next build</code> and took 2.8 seconds. When the type check runs on its own on a fresh checkout, <code>npx next typegen</code> has to run first, because the global <code>PageProps</code> and <code>LayoutProps</code> helper types have to exist on disk before a separate <code>tsc --noEmit</code> can check <code>app/</code>.</li>
 <li><b>Static generation.</b> Every <code>generateStaticParams</code> is called, and every page, route handler and metadata file is rendered to disk. This took 21.5 seconds.</li>
 </ol>
 <p>

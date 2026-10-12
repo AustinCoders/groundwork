@@ -230,8 +230,8 @@ export const archRendering: Chapter = {
 <p>
   Read browser state through one of the hooks in <code>lib/hooks.ts</code>, never in render or in a
   <code>useState</code> initialiser, unless the whole component is behind <code>ssr: false</code>.
-  The e2e test "the mock lobby hydrates cleanly with saved choices" seeds storage before loading the
-  page and fails on error #418. It was added with the lobby fix and fails on the old code.
+  A browser test used to seed storage before loading the mock lobby and fail on error #418; it was cut with the
+  browser suite, so the rule is kept now by reading the console for hydration errors when a page that reads storage changes.
 </p>
 </div>`,
 };

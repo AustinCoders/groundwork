@@ -220,8 +220,8 @@ export const archSecurity: Chapter = {
   It groups Next, React, CodeMirror and the dev tooling so that packages that move together arrive
   together. It ignores major versions of <code>@types/node</code>, which follows the Node in
   <code>.nvmrc</code> rather than the newest release. GitHub Actions are checked monthly.
-  <code>vercel.json</code> stops those branches from building preview deployments, and CI still
-  runs on each one.
+  <code>vercel.json</code> stops those branches from building preview deployments, and nothing
+  checks them automatically.
 </p>
 <p>
   The honest part: of 13 Dependabot pull requests so far, 13 were closed and none was merged.

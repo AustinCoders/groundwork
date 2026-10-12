@@ -9,11 +9,11 @@ export const archPerformance: Chapter = {
   practice: [],
   ready: true,
   subtitle:
-    "Budgets that fail CI, code that loads only when it is asked for, and two places where the browser is told to skip work.",
+    "Budgets that fail the check, code that loads only when it is asked for, and two places where the browser is told to skip work.",
   body: `<h3>Three ideas</h3>
 <p>
   Performance here rests on three things. The first is a set of <strong>budgets</strong> that fail
-  the CI job when a page gets slower or heavier. The second is <strong>deferral</strong>: anything
+  the Lighthouse run when a page gets slower or heavier. The second is <strong>deferral</strong>: anything
   heavy loads only when a reader does something that needs it. The third is <strong>skipping
   work</strong> the reader cannot see, on the two pages that can grow without limit. This chapter
   covers all three, with the numbers as they stand today.
@@ -21,8 +21,8 @@ export const archPerformance: Chapter = {
 
 <h3>The budgets, and why they now run three times</h3>
 <p>
-  The budgets live in <code>.lighthouserc.json</code>. The last step of CI starts the production
-  build on port 3101 and runs Lighthouse, with the desktop preset, against three URLs: the home
+  The budgets live in <code>.lighthouserc.json</code>. <code>npm run build</code> and then <code>npm run test:perf</code>
+  start the production build on port 3101 and run Lighthouse, with the desktop preset, against three URLs: the home
   page, one chapter (<code>/notes/setup-mental-model</code>) and <code>/interview</code>.
 </p>
 <div class="table-scroll"><table>
@@ -46,15 +46,16 @@ export const archPerformance: Chapter = {
 </p>
 <p>
   <code>numberOfRuns</code> is now <strong>3</strong>. Locally, the home page scores 100 on
-  performance with 0 ms of blocking time. On a GitHub runner, a single run once measured 0.91 and
+  performance with 0 ms of blocking time. On a GitHub runner, back when CI ran it, a single run once measured 0.91 and
   245 ms for the same page. That run was on the Dependabot pull request for Next, and it failed both
   the performance score and the blocking-time budget. Nothing in the pull request had made the page
   slower. The runner had been slow. With three runs, one bad sample can no longer fail the job.
 </p>
 <p>
   There is a price. Lighthouse CI's default aggregation is optimistic: it asserts against the best
-  of the runs. So a real regression now has to show up in all three samples before it fails. In the
-  latest run on <code>main</code> the step took 118 seconds, the longest step in the pipeline.
+  of the runs. So a real regression now has to show up in all three samples before it fails. On the last CI
+  run, before the workflow was removed, the step took 118 seconds, the longest step in the pipeline. It is no longer part of
+  the merge gate: run it by hand when a change could make a page heavier.
 </p>
 
 <h3>What a page actually downloads</h3>
@@ -77,8 +78,8 @@ export const archPerformance: Chapter = {
 <p>
   The script budget measures bytes on the wire, so the home page uses about 41% of its 700,000.
   The two heaviest pages are the playground and the problem pages, which carry the code editor, and
-  <strong>neither is on the Lighthouse URL list</strong>. They are guarded only by the Playwright
-  tests, which check that they work, not how much they weigh.
+  <strong>neither is on the Lighthouse URL list</strong>. Nothing guards how much they weigh.
+  The browser smoke spec only checks that the playground works.
 </p>
 
 <h3>Loaded when asked</h3>
