@@ -70,10 +70,34 @@
 @media (max-width: 720px) {
   .figure :global(.dg .lbl) {
     font-size: var(--t-display);
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    transform: scale(1.1);
+  }
+
+  .figure :global(.dg .lbl[x="836"]) {
+    text-anchor: end;
+    transform-origin: 100% 100%;
+    transform: translateY(-34px) scale(1.1);
   }
 
   .figure :global(.dg .sm) {
     display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .figure :global(.dg .lbl) {
+    transform: scale(1.5);
+  }
+
+  .figure :global(.dg .lbl[x="836"]) {
+    transform: translateY(-64px) scale(1.5);
+  }
+
+  .figure :global(.dg .lbl[x="500"]) {
+    transform-origin: 50% 0;
+    transform: translateY(30px) scale(1.5);
   }
 }
 

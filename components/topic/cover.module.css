@@ -145,8 +145,9 @@
 
 .partHead {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 14px;
+  gap: 6px 14px;
 }
 
 .partNo {

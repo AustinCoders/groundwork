@@ -1,6 +1,6 @@
 .prompt {
   position: fixed;
-  right: 24px;
+  left: 24px;
   bottom: max(20px, env(safe-area-inset-bottom));
   z-index: 120;
   display: flex;
@@ -48,6 +48,26 @@
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 8px;
+}
+
+@media (min-width: 1101px) {
+  .prompt {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    width: min(960px, calc(100vw - 48px));
+    padding: 10px 16px;
+  }
+
+  .promptTape {
+    display: none;
+  }
+
+  .promptActions {
+    margin-top: 0;
+    flex-wrap: nowrap;
+  }
 }
 
 .primary,

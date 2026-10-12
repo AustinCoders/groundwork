@@ -144,6 +144,33 @@ test("the not-found page renders in the page frame with a labelled back pill and
   await expect(page.locator("main kbd")).toHaveText(/Ctrl K|⌘K/);
 });
 
+test("the not-found page paints its heading in the handwriting font on a first visit", async ({ page }) => {
+  await page.goto("/no-such-page");
+  const session = await page.context().newCDPSession(page);
+  await session.send("DOM.enable");
+  await session.send("CSS.enable");
+  await expect
+    .poll(async () => {
+      const { root } = await session.send("DOM.getDocument", { depth: 0 });
+      const { nodeId } = await session.send("DOM.querySelector", { nodeId: root.nodeId, selector: "main h1" });
+      const { fonts } = await session.send("CSS.getPlatformFontsForNode", { nodeId });
+      return fonts.map((font) => font.familyName).join(",");
+    })
+    .toContain("Caveat");
+});
+
+test("the git hero figure keeps its labels at least 12px on a phone", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/git");
+  const sizes = await page.evaluate(() =>
+    [...document.querySelectorAll<SVGTextElement>(".dg text.lbl")]
+      .filter((label) => getComputedStyle(label).display !== "none")
+      .map((label) => parseFloat(getComputedStyle(label).fontSize) * (label.getScreenCTM()?.a ?? 0))
+  );
+  expect(sizes.length).toBeGreaterThan(0);
+  for (const size of sizes) expect(size).toBeGreaterThanOrEqual(12);
+});
+
 test("a page that fails to load shows the error scene, which offers a retry and the way home", async ({ page }) => {
   await failToLoad(page);
   await expect(page.locator("header a.head-back")).toBeVisible();

@@ -20,13 +20,13 @@ export const caveat = Caveat({
   subsets: ["latin"],
   weight: ["500", "700"],
   variable: "--font-caveat",
-  display: "optional",
+  display: "fallback",
 });
 export const kalam = Kalam({
   subsets: ["latin"],
   weight: ["300", "400", "700"],
   variable: "--font-kalam",
-  display: "optional",
+  display: "fallback",
 });
 export const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],

@@ -151,6 +151,45 @@ test("the stages hold their rules in every font", async ({ page }) => {
   expect(problems).toEqual([]);
 });
 
+test("nothing pokes past the right edge of a phone in any font", async ({ page }) => {
+  test.setTimeout(240_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const problems: string[] = [];
+  for (const { value } of FONT_ITEMS) {
+    await page.addInitScript((font) => localStorage.setItem("jsnotes:font", JSON.stringify(font)), value);
+    for (const path of ["/notes", "/dsa", "/react", "/git", "/level/js", "/interview", "/architecture"]) {
+      await page.goto(path);
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await page.evaluate(() => document.fonts.ready);
+      const poking = await page.evaluate(() => {
+        const edge = innerWidth + 1;
+        const scrolls = (el: Element) => {
+          for (let up = el.parentElement; up; up = up.parentElement)
+            if (/(auto|scroll)/.test(getComputedStyle(up).overflowX)) return true;
+          return false;
+        };
+        return [...document.body.querySelectorAll("*")]
+          .filter((el) => {
+            const box = el.getBoundingClientRect();
+            const style = getComputedStyle(el);
+            return (
+              box.width > 1 &&
+              box.right > edge &&
+              style.position !== "fixed" &&
+              style.visibility !== "hidden" &&
+              !el.closest("svg") &&
+              !scrolls(el)
+            );
+          })
+          .map((el) => `${el.tagName.toLowerCase()}.${String(el.className).split(" ")[0]}`)
+          .slice(0, 4);
+      });
+      problems.push(...poking.map((line) => `${value} ${path} ${line}`));
+    }
+  }
+  expect(problems).toEqual([]);
+});
+
 test("a highlight is an underline stroke that keeps the text readable in every theme", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   const bad: string[] = [];

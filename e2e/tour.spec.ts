@@ -558,6 +558,31 @@ test.describe("composition and fit", () => {
     });
   }
 
+  test("the prompt covers no home hero content at 1440x900", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    await expect(prompt(page)).toBeVisible({ timeout: 15_000 });
+    await settled(page);
+    const covered = await page.evaluate(() => {
+      const box = document.querySelector("[data-tour-prompt]")!.getBoundingClientRect();
+      return [...document.querySelectorAll("main h1, main p, main a, main button, main dl, main [data-card]")]
+        .filter((el) => {
+          const r = el.getBoundingClientRect();
+          return (
+            r.width > 0 &&
+            r.top < innerHeight &&
+            r.bottom > 0 &&
+            r.left < box.right &&
+            r.right > box.left &&
+            r.top < box.bottom &&
+            r.bottom > box.top
+          );
+        })
+        .map((el) => (el.textContent ?? "").trim().slice(0, 30));
+    });
+    expect(covered).toEqual([]);
+  });
+
   for (const { value } of FONT_ITEMS) {
     test(`nothing is clipped in the ${value} font`, async ({ page }) => {
       await page.addInitScript((font) => localStorage.setItem("jsnotes:font", JSON.stringify(font)), value);
