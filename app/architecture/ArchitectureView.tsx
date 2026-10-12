@@ -108,8 +108,8 @@ const LANES: Lane[] = [
     nodes: [
       {
         chapter: "arch-testing",
-        label: "Tests & CI",
-        note: "Unit tests, end-to-end, accessibility and honesty checks",
+        label: "Tests & hooks",
+        note: "Unit tests, a small smoke run, and the checks that run before a push",
       },
       { chapter: "arch-delivery", label: "Delivery", note: "Branches, previews, cleanup and error reporting" },
       { chapter: "arch-performance", label: "Performance", note: "Lighthouse budgets and what each page ships" },

@@ -363,6 +363,7 @@ export function TopicsScene({
                       </span>
                       <span className={styles.name}>
                         <span className={styles.nameText}>{topic.name}</span>
+                        <span className="visually-hidden"> topic</span>
                         {topic.written && <span className={styles.nameChip}>{topic.chip}</span>}
                       </span>
                       <span className={styles.card} id={cardId} data-soon={topic.written ? undefined : ""}>

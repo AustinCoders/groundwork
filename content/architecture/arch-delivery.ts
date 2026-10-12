@@ -26,13 +26,13 @@ export const archDelivery: Chapter = {
   to the same path on the real domain.
 </p>
 <p>
-  CI runs independently of all this, on GitHub's runners. It runs on every pull request and on
-  every push to <code>main</code>. A preview can be live before CI has finished. The
-  preview is for looking; CI is for deciding.
+  There is no CI service. The checks run on the author's machine, by hand: <code>npm run check</code>, a build and
+  <code>npm run test:e2e</code>. A preview can be live before any of them has run. Vercel's commit status, called
+  <code>Vercel</code>, says whether the preview built.
 </p>
 
 <figure>
-<svg viewBox="0 0 900 360" class="dg" role="img" aria-label="Delivery. A feature branch push creates a Vercel preview and, through its pull request, a CI run. Merging to main creates the production deployment and another CI run. A Dependabot branch gets CI but no deployment. A daily cleanup job deletes old deployments.">
+<svg viewBox="0 0 900 360" class="dg" role="img" aria-label="Delivery. A feature branch push creates a Vercel preview, and the author runs the checks by hand before merging. Merging to main creates the production deployment, with no automatic check. A Dependabot branch gets neither a deployment nor a check. A daily cleanup job deletes old deployments.">
 <g class="rough">
 <rect x="20" y="40" width="200" height="72" rx="10" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.8" />
 <rect x="20" y="152" width="200" height="72" rx="10" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.8" />
@@ -54,10 +54,10 @@ export const archDelivery: Chapter = {
 <text class="sm" x="36" y="208">push or pull request</text>
 <text class="lbl" x="36" y="296">dependabot/*</text>
 <text class="sm" x="36" y="320">weekly, grouped</text>
-<text class="lbl" x="356" y="128">CI on the PR</text>
-<text class="sm" x="356" y="150">GitHub runner</text>
-<text class="lbl" x="356" y="268">CI on main</text>
-<text class="sm" x="356" y="290">and on Dependabot PRs</text>
+<text class="lbl" x="356" y="128">Checks by hand</text>
+<text class="sm" x="356" y="150">check, build, e2e</text>
+<text class="lbl" x="356" y="268">No automatic check</text>
+<text class="sm" x="356" y="290">main, Dependabot PRs</text>
 <text class="lbl" x="676" y="72">Vercel preview</text>
 <text class="sm" x="676" y="96">about 190 MB each</text>
 <text class="lbl" x="676" y="184">Production</text>
@@ -68,8 +68,8 @@ export const archDelivery: Chapter = {
 <text class="sm" x="440" y="180">deploys</text>
 </svg>
 <figcaption>
-  Two systems watch the same repository. Vercel deploys branches and GitHub checks them. The red
-  box is the one kind of branch that is checked but never deployed. The yellow box deletes old
+  Vercel deploys branches, and the author checks them by hand. The red
+  box is the one kind of branch that is neither checked nor deployed. The yellow box deletes old
   previews and old production builds, never the live one.
 </figcaption>
 </figure>
@@ -86,8 +86,7 @@ export const archDelivery: Chapter = {
 <p>
   Together they come to 1.4 MB. The script can still copy Pyodide and sql.js into the build with
   <code>--all</code>, but the build does not pass that flag, so those runtimes come from jsDelivr.
-  <code>package.json</code> pins Node to <code>24.x</code>, the same major as the Vercel project settings, and CI reads 24 from
-  <code>.nvmrc</code>. When the two disagree, Vercel warns on every build that <code>engines</code> overrides the project setting.
+  <code>package.json</code> pins Node to <code>24.x</code>, the same major as the Vercel project settings, and <code>.nvmrc</code> says 24 for the local tools. When the two disagree, Vercel warns on every build that <code>engines</code> overrides the project setting.
 </p>
 
 <h3><code>vercel.json</code>, in full</h3>
@@ -95,8 +94,8 @@ export const archDelivery: Chapter = {
   The whole file is one rule: <code>"git": { "deploymentEnabled": { "dependabot/**": false } }</code>.
   Dependabot opens grouped pull requests every week, one each for Next, React, CodeMirror and the dev
   tooling, plus monthly ones for GitHub Actions. Each would otherwise build a full preview
-  deployment that nobody would ever open. CI still runs on those branches, because the question a
-  dependency bump raises is whether it breaks anything, and CI answers that without a deployment.
+  deployment that nobody would ever open. Nothing runs on those branches either: with no CI service, a bump is checked only when
+  someone pulls the branch and runs <code>npm run check</code> and a build, which answer whether it breaks anything without a deployment.
 </p>
 
 <h3>Why the storage filled up</h3>
@@ -186,8 +185,8 @@ export const archDelivery: Chapter = {
 <span class="ttl">What this setup does well, and what it does not</span>
 <p>
   Every branch is testable at a real URL before it merges, and a broken build never reaches
-  readers, because a failed build never replaces the live deployment. What it lacks is a gate
-  between CI and production: nothing in this repository makes Vercel wait for CI before it
+  readers, because a failed build never replaces the live deployment. What it lacks is a gate that runs without the
+  author: the checks are a command someone has to remember, and nothing in this repository makes Vercel wait for them before it
   promotes a build of <code>main</code>. On a one-person project that is a reasonable trade. With a
   second person it would be the first thing to change.
 </p>

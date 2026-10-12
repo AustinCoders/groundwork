@@ -2474,7 +2474,7 @@ export const topics: TopicsData = {
           mark: "3",
           tagline: "I want to know whether it holds up.",
           blurb:
-            "The design review: what was measured and what changed, the security posture, what CI actually checks, the current health of the project including what is failing, what breaks first under pressure, and what is next.",
+            "The design review: what was measured and what changed, the security posture, what the local checks cover, the current health of the project including what is failing, what breaks first under pressure, and what is next.",
           bullets: [
             "You want the regressions, not the highlights",
             "You want to know where this design stops being right",
@@ -2486,7 +2486,7 @@ export const topics: TopicsData = {
               title: "Performance, and how it is kept",
               chapter: "arch-performance",
               items: [
-                "Budgets that fail CI, code that loads only when it is asked for, and two places where the browser is told to skip work.",
+                "Budgets that fail the check, code that loads only when it is asked for, and two places where the browser is told to skip work.",
               ],
             },
             {
@@ -2497,10 +2497,10 @@ export const topics: TopicsData = {
               ],
             },
             {
-              title: "Tests, hooks and CI",
+              title: "Tests and hooks",
               chapter: "arch-testing",
               items: [
-                "166 unit tests, 74 browser tests, and one test that checks what these pages say about the site.",
+                "Unit tests, one small browser smoke spec, and one test that checks what these pages say about the site.",
               ],
             },
             {

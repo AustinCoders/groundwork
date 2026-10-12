@@ -8,7 +8,6 @@ import { chapters, exercises, topics } from "@/lib/content";
 import { LANG_ORDER, LANGUAGES } from "@/lib/codeLanguages";
 import { bankQuestions, bookRounds } from "@/lib/interviewBook";
 import { INTERVIEW_TOTAL_QUESTIONS, INTERVIEW_TOTAL_ROUNDS } from "@/lib/interviewContent";
-import { THEME_ITEMS } from "@/lib/storage";
 import { siteStats, topicStats } from "@/lib/topicStats";
 import { hasColourLiteral } from "./colour-literal";
 
@@ -238,54 +237,14 @@ const sources = filesUnder(["app", "components", "lib"])
   .map((file) => read(file));
 const clientFiles = sources.filter((source) => /^\s*["']use client["']/.test(source)).length;
 
-const listing = (items: string[]) =>
-  items.length > 1 ? `${items.slice(0, -1).join(", ")} and ${items.at(-1)}` : (items[0] ?? "");
-
-const a11ySpec = read("e2e/a11y.spec.ts");
-const a11yPages = [...(/const PAGES = \[([\s\S]*?)\];/.exec(a11ySpec)?.[1] ?? "").matchAll(/"\//g)].length;
-const a11yViewports = (/const VIEWPORTS = \[([\w, ]*)\];/.exec(a11ySpec)?.[1] ?? "")
-  .split(",")
-  .map((name) => name.trim())
-  .filter(Boolean);
-const a11yWidths = a11yViewports.map(
-  (name) => new RegExp(`const ${name} = \\{ width: (\\d+), height: \\d+ \\};`).exec(a11ySpec)?.[1] ?? "?"
-);
-const a11yStatesBlock = /^const STATES: State\[\] = \[\n([\s\S]*?)^\];$/m.exec(a11ySpec)?.[1] ?? "";
-const a11yStateEntries = a11yStatesBlock.split(/^ {4}name: /m).slice(1);
-const a11yStateViewports = a11yStateEntries.map((entry) => {
-  const listed = /^ {4}viewports: (.+),$/m.exec(entry)?.[1] ?? "";
-  if (listed === "VIEWPORTS") return a11yViewports;
-  return (/^\[(.*)\]$/.exec(listed)?.[1] ?? "")
-    .split(",")
-    .map((name) => name.trim())
-    .filter(Boolean);
-});
-const a11yStates = a11yStateEntries.length;
-const a11ySeededStates = a11yStateEntries.filter((entry) => /^ {4}seed: /m.test(entry)).length;
-const a11yTests =
-  a11yPages * a11yViewports.length + a11yStateViewports.reduce((total, viewports) => total + viewports.length, 0);
-const a11yThemes = THEME_ITEMS.length;
-
 const smokeSpec = read("e2e/smoke.spec.ts");
 const smokePages = [...(/const PAGES = \[([\s\S]*?)\];/.exec(smokeSpec)?.[1] ?? "").matchAll(/path:/g)].length;
-const smokeViewports = [
-  ...(/for \(const \[width, maxBar\] of \[([\s\S]*?)\] as const\)/.exec(smokeSpec)?.[1] ?? "").matchAll(
-    /\[\d+, \d+\]/g
-  ),
-].length;
 const smokeFlows = (smokeSpec.match(/^test\(/gm) ?? []).length;
-const smokeTests = smokePages + smokeViewports + smokeFlows;
+const smokeTests = smokePages + smokeFlows;
 
 const specFiles = readdirSync(join(process.cwd(), "e2e"))
   .filter((file) => file.endsWith(".spec.ts"))
   .sort();
-const testsCountedApart: Record<string, number> = { "a11y.spec.ts": a11yTests, "smoke.spec.ts": smokeTests };
-const specTests = specFiles.map((file) => ({
-  file,
-  tests: testsCountedApart[file] ?? (read(`e2e/${file}`).match(/^ {0,2}test\(/gm) ?? []).length,
-}));
-
-const browserTests = specTests.reduce((total, spec) => total + spec.tests, 0);
 
 const flattenedCases: { file: string; claim: string; about: string }[] = [
   {
@@ -319,55 +278,28 @@ const flattenedCases: { file: string; claim: string; about: string }[] = [
     about: "the CSS row",
   },
   {
-    file: "content/architecture/arch-design-system.ts",
-    claim: `runs axe through <code>@axe-core/playwright</code> against ${a11yPages} pages`,
-    about: "the pages axe checks",
-  },
-  {
-    file: "content/architecture/arch-design-system.ts",
-    claim: `against ${a11yStates} states that a plain page load does not show: ${a11yStates - a11ySeededStates} that open with a click, and ${a11ySeededStates} seeded in <code>localStorage</code>`,
-    about: "the states axe checks",
-  },
-  {
-    file: "content/architecture/arch-design-system.ts",
-    claim: `Each page and state is checked in all ${a11yThemes} themes, at ${listing(a11yWidths)} pixels wide`,
-    about: "the themes and widths axe checks",
+    file: "content/architecture/arch-testing.ts",
+    claim: `<tr><td><code>smoke.spec.ts</code></td><td>${smokeTests}</td><td>${smokePages} pages load with their heading and no console error; ${smokeFlows} flows`,
+    about: "the smoke spec's tests, pages and flows",
   },
   {
     file: "content/architecture/arch-testing.ts",
-    claim: `<tr><td><code>a11y.spec.ts</code></td><td>${a11yTests}</td><td>axe with the WCAG 2.0 and 2.1 A and AA tags, and no rule disabled, over ${a11yPages} pages and ${a11yStates} states, in all ${a11yThemes} themes at ${listing(a11yWidths)} pixels wide`,
-    about: "the accessibility spec's tests, pages, states, themes and widths",
-  },
-  {
-    file: "content/architecture/arch-testing.ts",
-    claim: `<tr><td><code>smoke.spec.ts</code></td><td>${smokeTests}</td><td>${smokePages} routes load with no console error and no failed request; the playground fits at 1024, 768 and 390 pixels wide; ${smokeFlows} flows`,
-    about: "the smoke spec's tests, routes and flows",
-  },
-  ...specTests
-    .filter(({ file }) => !(file in testsCountedApart))
-    .map(({ file, tests }) => ({
-      file: "content/architecture/arch-testing.ts",
-      claim: `<tr><td><code>${file}</code></td><td>${tests}</td>`,
-      about: `the ${file} row`,
-    })),
-  {
-    file: "content/architecture/arch-testing.ts",
-    claim: `<h3>Browser tests: ${specFiles.length} specs, ${browserTests} tests</h3>`,
-    about: "every spec's total",
+    claim: `<h3>Browser tests: one smoke spec, ${smokeTests} tests</h3>`,
+    about: "the browser test total",
   },
   {
     file: "content/architecture/arch-tech-stack.ts",
-    claim: `${specFiles.length} specs against a production build`,
-    about: "the Playwright row's spec count",
+    claim: `${smokeTests} tests in one smoke spec against a production build`,
+    about: "the Playwright row's test count",
   },
   {
     file: "content/architecture/arch-testing.ts",
-    claim: `unit tests, ${browserTests} browser tests`,
+    claim: `unit tests, ${smokeTests} browser tests`,
     about: "the browser total in the subtitle",
   },
   {
     file: "content/architecture/arch-health.ts",
-    claim: `<tr><td>Playwright, ${specFiles.length} specs</td><td><span class="chip tone-yes">${browserTests} of ${browserTests}</span></td></tr>`,
+    claim: `<tr><td>Playwright, one smoke spec</td><td><span class="chip tone-yes">${smokeTests} of ${smokeTests}</span></td></tr>`,
     about: "the Playwright row",
   },
 ];
@@ -396,27 +328,10 @@ describe("what the site says about its stylesheets and checks", () => {
   it("finds what it counts", () => {
     expect(cssModules.length).toBeGreaterThan(0);
     expect(clientFiles, "some files carry use client").toBeGreaterThan(0);
-    expect(a11yPages).toBeGreaterThan(0);
-    expect(a11yViewports.length, "the a11y spec declares its viewports").toBeGreaterThan(1);
-    expect(a11yWidths, "each a11y viewport has a width").not.toContain("?");
-    expect(a11yStates, "the a11y spec declares its states").toBeGreaterThan(0);
-    expect(a11ySeededStates, "the a11y spec seeds some states").toBeGreaterThan(0);
-    expect(a11yStatesBlock.match(/^ {2}\{$/gm) ?? [], "every STATES entry starts with its name").toHaveLength(
-      a11yStates
-    );
-    for (const [index, viewports] of a11yStateViewports.entries()) {
-      expect(viewports.length, `STATES entry ${index + 1} lists the viewports it runs at`).toBeGreaterThan(0);
-      for (const viewport of viewports)
-        expect(a11yViewports, `STATES entry ${index + 1} runs at a declared viewport`).toContain(viewport);
-    }
-    expect(a11ySpec, "the a11y spec runs axe in every theme").toContain("for (const theme of THEMES)");
-    expect(a11ySpec, "the a11y spec disables no rule").not.toContain("disableRules");
-    expect(a11yTests).toBeGreaterThan(a11yPages);
     expect(smokePages).toBeGreaterThan(0);
-    expect(smokeViewports).toBeGreaterThan(0);
-    expect(smokeSpec.match(/^ {2}test\(/gm) ?? [], "one test per PAGES entry and one per viewport").toHaveLength(2);
-    expect(specFiles).toEqual(expect.arrayContaining(["a11y.spec.ts", "smoke.spec.ts"]));
-    for (const { file, tests } of specTests) expect(tests, `${file} has tests`).toBeGreaterThan(0);
+    expect(smokeFlows).toBeGreaterThan(0);
+    expect(smokeSpec.match(/^ {2}test\(/gm) ?? [], "one test per PAGES entry").toHaveLength(1);
+    expect(specFiles, "the only browser spec is the smoke spec").toEqual(["smoke.spec.ts"]);
   });
 
   it.each(flattenedCases)("$file still tells the truth about $about", ({ file, claim }) => {

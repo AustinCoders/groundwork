@@ -125,7 +125,7 @@ export const archApis: Chapter = {
   <code>msedge-tts</code> reaches a Microsoft service meant for the Edge browser's read-aloud
   feature. It is free and sounds much better than <code>speechSynthesis</code>, but nobody has
   promised it will keep working. That is why the narrator is a button on a page that reads fine
-  without it. The narration e2e test stubs <code>/api/tts</code> with a fixture, so CI does not depend on it either.
+  without it.
 </p>
 </div>
 

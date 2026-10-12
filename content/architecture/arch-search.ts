@@ -132,7 +132,7 @@ export const archSearch: Chapter = {
 <h3>The size budget</h3>
 <p>
   The third test in <code>tests/search-index.test.ts</code> gzips every written topic's index with
-  Node's default level and fails if any is 85 KB or more. It runs in CI before the build step, so an
+  Node's default level and fails if any is 85 KB or more. It runs with the unit tests, before the build step, so an
   index that crosses the line fails the check. Sizes from the last production build, read from
   the files it wrote:
 </p>
@@ -177,8 +177,7 @@ export const archSearch: Chapter = {
 <p>
   The reader's rail once showed a hit count beside each chapter. Counting occurrences needs the
   repetition that made up most of the index's weight, so it went when the index was compacted. The
-  rail now shows <em>which</em> chapters match, not how often. An e2e test types a query, checks
-  that the right chapters are marked, and checks that demo-script source is not matched.
+  rail now shows <em>which</em> chapters match, not how often.
 </p>
 </div>`,
 };

@@ -49,7 +49,7 @@ npm run check   # typecheck + lint + format + spelling + tests
 ```
 
 Or individually: `npm run typecheck`, `npm run lint`, `npm run format:check`, `npm run spell`,
-`npm test`. The same set runs in CI on every push and pull request, plus a production build.
+`npm test`. There is no CI service, so nothing runs them for you: run `npm run check`, then `npm run build` and `npm run test:e2e` (a small browser smoke spec), before you merge.
 
 A pre-commit hook runs eslint, prettier and the spell checker over staged files only.
 

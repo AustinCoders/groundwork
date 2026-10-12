@@ -26,8 +26,11 @@ A free study site for JavaScript and interview prep: notes, runnable exercises, 
 ## Running and verifying
 
 - Use Node 24 (`.nvmrc`): the default shell here is Node 22, so prefix commands with `PATH=~/.nvm/versions/node/v24.14.1/bin:$PATH`.
-- `npm run check` is the pre-merge gate, but it skips the build and e2e; run `npm run build` before `npm run test:e2e`, which serves the production build.
-- CI, the pre-push hook and `npm run check` all run `npm run comments`.
+- There is no CI service: nothing runs the checks unless you do. `npm run check` (typecheck, lint, comments, format, spell, unit tests) skips the build and e2e. `npm run build` then `npm run test:e2e` runs the one small Playwright smoke spec (about 19 tests, around ten seconds) against the production build on port 3100.
+- The unit tests (`npm test`) carry most of the checking, including `tests/claims.test.ts` (numbers in the "How this is built" chapters) and the contrast and theme tests. The old browser suite (axe in nine themes, composition probes, per-page specs) was cut; layout, focus and hydration on the pages it covered are checked by looking.
+- Lighthouse budgets (`.lighthouserc.json`) run only on request: `npm run build && npm run test:perf`.
+- Tip: pushing a branch makes Vercel build a preview; its commit status `Vercel` shows whether it built, and it links the preview URL to open.
+- The pre-push hook and `npm run check` run `npm run comments`.
 
 ## Conventions that differ from defaults
 
@@ -38,6 +41,6 @@ A free study site for JavaScript and interview prep: notes, runnable exercises, 
 ## Known pitfalls
 
 - Numbers stated in `content/architecture/` are asserted by `tests/claims.test.ts`; update the chapter when a count changes.
-- Scroll reveals leave elements part-transparent mid-animation; run axe checks with reduced motion or contrast fails at random.
+- Scroll reveals leave elements part-transparent mid-animation; any contrast or visibility check in a browser needs reduced motion on.
 
 <!-- /bmad:context -->

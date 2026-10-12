@@ -410,36 +410,17 @@ export const archDesignSystem: Chapter = {
 
 <h3>The checks</h3>
 <p>
-  <code>e2e/a11y.spec.ts</code> runs axe through <code>@axe-core/playwright</code> against 38
-  pages, including the home page, the outline cover of a topic that is only being planned, ten chapters, one of them a DSA chapter with a player and a check, the other three written topics' covers, the
-  playground, the problems list, the mock lobby, the whiteboard, the 404 page, the interview book's screening round and this
-  architecture section. One of them, <code>/level/typescript</code>, is the level picker of a
-  topic that is only outlined, and another, <code>/typescript/ts-setup-compiler</code>, is that
-  same topic's own outline chapter; <code>/level/typescript</code> stands in for <code>/soon</code>,
-  which redirects there while every topic is marked ready. It also runs against 65 states that a plain page load does not show: 52 that open with a click, and 13 seeded in
-  <code>localStorage</code>. The clicks open the site menu, the reading menu on <code>/notes</code>
-  with its Appearance, Narrator and Keyboard shortcuts folds open, a reading budget picked on the JavaScript cover's Up
-  next card, the Advanced level picked on the level picker, the site menu with a category expanded and with the theme swatches focused, the first-visit tour prompt and each of its five slides on the home page, the home page's topic section on Languages, with a legend row expanded and a station card open and with a search term typed,
-  its interview book on a later round and on its last stage, its practice section with a row focused, a path tab with unwritten topics, its FAQ with the comparison answer open and its how-it-works demo with a line opened, a failing run, every test passing, an answer checked and a chapter marked read, and its topic section on the AI category, a chapter marked read, a try-it block run, the phone's inline contents, the binary search chapter's player stepped to a middle step and to its last, the chapter check's start card, the check started from a tick, a checked answer with its explanations, its miss and pass screens and an order question, the Chapters and Filters sheets, the mock loop planner at its review step and the single round picker, a system design round in
-  the mock interview, checked at the brief, a question, a follow-up, the rubric and the debrief, a design round on the whiteboard tab, an interview round in practice mode with an answer shown and a question marked, the question bank with a question opened and the filters used and with nothing matching, and the flashcard drill with the answer revealed.
-  The seeds give a chapter due for review, a
-  chapter read before checks, a chapter marked read on a path, a year of activity on the progress page, two saved mock
-  sessions, and the interview landing with two rounds read, three questions marked and the question of the day revealed. Each page and state is
-  checked in all 9 themes, at 1440 and 390 pixels wide, except the two sheets, which
-  only open on a narrow screen and are checked at 390. One helper sets the theme the way the theme
-  picker does, runs axe with the WCAG 2.0 and 2.1 A and AA tags, and fails on any violation, naming
-  the page, the state, the theme and the width. No rule is disabled. A table, a code block, a query
-  result or the progress heatmap that is wider than its box takes focus and gets a name while it
-  scrolls, and drops both when its box grows wide enough to show it whole.
+  No browser check of accessibility runs any more. An axe spec (<code>@axe-core/playwright</code>, the WCAG 2.0 and 2.1 A and AA tags, every page and state in all nine themes) used to run in CI and was cut with the rest of the browser suite. A table, a code block, a query
+  result or the progress heatmap that is wider than its box still takes focus and gets a name while it
+  scrolls, and drops both when its box grows wide enough to show it whole, but nothing checks that on a page now.
 </p>
 <p>
-  Axe cannot settle the contrast of most text on the reading pages. The ruled paper behind it is a
-  gradient or a pseudo-element, so axe reports that text as incomplete rather than as a pass or a
-  failure. The token pairs and the tinted-box pairs in <code>tests/contrast.test.ts</code> guard
-  those colours instead.
+  What guards colour is <code>tests/contrast.test.ts</code>, which works from the tokens without a browser. The ruled paper behind the reading pages is a
+  gradient or a pseudo-element, so no tool could settle the contrast of that text from the rendered page anyway; the token pairs and the tinted-box pairs are
+  checked instead.
 </p>
 <p>
-  Axe only sees the pages and states the spec opens. <code>tests/contrast.test.ts</code> checks the
+  <code>tests/contrast.test.ts</code> checks the
   tokens themselves, without a browser. It parses <code>globals.css</code>, finds every block that
   defines the editor's colours, and for each of the five syntax colours (keyword, string, number,
   operator, comment) computes the WCAG contrast ratio against the editor background and against the
@@ -468,8 +449,7 @@ export const archDesignSystem: Chapter = {
 <p>
   Adding a theme takes one <code>[data-theme="&hellip;"]</code> block in <code>globals.css</code>
   that restates the 71 colour tokens, the seven roles included, and one entry in
-  <code>THEME_ITEMS</code> in <code>lib/storage.ts</code>. The <code>ThemeValue</code> type, both
-  pickers and the e2e accent tests all come from that list. A dark theme may also join the
+  <code>THEME_ITEMS</code> in <code>lib/storage.ts</code>. The <code>ThemeValue</code> type and both pickers come from that list. A dark theme may also join the
   <code>[data-theme="dark"]</code> override selectors that swap the heading underline and the
   code background inside sticky notes and gotcha boxes. Nothing else in the code is edited. This
   chapter is the one hand-kept description: its theme table, its heading, and the check counts
@@ -482,9 +462,7 @@ export const archDesignSystem: Chapter = {
   entry, a value listed twice and a label that is not an icon and a name. It fails when Paper
   derives a colour that belongs in the shared block, or when a rule reads <code>--scrim</code> or
   an <code>--ide-*</code> alias that nothing declares. <code>tests/contrast.test.ts</code> fails a text, role, syntax or categorical colour
-  below its ratio. The e2e accent tests iterate <code>THEME_ITEMS</code> and read each theme's
-  expected colours from <code>globals.css</code>, and the accessibility spec runs axe in every theme
-  that list names, so they check the new theme without a change.
+  below its ratio.
   What the approach still costs is 56 restated values per theme, chosen by hand. What it buys is
   that a theme switch is one attribute write and nothing in React.
 </p>

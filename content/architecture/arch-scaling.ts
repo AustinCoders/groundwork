@@ -72,7 +72,7 @@ export const archScaling: Chapter = {
 <tr>
   <td>Writing the 366 outlined chapters</td>
   <td>Less than it looks. Outline chapters already prerender, so the page count does not move. Build time and deploy size grow with the body text, and the chapters written so far average about 15,400 characters of HTML.</td>
-  <td>Nothing urgent. The whole static generation step takes 71 seconds on CI's 3 workers.</td>
+  <td>Nothing urgent. The whole static generation step takes 71 seconds on 3 workers.</td>
 </tr>
 <tr>
   <td>A burst on the narrator</td>

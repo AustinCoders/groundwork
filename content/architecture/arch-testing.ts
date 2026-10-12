@@ -3,26 +3,26 @@ import type { Chapter } from "../types";
 export const archTesting: Chapter = {
   id: "arch-testing",
   num: "A3",
-  title: "Tests, hooks and CI",
-  short: "CI and tests",
+  title: "Tests and hooks",
+  short: "Tests",
   levels: ["advanced"],
   practice: [],
   ready: true,
-  subtitle: "1309 unit tests, 567 browser tests, and one test that checks what these pages say about the site.",
+  subtitle: "1295 unit tests, 19 browser tests, and one test that checks what these pages say about the site.",
   body: `<h3>The shape of it</h3>
 <p>
-  There are three layers of checking, each slower and more thorough than the one before:
+  There are three layers of checking, each slower than the one before:
 </p>
 <ul>
 <li><strong>Git hooks</strong> on the author's machine, over staged files only.</li>
-<li><strong>Vitest</strong> in Node, over data and pure logic.</li>
-<li><strong>Playwright</strong> in a real browser, against a production build.</li>
+<li><strong>Vitest</strong> in Node, over data and pure logic. Most of the weight is here.</li>
+<li><strong>Playwright</strong> in a real browser, against a production build: one small smoke spec.</li>
 </ul>
 <p>
-  CI runs the last two, plus the compiler, the linters and Lighthouse, on every push to
-  <code>main</code> and on every pull request. The test counts in this chapter are counted from the working tree of
-  the branch it was last edited on, not read from a CI run. The step timings further down are from one earlier CI run
-  on <code>main</code>.
+  There is no CI service. A GitHub workflow used to run the compiler, the linters, the unit tests, the build, about 570
+  browser tests and Lighthouse on every push and pull request; it was removed, and nothing runs these checks for the author
+  now. The browser suite was cut to the smoke spec described below. The test counts in this chapter are counted from the
+  working tree of the branch it was last edited on.
 </p>
 
 <h3>Unit tests: 24 files, 405 tests</h3>
@@ -56,7 +56,7 @@ export const archTesting: Chapter = {
 <li>an exercise pointing at a chapter that does not exist</li>
 </ul>
 <p>
-  The whole suite runs in 8 seconds in CI.
+  The whole suite runs in under 10 seconds.
 </p>
 
 <h3>The test that keeps these pages honest</h3>
@@ -78,36 +78,37 @@ export const archTesting: Chapter = {
   and then drifted.
 </p>
 
-<h3>Browser tests: 12 specs, 567 tests</h3>
+<h3>Browser tests: one smoke spec, 19 tests</h3>
 <p>
   <code>playwright.config.ts</code> starts <code>npm run start</code> on port 3100. That is the
   production build, not the dev server, because dev mode double-invokes effects and serves
-  unminified code. In CI it retries a failed test once and fails the run if anyone left a
-  <code>test.only</code> behind.
+  unminified code, so <code>npm run build</code> comes first. <code>npm run test:e2e</code> then runs the spec in about ten
+  seconds on three workers, with no retries unless <code>CI</code> is set, in which case it retries a failed test once and
+  fails the run if anyone left a <code>test.only</code> behind.
 </p>
 <div class="table-scroll"><table>
 <thead><tr><th>Spec</th><th>Tests</th><th>Covers</th></tr></thead>
 <tbody>
-<tr><td><code>smoke.spec.ts</code></td><td>255</td><td>23 routes load with no console error and no failed request; the playground fits at 1024, 768 and 390 pixels wide; 229 flows (narration, search, share links, stdin, the debugger, Lua and Python grading, the mock interview from lobby to debrief, the problems page filters, an unknown chapter slug returning a stored 404, the old <code>/soon</code> links redirecting to a cover, a level page or the home page, the 404 page in its frame with its search hint and its heading in the handwriting font on a first visit, the Git hero figure's labels at least 12 pixels high on a phone, the error scene after a page fails to load (a chunk request is aborted during a client navigation) with its retry, the Git landing never showing the wrong start before hydration, the privacy page's five numbered sections, a written topic's reading plan, its Continue action and its reading-budget reach text, a written topic's path page scoped to its own steps, its back pill, its no-level and topic-only redirects, marking a step read, a quiz topic's unread ticks linking to its chapter check while a read chapter keeps its toggle and other topics keep their buttons, the phone Chapters sheet's read ticks, and a DSA chapter's code switch: JavaScript first with no other language sent, each language in turn, the choice kept across a reload and a second chapter, the keyboard, and no switch or key read in other chapters, and the binary search player: its first frame in the server HTML, stepping by keyboard with the code line, the marks and the narration in step, play, pause, scrub, reset and stopping itself, focus kept when a button reaches an end, and no transition under reduced motion, and the chapter check: a keyboard pass, a miss with its section links and a fresh retry, an order question answered with the Move buttons, marking read without the check, an old read mark shown as read before checks, a chapter with no check yet, a stale stored value, the reader's plain-key shortcuts kept out, the check on a phone, and a tick opening the check: the end card, contents card, cover and path ticks and a direct <code>#check</code> address start it with a banner, the first question and focus, a second click only repeating the pulse, a tick on the miss screen or mid-check without a banner, a modified click doing nothing, <code>#check</code> set after the page loaded, the banner's Mark as read without the check, nothing opening on a read chapter or one with no check, and a static outline instead of an animation under reduced motion, the rail, cover and path telling checked, not checked, read before checks and tested out apart in text, a topic that asks for no checks showing none of them, the phone Chapters sheet telling a state, and the language switch, the player and the check each filling the reading column, with 44 pixel controls and no sideways scroll at 320, 390 and 1440 pixels, the home page's interview book with its stage switcher and its sentence-boundary previews, its how-it-works demo (a line opened, a failing then a passing run, an answer checked, a chapter marked read, a reset, and the page with JavaScript off), its scenes with their layered cards, stickers and notes, the parallax and reduced-motion rules, its practice rows, its path journeys and its single-open FAQ, and its sections each filling a view with the nav anchors landing under the header)</td></tr>
-<tr><td><code>a11y.spec.ts</code></td><td>199</td><td>axe with the WCAG 2.0 and 2.1 A and AA tags, and no rule disabled, over 38 pages and 65 states, in all 9 themes at 1440 and 390 pixels wide. The states are the error page after a page fails to load, the site menu open, the reading menu on <code>/notes</code> with its Narrator and Keyboard shortcuts folds open, and a reading budget picked on the JavaScript cover, the site menu with a category expanded, the site menu with the theme swatches focused and the home page's topic section on Languages, with a legend row expanded and a station card open and with a search term typed, its interview book on a later round and on its last stage, its practice section with a row focused, a path tab with unwritten topics, its FAQ with the comparison answer open, its how-it-works demo with a line opened, a failing run, every test passing, an answer checked and a chapter marked read, a try-it block run, its interview book pinned and scrolled to a later round, the section rail with a focused link, and its topic section on the AI category, the binary search chapter's player stepped to a middle step and to its last, the chapter check's start card, the check started from a tick, a checked answer with its explanations, its miss and pass screens and an order question, at both widths; the inline contents of a chapter, the Chapters sheet and the Filters sheet open, at 390 only; the problems list with a topic and a level picked and with nothing matching, the playground after a run that threw (and with its debugger open) and with the new file dialog open, and an exercise with a hint shown, with failing tests and with every test passing; a mock round checked at up to five stages; an interview round in practice mode, the question bank with a question opened and with nothing matching, and the flashcard drill with the answer revealed; and thirteen seeded from saved progress: a chapter due for review, a chapter read before checks, reviews due with one marked Again and a schedule behind them, the review session and its done card, the last review remembered with the all-done stamp, nothing due but chapters scheduled, a chapter read on a path, a year of activity, a new reader on the progress page, a heavy reader with a level up, badges and marked answers, two saved mock sessions and the interview landing with progress</td></tr>
-<tr><td><code>chapters.spec.ts</code></td><td>8</td><td>Every written chapter opened at 390 pixels wide in batches of twenty, checked for page overflow, content wider than the screen outside a scroll region, console errors, failed requests and an empty body; balanced room under the header and a comfortable line length from 390 to 2560 pixels; no text left part-transparent while scrolling; the hero stage and its read sticker; the code, try-it, table and figure cards of a heavy chapter, and the run button adding no layout shift</td></tr>
-<tr><td><code>book.spec.ts</code></td><td>16</td><td>The interview landing with every round on one of its six trails and its numbers from the data; the question of the day revealing in place and no stage card covering another at four screen sizes, on the landing and on this section's index; no wrong label or question on any frame before hydration; read rounds and the pick-up point on the trails; a round with its rounds rail, its aside, its glance card and its next stop, marked read and kept after a reload; the first and last rounds; marks, clearing them and practice mode; the question bank's filters, empty state and totals; 44 pixel targets and no overflow at 390; every round at 390 and 320 with no console error; no content part-transparent while scrolling; and a round's wide code scrolling inside its own region</td></tr>
-<tr><td><code>mock.spec.ts</code></td><td>7</td><td>The mock lobby with no scroll reveals and no stage card covering another at three screen sizes; no wrong pick-up card on any frame before hydration, and walking back into a saved round; the room filling the window on every side with no page scroll from 1001 to 2560 pixels wide, through the brief, a question, a follow-up and the review, and stacking below it; the coding room keeping its editor; no sideways scroll and tappable controls at 390 and 320 from the lobby to the debrief; the debrief's verdict and sections; and the readiness board's empty state</td></tr>
-<tr><td><code>review.spec.ts</code></td><td>9</td><td>The review page in its three states (nothing read, some due, nothing due but scheduled) as one balanced screen under the header at four sizes with no stage card covering another; no wrong heading or card on any frame before hydration; remembering a chapter taking it off the due list while the menu count follows; Again keeping it due, moving it to the end and undoing; the all-done stamp and what comes next; the honest start for a reader with nothing read; the schedule grouped by day with a Show all toggle; the session walking the due chapters; and no sideways scroll at 390 and 320 with 44 pixel controls in each state</td></tr>
-<tr><td><code>progress.spec.ts</code></td><td>9</td><td>The progress page in its three states (nothing yet, some progress, a lot) as one balanced screen under the header at four sizes with no stage card covering another; no wrong level, count or label on any frame before hydration; every number matching the saved data; the links to the saved chapter, the review, the topics and the interview drill; the honest start for a reader with nothing saved; the level-up announced once; the year of activity as a named scroll region with a tooltip on every day; no sideways scroll and 44 pixel controls at 390 and 320; and nothing part-transparent at any scroll position</td></tr>
-<tr><td><code>compose.spec.ts</code></td><td>10</td><td>Every hero stage composed from the kit at four desktop sizes, a tablet and two phones, in all nine themes and all eight fonts: three tilts only, tape never over text or a sticker, stickers on a card edge, hand notes hung on their card with the arrow touching it, connectors running edge to edge, numbers tables aligned on one baseline, highlights drawn as a stroke that keeps the text at 4.5:1, and the same rules on the Git landing, the privacy page, the 404 page and the error scene, and nothing poking past the right edge of a phone in any font on seven pages</td></tr>
-<tr><td><code>tour.spec.ts</code></td><td>26</td><td>The first-visit tour: the prompt appears only after the page has loaded and shifts nothing, Skip and Escape remember, the prompt covering no home hero content at 1440 by 900, a chapter or any deep page shows nothing, bad saved values count as not seen, the Menu row opens the tour from any page, keyboard use with focus trapped and returned, one slide at a time with fully opaque text on every frame, reduced motion, every slide composed with the kit and fitting at five sizes, and nothing clipped in the eight fonts</td></tr>
-<tr><td><code>whiteboard.spec.ts</code></td><td>6</td><td>Drawing, arrows that follow their shapes, undo, reload, PNG export, share links, templates, locking, grouping</td></tr>
-<tr><td><code>workbench.spec.ts</code></td><td>14</td><td>The playground and the problem pages filling the window with the same room on every side and no page scroll from 1001 to 2560 pixels wide, and stacking below it; no sideways scroll and 44 pixel controls at 390 and 320; the stamp, the hints and the console's empty states; the problems list with its balanced hero, sticky bar, ticks, Filters sheet, empty state, no wrong label before hydration and no JavaScript; and the mock room's editor keeping its tool icons</td></tr>
-<tr><td><code>keyboard.spec.ts</code></td><td>8</td><td>At 390 pixels wide: the closed Chapters sheet stays out of the tab order; the open Chapters sheet, the site menu and the Filters sheet hold focus and hand it back on Escape; a wide table and a wide code block in a git chapter and in the interview book take focus and have names; the question drill and the mock brief leave Enter to a focused control; the playground's skip link lands in the editor</td></tr>
+<tr><td><code>smoke.spec.ts</code></td><td>19</td><td>8 pages load with their heading and no console error; 11 flows (the home page with its heading and the Menu pill, the Menu opening and closing on Escape, a topic cover and its level picker link, a chapter with its rail and no sideways scroll at 390 pixels wide, the playground running a JavaScript snippet, an exercise page running code and grading a submission, unknown URLs returning a real 404, a DSA chapter switching its code to Python and back, the binary search player stepping forward and back, marking a DSA chapter read opening its check that a keyboard user answers and finishes, and the DSA cover telling a passed chapter's check state in words)</td></tr>
 </tbody>
 </table></div>
 <p>
-  The smoke spec ignores requests to <code>/_vercel/</code>. Those scripts exist only on Vercel's
-  edge, so they return 404 locally every time. The accessibility spec loads each page or state
-  once per width and then switches the theme in place, the way the theme picker does, so one page
-  load covers all nine themes.
+  The eight pages are the problems list, the interview book, the mock interview, review, progress, privacy, this section and
+  the Git guide. A test that clicks first waits for the element to be hydrated, by looking for the property React puts on a
+  DOM node once it owns it, so it cannot click before the handler exists and nothing in the spec sleeps. It ignores requests
+  to <code>/_vercel/</code>. Those scripts exist only on Vercel's edge, so they return 404 locally every time.
 </p>
+<div class="bx is-ref">
+<span class="ttl">What the cut removed</span>
+<p>
+  The old suite also ran axe over every page and state in all nine themes at two widths, opened every written chapter at 390
+  pixels wide, probed the composition of every hero stage in every theme and font, and covered the tour, the interview book,
+  the mock room, review, progress, the workbench, the whiteboard and keyboard focus in detail, including checks that nothing
+  flashes the wrong state before hydration. None of that is checked in a browser any more. What still guards the colours is
+  <code>tests/contrast.test.ts</code> and the theme tests, which read the tokens of all nine themes in Node. Layout, overflow,
+  focus and hydration behaviour on those pages are now checked by looking.
+</p>
+</div>
 
 <h3>Before code leaves the machine</h3>
 <p>
@@ -132,106 +133,38 @@ export const archTesting: Chapter = {
   Five unit tests cover the checker.
 </p>
 <div class="bx is-ref">
-<span class="ttl">The rule has one door open</span>
+<span class="ttl">The rule has one door</span>
 <p>
-  CI does not run <code>npm run comments</code>. The check lives only in the pre-push hook and in
-  <code>npm run check</code>. A push with <code>--no-verify</code>, or a commit made in the GitHub
-  web editor, skips it. The workflow files themselves carry comments, which is allowed, because the
-  checker does not read YAML.
+  The check runs in the pre-push hook and in <code>npm run check</code>. A push with
+  <code>--no-verify</code>, or a commit made in the GitHub web editor, skips the hook, and nothing else runs it.
 </p>
 </div>
 
-<h3>CI, step by step</h3>
+<h3>What runs, and when</h3>
 <p>
-  <code>.github/workflows/ci.yml</code> has one job on <code>ubuntu-latest</code>. The timings are
-  from the latest run on <code>main</code>, which took 403 seconds from start to finish.
+  Nothing here runs by itself except the two git hooks. The rest are commands the author runs.
 </p>
 <div class="table-scroll"><table>
-<thead><tr><th>#</th><th>Step</th><th>Seconds</th><th>Note</th></tr></thead>
+<thead><tr><th>Command</th><th>What it runs</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>Checkout</td><td>1</td><td></td></tr>
-<tr><td>2</td><td>Set up Node</td><td>8</td><td>Version from <code>.nvmrc</code>, which is 24, with the npm cache</td></tr>
-<tr><td>3</td><td><code>npm ci --ignore-scripts</code></td><td>14</td><td><code>msedge-tts</code> has a pnpm-only preinstall gate; its published build does not need it</td></tr>
-<tr><td>4</td><td>Generate route types</td><td>under 1</td><td><code>next typegen</code>, so <code>tsc</code> can see the route helper types</td></tr>
-<tr><td>5</td><td>Typecheck</td><td>11</td><td>Includes every content file</td></tr>
-<tr><td>6</td><td>Lint</td><td>18</td><td></td></tr>
-<tr><td>7</td><td>Formatting</td><td>8</td><td><code>prettier --check</code></td></tr>
-<tr><td>8</td><td>Spelling</td><td>7</td><td>cspell over the whole repository, dotfiles included</td></tr>
-<tr><td>9</td><td>Unit tests</td><td>8</td><td>Named "Content integrity tests" in the workflow; it runs the full Vitest suite</td></tr>
-<tr><td>10</td><td>Build</td><td>107</td><td>Compiled in 21.5 s, then 1,738 static pages generated in 71 s on 3 workers</td></tr>
-<tr><td>11</td><td>Install Chromium</td><td>20</td><td></td></tr>
-<tr><td>12</td><td>End-to-end</td><td>77</td><td>74 passed</td></tr>
-<tr><td>13</td><td>Upload Playwright report</td><td>&mdash;</td><td>Only on failure, kept 7 days</td></tr>
-<tr><td>14</td><td>Lighthouse budgets</td><td>118</td><td>3 URLs, 3 runs each</td></tr>
-<tr><td>15</td><td>Upload Lighthouse report</td><td>&mdash;</td><td>Only on failure, kept 7 days</td></tr>
+<tr><td><code>npm run check</code></td><td>Typecheck, lint, the comment check, formatting, spelling and the unit tests</td></tr>
+<tr><td><code>npm run build</code></td><td>The production build, which type-checks again and renders every page; Vercel runs the same command</td></tr>
+<tr><td><code>npm run test:e2e</code></td><td>The smoke spec, against the build</td></tr>
+<tr><td><code>npm run build</code> then <code>npm run test:perf</code></td><td>The Lighthouse budgets in <code>.lighthouserc.json</code>, three runs on three URLs, started through <code>npx</code></td></tr>
 </tbody>
 </table></div>
 <p>
-  The order is cheapest first. Everything up to the unit tests takes 66 seconds, so a type error or
-  a misspelling fails long before the build starts.
+  Pushing a branch is also a check. Vercel builds a preview of every pushed branch and reports it as a commit status called
+  <code>Vercel</code>, with a URL to open. Vercel runs the build but not the linters or the tests.
 </p>
 <p>
-  Lighthouse runs from <code>treosh/lighthouse-ci-action</code> rather than from the project's own
-  dependencies. The CLI pulls in an old Lighthouse and Puppeteer, and that was thirteen advisories
-  the lockfile did not need for a tool that only ever runs in CI.
+  Lighthouse runs through <code>npx</code> rather than from the project's own dependencies. The CLI pulls in an old
+  Lighthouse and Puppeteer, and that was thirteen advisories the lockfile did not need for a tool that only runs when someone asks.
 </p>
-
-<figure>
-<svg viewBox="0 0 900 290" class="dg" role="img" aria-label="The CI job in order. The first row holds the cheap checks: install 14 seconds, typecheck 11, lint 18, format 8, spell 7 and unit tests 8, together 66 seconds. The second row holds the expensive ones: build 107 seconds, Chromium 20, end-to-end 77 and Lighthouse 118.">
-<g class="rough">
-<rect x="20" y="40" width="126" height="64" rx="9" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 1.8" />
-<rect x="166" y="40" width="126" height="64" rx="9" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 1.8" />
-<rect x="312" y="40" width="126" height="64" rx="9" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 1.8" />
-<rect x="458" y="40" width="126" height="64" rx="9" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 1.8" />
-<rect x="604" y="40" width="126" height="64" rx="9" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 1.8" />
-<rect x="750" y="40" width="126" height="64" rx="9" style="fill: var(--dg-box-green); stroke: var(--green); stroke-width: 1.8" />
-<rect x="20" y="186" width="196" height="64" rx="9" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.8" />
-<rect x="240" y="186" width="196" height="64" rx="9" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.8" />
-<rect x="460" y="186" width="196" height="64" rx="9" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.8" />
-<rect x="680" y="186" width="196" height="64" rx="9" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.8" />
-<path class="ln" d="M146 72 H160" marker-end="url(#arrow)" />
-<path class="ln" d="M292 72 H306" marker-end="url(#arrow)" />
-<path class="ln" d="M438 72 H452" marker-end="url(#arrow)" />
-<path class="ln" d="M584 72 H598" marker-end="url(#arrow)" />
-<path class="ln" d="M730 72 H744" marker-end="url(#arrow)" />
-<path class="ln" d="M813 104 V140 H118 V180" marker-end="url(#arrow)" />
-<path class="ln" d="M216 218 H234" marker-end="url(#arrow)" />
-<path class="ln" d="M436 218 H454" marker-end="url(#arrow)" />
-<path class="ln" d="M656 218 H674" marker-end="url(#arrow)" />
-</g>
-<text class="sm" x="20" y="26">CHEAP CHECKS, 66 s TOGETHER</text>
-<text class="lbl" x="34" y="70">Install</text>
-<text class="sm" x="34" y="92">14 s</text>
-<text class="lbl" x="180" y="70">Typecheck</text>
-<text class="sm" x="180" y="92">11 s</text>
-<text class="lbl" x="326" y="70">Lint</text>
-<text class="sm" x="326" y="92">18 s</text>
-<text class="lbl" x="472" y="70">Format</text>
-<text class="sm" x="472" y="92">8 s</text>
-<text class="lbl" x="618" y="70">Spell</text>
-<text class="sm" x="618" y="92">7 s</text>
-<text class="lbl" x="764" y="70">Unit tests</text>
-<text class="sm" x="764" y="92">8 s, 166 tests</text>
-<text class="sm" x="20" y="172">EXPENSIVE CHECKS</text>
-<text class="lbl" x="34" y="216">Build</text>
-<text class="sm" x="34" y="238">107 s, 1,738 pages</text>
-<text class="lbl" x="254" y="216">Chromium</text>
-<text class="sm" x="254" y="238">20 s</text>
-<text class="lbl" x="474" y="216">End-to-end</text>
-<text class="sm" x="474" y="238">77 s, 74 tests</text>
-<text class="lbl" x="694" y="216">Lighthouse</text>
-<text class="sm" x="694" y="238">118 s, 3 &times; 3 runs</text>
-<text class="sm" x="20" y="276">403 s in total on the latest run on main</text>
-</svg>
-<figcaption>
-  The first row is a sixth of the job and fails fastest. The rest is the build and two browser suites, and
-  Lighthouse is now the single longest step.
-</figcaption>
-</figure>
 
 <h3>What the Dependabot runs showed</h3>
 <p>
-  The failed runs on Dependabot's pull requests show each layer doing its job:
+  The failed runs on Dependabot's pull requests, from when CI still ran, show each layer doing its job. Those pull requests now get no automatic check at all:
 </p>
 <ul>
 <li>
