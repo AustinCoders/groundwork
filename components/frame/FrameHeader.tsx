@@ -12,6 +12,7 @@ import styles from "./frame.module.css";
 export interface FrameLink {
   href: string;
   label: string;
+  fixed?: boolean;
 }
 
 export function FrameHeader({
@@ -63,7 +64,13 @@ export function FrameHeader({
 
   return (
     <header className={headerClass}>
-      <BackButton variant="bar" className="head-back" fallbackHref={back.href} fallbackLabel={back.label} />
+      <BackButton
+        variant="bar"
+        className="head-back"
+        fallbackHref={back.href}
+        fallbackLabel={back.label}
+        fixed={back.fixed}
+      />
       <MenuButton open={menuOpen} onOpen={onMenu} />
       <Link href="/" className={styles.brand} aria-label={`${SITE_NAME} home`}>
         <span className="brand__mark" aria-hidden="true">

@@ -10,20 +10,18 @@ export function PlacementDoors({
   data,
   basePath,
   pickHref,
-  row = false,
-  labelledBy,
+  label,
 }: {
   data: PlanData;
   basePath: string;
   pickHref: string;
-  row?: boolean;
-  labelledBy?: string;
+  label: string;
 }) {
   const first = data.chapters.find((chapter) => chapter.ready);
   const beginningHref = first ? `${basePath}/${first.id}` : basePath;
 
   return (
-    <ul className={row ? `${styles.doors} ${styles.doorsRow}` : styles.doors} aria-labelledby={labelledBy}>
+    <ul className={styles.doors} aria-label={label}>
       <li>
         <Link
           className={styles.door}
@@ -32,27 +30,18 @@ export function PlacementDoors({
           prefetch={false}
           onClick={() => savePlacement(beginningPlacement(data.chapters, Date.now()))}
         >
-          <span className={styles.doorNo} aria-hidden="true">
-            01
-          </span>
           <span className={styles.doorName}>Start from the beginning</span>
           <span className={styles.doorQuote}>No test. Every chapter, in order.</span>
         </Link>
       </li>
       <li>
         <Link className={styles.door} data-door="placement" href={placementPath(data.topicId)} prefetch={false}>
-          <span className={styles.doorNo} aria-hidden="true">
-            02
-          </span>
           <span className={styles.doorName}>Find my level</span>
           <span className={styles.doorQuote}>A short set of questions, no timer, then a plan.</span>
         </Link>
       </li>
       <li>
         <Link className={styles.door} data-door="pick" href={pickHref} prefetch={false}>
-          <span className={styles.doorNo} aria-hidden="true">
-            03
-          </span>
           <span className={styles.doorName}>I&apos;ll pick a level</span>
           <span className={styles.doorQuote}>Choose beginner, intermediate or advanced yourself.</span>
         </Link>

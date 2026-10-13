@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { LevelView } from "@/app/level/LevelView";
 import { TopicHome } from "@/components/topic/TopicHome";
-import type { LevelStat } from "@/components/topic/LevelPicker";
+import type { LevelStat } from "@/components/topic/levelStats";
 import {
   chapterMetas,
   chaptersForLevel,
@@ -71,7 +71,6 @@ export default async function LevelPage({ params }: { params: Promise<{ topic: s
         topic={topic}
         levels={levels}
         perLevel={perLevel}
-        chapterById={byChapterId(metas)}
         curriculumNotes={curriculumNotes(topic.id)}
         parts={coverParts(topic.id)}
         cards={coverCards(topic.id)}

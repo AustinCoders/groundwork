@@ -6,37 +6,19 @@ import { Copy, Scene } from "@/components/home/Stage";
 import { Card, Compose, Remark, Tag } from "@/components/topic/Compose";
 import { RevealWithoutScript } from "@/components/topic/RevealWithoutScript";
 import { Facts, topicKit } from "@/components/topic/TopicKit";
+import { NO_STAT, levelTotals, type LevelStat } from "@/components/topic/levelStats";
 import { compactSpan, formatSpan, plural } from "@/lib/format";
 import { levelRows } from "@/lib/levelRows";
 import { useMounted } from "@/lib/hooks";
 import type { ChapterMeta, Level, LevelId, Topic } from "@/content/types";
 import styles from "./level.module.css";
 
-export interface LevelStat {
-  chapters: number;
-  minutes: number;
-  exercises: number;
-}
-
-export const NO_STAT: LevelStat = { chapters: 0, minutes: 0, exercises: 0 };
+export type { LevelStat };
+export { NO_STAT, levelTotals };
 const PREVIEW = 4;
 
 export function padNumber(n: number) {
   return String(n).padStart(2, "0");
-}
-
-export function levelTotals(levels: Level[], perLevel: Record<string, LevelStat>): LevelStat {
-  return levels.reduce(
-    (sum, level) => {
-      const stat = perLevel[level.id] ?? NO_STAT;
-      return {
-        chapters: sum.chapters + stat.chapters,
-        minutes: sum.minutes + stat.minutes,
-        exercises: sum.exercises + stat.exercises,
-      };
-    },
-    { chapters: 0, minutes: 0, exercises: 0 }
-  );
 }
 
 export function LevelPicker({

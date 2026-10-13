@@ -15,7 +15,7 @@ export const archRendering: Chapter = {
   A component is a server component unless it needs something only a browser has: state, an effect,
   an event handler, <code>localStorage</code>, or a measurement. Adding <code>"use client"</code> has
   a cost, because everything the file imports is bundled and shipped. Across <code>app/</code>,
-  <code>components/</code> and <code>lib/</code>, 126 files carry the directive. About a third belong
+  <code>components/</code> and <code>lib/</code>, 131 files carry the directive. About a third belong
   to the three big interactive surfaces: the playground, the whiteboard and the mock interview.
 </p>
 
@@ -100,11 +100,15 @@ export const archRendering: Chapter = {
   a server-computed list of cards and parts handed to a client component that renders
   <code>TopicFrame</code> and reads its own done/next/budget state through
   <code>useCoverProgress</code>, which wraps <code>useReadingPlan</code>. DSA has no cover of its own: its
-  home is <code>/level/dsa</code>, rendered by <code>TopicHome</code> (<code>components/topic/TopicHome.tsx</code>)
-  from the same shared pieces (<code>CoverParts</code>, <code>LevelPicker</code>, <code>LevelSyllabus</code>).
+  home is <code>/level/dsa</code>, rendered by <code>TopicHome</code> (<code>components/topic/TopicHome.tsx</code>),
+  a thin adapter: it reads the reading plan, the check states and the placement, builds plain props
+  and hands them to the generic topic shell, <code>TopicShell</code> (<code>components/topic/shell/</code>).
   The page shows a first-time reader the three doors (start from the beginning, find my level, pick a
-  level) and a placed reader their next chapter, plan and chapter list, with the level picker lower down as
-  Change level. The bare <code>/dsa</code> is a permanent redirect to it, and
+  level) in the hero, and a placed reader one Continue button with a status line such as
+  <code>12 / 34 read · next: Hashing</code>. Both get one chapter list grouped by level, whose folds
+  open to the reader's current level, then a row of practice, review, interview and notes links and a closed
+  <code>Plan &amp; level</code> panel that holds the plan, the level picker and the time budget. The bare
+  <code>/dsa</code> is a permanent redirect to it, and
   <code>topicHome()</code> in <code>lib/topics.ts</code> gives every back link and breadcrumb the right
   address. Every other topic's cover is a roadmap: <code>TopicCoverPage</code>
   renders <code>TopicOutline</code> (<code>components/topic/TopicOutline.tsx</code>) in the same

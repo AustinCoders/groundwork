@@ -275,6 +275,33 @@ export const archDesignSystem: Chapter = {
   page has hydrated, so the label of a button never changes under the reader.
 </p>
 
+<h3>The topic shell</h3>
+<p>
+  A topic's home is drawn by one generic shell, <code>components/topic/shell/</code>, and nothing in it
+  names a topic. <code>TopicShell</code> takes plain props: the topic's name, a hero (a title, a status
+  line, at most one primary action or a slot for the first-time choice), the chapters grouped by level,
+  a list of tool links, an optional details panel and an optional notes fold. Each chapter arrives as a
+  row with its code, title, minutes, exercise count, link, one state mark and at most one quiet tag
+  (<code>up next</code> or <code>revise earlier</code>). <code>PathList</code> draws the groups as native
+  <code>details</code> folds, so they open by keyboard, announce themselves to a screen reader and need no
+  animation; <code>ChapterRow</code> and <code>StateMark</code> draw a row, with the state in words
+  where it matters (read, checked, not checked, tested out, soon) and a hidden label otherwise;
+  <code>ToolsRow</code> and <code>DetailsPanel</code> draw the links and the closed panel. A link such as
+  <code>#pick-level</code>, <code>#beginner</code> or <code>#notes</code> opens the fold it names.
+</p>
+<p>
+  The page is deliberately calm: one column, flat bordered cards from the theme tokens, no tape and no
+  tilt, the heading font for names and the reading font for rows. Everything is hidden until the page
+  has hydrated, as the old hero was, so a returning reader never sees the first-time hero flash.
+  A topic adopts the shell with a thin adapter. <code>components/topic/shell/model.ts</code> holds the
+  pure part, <code>buildGroups</code>, which turns cards and the optional done set, check states and plan
+  into groups, so a topic with no placement and no checks (JavaScript, say) passes its cards and levels
+  and leaves the rest out. <code>TopicHome</code> is the first adapter and does the same for DSA with its
+  plan, its doors and its level picker. The shell replaced the chapters band, the full syllabus band,
+  the practice band, the up-next card, the plan card with its own Continue and the Start button in the
+  header, so the page now shows each chapter once and has one way forward.
+</p>
+
 <h3>The workbench pages</h3>
 <p>
   The playground and the problem pages share one shell, <code>components/practice/workbench.module.css</code>,
@@ -354,7 +381,7 @@ export const archDesignSystem: Chapter = {
 <p>
   <code>globals.css</code> is about 7,400 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
-  one of 61 CSS modules, the largest being <code>app/whiteboard/whiteboard.module.css</code> at about 1,600
+  one of 62 CSS modules, the largest being <code>app/whiteboard/whiteboard.module.css</code> at about 1,600
   lines. The rule of thumb is that anything
   chapter HTML can contain goes in globals, because chapter bodies are strings that cannot import a
   module, and anything else goes in a module so it loads only with its page.

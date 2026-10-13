@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Copy, Scene } from "@/components/home/Stage";
 import { Card, Compose, Remark, Tag } from "@/components/topic/Compose";
 import {
@@ -25,6 +25,7 @@ import { useProgressValue } from "@/lib/hooks";
 import { levelWords, planView, readingPlan, type PlanChapter, type PlanData } from "@/lib/placementPlan";
 import type { PlacementRecord } from "@/lib/placementRecord";
 import { progress } from "@/lib/storage";
+import { ResetPlan } from "./ResetPlan";
 import styles from "./placement.module.css";
 
 const HEADLINE = {
@@ -91,19 +92,6 @@ export function PlacementPlan({
   );
   const next = nextChapter("quiz", readable, done, readingPlan(record, readable), true);
   const level = levelWords(record.level, data.levelNames);
-  const [confirming, setConfirming] = useState(false);
-  const resetRef = useRef<HTMLButtonElement>(null);
-  const keepRef = useRef<HTMLButtonElement>(null);
-  const returnFocus = useRef(false);
-
-  useEffect(() => {
-    if (confirming) keepRef.current?.focus();
-    else if (returnFocus.current) {
-      returnFocus.current = false;
-      resetRef.current?.focus();
-    }
-  }, [confirming]);
-
   useEffect(() => {
     if (!fresh) return;
     const heading = document.getElementById("plan-heading");
@@ -151,37 +139,7 @@ export function PlacementPlan({
             Saved on this device. Resetting clears only this plan: your ticks, XP and review queue stay as they are.
             {bankNote && ` ${bankNote}`}
           </p>
-          {!confirming && (
-            <button
-              type="button"
-              className={styles.textButton}
-              id="plan-reset"
-              ref={resetRef}
-              onClick={() => setConfirming(true)}
-            >
-              Reset my plan
-            </button>
-          )}
-          {confirming && (
-            <div className={styles.confirm} role="group" aria-label="Reset my plan">
-              <p>Clear this plan from the device? Your ticks, XP and review queue stay as they are.</p>
-              <button type="button" className={topicKit.btn} id="plan-reset-yes" onClick={onReset}>
-                Yes, reset my plan
-              </button>
-              <button
-                type="button"
-                className={topicKit.btnGhost}
-                id="plan-reset-no"
-                ref={keepRef}
-                onClick={() => {
-                  returnFocus.current = true;
-                  setConfirming(false);
-                }}
-              >
-                Keep my plan
-              </button>
-            </div>
-          )}
+          <ResetPlan onReset={onReset} />
         </Copy>
         <Compose live layout="rail">
           <Card at="a" tilt={-1} taped>

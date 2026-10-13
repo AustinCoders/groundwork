@@ -14,16 +14,18 @@ export function BackButton({
   fallbackLabel,
   variant,
   className,
+  fixed = false,
 }: {
   fallbackHref: string;
   fallbackLabel: string;
   variant: "bar" | "icon";
   className?: string;
+  fixed?: boolean;
 }) {
   const router = useRouter();
   const raw = useClientValue(cameFromRaw, "");
   const here = useClientValue(currentPath, "");
-  const trail = parseTrail(raw, here);
+  const trail = fixed ? null : parseTrail(raw, here);
   const label = trail ? `Back to ${shortTitle(trail.title)}` : fallbackLabel;
   const href = trail ? trail.path : fallbackHref;
 
