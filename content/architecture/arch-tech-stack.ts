@@ -147,7 +147,7 @@ export const archTechStack: Chapter = {
 <tr><td><b>ESLint</b> + <code>eslint-config-next</code></td><td>The usual, plus Next-specific mistakes</td></tr>
 <tr><td><b>Prettier</b></td><td>Formatting, with <code>content/interview-data.ts</code> and <code>content/practice/</code> ignored on purpose</td></tr>
 <tr><td><b>cspell</b></td><td>Spelling across every file, including all the prose</td></tr>
-<tr><td><b>Vitest</b></td><td>75 test files. Among them: the content's integrity, the site's claims about itself, SEO metadata, and the pure engines behind the mock interview, the grader, the debugger and the whiteboard</td></tr>
+<tr><td><b>Vitest</b></td><td>77 test files. Among them: the content's integrity, the site's claims about itself, SEO metadata, and the pure engines behind the mock interview, the grader, the debugger and the whiteboard</td></tr>
 <tr><td><b>Playwright</b></td><td>27 tests in one smoke spec against a production build: the pages load, the menu opens, the path trail stays clear of itself, the playground and an exercise run, a DSA chapter's code switch, player and chapter check work, the end-of-chapter popup asks once, the placement flow lands on a plan, unknown URLs return 404</td></tr>
 <tr><td><b>Lighthouse CI</b></td><td>Performance budgets, run three times so one slow run cannot fail them; started by hand with <code>npm run test:perf</code></td></tr>
 <tr><td><b>esbuild</b></td><td>Bundles the React sandbox before every build</td></tr>

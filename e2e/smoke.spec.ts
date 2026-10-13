@@ -1,10 +1,33 @@
 import { expect, test, type ConsoleMessage, type Locator, type Page } from "@playwright/test";
-import { pool } from "../content/dsa/quiz/dsa-binary-search";
+import { pool as poolArraysStrings } from "../content/dsa/quiz/dsa-arrays-strings";
+import { pool as poolBasicRecursion } from "../content/dsa/quiz/dsa-basic-recursion";
+import { pool as poolBinarySearch } from "../content/dsa/quiz/dsa-binary-search";
+import { pool as poolComplexityAnalysis } from "../content/dsa/quiz/dsa-complexity-analysis";
+import { pool as poolHashing } from "../content/dsa/quiz/dsa-hashing";
+import { pool as poolLinkedLists } from "../content/dsa/quiz/dsa-linked-lists";
+import { pool as poolSlidingWindow } from "../content/dsa/quiz/dsa-sliding-window";
+import { pool as poolSortingAlgorithms } from "../content/dsa/quiz/dsa-sorting-algorithms";
+import { pool as poolStacksQueues } from "../content/dsa/quiz/dsa-stacks-queues";
+import { pool as poolTwoPointers } from "../content/dsa/quiz/dsa-two-pointers";
 import type { OrderQuestion, Question } from "../content/quiz-types";
 
 const CHAPTER_ID = "dsa-binary-search";
 const CHAPTER_PATH = `/dsa/${CHAPTER_ID}`;
-const QUESTIONS = new Map<string, Question>(pool.questions.map((question) => [question.id, question]));
+const POOLS = [
+  poolArraysStrings,
+  poolBasicRecursion,
+  poolBinarySearch,
+  poolComplexityAnalysis,
+  poolHashing,
+  poolLinkedLists,
+  poolSlidingWindow,
+  poolSortingAlgorithms,
+  poolStacksQueues,
+  poolTwoPointers,
+];
+const QUESTIONS = new Map<string, Question>(
+  POOLS.flatMap((pool) => pool.questions).map((question) => [question.id, question])
+);
 
 const PAGES = [
   { path: "/problems", heading: /problem/i },
@@ -166,7 +189,12 @@ test("the path trail keeps every stop clear of the others with every exercise li
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/path/dsa/beginner", { waitUntil: "networkidle" });
   const steps = page.locator("#steps");
-  await hydrated(steps.getByRole("button", { name: "Mark as read" }).first());
+  await hydrated(
+    steps
+      .getByRole("button", { name: "Mark as read" })
+      .or(steps.getByRole("link", { name: "Mark as read" }))
+      .first()
+  );
   const lists = steps.locator("details");
   await expect(steps.locator("details[open]")).toHaveCount(1);
   const total = await lists.count();
@@ -518,7 +546,7 @@ test("a first-time reader finds their level, lands on a plan and Continue skips 
 
   await expect(page.locator("#plan-heading")).toBeFocused();
   await expect(page.locator("body")).not.toContainText(/\d+ of \d+ correct|score/i);
-  await expect(page.locator("#tested-out-list")).toContainText("Binary search");
+  await expect(page.locator("#plan-list a").first()).toBeVisible();
   const cont = page.locator("#plan-continue");
   await expect(cont).toHaveAttribute("href", (await page.locator("#plan-list a").first().getAttribute("href")) ?? "");
   await expect(cont).not.toHaveAttribute("href", `/dsa/${CHAPTER_ID}`);

@@ -34,10 +34,13 @@ describe("the placement bank loader", () => {
       return importOriginal();
     });
     const { loadPlacementBank } = await loadPool();
-    await expect(loadPlacementBank()).resolves.toEqual([]);
+    const partial = await loadPlacementBank();
+    expect(partial.length).toBeGreaterThan(0);
+    expect(partial.some((question) => question.chapter === "dsa-binary-search")).toBe(false);
     await Promise.resolve();
     const retried = await loadPlacementBank();
-    expect(retried.length).toBeGreaterThan(0);
+    expect(retried.some((question) => question.chapter === "dsa-binary-search")).toBe(true);
+    expect(retried.length).toBeGreaterThan(partial.length);
     expect(loadPlacementBank()).toBe(loadPlacementBank());
   });
 });
