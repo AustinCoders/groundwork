@@ -31,7 +31,7 @@ import { formatSpan, plural } from "@/lib/format";
 import { problemHref } from "@/lib/problemHref";
 import { quizStore } from "@/lib/quizStore";
 import { progress, rememberLevel } from "@/lib/storage";
-import { readingPlan } from "@/lib/placementPlan";
+import { pickLevelPath, readingPlan } from "@/lib/placementPlan";
 import { usePlacement } from "@/lib/placementStore";
 import { useChapterStates } from "@/lib/useChapterStates";
 import { nextChapter, requiresCheck, tickHref } from "@/lib/completion";
@@ -76,7 +76,23 @@ export function TopicPath({
     if (!checks) rememberLevel(level.id);
   }, [level.id, checks]);
 
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    if (query.get("topic") !== topic.id || query.get("level") !== level.id) return;
+    query.delete("topic");
+    query.delete("level");
+    const rest = query.toString();
+    window.history.replaceState(window.history.state, "", `${window.location.pathname}${rest ? `?${rest}` : ""}`);
+  }, [topic.id, level.id]);
+
+  const pickerHref = checks ? pickLevelPath(topic.id) : `/level/${topic.id}`;
+
   const chapters = useMemo(() => entries.filter((entry) => entry.ready).map((entry) => entry.chapter), [entries]);
+
+  const pathPlanChapters = useMemo(
+    () => chapters.map((chapter) => ({ id: chapter.id, level: chapter.levels[0] ?? level.id, ready: true })),
+    [chapters, level.id]
+  );
 
   const doneKey = useProgressValue(
     () => chapters.map((ch) => (progress.isChapterDone(ch.id) ? "1" : "0")).join(""),
@@ -101,7 +117,7 @@ export function TopicPath({
     : "";
   const doneCount = mounted ? done.size : 0;
   const next = mounted
-    ? nextChapter(topic.completion, chapters, done, checks ? readingPlan(placement) : null)
+    ? nextChapter(topic.completion, chapters, done, checks ? readingPlan(placement, pathPlanChapters) : null)
     : (chapters[0] ?? null);
 
   const continueHref = next ? `${basePath}/${next.id}` : homeHref;
@@ -125,12 +141,12 @@ export function TopicPath({
   return (
     <TopicFrame
       topic={{ name: topic.name, href: homeHref, mark: topic.mark, accent: topic.accent }}
-      back={{ href: `/level/${topic.id}`, label: topic.name }}
+      back={{ href: `/level/${topic.id}`, label: checks ? `Back to ${topic.name}` : topic.name }}
       skip={{ label: "Skip to the path" }}
       layout="reader"
     >
       <TopicPage accent={topic.accent}>
-        <Scene className={topicKit.hero}>
+        <Scene className={`${topicKit.hero} ${styles.pathHero}`}>
           <Copy>
             <Kicker mark={topic.mark} id="path-kicker">
               Step 2 of 2 · your path
@@ -143,10 +159,10 @@ export function TopicPath({
               <Button id="start-btn" href={continueHref}>
                 {continueLabel} <span aria-hidden="true">→</span>
               </Button>
-              <Button ghost id="change-level" href={`/level/${topic.id}`}>
+              <Button ghost id="change-level" href={pickerHref}>
                 <span aria-hidden="true">⇄</span> Change level
               </Button>
-              <Button ghost id="all-chapters" href={homeHref}>
+              <Button ghost id="all-chapters" href={checks ? pickerHref : homeHref}>
                 All chapters
               </Button>
             </Actions>

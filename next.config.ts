@@ -1,11 +1,12 @@
 import type { NextConfig } from "next";
 import { CANONICAL_ORIGIN, LEGACY_HOSTS } from "./lib/site";
+import { PINNED_LEVEL_HOME_TOPIC_IDS } from "./lib/pinnedRoutes";
 import { wasmOrigins } from "./lib/wasmAssets";
 import { sentryOrigin } from "./lib/errorTracking";
 
 export const PATH_LEVEL_IDS = ["beginner", "intermediate", "advanced"];
 
-export const PINNED_LEVEL_HOME_TOPIC_IDS = ["dsa"];
+export { PINNED_LEVEL_HOME_TOPIC_IDS };
 
 export const PINNED_PATH_TOPIC_IDS = ["js", "react", "dsa", "system-design"];
 
@@ -65,6 +66,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  skipTrailingSlashRedirect: true,
+
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
@@ -73,7 +76,6 @@ const nextConfig: NextConfig = {
     const outlineIds = PINNED_OUTLINE_TOPIC_IDS.join("|");
     const pathIds = PINNED_PATH_TOPIC_IDS.join("|");
     const levelIds = PATH_LEVEL_IDS.join("|");
-    const levelHomeIds = PINNED_LEVEL_HOME_TOPIC_IDS.join("|");
 
     return [
       ...LEGACY_HOSTS.map((host) => ({
@@ -82,11 +84,11 @@ const nextConfig: NextConfig = {
         destination: `${CANONICAL_ORIGIN}/:path*`,
         permanent: true,
       })),
-      {
-        source: `/:topic(${levelHomeIds})`,
-        destination: "/level/:topic",
+      ...PINNED_LEVEL_HOME_TOPIC_IDS.map((id) => ({
+        source: `/${id}`,
+        destination: `/level/${id}`,
         permanent: true,
-      },
+      })),
       {
         source: "/soon",
         has: [{ type: "query" as const, key: "topic", value: `(?<topic>${outlineIds})` }],

@@ -352,7 +352,7 @@ export const archDesignSystem: Chapter = {
 
 <h3>CSS modules and globals.css</h3>
 <p>
-  <code>globals.css</code> is about 7,300 lines. It holds the tokens, the prose styles every
+  <code>globals.css</code> is about 7,400 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
   one of 61 CSS modules, the largest being <code>app/whiteboard/whiteboard.module.css</code> at about 1,600
   lines. The rule of thumb is that anything

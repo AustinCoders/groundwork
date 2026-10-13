@@ -273,6 +273,7 @@ function kLargest(nums, k) {
       <div>
         <div class="loop-code" id="hp-code"></div>
         <div class="loop-bar"><i id="hp-bar"></i></div>
+        <p class="loop-step" id="hp-step"></p>
         <div class="demo__ctl">
           <button class="btn" id="hp-prev" type="button">← Back</button>
           <button class="btn" id="hp-next" type="button">Next step →</button>
@@ -296,13 +297,14 @@ function kLargest(nums, k) {
 (function () {
   var ID = "hp";
   var CODE = ["const min = h[0];","h[0] = h.pop();","let i = 0;","while (true) {","  let small = i, l = 2*i+1, r = 2*i+2;","  if (l < h.length && h[l] < h[small]) small = l;","  if (r < h.length && h[r] < h[small]) small = r;","  if (small === i) break;","  [h[i], h[small]] = [h[small], h[i]]; i = small;","}"];
-  var STEPS = [{"cells":[{"v":"1","c":"","p":""},{"v":"3","c":"","p":""},{"v":"6","c":"","p":""},{"v":"5","c":"","p":""},{"v":"9","c":"","p":""},{"v":"8","c":"","p":""}],"panels":{"tree":["1","3  6","5  9  8"]},"note":"A min-heap as an array. Children of index i live at 2i+1 and 2i+2 — no pointers needed."},{"cells":[{"v":"8","c":"hot","p":"node"},{"v":"3","c":"","p":""},{"v":"6","c":"","p":""},{"v":"5","c":"","p":""},{"v":"9","c":"","p":""}],"panels":{"tree":["8","3  6","5  9"]},"note":"Extract-min returns 1. The LAST element (8) moves to the root to keep the tree complete — now it's probably in the wrong place."},{"cells":[{"v":"8","c":"hot","p":"node"},{"v":"3","c":"in","p":"child"},{"v":"6","c":"in","p":"child"},{"v":"5","c":"","p":""},{"v":"9","c":"","p":""}],"panels":{"tree":["8","3  6","5  9"]},"note":"Compare 8 with its children (3, 6)."},{"cells":[{"v":"3","c":"","p":""},{"v":"8","c":"hot","p":"node"},{"v":"6","c":"","p":""},{"v":"5","c":"","p":""},{"v":"9","c":"","p":""}],"panels":{"tree":["3","8  6","5  9"]},"note":"3 > 8, so swap. Sift-down follows the smaller child — at most log n swaps."},{"cells":[{"v":"3","c":"","p":""},{"v":"8","c":"hot","p":"node"},{"v":"6","c":"","p":""},{"v":"5","c":"in","p":"child"},{"v":"9","c":"in","p":"child"}],"panels":{"tree":["3","8  6","5  9"]},"note":"Compare 8 with its children (5, 9)."},{"cells":[{"v":"3","c":"","p":""},{"v":"5","c":"","p":""},{"v":"6","c":"","p":""},{"v":"8","c":"hot","p":"node"},{"v":"9","c":"","p":""}],"panels":{"tree":["3","5  6","8  9"]},"note":"5 > 8, so swap. Sift-down follows the smaller child — at most log n swaps."},{"cells":[{"v":"3","c":"","p":""},{"v":"5","c":"","p":""},{"v":"6","c":"","p":""},{"v":"8","c":"hot","p":"node"},{"v":"9","c":"","p":""}],"panels":{"tree":["3","5  6","8  9"]},"note":"Index 3 has no children — sift-down is done."},{"cells":[{"v":"3","c":"done","p":""},{"v":"5","c":"done","p":""},{"v":"6","c":"done","p":""},{"v":"8","c":"done","p":""},{"v":"9","c":"done","p":""}],"panels":{"tree":["3","5  6","8  9"]},"note":"Heap restored: [3, 5, 6, 8, 9]. Root is 3, the new minimum."}];
+  var STEPS = [{"cells":[{"v":"1","c":"","p":""},{"v":"3","c":"","p":""},{"v":"6","c":"","p":""},{"v":"5","c":"","p":""},{"v":"9","c":"","p":""},{"v":"8","c":"","p":""}],"panels":{"tree":["1","3  6","5  9  8"]},"note":"A min-heap as an array. Children of index i live at 2i+1 and 2i+2 — no pointers needed.","line":1},{"cells":[{"v":"8","c":"hot","p":"node"},{"v":"3","c":"","p":""},{"v":"6","c":"","p":""},{"v":"5","c":"","p":""},{"v":"9","c":"","p":""}],"panels":{"tree":["8","3  6","5  9"]},"note":"Extract-min returns 1. The LAST element (8) moves to the root to keep the tree complete — now it's probably in the wrong place.","line":2},{"cells":[{"v":"8","c":"hot","p":"node"},{"v":"3","c":"in","p":"child"},{"v":"6","c":"in","p":"child"},{"v":"5","c":"","p":""},{"v":"9","c":"","p":""}],"panels":{"tree":["8","3  6","5  9"]},"note":"Compare 8 with its children, 3 and 6. The smaller child is 3.","line":6},{"cells":[{"v":"3","c":"","p":""},{"v":"8","c":"hot","p":"node"},{"v":"6","c":"","p":""},{"v":"5","c":"","p":""},{"v":"9","c":"","p":""}],"panels":{"tree":["3","8  6","5  9"]},"note":"8 > 3, so swap. Sift-down always follows the smaller child, so it makes at most log n swaps.","line":9},{"cells":[{"v":"3","c":"","p":""},{"v":"8","c":"hot","p":"node"},{"v":"6","c":"","p":""},{"v":"5","c":"in","p":"child"},{"v":"9","c":"in","p":"child"}],"panels":{"tree":["3","8  6","5  9"]},"note":"Compare 8 with its children, 5 and 9. The smaller child is 5.","line":6},{"cells":[{"v":"3","c":"","p":""},{"v":"5","c":"","p":""},{"v":"6","c":"","p":""},{"v":"8","c":"hot","p":"node"},{"v":"9","c":"","p":""}],"panels":{"tree":["3","5  6","8  9"]},"note":"8 > 5, so swap. Sift-down always follows the smaller child, so it makes at most log n swaps.","line":9},{"cells":[{"v":"3","c":"","p":""},{"v":"5","c":"","p":""},{"v":"6","c":"","p":""},{"v":"8","c":"hot","p":"node"},{"v":"9","c":"","p":""}],"panels":{"tree":["3","5  6","8  9"]},"note":"Index 3 has no children — sift-down is done.","line":8},{"cells":[{"v":"3","c":"done","p":""},{"v":"5","c":"done","p":""},{"v":"6","c":"done","p":""},{"v":"8","c":"done","p":""},{"v":"9","c":"done","p":""}],"panels":{"tree":["3","5  6","8  9"]},"note":"Heap restored: [3, 5, 6, 8, 9]. Root is 3, the new minimum.","line":10}];
   var codeEl = document.getElementById(ID + "-code");
   if (!codeEl) return;
   if (codeEl.dataset.demoInit) return;
   codeEl.dataset.demoInit = "1";
 
   var barEl = document.getElementById(ID + "-bar");
+  var stepEl = document.getElementById(ID + "-step");
   var noteEl = document.getElementById(ID + "-note");
   var cellsEl = document.getElementById(ID + "-cells");
   var gridEl = document.getElementById(ID + "-grid");
@@ -318,6 +320,21 @@ function kLargest(nums, k) {
     row.textContent = text;
     codeEl.appendChild(row);
   });
+
+  function fillTree(el, levels) {
+    el.innerHTML = "";
+    levels.forEach(function (level) {
+      var row = document.createElement("div");
+      row.className = "loop-level";
+      level.split("  ").forEach(function (t) {
+        var chip = document.createElement("span");
+        chip.className = "loop-frame";
+        chip.textContent = t;
+        row.appendChild(chip);
+      });
+      el.appendChild(row);
+    });
+  }
 
   function fill(el, items) {
     if (!el) return;
@@ -344,7 +361,9 @@ function kLargest(nums, k) {
       row.classList.toggle("hot", Number(row.dataset.n) === s.line);
     });
     Object.keys(s.panels || {}).forEach(function (k) {
-      fill(document.getElementById(ID + "-p-" + k), s.panels[k]);
+      var panel = document.getElementById(ID + "-p-" + k);
+      if (k === "tree") fillTree(panel, s.panels[k]);
+      else fill(panel, s.panels[k]);
     });
     if (cellsEl && s.cells) {
       cellsEl.innerHTML = "";
@@ -372,6 +391,7 @@ function kLargest(nums, k) {
     }
     noteEl.textContent = s.note;
     barEl.style.width = (i / (STEPS.length - 1)) * 100 + "%";
+    if (stepEl) stepEl.textContent = "Step " + (i + 1) + " of " + STEPS.length;
     nextBtn.disabled = i === STEPS.length - 1;
     prevBtn.disabled = i === 0;
   }

@@ -6,17 +6,7 @@ import { loadRoom } from "@/app/mock/preload";
 import { planLoop, STAGE_RULES } from "@/lib/mock/loops";
 import { buildSession, type Session, type SessionMode } from "@/lib/mock/session";
 import type { HistoryEntry, RetryEntry } from "@/lib/mock/storage";
-import { STYLES } from "@/lib/mock/styles";
-import type {
-  CompanyType,
-  Intensity,
-  LoopConfig,
-  PlannedStage,
-  Role,
-  Seniority,
-  StageId,
-  StageInfo,
-} from "@/lib/mock/types";
+import type { LoopConfig, PlannedStage, StageId, StageInfo } from "@/lib/mock/types";
 import type { MockCatalog } from "@/lib/mock/bank";
 import { store } from "@/lib/storage";
 import { useMounted, subscribeNever } from "@/lib/hooks";
@@ -27,7 +17,7 @@ import { LoopWizard } from "@/app/mock/LoopWizard";
 import { ReadinessBoard } from "@/app/mock/Readiness";
 import { RetryPanel } from "@/app/mock/RetryPanel";
 import { LOBBY_STEPS } from "@/lib/mock/guide";
-import { COMPANIES, INTENSITIES, LEVELS, ROLES } from "@/app/mock/options";
+import { sanitizeConfig } from "@/app/mock/loopConfig";
 import { HowScored, MockFaq, RoundsDecoded, SampleDebrief } from "@/app/mock/LobbyGuide";
 import { smoothScroll } from "@/lib/scrollFx";
 import styles from "./plan.module.css";
@@ -38,16 +28,7 @@ const CONFIG_KEY = "groundwork:mock:config";
 const DEFAULT_CONFIG: LoopConfig = { role: "fullstack", seniority: "mid", company: "product", intensity: "standard" };
 
 function readConfig(): LoopConfig {
-  const saved = store.get<Partial<LoopConfig>>(CONFIG_KEY, {});
-  return {
-    role: ROLES.some(([r]) => r === saved.role) ? (saved.role as Role) : DEFAULT_CONFIG.role,
-    seniority: LEVELS.some(([l]) => l === saved.seniority) ? (saved.seniority as Seniority) : DEFAULT_CONFIG.seniority,
-    company: COMPANIES.some(([c]) => c === saved.company) ? (saved.company as CompanyType) : DEFAULT_CONFIG.company,
-    intensity: INTENSITIES.some(([i]) => i === saved.intensity)
-      ? (saved.intensity as Intensity)
-      : DEFAULT_CONFIG.intensity,
-    style: saved.style && saved.style in STYLES ? saved.style : null,
-  };
+  return sanitizeConfig(store.get<unknown>(CONFIG_KEY, null), DEFAULT_CONFIG);
 }
 
 let cachedRaw: string | null | undefined;

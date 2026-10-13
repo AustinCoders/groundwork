@@ -1,5 +1,6 @@
-import { store } from "@/lib/storage";
-import { decideLoop, type LevelCall, type Verdict } from "@/lib/mock/scoring";
+import { isPlainObject, store } from "@/lib/storage";
+import { STAGE_RULES } from "@/lib/mock/loops";
+import { decideLoop, VERDICT_LABEL, type LevelCall, type Verdict } from "@/lib/mock/scoring";
 import { stageResults, type Session, type SessionMode } from "@/lib/mock/session";
 import type { LoopConfig, StageId } from "@/lib/mock/types";
 
@@ -46,9 +47,44 @@ function plain(html: string, max = 140): string {
   return text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text;
 }
 
+const MODES: readonly string[] = ["loop", "drill", "retry"];
+const STEPS: readonly string[] = ["brief", "answer", "followup", "review"];
+
+const isStage = (value: unknown): boolean => typeof value === "string" && Object.hasOwn(STAGE_RULES, value);
+const isNumber = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);
+const isText = (value: unknown): value is string => typeof value === "string";
+
 function isSession(v: unknown): v is Session {
-  const s = v as Session | null;
-  return Boolean(s && s.version === 1 && Array.isArray(s.questions) && Array.isArray(s.plan) && s.config);
+  if (!isPlainObject(v) || v.version !== 1) return false;
+  if (!isText(v.id) || !MODES.includes(v.mode as string) || !isPlainObject(v.config)) return false;
+  if (!isNumber(v.startedAt) || !(v.finishedAt === null || isNumber(v.finishedAt))) return false;
+  if (!Array.isArray(v.questions) || !Array.isArray(v.plan)) return false;
+  if (!isNumber(v.cursor) || !Number.isInteger(v.cursor) || v.cursor < 0 || v.cursor > v.questions.length) return false;
+  if (!STEPS.includes(v.step as string)) return false;
+  if (!v.plan.every((p) => isPlainObject(p) && isStage(p.stage))) return false;
+  return v.questions.every(
+    (q) =>
+      isPlainObject(q) &&
+      isStage(q.stage) &&
+      isPlainObject(q.item) &&
+      isText(q.item.id) &&
+      isPlainObject(q.marks) &&
+      Array.isArray(q.item.followUps ?? [])
+  );
+}
+
+function isHistoryEntry(v: unknown): v is HistoryEntry {
+  if (!isPlainObject(v) || !isText(v.id) || !MODES.includes(v.mode as string) || !isPlainObject(v.config)) return false;
+  if (!isNumber(v.startedAt) || !isNumber(v.finishedAt) || !isNumber(v.score)) return false;
+  if (!isText(v.verdict) || !Object.hasOwn(VERDICT_LABEL, v.verdict) || !isText(v.headline)) return false;
+  if (!Array.isArray(v.stages)) return false;
+  return v.stages.every(
+    (s) => isPlainObject(s) && isStage(s.stage) && Array.isArray(s.scores) && s.scores.every(isNumber)
+  );
+}
+
+function isRetryEntry(v: unknown): v is RetryEntry {
+  return isPlainObject(v) && isText(v.id) && isStage(v.stage) && isText(v.title) && isNumber(v.score) && isNumber(v.at);
 }
 
 export interface MockSnapshot {
@@ -100,12 +136,12 @@ export const mockStore = {
 
   history(): HistoryEntry[] {
     const list = store.get<unknown>(KEY_HISTORY, []);
-    return Array.isArray(list) ? (list as HistoryEntry[]) : [];
+    return Array.isArray(list) ? list.filter(isHistoryEntry).slice(-MAX_HISTORY) : [];
   },
 
   retry(): RetryEntry[] {
     const list = store.get<unknown>(KEY_RETRY, []);
-    return Array.isArray(list) ? (list as RetryEntry[]) : [];
+    return Array.isArray(list) ? list.filter(isRetryEntry).slice(0, MAX_RETRY) : [];
   },
 
   removeRetry(ids: readonly string[]): void {

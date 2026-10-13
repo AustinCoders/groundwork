@@ -190,7 +190,7 @@
   }
 }
 
-:global(html[data-js]) .pending {
+.pending {
   visibility: hidden;
 }
 
@@ -326,6 +326,21 @@
 .goRow {
   margin-top: auto;
   padding-top: 14px;
+}
+
+.goMobile {
+  display: none;
+  margin-top: 18px;
+}
+
+@media (max-width: 1080px) {
+  .goMobile {
+    display: block;
+  }
+
+  .goRow {
+    display: none;
+  }
 }
 
 .whoList {

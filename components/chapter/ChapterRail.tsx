@@ -8,6 +8,8 @@ import { STATE_TEXT, type ChapterState } from "@/lib/chapterState";
 import type { SeriesCard, SeriesPart } from "./types";
 import styles from "./rail.module.css";
 
+const HEAD_ROOM = 120;
+
 export function useRailParts(chapter: SeriesCard<string>) {
   const currentPart = chapter.levels[0];
   const [opened, setOpened] = useState<{ at: string; parts: Set<string> }>(() => ({
@@ -42,6 +44,7 @@ export function ChapterRail({
   searching = false,
   navListId = "nav-list",
   label = "Chapters",
+  unwritten = 0,
 }: {
   parts: SeriesPart<string>[];
   chapters: SeriesCard<string>[];
@@ -60,6 +63,7 @@ export function ChapterRail({
   searching?: boolean;
   navListId?: string;
   label?: string;
+  unwritten?: number;
 }) {
   const effectiveOpenParts = searching ? new Set(parts.map((p) => p.level)) : openParts;
   const rail = useRef<HTMLElement>(null);
@@ -69,7 +73,9 @@ export function ChapterRail({
     const box = link?.closest<HTMLElement>("aside, [role=dialog]");
     if (!link || !box) return;
     const offset = link.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
-    box.scrollTop = Math.max(0, offset - box.clientHeight / 2);
+    const shown =
+      offset >= box.scrollTop + HEAD_ROOM && offset + link.offsetHeight <= box.scrollTop + box.clientHeight - 8;
+    if (!shown) box.scrollTop = Math.max(0, offset - box.clientHeight / 2);
   }, [chapter.id]);
 
   return (
@@ -138,6 +144,12 @@ export function ChapterRail({
           );
         })}
       </div>
+      {unwritten > 0 && (
+        <p className={styles.unwritten}>
+          {chapters.length} written. {unwritten} more {unwritten === 1 ? "chapter is" : "chapters are"} still being
+          written, so the numbers above skip.
+        </p>
+      )}
     </nav>
   );
 }

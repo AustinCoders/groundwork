@@ -11,12 +11,15 @@ export const KEYS = {
   soundEnabled: "jsnotes:sound-enabled",
 } as const;
 
+export const MAX_STORED_CHARS = 4_000_000;
+
 export const store = {
   get<T>(key: string, fallback: T): T {
     if (typeof window === "undefined") return fallback;
     try {
       const raw = localStorage.getItem(key);
-      return raw === null ? fallback : JSON.parse(raw);
+      if (raw === null || raw.length > MAX_STORED_CHARS) return fallback;
+      return JSON.parse(raw);
     } catch {
       return fallback;
     }
@@ -38,6 +41,28 @@ export const store = {
   },
 };
 
+const SAVED_PREFIXES = ["jsnotes:", "groundwork:"];
+const KEPT_PREFIXES = ["groundwork:board"];
+
+export function isSavedDataKey(key: string): boolean {
+  return SAVED_PREFIXES.some((p) => key.startsWith(p)) && !KEPT_PREFIXES.some((p) => key.startsWith(p));
+}
+
+export function clearSavedData(): number {
+  if (typeof window === "undefined") return 0;
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key !== null && isSavedDataKey(key)) keys.push(key);
+    }
+    keys.forEach((key) => localStorage.removeItem(key));
+    return keys.length;
+  } catch {
+    return 0;
+  }
+}
+
 export interface ChapterMark {
   at: number;
   reviews: number;
@@ -48,13 +73,62 @@ export interface ProgressData {
   exercises: Record<string, true>;
 }
 
-function readProgress(): ProgressData {
-  const saved = store.get<Partial<ProgressData> | null>(KEYS.progress, null);
-  const data: ProgressData = {
-    chapters: (saved && saved.chapters) || {},
-    exercises: (saved && saved.exercises) || {},
-  };
+const DAY_KEY = /^\d{4}-\d{2}-\d{2}$/;
+const MAX_DAY_COUNT = 100000;
+const MAX_ENTRIES = 5000;
+const MAX_ID_LENGTH = 200;
+const MAX_REVIEWS = 1000;
+
+export function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function entriesOf(value: unknown): [string, unknown][] {
+  if (!isPlainObject(value)) return [];
+  return Object.entries(value)
+    .filter(([key]) => key !== "__proto__" && key.length > 0 && key.length <= MAX_ID_LENGTH)
+    .slice(0, MAX_ENTRIES);
+}
+
+function sanitizeMark(value: unknown): true | ChapterMark | null {
+  if (value === true) return true;
+  if (!isPlainObject(value)) return null;
+  const { at, reviews } = value;
+  if (typeof at !== "number" || !Number.isFinite(at) || at < 0) return null;
+  if (at === 0) return true;
+  const count = typeof reviews === "number" && Number.isFinite(reviews) && reviews >= 0 ? Math.floor(reviews) : 0;
+  return { at, reviews: Math.min(count, MAX_REVIEWS) };
+}
+
+export function sanitizeProgress(value: unknown): ProgressData {
+  const data: ProgressData = { chapters: {}, exercises: {} };
+  if (!isPlainObject(value)) return data;
+  for (const [id, mark] of entriesOf(value.chapters)) {
+    const clean = sanitizeMark(mark);
+    if (clean !== null) data.chapters[id] = clean;
+  }
+  for (const [id, solved] of entriesOf(value.exercises)) {
+    if (solved === true) data.exercises[id] = true;
+  }
   return data;
+}
+
+export function sanitizeActivity(value: unknown): Record<string, number> {
+  const log: Record<string, number> = {};
+  for (const [day, count] of entriesOf(value)) {
+    if (!DAY_KEY.test(day)) continue;
+    if (typeof count !== "number" || !Number.isFinite(count) || count < 1) continue;
+    log[day] = Math.min(Math.floor(count), MAX_DAY_COUNT);
+  }
+  return log;
+}
+
+function readProgress(): ProgressData {
+  return sanitizeProgress(store.get<unknown>(KEYS.progress, null));
+}
+
+function readActivity(): Record<string, number> {
+  return sanitizeActivity(store.get<unknown>(KEYS.activity, null));
 }
 
 export const REVIEW_GAPS_DAYS = [3, 7, 21, 60, 180];
@@ -64,7 +138,8 @@ function markOf(v: true | ChapterMark): ChapterMark {
   return v === true ? { at: 0, reviews: 0 } : v;
 }
 
-export function dueAt(v: true | ChapterMark): number | null {
+export function dueAt(v: true | ChapterMark, now: number = Date.now()): number | null {
+  if (v === true) return now;
   const m = markOf(v);
   if (m.reviews >= REVIEW_GAPS_DAYS.length) return null;
   return m.at + REVIEW_GAPS_DAYS[m.reviews] * DAY;
@@ -85,7 +160,7 @@ export function dayKey(date: number = Date.now()): string {
 }
 
 function recordActivity(): void {
-  const data = store.get<Record<string, number>>(KEYS.activity, {});
+  const data = readActivity();
   const key = dayKey();
   data[key] = (data[key] || 0) + 1;
   store.set(KEYS.activity, data);
@@ -94,7 +169,7 @@ function recordActivity(): void {
 
 export const activity = {
   all(): Record<string, number> {
-    return store.get<Record<string, number>>(KEYS.activity, {});
+    return readActivity();
   },
   subscribe(listener: () => void): () => void {
     progressListeners.add(listener);
@@ -129,7 +204,7 @@ export const progress = {
     const { chapters } = readProgress();
     return ids
       .filter((id) => chapters[id])
-      .map((id) => ({ id, due: dueAt(chapters[id]) }))
+      .map((id) => ({ id, due: dueAt(chapters[id], now) }))
       .filter((r): r is { id: string; due: number } => r.due !== null && r.due <= now)
       .sort((a, b) => a.due - b.due)
       .map((r) => r.id);
@@ -177,7 +252,8 @@ function codeKey(exerciseId: string, language?: string): string {
 
 export const code = {
   load(exerciseId: string, language?: string): string | null {
-    return store.get<string | null>(codeKey(exerciseId, language), null);
+    const saved = store.get<unknown>(codeKey(exerciseId, language), null);
+    return typeof saved === "string" ? saved : null;
   },
   save(exerciseId: string, text: string, language?: string): boolean {
     return store.set(codeKey(exerciseId, language), text);
@@ -191,8 +267,11 @@ export function rememberLevel(level: string): void {
   store.set(KEYS.level, level);
 }
 
+const LEVEL_IDS = ["beginner", "intermediate", "advanced"];
+
 export function lastLevel(): string | null {
-  return store.get<string | null>(KEYS.level, null);
+  const saved = store.get<unknown>(KEYS.level, null);
+  return typeof saved === "string" && LEVEL_IDS.includes(saved) ? saved : null;
 }
 
 export const THEME_ITEMS = [
@@ -222,7 +301,7 @@ export const FONT_ITEMS: { value: FontValue; label: string }[] = [
 ];
 
 export function savedTheme(): ThemeValue | null {
-  const saved = store.get<string | null>(KEYS.theme, null);
+  const saved = store.get<unknown>(KEYS.theme, null);
   return THEME_ITEMS.some((item) => item.value === saved) ? (saved as ThemeValue) : null;
 }
 
@@ -231,7 +310,7 @@ export function setSavedTheme(theme: ThemeValue): void {
 }
 
 export function savedFont(): FontValue | null {
-  const saved = store.get<string | null>(KEYS.font, null);
+  const saved = store.get<unknown>(KEYS.font, null);
   return FONT_ITEMS.some((item) => item.value === saved) ? (saved as FontValue) : null;
 }
 
@@ -247,12 +326,17 @@ export interface NarrationSettings {
 
 const DEFAULT_NARRATION: NarrationSettings = { voice: DEFAULT_EDGE_VOICE, rate: 0.94, pitch: "0%" };
 
+const PITCH = /^[+-]?\d{1,3}%$/;
+const VOICE = /^[\w.-]{1,80}$/;
+
 export function savedNarration(): NarrationSettings {
-  const saved = store.get<Partial<NarrationSettings> | null>(KEYS.narration, null);
+  const saved = store.get<unknown>(KEYS.narration, null);
+  const loose = isPlainObject(saved) ? saved : {};
+  const { voice, rate, pitch } = loose;
   return {
-    voice: typeof saved?.voice === "string" ? saved.voice : DEFAULT_NARRATION.voice,
-    rate: typeof saved?.rate === "number" ? saved.rate : DEFAULT_NARRATION.rate,
-    pitch: typeof saved?.pitch === "string" ? saved.pitch : DEFAULT_NARRATION.pitch,
+    voice: typeof voice === "string" && VOICE.test(voice) ? voice : DEFAULT_NARRATION.voice,
+    rate: typeof rate === "number" && Number.isFinite(rate) && rate >= 0.5 && rate <= 2 ? rate : DEFAULT_NARRATION.rate,
+    pitch: typeof pitch === "string" && PITCH.test(pitch) ? pitch : DEFAULT_NARRATION.pitch,
   };
 }
 

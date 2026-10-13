@@ -12,7 +12,7 @@ function getContext(): AudioContext | null {
 }
 
 export function isSoundEnabled(): boolean {
-  return store.get<boolean>(KEYS.soundEnabled, true);
+  return store.get<unknown>(KEYS.soundEnabled, true) !== false;
 }
 
 export function setSoundEnabled(on: boolean): void {

@@ -69,6 +69,7 @@ function Train({ line, on }: { line: MetroLine; on: boolean }) {
 
 export function TopicsScene({
   head,
+  tally,
   ready,
   soon,
   interview,
@@ -76,6 +77,7 @@ export function TopicsScene({
   onBrowse,
 }: {
   head: ReactNode;
+  tally: HomeViewProps["tally"];
   ready: ShelfCard[];
   soon: ShelfCard[];
   interview: HomeViewProps["interview"];
@@ -112,8 +114,8 @@ export function TopicsScene({
     {
       id: READY_TAB,
       label: "Ready now",
-      written: topics.filter((topic) => topic.written).length,
-      total: topics.length,
+      written: tally.written,
+      total: tally.total,
       glyph: null,
     },
     ...TOPIC_CATEGORIES.map((category) => ({

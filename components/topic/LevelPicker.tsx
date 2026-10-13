@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { Copy, Scene } from "@/components/home/Stage";
 import { Card, Compose, Remark, Tag } from "@/components/topic/Compose";
+import { RevealWithoutScript } from "@/components/topic/RevealWithoutScript";
 import { Facts, topicKit } from "@/components/topic/TopicKit";
 import { compactSpan, formatSpan, plural } from "@/lib/format";
 import { levelRows } from "@/lib/levelRows";
@@ -63,10 +64,12 @@ export function LevelPicker({
   const [picked, setPicked] = useState<string | null>(null);
   const known = (id: string | null) => (id && levels.some((l) => l.id === id) ? id : null);
   const selected = known(picked) ?? known(savedLevel) ?? levels[0]?.id;
-  const totals = levelTotals(levels, perLevel);
+  const selectedName = levels.find((level) => level.id === selected)?.name ?? "";
+  const selectedStat = (selected && perLevel[selected]) || NO_STAT;
 
   return (
     <Scene className={hero ? `${topicKit.hero} ${styles.pick}` : `${styles.pick} ${styles.pickInline}`}>
+      <RevealWithoutScript className={styles.pending} />
       <Copy>
         {intro}
         <fieldset className={`${styles.choices} ${mounted ? "" : styles.pending}`} id="level-grid">
@@ -94,6 +97,18 @@ export function LevelPicker({
             );
           })}
         </fieldset>
+        {selected && (
+          <div className={`${styles.goMobile} ${mounted ? "" : styles.pending}`}>
+            <Link
+              className={topicKit.btn}
+              href={`/path/${topic.id}/${selected}`}
+              prefetch={false}
+              onClick={() => onShowPath(selected as LevelId)}
+            >
+              {pathLabel} <span aria-hidden="true">→</span>
+            </Link>
+          </div>
+        )}
       </Copy>
       <Compose
         live
@@ -103,14 +118,18 @@ export function LevelPicker({
       >
         {levels.map((level, i) => {
           const stat = perLevel[level.id] ?? NO_STAT;
-          const rows = levelRows(level, chapterById);
-          const preview = rows.slice(0, PREVIEW);
+          const written = levelRows(level, chapterById).filter(
+            (row): row is Extract<typeof row, { ready: true }> => row.ready
+          );
+          const soon = levelRows(level, chapterById).length - written.length;
+          const preview = written.slice(0, PREVIEW);
           return (
             <div key={level.id} className={styles.panel} data-level={level.id}>
               <Card at="a" tilt={-1} taped className={styles.main}>
                 {savedLevel === level.id && <Tag tone="primary">★ your level</Tag>}
                 <p className={styles.cardKicker}>
-                  Part {i + 1} · {plural(rows.length, "section")}
+                  Part {i + 1} of {levels.length}
+                  {soon > 0 && ` · ${soon} more soon`}
                 </p>
                 <h2 className={styles.cardName}>{level.name}</h2>
                 <p className={styles.cardQuote}>
@@ -124,20 +143,17 @@ export function LevelPicker({
                 <p className={styles.cardBlurb}>{level.blurb}</p>
                 <p className={styles.cardLabel}>It opens with</p>
                 <ol className={styles.cardChapters}>
-                  {preview.map((row, k) => (
-                    <li key={k}>
-                      <span className={styles.chapterCode}>{row.ready ? row.chapter.num : "..."}</span>
-                      <span
-                        className={styles.chapterName}
-                        {...(row.ready
-                          ? { dangerouslySetInnerHTML: { __html: row.chapter.title } }
-                          : { children: row.section.title })}
-                      />
-                      <span className={styles.chapterMin}>{row.ready ? `${row.chapter.readMinutes} min` : "soon"}</span>
+                  {preview.map((row) => (
+                    <li key={row.chapter.id}>
+                      <span className={styles.chapterCode}>{row.chapter.num}</span>
+                      <span className={styles.chapterName} dangerouslySetInnerHTML={{ __html: row.chapter.title }} />
+                      <span className={styles.chapterMin}>{row.chapter.readMinutes} min</span>
                     </li>
                   ))}
                 </ol>
-                {rows.length > PREVIEW && <p className={styles.more}>and {rows.length - PREVIEW} more stops below</p>}
+                {written.length > PREVIEW && (
+                  <p className={styles.more}>and {plural(written.length - PREVIEW, "more chapter")} below</p>
+                )}
                 <div className={styles.goRow}>
                   <Link
                     className={topicKit.btn}
@@ -161,12 +177,21 @@ export function LevelPicker({
             </div>
           );
         })}
-        <Card as="aside" aria-label={`${topic.name} in numbers`} at="b" tilt={1} className={styles.facts}>
+        <Card
+          as="aside"
+          aria-label={`${topic.name} ${selectedName} in numbers`}
+          at="b"
+          tilt={1}
+          className={styles.facts}
+        >
           <Facts
             items={[
-              { value: totals.chapters, label: totals.chapters === 1 ? "chapter written" : "chapters written" },
-              { value: compactSpan(totals.minutes), label: "of reading" },
-              { value: totals.exercises, label: totals.exercises === 1 ? "exercise" : "exercises" },
+              {
+                value: selectedStat.chapters,
+                label: selectedStat.chapters === 1 ? "chapter written" : "chapters written",
+              },
+              { value: compactSpan(selectedStat.minutes), label: "of reading" },
+              { value: selectedStat.exercises, label: selectedStat.exercises === 1 ? "exercise" : "exercises" },
             ]}
           />
         </Card>

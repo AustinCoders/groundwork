@@ -201,8 +201,12 @@ export const dsa2: Exercise[] = [
         body: "assert.equal(binarySearch([7], 7), 0);\nassert.equal(binarySearch([7], 8), -1);\nassert.equal(binarySearch([], 1), -1);",
       },
       {
-        name: "stays fast on a large array",
+        name: "finds values in a large array",
         body: "const big = [];\nfor (let i = 0; i < 200000; i++) big.push(i * 2);\nassert.equal(binarySearch(big, 399998), 199999);\nassert.equal(binarySearch(big, 399999), -1);",
+      },
+      {
+        name: "looks at only a handful of elements, so a linear scan fails",
+        body: "const big = [];\nfor (let i = 0; i < 200000; i++) big.push(i * 2);\nlet reads = 0;\nconst watched = new Proxy(big, {\n  get(target, key) {\n    if (typeof key === 'string' && key !== 'length') reads++;\n    return target[key];\n  },\n});\nassert.equal(binarySearch(watched, 399998), 199999);\nassert.equal(binarySearch(watched, 399999), -1);\nassert.ok(reads < 200, 'read ' + reads + ' elements; binary search needs about 20 per lookup, not one per element');",
       },
       { name: "two element array, both positions", body: "assert.equal(binarySearch([2,5],2), 0);\nassert.equal(binarySearch([2,5],5), 1);\nassert.equal(binarySearch([2,5],3), -1);" },
       { name: "negative numbers", body: "assert.equal(binarySearch([-20,-10,-5,0,5],-10), 1);\nassert.equal(binarySearch([-20,-10,-5,0,5],-21), -1);" },

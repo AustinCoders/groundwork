@@ -21,7 +21,6 @@ import { placementData } from "@/lib/placementChapters";
 import { poolChapterIds } from "@/lib/quizPool";
 import { bookRound } from "@/lib/interviewBook";
 import { relatedInterviewRound } from "@/lib/topics";
-import { topicCoverMetadata } from "@/components/reader/topicPages";
 import { topicStats } from "@/lib/topicStats";
 
 export function generateStaticParams() {
@@ -34,7 +33,6 @@ export async function generateMetadata({ params }: { params: Promise<{ topic: st
   const { topic: topicId } = await params;
   const topic = findTopic(topicId);
   if (!topic) return {};
-  if (requiresCheck(topic.completion)) return topicCoverMetadata(topic.id, `/level/${topic.id}`);
   const written = chapterMetas(topic.id).filter((ch) => ch.ready).length;
   return pageMetadata({
     title: `${topic.name} — pick your level`,

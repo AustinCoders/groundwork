@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { CodeLanguageNote } from "@/components/dsa/CodeLanguageNote";
 import { EndPopup } from "@/components/check/EndPopup";
 import { TopicFrame } from "@/components/topic/TopicFrame";
 import { useChapterBody } from "@/components/reader/useChapterBody";
@@ -60,6 +61,7 @@ export function TopicReader({
   check,
   checkChapterIds,
   codeBlocks,
+  unwritten = 0,
 }: {
   topicId: string;
   topicName: string;
@@ -81,6 +83,7 @@ export function TopicReader({
   check?: ReactNode;
   checkChapterIds?: string[];
   codeBlocks?: boolean;
+  unwritten?: number;
 }) {
   const mounted = useMounted();
   const [railOpen, setRailOpen] = useState(false);
@@ -111,7 +114,9 @@ export function TopicReader({
     if (isDone && requiresCheck(completion)) quizStore.unmark(chapter.id);
     progress.setChapterDone(chapter.id, !isDone);
   };
-  const tick = tickHref(completion, basePath, chapter.id, true, isDone, (checkChapterIds ?? []).includes(chapter.id));
+  const hasCheck = (checkChapterIds ?? []).includes(chapter.id);
+  const noCheck = requiresCheck(completion) && !hasCheck;
+  const tick = tickHref(completion, basePath, chapter.id, true, isDone, hasCheck);
 
   const reviews = useProgressValue(() => {
     const mark = progress.all().chapters[chapter.id];
@@ -165,6 +170,7 @@ export function TopicReader({
       matchInfo={search.matches}
       navListId={extra.navListId}
       search={extra.search}
+      unwritten={unwritten}
     />
   );
 
@@ -228,7 +234,13 @@ export function TopicReader({
             minutes={chapter.minutes}
             position={{ index: index + 1, total: chapters.length }}
             read={mounted && isDone}
-            extra={codeBlocks ? <CodeLanguageSwitch chapterId={chapter.id} bodyRef={bodyRef} /> : undefined}
+            extra={
+              codeBlocks ? (
+                <CodeLanguageSwitch chapterId={chapter.id} bodyRef={bodyRef} />
+              ) : topicId === "dsa" ? (
+                <CodeLanguageNote />
+              ) : undefined
+            }
           />
 
           {toc.length > 0 && <ChapterInlineToc toc={toc} />}
@@ -256,7 +268,7 @@ export function TopicReader({
             chapterId={chapter.id}
             title={chapter.title}
             done={isDone}
-            hasCheck={requiresCheck(completion) && (checkChapterIds ?? []).includes(chapter.id)}
+            hasCheck={requiresCheck(completion) && hasCheck}
           />
 
           <ChapterEndScene
@@ -268,6 +280,7 @@ export function TopicReader({
               total: chapters.length,
               onToggleRead: toggleRead,
               reviewDays,
+              note: noCheck ? "There is no check for this chapter yet, so marking it read is all it takes." : undefined,
               tickHref: tick,
             }}
             prev={prev}

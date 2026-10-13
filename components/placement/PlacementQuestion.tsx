@@ -19,6 +19,7 @@ export function PlacementQuestion({
   onPick,
   onNext,
   onNotSure,
+  onBack,
 }: {
   question: Question;
   number: number;
@@ -26,6 +27,7 @@ export function PlacementQuestion({
   onPick: (picked: string[]) => void;
   onNext: () => void;
   onNotSure: () => void;
+  onBack?: () => void;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const canAnswer = question.kind === "order" || picked.length > 0;
@@ -77,6 +79,11 @@ export function PlacementQuestion({
         <button type="button" className={checkStyles.secondary} data-not-sure="" onClick={onNotSure}>
           Not sure yet
         </button>
+        {onBack && (
+          <button type="button" className={checkStyles.secondary} data-previous="" onClick={onBack}>
+            Previous question
+          </button>
+        )}
       </div>
     </div>
   );

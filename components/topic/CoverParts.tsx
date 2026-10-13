@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { Card, Remark, Tag } from "@/components/topic/Compose";
 import { Button, Chips, topicKit } from "@/components/topic/TopicKit";
 import { SoonTag } from "@/components/topic/Journey";
@@ -8,7 +9,7 @@ import { BUDGET_STEPS } from "@/components/topic/useReadingPlan";
 import type { CoverCard, CoverProgress } from "@/components/topic/useCoverProgress";
 import { countStates, STATE_ORDER, STATE_TEXT, summarizeStates } from "@/lib/chapterState";
 import { openCheckOnClick } from "@/lib/checkOpen";
-import { tickHref, type Completion } from "@/lib/completion";
+import { requiresCheck, tickHref, type Completion } from "@/lib/completion";
 import { formatSpan, plural } from "@/lib/format";
 import type { SeriesPart } from "@/components/chapter/types";
 import type { LevelId } from "@/content/types";
@@ -21,8 +22,12 @@ export function UpNextAndBudget({ progress, basePath }: { progress: CoverProgres
     return (
       <Card at="a" tilt={-1} taped aria-label="Up next">
         <Tag tone="success">{plan.mounted && plan.readCount > 0 ? `★ ${plan.readCount} read` : "★ free to read"}</Tag>
-        <h2 className={styles.upNextTitle}>{plan.skipped > 0 ? "Plan complete" : "Every chapter read"}</h2>
-        <p className={styles.upNextSub}>The review page keeps it fresh from here.</p>
+        <h2 className={styles.upNextTitle}>{plan.planned ? "Plan complete" : "Every chapter read"}</h2>
+        <p className={styles.upNextSub}>
+          {plan.reviseLeft > 0
+            ? `${plural(plan.reviseLeft, "chapter")} under Revise earlier stay open. The review page keeps the rest fresh.`
+            : "The review page keeps it fresh from here."}
+        </p>
         <div className={styles.upNextGo}>
           <Button href="/review">
             Go to review <span aria-hidden="true">→</span>
@@ -118,6 +123,42 @@ export function ProgressChips({ progress }: { progress: CoverProgress }) {
   );
 }
 
+function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b);
+}
+
+interface PlacedPart {
+  part: SeriesPart<LevelId>;
+  index: number;
+  list: CoverCard[];
+  style: CSSProperties;
+}
+
+function placeParts(parts: SeriesPart<LevelId>[], cards: CoverCard[]): PlacedPart[] {
+  const filled = parts
+    .map((part, index) => ({ part, index, list: cards.filter((c) => c.levels.includes(part.level)) }))
+    .filter((entry) => entry.list.length > 0);
+  const loads = [0, 0];
+  const columnOf = filled.map((entry) => {
+    const target = loads[0] <= loads[1] ? 0 : 1;
+    loads[target] += entry.list.length;
+    return target;
+  });
+  const sizes = [0, 1].map((column) => columnOf.filter((c) => c === column).length);
+  const rows = sizes[0] > 0 && sizes[1] > 0 ? (sizes[0] * sizes[1]) / gcd(sizes[0], sizes[1]) : Math.max(...sizes, 1);
+  const seen = [0, 0];
+  return filled.map((entry, at) => {
+    const column = columnOf[at];
+    const span = rows / Math.max(sizes[column], 1);
+    const start = seen[column] * span + 1;
+    seen[column]++;
+    return {
+      ...entry,
+      style: { "--part-col": column + 1, "--part-row": start, "--part-span": span } as CSSProperties,
+    };
+  });
+}
+
 export function ChapterContents({
   progress,
   parts,
@@ -134,112 +175,99 @@ export function ChapterContents({
   checkChapterIds?: string[];
 }) {
   const { plan, states, toggleRead } = progress;
-  const columns: { part: SeriesPart<LevelId>; index: number; list: CoverCard[] }[][] = [[], []];
-  const loads = [0, 0];
-  parts.forEach((part, index) => {
-    const list = cards.filter((c) => c.levels.includes(part.level));
-    if (!list.length) return;
-    const target = loads[0] <= loads[1] ? 0 : 1;
-    loads[target] += list.length;
-    columns[target].push({ part, index, list });
-  });
+  const placed = placeParts(parts, cards);
 
   return (
     <div className={styles.sheet}>
-      {columns.map((column, ci) => (
-        <div key={ci} className={styles.column}>
-          {column.map(({ part, index, list }) => {
-            const read = plan.mounted ? list.filter((c) => plan.done.has(c.id)).length : 0;
-            const partStates = plan.mounted
-              ? summarizeStates(
-                  countStates(
-                    list.map((c) => c.id),
-                    states
-                  )
-                )
-              : "";
-            return (
-              <section key={part.level} aria-labelledby={`part-${part.level}`}>
-                <header className={styles.partHead}>
-                  <span className={styles.partNo} aria-hidden="true">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <h3 className={styles.partName} id={`part-${part.level}`}>
-                    {part.title}
-                  </h3>
-                  <span className={styles.partRule} aria-hidden="true" />
-                  <span className={styles.partCount}>
-                    {read}/{list.length} read{partStates && ` · ${partStates}`}
-                  </span>
-                </header>
-                {part.blurb && <p className={styles.partBlurb}>{part.blurb}</p>}
-                <ol className={styles.entries}>
-                  {list.map((c) => {
-                    const isRead = plan.mounted && plan.done.has(c.id);
-                    const name = c.short || c.title;
-                    const meta = c.exercises
-                      ? `${c.minutes} min · ${plural(c.exercises, "exercise")}`
-                      : `${c.minutes} min`;
-                    const state = plan.mounted ? states.get(c.id) : undefined;
-                    const tickLabel = isRead ? `Mark ${name} unread` : `Mark ${name} read`;
-                    const entryTick = plan.mounted
-                      ? tickHref(
-                          completion,
-                          basePath,
-                          c.id,
-                          false,
-                          plan.done.has(c.id),
-                          (checkChapterIds ?? []).includes(c.id)
-                        )
-                      : null;
-                    return (
-                      <li key={c.id} className={styles.entry}>
-                        <Link className={styles.entryLink} href={`${basePath}/${c.id}`} prefetch={false}>
-                          <span className={styles.entryCode}>{c.num}</span>
-                          <span className={styles.entryMain}>
-                            <span className={styles.entryTitle}>{c.title}</span>
-                            {c.subtitle && <span className={styles.entrySub}>{c.subtitle}</span>}
-                            {state && (
-                              <span className={styles.entryState} data-state={state}>
-                                {STATE_TEXT[state]}
-                              </span>
-                            )}
+      {placed.map(({ part, index, list, style }) => {
+        const written = list.filter((c) => c.ready);
+        const read = plan.mounted ? written.filter((c) => plan.done.has(c.id)).length : 0;
+        const partStates = plan.mounted
+          ? summarizeStates(
+              countStates(
+                written.map((c) => c.id),
+                states
+              )
+            )
+          : "";
+        return (
+          <section key={part.level} className={styles.part} style={style} aria-labelledby={`part-${part.level}`}>
+            <header className={styles.partHead}>
+              <span className={styles.partNo} aria-hidden="true">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <h3 className={styles.partName} id={`part-${part.level}`}>
+                {part.title}
+              </h3>
+              <span className={styles.partRule} aria-hidden="true" />
+              <span className={styles.partCount}>
+                {read}/{written.length} read{partStates && ` · ${partStates}`}
+              </span>
+            </header>
+            {part.blurb && <p className={styles.partBlurb}>{part.blurb}</p>}
+            <ol className={styles.entries}>
+              {list.map((c) => {
+                const isRead = plan.mounted && plan.done.has(c.id);
+                const name = c.short || c.title;
+                const meta = c.exercises ? `${c.minutes} min · ${plural(c.exercises, "exercise")}` : `${c.minutes} min`;
+                const state = plan.mounted ? states.get(c.id) : undefined;
+                const tickLabel = isRead ? `Mark ${name} unread` : `Mark ${name} read`;
+                const entryTick = plan.mounted
+                  ? tickHref(
+                      completion,
+                      basePath,
+                      c.id,
+                      false,
+                      plan.done.has(c.id),
+                      (checkChapterIds ?? []).includes(c.id)
+                    )
+                  : null;
+                return (
+                  <li key={c.id} className={styles.entry}>
+                    <Link className={styles.entryLink} href={`${basePath}/${c.id}`} prefetch={false}>
+                      <span className={styles.entryCode}>{c.num}</span>
+                      <span className={styles.entryMain}>
+                        <span className={styles.entryTitle}>{requiresCheck(completion) ? name : c.title}</span>
+                        {c.subtitle && <span className={styles.entrySub}>{c.subtitle}</span>}
+                        {state && (
+                          <span className={styles.entryState} data-state={state}>
+                            {STATE_TEXT[state]}
                           </span>
-                          {c.ready ? <span className={styles.entryMeta}>{meta}</span> : <SoonTag />}
+                        )}
+                      </span>
+                      {c.ready ? <span className={styles.entryMeta}>{meta}</span> : <SoonTag />}
+                    </Link>
+                    {c.ready &&
+                      (entryTick ? (
+                        <Link
+                          className={topicKit.tick}
+                          href={entryTick}
+                          prefetch={false}
+                          aria-label={tickLabel}
+                          title={tickLabel}
+                          onClick={openCheckOnClick}
+                        >
+                          <span aria-hidden="true">{isRead ? "✓" : ""}</span>
                         </Link>
-                        {c.ready &&
-                          (entryTick ? (
-                            <Link
-                              className={topicKit.tick}
-                              href={entryTick}
-                              prefetch={false}
-                              aria-label={tickLabel}
-                              title={tickLabel}
-                              onClick={openCheckOnClick}
-                            >
-                              <span aria-hidden="true">{isRead ? "✓" : ""}</span>
-                            </Link>
-                          ) : (
-                            <button
-                              type="button"
-                              className={topicKit.tick}
-                              aria-pressed={isRead}
-                              aria-label={tickLabel}
-                              title={tickLabel}
-                              onClick={() => toggleRead(c.id)}
-                            >
-                              <span aria-hidden="true">{isRead ? "✓" : ""}</span>
-                            </button>
-                          ))}
-                      </li>
-                    );
-                  })}
-                </ol>
-              </section>
-            );
-          })}
-        </div>
-      ))}
+                      ) : (
+                        <button
+                          type="button"
+                          className={topicKit.tick}
+                          aria-pressed={isRead}
+                          aria-label={tickLabel}
+                          title={tickLabel}
+                          onClick={() => toggleRead(c.id)}
+                        >
+                          <span aria-hidden="true">{isRead ? "✓" : ""}</span>
+                        </button>
+                      ))}
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        );
+      })}
     </div>
   );
 }
@@ -248,22 +276,40 @@ export function PracticeLinks({
   topicId,
   parts,
   cards,
+  completion,
 }: {
   topicId: string;
   parts: SeriesPart<LevelId>[];
   cards: CoverCard[];
+  completion?: Completion;
 }) {
+  const byChapter = requiresCheck(completion);
   return (
     <div className={styles.practiceLinks}>
       {parts.map((part) => {
-        const count = cards.filter((c) => c.levels.includes(part.level)).reduce((sum, c) => sum + c.exercises, 0);
+        const count = cards
+          .filter((c) => c.ready && c.levels.includes(part.level))
+          .reduce((sum, c) => sum + c.exercises, 0);
         if (!count) return null;
         return (
-          <Button key={part.level} ghost href={`/problems?topic=${topicId}&level=${part.level}`}>
+          <Button
+            key={part.level}
+            ghost
+            href={
+              byChapter
+                ? `/path/${topicId}/${part.level}#practice-title`
+                : `/problems?topic=${topicId}&level=${part.level}`
+            }
+          >
             {plural(count, "exercise")} at {part.title} →
           </Button>
         );
       })}
+      {byChapter && (
+        <Button ghost href={`/problems?topic=${topicId}`}>
+          All problems by difficulty →
+        </Button>
+      )}
     </div>
   );
 }

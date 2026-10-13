@@ -27,7 +27,9 @@ const count = (value: unknown): number =>
   typeof value === "number" && Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
 
 const strings = (value: unknown): string[] =>
-  Array.isArray(value) ? [...new Set(value.filter((entry): entry is string => typeof entry === "string"))] : [];
+  Array.isArray(value)
+    ? [...new Set(value.filter((entry): entry is string => typeof entry === "string"))].slice(0, 1000)
+    : [];
 
 const validTime = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value) && value > 0;
 
@@ -63,7 +65,12 @@ export function sanitizePlacement(value: unknown): PlacementRecord | null {
     mode: loose.mode as PlacementMode,
     level: loose.level as LevelId,
     stages: Array.isArray(loose.stages)
-      ? firstOfEachStage(loose.stages.map(stageScore).filter((score): score is StageScore => score !== null))
+      ? firstOfEachStage(
+          loose.stages
+            .slice(0, 50)
+            .map(stageScore)
+            .filter((score): score is StageScore => score !== null)
+        )
       : [],
     testedOut,
     allotted: strings(loose.allotted).filter((id) => !tested.has(id)),

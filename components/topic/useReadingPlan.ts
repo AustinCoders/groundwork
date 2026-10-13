@@ -1,17 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { progress, store } from "@/lib/storage";
 import { useClientValue, useMounted, useProgressValue } from "@/lib/hooks";
 import { nextChapter, requiresCheck, type Completion } from "@/lib/completion";
 import { readingPlan } from "@/lib/placementPlan";
 import { usePlacement } from "@/lib/placementStore";
+import type { LevelId } from "@/content/types";
 
 export interface Station {
   id: string;
   num: string;
   short: string;
   subtitle: string;
+  level: LevelId;
   minutes: number;
   exercises: number;
   ready: boolean;
@@ -24,19 +26,20 @@ const DEFAULT_BUDGET = 30;
 export function useReadingPlan(stations: Station[], topicId: string, completion?: Completion) {
   const mounted = useMounted();
   const savedBudget = useClientValue(() => {
-    const value = store.get<number>(BUDGET_KEY, DEFAULT_BUDGET);
-    return typeof value === "number" ? value : DEFAULT_BUDGET;
+    const value = store.get<unknown>(BUDGET_KEY, DEFAULT_BUDGET);
+    return typeof value === "number" && BUDGET_STEPS.includes(value) ? value : DEFAULT_BUDGET;
   }, DEFAULT_BUDGET);
   const [budgetOverride, setBudgetOverride] = useState<number | null>(null);
   const budget = budgetOverride ?? savedBudget;
 
   const placement = usePlacement();
-  const plan = useMemo(() => (requiresCheck(completion) ? readingPlan(placement) : null), [completion, placement]);
   const readable = useMemo(() => stations.filter((s) => s.ready), [stations]);
-  const testedOut = useMemo(() => {
-    const known = new Set(readable.map((s) => s.id));
-    return new Set((plan?.testedOut ?? []).filter((id) => known.has(id)));
-  }, [plan, readable]);
+  const plan = useMemo(
+    () => (requiresCheck(completion) ? readingPlan(placement, readable) : null),
+    [completion, placement, readable]
+  );
+  const testedOut = useMemo(() => new Set(plan?.testedOut ?? []), [plan]);
+  const allotted = useMemo(() => (plan ? new Set(plan.allotted) : null), [plan]);
 
   const doneKey = useProgressValue(() => readable.map((s) => (progress.isChapterDone(s.id) ? "1" : "0")).join(""), "");
   const done = useMemo(() => {
@@ -48,7 +51,9 @@ export function useReadingPlan(stations: Station[], topicId: string, completion?
     return set;
   }, [doneKey, readable]);
 
-  const next = useMemo(() => nextChapter(completion, readable, done, plan), [completion, readable, done, plan]);
+  const inPlan = useCallback((id: string) => (allotted ? allotted.has(id) : true), [allotted]);
+
+  const next = useMemo(() => nextChapter(completion, readable, done, plan, true), [completion, readable, done, plan]);
 
   const reach = useMemo(() => {
     const set = new Set<string>();
@@ -56,17 +61,15 @@ export function useReadingPlan(stations: Station[], topicId: string, completion?
     let spent = 0;
     for (let i = readable.indexOf(next); i < readable.length; i++) {
       const s = readable[i];
-      if (done.has(s.id) || testedOut.has(s.id)) continue;
+      if (done.has(s.id) || !inPlan(s.id)) continue;
       if (spent + s.minutes > budget) break;
       spent += s.minutes;
       set.add(s.id);
     }
     return set;
-  }, [readable, next, done, budget, testedOut]);
+  }, [readable, next, done, budget, inPlan]);
 
-  const minutesLeft = readable
-    .filter((s) => !done.has(s.id) && !testedOut.has(s.id))
-    .reduce((sum, s) => sum + s.minutes, 0);
+  const minutesLeft = readable.filter((s) => !done.has(s.id) && inPlan(s.id)).reduce((sum, s) => sum + s.minutes, 0);
   const lastInReach = readable.filter((s) => reach.has(s.id)).slice(-1)[0] ?? null;
 
   function setBudget(value: number) {
@@ -85,6 +88,7 @@ export function useReadingPlan(stations: Station[], topicId: string, completion?
     minutesLeft,
     lastInReach,
     readCount: done.size,
-    skipped: readable.filter((s) => testedOut.has(s.id) && !done.has(s.id)).length,
+    planned: allotted !== null,
+    reviseLeft: readable.filter((s) => !done.has(s.id) && !testedOut.has(s.id) && !inPlan(s.id)).length,
   };
 }

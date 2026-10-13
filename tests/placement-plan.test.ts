@@ -9,6 +9,7 @@ import {
   type PlanChapter,
 } from "@/lib/placementPlan";
 import { topicHome } from "@/lib/topics";
+import { nextChapter } from "@/lib/completion";
 import type { PlacementRecord } from "@/lib/placementRecord";
 
 function chapter(id: string, level: PlanChapter["level"], ready = true): PlanChapter {
@@ -88,11 +89,59 @@ describe("planView", () => {
 
 describe("readingPlan", () => {
   it("is null with no placement", () => {
-    expect(readingPlan(null)).toBeNull();
+    expect(readingPlan(null, chapters)).toBeNull();
   });
 
-  it("carries the tested-out and allotted ids", () => {
-    expect(readingPlan(record({ testedOut: ["a"], allotted: ["d"] }))).toEqual({ testedOut: ["a"], allotted: ["d"] });
+  it("carries the tested-out and allotted ids of the written chapters", () => {
+    expect(readingPlan(record({ testedOut: ["a"], allotted: ["d"] }), chapters)).toEqual({
+      testedOut: ["a"],
+      allotted: ["d", "e", "f"],
+    });
+  });
+
+  it("allots by level when the record names no chapters, as the plan page does", () => {
+    const plan = readingPlan(record({ mode: "self", allotted: [] }), chapters);
+    expect(plan?.allotted).toEqual(["d", "e", "f"]);
+    expect(plan?.testedOut).toEqual([]);
+  });
+});
+
+describe("the chapter a reader is sent to", () => {
+  const written = chapters.filter((entry) => entry.ready);
+  const first = (rec: PlacementRecord | null, done: string[] = []) =>
+    nextChapter("quiz", written, new Set(done), readingPlan(rec, chapters), true)?.id ?? null;
+
+  it("starts a self placement at its level for every level", () => {
+    expect(first(record({ mode: "self", level: "beginner", allotted: [] }))).toBe("a");
+    expect(first(record({ mode: "self", level: "intermediate", allotted: [] }))).toBe("d");
+    expect(first(record({ mode: "self", level: "advanced", allotted: [] }))).toBe("f");
+  });
+
+  it("agrees with the first chapter of the plan list", () => {
+    for (const level of ["beginner", "intermediate", "advanced"] as const) {
+      const rec = record({ mode: "self", level, allotted: [] });
+      expect(first(rec)).toBe(planView(rec, chapters).allotted[0].id);
+    }
+  });
+
+  it("skips tested-out chapters and chapters to revise earlier", () => {
+    const rec = record({ testedOut: ["d"], allotted: ["e", "f"] });
+    expect(first(rec)).toBe("e");
+    expect(first(rec, ["e"])).toBe("f");
+  });
+
+  it("starts a reader who began from the beginning at the first chapter", () => {
+    expect(first(record({ mode: "beginning", level: "beginner", allotted: [] }))).toBe("a");
+  });
+
+  it("walks the plain order with no placement", () => {
+    expect(first(null)).toBe("a");
+    expect(first(null, ["a"])).toBe("b");
+  });
+
+  it("returns nothing once every chapter in the plan is read, even with chapters to revise left", () => {
+    expect(first(record({ mode: "self", allotted: [] }), ["d", "e", "f"])).toBeNull();
+    expect(first(null, ["a", "b", "d", "e", "f"])).toBeNull();
   });
 });
 

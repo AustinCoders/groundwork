@@ -65,6 +65,15 @@
   background: var(--sheet-2);
 }
 
+.unwritten {
+  margin: 0;
+  padding-top: 12px;
+  font-size: var(--t-meta);
+  line-height: 1.5;
+  color: var(--ink-soft);
+  border-top: 1.5px dashed var(--line);
+}
+
 .parts {
   display: flex;
   flex-direction: column;

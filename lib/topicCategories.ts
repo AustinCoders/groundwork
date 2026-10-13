@@ -21,6 +21,10 @@ export function isReadable(t: TopicNav): boolean {
   return t.status === "ready" && t.written > 0;
 }
 
+export function topicTally(topics: readonly TopicNav[]): { written: number; total: number } {
+  return { written: topics.filter(isReadable).length, total: topics.length };
+}
+
 export function groupByCategory(topics: TopicNav[]): CategoryGroup[] {
   return TOPIC_CATEGORIES.map(({ id, label }) => {
     const members = topics.filter((t) => t.category === id);

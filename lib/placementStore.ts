@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { store } from "@/lib/storage";
+import { clearDraft } from "@/lib/placementDraft";
 import { sanitizePlacement, type PlacementRecord } from "@/lib/placementRecord";
 
 export const PLACEMENT_KEY = "groundwork:dsa:placement";
@@ -53,6 +54,7 @@ export function savePlacement(record: PlacementRecord) {
 
 export function clearPlacement() {
   store.remove(PLACEMENT_KEY);
+  clearDraft();
   unsaved = null;
   listeners.forEach((fn) => fn());
 }

@@ -1,4 +1,4 @@
-import { Station, Journey, JourneyStop, Check, Checkpoint, SoonTag, StopHead } from "@/components/topic/Journey";
+import { Station, Journey, JourneyStop, Checkpoint, SoonTag, StopHead } from "@/components/topic/Journey";
 import { Band, topicKit } from "@/components/topic/TopicKit";
 import { padNumber } from "@/components/topic/LevelPicker";
 import { plural } from "@/lib/format";
@@ -26,13 +26,14 @@ export function LevelSyllabus({
       id="syllabus-title"
       label="Full syllabus"
       title="Every stop on the way"
-      sub="Everything each level eventually covers. Flags with a tick are written, the dashed ones are still on the desk."
+      sub="Everything each level eventually covers. Solid cards are written and open to read, dashed ones are still on the desk."
       count={plural(chapterCount, "chapter")}
     >
       <div id="syllabus">
         {levels.map((level, index) => {
           const rows = levelRows(level, chapterById);
           const written = rows.filter((r) => r.ready).length;
+          const soon = rows.length - written;
           return (
             <div key={level.id} className={topicKit.level}>
               <Station
@@ -41,13 +42,13 @@ export function LevelSyllabus({
                 id={`station-${level.id}`}
                 quote={level.tagline}
                 mark={savedLevel === level.id ? "Your level" : undefined}
-                chips={[`${written} / ${rows.length} sections written`]}
+                chips={[`${plural(written, "chapter")} written`, ...(soon > 0 ? [`${soon} soon`] : [])]}
               />
-              <Journey count={rows.length} slot={76} label={`${level.name}: every section`}>
+              <Journey count={rows.length} slot={76} label={`${level.name}: every chapter`}>
                 {rows.map((row, i) => (
                   <JourneyStop
                     key={row.ready ? row.chapter.id : row.section.title + i}
-                    state={row.ready ? "done" : "soon"}
+                    state={row.ready ? "todo" : "soon"}
                   >
                     {row.ready ? (
                       <StopHead
@@ -57,7 +58,6 @@ export function LevelSyllabus({
                         sub={row.chapter.subtitle}
                         rawSub
                         href={`${basePath}/${row.chapter.id}`}
-                        end={<Check />}
                       />
                     ) : (
                       <StopHead

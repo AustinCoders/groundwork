@@ -23,6 +23,7 @@ import {
 } from "@/components/topic/TopicKit";
 import { ChapterContents, PracticeLinks, ProgressChips, UpNextAndBudget } from "@/components/topic/CoverParts";
 import { LevelPicker, levelTotals, type LevelStat } from "@/components/topic/LevelPicker";
+import { RevealWithoutScript } from "@/components/topic/RevealWithoutScript";
 import { LevelSyllabus } from "@/components/topic/LevelSyllabus";
 import { useCoverProgress, type CoverCard } from "@/components/topic/useCoverProgress";
 import { PlacementAside } from "@/components/placement/PlacementAside";
@@ -133,7 +134,7 @@ export function TopicHome({
         label="Chapters"
         title="Every chapter, in reading order"
         sub="Start at the top or jump to what you need. Tick a chapter once you have read it."
-        count={plural(cards.length, "chapter")}
+        count={plural(written, "chapter")}
       >
         <ChapterContents
           progress={progress}
@@ -154,7 +155,7 @@ export function TopicHome({
         title={`Practice ${topic.name}`}
         sub="Every exercise opens in the editor with tests you can run."
       >
-        <PracticeLinks topicId={topic.id} parts={parts} cards={cards} />
+        <PracticeLinks topicId={topic.id} parts={parts} cards={cards} completion={topic.completion} />
       </Band>
     ),
   };
@@ -174,6 +175,7 @@ export function TopicHome({
       }
     >
       <HashRedirect basePath={basePath} />
+      <RevealWithoutScript className={placement.pending} />
       <TopicPage accent={topic.accent} id="top">
         {firstTime ? (
           <Scene className={heroClass}>
@@ -207,7 +209,7 @@ export function TopicHome({
                 <p className={placement.cardKicker}>Nothing is locked</p>
                 <ul className={placement.bullets}>
                   <li>Every chapter is open to you, whatever you choose.</li>
-                  <li>A placement is about 10 minutes, no timer, and it never changes a tick.</li>
+                  <li>A placement is short, has no timer and never changes a tick.</li>
                   <li>You can change your level any time from this page.</li>
                 </ul>
                 <Remark>no wrong door</Remark>

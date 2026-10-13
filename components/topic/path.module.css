@@ -1,3 +1,7 @@
+.pathHero.pathHero {
+  min-height: 0;
+}
+
 .nextTitle {
   margin: 0;
   font-family: var(--font-heading);

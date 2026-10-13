@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { MenuIcon, type MenuIconName } from "@/components/menu/MenuIcon";
 import { Eyebrow, kit } from "@/components/ui/MenuKit";
-import { groupByCategory, isReadable } from "@/lib/topicCategories";
+import { groupByCategory, isReadable, topicTally } from "@/lib/topicCategories";
 import { navHref, type GuideNav } from "@/lib/topicNav";
 import type { TopicNav } from "@/content/types";
 import styles from "../SiteDrawer.module.css";
@@ -181,11 +181,11 @@ export function TopicsSection({
     if (here) setOpenId(here);
   }
   const toggle = (id: string) => setOpenId(openId === id ? null : id);
-  const written = topics.filter(isReadable).length;
+  const tally = topicTally(topics);
 
   return (
     <section className={styles.block} aria-labelledby="menu-topics">
-      <Eyebrow no="03" id="menu-topics" count={`${written} of ${topics.length} written`}>
+      <Eyebrow no="03" id="menu-topics" count={`${tally.written} of ${tally.total} written`}>
         Topics
       </Eyebrow>
       <nav aria-label="Topics" className={styles.accordion}>

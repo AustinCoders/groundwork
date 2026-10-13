@@ -24,11 +24,23 @@ export interface PlanView {
   reviseEarlier: PlanChapter[];
 }
 
-export function planView(record: PlacementRecord, chapters: readonly PlanChapter[]): PlanView {
+export interface PlannedChapter {
+  id: string;
+  level: LevelId;
+  ready: boolean;
+}
+
+export interface PlanSplit<T> {
+  allotted: T[];
+  testedOut: T[];
+  reviseEarlier: T[];
+}
+
+export function splitPlan<T extends PlannedChapter>(record: PlacementRecord, chapters: readonly T[]): PlanSplit<T> {
   const tested = new Set(record.testedOut);
   const named = new Set(record.allotted);
   const reached = levelRank(record.level);
-  const view: PlanView = { mode: record.mode, level: record.level, allotted: [], testedOut: [], reviseEarlier: [] };
+  const view: PlanSplit<T> = { allotted: [], testedOut: [], reviseEarlier: [] };
   for (const chapter of chapters) {
     if (!chapter.ready) continue;
     if (tested.has(chapter.id)) view.testedOut.push(chapter);
@@ -38,8 +50,17 @@ export function planView(record: PlacementRecord, chapters: readonly PlanChapter
   return view;
 }
 
-export function readingPlan(record: PlacementRecord | null): ReadingPlan | null {
-  return record ? { testedOut: record.testedOut, allotted: record.allotted } : null;
+export function planView(record: PlacementRecord, chapters: readonly PlanChapter[]): PlanView {
+  return { mode: record.mode, level: record.level, ...splitPlan(record, chapters) };
+}
+
+export function readingPlan(record: PlacementRecord | null, chapters: readonly PlannedChapter[]): ReadingPlan | null {
+  if (!record) return null;
+  const view = splitPlan(record, chapters);
+  return {
+    testedOut: view.testedOut.map((chapter) => chapter.id),
+    allotted: view.allotted.map((chapter) => chapter.id),
+  };
 }
 
 export function planSummary(view: PlanView): string {

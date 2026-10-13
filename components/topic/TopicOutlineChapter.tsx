@@ -27,6 +27,7 @@ export function TopicOutlineChapter({
   mark,
   accent,
   basePath,
+  homeHref,
   parts,
   chapter,
   chapters,
@@ -34,6 +35,7 @@ export function TopicOutlineChapter({
   items,
   relatedHref,
   relatedLabel,
+  relatedWritten,
   relatedRoundHref,
   relatedRoundLabel,
 }: {
@@ -41,6 +43,7 @@ export function TopicOutlineChapter({
   mark: string;
   accent: string;
   basePath: string;
+  homeHref?: string;
   parts: SeriesPart<LevelId>[];
   chapter: SeriesCard<LevelId>;
   chapters: SeriesCard<LevelId>[];
@@ -48,12 +51,15 @@ export function TopicOutlineChapter({
   items: string[];
   relatedHref: string;
   relatedLabel: string;
+  relatedWritten?: number;
   relatedRoundHref: string | null;
   relatedRoundLabel: string | null;
 }) {
   const [railOpen, setRailOpen] = useState(false);
   const closeRail = useCallback(() => setRailOpen(false), []);
 
+  const home = homeHref ?? basePath;
+  const homeLabel = home === basePath ? "The cover" : "Levels and plan";
   const index = chapters.findIndex((c) => c.id === chapter.id);
   const prev = chapters[index - 1];
   const next = chapters[index + 1];
@@ -73,7 +79,8 @@ export function TopicOutlineChapter({
       chapters={chapters}
       chapter={chapter}
       basePath={basePath}
-      homeLabel="The cover"
+      homeHref={home}
+      homeLabel={homeLabel}
       done={NO_DONE}
       mounted={false}
       openParts={openParts}
@@ -84,15 +91,15 @@ export function TopicOutlineChapter({
 
   return (
     <TopicFrame
-      topic={{ name: topicName, href: basePath, mark, accent }}
-      back={{ href: basePath, label: topicName }}
+      topic={{ name: topicName, href: home, mark, accent }}
+      back={{ href: home, label: topicName }}
       layout="reader"
       skip={{ label: "Skip to the chapter", href: `#${chapter.id}` }}
       scan={chapter.id}
       actions={
         <>
           <ChaptersSheetButton open={railOpen} onOpen={() => setRailOpen(true)} />
-          <ChapterCrumbs href={basePath} label={topicName} part={part?.title} num={chapter.num} />
+          <ChapterCrumbs href={home} label={topicName} part={part?.title} num={chapter.num} />
           <ChapterHeaderPager index={index} total={chapters.length} prev={prev} next={next} basePath={basePath} />
         </>
       }
@@ -109,7 +116,11 @@ export function TopicOutlineChapter({
               <ul className={kit.rows}>
                 <li>
                   <Link className={kit.row} href={relatedHref}>
-                    <span className={kit.title}>{relatedLabel} is written, start there</span>
+                    <span className={kit.title}>
+                      {relatedWritten
+                        ? `${relatedWritten} ${relatedLabel} ${relatedWritten === 1 ? "chapter is" : "chapters are"} written, pick one on the levels page`
+                        : `${relatedLabel} is written, start there`}
+                    </span>
                   </Link>
                 </li>
                 {relatedRoundHref && relatedRoundLabel && (
@@ -149,7 +160,14 @@ export function TopicOutlineChapter({
             </ul>
           </section>
 
-          <ChapterEndScene num={chapter.num} prev={prev} next={next} basePath={basePath} homeLabel="The cover" />
+          <ChapterEndScene
+            num={chapter.num}
+            prev={prev}
+            next={next}
+            basePath={basePath}
+            homeHref={home}
+            homeLabel={homeLabel}
+          />
         </ReadingColumn>
       </ReaderLayout>
 
@@ -159,7 +177,8 @@ export function TopicOutlineChapter({
           chapters={chapters}
           chapter={chapter}
           basePath={basePath}
-          homeLabel="The cover"
+          homeHref={home}
+          homeLabel={homeLabel}
           done={NO_DONE}
           mounted={false}
           openParts={openParts}

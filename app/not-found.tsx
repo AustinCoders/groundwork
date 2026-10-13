@@ -1,8 +1,28 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PageFrame } from "@/components/frame/PageFrame";
 import { LostScene, MenuKey } from "@/components/frame/LostScene";
-import { Button, Underlined } from "@/components/topic/TopicKit";
+import { LostActions } from "@/components/frame/LostActions";
+import { Underlined } from "@/components/topic/TopicKit";
+import { guidesNav } from "@/lib/guidesNav";
+import type { LostTopic } from "@/lib/lostTopic";
+import { notesHref, topicHome, topics } from "@/lib/topics";
 import styles from "@/components/frame/lost.module.css";
+
+export const metadata: Metadata = { title: "Page not found" };
+
+function lostTopics(): LostTopic[] {
+  const guideIds = new Set(guidesNav().map((guide) => guide.id));
+  return topics()
+    .filter((topic) => topic.status === "ready")
+    .map((topic) => ({
+      id: topic.id,
+      name: topic.name,
+      segment: notesHref(topic.id).slice(1),
+      home: topicHome(topic.id),
+      guide: guideIds.has(topic.id),
+    }));
+}
 
 export default function NotFound() {
   return (
@@ -17,16 +37,7 @@ export default function NotFound() {
           </>
         }
         lead="The link might be old, or the chapter may have moved. Everything that exists is on the shelf. Start there and pick a topic."
-        actions={
-          <>
-            <Button href="/">
-              Back to all topics <span aria-hidden="true">→</span>
-            </Button>
-            <Button ghost href="/level/dsa">
-              Open the DSA notes
-            </Button>
-          </>
-        }
+        actions={<LostActions topics={lostTopics()} />}
         stamp="404"
         stampNote="page not found"
         stampTone="draft"

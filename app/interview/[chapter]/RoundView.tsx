@@ -37,7 +37,7 @@ const MODE_KEY = "groundwork:interview:mode";
 const modeListeners = new Set<() => void>();
 
 function readMode(): Mode {
-  return store.get<Mode>(MODE_KEY, "read") === "practise" ? "practise" : "read";
+  return store.get<unknown>(MODE_KEY, "read") === "practise" ? "practise" : "read";
 }
 
 function subscribeMode(fn: () => void) {

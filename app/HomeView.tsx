@@ -278,7 +278,7 @@ function Head({
   );
 }
 
-export function HomeView({ stats, ready, soon, languages, interview, bookRounds }: HomeViewProps) {
+export function HomeView({ stats, tally, ready, soon, languages, interview, bookRounds }: HomeViewProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const closeMenu = useCallback(() => {
@@ -473,6 +473,7 @@ export function HomeView({ stats, ready, soon, languages, interview, bookRounds 
           <section className={styles.section} id="shelf" aria-labelledby="shelf-h" data-scene>
             <div className={styles.pin} data-pin-box>
               <TopicsScene
+                tally={tally}
                 ready={ready}
                 soon={soon}
                 interview={interview}

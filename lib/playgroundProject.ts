@@ -39,21 +39,31 @@ export function langForName(name: string): LanguageKey | null {
   return LANG_ORDER.find((k) => LANGUAGES[k].ext === ext) ?? null;
 }
 
-function valid(p: unknown): p is Project {
-  const project = p as Project;
+const MAX_FILES = 200;
+
+function validFile(f: unknown): f is PgFile {
+  if (f === null || typeof f !== "object") return false;
+  const file = f as Record<string, unknown>;
   return (
-    Boolean(project) &&
-    Array.isArray(project.files) &&
-    project.files.length > 0 &&
-    project.files.every((f) => typeof f.id === "string" && typeof f.code === "string" && isLanguage(f.lang))
+    typeof file.id === "string" &&
+    typeof file.name === "string" &&
+    typeof file.code === "string" &&
+    typeof file.lang === "string" &&
+    isLanguage(file.lang)
   );
 }
 
+export function sanitizeProject(p: unknown): Project | null {
+  if (p === null || typeof p !== "object" || !Array.isArray((p as Project).files)) return null;
+  const files = (p as Project).files.filter(validFile).slice(0, MAX_FILES);
+  if (files.length === 0) return null;
+  const active = (p as Project).active;
+  return { files, active: files.some((f) => f.id === active) ? active : files[0].id };
+}
+
 export function loadProject(): Project {
-  const saved = store.get<unknown>(KEY, null);
-  if (valid(saved)) {
-    return saved.files.some((f) => f.id === saved.active) ? saved : { ...saved, active: saved.files[0].id };
-  }
+  const saved = sanitizeProject(store.get<unknown>(KEY, null));
+  if (saved) return saved;
   const files: PgFile[] = [];
   for (const lang of LANG_ORDER) {
     const code = codeStore.load("free", lang);

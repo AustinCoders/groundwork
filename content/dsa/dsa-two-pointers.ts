@@ -156,6 +156,7 @@ function removeDuplicates(nums) {
       <div>
         <div class="loop-code" id="tp-code"></div>
         <div class="loop-bar"><i id="tp-bar"></i></div>
+        <p class="loop-step" id="tp-step"></p>
         <div class="demo__ctl">
           <button class="btn" id="tp-prev" type="button">← Back</button>
           <button class="btn" id="tp-next" type="button">Next step →</button>
@@ -179,13 +180,14 @@ function removeDuplicates(nums) {
 (function () {
   var ID = "tp";
   var CODE = ["let lo = 0, hi = a.length - 1;","while (lo < hi) {","  const sum = a[lo] + a[hi];","  if (sum === target) return [lo, hi];","  sum < target ? lo++ : hi--;","}"];
-  var STEPS = [{"cells":[{"v":"2","c":"out","p":""},{"v":"4","c":"out","p":""},{"v":"7","c":"out","p":""},{"v":"11","c":"out","p":""},{"v":"15","c":"out","p":""},{"v":"19","c":"out","p":""},{"v":"24","c":"out","p":""}],"panels":{"sum":[]},"note":"Sorted array, target 22. Two pointers start at both ends."},{"cells":[{"v":"2","c":"lo","p":"lo"},{"v":"4","c":"in","p":""},{"v":"7","c":"in","p":""},{"v":"11","c":"in","p":""},{"v":"15","c":"in","p":""},{"v":"19","c":"in","p":""},{"v":"24","c":"hi","p":"hi"}],"panels":{"sum":["a[0] + a[6] = 2 + 24 = 26"]},"note":"Sum is 26. Compare it with the target 22."},{"cells":[{"v":"2","c":"lo","p":"lo"},{"v":"4","c":"in","p":""},{"v":"7","c":"in","p":""},{"v":"11","c":"in","p":""},{"v":"15","c":"in","p":""},{"v":"19","c":"hi","p":"hi"},{"v":"24","c":"out","p":""}],"panels":{"sum":["a[0] + a[5] = 2 + 19 = 21"]},"note":"26 > 22. Only moving hi DOWN can decrease the sum, so hi retreats."},{"cells":[{"v":"2","c":"out","p":""},{"v":"4","c":"lo","p":"lo"},{"v":"7","c":"in","p":""},{"v":"11","c":"in","p":""},{"v":"15","c":"in","p":""},{"v":"19","c":"hi","p":"hi"},{"v":"24","c":"out","p":""}],"panels":{"sum":["a[1] + a[5] = 4 + 19 = 23"]},"note":"21 < 22. Only moving lo UP can increase the sum, so lo advances. Everything left of it is now impossible."},{"cells":[{"v":"2","c":"out","p":""},{"v":"4","c":"lo","p":"lo"},{"v":"7","c":"in","p":""},{"v":"11","c":"in","p":""},{"v":"15","c":"hi","p":"hi"},{"v":"19","c":"out","p":""},{"v":"24","c":"out","p":""}],"panels":{"sum":["a[1] + a[4] = 4 + 15 = 19"]},"note":"23 > 22. Only moving hi DOWN can decrease the sum, so hi retreats."},{"cells":[{"v":"2","c":"out","p":""},{"v":"4","c":"out","p":""},{"v":"7","c":"lo","p":"lo"},{"v":"11","c":"in","p":""},{"v":"15","c":"hi","p":"hi"},{"v":"19","c":"out","p":""},{"v":"24","c":"out","p":""}],"panels":{"sum":["a[2] + a[4] = 7 + 15 = 22"]},"note":"19 < 22. Only moving lo UP can increase the sum, so lo advances. Everything left of it is now impossible."},{"cells":[{"v":"2","c":"out","p":""},{"v":"4","c":"out","p":""},{"v":"7","c":"done","p":"lo"},{"v":"11","c":"out","p":""},{"v":"15","c":"done","p":"hi"},{"v":"19","c":"out","p":""},{"v":"24","c":"out","p":""}],"panels":{"sum":["a[2] + a[4] = 7 + 15 = 22"]},"note":"7 + 15 = 22. Found the pair — done in one pass, O(n)."}];
+  var STEPS = [{"cells":[{"v":"2","c":"out","p":""},{"v":"4","c":"out","p":""},{"v":"7","c":"out","p":""},{"v":"11","c":"out","p":""},{"v":"15","c":"out","p":""},{"v":"19","c":"out","p":""},{"v":"24","c":"out","p":""}],"panels":{"sum":[]},"note":"Sorted array, target 22. Two pointers start at both ends.","line":1},{"cells":[{"v":"2","c":"lo","p":"lo"},{"v":"4","c":"in","p":""},{"v":"7","c":"in","p":""},{"v":"11","c":"in","p":""},{"v":"15","c":"in","p":""},{"v":"19","c":"in","p":""},{"v":"24","c":"hi","p":"hi"}],"panels":{"sum":["a[0] + a[6] = 2 + 24 = 26"]},"note":"Sum is 26. Compare it with the target 22.","line":3},{"cells":[{"v":"2","c":"lo","p":"lo"},{"v":"4","c":"in","p":""},{"v":"7","c":"in","p":""},{"v":"11","c":"in","p":""},{"v":"15","c":"in","p":""},{"v":"19","c":"hi","p":"hi"},{"v":"24","c":"out","p":""}],"panels":{"sum":["a[0] + a[5] = 2 + 19 = 21"]},"note":"26 > 22. Only moving hi DOWN can decrease the sum, so hi retreats.","line":5},{"cells":[{"v":"2","c":"out","p":""},{"v":"4","c":"lo","p":"lo"},{"v":"7","c":"in","p":""},{"v":"11","c":"in","p":""},{"v":"15","c":"in","p":""},{"v":"19","c":"hi","p":"hi"},{"v":"24","c":"out","p":""}],"panels":{"sum":["a[1] + a[5] = 4 + 19 = 23"]},"note":"21 < 22. Only moving lo UP can increase the sum, so lo advances. Everything left of it is now impossible.","line":5},{"cells":[{"v":"2","c":"out","p":""},{"v":"4","c":"lo","p":"lo"},{"v":"7","c":"in","p":""},{"v":"11","c":"in","p":""},{"v":"15","c":"hi","p":"hi"},{"v":"19","c":"out","p":""},{"v":"24","c":"out","p":""}],"panels":{"sum":["a[1] + a[4] = 4 + 15 = 19"]},"note":"23 > 22. Only moving hi DOWN can decrease the sum, so hi retreats.","line":5},{"cells":[{"v":"2","c":"out","p":""},{"v":"4","c":"out","p":""},{"v":"7","c":"lo","p":"lo"},{"v":"11","c":"in","p":""},{"v":"15","c":"hi","p":"hi"},{"v":"19","c":"out","p":""},{"v":"24","c":"out","p":""}],"panels":{"sum":["a[2] + a[4] = 7 + 15 = 22"]},"note":"19 < 22. Only moving lo UP can increase the sum, so lo advances. Everything left of it is now impossible.","line":5},{"cells":[{"v":"2","c":"out","p":""},{"v":"4","c":"out","p":""},{"v":"7","c":"done","p":"lo"},{"v":"11","c":"out","p":""},{"v":"15","c":"done","p":"hi"},{"v":"19","c":"out","p":""},{"v":"24","c":"out","p":""}],"panels":{"sum":["a[2] + a[4] = 7 + 15 = 22"]},"note":"7 + 15 = 22. Found the pair — done in one pass, O(n).","line":4}];
   var codeEl = document.getElementById(ID + "-code");
   if (!codeEl) return;
   if (codeEl.dataset.demoInit) return;
   codeEl.dataset.demoInit = "1";
 
   var barEl = document.getElementById(ID + "-bar");
+  var stepEl = document.getElementById(ID + "-step");
   var noteEl = document.getElementById(ID + "-note");
   var cellsEl = document.getElementById(ID + "-cells");
   var gridEl = document.getElementById(ID + "-grid");
@@ -255,6 +257,7 @@ function removeDuplicates(nums) {
     }
     noteEl.textContent = s.note;
     barEl.style.width = (i / (STEPS.length - 1)) * 100 + "%";
+    if (stepEl) stepEl.textContent = "Step " + (i + 1) + " of " + STEPS.length;
     nextBtn.disabled = i === STEPS.length - 1;
     prevBtn.disabled = i === 0;
   }

@@ -84,6 +84,16 @@ const MARKS: Record<string, string> = { log: "›", info: "i", warn: "!", error:
 const EDITOR_HEIGHT_KEY = "jsnotes:editor-height";
 const LIVE_KEY = "jsnotes:playground-live";
 const STDIN_KEY = "groundwork:playground:stdin";
+
+function savedText(key: string, fallback = ""): string {
+  const value = store.get<unknown>(key, fallback);
+  return typeof value === "string" ? value : fallback;
+}
+
+function savedHeight(): number {
+  const value = store.get<unknown>(EDITOR_HEIGHT_KEY, 430);
+  return typeof value === "number" && Number.isFinite(value) && value >= 160 && value <= 2000 ? value : 430;
+}
 const QUICK_LANGS: readonly LanguageKey[] = ["javascript", "typescript", "python", "sql", "html", "css"];
 const EDITOR_HEIGHT_MIN = 220;
 const EDITOR_HEIGHT_MAX = 900;
@@ -205,7 +215,7 @@ export function PracticeWorkspace({
   const [activeTab, setActiveTab] = useState<
     "console" | "tests" | "problems" | "preview" | "history" | "input" | "debug"
   >("console");
-  const storedStdin = useClientValue(() => (isFree && !interview ? store.get<string>(STDIN_KEY, "") : ""), "");
+  const storedStdin = useClientValue(() => (isFree && !interview ? savedText(STDIN_KEY) : ""), "");
   const [stdinOverride, setStdin] = useState<string | null>(null);
   const stdin = stdinOverride ?? storedStdin;
   const runs = useSyncExternalStore(subscribeRuns, runsSnapshot, serverRunsSnapshot);
@@ -220,7 +230,7 @@ export function PracticeWorkspace({
   const [consoleLines, setConsoleLines] = useState<RunnerOutputEntry[]>([]);
   const [consolePhase, setConsolePhase] = useState<"idle" | "running" | "compiling" | "ran" | "cleared">("idle");
   const [runMs, setRunMs] = useState<number | null>(null);
-  const storedLive = useClientValue(() => isFree && !interview && store.get<boolean>(LIVE_KEY, false), false);
+  const storedLive = useClientValue(() => isFree && !interview && store.get<unknown>(LIVE_KEY, false) === true, false);
   const [liveOverride, setLive] = useState<boolean | null>(null);
   const live = liveOverride ?? storedLive;
   const liveTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -244,7 +254,7 @@ export function PracticeWorkspace({
     });
   }, [testResults, hintsShown, sawSolution, exercise.tests.length]);
 
-  const savedEditorHeight = useClientValue(() => store.get<number>(EDITOR_HEIGHT_KEY, 430), 430);
+  const savedEditorHeight = useClientValue(() => savedHeight(), 430);
   const [editorHeightOverride, setEditorHeightOverride] = useState<number | null>(null);
   const editorHeight = editorHeightOverride ?? savedEditorHeight;
 
@@ -314,7 +324,7 @@ export function PracticeWorkspace({
   const projectSaveRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const activeFile = project?.files.find((f) => f.id === project.active) ?? null;
 
-  const storedLanguage = mounted && !interview ? store.get<string>(langKey, "javascript") : "javascript";
+  const storedLanguage = mounted && !interview ? savedText(langKey, "javascript") : "javascript";
   const initialLanguage: LanguageKey = activeFile
     ? activeFile.lang
     : isLanguage(storedLanguage)

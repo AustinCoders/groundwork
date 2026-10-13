@@ -5,6 +5,7 @@ import { CheckRunner } from "./CheckRunnerLoader";
 
 export async function CheckIsland({ chapterId, basePath }: { chapterId: string; basePath: string }) {
   const pool = await loadPool(chapterId);
+  if (!pool || pool.questions.length === 0) return null;
   return (
     <section
       id="check"
@@ -17,7 +18,7 @@ export async function CheckIsland({ chapterId, basePath }: { chapterId: string; 
       <Eyebrow no="✓" as="p">
         Check yourself
       </Eyebrow>
-      <CheckRunner key={chapterId} chapterId={chapterId} basePath={basePath} questions={pool?.questions ?? []} />
+      <CheckRunner key={chapterId} chapterId={chapterId} basePath={basePath} questions={pool.questions} />
     </section>
   );
 }

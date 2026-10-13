@@ -25,7 +25,7 @@ function isCodeLanguage(value: unknown): value is CodeLanguage {
   return CODE_LANGUAGES.some((language) => language.id === value);
 }
 
-function read(): CodeLanguage {
+export function readCodeLanguage(): CodeLanguage {
   if (unsaved) return unsaved;
   let raw: string | null = null;
   try {
@@ -65,6 +65,6 @@ export function codeLanguageLabel(language: CodeLanguage): string {
 }
 
 export function useCodeLanguage(): [CodeLanguage, (language: CodeLanguage) => void] {
-  const language = useSyncExternalStore(subscribe, read, () => DEFAULT_CODE_LANGUAGE);
+  const language = useSyncExternalStore(subscribe, readCodeLanguage, () => DEFAULT_CODE_LANGUAGE);
   return [language, write];
 }

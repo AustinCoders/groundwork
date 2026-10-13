@@ -65,7 +65,7 @@ export const dsaBinarySearch: Chapter = {
 <div data-code="binary-search-classic"><pre><code>function binarySearch(sorted, target) {
   let lo = 0, hi = sorted.length - 1;
   while (lo <= hi) {              <span class="c">// note: <=, not <</span>
-    const mid = lo + Math.floor((hi - lo) / 2); <span class="c">// avoids overflow, same as (lo+hi)>>1 in JS</span>
+    const mid = lo + Math.floor((hi - lo) / 2); <span class="c">// avoids overflow in fixed-width integer languages</span>
     if (sorted[mid] === target) return mid;
     if (sorted[mid] < target) lo = mid + 1;
     else hi = mid - 1;
@@ -77,9 +77,10 @@ export const dsaBinarySearch: Chapter = {
   <ul style="margin:6px 0 0">
     <li><code>lo &lt;= hi</code> vs <code>lo &lt; hi</code> — get this wrong
       and you'll either miss the last candidate or loop forever.</li>
-    <li><code>mid = (lo + hi) / 2</code> can integer-overflow in other
-      languages (not JS, but say it right anyway) — the
-      <code>lo + (hi - lo) / 2</code> form is the safe habit.</li>
+    <li><code>mid = (lo + hi) / 2</code> is a fraction in JS and can
+      integer-overflow in other languages — the
+      <code>lo + Math.floor((hi - lo) / 2)</code> form is the safe habit
+      everywhere, so use it every time.</li>
   </ul>
 </div>
 
@@ -130,7 +131,7 @@ function minEatingSpeed(piles, h) {
 
 <h3>Finding a boundary (first/last occurrence)</h3>
 <div data-code="lower-bound"><pre><code><span class="c">// leftmost index where nums[i] >= target — the building block for
-   // "find first occurrence" and most boundary-search variants</span>
+// "find first occurrence" and most boundary-search variants</span>
 function lowerBound(nums, target) {
   let lo = 0, hi = nums.length; <span class="c">// note: hi = length, not length-1, here</span>
   while (lo < hi) {

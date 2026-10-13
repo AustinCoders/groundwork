@@ -263,11 +263,6 @@ export function CheckRunner({
     show({ name: "start" });
   }
 
-  function markReadWithoutCheck() {
-    progress.setChapterDone(chapterId, true);
-    refocus.current = "status";
-  }
-
   const statusLine = mounted && status !== "unread" && (
     <div className={styles.statusBlock}>
       <p className={styles.status} data-status={status} tabIndex={-1}>
@@ -286,28 +281,7 @@ export function CheckRunner({
   );
 
   let body;
-  if (questions.length === 0) {
-    body = (
-      <>
-        {mounted && done ? (
-          <p className={styles.text} data-status="read" tabIndex={-1}>
-            Marked as read. The check for this chapter is not written yet.
-          </p>
-        ) : (
-          <p className={styles.text}>
-            The check for this chapter is not written yet, so there is nothing to answer here.
-          </p>
-        )}
-        {!(mounted && done) && (
-          <div className={styles.actions}>
-            <button type="button" className={styles.secondary} onClick={markReadWithoutCheck}>
-              Mark as read
-            </button>
-          </div>
-        )}
-      </>
-    );
-  } else if (view.name === "start") {
+  if (view.name === "start") {
     const readAlready = mounted && done;
     body = (
       <>

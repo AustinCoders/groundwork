@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { beginningPlacement } from "@/lib/placementRecord";
 import { savePlacement } from "@/lib/placementStore";
 import { placementPath, type PlanData } from "@/lib/placementPlan";
@@ -20,24 +19,25 @@ export function PlacementDoors({
   row?: boolean;
   labelledBy?: string;
 }) {
-  const router = useRouter();
   const first = data.chapters.find((chapter) => chapter.ready);
-
-  function startFromTheBeginning() {
-    savePlacement(beginningPlacement(data.chapters, Date.now()));
-    if (first) router.push(`${basePath}/${first.id}`);
-  }
+  const beginningHref = first ? `${basePath}/${first.id}` : basePath;
 
   return (
     <ul className={row ? `${styles.doors} ${styles.doorsRow}` : styles.doors} aria-labelledby={labelledBy}>
       <li>
-        <button type="button" className={styles.door} data-door="beginning" onClick={startFromTheBeginning}>
+        <Link
+          className={styles.door}
+          data-door="beginning"
+          href={beginningHref}
+          prefetch={false}
+          onClick={() => savePlacement(beginningPlacement(data.chapters, Date.now()))}
+        >
           <span className={styles.doorNo} aria-hidden="true">
             01
           </span>
           <span className={styles.doorName}>Start from the beginning</span>
           <span className={styles.doorQuote}>No test. Every chapter, in order.</span>
-        </button>
+        </Link>
       </li>
       <li>
         <Link className={styles.door} data-door="placement" href={placementPath(data.topicId)} prefetch={false}>
@@ -45,7 +45,7 @@ export function PlacementDoors({
             02
           </span>
           <span className={styles.doorName}>Find my level</span>
-          <span className={styles.doorQuote}>About 10 minutes, no timer, then a plan.</span>
+          <span className={styles.doorQuote}>A short set of questions, no timer, then a plan.</span>
         </Link>
       </li>
       <li>

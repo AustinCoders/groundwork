@@ -20,6 +20,8 @@ export const EMPTY_RECORD: QuizRecord = Object.freeze({
   popupDismissed: false,
 });
 
+const MAX_MISSED = 500;
+
 const count = (value: unknown): number =>
   typeof value === "number" && Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
 
@@ -35,7 +37,9 @@ export function sanitizeRecord(value: unknown): QuizRecord | null {
     lastAt: instant(loose.lastAt),
     passedAt: instant(loose.passedAt),
     markedAnyway: loose.markedAnyway === true,
-    missed: Array.isArray(loose.missed) ? loose.missed.filter((id): id is string => typeof id === "string") : [],
+    missed: Array.isArray(loose.missed)
+      ? loose.missed.filter((id): id is string => typeof id === "string").slice(0, MAX_MISSED)
+      : [],
     popupDismissed: loose.popupDismissed === true,
   };
 }

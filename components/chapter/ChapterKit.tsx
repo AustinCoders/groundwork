@@ -72,8 +72,9 @@ export function ChapterHeaderPager({
           <TopIcon name="prev" />
         </span>
       )}
-      <span className={styles.position}>
+      <span className={styles.position} title={`Chapter ${index + 1} of ${total} written`}>
         {index + 1} / {total}
+        <span className="visually-hidden"> written chapters</span>
       </span>
       {next ? (
         <Link className={styles.iconBtn} href={`${basePath}/${next.id}`} aria-label={`Next: ${next.title}`}>
@@ -408,6 +409,7 @@ export interface ChapterFinishProps {
   doneLabel?: string;
   todoLabel?: string;
   aside?: ReactNode;
+  note?: string;
   tickHref?: string | null;
 }
 
@@ -423,6 +425,7 @@ function ChapterFinish({
   doneLabel = "Chapter read",
   todoLabel = "Finished reading?",
   aside,
+  note,
   tickHref,
 }: ChapterFinishProps) {
   return (
@@ -443,6 +446,7 @@ function ChapterFinish({
         <span className={styles.finishBar} aria-hidden="true">
           <span style={{ width: `${(readCount / total) * 100}%` }} />
         </span>
+        {note && <p className={styles.finishSub}>{note}</p>}
         {aside}
       </div>
       {tickHref ? (

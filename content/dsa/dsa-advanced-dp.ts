@@ -68,7 +68,7 @@ export const dsaAdvancedDp: Chapter = {
   <tr><td>Add item i</td><td><code>mask | (1 << i)</code></td><td>set bit i</td></tr>
   <tr><td>Remove item i</td><td><code>mask & ~(1 << i)</code></td><td>clear bit i</td></tr>
   <tr><td>Full set of n items</td><td><code>(1 << n) - 1</code></td><td>n low bits set</td></tr>
-  <tr><td>Iterate submasks of mask</td><td><code>for (let s = mask; s; s = (s - 1) & mask)</code></td><td>every subset of mask, 3<sup>n</sup> total</td></tr>
+  <tr><td>Iterate submasks of mask</td><td><code>for (let s = mask; s; s = (s - 1) & mask)</code></td><td>every non-empty subset of mask (the empty subset, 0, ends the loop, so handle it separately if you need it), 3<sup>n</sup> total across all masks</td></tr>
 </table>
 <p class="sub">
   The bit-manipulation chapter covered these operators; the new idea here is

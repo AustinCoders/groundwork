@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { useCodeLanguage } from "@/lib/codeLanguage";
 import type { CellState, Frame, TracerLine, VariableValue } from "@/lib/play/types";
 import styles from "./player.module.css";
 
@@ -37,6 +38,7 @@ export function Player({ title, lines, frames }: { title: string; lines: TracerL
   const nextRef = useRef<HTMLButtonElement>(null);
   const playRef = useRef<HTMLButtonElement>(null);
   const scrubId = useId();
+  const [language] = useCodeLanguage();
   const frame = frames[index];
 
   const go = useCallback(
@@ -181,8 +183,8 @@ export function Player({ title, lines, frames }: { title: string; lines: TracerL
 
       <div className={styles.lower}>
         <div>
-          <p className={styles.label}>Code</p>
-          <ol className={styles.code} role="list" aria-label={`${title} code`}>
+          <p className={styles.label}>{language === "javascript" ? "Code" : "Code · JavaScript only"}</p>
+          <ol className={styles.code} role="list" aria-label={`${title} code`} tabIndex={0}>
             {lines.map((line) => {
               const ran = line.id === frame.line;
               const queued = line.id === frame.next;

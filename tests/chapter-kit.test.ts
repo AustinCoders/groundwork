@@ -39,7 +39,7 @@ const PROSE_MONO_USERS = [
   ".prose pre::before",
   ".prose .try::after",
   ".prose .try .demo__term::before",
-  ".prose h3::before",
+  ".prose :is(h2, h3:not(.subhead))::before",
   ".prose th",
   ".prose figcaption::before",
   ".prose .qa .q::before",

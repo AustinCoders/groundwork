@@ -117,3 +117,20 @@
 .blank span:nth-child(3) {
   width: 52%;
 }
+
+.reset {
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--paper);
+  border: 1.5px dashed var(--danger);
+  border-radius: 10px;
+}
+
+.resetActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}

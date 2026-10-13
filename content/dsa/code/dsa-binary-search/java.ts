@@ -27,7 +27,7 @@ static int minEatingSpeed(int[] piles, int h) {
     return lo;
 }`,
   "lower-bound": `<span class="c">// leftmost index where nums[i] &gt;= target — the building block for
-   // "find first occurrence" and most boundary-search variants</span>
+// "find first occurrence" and most boundary-search variants</span>
 static int lowerBound(int[] nums, int target) {
     int lo = 0, hi = nums.length; <span class="c">// note: hi = length, not length-1, here</span>
     while (lo &lt; hi) {

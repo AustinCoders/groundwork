@@ -8,7 +8,10 @@ const lines: TracerLine[] = [
   { id: "signature", text: "function binarySearch(sorted, target) {" },
   { id: "init", text: "  let lo = 0, hi = sorted.length - 1;" },
   { id: "loop", text: "  while (lo <= hi) {              // note: <=, not <" },
-  { id: "mid", text: "    const mid = lo + Math.floor((hi - lo) / 2); // avoids overflow, same as (lo+hi)>>1 in JS" },
+  {
+    id: "mid",
+    text: "    const mid = lo + Math.floor((hi - lo) / 2); // avoids overflow in fixed-width integer languages",
+  },
   { id: "equal", text: "    if (sorted[mid] === target) return mid;" },
   { id: "smaller", text: "    if (sorted[mid] < target) lo = mid + 1;" },
   { id: "larger", text: "    else hi = mid - 1;" },

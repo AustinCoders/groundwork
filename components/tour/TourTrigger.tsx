@@ -3,7 +3,13 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ComponentType } from "react";
 import { readTour } from "@/components/tour/tourStore";
-import { TOUR_OPEN_EVENT, TOUR_PROMPT_DELAY_MS, isTourPage, shouldOfferTour } from "@/components/tour/tourRules";
+import {
+  TOUR_OPEN_EVENT,
+  TOUR_PROMPT_DELAY_MS,
+  isInteracting,
+  isTourPage,
+  shouldOfferTour,
+} from "@/components/tour/tourRules";
 
 type Mode = "prompt" | "tour";
 type HostProps = { mode: Mode; onStart: () => void; onClose: () => void };
@@ -12,12 +18,37 @@ let shownThisLoad = false;
 
 function whenLoaded(run: () => void): () => void {
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const arm = () => {
-    timer = setTimeout(run, TOUR_PROMPT_DELAY_MS);
+  let lastInput = Number.NEGATIVE_INFINITY;
+  const noteInput = () => {
+    lastInput = Date.now();
   };
+  const attempt = () => {
+    const active = document.activeElement as HTMLElement | null;
+    if (
+      isInteracting(
+        active && {
+          tagName: active.tagName,
+          role: active.getAttribute("role"),
+          isContentEditable: active.isContentEditable,
+        },
+        Date.now() - lastInput
+      )
+    ) {
+      timer = setTimeout(attempt, TOUR_PROMPT_DELAY_MS);
+      return;
+    }
+    run();
+  };
+  const arm = () => {
+    timer = setTimeout(attempt, TOUR_PROMPT_DELAY_MS);
+  };
+  window.addEventListener("keydown", noteInput, true);
+  window.addEventListener("pointerdown", noteInput, true);
   if (document.readyState === "complete") arm();
   else window.addEventListener("load", arm, { once: true });
   return () => {
+    window.removeEventListener("keydown", noteInput, true);
+    window.removeEventListener("pointerdown", noteInput, true);
     window.removeEventListener("load", arm);
     clearTimeout(timer);
   };

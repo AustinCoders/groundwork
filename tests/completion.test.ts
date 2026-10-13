@@ -110,6 +110,13 @@ describe("nextChapter with a placement plan", () => {
     expect(nextChapter("quiz", list, new Set(["c", "d"]), plan)).toBeNull();
   });
 
+  it("stops at the end of the plan instead of falling back when asked to follow the plan only", () => {
+    const plan = { testedOut: ["a"], allotted: ["c", "d"] };
+    expect(nextChapter("quiz", list, new Set(["c", "d"]), plan, true)).toBeNull();
+    expect(nextChapter("quiz", list, new Set(["c"]), plan, true)?.id).toBe("d");
+    expect(nextChapter("quiz", list, new Set(), { testedOut: [], allotted: [] }, true)).toBeNull();
+  });
+
   it("ignores the plan for a topic that does not check", () => {
     const plan = { testedOut: ["a"], allotted: ["c"] };
     expect(nextChapter("read", list, new Set(), plan)?.id).toBe("a");

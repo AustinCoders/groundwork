@@ -6,10 +6,17 @@ export interface Trail {
 const HERE = "groundwork:nav:here";
 const FROM = "groundwork:nav:from";
 
+function asTrail(value: unknown): Trail | null {
+  if (value === null || typeof value !== "object") return null;
+  const { path, title } = value as Record<string, unknown>;
+  if (typeof path !== "string" || !path.startsWith("/") || path.startsWith("//")) return null;
+  return { path, title: typeof title === "string" ? title : "" };
+}
+
 function read(key: string): Trail | null {
   try {
     const raw = sessionStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as Trail) : null;
+    return raw ? asTrail(JSON.parse(raw)) : null;
   } catch {
     return null;
   }
@@ -43,8 +50,8 @@ export function cameFromRaw(): string {
 export function parseTrail(raw: string, currentPath: string): Trail | null {
   if (!raw) return null;
   try {
-    const t = JSON.parse(raw) as Trail;
-    return t.path && t.path !== currentPath ? t : null;
+    const t = asTrail(JSON.parse(raw));
+    return t && t.path !== currentPath ? t : null;
   } catch {
     return null;
   }

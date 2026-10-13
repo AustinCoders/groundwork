@@ -147,11 +147,12 @@ export const dsaArraysStrings: Chapter = {
   In JS, strings are <b>immutable</b> — <code>str[0] = "x"</code> silently
   does nothing. Every "mutation" (<code>slice</code>, <code>+</code>,
   <code>replace</code>) actually builds a brand new string. That has a real
-  cost: repeatedly concatenating inside a loop is O(n) <em>per
+  cost: repeatedly concatenating inside a loop can be O(n) <em>per
   concatenation</em>, so a naive loop that builds a string character by
-  character is O(n²), not O(n).
+  character can be O(n²) in the worst case. Modern engines often optimise
+  this, but use an array and <code>join</code> when it matters.
 </p>
-<pre><code><span class="c">// O(n²) — each += allocates a new string of growing length</span>
+<pre><code><span class="c">// can be O(n²) in the worst case — each += may copy a string of growing length</span>
 function buildSlow(chars) {
   let out = "";
   for (const c of chars) out += c;
@@ -169,8 +170,9 @@ function buildFast(chars) {
 <p>
   A huge share of array interview questions ask for O(1) extra space,
   which means mutating the input instead of allocating a new array. The
-  standard tool is <b>swap-and-shrink</b>: walk with two indices, overwrite
-  in place, and treat everything past a "write pointer" as garbage.
+  standard tool is <b>read and write pointers</b>: walk with two indices,
+  overwrite in place, and treat everything past the write pointer as
+  garbage.
 </p>
 <pre><code><span class="c">// remove all occurrences of val, in place, return new length</span>
 function removeElement(nums, val) {
@@ -200,10 +202,10 @@ function removeElement(nums, val) {
   <svg viewBox="0 0 640 195" class="dg" role="img" aria-label="A prefix sum array where each entry holds the running total up to that index, letting a range sum be computed as a single subtraction">
     <g class="rough">
       <rect class="box" x="20" y="20" width="70" height="40" />
-      <rect class="box" x="90" y="20" width="70" height="40" />
-      <rect class="box" x="160" y="20" width="70" height="40" />
-      <rect class="box" x="230" y="20" width="70" height="40" />
-      <rect class="box" x="300" y="20" width="70" height="40" />
+      <rect class="boxy" x="90" y="20" width="70" height="40" />
+      <rect class="boxy" x="160" y="20" width="70" height="40" />
+      <rect class="boxy" x="230" y="20" width="70" height="40" />
+      <rect class="boxy" x="300" y="20" width="70" height="40" />
     </g>
     <text class="sm" x="55" y="45" text-anchor="middle">3</text>
     <text class="sm" x="125" y="45" text-anchor="middle">1</text>
@@ -213,19 +215,19 @@ function removeElement(nums, val) {
     <text class="lbl" x="20" y="85" style="font-size:13px">original array</text>
 
     <g class="rough">
-      <rect class="boxg" x="20" y="100" width="70" height="40" />
-      <rect class="boxg" x="90" y="100" width="70" height="40" />
-      <rect class="boxy" x="160" y="100" width="70" height="40" />
+      <rect class="boxr" x="20" y="100" width="70" height="40" />
+      <rect class="box" x="90" y="100" width="70" height="40" />
+      <rect class="box" x="160" y="100" width="70" height="40" />
       <rect class="box" x="230" y="100" width="70" height="40" />
-      <rect class="boxy" x="300" y="100" width="70" height="40" />
+      <rect class="boxg" x="300" y="100" width="70" height="40" />
     </g>
-    <text class="sm gr" x="55" y="125" text-anchor="middle">3</text>
-    <text class="sm gr" x="125" y="125" text-anchor="middle">4</text>
+    <text class="sm rd" x="55" y="125" text-anchor="middle">3</text>
+    <text class="sm" x="125" y="125" text-anchor="middle">4</text>
     <text class="sm" x="195" y="125" text-anchor="middle">8</text>
     <text class="sm" x="265" y="125" text-anchor="middle">9</text>
-    <text class="sm" x="335" y="125" text-anchor="middle">14</text>
+    <text class="sm gr" x="335" y="125" text-anchor="middle">14</text>
     <text class="lbl" x="20" y="160" style="font-size:13px">sum(1..4) = prefix[4] − prefix[0] = 14 − 3 = 11</text>
-    <text class="lbl" x="20" y="182" style="font-size:13px">prefix[i] = sum of everything up to and including index i</text>
+    <text class="lbl" x="20" y="182" style="font-size:13px">green cell minus red cell; prefix[i] = sum of everything up to and including index i</text>
   </svg>
   <figcaption>One O(n) pass builds the prefix array; every range sum after that is O(1) — a single subtraction.</figcaption>
 </figure>
@@ -367,7 +369,7 @@ function traverse2D(grid) {
   <span class="ttl">Say it like this →</span> "Arrays give O(1) random
   access because the address is computed, not searched — but any operation
   that has to shift elements is O(n), and strings are immutable so
-  building one char-by-char in a loop is O(n²) unless you batch it."
+  building one char-by-char in a loop can be O(n²) in the worst case, so I batch it with an array and join."
 </div>
 
 <h3>Common gotchas worth knowing cold</h3>

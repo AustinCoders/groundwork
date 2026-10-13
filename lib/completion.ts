@@ -27,11 +27,14 @@ export function nextChapter<T extends { id: string }>(
   completion: Completion | undefined,
   chapters: T[],
   done: Set<string>,
-  plan: ReadingPlan | null = null
+  plan: ReadingPlan | null = null,
+  planOnly = false
 ): T | null {
   if (!requiresCheck(completion) || plan === null) return chapters.find((chapter) => !done.has(chapter.id)) ?? null;
   const skipped = new Set(plan.testedOut);
   const allotted = new Set(plan.allotted);
   const open = chapters.filter((chapter) => !done.has(chapter.id) && !skipped.has(chapter.id));
-  return open.find((chapter) => allotted.has(chapter.id)) ?? open[0] ?? null;
+  const planned = open.find((chapter) => allotted.has(chapter.id));
+  if (planned) return planned;
+  return planOnly ? null : (open[0] ?? null);
 }

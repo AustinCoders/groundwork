@@ -6,6 +6,7 @@ import { homeRounds } from "@/lib/homeRounds";
 import { bankQuestions, bookRounds } from "@/lib/interviewBook";
 import { onShelf } from "@/lib/topicShelf";
 import type { TopicNav } from "@/content/types";
+import { topicTally } from "@/lib/topicCategories";
 import { siteStats, topicStats, topicsNavWithStats } from "@/lib/topicStats";
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
@@ -35,6 +36,7 @@ export default function HomePage() {
   return (
     <HomeView
       stats={siteStats()}
+      tally={topicTally(shelf)}
       ready={shelf.filter((t) => t.written > 0).map(card)}
       soon={shelf.filter((t) => t.written === 0).map(card)}
       languages={{ total: LANG_ORDER.length, runnable: runnable.length, runs: runnable.map((k) => LANGUAGES[k].label) }}

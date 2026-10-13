@@ -218,6 +218,8 @@ function dfsIterative(graph, start) {
             </select>
           </label>
         </p>
+        <div class="loop-code" id="gt-code"></div>
+        <p class="loop-step" id="gt-step"></p>
         <div class="demo__ctl">
           <button class="btn" id="gt-prev" type="button">← Back</button>
           <button class="btn" id="gt-next" type="button">Next step →</button>
@@ -241,33 +243,38 @@ function dfsIterative(graph, start) {
   EDGES.forEach(function (e) { ADJ[e[0]].push(e[1]); ADJ[e[1]].push(e[0]); });
   Object.keys(ADJ).forEach(function (n) { ADJ[n].sort(); });
 
+  var CODES = {
+    bfs: ["queue = [A]; seen = {A}", "while (queue.length) {", "  n = queue.shift()", "  for (m of adj[n])", "    if (!seen.has(m))", "      { seen.add(m); queue.push(m) }", "}"],
+    dfs: ["stack = [A]; visited = {}", "while (stack.length) {", "  n = stack.pop()", "  if (visited.has(n)) continue", "  visited.add(n)", "  for (m of adj[n].reverse())", "    if (!visited.has(m)) stack.push(m)", "}"]
+  };
+
   function bfs() {
-    var out = [{ cur: null, frontier: ["A"], visited: ["A"], order: [], note: "Start: put A in the queue and mark it seen." }];
+    var out = [{ line: 1, cur: null, frontier: ["A"], visited: ["A"], order: [], note: "Start: put A in the queue and mark it seen." }];
     var queue = ["A"], seen = { A: true }, visited = ["A"], order = [];
     while (queue.length) {
       var n = queue.shift();
       order.push(n);
       var added = [];
       ADJ[n].forEach(function (m) { if (!seen[m]) { seen[m] = true; visited.push(m); queue.push(m); added.push(m); } });
-      out.push({ cur: n, frontier: queue.slice(), visited: visited.slice(), order: order.slice(),
+      out.push({ line: added.length ? 6 : 3, cur: n, frontier: queue.slice(), visited: visited.slice(), order: order.slice(),
         note: "Take " + n + " from the front. " + (added.length ? "Its unseen neighbours " + added.join(", ") + " join the back, marked seen now so nothing is queued twice." : "No unseen neighbours.") });
     }
     return out;
   }
   function dfs() {
-    var out = [{ cur: null, frontier: ["A"], visited: [], order: [], note: "Start: push A on the stack." }];
+    var out = [{ line: 1, cur: null, frontier: ["A"], visited: [], order: [], note: "Start: push A on the stack." }];
     var stack = ["A"], visited = [], order = [];
     while (stack.length) {
       var n = stack.pop();
       if (visited.indexOf(n) !== -1) {
-        out.push({ cur: null, frontier: stack.slice(), visited: visited.slice(), order: order.slice(), note: "Pop " + n + ": already visited, so skip it. The stack can hold duplicates; visited is checked on the way out." });
+        out.push({ line: 4, cur: null, frontier: stack.slice(), visited: visited.slice(), order: order.slice(), note: "Pop " + n + ": already visited, so skip it. The stack can hold duplicates; visited is checked on the way out." });
         continue;
       }
       visited.push(n);
       order.push(n);
       var pushed = [];
       ADJ[n].slice().reverse().forEach(function (m) { if (visited.indexOf(m) === -1) { stack.push(m); pushed.push(m); } });
-      out.push({ cur: n, frontier: stack.slice(), visited: visited.slice(), order: order.slice(),
+      out.push({ line: pushed.length ? 7 : 5, cur: n, frontier: stack.slice(), visited: visited.slice(), order: order.slice(),
         note: "Pop " + n + " from the top and visit it. " + (pushed.length ? "Push its neighbours (" + pushed.slice().reverse().join(", ") + "), smallest on top, so the search goes deep first." : "Nothing new to push: backtrack.") });
     }
     return out;
@@ -289,6 +296,22 @@ function dfsIterative(graph, start) {
       html += '<g class="' + cls + '"><circle cx="' + POS[n][0] + '" cy="' + POS[n][1] + '" r="16"></circle><text x="' + POS[n][0] + '" y="' + POS[n][1] + '">' + n + "</text></g>";
     });
     svg.innerHTML = html;
+    var codeEl = document.getElementById("gt-code");
+    var code = CODES[mode.value];
+    if (codeEl.children.length !== code.length || codeEl.dataset.mode !== mode.value) {
+      codeEl.innerHTML = "";
+      codeEl.dataset.mode = mode.value;
+      code.forEach(function (text, idx) {
+        var row = document.createElement("div");
+        row.dataset.n = String(idx + 1);
+        row.textContent = text;
+        codeEl.appendChild(row);
+      });
+    }
+    Array.prototype.forEach.call(codeEl.children, function (row) {
+      row.classList.toggle("hot", Number(row.dataset.n) === s.line);
+    });
+    document.getElementById("gt-step").textContent = "Step " + (i + 1) + " of " + steps.length;
     document.getElementById("gt-frontier-label").textContent = mode.value === "bfs" ? "Queue (front on the left)" : "Stack (top on the right)";
     document.getElementById("gt-frontier").innerHTML = s.frontier.map(function (n) { return '<span class="loop-frame loop-frame--stack">' + n + "</span>"; }).join("") || "<em>empty</em>";
     document.getElementById("gt-order").innerHTML = s.order.map(function (n) { return '<span class="loop-frame loop-frame--out">' + n + "</span>"; }).join("") || "<em>nothing yet</em>";

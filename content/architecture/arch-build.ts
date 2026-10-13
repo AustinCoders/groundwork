@@ -147,7 +147,7 @@ export const archBuild: Chapter = {
 
 <h3>What next.config.ts does, and does not, do</h3>
 <p>
-  It sets headers and redirects, and nothing else: no <code>images</code> block, no experimental
+  It sets headers and redirects, turns off the automatic trailing-slash redirect so that <code>proxy.ts</code> can do it in one hop, and nothing else: no <code>images</code> block, no experimental
   flags, no webpack changes. The CSP inside it is assembled from two helpers. One is
   <code>wasmOrigins()</code> from <code>lib/wasmAssets.ts</code>. The other is
   <code>sentryOrigin()</code>, which adds nothing unless a DSN is set.

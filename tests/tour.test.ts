@@ -2,7 +2,14 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { SLIDES } from "@/components/tour/slides";
-import { coverPaths, isTourPage, shouldOfferTour } from "@/components/tour/tourRules";
+import {
+  TOUR_IDLE_MS,
+  coverPaths,
+  isFormControl,
+  isInteracting,
+  isTourPage,
+  shouldOfferTour,
+} from "@/components/tour/tourRules";
 import { TOUR_KEY, parseTour, readTour, rememberTourSeen } from "@/components/tour/tourStore";
 import { colourLiteralPattern, withoutStringsAndUrls } from "./colour-literal";
 
@@ -295,5 +302,24 @@ describe("the menu's way back", () => {
     const drawer = read("components/SiteDrawer.tsx");
     expect(drawer).toContain("Take the tour");
     expect(drawer).toContain("TOUR_OPEN_EVENT");
+  });
+});
+
+describe("holding the prompt back while the reader is busy", () => {
+  it("treats text fields, selects and radios as form controls, and plain links and the page as not", () => {
+    expect(isFormControl({ tagName: "INPUT" })).toBe(true);
+    expect(isFormControl({ tagName: "textarea" })).toBe(true);
+    expect(isFormControl({ tagName: "DIV", role: "radio" })).toBe(true);
+    expect(isFormControl({ tagName: "DIV", isContentEditable: true })).toBe(true);
+    expect(isFormControl({ tagName: "A" })).toBe(false);
+    expect(isFormControl({ tagName: "BODY" })).toBe(false);
+    expect(isFormControl(null)).toBe(false);
+  });
+
+  it("waits while a form control has focus or a key or click came a moment ago", () => {
+    expect(isInteracting({ tagName: "INPUT" }, 60_000)).toBe(true);
+    expect(isInteracting({ tagName: "BODY" }, TOUR_IDLE_MS - 1)).toBe(true);
+    expect(isInteracting({ tagName: "BODY" }, TOUR_IDLE_MS)).toBe(false);
+    expect(isInteracting(null, Number.POSITIVE_INFINITY)).toBe(false);
   });
 });

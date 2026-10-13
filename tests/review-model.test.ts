@@ -71,9 +71,15 @@ describe("the review model", () => {
     expect(model.reviewed.map((r) => r.ch.id)).toEqual(["d", "c"]);
   });
 
-  it("treats a chapter marked read the old way as due after the first gap", () => {
+  it("treats a chapter marked read the old way as due today, never decades overdue", () => {
     const model = buildRows(CHAPTERS, { a: true }, NOON);
     expect(model.due.map((r) => r.ch.id)).toEqual(["a"]);
+    expect(lateness(model.due[0].due!, NOON)).toBe("due today");
+  });
+
+  it("words a very old due date as over a year overdue instead of a day count", () => {
+    expect(lateness(NOON - 400 * DAY, NOON)).toBe("over a year overdue");
+    expect(lateness(NOON - 20 * DAY, NOON)).toBe("20 days overdue");
   });
 
   it("groups upcoming rows by the day they come back", () => {

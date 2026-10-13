@@ -25,6 +25,16 @@ function show(block: HTMLElement, code: HTMLElement, html: string, language: Cod
   block.dataset.lang = language;
 }
 
+function markJavaScriptOnly(container: HTMLElement, language: CodeLanguage) {
+  const flagged = language !== "javascript";
+  for (const pre of Array.from(container.querySelectorAll<HTMLElement>("pre"))) {
+    if (pre.closest("[data-island]")) continue;
+    const translated = pre.closest("[data-code]");
+    const stillJavaScript = translated instanceof HTMLElement && translated.dataset.lang === "javascript";
+    pre.toggleAttribute("data-js-only", flagged && (!translated || stillJavaScript));
+  }
+}
+
 export async function applyCodeLanguage(
   container: HTMLElement,
   chapterId: string,
@@ -33,6 +43,10 @@ export async function applyCodeLanguage(
 ): Promise<boolean> {
   const blocks = Array.from(container.querySelectorAll<HTMLElement>("[data-code]"));
   if (blocks.length === 0) return true;
+  const finish = (complete: boolean) => {
+    markJavaScriptOnly(container, language);
+    return complete;
+  };
 
   if (language === "javascript") {
     for (const block of blocks) {
@@ -40,7 +54,7 @@ export async function applyCodeLanguage(
       const original = code ? originals.get(code) : undefined;
       if (code && original !== undefined) show(block, code, original, language);
     }
-    return true;
+    return finish(true);
   }
 
   const translations = await load(chapterId, language);
@@ -60,5 +74,5 @@ export async function applyCodeLanguage(
     if (!originals.has(code)) originals.set(code, code.innerHTML);
     show(block, code, html, language);
   }
-  return complete;
+  return finish(complete);
 }

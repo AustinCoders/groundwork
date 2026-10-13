@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { topics, topicsNav } from "@/lib/topics";
 import { topicsNavWithStats } from "@/lib/topicStats";
-import { TOPIC_CATEGORIES, groupByCategory, isReadable } from "@/lib/topicCategories";
+import { TOPIC_CATEGORIES, groupByCategory, isReadable, topicTally } from "@/lib/topicCategories";
 import { guidesNav } from "@/lib/guidesNav";
 import { onShelf } from "@/lib/topicShelf";
 import { curriculumNotes } from "@/lib/topics";
@@ -125,5 +125,16 @@ describe("planning topics", () => {
     expect(relatedTopicId("typescript")).toBe("js");
     expect(relatedTopicId("nextjs")).toBe("react");
     expect(relatedTopicId("docker")).toBe("js");
+  });
+});
+
+describe("the written tally", () => {
+  const shelf = topicsNavWithStats().filter((t) => onShelf(t.id));
+
+  it("counts the shelf topics that can be read, and leaves the guides out", () => {
+    const tally = topicTally(shelf);
+    expect(tally.total).toBe(shelf.length);
+    expect(tally.written).toBe(shelf.filter(isReadable).length);
+    expect(topicTally(topicsNavWithStats()).total).toBe(shelf.length + 2);
   });
 });

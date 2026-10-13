@@ -13,6 +13,7 @@ import {
 } from "@/lib/content";
 import { byChapterId, levelRows } from "@/lib/levelRows";
 import { pageMetadata } from "@/lib/metadata";
+import { requiresCheck } from "@/lib/completion";
 import { pathTopicIds } from "@/lib/topicIds";
 
 export const dynamicParams = false;
@@ -73,7 +74,7 @@ export default async function TopicPathPage({ params }: { params: Promise<{ topi
   });
 
   const levelExerciseList: ExerciseLink[] = exercises()
-    .filter((ex) => ex.level === level.id && ownIds.has(ex.chapter))
+    .filter((ex) => ownIds.has(ex.chapter) && (requiresCheck(topic.completion) || ex.level === level.id))
     .map((ex) => ({
       id: ex.id,
       title: ex.title,

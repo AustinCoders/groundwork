@@ -113,7 +113,7 @@ export function TopicCover({
           label="Contents"
           title="Every chapter, in reading order"
           sub="Start at the top or jump to what you need. Tick a chapter once you have read it."
-          count={plural(cards.length, "chapter")}
+          count={plural(written, "chapter")}
         >
           <ChapterContents
             progress={progress}
@@ -133,7 +133,7 @@ export function TopicCover({
             title={`Practice ${topicName}`}
             sub="Every exercise opens in the editor with tests you can run."
           >
-            <PracticeLinks topicId={topicId} parts={parts} cards={cards} />
+            <PracticeLinks topicId={topicId} parts={parts} cards={cards} completion={completion} />
           </Band>
         )}
 

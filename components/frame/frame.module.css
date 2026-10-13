@@ -8,8 +8,8 @@
 
 .page h1::before,
 .page h1::after,
-.page h2::before,
-.page h2::after {
+.page h2:not(:global(.prose) h2)::before,
+.page h2:not(:global(.prose) h2)::after {
   content: none !important;
 }
 

@@ -1936,6 +1936,22 @@ figcaption code,
   fill: var(--green);
 }
 
+.dg-fit {
+  display: block;
+  max-width: 34rem;
+  margin-inline: auto;
+}
+
+.dg-fit .sm {
+  font-size: 15px;
+}
+
+@media (max-width: 640px) {
+  .dg-fit .sm {
+    font-size: 17px;
+  }
+}
+
 .box {
   fill: var(--dg-box);
   stroke: var(--ink);
@@ -2128,6 +2144,18 @@ figcaption code,
   gap: 16px;
 }
 
+.loop-grid + .viz {
+  margin-top: 16px;
+}
+
+.loop-grid--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.loop-grid > * {
+  min-width: 0;
+}
+
 .loop-code {
   font-family: var(--font-mono);
   font-variant-ligatures: none;
@@ -2139,11 +2167,31 @@ figcaption code,
   border-radius: 6px;
   padding: 10px 0;
   overflow-x: auto;
+  max-width: 100%;
+  background-image:
+    linear-gradient(to right, var(--code-bg) 30%, transparent),
+    linear-gradient(to left, var(--code-bg) 30%, transparent),
+    linear-gradient(to right, color-mix(in srgb, var(--code-fg) 35%, transparent), transparent),
+    linear-gradient(to left, color-mix(in srgb, var(--code-fg) 35%, transparent), transparent);
+  background-position:
+    left center,
+    right center,
+    left center,
+    right center;
+  background-repeat: no-repeat;
+  background-size:
+    28px 100%,
+    28px 100%,
+    10px 100%,
+    10px 100%;
+  background-attachment: local, local, scroll, scroll;
 }
 
 .loop-code div {
   padding: 2px 14px;
   white-space: pre;
+  width: max-content;
+  min-width: 100%;
 }
 
 .loop-code div.hot {
@@ -2187,6 +2235,25 @@ figcaption code,
   letter-spacing: 0.05em;
 }
 
+.loop-level {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 14px;
+  margin-top: 6px;
+}
+
+.loop-level .loop-frame {
+  margin: 0;
+}
+
+.loop-step {
+  margin: 8px 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--t-meta);
+  color: var(--ink-soft);
+}
+
 .loop-frame {
   display: inline-block;
   font-family: var(--font-mono);
@@ -2222,7 +2289,7 @@ figcaption code,
 
 @media (max-width: 640px) {
   .loop-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -2394,7 +2461,9 @@ span.tone-bad {
   background: color-mix(in srgb, currentColor 11%, transparent);
 }
 
-.prose h3 {
+.prose :is(h2, h3:not(.subhead)) {
+  display: block;
+  z-index: auto;
   position: relative;
   margin: clamp(4.5rem, 11vh, 8rem) 0 0.7em;
   padding: 2.6rem 0 0;
@@ -2411,11 +2480,11 @@ span.tone-bad {
   counter-increment: section;
 }
 
-.prose h3:first-child {
+.prose :is(h2, h3:not(.subhead)):first-child {
   margin-top: 0;
 }
 
-.prose h3::before {
+.prose :is(h2, h3:not(.subhead))::before {
   content: counter(section, decimal-leading-zero);
   position: absolute;
   top: 0;
@@ -2431,16 +2500,23 @@ span.tone-bad {
   border-radius: 999px;
 }
 
-.prose h3::after {
+.prose :is(h2, h3:not(.subhead))::after {
   content: "";
   position: absolute;
   top: 0.8rem;
   right: 0;
+  bottom: auto;
   left: 3.6rem;
+  z-index: auto;
+  height: 0;
+  background: none;
   border-top: 1.5px dashed var(--line);
+  border-radius: 0;
+  opacity: 1;
+  transform: none;
 }
 
-.prose h4 {
+.prose :is(h4, h3.subhead) {
   margin: 2em 0 0.4em;
   font-family: var(--font-heading);
   font-size: 1.3em;
@@ -2498,6 +2574,10 @@ span.tone-bad {
     100% 100%,
     100% 1px;
   transform: none;
+}
+
+.prose pre[data-js-only]::before {
+  content: var(--code-label) " · JavaScript only";
 }
 
 .prose pre::after {
@@ -2907,8 +2987,12 @@ span.tone-bad {
   padding: 1.2rem 1.4rem 1.4rem;
 }
 
+.prose .demo__body .demo__note {
+  margin: 1rem 0 0;
+}
+
 @media (max-width: 640px) {
-  .prose h3 {
+  .prose :is(h2, h3:not(.subhead)) {
     margin-top: 4rem;
   }
 
@@ -2923,6 +3007,29 @@ span.tone-bad {
 
   .prose figure svg.dg {
     min-width: 34rem;
+  }
+
+  .prose figure svg.dg.dg-fit {
+    min-width: 0;
+  }
+
+  .prose figure {
+    background-image:
+      linear-gradient(to right, var(--sheet) 30%, transparent), linear-gradient(to left, var(--sheet) 30%, transparent),
+      linear-gradient(to right, color-mix(in srgb, var(--ink) 22%, transparent), transparent),
+      linear-gradient(to left, color-mix(in srgb, var(--ink) 22%, transparent), transparent);
+    background-position:
+      left center,
+      right center,
+      left center,
+      right center;
+    background-repeat: no-repeat;
+    background-size:
+      28px 100%,
+      28px 100%,
+      10px 100%,
+      10px 100%;
+    background-attachment: local, local, scroll, scroll;
   }
 
   .prose .try::after {
@@ -6193,6 +6300,7 @@ span.tone-bad {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-width: 0;
 }
 
 .viz__row {
@@ -6303,6 +6411,12 @@ span.tone-bad {
 .viz__gcell--done {
   color: var(--green);
   border-color: var(--green);
+}
+
+@media (max-width: 640px) {
+  .viz__gcell {
+    min-width: 28px;
+  }
 }
 
 .btn--chip {

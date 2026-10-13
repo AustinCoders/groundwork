@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Copy, Scene } from "@/components/home/Stage";
 import { Card, Compose, Remark, Tag } from "@/components/topic/Compose";
 import {
@@ -65,7 +65,7 @@ export function PlacementPlan({
   topicName,
   record,
   fresh,
-  coverage,
+  bankNote,
   onRetake,
   onReset,
 }: {
@@ -75,7 +75,7 @@ export function PlacementPlan({
   topicName: string;
   record: PlacementRecord;
   fresh: boolean;
-  coverage: number | null;
+  bankNote: string | null;
   onRetake: () => void;
   onReset: () => void;
 }) {
@@ -89,8 +89,20 @@ export function PlacementPlan({
     () => new Set(readable.filter((_, at) => doneKey[at] === "1").map((chapter) => chapter.id)),
     [readable, doneKey]
   );
-  const next = nextChapter("quiz", readable, done, readingPlan(record));
+  const next = nextChapter("quiz", readable, done, readingPlan(record, readable), true);
   const level = levelWords(record.level, data.levelNames);
+  const [confirming, setConfirming] = useState(false);
+  const resetRef = useRef<HTMLButtonElement>(null);
+  const keepRef = useRef<HTMLButtonElement>(null);
+  const returnFocus = useRef(false);
+
+  useEffect(() => {
+    if (confirming) keepRef.current?.focus();
+    else if (returnFocus.current) {
+      returnFocus.current = false;
+      resetRef.current?.focus();
+    }
+  }, [confirming]);
 
   useEffect(() => {
     if (!fresh) return;
@@ -100,14 +112,17 @@ export function PlacementPlan({
     heading.focus({ preventScroll: true });
   }, [fresh]);
 
+  const revise = view.reviseEarlier.length > 0 ? " Chapters below your level stay open under Revise earlier." : "";
   const lead =
     record.mode === "beginning"
       ? `Every chapter, in order, from ${view.allotted[0]?.short ?? "the first one"}. Nothing is locked.`
       : record.mode === "self"
-        ? `Chapters from ${level} on come first. The ones before stay open under Revise earlier. Nothing is locked.`
+        ? view.reviseEarlier.length > 0
+          ? `Chapters from ${level} on come first. The ones before stay open under Revise earlier. Nothing is locked.`
+          : `Every chapter from ${level} on is in your plan, in order. Nothing is locked.`
         : `${plural(view.allotted.length, "chapter")} to read${
             view.testedOut.length > 0 ? `, ${view.testedOut.length} tested out` : ""
-          }. Chapters below your level stay open under Revise earlier. Nothing is locked.`;
+          }.${revise} Nothing is locked.`;
 
   return (
     <>
@@ -131,16 +146,42 @@ export function PlacementPlan({
             <button type="button" className={topicKit.btnGhost} id="plan-retake" onClick={onRetake}>
               Retake the placement
             </button>
-            <button type="button" className={topicKit.btnGhost} id="plan-reset" onClick={onReset}>
-              Reset my plan
-            </button>
           </Actions>
           <p className={styles.keepNote}>
             Saved on this device. Resetting clears only this plan: your ticks, XP and review queue stay as they are.
-            {coverage !== null &&
-              record.mode === "quiz" &&
-              ` Placement questions exist for ${coverage} of ${readable.length} chapters so far, so the rest of the plan follows the chapters in order.`}
+            {bankNote && ` ${bankNote}`}
           </p>
+          {!confirming && (
+            <button
+              type="button"
+              className={styles.textButton}
+              id="plan-reset"
+              ref={resetRef}
+              onClick={() => setConfirming(true)}
+            >
+              Reset my plan
+            </button>
+          )}
+          {confirming && (
+            <div className={styles.confirm} role="group" aria-label="Reset my plan">
+              <p>Clear this plan from the device? Your ticks, XP and review queue stay as they are.</p>
+              <button type="button" className={topicKit.btn} id="plan-reset-yes" onClick={onReset}>
+                Yes, reset my plan
+              </button>
+              <button
+                type="button"
+                className={topicKit.btnGhost}
+                id="plan-reset-no"
+                ref={keepRef}
+                onClick={() => {
+                  returnFocus.current = true;
+                  setConfirming(false);
+                }}
+              >
+                Keep my plan
+              </button>
+            </div>
+          )}
         </Copy>
         <Compose live layout="rail">
           <Card at="a" tilt={-1} taped>

@@ -249,9 +249,37 @@ test("a DSA chapter switches its code to Python and back to JavaScript", async (
   await expect(python).toHaveAttribute("aria-pressed", "true");
   await expect(code).toContainText("def binary_search");
   await expect(code).not.toContainText("function binarySearch");
+  await expect(page.locator("[data-island=play]").getByText("Code · JavaScript only")).toBeVisible();
   await javascript.click();
   await expect(javascript).toHaveAttribute("aria-pressed", "true");
   await expect(code).toContainText("function binarySearch");
+  expect(problems).toEqual([]);
+});
+
+test("a step-through demo fits a phone and marks the line it is on, and the chapter's headings skip no level", async ({
+  page,
+}) => {
+  const problems = collectProblems(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/dsa/dsa-heaps-priority-queues", { waitUntil: "networkidle" });
+  const demo = page.locator(".prose .demo");
+  await hydrated(page.locator(".prose[data-enhanced]"));
+  await expect(demo.locator(".loop-step")).toHaveText("Step 1 of 8");
+  await expect(demo.locator(".loop-code .hot")).toHaveText("const min = h[0];");
+  await demo.getByRole("button", { name: /Next step/ }).click();
+  await expect(demo.locator(".loop-step")).toHaveText("Step 2 of 8");
+  await expect(demo.locator(".loop-code .hot")).toHaveText("h[0] = h.pop();");
+  const overhang = await demo.evaluate((box) => {
+    const edge = box.getBoundingClientRect().right;
+    const panels = box.querySelectorAll(".loop-grid, .loop-code, .loop-box, .viz, .demo__ctl, .demo__note");
+    return Math.max(0, ...Array.from(panels).map((node) => node.getBoundingClientRect().right - edge));
+  });
+  expect(overhang).toBeLessThanOrEqual(1);
+  const skipped = await page.evaluate(() => {
+    const levels = Array.from(document.querySelectorAll("h1, h2, h3, h4")).map((node) => Number(node.tagName[1]));
+    return levels.filter((level, i) => i > 0 && level - levels[i - 1] > 1);
+  });
+  expect(skipped).toEqual([]);
   expect(problems).toEqual([]);
 });
 
@@ -495,6 +523,10 @@ test("a first-time reader finds their level, lands on a plan and Continue skips 
   await page.goto("/dsa/placement", { waitUntil: "networkidle" });
   await hydrated(page.locator("#plan-reset"));
   await page.locator("#plan-reset").click();
+  await page.locator("#plan-reset-no").click();
+  await expect(page.locator("#plan-reset")).toBeFocused();
+  await page.locator("#plan-reset").click();
+  await page.locator("#plan-reset-yes").click();
   await expect(page.locator("#placement-begin")).toBeVisible();
   expect(await page.evaluate((key) => localStorage.getItem(key), PLACEMENT_KEY)).toBeNull();
   expect(await stored(page, SHARED_KEYS)).toEqual(before);
@@ -522,6 +554,10 @@ test("a placed reader sees Revise earlier and can mark one done, and a reader wi
   const revise = page.locator("#revise-earlier-list");
   await expect(revise).toBeVisible();
   await expect(page.locator("#plan-list")).not.toContainText("Complexity analysis");
+  await expect(page.locator("#plan-continue")).toHaveAttribute(
+    "href",
+    (await page.locator("#plan-list a").first().getAttribute("href")) ?? ""
+  );
   const link = revise.getByRole("link", { name: /Complexity analysis/ });
   await hydrated(link);
   await link.click();
@@ -541,4 +577,78 @@ test("a placed reader sees Revise earlier and can mark one done, and a reader wi
   await expect(page).toHaveURL(/\/dsa\/placement\?retake=1$/);
   await expect(page.locator("#placement-begin")).toBeVisible();
   expect(await stored(page, ["jsnotes:progress"])).toEqual(marks);
+});
+
+test("a placement run survives a reload and steps back, and only ?retake=1 starts a retake", async ({ page }) => {
+  const problems = collectProblems(page);
+  await seed(page, {
+    [PLACEMENT_KEY]: JSON.stringify({
+      v: 1,
+      record: {
+        mode: "self",
+        level: "beginner",
+        stages: [],
+        testedOut: [],
+        allotted: [],
+        takenAt: 1700000000000,
+        seconds: 0,
+      },
+    }),
+  });
+  await page.goto("/dsa/placement?retake=0", { waitUntil: "networkidle" });
+  await expect(page.locator("#plan-heading")).toBeVisible();
+  await page.goto("/dsa/placement?retake", { waitUntil: "networkidle" });
+  await expect(page.locator("#plan-heading")).toBeVisible();
+
+  await page.goto("/dsa/placement?retake=1", { waitUntil: "networkidle" });
+  const keep = page.locator("#placement-keep");
+  await hydrated(keep);
+  await keep.click();
+  await expect(page.locator("#plan-heading")).toBeFocused();
+  expect(new URL(page.url()).search).toBe("");
+
+  await page.goto("/dsa/placement?retake=1", { waitUntil: "networkidle" });
+  const begin = page.locator("#placement-begin");
+  await expect(begin).toBeEnabled();
+  await hydrated(begin);
+  await begin.click();
+  const asked = page.locator("[data-placement-question]");
+  const firstId = await asked.getAttribute("data-placement-question");
+  const question = QUESTIONS.get(firstId ?? "");
+  if (!question || question.kind !== "single") throw new Error(`unexpected placement question ${firstId}`);
+  await asked.locator(`[data-choice="${question.answer}"] input`).check();
+  await asked.getByRole("button", { name: "Next" }).click();
+  await expect(asked).not.toHaveAttribute("data-placement-question", firstId ?? "");
+  const secondId = await asked.getAttribute("data-placement-question");
+
+  await page.reload({ waitUntil: "networkidle" });
+  await expect(asked).toHaveAttribute("data-placement-question", secondId ?? "");
+  const previous = page.getByRole("button", { name: "Previous question" });
+  await hydrated(previous);
+  await previous.click();
+  await expect(asked).toHaveAttribute("data-placement-question", firstId ?? "");
+  await expect(page.getByRole("button", { name: "Previous question" })).toHaveCount(0);
+  expect(problems).toEqual([]);
+});
+
+test("corrupt saved data never takes a page down, and the bare /path/dsa and /dsa/ addresses land on real pages", async ({
+  page,
+}) => {
+  const problems = collectProblems(page);
+  await page.addInitScript(() => {
+    localStorage.setItem("jsnotes:activity", "null");
+    localStorage.setItem("jsnotes:progress", JSON.stringify({ chapters: { "dsa-trees": null, "dsa-hashing": true } }));
+    localStorage.setItem("groundwork:quiz", "[1,2");
+  });
+  for (const path of ["/", "/progress", "/review"]) {
+    await page.goto(path, { waitUntil: "networkidle" });
+    await expect(page.getByText("This page hit an error")).toHaveCount(0);
+  }
+  await expect(page.getByText(/20\d{3} days overdue|[1-9]\d{3,} days overdue/)).toHaveCount(0);
+
+  await page.goto("/path/dsa", { waitUntil: "networkidle" });
+  await expect(page).toHaveURL(/\/path\/dsa\/beginner$/);
+  await page.goto("/dsa/", { waitUntil: "networkidle" });
+  await expect(page).toHaveURL(/\/level\/dsa$/);
+  expect(problems).toEqual([]);
 });

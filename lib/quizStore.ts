@@ -16,6 +16,7 @@ export type QuizRecords = Record<string, QuizRecord>;
 
 export const QUIZ_KEY = "groundwork:quiz";
 const VERSION = 1;
+const MAX_RECORDS = 5000;
 const EMPTY: QuizRecords = Object.freeze({}) as QuizRecords;
 const listeners = new Set<() => void>();
 let cachedRaw: string | null | undefined;
@@ -25,8 +26,11 @@ let unsaved: QuizRecords | null = null;
 function parse(): QuizRecords {
   const saved = store.get<{ v?: number; chapters?: unknown } | null>(QUIZ_KEY, null);
   if (!saved || saved.v !== VERSION || saved.chapters === null || typeof saved.chapters !== "object") return EMPTY;
+  if (Array.isArray(saved.chapters)) return EMPTY;
   const records: QuizRecords = {};
-  for (const [id, value] of Object.entries(saved.chapters as Record<string, unknown>)) {
+  const entries = Object.entries(saved.chapters as Record<string, unknown>).slice(0, MAX_RECORDS);
+  for (const [id, value] of entries) {
+    if (id === "__proto__") continue;
     const record = sanitizeRecord(value);
     if (record) records[id] = record;
   }

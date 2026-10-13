@@ -205,6 +205,7 @@ export async function TopicChapterPage({ topicId, chapterId }: { topicId: string
         checkChapterIds={poolChapterIds()}
         check={requiresCheck(t?.completion) ? <CheckIsland chapterId={chapter.id} basePath={basePath} /> : null}
         codeBlocks={chapter.body.includes('data-code="')}
+        unwritten={list.filter((c) => !c.ready).length}
       />
     );
   }
@@ -226,7 +227,8 @@ export async function TopicChapterPage({ topicId, chapterId }: { topicId: string
   const outlineCardIndex = outlineCards.findIndex((c) => c.id === chapter.id);
   const found = syllabusSectionForChapter(chapter.id, topicId);
   const items = (found ? found.section.items : []).map((item) => escapeHtml(item));
-  const relTopicId = relatedTopicId(topicId);
+  const ownWritten = chapterMetas(topicId).filter((c) => c.ready).length;
+  const relTopicId = ownWritten > 0 ? topicId : relatedTopicId(topicId);
   const relTopic = topic(relTopicId);
   const relRoundId = relatedInterviewRound(relTopicId);
   const relRound = relRoundId ? bookRound(relRoundId) : null;
@@ -237,13 +239,15 @@ export async function TopicChapterPage({ topicId, chapterId }: { topicId: string
       mark={t?.mark || ""}
       accent={t?.accent || "ink"}
       basePath={basePath}
+      homeHref={topicHome(topicId)}
       parts={parts}
       chapter={outlineCards[outlineCardIndex]}
       chapters={outlineCards}
       sectionTitle={found ? found.section.title : chapter.title}
       items={items}
-      relatedHref={notesHref(relTopicId)}
+      relatedHref={ownWritten > 0 ? topicHome(topicId) : notesHref(relTopicId)}
       relatedLabel={relTopic?.name || notesData(relTopicId).meta.title}
+      relatedWritten={ownWritten > 0 ? ownWritten : undefined}
       relatedRoundHref={relRound ? `/interview/${relRoundId}` : null}
       relatedRoundLabel={relRound ? `${relRound.code} · ${relRound.navTitle}` : null}
     />

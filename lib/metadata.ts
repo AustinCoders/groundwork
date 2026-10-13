@@ -29,6 +29,11 @@ function ogImageFor(path: string): string {
   return section ? section[1] : "/opengraph-image";
 }
 
+export function withTitleTemplate(metadata: Metadata): Metadata {
+  const title = typeof metadata.title === "string" ? metadata.title : "";
+  return { ...metadata, title: { default: title, template: `%s · ${SITE_NAME}` } };
+}
+
 export function pageMetadata(o: PageMeta): Metadata {
   const full = `${o.title} · ${SITE_NAME}`;
   const type = o.type ?? "website";

@@ -142,36 +142,30 @@ function hasCommonElement(arr1, arr2) {
 </p>
 
 <figure>
-  <svg viewBox="0 0 680 400" class="dg" role="img" aria-label="A chart of operations versus input size n, showing O(1) and O(log n) staying low, O(n) rising as a straight diagonal, O(n log n) rising faster, and O(n squared) and O(2 to the n) shooting almost straight up and exiting the top of the chart early">
+  <svg viewBox="0 0 520 400" class="dg dg-fit" role="img" aria-label="A chart of operations versus input size n, showing O(1) and O(log n) staying low, O(n) rising as a straight diagonal, O(n log n) rising faster, and O(n squared) and O(2 to the n) shooting almost straight up and exiting the top of the chart early">
     <g class="rough">
-      <path class="ln" d="M70,340 L640,340" />
+      <path class="ln" d="M70,340 L423,340" />
       <path class="ln" d="M70,340 L70,20" />
     </g>
-    <text class="sm" x="645" y="345">n</text>
+    <text class="sm" x="429" y="345">n</text>
     <text class="sm" x="40" y="20">ops</text>
 
-    <!-- O(1) — flat, green solid -->
-    <path class="lng" d="M70,320 L640,320" fill="none" />
-    <!-- O(log n) — green dashed, slow rise that flattens -->
-    <path class="lng dash" d="M70,320 C 200,300 380,270 640,250" fill="none" />
-    <!-- O(n) — black solid diagonal -->
-    <path class="ln" d="M70,320 L640,60" fill="none" />
-    <!-- O(n log n) — black dashed, above O(n), exits near the top-right -->
-    <path class="ln dash" d="M70,320 C 300,220 500,90 610,25" fill="none" />
-    <!-- O(n^2) — red solid, steep, exits top early -->
-    <path class="lnr" d="M70,320 C 180,260 300,120 360,25" fill="none" />
-    <path class="lnr dash" d="M360,25 L360,10" fill="none" />
-    <!-- O(2^n) — red dashed, exits top almost immediately -->
-    <path class="lnr dash" d="M70,320 C 110,260 160,120 195,25" fill="none" />
-    <path class="lnr dash" d="M195,25 L195,10" fill="none" />
+    <path class="lng" d="M70,320 L423,320" fill="none" />
+    <path class="lng dash" d="M70,320 C 151,300 261,270 423,250" fill="none" />
+    <path class="ln" d="M70,320 L423,60" fill="none" />
+    <path class="ln dash" d="M70,320 C 213,220 337,90 405,25" fill="none" />
+    <path class="lnr" d="M70,320 C 138,260 213,120 250,25" fill="none" />
+    <path class="lnr dash" d="M250,25 L250,10" fill="none" />
+    <path class="lnr dash" d="M70,320 C 95,260 126,120 148,25" fill="none" />
+    <path class="lnr dash" d="M148,25 L148,10" fill="none" />
 
-    <text class="sm gr" x="546" y="316">O(1)</text>
-    <text class="sm gr" x="546" y="242">O(log n)</text>
-    <text class="sm" x="546" y="52">O(n)</text>
-    <text class="sm" x="440" y="72">O(n log n)</text>
-    <text class="sm rd" x="230" y="45">O(n²)</text>
+    <text class="sm gr" x="432" y="324">O(1)</text>
+    <text class="sm gr" x="432" y="254">O(log n)</text>
+    <text class="sm" x="432" y="64">O(n)</text>
+    <text class="sm" x="412" y="22">O(n log n)</text>
+    <text class="sm rd" x="258" y="40">O(n²)</text>
     <text class="sm rd" x="15" y="45">O(2ⁿ)</text>
-    <text class="sm rd" x="15" y="378">O(n²) and O(2ⁿ) both explode — see the table below for real numbers</text>
+    <text class="sm rd" x="15" y="378">O(n²) and O(2ⁿ) explode — real numbers in the table below</text>
   </svg>
   <figcaption>Same input size n on the x-axis for every curve — the only difference is the shape of the growth. Green stays cheap, red gets unusable fast.</figcaption>
 </figure>
@@ -294,7 +288,7 @@ function hasDuplicatePair(arr) {
 function binarySearch(sorted, target) {
   let lo = 0, hi = sorted.length - 1;
   while (lo <= hi) {
-    const mid = (lo + hi) >> 1;
+    const mid = lo + Math.floor((hi - lo) / 2);
     if (sorted[mid] === target) return mid;
     if (sorted[mid] < target) lo = mid + 1;
     else hi = mid - 1;
@@ -393,7 +387,7 @@ function hasDuplicateFast(arr) {
   <tr><td>Binary search</td><td>T(n) = T(n/2) + O(1)</td><td>a=1, b=2, d=0</td><td>O(log n)</td></tr>
   <tr><td>Merge sort</td><td>T(n) = 2T(n/2) + O(n)</td><td>a=2, b=2, d=1</td><td>O(n log n)</td></tr>
   <tr><td>Binary tree traversal</td><td>T(n) = 2T(n/2) + O(1)</td><td>a=2, b=2, d=0</td><td>O(n)</td></tr>
-  <tr><td>Naive recursive Fibonacci</td><td>T(n) = 2T(n-1) + O(1)</td><td>doesn't fit the form (n-1, not n/b)</td><td>O(2ⁿ)</td></tr>
+  <tr><td>Naive recursive Fibonacci</td><td>T(n) = T(n-1) + T(n-2) + O(1)</td><td>doesn't fit the form (n-1 and n-2, not n/b)</td><td>O(2ⁿ) upper bound (the tight bound is O(φⁿ), φ ≈ 1.618)</td></tr>
 </table>
 <p class="sub">
   You will not be asked to apply the Master Theorem from memory in most

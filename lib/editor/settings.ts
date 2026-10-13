@@ -25,8 +25,23 @@ export const DEFAULT_SETTINGS: EditorSettings = {
 const KEY = "jsnotes:editor-settings";
 
 export function loadSettings(): EditorSettings {
-  const saved = store.get<Partial<EditorSettings>>(KEY, {});
-  return { ...DEFAULT_SETTINGS, ...saved, tabSize: saved.tabSize === 4 ? 4 : 2 };
+  const saved = store.get<unknown>(KEY, null);
+  const loose = (saved !== null && typeof saved === "object" && !Array.isArray(saved) ? saved : {}) as Record<
+    string,
+    unknown
+  >;
+  const flag = (name: Exclude<keyof EditorSettings, "tabSize">): boolean =>
+    typeof loose[name] === "boolean" ? loose[name] : DEFAULT_SETTINGS[name];
+  return {
+    formatOnSave: flag("formatOnSave"),
+    runOnSave: flag("runOnSave"),
+    lint: flag("lint"),
+    vim: flag("vim"),
+    minimap: flag("minimap"),
+    indentGuides: flag("indentGuides"),
+    wrap: flag("wrap"),
+    tabSize: loose.tabSize === 4 ? 4 : 2,
+  };
 }
 
 export function saveSettings(settings: EditorSettings) {

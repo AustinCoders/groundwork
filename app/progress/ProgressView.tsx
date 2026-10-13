@@ -42,7 +42,8 @@ function useLevelUp(level: number): boolean {
     if (level <= 1) return;
     let last = 1;
     try {
-      last = Number(localStorage.getItem(LAST_SEEN_LEVEL_KEY) || "1");
+      const seen = Number(localStorage.getItem(LAST_SEEN_LEVEL_KEY) || "1");
+      last = Number.isFinite(seen) && seen >= 1 ? seen : 1;
       if (level !== last) localStorage.setItem(LAST_SEEN_LEVEL_KEY, String(level));
     } catch {
       return;

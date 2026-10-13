@@ -180,6 +180,10 @@
   gap: 14px;
 }
 
+.player .lower > div {
+  min-width: 0;
+}
+
 .player .code {
   margin: 0;
   padding: 8px 0;
@@ -192,12 +196,38 @@
   background: var(--sheet-2);
   border: 1px solid var(--line);
   border-radius: 8px;
+  overflow-x: auto;
+  background-image:
+    linear-gradient(to right, var(--sheet-2) 30%, transparent),
+    linear-gradient(to left, var(--sheet-2) 30%, transparent),
+    linear-gradient(to right, color-mix(in srgb, var(--ink) 25%, transparent), transparent),
+    linear-gradient(to left, color-mix(in srgb, var(--ink) 25%, transparent), transparent);
+  background-position:
+    left center,
+    right center,
+    left center,
+    right center;
+  background-repeat: no-repeat;
+  background-size:
+    28px 100%,
+    28px 100%,
+    10px 100%,
+    10px 100%;
+  background-attachment: local, local, scroll, scroll;
+}
+
+.player .code:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .player .codeLine {
   margin: 0;
   display: grid;
-  grid-template-columns: 4.6em minmax(0, 1fr);
+  width: max-content;
+  min-width: 100%;
+  box-sizing: border-box;
+  grid-template-columns: 4.6em max-content;
   gap: 6px;
   padding: 1px 10px 1px 6px;
   border-left: 4px solid var(--sheet-2);
@@ -229,8 +259,7 @@
   font-size: 1em;
   background: none;
   border-radius: 0;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  white-space: pre;
 }
 
 .player .vars {

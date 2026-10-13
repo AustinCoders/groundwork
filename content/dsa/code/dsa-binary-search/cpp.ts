@@ -33,7 +33,7 @@ int minEatingSpeed(const std::vector&lt;int&gt;&amp; piles, int h) {
   "lower-bound": `#include &lt;vector&gt;
 
 <span class="c">// leftmost index where nums[i] &gt;= target — the building block for
-   // "find first occurrence" and most boundary-search variants</span>
+// "find first occurrence" and most boundary-search variants</span>
 int lowerBound(const std::vector&lt;int&gt;&amp; nums, int target) {
     int lo = 0, hi = (int)nums.size(); <span class="c">// note: hi = length, not length-1, here</span>
     while (lo &lt; hi) {

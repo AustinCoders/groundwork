@@ -17,6 +17,7 @@ export interface ShelfCard {
 
 export interface HomeViewProps {
   stats: SiteStats;
+  tally: { written: number; total: number };
   ready: ShelfCard[];
   soon: ShelfCard[];
   languages: { total: number; runnable: number; runs: string[] };

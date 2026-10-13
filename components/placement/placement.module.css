@@ -1,5 +1,40 @@
-:global(html[data-js]) .pending {
+.pending {
   visibility: hidden;
+}
+
+.shell {
+  display: grid;
+  gap: 12px;
+  max-width: 54ch;
+  margin-top: 18px;
+}
+
+.shell span {
+  display: block;
+  height: 18px;
+  background: var(--sheet-2);
+  border-radius: 9px;
+  animation: shellPulse 1.4s ease-in-out infinite;
+}
+
+.shell span:nth-child(2) {
+  width: 82%;
+}
+
+.shell span:nth-child(3) {
+  width: 56%;
+}
+
+@keyframes shellPulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell span {
+    animation: none;
+  }
 }
 
 .doors {
@@ -178,6 +213,53 @@
   background: var(--sheet);
   border: 1.5px solid var(--line);
   border-radius: 16px;
+}
+
+.askingFoot {
+  margin: 14px 0 0;
+}
+
+.textButton {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0;
+  font: inherit;
+  font-size: var(--t-body);
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  background: none;
+  border: 0;
+}
+
+.textButton:hover {
+  color: var(--ink);
+}
+
+.textButton:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 14px 0 0;
+  padding: 12px 16px;
+  font-size: var(--t-body);
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--sheet-2);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+}
+
+.confirm p {
+  flex: 1 1 28ch;
+  margin: 0;
 }
 
 .keepNote {

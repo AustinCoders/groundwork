@@ -21,6 +21,8 @@ export interface ReviewDay {
   rows: ReviewRow[];
 }
 
+const MAX_OVERDUE_DAYS = 365;
+
 export const DAY = 24 * 60 * 60 * 1000;
 
 export function markOf(v: true | ChapterMark): ChapterMark {
@@ -59,7 +61,9 @@ export const SHORT_GAPS = REVIEW_GAPS_DAYS.map(shortGap);
 
 export function lateness(due: number, now: number): string {
   const days = daysBetween(due, now);
-  return days <= 0 ? "due today" : `${plural(days, "day")} overdue`;
+  if (days <= 0) return "due today";
+  if (days > MAX_OVERDUE_DAYS) return "over a year overdue";
+  return `${plural(days, "day")} overdue`;
 }
 
 export function whenLabel(due: number, now: number): string {
@@ -82,6 +86,7 @@ export function agoLabel(at: number, now: number): string {
   if (days === 1) return "yesterday";
   if (days < 14) return `${days} days ago`;
   if (days < 60) return `${Math.round(days / 7)} weeks ago`;
+  if (days > 730) return "over two years ago";
   return `${Math.round(days / 30)} months ago`;
 }
 
@@ -92,7 +97,7 @@ export function buildRows(
 ): { rows: ReviewRow[]; due: ReviewRow[]; upcoming: ReviewRow[]; kept: number; reviewed: ReviewRow[] } {
   const rows: ReviewRow[] = chapters
     .filter((ch) => marks[ch.id])
-    .map((ch) => ({ ch, mark: markOf(marks[ch.id]), due: dueAt(marks[ch.id]) }));
+    .map((ch) => ({ ch, mark: markOf(marks[ch.id]), due: dueAt(marks[ch.id], now) }));
   return {
     rows,
     kept: rows.filter((r) => r.due === null).length,

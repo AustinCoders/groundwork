@@ -1,5 +1,26 @@
 export const TOUR_OPEN_EVENT = "groundwork:tour-open";
 export const TOUR_PROMPT_DELAY_MS = 1600;
+export const TOUR_IDLE_MS = 1200;
+
+const FORM_TAGS = ["INPUT", "SELECT", "TEXTAREA"];
+const FORM_ROLES = ["radio", "slider", "textbox", "combobox", "searchbox", "spinbutton", "switch", "checkbox"];
+
+export interface ActiveElement {
+  tagName: string;
+  role?: string | null;
+  isContentEditable?: boolean;
+}
+
+export function isFormControl(element: ActiveElement | null): boolean {
+  if (!element) return false;
+  if (element.isContentEditable) return true;
+  if (FORM_TAGS.includes(element.tagName.toUpperCase())) return true;
+  return element.role != null && FORM_ROLES.includes(element.role);
+}
+
+export function isInteracting(element: ActiveElement | null, msSinceInput: number): boolean {
+  return isFormControl(element) || msSinceInput < TOUR_IDLE_MS;
+}
 
 interface CoverSource {
   id: string;

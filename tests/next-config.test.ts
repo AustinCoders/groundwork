@@ -30,11 +30,11 @@ describe("next.config redirects", () => {
 
   it("sends a bare quiz topic cover, like /dsa, permanently to its level page", async () => {
     const redirects = await nextConfig.redirects?.();
-    const home = (redirects ?? []).find((r) => r.destination === "/level/:topic" && !r.has);
-    expect(home, "no redirect to the level home").toBeTruthy();
-    expect(home?.permanent).toBe(true);
     for (const id of PINNED_LEVEL_HOME_TOPIC_IDS) {
-      expect(home?.source, `the home redirect does not match ${id}`).toMatch(new RegExp(`[(|]${id}[|)]`));
+      const home = (redirects ?? []).find((r) => r.source === `/${id}` && !r.has);
+      expect(home, `no redirect from /${id} to its level home`).toBeTruthy();
+      expect(home?.destination).toBe(`/level/${id}`);
+      expect(home?.permanent).toBe(true);
     }
   });
 

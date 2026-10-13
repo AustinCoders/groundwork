@@ -10,8 +10,8 @@ export const ZOOM_KEY = "jsnotes:zoom";
 export function useReaderZoom(): [number, (step: number) => void] {
   const mounted = useMounted();
   const saved = useClientValue(() => {
-    const value = store.get<number | null>(ZOOM_KEY, null);
-    const index = value !== null ? ZOOM_STEPS.indexOf(value) : -1;
+    const value = store.get<unknown>(ZOOM_KEY, null);
+    const index = typeof value === "number" ? ZOOM_STEPS.indexOf(value) : -1;
     return index !== -1 ? index : ZOOM_STEPS.indexOf(100);
   }, ZOOM_STEPS.indexOf(100));
   const [override, setOverride] = useState<number | null>(null);

@@ -5,12 +5,12 @@ import { useEffect } from "react";
 import { readPlacement } from "@/lib/placementStore";
 import { lastLevel } from "@/lib/storage";
 
-export function PathRedirect({ targets }: { targets: Record<string, string[] | null> }) {
+export function PathRedirect({ targets, topic }: { targets: Record<string, string[] | null>; topic?: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const topicId = searchParams.get("topic") || "js";
+    const topicId = topic ?? (searchParams.get("topic") || "js");
     const levelIds = targets[topicId];
 
     if (!levelIds) {
@@ -25,7 +25,7 @@ export function PathRedirect({ targets }: { targets: Record<string, string[] | n
       (saved && levelIds.includes(saved) && saved) ||
       "beginner";
     router.replace(`/path/${topicId}/${levelId}`);
-  }, [router, searchParams, targets]);
+  }, [router, searchParams, targets, topic]);
 
   return null;
 }
