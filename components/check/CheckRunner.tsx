@@ -15,6 +15,7 @@ import {
   type Answer,
 } from "@/lib/checkDraw";
 import { onCheckRequest } from "@/lib/checkOpen";
+import { PLAIN_KEYS } from "@/lib/endPopup";
 import { useMounted, useProgressValue } from "@/lib/hooks";
 import { checkStatus } from "@/lib/quizRecord";
 import { quizStore, useQuizRecord } from "@/lib/quizStore";
@@ -55,8 +56,6 @@ const REFOCUS_TARGET: Record<Refocus, string> = {
   status: "[data-status]",
   advance: "[data-advance]",
 };
-
-const PLAIN_KEYS = new Set(["n", "p", "t", "[", "]", "/"]);
 
 function wordsOf(sectionId: string): string {
   const words = sectionId.replace(/-/g, " ");

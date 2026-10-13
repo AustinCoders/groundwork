@@ -5,6 +5,7 @@ export interface QuizRecord {
   passedAt: number | null;
   markedAnyway: boolean;
   missed: string[];
+  popupDismissed: boolean;
 }
 
 export type CheckStatus = "passed" | "not-checked" | "read-before-checks" | "unread";
@@ -16,6 +17,7 @@ export const EMPTY_RECORD: QuizRecord = Object.freeze({
   passedAt: null,
   markedAnyway: false,
   missed: [],
+  popupDismissed: false,
 });
 
 const count = (value: unknown): number =>
@@ -34,6 +36,7 @@ export function sanitizeRecord(value: unknown): QuizRecord | null {
     passedAt: instant(loose.passedAt),
     markedAnyway: loose.markedAnyway === true,
     missed: Array.isArray(loose.missed) ? loose.missed.filter((id): id is string => typeof id === "string") : [],
+    popupDismissed: loose.popupDismissed === true,
   };
 }
 
@@ -57,6 +60,10 @@ export function applyPass(record: QuizRecord | undefined, at: number): QuizRecor
 
 export function applyMarkedAnyway(record: QuizRecord | undefined): QuizRecord {
   return { ...(record ?? EMPTY_RECORD), passedAt: null, markedAnyway: true };
+}
+
+export function applyPopupDismissed(record: QuizRecord | undefined): QuizRecord {
+  return { ...(record ?? EMPTY_RECORD), popupDismissed: true };
 }
 
 export function applyUnmark(record: QuizRecord | undefined): QuizRecord | undefined {

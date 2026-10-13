@@ -479,7 +479,7 @@ export function ChapterEndScene({
 }) {
   const read = finish?.read;
   return (
-    <div className={styles.end}>
+    <div className={styles.end} data-end-card>
       {finish && <ChapterFinish {...finish} />}
       <Eyebrow no="→" as="p">
         Next stop

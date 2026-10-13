@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { EndPopup } from "@/components/check/EndPopup";
 import { TopicFrame } from "@/components/topic/TopicFrame";
 import { useChapterBody } from "@/components/reader/useChapterBody";
 import { quizStore } from "@/lib/quizStore";
@@ -244,6 +245,14 @@ export function TopicReader({
           />
 
           {check}
+
+          <EndPopup
+            key={chapter.id}
+            chapterId={chapter.id}
+            title={chapter.title}
+            done={isDone}
+            hasCheck={requiresCheck(completion) && (checkChapterIds ?? []).includes(chapter.id)}
+          />
 
           <ChapterEndScene
             num={chapter.num}

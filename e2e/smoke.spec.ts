@@ -327,3 +327,95 @@ test("the DSA cover tells a passed chapter's check state in words", async ({ pag
   await expect(entry.locator("[data-state]")).toHaveText("checked");
   await expect(page.locator("body")).toContainText(/(?<!\d)1 checked\b/);
 });
+
+test("the end-of-chapter popup opens once, Yes opens the check, and a dismissal never comes back", async ({
+  page,
+  browser,
+}) => {
+  const asked = (target: Page) => target.getByRole("dialog", { name: "Mark this chapter done?" });
+  const finish = (target: Page) =>
+    target.getByRole("region", { name: "Finish" }).getByRole("link", { name: "Mark as read" });
+  const control = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+  const fresh = await control.newPage();
+
+  async function freshReaderIsAsked() {
+    await fresh.goto(CHAPTER_PATH, { waitUntil: "networkidle" });
+    await fresh.locator("[data-end-card]").scrollIntoViewIfNeeded();
+    await fresh.keyboard.press("End");
+    await expect(asked(fresh)).toBeVisible();
+    await expect(asked(fresh)).toBeFocused();
+  }
+
+  async function atTheEnd() {
+    await page.goto(CHAPTER_PATH, { waitUntil: "networkidle" });
+    await hydrated(finish(page));
+    await finish(page).focus();
+    await page.keyboard.press("End");
+  }
+
+  await page.goto(CHAPTER_PATH, { waitUntil: "networkidle" });
+  await expect(asked(page)).toHaveCount(0);
+
+  await atTheEnd();
+  const dialog = asked(page);
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(dialog.getByRole("button", { name: /^Yes/ })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(dialog.getByRole("button", { name: "Not yet" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(dialog.getByRole("button", { name: /^Yes/ })).toBeFocused();
+  await page.keyboard.press("n");
+  await expect(dialog).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`${CHAPTER_PATH}$`));
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+  await expect(finish(page)).toBeFocused();
+  await expect
+    .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("groundwork:quiz") ?? "{}").chapters))
+    .toMatchObject({ [CHAPTER_ID]: { popupDismissed: true } });
+
+  await page.evaluate(() => localStorage.removeItem("groundwork:quiz"));
+  await atTheEnd();
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("button", { name: "Not yet" }).click();
+  await expect(dialog).toHaveCount(0);
+
+  await atTheEnd();
+  await freshReaderIsAsked();
+  await expect(dialog).toHaveCount(0);
+
+  await page.evaluate(() => localStorage.removeItem("groundwork:quiz"));
+  await page.evaluate(
+    (chapterId) =>
+      localStorage.setItem(
+        "jsnotes:progress",
+        JSON.stringify({ chapters: { [chapterId]: { at: Date.now(), reviews: 0 } }, exercises: {} })
+      ),
+    CHAPTER_ID
+  );
+  await page.goto(CHAPTER_PATH, { waitUntil: "networkidle" });
+  await page.locator("[data-end-card]").scrollIntoViewIfNeeded();
+  await page.keyboard.press("End");
+  await freshReaderIsAsked();
+  await expect(dialog).toHaveCount(0);
+
+  await page.evaluate(() => localStorage.clear());
+  await page.goto(`${CHAPTER_PATH}#check`, { waitUntil: "networkidle" });
+  await page.keyboard.press("End");
+  await freshReaderIsAsked();
+  await expect(dialog).toHaveCount(0);
+
+  await page.goto(CHAPTER_PATH, { waitUntil: "networkidle" });
+  await atTheEnd();
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("button", { name: /^Yes/ }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.locator("#check").getByRole("group", { name: "Question 1 of 5" })).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("groundwork:quiz") ?? "{}").chapters))
+    .toMatchObject({ [CHAPTER_ID]: { popupDismissed: true } });
+  await expect(page).toHaveURL(/#check$/);
+  await control.close();
+});

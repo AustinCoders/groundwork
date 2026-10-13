@@ -102,6 +102,44 @@ describe("the quiz store", () => {
     expect(quizStore.get("c")).toMatchObject({ markedAnyway: false, attempts: 1 });
   });
 
+  it("remembers a popup dismissal for that chapter only, and keeps it through a pass and an unmark", async () => {
+    install();
+    const { quizStore } = await load();
+    quizStore.recordPopupDismissed("a");
+    expect(quizStore.get("a")).toMatchObject({ popupDismissed: true, attempts: 0 });
+    expect(quizStore.get("b")).toBeUndefined();
+    quizStore.recordAttempt("a", { score: 5, missed: [], passed: true });
+    quizStore.unmark("a");
+    expect(quizStore.get("a")).toMatchObject({ popupDismissed: true, attempts: 1, passedAt: null });
+  });
+
+  it("saves a dismissal once, survives a reload and writes no other key", async () => {
+    const { data } = install();
+    const first = await load();
+    first.quizStore.recordPopupDismissed("a");
+    const written = data.get(KEY);
+    first.quizStore.recordPopupDismissed("a");
+    expect(data.get(KEY)).toBe(written);
+    expect([...data.keys()]).toEqual([KEY]);
+    const second = await load();
+    expect(second.quizStore.get("a")?.popupDismissed).toBe(true);
+  });
+
+  it("keeps a dismissal in memory for the session when the write fails", async () => {
+    install({ failWrites: true });
+    const { quizStore } = await load();
+    quizStore.recordPopupDismissed("a");
+    expect(quizStore.get("a")?.popupDismissed).toBe(true);
+  });
+
+  it("clearing the store forgets dismissals", async () => {
+    install();
+    const { quizStore } = await load();
+    quizStore.recordPopupDismissed("a");
+    quizStore.clear();
+    expect(quizStore.get("a")).toBeUndefined();
+  });
+
   it("unmarking a chapter with no record writes nothing", async () => {
     const { data } = install();
     const { quizStore } = await load();

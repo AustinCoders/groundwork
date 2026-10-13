@@ -8,7 +8,7 @@ export const archTesting: Chapter = {
   levels: ["advanced"],
   practice: [],
   ready: true,
-  subtitle: "1295 unit tests, 20 browser tests, and one test that checks what these pages say about the site.",
+  subtitle: "1323 unit tests, 21 browser tests, and one test that checks what these pages say about the site.",
   body: `<h3>The shape of it</h3>
 <p>
   There are three layers of checking, each slower than the one before:
@@ -78,7 +78,7 @@ export const archTesting: Chapter = {
   and then drifted.
 </p>
 
-<h3>Browser tests: one smoke spec, 20 tests</h3>
+<h3>Browser tests: one smoke spec, 21 tests</h3>
 <p>
   <code>playwright.config.ts</code> starts <code>npm run start</code> on port 3100. That is the
   production build, not the dev server, because dev mode double-invokes effects and serves
@@ -89,7 +89,7 @@ export const archTesting: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Spec</th><th>Tests</th><th>Covers</th></tr></thead>
 <tbody>
-<tr><td><code>smoke.spec.ts</code></td><td>20</td><td>8 pages load with their heading and no console error; 12 flows (the home page with its heading and the Menu pill, the Menu opening and closing on Escape, a topic cover and its level picker link, a chapter with its rail and no sideways scroll at 390 pixels wide, the path trail with every exercise list open and no stop covering another, the playground running a JavaScript snippet, an exercise page running code and grading a submission, unknown URLs returning a real 404, a DSA chapter switching its code to Python and back, the binary search player stepping forward and back, marking a DSA chapter read opening its check that a keyboard user answers and finishes, and the DSA cover telling a passed chapter's check state in words)</td></tr>
+<tr><td><code>smoke.spec.ts</code></td><td>21</td><td>8 pages load with their heading and no console error; 13 flows (the home page with its heading and the Menu pill, the Menu opening and closing on Escape, a topic cover and its level picker link, a chapter with its rail and no sideways scroll at 390 pixels wide, the path trail with every exercise list open and no stop covering another, the playground running a JavaScript snippet, an exercise page running code and grading a submission, unknown URLs returning a real 404, a DSA chapter switching its code to Python and back, the binary search player stepping forward and back, marking a DSA chapter read opening its check that a keyboard user answers and finishes, the DSA cover telling a passed chapter's check state in words, and the end-of-chapter popup opening once, Yes opening the check and a dismissal never coming back)</td></tr>
 </tbody>
 </table></div>
 <p>

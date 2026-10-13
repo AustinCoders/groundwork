@@ -3,6 +3,7 @@ import {
   applyAttempt,
   applyMarkedAnyway,
   applyPass,
+  applyPopupDismissed,
   applyUnmark,
   checkStatus,
   EMPTY_RECORD,
@@ -17,6 +18,7 @@ const passed: QuizRecord = {
   passedAt: 300,
   markedAnyway: false,
   missed: ["q1"],
+  popupDismissed: false,
 };
 
 describe("recording an attempt", () => {
@@ -29,6 +31,7 @@ describe("recording an attempt", () => {
       passedAt: null,
       markedAnyway: false,
       missed: ["a", "b"],
+      popupDismissed: false,
     });
   });
 
@@ -107,6 +110,40 @@ describe("the check status", () => {
   });
 });
 
+describe("dismissing the end-of-chapter popup", () => {
+  it("sets the flag on a record that does not exist yet and changes nothing else", () => {
+    expect(applyPopupDismissed(undefined)).toEqual({ ...EMPTY_RECORD, popupDismissed: true });
+    expect(applyPopupDismissed(passed)).toEqual({ ...passed, popupDismissed: true });
+  });
+
+  it("is kept by an attempt, a pass, a marked-anyway and an unmark", () => {
+    const dismissed = applyPopupDismissed(undefined);
+    expect(applyAttempt(dismissed, { score: 2, missed: ["a"], at: 1 }).popupDismissed).toBe(true);
+    expect(applyPass(dismissed, 2).popupDismissed).toBe(true);
+    expect(applyMarkedAnyway(dismissed).popupDismissed).toBe(true);
+    expect(applyUnmark({ ...dismissed, passedAt: 3 })?.popupDismissed).toBe(true);
+  });
+
+  it("does not change the record it was given", () => {
+    const before = structuredClone(passed);
+    applyPopupDismissed(passed);
+    expect(passed).toEqual(before);
+  });
+
+  it("does not make a chapter look checked or not checked", () => {
+    expect(checkStatus(true, applyPopupDismissed(undefined))).toBe("read-before-checks");
+    expect(checkStatus(false, applyPopupDismissed(undefined))).toBe("unread");
+  });
+
+  it("is read back from a saved record, and anything but true means not dismissed", () => {
+    expect(sanitizeRecord({ ...passed, popupDismissed: true })?.popupDismissed).toBe(true);
+    expect(sanitizeRecord({ ...passed, popupDismissed: "yes" })?.popupDismissed).toBe(false);
+    const old: Partial<QuizRecord> = { ...passed };
+    delete old.popupDismissed;
+    expect(sanitizeRecord(old)?.popupDismissed).toBe(false);
+  });
+});
+
 describe("cleaning a saved record", () => {
   it("keeps a good record as it is", () => {
     expect(sanitizeRecord(passed)).toEqual(passed);
@@ -115,7 +152,15 @@ describe("cleaning a saved record", () => {
   it("repairs bad fields", () => {
     expect(
       sanitizeRecord({ attempts: -2, best: "x", lastAt: 0, passedAt: NaN, markedAnyway: "yes", missed: ["a", 3, null] })
-    ).toEqual({ attempts: 0, best: 0, lastAt: null, passedAt: null, markedAnyway: false, missed: ["a"] });
+    ).toEqual({
+      attempts: 0,
+      best: 0,
+      lastAt: null,
+      passedAt: null,
+      markedAnyway: false,
+      missed: ["a"],
+      popupDismissed: false,
+    });
   });
 
   it("rejects what is not an object", () => {

@@ -6,6 +6,7 @@ import {
   applyAttempt,
   applyMarkedAnyway,
   applyPass,
+  applyPopupDismissed,
   applyUnmark,
   sanitizeRecord,
   type QuizRecord,
@@ -89,6 +90,10 @@ export const quizStore = {
   },
   recordMarkedAnyway(chapterId: string) {
     change(chapterId, (record) => applyMarkedAnyway(record));
+  },
+  recordPopupDismissed(chapterId: string) {
+    if (read()[chapterId]?.popupDismissed) return;
+    change(chapterId, (record) => applyPopupDismissed(record));
   },
   clear() {
     store.remove(QUIZ_KEY);

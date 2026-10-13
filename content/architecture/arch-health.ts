@@ -15,9 +15,9 @@ export const archHealth: Chapter = {
 <thead><tr><th>Check</th><th>Result, latest local run</th></tr></thead>
 <tbody>
 <tr><td>TypeScript, ESLint, Prettier, cspell</td><td><span class="chip tone-yes">clean</span></td></tr>
-<tr><td>Vitest</td><td><span class="chip tone-yes">1295 of 1295</span></td></tr>
+<tr><td>Vitest</td><td><span class="chip tone-yes">1323 of 1323</span></td></tr>
 <tr><td>Build</td><td><span class="chip tone-yes">1,803 prerendered routes</span></td></tr>
-<tr><td>Playwright, one smoke spec</td><td><span class="chip tone-yes">20 of 20</span></td></tr>
+<tr><td>Playwright, one smoke spec</td><td><span class="chip tone-yes">21 of 21</span></td></tr>
 <tr><td>Lighthouse budgets, 3 URLs, 3 runs each</td><td><span class="chip tone-yes">pass, last run before CI was removed</span></td></tr>
 <tr><td><code>TODO</code>, <code>FIXME</code>, <code>HACK</code> in source</td><td><span class="chip tone-yes">0</span></td></tr>
 <tr><td><code>npm audit</code>, production dependencies</td><td><span class="chip tone-bad">1 critical, 1 high</span></td></tr>
