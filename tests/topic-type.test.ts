@@ -58,6 +58,9 @@ const TOKENS = [
 
 const MONO_USERS = [
   ".kicker",
+  ".eyebrow",
+  ".teaserCaption",
+  ".upCode",
   ".cardKicker",
   ".fact dd",
   ".meterLabel",
@@ -206,7 +209,10 @@ describe("the topic pages share the menu type scale", () => {
       "components/topic/TopicCover.tsx",
       "components/topic/TopicHome.tsx",
       "components/topic/shell/TopicShell.tsx",
-      "components/topic/shell/PathList.tsx",
+      "components/topic/shell/JourneyMap.tsx",
+      "components/topic/shell/Hero.tsx",
+      "components/topic/shell/Ring.tsx",
+      "components/topic/shell/TrailLeg.tsx",
       "components/topic/shell/ChapterRow.tsx",
       "components/topic/TopicOutline.tsx",
       "components/topic/TopicKit.tsx",

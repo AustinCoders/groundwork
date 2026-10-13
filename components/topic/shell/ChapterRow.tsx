@@ -4,15 +4,9 @@ import { StateMark } from "./StateMark";
 import type { ShellChapter } from "./types";
 import styles from "./shell.module.css";
 
-function metaOf(chapter: ShellChapter): string {
-  const parts: string[] = [];
-  if (chapter.minutes > 0) parts.push(`${chapter.minutes} min`);
-  if (chapter.exercises > 0) parts.push(plural(chapter.exercises, "exercise"));
-  return parts.join(" · ");
-}
-
 export function ChapterRow({ chapter }: { chapter: ShellChapter }) {
-  const meta = metaOf(chapter);
+  const minutes = chapter.minutes > 0 ? `${chapter.minutes} min` : null;
+  const exercises = chapter.exercises > 0 ? plural(chapter.exercises, "exercise") : null;
   return (
     <li className={styles.row} data-kind={chapter.mark.kind} data-next={chapter.next || undefined}>
       <Link
@@ -27,7 +21,10 @@ export function ChapterRow({ chapter }: { chapter: ShellChapter }) {
           <span className={styles.rowTitle}>{chapter.title}</span>
           {chapter.tag && <span className={styles.rowTag}>{chapter.tag}</span>}
         </span>
-        {meta && <span className={styles.rowMeta}>{meta}</span>}
+        <span className={styles.rowMeta}>
+          {minutes && <span className={styles.rowTime}>{minutes}</span>}
+          {exercises && <span className={styles.rowEx}>{exercises}</span>}
+        </span>
       </Link>
     </li>
   );

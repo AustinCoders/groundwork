@@ -31,7 +31,7 @@ import styles from "./placement.module.css";
 const HEADLINE = {
   quiz: (level: string) => (
     <>
-      You&apos;re at <Underlined>{level}</Underlined>
+      Your starting point: <Underlined>{level}</Underlined>
     </>
   ),
   self: (level: string) => (

@@ -18,7 +18,8 @@ import { byChapterId } from "@/lib/levelRows";
 import { pageMetadata } from "@/lib/metadata";
 import { coverCards, coverParts } from "@/lib/coverData";
 import { placementData } from "@/lib/placementChapters";
-import { poolChapterIds } from "@/lib/quizPool";
+import { summarizeBank } from "@/lib/placementBank";
+import { loadPlacementBank, poolChapterIds } from "@/lib/quizPool";
 import { bookRound } from "@/lib/interviewBook";
 import { relatedInterviewRound } from "@/lib/topics";
 import { topicStats } from "@/lib/topicStats";
@@ -66,6 +67,8 @@ export default async function LevelPage({ params }: { params: Promise<{ topic: s
   if (requiresCheck(topic.completion)) {
     const roundId = relatedInterviewRound(topic.id);
     const round = roundId ? bookRound(roundId) : null;
+    const placement = placementData(topic.id);
+    const placementSummary = summarizeBank({ chapters: placement.chapters, bank: await loadPlacementBank() });
     return (
       <TopicHome
         topic={topic}
@@ -75,7 +78,8 @@ export default async function LevelPage({ params }: { params: Promise<{ topic: s
         parts={coverParts(topic.id)}
         cards={coverCards(topic.id)}
         checkChapterIds={poolChapterIds()}
-        placementData={placementData(topic.id)}
+        placementData={placement}
+        placementSummary={placementSummary}
         relatedRoundHref={round ? `/interview/${roundId}` : null}
         relatedRoundLabel={round ? `${round.code} · ${round.navTitle}` : null}
       />

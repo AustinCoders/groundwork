@@ -351,9 +351,11 @@ test("the DSA home tells a passed chapter's check state in words", async ({ page
     { chapterId: CHAPTER_ID }
   );
   await page.goto("/level/dsa", { waitUntil: "networkidle" });
-  const entry = page.locator("#chapters li", { has: page.locator(`a[href="${CHAPTER_PATH}"]`) }).first();
+  const entry = page.locator("#chapters li[data-kind]", { has: page.locator(`a[href="${CHAPTER_PATH}"]`) });
   await expect(entry.locator("[data-state]")).toHaveText("checked");
   await expect(page.locator("#beginner > summary")).toContainText("1 / 10 read");
+  await expect(page.locator("[data-hero]")).toContainText("Not sure where you stand?");
+  await expect(page.locator("#topic-primary")).toHaveCount(1);
 });
 
 test("the end-of-chapter popup opens once, Yes opens the check, and a dismissal never comes back", async ({
@@ -584,34 +586,50 @@ async function folded(page: Page, level: string) {
   return page.locator(`#${level}`).evaluate((el) => (el as HTMLDetailsElement).open);
 }
 
-test("the DSA home gives a first-time reader three doors and one list, and a placed reader one Continue and the plan in its details", async ({
+test("the DSA home leads a first-time reader to check their level, and a placed reader sees their level, progress, up next and one Continue", async ({
   page,
 }) => {
   const problems = collectProblems(page);
   await page.goto("/progress", { waitUntil: "networkidle" });
   await page.goto("/level/dsa", { waitUntil: "networkidle" });
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("DSA");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("starting point");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("DSA");
   await expect(page.locator("header .head-back")).toContainText("Home");
   await expect(page.locator("header .head-back")).not.toContainText("Back to");
+  await expect(page.locator("#topic-primary")).toHaveCount(1);
+  await expect(page.locator("#topic-primary")).toHaveText(/Check my level/);
+  await expect(page.locator("#topic-primary")).toHaveAttribute("href", "/dsa/placement");
   await expect(page.locator("[data-door]")).toHaveCount(3);
-  await expect(page.locator("#topic-primary")).toHaveCount(0);
+  await expect(page.locator('[data-door="beginning"]')).toHaveText("Start from the beginning");
+  await expect(page.locator('[data-door="pick"]')).toHaveText("I'll pick a level myself");
+  await expect(page.locator("[data-hero]")).toContainText(/\d+ questions? today, about \d+ minutes?/);
+  await expect(page.locator("[data-teaser]")).toBeVisible();
+  await expect(page.locator("[data-teaser]")).toContainText("Beginner");
+  await expect(page.locator("[data-teaser]")).toContainText("Advanced");
+  await expect(page.locator("[data-hero] [data-ring]")).toHaveCount(0);
 
   const targets = await page.locator("#chapters li a").evaluateAll((links) => links.map((a) => a.getAttribute("href")));
   expect(targets.length).toBeGreaterThan(30);
   expect(new Set(targets).size).toBe(targets.length);
+  await expect(page.locator("#chapters details")).toHaveCount(3);
+  await expect(page.locator("#beginner > summary")).toContainText("0 / 10 read");
+  await expect(page.locator("#beginner > summary")).toContainText("not started");
   expect(await folded(page, "beginner")).toBe(true);
   expect(await folded(page, "intermediate")).toBe(false);
   expect(await folded(page, "advanced")).toBe(false);
+  await expect(page.locator("#intermediate > summary")).toContainText("Starts with");
 
   const intermediate = page.locator("#intermediate > summary");
   await hydrated(intermediate);
   await press(page, intermediate);
   await expect.poll(() => folded(page, "intermediate")).toBe(true);
-  await press(page, intermediate);
+  await press(page, intermediate, "Space");
   await expect.poll(() => folded(page, "intermediate")).toBe(false);
 
-  await page.goto("/level/dsa#advanced", { waitUntil: "networkidle" });
-  await expect.poll(() => folded(page, "advanced")).toBe(true);
+  for (const level of ["intermediate", "advanced"]) {
+    await page.goto(`/level/dsa#${level}`, { waitUntil: "networkidle" });
+    await expect.poll(() => folded(page, level)).toBe(true);
+  }
   await page.goto("/level/dsa#pick-level", { waitUntil: "networkidle" });
   await expect(page.getByRole("group", { name: "Pick your level" })).toBeInViewport();
 
@@ -635,15 +653,26 @@ test("the DSA home gives a first-time reader three doors and one list, and a pla
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/level/dsa", { waitUntil: "networkidle" });
   await expect(page.locator("[data-door]")).toHaveCount(0);
+  await expect(page.locator("[data-teaser]")).toHaveCount(0);
+  await expect(page.locator("#topic-primary")).toHaveCount(1);
   await expect(page.locator("#topic-primary")).toHaveText(/^Start/);
   await expect(page.locator("#topic-primary")).toHaveAttribute("href", "/dsa/dsa-trees");
-  await expect(page.locator("[data-hero]")).toContainText(/0 \/ \d+ read · next: Trees/);
+  await expect(page.locator("[data-hero]").getByRole("link", { name: /^(Start|Continue)/ })).toHaveCount(1);
+  await expect(page.locator("[data-hero]")).toContainText("Intermediate");
+  await expect(page.locator("[data-hero]")).toContainText(/Up next/i);
+  await expect(page.locator("[data-hero]")).toContainText("Trees");
+  await expect(page.locator("[data-hero] [data-ring]")).toHaveAttribute("aria-label", /^0 of \d+ chapters read$/);
+  await expect(page.locator('[data-hero] [data-link="recheck"]')).toHaveText("Re-check my level");
+  await expect(page.locator("[data-hero]")).not.toContainText("Not sure where you stand?");
+  await expect(page.locator("#intermediate > summary")).toContainText("your level");
   expect(await folded(page, "intermediate")).toBe(true);
   expect(await folded(page, "beginner")).toBe(false);
-  await expect(page.locator("#chapters li", { has: page.locator('a[href="/dsa/dsa-trees"]') })).toContainText(
+  await expect(page.locator("#beginner > summary")).toContainText("Starts with");
+  await expect(page.locator("#chapters li", { has: page.locator('a[href="/dsa/dsa-trees"]') }).last()).toContainText(
     "up next"
   );
   await expect(page.locator("#pick-level")).not.toHaveJSProperty("open", true);
+  await expect(page.locator("[data-tool]")).toHaveCount(4);
   expect(problems).toEqual([]);
 });
 

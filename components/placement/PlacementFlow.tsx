@@ -106,7 +106,7 @@ function Shell({ topic }: { topic: FrameTopic }) {
               Find my level
             </Kicker>
             <Heading id="placement-title">
-              Where should you <Underlined>start</Underlined>?
+              Let&apos;s find your <Underlined>starting point</Underlined>
             </Heading>
             <div className={styles.shell} role="status" aria-label="Loading the placement">
               <span />
@@ -254,8 +254,21 @@ export function PlacementFlow({ topic, data, basePath }: { topic: FrameTopic; da
               <Kicker mark="?">Finding your level</Kicker>
               <h1 className={styles.askingTitle}>
                 Question {answered + 1}
-                {summary && <span className="visually-hidden"> of {questionCountText(summary)}</span>}
+                {summary && summary.capacity > 0 && (
+                  <span className={styles.askingOf}>
+                    {" "}
+                    of {summary.capacity > summary.start ? "up to " : ""}
+                    {summary.capacity}
+                  </span>
+                )}
               </h1>
+              {summary && summary.capacity > 0 && (
+                <div className={styles.dots} aria-hidden="true">
+                  {Array.from({ length: summary.capacity }, (_, index) => (
+                    <i key={index} data-state={index < answered ? "done" : index === answered ? "now" : "todo"} />
+                  ))}
+                </div>
+              )}
               <p className={styles.askingNote}>
                 {summary ? `${questionCountText(summary)}, no timer. ` : "No timer. "}
                 &ldquo;Not sure yet&rdquo; is always a fine answer.
@@ -297,7 +310,7 @@ export function PlacementFlow({ topic, data, basePath }: { topic: FrameTopic; da
                 Find my level
               </Kicker>
               <Heading id="placement-title">
-                Where should you <Underlined>start</Underlined>?
+                Let&apos;s find your <Underlined>starting point</Underlined>
               </Heading>
               <Lead>
                 {summary && !emptyBank

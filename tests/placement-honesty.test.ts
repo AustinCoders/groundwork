@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Question, SingleQuestion } from "@/content/quiz-types";
 import type { LevelId } from "@/content/types";
 import { MAX_QUESTIONS, answerQuestion, currentQuestion, startPlacement, type PlacementChapter } from "@/lib/placement";
-import { minutesText, questionCountText, summarizeBank, thinNote } from "@/lib/placementBank";
+import { minutesText, questionCountText, sizeLine, summarizeBank, thinNote } from "@/lib/placementBank";
 import { DRAFT_KEY, draftFitsBank, sanitizeDraft } from "@/lib/placementDraft";
 
 const CURRICULUM: PlacementChapter[] = [
@@ -91,6 +91,19 @@ describe("summarizeBank", () => {
     const summary = summarizeBank({ chapters: CURRICULUM, bank: [] });
     expect(summary.capacity).toBe(0);
     expect(questionCountText(summary)).toBe("no questions yet");
+  });
+});
+
+describe("sizeLine", () => {
+  it("states a thin run as today's size and says more chapters add more", () => {
+    expect(sizeLine(summarizeBank({ chapters: CURRICULUM, bank: bank({ b1: 2 }) }))).toBe(
+      "2 questions today, about 1 minute; more chapters add more."
+    );
+  });
+
+  it("states a full run as a ceiling", () => {
+    const full = summarizeBank({ chapters: CURRICULUM, bank: bank({ b1: 6, b2: 6, i1: 6, i2: 6, a1: 6 }) });
+    expect(sizeLine(full)).toBe("Up to 18 questions, about 10 minutes.");
   });
 });
 

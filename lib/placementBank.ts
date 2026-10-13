@@ -65,6 +65,12 @@ export function minutesText(summary: BankSummary): string {
   return `about ${summary.minutes} ${summary.minutes === 1 ? "minute" : "minutes"}`;
 }
 
+export function sizeLine(summary: BankSummary): string {
+  const count = questionCountText(summary);
+  const lead = `${count.charAt(0).toUpperCase()}${count.slice(1)}${summary.thin ? " today" : ""}`;
+  return `${lead}, ${minutesText(summary)}${summary.thin ? "; more chapters add more." : "."}`;
+}
+
 export function thinNote(summary: BankSummary, written: number, names: Record<LevelId, string>): string | null {
   if (!summary.thin) return null;
   const above =

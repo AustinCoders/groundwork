@@ -186,6 +186,35 @@
   content: none !important;
 }
 
+.askingOf {
+  font-size: var(--t-heading);
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
+.dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dots i {
+  width: 22px;
+  height: 8px;
+  background: var(--sheet-2);
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+}
+
+.dots i[data-state="done"] {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.dots i[data-state="now"] {
+  border-color: var(--primary);
+}
+
 .askingNote {
   margin: 0;
   font-size: var(--t-body);

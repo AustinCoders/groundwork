@@ -278,28 +278,45 @@ export const archDesignSystem: Chapter = {
 <h3>The topic shell</h3>
 <p>
   A topic's home is drawn by one generic shell, <code>components/topic/shell/</code>, and nothing in it
-  names a topic. <code>TopicShell</code> takes plain props: the topic's name, a hero (a title, a status
-  line, at most one primary action or a slot for the first-time choice), the chapters grouped by level,
-  a list of tool links, an optional details panel and an optional notes fold. Each chapter arrives as a
-  row with its code, title, minutes, exercise count, link, one state mark and at most one quiet tag
-  (<code>up next</code> or <code>revise earlier</code>). <code>PathList</code> draws the groups as native
-  <code>details</code> folds, so they open by keyboard, announce themselves to a screen reader and need no
-  animation; <code>ChapterRow</code> and <code>StateMark</code> draw a row, with the state in words
-  where it matters (read, checked, not checked, tested out, soon) and a hidden label otherwise;
-  <code>ToolsRow</code> and <code>DetailsPanel</code> draw the links and the closed panel. A link such as
-  <code>#pick-level</code>, <code>#beginner</code> or <code>#notes</code> opens the fold it names.
+  names a topic. <code>TopicShell</code> takes plain props: the topic's name, a hero, the chapters grouped
+  by level into stages, a list of tool links, an optional details panel and an optional notes fold. The
+  hero has three shapes and every one carries exactly one primary action. An invitation leads with a
+  friendly title, a line about what the quiz is, the honest size of the check, one big button and two quiet
+  text links, beside a small three-stop preview of the stages where nothing is locked. A standing, for a
+  reader who has progress, shows a level card (the level name in its stage colour and a progress ring
+  that fills once on arrival) beside an up-next card that holds the one Continue button; a reader with
+  only ticks gets a gentle prompt to check their level instead of a level badge. A plain hero, a title,
+  a status line and an action, is what a topic with no placement passes.
 </p>
 <p>
-  The page is deliberately calm: one column, flat bordered cards from the theme tokens, no tape and no
-  tilt, the heading font for names and the reading font for rows. Everything is hidden until the page
-  has hydrated, as the old hero was, so a returning reader never sees the first-time hero flash.
+  <code>JourneyMap</code> replaces the plain list. Each stage is a card on a dashed, wavy trail
+  (<code>TrailLeg</code>, the same dashed look as the path page, drawn in pure SVG and hidden from a screen
+  reader) and a numbered node that is filled once the stage is read. A stage card is a native
+  <code>details</code>, so it opens by keyboard, announces itself and needs no animation; its summary carries
+  the stage name, a status chip (your level, up next, in progress, not started or all read), the one-line
+  promise, a progress bar with its words (<code>4 / 10 read</code>) and, while closed, a peek at the next
+  stop. Each stage takes one of the theme's colour tokens by position, so its tint is readable in every
+  theme. <code>ChapterRow</code> and <code>StateMark</code> draw a row with one state mark, the state in
+  words where it matters (read, checked, not checked, tested out, soon) and a hidden label otherwise, and
+  the minutes and exercises in aligned columns that wrap under the title on a phone; the up-next row is
+  tinted. <code>ToolsRow</code> draws four friendly tiles and <code>DetailsPanel</code> the closed panel.
+  A link such as <code>#pick-level</code>, <code>#beginner</code> or <code>#notes</code> opens the fold it
+  names.
+</p>
+<p>
+  The page stays on the theme tokens: flat cards, no tape and no tilt, the heading font for names and the
+  reading font for rows, and the only motion (a card lifting on hover, the ring and the bars filling) is
+  switched off for a reader who asks for reduced motion. Everything is hidden until the page has hydrated,
+  as the old hero was, so a returning reader never sees the first-time hero flash.
   A topic adopts the shell with a thin adapter. <code>components/topic/shell/model.ts</code> holds the
   pure part, <code>buildGroups</code>, which turns cards and the optional done set, check states and plan
-  into groups, so a topic with no placement and no checks (JavaScript, say) passes its cards and levels
-  and leaves the rest out. <code>TopicHome</code> is the first adapter and does the same for DSA with its
-  plan, its doors and its level picker. The shell replaced the chapters band, the full syllabus band,
+  into groups with their tone, status and peek, so a topic with no placement and no checks (JavaScript,
+  say) passes its cards and levels and leaves the rest out. <code>TopicHome</code> is the first adapter and
+  does the same for DSA with its plan, its three doors and its level picker; the server hands it the size
+  of the placement bank, so the invitation can say how long the check is. If that bank is empty the hero
+  falls back to the three equal doors. The shell replaced the chapters band, the full syllabus band,
   the practice band, the up-next card, the plan card with its own Continue and the Start button in the
-  header, so the page now shows each chapter once and has one way forward.
+  header, so the page shows each chapter once and has one way forward.
 </p>
 
 <h3>The workbench pages</h3>

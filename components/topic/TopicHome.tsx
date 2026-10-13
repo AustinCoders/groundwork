@@ -3,22 +3,23 @@
 import { useMemo } from "react";
 import { HashRedirect } from "@/components/reader/HashRedirect";
 import { TopicFrame } from "@/components/topic/TopicFrame";
-import { FootLink, TopicPage } from "@/components/topic/TopicKit";
+import { FootLink, TopicPage, Underlined } from "@/components/topic/TopicKit";
 import { levelTotals, type LevelStat } from "@/components/topic/levelStats";
 import { useCoverProgress, type CoverCard } from "@/components/topic/useCoverProgress";
 import { BudgetChips } from "@/components/topic/shell/BudgetChips";
 import { LevelChoice } from "@/components/topic/shell/LevelChoice";
 import { TopicShell } from "@/components/topic/shell/TopicShell";
-import { buildGroups, currentLevel, heroStatus } from "@/components/topic/shell/model";
-import type { ShellTool } from "@/components/topic/shell/types";
+import { buildGroups, currentLevel, upNextOf } from "@/components/topic/shell/model";
+import type { ShellHero, ShellStanding, ShellTool } from "@/components/topic/shell/types";
 import { BUDGET_STEPS } from "@/components/topic/useReadingPlan";
 import { PlacementDoors } from "@/components/placement/PlacementDoors";
 import { PlanPanel } from "@/components/placement/PlanPanel";
 import { compactSpan, plural } from "@/lib/format";
 import { notesHref } from "@/lib/topics";
 import { requiresCheck } from "@/lib/completion";
-import { levelWords, PICK_LEVEL_ID, planView, type PlanData } from "@/lib/placementPlan";
-import { selfPlacement } from "@/lib/placementRecord";
+import { levelWords, PICK_LEVEL_ID, placementPath, planView, type PlanData } from "@/lib/placementPlan";
+import { sizeLine, type BankSummary } from "@/lib/placementBank";
+import { beginningPlacement, selfPlacement } from "@/lib/placementRecord";
 import { clearPlacement, savePlacement } from "@/lib/placementStore";
 import { usePlacementState } from "@/lib/usePlacementState";
 import type { SeriesPart } from "@/components/chapter/types";
@@ -33,6 +34,7 @@ export interface TopicHomeProps {
   cards: CoverCard[];
   checkChapterIds: string[];
   placementData: PlanData;
+  placementSummary: BankSummary;
   relatedRoundHref: string | null;
   relatedRoundLabel: string | null;
 }
@@ -46,6 +48,7 @@ export function TopicHome({
   cards,
   checkChapterIds,
   placementData,
+  placementSummary,
   relatedRoundHref,
   relatedRoundLabel,
 }: TopicHomeProps) {
@@ -77,7 +80,11 @@ export function TopicHome({
   const groups = useMemo(
     () =>
       buildGroups({
-        parts: parts.map((part) => ({ level: part.level, title: part.title })),
+        parts: parts.map((part) => ({
+          level: part.level,
+          title: part.title,
+          promise: levels.find((level) => level.id === part.level)?.tagline ?? null,
+        })),
         cards,
         basePath,
         done: plan.mounted ? plan.done : null,
@@ -90,6 +97,7 @@ export function TopicHome({
       }),
     [
       parts,
+      levels,
       cards,
       basePath,
       plan.mounted,
@@ -104,7 +112,6 @@ export function TopicHome({
     ]
   );
 
-  const nextTitle = plan.next ? plan.next.short : null;
   const outcome = plan.mounted
     ? plan.reach.size > 0
       ? `→ ${plural(plan.reach.size, "chapter")}, up to ${plan.lastInReach?.short}`
@@ -119,13 +126,36 @@ export function TopicHome({
       label: "Practice",
       href: `/problems?topic=${topic.id}`,
       count: totalExercises > 0 ? plural(totalExercises, "exercise") : null,
+      glyph: "pencil",
     },
-    { id: "review", label: "Review", href: "/review", count: dueCount > 0 ? `${dueCount} due` : null },
+    {
+      id: "review",
+      label: "Review",
+      href: "/review",
+      count: dueCount > 0 ? `${dueCount} due` : "nothing due",
+      glyph: "loop",
+    },
     ...(relatedRoundHref
-      ? [{ id: "interview", label: "Interview round", href: relatedRoundHref, count: relatedRoundLabel }]
+      ? [
+          {
+            id: "interview",
+            label: "Interview round",
+            href: relatedRoundHref,
+            count: relatedRoundLabel,
+            glyph: "chat" as const,
+          },
+        ]
       : []),
     ...(curriculumNotes.length > 0
-      ? [{ id: "notes", label: "Notes", href: "#notes", count: plural(curriculumNotes.length, "honest note") }]
+      ? [
+          {
+            id: "notes",
+            label: "Notes",
+            href: "#notes",
+            count: plural(curriculumNotes.length, "honest note"),
+            glyph: "note" as const,
+          },
+        ]
       : []),
   ];
 
@@ -169,6 +199,108 @@ export function TopicHome({
     />
   );
 
+  const first = placementData.chapters.find((chapter) => chapter.ready);
+  const checkable = placementSummary.capacity > 0;
+  const toneOf = (levelId: string | null) => groups.find((group) => group.id === levelId)?.tone ?? "green";
+  const nextChapterRow = groups.flatMap((group) => group.chapters).find((chapter) => chapter.next);
+  const nextLevel = cards.find((card) => card.id === nextId)?.levels[0] ?? null;
+
+  const invite: ShellHero = {
+    eyebrow: topic.name,
+    title: (
+      <>
+        Let&apos;s find your <Underlined>starting point</Underlined>
+      </>
+    ),
+    lead: "A short quiz, no timer, no score. We plan your path from it.",
+    status: null,
+    note: sizeLine(placementSummary),
+    action: { label: "Check my level", href: placementPath(topic.id), id: "placement" },
+    links: [
+      {
+        label: "Start from the beginning",
+        href: first ? `${basePath}/${first.id}` : basePath,
+        id: "beginning",
+        onClick: () => savePlacement(beginningPlacement(placementData.chapters, Date.now())),
+      },
+      { label: "I'll pick a level myself", href: `#${PICK_LEVEL_ID}`, id: "pick" },
+    ],
+    teaser: {
+      caption: "Three stops, nothing locked",
+      stops: groups.map((group) => ({
+        id: group.id,
+        name: group.name,
+        promise: group.promise,
+        tone: group.tone,
+      })),
+    },
+    standing: null,
+    choice: null,
+  };
+
+  const doors: ShellHero = {
+    eyebrow: topic.name,
+    title: "Where would you like to begin?",
+    lead: `${plural(totals.chapters, "chapter")}, about ${compactSpan(totals.minutes)} of reading.`,
+    status: null,
+    note: null,
+    action: null,
+    links: [],
+    teaser: null,
+    standing: null,
+    choice: (
+      <PlacementDoors
+        data={placementData}
+        basePath={basePath}
+        pickHref={`#${PICK_LEVEL_ID}`}
+        label={`How to begin ${topic.name}`}
+      />
+    ),
+  };
+
+  const standing: ShellStanding = placement
+    ? {
+        kicker: placement.mode === "beginning" ? "Your path" : "Your level",
+        name:
+          placement.mode === "beginning" ? "From the beginning" : levelWords(placement.level, placementData.levelNames),
+        tone: toneOf(placement.mode === "beginning" ? (parts[0]?.level ?? null) : placement.level),
+        read: plan.readCount,
+        total: written,
+        summary: `${plan.readCount} of ${plural(written, "chapter")} read`,
+        upNext: upNextOf(nextChapterRow),
+        recheck: { label: "Re-check my level", href: placementPath(topic.id, true), id: "recheck" },
+        prompt: null,
+      }
+    : {
+        kicker: "Your progress",
+        name: null,
+        tone: toneOf(nextLevel),
+        read: plan.readCount,
+        total: written,
+        summary: `${plan.readCount} of ${plural(written, "chapter")} read`,
+        upNext: upNextOf(nextChapterRow),
+        recheck: null,
+        prompt: {
+          text: "Not sure where you stand?",
+          link: { label: "Check my level", href: placementPath(topic.id, true), id: "recheck" },
+        },
+      };
+
+  const welcome: ShellHero = {
+    eyebrow: topic.name,
+    title: plan.readCount === 0 ? "Ready when you are" : "Welcome back",
+    lead: null,
+    status: null,
+    note: null,
+    action: { label: continueLabel, href: continueHref },
+    links: [],
+    teaser: null,
+    standing,
+    choice: null,
+  };
+
+  const hero = firstTime ? (checkable ? invite : doors) : welcome;
+
   return (
     <TopicFrame
       topic={{ name: topic.name, href: `/level/${topic.id}`, mark: topic.mark, accent: topic.accent }}
@@ -182,23 +314,13 @@ export function TopicHome({
         <TopicShell
           topic={{ name: topic.name }}
           ready={status.mounted}
-          hero={{
-            title: topic.name,
-            lead: firstTime
-              ? `${plural(totals.chapters, "chapter")}, about ${compactSpan(totals.minutes)} of reading. How do you want to begin?`
-              : null,
-            status: firstTime ? null : heroStatus(plan.readCount, written, nextTitle),
-            action: firstTime ? null : { label: continueLabel, href: continueHref },
-            choice: firstTime ? (
-              <PlacementDoors
-                data={placementData}
-                basePath={basePath}
-                pickHref={`#${PICK_LEVEL_ID}`}
-                label={`How to begin ${topic.name}`}
-              />
-            ) : null,
-          }}
-          pathTitle={firstTime ? "The path" : "Your path"}
+          hero={hero}
+          pathTitle={firstTime ? "The journey" : "Your journey"}
+          pathHint={
+            firstTime
+              ? "Three stops, from first steps to interview-ready. Nothing is locked, so open any chapter whenever you like."
+              : "Open any stop whenever you like. Your level only decides where we suggest you begin."
+          }
           pathCount={plural(written, "chapter")}
           groups={groups}
           tools={tools}

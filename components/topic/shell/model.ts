@@ -1,6 +1,51 @@
 import { STATE_TEXT, type ChapterState } from "@/lib/chapterState";
 import { plural } from "@/lib/format";
-import type { ShellCard, ShellChapter, ShellGroup, ShellMark, ShellPart } from "./types";
+import type {
+  ShellCard,
+  ShellChapter,
+  ShellGroup,
+  ShellMark,
+  ShellPart,
+  ShellTone,
+  StageStatus,
+  ShellUpNext,
+} from "./types";
+
+export const STAGE_TONES: readonly ShellTone[] = ["green", "orange", "purple", "blue", "teal", "red"];
+
+export const STATUS_TEXT: Record<StageStatus, string> = {
+  yours: "your level",
+  next: "up next",
+  started: "in progress",
+  fresh: "not started",
+  done: "all read",
+};
+
+export function stageStatus(group: Pick<ShellGroup, "read" | "written" | "yours">, hasNext: boolean): StageStatus {
+  if (group.written > 0 && group.read >= group.written) return "done";
+  if (group.yours) return "yours";
+  if (hasNext) return "next";
+  return group.read > 0 ? "started" : "fresh";
+}
+
+export function peekFor(chapters: readonly ShellChapter[], read: number, written: number): string | null {
+  if (written > 0 && read >= written) return "Every chapter read";
+  const next = chapters.find((chapter) => chapter.next) ?? chapters.find((chapter) => chapter.mark.kind === "todo");
+  if (!next) return written === 0 ? "Chapters are on their way" : null;
+  return next.next || read > 0 ? `Next stop: ${next.title}` : `Starts with ${next.title}`;
+}
+
+export function percent(read: number, written: number): number {
+  return written > 0 ? Math.min(100, Math.round((read / written) * 100)) : 0;
+}
+
+export function upNextOf(chapter: ShellChapter | undefined): ShellUpNext | null {
+  if (!chapter) return null;
+  const meta: string[] = [];
+  if (chapter.minutes > 0) meta.push(`${chapter.minutes} min`);
+  if (chapter.exercises > 0) meta.push(plural(chapter.exercises, "exercise"));
+  return { code: chapter.code, title: chapter.title, meta: meta.join(" · ") };
+}
 
 const SOON: ShellMark = { kind: "soon", label: "coming soon", word: "soon" };
 const TODO: ShellMark = { kind: "todo", label: "not read yet", word: null };
@@ -38,7 +83,7 @@ export interface GroupInput {
 export function buildGroups(input: GroupInput): ShellGroup[] {
   const { parts, cards, basePath, done, states, nextId, reviseIds, yourLevel, openLevel, titleOf } = input;
   return parts
-    .map((part) => {
+    .map((part, index) => {
       const inLevel = cards.filter((card) => card.levels.includes(part.level));
       const chapters: ShellChapter[] = inLevel.map((card) => {
         const mark = markFor(card, done, states);
@@ -58,13 +103,22 @@ export function buildGroups(input: GroupInput): ShellGroup[] {
         };
       });
       const written = inLevel.filter((card) => card.ready);
+      const read = done ? written.filter((card) => done.has(card.id)).length : 0;
+      const yours = yourLevel === part.level;
       return {
         id: part.level,
         name: part.title,
+        promise: part.promise ?? null,
+        tone: STAGE_TONES[index % STAGE_TONES.length],
+        status: stageStatus(
+          { read, written: written.length, yours },
+          chapters.some((chapter) => chapter.next)
+        ),
+        peek: peekFor(chapters, read, written.length),
         chapters,
         written: written.length,
-        read: done ? written.filter((card) => done.has(card.id)).length : 0,
-        yours: yourLevel === part.level,
+        read,
+        yours,
         open: openLevel === part.level,
       };
     })
@@ -82,8 +136,7 @@ export function currentLevel(
 }
 
 export function groupSummary(group: Pick<ShellGroup, "read" | "written">, counting: boolean): string {
-  const total = plural(group.written, "chapter");
-  return counting && group.read > 0 ? `${group.read} / ${group.written} read` : total;
+  return counting ? `${group.read} / ${group.written} read` : plural(group.written, "chapter");
 }
 
 export function heroStatus(read: number, written: number, nextTitle: string | null): string {

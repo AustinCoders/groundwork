@@ -4,8 +4,18 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { TopicShell } from "@/components/topic/shell/TopicShell";
-import { buildGroups, currentLevel, groupSummary, heroStatus, markFor } from "@/components/topic/shell/model";
-import type { ShellCard, ShellPart, TopicShellProps } from "@/components/topic/shell/types";
+import {
+  buildGroups,
+  currentLevel,
+  groupSummary,
+  heroStatus,
+  markFor,
+  peekFor,
+  percent,
+  stageStatus,
+  upNextOf,
+} from "@/components/topic/shell/model";
+import type { ShellCard, ShellHero, ShellPart, TopicShellProps } from "@/components/topic/shell/types";
 import { buildChapterStates } from "@/lib/chapterState";
 import { chapterMetas, levels } from "@/lib/content";
 import { coverCards, coverParts } from "@/lib/coverData";
@@ -13,9 +23,22 @@ import { coverCards, coverParts } from "@/lib/coverData";
 const read = (file: string) => readFileSync(join(process.cwd(), file), "utf8");
 
 const jsParts: ShellPart[] = [
-  { level: "beginner", title: "Beginner" },
+  { level: "beginner", title: "Beginner", promise: "I can write working code." },
   { level: "advanced", title: "Advanced" },
 ];
+
+const plainHero: ShellHero = {
+  eyebrow: null,
+  title: "Topic",
+  lead: null,
+  status: null,
+  note: null,
+  action: null,
+  links: [],
+  teaser: null,
+  standing: null,
+  choice: null,
+};
 
 const jsCards: ShellCard[] = [
   { id: "scope", num: "1", title: "Scope", levels: ["beginner"], minutes: 8, exercises: 2, ready: true },
@@ -26,8 +49,9 @@ const jsCards: ShellCard[] = [
 const base = (overrides: Partial<TopicShellProps>): TopicShellProps => ({
   topic: { name: "Topic" },
   ready: true,
-  hero: { title: "Topic", lead: null, status: null, action: null, choice: null },
+  hero: plainHero,
   pathTitle: "Your path",
+  pathHint: null,
   pathCount: "0 chapters",
   groups: [],
   tools: [],
@@ -56,11 +80,10 @@ function jsShell(done: ReadonlySet<string> | null) {
       base({
         topic: { name: "JavaScript" },
         hero: {
+          ...plainHero,
           title: "JavaScript",
-          lead: null,
           status: heroStatus(done?.size ?? 0, 2, "Closures"),
           action: { label: "Continue", href: "/notes/closures" },
-          choice: null,
         },
         pathCount: "2 chapters",
         groups,
@@ -76,7 +99,7 @@ describe("the topic shell takes a JavaScript-like config: no placement, no check
     expect(html.match(/id="topic-primary"/g)).toHaveLength(1);
     expect(html).toContain('href="/notes/closures"');
     expect(html.match(/<details/g)).toHaveLength(2);
-    expect(html.match(/<li /g)).toHaveLength(3);
+    expect(html.match(/<li [^>]*data-kind/g)).toHaveLength(3);
   });
 
   it("opens the named level only", () => {
@@ -122,6 +145,15 @@ describe("the topic shell takes a DSA config", () => {
     titleOf: (card) => card.short || card.title,
   });
 
+  it("gives each stage its own tone, a promise, a status and a peek", () => {
+    expect(new Set(groups.map((g) => g.tone)).size).toBe(groups.length);
+    expect(groups.every((g) => g.promise === null)).toBe(true);
+    expect(groups[0].status).toBe("yours");
+    expect(groups[1].status).toBe("fresh");
+    expect(groups[0].peek).toBe("Next stop: Arrays & strings");
+    expect(groups[1].peek).toMatch(/^Starts with /);
+  });
+
   it("groups every chapter under its level and counts the written ones only", () => {
     expect(groups.map((g) => g.id)).toEqual(levels("dsa").map((l) => l.id));
     const metas = chapterMetas("dsa");
@@ -149,16 +181,15 @@ describe("the topic shell takes a DSA config", () => {
       base({
         topic: { name: "DSA" },
         hero: {
+          ...plainHero,
           title: "DSA",
-          lead: null,
           status: heroStatus(2, 34, "Arrays & strings"),
           action: { label: "Continue", href: "/dsa/dsa-arrays-strings" },
-          choice: null,
         },
         groups,
         tools: [
-          { id: "practice", label: "Practice", href: "/problems?topic=dsa", count: "277 exercises" },
-          { id: "review", label: "Review", href: "/review", count: null },
+          { id: "practice", label: "Practice", href: "/problems?topic=dsa", count: "277 exercises", glyph: "pencil" },
+          { id: "review", label: "Review", href: "/review", count: null, glyph: "loop" },
         ],
         details: { id: "pick-level", title: "Plan & level", hint: "Beginner plan", children: "inside" },
         notes: { id: "notes", title: "Honest notes", items: ["one", "two"] },
@@ -176,18 +207,119 @@ describe("the topic shell takes a DSA config", () => {
     expect(html).toMatch(/<details[^>]*id="intermediate"(?![^>]* open="")/);
   });
 
+  it("draws each stage as a disclosure with its chip, progress bar and peek", () => {
+    expect(html.match(/<details[^>]*id="(beginner|intermediate|advanced)"/g)).toHaveLength(3);
+    expect(html.match(/<summary/g)?.length).toBe(5);
+    expect(html).toContain("your level");
+    expect(html).toContain("not started");
+    expect(html).toContain("Next stop: Arrays &amp; strings");
+    expect(html.match(/aria-hidden="true"><i><\/i>/g)).toHaveLength(3);
+    expect(html).toContain("2 / 10 read");
+    expect(html.match(/data-teaser/g)).toBeNull();
+  });
+
+  it("draws a first-time invitation with one primary action, quiet links and a three-stop preview", () => {
+    const invite = renderToStaticMarkup(
+      createElement(
+        TopicShell,
+        base({
+          groups,
+          hero: {
+            ...plainHero,
+            eyebrow: "DSA",
+            title: "Let's find your starting point",
+            lead: "A short quiz.",
+            note: "2 questions today, about 1 minute; more chapters add more.",
+            action: { label: "Check my level", href: "/dsa/placement", id: "placement" },
+            links: [
+              { label: "Start from the beginning", href: "/dsa/first", id: "beginning" },
+              { label: "I'll pick a level myself", href: "#pick-level", id: "pick" },
+            ],
+            teaser: {
+              caption: "Three stops, nothing locked",
+              stops: groups.map((g) => ({ id: g.id, name: g.name, promise: g.promise, tone: g.tone })),
+            },
+          },
+        })
+      )
+    );
+    expect(invite.match(/id="topic-primary"/g)).toHaveLength(1);
+    expect(invite).toMatch(/id="topic-primary"[^>]*data-door="placement"|data-door="placement"[^>]*id="topic-primary"/);
+    expect(invite.match(/data-door="/g)).toHaveLength(3);
+    expect(invite).toContain("2 questions today, about 1 minute; more chapters add more.");
+    expect(invite).toMatch(/data-teaser/);
+    expect(invite).toContain("Check my level");
+  });
+
+  it("draws a placed reader's level, ring, up next card and exactly one Continue", () => {
+    const placed = renderToStaticMarkup(
+      createElement(
+        TopicShell,
+        base({
+          groups,
+          hero: {
+            ...plainHero,
+            eyebrow: "DSA",
+            title: "Welcome back",
+            action: { label: "Continue", href: "/dsa/dsa-arrays-strings" },
+            standing: {
+              kicker: "Your level",
+              name: "Beginner",
+              tone: "green",
+              read: 2,
+              total: 34,
+              summary: "2 of 34 chapters read",
+              upNext: { code: "B3", title: "Arrays & strings", meta: "7 min · 24 exercises" },
+              recheck: { label: "Re-check my level", href: "/dsa/placement?retake=1", id: "recheck" },
+              prompt: null,
+            },
+          },
+        })
+      )
+    );
+    expect(placed.match(/id="topic-primary"/g)).toHaveLength(1);
+    expect(placed).toContain("Beginner");
+    expect(placed).toContain('aria-label="2 of 34 chapters read"');
+    expect(placed).toContain("Up next");
+    expect(placed).toContain("7 min · 24 exercises");
+    expect(placed).toContain("Re-check my level");
+    expect(placed).not.toContain("Not sure where you stand");
+  });
+
+  it("offers a gentle prompt instead of a level badge when there are only ticks", () => {
+    const ticks = renderToStaticMarkup(
+      createElement(
+        TopicShell,
+        base({
+          hero: {
+            ...plainHero,
+            action: { label: "Continue", href: "/x" },
+            standing: {
+              kicker: "Your progress",
+              name: null,
+              tone: "green",
+              read: 3,
+              total: 34,
+              summary: "3 of 34 chapters read",
+              upNext: null,
+              recheck: null,
+              prompt: { text: "Not sure where you stand?", link: { label: "Check my level", href: "/c" } },
+            },
+          },
+        })
+      )
+    );
+    expect(ticks).toContain("Not sure where you stand?");
+    expect(ticks).toContain("All caught up");
+    expect(ticks.match(/id="topic-primary"/g)).toHaveLength(1);
+  });
+
   it("lets a first-time hero hold its own choice and no action", () => {
     const first = renderToStaticMarkup(
       createElement(
         TopicShell,
         base({
-          hero: {
-            title: "DSA",
-            lead: "How?",
-            status: null,
-            action: null,
-            choice: createElement("ul", { id: "doors" }),
-          },
+          hero: { ...plainHero, title: "DSA", lead: "How?", choice: createElement("ul", { id: "doors" }) },
         })
       )
     );
@@ -228,10 +360,64 @@ describe("the shell's pure model", () => {
     expect(currentLevel(jsCards, null, null, "beginner")).toBe("beginner");
   });
 
-  it("summarises a level by its read count once there is one", () => {
-    expect(groupSummary({ read: 0, written: 10 }, true)).toBe("10 chapters");
+  it("summarises a level by its read count once the page is live", () => {
+    expect(groupSummary({ read: 0, written: 10 }, true)).toBe("0 / 10 read");
     expect(groupSummary({ read: 3, written: 10 }, true)).toBe("3 / 10 read");
     expect(groupSummary({ read: 3, written: 10 }, false)).toBe("10 chapters");
+  });
+
+  it("tells a stage's status in one word and its progress as a share", () => {
+    expect(stageStatus({ read: 10, written: 10, yours: true }, true)).toBe("done");
+    expect(stageStatus({ read: 2, written: 10, yours: true }, true)).toBe("yours");
+    expect(stageStatus({ read: 0, written: 10, yours: false }, true)).toBe("next");
+    expect(stageStatus({ read: 2, written: 10, yours: false }, false)).toBe("started");
+    expect(stageStatus({ read: 0, written: 10, yours: false }, false)).toBe("fresh");
+    expect(stageStatus({ read: 0, written: 0, yours: false }, false)).toBe("fresh");
+    expect(percent(4, 10)).toBe(40);
+    expect(percent(0, 0)).toBe(0);
+    expect(percent(12, 10)).toBe(100);
+  });
+
+  it("peeks at the next stop of a closed stage", () => {
+    const rows = buildGroups({
+      parts: jsParts,
+      cards: jsCards,
+      basePath: "/notes",
+      done: new Set(["scope"]),
+      states: null,
+      nextId: null,
+      reviseIds: new Set(),
+      yourLevel: null,
+      openLevel: null,
+      titleOf: (card) => card.title,
+    });
+    expect(rows[0].peek).toBe("Next stop: Closures");
+    expect(rows[1].peek).toBe("Chapters are on their way");
+    expect(peekFor(rows[0].chapters, 2, 2)).toBe("Every chapter read");
+    expect(
+      peekFor(
+        rows[0].chapters.slice(0, 1).map((c) => ({ ...c, mark: { ...c.mark, kind: "todo" as const } })),
+        0,
+        1
+      )
+    ).toBe("Starts with Scope");
+  });
+
+  it("describes the up next chapter by its time and exercises", () => {
+    expect(upNextOf(undefined)).toBeNull();
+    const row = buildGroups({
+      parts: jsParts,
+      cards: jsCards,
+      basePath: "/notes",
+      done: null,
+      states: null,
+      nextId: "scope",
+      reviseIds: new Set(),
+      yourLevel: null,
+      openLevel: null,
+      titleOf: (card) => card.title,
+    })[0].chapters[0];
+    expect(upNextOf(row)).toEqual({ code: "1", title: "Scope", meta: "8 min · 2 exercises" });
   });
 
   it("closes the status line honestly when nothing is next", () => {
