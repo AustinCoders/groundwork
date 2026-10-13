@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { store } from "@/lib/storage";
 import { useClientValue, useMounted } from "@/lib/hooks";
 
-export const ZOOM_STEPS = [85, 92, 100, 110, 120, 132, 145, 160];
+export const ZOOM_STEPS = [70, 78, 85, 92, 100, 110, 120, 132, 145, 160];
 export const ZOOM_KEY = "jsnotes:zoom";
 
 export function useReaderZoom(): [number, (step: number) => void] {

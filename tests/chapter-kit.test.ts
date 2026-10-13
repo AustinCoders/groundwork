@@ -62,8 +62,8 @@ function monoUsers(css: string) {
 
 describe("the chapter prose and kit share the type scale", () => {
   it("defines the reading sizes once on :root", () => {
-    expect(globals).toMatch(/--t-prose: clamp\(1\.125rem, 0\.5rem \+ 0\.9vw, 1\.625rem\);/);
-    expect(globals).toMatch(/--t-prose-h3: clamp\(2rem, 1\.3rem \+ 1\.7vw, 3\.25rem\);/);
+    expect(globals).toMatch(/--t-prose: clamp\(1rem, 0\.7rem \+ 0\.45vw, 1\.1875rem\);/);
+    expect(globals).toMatch(/--t-prose-h3: clamp\(1\.5rem, 1rem \+ 1vw, 2\.375rem\);/);
     expect(globals).toMatch(/--t-chapter: clamp\(2\.5rem, 1rem \+ 3\.2vw, 4\.25rem\);/);
   });
 

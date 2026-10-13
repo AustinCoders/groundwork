@@ -109,8 +109,8 @@
   --t-section: clamp(2.125rem, 3.8vw, 3.5rem);
   --t-hero-fit: clamp(2.25rem, min(5vw, 7svh), 5rem);
   --t-lead: 1.125rem;
-  --t-prose: clamp(1.125rem, 0.5rem + 0.9vw, 1.625rem);
-  --t-prose-h3: clamp(2rem, 1.3rem + 1.7vw, 3.25rem);
+  --t-prose: clamp(1rem, 0.7rem + 0.45vw, 1.1875rem);
+  --t-prose-h3: clamp(1.5rem, 1rem + 1vw, 2.375rem);
   --t-chapter: clamp(2.5rem, 1rem + 3.2vw, 4.25rem);
   --t-panel: clamp(2rem, 1.2rem + 1.2vw, 2.75rem);
   --topic-w: 1040px;
@@ -119,7 +119,7 @@
 html[data-font="serif"],
 html[data-font="roboto"] {
   --t-title: 1rem;
-  --t-prose-h3: clamp(1.625rem, 1.1rem + 1.2vw, 2.5rem);
+  --t-prose-h3: clamp(1.375rem, 0.95rem + 0.85vw, 2rem);
 }
 
 html[data-font="serif"],
@@ -132,12 +132,12 @@ html[data-font="marker"] {
 }
 
 html[data-font="sketch"] {
-  --t-prose: clamp(1.35rem, 0.6rem + 1.05vw, 1.9rem);
+  --t-prose: clamp(1.1rem, 0.75rem + 0.5vw, 1.35rem);
 }
 
 html[data-font="chalk"],
 html[data-font="marker"] {
-  --t-prose-h3: clamp(1.75rem, 1.1rem + 1.4vw, 2.75rem);
+  --t-prose-h3: clamp(1.5rem, 1rem + 1vw, 2.25rem);
 }
 
 :root,
