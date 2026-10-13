@@ -6,7 +6,6 @@ import { Button, topicKit } from "@/components/topic/TopicKit";
 import { levelWords, placementPath, planSummary, planView, type PlanData } from "@/lib/placementPlan";
 import type { PlacementStatus } from "@/lib/usePlacementState";
 import { plural } from "@/lib/format";
-import { PlacementDoors } from "./PlacementDoors";
 import styles from "./placement.module.css";
 
 export function PlacementAside({
@@ -22,18 +21,7 @@ export function PlacementAside({
   next: { id: string } | null;
   readCount: number;
 }) {
-  if (!state.mounted) return null;
-
-  if (state.firstTime) {
-    return (
-      <Card at="c" tilt={1} aria-labelledby="doors-title">
-        <p className={styles.cardKicker} id="doors-title">
-          Where do you start?
-        </p>
-        <PlacementDoors data={data} basePath={basePath} pickHref={`/level/${data.topicId}`} />
-      </Card>
-    );
-  }
+  if (!state.mounted || state.firstTime) return null;
 
   if (state.placement) {
     const view = planView(state.placement, data.chapters);

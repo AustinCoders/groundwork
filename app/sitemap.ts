@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { topics, notesData, notesHref, chapterHref, chapters, exercises } from "@/lib/content";
+import { topics, notesData, notesHref, topicHome, chapterHref, chapters, exercises } from "@/lib/content";
 import { problemHref } from "@/lib/practiceLinks";
 import { SITE_URL, UNDATED_CONTENT_LAST_CHANGED } from "@/lib/site";
 import { GIT_CHAPTERS } from "@/content/git-body";
@@ -64,14 +64,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       if (!written.length && !isSinglePage) return;
       const lastModified = topicLastModified(t.id);
 
+      const home = topicHome(t.id);
+
       topicRoutes.push({
-        url: `${SITE_URL}${notesHref(t.id)}`,
+        url: `${SITE_URL}${home}`,
         lastModified,
         changeFrequency: "weekly",
         priority: 0.9,
       });
 
-      if (t.levels && written.length) {
+      if (t.levels && written.length && home === notesHref(t.id)) {
         levelRoutes.push({
           url: `${SITE_URL}/level/${t.id}`,
           lastModified,

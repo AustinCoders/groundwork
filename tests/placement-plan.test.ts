@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { isFirstTime, levelWords, planSummary, planView, readingPlan, type PlanChapter } from "@/lib/placementPlan";
+import {
+  isFirstTime,
+  levelWords,
+  pickLevelPath,
+  planSummary,
+  planView,
+  readingPlan,
+  type PlanChapter,
+} from "@/lib/placementPlan";
+import { topicHome } from "@/lib/topics";
 import type { PlacementRecord } from "@/lib/placementRecord";
 
 function chapter(id: string, level: PlanChapter["level"], ready = true): PlanChapter {
@@ -106,5 +115,17 @@ describe("levelWords and isFirstTime", () => {
     expect(isFirstTime(null, false)).toBe(true);
     expect(isFirstTime(null, true)).toBe(false);
     expect(isFirstTime(record(), false)).toBe(false);
+  });
+});
+
+describe("where a topic lives", () => {
+  it("puts a quiz topic's home on its level page and every other topic on its cover", () => {
+    expect(topicHome("dsa")).toBe("/level/dsa");
+    expect(topicHome("js")).toBe("/notes");
+    expect(topicHome("react")).toBe("/react");
+  });
+
+  it("points the pick-a-level door at the picker on that page", () => {
+    expect(pickLevelPath("dsa")).toBe("/level/dsa#pick-level");
   });
 });

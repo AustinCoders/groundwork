@@ -15,8 +15,8 @@ export const archHealth: Chapter = {
 <thead><tr><th>Check</th><th>Result, latest local run</th></tr></thead>
 <tbody>
 <tr><td>TypeScript, ESLint, Prettier, cspell</td><td><span class="chip tone-yes">clean</span></td></tr>
-<tr><td>Vitest</td><td><span class="chip tone-yes">1345 of 1345</span></td></tr>
-<tr><td>Build</td><td><span class="chip tone-yes">1,804 prerendered routes</span></td></tr>
+<tr><td>Vitest</td><td><span class="chip tone-yes">1352 of 1352</span></td></tr>
+<tr><td>Build</td><td><span class="chip tone-yes">1,803 prerendered routes</span></td></tr>
 <tr><td>Playwright, one smoke spec</td><td><span class="chip tone-yes">23 of 23</span></td></tr>
 <tr><td>Lighthouse budgets, 3 URLs, 3 runs each</td><td><span class="chip tone-yes">pass, last run before CI was removed</span></td></tr>
 <tr><td><code>TODO</code>, <code>FIXME</code>, <code>HACK</code> in source</td><td><span class="chip tone-yes">0</span></td></tr>
@@ -133,7 +133,7 @@ export const archHealth: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Where</th><th>Says</th><th>Is</th></tr></thead>
 <tbody>
-<tr><td><code>docs/ROADMAP.md</code></td><td>602 prerendered pages</td><td>1,804 prerendered routes in a local build</td></tr>
+<tr><td><code>docs/ROADMAP.md</code></td><td>602 prerendered pages</td><td>1,803 prerendered routes in a local build</td></tr>
 <tr><td><code>docs/ROADMAP.md</code>, section 6</td><td>A weekly cleanup keeping 5 and 5, with 24 hours of grace</td><td>Daily, keeping 3 and 2, with 6 hours</td></tr>
 <tr><td><code>docs/ROADMAP.md</code>, section 6</td><td><code>public/wasm/</code> is 18 MB</td><td>1.4 MB; the runtimes come from jsDelivr</td></tr>
 <tr><td><code>docs/ROADMAP.md</code>, section 7</td><td>No error service; <code>/git</code> shows crawlers 42 characters</td><td>Sentry is wired behind a DSN; <code>/git</code> renders its body on the server</td></tr>

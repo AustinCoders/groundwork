@@ -66,6 +66,7 @@ export {
   curriculumNotes,
   syllabusSectionForChapter,
   notesHref,
+  topicHome,
   chapterHref,
   topicHref,
 } from "@/lib/topics";

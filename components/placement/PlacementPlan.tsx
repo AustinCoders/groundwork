@@ -61,6 +61,7 @@ function rowsFor(list: PlanChapter[], basePath: string, done: ReadonlySet<string
 export function PlacementPlan({
   data,
   basePath,
+  homeHref,
   topicName,
   record,
   fresh,
@@ -70,6 +71,7 @@ export function PlacementPlan({
 }: {
   data: PlanData;
   basePath: string;
+  homeHref: string;
   topicName: string;
   record: PlacementRecord;
   fresh: boolean;
@@ -213,7 +215,7 @@ export function PlacementPlan({
 
       <Foot>
         <FootLink href="/">All topics</FootLink>
-        <FootLink href={basePath}>{topicName} notes</FootLink>
+        <FootLink href={homeHref}>{topicName} home</FootLink>
       </Foot>
     </>
   );

@@ -186,7 +186,7 @@ describe("what the interview book says about the DSA track", () => {
   });
 
   it("states the written chapters and the exercises in the DSA round", () => {
-    expect(round("r7")?.post).toContain(`<a href="/dsa">${dsaTrack}</a>`);
+    expect(round("r7")?.post).toContain(`<a href="/level/dsa">${dsaTrack}</a>`);
   });
 
   it("states them again in the hard DSA round's eight-week plan", () => {

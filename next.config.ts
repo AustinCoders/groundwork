@@ -5,6 +5,8 @@ import { sentryOrigin } from "./lib/errorTracking";
 
 export const PATH_LEVEL_IDS = ["beginner", "intermediate", "advanced"];
 
+export const PINNED_LEVEL_HOME_TOPIC_IDS = ["dsa"];
+
 export const PINNED_PATH_TOPIC_IDS = ["js", "react", "dsa", "system-design"];
 
 export const PINNED_OUTLINE_TOPIC_IDS = [
@@ -71,6 +73,7 @@ const nextConfig: NextConfig = {
     const outlineIds = PINNED_OUTLINE_TOPIC_IDS.join("|");
     const pathIds = PINNED_PATH_TOPIC_IDS.join("|");
     const levelIds = PATH_LEVEL_IDS.join("|");
+    const levelHomeIds = PINNED_LEVEL_HOME_TOPIC_IDS.join("|");
 
     return [
       ...LEGACY_HOSTS.map((host) => ({
@@ -79,6 +82,11 @@ const nextConfig: NextConfig = {
         destination: `${CANONICAL_ORIGIN}/:path*`,
         permanent: true,
       })),
+      {
+        source: `/:topic(${levelHomeIds})`,
+        destination: "/level/:topic",
+        permanent: true,
+      },
       {
         source: "/soon",
         has: [{ type: "query" as const, key: "topic", value: `(?<topic>${outlineIds})` }],

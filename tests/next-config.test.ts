@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
-import nextConfig, { PINNED_OUTLINE_TOPIC_IDS, PINNED_PATH_TOPIC_IDS } from "../next.config";
-import { outlineTopicIds, pathTopicIds } from "@/lib/topicIds";
+import nextConfig, {
+  PINNED_LEVEL_HOME_TOPIC_IDS,
+  PINNED_OUTLINE_TOPIC_IDS,
+  PINNED_PATH_TOPIC_IDS,
+} from "../next.config";
+import { levelHomeTopicIds, outlineTopicIds, pathTopicIds } from "@/lib/topicIds";
 
 describe("next.config headers", () => {
   it("turns geolocation off in the Permissions-Policy for every page", async () => {
@@ -18,6 +22,20 @@ describe("next.config redirects", () => {
 
   it("pins the same written topic ids that pathTopicIds() computes right now", () => {
     expect(new Set(PINNED_PATH_TOPIC_IDS)).toEqual(new Set(pathTopicIds()));
+  });
+
+  it("pins the same topic ids that levelHomeTopicIds() computes right now", () => {
+    expect(new Set(PINNED_LEVEL_HOME_TOPIC_IDS)).toEqual(new Set(levelHomeTopicIds()));
+  });
+
+  it("sends a bare quiz topic cover, like /dsa, permanently to its level page", async () => {
+    const redirects = await nextConfig.redirects?.();
+    const home = (redirects ?? []).find((r) => r.destination === "/level/:topic" && !r.has);
+    expect(home, "no redirect to the level home").toBeTruthy();
+    expect(home?.permanent).toBe(true);
+    for (const id of PINNED_LEVEL_HOME_TOPIC_IDS) {
+      expect(home?.source, `the home redirect does not match ${id}`).toMatch(new RegExp(`[(|]${id}[|)]`));
+    }
   });
 
   it("redirects /soon and /path for every pinned outline topic, to that topic's own cover", async () => {

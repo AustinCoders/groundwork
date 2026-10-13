@@ -60,3 +60,9 @@ export function isFirstTime(placement: PlacementRecord | null, marks: boolean): 
 export function placementPath(topicId: string, retake = false): string {
   return `/${topicId}/placement${retake ? "?retake=1" : ""}`;
 }
+
+export const PICK_LEVEL_ID = "pick-level";
+
+export function pickLevelPath(topicId: string): string {
+  return `/level/${topicId}#${PICK_LEVEL_ID}`;
+}

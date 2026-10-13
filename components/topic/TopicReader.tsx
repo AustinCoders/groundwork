@@ -45,6 +45,7 @@ export function TopicReader({
   mark,
   accent,
   basePath,
+  homeHref,
   parts,
   chapter,
   chapters,
@@ -65,6 +66,7 @@ export function TopicReader({
   mark: string;
   accent: string;
   basePath: string;
+  homeHref?: string;
   parts: SeriesPart<LevelId>[];
   chapter: SeriesCard<LevelId>;
   chapters: SeriesCard<LevelId>[];
@@ -86,6 +88,8 @@ export function TopicReader({
   const bodyRef = useChapterBody(chapter.id);
   const closeRail = useCallback(() => setRailOpen(false), []);
 
+  const home = homeHref ?? basePath;
+  const homeLabel = home === basePath ? "The cover" : "Levels and plan";
   const index = chapters.findIndex((c) => c.id === chapter.id);
   const prev = chapters[index - 1];
   const next = chapters[index + 1];
@@ -149,7 +153,8 @@ export function TopicReader({
       chapters={chapters}
       chapter={chapter}
       basePath={basePath}
-      homeLabel="The cover"
+      homeHref={home}
+      homeLabel={homeLabel}
       done={done}
       mounted={mounted}
       states={states}
@@ -165,8 +170,8 @@ export function TopicReader({
 
   return (
     <TopicFrame
-      topic={{ name: topicName, href: basePath, mark, accent }}
-      back={{ href: basePath, label: topicName }}
+      topic={{ name: topicName, href: home, mark, accent }}
+      back={{ href: home, label: topicName }}
       reading
       layout="reader"
       skip={{ label: "Skip to the chapter", href: `#${chapter.id}` }}
@@ -174,7 +179,7 @@ export function TopicReader({
       actions={
         <>
           <ChaptersSheetButton open={railOpen} onOpen={() => setRailOpen(true)} />
-          <ChapterCrumbs href={basePath} label={topicName} part={part?.title} num={chapter.num} />
+          <ChapterCrumbs href={home} label={topicName} part={part?.title} num={chapter.num} />
           <ChapterHeaderPager index={index} total={chapters.length} prev={prev} next={next} basePath={basePath} />
         </>
       }
@@ -268,7 +273,8 @@ export function TopicReader({
             prev={prev}
             next={next}
             basePath={basePath}
-            homeLabel="The cover"
+            homeHref={home}
+            homeLabel={homeLabel}
           />
         </ReadingColumn>
       </ReaderLayout>

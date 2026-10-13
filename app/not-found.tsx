@@ -22,7 +22,7 @@ export default function NotFound() {
             <Button href="/">
               Back to all topics <span aria-hidden="true">→</span>
             </Button>
-            <Button ghost href="/dsa">
+            <Button ghost href="/level/dsa">
               Open the DSA notes
             </Button>
           </>

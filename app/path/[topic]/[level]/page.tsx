@@ -8,6 +8,7 @@ import {
   level as findLevel,
   levels as levelsFor,
   notesHref,
+  topicHome,
   topic as findTopic,
 } from "@/lib/content";
 import { byChapterId, levelRows } from "@/lib/levelRows";
@@ -86,6 +87,7 @@ export default async function TopicPathPage({ params }: { params: Promise<{ topi
       topic={topic}
       level={level}
       basePath={notesHref(topic.id)}
+      homeHref={topicHome(topic.id)}
       entries={entries}
       chapterExercises={chapterExercises}
       levelExerciseList={levelExerciseList}

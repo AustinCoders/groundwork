@@ -6,7 +6,7 @@ import { PlayIsland } from "@/components/play/PlayIsland";
 import { TopicReader } from "@/components/topic/TopicReader";
 import { TopicOutlineChapter } from "@/components/topic/TopicOutlineChapter";
 import { TopicOutline, type OutlineLevel } from "@/components/topic/TopicOutline";
-import { TopicCover, type CoverCard } from "@/components/topic/TopicCover";
+import { TopicCover } from "@/components/topic/TopicCover";
 import { bookRound } from "@/lib/interviewBook";
 import {
   chapterMetas,
@@ -17,9 +17,10 @@ import {
   notesData,
   notesHref,
   syllabusSectionForChapter,
+  topicHome,
 } from "@/lib/content";
 import { requiresCheck } from "@/lib/completion";
-import { placementData } from "@/lib/placementChapters";
+import { coverCards, coverParts } from "@/lib/coverData";
 import { poolChapterIds } from "@/lib/quizPool";
 import { pageMetadata } from "@/lib/metadata";
 import { curriculumNotes, levels, levelsNav, relatedInterviewRound, topic } from "@/lib/topics";
@@ -37,18 +38,8 @@ export function TopicCoverPage({ topicId }: { topicId: string }) {
   if (stats && stats.written > 0) {
     const t = topic(topicId);
     const data = notesData(topicId);
-    const cards: CoverCard[] = chapterMetas(topicId).map((c) => ({
-      id: c.id,
-      num: c.num,
-      title: c.title,
-      short: c.short,
-      subtitle: c.subtitle,
-      levels: c.levels.length ? c.levels : (["beginner"] as LevelId[]),
-      minutes: c.readMinutes,
-      ready: c.ready,
-      exercises: c.practice.length,
-    }));
-    const parts: SeriesPart<LevelId>[] = levels(topicId).map((l) => ({ level: l.id, title: l.name, blurb: l.blurb }));
+    const cards = coverCards(topicId);
+    const parts = coverParts(topicId);
     const roundId = relatedInterviewRound(topicId);
     const round = roundId ? bookRound(roundId) : null;
 
@@ -67,7 +58,6 @@ export function TopicCoverPage({ topicId }: { topicId: string }) {
         curriculumNotes={curriculumNotes(topicId)}
         completion={t?.completion}
         checkChapterIds={poolChapterIds()}
-        placementData={requiresCheck(t?.completion) ? placementData(topicId) : undefined}
       />
     );
   }
@@ -116,7 +106,7 @@ export function topicChapterParams(topicId: string) {
   return chapters(topicId).map((ch) => ({ chapter: ch.id }));
 }
 
-export function topicCoverMetadata(topicId: string): Metadata {
+export function topicCoverMetadata(topicId: string, path = notesHref(topicId)): Metadata {
   const t = topic(topicId);
   const data = notesData(topicId);
   const all = chapters(topicId);
@@ -132,7 +122,7 @@ export function topicCoverMetadata(topicId: string): Metadata {
   return pageMetadata({
     title: name,
     description: description.trim(),
-    path: notesHref(topicId),
+    path,
     index: written > 0,
   });
 }
@@ -198,6 +188,7 @@ export async function TopicChapterPage({ topicId, chapterId }: { topicId: string
         mark={t?.mark || ""}
         accent={t?.accent || "ink"}
         basePath={basePath}
+        homeHref={topicHome(topicId)}
         parts={parts}
         chapter={cards[cardIndex]}
         chapters={cards}

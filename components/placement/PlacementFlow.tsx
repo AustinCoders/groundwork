@@ -32,7 +32,7 @@ import {
   type PlacementInput,
   type PlacementState,
 } from "@/lib/placement";
-import type { PlanData } from "@/lib/placementPlan";
+import { pickLevelPath, type PlanData } from "@/lib/placementPlan";
 import { beginningPlacement, placementFromResult } from "@/lib/placementRecord";
 import { clearPlacement, savePlacement, usePlacement } from "@/lib/placementStore";
 import { loadPlacementBank } from "@/lib/quizPool";
@@ -86,7 +86,7 @@ export function PlacementFlow({ topic, data, basePath }: { topic: FrameTopic; da
   function startFromTheBeginning() {
     savePlacement(beginningPlacement(data.chapters, Date.now()));
     const first = data.chapters.find((chapter) => chapter.ready);
-    router.push(first ? `${basePath}/${first.id}` : basePath);
+    router.push(first ? `${basePath}/${first.id}` : topic.href);
   }
 
   function begin() {
@@ -121,7 +121,7 @@ export function PlacementFlow({ topic, data, basePath }: { topic: FrameTopic; da
   return (
     <TopicFrame
       topic={topic}
-      back={{ href: basePath, label: topic.name }}
+      back={{ href: topic.href, label: topic.name }}
       skip={{ label: "Skip to the placement" }}
       layout="reader"
     >
@@ -152,6 +152,7 @@ export function PlacementFlow({ topic, data, basePath }: { topic: FrameTopic; da
           <PlacementPlan
             data={data}
             basePath={basePath}
+            homeHref={topic.href}
             topicName={topic.name}
             record={placement}
             fresh={fresh}
@@ -192,7 +193,7 @@ export function PlacementFlow({ topic, data, basePath }: { topic: FrameTopic; da
                   </button>
                 )}
                 {!placement && !emptyBank && (
-                  <Link className={topicKit.btnGhost} href={`/level/${data.topicId}`} prefetch={false}>
+                  <Link className={topicKit.btnGhost} href={pickLevelPath(data.topicId)} prefetch={false}>
                     I&apos;ll pick a level
                   </Link>
                 )}
@@ -207,7 +208,7 @@ export function PlacementFlow({ topic, data, basePath }: { topic: FrameTopic; da
                     <button type="button" className={topicKit.btn} onClick={startFromTheBeginning}>
                       Start from the beginning <span aria-hidden="true">→</span>
                     </button>
-                    <Link className={topicKit.btnGhost} href={`/level/${data.topicId}`} prefetch={false}>
+                    <Link className={topicKit.btnGhost} href={pickLevelPath(data.topicId)} prefetch={false}>
                       I&apos;ll pick a level
                     </Link>
                   </Actions>

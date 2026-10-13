@@ -8,7 +8,7 @@ export const archTesting: Chapter = {
   levels: ["advanced"],
   practice: [],
   ready: true,
-  subtitle: "1345 unit tests, 23 browser tests, and one test that checks what these pages say about the site.",
+  subtitle: "1352 unit tests, 23 browser tests, and one test that checks what these pages say about the site.",
   body: `<h3>The shape of it</h3>
 <p>
   There are three layers of checking, each slower than the one before:
@@ -89,7 +89,7 @@ export const archTesting: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Spec</th><th>Tests</th><th>Covers</th></tr></thead>
 <tbody>
-<tr><td><code>smoke.spec.ts</code></td><td>23</td><td>8 pages load with their heading and no console error; 15 flows (the home page with its heading and the Menu pill, the Menu opening and closing on Escape, a topic cover and its level picker link, a chapter with its rail and no sideways scroll at 390 pixels wide, the path trail with every exercise list open and no stop covering another, the playground running a JavaScript snippet, an exercise page running code and grading a submission, unknown URLs returning a real 404, a DSA chapter switching its code to Python and back, the binary search player stepping forward and back, marking a DSA chapter read opening its check that a keyboard user answers and finishes, the DSA cover telling a passed chapter's check state in words, and the end-of-chapter popup opening once, Yes opening the check and a dismissal never coming back, a first-time reader finding their level and landing on a plan that Continue follows past the chapters they tested out with the shared storage keys untouched, and a placed reader opening and marking a Revise earlier chapter while a reader with marks sees Re-check my level)</td></tr>
+<tr><td><code>smoke.spec.ts</code></td><td>23</td><td>8 pages load with their heading and no console error; 15 flows (the home page with its heading and the Menu pill, the Menu opening and closing on Escape, a topic cover and its level picker link, a chapter with its rail and no sideways scroll at 390 pixels wide, the path trail with every exercise list open and no stop covering another, the playground running a JavaScript snippet, an exercise page running code and grading a submission, unknown URLs returning a real 404, a DSA chapter switching its code to Python and back, the binary search player stepping forward and back, marking a DSA chapter read opening its check that a keyboard user answers and finishes, the DSA home page telling a passed chapter's check state in words, and the end-of-chapter popup opening once, Yes opening the check and a dismissal never coming back, a first-time reader arriving from the old /dsa address, finding their level and landing on a plan that Continue follows past the chapters they tested out with the shared storage keys untouched, and a placed reader opening and marking a Revise earlier chapter while a reader with marks sees Re-check my level)</td></tr>
 </tbody>
 </table></div>
 <p>

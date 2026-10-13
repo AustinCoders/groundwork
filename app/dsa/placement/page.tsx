@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PlacementFlow } from "@/components/placement/PlacementFlow";
-import { notesHref, topic as findTopic } from "@/lib/content";
+import { notesHref, topic as findTopic, topicHome } from "@/lib/content";
 import { pageMetadata } from "@/lib/metadata";
 import { placementData } from "@/lib/placementChapters";
 
@@ -20,7 +20,7 @@ export default function Page() {
   return (
     <Suspense fallback={null}>
       <PlacementFlow
-        topic={{ name: topic.name, href: notesHref(TOPIC), mark: topic.mark, accent: topic.accent }}
+        topic={{ name: topic.name, href: topicHome(TOPIC), mark: topic.mark, accent: topic.accent }}
         data={placementData(TOPIC)}
         basePath={notesHref(TOPIC)}
       />

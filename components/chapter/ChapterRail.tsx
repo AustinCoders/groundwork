@@ -29,6 +29,7 @@ export function ChapterRail({
   chapters,
   chapter,
   basePath,
+  homeHref,
   homeLabel,
   done,
   mounted,
@@ -46,6 +47,7 @@ export function ChapterRail({
   chapters: SeriesCard<string>[];
   chapter: SeriesCard<string>;
   basePath: string;
+  homeHref?: string;
   homeLabel: string;
   done: Set<string>;
   mounted: boolean;
@@ -73,7 +75,7 @@ export function ChapterRail({
   return (
     <nav ref={rail} className={styles.rail} aria-label={label}>
       {search}
-      <Link className={styles.cover} href={basePath} onClick={onNavigate}>
+      <Link className={styles.cover} href={homeHref ?? basePath} onClick={onNavigate}>
         <TopIcon name="prev" size={15} />
         {homeLabel}
       </Link>

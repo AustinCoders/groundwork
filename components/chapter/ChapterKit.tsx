@@ -464,6 +464,7 @@ export function ChapterEndScene({
   prev,
   next,
   basePath,
+  homeHref,
   homeLabel,
   navLabel = "Chapter navigation",
   unit = "chapter",
@@ -473,6 +474,7 @@ export function ChapterEndScene({
   prev?: SeriesCard<string>;
   next?: SeriesCard<string>;
   basePath: string;
+  homeHref?: string;
   homeLabel: string;
   navLabel?: string;
   unit?: string;
@@ -487,7 +489,7 @@ export function ChapterEndScene({
       <nav className={styles.nav} aria-label={navLabel} data-speech-exclude>
         <ol className={styles.trail}>
           <li className={styles.stop} data-stop="prev">
-            <Link className={styles.prevLink} href={prev ? `${basePath}/${prev.id}` : basePath}>
+            <Link className={styles.prevLink} href={prev ? `${basePath}/${prev.id}` : (homeHref ?? basePath)}>
               <span className={styles.node} aria-hidden="true">
                 {prev ? prev.num : <TopIcon name="prev" size={18} />}
               </span>
@@ -506,7 +508,7 @@ export function ChapterEndScene({
           </li>
           <li className={styles.link} aria-hidden="true" />
           <li className={styles.stop} data-stop="next">
-            <Link className={styles.nextStop} href={next ? `${basePath}/${next.id}` : basePath}>
+            <Link className={styles.nextStop} href={next ? `${basePath}/${next.id}` : (homeHref ?? basePath)}>
               <Tape rot={2} />
               <span className={styles.navHint}>{next ? `Next · ${next.num}` : "The end"}</span>
               <span className={styles.nextTitle}>{next ? next.title : `Back to ${homeLabel.toLowerCase()}`}</span>

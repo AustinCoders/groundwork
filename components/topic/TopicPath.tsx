@@ -52,6 +52,7 @@ export function TopicPath({
   topic,
   level,
   basePath,
+  homeHref,
   entries,
   chapterExercises,
   levelExerciseList,
@@ -60,6 +61,7 @@ export function TopicPath({
   topic: Topic;
   level: Level;
   basePath: string;
+  homeHref: string;
   entries: LevelRow[];
   chapterExercises: Record<string, ExerciseLink[]>;
   levelExerciseList: ExerciseLink[];
@@ -102,7 +104,7 @@ export function TopicPath({
     ? nextChapter(topic.completion, chapters, done, checks ? readingPlan(placement) : null)
     : (chapters[0] ?? null);
 
-  const continueHref = next ? `${basePath}/${next.id}` : basePath;
+  const continueHref = next ? `${basePath}/${next.id}` : homeHref;
   const continueLabel = !mounted || doneCount === 0 ? "Start reading" : next ? `Continue — ${next.short}` : "Review";
   const totalMinutes = chapters.reduce((sum, ch) => sum + ch.readMinutes, 0);
   const chaptersLeft = chapters.length - doneCount;
@@ -122,7 +124,7 @@ export function TopicPath({
 
   return (
     <TopicFrame
-      topic={{ name: topic.name, href: basePath, mark: topic.mark, accent: topic.accent }}
+      topic={{ name: topic.name, href: homeHref, mark: topic.mark, accent: topic.accent }}
       back={{ href: `/level/${topic.id}`, label: topic.name }}
       skip={{ label: "Skip to the path" }}
       layout="reader"
@@ -144,7 +146,7 @@ export function TopicPath({
               <Button ghost id="change-level" href={`/level/${topic.id}`}>
                 <span aria-hidden="true">⇄</span> Change level
               </Button>
-              <Button ghost id="all-chapters" href={basePath}>
+              <Button ghost id="all-chapters" href={homeHref}>
                 All chapters
               </Button>
             </Actions>
@@ -328,7 +330,9 @@ export function TopicPath({
 
         <Foot>
           <FootLink href="/">All topics</FootLink>
-          <FootLink href={basePath}>{topic.name} notes</FootLink>
+          <FootLink href={homeHref}>
+            {topic.name} {homeHref === basePath ? "notes" : "home"}
+          </FootLink>
           <button
             type="button"
             className={topicKit.btnGhost}

@@ -303,7 +303,7 @@ test("marking a DSA chapter read opens its check, and a keyboard user answers it
   ).toBeVisible();
 });
 
-test("the DSA cover tells a passed chapter's check state in words", async ({ page }) => {
+test("the DSA home tells a passed chapter's check state in words", async ({ page }) => {
   await page.addInitScript(
     ({ chapterId }) => {
       localStorage.setItem(
@@ -322,8 +322,10 @@ test("the DSA cover tells a passed chapter's check state in words", async ({ pag
     },
     { chapterId: CHAPTER_ID }
   );
-  await page.goto("/dsa", { waitUntil: "networkidle" });
-  const entry = page.locator("li", { has: page.locator(`a[href="${CHAPTER_PATH}"]`) }).first();
+  await page.goto("/level/dsa", { waitUntil: "networkidle" });
+  const entry = page
+    .locator('section[aria-labelledby="contents-title"] li', { has: page.locator(`a[href="${CHAPTER_PATH}"]`) })
+    .first();
   await expect(entry.locator("[data-state]")).toHaveText("checked");
   await expect(page.locator("body")).toContainText(/(?<!\d)1 checked\b/);
 });
@@ -444,8 +446,15 @@ test("a first-time reader finds their level, lands on a plan and Continue skips 
     "jsnotes:level": JSON.stringify("advanced"),
   });
   await page.goto("/dsa", { waitUntil: "networkidle" });
+  await expect(page).toHaveURL(/\/level\/dsa$/);
   await expect(page.locator("[data-door]")).toHaveCount(3);
   const before = await stored(page, SHARED_KEYS);
+
+  const pick = page.locator('[data-door="pick"]');
+  await hydrated(pick);
+  await pick.click();
+  await expect(page).toHaveURL(/\/level\/dsa#pick-level$/);
+  await expect(page.getByRole("group", { name: "Pick your level" })).toBeInViewport();
 
   const find = page.locator('[data-door="placement"]');
   await hydrated(find);
@@ -476,7 +485,7 @@ test("a first-time reader finds their level, lands on a plan and Continue skips 
   expect(await stored(page, SHARED_KEYS)).toEqual(before);
   expect(await page.evaluate((key) => localStorage.getItem(key), PLACEMENT_KEY)).toContain('"mode":"quiz"');
 
-  await page.goto("/dsa", { waitUntil: "networkidle" });
+  await page.goto("/level/dsa", { waitUntil: "networkidle" });
   await expect(page.locator("[data-plan]").getByRole("link", { name: "Continue" })).toHaveAttribute(
     "href",
     "/dsa/dsa-complexity-analysis"
@@ -524,7 +533,7 @@ test("a placed reader sees Revise earlier and can mark one done, and a reader wi
     .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("jsnotes:progress") ?? "{}").chapters))
     .toHaveProperty("dsa-complexity-analysis");
 
-  await page.goto("/dsa", { waitUntil: "networkidle" });
+  await page.goto("/level/dsa", { waitUntil: "networkidle" });
   const recheck = page.locator("[data-plan] [data-recheck]");
   await expect(recheck).toHaveText("Re-check my level");
   const marks = await stored(page, ["jsnotes:progress"]);

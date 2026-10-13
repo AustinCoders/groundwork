@@ -2475,7 +2475,7 @@ intro:'Your background shows no competitive programming, so this is your weakest
 pre:`<div class="note"><span class="lbl">If you have three days, not three weeks</span><p>Do not attempt breadth. Do the first four patterns only — hash map, two pointers, sliding window, stack — about eight problems each, until recognition is instant. Those four cover the large majority of mediums given to full-stack candidates. Add intervals as a fifth, because your booking-marketplace background means an interviewer may reach for it deliberately.</p></div>`,
 post:`<div class="prep">
 <span class="ttl">The DSA track on this site</span>
-<p>This round is ten questions: how to behave in the room, and the handful of patterns worth having cold. The patterns themselves are a whole track — <a href="/dsa">{{dsa.chapters}} chapters and {{dsa.exercises}} exercises</a> — and this is the order to walk it.</p>
+<p>This round is ten questions: how to behave in the room, and the handful of patterns worth having cold. The patterns themselves are a whole track — <a href="/level/dsa">{{dsa.chapters}} chapters and {{dsa.exercises}} exercises</a> — and this is the order to walk it.</p>
 <ul>
 <li><a href="/dsa/dsa-interview-strategy">Interview strategy</a> and <a href="/dsa/dsa-complexity-analysis">Complexity analysis</a> — start here; they change how you answer everything else</li>
 <li>The patterns that carry most interviews: <a href="/dsa/dsa-hashing">Hashing</a>, <a href="/dsa/dsa-two-pointers">Two pointers</a>, <a href="/dsa/dsa-sliding-window">Sliding window</a>, <a href="/dsa/dsa-binary-search">Binary search</a></li>

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import sitemap from "@/app/sitemap";
 import { topicChapterMetadata, topicCoverMetadata } from "@/components/reader/topicPages";
-import { chapters, chapterHref, exercises, notesHref, topics } from "@/lib/content";
+import { chapters, chapterHref, exercises, notesHref, topicHome, topics } from "@/lib/content";
 import { pageMetadata } from "@/lib/metadata";
 import { practiceChapterLinks, problemHref } from "@/lib/practiceLinks";
 import { CANONICAL_ORIGIN, SITE_URL } from "@/lib/site";
@@ -43,6 +43,11 @@ describe("sitemap", () => {
     }
   });
 
+  it("lists a quiz topic's level page as its home and leaves its bare cover out", () => {
+    expect(urls.has(`${SITE_URL}/level/dsa`)).toBe(true);
+    expect(urls.has(`${SITE_URL}/dsa`)).toBe(false);
+  });
+
   it("has no duplicate entries", () => {
     expect(urls.size).toBe(entries.length);
   });
@@ -70,7 +75,7 @@ describe("sitemap", () => {
 
   it("gives a topic's own lastModified from its own notes file, not the shared fallback", () => {
     const stamp = (url: string) => new Date(entries.find((e) => e.url === url)!.lastModified as Date).getTime();
-    const augustTopic = stamp(`${SITE_URL}${notesHref("dsa")}`);
+    const augustTopic = stamp(`${SITE_URL}${topicHome("dsa")}`);
     const septemberTopic = stamp(`${SITE_URL}${notesHref("react")}`);
     const undated = stamp(`${SITE_URL}/problems`);
     expect(augustTopic, "an August-dated topic shares a date with a September one").not.toBe(septemberTopic);

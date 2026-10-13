@@ -1,4 +1,5 @@
 import { topics as topicsData } from "@/content/topics";
+import { requiresCheck } from "@/lib/completion";
 import type { Level, LevelNav, Topic, TopicNav } from "@/content/types";
 
 export { INTERVIEW_TOPIC_ID } from "./topicShelf";
@@ -62,6 +63,11 @@ export function notesHref(topicId?: string | null): string {
   const t = topicId ? byId(topics(), topicId) : null;
   const file = (t && t.notes) || "notes.html";
   return `/${file.replace(/\.html$/, "")}`;
+}
+
+export function topicHome(topicId: string): string {
+  const t = byId(topics(), topicId);
+  return t && requiresCheck(t.completion) ? `/level/${t.id}` : notesHref(topicId);
 }
 
 export function chapterHref(topicId: string | null | undefined, chapterId: string): string {
