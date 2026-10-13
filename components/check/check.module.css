@@ -45,7 +45,9 @@
 
 .runner .prompt {
   min-width: 0;
+  padding-block: 2px;
   overflow-x: auto;
+  overflow-y: hidden;
   font-size: var(--t-control);
   line-height: 1.55;
   overflow-wrap: anywhere;
@@ -94,23 +96,42 @@
 
 .runner .choices {
   display: grid;
-  gap: 8px;
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .runner .choice {
-  margin: 0;
   min-width: 0;
+  margin: 0;
   background: var(--sheet);
-  border: 1.5px solid var(--line);
-  border-radius: 10px;
+  border: 2px solid var(--line);
+  border-radius: 16px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .runner .choice {
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+}
+
+.runner .choice:has(.choiceInput:enabled):hover {
+  border-color: var(--ink-soft);
+}
+
+.runner .choice:has(.choiceInput:focus-visible) {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
 }
 
 .runner .choice[data-state="picked"] {
   background: var(--primary-soft);
   border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent);
 }
 
 .runner .choice[data-state="right"] {
@@ -124,26 +145,114 @@
 }
 
 .runner .choiceLabel {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  min-height: 44px;
-  padding: 10px 14px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "letter text mark";
+  align-items: center;
+  gap: 14px;
+  min-height: 64px;
+  padding: 12px 18px;
   cursor: pointer;
 }
 
-.runner .choiceInput {
+.runner .letter {
+  grid-area: letter;
+  display: grid;
   flex: none;
-  width: 20px;
-  height: 20px;
-  margin: 2px 0 0;
-  accent-color: var(--primary);
+  place-items: center;
+  box-sizing: border-box;
+  width: 38px;
+  height: 38px;
+  font-family: var(--font-mono);
+  font-size: var(--t-control);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+  background: var(--sheet-2);
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+}
+
+.runner .choice[data-state="picked"] .letter {
+  color: var(--on-primary);
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.runner .choiceInput {
+  grid-area: mark;
+  display: grid;
+  flex: none;
+  place-content: center;
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  appearance: none;
+  background: var(--sheet);
+  border: 2px solid var(--ink-soft);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.runner .choiceInput[type="checkbox"] {
+  border-radius: 7px;
+}
+
+.runner .choiceInput::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: var(--on-primary);
+  border-radius: 50%;
+  scale: 0;
+}
+
+.runner .choiceInput[type="checkbox"]::after {
+  width: 6px;
+  height: 11px;
+  background: none;
+  border: solid var(--on-primary);
+  border-width: 0 2.5px 2.5px 0;
+  border-radius: 0;
+  rotate: 45deg;
+  translate: 0 -1px;
+}
+
+.runner .choiceInput:checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.runner .choiceInput:checked::after {
+  scale: 1;
+}
+
+.runner .choiceInput:disabled {
+  cursor: default;
 }
 
 .runner .choiceText {
+  grid-area: text;
   min-width: 0;
   font-size: var(--t-control);
   line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.runner .choice[data-code] .choiceText code {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  padding: 9px 14px;
+  font-family: var(--font-mono);
+  font-size: var(--t-control);
+  line-height: 1.5;
+  color: var(--ink);
+  white-space: pre-wrap;
+  background: var(--sheet-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
   overflow-wrap: anywhere;
 }
 
@@ -157,7 +266,7 @@
 .runner .why {
   display: grid;
   gap: 6px;
-  padding: 0 14px 12px 46px;
+  padding: 0 18px 16px 70px;
   font-size: var(--t-body);
   line-height: 1.55;
   overflow-wrap: anywhere;
@@ -180,21 +289,22 @@
 
 .runner .orderList {
   display: grid;
-  gap: 8px;
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .runner .orderItem {
-  margin: 0;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 8px 12px;
-  padding: 10px 14px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px 14px;
+  margin: 0;
+  padding: 12px 18px;
   background: var(--sheet);
-  border: 1.5px solid var(--line);
-  border-radius: 10px;
+  border: 2px solid var(--line);
+  border-radius: 16px;
 }
 
 .runner .orderItem[data-state="right"] {
@@ -210,15 +320,17 @@
 .runner .orderPosition {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  box-sizing: border-box;
+  width: 38px;
+  height: 38px;
   font-family: var(--font-mono);
-  font-size: var(--t-meta);
+  font-size: var(--t-control);
   font-weight: 700;
+  line-height: 1;
   color: var(--ink);
   background: var(--sheet-2);
-  border: 1.5px solid var(--ink-soft);
-  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
 }
 
 .runner .orderText {
@@ -229,7 +341,6 @@
 }
 
 .runner .orderButtons {
-  grid-column: 2;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -482,20 +593,129 @@
   }
 }
 
+.runner[data-variant="quiz"] .legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.runner[data-variant="quiz"] .fieldset {
+  gap: 16px;
+}
+
+.runner[data-variant="quiz"] .fieldset:focus-visible {
+  outline: none;
+}
+
+.runner[data-variant="quiz"] .prompt {
+  font-size: var(--t-heading);
+  line-height: 1.4;
+}
+
+.runner[data-variant="quiz"] .hint {
+  font-size: var(--t-meta);
+}
+
+.runner[data-variant="quiz"] .choiceText,
+.runner[data-variant="quiz"] .orderText {
+  font-size: var(--t-title);
+}
+
+.runner[data-variant="quiz"] .choice[data-code] .choiceText code {
+  font-size: var(--t-title);
+}
+
+:global(html[data-font="sketch"]) .runner[data-variant="quiz"] .prompt {
+  font-size: calc(var(--t-heading) * 1.2);
+}
+
+:global(html[data-font="sketch"]) .runner[data-variant="quiz"] .choiceText,
+:global(html[data-font="sketch"]) .runner[data-variant="quiz"] .orderText {
+  font-size: calc(var(--t-title) * 1.3);
+}
+
+:global(html[data-font="sketch"]) .runner[data-variant="quiz"] .choiceText code,
+:global(html[data-font="sketch"]) .runner[data-variant="quiz"] .orderText code {
+  font-size: 0.8em;
+}
+
+:global(html[data-font="sketch"]) .runner[data-variant="quiz"] .hint {
+  font-size: var(--t-body);
+}
+
 @media (max-width: 640px) {
   .runner .banner > button {
     width: 100%;
   }
 
   .runner .why {
-    padding-left: 14px;
+    padding-left: 16px;
   }
 
   .runner .actions > button {
     flex: 1 1 100%;
   }
 
+  .runner .choiceLabel {
+    gap: 12px;
+    padding: 12px 14px;
+  }
+
+  .runner .letter,
+  .runner .orderPosition {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .runner .orderItem {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 12px 14px;
+  }
+
   .runner .orderButtons {
-    grid-column: 1 / -1;
+    grid-column: 2;
+  }
+
+  .runner[data-variant="quiz"] .prompt {
+    font-size: var(--t-title);
+  }
+
+  :global(html[data-font="sketch"]) .runner[data-variant="quiz"] .prompt {
+    font-size: var(--t-heading);
+  }
+
+  .runner[data-variant="quiz"] .choice[data-code] .choiceText code {
+    padding: 8px 10px;
+    font-size: var(--t-control);
+  }
+}
+
+@media (max-width: 380px) {
+  .runner .choiceLabel {
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .runner .letter,
+  .runner .orderPosition {
+    width: 30px;
+    height: 30px;
+  }
+
+  .runner .choiceInput {
+    width: 22px;
+    height: 22px;
+  }
+
+  .runner[data-variant="quiz"] .choiceText,
+  .runner[data-variant="quiz"] .orderText {
+    font-size: var(--t-control);
   }
 }

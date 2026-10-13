@@ -1,36 +1,9 @@
-.shell {
-  display: grid;
-  gap: 12px;
-  max-width: 54ch;
-  margin-top: 18px;
-}
-
-.shell span {
-  display: block;
-  height: 18px;
-  background: var(--sheet-2);
-  border-radius: 9px;
-  animation: shellPulse 1.4s ease-in-out infinite;
-}
-
-.shell span:nth-child(2) {
-  width: 82%;
-}
-
-.shell span:nth-child(3) {
-  width: 56%;
-}
-
-@keyframes shellPulse {
-  50% {
-    opacity: 0.45;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .shell span {
-    animation: none;
-  }
+.page {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--topic-w);
+  margin: 0 auto;
+  padding: clamp(20px, 4vh, 44px) clamp(16px, 3vw, 40px) clamp(40px, 8vh, 80px);
 }
 
 .doors {
@@ -149,90 +122,6 @@
   align-items: flex-start;
 }
 
-.bullets {
-  display: grid;
-  gap: 8px;
-  margin: 0;
-  padding-left: 20px;
-  font-size: var(--t-body);
-  line-height: 1.5;
-}
-
-.asking {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: clamp(32px, 6vh, 64px) clamp(16px, 3vw, 40px) 0;
-}
-
-.askingHead {
-  display: grid;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.askingTitle {
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-heading);
-  font-size: var(--t-display);
-  font-weight: 700;
-  line-height: 1.15;
-  color: var(--ink);
-  border: 0;
-}
-
-.askingTitle::before,
-.askingTitle::after {
-  content: none !important;
-}
-
-.askingOf {
-  font-size: var(--t-heading);
-  font-weight: 400;
-  color: var(--ink-soft);
-}
-
-.dots {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.dots i {
-  width: 22px;
-  height: 8px;
-  background: var(--sheet-2);
-  border: 1.5px solid var(--line);
-  border-radius: 999px;
-}
-
-.dots i[data-state="done"] {
-  background: var(--primary);
-  border-color: var(--primary);
-}
-
-.dots i[data-state="now"] {
-  border-color: var(--primary);
-}
-
-.askingNote {
-  margin: 0;
-  font-size: var(--t-body);
-  line-height: 1.5;
-  color: var(--ink-soft);
-}
-
-.sheet {
-  padding: clamp(16px, 3vw, 28px);
-  background: var(--sheet);
-  border: 1.5px solid var(--line);
-  border-radius: 16px;
-}
-
-.askingFoot {
-  margin: 14px 0 0;
-}
-
 .textButton {
   align-self: flex-start;
   min-height: 44px;
@@ -274,14 +163,6 @@
 .confirm p {
   flex: 1 1 28ch;
   margin: 0;
-}
-
-.keepNote {
-  max-width: 54ch;
-  margin: 14px 0 0;
-  font-size: var(--t-body);
-  line-height: 1.5;
-  color: var(--ink-soft);
 }
 
 @media (max-width: 760px) {

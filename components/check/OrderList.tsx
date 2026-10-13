@@ -104,7 +104,7 @@ export function OrderList({
                   disabled={checked || at === 0}
                   onClick={() => move(id, "up")}
                 >
-                  Move up
+                  <span aria-hidden="true">↑</span> Move up
                 </button>
                 <button
                   type="button"
@@ -118,7 +118,7 @@ export function OrderList({
                   disabled={checked || at === order.length - 1}
                   onClick={() => move(id, "down")}
                 >
-                  Move down
+                  <span aria-hidden="true">↓</span> Move down
                 </button>
               </span>
             </li>

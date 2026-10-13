@@ -1,27 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { Copy, Scene } from "@/components/home/Stage";
-import { Card, Compose, Remark } from "@/components/topic/Compose";
 import { TopicFrame, type FrameTopic } from "@/components/topic/TopicFrame";
-import {
-  Actions,
-  CardKicker,
-  Facts,
-  Heading,
-  Kicker,
-  Lead,
-  TopicPage,
-  Underlined,
-  topicKit,
-} from "@/components/topic/TopicKit";
+import { TopicPage } from "@/components/topic/TopicKit";
 import type { Question } from "@/content/quiz-types";
 import { startingOrder } from "@/lib/checkDraw";
 import { useMounted } from "@/lib/hooks";
 import {
   NOT_SURE,
+  STAGES,
   answerQuestion,
   currentQuestion,
   placementDone,
@@ -31,7 +19,7 @@ import {
   type PlacementInput,
   type PlacementState,
 } from "@/lib/placement";
-import { minutesText, questionCountText, summarizeBank, thinNote, type BankSummary } from "@/lib/placementBank";
+import { summarizeBank, thinNote, type BankSummary } from "@/lib/placementBank";
 import {
   clearDraft,
   draftFitsBank,
@@ -40,13 +28,15 @@ import {
   type DraftStep,
   type PlacementDraft,
 } from "@/lib/placementDraft";
-import { pickLevelPath, type PlanData } from "@/lib/placementPlan";
+import { levelWords, pickLevelPath, planSummary, planView, type PlanData } from "@/lib/placementPlan";
 import { beginningPlacement, placementFromResult } from "@/lib/placementRecord";
 import { clearPlacement, savePlacement, usePlacement } from "@/lib/placementStore";
 import { loadPlacementBank } from "@/lib/quizPool";
-import { plural } from "@/lib/format";
+import { levelStop, levelTone } from "./levelTone";
+import { PlacementAsk } from "./PlacementAsk";
+import { IntroSkeleton, PlacementIntro, type IntroPlan } from "./PlacementIntro";
 import { PlacementPlan } from "./PlacementPlan";
-import { PlacementQuestion, answerOf } from "./PlacementQuestion";
+import { answerOf } from "./PlacementQuestion";
 import styles from "./placement.module.css";
 
 interface Asking {
@@ -100,21 +90,9 @@ function Shell({ topic }: { topic: FrameTopic }) {
       layout="reader"
     >
       <TopicPage accent={topic.accent}>
-        <Scene className={topicKit.hero}>
-          <Copy>
-            <Kicker mark="?" id="placement-kicker">
-              Find my level
-            </Kicker>
-            <Heading id="placement-title">
-              Let&apos;s find your <Underlined>starting point</Underlined>
-            </Heading>
-            <div className={styles.shell} role="status" aria-label="Loading the placement">
-              <span />
-              <span />
-              <span />
-            </div>
-          </Copy>
-        </Scene>
+        <div className={styles.page}>
+          <IntroSkeleton />
+        </div>
       </TopicPage>
     </TopicFrame>
   );
@@ -239,6 +217,16 @@ export function PlacementFlow({ topic, data, basePath }: { topic: FrameTopic; da
 
   const question = ctx && asking ? currentQuestion(asking.state, ctx) : null;
   const answered = asking ? asking.state.answers.length : 0;
+  const stage = asking?.state.stage ?? null;
+  const askLevel = stage ? STAGES[stage].level : (asking?.state.level ?? "beginner");
+  const plan: IntroPlan | null = placement
+    ? {
+        level: levelWords(placement.level, data.levelNames),
+        tone: levelTone(placement.level),
+        step: levelStop(placement.level),
+        summary: planSummary(planView(placement, data.chapters)),
+      }
+    : null;
 
   return (
     <TopicFrame
@@ -248,155 +236,48 @@ export function PlacementFlow({ topic, data, basePath }: { topic: FrameTopic; da
       layout="reader"
     >
       <TopicPage accent={topic.accent}>
-        {asking && question ? (
-          <div className={styles.asking}>
-            <div className={styles.askingHead}>
-              <Kicker mark="?">Finding your level</Kicker>
-              <h1 className={styles.askingTitle}>
-                Question {answered + 1}
-                {summary && summary.capacity > 0 && (
-                  <span className={styles.askingOf}>
-                    {" "}
-                    of {summary.capacity > summary.start ? "up to " : ""}
-                    {summary.capacity}
-                  </span>
-                )}
-              </h1>
-              {summary && summary.capacity > 0 && (
-                <div className={styles.dots} aria-hidden="true">
-                  {Array.from({ length: summary.capacity }, (_, index) => (
-                    <i key={index} data-state={index < answered ? "done" : index === answered ? "now" : "todo"} />
-                  ))}
-                </div>
-              )}
-              <p className={styles.askingNote}>
-                {summary ? `${questionCountText(summary)}, no timer. ` : "No timer. "}
-                &ldquo;Not sure yet&rdquo; is always a fine answer.
-              </p>
-            </div>
-            <div className={styles.sheet}>
-              <PlacementQuestion
-                question={question}
-                number={answered + 1}
-                picked={asking.picked}
-                onPick={(picked) => setStarted({ ...asking, picked })}
-                onNext={() => submit(answerOf(question, asking.picked))}
-                onNotSure={() => submit(NOT_SURE)}
-                onBack={asking.history.length > 0 ? back : undefined}
-              />
-            </div>
-            <p className={styles.askingFoot}>
-              <button type="button" className={styles.textButton} data-start-over="" onClick={startOver}>
-                Start over
-              </button>
-            </p>
-          </div>
-        ) : placement && !retaking ? (
-          <PlacementPlan
-            data={data}
-            basePath={basePath}
-            homeHref={topic.href}
-            topicName={topic.name}
-            record={placement}
-            fresh={fresh}
-            bankNote={placement.mode === "quiz" ? note : null}
-            onRetake={() => setRetakeChoice(true)}
-            onReset={resetPlan}
-          />
-        ) : (
-          <Scene className={topicKit.hero}>
-            <Copy>
-              <Kicker mark="?" id="placement-kicker">
-                Find my level
-              </Kicker>
-              <Heading id="placement-title">
-                Let&apos;s find your <Underlined>starting point</Underlined>
-              </Heading>
-              <Lead>
-                {summary && !emptyBank
-                  ? `A short placement: ${questionCountText(summary)}, ${minutesText(summary)}, no timer. `
-                  : "A short placement with no timer. "}
-                You get a level and a plan, and every chapter stays open either way.
-              </Lead>
-              {note && !emptyBank && (
-                <p className={styles.keepNote} data-bank-note="">
-                  {note}
-                </p>
-              )}
-              <Actions>
-                <button
-                  type="button"
-                  className={topicKit.btn}
-                  id="placement-begin"
-                  disabled={!canBegin}
-                  onClick={begin}
-                >
-                  {placement ? "Retake the placement" : "Begin the placement"} <span aria-hidden="true">→</span>
-                </button>
-                {placement && (
-                  <button type="button" className={topicKit.btnGhost} id="placement-keep" onClick={keepPlan}>
-                    Keep my current plan
-                  </button>
-                )}
-                {!emptyBank && (placement === null || note !== null) && (
-                  <Link className={topicKit.btnGhost} href={pickLevelPath(data.topicId)} prefetch={false}>
-                    I&apos;ll pick a level
-                  </Link>
-                )}
-              </Actions>
-              {emptyBank && (
-                <>
-                  <p className={styles.keepNote} role="status">
-                    The placement questions are not written yet, so there is nothing to answer. Start from the beginning
-                    or pick a level instead.
-                  </p>
-                  <Actions>
-                    <button type="button" className={topicKit.btn} onClick={startFromTheBeginning}>
-                      Start from the beginning <span aria-hidden="true">→</span>
-                    </button>
-                    <Link className={topicKit.btnGhost} href={pickLevelPath(data.topicId)} prefetch={false}>
-                      I&apos;ll pick a level
-                    </Link>
-                  </Actions>
-                </>
-              )}
-            </Copy>
-            <Compose live layout="rail">
-              <Card at="a" tilt={-1} taped>
-                <CardKicker>How it works</CardKicker>
-                <ul className={styles.bullets}>
-                  <li>
-                    {summary && summary.start > 0
-                      ? `${plural(summary.start, "question")} to start${
-                          summary.capacity > summary.start ? ", and more only while you are doing well" : ""
-                        }.`
-                      : "A few questions to start, and more only while you are doing well."}
-                  </li>
-                  <li>
-                    <strong>Not sure yet</strong> is always allowed. It counts as a miss, nothing more.
-                  </li>
-                  <li>
-                    Your ticks, XP and review queue are never touched
-                    {placement ? ", and your current plan stays until you finish." : "."}
-                  </li>
-                </ul>
-                <Remark>no score shown, ever</Remark>
-              </Card>
-              <Card as="aside" aria-label="The placement in numbers" at="b" tilt={1}>
-                <Facts
-                  items={[
-                    {
-                      value: summary ? summary.capacity : "...",
-                      label: summary && summary.capacity === summary.start ? "questions" : "questions at most",
-                    },
-                    { value: summary ? `~${summary.minutes} min` : "...", label: "start to plan" },
-                    { value: "none", label: "timers" },
-                  ]}
-                />
-              </Card>
-            </Compose>
-          </Scene>
-        )}
+        <div className={styles.page}>
+          {asking && question ? (
+            <PlacementAsk
+              leaveHref={topic.href}
+              question={question}
+              answered={answered}
+              capacity={summary?.capacity ?? 0}
+              guaranteed={summary?.start ?? 0}
+              tone={levelTone(askLevel)}
+              picked={asking.picked}
+              onPick={(picked) => setStarted({ ...asking, picked })}
+              onNext={() => submit(answerOf(question, asking.picked))}
+              onNotSure={() => submit(NOT_SURE)}
+              onBack={asking.history.length > 0 ? back : undefined}
+              onStartOver={startOver}
+            />
+          ) : placement && !retaking ? (
+            <PlacementPlan
+              data={data}
+              basePath={basePath}
+              homeHref={topic.href}
+              topicName={topic.name}
+              record={placement}
+              fresh={fresh}
+              bankNote={placement.mode === "quiz" ? note : null}
+              onRetake={() => setRetakeChoice(true)}
+              onReset={resetPlan}
+            />
+          ) : (
+            <PlacementIntro
+              summary={summary}
+              note={emptyBank ? null : note}
+              emptyBank={emptyBank}
+              canBegin={canBegin}
+              plan={plan}
+              pickHref={pickLevelPath(data.topicId)}
+              onBegin={begin}
+              onKeep={keepPlan}
+              onStartFromBeginning={startFromTheBeginning}
+            />
+          )}
+        </div>
       </TopicPage>
     </TopicFrame>
   );

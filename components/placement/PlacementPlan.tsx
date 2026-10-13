@@ -1,62 +1,92 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-import { Copy, Scene } from "@/components/home/Stage";
-import { Card, Compose, Remark, Tag } from "@/components/topic/Compose";
-import {
-  Actions,
-  Band,
-  Button,
-  CardKicker,
-  Facts,
-  Foot,
-  FootLink,
-  Heading,
-  Kicker,
-  Lead,
-  List,
-  Row,
-  Underlined,
-  topicKit,
-} from "@/components/topic/TopicKit";
+import Link from "next/link";
+import { useEffect, useMemo, type CSSProperties, type ReactNode } from "react";
+import { Button, topicKit } from "@/components/topic/TopicKit";
+import { Ring } from "@/components/topic/shell/Ring";
+import { toneStyle } from "@/components/topic/shell/tone";
+import type { ShellTone } from "@/components/topic/shell/types";
 import { nextChapter } from "@/lib/completion";
 import { plural } from "@/lib/format";
 import { useProgressValue } from "@/lib/hooks";
-import { levelWords, planView, readingPlan, type PlanChapter, type PlanData } from "@/lib/placementPlan";
+import { levelWords, planMeaning, planView, readingPlan, type PlanChapter, type PlanData } from "@/lib/placementPlan";
 import type { PlacementRecord } from "@/lib/placementRecord";
 import { progress } from "@/lib/storage";
+import { LEVEL_STOPS, levelStop, levelTone } from "./levelTone";
 import { ResetPlan } from "./ResetPlan";
-import styles from "./placement.module.css";
+import styles from "./plan.module.css";
 
-const HEADLINE = {
-  quiz: (level: string) => (
-    <>
-      Your starting point: <Underlined>{level}</Underlined>
-    </>
-  ),
-  self: (level: string) => (
-    <>
-      You picked <Underlined>{level}</Underlined>
-    </>
-  ),
-  beginning: () => (
-    <>
-      Starting <Underlined>from the beginning</Underlined>
-    </>
-  ),
-};
+function headline(record: PlacementRecord, level: string): { kicker: string; name: string } {
+  if (record.mode === "self") return { kicker: "You picked", name: level };
+  if (record.mode === "beginning") return { kicker: "Your plan", name: "From the beginning" };
+  return { kicker: "Your starting point", name: level };
+}
 
-function rowsFor(list: PlanChapter[], basePath: string, done: ReadonlySet<string>) {
-  return list.map((chapter) => (
-    <Row
-      key={chapter.id}
-      code={chapter.num}
-      title={chapter.short}
-      sub={`${chapter.minutes} min read`}
-      href={`${basePath}/${chapter.id}`}
-      done={done.has(chapter.id)}
-    />
-  ));
+function Row({ chapter, basePath, done }: { chapter: PlanChapter; basePath: string; done: boolean }) {
+  return (
+    <li className={styles.row}>
+      <Link className={styles.rowLink} href={`${basePath}/${chapter.id}`} prefetch={false}>
+        <span className={styles.rowCode}>{chapter.num}</span>
+        <span className={styles.rowTitle}>{chapter.short}</span>
+        <span className={styles.rowMeta}>{chapter.minutes} min read</span>
+        {done && (
+          <span className={styles.rowDone}>
+            <span className="visually-hidden">Read. </span>
+            <span aria-hidden="true">✓</span>
+          </span>
+        )}
+      </Link>
+    </li>
+  );
+}
+
+function Group({
+  titleId,
+  listId,
+  title,
+  sub,
+  count,
+  tone,
+  chapters,
+  basePath,
+  done,
+}: {
+  titleId: string;
+  listId: string;
+  title: string;
+  sub: string;
+  count: string;
+  tone: string;
+  chapters: PlanChapter[];
+  basePath: string;
+  done: ReadonlySet<string>;
+}) {
+  return (
+    <section className={styles.group} aria-labelledby={titleId} style={{ "--tone": tone } as CSSProperties}>
+      <header className={styles.groupHead}>
+        <h2 className={styles.groupTitle} id={titleId}>
+          {title}
+        </h2>
+        <span className={styles.groupCount}>{count}</span>
+        <p className={styles.groupSub}>{sub}</p>
+      </header>
+      <ul className={styles.list} id={listId}>
+        {chapters.map((chapter) => (
+          <Row key={chapter.id} chapter={chapter} basePath={basePath} done={done.has(chapter.id)} />
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function Stat({ value, label, children }: { value: number; label: string; children?: ReactNode }) {
+  return (
+    <li className={styles.stat}>
+      <span className={styles.statValue}>{value}</span>
+      <span className={styles.statLabel}>{label}</span>
+      {children}
+    </li>
+  );
 }
 
 export function PlacementPlan({
@@ -92,6 +122,9 @@ export function PlacementPlan({
   );
   const next = nextChapter("quiz", readable, done, readingPlan(record, readable), true);
   const level = levelWords(record.level, data.levelNames);
+  const tone: ShellTone = levelTone(record.level);
+  const { kicker, name } = headline(record, level);
+
   useEffect(() => {
     if (!fresh) return;
     const heading = document.getElementById("plan-heading");
@@ -100,28 +133,20 @@ export function PlacementPlan({
     heading.focus({ preventScroll: true });
   }, [fresh]);
 
-  const revise = view.reviseEarlier.length > 0 ? " Chapters below your level stay open under Revise earlier." : "";
-  const lead =
-    record.mode === "beginning"
-      ? `Every chapter, in order, from ${view.allotted[0]?.short ?? "the first one"}. Nothing is locked.`
-      : record.mode === "self"
-        ? view.reviseEarlier.length > 0
-          ? `Chapters from ${level} on come first. The ones before stay open under Revise earlier. Nothing is locked.`
-          : `Every chapter from ${level} on is in your plan, in order. Nothing is locked.`
-        : `${plural(view.allotted.length, "chapter")} to read${
-            view.testedOut.length > 0 ? `, ${view.testedOut.length} tested out` : ""
-          }.${revise} Nothing is locked.`;
-
   return (
-    <>
-      <Scene className={topicKit.hero}>
-        <Copy>
-          <Kicker mark="✓" id="plan-kicker">
-            Your placement
-          </Kicker>
-          <Heading id="plan-heading">{HEADLINE[record.mode](level)}</Heading>
-          <Lead>{lead}</Lead>
-          <Actions>
+    <div className={styles.plan}>
+      <section className={styles.hero} style={toneStyle(tone)} aria-labelledby="plan-heading" data-plan-hero="">
+        <div className={styles.main}>
+          <div className={styles.lede}>
+            <Ring read={levelStop(record.level)} total={LEVEL_STOPS} label="stops" />
+            <h1 className={styles.title} id="plan-heading">
+              <span className={styles.kicker}>{kicker}</span>
+              <span className="visually-hidden">: </span>
+              <span className={styles.name}>{name}</span>
+            </h1>
+          </div>
+          <p className={styles.meaning}>{planMeaning(record, view, level)}</p>
+          <div className={styles.actions}>
             {next ? (
               <Button id="plan-continue" href={`${basePath}/${next.id}`}>
                 Continue <span aria-hidden="true">→</span>
@@ -131,91 +156,92 @@ export function PlacementPlan({
                 Review <span aria-hidden="true">→</span>
               </Button>
             )}
-            <button type="button" className={topicKit.btnGhost} id="plan-retake" onClick={onRetake}>
-              Retake the placement
+          </div>
+          <div className={styles.quiet}>
+            <a className={styles.quietLink} href="#plan-details">
+              See the plan details
+            </a>
+            <button type="button" className={styles.quietLink} id="plan-retake" onClick={onRetake}>
+              Retake the check
             </button>
-          </Actions>
-          <p className={styles.keepNote}>
-            Saved on this device. Resetting clears only this plan: your ticks, XP and review queue stay as they are.
-            {bankNote && ` ${bankNote}`}
-          </p>
-          <ResetPlan onReset={onReset} />
-        </Copy>
-        <Compose live layout="rail">
-          <Card at="a" tilt={-1} taped>
-            <CardKicker>Your level</CardKicker>
-            <p className={styles.cardTitle}>{level}</p>
-            <Facts
-              items={[
-                { value: view.allotted.length, label: "to read" },
-                { value: view.testedOut.length, label: "tested out" },
-                { value: view.reviseEarlier.length, label: "to revise earlier" },
-              ]}
-            />
-          </Card>
-          <Card at="b" tone="note" tilt={1}>
-            <Tag tone="success">{next ? "⚑ you are here" : "★ plan done"}</Tag>
-            <CardKicker>{next ? "Up next" : "All read"}</CardKicker>
+            <ResetPlan onReset={onReset} />
+          </div>
+        </div>
+        <aside className={styles.side} aria-label="Your plan at a glance">
+          <div className={styles.upNext}>
+            <p className={styles.upKicker}>{next ? "Up next" : "All read"}</p>
             {next ? (
               <>
-                <p className={styles.cardTitle}>{next.short}</p>
-                <p className={styles.cardText}>{next.minutes} min read</p>
+                <p className={styles.upTitle}>
+                  <span className={styles.upCode}>{next.num}</span> {next.short}
+                </p>
+                <p className={styles.upMeta}>{next.minutes} min read</p>
               </>
             ) : (
-              <p className={styles.cardText}>Every chapter in the plan is ticked off.</p>
+              <p className={styles.upMeta}>Every chapter in the plan is ticked off.</p>
             )}
-            <Remark>nothing is locked</Remark>
-          </Card>
-        </Compose>
-      </Scene>
+          </div>
+          <ul className={styles.stats}>
+            <Stat value={view.allotted.length} label="to read" />
+            {view.testedOut.length > 0 && <Stat value={view.testedOut.length} label="tested out" />}
+            {view.reviseEarlier.length > 0 && <Stat value={view.reviseEarlier.length} label="to revise earlier" />}
+          </ul>
+        </aside>
+        <p className={styles.saved}>
+          Nothing is locked. Saved on this device: resetting clears only this plan, and your ticks, XP and review queue
+          stay as they are.
+          {bankNote && ` ${bankNote}`}
+        </p>
+      </section>
 
-      <Band
-        no="01"
-        id="plan-list-title"
-        label="The plan"
-        title="Read these, in this order"
-        sub="Prerequisites come first. Tick one off as you finish it."
-        count={plural(view.allotted.length, "chapter")}
-      >
-        <List columns id="plan-list">
-          {rowsFor(view.allotted, basePath, done)}
-        </List>
-      </Band>
+      <div className={styles.details} id="plan-details">
+        <Group
+          titleId="plan-list-title"
+          listId="plan-list"
+          title="Read these, in this order"
+          sub="Prerequisites come first. Tick one off as you finish it."
+          count={plural(view.allotted.length, "chapter")}
+          tone={`var(--c-${tone})`}
+          chapters={view.allotted}
+          basePath={basePath}
+          done={done}
+        />
+        {view.testedOut.length > 0 && (
+          <Group
+            titleId="tested-out-title"
+            listId="tested-out-list"
+            title="You already know these"
+            sub="Counted as covered. They earn no XP and have no review entry, and they stay open if you want them."
+            count={plural(view.testedOut.length, "chapter")}
+            tone="var(--c-teal)"
+            chapters={view.testedOut}
+            basePath={basePath}
+            done={done}
+          />
+        )}
+        {view.reviseEarlier.length > 0 && (
+          <Group
+            titleId="revise-earlier-title"
+            listId="revise-earlier-list"
+            title="Below your level, still open"
+            sub="Read them whenever a gap shows up. Nothing here is locked."
+            count={plural(view.reviseEarlier.length, "chapter")}
+            tone="var(--c-grey)"
+            chapters={view.reviseEarlier}
+            basePath={basePath}
+            done={done}
+          />
+        )}
+      </div>
 
-      {view.testedOut.length > 0 && (
-        <Band
-          no="02"
-          id="tested-out-title"
-          label="Tested out"
-          title="You already know these"
-          sub="Counted as covered. They earn no XP and have no review entry, and they stay open if you want them."
-          count={plural(view.testedOut.length, "chapter")}
-        >
-          <List columns id="tested-out-list">
-            {rowsFor(view.testedOut, basePath, done)}
-          </List>
-        </Band>
-      )}
-
-      {view.reviseEarlier.length > 0 && (
-        <Band
-          no={view.testedOut.length > 0 ? "03" : "02"}
-          id="revise-earlier-title"
-          label="Revise earlier"
-          title="Below your level, still open"
-          sub="Read them whenever a gap shows up. Nothing here is locked."
-          count={plural(view.reviseEarlier.length, "chapter")}
-        >
-          <List columns id="revise-earlier-list">
-            {rowsFor(view.reviseEarlier, basePath, done)}
-          </List>
-        </Band>
-      )}
-
-      <Foot>
-        <FootLink href="/">All topics</FootLink>
-        <FootLink href={homeHref}>{topicName} home</FootLink>
-      </Foot>
-    </>
+      <footer className={styles.foot}>
+        <Link className={topicKit.link} href="/">
+          All topics
+        </Link>
+        <Link className={topicKit.link} href={homeHref}>
+          {topicName} home
+        </Link>
+      </footer>
+    </div>
   );
 }

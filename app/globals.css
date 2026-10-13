@@ -113,6 +113,7 @@
   --t-prose-h3: clamp(2rem, 1.3rem + 1.7vw, 3.25rem);
   --t-chapter: clamp(2.5rem, 1rem + 3.2vw, 4.25rem);
   --t-panel: clamp(2rem, 1.2rem + 1.2vw, 2.75rem);
+  --topic-w: 1040px;
 }
 
 html[data-font="serif"],

@@ -87,3 +87,22 @@ export const PICK_LEVEL_ID = "pick-level";
 export function pickLevelPath(topicId: string): string {
   return `/level/${topicId}#${PICK_LEVEL_ID}`;
 }
+
+const QUIZ_MEANING: Record<LevelId, string> = {
+  beginner: "Start with the first chapters and build up from there.",
+  intermediate: "The basics look solid, so your plan starts at the middle stop.",
+  advanced: "You are ready for the hardest material, so your plan starts at the top stop.",
+};
+
+export function planMeaning(record: PlacementRecord, view: PlanView, level: string): string {
+  if (record.mode === "beginning") {
+    return `Every chapter, in order, from ${view.allotted[0]?.short ?? "the first one"}.`;
+  }
+  const revise = view.reviseEarlier.length > 0 ? " Earlier chapters stay open under Revise earlier." : "";
+  if (record.mode === "self") {
+    return view.reviseEarlier.length > 0
+      ? `Chapters from ${level} on come first.${revise}`
+      : `Every chapter from ${level} on is in your plan, in order.`;
+  }
+  return `${QUIZ_MEANING[record.level]}${revise}`;
+}

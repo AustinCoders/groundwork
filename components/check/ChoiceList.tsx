@@ -2,6 +2,7 @@
 
 import { useId } from "react";
 import type { Choice } from "@/content/quiz-types";
+import { choiceLetter, isCodeOnly } from "@/lib/choiceDisplay";
 import { RichHtml } from "./RichHtml";
 import styles from "./check.module.css";
 
@@ -53,15 +54,24 @@ export function ChoiceList({
       <RichHtml id={promptId} html={prompt} label={`Code in ${legend.toLowerCase()}`} className={styles.prompt} />
       <p className={styles.hint}>{multi ? "Select every answer that applies." : "Select one answer."}</p>
       <ul className={styles.choices}>
-        {choices.map((choice) => {
+        {choices.map((choice, index) => {
           const picked = selected.includes(choice.id);
           const right = correct.includes(choice.id);
           const state = checked ? (right ? "right" : picked ? "wrong" : "plain") : picked ? "picked" : "plain";
           const tags = checked ? tagsFor(picked, right, multi) : [];
           const whyId = `${uid}-${choice.id}-why`;
           return (
-            <li key={choice.id} className={styles.choice} data-state={state} data-choice={choice.id}>
+            <li
+              key={choice.id}
+              className={styles.choice}
+              data-state={state}
+              data-choice={choice.id}
+              data-code={isCodeOnly(choice.text) || undefined}
+            >
               <label className={styles.choiceLabel}>
+                <span className={styles.letter} aria-hidden="true">
+                  {choiceLetter(index)}
+                </span>
                 <input
                   className={styles.choiceInput}
                   type={multi ? "checkbox" : "radio"}

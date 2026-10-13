@@ -1,0 +1,349 @@
+.card {
+  display: grid;
+  gap: clamp(22px, 3.4vw, 36px);
+  box-sizing: border-box;
+  padding: clamp(22px, 4vw, 48px);
+  color: var(--ink);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 9%, var(--sheet)), var(--sheet) 70%);
+  border: 1.5px solid var(--line);
+  border-radius: 26px;
+  box-shadow: var(--shadow-md);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 5px 16px 5px 6px;
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--primary) 70%, var(--ink));
+  background: var(--primary-soft);
+  border-radius: 999px;
+}
+
+.eyebrowMark {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  font-size: var(--t-meta);
+  color: var(--on-primary);
+  background: var(--primary);
+  border-radius: 50%;
+}
+
+.title {
+  margin: 0;
+  padding: 0 0 0.1em;
+  font-family: var(--font-heading);
+  font-size: var(--t-section);
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-wrap: balance;
+  border: 0;
+}
+
+.title::before,
+.title::after {
+  content: none !important;
+}
+
+.lead {
+  max-width: 54ch;
+  margin: 0;
+  font-size: var(--t-lead);
+  line-height: 1.5;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.current {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-sizing: border-box;
+  max-width: 100%;
+  margin: 4px 0 0;
+  padding: 12px 22px 12px 14px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tone) 14%, var(--sheet)), var(--sheet) 80%);
+  border: 1.5px solid color-mix(in srgb, var(--tone) 42%, var(--line));
+  border-radius: 20px;
+}
+
+.currentStep {
+  display: grid;
+  flex: none;
+  place-items: center;
+  box-sizing: border-box;
+  width: 48px;
+  height: 48px;
+  font-family: var(--font-heading);
+  font-size: var(--t-display);
+  font-weight: 700;
+  line-height: 1;
+  color: color-mix(in srgb, var(--tone) 62%, var(--ink));
+  background: color-mix(in srgb, var(--tone) 22%, var(--sheet));
+  border: 2.5px solid color-mix(in srgb, var(--tone) 60%, var(--line));
+  border-radius: 50%;
+}
+
+.currentText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.currentKicker {
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.currentName {
+  font-family: var(--font-heading);
+  font-size: var(--t-display);
+  font-weight: 700;
+  line-height: 1.1;
+  color: color-mix(in srgb, var(--tone) 62%, var(--ink));
+}
+
+.currentSum {
+  font-size: var(--t-body);
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+
+.expect {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.expectItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin: 0;
+  padding: 16px 18px;
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 18px;
+}
+
+.expectItem::before {
+  content: none;
+}
+
+.expectIcon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  padding: 7px;
+  box-sizing: border-box;
+  fill: none;
+  stroke: color-mix(in srgb, var(--primary) 70%, var(--ink));
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  background: var(--primary-soft);
+  border-radius: 12px;
+}
+
+.expectText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.expectTitle {
+  font-family: var(--font-heading);
+  font-size: var(--t-title);
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.expectSub {
+  font-size: var(--t-body);
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.closing {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "size actions"
+    "note note";
+  align-items: center;
+  gap: 8px clamp(24px, 4vw, 56px);
+  padding-top: clamp(18px, 2.6vw, 28px);
+  border-top: 1.5px dashed var(--line);
+}
+
+.size {
+  grid-area: size;
+  margin: 0;
+  font-size: var(--t-control);
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.note {
+  grid-area: note;
+  max-width: 62ch;
+  margin: 0;
+  font-size: var(--t-body);
+  line-height: 1.5;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.sizeSkeleton {
+  grid-area: size;
+  display: block;
+  width: 24ch;
+  max-width: 100%;
+  height: 1.4em;
+  background: var(--sheet-2);
+  border-radius: 8px;
+}
+
+.empty {
+  max-width: 58ch;
+  margin: 0;
+  padding: 16px 20px;
+  font-size: var(--t-control);
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1.5px dashed var(--line);
+  border-radius: 18px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px 22px;
+  max-width: 32rem;
+}
+
+.closing > .actions {
+  grid-area: actions;
+}
+
+.quiet {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--t-body);
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--ink-soft) 55%, transparent);
+  text-underline-offset: 4px;
+}
+
+.quiet:hover {
+  text-decoration-color: var(--primary);
+}
+
+.quiet:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.skeleton {
+  display: grid;
+  gap: 12px;
+  width: min(54ch, 100%);
+}
+
+.skeleton span {
+  display: block;
+  height: 18px;
+  background: var(--sheet-2);
+  border-radius: 9px;
+}
+
+.skeleton span:nth-child(2) {
+  width: 62%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton span,
+  .sizeSkeleton {
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (max-width: 900px) {
+  .expect {
+    order: 1;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .expectItem {
+    align-items: center;
+    padding: 12px 16px;
+  }
+
+  .closing {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "size"
+      "actions"
+      "note";
+    gap: 12px;
+  }
+
+  .actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 520px) {
+  .card {
+    border-radius: 22px;
+  }
+
+  .actions > button {
+    flex: 1 1 100%;
+  }
+
+  .actions .quiet {
+    justify-content: center;
+    width: 100%;
+  }
+}

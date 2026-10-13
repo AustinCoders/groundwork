@@ -3,6 +3,7 @@ import {
   isFirstTime,
   levelWords,
   pickLevelPath,
+  planMeaning,
   planSummary,
   planView,
   readingPlan,
@@ -176,5 +177,30 @@ describe("where a topic lives", () => {
 
   it("points the pick-a-level door at the picker on that page", () => {
     expect(pickLevelPath("dsa")).toBe("/level/dsa#pick-level");
+  });
+});
+
+describe("planMeaning", () => {
+  it("says in one sentence what a quiz level means and mentions Revise earlier only when it has chapters", () => {
+    const placed = record({ level: "intermediate" });
+    const withRevise = planMeaning(placed, planView(placed, chapters), "Intermediate");
+    expect(withRevise).toContain("middle stop");
+    expect(withRevise).toContain("Revise earlier");
+    const first = record({ level: "beginner", allotted: [] });
+    const without = planMeaning(first, planView(first, chapters), "Beginner");
+    expect(without).toContain("first chapters");
+    expect(without).not.toContain("Revise earlier");
+  });
+
+  it("names the chosen level for a reader who picked one and the first chapter for one who started from the beginning", () => {
+    const picked = record({ mode: "self", level: "advanced", allotted: [] });
+    expect(planMeaning(picked, planView(picked, chapters), "Advanced")).toContain("from Advanced on");
+    const beginning = record({ mode: "beginning", level: "beginner", allotted: ["a", "b", "d", "e", "f"] });
+    expect(planMeaning(beginning, planView(beginning, chapters), "Beginner")).toContain("from a");
+  });
+
+  it("never mentions a score", () => {
+    const placed = record();
+    expect(planMeaning(placed, planView(placed, chapters), "Intermediate")).not.toMatch(/score|correct|\d+ of \d+/i);
   });
 });

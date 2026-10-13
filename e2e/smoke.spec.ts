@@ -495,10 +495,22 @@ test("a first-time reader finds their level, lands on a plan and Continue skips 
 
   const asked = page.locator("[data-placement-question]");
   await expect(asked).toBeVisible();
+  await expect(asked.getByRole("button", { name: "Next" })).toBeDisabled();
   for (let guard = 0; guard < 18 && (await asked.count()) > 0; guard++) {
     const id = await asked.getAttribute("data-placement-question");
     const question = QUESTIONS.get(id ?? "");
     if (!question || question.kind !== "single") throw new Error(`unexpected placement question ${id}`);
+    if (guard === 0) {
+      const ids = await asked
+        .locator("[data-choice]")
+        .evaluateAll((items) => items.map((item) => item.getAttribute("data-choice")));
+      await expect(asked.locator("fieldset")).toBeFocused();
+      await page.keyboard.press(String(ids.indexOf(question.answer) + 1));
+      await expect(asked.locator(`[data-choice="${question.answer}"] input`)).toBeChecked();
+      await page.keyboard.press("Enter");
+      await expect(asked.or(page.locator("#plan-heading"))).toBeVisible();
+      continue;
+    }
     await asked.locator(`[data-choice="${question.answer}"] input`).check();
     await asked.getByRole("button", { name: "Next" }).click();
     await expect(asked.or(page.locator("#plan-heading"))).toBeVisible();
@@ -720,6 +732,7 @@ test("a placement run survives a reload and steps back, and only ?retake=1 start
 
   await page.reload({ waitUntil: "networkidle" });
   await expect(asked).toHaveAttribute("data-placement-question", secondId ?? "");
+  await expect(page.getByRole("link", { name: /Leave the check/ })).toHaveAttribute("href", "/level/dsa");
   const previous = page.getByRole("button", { name: "Previous question" });
   await hydrated(previous);
   await previous.click();
