@@ -1,0 +1,195 @@
+:global(html[data-js]) .pending {
+  visibility: hidden;
+}
+
+.doors {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.doorsRow {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(12px, 2vw, 24px);
+}
+
+.door {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "no name"
+    "no quote";
+  align-items: baseline;
+  gap: 2px 14px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 16px;
+  font: inherit;
+  color: var(--ink);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-left: 6px solid var(--line);
+  border-radius: 14px;
+}
+
+.door:hover {
+  border-color: color-mix(in srgb, var(--accent, var(--primary)) 45%, var(--line));
+  border-left-color: color-mix(in srgb, var(--accent, var(--primary)) 60%, var(--line));
+}
+
+.door:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.doorNo {
+  grid-area: no;
+  align-self: center;
+  font-family: var(--font-mono);
+  font-size: var(--t-control);
+  font-weight: 700;
+  color: color-mix(in srgb, var(--accent, var(--primary)) 62%, var(--ink));
+}
+
+.doorName {
+  grid-area: name;
+  font-family: var(--font-heading);
+  font-size: var(--t-title);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.doorQuote {
+  grid-area: quote;
+  font-size: var(--t-body);
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.cardKicker {
+  margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--primary) 70%, var(--ink));
+}
+
+.cardTitle {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-heading);
+  font-size: var(--t-heading);
+  font-weight: 700;
+  line-height: 1.15;
+  border: 0;
+}
+
+.cardTitle::before,
+.cardTitle::after {
+  content: none !important;
+}
+
+.cardText {
+  margin: 10px 0 0;
+  font-size: var(--t-body);
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.cardActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: 14px;
+}
+
+.cardLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--t-body);
+  font-weight: 700;
+  color: var(--ink);
+  text-underline-offset: 3px;
+}
+
+.cardLink:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.afterBudget {
+  margin-top: 28px;
+}
+
+.bullets {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+  font-size: var(--t-body);
+  line-height: 1.5;
+}
+
+.asking {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: clamp(32px, 6vh, 64px) clamp(16px, 3vw, 40px) 0;
+}
+
+.askingHead {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.askingTitle {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-heading);
+  font-size: var(--t-display);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--ink);
+  border: 0;
+}
+
+.askingTitle::before,
+.askingTitle::after {
+  content: none !important;
+}
+
+.askingNote {
+  margin: 0;
+  font-size: var(--t-body);
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.sheet {
+  padding: clamp(16px, 3vw, 28px);
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+}
+
+.keepNote {
+  max-width: 54ch;
+  margin: 14px 0 0;
+  font-size: var(--t-body);
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 900px) {
+  .doorsRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

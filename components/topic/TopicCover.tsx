@@ -22,12 +22,15 @@ import {
   topicKit,
 } from "@/components/topic/TopicKit";
 import { SoonTag } from "@/components/topic/Journey";
+import { PlacementAside } from "@/components/placement/PlacementAside";
 import { BUDGET_STEPS, useReadingPlan, type Station } from "@/components/topic/useReadingPlan";
 import { countStates, STATE_ORDER, STATE_TEXT, summarizeStates } from "@/lib/chapterState";
 import { openCheckOnClick } from "@/lib/checkOpen";
 import { quizStore } from "@/lib/quizStore";
 import { progress } from "@/lib/storage";
+import type { PlanData } from "@/lib/placementPlan";
 import { useChapterStates } from "@/lib/useChapterStates";
+import { usePlacementState } from "@/lib/usePlacementState";
 import { requiresCheck, tickHref, type Completion } from "@/lib/completion";
 import { formatSpan, plural } from "@/lib/format";
 import type { SeriesCard, SeriesPart } from "@/components/chapter/types";
@@ -54,6 +57,7 @@ export function TopicCover({
   completion,
   checkChapterIds,
   aside,
+  placementData,
 }: {
   topicId: string;
   topicName: string;
@@ -69,6 +73,7 @@ export function TopicCover({
   completion?: Completion;
   checkChapterIds?: string[];
   aside?: ReactNode;
+  placementData?: PlanData;
 }) {
   const stations: Station[] = useMemo(
     () =>
@@ -86,6 +91,7 @@ export function TopicCover({
 
   const plan = useReadingPlan(stations, topicId, completion);
   const states = useChapterStates(completion, plan.readable, checkChapterIds, plan.done);
+  const placementStatus = usePlacementState(plan.readable.map((s) => s.id));
   const stateTotals = countStates(
     plan.readable.map((s) => s.id),
     states
@@ -96,6 +102,23 @@ export function TopicCover({
   const totalExercises = cards.reduce((sum, c) => sum + c.exercises, 0);
   const dueCount = plan.mounted ? progress.dueForReview(plan.readable.map((s) => s.id)).length : 0;
   const totalMinutes = cards.reduce((sum, c) => sum + c.minutes, 0);
+
+  const doorsFirst = Boolean(placementData) && placementStatus.firstTime;
+  const asideNode = placementData ? (
+    <PlacementAside
+      data={placementData}
+      basePath={basePath}
+      state={placementStatus}
+      next={plan.next}
+      readCount={plan.readCount}
+    />
+  ) : (
+    aside && (
+      <Card at="c" tilt={1}>
+        {aside}
+      </Card>
+    )
+  );
 
   const toggleRead = (id: string) => {
     const read = plan.done.has(id);
@@ -177,6 +200,7 @@ export function TopicCover({
             </Chips>
           </Copy>
           <Compose live layout="stack">
+            {doorsFirst && asideNode}
             {plan.next ? (
               <>
                 <Card at="a" tilt={-1} taped aria-label="Up next">
@@ -238,7 +262,7 @@ export function TopicCover({
                 <Tag tone="success">
                   {plan.mounted && plan.readCount > 0 ? `★ ${plan.readCount} read` : "★ free to read"}
                 </Tag>
-                <h2 className={styles.upNextTitle}>Every chapter read</h2>
+                <h2 className={styles.upNextTitle}>{plan.skipped > 0 ? "Plan complete" : "Every chapter read"}</h2>
                 <p className={styles.upNextSub}>The review page keeps it fresh from here.</p>
                 <div className={styles.upNextGo}>
                   <Button href="/review">
@@ -247,11 +271,7 @@ export function TopicCover({
                 </div>
               </Card>
             )}
-            {aside && (
-              <Card at="c" tilt={1}>
-                {aside}
-              </Card>
-            )}
+            {!doorsFirst && asideNode}
           </Compose>
         </Scene>
 

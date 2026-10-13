@@ -85,3 +85,38 @@ describe("nextChapter", () => {
     expect(nextChapter(undefined, rich, new Set())?.title).toBe("X");
   });
 });
+
+describe("nextChapter with a placement plan", () => {
+  const list = [{ id: "a" }, { id: "b" }, { id: "c" }, { id: "d" }];
+
+  it("skips tested-out chapters", () => {
+    const plan = { testedOut: ["a", "b"], allotted: ["c", "d"] };
+    expect(nextChapter("quiz", list, new Set(), plan)?.id).toBe("c");
+    expect(nextChapter("quiz", list, new Set(["c"]), plan)?.id).toBe("d");
+  });
+
+  it("prefers allotted chapters over the ones to revise", () => {
+    const plan = { testedOut: [], allotted: ["c", "d"] };
+    expect(nextChapter("quiz", list, new Set(), plan)?.id).toBe("c");
+    expect(nextChapter("quiz", list, new Set(["c", "d"]), plan)?.id).toBe("a");
+  });
+
+  it("falls back to the first open chapter when none is allotted", () => {
+    expect(nextChapter("quiz", list, new Set(["a"]), { testedOut: ["b"], allotted: [] })?.id).toBe("c");
+  });
+
+  it("returns null when everything is read or tested out", () => {
+    const plan = { testedOut: ["a", "b"], allotted: ["c", "d"] };
+    expect(nextChapter("quiz", list, new Set(["c", "d"]), plan)).toBeNull();
+  });
+
+  it("ignores the plan for a topic that does not check", () => {
+    const plan = { testedOut: ["a"], allotted: ["c"] };
+    expect(nextChapter("read", list, new Set(), plan)?.id).toBe("a");
+    expect(nextChapter(undefined, list, new Set(), plan)?.id).toBe("a");
+  });
+
+  it("behaves as before with no plan", () => {
+    expect(nextChapter("quiz", list, new Set(["a"]), null)?.id).toBe("b");
+  });
+});

@@ -19,6 +19,7 @@ import {
   syllabusSectionForChapter,
 } from "@/lib/content";
 import { requiresCheck } from "@/lib/completion";
+import { placementData } from "@/lib/placementChapters";
 import { poolChapterIds } from "@/lib/quizPool";
 import { pageMetadata } from "@/lib/metadata";
 import { curriculumNotes, levels, levelsNav, relatedInterviewRound, topic } from "@/lib/topics";
@@ -66,6 +67,7 @@ export function TopicCoverPage({ topicId }: { topicId: string }) {
         curriculumNotes={curriculumNotes(topicId)}
         completion={t?.completion}
         checkChapterIds={poolChapterIds()}
+        placementData={requiresCheck(t?.completion) ? placementData(topicId) : undefined}
       />
     );
   }

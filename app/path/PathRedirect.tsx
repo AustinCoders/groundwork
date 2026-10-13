@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
+import { readPlacement } from "@/lib/placementStore";
 import { lastLevel } from "@/lib/storage";
 
 export function PathRedirect({ targets }: { targets: Record<string, string[] | null> }) {
@@ -18,7 +19,7 @@ export function PathRedirect({ targets }: { targets: Record<string, string[] | n
     }
 
     const levelParam = searchParams.get("level");
-    const saved = lastLevel();
+    const saved = topicId === "dsa" ? (readPlacement()?.level ?? null) : lastLevel();
     const levelId =
       (levelParam && levelIds.includes(levelParam) && levelParam) ||
       (saved && levelIds.includes(saved) && saved) ||

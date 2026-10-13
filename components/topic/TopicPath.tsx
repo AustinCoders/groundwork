@@ -31,6 +31,8 @@ import { formatSpan, plural } from "@/lib/format";
 import { problemHref } from "@/lib/problemHref";
 import { quizStore } from "@/lib/quizStore";
 import { progress, rememberLevel } from "@/lib/storage";
+import { readingPlan } from "@/lib/placementPlan";
+import { usePlacement } from "@/lib/placementStore";
 import { useChapterStates } from "@/lib/useChapterStates";
 import { nextChapter, requiresCheck, tickHref } from "@/lib/completion";
 import { useMounted, useProgressValue } from "@/lib/hooks";
@@ -65,9 +67,12 @@ export function TopicPath({
 }) {
   const mounted = useMounted();
 
+  const placement = usePlacement();
+  const checks = requiresCheck(topic.completion);
+
   useEffect(() => {
-    rememberLevel(level.id);
-  }, [level.id]);
+    if (!checks) rememberLevel(level.id);
+  }, [level.id, checks]);
 
   const chapters = useMemo(() => entries.filter((entry) => entry.ready).map((entry) => entry.chapter), [entries]);
 
@@ -93,7 +98,9 @@ export function TopicPath({
       )
     : "";
   const doneCount = mounted ? done.size : 0;
-  const next = mounted ? nextChapter(topic.completion, chapters, done) : (chapters[0] ?? null);
+  const next = mounted
+    ? nextChapter(topic.completion, chapters, done, checks ? readingPlan(placement) : null)
+    : (chapters[0] ?? null);
 
   const continueHref = next ? `${basePath}/${next.id}` : basePath;
   const continueLabel = !mounted || doneCount === 0 ? "Start reading" : next ? `Continue — ${next.short}` : "Review";

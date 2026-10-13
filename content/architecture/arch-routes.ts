@@ -159,6 +159,7 @@ export const archRoutes: Chapter = {
 <tr><td><code>/level?topic=</code></td><td>An empty page</td><td>A redirect to <code>/level/&lt;topic&gt;</code></td></tr>
 <tr><td><code>/path/&lt;topic&gt;/&lt;level&gt;</code></td><td>12 static pages: the 4 written topics (JavaScript, React, DSA, System Design) times their 3 levels. Each page's chapter metadata, exercise links and syllabus rows come from that one topic only, never the others</td><td>Which steps are read, the progress meter, and which step the primary button opens next</td></tr>
 <tr><td><code>/path?topic=&amp;level=</code></td><td>An empty page</td><td>With both a topic and a level, a redirect straight to <code>/path/&lt;topic&gt;/&lt;level&gt;</code> from <code>next.config.ts</code>, before any client code runs — unless the topic is a pinned outline one, in which case the outline redirect above still wins and sends it to the topic's own cover instead, level param or not; with only a topic, a client redirect once the saved or default level is known</td></tr>
+<tr><td><code>/dsa/placement</code></td><td>One static page, <code>noindex</code>, whose HTML is an empty shell because it reads <code>?retake</code> in the browser; the DSA chapter list and the level names travel in the page data and no questions are in it</td><td>The placement itself: it loads the placement questions, asks them one at a time with no timer, saves the plan in <code>groundwork:dsa:placement</code> and shows it, with Retake and Reset (<code>?retake=1</code> starts a new run for a reader who already has a plan)</td></tr>
 <tr><td><code>/review</code></td><td>Every written chapter</td><td>Which ones are due, from your read dates</td></tr>
 <tr><td><code>/progress</code></td><td>A frame</td><td>Streaks, XP, badges and the calendar, all from <code>localStorage</code></td></tr>
 <tr><td><code>/soon?topic=</code></td><td>Nothing: the page is gone. Three permanent redirects in <code>next.config.ts</code> cover the old links, an outline topic to its own cover, a written topic to <code>/level/&lt;topic&gt;</code>, and any other or missing topic to the home page</td><td>Nothing</td></tr>
@@ -166,7 +167,7 @@ export const archRoutes: Chapter = {
 </tbody>
 </table></div>
 <p>
-  <code>/path</code>, <code>/review</code>, <code>/progress</code> and the bare
+  <code>/path</code>, <code>/dsa/placement</code>, <code>/review</code>, <code>/progress</code> and the bare
   <code>/level</code> are marked <code>noindex</code>: without your browser's data they are either empty
   or a duplicate of a page that is indexed. <code>/level/&lt;topic&gt;</code> is indexed, and listed in
   the sitemap, only for topics with something written. <code>/privacy</code> is static and indexed. A

@@ -11,8 +11,10 @@ import {
   topics,
   totalTime,
 } from "@/lib/content";
+import { requiresCheck } from "@/lib/completion";
 import { byChapterId } from "@/lib/levelRows";
 import { pageMetadata } from "@/lib/metadata";
+import { placementData } from "@/lib/placementChapters";
 import { topicStats } from "@/lib/topicStats";
 
 export function generateStaticParams() {
@@ -62,6 +64,7 @@ export default async function LevelPage({ params }: { params: Promise<{ topic: s
       perLevel={perLevel}
       chapterById={byChapterId(metas)}
       curriculumNotes={curriculumNotes(topic.id)}
+      placementData={requiresCheck(topic.completion) ? placementData(topic.id) : undefined}
     />
   );
 }

@@ -3,7 +3,9 @@
 import { useMemo, useState } from "react";
 import { progress, store } from "@/lib/storage";
 import { useClientValue, useMounted, useProgressValue } from "@/lib/hooks";
-import { nextChapter, type Completion } from "@/lib/completion";
+import { nextChapter, requiresCheck, type Completion } from "@/lib/completion";
+import { readingPlan } from "@/lib/placementPlan";
+import { usePlacement } from "@/lib/placementStore";
 
 export interface Station {
   id: string;
@@ -28,7 +30,13 @@ export function useReadingPlan(stations: Station[], topicId: string, completion?
   const [budgetOverride, setBudgetOverride] = useState<number | null>(null);
   const budget = budgetOverride ?? savedBudget;
 
+  const placement = usePlacement();
+  const plan = useMemo(() => (requiresCheck(completion) ? readingPlan(placement) : null), [completion, placement]);
   const readable = useMemo(() => stations.filter((s) => s.ready), [stations]);
+  const testedOut = useMemo(() => {
+    const known = new Set(readable.map((s) => s.id));
+    return new Set((plan?.testedOut ?? []).filter((id) => known.has(id)));
+  }, [plan, readable]);
 
   const doneKey = useProgressValue(() => readable.map((s) => (progress.isChapterDone(s.id) ? "1" : "0")).join(""), "");
   const done = useMemo(() => {
@@ -40,7 +48,7 @@ export function useReadingPlan(stations: Station[], topicId: string, completion?
     return set;
   }, [doneKey, readable]);
 
-  const next = useMemo(() => nextChapter(completion, readable, done), [completion, readable, done]);
+  const next = useMemo(() => nextChapter(completion, readable, done, plan), [completion, readable, done, plan]);
 
   const reach = useMemo(() => {
     const set = new Set<string>();
@@ -48,15 +56,17 @@ export function useReadingPlan(stations: Station[], topicId: string, completion?
     let spent = 0;
     for (let i = readable.indexOf(next); i < readable.length; i++) {
       const s = readable[i];
-      if (done.has(s.id)) continue;
+      if (done.has(s.id) || testedOut.has(s.id)) continue;
       if (spent + s.minutes > budget) break;
       spent += s.minutes;
       set.add(s.id);
     }
     return set;
-  }, [readable, next, done, budget]);
+  }, [readable, next, done, budget, testedOut]);
 
-  const minutesLeft = readable.filter((s) => !done.has(s.id)).reduce((sum, s) => sum + s.minutes, 0);
+  const minutesLeft = readable
+    .filter((s) => !done.has(s.id) && !testedOut.has(s.id))
+    .reduce((sum, s) => sum + s.minutes, 0);
   const lastInReach = readable.filter((s) => reach.has(s.id)).slice(-1)[0] ?? null;
 
   function setBudget(value: number) {
@@ -75,5 +85,6 @@ export function useReadingPlan(stations: Station[], topicId: string, completion?
     minutesLeft,
     lastInReach,
     readCount: done.size,
+    skipped: readable.filter((s) => testedOut.has(s.id) && !done.has(s.id)).length,
   };
 }

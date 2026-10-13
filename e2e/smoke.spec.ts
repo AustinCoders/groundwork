@@ -419,3 +419,117 @@ test("the end-of-chapter popup opens once, Yes opens the check, and a dismissal 
   await expect(page).toHaveURL(/#check$/);
   await control.close();
 });
+
+const PLACEMENT_KEY = "groundwork:dsa:placement";
+const SHARED_KEYS = ["jsnotes:progress", "jsnotes:activity", "jsnotes:level"];
+
+async function seed(page: Page, entries: Record<string, string>) {
+  await page.addInitScript((values) => {
+    if (sessionStorage.getItem("seeded")) return;
+    sessionStorage.setItem("seeded", "1");
+    for (const [key, value] of Object.entries(values)) localStorage.setItem(key, value);
+  }, entries);
+}
+
+function stored(page: Page, keys: string[]) {
+  return page.evaluate((names) => names.map((name) => localStorage.getItem(name)), keys);
+}
+
+test("a first-time reader finds their level, lands on a plan and Continue skips what they tested out", async ({
+  page,
+}) => {
+  const problems = collectProblems(page);
+  await seed(page, {
+    "jsnotes:activity": JSON.stringify({ days: { "2026-01-01": 1 } }),
+    "jsnotes:level": JSON.stringify("advanced"),
+  });
+  await page.goto("/dsa", { waitUntil: "networkidle" });
+  await expect(page.locator("[data-door]")).toHaveCount(3);
+  const before = await stored(page, SHARED_KEYS);
+
+  const find = page.locator('[data-door="placement"]');
+  await hydrated(find);
+  await find.click();
+  await expect(page).toHaveURL(/\/dsa\/placement$/);
+  const begin = page.locator("#placement-begin");
+  await expect(begin).toBeEnabled();
+  await hydrated(begin);
+  await begin.click();
+
+  const asked = page.locator("[data-placement-question]");
+  await expect(asked).toBeVisible();
+  for (let guard = 0; guard < 18 && (await asked.count()) > 0; guard++) {
+    const id = await asked.getAttribute("data-placement-question");
+    const question = QUESTIONS.get(id ?? "");
+    if (!question || question.kind !== "single") throw new Error(`unexpected placement question ${id}`);
+    await asked.locator(`[data-choice="${question.answer}"] input`).check();
+    await asked.getByRole("button", { name: "Next" }).click();
+    await expect(asked.or(page.locator("#plan-heading"))).toBeVisible();
+  }
+
+  await expect(page.locator("#plan-heading")).toBeFocused();
+  await expect(page.locator("body")).not.toContainText(/\d+ of \d+ correct|score/i);
+  await expect(page.locator("#tested-out-list")).toContainText("Binary search");
+  const cont = page.locator("#plan-continue");
+  await expect(cont).toHaveAttribute("href", (await page.locator("#plan-list a").first().getAttribute("href")) ?? "");
+  await expect(cont).not.toHaveAttribute("href", `/dsa/${CHAPTER_ID}`);
+  expect(await stored(page, SHARED_KEYS)).toEqual(before);
+  expect(await page.evaluate((key) => localStorage.getItem(key), PLACEMENT_KEY)).toContain('"mode":"quiz"');
+
+  await page.goto("/dsa", { waitUntil: "networkidle" });
+  await expect(page.locator("[data-plan]").getByRole("link", { name: "Continue" })).toHaveAttribute(
+    "href",
+    "/dsa/dsa-complexity-analysis"
+  );
+  await expect(page.locator("[data-door]")).toHaveCount(0);
+
+  await page.goto("/dsa/placement", { waitUntil: "networkidle" });
+  await hydrated(page.locator("#plan-reset"));
+  await page.locator("#plan-reset").click();
+  await expect(page.locator("#placement-begin")).toBeVisible();
+  expect(await page.evaluate((key) => localStorage.getItem(key), PLACEMENT_KEY)).toBeNull();
+  expect(await stored(page, SHARED_KEYS)).toEqual(before);
+  expect(problems).toEqual([]);
+});
+
+test("a placed reader sees Revise earlier and can mark one done, and a reader with marks sees Re-check my level", async ({
+  page,
+}) => {
+  await seed(page, {
+    [PLACEMENT_KEY]: JSON.stringify({
+      v: 1,
+      record: {
+        mode: "quiz",
+        level: "intermediate",
+        stages: [{ id: "route", correct: 2, asked: 2 }],
+        testedOut: [CHAPTER_ID],
+        allotted: [],
+        takenAt: 1700000000000,
+        seconds: 90,
+      },
+    }),
+  });
+  await page.goto("/dsa/placement", { waitUntil: "networkidle" });
+  const revise = page.locator("#revise-earlier-list");
+  await expect(revise).toBeVisible();
+  await expect(page.locator("#plan-list")).not.toContainText("Complexity analysis");
+  const link = revise.getByRole("link", { name: /Complexity analysis/ });
+  await hydrated(link);
+  await link.click();
+  await expect(page).toHaveURL(/\/dsa\/dsa-complexity-analysis$/);
+  const mark = page.getByRole("button", { name: /^Mark as read/ }).first();
+  await hydrated(mark);
+  await mark.click();
+  await expect
+    .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("jsnotes:progress") ?? "{}").chapters))
+    .toHaveProperty("dsa-complexity-analysis");
+
+  await page.goto("/dsa", { waitUntil: "networkidle" });
+  const recheck = page.locator("[data-plan] [data-recheck]");
+  await expect(recheck).toHaveText("Re-check my level");
+  const marks = await stored(page, ["jsnotes:progress"]);
+  await recheck.click();
+  await expect(page).toHaveURL(/\/dsa\/placement\?retake=1$/);
+  await expect(page.locator("#placement-begin")).toBeVisible();
+  expect(await stored(page, ["jsnotes:progress"])).toEqual(marks);
+});

@@ -18,11 +18,16 @@ import {
   Underlined,
   topicKit,
 } from "@/components/topic/TopicKit";
+import { PlacementDoors } from "@/components/placement/PlacementDoors";
 import { Check, Checkpoint, Journey, JourneyStop, SoonTag, Station, StopHead } from "@/components/topic/Journey";
 import { compactSpan, formatSpan, plural } from "@/lib/format";
 import { levelRows } from "@/lib/levelRows";
 import { notesHref } from "@/lib/topics";
+import { selfPlacement } from "@/lib/placementRecord";
+import { savePlacement } from "@/lib/placementStore";
+import type { PlanData } from "@/lib/placementPlan";
 import { rememberLevel } from "@/lib/storage";
+import { usePlacementState } from "@/lib/usePlacementState";
 import { useLastLevel, useMounted } from "@/lib/hooks";
 import type { ChapterMeta, Level, Topic } from "@/content/types";
 import styles from "@/components/topic/level.module.css";
@@ -39,6 +44,7 @@ export interface LevelViewProps {
   perLevel: Record<string, LevelStat>;
   chapterById: Record<string, ChapterMeta>;
   curriculumNotes: string[];
+  placementData?: PlanData;
 }
 
 const NO_STAT: LevelStat = { chapters: 0, minutes: 0, exercises: 0 };
@@ -48,8 +54,10 @@ function pad(n: number) {
   return String(n).padStart(2, "0");
 }
 
-export function LevelView({ topic, levels, perLevel, chapterById, curriculumNotes }: LevelViewProps) {
-  const savedLevel = useLastLevel();
+export function LevelView({ topic, levels, perLevel, chapterById, curriculumNotes, placementData }: LevelViewProps) {
+  const lastLevel = useLastLevel();
+  const placementStatus = usePlacementState(placementData?.chapters.map((chapter) => chapter.id) ?? []);
+  const savedLevel = placementData ? (placementStatus.placement?.level ?? null) : lastLevel;
   const mounted = useMounted();
   const [picked, setPicked] = useState<string | null>(null);
   const basePath = notesHref(topic.id);
@@ -161,7 +169,12 @@ export function LevelView({ topic, levels, perLevel, chapterById, curriculumNote
                         className={topicKit.btn}
                         href={`/path/${topic.id}/${level.id}`}
                         prefetch={false}
-                        onClick={() => rememberLevel(level.id)}
+                        onClick={() => {
+                          if (!placementData) rememberLevel(level.id);
+                          else if (placementStatus.firstTime) {
+                            savePlacement(selfPlacement(level.id, placementData.chapters, Date.now()));
+                          }
+                        }}
                       >
                         Show me this path <span aria-hidden="true">→</span>
                       </Link>
@@ -190,6 +203,24 @@ export function LevelView({ topic, levels, perLevel, chapterById, curriculumNote
             </Card>
           </Compose>
         </Scene>
+
+        {placementData && placementStatus.firstTime && (
+          <Band
+            no="?"
+            id="doors-title"
+            label="Not sure?"
+            title="Three ways in"
+            sub="Pick a level above, or let a short placement find yours. Every chapter stays open either way."
+          >
+            <PlacementDoors
+              data={placementData}
+              basePath={basePath}
+              pickHref="#level-grid"
+              row
+              labelledBy="doors-title"
+            />
+          </Band>
+        )}
 
         <Band
           no="02"
