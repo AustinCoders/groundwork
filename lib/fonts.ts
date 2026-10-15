@@ -30,7 +30,6 @@ export const kalam = Kalam({
 });
 export const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  weight: ["400", "700"],
   variable: "--font-jetbrains-mono",
   preload: false,
 });

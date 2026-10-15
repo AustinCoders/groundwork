@@ -129,7 +129,7 @@ export const archBuild: Chapter = {
 <p>
   The 21 search indexes are <code>force-static</code> route handlers too. The
   <a href="/architecture/arch-search">search chapter</a> covers what goes in them.
-  <code>app/sitemap.ts</code> reads the same interface and lists 782 URLs. Outlines are left out.
+  <code>app/sitemap.ts</code> reads the same interface and lists 1192 URLs. Outlines are left out.
   A topic's pages carry the <code>meta.updated</code> month from its notes file as
   <code>lastModified</code>; everything with no such date, including every problem page, carries one
   shared constant that moves only when that content actually changes, so deploys stop telling
@@ -182,7 +182,7 @@ export const archBuild: Chapter = {
 <span class="ttl">Build time is not the constraint</span>
 <p>
   Static generation is the only step that grows with the content, and it renders about 80 files a
-  second. Writing the 366 outlined chapters would not add a single route, because every outline already
+  second. Writing the 358 outlined chapters would not add a single route, because every outline already
   has its page; it would only make those pages longer. The build would get slower by seconds, not
   minutes. Deploy storage is a more
   likely limit: each deployment is large enough that a scheduled workflow prunes old ones.

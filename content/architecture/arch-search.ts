@@ -132,7 +132,7 @@ export const archSearch: Chapter = {
 <h3>The size budget</h3>
 <p>
   The third test in <code>tests/search-index.test.ts</code> gzips every written topic's index with
-  Node's default level and fails if any is 85 KB or more. It runs with the unit tests, before the build step, so an
+  Node's default level and fails if any is 85 KB or more, except DSA, which has a budget of 300 KB because its 48 chapters hold about 400,000 words; sharding its index by level is the first step if it grows again. It runs with the unit tests, before the build step, so an
   index that crosses the line fails the check. Sizes from the last production build, read from
   the files it wrote:
 </p>
@@ -143,7 +143,7 @@ export const archSearch: Chapter = {
 <tr><td><code>/react</code></td><td>57</td><td>189 KB</td><td>74.4 KB</td><td>64.0 KB</td><td>87%</td></tr>
 <tr><td><code>/system-design</code></td><td>24</td><td>172 KB</td><td>71.6 KB</td><td>61.0 KB</td><td>84%</td></tr>
 <tr><td><code>/interview</code></td><td>27</td><td>149 KB</td><td>62.7 KB</td><td>54.5 KB</td><td>74%</td></tr>
-<tr><td><code>/dsa</code></td><td>34</td><td>137 KB</td><td>56.4 KB</td><td>49.2 KB</td><td>66%</td></tr>
+<tr><td><code>/dsa</code></td><td>48</td><td>525 KB</td><td>216.1 KB</td><td>181.8 KB</td><td>72% of its own 300 KB budget</td></tr>
 <tr><td><code>/search-index.json</code> (global)</td><td>174</td><td>49 KB</td><td>11.9 KB</td><td>10.0 KB</td><td>not tested</td></tr>
 <tr><td>An outline-only topic, such as <code>/redis</code></td><td>21</td><td>1.2 KB</td><td>0.4 KB</td><td>0.3 KB</td><td>not tested</td></tr>
 </tbody>

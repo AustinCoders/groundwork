@@ -214,7 +214,7 @@ describe("the topic shell takes a DSA config", () => {
     expect(html).toContain("not started");
     expect(html).toContain("Next stop: Arrays &amp; strings");
     expect(html.match(/aria-hidden="true"><i><\/i>/g)).toHaveLength(3);
-    expect(html).toContain("2 / 10 read");
+    expect(html).toContain("2 / 12 read");
     expect(html.match(/data-teaser/g)).toBeNull();
   });
 

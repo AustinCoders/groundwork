@@ -195,7 +195,7 @@ export const archPerformance: Chapter = {
 <h3>The search index has a budget of its own</h3>
 <p>
   Search fetches one JSON index per topic on the first keystroke. <code>tests/search-index.test.ts</code>
-  fails if any topic's index goes over 85 KB gzipped. The limit was raised from 75 on 24 September,
+  fails if any topic's index goes over 85 KB gzipped, or 300 KB for DSA, whose 48 chapters are the longest on the site. The limit was raised from 75 on 24 September,
   after real content growth, not bloat, pushed two topics past it. Measured today, in bytes:
 </p>
 <div class="table-scroll"><table>
@@ -205,7 +205,7 @@ export const archPerformance: Chapter = {
 <tr><td>React</td><td>57</td><td>76,150</td><td>87%</td></tr>
 <tr><td>System Design</td><td>24</td><td>73,293</td><td>84%</td></tr>
 <tr><td>Interview</td><td>27</td><td>64,246</td><td>74%</td></tr>
-<tr><td>DSA</td><td>34</td><td>57,719</td><td>66%</td></tr>
+<tr><td>DSA (budget 307,200)</td><td>48</td><td>221,261</td><td>72% of its own budget</td></tr>
 <tr><td>This topic, before this rewrite</td><td>18</td><td>11,500</td><td>13%</td></tr>
 </tbody>
 </table></div>

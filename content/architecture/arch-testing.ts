@@ -8,7 +8,7 @@ export const archTesting: Chapter = {
   levels: ["advanced"],
   practice: [],
   ready: true,
-  subtitle: "1590 unit tests, 27 browser tests, and one test that checks what these pages say about the site.",
+  subtitle: "1627 unit tests, 27 browser tests, and one test that checks what these pages say about the site.",
   body: `<h3>The shape of it</h3>
 <p>
   There are three layers of checking, each slower than the one before:

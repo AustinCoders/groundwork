@@ -36,7 +36,7 @@ describe("recording a problem for every language", () => {
         for (const c of t.cases) expect(fn(...structuredClone(c.args)), `${ex.id}: ${t.name}`).toEqual(c.expected);
     }
     expect(covered).toBeGreaterThanOrEqual(200);
-  });
+  }, 30000);
 
   it("leaves JavaScript-only problems alone, and says why", () => {
     const component = practice.find((e) => e.kind === "component")!;

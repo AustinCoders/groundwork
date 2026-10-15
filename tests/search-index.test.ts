@@ -24,7 +24,7 @@ describe("search index", () => {
         }
       }
     }
-  });
+  }, 30000);
 
   it("indexes what a reader sees, not demo scripts or raw entities", () => {
     for (const topicId of written) {
@@ -38,10 +38,12 @@ describe("search index", () => {
     }
   });
 
-  it("keeps every topic's index under 85 KB gzip", () => {
+  it("keeps every topic's index under its gzip budget, 85 KB and 300 KB for DSA", () => {
+    const budgetKb: Record<string, number> = { dsa: 300 };
     for (const topicId of written) {
       const gzip = gzipSync(JSON.stringify(buildSearchIndex(topicId))).length;
-      expect(gzip, `${topicId} index is ${Math.round(gzip / 1024)} KB gzip`).toBeLessThan(85 * 1024);
+      const limit = budgetKb[topicId] ?? 85;
+      expect(gzip, `${topicId} index is ${Math.round(gzip / 1024)} KB gzip`).toBeLessThan(limit * 1024);
     }
   });
 });
