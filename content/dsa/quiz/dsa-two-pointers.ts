@@ -16,22 +16,22 @@ export const pool: ChapterPool = {
       choices: [
         {
           id: "a",
-          text: "Put every number in a <code>Set</code> and check whether <code>target - x</code> is already in it.",
+          text: "Scan once, putting every number in a <code>Set</code> and checking whether <code>target - x</code> is already in it.",
           why: "This runs in O(n) time, but the <code>Set</code> grows with the input, so it needs O(n) extra space. It also ignores that the array is sorted, which is what makes O(1) space possible.",
         },
         {
           id: "b",
-          text: "Two nested loops that test every pair of positions.",
+          text: "Two nested loops over the array that test every pair of positions and stop at the first matching sum.",
           why: "This needs only O(1) extra space, but it tests about n²/2 pairs, so the time is O(n²), far over the limit.",
         },
         {
           id: "c",
-          text: "One index at each end of the array, moving the left one up when the sum is too small and the right one down when it is too big.",
+          text: "One index at each end, moving the left one up when the sum is too small and the right one down when it is too big.",
           why: "Because the array is sorted, a sum that is too small can only be fixed by a bigger left value, and a sum that is too big only by a smaller right value. Every comparison rules out one end for good, so the two indexes meet after at most n − 1 steps, using just two variables.",
         },
         {
           id: "d",
-          text: "For each element, binary search the rest of the array for <code>target - x</code>.",
+          text: "For each element, binary search the rest of the sorted array for the partner <code>target - x</code>.",
           why: "This is correct and uses O(1) extra space, but n binary searches of O(log n) each cost O(n log n) in total, which is over the O(n) limit.",
         },
       ],
@@ -51,22 +51,22 @@ export const pool: ChapterPool = {
       choices: [
         {
           id: "a",
-          text: "Loop over the array and call <code>splice</code> to delete each duplicate as it is found.",
+          text: "Loop over the array and call <code>splice</code> to delete each duplicate as it is found, then return the new length.",
           why: "This works in place, but every <code>splice</code> can move all the later elements down by one, so a single call can cost O(n) and the whole loop O(n²). Deleting while you loop also makes it easy to skip an element.",
         },
         {
           id: "b",
-          text: "Build a <code>Set</code> of the values, then copy it back into the array.",
+          text: "Build a <code>Set</code> of the values, then copy the set back over the front of the array and return its size.",
           why: "The <code>Set</code> holds up to n values, so this breaks the rule against allocating extra space.",
         },
         {
           id: "c",
-          text: "Put one pointer at each end of the array and move them toward each other until they meet.",
+          text: "Put one pointer at each end of the array and move them toward each other, comparing the values they point at.",
           why: "Closing inward suits a question about a pair of values. Here every element must be compared with its neighbour in order, so both pointers have to travel from the front toward the back.",
         },
         {
           id: "d",
-          text: "Two pointers that both start at the front: a read pointer scans every element, and a write pointer moves forward only when the read pointer finds a new value.",
+          text: "A read pointer scans the array while a write pointer advances only when the read pointer finds a new value.",
           why: "The write pointer marks where the next distinct value belongs, and the read pointer never goes backward. Each element is looked at once, so the time is O(n) and the extra space is O(1).",
         },
       ],
@@ -276,7 +276,7 @@ export const pool: ChapterPool = {
       choices: [
         {
           id: "a",
-          text: "Each pass moves one pointer one step toward the other, so the gap of n − 1 closes in at most n − 1 passes, which is O(n).",
+          text: "Each pass moves one pointer one step inward, so the gap of n − 1 closes in at most n − 1 passes, which is O(n).",
           why: "The gap between the pointers starts at n − 1 and shrinks by exactly one on every pass that does not return. The loop ends when it reaches 0. This is also the case with no matching pair, which is the worst case.",
         },
         {
@@ -286,7 +286,7 @@ export const pool: ChapterPool = {
         },
         {
           id: "c",
-          text: "It takes about log n passes, because each comparison halves the range.",
+          text: "It takes about log n passes, because each comparison halves the range between the pointers.",
           why: "That is binary search. Here a comparison discards only one element, the one at the end whose partner would be too small or too big, so the range shrinks by one, not by half.",
         },
         {
@@ -364,6 +364,283 @@ export const pool: ChapterPool = {
         },
       ],
       answer: "a",
+    },
+    {
+      id: "tp-container-move",
+      chapter: "dsa-two-pointers",
+      level: "beginner",
+      skill: "recognise",
+      pattern: "two-pointers",
+      section: "container-with-most-water-proving-the-move-is-safe",
+      kind: "single",
+      prompt:
+        "<p>In container with most water the two pointers start at the ends of the array of heights. At each step you compute the area, then move one pointer. Which pointer do you move, and why is it safe?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "The one at the taller line, because the shorter line is the bottleneck, so it should stay in place while the taller one moves inward.",
+          why: "The area is capped by the shorter line. Moving the taller line inward only shrinks the width while the shorter line still caps the height, so the area cannot grow.",
+        },
+        {
+          id: "b",
+          text: "The one at the shorter line, because any container that keeps it with a closer partner is no better than the one just measured.",
+          why: "Such a container is narrower and its height is still capped by the shorter line, so its area is at most the area you already recorded. The shorter line has nothing more to offer and can be dropped.",
+        },
+        {
+          id: "c",
+          text: "Always the left one, and then the right one, taking turns.",
+          why: "Taking turns ignores the heights. It can discard a tall line that belongs to the best container, so the answer can be wrong.",
+        },
+        {
+          id: "d",
+          text: "Whichever pointer is closer to the middle of the array.",
+          why: "The position in the array has no bearing on the area. What matters is which line limits the height.",
+        },
+      ],
+      answer: "b",
+    },
+    {
+      id: "tp-three-sum-next-guard",
+      chapter: "dsa-two-pointers",
+      level: "beginner",
+      skill: "edge-case",
+      pattern: "two-pointers",
+      section: "3sum-sort-fix-one-scan-the-rest",
+      kind: "single",
+      prompt:
+        "<p>A 3Sum solution skips a repeated fixed value with <code>if (i &gt; 0 &amp;&amp; a[i] === a[i + 1]) continue;</code>, comparing with the <em>next</em> element, where the chapter compares with the previous one. Everything else is the same. What does it return for <code>[-5, -1, -1, 2]</code>, whose only triplet is <code>[-1, -1, 2]</code>?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "<code>[[-1, -1, 2]]</code>, the correct answer",
+          why: "The version that compares with the previous element finds it. The changed version skips the first <code>-1</code> at index 1, because the next element is also <code>-1</code>, and that is the only fixed value from which the triplet can be found.",
+        },
+        {
+          id: "b",
+          text: "<code>[[-1, -1, 2], [-1, -1, 2]]</code>, the triplet twice",
+          why: "Nothing in the changed code can report it twice here. The skip removes the iteration that would have found it, so it is found zero times.",
+        },
+        {
+          id: "c",
+          text: "<code>[]</code>, because the fixed value at index 1 is skipped",
+          why: "The first <code>-1</code> is skipped since the element after it is equal. The loop then ends, as only indices 0 and 1 can be fixed values, so the triplet is never found.",
+        },
+        {
+          id: "d",
+          text: "It throws, because <code>a[i + 1]</code> can be past the end of the array.",
+          why: "The loop stops two positions before the end, so <code>a[i + 1]</code> is always inside the array. Reading it never throws, and a read past the end of an array gives <code>undefined</code> anyway.",
+        },
+      ],
+      answer: "c",
+    },
+    {
+      id: "tp-trace-trap",
+      chapter: "dsa-two-pointers",
+      level: "beginner",
+      skill: "trace",
+      pattern: "two-pointers",
+      section: "trapping-rain-water-three-ways-to-the-same-answer",
+      kind: "single",
+      prompt:
+        "<p>Run the chapter's two-pointer <code>trap</code> on a new array. How much water does it report?</p><pre><code>trap([3, 0, 2, 0, 4]);</code></pre>",
+      choices: [
+        {
+          id: "a",
+          text: "5",
+          why: "Count each column. The 0 at index 1 holds 3 units, the 2 at index 2 holds 1, and the 0 at index 3 holds 3, which is more than 5.",
+        },
+        {
+          id: "b",
+          text: "6",
+          why: "That undercounts by one. The 2 at index 2 does hold 1 unit, because the walls on both sides of it, the 3 and the 4, are higher.",
+        },
+        {
+          id: "c",
+          text: "7",
+          why: "Each column holds <code>min(leftMax, rightMax) - height</code>: 0 for the first 3, then 3, 1, 3, and 0 for the 4. That is 7, and the two-pointer scan adds the same amounts while moving in from both ends.",
+        },
+        {
+          id: "d",
+          text: "10",
+          why: "That fills the three inner columns up to 4, the height of the right wall. The left wall is only 3 high, so the water would spill over it. Water cannot rise above the lower of the two walls.",
+        },
+      ],
+      answer: "c",
+    },
+    {
+      id: "tp-flag-advance-mid",
+      chapter: "dsa-two-pointers",
+      level: "beginner",
+      skill: "edge-case",
+      pattern: "two-pointers",
+      section: "three-way-partition-the-dutch-national-flag",
+      kind: "single",
+      prompt:
+        "<p>In <code>sortColors</code> a teammate also writes <code>mid++</code> after the swap with <code>high</code> in the branch for a 2. What does the changed code leave in the array when it runs on <code>[2, 1, 2]</code>?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "<code>[1, 2, 2]</code>, sorted, because the swaps still move both 2s to the back",
+          why: "The first step swaps the two ends, which changes nothing, then advances <code>mid</code> past an element that was never looked at. The array ends up unsorted.",
+        },
+        {
+          id: "b",
+          text: "<code>[2, 1, 2]</code>, unchanged and unsorted",
+          why: "The first 2 is swapped with the last 2, <code>high</code> becomes 1 and <code>mid</code> becomes 1. The 1 at index 1 is passed over and <code>mid</code> moves to 2, past <code>high</code>. The unseen element that swapped in at index 0 is never examined, so the array stays out of order.",
+        },
+        {
+          id: "c",
+          text: "<code>[1, 2, 2]</code> after one extra pass",
+          why: "The function makes a single pass and never goes back. Without a second pass nothing repairs the order.",
+        },
+        {
+          id: "d",
+          text: "<code>[2, 2, 1]</code>, reversed",
+          why: "No step moves the 1 to the end. The swaps only exchange the two ends, which are equal, so the 1 stays in the middle.",
+        },
+      ],
+      answer: "b",
+    },
+    {
+      id: "tp-merge-from-back",
+      chapter: "dsa-two-pointers",
+      level: "beginner",
+      skill: "recognise",
+      pattern: "two-pointers",
+      section: "two-sorted-inputs-merge-from-the-back-squares-from-the-ends",
+      kind: "single",
+      prompt:
+        "<p><code>mergeInto(nums1, m, nums2, n)</code> merges into <code>nums1</code>, which has <code>m</code> real values followed by <code>n</code> free slots. Why does the merge write from the last slot toward the front?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "Because the largest value is known first when both arrays are sorted ascending, and sorting is faster from the back.",
+          why: "The largest value is easy to find, but that is not what makes the back safe. Going from the front would be just as fast; it would overwrite data.",
+        },
+        {
+          id: "b",
+          text: "Because writing into the free slots needs no extra array and never overwrites an unread value of <code>nums1</code>.",
+          why: "The slots at the back are empty, so the largest remaining value can go there without destroying anything. Writing from the front would overwrite the early values of <code>nums1</code> before they were compared.",
+        },
+        {
+          id: "c",
+          text: "Because JavaScript arrays are faster to fill from the end.",
+          why: "Nothing in the language makes the end of an array cheaper to write in this situation. The reason is about which positions are free.",
+        },
+        {
+          id: "d",
+          text: "Because the loop can then stop when <code>nums1</code> runs out instead of <code>nums2</code>.",
+          why: "It is the other way round: the loop stops when <code>nums2</code> runs out, since what remains of <code>nums1</code> is already in place.",
+        },
+      ],
+      answer: "b",
+    },
+    {
+      id: "tp-cycle-gap",
+      chapter: "dsa-two-pointers",
+      level: "beginner",
+      skill: "recognise",
+      pattern: "two-pointers",
+      section: "fast-and-slow-on-linked-lists-middle-cycle-cycle-start",
+      kind: "single",
+      prompt:
+        "<p>In a linked list with a cycle, <code>slow</code> moves one node per step and <code>fast</code> moves two. Why are they certain to meet?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "Because each walker visits every node of the cycle before the other does.",
+          why: "Neither walker is guaranteed to visit every node of the cycle, and visiting nodes is not what makes them meet.",
+        },
+        {
+          id: "b",
+          text: "Because <code>fast</code> travels exactly twice as far, so the gap is always even.",
+          why: "The distance travelled is twice as large, but the gap measured along the cycle can be odd or even. Parity is not what matters.",
+        },
+        {
+          id: "c",
+          text: "Because once both are in the cycle, the gap shrinks by exactly one per step, so it cannot skip past zero.",
+          why: "The gap along the cycle drops by 1 each step. A gap that shrinks one at a time must pass through 0, which is the moment the walkers are on the same node, and that happens within one cycle length of steps.",
+        },
+        {
+          id: "d",
+          text: "Because the list has a finite number of nodes, so any two walkers with different speeds must eventually collide.",
+          why: "Finite does not mean that two walkers with different speeds must land on the same node. The argument needs the gap to close by exactly one each step.",
+        },
+      ],
+      answer: "c",
+    },
+    {
+      id: "tp-trace-next-permutation",
+      chapter: "dsa-two-pointers",
+      level: "beginner",
+      skill: "trace",
+      pattern: "two-pointers",
+      section: "next-permutation-a-pivot-a-swap-and-a-reverse",
+      kind: "single",
+      prompt:
+        "<p>Run the chapter's <code>nextPermutation</code> in place. What is the array afterwards?</p><pre><code>const nums = [1, 2, 3, 6, 5, 4];\nnextPermutation(nums);</code></pre>",
+      choices: [
+        {
+          id: "a",
+          text: "<code>[1, 2, 4, 3, 5, 6]</code>",
+          why: "The suffix <code>[6, 5, 4]</code> is non-increasing, so the pivot is the 3 at index 2. The rightmost value larger than 3 is the 4, and swapping gives <code>[1, 2, 4, 6, 5, 3]</code>. Reversing the suffix after the pivot gives <code>[1, 2, 4, 3, 5, 6]</code>.",
+        },
+        {
+          id: "b",
+          text: "<code>[1, 2, 4, 6, 5, 3]</code>",
+          why: "That is the array right after the swap. The suffix after the pivot is still in descending order, which is its largest arrangement, so the final reverse is needed to make it the smallest.",
+        },
+        {
+          id: "c",
+          text: "<code>[1, 2, 6, 3, 4, 5]</code>",
+          why: "That puts the 6, the largest value of the suffix, in the pivot's place and then arranges the rest in ascending order. It jumps over many permutations that come in between, because the swap should use the smallest value larger than 3.",
+        },
+        {
+          id: "d",
+          text: "<code>[1, 2, 3, 4, 5, 6]</code>",
+          why: "That is the smallest permutation, the result for an array that is already the largest. This array is not the largest, so a next permutation exists.",
+        },
+      ],
+      answer: "a",
+    },
+    {
+      id: "tp-read-write-which",
+      chapter: "dsa-two-pointers",
+      level: "beginner",
+      skill: "recognise",
+      pattern: "two-pointers",
+      section: "which-shape-for-which-problem",
+      kind: "multi",
+      prompt:
+        "<p>Select every problem that is solved with a read pointer and a write pointer moving in the same direction.</p>",
+      choices: [
+        {
+          id: "a",
+          text: "Remove every copy of a given value from an array in place and return the new length.",
+          why: "The read pointer visits every element and the write pointer only advances when an element is kept.",
+        },
+        {
+          id: "b",
+          text: "Find all unique triplets that sum to zero.",
+          why: "This fixes one value and closes two pointers in from both ends of the sorted rest. The pointers move toward each other, not in the same direction.",
+        },
+        {
+          id: "c",
+          text: "Move all zeroes to the end while keeping the order of the other values.",
+          why: "The write pointer marks the end of the non-zero prefix, and each non-zero value the read pointer finds is moved to it.",
+        },
+        {
+          id: "d",
+          text: "Find the longest palindromic substring.",
+          why: "Each center expands outward, with the two pointers moving away from each other, so it is not a read and write pair.",
+        },
+        {
+          id: "e",
+          text: "Keep at most two copies of each value in a sorted array, in place.",
+          why: "The write pointer marks the end of the kept prefix, and a value is written unless the prefix already ends in two copies of it.",
+        },
+      ],
+      answers: ["a", "c", "e"],
     },
   ],
   pattern: {

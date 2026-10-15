@@ -51,12 +51,12 @@ export const pool: ChapterPool = {
       choices: [
         {
           id: "a",
-          text: "Walk one pointer forward until it reaches <code>null</code>.",
+          text: "Walk one pointer forward, node by node, until it reaches <code>null</code>, then report no cycle.",
           why: "In a list with a cycle no node ever points to <code>null</code>, so the walk goes round the loop forever and never answers.",
         },
         {
           id: "b",
-          text: "Store every visited node in a <code>Set</code> and stop when one repeats.",
+          text: "Store every visited node in a <code>Set</code> and report a cycle when one node shows up twice.",
           why: "This finds the cycle correctly, but the set grows with the list, so it needs O(n) extra memory instead of O(1).",
         },
         {
@@ -66,7 +66,7 @@ export const pool: ChapterPool = {
         },
         {
           id: "d",
-          text: "Move one pointer one step at a time and another two steps at a time. If they ever meet, there is a cycle.",
+          text: "Move one pointer one step at a time and another two steps. If they ever meet, there is a cycle.",
           why: "Inside a cycle the faster pointer gains one node on the slower one every round, so it must catch it. Without a cycle the fast pointer simply reaches <code>null</code>. Two pointers use O(1) memory.",
         },
       ],
@@ -407,6 +407,278 @@ export const pool: ChapterPool = {
         { id: "return", text: "Return <code>dummy.next</code>." },
       ],
       why: "The gap has to be opened before the two pointers walk together, because the fixed distance between them is what finds the target. When <code>fast</code> reaches the last node, <code>slow</code> is right before the node to remove, so the skip comes after the walk. Returning <code>dummy.next</code> comes last, because it is correct even when the head was the node removed.",
+    },
+    {
+      id: "ll-array-as-list",
+      chapter: "dsa-linked-lists",
+      level: "beginner",
+      skill: "recognise",
+      pattern: "linked-list",
+      section: "floyd-on-an-array-finding-the-duplicate-number",
+      kind: "single",
+      prompt:
+        "<p>An array holds <code>n + 1</code> integers, each between <code>1</code> and <code>n</code>, so at least one value repeats. You must return a repeated value without changing the array and with O(1) extra space. Which approach meets all of that?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "Sort the array and compare each element with its neighbour.",
+          why: "Sorting does find the duplicate, but it rearranges the array, which the problem forbids. Sorting in place also costs O(n log n) time.",
+        },
+        {
+          id: "b",
+          text: "Treat <code>nums[i]</code> as the next pointer of node <code>i</code>, run Floyd's two phases and return the cycle's start.",
+          why: "Every value is a valid index and none is 0, so the walk from index 0 never ends and must enter a cycle. The entry node has two incoming pointers, which means two indices hold the same value. Two pointers use O(1) space and the array is only read.",
+        },
+        {
+          id: "c",
+          text: "Binary search the array, because equal values sit next to each other.",
+          why: "The array is not sorted, so equal values can be anywhere. Binary search needs an order to throw half the array away.",
+        },
+        {
+          id: "d",
+          text: "Put every value into a <code>Set</code> as you scan the array, and report the first one that is already in it.",
+          why: "This finds a repeated value and leaves the array alone, but the set can grow to n entries, so it uses O(n) extra space.",
+        },
+      ],
+      answer: "b",
+    },
+    {
+      id: "ll-between-first-move",
+      chapter: "dsa-linked-lists",
+      level: "beginner",
+      skill: "trace",
+      pattern: "linked-list",
+      section: "reversing-part-of-a-list-a-sublist-pairs-and-groups-of-k",
+      kind: "single",
+      prompt:
+        "<p><code>reverseBetween</code> runs on <code>10 → 20 → 30 → 40 → 50 → 60</code> with <code>left = 2</code> and <code>right = 5</code>. What does the list look like after the loop body has run exactly once?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "<code>10 → 50 → 40 → 30 → 20 → 60</code>",
+          why: "That is the finished answer, after all three passes of the loop. The loop runs <code>right - left</code> times, which is 3 here, and this is only the first.",
+        },
+        {
+          id: "b",
+          text: "<code>30 → 10 → 20 → 40 → 50 → 60</code>",
+          why: "The moved node is inserted right after <code>before</code>, the node 10, not in front of it. The node 10 is outside the range and stays the head.",
+        },
+        {
+          id: "c",
+          text: "<code>10 → 30 → 20 → 40 → 50 → 60</code>",
+          why: "<code>before</code> is 10 and <code>start</code> is 20. The node after <code>start</code>, 30, is unhooked and placed right after <code>before</code>, ahead of 20. The node 20 never moves and drifts toward the back of the segment.",
+        },
+        {
+          id: "d",
+          text: "<code>10 → 20 → 40 → 30 → 50 → 60</code>",
+          why: "That would swap the nodes 30 and 40 and leave 20 first in the segment. The first move pulls a node to the <em>front</em> of the segment, so the node 20 is no longer the first node of the segment afterwards.",
+        },
+      ],
+      answer: "c",
+    },
+    {
+      id: "ll-merge-k-rounds",
+      chapter: "dsa-linked-lists",
+      level: "beginner",
+      skill: "complexity",
+      pattern: "linked-list",
+      section: "merge-sort-on-a-list-and-merging-k-sorted-lists",
+      kind: "single",
+      prompt:
+        "<p><code>k</code> sorted lists hold <code>N</code> nodes in total. <code>mergeKLists</code> merges them in pairs, round after round, until one list is left. What is its time complexity?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "O(N · k), because every list is merged into the growing result, which is walked again each time.",
+          why: "That is the cost of merging the lists into one accumulated result one at a time, where the result is walked again with each merge. Pairing the lists keeps every round at about N nodes in total.",
+        },
+        {
+          id: "b",
+          text: "O(N), because each node is only linked once.",
+          why: "A node is handled again in every round that its list takes part in, and there are about log₂ k rounds, so it is not linked just once.",
+        },
+        {
+          id: "c",
+          text: "O(k log N), because there are k lists to merge.",
+          why: "The cost depends on how many nodes are walked, not only on the number of lists. A single round already looks at up to N nodes.",
+        },
+        {
+          id: "d",
+          text: "O(N log k), because there are about log₂ k rounds and each round handles at most N nodes.",
+          why: "Each round halves the number of lists, so ⌈log₂ k⌉ rounds leave one list, and a round only merges disjoint pairs, so it handles each node at most once. For k = 32 and N = 3,200 that is 5 rounds and 16,000 node handlings.",
+        },
+      ],
+      answer: "d",
+    },
+    {
+      id: "ll-partition-no-cut",
+      chapter: "dsa-linked-lists",
+      level: "beginner",
+      skill: "edge-case",
+      pattern: "linked-list",
+      section: "rearranging-without-allocating-odd-even-partition-and-rotate",
+      kind: "single",
+      prompt:
+        "<p>A teammate deletes the line <code>large.next = null</code> from <code>partition</code>. The function runs on <code>1 → 4 → 3 → 2 → 5 → 2</code> with <code>x = 3</code>. What happens?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "The returned list loops forever: the 5 points at the last 2, which points at the 4, so a walk never reaches <code>null</code>.",
+          why: "The last node of the large chain keeps its original <code>next</code>, which is a node that was moved into the small chain. That small chain then ends in the large chain, so the nodes 4, 3, 5, 2 form a loop.",
+        },
+        {
+          id: "b",
+          text: "It throws a <code>TypeError</code>, because <code>large</code> is not <code>null</code> at the end.",
+          why: "The line only assigned <code>null</code> to <code>large.next</code>. Without it nothing reads a property of <code>null</code>, so no error is thrown.",
+        },
+        {
+          id: "c",
+          text: "It still returns <code>1 → 2 → 2 → 4 → 3 → 5</code>, because the small chain is joined in front of the large one and every node is reached.",
+          why: "Joining the chains is not the problem. The last node of the large chain, 5, still points at its old <code>next</code>, the final 2, and nothing replaces that pointer.",
+        },
+        {
+          id: "d",
+          text: "It returns <code>1 → 2 → 2</code>, because the large chain is lost.",
+          why: "The large chain is attached with <code>small.next = largeHead.next</code>, so its nodes are reachable. Nothing is lost; the problem is the extra link at the end.",
+        },
+      ],
+      answer: "a",
+    },
+    {
+      id: "ll-meeting-lists",
+      chapter: "dsa-linked-lists",
+      level: "beginner",
+      skill: "recognise",
+      pattern: "linked-list",
+      section: "two-lists-that-meet-intersection-and-adding-two-numbers",
+      kind: "single",
+      prompt:
+        "<p>Two singly linked lists end in the same chain of shared nodes. You must return the first shared node, or <code>null</code>, in O(m + n) time and O(1) extra space. Which approach works?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "Walk both lists at once and return the first position where the two <code>.val</code> fields are equal.",
+          why: "Two different nodes can hold equal values, and the lists can have different lengths before the shared part, so the pointers need not even be at matching positions.",
+        },
+        {
+          id: "b",
+          text: "Store every node of the first list in a <code>Set</code>, then scan the second list for a node that is already in the set, and return the first such node.",
+          why: "This is correct and O(m + n) in time, but the set holds up to m nodes, so the extra space is O(m), not O(1).",
+        },
+        {
+          id: "c",
+          text: "Reverse both lists and look for the place where they start to differ.",
+          why: "The shared nodes belong to both lists, so reversing one list also changes the pointers the other list walks over. The lists no longer describe what they did before.",
+        },
+        {
+          id: "d",
+          text: "Walk one pointer down each list, send a pointer that falls off the end to the head of the other list, and stop at the same node.",
+          why: "Each pointer walks the length of both lists, so their different prefixes cancel out and they reach the first shared node together. If there is none, both become <code>null</code> on the same step. It uses two pointers.",
+        },
+      ],
+      answer: "d",
+    },
+    {
+      id: "ll-lru-sequence",
+      chapter: "dsa-linked-lists",
+      level: "beginner",
+      skill: "trace",
+      pattern: "linked-list",
+      section: "lru-cache-a-hash-map-plus-a-doubly-linked-list-with-sentinel",
+      kind: "single",
+      prompt:
+        "<p>An LRU cache with capacity 2 runs <code>put(1, a)</code>, <code>put(2, b)</code>, <code>get(1)</code>, <code>put(3, c)</code>, <code>put(4, d)</code>. Which keys does it hold afterwards?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "Keys 1 and 4. The key 3 was evicted by <code>put(4, d)</code>.",
+          why: "The key 3 was added after the last use of the key 1, so it is the more recent of the two. <code>put(4, d)</code> evicts the least recent one, which is 1.",
+        },
+        {
+          id: "b",
+          text: "Keys 3 and 4. The key 1 was evicted by <code>put(4, d)</code>.",
+          why: "After <code>get(1)</code> the order is 1, 2, with 2 the least recent, so <code>put(3, c)</code> evicts 2. The list is then 3, 1, and <code>put(4, d)</code> evicts 1, the least recent, leaving 4, 3.",
+        },
+        {
+          id: "c",
+          text: "Keys 2 and 3. The key 4 was never stored.",
+          why: "Every <code>put</code> stores its key, and 2 was already evicted by <code>put(3, c)</code>. The key 4 is the most recent one and is always in the cache after its own <code>put</code>.",
+        },
+        {
+          id: "d",
+          text: "Keys 3 and 4. The key 2 was evicted by <code>put(4, d)</code>.",
+          why: "The key 2 was already gone: <code>put(3, c)</code> evicted it, because <code>get(1)</code> had made 1 the more recent of the two. Only two keys fit, so the second eviction had to remove 1.",
+        },
+      ],
+      answer: "b",
+    },
+    {
+      id: "ll-lru-design-claims",
+      chapter: "dsa-linked-lists",
+      level: "beginner",
+      skill: "edge-case",
+      pattern: "linked-list",
+      section: "lru-cache-a-hash-map-plus-a-doubly-linked-list-with-sentinel",
+      kind: "multi",
+      prompt:
+        "<p>Select every statement that is true about the LRU design built from a <code>Map</code> and a doubly linked list with two sentinel nodes.</p>",
+      choices: [
+        {
+          id: "a",
+          text: "Each node stores its own key, so that evicting <code>tail.prev</code> can also delete its entry from the map.",
+          why: "The list only knows nodes, and the map is keyed by key. Without the key in the node, the evicted node's map entry could not be found in O(1), and it would be left behind.",
+        },
+        {
+          id: "b",
+          text: "A singly linked list would do, because only the least recent node is ever removed.",
+          why: "A <code>get</code> also removes a node from the middle of the list, to move it to the front, and that needs the node's predecessor. A singly linked list would have to walk from the head to find it.",
+        },
+        {
+          id: "c",
+          text: "The two sentinels mean <code>unlink</code> and <code>pushFront</code> never have to check for a missing neighbour.",
+          why: "Every real node has a node on both sides, either another real node or a sentinel, so the same few assignments work for an empty list, a one-node list and a full list.",
+        },
+        {
+          id: "d",
+          text: "Updating the value of an existing key with <code>put</code> does not count as a use, so it does not move the node.",
+          why: "In an LRU cache every <code>put</code> counts as a use, including one that overwrites a value. Not moving the node would let a just-updated key be evicted first.",
+        },
+      ],
+      answers: ["a", "c"],
+    },
+    {
+      id: "ll-first-half-end",
+      chapter: "dsa-linked-lists",
+      level: "beginner",
+      skill: "trace",
+      pattern: "linked-list",
+      section: "composing-the-primitives-palindrome-and-reorder-list",
+      kind: "single",
+      prompt:
+        "<p><code>endOfFirstHalf</code> runs on the four-node list <code>1 → 2 → 2 → 1</code>. Which node does it return?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "The second node, the first 2, because <code>fast</code> stops on the third node.",
+          why: "After one pass <code>slow</code> is on the second node and <code>fast</code> on the third. Then <code>fast.next.next</code> is <code>null</code>, so the loop ends, and the first half is <code>1 → 2</code>.",
+        },
+        {
+          id: "b",
+          text: "The third node, the second 2, which is the node <code>findMiddle</code> returns.",
+          why: "<code>findMiddle</code> keeps going until <code>fast</code> falls off the end and lands on the second middle. <code>endOfFirstHalf</code> stops one move earlier, because its loop test also looks at <code>fast.next.next</code>.",
+        },
+        {
+          id: "c",
+          text: "The first node, the 1 at the head.",
+          why: "<code>slow</code> moves once, because <code>fast</code> can still jump two nodes from the head. It does not stay on the head.",
+        },
+        {
+          id: "d",
+          text: "<code>null</code>, because an even-length list has no single middle.",
+          why: "The function always returns a real node. For an even length it returns the last node of the first half.",
+        },
+      ],
+      answer: "a",
     },
   ],
   pattern: {

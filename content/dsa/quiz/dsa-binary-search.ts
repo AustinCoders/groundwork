@@ -368,6 +368,286 @@ export const pool: ChapterPool = {
       ],
       answer: "b",
     },
+    {
+      id: "bs-count-of-fours",
+      chapter: "dsa-binary-search",
+      level: "beginner",
+      skill: "trace",
+      pattern: "binary-search",
+      section: "upper-bound-first-and-last-position-and-counting",
+      kind: "single",
+      prompt:
+        "<p>With the chapter's <code>lowerBound</code> and <code>upperBound</code>, what do <code>upperBound(nums, 4)</code> and the count <code>upperBound(nums, 4) - lowerBound(nums, 4)</code> give for this array?</p><pre><code>const nums = [2, 4, 4, 4, 4, 9, 12];</code></pre>",
+      choices: [
+        {
+          id: "a",
+          text: "<code>upperBound</code> is 4, and the count is 3",
+          why: "Index 4 holds the last 4, but <code>upperBound</code> returns the first index whose value is <em>greater</em> than 4, which is one past it. Also, <code>lowerBound</code> is 1, so a result of 4 would give a count of 3, which is one too few.",
+        },
+        {
+          id: "b",
+          text: "<code>upperBound</code> is 5, and the count is 5",
+          why: "<code>upperBound</code> is indeed 5, but the count subtracts <code>lowerBound</code>, which is 1, the index of the first 4. That makes the count 4. A count of 5 would be the index of the first larger value, not a count of the 4s.",
+        },
+        {
+          id: "c",
+          text: "<code>upperBound</code> is 1, and the count is 0",
+          why: "1 is what <code>lowerBound</code> returns, the first index whose value is at least 4. <code>upperBound</code> skips past every value that is at most 4.",
+        },
+        {
+          id: "d",
+          text: "<code>upperBound</code> is 5, and the count is 4",
+          why: "Five values are at most 4 (the 2 and four 4s), so <code>upperBound</code> is 5. One value is smaller than 4, so <code>lowerBound</code> is 1. Their difference, 4, is the number of 4s.",
+        },
+      ],
+      answer: "d",
+    },
+    {
+      id: "bs-lo-equals-mid",
+      chapter: "dsa-binary-search",
+      level: "beginner",
+      skill: "edge-case",
+      pattern: "binary-search",
+      section: "deriving-the-loop-from-an-invariant",
+      kind: "single",
+      prompt:
+        "<p>This loop looks for the last index where <code>ok</code> is true. Here <code>ok(0)</code> is true and <code>ok(1)</code> is false. What happens when it runs?</p><pre><code>let lo = 0, hi = 1;\nwhile (lo &lt; hi) {\n  const mid = lo + Math.floor((hi - lo) / 2);\n  if (ok(mid)) lo = mid;\n  else hi = mid - 1;\n}</code></pre>",
+      choices: [
+        {
+          id: "a",
+          text: "It never ends: <code>mid</code> is 0, <code>ok(0)</code> is true, and <code>lo = mid</code> changes nothing.",
+          why: "With <code>lo = 0</code> and <code>hi = 1</code> the lower middle is 0. Setting <code>lo = mid</code> leaves both bounds as they were, so the loop test stays true forever. Pairing <code>lo = mid</code> with the upper middle, <code>lo + Math.ceil((hi - lo) / 2)</code>, makes <code>mid</code> 1 and the range shrink.",
+        },
+        {
+          id: "b",
+          text: "It returns 0 after one pass, which is the right answer.",
+          why: "After the first pass <code>lo</code> is still 0 and <code>hi</code> is still 1, so the loop test is true again and the loop does not stop. The value 0 would be right, but the code never gets to return it.",
+        },
+        {
+          id: "c",
+          text: "It throws a <code>RangeError</code> because <code>mid</code> repeats.",
+          why: "JavaScript does not detect that a loop makes no progress. The program simply keeps running and no error is raised.",
+        },
+        {
+          id: "d",
+          text: "It returns 1, because <code>hi</code> is never lowered.",
+          why: "<code>hi</code> is not lowered because the <code>else</code> branch never runs: <code>ok(0)</code> is true on every pass. The function does not return at all.",
+        },
+      ],
+      answer: "a",
+    },
+    {
+      id: "bs-rotated-tie",
+      chapter: "dsa-binary-search",
+      level: "beginner",
+      skill: "edge-case",
+      pattern: "binary-search",
+      section: "rotated-sorted-arrays-minimum-search-and-the-duplicates-trap",
+      kind: "single",
+      prompt:
+        "<p>This <code>findMin</code> was written for a rotated array with distinct values, and has no case for equal values. On which input does it return a wrong answer?</p><pre><code>function findMin(nums) {\n  let lo = 0, hi = nums.length - 1;\n  while (lo &lt; hi) {\n    const mid = lo + Math.floor((hi - lo) / 2);\n    if (nums[mid] &gt; nums[hi]) lo = mid + 1;\n    else hi = mid;\n  }\n  return nums[lo];\n}</code></pre>",
+      choices: [
+        {
+          id: "a",
+          text: "<code>[4, 5, 6, 7, 0, 1, 2]</code>",
+          why: "All values are different, which is the case the code was written for. The three passes use middles 3, 5 and 4, and it returns 0.",
+        },
+        {
+          id: "b",
+          text: "<code>[2, 0, 2, 2, 2]</code>",
+          why: "It happens to work here: the first middle (2) is not greater than the last element, so <code>hi</code> moves to 2, then to 1, and then the comparison of 2 with 0 sends <code>lo</code> to 1, which holds the 0.",
+        },
+        {
+          id: "c",
+          text: "<code>[2, 2, 2, 0, 2]</code>",
+          why: "The middle and the last element are both 2, so the code takes the <code>else</code> branch and moves <code>hi</code> down to the middle, discarding the 0 that sits to the right of it. It ends at index 0 and returns 2 instead of 0.",
+        },
+        {
+          id: "d",
+          text: "<code>[1, 1, 1, 1]</code>",
+          why: "Every value is equal and the minimum is 1. The code moves <code>hi</code> down each time, ends at index 0 and returns 1, which is correct.",
+        },
+      ],
+      answer: "c",
+    },
+    {
+      id: "bs-peak-discard",
+      chapter: "dsa-binary-search",
+      level: "beginner",
+      skill: "recognise",
+      pattern: "binary-search",
+      section: "peak-element-binary-search-without-a-sorted-array",
+      kind: "single",
+      prompt:
+        "<p>In <code>findPeakElement</code> the array is not sorted, yet when <code>nums[mid] &lt; nums[mid + 1]</code> the code sets <code>lo = mid + 1</code> and never looks at the left part again. Why is that safe?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "Everything left of <code>mid</code> is smaller than <code>nums[mid]</code>, so no peak can be there.",
+          why: "Nothing says the left part is smaller. In <code>[1, 9, 2, 3, 4]</code> the first middle is 2, the 9 on its left is a peak, and the search still goes right.",
+        },
+        {
+          id: "b",
+          text: "The largest value of the array must be on the right, and a peak is the largest value.",
+          why: "A peak is only larger than its two neighbours, not the largest value, and the largest value need not be on the right. The search returns one peak, which can be a smaller one than another peak elsewhere.",
+        },
+        {
+          id: "c",
+          text: "The left part is sorted in ascending order up to <code>mid</code>, so it cannot hold a peak.",
+          why: "The array may go up and down on the left, as in <code>[1, 2, 1, 3, 5]</code>. A sorted ascending stretch can end in a peak anyway if the next value is smaller, so this is not the reason.",
+        },
+        {
+          id: "e",
+          text: "Walking uphill to the right must reach an element that beats its right neighbour, or the end of the array.",
+          why: "Starting at <code>mid + 1</code> and following the climb, the values stop rising at some index. That index is a peak, or it is the last index, which counts as a peak because the value beyond the end is treated as negative infinity.",
+        },
+        {
+          id: "d",
+          text: "<code>mid + 1</code> is always a peak when it is larger than <code>nums[mid]</code>.",
+          why: "A larger right neighbour can still be followed by an even larger value, as with the 4 in <code>[1, 2, 3, 4, 5, 1]</code>, which is larger than the 3 before it and is followed by the 5. At the first middle, <code>mid + 1</code> is that 4, and it is not a peak. The claim is only that a peak exists somewhere in the right part.",
+        },
+      ],
+      answer: "e",
+    },
+    {
+      id: "bs-ship-low-bound",
+      chapter: "dsa-binary-search",
+      level: "beginner",
+      skill: "edge-case",
+      pattern: "binary-search",
+      section: "the-feasible-x-template-minimize-the-maximum",
+      kind: "single",
+      prompt:
+        "<p>In <code>shipWithinDays</code> a teammate starts the search at <code>lo = 1</code> instead of the weight of the heaviest package. Take <code>weights = [10, 1]</code> and <code>days = 3</code>. The check <code>daysNeeded(capacity)</code> adds a day whenever the next package would overflow, then loads that package even if it alone is heavier than the capacity. What does the search return?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "It never finishes, because the check is not monotone.",
+          why: "Every pass moves <code>lo</code> or <code>hi</code> strictly inward, so the loop finishes whatever the check says. The problem is the value it settles on, not a hang.",
+        },
+        {
+          id: "b",
+          text: "11, the sum of the weights.",
+          why: "11 is the starting value of <code>hi</code>. The search only keeps it if every smaller capacity is rejected, and here the check accepts much smaller ones.",
+        },
+        {
+          id: "c",
+          text: "10, the same as with the correct bound, just after more steps.",
+          why: "The correct bound returns 10, but the wrong one does not. Capacity 1 is accepted by the check, so the search moves below 10.",
+        },
+        {
+          id: "d",
+          text: "It throws, because a capacity of 1 cannot hold a package of weight 10.",
+          why: "Nothing in the check tests for that. It counts days and loads the package anyway, so no error is raised.",
+        },
+        {
+          id: "e",
+          text: "1, because the check counts the 10 as an ordinary day.",
+          why: "With capacity 1 the 10 starts a new day (day 2) and is loaded despite being too heavy, then the 1 starts day 3. That is 3 days, so the check says yes and the search settles on 1. The answer 1 cannot carry the 10, so a lower bound below the heaviest package gives a wrong result.",
+        },
+      ],
+      answer: "e",
+    },
+    {
+      id: "bs-median-cost",
+      chapter: "dsa-binary-search",
+      level: "beginner",
+      skill: "complexity",
+      pattern: "binary-search",
+      section: "median-of-two-sorted-arrays-search-the-partition",
+      kind: "single",
+      prompt:
+        "<p>Two sorted arrays have lengths <code>m</code> and <code>n</code>, with <code>m &lt;= n</code>. The partition search for the median does a binary search over the cut in the shorter array and fixes the cut in the longer one from it. What is its running time?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "O(m + n), the cost of merging the two arrays",
+          why: "Merging touches every element, but this search never does. Each step compares four elements around the cut and halves the range of cuts.",
+        },
+        {
+          id: "b",
+          text: "O(min(m, n)), because the cut may have to move through every position of the shorter array",
+          why: "A linear walk over the cuts would cost that much. Each comparison tells you which side of the cut to keep, so the range of cuts halves every step instead.",
+        },
+        {
+          id: "c",
+          text: "O(log m · log n), because each array is searched on its own",
+          why: "The arrays are not searched separately. One search over the cut in the shorter array fixes the cut in the other, and each step costs O(1).",
+        },
+        {
+          id: "d",
+          text: "O((m + n) / 2), because you stop at the middle of the merged order",
+          why: "Stopping at the middle halves the cost of a merge but leaves it linear. The partition search does not walk through the elements at all.",
+        },
+        {
+          id: "e",
+          text: "O(log(min(m, n)))",
+          why: "The search ranges over the <code>m + 1</code> possible cuts of the shorter array and halves that range on each step, doing a constant amount of work per step.",
+        },
+      ],
+      answer: "e",
+    },
+    {
+      id: "bs-which-feasible",
+      chapter: "dsa-binary-search",
+      level: "beginner",
+      skill: "recognise",
+      pattern: "binary-search",
+      section: "the-feasible-x-template-minimize-the-maximum",
+      kind: "multi",
+      prompt:
+        "<p>Select every problem that can be solved by binary searching a candidate answer, with a monotone check on each candidate.</p>",
+      choices: [
+        {
+          id: "a",
+          text: "The smallest eating speed that finishes all piles within <code>h</code> hours.",
+          why: "A faster speed never needs more hours, so the check is monotone in the speed.",
+        },
+        {
+          id: "b",
+          text: "The number of subarrays whose sum equals <code>k</code>, when the array contains negative numbers.",
+          why: "There is no candidate answer to test here. The answer is a count, and negative numbers break the monotone behaviour that sliding windows and searches rely on. Prefix sums with a hash map fit instead.",
+        },
+        {
+          id: "c",
+          text: "The largest possible smallest gap when placing <code>m</code> balls into baskets on a line.",
+          why: "A larger required gap is harder to satisfy, so the check goes from true to false as the gap grows. That is the last-true form of the template.",
+        },
+        {
+          id: "d",
+          text: "The smallest possible largest sum when splitting an array into <code>k</code> consecutive pieces.",
+          why: "A larger limit never needs more pieces, so the check is monotone in the limit.",
+        },
+        {
+          id: "e",
+          text: "The length of the longest substring without a repeated character.",
+          why: "A single pass with a window answers it, and there is no candidate answer whose check can be repeated with a halved range.",
+        },
+      ],
+      answers: ["a", "c", "d"],
+    },
+    {
+      id: "bs-order-first-true",
+      chapter: "dsa-binary-search",
+      level: "beginner",
+      skill: "trace",
+      pattern: "binary-search",
+      section: "deriving-the-loop-from-an-invariant",
+      kind: "order",
+      prompt:
+        "<p>Put the work of <code>firstTrue(lo, hi, ok)</code> in the order it happens, from entering the function to returning, for a call where the loop runs exactly once before ending.</p>",
+      items: [
+        {
+          id: "range",
+          text: 'Start with <code>lo</code> and <code>hi</code> as the range that may hold the answer, with <code>hi</code> meaning "none".',
+        },
+        { id: "mid", text: "Compute <code>mid = lo + Math.floor((hi - lo) / 2)</code>." },
+        { id: "test", text: "Call <code>ok(mid)</code>." },
+        { id: "move", text: "Set <code>hi = mid</code> if it was true, or <code>lo = mid + 1</code> if it was false." },
+        { id: "done", text: "Find that <code>lo</code> now equals <code>hi</code>, and return <code>lo</code>." },
+      ],
+      why: "The range is set up before anything else. The middle needs the range, the test needs the middle, and the move depends on what the test said. Only after the move can the loop test see that <code>lo === hi</code>, at which point the single remaining index is the answer.",
+    },
   ],
   pattern: {
     pattern: "binary-search",

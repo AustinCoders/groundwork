@@ -51,22 +51,22 @@ export const pool: ChapterPool = {
       choices: [
         {
           id: "a",
-          text: "Bubble sort, because the scores are small numbers.",
+          text: "Bubble sort, because the scores are small numbers and most of them will already be close.",
           why: "The numbers being small does not help bubble sort, because its cost depends on how many elements there are. With 2,000,000 of them, O(n²) is trillions of steps.",
         },
         {
           id: "b",
-          text: "Counting sort: count how many students got each score, then write the scores out in order.",
+          text: "Counting sort: count how many students got each score, then write them out in order.",
           why: "The scores can only take 101 different values, so the counts array is tiny. The cost is O(n + k), about two million steps, and no two elements are ever compared.",
         },
         {
           id: "c",
-          text: "Quicksort with a random pivot, since no sort can beat it.",
+          text: "Quicksort with a random pivot, since no sort can beat O(n log n) on this many numbers.",
           why: "Any sort that compares elements needs about n log n steps, roughly 40 million comparisons here. When the values come from a tiny known range, counting them avoids comparing at all and does better.",
         },
         {
           id: "d",
-          text: "Heap sort, because it uses no extra memory and never degrades.",
+          text: "Heap sort, because it uses no extra memory and its worst case never degrades below n log n.",
           why: "Heap sort has a guaranteed O(n log n) worst case and O(1) extra space, but this problem has no memory limit. The tiny range of scores is the clue that points to something faster than any comparison sort.",
         },
       ],
@@ -204,7 +204,7 @@ export const pool: ChapterPool = {
         {
           id: "d",
           text: "O(log n), because the recursion depth is logarithmic.",
-          why: "The recursion would be about log n deep only if each pivot split the range in half. Here it goes n levels deep, and each level scans the remaining elements.",
+          why: "The work would be about n log n only if each pivot split the range in half, giving log n rounds of scanning. Here every split leaves one side empty, so there are n rounds, and each one scans the remaining elements.",
         },
       ],
       answer: "c",
@@ -261,17 +261,17 @@ export const pool: ChapterPool = {
         },
         {
           id: "b",
-          text: "Counting sort compares elements, so it cannot beat O(n log n).",
+          text: "Counting sort still compares elements in pairs, so it cannot beat O(n log n) here.",
           why: "Counting sort never compares two elements. That is exactly how it can beat the n log n limit of comparison sorts, when the range allows it.",
         },
         {
           id: "c",
-          text: "Counting sort cannot handle values above 100, whatever the array length.",
+          text: "Counting sort cannot handle values above 100, whatever the length of the array is.",
           why: "There is no such limit. Any bounded range works, and the trouble is how large that range is.",
         },
         {
           id: "d",
-          text: "The counts array would need a billion slots, far more work than the roughly 10,000 comparisons of an ordinary sort.",
+          text: "The counts array would need a billion slots, far more work than about 10,000 comparisons.",
           why: "O(n + k) is only good when k is small. Here the k term dwarfs n, because the walk from 0 to <code>maxVal</code> visits every possible value, and so an ordinary comparison sort does far less work.",
         },
       ],
@@ -401,6 +401,278 @@ export const pool: ChapterPool = {
         },
       ],
       why: "The counts array has to exist before anything can be tallied, and the tally has to be finished before the output is written, because the output reads the final counts. Walking <code>val</code> from low to high is what puts the result in ascending order, and no element is ever compared with another.",
+    },
+    {
+      id: "sort-lomuto-all-equal",
+      chapter: "dsa-sorting-algorithms",
+      level: "beginner",
+      skill: "complexity",
+      pattern: "sorting",
+      section: "partitioning-lomuto-s-trap-three-way-and-hoare",
+      kind: "single",
+      prompt:
+        "<p>The chapter's quicksort uses Lomuto's partition with the last element as the pivot. How does its running time grow when it sorts an array of n values that are all equal?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "O(n), because an array with no disorder needs only one pass",
+          why: "A pass over the array is O(n), but each partition fixes only one element and the recursion then handles the other n − 1. One pass is not the whole run.",
+        },
+        {
+          id: "b",
+          text: "O(n log n), because each partition splits the range into two equal halves, so the recursion is about log n levels deep",
+          why: "The split is not even. The test <code>arr[j] &lt; pivot</code> is never true for equal values, so everything stays on the right of the pivot and the left part is empty.",
+        },
+        {
+          id: "c",
+          text: "O(2ⁿ), because every call makes two recursive calls",
+          why: "One of the two calls is on an empty range and returns at once, so the calls form a chain of about n, not a doubling tree.",
+        },
+        {
+          id: "d",
+          text: "O(n²), because each partition peels off only one element and scans all the rest",
+          why: 'Equal values are never "less than" the pivot, so the pivot ends at the start of the range and each call shrinks the problem by one. The scans add up to n(n − 1) / 2 comparisons: 1,999,000 for 2,000 values. A three-way partition finishes in one pass.',
+        },
+      ],
+      answer: "d",
+    },
+    {
+      id: "sort-three-way-result",
+      chapter: "dsa-sorting-algorithms",
+      level: "beginner",
+      skill: "trace",
+      pattern: "sorting",
+      section: "partitioning-lomuto-s-trap-three-way-and-hoare",
+      kind: "single",
+      prompt:
+        "<p>The array is <code>[4, 1, 5, 2]</code>. What does <code>partition3(arr, 0, 3, 3)</code> return, as <code>[lt, gt]</code>, using the function from the chapter?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "<code>[2, 1]</code>",
+          why: "No element equals 3, so the middle block is empty and <code>gt</code> ends one less than <code>lt</code>. The array becomes <code>[2, 1, 5, 4]</code>: indices 0 and 1 hold the smaller values, and 2 and 3 the larger.",
+        },
+        {
+          id: "b",
+          text: "<code>[2, 2]</code>",
+          why: "That would say index 2 holds a value equal to 3, but <code>arr[2]</code> is 5. A middle block of one element needs one element equal to the pivot.",
+        },
+        {
+          id: "c",
+          text: "<code>[0, 3]</code>",
+          why: "That is the result for an array in which every element equals the pivot. Here the values are all different from 3.",
+        },
+        {
+          id: "d",
+          text: "<code>[1, 2]</code>",
+          why: "Two elements, 1 and 2, are smaller than 3, so <code>lt</code> ends at 2, not 1.",
+        },
+      ],
+      answer: "a",
+    },
+    {
+      id: "sort-quickselect-index",
+      chapter: "dsa-sorting-algorithms",
+      level: "beginner",
+      skill: "edge-case",
+      pattern: "sorting",
+      section: "quickselect-the-k-th-smallest-without-sorting-everything",
+      kind: "single",
+      prompt:
+        "<p>You must find the 3rd largest of 7 values with the chapter's <code>quickselect(nums, k)</code>, where <code>k</code> is a 0-based index into the sorted order and <code>k = 0</code> is the minimum. Which call is right?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "<code>quickselect(nums, 2)</code>",
+          why: "Index 2 is the 3rd smallest of the seven values, not the 3rd largest.",
+        },
+        {
+          id: "b",
+          text: "<code>quickselect(nums, 3)</code>",
+          why: "Index 3 is the middle value (the median of seven), the 4th smallest and also the 4th largest.",
+        },
+        {
+          id: "c",
+          text: "<code>quickselect(nums, 4)</code>",
+          why: "In sorted order the largest is at index 6, the 2nd largest at 5 and the 3rd largest at 4. In general the k-th largest is at index <code>n − k</code>, here 7 − 3.",
+        },
+        {
+          id: "d",
+          text: "<code>quickselect(nums, 5)</code>",
+          why: 'Index 5 is the 2nd largest. Counting the largest as "1st" means the k-th largest is at <code>n − k</code>, not <code>n − k + 1</code>.',
+        },
+      ],
+      answer: "c",
+    },
+    {
+      id: "sort-quickselect-cost",
+      chapter: "dsa-sorting-algorithms",
+      level: "beginner",
+      skill: "complexity",
+      pattern: "sorting",
+      section: "quickselect-the-k-th-smallest-without-sorting-everything",
+      kind: "single",
+      prompt:
+        "<p>Quickselect with a random pivot finds the k-th smallest of n values. What is its average running time, and why?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "O(n log n), because it partitions at every level just as quicksort does, so every level handles all n elements, as in a full sort",
+          why: "Quicksort recurses into both sides, so every level handles all n elements. Quickselect keeps only the side that contains index k, so the work shrinks from level to level.",
+        },
+        {
+          id: "b",
+          text: "O(log n), because each step halves the range",
+          why: "Each step still scans the whole current range to partition it, which costs O(range). The ranges shrink, but their sizes add up to more than a logarithm.",
+        },
+        {
+          id: "c",
+          text: "O(n²), because the pivot is chosen at random",
+          why: "A random pivot is what makes the quadratic case very unlikely. O(n²) is the worst case, when every pivot is nearly the smallest or largest value.",
+        },
+        {
+          id: "d",
+          text: "O(n), because the remaining part shrinks by a constant fraction on average, so the sizes form a geometric series",
+          why: "With probability 1/2 the pivot falls in the middle half and at most 3/4 of the range remains. The costs n + (3/4)n + (3/4)²n + … add up to a constant times n, and measured on random data it averaged about 3.4 element visits per element.",
+        },
+      ],
+      answer: "d",
+    },
+    {
+      id: "sort-inversions-merge-step",
+      chapter: "dsa-sorting-algorithms",
+      level: "beginner",
+      skill: "trace",
+      pattern: "sorting",
+      section: "counting-inversions-a-merge-sort-that-answers-a-question",
+      kind: "single",
+      prompt:
+        "<p>During the merge in <code>countInversions</code>, the left half is <code>[2, 5, 8]</code> and the right half is <code>[3, 4, 9]</code>, both already sorted. How many inversions does this merge add to <code>count</code>?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "2",
+          why: "Two is the number of times an element is taken from the right half while the left half still has elements (the 3 and the 4). Each of those jumps over several left elements, and the count adds all of them.",
+        },
+        {
+          id: "b",
+          text: "4",
+          why: "The 3 is written before 5 and 8, adding <code>mid − i</code> = 2, and the 4 is written before the same two, adding 2 more. The 9 is written after the left half is used up, so it adds nothing.",
+        },
+        {
+          id: "c",
+          text: "6",
+          why: "Six would count every right element against every left element it exceeds or sits beside. The 9 is larger than all of the left half, so it forms no inversion at all.",
+        },
+        {
+          id: "d",
+          text: "9",
+          why: "Nine is the number of pairs with one element from each half (3 × 3), but most of them are in the right order, such as (2, 3) and (5, 9).",
+        },
+      ],
+      answer: "b",
+    },
+    {
+      id: "sort-boolean-comparator",
+      chapter: "dsa-sorting-algorithms",
+      level: "beginner",
+      skill: "edge-case",
+      pattern: "sorting",
+      section: "writing-comparators-that-do-not-lie",
+      kind: "single",
+      prompt:
+        "<p>A teammate sorts numbers with <code>nums.sort((a, b) =&gt; a &gt; b)</code>. In node, <code>[4, 3, 2, 1].sort((a, b) =&gt; a &gt; b)</code> returns <code>[4, 3, 2, 1]</code> unchanged. What is wrong?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "The comparator returns <code>true</code> or <code>false</code>, which are never negative, so it cannot say that <code>a</code> goes first",
+          why: "A comparator must return a negative number, zero or a positive number. With only 1 and 0 the engine never learns that an element belongs earlier, so the order it produces is unreliable, and on 30-element random arrays it was wrong every time in node.",
+        },
+        {
+          id: "b",
+          text: "It sorts in descending order, so it should use <code>&lt;</code> instead",
+          why: "Switching the operator does not help: <code>a &lt; b</code> is also a boolean, and a boolean is the problem. The array above is simply left as it was, not reversed.",
+        },
+        {
+          id: "c",
+          text: "It throws a <code>TypeError</code>, because the comparator must return a number",
+          why: "No error is thrown. The value is converted to a number, 1 or 0, and the sort goes ahead with a comparator that is not consistent.",
+        },
+        {
+          id: "d",
+          text: "Nothing is wrong, because <code>true</code> means that the pair should be swapped and <code>false</code> means that it should stay where it is",
+          why: 'The sort does not interpret the result as "swap". It treats it as the sign of a comparison, and a result that is never negative cannot express "a before b".',
+        },
+      ],
+      answer: "a",
+    },
+    {
+      id: "sort-radix-stable-pass",
+      chapter: "dsa-sorting-algorithms",
+      level: "beginner",
+      skill: "edge-case",
+      pattern: "sorting",
+      section: "radix-sort-one-digit-at-a-time",
+      kind: "single",
+      prompt:
+        "<p>An LSD radix sort handles the ones digit first, then the tens, then the hundreds. Suppose its tens-digit pass is <em>not</em> stable. What can go wrong?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "The pass can crash when two numbers have the same tens digit, because the counting array has room for only one number per digit",
+          why: "Equal digits are ordinary input for a counting pass. Without stability they are placed in some order, not rejected.",
+        },
+        {
+          id: "b",
+          text: "The result is always sorted in descending order instead",
+          why: "An unstable pass does not reverse the order. It only fails to preserve the order that the earlier pass gave to numbers that tie on the current digit.",
+        },
+        {
+          id: "c",
+          text: "Numbers that share a tens digit can lose the order the ones pass gave them, so the final array can be out of order",
+          why: "Take 45 and 42: after the ones pass 42 comes before 45. They tie on the tens digit, so only a stable pass keeps 42 ahead of 45. An unstable pass may swap them, and no later pass looks at the ones digit again, so the mistake stays.",
+        },
+        {
+          id: "d",
+          text: "Nothing, because the hundreds pass will sort everything again",
+          why: "A later pass only orders by its own digit. Numbers that tie on it keep whatever order they arrived in, so a mistake made earlier is not repaired.",
+        },
+      ],
+      answer: "c",
+    },
+    {
+      id: "sort-lower-bound-claim",
+      chapter: "dsa-sorting-algorithms",
+      level: "beginner",
+      skill: "recognise",
+      pattern: "sorting",
+      section: "why-n-log-n-is-a-wall-for-comparison-sorts",
+      kind: "single",
+      prompt:
+        '<p>An interviewer asks: "Could a clever algorithm sort n arbitrary distinct numbers in O(n) worst-case time using only comparisons between elements?" What is the best answer?</p>',
+      choices: [
+        {
+          id: "a",
+          text: "Yes, merge sort can be tuned to reach O(n) with enough care",
+          why: "Merge sort's worst case is about n log₂ n comparisons, which is already close to the proven minimum, so there is no tuning that reaches O(n).",
+        },
+        {
+          id: "b",
+          text: "No: a comparison sort must tell apart all n! orderings, so its decision tree needs n! leaves and a height of at least log₂(n!), which is Ω(n log n)",
+          why: "Each comparison has two outcomes, so t comparisons can distinguish at most 2ᵗ orderings, and 2ᵗ ≥ n! forces t ≥ log₂(n!) ≥ (n/2) log₂(n/2). Counting and radix sort escape the bound because they read values rather than only comparing.",
+        },
+        {
+          id: "c",
+          text: "No, because every sorting algorithm needs at least n log n steps",
+          why: "That is too broad: counting sort runs in O(n + k) and radix sort in O(d · (n + b)). The bound holds only for algorithms that learn about the data through comparisons.",
+        },
+        {
+          id: "d",
+          text: "Yes, if the input happens to be nearly sorted",
+          why: "Nearly sorted input can be handled in O(n), as insertion sort does, but the question asks about the worst case over arbitrary inputs, where the bound applies.",
+        },
+      ],
+      answer: "b",
     },
   ],
   pattern: {

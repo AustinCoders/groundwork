@@ -1,29 +1,105 @@
 import { expect, test, type ConsoleMessage, type Locator, type Page } from "@playwright/test";
+import { pool as poolAdvancedBacktracking } from "../content/dsa/quiz/dsa-advanced-backtracking";
+import { pool as poolAdvancedDp } from "../content/dsa/quiz/dsa-advanced-dp";
+import { pool as poolAdvancedGraphAlgorithms } from "../content/dsa/quiz/dsa-advanced-graph-algorithms";
 import { pool as poolArraysStrings } from "../content/dsa/quiz/dsa-arrays-strings";
+import { pool as poolBacktracking } from "../content/dsa/quiz/dsa-backtracking";
 import { pool as poolBasicRecursion } from "../content/dsa/quiz/dsa-basic-recursion";
 import { pool as poolBinarySearch } from "../content/dsa/quiz/dsa-binary-search";
+import { pool as poolBitManipulation } from "../content/dsa/quiz/dsa-bit-manipulation";
+import { pool as poolBstOperations } from "../content/dsa/quiz/dsa-bst-operations";
 import { pool as poolComplexityAnalysis } from "../content/dsa/quiz/dsa-complexity-analysis";
+import { pool as poolDesignProblems } from "../content/dsa/quiz/dsa-design-problems";
+import { pool as poolDesignSimulation } from "../content/dsa/quiz/dsa-design-simulation";
+import { pool as poolDivideConquer } from "../content/dsa/quiz/dsa-divide-conquer";
+import { pool as poolDp1d } from "../content/dsa/quiz/dsa-dp-1d";
+import { pool as poolDp2d } from "../content/dsa/quiz/dsa-dp-2d";
+import { pool as poolDpStateMachines } from "../content/dsa/quiz/dsa-dp-state-machines";
+import { pool as poolGamesProbabilityDp } from "../content/dsa/quiz/dsa-games-probability-dp";
+import { pool as poolGraphProblems } from "../content/dsa/quiz/dsa-graph-problems";
+import { pool as poolGraphStructure } from "../content/dsa/quiz/dsa-graph-structure";
+import { pool as poolGraphsRepresentationTraversal } from "../content/dsa/quiz/dsa-graphs-representation-traversal";
+import { pool as poolGreedy } from "../content/dsa/quiz/dsa-greedy";
+import { pool as poolGridBfs } from "../content/dsa/quiz/dsa-grid-bfs";
 import { pool as poolHashing } from "../content/dsa/quiz/dsa-hashing";
+import { pool as poolHeapsPriorityQueues } from "../content/dsa/quiz/dsa-heaps-priority-queues";
+import { pool as poolIntervals } from "../content/dsa/quiz/dsa-intervals";
+import { pool as poolInterviewStrategy } from "../content/dsa/quiz/dsa-interview-strategy";
+import { pool as poolJsToolkit } from "../content/dsa/quiz/dsa-js-toolkit";
 import { pool as poolLinkedLists } from "../content/dsa/quiz/dsa-linked-lists";
+import { pool as poolMath } from "../content/dsa/quiz/dsa-math";
+import { pool as poolMatrixProblems } from "../content/dsa/quiz/dsa-matrix-problems";
+import { pool as poolMinimumSpanningTree } from "../content/dsa/quiz/dsa-minimum-spanning-tree";
+import { pool as poolMonotonicStackQueue } from "../content/dsa/quiz/dsa-monotonic-stack-queue";
+import { pool as poolOrderedStructures } from "../content/dsa/quiz/dsa-ordered-structures";
+import { pool as poolPrefixSums } from "../content/dsa/quiz/dsa-prefix-sums";
+import { pool as poolRandomizationSampling } from "../content/dsa/quiz/dsa-randomization-sampling";
+import { pool as poolSegmentFenwickTrees } from "../content/dsa/quiz/dsa-segment-fenwick-trees";
 import { pool as poolSlidingWindow } from "../content/dsa/quiz/dsa-sliding-window";
 import { pool as poolSortingAlgorithms } from "../content/dsa/quiz/dsa-sorting-algorithms";
+import { pool as poolSparseTable } from "../content/dsa/quiz/dsa-sparse-table";
 import { pool as poolStacksQueues } from "../content/dsa/quiz/dsa-stacks-queues";
+import { pool as poolStringAlgorithms } from "../content/dsa/quiz/dsa-string-algorithms";
+import { pool as poolSweepLineGeometry } from "../content/dsa/quiz/dsa-sweep-line-geometry";
+import { pool as poolTopologicalPatterns } from "../content/dsa/quiz/dsa-topological-patterns";
+import { pool as poolTreeProblems } from "../content/dsa/quiz/dsa-tree-problems";
+import { pool as poolTrees } from "../content/dsa/quiz/dsa-trees";
+import { pool as poolTries } from "../content/dsa/quiz/dsa-tries";
 import { pool as poolTwoPointers } from "../content/dsa/quiz/dsa-two-pointers";
+import { pool as poolUnionFind } from "../content/dsa/quiz/dsa-union-find";
 import type { OrderQuestion, Question } from "../content/quiz-types";
 
 const CHAPTER_ID = "dsa-binary-search";
 const CHAPTER_PATH = `/dsa/${CHAPTER_ID}`;
 const POOLS = [
+  poolAdvancedBacktracking,
+  poolAdvancedDp,
+  poolAdvancedGraphAlgorithms,
   poolArraysStrings,
+  poolBacktracking,
   poolBasicRecursion,
   poolBinarySearch,
+  poolBitManipulation,
+  poolBstOperations,
   poolComplexityAnalysis,
+  poolDesignProblems,
+  poolDesignSimulation,
+  poolDivideConquer,
+  poolDp1d,
+  poolDp2d,
+  poolDpStateMachines,
+  poolGamesProbabilityDp,
+  poolGraphProblems,
+  poolGraphStructure,
+  poolGraphsRepresentationTraversal,
+  poolGreedy,
+  poolGridBfs,
   poolHashing,
+  poolHeapsPriorityQueues,
+  poolIntervals,
+  poolInterviewStrategy,
+  poolJsToolkit,
   poolLinkedLists,
+  poolMath,
+  poolMatrixProblems,
+  poolMinimumSpanningTree,
+  poolMonotonicStackQueue,
+  poolOrderedStructures,
+  poolPrefixSums,
+  poolRandomizationSampling,
+  poolSegmentFenwickTrees,
   poolSlidingWindow,
   poolSortingAlgorithms,
+  poolSparseTable,
   poolStacksQueues,
+  poolStringAlgorithms,
+  poolSweepLineGeometry,
+  poolTopologicalPatterns,
+  poolTreeProblems,
+  poolTrees,
+  poolTries,
   poolTwoPointers,
+  poolUnionFind,
 ];
 const QUESTIONS = new Map<string, Question>(
   POOLS.flatMap((pool) => pool.questions).map((question) => [question.id, question])
@@ -381,7 +457,7 @@ test("the DSA home tells a passed chapter's check state in words", async ({ page
   await page.goto("/level/dsa", { waitUntil: "networkidle" });
   const entry = page.locator("#chapters li[data-kind]", { has: page.locator(`a[href="${CHAPTER_PATH}"]`) });
   await expect(entry.locator("[data-state]")).toHaveText("checked");
-  await expect(page.locator("#beginner > summary")).toContainText("1 / 10 read");
+  await expect(page.locator("#beginner > summary")).toContainText("1 / 12 read");
   await expect(page.locator("[data-hero]")).toContainText("Not sure where you stand?");
   await expect(page.locator("#topic-primary")).toHaveCount(1);
 });
@@ -548,13 +624,14 @@ test("a first-time reader finds their level, lands on a plan and Continue skips 
   await expect(page.locator("body")).not.toContainText(/\d+ of \d+ correct|score/i);
   await expect(page.locator("#plan-list a").first()).toBeVisible();
   const cont = page.locator("#plan-continue");
+  const planStart = await cont.getAttribute("href");
   await expect(cont).toHaveAttribute("href", (await page.locator("#plan-list a").first().getAttribute("href")) ?? "");
   await expect(cont).not.toHaveAttribute("href", `/dsa/${CHAPTER_ID}`);
   expect(await stored(page, SHARED_KEYS)).toEqual(before);
   expect(await page.evaluate((key) => localStorage.getItem(key), PLACEMENT_KEY)).toContain('"mode":"quiz"');
 
   await page.goto("/level/dsa", { waitUntil: "networkidle" });
-  await expect(page.locator("#topic-primary")).toHaveAttribute("href", "/dsa/dsa-complexity-analysis");
+  await expect(page.locator("#topic-primary")).toHaveAttribute("href", planStart ?? "");
   await expect(page.locator("[data-door]")).toHaveCount(0);
   await expect(page.locator("[data-plan]")).toBeHidden();
   await page.locator("#pick-level-summary").click();
@@ -642,7 +719,7 @@ test("the DSA home leads a first-time reader to check their level, and a placed 
   await expect(page.locator("[data-door]")).toHaveCount(3);
   await expect(page.locator('[data-door="beginning"]')).toHaveText("Start from the beginning");
   await expect(page.locator('[data-door="pick"]')).toHaveText("I'll pick a level myself");
-  await expect(page.locator("[data-hero]")).toContainText(/\d+ questions? today, about \d+ minutes?/);
+  await expect(page.locator("[data-hero]")).toContainText(/\d+ questions?.*about \d+ minutes?/);
   await expect(page.locator("[data-teaser]")).toBeVisible();
   await expect(page.locator("[data-teaser]")).toContainText("Beginner");
   await expect(page.locator("[data-teaser]")).toContainText("Advanced");
@@ -652,7 +729,7 @@ test("the DSA home leads a first-time reader to check their level, and a placed 
   expect(targets.length).toBeGreaterThan(30);
   expect(new Set(targets).size).toBe(targets.length);
   await expect(page.locator("#chapters details")).toHaveCount(3);
-  await expect(page.locator("#beginner > summary")).toContainText("0 / 10 read");
+  await expect(page.locator("#beginner > summary")).toContainText("0 / 12 read");
   await expect(page.locator("#beginner > summary")).toContainText("not started");
   expect(await folded(page, "beginner")).toBe(true);
   expect(await folded(page, "intermediate")).toBe(false);

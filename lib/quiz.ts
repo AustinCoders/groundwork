@@ -47,6 +47,9 @@ export const PATTERNS = [
   { id: "string-matching", label: "String matching" },
   { id: "design", label: "Data structure design" },
   { id: "interview-strategy", label: "Interview strategy" },
+  { id: "randomization", label: "Randomization and sampling" },
+  { id: "game-dp", label: "Game and probability DP" },
+  { id: "ordered-set", label: "Ordered set" },
 ] as const;
 
 export const SKILLS = [

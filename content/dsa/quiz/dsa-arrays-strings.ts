@@ -300,7 +300,7 @@ export const pool: ChapterPool = {
           text: "Reverse the remaining elements, giving <code>[5, 6, 1, 2, 3, 4]</code>.",
         },
       ],
-      why: "Reversing everything puts the last k elements at the front, in the wrong order. Reversing the first k and then the rest puts both pieces back in their original order, and the result is rotated. Each array shown is the result of the step before it. The full function also starts with <code>k = k % nums.length</code>, because for a k larger than the length the reversal bounds would point past the end of the array.",
+      why: "Reversing everything puts the last k elements at the front, in the wrong order. Reversing the first k and then the rest puts both pieces back in their original order, and the result is rotated. Each array shown is the result of the step before it. The full function also starts by reducing k modulo the length (<code>k % nums.length</code>), because for a k larger than the length the reversal bounds would point past the end of the array.",
     },
     {
       id: "as-shared-rows",
@@ -368,6 +368,278 @@ export const pool: ChapterPool = {
         },
       ],
       answers: ["a", "c"],
+    },
+    {
+      id: "as-merge-from-back",
+      chapter: "dsa-arrays-strings",
+      level: "beginner",
+      skill: "recognise",
+      pattern: "in-place-array",
+      section: "merging-from-the-back-in-place-without-overwriting",
+      kind: "single",
+      prompt:
+        "<p><code>nums1</code> holds <code>m</code> sorted values followed by room for <code>n</code> more, and <code>nums2</code> holds <code>n</code> sorted values. You must merge them into <code>nums1</code> with no third array. Which plan works in O(m + n) time?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "Compare the two heads and write the smaller one at the front of <code>nums1</code>, then move both pointers.",
+          why: "The front of <code>nums1</code> still holds values that have not been read yet, so a write there destroys data. Making room first would cost a shift of the whole array on every insert.",
+        },
+        {
+          id: "b",
+          text: "Copy <code>nums2</code> into the empty tail, then call <code>nums1.sort()</code>.",
+          why: "This works for the right reason only if a comparator is passed, because <code>sort()</code> without one compares as strings. Even then, sorting costs O(n log n) on the total length and ignores that both inputs are already sorted.",
+        },
+        {
+          id: "c",
+          text: "Compare the two tails and write the larger one at the last free slot, moving backwards.",
+          why: "The free slots always sit between the unread part of <code>nums1</code> and the written tail, and there are as many of them as values still waiting in <code>nums2</code>. A write can never land on unread data, and every step costs O(1).",
+        },
+        {
+          id: "d",
+          text: "Insert each value of <code>nums2</code> into <code>nums1</code> with <code>splice</code>.",
+          why: "Each <code>splice</code> in the middle shifts the elements after it, which is O(m) per insert and O(m · n) overall, so it misses the O(m + n) target.",
+        },
+      ],
+      answer: "c",
+    },
+    {
+      id: "as-circular-all-negative",
+      chapter: "dsa-arrays-strings",
+      level: "beginner",
+      skill: "recognise",
+      pattern: "in-place-array",
+      section: "kadane-s-variants-the-indices-and-the-circular-array",
+      kind: "single",
+      prompt:
+        "<p>A circular maximum-subarray solution returns <code>Math.max(bestMax, total - bestMin)</code> with no further check, where <code>bestMax</code> and <code>bestMin</code> are the largest and smallest ordinary subarray sums. What does it return for <code>[-4, -2, -7]</code>, where the correct answer is -2?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "-2, because <code>bestMax</code> is -2 and it is the larger of the two.",
+          why: "<code>bestMax</code> is -2, but the second value is not smaller. The smallest ordinary run is the whole array, so <code>total - bestMin</code> is -13 - (-13) = 0, which is larger than -2.",
+        },
+        {
+          id: "b",
+          text: "0, which no non-empty subarray has.",
+          why: 'The whole array is the smallest run, so "the array minus that run" is empty and worth 0. It beats -2 in the comparison, so the answer is wrong. Trusting the wrap only when <code>bestMax &gt; 0</code> avoids it.',
+        },
+        {
+          id: "c",
+          text: "-13, the sum of the whole array.",
+          why: "-13 is <code>total</code> and <code>bestMin</code>. The formula takes a maximum, and both candidates (-2 and 0) are larger than -13.",
+        },
+        {
+          id: "d",
+          text: "-11, the sum of the last element and the first, going around the end.",
+          why: "Neither term of the formula is -11. The wrap the formula describes is the whole array minus the smallest ordinary run, which here is the whole array minus itself, not a two-element wrap.",
+        },
+      ],
+      answer: "b",
+    },
+    {
+      id: "as-trace-left-pass",
+      chapter: "dsa-arrays-strings",
+      level: "beginner",
+      skill: "trace",
+      pattern: "in-place-array",
+      section: "prefix-and-suffix-products-and-the-running-minimum",
+      kind: "single",
+      prompt:
+        "<p>In <code>productExceptSelf([2, 3, 4, 5])</code>, the first loop writes <code>out[i] = left</code> and then multiplies <code>left</code> by <code>nums[i]</code>. What does <code>out</code> hold when that first loop has finished, before the right-to-left pass starts?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "[60, 40, 30, 24]",
+          why: "Those are the final answers: the product of everything except each element. They only exist after the second loop has multiplied in the right-hand products.",
+        },
+        {
+          id: "b",
+          text: "[2, 6, 24, 120]",
+          why: "That would be the running product including the current element. The code writes <code>left</code> before multiplying by <code>nums[i]</code>, so each slot excludes its own element.",
+        },
+        {
+          id: "c",
+          text: "[1, 2, 6, 24]",
+          why: "Slot 0 has nothing to its left, so it holds 1. Slot 1 holds 2, slot 2 holds 2 · 3 = 6, and slot 3 holds 2 · 3 · 4 = 24. Each slot is the product of the elements strictly to its left.",
+        },
+        {
+          id: "d",
+          text: "[1, 1, 1, 1]",
+          why: "That is how <code>out</code> starts, before the first loop writes anything. The loop replaces each slot with the running left product.",
+        },
+      ],
+      answer: "c",
+    },
+    {
+      id: "as-vote-without-guarantee",
+      chapter: "dsa-arrays-strings",
+      level: "beginner",
+      skill: "edge-case",
+      pattern: "in-place-array",
+      section: "boyer-moore-voting-the-majority-element",
+      kind: "single",
+      prompt:
+        "<p>The Boyer-Moore vote on <code>[1, 2, 3]</code> ends with the candidate 3. The problem did not promise that a majority element exists. What should the solution do?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "Return 3: the vote always ends on the most frequent value.",
+          why: "The vote proves that if a majority exists it is the final candidate. It does not say the final candidate is the most frequent value, and here all three values appear once.",
+        },
+        {
+          id: "b",
+          text: "Return 1, because the first element of the array is the safest guess.",
+          why: "Nothing in the algorithm favours the first element. Guessing replaces a proof with luck, and it fails whenever the majority is elsewhere.",
+        },
+        {
+          id: "c",
+          text: "Run the vote again from the other end of the array and compare the two candidates it ends on.",
+          why: "A second candidate does not prove anything either. When no majority exists, both runs can end on values that appear once.",
+        },
+        {
+          id: "d",
+          text: "Count how often 3 occurs in a second pass, and report it only if the count is more than n/2.",
+          why: 'The count of 3 is 1, and 1 is not more than 3 / 2, so there is no majority and the answer is "none". The extra pass is O(n) time and O(1) space, so the vote keeps its bounds.',
+        },
+      ],
+      answer: "d",
+    },
+    {
+      id: "as-find-missing-technique",
+      chapter: "dsa-arrays-strings",
+      level: "beginner",
+      skill: "recognise",
+      pattern: "in-place-array",
+      section: "the-array-as-its-own-hash-table-marking-and-cyclic-placement",
+      placement: true,
+      kind: "single",
+      prompt:
+        "<p>An array of n integers, each between 1 and n, may contain repeats. Return every number from 1 to n that is missing, in O(n) time and O(1) extra space (not counting the output). Which idea does it?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "Put all the values in a <code>Set</code>, then test each number from 1 to n.",
+          why: "This is O(n) time, but the <code>Set</code> holds up to n values, so the extra space is O(n). It is the right answer without the space limit.",
+        },
+        {
+          id: "b",
+          text: "Make <code>nums[x - 1]</code> negative for every value x, then report the indexes still positive.",
+          why: 'The value x has a home slot at index x - 1, so the array can record "x was seen" with a sign flip. A slot that stays positive was never marked, so its value is missing. It uses no extra structure, though it modifies the input.',
+        },
+        {
+          id: "c",
+          text: "Sort the array and walk it looking for gaps.",
+          why: "Sorting costs O(n log n) time, which is above the O(n) target, even though the extra space can be small.",
+        },
+        {
+          id: "d",
+          text: "Allocate a boolean array of length n and mark each value as it is read, then scan it for gaps.",
+          why: "That is a counting table. It is O(n) time, but the table itself is O(n) extra space, so it does not meet the space limit.",
+        },
+      ],
+      answer: "b",
+    },
+    {
+      id: "as-trace-swap-bug",
+      chapter: "dsa-arrays-strings",
+      level: "beginner",
+      skill: "trace",
+      pattern: "in-place-array",
+      section: "the-array-as-its-own-hash-table-marking-and-cyclic-placement",
+      kind: "single",
+      prompt:
+        "<p>With <code>nums = [3, 1, 2]</code> and <code>i = 0</code>, what does <code>nums</code> hold after this line?</p><pre><code>[nums[i], nums[nums[i] - 1]] = [nums[nums[i] - 1], nums[i]];</code></pre>",
+      choices: [
+        {
+          id: "a",
+          text: "[2, 1, 3]",
+          why: "That is the swap the line was meant to do: 3 goes to index 2 and 2 comes back to index 0. The line does not compute it, because its second target is worked out after the first assignment.",
+        },
+        {
+          id: "b",
+          text: "[3, 1, 2], unchanged",
+          why: "Both assignments happen, so the array changes. The right-hand side is read first as [2, 3], then the two targets are written one after the other.",
+        },
+        {
+          id: "c",
+          text: "[2, 3, 2]",
+          why: "The right-hand side is [2, 3]. The first write puts 2 at index 0, so <code>nums[i]</code> is now 2 and the second target becomes <code>nums[1]</code>, which receives the 3. Index 2 keeps its 2 and the value 1 is gone.",
+        },
+        {
+          id: "d",
+          text: "[1, 3, 2]",
+          why: "That would need the 1 to move to the front. Nothing in the line reads index 1 as a source, so the 1 is never copied, only overwritten.",
+        },
+      ],
+      answer: "c",
+    },
+    {
+      id: "as-cyclic-complexity",
+      chapter: "dsa-arrays-strings",
+      level: "beginner",
+      skill: "complexity",
+      pattern: "in-place-array",
+      section: "the-array-as-its-own-hash-table-marking-and-cyclic-placement",
+      kind: "single",
+      prompt:
+        "<p>First-missing-positive places each value with a <code>while</code> loop inside a <code>for</code> loop that runs n times. What is the total running time?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "O(n²), because a loop is nested inside a loop.",
+          why: "The inner loop does not run up to n each time. Every swap moves one value into its final home and the loop never moves it again, so all the inner iterations together are bounded by n.",
+        },
+        {
+          id: "b",
+          text: "O(n), because there are at most n swaps in total across all inner loops.",
+          why: "A swap places one value in its home slot, there are at most n home slots, and a value in its home is never swapped again. The n steps of the outer loop plus at most n swaps give O(n).",
+        },
+        {
+          id: "c",
+          text: "O(n log n), because the inner loop halves the remaining work at each step of the outer loop.",
+          why: "Nothing halves here. The bound comes from a count of finished values, not from a shrinking range.",
+        },
+        {
+          id: "d",
+          text: "O(1), because the array is rearranged in place.",
+          why: "Working in place makes the extra space O(1), not the time. Every element still has to be looked at at least once.",
+        },
+      ],
+      answer: "b",
+    },
+    {
+      id: "as-code-points",
+      chapter: "dsa-arrays-strings",
+      level: "beginner",
+      skill: "edge-case",
+      pattern: "in-place-array",
+      section: "strings-are-utf-16-length-code-points-and-reversing",
+      kind: "single",
+      prompt: '<p>Which expression evaluates to <code>1</code> for the single emoji string <code>"😀"</code>?</p>',
+      choices: [
+        {
+          id: "a",
+          text: '<code>"😀".length</code>',
+          why: "<code>length</code> counts UTF-16 code units, and this emoji is stored as a surrogate pair of two units, so it is 2.",
+        },
+        {
+          id: "b",
+          text: '<code>"😀".split("").length</code>',
+          why: '<code>split("")</code> splits between code units, so it cuts the pair in half and returns an array of 2.',
+        },
+        {
+          id: "c",
+          text: '<code>[..."😀"].length</code>',
+          why: "Spread uses the string's iterator, which walks by code point, so the pair stays together and the array has one element.",
+        },
+        {
+          id: "d",
+          text: '<code>"😀".charCodeAt(0)</code>',
+          why: "This returns the number 55357, the first half of the pair, not a count of 1.",
+        },
+      ],
+      answer: "c",
     },
   ],
   pattern: {

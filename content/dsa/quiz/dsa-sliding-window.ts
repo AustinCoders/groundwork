@@ -16,22 +16,22 @@ export const pool: ChapterPool = {
       choices: [
         {
           id: "a",
-          text: "For every start day, add up its k days from scratch and keep the biggest total.",
+          text: "For every start day, add up its k days from scratch, then keep the biggest total found.",
           why: "This is correct, but each window costs k additions and there are about n windows, so the time is O(n · k). Neighbouring windows share all but one day each, and this approach throws that overlap away.",
         },
         {
           id: "b",
-          text: "Sort the takings and add up the k largest values.",
+          text: "Sort the takings from largest to smallest, then add up the first k of them to get the answer.",
           why: "Sorting breaks the order of the days, and the k largest days are usually not next to each other. The question is about days in a row, so the answer can be smaller than this total.",
         },
         {
           id: "c",
-          text: "Put one pointer at each end of the array and move them toward each other.",
+          text: "Put one pointer at each end of the array and move them toward each other, comparing sums.",
           why: "Pointers closing inward look for a pair, not for a block of k neighbours. They never form a window of a fixed size.",
         },
         {
           id: "d",
-          text: "Add up the first k days once, then move one day at a time: add the new day, subtract the day that left, and keep the best total.",
+          text: "Add up the first k days once, then slide: add the new day, subtract the day that left, keep the best total.",
           why: "Moving the window one step changes only two values, so each update is O(1) and the whole scan is O(n), however large k is.",
         },
       ],
@@ -51,22 +51,22 @@ export const pool: ChapterPool = {
       choices: [
         {
           id: "a",
-          text: "A window of one fixed size k, slid across the array once.",
+          text: "A window of one fixed size k, chosen up front and slid across the array once, tracking its sum.",
           why: "The answer is the length you are looking for, so you do not know k in advance. A fixed window only answers the question for a size you already have.",
         },
         {
           id: "b",
-          text: "A window that grows on the right until its sum reaches the target, then shrinks from the left for as long as the sum still reaches it.",
+          text: "A window that grows on the right until its sum reaches the target, then shrinks from the left while it still does.",
           why: "Because every number is positive, growing the window raises the sum and shrinking it lowers the sum, so the two moves never need to be undone. Each end only moves forward, so the scan is O(n).",
         },
         {
           id: "c",
-          text: "Sort the numbers from largest to smallest and add them up until the target is reached.",
+          text: "Sort the numbers from largest to smallest and add them up until the running total reaches the target.",
           why: "The largest numbers are usually not neighbours in the array, so this answers a different question. It also loses the positions the problem depends on.",
         },
         {
           id: "d",
-          text: "Store each number in a hash map and look up <code>target - x</code> for every element.",
+          text: "Store each number in a hash map, then look up <code>target - x</code> for every element in the array.",
           why: "That finds two elements that add up to the target. The question is about a run of any length, whose sum is not made of just two elements.",
         },
       ],
@@ -240,7 +240,7 @@ export const pool: ChapterPool = {
       section: "fixed-size-window",
       kind: "single",
       prompt:
-        "<p>The window size is larger than the array. In JavaScript, what does <code>maxSumWindow([5, 9], 3)</code> return, using the function from the chapter?</p>",
+        "<p>The window size is larger than the array. In JavaScript, what does <code>maxSumWindow([5, 9], 3)</code> return when the function has no check on <code>k</code> and starts like this?</p><pre><code>function maxSumWindow(nums, k) {\n  let windowSum = 0;\n  for (let i = 0; i &lt; k; i++) windowSum += nums[i];\n\n  let best = windowSum;\n  for (let i = k; i &lt; nums.length; i++) {\n    windowSum += nums[i] - nums[i - k];\n    best = Math.max(best, windowSum);\n  }\n  return best;\n}</code></pre>",
       choices: [
         {
           id: "a",
@@ -250,7 +250,7 @@ export const pool: ChapterPool = {
         {
           id: "b",
           text: "<code>NaN</code>",
-          why: "The first loop reads <code>nums[2]</code>, which does not exist, so it gives <code>undefined</code>. Adding <code>undefined</code> to a number gives <code>NaN</code>, and the second loop never runs, so <code>best</code> stays <code>NaN</code>. Check that <code>k &lt;= nums.length</code> before building the first window.",
+          why: "The first loop reads <code>nums[2]</code>, which does not exist, so it gives <code>undefined</code>. Adding <code>undefined</code> to a number gives <code>NaN</code>, and the second loop never runs, so <code>best</code> stays <code>NaN</code>. Check that <code>k &lt;= nums.length</code> before building the first window; the chapter's version returns <code>null</code> when no window of that size exists.",
         },
         {
           id: "c",
@@ -278,22 +278,22 @@ export const pool: ChapterPool = {
       choices: [
         {
           id: "a",
-          text: "O(n²), because a <code>while</code> loop sits inside a <code>for</code> loop",
+          text: "O(n²), because a <code>while</code> loop runs inside every pass of the <code>for</code> loop",
           why: "The inner loop can run many times in one pass, but <code>left</code> only ever moves forward and can move at most n steps in the whole call. The loops add up, they do not multiply.",
         },
         {
           id: "b",
-          text: "O(n log n), because the window is halved each time",
+          text: "O(n log n), because the window is halved each time it shrinks",
           why: "Nothing is halved. The window grows by one element on the right and loses elements on the left, one step at a time.",
         },
         {
           id: "c",
-          text: "O(n), because <code>right</code> moves n times and <code>left</code> moves at most n times in total",
+          text: "O(n), because <code>right</code> moves n times and <code>left</code> never moves more than n times",
           why: "Every element enters the window once and leaves it at most once, so the total work is at most about 2n steps. This is the amortized argument for the shrink loop.",
         },
         {
           id: "d",
-          text: "O(n · m), where m is the length of the final window",
+          text: "O(n · m), where m is the length of the longest window the loop reaches",
           why: "m can be close to n, which would make this as large as O(n²). The cost does not depend on the window size at all, because each element is added and removed at most once.",
         },
       ],
@@ -366,6 +366,264 @@ export const pool: ChapterPool = {
         },
       ],
       answer: "d",
+    },
+    {
+      id: "sw-record-after-shrink",
+      chapter: "dsa-sliding-window",
+      level: "beginner",
+      skill: "edge-case",
+      pattern: "sliding-window",
+      section: "longest-or-shortest-where-the-answer-is-recorded",
+      kind: "single",
+      prompt:
+        "<p>A teammate moves the <code>best = Math.min(...)</code> line of <code>minSubArrayLen</code> out of the <code>while</code> loop, to just after it. The array has positive numbers and the true answer for <code>minSubArrayLen(7, [2, 3, 1, 2, 4, 3])</code> is 2. What does the changed version return?</p><pre><code>for (let right = 0; right &lt; nums.length; right++) {\n  sum += nums[right];\n  while (sum &gt;= target) sum -= nums[left++];\n  best = Math.min(best, right - left + 1);\n}</code></pre>",
+      choices: [
+        {
+          id: "a",
+          text: "2, the same as before, because the window is smallest at the end anyway.",
+          why: "The change records the window at a different moment, so the numbers differ. After the loop the window has just stopped satisfying <code>sum &gt;= target</code>, so it is not a window that reaches the target at all.",
+        },
+        {
+          id: "b",
+          text: "<code>Infinity</code>, because <code>best</code> is never updated.",
+          why: "<code>best</code> is updated on every pass of the <code>for</code> loop, just not at a useful moment. It ends as a finite number.",
+        },
+        {
+          id: "c",
+          text: "1, a length that no window with sum at least 7 has.",
+          why: "On the last element the window after shrinking is <code>[3]</code> with sum 3, which is below 7, and its length 1 is recorded. Recording after the shrink loop measures a window that is already too small. Record inside the loop, before the element is removed.",
+        },
+        {
+          id: "d",
+          text: "4, the length of the first window that reached the target.",
+          why: "The first time the sum reaches 7 the window has length 4, but that value is not recorded: the length is read after the loop has shortened the window, and later passes produce smaller values still.",
+        },
+      ],
+      answer: "c",
+    },
+    {
+      id: "sw-trace-product",
+      chapter: "dsa-sliding-window",
+      level: "beginner",
+      skill: "trace",
+      pattern: "sliding-window",
+      section: "counting-windows-every-right-end-adds-right-left-1",
+      kind: "single",
+      prompt:
+        "<p>Run the chapter's <code>numSubarrayProductLessThanK</code> on a new input. What does it return?</p><pre><code>numSubarrayProductLessThanK([3, 1, 2, 2], 5);</code></pre>",
+      choices: [
+        {
+          id: "a",
+          text: "4",
+          why: "That is how many single-element windows there are. Windows such as <code>[1, 2]</code> and <code>[3, 1]</code> also have a product below 5 and are counted too.",
+        },
+        {
+          id: "b",
+          text: "6",
+          why: "The valid windows ending at each position number 1, 2, 2 and 3, which does not total 6. The product 3 · 1 · 2 = 6 reaches the limit at the third element and forces <code>left</code> to move.",
+        },
+        {
+          id: "c",
+          text: "8",
+          why: "The additions are 1 (for the 3), 2 (for the 1: <code>[1]</code> and <code>[3, 1]</code>), 2 (for the first 2: <code>[2]</code> and <code>[1, 2]</code>, after dropping the 3) and 3 (for the second 2: <code>[2]</code>, <code>[2, 2]</code>, <code>[1, 2, 2]</code>), which is 8.",
+        },
+        {
+          id: "d",
+          text: "10",
+          why: "That would count every subarray of four elements. The windows containing both the 3 and a 2, such as <code>[3, 1, 2]</code>, have a product of 6 or more and are not valid.",
+        },
+      ],
+      answer: "c",
+    },
+    {
+      id: "sw-exactly-k-recognise",
+      chapter: "dsa-sliding-window",
+      level: "beginner",
+      skill: "recognise",
+      pattern: "sliding-window",
+      section: "exactly-k-is-at-most-k-minus-at-most-k-1",
+      kind: "single",
+      prompt:
+        "<p>You must count the contiguous subarrays of an integer array that contain <b>exactly</b> 3 distinct values. A single window that grows and shrinks to hold exactly 3 does not work. Which approach does?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "Count the subarrays with at most 3 distinct values and subtract those with at most 2.",
+          why: "A subarray with at most 3 distinct values has either at most 2 or exactly 3, so the difference is the subarrays with exactly 3. Each count is an ordinary window, because shrinking never adds a distinct value.",
+        },
+        {
+          id: "b",
+          text: "Track the longest window with exactly 3 distinct values and multiply its length by the array length.",
+          why: "The longest such window says nothing about how many subarrays qualify, and a product of lengths is not a count of anything here.",
+        },
+        {
+          id: "c",
+          text: "Sort the array first, then use a window over the sorted values.",
+          why: "Subarrays are contiguous in the original order. Sorting changes which elements are next to each other and destroys the thing being counted.",
+        },
+        {
+          id: "d",
+          text: "Shrink the window whenever it holds more than 3 distinct values and add its length each time.",
+          why: "That counts subarrays with at most 3 distinct values, including those with 1 or 2. The subarrays with fewer than 3 must still be removed from the total.",
+        },
+      ],
+      answer: "a",
+    },
+    {
+      id: "sw-missing-counter",
+      chapter: "dsa-sliding-window",
+      level: "beginner",
+      skill: "edge-case",
+      pattern: "sliding-window",
+      section: "the-need-and-missing-counters-minimum-window-substring",
+      kind: "single",
+      prompt:
+        '<p>In <code>minWindow</code> the line <code>if (need.get(c) &gt; 0) missing--;</code> is changed to decrement <code>missing</code> for every character that appears in <code>t</code>, whatever <code>need.get(c)</code> is. What does <code>minWindow("AAB", "AB")</code> return now?</p>',
+      choices: [
+        {
+          id: "a",
+          text: '<code>"AB"</code>, the correct answer',
+          why: 'The second <code>A</code> is counted as if it helped, so <code>missing</code> reaches 0 before the <code>B</code> is seen. The loop records a window earlier than it should and cannot return <code>"AB"</code>.',
+        },
+        {
+          id: "b",
+          text: '<code>"A"</code>, a window with no <code>B</code>',
+          why: "After the second <code>A</code>, <code>missing</code> is 0 although the window holds no <code>B</code>. The shrink loop then records windows that lack it, and the shortest is a single <code>A</code>.",
+        },
+        {
+          id: "c",
+          text: '<code>"AAB"</code>, the whole string',
+          why: 'The whole string is a valid window but not the shortest. The faulty count says a shorter one, <code>"AA"</code> and then <code>"A"</code>, is already valid.',
+        },
+        {
+          id: "d",
+          text: "The empty string, because no window is found.",
+          why: "The faulty counter reaches 0, so the loop does record windows. It records ones that are wrong rather than none at all.",
+        },
+      ],
+      answer: "b",
+    },
+    {
+      id: "sw-negative-recognise",
+      chapter: "dsa-sliding-window",
+      level: "beginner",
+      skill: "recognise",
+      pattern: "sliding-window",
+      section: "when-the-window-breaks-negative-numbers-and-non-monotone-rul",
+      kind: "single",
+      prompt: "<p>For which of these is the plain expand-and-shrink window unsafe?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "The shortest subarray of positive numbers with sum at least <code>k</code>.",
+          why: "Adding an element can only raise the sum and removing one can only lower it, so the shrink loop never skips a better window. This is the standard safe case.",
+        },
+        {
+          id: "b",
+          text: "The longest substring with at most <code>k</code> distinct characters.",
+          why: "Shrinking a window never adds a distinct character, so validity is monotone and the window is safe.",
+        },
+        {
+          id: "c",
+          text: "The shortest subarray with sum at least <code>k</code> when the array can contain negative numbers.",
+          why: "Removing a negative number raises the sum, so after the window stops being valid, giving up more elements from the left could make it valid again. The shrink loop never looks, so it can miss shorter windows. Prefix sums with a monotonic deque handle it.",
+        },
+        {
+          id: "d",
+          text: "The number of subarrays of positive numbers with a product below <code>k</code>.",
+          why: "Removing a positive factor never raises the product, so a valid window stays valid when it shrinks and the counting window is safe.",
+        },
+      ],
+      answer: "c",
+    },
+    {
+      id: "sw-deque-cost",
+      chapter: "dsa-sliding-window",
+      level: "beginner",
+      skill: "complexity",
+      pattern: "sliding-window",
+      section: "sliding-window-maximum-a-window-with-a-deque",
+      kind: "single",
+      prompt:
+        "<p>In <code>maxSlidingWindow</code> the inner <code>while</code> can pop many indices on a single step. Why is the total work for an array of n numbers O(n) and not O(n · k)?</p>",
+      choices: [
+        {
+          id: "a",
+          text: "The deque holds at most one index, so each step costs O(1).",
+          why: "The deque holds up to <code>k</code> indices, in decreasing order of value. In a decreasing array it grows to <code>k</code>.",
+        },
+        {
+          id: "b",
+          text: "Each index is pushed once and popped at most once, so the pops over the whole run add up to at most n.",
+          why: "A pop removes an index for good, and each index enters only once, so the total number of pops cannot exceed n. A single step may pop many, but only because earlier steps did little.",
+        },
+        {
+          id: "c",
+          text: "The inner loop only runs when the window is full.",
+          why: "It runs on every step, including the first <code>k - 1</code>, before any maximum is recorded. The bound comes from counting pops, not from when the loop is active.",
+        },
+        {
+          id: "d",
+          text: "The loop is O(n · k) in the worst case, and the speed-up only shows on average.",
+          why: "The bound holds on every input: the number of pushes is n and the number of pops is at most the number of pushes, whatever the data looks like.",
+        },
+      ],
+      answer: "b",
+    },
+    {
+      id: "sw-trace-k-distinct",
+      chapter: "dsa-sliding-window",
+      level: "beginner",
+      skill: "trace",
+      pattern: "sliding-window",
+      section: "at-most-k-distinct-a-longest-window-over-a-counting-map",
+      kind: "single",
+      prompt:
+        '<p>Run <code>longestAtMostKDistinct</code> from the chapter. What does it return, and what is the final window?</p><pre><code>longestAtMostKDistinct("abaccc", 2);</code></pre>',
+      choices: [
+        {
+          id: "a",
+          text: '3, with the window <code>"aba"</code>',
+          why: '<code>"aba"</code> is valid, but the scan reaches a longer valid window later, at the end of the string.',
+        },
+        {
+          id: "b",
+          text: '4, with the window <code>"accc"</code>',
+          why: 'At the first <code>c</code> the window <code>"abac"</code> holds three distinct letters, so the left end moves past the <code>a</code> and the <code>b</code>, leaving <code>"ac"</code>. The next two <code>c</code>s grow it to <code>"accc"</code>, length 4.',
+        },
+        {
+          id: "c",
+          text: "6, with the whole string",
+          why: "The whole string holds three distinct letters, <code>a</code>, <code>b</code> and <code>c</code>, one more than the limit.",
+        },
+        {
+          id: "d",
+          text: '5, with the window <code>"baccc"</code>',
+          why: '<code>"baccc"</code> holds three distinct letters, <code>b</code>, <code>a</code> and <code>c</code>, so it is never a valid window.',
+        },
+      ],
+      answer: "b",
+    },
+    {
+      id: "sw-order-anagram-slide",
+      chapter: "dsa-sliding-window",
+      level: "beginner",
+      skill: "trace",
+      pattern: "sliding-window",
+      section: "fixed-window-with-a-frequency-compare-anagrams-and-permutati",
+      kind: "order",
+      prompt:
+        "<p>Put one pass of the main loop of <code>findAnagrams</code> in the order the chapter's code runs it, for a pass where the window is already full.</p>",
+      items: [
+        { id: "add", text: "Add <code>s[right]</code> to the window by calling <code>bump(s[right], 1)</code>." },
+        {
+          id: "drop",
+          text: "Remove the letter that just left, <code>s[right - k]</code>, with <code>bump(..., -1)</code>.",
+        },
+        { id: "check", text: "Test whether <code>unequal</code> is 0." },
+        { id: "record", text: "If it is 0, push the start index <code>right - k + 1</code> into the result." },
+      ],
+      why: "In the chapter's code the new letter is added first, which grows the window to <code>k + 1</code> letters. The old letter is removed next, so the window is back to <code>k</code> letters before it is compared. The check reads <code>unequal</code> only after both updates, and the index is recorded only if the check passes.",
     },
   ],
   pattern: {
