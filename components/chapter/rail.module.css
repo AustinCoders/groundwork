@@ -236,6 +236,15 @@
   margin: 0;
   padding: 0;
   list-style: none;
+  max-height: max(220px, calc(100dvh - var(--header-h, 60px) - 340px));
+  overflow-y: auto;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+  mask-image: linear-gradient(to bottom, var(--ink) calc(100% - 24px), transparent);
+}
+
+.toc::-webkit-scrollbar {
+  display: none;
 }
 
 .toc li {

@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { Eyebrow, kit } from "@/components/ui/MenuKit";
 import { openCheckOnClick } from "@/lib/checkOpen";
@@ -40,6 +40,18 @@ export function TocCard({
   after?: ReactNode;
 }) {
   const at = toc.findIndex((t) => t.id === active);
+  const listRef = useRef<HTMLOListElement>(null);
+  useEffect(() => {
+    const list = listRef.current;
+    const current = list?.querySelector<HTMLElement>('[data-state="now"]');
+    if (!list || !current) return;
+    const margin = 24;
+    const above = current.getBoundingClientRect().top - list.getBoundingClientRect().top - margin;
+    const below = current.getBoundingClientRect().bottom - list.getBoundingClientRect().bottom + margin;
+    const behavior = prefersMotion() ? "smooth" : "auto";
+    if (below > 0) list.scrollTo({ top: list.scrollTop + below, behavior });
+    else if (above < 0) list.scrollTo({ top: list.scrollTop + above, behavior });
+  }, [at]);
   const readClass = `${styles.readBtn}${read ? ` ${styles.readBtnOn}` : ""}`;
   const readBody = (
     <>
@@ -63,7 +75,7 @@ export function TocCard({
           <p className={styles.tocMeta}>
             {active ? `${item} ${at + 1} of ${toc.length}` : `${toc.length} ${item.toLowerCase()}s`} · {pct}%
           </p>
-          <ol className={styles.toc}>
+          <ol className={styles.toc} ref={listRef}>
             {toc.map((t, i) => {
               const state = i === at ? "now" : i < at ? "past" : "next";
               const mark = marks?.[t.id];
