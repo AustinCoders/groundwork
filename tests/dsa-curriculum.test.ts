@@ -67,6 +67,24 @@ const target: Target[] = [
     prerequisites: ["dsa-stacks-queues", "dsa-sliding-window"],
   },
   { id: "dsa-math", num: "I19", level: "intermediate", prerequisites: ["dsa-basic-recursion"] },
+  {
+    id: "dsa-design-simulation",
+    num: "I20",
+    level: "intermediate",
+    prerequisites: ["dsa-hashing", "dsa-linked-lists", "dsa-heaps-priority-queues"],
+  },
+  {
+    id: "dsa-divide-conquer",
+    num: "I21",
+    level: "intermediate",
+    prerequisites: ["dsa-basic-recursion", "dsa-sorting-algorithms"],
+  },
+  {
+    id: "dsa-randomization-sampling",
+    num: "I22",
+    level: "intermediate",
+    prerequisites: ["dsa-prefix-sums", "dsa-binary-search"],
+  },
   { id: "dsa-advanced-dp", num: "A1", level: "advanced", prerequisites: ["dsa-dp-2d", "dsa-dp-state-machines"] },
   { id: "dsa-union-find", num: "A2", level: "advanced", prerequisites: ["dsa-graphs-representation-traversal"] },
   {
@@ -97,32 +115,24 @@ const target: Target[] = [
     prerequisites: ["dsa-hashing", "dsa-linked-lists", "dsa-heaps-priority-queues"],
   },
   { id: "dsa-advanced-backtracking", num: "A10", level: "advanced", prerequisites: ["dsa-backtracking"] },
-  { id: "dsa-interview-strategy", num: "A11", level: "advanced", prerequisites: ["dsa-complexity-analysis"] },
+  { id: "dsa-games-probability-dp", num: "A11", level: "advanced", prerequisites: ["dsa-advanced-dp"] },
+  {
+    id: "dsa-ordered-structures",
+    num: "A12",
+    level: "advanced",
+    prerequisites: ["dsa-bst-operations", "dsa-segment-fenwick-trees"],
+  },
+  {
+    id: "dsa-sweep-line-geometry",
+    num: "A13",
+    level: "advanced",
+    prerequisites: ["dsa-intervals", "dsa-heaps-priority-queues", "dsa-math"],
+  },
+  { id: "dsa-interview-strategy", num: "A14", level: "advanced", prerequisites: ["dsa-complexity-analysis"] },
 ];
 
-const DEPTH_ALLOW: string[] = [
-  "dsa-arrays-strings",
-  "dsa-hashing",
-  "dsa-two-pointers",
-  "dsa-sliding-window",
-  "dsa-binary-search",
-  "dsa-basic-recursion",
-  "dsa-stacks-queues",
-  "dsa-linked-lists",
-  "dsa-trees",
-  "dsa-tree-problems",
-  "dsa-heaps-priority-queues",
-  "dsa-graphs-representation-traversal",
-  "dsa-graph-problems",
-  "dsa-backtracking",
-  "dsa-dp-1d",
-  "dsa-dp-2d",
-  "dsa-greedy",
-  "dsa-intervals",
-  "dsa-bit-manipulation",
-  "dsa-matrix-problems",
-];
-const EXERCISE_ALLOW: string[] = ["dsa-sliding-window"];
+const DEPTH_ALLOW: string[] = [];
+const EXERCISE_ALLOW: string[] = [];
 
 const DEPTH_BAR_WORDS = 1200;
 const levelRank: Record<LevelId, number> = { beginner: 0, intermediate: 1, advanced: 2 };
@@ -148,7 +158,7 @@ function exercisesFitting(chapterId: string): { level: LevelId }[] {
 }
 
 describe("DSA curriculum", () => {
-  it("lists the 42 chapters in curriculum order with their num and level", () => {
+  it("lists the 48 chapters in curriculum order with their num and level", () => {
     expect(dsa.map((ch) => ({ id: ch.id, num: ch.num, level: ch.levels[0], count: ch.levels.length }))).toEqual(
       target.map((t) => ({ id: t.id, num: t.num, level: t.level, count: 1 }))
     );
@@ -202,26 +212,6 @@ describe("DSA curriculum", () => {
       const section = sections.find((s) => s.chapter === ch.id);
       expect(section?.items.length ?? 0, `${ch.id} outline has no syllabus bullets`).toBeGreaterThan(0);
     }
-  });
-
-  it("keeps the unwritten chapters as outlines", () => {
-    expect(
-      dsa
-        .filter((ch) => !ch.ready)
-        .map((ch) => ch.id)
-        .sort()
-    ).toEqual(
-      [
-        "dsa-bst-operations",
-        "dsa-dp-state-machines",
-        "dsa-graph-structure",
-        "dsa-grid-bfs",
-        "dsa-js-toolkit",
-        "dsa-math",
-        "dsa-prefix-sums",
-        "dsa-sparse-table",
-      ].sort()
-    );
   });
 
   it("meets the depth bar in every written chapter not on the allow-list", () => {

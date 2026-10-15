@@ -33,11 +33,25 @@ import { dsaDesignProblems } from "./dsa/dsa-design-problems";
 import { dsaAdvancedBacktracking } from "./dsa/dsa-advanced-backtracking";
 import { dsaTopologicalPatterns } from "./dsa/dsa-topological-patterns";
 import { dsaInterviewStrategy } from "./dsa/dsa-interview-strategy";
+import { dsaJsToolkit } from "./dsa/dsa-js-toolkit";
+import { dsaPrefixSums } from "./dsa/dsa-prefix-sums";
+import { dsaBstOperations } from "./dsa/dsa-bst-operations";
+import { dsaGridBfs } from "./dsa/dsa-grid-bfs";
+import { dsaDpStateMachines } from "./dsa/dsa-dp-state-machines";
+import { dsaMath } from "./dsa/dsa-math";
+import { dsaGraphStructure } from "./dsa/dsa-graph-structure";
+import { dsaSparseTable } from "./dsa/dsa-sparse-table";
+import { dsaDesignSimulation } from "./dsa/dsa-design-simulation";
+import { dsaDivideConquer } from "./dsa/dsa-divide-conquer";
+import { dsaRandomizationSampling } from "./dsa/dsa-randomization-sampling";
+import { dsaGamesProbabilityDp } from "./dsa/dsa-games-probability-dp";
+import { dsaOrderedStructures } from "./dsa/dsa-ordered-structures";
+import { dsaSweepLineGeometry } from "./dsa/dsa-sweep-line-geometry";
 
 export const dsaNotes: NotesFile = {
   meta: {
     title: "DSA — the whole map",
-    subtitle: "42 sections across three levels — beginner through advanced. 34 are written; the other 8 are outlined.",
+    subtitle: "48 sections across three levels — beginner through advanced. All 48 are written.",
     lead: "Pick a level and you'll get these sections in the order that makes sense, from the first pointer trick to segment trees and interview strategy.",
     author: "Akshat",
     updated: "August 2026",
@@ -47,31 +61,9 @@ export const dsaNotes: NotesFile = {
 
   chapters: [
     dsaComplexityAnalysis,
-    {
-      id: "dsa-js-toolkit",
-      num: "B2",
-      title: "The JavaScript toolkit for DSA",
-      short: "JavaScript toolkit",
-      levels: ["beginner"],
-      prerequisites: ["dsa-complexity-analysis"],
-      practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
-    },
+    dsaJsToolkit,
     dsaArraysStrings,
-    {
-      id: "dsa-prefix-sums",
-      num: "B4",
-      title: "Prefix sums and difference arrays",
-      short: "Prefix sums",
-      levels: ["beginner"],
-      prerequisites: ["dsa-arrays-strings"],
-      practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
-    },
+    dsaPrefixSums,
     dsaHashing,
     dsaTwoPointers,
     dsaSlidingWindow,
@@ -81,100 +73,40 @@ export const dsaNotes: NotesFile = {
     dsaStacksQueues,
     dsaLinkedLists,
     dsaTrees,
-    {
-      id: "dsa-bst-operations",
-      num: "I2",
-      title: "BST operations and ordered data",
-      short: "BST operations",
-      levels: ["intermediate"],
-      prerequisites: ["dsa-trees", "dsa-binary-search"],
-      practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
-    },
+    dsaBstOperations,
     dsaTreeProblems,
     dsaHeapsPriorityQueues,
     dsaGraphsRepresentationTraversal,
-    {
-      id: "dsa-grid-bfs",
-      num: "I6",
-      title: "BFS on grids and implicit graphs",
-      short: "BFS on grids",
-      levels: ["intermediate"],
-      prerequisites: ["dsa-graphs-representation-traversal"],
-      practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
-    },
+    dsaGridBfs,
     dsaGraphProblems,
     dsaTopologicalPatterns,
     dsaBacktracking,
     dsaDp1d,
     dsaDp2d,
-    {
-      id: "dsa-dp-state-machines",
-      num: "I12",
-      title: "DP state machines and the knapsack family",
-      short: "DP state machines",
-      levels: ["intermediate"],
-      prerequisites: ["dsa-dp-1d"],
-      practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
-    },
+    dsaDpStateMachines,
     dsaGreedy,
     dsaIntervals,
     dsaBitManipulation,
     dsaMatrixProblems,
     dsaTries,
     dsaMonotonicStackQueue,
-    {
-      id: "dsa-math",
-      num: "I19",
-      title: "Math for interviews",
-      short: "Math for interviews",
-      levels: ["intermediate"],
-      prerequisites: ["dsa-basic-recursion"],
-      practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
-    },
+    dsaMath,
+    dsaDesignSimulation,
+    dsaDivideConquer,
+    dsaRandomizationSampling,
     dsaAdvancedDp,
     dsaUnionFind,
     dsaAdvancedGraphAlgorithms,
     dsaMinimumSpanningTree,
-    {
-      id: "dsa-graph-structure",
-      num: "A5",
-      title: "Advanced graphs: SCC, bridges, Euler paths, LCA",
-      short: "Advanced graphs",
-      levels: ["advanced"],
-      prerequisites: ["dsa-topological-patterns", "dsa-advanced-graph-algorithms"],
-      practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
-    },
+    dsaGraphStructure,
     dsaSegmentFenwickTrees,
-    {
-      id: "dsa-sparse-table",
-      num: "A7",
-      title: "Sparse tables and range tricks",
-      short: "Sparse tables",
-      levels: ["advanced"],
-      prerequisites: ["dsa-segment-fenwick-trees"],
-      practice: [],
-      ready: false,
-      subtitle: "",
-      body: "",
-    },
+    dsaSparseTable,
     dsaStringAlgorithms,
     dsaDesignProblems,
     dsaAdvancedBacktracking,
+    dsaGamesProbabilityDp,
+    dsaOrderedStructures,
+    dsaSweepLineGeometry,
     dsaInterviewStrategy,
   ],
 };

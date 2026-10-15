@@ -13,6 +13,14 @@ export const dsaSegmentFenwickTrees: Chapter = {
     "ex-range-minimum-query-segment-tree",
     "ex-count-of-smaller-numbers-after-self",
     "ex-range-sum-query-2d-mutable",
+    "ex-count-inversions",
+    "ex-fenwick-kth-smallest",
+    "ex-range-add-range-sum",
+    "ex-maximum-subarray-with-updates",
+    "ex-reverse-pairs",
+    "ex-count-of-range-sum",
+    "ex-my-calendar-iii",
+    "ex-fruits-into-baskets",
   ],
   ready: true,
   subtitle: "Prefix sums die the moment the array can change — these two structures buy back updates for a log factor.",
@@ -159,16 +167,16 @@ export const dsaSegmentFenwickTrees: Chapter = {
   Only the nodes on the root-to-leaf chain for index 4 ever change — 12, then 6,
   then 3, then 1 — which is exactly why <code>update</code> is O(log n) instead
   of O(n). The first <code>query(2,5)</code> never even visits node 12; it reads
-  the already-cached <code>t[6] = 14</code>, which is exactly why bumping index 4
-  from 5 to 10 is enough to shift the range answer from 19 to 24 without re-summing
-  anything by hand.
+  the already-cached <code>t[6] = 14</code>. The update then refreshed that cache to
+  19 on its way up, so bumping index 4 from 5 to 10 shifts the range answer from
+  19 to 24 without anyone re-summing the range.
 </p>
 <div class="warn">
   <span class="ttl">⚠ Two sizing/identity traps</span>
   <b>4n, not 2n.</b> When n isn't a power of two the tree is unbalanced in the
-  heap layout and indices can reach just past 2n; 4n is the standard safe
-  over-allocation (the tight bound is 2·2<sup>⌈log₂ n⌉</sup>, which is easier
-  to just round up than to compute). <b>The no-overlap return must be the
+  heap layout and indices can reach almost 4n (for n = 2080 the largest is about 3.9n); 4n is
+  the standard safe over-allocation, which is easier to just use than to
+  compute a tighter bound. <b>The no-overlap return must be the
   operation's identity.</b> Returning 0 is right for sum, catastrophically
   wrong for min — a min tree must return <code>Infinity</code> there, or every
   query gets dragged to 0.
@@ -196,6 +204,267 @@ export const dsaSegmentFenwickTrees: Chapter = {
   which needs an <em>invertible</em> operation. Min has no inverse — you cannot
   recover min(l..r) from min(0..r) and min(0..l−1) — so range-min genuinely
   requires a segment tree (or, if the array never changes, a sparse table).
+</p>
+
+<h3>Struct nodes: when a node stores more than one number</h3>
+<p>
+  So far every node held one number and the merge was one operator. Some
+  questions need a node to remember <em>several</em> facts about its range, so
+  that two halves can be combined without re-reading either. The standard
+  example is the <b>maximum subarray sum</b> (the best non-empty contiguous
+  run) with point updates, which a Fenwick tree cannot do and a prefix-sum array
+  cannot do once values change.
+</p>
+<p>
+  Ask what you would need to know about a left half L and a right half R to get
+  the answer for the joined range. The best subarray of L∪R is one of three
+  things: entirely inside L, entirely inside R, or <em>crossing the middle</em>,
+  in which case it is a suffix of L glued to a prefix of R. So each node stores
+  four numbers: <code>sum</code> (the whole range), <code>prefix</code> (the best
+  run starting at the left end), <code>suffix</code> (the best run ending at the
+  right end) and <code>best</code> (the best run anywhere). Each of the four can
+  itself be derived from the children's four:
+</p>
+<table>
+  <tr><th>field of the merged node</th><th>how it comes from L and R</th></tr>
+  <tr><td><code>sum</code></td><td>L.sum + R.sum</td></tr>
+  <tr><td><code>prefix</code></td><td>the better of L.prefix and (L.sum + R.prefix): stop inside L, or take all of L and keep going</td></tr>
+  <tr><td><code>suffix</code></td><td>the better of R.suffix and (R.sum + L.suffix)</td></tr>
+  <tr><td><code>best</code></td><td>the best of L.best, R.best and (L.suffix + R.prefix)</td></tr>
+</table>
+<pre><code>class MaxSubarrayTree {
+  constructor(nums) {
+    this.n = nums.length;
+    this.t = new Array(4 * this.n);
+    if (this.n > 0) this._build(nums, 1, 0, this.n - 1);
+  }
+
+  static leaf(v) { return { sum: v, prefix: v, suffix: v, best: v }; } <span class="c">// non-empty runs only</span>
+
+  static merge(a, b) { <span class="c">// order matters: a is the LEFT half</span>
+    return {
+      sum: a.sum + b.sum,
+      prefix: Math.max(a.prefix, a.sum + b.prefix),
+      suffix: Math.max(b.suffix, b.sum + a.suffix),
+      best: Math.max(a.best, b.best, a.suffix + b.prefix),
+    };
+  }
+
+  _build(nums, node, lo, hi) {
+    if (lo === hi) { this.t[node] = MaxSubarrayTree.leaf(nums[lo]); return; }
+    const mid = (lo + hi) >> 1;
+    this._build(nums, 2 * node, lo, mid);
+    this._build(nums, 2 * node + 1, mid + 1, hi);
+    this.t[node] = MaxSubarrayTree.merge(this.t[2 * node], this.t[2 * node + 1]);
+  }
+
+  update(i, value, node = 1, lo = 0, hi = this.n - 1) {
+    if (lo === hi) { this.t[node] = MaxSubarrayTree.leaf(value); return; }
+    const mid = (lo + hi) >> 1;
+    if (i &lt;= mid) this.update(i, value, 2 * node, lo, mid);
+    else this.update(i, value, 2 * node + 1, mid + 1, hi);
+    this.t[node] = MaxSubarrayTree.merge(this.t[2 * node], this.t[2 * node + 1]);
+  }
+
+  <span class="c">// best subarray sum inside nums[l..r] — O(log n)</span>
+  query(l, r, node = 1, lo = 0, hi = this.n - 1) {
+    if (r &lt; lo || hi &lt; l) return null; <span class="c">// no zero-like identity exists, so "nothing" is null</span>
+    if (l &lt;= lo &amp;&amp; hi &lt;= r) return this.t[node];
+    const mid = (lo + hi) >> 1;
+    const left = this.query(l, r, 2 * node, lo, mid);
+    const right = this.query(l, r, 2 * node + 1, mid + 1, hi);
+    if (left === null) return right;
+    if (right === null) return left;
+    return MaxSubarrayTree.merge(left, right);
+  }
+
+  best(l, r) { return this.query(l, r).best; }
+}</code></pre>
+<h4>Dry run: build on [1, −3, 4, 2], then set index 1 to 5</h4>
+<table>
+  <tr><th>node (range)</th><th>sum</th><th>prefix</th><th>suffix</th><th>best</th><th>how</th></tr>
+  <tr><td>[0,1]</td><td>−2</td><td>1</td><td>−2</td><td>1</td><td>merge(1, −3): prefix max(1, 1−3), suffix max(−3, −3+1), best max(1, −3, 1−3)</td></tr>
+  <tr><td>[2,3]</td><td>6</td><td>6</td><td>6</td><td>6</td><td>merge(4, 2): everything is positive, so all four fields grow</td></tr>
+  <tr><td>[0,3] root</td><td>4</td><td>4</td><td>6</td><td><b>6</b></td><td>best max(1, 6, suffix(−2) + prefix(6) = 4) is the run [4, 2]</td></tr>
+  <tr><td colspan="6"><b>update(1, 5)</b>: only the leaf, [0,1] and the root are rebuilt</td></tr>
+  <tr><td>[0,1]</td><td>6</td><td>6</td><td>6</td><td>6</td><td>merge(1, 5)</td></tr>
+  <tr><td>[0,3] root</td><td>12</td><td>12</td><td>12</td><td><b>12</b></td><td>best max(6, 6, suffix 6 + prefix 6 = 12): the whole array</td></tr>
+</table>
+<p class="sub">
+  The cost per query and per update is still O(log n); only the constant grows,
+  because a node is four numbers and a merge is a handful of operations. The
+  principle is the useful part: when a question about a range cannot be answered
+  from one number per half, add the facts that <em>can</em>, until the merge
+  closes. Longest run of equal values, the number of runs, "is this range
+  sorted" and range-gcd-with-count are all built this way.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ Struct merges are not commutative</span>
+  <code>merge(a, b)</code> and <code>merge(b, a)</code> give different answers,
+  because prefix and suffix depend on which half is on the left. The recursive
+  query above is safe because it always merges the left result with the right
+  one. Also note there is no zero-like identity element: with empty runs not
+  allowed, a range that overlaps nothing has no "empty" node of ordinary numbers
+  that is neutral (a true one needs sum 0 and <code>-Infinity</code> in the other
+  three fields, which is easy to get wrong), so the query returns
+  <code>null</code> and the two <code>if</code> lines skip it. Initialising an empty node to zeros would silently allow the
+  empty subarray and break all-negative inputs.
+</div>
+
+<h3>The iterative bottom-up segment tree</h3>
+<p>
+  The recursive tree needs 4n cells and pays for a function call per level. When
+  you can use the half-open convention, there is a much shorter version with a
+  flat array of exactly 2n cells: leaf i lives at index <code>n + i</code>, and
+  node k is the merge of nodes 2k and 2k+1. Building is a single backwards loop,
+  updating is "write the leaf, then walk to the root", and a query walks inward
+  from both ends of the range at once.
+</p>
+<pre><code>class BottomUpTree {
+  constructor(nums, merge, identity) {
+    this.n = nums.length;
+    this.merge = merge;
+    this.identity = identity;
+    this.t = new Array(2 * this.n).fill(identity);
+    for (let i = 0; i &lt; this.n; i++) this.t[this.n + i] = nums[i]; <span class="c">// leaves</span>
+    for (let k = this.n - 1; k >= 1; k--) this.t[k] = merge(this.t[2 * k], this.t[2 * k + 1]);
+  }
+
+  update(i, value) {
+    let k = i + this.n;
+    this.t[k] = value;
+    for (k >>= 1; k >= 1; k >>= 1) this.t[k] = this.merge(this.t[2 * k], this.t[2 * k + 1]);
+  }
+
+  <span class="c">// merge of nums[l..r-1], half-open — O(log n)</span>
+  query(l, r) {
+    let left = this.identity, right = this.identity;
+    for (l += this.n, r += this.n; l &lt; r; l >>= 1, r >>= 1) {
+      if (l &amp; 1) left = this.merge(left, this.t[l++]);     <span class="c">// l is a right child: take it, step past it</span>
+      if (r &amp; 1) right = this.merge(this.t[--r], right);   <span class="c">// r is exclusive: step back, then take it</span>
+    }
+    return this.merge(left, right);
+  }
+}</code></pre>
+<p>
+  Here is why the loop works. At each level, <code>l</code> is the leftmost node
+  whose range is still inside the query, and <code>r</code> is one past the
+  rightmost. If <code>l</code> is odd it is a <em>right</em> child, so its parent
+  would also cover an element left of the query: take <code>l</code> alone and
+  move one step right. If <code>r</code> is odd then <code>r - 1</code> is a left
+  child whose parent would cover an element right of the query: take
+  <code>r - 1</code> alone. Then both indices halve and the same argument holds one
+  level up. Each level takes at most two nodes, so a query is O(log n).
+</p>
+<h4>Dry run: query(2, 6) on [3, 1, 4, 1, 5, 9, 2, 6] with sum</h4>
+<table>
+  <tr><th>level</th><th>l, r</th><th>l odd?</th><th>r odd?</th><th>running result</th></tr>
+  <tr><td>leaves</td><td>10, 14</td><td>no</td><td>no</td><td>0</td></tr>
+  <tr><td>parents</td><td>5, 7</td><td>yes: take t[5] = 4 + 1 = 5, l becomes 6</td><td>yes: r becomes 6, take t[6] = 5 + 9 = 14</td><td>5 + 14 = 19</td></tr>
+  <tr><td>grandparents</td><td>3, 3</td><td colspan="2">l &lt; r fails, stop</td><td><b>19</b></td></tr>
+</table>
+<p class="sub">
+  The answer 19 matches the recursive tree's <code>query(2, 5)</code> from the
+  dry run above, and it took two reads. Note the <em>half-open</em> range: the
+  second argument is one past the last index.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ Why there are two accumulators</span>
+  For sum and min a single accumulator would do, since the order of merging does
+  not change the answer. But the loop collects nodes from the left edge moving
+  right and from the right edge moving left. For an operation that is not
+  commutative (string concatenation, the struct merge above, matrix product) the
+  left pieces must be merged on the left side and the right pieces on the right
+  side, which is what <code>left</code> and <code>right</code> do. With them the
+  code is correct for non-commutative merges too, including when n is not a
+  power of two. Passing a merge to the constructor means you must also pass
+  its identity, and it must be a true identity for that merge.
+</div>
+<p class="sub">
+  Use this version when you want the smallest, fastest code for point update and
+  range query. Its limits: lazy propagation is awkward without the recursive
+  structure, and the "descend by comparing the children" idiom in the next
+  section is easier on the recursive layout.
+</p>
+
+<h3>Descending the tree: the leftmost index at or above a threshold</h3>
+<p>
+  A segment tree can also answer questions about <em>positions</em>, not just
+  ranges. Take an array of capacities and the request "find the leftmost bin
+  with capacity at least x, then use some of it." Scanning is O(n). If each node
+  stores the <b>maximum</b> of its range, you can decide in O(1) whether a range
+  contains any bin with capacity ≥ x, and descend straight to the answer: go left
+  if the left child's maximum is enough, otherwise go right.
+</p>
+<pre><code>class MaxTree {
+  constructor(nums) {
+    this.n = nums.length;
+    this.t = new Array(4 * this.n).fill(-Infinity);
+    if (this.n > 0) this._build(nums, 1, 0, this.n - 1);
+  }
+
+  _build(nums, node, lo, hi) {
+    if (lo === hi) { this.t[node] = nums[lo]; return; }
+    const mid = (lo + hi) >> 1;
+    this._build(nums, 2 * node, lo, mid);
+    this._build(nums, 2 * node + 1, mid + 1, hi);
+    this.t[node] = Math.max(this.t[2 * node], this.t[2 * node + 1]);
+  }
+
+  update(i, value, node = 1, lo = 0, hi = this.n - 1) {
+    if (lo === hi) { this.t[node] = value; return; }
+    const mid = (lo + hi) >> 1;
+    if (i &lt;= mid) this.update(i, value, 2 * node, lo, mid);
+    else this.update(i, value, 2 * node + 1, mid + 1, hi);
+    this.t[node] = Math.max(this.t[2 * node], this.t[2 * node + 1]);
+  }
+
+  <span class="c">// smallest index i >= from with nums[i] >= x, or -1 — O(log n)</span>
+  firstAtLeast(x, from = 0, node = 1, lo = 0, hi = this.n - 1) {
+    if (hi &lt; from || this.t[node] &lt; x) return -1; <span class="c">// out of range, or no bin here is big enough</span>
+    if (lo === hi) return lo;
+    const mid = (lo + hi) >> 1;
+    const found = this.firstAtLeast(x, from, 2 * node, lo, mid);
+    return found !== -1 ? found : this.firstAtLeast(x, from, 2 * node + 1, mid + 1, hi);
+  }
+}</code></pre>
+<p>
+  Without the <code>from</code> argument the search is one root-to-leaf walk:
+  at every node, the left child either has a bin that fits (go there; the answer
+  is the <em>leftmost</em> one) or it does not and the right child must. With
+  <code>from</code> some nodes straddle the start position, but a straddling
+  node exists at only one position per level, and any node fully to the right of
+  <code>from</code> is either rejected in O(1) by its maximum or contains the
+  answer, so the total is still O(log n). Dry run on
+  <code>[5, 3, 9, 2, 7, 8, 1, 6]</code>:
+</p>
+<table>
+  <tr><th>call</th><th>node [lo, hi] and its max</th><th>decision</th></tr>
+  <tr><td>firstAtLeast(8)</td><td>[0,7], max 9</td><td>9 ≥ 8, split</td></tr>
+  <tr><td></td><td>[0,3], max 9</td><td>9 ≥ 8, split: try the left child first</td></tr>
+  <tr><td></td><td>[0,1], max 5</td><td>5 &lt; 8, return −1 at once</td></tr>
+  <tr><td></td><td>[2,3], max 9</td><td>≥ 8, split</td></tr>
+  <tr><td></td><td>[2,2], 9</td><td>leaf, <b>return 2</b></td></tr>
+  <tr><td>firstAtLeast(8, 3)</td><td>[0,3], max 9</td><td>9 is at index 2, before <code>from</code>, but the node's max cannot tell; split</td></tr>
+  <tr><td></td><td>[0,1], then [2,2] inside [2,3] (max 9, split)</td><td>both end before 3: return −1 at once</td></tr>
+  <tr><td></td><td>[2,3] and [3,3], max 2</td><td>[3,3] has 2 &lt; 8: return −1, so the whole left half fails</td></tr>
+  <tr><td></td><td>[4,7], max 8</td><td>8 ≥ 8, split; [4,5] has max 8, split; [4,4] is 7 &lt; 8</td></tr>
+  <tr><td></td><td>[5,5]</td><td>leaf, 8 ≥ 8, <b>return 5</b></td></tr>
+</table>
+<div class="warn">
+  <span class="ttl">⚠ After you use a bin, write the new capacity back</span>
+  The tree answers "where"; you still have to call <code>update</code> with the
+  reduced capacity, or the same bin is offered again. A bin that is used up
+  entirely can be set to <code>-Infinity</code> (or 0, when every request is
+  positive), so it is never chosen again. Check <code>-1</code> before using the
+  result as an index.
+</div>
+<p class="sub">
+  The same shape answers "leftmost position whose prefix sum reaches k"
+  (store sums, compare against the remaining amount while descending) and, with
+  a min tree, "first index whose value is at most x". Whenever a loop over
+  positions asks for the <em>first</em> one that satisfies a monotone test on a
+  range aggregate, descend instead.
 </p>
 
 <h3>Lazy propagation: range updates without touching every leaf</h3>
@@ -264,6 +533,90 @@ export const dsaSegmentFenwickTrees: Chapter = {
   values and cannot share one field naively — if a problem needs both, store the
   assignment tag and the pending add together, and apply assignment first.
 </div>
+
+<h3>My Calendar III: a dynamic tree and tags that never move</h3>
+<p>
+  A booking <code>[start, end)</code> arrives, and after each one you must report
+  the largest number of bookings that overlap at any single moment. Times go up
+  to 10<sup>9</sup>, so an array indexed by time is impossible, and bookings
+  arrive online, so you cannot compress coordinates in advance. This is a
+  range-add, global-max problem, which is exactly what a segment tree with lazy
+  updates does, if the tree is built <em>on demand</em>.
+</p>
+<p>
+  Two ideas combine. First, a <b>dynamic tree</b>: nodes are objects created
+  only when an update descends into them, so the tree over [0, 10<sup>9</sup>] has
+  about log₂(10<sup>9</sup>) ≈ 30 levels but only O(log C) new nodes per booking.
+  Second, <b>tags that never move</b>. In the earlier lazy tree you pushed a
+  pending add down to the children before looking at them. For "add to a range,
+  ask for the maximum" there is a simpler trick: leave the tag on the node where
+  the update stopped, and let every ancestor recompute its maximum as
+  <code>its own tag + the larger child maximum</code>. Nothing is ever pushed down,
+  so no node ever needs to be visited just to settle a debt.
+</p>
+<pre><code>class MyCalendarThree {
+  constructor() {
+    this.root = this._node();
+  }
+
+  _node() { return { max: 0, add: 0, left: null, right: null }; }
+
+  <span class="c">// book [startTime, endTime) and return the largest overlap so far — O(log C) per call</span>
+  book(startTime, endTime) {
+    this._add(this.root, 0, 1000000000, startTime, endTime - 1); <span class="c">// closed [l, r] inside the tree</span>
+    return this.root.max;
+  }
+
+  _add(node, lo, hi, l, r) {
+    if (r &lt; lo || hi &lt; l) return;
+    if (l &lt;= lo &amp;&amp; hi &lt;= r) { <span class="c">// fully covered: tag this node and stop</span>
+      node.max++;
+      node.add++;
+      return;
+    }
+    const mid = Math.floor((lo + hi) / 2);
+    if (node.left === null) node.left = this._node();
+    if (node.right === null) node.right = this._node();
+    this._add(node.left, lo, mid, l, r);
+    this._add(node.right, mid + 1, hi, l, r);
+    node.max = node.add + Math.max(node.left.max, node.right.max); <span class="c">// the tag still applies to everything below</span>
+  }
+}</code></pre>
+<p>
+  The invariant is that <code>node.max</code> is the largest overlap anywhere in
+  the node's range, counting the tags on the node itself and below it but not on
+  its ancestors. When a booking fully covers a node, every point in it gains one
+  booking, so both the maximum and the stored tag go up by one. A parent
+  re-derives its maximum from its children's maxima plus its own tag. The root has
+  no ancestors, so <code>root.max</code> is the global answer.
+</p>
+<table>
+  <tr><th>call</th><th>effect</th><th>returns</th></tr>
+  <tr><td>book(10, 20)</td><td>covers 10..19</td><td>1</td></tr>
+  <tr><td>book(50, 60)</td><td>covers 50..59, disjoint from the first</td><td>1</td></tr>
+  <tr><td>book(10, 40)</td><td>10..19 now has 2 overlapping</td><td>2</td></tr>
+  <tr><td>book(5, 15)</td><td>10..14 is inside all of [10,20), [10,40), [5,15)</td><td>3</td></tr>
+  <tr><td>book(5, 10)</td><td>5..9 has two, and 10 is not included in [5,10)</td><td>3</td></tr>
+  <tr><td>book(25, 55)</td><td>50..54 now has two; no point reaches 4</td><td>3</td></tr>
+</table>
+<div class="warn">
+  <span class="ttl">⚠ Half-open bookings and the tag-never-moves rule</span>
+  A booking <code>[start, end)</code> excludes <code>end</code>, so the closed
+  range inside the tree is <code>[start, end - 1]</code>; forgetting the
+  <code>- 1</code> makes <code>book(5, 10)</code> and <code>book(10, 20)</code>
+  appear to overlap at 10. And the shortcut is specific to this problem: tags
+  that never move work because adding x to a whole range shifts its maximum by
+  exactly x. A range <em>sum</em> needs the range width in the update, and an
+  <em>assignment</em> tag does not commute with an add tag, so those need the
+  push-down version from the lazy section.
+</div>
+<p class="sub">
+  Memory is about O(n log C) nodes for n bookings, because each booking creates at
+  most a few nodes per level. When all the bookings are known in advance, an even
+  simpler method sweeps sorted start and end events and counts, but the online
+  version above is the one that survives a follow-up of "what if they arrive
+  one at a time?"
+</p>
 
 <h3>Fenwick tree: the same job in a quarter of the code</h3>
 <p>
@@ -350,7 +703,7 @@ export const dsaSegmentFenwickTrees: Chapter = {
   Passing the new value straight in is the single most common Fenwick bug, and
   it produces plausible-looking wrong answers rather than a crash. Related: the
   1-indexing is not stylistic — <code>k & -k</code> is 0 when k is 0, so a
-  0-indexed loop never terminates.
+  0-indexed update loop never terminates.
 </div>
 
 <h3>Why Fenwick usually wins in practice</h3>
@@ -366,8 +719,9 @@ export const dsaSegmentFenwickTrees: Chapter = {
   The price is expressiveness. Fenwick does point-update + prefix-query of an
   invertible operation, and (via a difference array) range-update + point-query.
   Everything else — range min/max, range update <em>and</em> range query
-  together, "find the k-th element," storing anything richer than a number per
-  node — is segment tree territory.
+  together (a two-tree trick exists for sums, but the segment tree is the
+  general tool), storing anything richer than a number per node — is segment
+  tree territory.
 </p>
 
 <h3>Count of smaller numbers after self — the classic BIT problem</h3>
@@ -401,6 +755,283 @@ function countSmaller(nums) {
   skeleton is worth more than memorising any one of them.
 </p>
 
+<h3>Fenwick binary descent: the k-th element in O(log n)</h3>
+<p>
+  Suppose a Fenwick tree holds <em>counts</em>, so <code>prefix(i)</code> is how
+  many items have a value at index ≤ i. A natural question is the reverse one:
+  "what is the smallest index whose prefix count reaches k?", which is the k-th
+  smallest item of a multiset that supports insert and delete. Binary searching
+  over <code>prefix</code> works but costs O(log² n): a log for the search and a
+  log for each prefix. The Fenwick layout lets you do it in one O(log n) walk.
+</p>
+<p>
+  Recall that <code>t[k]</code> covers the block of <code>k &amp; -k</code> items
+  ending at k. Start at position 0 and try to move right by the biggest power of
+  two, then the next biggest, and so on. A jump of <code>step</code> from
+  <code>pos</code> lands on <code>pos + step</code>, and because
+  <code>pos</code> only has bits larger than <code>step</code> set, the cell
+  <code>t[pos + step]</code> covers exactly the <code>step</code> items just after
+  <code>pos</code>. So you can ask "would taking this whole block still leave the
+  prefix below the target?" and decide each bit of the answer from the high end,
+  exactly as in a binary search over bits.
+</p>
+<pre><code><span class="c">// smallest 0-indexed i with prefix(i) >= target, or f.n if the total is smaller.</span>
+<span class="c">// Every entry must be >= 0 so that prefix sums never decrease. O(log n).</span>
+function lowerBound(f, target) {
+  let top = 1;
+  while (top * 2 &lt;= f.n) top *= 2; <span class="c">// the largest power of two that fits</span>
+
+  let pos = 0, remaining = target;
+  for (let step = top; step > 0; step >>= 1) {
+    if (pos + step &lt;= f.n &amp;&amp; f.t[pos + step] &lt; remaining) {
+      pos += step;               <span class="c">// the whole block is still too small: jump over it</span>
+      remaining -= f.t[pos];
+    }
+  }
+  return pos; <span class="c">// pos items have a prefix below target, so the answer is item number pos (0-indexed)</span>
+}</code></pre>
+<p>
+  Dry run: values 1 to 8 live at indices 0 to 7, with counts
+  <code>[1, 0, 2, 0, 1, 0, 0, 3]</code>, so the multiset is 1, 3, 3, 5, 8, 8, 8 and
+  the 4th smallest should be 5, which is index 4. The Fenwick cells are
+  <code>t[4] = 1+0+2+0 = 3</code>, <code>t[6] = 1+0 = 1</code>,
+  <code>t[5] = 1</code> and <code>t[8] = 7</code>.
+</p>
+<table>
+  <tr><th>step</th><th>pos + step</th><th>t[pos + step]</th><th>&lt; remaining?</th><th>pos after</th><th>remaining after</th></tr>
+  <tr><td>8</td><td>8</td><td>7</td><td>7 &lt; 4? no</td><td>0</td><td>4</td></tr>
+  <tr><td>4</td><td>4</td><td>3</td><td>3 &lt; 4? yes, jump</td><td>4</td><td>1</td></tr>
+  <tr><td>2</td><td>6</td><td>1</td><td>1 &lt; 1? no</td><td>4</td><td>1</td></tr>
+  <tr><td>1</td><td>5</td><td>1</td><td>1 &lt; 1? no</td><td>4</td><td>1</td></tr>
+  <tr><td colspan="4">return pos = 4, which is value 5</td><td colspan="2"><b>4</b></td></tr>
+</table>
+<div class="warn">
+  <span class="ttl">⚠ Three ways the descent goes wrong</span>
+  <b>Negative entries.</b> The jump test assumes prefix sums only grow. With a
+  negative cell the condition no longer separates "too small" from "enough" and
+  the result is meaningless; this works for counts, not for arbitrary deltas.
+  <b>Not enough items.</b> If the total is below the target, the loop jumps as far
+  as it can and returns <code>f.n</code>, which is one past the last index.
+  Check for it. <b>The strict comparison.</b> The test is <code>&lt;</code>, not
+  <code>&lt;=</code>: you stop at the last position whose prefix is still
+  <em>below</em> the target, and the answer is the element after it. Using
+  <code>&lt;=</code> finds the first position whose prefix is strictly greater
+  than the target, which is a different question.
+</div>
+<p class="sub">
+  This is the engine behind "k-th smallest in a dynamic multiset", "find the
+  person at position k after removals" (keep a 1 per present person, delete by
+  subtracting 1) and "k-th missing number" style questions. It only works on a
+  Fenwick tree built over counts; the segment tree does the same thing by
+  descending with the left child's total, and handles more kinds of nodes.
+</p>
+
+<h3>Range add and range sum with two Fenwick trees</h3>
+<p>
+  The earlier table says a Fenwick tree over a difference array supports range
+  update with a <em>point</em> query. To get range updates <em>and</em> range sums
+  you can use a segment tree with lazy tags, or you can pay two Fenwick trees and
+  a little algebra. Derive it, because the formula is easy to forget but easy to
+  rebuild.
+</p>
+<p>
+  Let <code>d[j]</code> be the difference array, <code>d[j] = a[j] - a[j-1]</code>
+  (with <code>a[-1] = 0</code>), so <code>a[k]</code> is the sum of
+  <code>d[0..k]</code>. A range add of x on [l, r] changes just two entries:
+  <code>d[l] += x</code> and <code>d[r+1] -= x</code>. The prefix sum of
+  <code>a</code> up to i is
+</p>
+<p class="sub">
+  S(i) = Σ<sub>k≤i</sub> a[k] = Σ<sub>k≤i</sub> Σ<sub>j≤k</sub> d[j] = Σ<sub>j≤i</sub> d[j] · (i − j + 1) = (i + 1) · Σ<sub>j≤i</sub> d[j] − Σ<sub>j≤i</sub> j · d[j]
+</p>
+<p>
+  The middle step counts how many times each <code>d[j]</code> is included: once
+  for each k from j to i, which is i − j + 1 times. The last form needs only two
+  prefix sums: one over <code>d[j]</code> and one over <code>j · d[j]</code>. Keep
+  one Fenwick tree for each.
+</p>
+<pre><code>class RangeFenwick {
+  constructor(n) {
+    this.n = n;
+    this.byD = new Fenwick(n);     <span class="c">// prefix sums of d[j]</span>
+    this.byJD = new Fenwick(n);    <span class="c">// prefix sums of j * d[j]</span>
+  }
+
+  _addAt(j, x) { <span class="c">// d[j] += x</span>
+    this.byD.update(j, x);
+    this.byJD.update(j, x * j);
+  }
+
+  <span class="c">// add x to every element in [l, r] — O(log n)</span>
+  rangeAdd(l, r, x) {
+    this._addAt(l, x);
+    if (r + 1 &lt; this.n) this._addAt(r + 1, -x); <span class="c">// nothing to cancel past the end</span>
+  }
+
+  _prefix(i) {
+    if (i &lt; 0) return 0;
+    return (i + 1) * this.byD.prefix(i) - this.byJD.prefix(i);
+  }
+
+  <span class="c">// sum of a[l..r] — O(log n)</span>
+  rangeSum(l, r) {
+    return this._prefix(r) - this._prefix(l - 1);
+  }
+}</code></pre>
+<p>
+  This reuses the <code>Fenwick</code> class from earlier in the chapter. Dry run
+  on five zeros: <code>rangeAdd(1, 3, 5)</code> sets <code>d[1] = 5</code> and
+  <code>d[4] = −5</code>, so the stored arrays are:
+</p>
+<table>
+  <tr><th>j</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr>
+  <tr><td>d[j]</td><td>0</td><td>5</td><td>0</td><td>0</td><td>−5</td></tr>
+  <tr><td>j · d[j]</td><td>0</td><td>5</td><td>0</td><td>0</td><td>−20</td></tr>
+</table>
+<p class="sub">
+  Now <code>rangeSum(0, 2)</code> is S(2) − S(−1) with
+  S(2) = 3 · (0 + 5 + 0) − (0 + 5 + 0) = 10, which is a[0] + a[1] + a[2] =
+  0 + 5 + 5. And S(4) = 5 · (0 + 5 + 0 + 0 − 5) − (0 + 5 + 0 + 0 − 20) = 0 + 15 =
+  15, which is 5 + 5 + 5 over the whole array. Each call is four Fenwick
+  operations, O(log n), with no recursion and no tags to push.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ Initial values, and the overflow of j · d[j]</span>
+  The structure above starts from all zeros. If the array starts with values,
+  either feed them in as range adds (<code>rangeAdd(i, i, a[i])</code> for each
+  i), or keep a static prefix-sum array of the original values and add it to
+  every answer. Also, <code>j · d[j]</code> can reach n times the largest update,
+  so when n and the updates are both large the totals can pass
+  2<sup>53</sup>, and <code>Number</code> arithmetic then silently loses digits;
+  use <code>BigInt</code> if the limits are that large.
+</div>
+
+<h3>Offline sort plus Fenwick: reverse pairs and range-sum counts</h3>
+<p>
+  The count-of-smaller sweep generalises. Whenever a question is "for each
+  element, count the earlier (or later) elements that stand in some <em>order</em>
+  relation to it", sweep in index order, keep a Fenwick tree indexed by
+  <b>compressed value</b>, and for each element ask for a range of values among
+  the elements already inserted. Two questions show the pattern with a twist: the
+  value you compare against is not the element itself.
+</p>
+<h4>Reverse pairs: count i &lt; j with nums[i] &gt; 2 · nums[j]</h4>
+<p>
+  For each j, the number of earlier elements larger than 2·nums[j] is "how many
+  have I inserted" minus "how many inserted are at most 2·nums[j]". The value
+  2·nums[j] need not be in the array, so find its position among the sorted
+  distinct values with a binary search for how many values are ≤ it.
+</p>
+<pre><code><span class="c">// number of entries in the ascending array sorted that are &lt;= x</span>
+function countAtMost(sorted, x) {
+  let lo = 0, hi = sorted.length;
+  while (lo &lt; hi) {
+    const mid = (lo + hi) >> 1;
+    if (sorted[mid] &lt;= x) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
+<span class="c">// number of entries in the ascending array sorted that are &lt; x</span>
+function countLess(sorted, x) {
+  let lo = 0, hi = sorted.length;
+  while (lo &lt; hi) {
+    const mid = (lo + hi) >> 1;
+    if (sorted[mid] &lt; x) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
+<span class="c">// O(n log n) time, O(n) space</span>
+function reversePairs(nums) {
+  const sorted = [...new Set(nums)].sort((a, b) => a - b);
+  const bit = new Fenwick(sorted.length);
+  let pairs = 0;
+  for (let j = 0; j &lt; nums.length; j++) {
+    const upTo = countAtMost(sorted, 2 * nums[j]);         <span class="c">// ranks 0..upTo-1 are values &lt;= 2 * nums[j]</span>
+    const notBigger = upTo > 0 ? bit.prefix(upTo - 1) : 0; <span class="c">// inserted values that are NOT bigger</span>
+    pairs += j - notBigger;                                 <span class="c">// j values were inserted so far</span>
+    bit.update(countLess(sorted, nums[j]), 1);              <span class="c">// the rank of nums[j] is how many values are below it</span>
+  }
+  return pairs;
+}</code></pre>
+<p>
+  On <code>[1, 3, 2, 3, 1]</code> the sorted distinct values are 1, 2, 3 with
+  ranks 0, 1, 2. The answer should be 2, from the pairs (index 1, index 4) and
+  (index 3, index 4), since 3 &gt; 2·1:
+</p>
+<table>
+  <tr><th>j</th><th>nums[j]</th><th>2·nums[j]</th><th>values ≤ it</th><th>inserted so far</th><th>not bigger</th><th>pairs added</th></tr>
+  <tr><td>0</td><td>1</td><td>2</td><td>2 (ranks 0, 1)</td><td>0</td><td>0</td><td>0</td></tr>
+  <tr><td>1</td><td>3</td><td>6</td><td>3</td><td>1</td><td>1</td><td>0</td></tr>
+  <tr><td>2</td><td>2</td><td>4</td><td>3</td><td>2</td><td>2</td><td>0</td></tr>
+  <tr><td>3</td><td>3</td><td>6</td><td>3</td><td>3</td><td>3</td><td>0</td></tr>
+  <tr><td>4</td><td>1</td><td>2</td><td>2</td><td>4</td><td>2 (the values 1 and 2)</td><td><b>2</b></td></tr>
+</table>
+<p class="sub">
+  At j = 4 the inserted values are 1, 3, 2, 3. Those at most 2 are 1 and 2, so
+  two are not bigger, and 4 − 2 = 2 are bigger: the two 3s.
+</p>
+<h4>Count of range sum: how many subarrays have a sum in [lower, upper]</h4>
+<p>
+  Let <code>P</code> be the prefix sums with <code>P[0] = 0</code>. A subarray
+  ending at <code>j</code> and starting after <code>i</code> has sum
+  <code>P[j] − P[i]</code>, so you need the number of earlier prefix values
+  <code>P[i]</code> in the window
+  <code>[P[j] − upper, P[j] − lower]</code>. That is a <em>range</em> query on
+  the Fenwick tree over compressed prefix values, the difference of two prefix
+  counts.
+</p>
+<pre><code><span class="c">// O(n log n) time, O(n) space; needs countAtMost and countLess from above</span>
+function countRangeSum(nums, lower, upper) {
+  const prefix = [0];
+  for (const x of nums) prefix.push(prefix[prefix.length - 1] + x);
+
+  const sorted = [...new Set(prefix)].sort((a, b) => a - b);
+  const bit = new Fenwick(sorted.length);
+  let total = 0;
+  for (const p of prefix) {
+    const from = countLess(sorted, p - upper);   <span class="c">// ranks below this are too small</span>
+    const to = countAtMost(sorted, p - lower);   <span class="c">// ranks below this hold values at most p - lower</span>
+    const atMost = to > 0 ? bit.prefix(to - 1) : 0;
+    const below = from > 0 ? bit.prefix(from - 1) : 0;
+    total += atMost - below;
+    bit.update(countLess(sorted, p), 1);         <span class="c">// insert AFTER counting, so only earlier prefixes are matched</span>
+  }
+  return total;
+}</code></pre>
+<p>
+  On <code>nums = [−2, 5, −1]</code> with the window [−2, 2], the prefix sums are
+  [0, −2, 3, 2] and the answer is 3 (the subarrays [−2], [−2, 5, −1] and [−1]):
+</p>
+<table>
+  <tr><th>p</th><th>window [p − 2, p + 2]</th><th>earlier prefixes in the window</th><th>added</th></tr>
+  <tr><td>0</td><td>[−2, 2]</td><td>none yet</td><td>0</td></tr>
+  <tr><td>−2</td><td>[−4, 0]</td><td>0</td><td>1</td></tr>
+  <tr><td>3</td><td>[1, 5]</td><td>none of 0, −2</td><td>0</td></tr>
+  <tr><td>2</td><td>[0, 4]</td><td>0 and 3</td><td>2</td></tr>
+</table>
+<div class="warn">
+  <span class="ttl">⚠ Insert after counting, and strict versus inclusive bounds</span>
+  If you insert <code>p</code> before querying, the element pairs with itself
+  and, whenever 0 is inside [lower, upper], an empty subarray is counted. Use
+  <code>countLess</code> for the lower edge of the window and
+  <code>countAtMost</code> for the upper edge; swapping them drops or adds the
+  values that sit exactly on the edge. Also remember the prefix array has n + 1
+  entries, not n.
+</div>
+<p class="sub">
+  The reusable skeleton is: (1) turn the question into "for each j, count earlier
+  i whose value falls in a window that depends on j"; (2) compress the values you
+  will insert; (3) sweep, query the window as the difference of two prefix counts,
+  then insert. Merge sort can solve the same two problems in the same time, but
+  the Fenwick version is shorter to write once the helper exists, and each
+  element is counted the moment it is inserted (the values still have to be known
+  up front for the compression).
+</p>
+
 <div class="say">
   <span class="ttl">Say it like this →</span> "Queries and updates are
   interleaved, so a prefix-sum array would cost O(n) per update. I'll use a
@@ -419,8 +1050,13 @@ function countSmaller(nums) {
   <tr><td>Range update + <em>point</em> query</td><td><b>Fenwick over a difference array</b></td><td>add x at l, subtract x at r+1; point value = prefix sum</td></tr>
   <tr><td>Point update + range <b>min/max/gcd</b></td><td><b>Segment tree</b></td><td>non-invertible merge — prefixes can't be subtracted</td></tr>
   <tr><td>Range update + range query</td><td><b>Segment tree + lazy</b></td><td>the only one of the three that can defer work</td></tr>
-  <tr><td>Rich per-node state (max subarray, k-th element, merge sort tree)</td><td><b>Segment tree</b></td><td>a node can hold a struct, not just a number</td></tr>
+  <tr><td>Rich per-node state (max subarray, merge sort tree)</td><td><b>Segment tree</b></td><td>a node can hold a struct, not just a number</td></tr>
   <tr><td>2D grid sums with updates</td><td><b>2D Fenwick</b></td><td>nested loops over both dimensions, O(log² n)</td></tr>
+  <tr><td>Range add + range sum, no tags to push</td><td><b>Two Fenwick trees</b></td><td>prefix sums of d[j] and of j·d[j] give any prefix sum</td></tr>
+  <tr><td>k-th smallest in a multiset with inserts and deletes</td><td><b>Fenwick descent</b></td><td>one O(log n) walk over the counts, instead of a binary search over prefix queries</td></tr>
+  <tr><td>Leftmost position that fits, with updates</td><td><b>Segment tree of maxima, descended</b></td><td>each node's max says whether the left half can serve the request</td></tr>
+  <tr><td>Count earlier elements in a value window</td><td><b>Offline sweep + Fenwick over ranks</b></td><td>reverse pairs, range-sum counts, inversions</td></tr>
+  <tr><td>Online range add, global max, huge coordinates</td><td><b>Dynamic segment tree</b></td><td>nodes created on demand; tags stay on the node</td></tr>
 </table>
 
 <div class="sticky mint">
@@ -440,6 +1076,10 @@ function countSmaller(nums) {
   <li>"How many earlier/later elements are smaller/larger" or "count inversions" → sweep in one direction with a Fenwick over compressed value ranks, not over positions</li>
   <li>Distinguish from a heap: a heap gives you the global min/max with updates, but cannot answer <em>a specific range</em>. Distinguish from a sorted structure: if you need order statistics <em>plus</em> ranges, that's a Fenwick over ranks</li>
   <li>If the array never changes after construction, stop — prefix sums or a sparse table, and say why you didn't build a tree</li>
+  <li>The answer for a range cannot be built from one number per half (best subarray, longest run, is-it-sorted) → a segment tree whose node stores a small struct, merged left-to-right</li>
+  <li>"Find the first / leftmost / k-th position such that ..." with updates → descend a tree of aggregates (maxima in a segment tree, counts in a Fenwick) instead of scanning</li>
+  <li>"Count pairs i &lt; j with a relation between nums[i] and a transform of nums[j]" → sweep j, query a window of ranks among the inserted values, then insert</li>
+  <li>Range add and range sum with a tight code budget → two Fenwick trees; times up to 10<sup>9</sup> arriving online → a dynamic segment tree</li>
 </ul>
 
 <div class="bx is-ref">
@@ -450,6 +1090,12 @@ function countSmaller(nums) {
     <li>Write a Fenwick tree's update and prefix loops, and explain why 1-indexing (not 0-indexing) is required for <code>k &amp; -k</code> to terminate.</li>
     <li>State the two lazy-propagation rules — push before you look, stop at total coverage — and say what breaks if you skip either one.</li>
     <li>Given a new problem, decide whether it needs a prefix-sum array, a Fenwick tree, or a segment tree (with or without lazy propagation), based on whether updates and non-invertible queries are both present.</li>
+    <li>Define the four fields of a max-subarray node and say why its merge is not commutative and has no simple identity element.</li>
+    <li>Write the iterative bottom-up tree from memory, say why the query uses a left and a right accumulator, and why the range is half-open.</li>
+    <li>Descend a tree of maxima to find the leftmost bin that fits, and descend a Fenwick tree of counts to find the k-th element; say what each needs in order to work (monotone test, non-negative counts).</li>
+    <li>Derive the two-Fenwick formula for a range-add range-sum from the difference array.</li>
+    <li>Turn "count pairs with a relation" into a sweep with a Fenwick tree over compressed values, and say why you insert after counting.</li>
+    <li>Explain why a dynamic segment tree can leave its tags in place for range add with global max, and why that shortcut does not carry over to sums or assignments.</li>
   </ul>
 </div>`,
 };

@@ -14,6 +14,11 @@ export const dsaTopologicalPatterns: Chapter = {
     "ex-parallel-courses",
     "ex-min-height-trees",
     "ex-sequence-reconstruction",
+    "ex-course-schedule-iv",
+    "ex-parallel-courses-iii",
+    "ex-longest-increasing-path-matrix",
+    "ex-eventual-safe-states",
+    "ex-largest-color-value",
   ],
   ready: true,
   subtitle: 'Any problem phrased as "X must come before Y" is a DAG asking to be linearized.',
@@ -409,11 +414,13 @@ function longestPath(n, edges) {
   return Math.max(...dist);
 }</code></pre>
 <p class="sub">
-  Flip <code>Math.max</code> to <code>Math.min</code> and you have shortest
-  path on a DAG, which beats Dijkstra's O(E log V) and — unlike Dijkstra —
-  handles negative edge weights correctly. This is worth knowing as a named
-  fact: "if the graph is a DAG, shortest path is O(V + E) by topological order,
-  and negative weights are not a problem."
+  Start every distance at <code>Infinity</code> (0 only for the source), skip
+  nodes still at <code>Infinity</code>, flip <code>Math.max</code> to
+  <code>Math.min</code> and read the target's distance instead of the maximum,
+  and you have single-source shortest path on a DAG. It beats Dijkstra's
+  O(E log V) and — unlike Dijkstra — handles negative edge weights correctly.
+  This is worth knowing as a named fact: "if the graph is a DAG, shortest path
+  is O(V + E) by topological order, and negative weights are not a problem."
 </p>
 <p>
   Once you see this, a whole family of problems reveals itself as topological
@@ -436,6 +443,614 @@ function longestPath(n, edges) {
   recursion to iteration," what they are asking for is the topological order.
 </div>
 
+<h3>Minimum Height Trees — peeling leaves is Kahn on a tree</h3>
+<p>
+  You are given an undirected tree of <code>n</code> nodes and may hang it from
+  any node you like. The <b>height</b> of the tree hung from a root is the
+  distance to the farthest node. Which roots give the smallest height? Trying
+  every root with a BFS each costs O(n²), and with <code>n</code> in the tens of thousands
+  that is too slow, so the structure has to be used.
+</p>
+<p>
+  Derive it from the longest path. Let the tree's longest path (its diameter)
+  have <code>d</code> edges, with end nodes <code>a</code> and <code>b</code>.
+  For any root <code>r</code>, the distances to the two ends add up to at least
+  <code>d</code> (going from <code>a</code> to <code>b</code> by way of
+  <code>r</code> cannot be shorter than the direct path), so one of them is at
+  least <code>d / 2</code>. No root can beat a height of
+  ⌈d / 2⌉, and the middle of that path reaches it. The middle is one node when
+  <code>d</code> is even and two adjacent nodes when <code>d</code> is odd, which
+  is why the answer never has more than two roots.
+</p>
+<p>
+  Finding the middle without finding the path: delete <b>every leaf at once</b>,
+  then delete the leaves of what is left, and repeat. Each round removes both
+  ends of every longest path, shortening it by two edges, so the last one or two
+  nodes standing are exactly the middle. This is Kahn's loop with a different
+  threshold: a leaf is a node of degree 1, and a node becomes a leaf when its
+  degree drops to 1.
+</p>
+<figure>
+  <svg viewBox="0 0 640 240" class="dg" role="img" aria-label="A seven node tree where nodes 0, 1, 2 hang off node 3, and nodes 3, 4, 5, 6 form a path; round one removes the leaves 0, 1, 2 and 6, round two removes 3 and 5, and node 4 is left as the only root">
+    <g class="rough">
+      <path class="ln" d="M77,60 L163,110" />
+      <path class="ln" d="M80,120 L160,120" />
+      <path class="ln" d="M77,180 L163,130" />
+      <path class="ln" d="M200,120 L280,120" />
+      <path class="ln" d="M320,120 L400,120" />
+      <path class="ln" d="M440,120 L520,120" />
+    </g>
+    <g class="rough">
+      <circle class="boxr" cx="60" cy="50" r="20" />
+      <circle class="boxr" cx="60" cy="120" r="20" />
+      <circle class="boxr" cx="60" cy="190" r="20" />
+      <circle class="boxy" cx="180" cy="120" r="20" />
+      <circle class="boxg" cx="300" cy="120" r="20" />
+      <circle class="boxy" cx="420" cy="120" r="20" />
+      <circle class="boxr" cx="540" cy="120" r="20" />
+    </g>
+    <text class="lbl" x="60" y="56" text-anchor="middle">0</text>
+    <text class="lbl" x="60" y="126" text-anchor="middle">1</text>
+    <text class="lbl" x="60" y="196" text-anchor="middle">2</text>
+    <text class="lbl" x="180" y="126" text-anchor="middle">3</text>
+    <text class="lbl" x="300" y="126" text-anchor="middle">4</text>
+    <text class="lbl" x="420" y="126" text-anchor="middle">5</text>
+    <text class="lbl" x="540" y="126" text-anchor="middle">6</text>
+    <text class="sm rd" x="300" y="40" text-anchor="middle">round 1: peel 0, 1, 2 and 6</text>
+    <text class="sm" x="300" y="64" text-anchor="middle">round 2: peel 3 and 5</text>
+    <text class="sm gr" x="300" y="180" text-anchor="middle">node 4 is left: the only best root</text>
+    <text class="sm" x="300" y="204" text-anchor="middle">longest path 0-3-4-5-6 has 4 edges, its middle is 4</text>
+  </svg>
+  <figcaption>Each round strips every current leaf, so every longest path loses both of its ends together.</figcaption>
+</figure>
+<pre><code>function findMinHeightTrees(n, edges) {
+  if (n &lt;= 2) return Array.from({ length: n }, (_, i) =&gt; i); <span class="c">// 1 node: itself; 2 nodes: both</span>
+  const adj = Array.from({ length: n }, () =&gt; []);
+  const degree = new Array(n).fill(0);
+  for (const [a, b] of edges) {
+    adj[a].push(b);
+    adj[b].push(a);
+    degree[a]++;
+    degree[b]++;
+  }
+
+  let leaves = [];
+  for (let i = 0; i &lt; n; i++) if (degree[i] === 1) leaves.push(i);
+
+  let remaining = n;
+  while (remaining &gt; 2) { <span class="c">// a tree has one or two centres, so stop at 2 or fewer</span>
+    remaining -= leaves.length; <span class="c">// the whole layer goes at once</span>
+    const nextLeaves = [];
+    for (const leaf of leaves) {
+      for (const v of adj[leaf]) {
+        if (--degree[v] === 1) nextLeaves.push(v); <span class="c">// v just lost its last child: new leaf</span>
+      }
+    }
+    leaves = nextLeaves;
+  }
+  return leaves.sort((a, b) =&gt; a - b);
+}</code></pre>
+<h4>Dry run: the tree in the figure, edges 0-3, 1-3, 2-3, 3-4, 4-5, 5-6</h4>
+<table>
+  <tr><th>Round</th><th>Leaves removed</th><th>remaining</th><th>Degrees that dropped to 1</th><th>Next leaves</th></tr>
+  <tr><td>start</td><td>—</td><td>7</td><td>degrees: 0:1 1:1 2:1 3:4 4:2 5:2 6:1</td><td>[0, 1, 2, 6]</td></tr>
+  <tr><td>1</td><td>0, 1, 2, 6</td><td>3</td><td>3: 4→1 (after 0, 1, 2); 5: 2→1 (after 6)</td><td>[3, 5]</td></tr>
+  <tr><td>2</td><td>3, 5</td><td>1</td><td>4: 2→1 (after 3), then 1→0 (after 5)</td><td>[4]</td></tr>
+  <tr><td>end</td><td>—</td><td>1</td><td>remaining ≤ 2, stop</td><td>answer [4]</td></tr>
+</table>
+<p class="sub">
+  The round-2 row is the one to watch. Node 4's degree goes 2 → 1 → 0, so it is
+  pushed when it reaches exactly 1 and never again; the later decrement to 0
+  does nothing because the test is <code>=== 1</code>. Time and space are O(n):
+  every node is a leaf at most once and every edge is looked at twice.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ Three ways this loop goes wrong</span>
+  <b>Tiny trees.</b> A single node has degree 0, so it is never found as a
+  leaf and the loop would return nothing; <code>n = 1</code> and
+  <code>n = 2</code> are answered before the loop. <b>Peeling one leaf at a
+  time.</b> Layers must go together; removing leaves singly can strip a long arm
+  past the centre and return a wrong node. <b>Looping while
+  <code>remaining &gt; 0</code>.</b> That peels the centre away as well. The
+  condition <code>remaining &gt; 2</code> stops with the one or two nodes that
+  are the answer.
+</div>
+<div class="say">
+  <span class="ttl">Say it like this →</span> "The best roots are the middle of
+  the tree's longest path. I find them by peeling all leaves layer by layer, the
+  same as Kahn's algorithm on degree 1, and stop at two or fewer nodes. That is
+  O(n), against O(n²) for trying every root."
+</div>
+
+<h3>Course Schedule IV — answering reachability queries on a DAG</h3>
+<p>
+  Now the question is not an order but a <b>lookup</b>. You get the prerequisite
+  pairs once, then many queries <code>[u, v]</code> asking "is <code>u</code> a
+  prerequisite of <code>v</code>, directly or through a chain?" The graph is
+  guaranteed to be a DAG. A fresh DFS per query costs O(V + E) each, so q
+  queries cost O(q · (V + E)). When q is large, do the work once and answer every
+  query from a table.
+</p>
+<p>
+  The table is "for each node, the set of all its ancestors." The topological
+  order is what makes it computable in one pass. When node <code>u</code> is
+  popped from Kahn's queue, all of its parents have already been popped, and each
+  parent passed down everything it knew, so <code>ancestors[u]</code> is already
+  complete. Now <code>u</code> hands each child <code>v</code> its own ancestors
+  plus <code>u</code> itself. A child that has several parents collects the union
+  from all of them.
+</p>
+<pre><code>function checkIfPrerequisite(n, prerequisites, queries) {
+  const adj = Array.from({ length: n }, () =&gt; []);
+  const indeg = new Array(n).fill(0);
+  for (const [a, b] of prerequisites) {
+    adj[a].push(b); <span class="c">// a must come before b</span>
+    indeg[b]++;
+  }
+
+  const ancestors = Array.from({ length: n }, () =&gt; new Set()); <span class="c">// everything that reaches v</span>
+  const queue = [];
+  for (let i = 0; i &lt; n; i++) if (indeg[i] === 0) queue.push(i);
+
+  for (let head = 0; head &lt; queue.length; head++) {
+    const u = queue[head]; <span class="c">// ancestors[u] is complete: every parent of u was popped earlier</span>
+    for (const v of adj[u]) {
+      ancestors[v].add(u);
+      for (const a of ancestors[u]) ancestors[v].add(a);
+      if (--indeg[v] === 0) queue.push(v);
+    }
+  }
+
+  return queries.map(([u, v]) =&gt; ancestors[v].has(u));
+}</code></pre>
+<h4>Dry run: edges 0→1, 0→2, 1→3, 2→3, 3→4</h4>
+<table>
+  <tr><th>Pop</th><th>ancestors after this pop</th><th>What happened</th></tr>
+  <tr><td>0</td><td>1:{0} 2:{0}</td><td>0 has no ancestors, so each child only gets 0</td></tr>
+  <tr><td>1</td><td>1:{0} 2:{0} 3:{0,1}</td><td>3 receives 1 and everything 1 knows (0); its in-degree goes 2 → 1</td></tr>
+  <tr><td>2</td><td>3:{0,1,2}</td><td>3 receives 2 and 0 again (already present); in-degree reaches 0, so 3 is queued</td></tr>
+  <tr><td>3</td><td>4:{0,1,2,3}</td><td>3's set is complete only now, and it goes to 4 whole</td></tr>
+  <tr><td>4</td><td>unchanged</td><td>no children</td></tr>
+</table>
+<p class="sub">
+  The query <code>[0, 4]</code> is <code>ancestors[4].has(0)</code>, true; the
+  query <code>[4, 0]</code> asks whether 4 is in <code>ancestors[0]</code>, which
+  is empty, so false. Time is O(V + E · V) in the worst case, because each edge
+  may copy a set of up to V elements, and space is O(V²) for the sets. Queries
+  then cost O(1) each.
+</p>
+<p>
+  The shorter alternative is Floyd–Warshall on a boolean matrix, O(V³) time and
+  O(V²) space, which ignores the topological order entirely and also works when
+  the graph is not a DAG. For a few hundred nodes it is perfectly good, and it is
+  short:
+</p>
+<pre><code>function checkIfPrerequisiteFloyd(n, prerequisites, queries) {
+  const reach = Array.from({ length: n }, () =&gt; new Array(n).fill(false));
+  for (const [a, b] of prerequisites) reach[a][b] = true;
+
+  for (let k = 0; k &lt; n; k++) { <span class="c">// k, the allowed middle node, MUST be the outer loop</span>
+    for (let i = 0; i &lt; n; i++) {
+      if (!reach[i][k]) continue;
+      for (let j = 0; j &lt; n; j++) {
+        if (reach[k][j]) reach[i][j] = true;
+      }
+    }
+  }
+  return queries.map(([u, v]) =&gt; reach[u][v]);
+}</code></pre>
+<div class="warn">
+  <span class="ttl">⚠ The middle node goes in the OUTER loop</span>
+  <code>reach[i][j]</code> after round <code>k</code> means "there is a path from
+  <code>i</code> to <code>j</code> using only nodes <code>0..k</code> in the
+  middle." Put <code>k</code> in the inner loop and you are asking for paths
+  before all the shorter pieces exist, so long chains come back as
+  <code>false</code>. Two more details on the topological version: a node is not
+  its own ancestor, so never add <code>v</code> to <code>ancestors[v]</code>, and
+  a query <code>[u, v]</code> reads "is <code>u</code> before <code>v</code>,"
+  so look <code>u</code> up in <code>ancestors[v]</code>, not the other way round.
+</div>
+
+<h3>Parallel Courses — rounds first, then durations</h3>
+<p>
+  The first version asks for the fewest semesters when you may take any number of
+  courses per semester, provided their prerequisites were finished in
+  <em>earlier</em> semesters. Kahn's algorithm run one layer at a time answers it
+  directly: the courses ready now all fit in this semester, and the courses they
+  free have to wait for the next one.
+</p>
+<pre><code>function minimumSemesters(n, relations) {
+  const adj = Array.from({ length: n + 1 }, () =&gt; []);
+  const indeg = new Array(n + 1).fill(0);
+  for (const [prev, next] of relations) {
+    adj[prev].push(next);
+    indeg[next]++;
+  }
+
+  let ready = [];
+  for (let c = 1; c &lt;= n; c++) if (indeg[c] === 0) ready.push(c);
+
+  let semesters = 0, taken = 0;
+  while (ready.length &gt; 0) {
+    semesters++; <span class="c">// everything in "ready" fits in this one semester</span>
+    const nextReady = [];
+    for (const u of ready) {
+      taken++;
+      for (const v of adj[u]) if (--indeg[v] === 0) nextReady.push(v);
+    }
+    ready = nextReady; <span class="c">// courses freed now can only start next semester</span>
+  }
+  return taken === n ? semesters : -1; <span class="c">// fewer taken than n: a cycle blocked the rest</span>
+}</code></pre>
+<p>
+  The number of layers equals the number of courses on the longest prerequisite
+  chain, because a chain of <code>k</code> courses forces <code>k</code>
+  semesters and nothing forces more. For <code>n = 3</code> and relations
+  <code>[[1, 3], [2, 3]]</code> the first layer is <code>[1, 2]</code>, the
+  second is <code>[3]</code>, and the answer is 2. For the cycle
+  <code>[[1, 2], [2, 3], [3, 1]]</code> nothing has in-degree 0, nothing is
+  taken, and the check <code>taken === n</code> fails, so the answer is
+  <code>-1</code>. The loop must snapshot <code>ready</code> and build
+  <code>nextReady</code> separately; if you push freed courses into the layer
+  you are still iterating, you merge semesters and under-count.
+</p>
+<p>
+  The harder cousin gives every course a duration, and now "layers" no longer
+  measure time: a layer holding a one-month course and a ten-month course lasts
+  ten months. The right quantity is each course's <b>earliest finish time</b>,
+  and it is exactly the longest-path DP from earlier in this chapter with the
+  weight on the node instead of the edge:
+  <code>finish[v] = time[v] + max(finish[u] over prerequisites u)</code>. Courses
+  with no prerequisites start at month 0. The answer is the largest finish time.
+</p>
+<pre><code>function minimumTime(n, relations, time) { <span class="c">// time[c - 1] = months course c takes</span>
+  const adj = Array.from({ length: n + 1 }, () =&gt; []);
+  const indeg = new Array(n + 1).fill(0);
+  for (const [prev, next] of relations) {
+    adj[prev].push(next);
+    indeg[next]++;
+  }
+
+  const finish = new Array(n + 1).fill(0); <span class="c">// earliest month course c can be done</span>
+  const queue = [];
+  for (let c = 1; c &lt;= n; c++) {
+    if (indeg[c] === 0) {
+      queue.push(c);
+      finish[c] = time[c - 1]; <span class="c">// a source starts at month 0 and takes its own time</span>
+    }
+  }
+
+  let taken = 0, total = 0;
+  for (let head = 0; head &lt; queue.length; head++) {
+    const u = queue[head];
+    taken++;
+    total = Math.max(total, finish[u]);
+    for (const v of adj[u]) {
+      finish[v] = Math.max(finish[v], finish[u] + time[v - 1]); <span class="c">// wait for the slowest prerequisite</span>
+      if (--indeg[v] === 0) queue.push(v);
+    }
+  }
+  return taken === n ? total : -1;
+}</code></pre>
+<h4>Dry run: 5 courses, times [1, 2, 3, 4, 5], relations 1→5, 2→5, 3→5, 3→4, 4→5</h4>
+<table>
+  <tr><th>Pop</th><th>finish[1..5] after</th><th>Why</th></tr>
+  <tr><td>init</td><td>1, 2, 3, 0, 0</td><td>1, 2, 3 have no prerequisites and finish after their own time</td></tr>
+  <tr><td>1</td><td>1, 2, 3, 0, 6</td><td>5 can finish at 1 + 5 = 6 at the earliest, for now</td></tr>
+  <tr><td>2</td><td>1, 2, 3, 0, 7</td><td>2 + 5 = 7 beats 6</td></tr>
+  <tr><td>3</td><td>1, 2, 3, 7, 8</td><td>4 finishes at 3 + 4 = 7; 5 gets 3 + 5 = 8, and 4 is not done yet</td></tr>
+  <tr><td>4</td><td>1, 2, 3, 7, 12</td><td>7 + 5 = 12 is the largest, so 5 finishes at month 12</td></tr>
+  <tr><td>5</td><td>unchanged</td><td>the answer is the maximum, 12</td></tr>
+</table>
+<div class="warn">
+  <span class="ttl">⚠ Off-by-one and "rounds" used where weights are needed</span>
+  Courses are numbered from 1 but <code>time</code> is a 0-indexed array, so the
+  duration of course <code>c</code> is <code>time[c - 1]</code>. Sources must be
+  seeded with their own duration, not 0, or every finish time comes out short by
+  one course. And do not answer the weighted version by counting layers: with
+  durations 1 and 10 in the same layer the layer count says 1 while the real
+  answer is 10.
+</div>
+<p class="sub">
+  The same skeleton scales up. If you must carry more than a number through the
+  DAG, such as "the highest count of any single colour along a path" (Largest
+  Color Value in a Directed Graph), give every node an array of counts, merge
+  parents with an element-wise max, and keep the same cycle check at the end.
+</p>
+
+<h3>Sequence Reconstruction — is the order unique?</h3>
+<p>
+  You have a permutation <code>nums</code> of <code>1..n</code> and a list of
+  sequences, each a subsequence of the secret order. Is <code>nums</code> the
+  <em>only</em> order consistent with all the sequences? Every consecutive pair
+  in a sequence is an ordering fact, so build the edges and ask for a topological
+  order. Uniqueness is the part to derive: two nodes can be swapped exactly when
+  they are free at the same moment, so the order is unique if and only if
+  <b>the queue holds exactly one node at every step</b>. The queue already shows
+  it, with no extra work.
+</p>
+<pre><code>function sequenceReconstruction(nums, sequences) {
+  const n = nums.length;
+  const adj = Array.from({ length: n + 1 }, () =&gt; new Set());
+  const indeg = new Array(n + 1).fill(0);
+  const seen = new Set();
+
+  for (const seq of sequences) {
+    for (let i = 0; i &lt; seq.length; i++) {
+      if (seq[i] &lt; 1 || seq[i] &gt; n) return false;
+      seen.add(seq[i]);
+      if (i &gt; 0 &amp;&amp; !adj[seq[i - 1]].has(seq[i])) { <span class="c">// each edge counted once</span>
+        adj[seq[i - 1]].add(seq[i]);
+        indeg[seq[i]]++;
+      }
+    }
+  }
+  if (seen.size !== n) return false; <span class="c">// a number no sequence mentions can go anywhere</span>
+
+  let queue = [];
+  for (let v = 1; v &lt;= n; v++) if (indeg[v] === 0) queue.push(v);
+
+  let placed = 0;
+  while (queue.length &gt; 0) {
+    if (queue.length &gt; 1) return false; <span class="c">// two free nodes can swap: the order is not unique</span>
+    const u = queue.pop();
+    if (nums[placed++] !== u) return false; <span class="c">// the one possible order is not nums</span>
+    for (const v of adj[u]) if (--indeg[v] === 0) queue.push(v);
+  }
+  return placed === n; <span class="c">// short of n: a cycle</span>
+}</code></pre>
+<h4>Dry run: nums = [1, 2, 3]</h4>
+<table>
+  <tr><th>sequences</th><th>Edges</th><th>Queue at the start of each pop</th><th>Result</th></tr>
+  <tr><td>[[1,2],[1,3]]</td><td>1→2, 1→3</td><td>[1], then [2, 3]</td><td>two free nodes: <b>false</b></td></tr>
+  <tr><td>[[1,2],[1,3],[2,3]]</td><td>1→2, 1→3, 2→3</td><td>[1], [2], [3]</td><td>placed = 3 and order equals nums: <b>true</b></td></tr>
+  <tr><td>[[1,2]]</td><td>1→2</td><td>not reached: the check for unmentioned numbers returns first</td><td>3 is mentioned by no sequence: <b>false</b></td></tr>
+</table>
+<p class="sub">
+  There is an equivalent view that is worth knowing: the order is unique exactly
+  when every neighbouring pair <code>nums[i], nums[i + 1]</code> appears next to
+  each other in some sequence, so each step is forced by a direct edge. The queue
+  version checks the same thing and also catches contradictions as a bonus.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ Check the queue size before popping, and keep the counts consistent</span>
+  Test <code>queue.length &gt; 1</code> at the top of the loop. After you pop, the
+  queue may look single again and hide the tie. Count each edge once, because
+  adjacency is stored in a <code>Set</code>: if you incremented the in-degree for
+  a repeated pair but the set stored it once, that node's counter could never
+  reach 0 and you would report a false cycle. Finally, <code>nums</code> must
+  equal the order you emit, not merely be a valid one, so compare as you go; and
+  a number that appears in no sequence makes the answer false, because it could
+  slot in anywhere.
+</div>
+
+<h3>Longest Increasing Path in a Matrix — a DAG you never build</h3>
+<p>
+  From a cell you may step up, down, left or right, but only onto a
+  <b>strictly larger</b> value. How many cells can the longest such walk visit?
+  The cells are nodes and each allowed step is an edge. Because every step
+  strictly increases the value, you can never return to a cell, so this graph has
+  no cycles and needs no visited set. That is the topological DP from earlier,
+  with the order left implicit: <code>longestFrom(cell)</code> is 1 plus the
+  best of <code>longestFrom</code> over the larger neighbours, memoized.
+</p>
+<pre><code>const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+
+function longestIncreasingPath(matrix) {
+  const rows = matrix.length;
+  if (rows === 0) return 0;
+  const cols = matrix[0].length;
+  const memo = Array.from({ length: rows }, () =&gt; new Array(cols).fill(0)); <span class="c">// 0 = not computed yet</span>
+
+  function longestFrom(r, c) { <span class="c">// cells on the longest increasing path that starts at (r, c)</span>
+    if (memo[r][c] !== 0) return memo[r][c];
+    let best = 1;
+    for (const [dr, dc] of DIRS) {
+      const nr = r + dr, nc = c + dc;
+      if (nr &lt; 0 || nr &gt;= rows || nc &lt; 0 || nc &gt;= cols) continue;
+      if (matrix[nr][nc] &gt; matrix[r][c]) best = Math.max(best, 1 + longestFrom(nr, nc)); <span class="c">// strictly larger only</span>
+    }
+    memo[r][c] = best;
+    return best;
+  }
+
+  let answer = 0;
+  for (let r = 0; r &lt; rows; r++) {
+    for (let c = 0; c &lt; cols; c++) answer = Math.max(answer, longestFrom(r, c));
+  }
+  return answer;
+}</code></pre>
+<p>
+  Each cell is computed once and looks at four neighbours, so the time is
+  O(m · n) for an m × n grid, with O(m · n) memory for the table. Memoization is
+  the whole speedup: the same code with a visited array that is set and cleared
+  (backtracking style) walks every increasing path one by one, and the number of
+  paths can be exponential: on a 12 × 12 grid whose values grow along both rows
+  and columns, stepping only right or down already gives 2,704,155 walks from the corner alone.
+</p>
+<p>
+  The iterative version is Kahn's algorithm again. A cell's in-degree is the
+  number of strictly smaller neighbours, because those are the cells that can
+  step onto it. Cells with in-degree 0 are local minima, the places a longest path
+  can start. Peel them layer by layer; the number of layers is the answer, because
+  each layer extends every chain by one cell.
+</p>
+<pre><code>function longestIncreasingPathKahn(matrix) {
+  const rows = matrix.length;
+  if (rows === 0) return 0;
+  const cols = matrix[0].length;
+  const inDegree = Array.from({ length: rows }, () =&gt; new Array(cols).fill(0));
+  let layer = [];
+
+  for (let r = 0; r &lt; rows; r++) {
+    for (let c = 0; c &lt; cols; c++) {
+      for (const [dr, dc] of DIRS) {
+        const nr = r + dr, nc = c + dc;
+        if (nr &gt;= 0 &amp;&amp; nr &lt; rows &amp;&amp; nc &gt;= 0 &amp;&amp; nc &lt; cols &amp;&amp; matrix[nr][nc] &lt; matrix[r][c]) inDegree[r][c]++;
+      }
+      if (inDegree[r][c] === 0) layer.push([r, c]); <span class="c">// no smaller neighbour: a path can start here</span>
+    }
+  }
+
+  let layers = 0;
+  while (layer.length &gt; 0) {
+    layers++;
+    const next = [];
+    for (const [r, c] of layer) {
+      for (const [dr, dc] of DIRS) {
+        const nr = r + dr, nc = c + dc;
+        if (nr &lt; 0 || nr &gt;= rows || nc &lt; 0 || nc &gt;= cols) continue;
+        if (matrix[nr][nc] &gt; matrix[r][c] &amp;&amp; --inDegree[nr][nc] === 0) next.push([nr, nc]);
+      }
+    }
+    layer = next;
+  }
+  return layers; <span class="c">// the number of layers is the length of the longest chain</span>
+}</code></pre>
+<h4>Dry run: [[9, 9, 4], [6, 6, 8], [2, 1, 1]]</h4>
+<table>
+  <tr><th>Layer</th><th>Cells peeled (row, col = value)</th><th>Why they are ready</th></tr>
+  <tr><td>1</td><td>(0,2)=4, (2,1)=1, (2,2)=1</td><td>no neighbour is strictly smaller; equal neighbours do not count</td></tr>
+  <tr><td>2</td><td>(1,1)=6, (2,0)=2</td><td>each has exactly one smaller neighbour, a 1 that was peeled in layer 1</td></tr>
+  <tr><td>3</td><td>(0,1)=9, (1,2)=8, (1,0)=6</td><td>each had every smaller neighbour already peeled</td></tr>
+  <tr><td>4</td><td>(0,0)=9</td><td>its smaller neighbour (1,0)=6 was in layer 3</td></tr>
+</table>
+<p class="sub">
+  Four layers, so the answer is 4, for example 1 → 2 → 6 → 9. The recursive
+  version is simpler to write, but its depth equals the length of the longest
+  increasing path, and an interview grid can force a path through most of its
+  cells. In a quick test on Node 24, a single row of 5,000 increasing numbers throws
+  <code>RangeError: Maximum call stack size exceeded</code> for the memoized
+  DFS above, while the layer version handles it without recursion. Mention the
+  trade-off.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ Equal neighbours are not edges</span>
+  Use <code>&gt;</code>, not <code>&gt;=</code>. With <code>&gt;=</code> two equal
+  neighbours point at each other, the graph gains cycles, the memoized recursion
+  never terminates, and the Kahn version never frees those cells so it
+  under-counts. Also initialise the memo with 0 meaning "not computed": every real
+  answer is at least 1, so 0 is a safe marker, but <code>-1</code> or
+  <code>undefined</code> works the same.
+</div>
+
+<h3>Eventual Safe States — peel from the sinks</h3>
+<p>
+  In a directed graph, a <b>terminal</b> node has no outgoing edges. A node is
+  <b>safe</b> if every path that starts at it ends at a terminal node after a
+  finite number of steps. Put differently: a node is unsafe exactly when it can
+  reach a cycle, since then a path can circle forever. Return all safe nodes in
+  ascending order.
+</p>
+<p>
+  Think of Kahn's algorithm with the edges turned around. Terminal nodes are safe
+  by definition. A node all of whose outgoing edges lead to safe nodes is safe
+  too, because every path from it passes through one of them. So peel from the
+  sinks inward: track each node's <b>out-degree</b> (how many of its successors
+  are not yet known to be safe), start the queue with out-degree 0, and when a
+  node is declared safe, decrement the out-degree of everything that points at
+  it. The decrement needs the reversed graph, which is why this build flips every
+  edge. Nodes that never reach 0 are on a cycle or lead into one.
+</p>
+<pre><code>function eventualSafeNodes(graph) {
+  const n = graph.length;
+  const reverse = Array.from({ length: n }, () =&gt; []);
+  const outDegree = new Array(n).fill(0);
+  for (let u = 0; u &lt; n; u++) {
+    outDegree[u] = graph[u].length;
+    for (const v of graph[u]) reverse[v].push(u); <span class="c">// flip every edge: v now points back at u</span>
+  }
+
+  const queue = [];
+  for (let u = 0; u &lt; n; u++) if (outDegree[u] === 0) queue.push(u); <span class="c">// terminal nodes are safe</span>
+
+  const safe = new Array(n).fill(false);
+  for (let head = 0; head &lt; queue.length; head++) {
+    const v = queue[head];
+    safe[v] = true;
+    for (const u of reverse[v]) {
+      if (--outDegree[u] === 0) queue.push(u); <span class="c">// every edge out of u now leads to a safe node</span>
+    }
+  }
+
+  const result = [];
+  for (let u = 0; u &lt; n; u++) if (safe[u]) result.push(u); <span class="c">// scan by label: the answer must be sorted</span>
+  return result;
+}</code></pre>
+<h4>Dry run: graph = [[1,2],[2,3],[5],[0],[5],[],[]]</h4>
+<table>
+  <tr><th>Pop</th><th>Out-degrees of 0..6 after</th><th>Newly safe</th></tr>
+  <tr><td>init</td><td>2, 2, 1, 1, 1, 0, 0</td><td>queue = [5, 6]</td></tr>
+  <tr><td>5</td><td>2, 2, 0, 1, 0, 0, 0</td><td>2 and 4 (their only edge went to 5)</td></tr>
+  <tr><td>6</td><td>unchanged</td><td>nothing points at 6</td></tr>
+  <tr><td>2</td><td>1, 1, 0, 1, 0, 0, 0</td><td>none: 0 and 1 each still have an unsafe edge</td></tr>
+  <tr><td>4</td><td>unchanged</td><td>nothing points at 4</td></tr>
+</table>
+<p class="sub">
+  Safe nodes are 2, 4, 5, 6. Nodes 0, 1 and 3 form the cycle 0 → 1 → 3 → 0, so
+  they stay stuck at out-degree 1 and are never emitted. Time and space are
+  O(V + E).
+</p>
+<p>
+  The DFS version asks the same question from the node's side with the three
+  states you saw earlier. A node is safe when the DFS from it never touches a
+  GRAY node:
+</p>
+<pre><code>function eventualSafeNodesDfs(graph) {
+  const n = graph.length;
+  const state = new Array(n).fill(0); <span class="c">// 0 unvisited, 1 on the current path, 2 known safe</span>
+
+  function isSafe(u) {
+    if (state[u] === 1) return false; <span class="c">// back into the current path: a cycle</span>
+    if (state[u] === 2) return true;
+    state[u] = 1;
+    for (const v of graph[u]) {
+      if (!isSafe(v)) return false; <span class="c">// u stays 1 on purpose: it leads into a cycle</span>
+    }
+    state[u] = 2;
+    return true;
+  }
+
+  const result = [];
+  for (let u = 0; u &lt; n; u++) if (isSafe(u)) result.push(u);
+  return result;
+}</code></pre>
+<div class="warn">
+  <span class="ttl">⚠ Three bugs, three different wrong answers</span>
+  <b>Running Kahn on in-degrees.</b> That peels the nodes that come <em>before</em>
+  a cycle and answers a different question. <b>Resetting a failed node to 0.</b>
+  In the DFS, a node found to lead into a cycle is left as 1 on purpose; resetting
+  it makes the next visit re-explore the same cycle again and again, which can
+  turn linear work into exponential work. <b>Returning nodes in queue order.</b>
+  The queue order is the order they became safe, not ascending; collect the
+  answer by scanning labels, as the code does. A self-loop <code>[0]</code> is a
+  cycle of one: node 0 keeps out-degree 1 and is never safe.
+</div>
+
+<h3>One loop, three thresholds</h3>
+<p>
+  Look back at what you wrote in this chapter. Course Schedule, Parallel Courses,
+  Course Schedule IV, Sequence Reconstruction and the grid problem all peel
+  nodes whose <em>in-degree</em> has fallen to 0. Minimum Height Trees peels
+  nodes whose <em>degree</em> has fallen to 1. Eventual Safe States peels nodes
+  whose <em>out-degree</em> has fallen to 0, on the reversed graph. The loop is
+  identical each time: remove what is finished, decrement its neighbours, queue
+  whatever just reached the threshold.
+</p>
+<table>
+  <tr><th>Problem</th><th>Graph</th><th>Counter</th><th>Peel when it reaches</th><th>Answer comes from</th></tr>
+  <tr><td>Course Schedule II</td><td>directed, prerequisite → course</td><td>in-degree</td><td>0</td><td>the emitted order</td></tr>
+  <tr><td>Parallel Courses</td><td>directed</td><td>in-degree</td><td>0, one layer per round</td><td>the number of layers</td></tr>
+  <tr><td>Minimum Height Trees</td><td>undirected tree</td><td>degree</td><td>1</td><td>the last one or two nodes</td></tr>
+  <tr><td>Eventual Safe States</td><td>directed, edges reversed</td><td>out-degree</td><td>0</td><td>the set of nodes peeled</td></tr>
+  <tr><td>Longest Increasing Path</td><td>implicit, to a larger neighbour</td><td>smaller neighbours</td><td>0, one layer per round</td><td>the number of layers</td></tr>
+</table>
+<p class="sub">
+  When a new problem mentions "remove … repeatedly until nothing is left" or asks
+  for the nodes that survive or fall away, name the counter and the threshold
+  before writing code. That choice is the whole design.
+</p>
+
 <h3>Recognizing it in an unseen problem</h3>
 <ul>
   <li>The words "prerequisite," "depends on," "must come before," "build
@@ -453,6 +1068,14 @@ function longestPath(n, edges) {
   <li>Longest/shortest/count-of paths where the graph provably has no cycles →
     do not reach for Dijkstra or Bellman-Ford; relax edges in topological order
     for O(V + E), negative weights included.</li>
+  <li>A tree problem asks for its "centre", or for what is left after repeatedly removing leaves → peel layers of degree-1 nodes
+    (Minimum Height Trees), do not try every root.</li>
+  <li>Many reachability or "is X before Y" queries on a DAG → compute each node's ancestor set once in topological
+    order, then answer queries by lookup.</li>
+  <li>A grid or array where every move must go strictly up (or down) in value → the cells already form a DAG; memoize or
+    peel layers, and skip the visited set.</li>
+  <li>"Which nodes are safe / cannot reach a cycle" → peel from the sinks on the reversed graph, with out-degree as the
+    counter.</li>
   <li>Distinguish from plain BFS/DFS: ordinary traversal visits a node the
     first time it is reached; topological sort must <em>wait</em> until every
     incoming edge is satisfied. If a node has two parents and you emit it after
@@ -470,6 +1093,9 @@ function longestPath(n, edges) {
     <li>Implement the DFS version's three-state (white/gray/black) cycle check, and explain why a single <code>visited</code> boolean reports cycles that don't exist.</li>
     <li>Explain why longest and shortest path are both O(V + E) on a DAG, even with negative edge weights, once you have a topological order.</li>
     <li>Given a new problem, recognize when it's really a topological sort in disguise (an implicit DAG hiding inside a DP recurrence) rather than plain BFS/DFS.</li>
+    <li>Explain why the middle of a tree's longest path is the best root, and how peeling whole layers of leaves finds it in O(n).</li>
+    <li>Say how the queue shows whether a topological order is unique, and why a count of Kahn layers is the wrong answer once courses have different durations.</li>
+    <li>Name the counter and the threshold for each peeling problem: in-degree 0, degree 1, or out-degree 0 on the reversed graph.</li>
   </ul>
 </div>`,
 };

@@ -7,7 +7,17 @@ export const dsaTries: Chapter = {
   short: "Tries",
   levels: ["intermediate"],
   prerequisites: ["dsa-trees", "dsa-hashing"],
-  practice: ["ex-maximum-xor-of-two-numbers", "ex-implement-trie", "ex-add-and-search-words", "ex-word-search-ii"],
+  practice: [
+    "ex-maximum-xor-of-two-numbers",
+    "ex-implement-trie",
+    "ex-add-and-search-words",
+    "ex-word-search-ii",
+    "ex-replace-words",
+    "ex-longest-word-in-dictionary",
+    "ex-map-sum-pairs",
+    "ex-stream-of-characters",
+    "ex-trie-remove-word",
+  ],
   ready: true,
   subtitle: "Store the string as a path, not a value — and every prefix question becomes a walk instead of a scan.",
   body: `<h3>The shape: the word is the path</h3>
@@ -133,15 +143,143 @@ class Trie {
   and <code>startsWith</code> doesn't.
 </p>
 <div class="warn">
-  <span class="ttl">⚠ isEnd is not "has no children," and a leaf is not "is a word"</span>
-  Both directions of this confusion produce wrong answers. In the diagram,
-  the <code>o</code> node has a child (<code>g</code>) but <em>is</em> a word
-  ("do") — so testing <code>children.size === 0</code> misses it. And if you
-  only ever insert "dog", the <code>o</code> node is childless-free but is
-  <em>not</em> a word. <code>search()</code> and <code>startsWith()</code>
-  differing by exactly the <code>isEnd</code> check is the entire point of the
-  flag; if your two methods have identical bodies, you have a bug.
+  <span class="ttl">⚠ isEnd and "has children" are independent facts</span>
+  Neither one tells you the other. In the diagram, the <code>o</code> node
+  has a child (<code>g</code>) but <em>is</em> a word ("do") — so testing
+  <code>children.size === 0</code> misses it. And if you only ever insert
+  "dog", the <code>o</code> node still has a child but is <em>not</em> a
+  word, so having children can't tell you a word ends there either. Only the
+  flag can. <code>search()</code> and <code>startsWith()</code> differing by
+  exactly the <code>isEnd</code> check is the entire point of the flag; if
+  your two methods have identical bodies, you have a bug.
 </div>
+
+<h3>Array children, Map children, and the radix trie</h3>
+<p>
+  The <code>Map</code> in each node is a default, not a law. When the alphabet
+  is fixed and small (lowercase letters, digits, DNA bases) a node can hold a
+  plain array with one slot per letter, indexed by
+  <code>word.charCodeAt(i) - 97</code>. A child lookup becomes an array read
+  with no hashing, and a node has a fixed shape, which helps the engine.
+</p>
+<pre><code>class ArrayTrieNode {
+  constructor() {
+    this.children = new Array(26).fill(null); <span class="c">// slot 0 is "a", slot 25 is "z"</span>
+    this.isEnd = false;
+  }
+}
+
+class ArrayTrie {
+  constructor() { this.root = new ArrayTrieNode(); }
+
+  insert(word) {
+    let node = this.root;
+    for (let i = 0; i &lt; word.length; i++) {
+      const slot = word.charCodeAt(i) - 97;
+      if (node.children[slot] === null) node.children[slot] = new ArrayTrieNode();
+      node = node.children[slot];
+    }
+    node.isEnd = true;
+  }
+
+  search(word) {
+    let node = this.root;
+    for (let i = 0; i &lt; word.length; i++) {
+      node = node.children[word.charCodeAt(i) - 97];
+      if (node === null) return false;
+    }
+    return node.isEnd;
+  }
+}</code></pre>
+<table>
+  <tr><th></th><th>Array of 26 slots</th><th>Map per node</th></tr>
+  <tr><td>Child lookup</td><td>index arithmetic, O(1)</td><td>hash lookup, O(1) on average</td></tr>
+  <tr><td>Memory per node</td><td>26 slots whether or not used</td><td>grows with the real number of children</td></tr>
+  <tr><td>Alphabet</td><td>must be known and small; a stray capital letter or digit indexes outside 0..25</td><td>anything: Unicode, digits, whole words as "characters"</td></tr>
+  <tr><td>Iterating children in order</td><td>already in alphabetical order</td><td>needs a sort of the keys</td></tr>
+  <tr><td>Best when</td><td>dense nodes near the root, lowercase input</td><td>sparse, deep nodes or an unknown alphabet</td></tr>
+</table>
+<p class="sub">
+  With a Map, a node that has one child costs one entry. With the array, the
+  same node still pays for 26, which dominates memory for long, unshared
+  words. A mistyped input such as <code>"A"</code> gives slot -32, and
+  <code>children[-32]</code> is <code>undefined</code>, not <code>null</code>,
+  so the <code>=== null</code> test lets it through into a crash. Say the
+  tradeoff, then pick the Map unless you were told the alphabet.
+</p>
+<p>
+  Long unshared words are exactly where a plain trie wastes nodes: a word
+  stored alone becomes a chain of single-child nodes. A <b>radix trie</b>
+  (compressed trie, Patricia trie) collapses every such chain into one edge
+  that carries a string label. Every non-root node then either ends a word or
+  has at least two children, which bounds the whole tree at about 2n nodes for
+  n words, whatever the word lengths.
+</p>
+<pre><code>function commonPrefixLength(a, b) {
+  let i = 0;
+  while (i &lt; a.length &amp;&amp; i &lt; b.length &amp;&amp; a[i] === b[i]) i++;
+  return i;
+}
+
+class RadixNode {
+  constructor() {
+    this.edges = new Map(); <span class="c">// first character of the label → { label, node }</span>
+    this.isEnd = false;
+  }
+}
+
+class RadixTrie {
+  constructor() { this.root = new RadixNode(); }
+
+  insert(word) {
+    let node = this.root, rest = word;
+    while (rest.length &gt; 0) {
+      const edge = node.edges.get(rest[0]);
+      if (!edge) {                                     <span class="c">// no edge starts this way: one new edge holds the whole rest</span>
+        const leaf = new RadixNode();
+        leaf.isEnd = true;
+        node.edges.set(rest[0], { label: rest, node: leaf });
+        return;
+      }
+      const k = commonPrefixLength(edge.label, rest);
+      if (k &lt; edge.label.length) {                     <span class="c">// the label only partly matches: split it at k</span>
+        const middle = new RadixNode();
+        middle.edges.set(edge.label[k], { label: edge.label.slice(k), node: edge.node });
+        edge.label = edge.label.slice(0, k);
+        edge.node = middle;
+      }
+      node = edge.node;
+      rest = rest.slice(k);
+    }
+    node.isEnd = true;
+  }
+
+  search(word) {
+    let node = this.root, rest = word;
+    while (rest.length &gt; 0) {
+      const edge = node.edges.get(rest[0]);
+      if (!edge || !rest.startsWith(edge.label)) return false;
+      node = edge.node;
+      rest = rest.slice(edge.label.length);
+    }
+    return node.isEnd;
+  }
+}</code></pre>
+<h4>Dry run: insert "car", then "cat", then "do"</h4>
+<table>
+  <tr><th>Call</th><th>What happens</th><th>Edges afterwards</th></tr>
+  <tr><td>insert("car")</td><td>root has no edge starting with c, so one edge carries the whole word</td><td>c: "car"</td></tr>
+  <tr><td>insert("cat")</td><td>the edge "car" shares only "ca" with "cat" (k = 2), so it splits: "ca" leads to a middle node with edges "r" and "t"</td><td>c: "ca" → { r: "r", t: "t" }</td></tr>
+  <tr><td>insert("do")</td><td>no edge starts with d: a new edge "do"</td><td>c: "ca" → { r, t }, d: "do"</td></tr>
+</table>
+<p class="sub">
+  The splitting step is the whole difficulty; searching is the same walk as
+  before, comparing a whole label with <code>startsWith</code> instead of one
+  character. Costs stay O(L) character comparisons per operation. A slice that
+  copies would make the string version O(L²) in the worst case, and although V8
+  shares the memory of long slices, walking by index is O(L) by construction. In an interview you are almost never asked to write this; knowing
+  it exists, and why it saves memory, is the point.
+</p>
 
 <h3>Cost: pay for the word length, not the dictionary size</h3>
 <table>
@@ -205,6 +343,68 @@ class Trie {
   system-design follow-up.
 </p>
 
+<h3>Counting inside the trie: prefix counts and Map Sum</h3>
+<p>
+  A node can carry any number that is defined by "all words below me". Store
+  at each node the total value of the words that pass through it, and the
+  answer to "what is the total of everything with this prefix" is the number
+  on the prefix node: O(prefix length), no subtree walk. The design question
+  <b>Map Sum</b> asks for exactly that: <code>insert(key, val)</code> sets a key
+  to a value (replacing an old one), and <code>sum(prefix)</code> returns the
+  total of all values whose key starts with the prefix.
+</p>
+<p>
+  The replacement rule is the trap. Re-inserting a key must not add its new
+  value on top of the old; it must add the <em>difference</em>. Keep a side
+  map of each key's current value, compute <code>delta = val - old</code>, and
+  add the delta at every node on the key's path.
+</p>
+<pre><code>class MapSum {
+  constructor() {
+    this.root = { sum: 0, children: new Map() };
+    this.values = new Map(); <span class="c">// key → its current value, so a replacement can be turned into a delta</span>
+  }
+
+  insert(key, val) {
+    const delta = val - (this.values.get(key) ?? 0);
+    this.values.set(key, val);
+    let node = this.root;
+    node.sum += delta;
+    for (const ch of key) {
+      if (!node.children.has(ch)) node.children.set(ch, { sum: 0, children: new Map() });
+      node = node.children.get(ch);
+      node.sum += delta;
+    }
+  }
+
+  sum(prefix) {
+    let node = this.root;
+    for (const ch of prefix) {
+      node = node.children.get(ch);
+      if (!node) return 0;
+    }
+    return node.sum;
+  }
+}</code></pre>
+<h4>Dry run: insert("apple", 3), sum("ap"), insert("app", 2), sum("ap"), insert("apple", 5), sum("ap")</h4>
+<table>
+  <tr><th>Call</th><th>delta</th><th>Sums on the path a, p, p, l, e</th><th>Returns</th></tr>
+  <tr><td>insert("apple", 3)</td><td>3 - 0 = 3</td><td>3, 3, 3, 3, 3</td><td>—</td></tr>
+  <tr><td>sum("ap")</td><td>—</td><td>node for "ap" holds 3</td><td>3</td></tr>
+  <tr><td>insert("app", 2)</td><td>2 - 0 = 2</td><td>a: 5, p: 5, p: 5 (the "l" and "e" nodes stay 3)</td><td>—</td></tr>
+  <tr><td>sum("ap")</td><td>—</td><td>node for "ap" holds 5</td><td>5</td></tr>
+  <tr><td>insert("apple", 5)</td><td>5 - 3 = 2</td><td>a: 7, p: 7, p: 7, l: 5, e: 5</td><td>—</td></tr>
+  <tr><td>sum("ap")</td><td>—</td><td>node for "ap" holds 7</td><td>7</td></tr>
+</table>
+<p class="sub">
+  Insert is O(L), sum is O(P), and memory is O(total characters). The same
+  idea, with 1 instead of a value, gives "how many words start with this
+  prefix" (a prefix count), which also lets you detect that one word is a
+  prefix of another without a flag walk. The brute-force alternative, a map
+  from key to value plus a scan of every key on each <code>sum</code>, costs
+  O(n · L) per query.
+</p>
+
 <h3>Wildcard search — the '.' matches any character</h3>
 <p>
   The "Design Add and Search Words" variant adds a dot that matches any single
@@ -231,6 +431,97 @@ class Trie {
   branching factor is the number of <em>existing</em> children, not 26, so on a
   real dictionary it collapses fast. Say that bound out loud rather than
   claiming O(L).
+</p>
+
+<h3>Replace Words: stop at the shortest root</h3>
+<p>
+  A dictionary holds "roots" (<code>"cat"</code>, <code>"bat"</code>), and
+  every word in a sentence that starts with a root is replaced by the
+  <em>shortest</em> root that begins it. Build a trie of the roots, then walk
+  each word through it: the first node on the path that is marked as a word end
+  is the shortest root, so return as soon as you meet it. If the walk falls off
+  the trie, or the word ends first, no root applies and the word stays as it
+  is.
+</p>
+<pre><code>function replaceWords(dictionary, sentence) {
+  const trie = {};
+  for (const root of dictionary) {
+    let node = trie;
+    for (const ch of root) {
+      if (!node[ch]) node[ch] = {};
+      node = node[ch];
+    }
+    node.end = true;
+  }
+
+  function shortestRoot(word) {
+    let node = trie;
+    for (let i = 0; i &lt; word.length; i++) {
+      node = node[word[i]];
+      if (!node) return word;                  <span class="c">// no root starts this way</span>
+      if (node.end) return word.slice(0, i + 1); <span class="c">// first end seen is the shortest root</span>
+    }
+    return word;
+  }
+
+  return sentence.split(" ").map(shortestRoot).join(" ");
+}
+
+replaceWords(["cat", "bat", "rat"], "the cattle was rattled by the battery");
+<span class="c">// "the cat was rat by the bat"</span></code></pre>
+<p class="sub">
+  Building costs O(total root characters). Each word costs at most the length
+  of the longest root, since the walk dies there, so the replacement phase is
+  O(sentence length) rather than O(words · roots). The rejected alternative is
+  to test every root with <code>startsWith</code> for every word. In the code
+  the end marker is stored under the key <code>"end"</code>, which cannot
+  collide with a child because child keys are single characters.
+</p>
+
+<h3>Longest Word in Dictionary: every prefix must be a word</h3>
+<p>
+  Find the longest word that can be built one letter at a time, each prefix
+  also being a word in the list; break ties with the lexicographically smallest.
+  In the trie, a word qualifies exactly when every node on its path is a word
+  end, so search only through children that are word ends. Visiting children
+  in alphabetical order, and replacing the best answer only when a path is
+  strictly longer, makes the first word found at each length the smallest.
+</p>
+<pre><code>function longestWord(words) {
+  const root = { end: true, kids: new Map() }; <span class="c">// the empty prefix counts as buildable</span>
+  for (const word of words) {
+    let node = root;
+    for (const ch of word) {
+      if (!node.kids.has(ch)) node.kids.set(ch, { end: false, kids: new Map() });
+      node = node.kids.get(ch);
+    }
+    node.end = true;
+  }
+
+  let best = "";
+  function dfs(node, path) {
+    if (path.length &gt; best.length) best = path; <span class="c">// strict: an equal-length later word is lexicographically larger</span>
+    for (const ch of [...node.kids.keys()].sort()) {
+      const child = node.kids.get(ch);
+      if (child.end) dfs(child, path + ch); <span class="c">// a gap in the chain of words ends this branch</span>
+    }
+  }
+  dfs(root, "");
+  return best;
+}</code></pre>
+<h4>Dry run: ["w", "wo", "wor", "worl", "world", "banana", "ban", "ba"]</h4>
+<table>
+  <tr><th>Branch from the root</th><th>Path visited</th><th>Why it stops</th></tr>
+  <tr><td>"b"</td><td>"b" is not a word, so the branch is never entered</td><td>the first letter is missing</td></tr>
+  <tr><td>"w"</td><td>w → wo → wor → worl → world</td><td>every prefix is a word, so best becomes "world"</td></tr>
+</table>
+<p class="sub">
+  <code>"banana"</code> has the prefixes <code>"ba"</code> and
+  <code>"ban"</code> in the list but no <code>"b"</code>, so it cannot be
+  built. The answer is <code>"world"</code>. Time O(total characters) for the
+  build plus the walk over the nodes (and the sorts, bounded by the alphabet
+  size at each node). The alternative without a trie sorts the words and keeps
+  a Set of buildable ones: also fine, and worth mentioning.
 </p>
 
 <h3>Word Break — the trie kills the substring scanning</h3>
@@ -351,6 +642,112 @@ class Trie {
   match anything."
 </div>
 
+<h3>Deleting a word: unlink on the way back up</h3>
+<p>
+  Deletion is the operation people skip and interviewers like to ask for.
+  Two separate things might need to happen. The word must stop being a word,
+  which means clearing <code>isEnd</code> on its last node. And nodes that
+  <em>only</em> existed for that word should disappear, otherwise the trie
+  leaks memory and <code>startsWith</code> still answers true for prefixes of
+  a word that is gone. A node is removable when it is not a word end and has
+  no children. The check runs from the deepest node back toward the root and
+  stops at the first node that is still needed.
+</p>
+<pre><code>function removeWord(root, word) {
+  const path = []; <span class="c">// [parent, character] pairs from the root down to the last node</span>
+  let node = root;
+  for (const ch of word) {
+    const next = node.children.get(ch);
+    if (!next) return false; <span class="c">// the word is not in the trie</span>
+    path.push([node, ch]);
+    node = next;
+  }
+  if (!node.isEnd) return false; <span class="c">// the path exists only as a prefix of other words</span>
+  node.isEnd = false;
+
+  for (let i = path.length - 1; i &gt;= 0; i--) {
+    const [parent, ch] = path[i];
+    const child = parent.children.get(ch);
+    if (child.isEnd || child.children.size &gt; 0) break; <span class="c">// something else still uses this node</span>
+    parent.children.delete(ch);
+  }
+  return true;
+}</code></pre>
+<h4>Dry run: the trie holds "do" and "dog"</h4>
+<table>
+  <tr><th>Call</th><th>Walk and flag</th><th>Cleanup, deepest node first</th><th>Result</th></tr>
+  <tr><td>removeWord("dog")</td><td>reaches g, g.isEnd becomes false</td><td>g has no children and is not an end: delete it. Then o is an end ("do"): stop</td><td>trie holds "do" only, with d → o</td></tr>
+  <tr><td>removeWord("do")</td><td>reaches o, o.isEnd becomes false</td><td>o has no children: delete it. d now has none and is not an end: delete it</td><td>trie is empty</td></tr>
+  <tr><td>removeWord("d")</td><td>the root has no child d (the trie is empty)</td><td>none</td><td>false: nothing was removed</td></tr>
+</table>
+<p class="sub">
+  Cost O(L). The two traps are deleting a prefix of another word (removing
+  <code>"do"</code> must keep the nodes <code>d, o, g</code> that
+  <code>"dog"</code> needs) and returning true for a word that was only a
+  prefix. An alternative with the same effect is a counter of words passing
+  through each node, decremented along the path, deleting any node whose count
+  reaches zero.
+</p>
+
+<h3>Stream of Characters: a trie of reversed words</h3>
+<p>
+  Letters arrive one at a time, and after each one you must say whether some
+  suffix of everything received so far is a dictionary word. A normal trie
+  matches from the start of a word, but here the end is fixed (the newest
+  letter) and the start is unknown. So flip the problem: insert every word
+  <em>reversed</em>, and on each arrival walk the stream backwards from the
+  newest letter. The first word end you reach means a word ends here.
+</p>
+<pre><code>class StreamChecker {
+  constructor(words) {
+    this.root = { children: new Map(), isEnd: false };
+    this.maxLength = 0;
+    for (const word of words) {
+      let node = this.root;
+      for (let i = word.length - 1; i &gt;= 0; i--) { <span class="c">// reversed insert</span>
+        if (!node.children.has(word[i])) node.children.set(word[i], { children: new Map(), isEnd: false });
+        node = node.children.get(word[i]);
+      }
+      node.isEnd = true;
+      this.maxLength = Math.max(this.maxLength, word.length);
+    }
+    this.recent = []; <span class="c">// only the last maxLength letters can matter</span>
+  }
+
+  query(letter) {
+    this.recent.push(letter);
+    if (this.recent.length &gt; this.maxLength) this.recent.shift();
+
+    let node = this.root;
+    for (let i = this.recent.length - 1; i &gt;= 0; i--) { <span class="c">// newest letter first</span>
+      node = node.children.get(this.recent[i]);
+      if (!node) return false;   <span class="c">// no word ends with these letters</span>
+      if (node.isEnd) return true; <span class="c">// a whole reversed word matched: a suffix of the stream is a word</span>
+    }
+    return false;
+  }
+}</code></pre>
+<h4>Dry run: words ["cd", "f", "kl"], stream a, b, c, d, e, f</h4>
+<table>
+  <tr><th>query</th><th>recent (last 2 letters)</th><th>Walk, newest first</th><th>Returns</th></tr>
+  <tr><td>"a"</td><td>a</td><td>root has no child "a"</td><td>false</td></tr>
+  <tr><td>"b"</td><td>a, b</td><td>root has no child "b"</td><td>false</td></tr>
+  <tr><td>"c"</td><td>b, c</td><td>root has no child "c" ("cd" is stored as d then c)</td><td>false</td></tr>
+  <tr><td>"d"</td><td>c, d</td><td>d, then c, and that node is a word end</td><td>true</td></tr>
+  <tr><td>"e"</td><td>d, e</td><td>root has no child "e"</td><td>false</td></tr>
+  <tr><td>"f"</td><td>e, f</td><td>f is a word end at once</td><td>true</td></tr>
+</table>
+<p class="sub">
+  Each query costs O(longest word), independent of the stream length, because
+  only the last <code>maxLength</code> letters are kept. The
+  <code>shift()</code> there is also O(maxLength), which does not change the
+  per-query bound. The shape to remember is "match against the end of a growing
+  string, so reverse the dictionary". The general tool for matching many words
+  against a stream is an Aho-Corasick automaton (a trie plus failure links),
+  which does a constant amortized amount of work per letter; the reversed trie
+  is the simpler one to write in an interview.
+</p>
+
 <h3>Advanced aside: the binary trie for maximum XOR</h3>
 <p>
   A trie doesn't have to be built from letters. Write each number as its 32-bit
@@ -409,6 +806,10 @@ function findMaximumXOR(nums) {
   <li>Distinguish from suffix structures: "any substring" questions (repeated substrings, longest common substring) want a suffix trie/automaton or hashing, not a plain prefix trie</li>
   <li>Bitwise pair problems — maximum XOR, XOR under a threshold — are a binary trie over 32-bit strings in disguise</li>
   <li>Watch the flag: <code>isEnd</code> is separate from "leaf," and <code>search</code> vs <code>startsWith</code> must differ by exactly that check</li>
+  <li>"Replace with the shortest root," "sum of values by prefix," "count of words with this prefix" → store the answer on the node and read it at the end of the prefix walk</li>
+  <li>"Every prefix must also be a word" → only descend through children that are word ends</li>
+  <li>Letters arrive in a stream and you ask about a suffix → insert the words reversed and walk backwards from the newest letter</li>
+  <li>"Remove a word" → clear the flag, then delete nodes upward while they are not word ends and have no children</li>
 </ul>
 
 <div class="bx is-ref">
@@ -419,6 +820,10 @@ function findMaximumXOR(nums) {
     <li>Explain why Word Search II builds one trie for all words instead of running Word Search once per word, and what the prefix-miss check prunes.</li>
     <li>Trace the greedy bit-by-bit choice in maximum XOR and explain why taking the opposite bit is never a mistake, even made greedily from the top bit down.</li>
     <li>Given a new problem, recognize when it needs a trie — incremental prefix checks while a candidate string is still being built — versus a plain hash set, which only answers exact membership.</li>
+    <li>Compare array children with Map children, and say what a radix trie compresses and why it has about 2n nodes.</li>
+    <li>Keep a running total on every node for Map Sum, and say why a replaced key adds only the difference.</li>
+    <li>Delete a word from a trie without breaking the words that share its prefix, and say which nodes are safe to unlink.</li>
+    <li>Answer a stream-of-characters query with a reversed trie, and say why only the last <code>maxLength</code> letters need to be kept.</li>
   </ul>
 </div>`,
 };

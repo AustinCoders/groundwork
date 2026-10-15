@@ -7,7 +7,15 @@ export const dsaComplexityAnalysis: Chapter = {
   short: "Complexity analysis",
   levels: ["beginner"],
   prerequisites: [],
-  practice: ["ex-classify-growth-rate", "ex-rewrite-nested-loop-linear", "ex-count-basic-operations"],
+  practice: [
+    "ex-classify-growth-rate",
+    "ex-rewrite-nested-loop-linear",
+    "ex-count-basic-operations",
+    "ex-loop-iteration-counts",
+    "ex-fib-call-count-and-depth",
+    "ex-master-theorem-solver",
+    "ex-amortized-push-cost",
+  ],
   ready: true,
   subtitle: "The one skill every interviewer is silently scoring, whether they say so or not.",
   body: `<h3>What Big-O actually measures</h3>
@@ -341,6 +349,203 @@ function hasDuplicateFast(arr) {
   single, innocent <code>for...of</code> loop.
 </p>
 
+<h3>Loops that don't count up by one</h3>
+<p>
+  "Count the loops" works when every loop runs n times. Plenty of loops
+  don't: the variable doubles, the inner loop starts where the outer one
+  is, the condition tests <code>i * i</code>. For all of these the honest
+  method is one question, asked of each loop in turn: <b>how many times
+  does the body run, as a function of n?</b> The five shapes below cover
+  almost everything you will meet. Each function counts its own body, so
+  the table afterwards is measured, not guessed.
+</p>
+<pre><code>function countDoubling(n) {
+  let steps = 0;
+  for (let i = 1; i &lt; n; i *= 2) steps++;
+  return steps;
+}
+
+function countTriangle(n) {
+  let steps = 0;
+  for (let i = 0; i &lt; n; i++) {
+    for (let j = i + 1; j &lt; n; j++) steps++;
+  }
+  return steps;
+}
+
+function countSqrt(n) {
+  let steps = 0;
+  for (let i = 2; i * i &lt;= n; i++) steps++;
+  return steps;
+}
+
+function countHarmonic(n) {
+  let steps = 0;
+  for (let i = 1; i &lt;= n; i++) {
+    for (let j = i; j &lt;= n; j += i) steps++;
+  }
+  return steps;
+}
+
+function countNestedDoubling(n) {
+  let steps = 0;
+  for (let i = 0; i &lt; n; i++) {
+    for (let j = 1; j &lt; n; j *= 2) steps++;
+  }
+  return steps;
+}</code></pre>
+<table>
+  <tr><th>n</th><th>countDoubling</th><th>countTriangle</th><th>countSqrt</th><th>countHarmonic</th><th>countNestedDoubling</th></tr>
+  <tr><td>10</td><td>4</td><td>45</td><td>2</td><td>27</td><td>40</td></tr>
+  <tr><td>100</td><td>7</td><td>4,950</td><td>9</td><td>482</td><td>700</td></tr>
+  <tr><td>1,000</td><td>10</td><td>499,500</td><td>30</td><td>7,069</td><td>10,000</td></tr>
+  <tr><td>10,000</td><td>14</td><td>49,995,000</td><td>99</td><td>93,668</td><td>140,000</td></tr>
+</table>
+<p>
+  Read the columns against the n that produced them and the shapes
+  appear. Here is where each one comes from.
+</p>
+<ul>
+  <li>
+    <b>Doubling is logarithmic.</b> <code>i</code> takes the values 1, 2,
+    4, 8, ..., 2<sup>k−1</sup> and stops once 2<sup>k</sup> reaches n. So
+    the body runs ⌈log₂ n⌉ times: 10 times for n = 1,000, 20 for a million,
+    and only 30 for a billion. Halving (<code>n = Math.floor(n / 2)</code>
+    until it hits 0) is the same loop run backwards, which is exactly why
+    binary search is O(log n).
+  </li>
+  <li>
+    <b>A dependent inner loop is quadratic, with a half in front.</b> When
+    the outer variable is <code>i</code>, the inner loop runs
+    <code>n − 1 − i</code> times, so the total is (n−1) + (n−2) + ... + 1 +
+    0 = n(n−1)/2. For n = 5 that is 4 + 3 + 2 + 1 + 0 = 10. The ½ is a
+    constant, so the class is still O(n²): halving the work of a quadratic
+    loop does not make it a different shape.
+  </li>
+  <li>
+    <b>A condition on <code>i * i</code> is a square root.</b>
+    <code>i * i &lt;= n</code> is the same test as <code>i &lt;= √n</code>, so
+    the loop runs about √n times. Trial division for primality stops there
+    because if n = a · b with a ≤ b, then a ≤ √n: any factor pair has a
+    member at or below the root. A million costs about a thousand steps.
+  </li>
+  <li>
+    <b>A stride that grows with <code>i</code> is harmonic.</b> The inner
+    loop of <code>countHarmonic</code> runs ⌊n/i⌋ times, so the total is
+    n · (1 + ½ + ⅓ + ... + 1/n) ≈ n · ln n. It is not n² because most values
+    of <code>i</code> are large and their inner loop runs only a few times;
+    for n = 100 the exact count is 482, close to 100 · ln 100 ≈ 460. This is
+    the shape of the sieve of Eratosthenes, though the real sieve only
+    strides from primes, which brings it down to O(n log log n).
+  </li>
+  <li>
+    <b>A linear loop around a logarithmic one multiplies.</b>
+    <code>countNestedDoubling</code> runs n times a loop that runs log n
+    times: O(n log n), and the table shows exactly n × ⌈log₂ n⌉ (1,000 ×
+    10 = 10,000).
+  </li>
+</ul>
+<p>
+  One more shape matters a great deal for the next chapters: a loop inside
+  a loop whose inner variable <em>does not reset</em>. This is the engine
+  of every two-pointer and sliding-window solution.
+</p>
+<pre><code>function countWindowMoves(nums, limit) {
+  let left = 0, sum = 0, moves = 0;
+  for (let right = 0; right &lt; nums.length; right++) {
+    sum += nums[right];
+    moves++;
+    while (sum &gt; limit &amp;&amp; left &lt;= right) {
+      sum -= nums[left];
+      left++;
+      moves++;
+    }
+  }
+  return moves;
+}</code></pre>
+<p class="sub">
+  It has a <code>while</code> inside a <code>for</code>, and it is O(n), not
+  O(n²). <code>left</code> never moves backwards and never passes
+  <code>right + 1</code>, so across the <em>whole</em> run it advances at
+  most n times in total. <code>right</code> advances n times. The inner loop
+  does not restart from zero on every outer step, so the two loops share a
+  budget of at most 2n moves instead of multiplying. For
+  <code>countWindowMoves([4, 2, 3, 5, 1], 6)</code> the moves are 5 steps of
+  <code>right</code> plus 3 of <code>left</code>, 8 in all, well under 2n =
+  10.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ Nested loops do not always mean a product</span>
+  Before multiplying two loops, ask whether the inner loop's variable is
+  reset to the same starting value on every outer step. If it is
+  (<code>let j = 0</code> inside the outer body), multiply the two counts. If
+  it is shared and only ever moves forward, add them. The mistake runs both
+  ways: calling a pointer loop O(n²) undersells the solution, and calling a
+  real double loop O(n) because "the inner one is small" oversells it.
+</div>
+
+<h3>What built-in calls really cost</h3>
+<p>
+  Most hidden quadratics come from one line that looks like a single step
+  but is a loop inside the engine. The language specification does not
+  promise any of these costs, and an engine is free to be faster than the
+  table, but this is what to <em>assume</em> in an interview and say out
+  loud. Read the right-hand column as "the work this line is allowed to
+  hide".
+</p>
+<table>
+  <tr><th>Call</th><th>Assume</th><th>Why</th></tr>
+  <tr><td><code>arr[i]</code>, <code>arr.length</code>, <code>s[i]</code>, <code>s.charCodeAt(i)</code></td><td>O(1)</td><td>one index computation</td></tr>
+  <tr><td><code>push</code>, <code>pop</code></td><td>amortized O(1)</td><td>the end of the array is the cheap end</td></tr>
+  <tr><td><code>shift</code>, <code>unshift</code>, <code>splice(i, k)</code></td><td>O(n)</td><td>elements after the change move over</td></tr>
+  <tr><td><code>slice(a, b)</code></td><td>O(b − a)</td><td>it builds a new array, so it copies the piece</td></tr>
+  <tr><td><code>concat</code>, <code>[...arr]</code>, <code>Array.from(arr)</code>, <code>reverse</code>, <code>join</code></td><td>O(n)</td><td>each one touches every element</td></tr>
+  <tr><td><code>includes</code>, <code>indexOf</code>, <code>find</code>, <code>some</code>, <code>every</code></td><td>O(n)</td><td>a scan that may stop early, worst case the whole array</td></tr>
+  <tr><td><code>map</code>, <code>filter</code>, <code>forEach</code>, <code>reduce</code></td><td>O(n) × the callback</td><td>a callback that itself scans makes the whole call quadratic</td></tr>
+  <tr><td><code>sort(compare)</code></td><td>O(n log n) comparisons</td><td>multiply by what one comparison costs</td></tr>
+  <tr><td><code>Math.max(...arr)</code></td><td>O(n)</td><td>spreading a very large array into arguments can also throw a <code>RangeError</code></td></tr>
+  <tr><td><code>s + t</code>, <code>s.slice(a, b)</code>, <code>s.repeat(k)</code></td><td>O(length of the result)</td><td>strings are immutable, so a new one is built</td></tr>
+  <tr><td><code>s === t</code></td><td>O(length of the shorter)</td><td>comparison walks until the first difference</td></tr>
+  <tr><td><code>s.split("")</code>, <code>[...s]</code></td><td>O(n)</td><td>one new element per character</td></tr>
+  <tr><td><code>map.get</code>, <code>map.set</code>, <code>set.has</code>, <code>set.add</code></td><td>O(1) average</td><td>for a string key add the O(L) cost of hashing a key of length L</td></tr>
+  <tr><td><code>Object.keys</code>, <code>Object.values</code>, <code>Object.entries</code></td><td>O(n)</td><td>builds an array of every property</td></tr>
+</table>
+<p>
+  Two rows deserve a second look. The callback row is where most
+  accidental quadratics are born:
+  <code>arr.filter((x) =&gt; other.includes(x))</code> is one line and
+  O(n × m), because the callback's <code>includes</code> scans
+  <code>other</code> for every element. And the string-key row is the
+  polite lie of hash maps: a map of n strings, each of length L, costs
+  O(n · L) to fill, not O(n), because every key has to be hashed
+  character by character. When the strings are short that is a constant, and
+  when the interviewer says "each word can be up to 10,000 characters", it
+  is not.
+</p>
+<p>Here is the table at work on a short function. Read it line by line, the way you would out loud.</p>
+<pre><code>function lengthsReversed(words) {          <span class="c">// n words, each up to L characters</span>
+  const sorted = [...words].sort();         <span class="c">// spread O(n); sort O(n log n) compares, each up to O(L)</span>
+  const out = [];
+  for (const w of sorted) {                 <span class="c">// n iterations</span>
+    out.unshift(w.length);                  <span class="c">// O(n) every time: the hidden loop</span>
+  }
+  return out;
+}</code></pre>
+<table>
+  <tr><th>Line</th><th>Cost</th></tr>
+  <tr><td><code>[...words]</code></td><td>O(n)</td></tr>
+  <tr><td><code>.sort()</code></td><td>O(n log n) comparisons × O(L) per comparison = O(n · L · log n)</td></tr>
+  <tr><td><code>out.unshift(...)</code> in a loop of n</td><td>n calls × O(n) each = O(n²)</td></tr>
+  <tr><td>Total</td><td>O(n · L · log n + n²), with O(n) extra space</td></tr>
+</table>
+<p class="sub">
+  Which term wins depends on the input: with short words the quadratic
+  <code>unshift</code> loop dominates, and with a few very long words the
+  sort does. Naming both terms instead of rounding to one is what shows the
+  interviewer you looked inside the lines. The fix for the loop is to
+  <code>push</code> and <code>reverse</code> once at the end, which is O(n).
+</p>
+
 <h3>Dropping constants and lower-order terms</h3>
 <p>
   <code>O(2n)</code> is written as <code>O(n)</code>. <code>O(n² + n)</code>
@@ -394,6 +599,103 @@ function hasDuplicateFast(arr) {
   interviews — but being able to write down a recurrence for your own
   recursive solution, and reason informally about "how many levels ×
   how much work per level," is a real and commonly-tested skill.
+</p>
+
+<h3>Memoized recursion: states times work per state</h3>
+<p>
+  A recurrence like <code>T(n) = T(n−1) + T(n−2) + O(1)</code> counts
+  <em>calls</em>, and it is the right tool for plain recursion. Add a cache
+  and it stops being the right tool, because most of those calls no longer
+  do anything. The count that matters changes to this:
+</p>
+<div class="sticky mint">
+  <span class="ttl">The memoization rule</span>
+  Time = (number of distinct states) × (work done in one state, not counting
+  the recursive calls it makes). Each state's body runs once, because every
+  later call to it is answered from the cache in O(1). Space = the cache
+  (one entry per state) plus the deepest chain of calls.
+</div>
+<p>Watch the rule on Fibonacci, counting both the calls and the bodies that actually run.</p>
+<pre><code>function fibNaive(n, stats) {
+  stats.calls++;
+  if (n &lt; 2) return n;
+  return fibNaive(n - 1, stats) + fibNaive(n - 2, stats);
+}
+
+function fibMemo(n, stats, memo = new Map()) {
+  stats.calls++;
+  if (n &lt; 2) return n;
+  if (memo.has(n)) return memo.get(n);
+  stats.bodies++;
+  const value = fibMemo(n - 1, stats, memo) + fibMemo(n - 2, stats, memo);
+  memo.set(n, value);
+  return value;
+}</code></pre>
+<table>
+  <tr><th>n</th><th>fibNaive calls</th><th>fibMemo calls</th><th>fibMemo bodies run</th></tr>
+  <tr><td>6</td><td>25</td><td>11</td><td>5</td></tr>
+  <tr><td>10</td><td>177</td><td>19</td><td>9</td></tr>
+  <tr><td>20</td><td>21,891</td><td>39</td><td>19</td></tr>
+  <tr><td>30</td><td>2,692,537</td><td>59</td><td>29</td></tr>
+</table>
+<p class="sub">
+  There are n − 1 states that run a body (the values 2 through n), and each
+  body does O(1) work besides its two recursive calls, so the time is
+  O(n). The calls column is about twice the bodies column because every body
+  makes two calls and only the first call into a state does real work. That
+  is the general shape: calls ≤ states × calls per body, so counting
+  bodies loses at most a constant factor.
+</p>
+<p>
+  The rule matters most when the work per state is not constant. Minimum
+  coins to make an amount is the standard example:
+</p>
+<pre><code>function minCoins(coins, amount) {
+  const memo = new Map();
+  function solve(left) {
+    if (left === 0) return 0;
+    if (left &lt; 0) return Infinity;
+    if (memo.has(left)) return memo.get(left);
+    let best = Infinity;
+    for (const coin of coins) {
+      best = Math.min(best, solve(left - coin) + 1);
+    }
+    memo.set(left, best);
+    return best;
+  }
+  const result = solve(amount);
+  return result === Infinity ? -1 : result;
+}</code></pre>
+<table>
+  <tr><th>Quantity</th><th>Value</th><th>Reason</th></tr>
+  <tr><td>States</td><td>amount</td><td><code>left</code> can be 1, 2, ..., amount; 0 and negatives return immediately</td></tr>
+  <tr><td>Work per state</td><td>coins.length</td><td>one loop over the coin list, plus O(1) cache work</td></tr>
+  <tr><td>Time</td><td>O(amount × coins.length)</td><td>states × work per state</td></tr>
+  <tr><td>Space</td><td>O(amount)</td><td>the cache has one entry per state</td></tr>
+</table>
+<p class="sub">
+  With <code>coins = [1, 2, 5]</code> and an amount of 11, 100 or 1,000, the
+  count of bodies run is exactly 11, 100 and 1,000: one per amount, as the
+  table says. Without the cache the same recursion branches three ways at
+  every level and its call tree grows exponentially in the amount.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ Two things the rule does not tell you</span>
+  <b>The stack is still there.</b> Memoization removes repeated work, not
+  depth: <code>minCoins([1], 10000)</code> recurses 10,000 calls deep and
+  throws a <code>RangeError</code> on a default Node 24 stack, even though it
+  has only 10,000 states. A bottom-up DP table has
+  no such limit. <b>The state must be the whole state.</b> If the answer
+  depends on two parameters but the cache key uses one, the cache returns
+  answers computed for a different question, and you get wrong results, not
+  slow ones. The number of states is the product of the ranges of every
+  parameter in the key.
+</div>
+<p class="sub">
+  The same rule prices every DP you will write later: a table of r × c
+  cells with O(1) work per cell is O(r · c); a table of n cells where each
+  looks back over all earlier cells is O(n²). See
+  <a href="/dsa/dsa-dp-1d">DP in one dimension</a> for the full treatment.
 </p>
 
 <h3>Space complexity — the part people forget</h3>
@@ -494,6 +796,204 @@ function sumRecursive(arr, i = 0) {
   the guarantee comes from the doubling strategy, not from luck.
 </div>
 
+<h3>The potential method: amortized cost with a bank account</h3>
+<p>
+  The aggregate method above works when you can add up the whole sequence
+  at once. Many structures are easier to reason about one operation at a
+  time, and for that you use a <b>potential function</b> Φ: a number
+  computed from the structure's current state that stands for "work we have
+  already paid for but not yet done". The amortized cost of an operation is
+  its actual cost plus the change in potential:
+</p>
+<pre><code>amortized = actual + Φ(after) − Φ(before)</code></pre>
+<p>
+  Add this up over a sequence of n operations and the Φ terms cancel from
+  end to end, leaving total actual cost = total amortized cost − Φ(final) +
+  Φ(start). So if Φ starts at 0 and never goes negative, the total actual
+  cost is at most the total amortized cost. If every operation has a
+  constant amortized cost, the whole sequence does too.
+</p>
+<p>
+  For the doubling array, pick Φ = 2 · size − capacity. Then the argument
+  has only two cases:
+</p>
+<ul>
+  <li>
+    <b>A push with room to spare.</b> Actual cost 1. The size grows by one,
+    so Φ rises by 2. Amortized = 1 + 2 = 3.
+  </li>
+  <li>
+    <b>A push into a full array</b> (size = capacity = c). Actual cost c + 1:
+    copy the c elements, then write one. Before the push Φ = 2c − c = c.
+    Afterwards the size is c + 1 and the capacity is 2c, so Φ = 2(c + 1) − 2c =
+    2. Amortized = (c + 1) + (2 − c) = 3. The big copy is paid for by the
+    potential the cheap pushes stored up.
+  </li>
+</ul>
+<p>
+  So every push has amortized cost at most 3, and n pushes cost at most 3n
+  in total. The code below replays the argument by running a model of the
+  array and recording both numbers for every push.
+</p>
+<pre><code>function simulatePushes(n) {
+  let size = 0, capacity = 0, actual = 0;
+  const amortized = [];
+  for (let k = 0; k &lt; n; k++) {
+    const before = 2 * size - capacity;
+    let cost = 1;
+    if (size === capacity) {
+      cost += size;
+      capacity = Math.max(1, capacity * 2);
+    }
+    size++;
+    actual += cost;
+    amortized.push(cost + (2 * size - capacity) - before);
+  }
+  return { actual, amortized };
+}</code></pre>
+<h4>Dry run: the first six pushes</h4>
+<table>
+  <tr><th>push</th><th>size, capacity before</th><th>actual cost</th><th>Φ before → after</th><th>amortized</th></tr>
+  <tr><td>1</td><td>0, 0 (full)</td><td>1</td><td>0 → 1</td><td>2</td></tr>
+  <tr><td>2</td><td>1, 1 (full)</td><td>2</td><td>1 → 2</td><td>3</td></tr>
+  <tr><td>3</td><td>2, 2 (full)</td><td>3</td><td>2 → 2</td><td>3</td></tr>
+  <tr><td>4</td><td>3, 4</td><td>1</td><td>2 → 4</td><td>3</td></tr>
+  <tr><td>5</td><td>4, 4 (full)</td><td>5</td><td>4 → 2</td><td>3</td></tr>
+  <tr><td>6</td><td>5, 8</td><td>1</td><td>2 → 4</td><td>3</td></tr>
+</table>
+<p class="sub">
+  Total actual cost of the first five pushes is 1 + 2 + 3 + 1 + 5 = 12,
+  against a budget of 3 × 5 = 15. The expensive pushes (3 and 5) are exactly
+  the ones where Φ drops. For n = 1,000 the simulation gives a total actual
+  cost of 2,023 and a largest amortized value of 3. The first push shows 2
+  rather than 3 only because the model starts from capacity 0.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ The potential has two jobs, and both can be forgotten</span>
+  Φ must start at 0 (or at its minimum) and must never go negative. With
+  Φ = 2 · size − capacity, an array that starts with capacity 1 and size 0
+  would begin at Φ = −1 and the "total actual ≤ total amortized" step would
+  quietly fail. Also keep the idea separate from average case: Φ is a
+  proof device about a sequence of operations, not a probability over inputs.
+</div>
+<p class="sub">
+  You will almost never write a potential function in an interview. What is
+  worth having is the story it tells: every cheap operation pays a little
+  extra into an account, and an occasional expensive one spends the
+  account. That is how to defend "amortized O(1)" for a dynamic array, for
+  the two-stack queue, and for a monotonic stack where each element is pushed
+  once and popped at most once.
+</p>
+
+<h3>Output size, and numbers that are values rather than sizes</h3>
+<p>
+  Two cases make "count the loops" give an answer that is right on paper and
+  wrong in practice.
+</p>
+<p>
+  <b>The output is part of the work.</b> No algorithm can run faster than the
+  time it takes to write its answer. A function that returns every subset of
+  n numbers must produce 2<sup>n</sup> arrays whose lengths add up to
+  n · 2<sup>n−1</sup>, so it is Θ(n · 2<sup>n</sup>) however cleverly it is
+  written.
+</p>
+<pre><code>function allSubsets(nums) {
+  const out = [[]];
+  for (const x of nums) {
+    const size = out.length;
+    for (let i = 0; i &lt; size; i++) out.push([...out[i], x]);
+  }
+  return out;
+}</code></pre>
+<p class="sub">
+  Counting the work: the loop over <code>nums</code> runs n times, but the
+  inner loop doubles each round (1, 2, 4, ..., 2<sup>n−1</sup> subsets), and
+  each <code>[...out[i], x]</code> copies the subset it extends. For n = 10
+  the result has 1,024 subsets with 5,120 elements in total; for n = 20 it has
+  1,048,576 subsets and 10,485,760 elements. Say so out loud: "O(n · 2ⁿ), and
+  that is also the size of the output, so it cannot be beaten". The same
+  reasoning prices all permutations at O(n · n!) and all pairs at O(n²).
+</p>
+<p>
+  <b>A number can be an input whose <em>value</em> is the loop bound.</b>
+  An algorithm is <em>pseudo-polynomial</em> when its cost is polynomial in
+  the numeric value of an input but exponential in the number of digits it
+  takes to write that input. The subset-sum check below is the classic case:
+</p>
+<pre><code>function canMakeSum(nums, target) {
+  const reachable = new Uint8Array(target + 1);
+  reachable[0] = 1;
+  for (const x of nums) {
+    for (let s = target; s &gt;= x; s--) {
+      if (reachable[s - x]) reachable[s] = 1;
+    }
+  }
+  return reachable[target] === 1;
+}</code></pre>
+<table>
+  <tr><th>target</th><th>digits needed to write it</th><th>steps for n numbers</th><th>memory</th></tr>
+  <tr><td>1,000</td><td>4</td><td>about n × 1,000</td><td>1 KB</td></tr>
+  <tr><td>1,000,000</td><td>7</td><td>about n × 1,000,000</td><td>1 MB</td></tr>
+  <tr><td>1,000,000,000</td><td>10</td><td>about n × 1,000,000,000</td><td>1 GB</td></tr>
+</table>
+<p class="sub">
+  The time is O(n · target) and the space is O(target). It is "polynomial"
+  only if you treat <code>target</code> as the input size. But adding one
+  digit to the target multiplies the work by ten, so in terms of the
+  length of the input it is exponential. The honest interview statement is
+  "O(n · T) time and O(T) space, which is fine because T is at most a few
+  thousand here". Two others you will meet: trial-division primality
+  (<code>for (let i = 2; i * i &lt;= n; i++)</code>) is O(√N) in the value
+  N, about 31,621 steps for N = 1,000,000,007, and the 0/1 knapsack DP is
+  O(n · W) in the capacity W.
+</p>
+<div class="say">
+  <span class="ttl">Say it like this →</span> "This is O(n · W), where W is
+  the numeric capacity, not the input length. It is pseudo-polynomial: fine
+  for W up to about a million, hopeless if W can be a billion, and in that
+  case I'd look for a different formulation."
+</div>
+
+<h3>The constraints tell you the target complexity</h3>
+<p>
+  The most useful complexity skill in an interview happens before any
+  code: read the limits on n and work backwards. A comfortable budget to plan
+  for is about 10<sup>8</sup> simple steps, which is a rule of thumb for
+  choosing an approach, not a measurement. The table lists the largest
+  growth rate that fits under that budget for each size of n, and the kind
+  of solution that usually lives there.
+</p>
+<table>
+  <tr><th>Largest n</th><th>Fits</th><th>Work at that n</th><th>Typical approach</th></tr>
+  <tr><td>about 10</td><td>O(n!)</td><td>10! = 3,628,800</td><td>try every ordering: permutations, brute-force backtracking</td></tr>
+  <tr><td>about 20 to 25</td><td>O(2ⁿ), or O(n · 2ⁿ) near 20</td><td>2²⁰ = 1,048,576 (times 20 for n · 2ⁿ); 2²⁵ = 33,554,432</td><td>try every subset, bitmask, meet in the middle</td></tr>
+  <tr><td>about 500</td><td>O(n³)</td><td>500³ = 125,000,000</td><td>three nested loops, interval DP, Floyd–Warshall</td></tr>
+  <tr><td>about 5,000</td><td>O(n²)</td><td>5,000² = 25,000,000</td><td>all pairs, 2D DP, two nested loops</td></tr>
+  <tr><td>about 10⁵</td><td>O(n log n)</td><td>about 1.7 million</td><td>sorting, heaps, binary search per element, balanced trees</td></tr>
+  <tr><td>about 10⁷</td><td>O(n)</td><td>about 10⁷</td><td>one pass, hash map, two pointers, prefix sums</td></tr>
+  <tr><td>10⁹ or more</td><td>O(log n) or O(1)</td><td>about 30</td><td>binary search on the answer, math formula, fast exponentiation</td></tr>
+</table>
+<p>
+  Use it in two directions. Forward: when a problem says n ≤ 10<sup>5</sup>
+  and your first idea is an O(n²) pair loop (10<sup>10</sup> steps), you
+  know before writing a line that the idea is too slow and a hash map, sort,
+  or pointer technique is needed. Backward: when the limit is n ≤ 20 and
+  someone proposes a clever O(n) greedy, the small limit is a hint that the
+  intended solution is an exponential search, and the greedy may be wrong.
+  The sizes in the table also tell you what <em>not</em> to over-engineer:
+  at n ≤ 1,000, an O(n²) loop is 10<sup>6</sup> steps and a perfectly good
+  answer.
+</p>
+<div class="warn">
+  <span class="ttl">⚠ The table is a starting guess, not a proof</span>
+  Constants matter at the edges: an O(n log n) solution with a heavy
+  comparator, or an O(n²) one that allocates in its inner loop, can fail
+  where the table says it fits. Strings multiply everything by their length
+  (see the string-key row above). And when the statement gives no limits at
+  all, ask for them: it is the single question that most changes your
+  answer.
+</div>
+
 <div class="sticky mint">
   <span class="ttl">The habit to build</span>
   Before you write a line of code in an interview, say the shape out
@@ -532,6 +1032,11 @@ console.log(countPairs([1, 9, 2, 8, 3, 7]));</code></pre>
     <li>Explain the difference between O, Ω and Θ, and why interviews almost always mean "worst case" when they say Big-O.</li>
     <li>Derive O(n log n) from a recurrence like T(n) = 2T(n/2) + O(n), at least at the level of "why the log n shows up."</li>
     <li>State a solution's complexity out loud before writing it, as a plan rather than an afterthought.</li>
+    <li>Work out how many times a loop body runs when the variable doubles, starts at the outer index, tests <code>i * i</code>, or strides by <code>i</code>, and tell a pointer loop that shares a budget from a nested loop that multiplies.</li>
+    <li>Price the built-in calls in a loop (<code>slice</code>, spread, <code>sort</code>, string keys) instead of treating each as one step.</li>
+    <li>Cost a memoized recursion as states times work per state, and say why a cache does not shrink the call stack.</li>
+    <li>Say why an output of size 2ⁿ forces the time, and what "pseudo-polynomial" means for a loop bounded by a value.</li>
+    <li>Turn a limit such as n ≤ 10⁵ into the complexity you are allowed to use before writing any code.</li>
   </ul>
 </div>`,
 };
