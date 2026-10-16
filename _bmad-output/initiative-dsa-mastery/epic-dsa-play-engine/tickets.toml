@@ -1,23 +1,11 @@
 [[entry]]
-id = 1
-type = "story"
-title = "Player tracer: binary search end to end"
-description = "Builds the tracer model (each tracer declares its code lines and the chapter code block it mirrors), a lazy registry with one line per chapter, and the Player with its controls, scoped keys, status narration, visibility pause and reduced-motion steps plus the array, code and variables views, and fills 1.1's stub Play island from the data-play placeholder that replaces the binary-search chapter's inline demo."
-verify = "On /dsa/dsa-binary-search a keyboard user steps, plays, scrubs and resets the search with the code line and lo, hi and mid in sync, the chapter file has no inline script, and the binary-search tracer tests pass."
-covers = ["P1", "P3"]
-after = ["1.1", "1.2"]
-hitl = false
-risk = "high"
-unknown = "Whether the Player's first frame can render on the server inside 1.1's island without shipping the tracer to the client twice; the builder measures the chapter payload before and after."
-
-[[entry]]
 id = 2
 type = "story"
 title = "Layout views: grid, graph, tree and forest"
 description = "Adds the grid, SVG graph, tree and forest views to the Player, each labelling every state in text, with server-render tests that check each view's labels for a sample frame."
 verify = "The four views' render tests pass in vitest and every highlighted state in each sample frame has a text label."
 covers = ["P2"]
-after = [1]
+after = []
 hitl = false
 risk = "medium"
 
@@ -72,7 +60,7 @@ title = "Puzzles: order the steps and pick the next step"
 description = "Adds a Puzzle component that reuses 3.2's ChoiceList and OrderList to grade order-the-steps and pick-the-next-step puzzles built from a tracer's frames, registers at least one puzzle per tracer in the lazy registry so puzzle data loads with its tracer, records solved puzzles in groundwork:quiz, and never writes a read mark, XP, activity or review entry, and listing the fields it adds to groundwork:quiz in How this is built."
 verify = "On /dsa/dsa-binary-search a reader orders the steps and picks the next step by keyboard with instant feedback, retries without limit, the solved puzzle is remembered in groundwork:quiz with no progress, XP, activity or review write, every state is stated in text, and axe passes on the puzzle under reduced motion in all nine themes."
 covers = ["P5"]
-after = [1, "3.2", "3.5"]
+after = ["3.5"]
 hitl = false
 risk = "medium"
 unknown = "Whether pick-the-next-step can be generated from every tracer's frames or some tracers need hand-written distractors; the builder checks this on binary search and the four graph and heap tracers first."
@@ -84,7 +72,7 @@ title = "Per-language code in the player"
 description = "Moves the tracer model to stable code line ids with a per-language map, converts binary search and every tracer ported in 2.4 and 2.5 to JavaScript, Python, Java and C++, shows the Player's code panel in the language chosen with 1.6's switch with the highlight following the frame, keeps the current step when the language changes, renders 1.6's switch beside the Player, and extends the tracer tests to check every line id in every language."
 verify = "On /dsa/dsa-binary-search switching between JavaScript, Python, Java and C++ mid-run keeps the step, narration and variables unchanged while the highlighted code line follows the frame in each language, the switch is present beside the player and drives its code panel, the completeness and syntax tests pass for binary search and every tracer ported in 2.4 and 2.5, and the puzzle, generated trace question and predict-the-next-step tests still pass."
 covers = ["P6"]
-after = [1, 5, 8, "1.6", "3.6"]
+after = [5, 8, "3.6"]
 hitl = false
 risk = "medium"
 unknown = "Whether one line id can always map to the same logical statement in all four languages, since Python has no braces and Java and C++ need declarations; the builder checks this on binary search and the heap tracer first."
@@ -96,6 +84,6 @@ title = "Refactor sweep"
 description = "Cleans up what entries 1 to 6, entries 8 and 9 and their reviews deferred, scoped from their build records when it starts, and takes cleanup only."
 verify = "npm run check, npm run build and npm run test:e2e pass, and every finding this epic deferred is fixed or moved to a named later entry."
 covers = ["P1", "P2", "P3", "P4", "P5", "P6"]
-after = [1, 2, 3, 4, 5, 6, 8, 9]
+after = [2, 3, 4, 5, 6, 8, 9]
 hitl = false
 risk = "low"

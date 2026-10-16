@@ -1,67 +1,10 @@
 [[entry]]
-id = 1
-type = "story"
-title = "Chapter islands on the topic reader (tracer)"
-description = "Adds the server step that splits chapter HTML at data-play placeholders into islands with a server-rendered first state, a [data-island] skip in the shared enhancers, narration and smooth scrolling, and a stub Play island, proven on /dsa/dsa-binary-search."
-verify = "The server HTML of /dsa/dsa-binary-search holds the stub Play island, the chapter's code blocks and tables are enhanced as before, narration skips the island, and the /notes, /git and /architecture e2e tests pass unchanged."
-covers = ["F1"]
-after = []
-hitl = false
-risk = "medium"
-unknown = "Whether the topic reader takes the body as one HTML string; if it does, this entry adds an optional segments prop to it. The check does not use a body placeholder: it mounts in the end card (1.3)."
-
-[[entry]]
-id = 2
-type = "story"
-title = "Curriculum data: order, levels and prerequisites"
-description = "Rewrites the DSA topic data to curriculum.md (order, levels and numbers, ids unchanged) with an optional prerequisites field on chapters, the eight new chapters as outlines in the topic frame's outline layout, Topic.completion set to quiz, the syllabus promises A1, A3 and A11 do not keep dropped, the How this is built outline and chapter counts updated, and a curriculum test that checks prerequisites exist and come earlier and that each chapter meets the depth bar and has an exercise at or below its level, with an allow-list of chapters not there yet."
-verify = "The curriculum test passes with every below-bar chapter on its allow-list, the claims test passes, and /dsa lists 42 chapters in curriculum.md order with the eight new ones shown as outlines."
-covers = ["F2"]
-after = [1]
-hitl = false
-risk = "low"
-
-[[entry]]
-id = 3
-type = "story"
-title = "Completion policy and the plan slot"
-description = "Adds one completion policy, read from Topic.completion, that every tick surface and read count of the topic frame asks (the end card, the rail tick, the phone Chapters sheet, the cover card tick and read count, and the path step and progress), so a quiz topic's tick links to its chapter's #check and every surface shows the same state, plus a next-chapter hook that Continue, Up next and the path's next step ask (first unread by default), an optional cover aside for the plan and a stub Check island in the end card, leaving every other topic unchanged."
-verify = "On /dsa, /dsa/dsa-binary-search, the phone Chapters sheet and the DSA path every tick links to #check and the end card shows the stub check, Continue still opens the first unread chapter, and the /notes, /git and /architecture tick, Continue and review e2e tests pass unchanged."
-covers = ["F3"]
-after = [1, 2]
-hitl = false
-risk = "medium"
-
-[[entry]]
-id = 4
-type = "story"
-title = "Site-wide DSA content fixes"
-description = "Makes reading time exclude <script>, <pre> and <svg> for every topic and updates stated reading times, derives the interview book's DSA chapter and exercise counts and asserts them in the claims test, and replaces the string-algorithms chapter's NUL separators, with a test that no content file holds U+0000."
-verify = "Vitest passes with the new claims and no-NUL tests, the chapter's zSearch example returns [0,2], and the sliding-window chapter's reading time equals its prose words divided by 180, rounded."
-covers = ["F4"]
-after = [2]
-hitl = false
-risk = "low"
-
-[[entry]]
-id = 6
-type = "story"
-title = "Language switch and per-language chapter code (tracer)"
-description = "Builds the groundwork:dsa:lang store, the switch component (a labelled button group with aria-pressed and a role=status announcement), the data-code placeholder island with a lazy per-chapter per-language import, the authoring format content/dsa/code/<chapter-id>.ts, the switch's place in the chapter header, and the completeness and Lezer syntax tests, proven end to end on binary search's code blocks, and lists the key in How this is built."
-verify = "On /dsa/dsa-binary-search switching to Python, Java and C++ and back changes the chapter's code blocks, a first visit with no groundwork:dsa:lang key shows JavaScript pressed and the JavaScript code, the choice survives a reload and shows on a second chapter, the switch works by keyboard alone with its role=status line reading Code shown in the chosen language and the language stated in text, a non-DSA topic page shows no switch and no jsnotes:* key or the global level changes, only the chosen language's code is in the page payload, the completeness and syntax tests pass and fail when a translation is removed or a syntax error is put in a fixture for each of the four grammars, and axe passes on the switch in all nine themes."
-covers = ["F5"]
-after = [1]
-hitl = false
-risk = "medium"
-unknown = "Whether the Lezer Python, Java and C++ grammars the editor ships can be imported in a unit test without the editor; if not, the syntax test uses the cheaper equivalent check the spec allows."
-
-[[entry]]
 id = 5
 type = "story"
 title = "Refactor sweep"
 description = "Cleans up what entries 1 to 4 and 6 and their reviews deferred, scoped from their build records when it starts, and takes cleanup only."
 verify = "npm run check, npm run build and npm run test:e2e pass, and every finding this epic deferred is fixed or moved to a named later entry."
 covers = ["F1", "F2", "F3", "F4", "F5"]
-after = [1, 2, 3, 4, 6]
+after = []
 hitl = false
 risk = "low"

@@ -5,7 +5,7 @@ title = "Review asks a DSA chapter's check questions"
 description = "Makes a due chapter of a quiz-completion topic in /review ask two of its check questions through 3.1's lazy per-chapter import and keeps its review gap in groundwork:quiz (both right moves it to the next gap, one right makes it due again after the same gap counted from now, both wrong steps it back one gap), so the reviews count in jsnotes:progress only ever grows and XP never falls, falling back to self-rating when a chapter has fewer than two questions, showing not checked on the review page, and leaving markReviewed, dueAt and REVIEW_GAPS_DAYS untouched, and saves the ids of the questions the reader answered wrong in the review result in groundwork:quiz for 7.7's shaky list to read."
 verify = "With seeded due chapters /review asks two binary-search questions and moves its due date by the rule for two, one and no right answers while XP never falls, a wrong answer's question id is saved in the review result in groundwork:quiz, a due /notes chapter still shows self-rating, and a vitest pins a non-DSA chapter's schedule as before."
 covers = ["X1", "X5"]
-after = ["3.2"]
+after = []
 hitl = false
 risk = "medium"
 
@@ -38,7 +38,7 @@ title = "Shaky list on /review"
 description = "Adds a shaky list that reads the ids of questions missed in checks (3.2's store), in the complexity round (3.10's round result) and in review (7.1's review result), removes a question when the reader later answers it right in any of them, and shows the list on /review with a link to each question's chapter section, listing the fields it adds to groundwork:quiz in How this is built."
 verify = "With a real wrong answer given in a binary-search check, in its complexity round and in a due review, /review lists those questions each linking to its chapter section, answering one right later removes it, and nothing is written to jsnotes:progress."
 covers = ["X5"]
-after = [1, "3.2", "3.10"]
+after = [1, "3.10"]
 hitl = false
 risk = "medium"
 
@@ -49,7 +49,7 @@ title = "Revision list by interview style and pattern"
 description = "Adds a revision list on /dsa that groups the reader's done chapters, shaky questions and the site's existing exercises by interview style (online assessment, phone screen, onsite round) and by pattern using the style tags in each chapter's pattern record, each exercise taking the style and pattern of its chapter, names no companies, works from local data only with no network call, and adds the list to How this is built."
 verify = "With seeded done chapters, shaky questions and an exercise the list groups them under each style and pattern, no company name appears anywhere in it or in the style tags, it renders with the network blocked, and axe passes on it in all nine themes."
 covers = ["X6"]
-after = [7, "6.8", "3.1"]
+after = [7, "6.8"]
 hitl = false
 risk = "medium"
 
