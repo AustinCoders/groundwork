@@ -21,6 +21,8 @@
     "check": "npm run typecheck && npm run lint && npm run comments && npm run format:check && npm run spell && npm test",
     "prepare": "husky",
     "test:e2e": "playwright test",
+    "claims:sync": "UPDATE_CLAIMS=1 vitest run tests/claims.test.ts",
+    "tickets:prune": "uv run scripts/prune-tickets.py",
     "test:perf": "npx --yes @lhci/cli@0.15 autorun",
     "comments": "node scripts/comments.mjs",
     "comments:fix": "node scripts/comments.mjs --fix"
@@ -34,8 +36,6 @@
     "@codemirror/lang-html": "^6.4.12",
     "@codemirror/lang-java": "^6.0.2",
     "@codemirror/lang-javascript": "^6.2.5",
-    "@codemirror/lang-json": "^6.0.2",
-    "@codemirror/lang-markdown": "^6.5.2",
     "@codemirror/lang-php": "^6.0.2",
     "@codemirror/lang-python": "^6.2.1",
     "@codemirror/lang-rust": "^6.0.2",
@@ -55,7 +55,6 @@
     "@uiw/react-codemirror": "^4.25.11",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
-    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "eslint-linter-browserify": "^10.11.0",
     "globals": "^17.12.0",
@@ -72,7 +71,6 @@
     "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.13.0",
     "@bjorn3/browser_wasi_shim": "^0.4.2",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
