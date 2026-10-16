@@ -19,6 +19,7 @@ A free study site for JavaScript and interview prep: notes, runnable exercises, 
 
 - Do each task on its own `feature/<name>` branch cut from an up-to-date `main`; never commit to `main` directly.
 - Merge by fast-forwarding `main` and pushing `origin` (the AustinCoders remote); then delete the branch locally and on GitHub.
+- Delete tickets once they are done and merged: mark them done (`tickets.py mark <ref> done`), then run `npm run tickets:prune` (add `-- --review` to include built stories nobody has marked) and commit the deletions with the work. Plans of built work in `_bmad-output/implementation-artifacts/` go too, except blocked ones and `deferred-work.md`.
 - Commit, push or merge only when the user asks; commits stay authored as akshataustin, with no AI co-author trailer.
 - Never edit `.claude/skills/` or `_bmad/`; update them with `npx skills update`, then run the `bmad` skill's setup.
 - Never stop or reuse the user's dev server on port 3000; run your own on another port (e2e uses 3100).
@@ -37,6 +38,23 @@ A free study site for JavaScript and interview prep: notes, runnable exercises, 
 - Write no comments in source; `npm run comments` fails them. Name things so the code explains itself.
 - Style with theme tokens (`--ink`, `--sheet`, `--paper`, `--line`, `--c-*`), never hex or white; all nine themes and the a11y contrast test depend on it.
 - Append new spelling words to the end of `.cspell/project-words.txt`; never re-sort it.
+
+## Content standard
+
+Every chapter, new or rewritten, follows `docs/content-standard.md`. In short:
+
+- Write 3,500 to 5,000 words of prose and never more than 6,000; `tests/chapter-standards.test.ts` fails a longer new chapter and stops an older long one from growing. Outline the sections first, then write the body.
+- Cover six things: depth (derive the idea, one hand-traced worked example, complexity with its reason, pitfalls), accuracy (run every code block and check every number, version and API claim for 2026), clarity (no placeholders, no concept used before it is taught), practice (exercises with 6+ tests and 3 hints, a 5-question self-check), a visual where a picture explains, and interview questions with written model answers and follow-ups.
+- Do not type counts into the "How this is built" chapters by hand; run `npm run claims:sync` after content changes and it rewrites them.
+- Working with agents: at most 5 or 6 at a time, a cheaper model for mechanical work (wiring, formatting, exercise typing), a short brief that points here instead of pasting this file, review only the diff and only theory and prose (the author already ran the code), merge with one script and an explicit file list per group.
+
+## Session handoff
+
+Long chats get expensive because every message re-reads the whole context. Keep sessions short: one big task per session.
+
+- At the start of a session, read `docs/handoff.md` and the memory index before anything else.
+- At the end of every big task (a merge, a batch of chapters, a redesign), update `docs/handoff.md`: what happened, what is left, which commands to run, in five lines or fewer per section. Then tell the owner it is safe to clear the chat.
+- Put decisions in the handoff, memory or `docs/content-standard.md`, not only in the chat, so clearing loses nothing.
 
 ## Known pitfalls
 

@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import sitemap from "@/app/sitemap";
@@ -124,6 +124,13 @@ describe("what the site says about itself", () => {
   });
 
   it.each(cases)("$file still tells the truth about $about", ({ file, claim }) => {
+    if (process.env.UPDATE_CLAIMS && !read(file).includes(claim)) {
+      const shape = new RegExp(claim.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\d+/g, "\\d+"));
+      writeFileSync(
+        join(process.cwd(), file),
+        read(file).replace(shape, () => claim)
+      );
+    }
     expect(read(file), `expected to find: ${claim}`).toContain(claim);
   });
 
