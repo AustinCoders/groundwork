@@ -398,7 +398,7 @@ export const archDesignSystem: Chapter = {
 <p>
   <code>globals.css</code> is about 7,400 lines. It holds the tokens, the prose styles every
   chapter uses, and the reading pages' layout. Everything that belongs to one page or tool is in
-  one of 67 CSS modules, the largest being <code>app/whiteboard/whiteboard.module.css</code> at about 1,600
+  one of 68 CSS modules, the largest being <code>app/whiteboard/whiteboard.module.css</code> at about 1,600
   lines. The rule of thumb is that anything
   chapter HTML can contain goes in globals, because chapter bodies are strings that cannot import a
   module, and anything else goes in a module so it loads only with its page.

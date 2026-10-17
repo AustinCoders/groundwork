@@ -1,11 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo } from "react";
 import { PageFrame } from "@/components/frame/PageFrame";
 import {
   Actions,
-  Band,
   Button,
   Chips,
   Foot,
@@ -18,10 +16,10 @@ import {
   Wrap,
   topicKit,
 } from "@/components/topic/TopicKit";
-import { accentVar } from "@/lib/accent";
 import { formatSpan, plural } from "@/lib/format";
-import type { Roadmap, RoadmapStep } from "@/lib/roadmap";
-import { roadmapProgress, statusLabel, type StepProgress } from "./roadmapModel";
+import type { Roadmap } from "@/lib/roadmap";
+import { RoadmapDiagram } from "./RoadmapDiagram";
+import { roadmapProgress } from "./roadmapModel";
 import { useDone } from "./useDone";
 import styles from "./roadmap.module.css";
 
@@ -29,46 +27,6 @@ const LINKS = [
   { href: "/roadmap", label: "Roadmaps" },
   { href: "/progress", label: "Progress" },
 ];
-
-const pad = (n: number) => String(n).padStart(2, "0");
-
-function stepMeta(step: RoadmapStep): string {
-  if (step.written === 0) return `Outline only · ${plural(step.planned, "chapter")} planned`;
-  if (step.kind === "round") return `Interview round · ${formatSpan(step.minutes)}`;
-  const parts = [plural(step.written, "chapter")];
-  if (step.exercises > 0) parts.push(plural(step.exercises, "exercise"));
-  parts.push(formatSpan(step.minutes));
-  return parts.join(" · ");
-}
-
-function StepCard({ step, progress, next }: { step: RoadmapStep; progress: StepProgress; next: boolean }) {
-  return (
-    <li
-      className={styles.step}
-      data-status={progress.status}
-      data-next={next}
-      style={{ "--accent": accentVar(step.accent) } as React.CSSProperties}
-    >
-      <div className={styles.stepHead}>
-        <span className={styles.mark} aria-hidden="true">
-          {step.mark}
-        </span>
-        <h3 className={styles.stepTitle}>
-          <Link href={step.href} prefetch={false} aria-current={next ? "step" : undefined}>
-            {step.title}
-          </Link>
-        </h3>
-        {next && <span className={styles.nextTag}>Next up</span>}
-      </div>
-      {step.why && <p className={styles.why}>{step.why}</p>}
-      <p className={styles.meta}>{stepMeta(step)}</p>
-      <p className={styles.status}>{statusLabel(progress)}</p>
-      {progress.status === "doing" && (
-        <ProgressMeter done={progress.done} total={progress.total} label={`${progress.done} / ${progress.total}`} />
-      )}
-    </li>
-  );
-}
 
 export function RoadmapView({ roadmap }: { roadmap: Roadmap }) {
   const { done, loaded } = useDone();
@@ -124,39 +82,11 @@ export function RoadmapView({ roadmap }: { roadmap: Roadmap }) {
           </div>
         </Wrap>
 
-        {roadmap.stages.map((stage, at) => (
-          <Band
-            key={stage.id}
-            no={pad(at + 1)}
-            id={`${stage.id}-h`}
-            sectionId={stage.id}
-            label={stage.order === "in-order" ? "in this order" : "any order"}
-            title={stage.title}
-            sub={stage.blurb}
-            count={plural(stage.steps.length, "step")}
-          >
-            <div className={loaded ? undefined : topicKit.pending}>
-              <ol
-                className={styles.steps}
-                aria-label={`${stage.title}, ${stage.order === "in-order" ? "in this order" : "in any order"}`}
-              >
-                {stage.steps.map((step) => (
-                  <StepCard
-                    key={step.key}
-                    step={step}
-                    progress={progress.steps[step.key]}
-                    next={start?.key === step.key}
-                  />
-                ))}
-              </ol>
-            </div>
-          </Band>
-        ))}
-
         <Wrap>
+          <RoadmapDiagram roadmap={roadmap} />
           {outlines > 0 && (
             <p className={styles.honest}>
-              {plural(outlines, "step")} on this path {outlines === 1 ? "is" : "are"} marked <b>Not written yet</b>: the
+              {plural(outlines, "step")} on this path {outlines === 1 ? "is" : "are"} marked <b>not written yet</b>: the
               topic is planned and outlined, but has no chapters to read. They stay on the map so the whole route is
               visible; they will start counting toward your progress the day they are written.
             </p>

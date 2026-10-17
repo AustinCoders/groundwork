@@ -147,4 +147,29 @@ describe("the resolved roadmaps", () => {
       expect(entry.totals.minutes, entry.id).toBeGreaterThan(0);
     }
   });
+
+  it("lists a written topic by level, each level with chapters and a path link", () => {
+    for (const entry of built) {
+      for (const step of entry.stages.flatMap((stage) => stage.steps)) {
+        if (step.kind !== "topic" || step.levels.length === 0) continue;
+        expect(step.written, step.key).toBeGreaterThan(0);
+        for (const level of step.levels) {
+          expect(level.chapters, `${step.key}/${level.id}`).toBeGreaterThan(0);
+          expect(level.href).toBe(`/path/${step.key.slice("topic:".length)}/${level.id}`);
+        }
+        const inLevels = new Set(step.levels.map((level) => level.id));
+        expect(inLevels.size).toBe(step.levels.length);
+      }
+    }
+  });
+
+  it("never lists levels for an outline, and names the part of the book for a round", () => {
+    for (const entry of built) {
+      for (const step of entry.stages.flatMap((stage) => stage.steps)) {
+        if (step.written === 0) expect(step.levels, step.key).toEqual([]);
+        if (step.kind === "round") expect(step.group, step.key).toEqual(expect.any(String));
+        else expect(step.group).toBeNull();
+      }
+    }
+  });
 });

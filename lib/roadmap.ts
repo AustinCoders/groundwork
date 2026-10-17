@@ -1,10 +1,18 @@
 import { ROADMAPS, type RoadmapOrder, type RoadmapSource, type RoadmapStepSource } from "@/content/roadmaps";
 import { GIT_CHAPTERS } from "@/content/git-body";
-import { chapterMetas, topic } from "@/lib/content";
+import { chapterMetas, chaptersForLevel, topic, totalTime } from "@/lib/content";
 import { GIT_PROGRESS_PREFIX } from "@/lib/gitSeries";
-import { bookRound } from "@/lib/interviewBook";
-import { topicHome } from "@/lib/topics";
+import { PARTS, bookRound } from "@/lib/interviewBook";
+import { levels, topicHome } from "@/lib/topics";
 import { topicStats } from "@/lib/topicStats";
+
+export interface RoadmapStepLevel {
+  id: string;
+  name: string;
+  chapters: number;
+  minutes: number;
+  href: string;
+}
 
 export interface RoadmapStep {
   key: string;
@@ -18,6 +26,8 @@ export interface RoadmapStep {
   planned: number;
   exercises: number;
   minutes: number;
+  group: string | null;
+  levels: RoadmapStepLevel[];
   progressIds: string[];
 }
 
@@ -58,6 +68,22 @@ function topicIdsFor(id: string): string[] {
     .map((chapter) => chapter.id);
 }
 
+function levelsFor(topicId: string): RoadmapStepLevel[] {
+  if (!topic(topicId)?.levels) return [];
+  return levels(topicId)
+    .map((level) => {
+      const written = chaptersForLevel(level.id, topicId).filter((chapter) => chapter.ready);
+      return {
+        id: level.id,
+        name: level.name,
+        chapters: written.length,
+        minutes: totalTime(written),
+        href: `/path/${topicId}/${level.id}`,
+      };
+    })
+    .filter((level) => level.chapters > 0);
+}
+
 function resolveStep(source: RoadmapStepSource): RoadmapStep {
   if ("round" in source) {
     const round = bookRound(source.round);
@@ -74,6 +100,8 @@ function resolveStep(source: RoadmapStepSource): RoadmapStep {
       planned: 1,
       exercises: 0,
       minutes: round.minutes,
+      group: PARTS.find((part) => part.id === round.part)?.title ?? null,
+      levels: [],
       progressIds: [round.id],
     };
   }
@@ -92,6 +120,8 @@ function resolveStep(source: RoadmapStepSource): RoadmapStep {
     planned: stat?.planned ?? 0,
     exercises: stat?.exercises ?? 0,
     minutes: stat?.minutes ?? 0,
+    group: null,
+    levels: levelsFor(found.id),
     progressIds: topicIdsFor(found.id),
   };
 }
