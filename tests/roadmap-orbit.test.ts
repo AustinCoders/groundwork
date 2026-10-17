@@ -9,12 +9,14 @@ import {
   VIEW_H,
   VIEW_W,
   circleEdge,
+  arcPath,
   connectorPath,
   dotAngles,
   middle,
   percentX,
   percentY,
   ringPoint,
+  spokePath,
   stageAngle,
   stageCenter,
 } from "@/app/roadmap/orbitLayout";
@@ -34,8 +36,17 @@ describe("the stage circles", () => {
   });
 
   it("spread the first and last stage to the edges of the arc", () => {
-    expect(stageAngle(0, 5)).toBe(-STAGE_ARC / 2);
-    expect(stageAngle(4, 5)).toBe(STAGE_ARC / 2);
+    expect(stageAngle(0, 5)).toBeCloseTo(-STAGE_ARC / 2, 8);
+    expect(stageAngle(4, 5)).toBeCloseTo(STAGE_ARC / 2, 8);
+  });
+
+  it("are the same distance apart from top to bottom, so each label has the same room", () => {
+    for (const count of [3, 4, 5]) {
+      const ys = Array.from({ length: count }, (_, i) => stageCenter(i, count).y);
+      const gaps = ys.slice(1).map((y, i) => Math.round((y - ys[i]) * 1000) / 1000);
+      expect(new Set(gaps).size).toBe(1);
+      expect(gaps[0]).toBeGreaterThan(CIRCLE_R * 2 + 12);
+    }
   });
 
   it("never overlap, and stay inside the picture, for up to five stages", () => {
@@ -92,6 +103,24 @@ describe("the dotted links", () => {
     expect(d.match(/C/g)).toHaveLength(1);
     expect(d.endsWith(`${to.x.toFixed(1)} ${to.y.toFixed(1)}`)).toBe(true);
     expect(to.x).toBeLessThan(stageCenter(2, 5).x - CIRCLE_R);
+  });
+});
+
+describe("the chain that joins a stage's dots", () => {
+  it("is an arc on the ring from the first dot to the last", () => {
+    const [first] = dotAngles([3, 2]);
+    const d = arcPath(first[0], first[2]);
+    const start = ringPoint(first[0]);
+    const end = ringPoint(first[2]);
+    expect(d.startsWith(`M${start.x.toFixed(1)} ${start.y.toFixed(1)} A${RING_R} ${RING_R}`)).toBe(true);
+    expect(d.endsWith(`${end.x.toFixed(1)} ${end.y.toFixed(1)}`)).toBe(true);
+  });
+
+  it("has a spoke that leaves the ring in a straight line", () => {
+    const d = spokePath(20);
+    const out = ringPoint(20, RING_R + 22);
+    expect(d).toContain(" L");
+    expect(d.endsWith(`${out.x.toFixed(1)} ${out.y.toFixed(1)}`)).toBe(true);
   });
 });
 
