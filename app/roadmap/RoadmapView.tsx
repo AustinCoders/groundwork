@@ -18,7 +18,7 @@ import {
 } from "@/components/topic/TopicKit";
 import { formatSpan, plural } from "@/lib/format";
 import type { Roadmap } from "@/lib/roadmap";
-import { RoadmapDiagram } from "./RoadmapDiagram";
+import { RoadmapMetro } from "./RoadmapMetro";
 import { roadmapProgress } from "./roadmapModel";
 import { useDone } from "./useDone";
 import styles from "./roadmap.module.css";
@@ -83,7 +83,7 @@ export function RoadmapView({ roadmap }: { roadmap: Roadmap }) {
         </Wrap>
 
         <Wrap>
-          <RoadmapDiagram roadmap={roadmap} />
+          <RoadmapMetro roadmap={roadmap} />
           {outlines > 0 && (
             <p className={styles.honest}>
               {plural(outlines, "step")} on this path {outlines === 1 ? "is" : "are"} marked <b>not written yet</b>: the
