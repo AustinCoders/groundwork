@@ -3476,6 +3476,11 @@ export const topics: TopicsData = {
               chapter: "sysdes-walkthrough-medium",
               items: ["A medium end-to-end design, start to finish"],
             },
+            {
+              title: "Walkthrough: a notification system",
+              chapter: "sysdes-walkthrough-notifications",
+              items: ["Push, SMS and email providers, preferences, retries, de-duplication"],
+            },
           ],
         },
         {
@@ -3524,6 +3529,11 @@ export const topics: TopicsData = {
               items: ["Leader election, Raft/Paxos concepts"],
             },
             {
+              title: "Batch & stream processing",
+              chapter: "sysdes-batch-stream-processing",
+              items: ["MapReduce to Flink, event time, windows, exactly-once, change data capture"],
+            },
+            {
               title: "Designing for fault tolerance",
               chapter: "sysdes-fault-tolerance",
               items: ["Circuit breakers, bulkheads, chaos engineering"],
@@ -3542,6 +3552,21 @@ export const topics: TopicsData = {
               title: "Real-world case studies",
               chapter: "sysdes-case-studies",
               items: ["Designing something like Twitter/Uber/Netflix, high level"],
+            },
+            {
+              title: "Walkthrough: a key-value store",
+              chapter: "sysdes-walkthrough-kv-store",
+              items: ["A Dynamo-style store: ring, quorums, hinted handoff, Merkle repair"],
+            },
+            {
+              title: "Walkthrough: a web crawler",
+              chapter: "sysdes-walkthrough-crawler",
+              items: ["URL frontier, politeness, robots.txt, near-duplicates, spider traps"],
+            },
+            {
+              title: "Walkthrough: a payment system",
+              chapter: "sysdes-walkthrough-payments",
+              items: ["Idempotency keys, double-entry ledger, reconciliation, PCI scope"],
             },
             {
               title: "Tradeoff thinking",

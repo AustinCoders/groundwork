@@ -141,7 +141,7 @@ export const archSearch: Chapter = {
 <tbody>
 <tr><td><code>/notes</code> (JavaScript)</td><td>41</td><td>189 KB</td><td>75.5 KB</td><td>65.4 KB</td><td>89%</td></tr>
 <tr><td><code>/react</code></td><td>57</td><td>189 KB</td><td>74.4 KB</td><td>64.0 KB</td><td>87%</td></tr>
-<tr><td><code>/system-design</code></td><td>28</td><td>238 KB</td><td>99.3 KB</td><td>83.6 KB</td><td>71% of its own 140 KB budget</td></tr>
+<tr><td><code>/system-design</code></td><td>33</td><td>284 KB</td><td>118.2 KB</td><td>99.4 KB</td><td>84% of its own 140 KB budget</td></tr>
 <tr><td><code>/interview</code></td><td>27</td><td>149 KB</td><td>62.7 KB</td><td>54.5 KB</td><td>74%</td></tr>
 <tr><td><code>/dsa</code></td><td>48</td><td>525 KB</td><td>216.1 KB</td><td>181.8 KB</td><td>72% of its own 300 KB budget</td></tr>
 <tr><td><code>/search-index.json</code> (global)</td><td>174</td><td>49 KB</td><td>11.9 KB</td><td>10.0 KB</td><td>not tested</td></tr>
