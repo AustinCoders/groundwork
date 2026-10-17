@@ -1,4 +1,4 @@
-import type { Roadmap, RoadmapStep } from "@/lib/roadmap";
+import type { Roadmap, RoadmapChapter, RoadmapStep, RoadmapStepLevel } from "@/lib/roadmap";
 
 export type StepStatus = "outline" | "todo" | "doing" | "done";
 
@@ -69,4 +69,12 @@ export function neighbours(roadmap: Roadmap, key: string): Neighbours {
   const before = inOrder && at > 0 ? stage.steps[at - 1] : (previousStage?.steps.at(-1) ?? null);
   const after = inOrder && at < stage.steps.length - 1 ? stage.steps[at + 1] : (nextStage?.steps[0] ?? null);
   return { before, after };
+}
+
+export function levelProgress(level: RoadmapStepLevel, done: ReadonlySet<string>): { done: number; total: number } {
+  return { done: level.ids.filter((id) => done.has(id)).length, total: level.ids.length };
+}
+
+export function upNext(step: RoadmapStep, done: ReadonlySet<string>, limit: number): RoadmapChapter[] {
+  return step.chapters.filter((chapter) => !done.has(chapter.id)).slice(0, limit);
 }

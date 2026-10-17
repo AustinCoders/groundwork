@@ -172,4 +172,32 @@ describe("the resolved roadmaps", () => {
       }
     }
   });
+
+  it("gives every written topic a titled, linked chapter list that matches what is tracked", () => {
+    for (const entry of built) {
+      for (const step of entry.stages.flatMap((stage) => stage.steps)) {
+        if (step.kind !== "topic") continue;
+        expect(
+          step.chapters.map((chapter) => chapter.id),
+          step.key
+        ).toEqual(step.progressIds);
+        for (const chapter of step.chapters) {
+          expect(chapter.title.length, `${step.key}/${chapter.id}`).toBeGreaterThan(0);
+          expect(chapter.href).toMatch(/^\/[a-z0-9/-]+$/);
+        }
+      }
+    }
+  });
+
+  it("keeps each level's chapter ids inside the topic's chapter list", () => {
+    for (const entry of built) {
+      for (const step of entry.stages.flatMap((stage) => stage.steps)) {
+        const all = new Set(step.progressIds);
+        for (const level of step.levels) {
+          expect(level.ids.length, `${step.key}/${level.id}`).toBe(level.chapters);
+          for (const id of level.ids) expect(all.has(id), `${step.key}/${level.id}/${id}`).toBe(true);
+        }
+      }
+    }
+  });
 });

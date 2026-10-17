@@ -1,0 +1,520 @@
+.wrap {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+  max-width: 1000px;
+  margin-inline: auto;
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  padding: 10px 14px;
+  background: var(--sheet-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend li::before {
+  content: "";
+  box-sizing: border-box;
+  width: 18px;
+  height: 18px;
+  background: var(--paper);
+  border: 4px solid var(--ink);
+  border-radius: 50%;
+}
+
+.legend li[data-key="done"]::before {
+  background: var(--success);
+}
+
+.legend li[data-key="doing"]::before {
+  background: conic-gradient(var(--success) 0 50%, var(--paper) 50% 100%);
+}
+
+.legend li[data-key="outline"]::before {
+  border-style: dashed;
+  border-color: var(--ink-soft);
+}
+
+.jump {
+  min-height: 38px;
+  padding: 0 16px;
+  font: inherit;
+  font-weight: 700;
+  color: var(--on-primary);
+  background: var(--primary);
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.jump:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.map {
+  --b: clamp(48px, 7.2cqw, 72px);
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--ratio);
+  container-type: inline-size;
+}
+
+.track {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.track path {
+  fill: none;
+  stroke-linejoin: round;
+}
+
+.bed {
+  stroke: var(--sheet-2);
+  stroke-width: 58;
+}
+
+.sleepers {
+  stroke: color-mix(in srgb, var(--ink-soft) 75%, transparent);
+  stroke-width: 42;
+  stroke-dasharray: 7 14;
+}
+
+.rails {
+  stroke: color-mix(in srgb, var(--ink) 62%, transparent);
+  stroke-width: 20;
+}
+
+.railsLit {
+  stroke: var(--primary);
+  stroke-width: 20;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--primary) 70%, transparent));
+}
+
+.start,
+.goal {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: clamp(18px, 3.4cqw, 30px);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.start {
+  transform: translate(-18%, -160%);
+}
+
+.goal {
+  transform: translate(-50%, -150%);
+}
+
+.goal[data-heading="left"] {
+  transform: translate(-30%, -150%);
+}
+
+.flagArt {
+  width: clamp(24px, 4.4cqw, 44px);
+  height: auto;
+  overflow: visible;
+}
+
+.flagArt path {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.flagCloth {
+  fill: var(--primary) !important;
+  stroke-linejoin: round;
+}
+
+.train {
+  position: absolute;
+  z-index: 3;
+  width: clamp(64px, 11cqw, 112px);
+  transform: translate(-50%, -64%);
+  pointer-events: none;
+}
+
+.trainArt {
+  display: block;
+  width: 100%;
+  overflow: visible;
+  animation: roll 2.4s ease-in-out infinite;
+}
+
+.trainArt[data-heading="left"] {
+  scale: -1 1;
+}
+
+.trainArt path,
+.trainArt circle {
+  stroke: var(--ink);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.trainBody {
+  fill: var(--primary);
+}
+
+.trainWindow {
+  fill: var(--paper);
+}
+
+.trainLight {
+  fill: var(--caution);
+}
+
+.wheel {
+  fill: var(--paper);
+}
+
+.smoke {
+  fill: none;
+  stroke: var(--ink-soft) !important;
+  opacity: 0.8;
+}
+
+.trainTag {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  padding: 1px 10px;
+  font-size: var(--t-kicker);
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--on-primary);
+  background: var(--primary);
+  border-radius: 99px;
+  transform: translateX(-50%);
+}
+
+.stops {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stop {
+  position: absolute;
+  top: calc(var(--y) * 1%);
+  left: calc(var(--x) * 1%);
+  width: 0;
+  height: 0;
+}
+
+.stop[data-open="true"] {
+  z-index: 10;
+}
+
+.badge {
+  position: absolute;
+  top: calc(var(--b) / -2);
+  left: calc(var(--b) / -2);
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: var(--b);
+  height: var(--b);
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: clamp(13px, 2.2cqw, 20px);
+  font-weight: 800;
+  color: var(--ink);
+  background: var(--paper);
+  border: 6px solid var(--tint);
+  border-radius: 50%;
+  box-shadow: 6px 8px 0 color-mix(in srgb, var(--ink) 24%, transparent);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.badge[data-status="done"] {
+  color: var(--paper);
+  background: var(--success);
+}
+
+.badge[data-status="doing"] {
+  background: conic-gradient(color-mix(in srgb, var(--success) 70%, var(--paper)) 0 50%, var(--paper) 50% 100%);
+}
+
+.badge[data-status="outline"] {
+  color: var(--ink-soft);
+  border-style: dashed;
+  border-color: var(--ink-soft);
+  box-shadow: none;
+}
+
+.badge[data-next="true"] {
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+.badge:hover {
+  transform: scale(1.08);
+}
+
+.badge:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 6px;
+}
+
+.label {
+  position: absolute;
+  top: 0;
+  display: grid;
+  gap: 3px;
+  width: clamp(190px, 52cqw, 520px);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.stop[data-side="right"] .label {
+  right: calc(12.6cqw + 10px);
+  text-align: right;
+}
+
+.stop[data-side="left"] .label {
+  left: calc(12.6cqw + 10px);
+  text-align: left;
+}
+
+.kicker {
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.kicker::before {
+  content: "";
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 6px;
+  background: var(--tint);
+  border-radius: 50%;
+}
+
+.stop[data-side="right"] .kicker::before {
+  display: none;
+}
+
+.stop[data-side="right"] .kicker::after {
+  content: "";
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-left: 6px;
+  background: var(--tint);
+  border-radius: 50%;
+}
+
+.title {
+  font-size: clamp(16px, 2.6cqw, 22px);
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.why {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: var(--t-meta);
+  line-height: 1.4;
+  color: var(--ink-soft);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.meta {
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+}
+
+.stop:has(.badge[data-status="outline"]) .title {
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+.ticketDesktop {
+  position: absolute;
+  top: calc(var(--b) / -2 - 4px);
+  z-index: 20;
+  width: clamp(290px, 50cqw, 460px);
+}
+
+.stop[data-side="right"] .ticketDesktop {
+  right: calc(12.6cqw + 10px);
+}
+
+.stop[data-side="left"] .ticketDesktop {
+  left: calc(12.6cqw + 10px);
+}
+
+.ticketInline {
+  display: none;
+}
+
+.pending .badge {
+  opacity: 0.7;
+}
+
+@keyframes pulse {
+  50% {
+    box-shadow:
+      6px 8px 0 color-mix(in srgb, var(--ink) 24%, transparent),
+      0 0 0 8px color-mix(in srgb, var(--primary) 40%, transparent);
+  }
+}
+
+@keyframes roll {
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@media (max-width: 760px) {
+  .map {
+    --b: 56px;
+    aspect-ratio: auto;
+    container-type: normal;
+  }
+
+  .track,
+  .start,
+  .goal,
+  .train {
+    display: none;
+  }
+
+  .stops {
+    position: relative;
+    inset: auto;
+    display: grid;
+    gap: 30px;
+    padding: 10px 0 10px 4px;
+  }
+
+  .stops::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 21px;
+    width: 22px;
+    background:
+      linear-gradient(90deg, var(--ink-soft) 0 3px, transparent 3px calc(100% - 3px), var(--ink-soft) calc(100% - 3px)),
+      repeating-linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--ink-soft) 55%, transparent) 0 5px,
+        transparent 5px 14px
+      );
+  }
+
+  .stop {
+    position: relative;
+    top: auto;
+    left: auto;
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    align-items: center;
+    column-gap: 18px;
+    width: auto;
+    height: auto;
+  }
+
+  .badge {
+    position: relative;
+    top: auto;
+    left: auto;
+    grid-column: 1;
+    grid-row: 1;
+    font-size: 15px;
+  }
+
+  .label,
+  .stop[data-side="right"] .label,
+  .stop[data-side="left"] .label {
+    position: static;
+    grid-column: 2;
+    grid-row: 1;
+    width: auto;
+    text-align: left;
+    transform: none;
+  }
+
+  .stop[data-side="right"] .kicker::before {
+    display: inline-block;
+  }
+
+  .stop[data-side="right"] .kicker::after {
+    display: none;
+  }
+
+  .stop:has(.badge[data-next="true"]) .meta::after {
+    content: " · next stop";
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .ticketDesktop {
+    display: none;
+  }
+
+  .ticketInline {
+    display: block;
+    grid-column: 1 / -1;
+    margin-top: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge {
+    transition: none;
+  }
+
+  .badge[data-next="true"],
+  .trainArt {
+    animation: none;
+  }
+}

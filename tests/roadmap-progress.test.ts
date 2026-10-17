@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 import { roadmap } from "@/lib/roadmap";
 import {
   EMPTY_DONE,
+  levelProgress,
   neighbours,
   parseDone,
   roadmapProgress,
   statusLabel,
   stepProgress,
+  upNext,
 } from "@/app/roadmap/roadmapModel";
 
 const frontend = roadmap("frontend")!;
@@ -113,5 +115,26 @@ describe("what comes before and after a step", () => {
     expect(neighbours(interview, "round:scout").before).toBeNull();
     expect(neighbours(interview, "round:plan").after).toBeNull();
     expect(neighbours(interview, "round:nope")).toEqual({ before: null, after: null });
+  });
+});
+
+describe("what is left inside a step", () => {
+  it("counts finished chapters per level", () => {
+    const level = js.levels[0];
+    expect(levelProgress(level, EMPTY_DONE)).toEqual({ done: 0, total: level.ids.length });
+    expect(levelProgress(level, new Set(level.ids.slice(0, 2)))).toEqual({ done: 2, total: level.ids.length });
+  });
+
+  it("lists the first unread chapters in reading order", () => {
+    const first = js.chapters.slice(0, 2).map((chapter) => chapter.id);
+    expect(upNext(js, EMPTY_DONE, 3).map((chapter) => chapter.id)).toEqual(js.chapters.slice(0, 3).map((c) => c.id));
+    expect(upNext(js, new Set(first), 2).map((chapter) => chapter.id)).toEqual(
+      js.chapters.slice(2, 4).map((c) => c.id)
+    );
+  });
+
+  it("has nothing left once every chapter is read, and nothing to list for a round", () => {
+    expect(upNext(js, new Set(js.progressIds), 3)).toEqual([]);
+    expect(upNext(round, EMPTY_DONE, 3)).toEqual([]);
   });
 });

@@ -3,7 +3,7 @@ import { GIT_CHAPTERS } from "@/content/git-body";
 import { chapterMetas, chaptersForLevel, topic, totalTime } from "@/lib/content";
 import { GIT_PROGRESS_PREFIX } from "@/lib/gitSeries";
 import { PARTS, bookRound } from "@/lib/interviewBook";
-import { levels, topicHome } from "@/lib/topics";
+import { chapterHref, levels, topicHome } from "@/lib/topics";
 import { topicStats } from "@/lib/topicStats";
 
 export interface RoadmapStepLevel {
@@ -11,6 +11,13 @@ export interface RoadmapStepLevel {
   name: string;
   chapters: number;
   minutes: number;
+  href: string;
+  ids: string[];
+}
+
+export interface RoadmapChapter {
+  id: string;
+  title: string;
   href: string;
 }
 
@@ -28,6 +35,7 @@ export interface RoadmapStep {
   minutes: number;
   group: string | null;
   levels: RoadmapStepLevel[];
+  chapters: RoadmapChapter[];
   progressIds: string[];
 }
 
@@ -61,11 +69,17 @@ export interface Roadmap {
 const ROUND_ACCENT = "red";
 const ROUND_MARK = "◎";
 
-function topicIdsFor(id: string): string[] {
-  if (id === "git") return GIT_CHAPTERS.map((section) => GIT_PROGRESS_PREFIX + section.id);
+function chaptersFor(id: string): RoadmapChapter[] {
+  if (id === "git") {
+    return GIT_CHAPTERS.map((section) => ({
+      id: GIT_PROGRESS_PREFIX + section.id,
+      title: section.title,
+      href: `/git/${section.id}`,
+    }));
+  }
   return chapterMetas(id)
     .filter((chapter) => chapter.ready)
-    .map((chapter) => chapter.id);
+    .map((chapter) => ({ id: chapter.id, title: chapter.title, href: chapterHref(id, chapter.id) }));
 }
 
 function levelsFor(topicId: string): RoadmapStepLevel[] {
@@ -79,6 +93,7 @@ function levelsFor(topicId: string): RoadmapStepLevel[] {
         chapters: written.length,
         minutes: totalTime(written),
         href: `/path/${topicId}/${level.id}`,
+        ids: written.map((chapter) => chapter.id),
       };
     })
     .filter((level) => level.chapters > 0);
@@ -102,12 +117,14 @@ function resolveStep(source: RoadmapStepSource): RoadmapStep {
       minutes: round.minutes,
       group: PARTS.find((part) => part.id === round.part)?.title ?? null,
       levels: [],
+      chapters: [],
       progressIds: [round.id],
     };
   }
   const found = topic(source.topic);
   if (!found) throw new Error(`roadmap: no topic "${source.topic}"`);
   const stat = topicStats()[found.id];
+  const chapters = chaptersFor(found.id);
   return {
     key: `topic:${found.id}`,
     kind: "topic",
@@ -122,7 +139,8 @@ function resolveStep(source: RoadmapStepSource): RoadmapStep {
     minutes: stat?.minutes ?? 0,
     group: null,
     levels: levelsFor(found.id),
-    progressIds: topicIdsFor(found.id),
+    chapters,
+    progressIds: chapters.map((chapter) => chapter.id),
   };
 }
 
