@@ -13,9 +13,10 @@ had at least one claim that was false, out of date, or contradicted by another c
 or reworded in the same change, every chapter now ends with a sources block, and the arithmetic and the
 wrong claims are guarded by tests.
 
-The fixes make the 24 chapters correct. They do not make the topic complete: against the benchmarks,
-replication, transactions and isolation, storage engines, time and ordering, and batch and stream
-processing have no chapter of their own, and there are no exercises. Those are listed under "Still missing".
+The fixes make the 24 chapters correct. They did not make the topic complete: against the benchmarks,
+replication, transactions and isolation, storage engines, and time and ordering had no chapter of their own.
+Four new chapters (batch 1, October 2026, below) now cover them, bringing the section to 28 chapters. Batch and
+stream processing and the practice layer are still missing; see "Still missing".
 
 ## Method
 
@@ -127,10 +128,10 @@ outdated, 99 misleading, 12 unverified.
 | Search                                                                                                                    | 3      | 1    |        |     | Covered (surface)                             |
 | Object storage                                                                                                            |        | 2    |        |     | Covered                                       |
 | URL shortener, news feed, chat (part), autocomplete (part), rate limiter                                                  |        | 1    | yes    |     | Covered                                       |
-| Replication: leaders, followers, multi-leader, leaderless, conflict resolution                                            | 5      |      | yes    |     | **Partial.** Lag and quorums only             |
-| Transactions: ACID, isolation levels, 2PC, sagas                                                                          | 7      | 2    |        |     | **Partial.** A short section                  |
-| Storage engines: LSM, B-tree, WAL, columnar                                                                               | 3      | 2    | yes    |     | **Partial.** Mentions only                    |
-| Clocks, ordering, unique IDs                                                                                              | 8      | 1    |        |     | **Partial.** Snowflake and TrueTime mentions  |
+| Replication: leaders, followers, multi-leader, leaderless, conflict resolution                                            | 5      |      | yes    |     | Covered (`sysdes-replication`)                |
+| Transactions: ACID, isolation levels, 2PC, sagas                                                                          | 7      | 2    |        |     | Covered (`sysdes-transactions-isolation`)     |
+| Storage engines: LSM, B-tree, WAL, columnar                                                                               | 3      | 2    | yes    |     | Covered (`sysdes-storage-engines`)            |
+| Clocks, ordering, unique IDs                                                                                              | 8      | 1    |        |     | Covered (`sysdes-time-ordering-ids`)          |
 | Batch and stream processing                                                                                               | 10, 11 | 2    |        | yes | **Missing**                                   |
 | Encoding and schema evolution                                                                                             | 4      |      |        |     | **Partial.** API versioning only              |
 | Release safety, incidents, postmortems                                                                                    |        |      |        | yes | **Partial.** Short additions                  |
@@ -142,23 +143,45 @@ outdated, 99 misleading, 12 unverified.
 
 ## Still missing, in the order worth building
 
-1. Replication, as a chapter: leader and follower, failover hazards, multi-leader and leaderless, conflict
-   resolution, read repair and anti-entropy.
-2. Transactions and isolation: ACID, isolation levels and their anomalies, snapshot isolation, write skew,
-   serializability, two-phase commit, sagas and the outbox.
-3. Storage engines: LSM trees against B-trees, write-ahead logs, compaction, column stores.
-4. Time, clocks and ordering: skew, Lamport and vector clocks, hybrid logical clocks, TrueTime, ID schemes.
-5. Batch and stream processing: MapReduce to Spark, Kafka with Flink, event time, windows, exactly-once.
-6. Release safety and incident practice: canaries, rollback, feature flags, config pushes, postmortems.
-7. Microservices and service discovery; security basics for design interviews.
-8. Walkthroughs from Xu's volumes that nothing here covers: key-value store, notifications, crawler,
+Items 1 to 4 of the original list (replication, transactions and isolation, storage engines, time and
+ordering) were written in batch 1; see below.
+
+1. Batch and stream processing: MapReduce to Spark, Kafka with Flink, event time, windows, exactly-once.
+2. Release safety and incident practice: canaries, rollback, feature flags, config pushes, postmortems.
+3. Microservices and service discovery; security basics for design interviews.
+4. Walkthroughs from Xu's volumes that nothing here covers: key-value store, notifications, crawler,
    payments, proximity, metrics monitoring.
-9. A practice layer. The quiz machinery is built around DSA patterns today, so System Design needs its own
+5. A practice layer. The quiz machinery is built around DSA patterns today, so System Design needs its own
    question format (design prompts with a scoring checklist, and trade-off multiple choice).
+
+## Batch 1: four new chapters (October 2026)
+
+| Chapter                         | Level        | Covers                                                                                                                                                                          |
+| ------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sysdes-replication`            | Intermediate | Leader and followers, sync against async, failover hazards (lost writes, split brain, fencing), multi-leader and conflict resolution, leaderless repair, how four systems do it |
+| `sysdes-transactions-isolation` | Advanced     | ACID honestly, the anomalies, isolation levels per engine, snapshot isolation against serializability, 2PL, SSI and serial execution, 2PC, sagas and the outbox                 |
+| `sysdes-storage-engines`        | Advanced     | WAL, B-trees against LSM-trees, compaction strategies, Bloom filters, column stores, the three amplifications                                                                   |
+| `sysdes-time-ordering-ids`      | Advanced     | Clocks and their error, Lamport and vector clocks, hybrid logical clocks, TrueTime, UUIDv4 and v7, ULID, Snowflake, sequences and ticket servers                                |
+
+How they were made: each chapter was written from primary sources fetched during the session (vendor
+manuals, papers, RFCs, engineering post-mortems), then handed to an independent reviewer that saw only the file
+and had to verify every checkable claim and recompute every sum. Their findings were severity-graded and fixed:
+
+| Chapter                         | Findings | Typical problems                                                                                                                                                                                   |
+| ------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sysdes-replication`            | 17       | A durability row that named the wrong failure, a dry run whose timing contradicted the chapter's own latencies, an "all three hazards" claim, and a Cassandra feature that had changed             |
+| `sysdes-transactions-isolation` | 12       | A phantom example that was not a phantom, a lock-hold figure that counted two round trips instead of one, claims true only at one isolation level                                                  |
+| `sysdes-storage-engines`        | 17       | A figure labelled to scale that was not, a "ceiling" that was not one, unconditional LSM advantages, a 1.11 space bound stated without its dynamic-level condition                                 |
+| `sysdes-time-ordering-ids`      | 16       | Spanner commit-wait figures from the wrong experiment, epsilon taken as the full interval width, an overstated Cloudflare headline, a leap-smear description that skipped where the offset is zero |
+
+The numbers that matter and the claims the reviews proved wrong are guarded in
+`tests/system-design-quality.test.ts`. Searching the section now costs 99.3 KB gzip of its 140 KB budget, so
+the budget did not need to move.
 
 ## What this audit could not check
 
 - Paid books were compared by table of contents and public material, not by text.
+- Batch 1 chapters rest on documentation for PostgreSQL 18, MySQL 8.4 and Cassandra 5.0 as of October 2026. A few sources could only be read as PDFs through a text extractor (Dynamo, Spanner, LSM-tree, Bigtable, Dong et al.), so wording from them was matched approximately, and the Instagram ID post could not be fetched directly, so the chapter does not rely on it.
 - A few primary sources are PDFs the reviewers could not read (the Spanner and Dynamo papers, the Raft
   paper); those facts rest on the abstracts and secondary summaries, and the chapters say so where it matters.
 - The OpenAI single-primary Postgres figures come from a page that blocks bots; they were confirmed through

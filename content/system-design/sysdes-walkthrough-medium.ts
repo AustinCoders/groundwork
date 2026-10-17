@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const sysdesWalkthroughMedium: Chapter = {
   id: "sysdes-walkthrough-medium",
-  num: "I9",
+  num: "I10",
   title: "Walkthrough: a news feed / chat app",
   short: "Walkthrough: feed/chat",
   levels: ["intermediate"],

@@ -21,7 +21,7 @@ sections among them, and 358 still outlines.
 | JavaScript        | 41        | 99        | 54k   | yes        |
 | React             | 57        | 135       | 42k   | yes        |
 | DSA               | 34        | 277       | 48k   | **no**     |
-| System Design     | 24        | **0**     | 61k   | **no**     |
+| System Design     | 28        | **0**     | 78k   | **no**     |
 | Interview book    | 27 rounds | **0**     | 61k   | —          |
 | How this is built | 26        | —         | 7k    | —          |
 | Git               | 18        | **0**     | —     | yes        |

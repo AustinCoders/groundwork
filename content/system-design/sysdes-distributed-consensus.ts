@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const sysdesDistributedConsensus: Chapter = {
   id: "sysdes-distributed-consensus",
-  num: "A3",
+  num: "A6",
   title: "Distributed consensus (surface)",
   short: "Distributed consensus",
   levels: ["advanced"],

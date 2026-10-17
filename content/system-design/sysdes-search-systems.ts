@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const sysdesSearchSystems: Chapter = {
   id: "sysdes-search-systems",
-  num: "I8",
+  num: "I9",
   title: "Search systems (surface)",
   short: "Search systems",
   levels: ["intermediate"],

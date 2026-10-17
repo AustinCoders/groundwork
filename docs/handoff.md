@@ -8,6 +8,12 @@ Read this and the memory index first in a new session. Update it at the end of e
 - Planned work: the BMad planning folder and skills were removed; the open entries (28 DSA, 1 groundwork) now live in `docs/ROADMAP.md`, and the old text is in git history up to commit `2da0b19`.
 - Uncommitted: the content standard (`AGENTS.md`, `docs/content-standard.md`, `docs/handoff.md`), `tests/chapter-standards*.ts`, `npm run claims:sync`. `npm run check` passes (78 files, 1630 tests).
 
+## System Design batch 1 (2026-10-17)
+
+- Four chapters added on `feature/system-design-batch-1`: replication, transactions and isolation, storage engines, time/ordering/IDs. The section is 28 chapters; chapter numbers were re-sequenced in reading order.
+- Each chapter was fact-checked by an independent reviewer and every finding fixed; the audit file lists the counts. The claims sync was run, and the search index is 99.3 KB gzip of its 140 KB budget.
+- Still missing: batch and stream processing, release safety, microservices and security basics, Xu walkthroughs, a practice layer (see `docs/content-audit/system-design.md`).
+
 ## Next
 
 1. Commit and push the content standard (on a `feature/` branch, or on `feature/dsa-rebuild` if the owner says so).

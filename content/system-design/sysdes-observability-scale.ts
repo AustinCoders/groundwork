@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const sysdesObservabilityScale: Chapter = {
   id: "sysdes-observability-scale",
-  num: "A5",
+  num: "A8",
   title: "Observability at scale",
   short: "Observability at scale",
   levels: ["advanced"],

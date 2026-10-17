@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const sysdesFaultTolerance: Chapter = {
   id: "sysdes-fault-tolerance",
-  num: "A4",
+  num: "A7",
   title: "Designing for fault tolerance",
   short: "Fault tolerance",
   levels: ["advanced"],

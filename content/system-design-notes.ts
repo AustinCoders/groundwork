@@ -23,14 +23,18 @@ import { sysdesObservabilityScale } from "./system-design/sysdes-observability-s
 import { sysdesCapacityEstimation } from "./system-design/sysdes-capacity-estimation";
 import { sysdesCaseStudies } from "./system-design/sysdes-case-studies";
 import { sysdesTradeoffThinking } from "./system-design/sysdes-tradeoff-thinking";
+import { sysdesReplication } from "./system-design/sysdes-replication";
+import { sysdesTransactionsIsolation } from "./system-design/sysdes-transactions-isolation";
+import { sysdesStorageEngines } from "./system-design/sysdes-storage-engines";
+import { sysdesTimeOrderingIds } from "./system-design/sysdes-time-ordering-ids";
 
 export const systemDesignNotes: NotesFile = {
   meta: {
     title: "System Design — the whole map",
-    subtitle: "24 sections across three levels — beginner through advanced, all written.",
+    subtitle: "28 sections across three levels — beginner through advanced, all written.",
     lead: "Pick a level and you'll get these sections in the order that makes sense, from the request lifecycle to sharding, consensus and the tradeoff thinking the interview is actually scoring.",
     author: "Akshat",
-    updated: "August 2026",
+    updated: "October 2026",
   },
 
   hero: { figure: "" },
@@ -47,13 +51,17 @@ export const systemDesignNotes: NotesFile = {
     sysdesCdns,
     sysdesMessageQueuesAsync,
     sysdesConsistencyModels,
+    sysdesReplication,
     sysdesRateLimiting,
     sysdesAvailabilityDesign,
     sysdesStorageSystems,
     sysdesSearchSystems,
     sysdesWalkthroughMedium,
     sysdesCapTheoremDepth,
+    sysdesTransactionsIsolation,
+    sysdesStorageEngines,
     sysdesShardingPartitioning,
+    sysdesTimeOrderingIds,
     sysdesDistributedConsensus,
     sysdesFaultTolerance,
     sysdesObservabilityScale,
