@@ -1,0 +1,325 @@
+.closurePlayer {
+  container-type: inline-size;
+}
+
+.closurePlayer .narration {
+  margin: 0;
+  padding: 10px 14px;
+  min-height: 3.2em;
+  font-size: var(--t-control);
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--sheet-2);
+  border-left: 4px solid var(--primary);
+  border-radius: 0 8px 8px 0;
+}
+
+.closurePlayer .narration ul {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.closurePlayer .narration li {
+  margin: 4px 0;
+}
+
+.closurePlayer .narration li[data-closure="true"] {
+  color: var(--caution);
+  font-weight: 600;
+}
+
+.closurePlayer .narration code,
+.closurePlayer .upNext code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  padding: 1px 5px;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1px solid var(--line-soft);
+  border-radius: 4px;
+}
+
+.closurePlayer .upNext {
+  margin: 10px 0 0;
+  font-size: var(--t-meta);
+  color: var(--ink-soft);
+}
+
+.closurePlayer .lower {
+  display: grid;
+  gap: 14px;
+}
+
+.closurePlayer .lower > div {
+  min-width: 0;
+}
+
+.closurePlayer .outputLabel {
+  margin-top: 14px;
+}
+
+.closurePlayer .output {
+  margin: 0;
+  padding: 8px 10px;
+  min-height: 2.4em;
+  font-family: var(--font-mono);
+  font-size: var(--t-meta);
+  white-space: pre-wrap;
+  color: var(--ink);
+  background: var(--sheet-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.closurePlayer .scroller {
+  overflow-x: auto;
+  padding: 12px;
+  background: var(--sheet-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.closurePlayer .stage {
+  position: relative;
+  min-width: 30rem;
+}
+
+.closurePlayer .columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 3.5rem;
+}
+
+.closurePlayer .column {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.closurePlayer .column:last-child {
+  padding-right: 1.5rem;
+}
+
+.closurePlayer .columnTitle {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.closurePlayer .frame,
+.closurePlayer .object {
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.15s ease;
+}
+
+.closurePlayer .frame[data-current="true"] {
+  border-color: var(--primary);
+  border-width: 2.5px;
+}
+
+.closurePlayer .frame[data-kept="true"] {
+  border-style: dashed;
+  border-color: var(--ink-soft);
+}
+
+.closurePlayer .object[data-closure="true"] {
+  border-color: var(--caution);
+}
+
+.closurePlayer .frameHead,
+.closurePlayer .objectHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 10px;
+  font-family: var(--font-mono);
+  font-size: var(--t-meta);
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+
+.closurePlayer .frameHead span,
+.closurePlayer .objectHead span {
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+}
+
+.closurePlayer .note,
+.closurePlayer .keptNote,
+.closurePlayer .chip,
+.closurePlayer .empty {
+  margin: 0;
+  padding: 5px 10px;
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+}
+
+.closurePlayer .keptNote,
+.closurePlayer .chip {
+  color: var(--caution);
+  font-weight: 600;
+}
+
+.closurePlayer .chip {
+  border-top: 1px dashed var(--caution);
+}
+
+.closurePlayer .rows {
+  margin: 0;
+  display: grid;
+}
+
+.closurePlayer .row {
+  display: grid;
+  grid-template-columns: minmax(3em, auto) 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: var(--t-body);
+  border-top: 1px solid var(--line-soft);
+}
+
+.closurePlayer .row:first-child {
+  border-top: 0;
+}
+
+.closurePlayer .row dt {
+  color: var(--ink-soft);
+}
+
+.closurePlayer .row[data-returned="true"] dt {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.closurePlayer .row dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.closurePlayer [data-kind="number"],
+.closurePlayer [data-kind="boolean"] {
+  color: var(--info);
+}
+
+.closurePlayer [data-kind="string"] {
+  color: var(--success);
+}
+
+.closurePlayer [data-kind="null"],
+.closurePlayer [data-kind="undefined"] {
+  color: var(--ink-soft);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.closurePlayer .pointer {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.closurePlayer .cells {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.closurePlayer .cells li {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 44px;
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: var(--t-body);
+  font-weight: 700;
+  border-right: 1px solid var(--line-soft);
+}
+
+.closurePlayer .cells small {
+  font-size: var(--t-kicker);
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
+.closurePlayer .arrows {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.closurePlayer .pointerArrow,
+.closurePlayer .closureArrow {
+  fill: none;
+  stroke-width: 1.8;
+}
+
+.closurePlayer .pointerArrow {
+  stroke: var(--primary);
+}
+
+.closurePlayer .closureArrow {
+  stroke: var(--caution);
+  stroke-dasharray: 5 4;
+}
+
+.closurePlayer .pointerHead {
+  fill: var(--primary);
+}
+
+.closurePlayer .closureHead {
+  fill: var(--caution);
+}
+
+.closurePlayer .legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+}
+
+.closurePlayer .legend li::before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  margin-right: 6px;
+  vertical-align: middle;
+  border-top: 2px solid var(--primary);
+}
+
+.closurePlayer .legend li[data-link="closure"]::before {
+  border-top: 2px dashed var(--caution);
+}
+
+.closurePlayer .legend li[data-link="kept"]::before {
+  border-top: 2px dashed var(--ink-soft);
+}
+
+@container (min-width: 56rem) {
+  .closurePlayer .lower {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    align-items: start;
+  }
+}

@@ -245,6 +245,16 @@ next();   <span class="c">// 2  — count outlived the call that created it</spa
 })();
 </script>
 
+<h3>Now step through it line by line</h3>
+<p>
+  The 3D scene shows the idea. This player runs the same program the way
+  the engine does, one line at a time. Press Next until
+  <code>counter()</code> returns: its frame turns dashed because the call
+  has ended, yet it is not thrown away.
+</p>
+
+<div data-play="closure-counter"></div>
+
 <h3>Why the variable survives at all</h3>
 <p>
   In <a href="/notes/execution-context">the execution context chapter</a> you learned that a call gets an execution context,
@@ -295,6 +305,14 @@ console.log(box.read());     <span class="c">// a copy would still say "first"</
   copied values, that would be impossible.
 </p>
 
+<p>
+  Here is the same idea with a bank balance. Both methods point at one
+  frame, and nothing outside can reach <code>balance</code> except through
+  them.
+</p>
+
+<div data-play="closure-private-state"></div>
+
 <h3>One call, one closure</h3>
 <div class="try">
   <pre><code>function makeCounter() {
@@ -332,6 +350,13 @@ console.log("a:", a(), " b:", b());   <span class="c">// what happens?</span></c
   — each call to <code>makeCounter()</code> built a fresh environment, so
   there were always two separate boxes, not one shared between them.
 </p>
+
+<p>
+  Step through the same program and compare the two kept frames: each
+  call to <code>makeCounter()</code> left behind its own box.
+</p>
+
+<div data-play="closure-two-counters"></div>
 
 <h3>Five real jobs closures do</h3>
 <p>
@@ -458,6 +483,16 @@ for (let j = 0; j &lt; 3; j++) setTimeout(() =&gt; console.log(j), 0);   <span c
   One shared box versus a fresh box per iteration. Nothing about the
   callbacks changed.
 </p>
+
+<p>
+  Step through both versions. With <code>var</code> there is one
+  <code>i</code> in the global scope. With <code>let</code> every pass gets
+  its own scope, and each callback keeps one of them alive.
+</p>
+
+<div data-play="closure-loop-var"></div>
+
+<div data-play="closure-loop-let"></div>
 
 <h3>See what the callback captured</h3>
 <p>The same loop twice, one keyword apart. Watch how many bindings each version creates — that is the whole difference.</p>

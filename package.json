@@ -55,6 +55,7 @@
     "@uiw/react-codemirror": "^4.25.11",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
+    "acorn": "^8.19.0",
     "clsx": "^2.1.1",
     "eslint-linter-browserify": "^10.11.0",
     "globals": "^17.12.0",
