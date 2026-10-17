@@ -24,6 +24,7 @@
     "claims:sync": "UPDATE_CLAIMS=1 vitest run tests/claims.test.ts",
     "test:perf": "npx --yes @lhci/cli@0.15 autorun",
     "comments": "node scripts/comments.mjs",
+    "sources": "node scripts/check-sources.mjs",
     "comments:fix": "node scripts/comments.mjs --fix"
   },
   "dependencies": {

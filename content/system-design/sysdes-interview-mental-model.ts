@@ -55,7 +55,7 @@ export const sysdesInterviewMentalModel: Chapter = {
   <tr>
     <td>Knowing what you don't know</td>
     <td>Bluffs a confident wrong number</td>
-    <td>"I don't know Spanner's exact commit latency; I know it's bounded by the TrueTime uncertainty window, so single-digit to low tens of milliseconds. I'd design assuming 10 ms and verify."</td>
+    <td>"I don't know Spanner's exact commit latency. I know it uses TrueTime, whose clock uncertainty is only a few milliseconds, so the real cost is the round trip to a majority of replicas. For a multi-region write I'd plan on tens of milliseconds and verify."</td>
   </tr>
   <tr>
     <td>Collaboration</td>
@@ -215,10 +215,13 @@ export const sysdesInterviewMentalModel: Chapter = {
 </p>
 <div class="sticky mint">
   <span class="ttl">The one conversion to memorise</span>
-  A day is 86,400 seconds — call it 100,000. So <b>1 million requests per day
-  ≈ 12 per second</b>, and 1 billion per day ≈ 12,000 per second. Almost every
-  QPS estimate you will ever do in an interview is this ratio scaled up or
-  down, then multiplied by 2-3 for peak.
+  A day is 86,400 seconds. So <b>1 million requests per day ≈ 12 per
+  second</b> (11.6 exactly), and 1 billion per day ≈ 12,000 per second. In
+  your head, rounding the day to 100,000 seconds gives 10 per second per
+  million, which is fine when you only want the order of magnitude; the
+  chapter uses 12 so the arithmetic stays honest. Almost every QPS estimate you
+  will ever do in an interview is this ratio scaled up or down, then
+  multiplied by 2-3 for peak.
 </div>
 <p>
   A worked pass, in the amount of detail you'd actually speak: 100 million
@@ -229,10 +232,12 @@ export const sysdesInterviewMentalModel: Chapter = {
   post data per day, so 36 TB a year before replication, media, or indexes.
 </p>
 <p>
-  Now use it. 30,000 reads per second will not come off a single relational
-  primary, so reads must be served from cache or replicas. 1,200 writes per
-  second <em>will</em> fit on one well-tuned Postgres box, which means sharding
-  the write path is not yet justified and saying so is a senior signal. 36 TB
+  Now use it. 30,000 reads per second is above the roughly 20,000 simple
+  reads per second that this course plans one relational primary for (see the
+  table below), so reads must be served from cache or replicas. 1,200 writes
+  per second is well under the roughly 5,000 committed writes per second we
+  plan for, which means sharding the write path is not yet justified and
+  saying so is a senior signal. 36 TB
   a year means the hot dataset and the cold archive should not live in the same
   place. Three architectural decisions from four multiplications.
 </p>
@@ -244,11 +249,34 @@ export const sysdesInterviewMentalModel: Chapter = {
   <tr><td>A tweet-sized text record</td><td>~200 bytes to 1 KB with metadata</td></tr>
   <tr><td>A compressed photo</td><td>~200 KB - 1 MB; a minute of 1080p video ~ 50 MB</td></tr>
   <tr><td>One commodity app server</td><td>Thousands of RPS for simple JSON, hundreds if it does real work per request</td></tr>
-  <tr><td>One relational primary</td><td>~5,000-20,000 simple reads/sec, ~1,000-10,000 writes/sec</td></tr>
+  <tr><td>One relational primary (modern NVMe server, warm cache)</td><td>Planning figures: ~20,000 simple indexed reads/sec, ~5,000 committed writes/sec</td></tr>
   <tr><td>One cache node</td><td>~100,000 ops/sec, sub-millisecond</td></tr>
+  <tr><td>Availability in nines</td><td>99.9% = about 8.8 hours of downtime a year; 99.99% = about 53 minutes; 99.999% = about 5 minutes</td></tr>
 </table>
+<div class="warn">
+  <span class="ttl">⚠ The primary figures are planning numbers, not limits</span>
+  20,000 reads/sec and 5,000 writes/sec are deliberately conservative: they
+  leave headroom and assume you have not tuned anything. Strong hardware with
+  batching and group commit does several times more (100,000+ reads/sec and
+  20,000-50,000 writes/sec are reported), and OpenAI has described running
+  ChatGPT on a single Azure PostgreSQL primary with about 50 read replicas at
+  millions of aggregate queries per second. The rule used across this course:
+  start planning a change when sustained reads pass ~20k/s (add a cache or
+  replicas) or sustained writes pass ~5k/s (partition or queue); at ~20k+
+  sustained writes you are sharding or queueing now. Measure, do not assume.
+</div>
 <p class="sub">
-  These are deliberately wide ranges. Quoting a range with the caveat "depends
+  Two more anchors belong in your head. Quote latency as a percentile, not an
+  average: p99 is what one user in a hundred sees, and a request that fans out
+  to many backends hits the slow tail of at least one of them far more often
+  than any single backend does (the "tail at scale" effect). And an
+  availability target is only meaningful alongside how you measure it: an SLI
+  (for example, the fraction of requests answered in under 300 ms without an
+  error) and an SLO (the target for that fraction, over a window). The error
+  budget is simply what the SLO leaves you to spend.
+</p>
+<p class="sub">
+  The ranges above are wide on purpose. Quoting a range with the caveat "depends
   on row size and whether it's index-only" reads as experience; quoting
   "Postgres does 8,342 QPS" reads as memorised trivia and invites a follow-up
   you can't answer.
@@ -400,8 +428,8 @@ export const sysdesInterviewMentalModel: Chapter = {
 <table>
   <tr><th>Phase</th><th>Applied here</th><th>Conclusion</th></tr>
   <tr><td>1. Clarify (0-8 min)</td><td>Ask DAU, read/write ratio, and whether a user must see an order they just placed immediately. Answers: 50M DAU, mostly reads, and yes — read-your-writes matters right after checkout.</td><td>Scope written down: read-heavy, one hard consistency requirement tied to a specific moment (just after write)</td></tr>
-  <tr><td>2. Estimate (8-13 min)</td><td>50M DAU × 5 order-history reads/day = 250M reads/day. Using the "1M requests/day ≈ 12 QPS" anchor: 250 × 12 = 3,000 QPS average, ~7,500 at a 2.5x peak.</td><td>3,000 QPS average will not come off a single relational primary for reads — caching or replicas are now justified, not assumed</td></tr>
-  <tr><td>3. High-level design (13-23 min)</td><td>API + orders table (sharded by user id) + read replicas + cache in front of the replicas. Data model: <code>orders(user_id, order_id, created_at, status, ...)</code>, primary key <code>(user_id, order_id)</code>.</td><td>6-10 boxes, one critical read path and one critical write path, both traceable on the diagram</td></tr>
+  <tr><td>2. Estimate (8-13 min)</td><td>50M DAU × 5 order-history reads/day = 250M reads/day. Using the "1M requests/day ≈ 12 QPS" anchor: 250 × 12 = 3,000 QPS average, ~7,500 at a 2.5x peak. Writes: assume 10M new orders/day, so ~120 per second.</td><td>7,500 peak reads is about 40% of the ~20,000/s we plan one primary for, and 120 writes/s is far below 5,000/s. Nothing forces sharding; the case for a replica is headroom, isolating history reads from checkout writes, and failover</td></tr>
+  <tr><td>3. High-level design (13-23 min)</td><td>API + one orders primary (not sharded) with a standby, one or two read replicas, and a small cache in front of them. Data model: <code>orders(user_id, order_id, created_at, status, ...)</code>, primary key <code>(user_id, order_id)</code>. Name <code>user_id</code> as the shard key you would use if the trigger ever arrives (writes sustained above ~5k/s, or the dataset outgrowing one node).</td><td>6-10 boxes, one critical read path and one critical write path, both traceable on the diagram</td></tr>
   <tr><td>4. Deep dive (23-38 min)</td><td>Interviewer points at "how do you page through years of orders?" — cursor pagination on <code>(created_at, order_id)</code>, not offset, because the set is unbounded and grows forever.</td><td>Taken to implementation detail: the exact query shape, not just the word "pagination"</td></tr>
   <tr><td>5. Failure (38-45 min)</td><td>"What if the user refreshes right after placing an order and hits a lagging read replica?" — pin that user's reads to the primary for a short window after their own write.</td><td>Read-your-writes violation named and fixed, using exactly the consistency requirement surfaced back in phase 1</td></tr>
 </table>
@@ -421,5 +449,18 @@ export const sysdesInterviewMentalModel: Chapter = {
     <li>Say what changes in your design when an interviewer says "let's say traffic grows 100x" — and why adding features is the wrong reaction.</li>
     <li>Walk the five-phase dry run above with a different prompt of your own choosing, keeping each phase's conclusion tied to what the previous phase established.</li>
   </ul>
+</div>
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://research.google/pubs/spanner-googles-globally-distributed-database-2/" rel="noopener noreferrer">Spanner: Google's globally distributed database</a> — the original paper; TrueTime uncertainty is a few milliseconds and commit cost is dominated by replica round trips</li>
+    <li><a href="https://openai.com/index/scaling-postgresql/" rel="noopener noreferrer">OpenAI: scaling PostgreSQL</a> — one primary plus about 50 replicas at millions of queries per second, which is why the per-primary figures here are planning numbers</li>
+    <li><a href="https://sre.google/sre-book/service-level-objectives/" rel="noopener noreferrer">Google SRE book: service level objectives</a> — definitions of SLI, SLO and error budget</li>
+    <li><a href="https://sre.google/sre-book/monitoring-distributed-systems/" rel="noopener noreferrer">Google SRE book: monitoring distributed systems</a> — percentiles over averages and the four golden signals</li>
+    <li><a href="https://research.google/pubs/pub40801/" rel="noopener noreferrer">The Tail at Scale</a> — why fan-out makes the slow tail dominate</li>
+    <li><a href="https://colin-scott.github.io/personal_website/research/interactive_latency.html" rel="noopener noreferrer">Interactive latency numbers by year</a> — Colin Scott's extrapolation of the classic latency table</li>
+    <li><a href="https://martin.kleppmann.com/2026/03/24/designing-data-intensive-applications-2e.html" rel="noopener noreferrer">Designing Data-Intensive Applications, second edition</a> — the standard reference for the tradeoffs this course builds on</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees.</p>
 </div>`,
 };

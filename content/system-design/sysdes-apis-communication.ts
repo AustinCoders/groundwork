@@ -72,10 +72,10 @@ export const sysdesApisCommunication: Chapter = {
   <tr><td>Coupling</td><td>Client couples to resource shapes and URL structure</td><td>Client couples to a generated stub; compatibility is a mechanical rule set (never reuse a field number)</td><td>Client declares the shape it wants; server owns the graph. Loosest client coupling of the three</td></tr>
   <tr><td>Over-fetching</td><td>Endemic. Every client gets the union of every client's needs</td><td>Same as REST unless you add field masks</td><td>Solved by construction — the client asks for four fields and gets four fields</td></tr>
   <tr><td>Round trips for a composite screen</td><td>One per resource, often sequential because of id dependencies</td><td>One per call; streaming can amortise</td><td>One, always</td></tr>
-  <tr><td>Payload / CPU</td><td>Verbose text; parsing is measurable on low-end phones</td><td>3-10× smaller on the wire, materially cheaper to encode and decode</td><td>JSON, so REST-like, but you only ship what was asked for</td></tr>
-  <tr><td>Intermediary caching</td><td>Free. URL + <code>Cache-Control</code> means CDNs and proxies work with no effort</td><td>None. Opaque bodies over HTTP/2 POST-like streams</td><td>Hard. Everything is <code>POST /graphql</code>; you need persisted queries served over GET to get any edge caching back</td></tr>
+  <tr><td>Payload / CPU</td><td>Verbose text; parsing is measurable on low-end phones</td><td>Binary, so typically smaller on the wire and cheaper to encode and decode than JSON; the factor depends on the data, so measure before quoting one</td><td>JSON, so REST-like, but you only ship what was asked for</td></tr>
+  <tr><td>Intermediary caching</td><td>Free. URL + <code>Cache-Control</code> means CDNs and proxies work with no effort, and <code>ETag</code> with <code>If-None-Match</code> gives cheap revalidation (<code>If-Match</code> gives optimistic concurrency on updates)</td><td>None. Opaque bodies over HTTP/2 POST-like streams</td><td>Hard. Everything is <code>POST /graphql</code>; you need persisted queries served over GET to get any edge caching back</td></tr>
   <tr><td>Browser support</td><td>Native</td><td>Not native — needs grpc-web plus a translating proxy</td><td>Native</td></tr>
-  <tr><td>Failure surface</td><td>HTTP status codes carry meaning</td><td>Rich status codes, deadlines that propagate across hops</td><td>HTTP 200 with an <code>errors</code> array — partial success is normal and your monitoring must understand it</td></tr>
+  <tr><td>Failure surface</td><td>HTTP status codes carry meaning</td><td>Rich status codes, and deadlines that can propagate across hops (on by default in Go and Java, opt-in in C++, so check your stack)</td><td>HTTP 200 with an <code>errors</code> array — partial success is normal and your monitoring must understand it</td></tr>
   <tr><td>Reach for this when…</td><td>Public APIs, third-party integrations, anything cacheable at the edge, anything a stranger must integrate against from a doc page</td><td>Internal service-to-service calls where latency, payload size and strict contracts matter, and both ends are yours</td><td>Many diverse clients (iOS, Android, web, TV) over one domain graph, shipping on different release cadences</td></tr>
 </table>
 <p class="sub">
@@ -135,7 +135,7 @@ export const sysdesApisCommunication: Chapter = {
   people write it.
 </p>
 <figure>
-  <svg viewBox="0 0 640 260" class="dg" role="img" aria-label="A checkout request that synchronously calls payment, email, analytics, warehouse and loyalty services taking 830 milliseconds with five hard dependencies, compared with a version that only calls payment synchronously and publishes an event that four consumers process independently">
+  <svg viewBox="0 0 640 260" class="dg" role="img" aria-label="A checkout request that synchronously calls payment, email, analytics, warehouse and loyalty services taking 830 milliseconds with five hard dependencies, compared with a version that only calls payment synchronously and publishes an event through a durable bus that four consumers process independently">
     <g class="rough">
       <path class="lnr" d="M64,64 L64,88" />
       <path class="lnr" d="M64,112 L64,136" />
@@ -181,9 +181,9 @@ export const sysdesApisCommunication: Chapter = {
     <text class="sm" x="572" y="185" text-anchor="middle">warehouse</text>
     <text class="sm" x="572" y="221" text-anchor="middle">loyalty</text>
     <text class="lbl rd" x="150" y="250" text-anchor="middle" style="font-size:14px">830 ms · 0.999^5 = 99.50%</text>
-    <text class="lbl gr" x="470" y="250" text-anchor="middle" style="font-size:14px">252 ms · 0.999^1 = 99.90%</text>
+    <text class="lbl gr" x="470" y="250" text-anchor="middle" style="font-size:14px">252 ms · 0.999^2 = 99.80%</text>
   </svg>
-  <figcaption>Moving four calls off the request path cut latency 3.3× and removed four dependencies from the availability product. Nothing got faster — the work simply stopped happening while the user waited.</figcaption>
+  <figcaption>Moving four calls off the request path cut latency 3.3× and removed four dependencies from the availability product. The event bus itself stays on the path as one more hard dependency (the second 0.999), which is why the right-hand figure is 99.80% and not 99.90%. Nothing got faster — the work simply stopped happening while the user waited.</figcaption>
 </figure>
 <p>
   Four symptoms tell you a request/response call should have been an event:
@@ -199,9 +199,9 @@ export const sysdesApisCommunication: Chapter = {
   authorisation synchronous, because the user has to be told yes or no before
   they leave the page. Everything else — receipt email, analytics, warehouse
   pick, loyalty points — becomes an <code>order.placed</code> event. That
-  takes checkout from 830 ms and five hard dependencies down to 250 ms and
-  one, and adding a sixth consumer later doesn't touch the checkout service
-  at all."
+  takes checkout from 830 ms and five hard dependencies down to 250 ms, one
+  hard dependency on the payment path, plus the event bus. Adding a sixth
+  consumer later doesn't touch the checkout service at all."
 </div>
 <p class="sub">
   Then say the cost, unprompted, or you sound naive: asynchronous means
@@ -209,7 +209,13 @@ export const sysdesApisCommunication: Chapter = {
   is only guaranteed within a partition key; it means the user's receipt now
   arrives "soon" rather than "now" and someone in product has to agree to
   that; and it means debugging a broken flow requires distributed tracing
-  rather than a stack trace.
+  rather than a stack trace. Say how the event is published, too. Charging a
+  card and then publishing to the bus are two separate writes, and a crash
+  between them loses the event (or, in the other order, announces an order
+  that never happened). The standard fix is the transactional outbox: write
+  the event into an outbox table in the same database transaction as the order
+  and let a relay publish it. Delivery is then at-least-once, and "exactly
+  once" in practice means at-least-once plus idempotent consumers.
 </p>
 
 <h3>Real-time transports: the decision table you will need</h3>
@@ -280,7 +286,7 @@ export const sysdesApisCommunication: Chapter = {
   <tr><th>Transport</th><th>Direction</th><th>Server cost at 1M clients</th><th>Real cost</th><th>Reach for this when…</th></tr>
   <tr><td><b>Short polling</b></td><td>Client pulls</td><td>200k rps at a 5 s interval, ~98% empty</td><td>Wasted capacity and up to 5 s of staleness</td><td>Updates are rare, latency tolerance is tens of seconds, and you want zero new infrastructure. Genuinely fine for "check order status"</td></tr>
   <tr><td><b>Long polling</b></td><td>Client pulls, server holds</td><td>1M held requests plus a re-request every ~30 s timeout</td><td>Ties up a request slot per client; needs async server I/O or your thread pool dies</td><td>You need push semantics but must traverse hostile proxies and ancient clients. The compatibility fallback, not the target</td></tr>
-  <tr><td><b>SSE</b></td><td>Server pushes, one way</td><td>1M open HTTP responses; a tuned box holds 100-500k</td><td>No client→server channel on that stream; older HTTP/1.1 stacks cap 6 connections per origin</td><td>Feeds, notifications, live scores, LLM token streaming — anything where the client only listens. Auto-reconnect and <code>Last-Event-ID</code> replay come free</td></tr>
+  <tr><td><b>SSE</b></td><td>Server pushes, one way</td><td>1M open HTTP responses; planning figure 250k-500k per tuned box, so a few boxes</td><td>No client→server channel on that stream; over HTTP/1.1 browsers cap about 6 connections per origin across all tabs (HTTP/2 negotiates around 100 streams instead)</td><td>Feeds, notifications, live scores, LLM token streaming — anything where the client only listens. The browser reconnects automatically and sends <code>Last-Event-ID</code>, but replaying the missed events is the server's job: keep recent events by id</td></tr>
   <tr><td><b>WebSocket</b></td><td>Full duplex</td><td>Same socket cost as SSE, plus connection-to-server routing</td><td>You leave HTTP behind: your own framing, auth refresh, heartbeats, reconnect and backpressure. Deploys disconnect everyone at once</td><td>Genuinely bidirectional and chatty: chat, multiplayer, collaborative editing, trading. Not "we might want push someday"</td></tr>
 </table>
 <div class="warn">
@@ -306,57 +312,84 @@ export const sysdesApisCommunication: Chapter = {
 </p>
 <p>
   The mechanism: the client generates a key per <em>logical operation</em> —
-  not per attempt — and sends it as a header. The server makes the key part of
-  the transaction.
+  not per attempt — and sends it in an <code>Idempotency-Key</code> header, the
+  convention popularised by APIs such as Stripe's (which keeps keys for at
+  least 24 hours). The header is still an IETF Internet-Draft
+  (<code>draft-ietf-httpapi-idempotency-key-header</code>, revision 07 of
+  October 2025, since expired), not an RFC. The server records the key
+  <em>before</em> doing the work, in its own short transaction that commits
+  immediately.
 </p>
-<pre><code>BEGIN;
-  <span class="c">-- UNIQUE (account_id, idempotency_key). This insert is the lock.</span>
-  INSERT INTO idempotency (account_id, key, request_hash, state)
-  VALUES ($1, $2, $3, 'in_progress');   <span class="c">-- duplicate → unique violation</span>
+<pre><code><span class="c">-- Step 1: claim the key. Its own transaction, committed at once.</span>
+<span class="c">-- UNIQUE (account_id, key). 1 row inserted = we own it; 0 rows = someone</span>
+<span class="c">-- else does, so SELECT the row and branch on state and request_hash.</span>
+INSERT INTO idempotency (account_id, key, request_hash, state, locked_until)
+VALUES ($1, $2, $3, 'in_progress', now() + interval '30 seconds')
+ON CONFLICT (account_id, key) DO NOTHING;
 
-  <span class="c">-- the real work, in the SAME transaction, so it can never</span>
-  <span class="c">-- happen without the key being recorded, or vice versa</span>
+<span class="c">-- Step 2: do the work. A card charge happens at an external processor, outside</span>
+<span class="c">-- any transaction of yours: pass the processor a key derived from ours, so it</span>
+<span class="c">-- deduplicates even if we crash and retry.</span>
+
+<span class="c">-- Step 3: record the outcome. Local effects and the key update are atomic.</span>
+BEGIN;
   INSERT INTO payments (...) VALUES (...);
-
-  UPDATE idempotency SET state = 'done', response = $4 WHERE key = $2;
+  UPDATE idempotency SET state = 'done', response = $4
+   WHERE account_id = $1 AND key = $2;
 COMMIT;</code></pre>
 <p>
-  Three details separate a working implementation from a plausible-sounding
-  one, and interviewers probe all three:
+  Why not claim the key and do everything in one transaction? In Postgres the
+  uncommitted claim row is invisible to other sessions, and a second inserter
+  of the same key does not fail fast: it blocks until the first transaction
+  ends, then gets a unique violation. The "fast 409" would never happen and a
+  retry would just hang behind the original. Committing the claim first makes
+  the duplicate visible immediately.
+</p>
+<p>
+  Four details separate a working implementation from a plausible-sounding
+  one, and interviewers probe all of them:
 </p>
 <ul>
   <li><b>Bind the key to the request.</b> Store a hash of the body. If the same key arrives with a different body, that is a client bug — return <code>422</code>, never silently replay the old response or, worse, execute the new one.</li>
-  <li><b>Handle the concurrent duplicate.</b> The retry may arrive while the original is still running. The unique constraint rejects it, and the correct response is <code>409 in progress</code> so the client backs off — not a wait, which converts one slow request into two held connections.</li>
+  <li><b>Handle the concurrent duplicate.</b> The retry may arrive while the original is still running. Because the claim is already committed, the insert is a no-op, the lookup shows <code>in_progress</code>, and the correct response is <code>409</code> so the client backs off (the IETF draft also recommends 409) — not a wait, which converts one slow request into two held connections.</li>
+  <li><b>Survive a crash mid-flight.</b> If the server dies after the charge but before step 3, the row stays <code>in_progress</code>. The lease (<code>locked_until</code>) lets a later retry take over; it repeats the processor call with the same derived key, and the processor returns the original charge instead of making a second one. Without a lease, that key is stuck forever.</li>
   <li><b>Give keys a lifetime and say what it is.</b> 24 hours to 7 days is typical. After that the record is reaped and a replayed request would execute again — which is fine, because no sane client retries a day later, but you should be the one to point that out.</li>
 </ul>
 
 <h4>Dry run: an idempotency key across a timeout, a retry, and a concurrent duplicate</h4>
 <table>
   <tr><th>Time</th><th>Event</th><th>Idempotency row (key K)</th><th>Payment charged?</th><th>Client sees</th></tr>
-  <tr><td>t0</td><td>Request A arrives, key K, body hash H1</td><td>INSERT succeeds: (K, H1, in_progress)</td><td>not yet</td><td>waiting</td></tr>
-  <tr><td>t0 + 5 ms</td><td>Request A executes the charge, same transaction</td><td>in_progress</td><td>yes — one charge</td><td>waiting</td></tr>
-  <tr><td>t0 + 8 ms</td><td>Row updated to done with the response</td><td>state = done</td><td>yes (unchanged)</td><td>waiting</td></tr>
+  <tr><td>t0</td><td>Request A arrives, key K, body hash H1; step 1 claims the key and commits</td><td>(K, H1, in_progress, lease 30 s)</td><td>not yet</td><td>waiting</td></tr>
+  <tr><td>t0 + 2 ms</td><td>Request C races in with key K while A is in flight</td><td>INSERT is a no-op (0 rows); lookup shows in_progress, same hash</td><td>no new charge</td><td>server returns <code>409</code>, client backs off</td></tr>
+  <tr><td>t0 + 5 ms</td><td>A calls the processor with derived key K', which charges once</td><td>in_progress</td><td>yes — one charge</td><td>waiting</td></tr>
+  <tr><td>t0 + 8 ms</td><td>A runs step 3: local payment record plus the row set to done with the response</td><td>state = done</td><td>yes (unchanged)</td><td>waiting</td></tr>
   <tr><td>t0 + 4 s</td><td>Network drops the response before it reaches the client</td><td>state = done</td><td>yes (unchanged)</td><td>client sees a timeout, not the response</td></tr>
   <tr><td>t0 + 6 s</td><td>Client retries: request B arrives, same key K, same hash H1</td><td>row already exists, state = done</td><td>no new charge</td><td>server returns the <em>stored</em> response — success</td></tr>
-  <tr><td>(alternate) t0 + 2 ms</td><td>Request C races in with key K while A is still in_progress</td><td>INSERT fails — unique constraint on (account_id, key)</td><td>no new charge</td><td>server returns <code>409 in progress</code>, client backs off</td></tr>
+  <tr><td>(crash variant) t0 + 6 ms</td><td>A's server dies after the processor charged but before step 3; the client retries after the lease expires</td><td>still in_progress, lease expired, so B takes it over</td><td>B repeats the processor call with K'; the processor returns the original charge</td><td>server finishes step 3 and returns success</td></tr>
 </table>
 <p class="sub">
-  Notice what makes this safe: the insert of the idempotency row and the
-  charge happen in the <em>same transaction</em>, so a charge can never exist
-  without its key recorded, or vice versa. The client cannot tell a lost
-  response from a lost request, but the server never has to guess — it just
-  answers "what did I already decide for key K?"
+  Notice what makes this safe, and what does not. The local database write and
+  the outcome record are atomic (step 3), but the card charge is not: it lives
+  at an external processor, outside your transaction. The processor's own
+  idempotency key is what stops a second charge, and the committed claim row
+  plus its lease are what let the server resume after a crash. The client
+  cannot tell a lost response from a lost request, but the server never has to
+  guess — it just answers "what did I already decide for key K?"
 </p>
 <p class="sub">
   Retry hygiene is the other half. Retry only on timeouts, connection errors,
   <code>429</code> and <code>5xx</code> — never on <code>4xx</code>, which
   will fail identically forever. Use exponential backoff with <em>full
-  jitter</em>, cap attempts, and add a retry budget (abort retrying entirely
-  if retries exceed ~10% of requests) so a struggling dependency doesn't
-  receive 4× traffic at its worst moment. Honour <code>Retry-After</code>. And
-  remember that every layer that retries multiplies: a client retrying 3× in
-  front of a gateway retrying 3× in front of a service retrying 3× turns one
-  user action into 27 backend calls. <b>Retry at one layer, not every layer.</b>
+  jitter</em>, cap attempts, and add a retry budget (for example, stop retrying
+  once retries exceed ~10% of requests, a common starting point) so a
+  struggling dependency doesn't see its traffic multiplied at its worst moment;
+  with two retries per request and no budget, it sees up to 3×. Pair retries
+  with timeouts and a circuit breaker, and honour <code>Retry-After</code>.
+  And remember that every layer that retries multiplies. Count attempts, not
+  retries: a client, a gateway and a service that each make up to 3 attempts
+  (2 retries) turn one user action into 3 × 3 × 3 = 27 backend calls, and the
+  Google SRE book's example, where each of three layers retries 3 times (4
+  attempts), reaches 4³ = 64. <b>Retry at one layer, not every layer.</b>
 </p>
 
 <h3>Pagination: why offset breaks and cursors don't</h3>
@@ -435,10 +468,24 @@ COMMIT;</code></pre>
   <span class="ttl">Before you move on</span>
   <ul>
     <li>Can you explain why the choice between REST, gRPC and GraphQL is a coupling decision, not a format preference?</li>
-    <li>Can you name the three symptoms that mean a synchronous call should have been an event?</li>
+    <li>Can you name the four symptoms that mean a synchronous call should have been an event?</li>
     <li>Can you trace an idempotency key through a timeout, a client retry, and a concurrent duplicate request?</li>
     <li>Can you explain why offset pagination breaks under concurrent writes while cursor pagination doesn't?</li>
     <li>Can you say what belongs at an API gateway and what doesn't, and why authorization decisions can't stop there?</li>
   </ul>
+</div>
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/" rel="noopener noreferrer">IETF draft: the Idempotency-Key HTTP header</a> — still a draft (revision 07, October 2025), with 409 for concurrent duplicates and 422 for a changed payload</li>
+    <li><a href="https://docs.stripe.com/api/idempotent_requests" rel="noopener noreferrer">Stripe API: idempotent requests</a> — the reference practice: saved responses, parameter comparison, 24-hour key pruning</li>
+    <li><a href="https://www.postgresql.org/docs/current/index-unique-checks.html" rel="noopener noreferrer">PostgreSQL docs: index uniqueness checks</a> — a second inserter of the same key waits for the first transaction to finish</li>
+    <li><a href="https://microservices.io/patterns/data/transactional-outbox.html" rel="noopener noreferrer">Transactional outbox pattern</a> — publishing an event atomically with a database change</li>
+    <li><a href="https://sre.google/sre-book/addressing-cascading-failures/" rel="noopener noreferrer">Google SRE book: addressing cascading failures</a> — retry amplification (the 64x example), retry budgets and jittered backoff</li>
+    <li><a href="https://grpc.io/docs/guides/deadlines/" rel="noopener noreferrer">gRPC: deadlines</a> — deadline propagation is on by default only in some languages</li>
+    <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events" rel="noopener noreferrer">MDN: using server-sent events</a> — automatic reconnection and the per-domain connection cap on HTTP/1</li>
+    <li><a href="https://www.rfc-editor.org/rfc/rfc9110" rel="noopener noreferrer">RFC 9110: HTTP semantics</a> — idempotent methods, status codes and conditional requests</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees.</p>
 </div>`,
 };

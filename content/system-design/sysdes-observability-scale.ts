@@ -9,15 +9,18 @@ export const sysdesObservabilityScale: Chapter = {
   practice: [],
   ready: true,
   subtitle: "Metrics say something is wrong, traces say where, logs say what — and p99 says whether anyone noticed.",
-  body: `<h3>Three pillars, three questions, one fixed order</h3>
+  body: `<h3>Three pillars, three questions, one common order</h3>
 <p>
   Observability is usually taught as a list of three data types, which is
   useless at a whiteboard. The useful framing is that each answers a
-  <em>different question</em>, and during an incident you reach for them in a
-  fixed order. <b>Metrics</b> answer "is something wrong, and since when?"
+  <em>different question</em>, and during an incident you usually reach for
+  them in a familiar order. <b>Metrics</b> answer "is something wrong, and since when?"
   <b>Traces</b> answer "where in the call graph is it wrong?" <b>Logs</b>
   answer "what exactly happened to the request that failed?" Run that order
-  backwards and you spend the outage grepping. Interviewers ask about this
+  backwards and you spend the outage grepping. It is a default drill-down,
+  not a law: teams that store one wide, structured event per request (what
+  some call "observability 2.0") can slice by any field and jump straight to
+  the evidence, and "three pillars" is itself a contested label. Interviewers ask about this
   because a design that cannot be debugged is not a finished design — and
   because the candidate who says "and here is how I'd know it broke" is
   visibly a different animal from one who draws boxes and stops.
@@ -49,20 +52,20 @@ export const sysdesObservabilityScale: Chapter = {
     <text class="sm" x="214" y="116" text-anchor="middle">collector</text>
     <text class="sm" x="214" y="133" text-anchor="middle">(sidecar agent)</text>
     <text class="sm" x="384" y="51"  text-anchor="middle">metrics — TSDB</text>
-    <text class="sm" x="384" y="82"  text-anchor="middle">13 months, cheap</text>
+    <text class="sm" x="384" y="82"  text-anchor="middle">13 months, cheap*</text>
     <text class="sm" x="384" y="127" text-anchor="middle">logs — object store</text>
-    <text class="sm" x="384" y="158" text-anchor="middle">14 days, expensive</text>
+    <text class="sm" x="384" y="158" text-anchor="middle">14 days, expensive*</text>
     <text class="sm" x="384" y="203" text-anchor="middle">traces</text>
-    <text class="sm" x="384" y="234" text-anchor="middle">7 days, sampled</text>
+    <text class="sm" x="384" y="234" text-anchor="middle">7 days, sampled*</text>
     <text class="sm rd" x="574" y="118" text-anchor="middle">alerting</text>
     <text class="sm rd" x="574" y="135" text-anchor="middle">pager</text>
   </svg>
-  <figcaption>Notice the one red arrow: only metrics drive the pager. Logs and traces are for the human who has already been woken up — paging off a log line is how you build an alert nobody trusts.</figcaption>
+  <figcaption>Notice the one red arrow: only metrics drive the pager. Logs and traces are for the human who has already been woken up — paging off a log line is how you build an alert nobody trusts. (*Retention periods are illustrative, not standards.)</figcaption>
 </figure>
 
 <h3>The three pillars, priced</h3>
 <table>
-  <tr><th>Pillar</th><th>Question it answers</th><th>Shape</th><th>Cost driver</th><th>Typical retention</th><th>How it fails you</th></tr>
+  <tr><th>Pillar</th><th>Question it answers</th><th>Shape</th><th>Cost driver</th><th>Typical retention (illustrative)</th><th>How it fails you</th></tr>
   <tr>
     <td>Metrics</td>
     <td>Is something wrong, and when did it start?</td>
@@ -75,7 +78,7 @@ export const sysdesObservabilityScale: Chapter = {
     <td>Logs</td>
     <td>What exactly happened to this one request?</td>
     <td>Semi-structured records, unbounded fields</td>
-    <td>Bytes ingested and indexed — roughly $0.30-$1.00 per GB on managed platforms</td>
+    <td>Bytes ingested and indexed — priced per GB and vendor-dependent (for example, Amazon CloudWatch Logs lists standard ingestion at $0.50 per GB in US East)</td>
     <td>7-30 days hot, then cold storage</td>
     <td>Volume. At real scale you cannot afford to keep them all, so the one you needed was sampled away.</td>
   </tr>
@@ -102,8 +105,11 @@ export const sysdesObservabilityScale: Chapter = {
   symmetric. Request latency is always right-skewed: it has a hard floor (you
   cannot be faster than the network) and no ceiling (a lock, a GC pause, a
   cold cache, a retry). Averaging a floor with a fat tail produces a number
-  that describes no actual user. Worse, the mean is dominated by the tail it
-  is hiding — you can double your p99 and barely move the mean.
+  that describes no actual user. Worse, the mean blends the fast majority
+  and the slow tail into one number that hides both: if the slowest 1% of
+  requests all got twice as slow (p99 going from 1.9 s to 3.8 s), the mean
+  would rise by only about 19 ms, from 205 ms to roughly 224 ms, while the
+  p99 doubled.
 </p>
 <figure>
   <svg viewBox="0 0 640 290" class="dg" role="img" aria-label="A right-skewed latency distribution curve with dashed vertical markers at p50 of 120 milliseconds, the mean at 205 milliseconds and p99 at 1.9 seconds far out in the tail">
@@ -121,7 +127,7 @@ export const sysdesObservabilityScale: Chapter = {
     <text class="lbl" x="56" y="268" style="font-size:14px">the mean sits between p50 and p75 and describes nobody;</text>
     <text class="lbl rd" x="56" y="286" style="font-size:14px">the users who churn are all living out past that red line</text>
   </svg>
-  <figcaption>The mean is pulled right by the tail without ever reaching it. Report p50 for "typical", p99 for "worst thing a real person routinely experiences", and never report a mean latency as if it were a user experience.</figcaption>
+  <figcaption>Horizontal axis compressed, not to scale: at true scale the p99 marker would sit far off the right edge. The mean is pulled right by the tail without ever reaching it. Report p50 for "typical", p99 for "worst thing a real person routinely experiences", and never report a mean latency as if it were a user experience.</figcaption>
 </figure>
 <div class="say">
   <span class="ttl">Say it like this →</span> "I'd set the SLO on p99, not
@@ -147,8 +153,8 @@ export const sysdesObservabilityScale: Chapter = {
 </table>
 <p>
   Read the last row again: with a hundred-way fan-out, a per-service p99 means
-  <em>most</em> requests hit at least one slow path. This is why Jeff Dean's
-  "tail at scale" framing matters — as you decompose into more services, the
+  <em>most</em> requests hit at least one slow path. This is why Jeff Dean and Luiz Barroso's
+  "The Tail at Scale" (CACM, 2013) matters — as you decompose into more services, the
   user-visible p99 degrades even though every individual service's p99 is
   unchanged. Turn it around to get the design rule: to hold a user-facing p99,
   each of ten backends needs roughly <b>p99.9</b>, because 0.999<sup>10</sup>
@@ -157,10 +163,11 @@ export const sysdesObservabilityScale: Chapter = {
 </p>
 <div class="warn">
   <span class="ttl">⚠ Retries and hedging cut the tail but multiply the load</span>
-  The standard fix is a <em>hedged request</em>: if a replica hasn't answered
-  by p95, fire a second request to another replica and take the first
-  response. That converts a tail event into a p95-plus-a-bit event for about
-  5% extra traffic. The failure mode is that when the system is already
+  A standard fix, described in that paper, is a <em>hedged request</em>: if a
+  replica hasn't answered by p95, fire a second request to another replica
+  and take the first response. That converts a tail event into a
+  p95-plus-a-bit event for about 5% extra traffic (the paper's benchmark
+  figure). The failure mode is that when the system is already
   degraded, <em>everything</em> exceeds p95, so every request hedges, load
   doubles, and you have built a retry storm. Always pair hedging with a
   circuit breaker and a budget ("at most 5% of requests may hedge") — the same
@@ -203,9 +210,12 @@ now add one label: user_id, 20,000,000 values
   Un-templated URL paths as a label (<code>/orders/8814</code> instead of
   <code>/orders/:id</code>); the raw exception message as a label when it
   contains an id or a timestamp; and a pod name or container id as a label in
-  an autoscaling deployment, which quietly creates a new series every deploy
-  and never garbage-collects the old ones. Each one has taken down a real
-  monitoring cluster.
+  an autoscaling deployment, which creates a fresh series for every new pod.
+  Prometheus does age out series that stop receiving samples, but the number
+  of series it has seen inside the retention window, and the memory and
+  index that go with them, grows with churn rather than with the size of
+  the current fleet. Each one of these has taken down a real monitoring
+  cluster.
 </div>
 
 <h3>Distributed tracing and context propagation</h3>
@@ -215,7 +225,9 @@ now add one label: user_id, 20,000,000 values
   a parent span id. The only genuinely hard part is <b>context
   propagation</b>: every hop — HTTP call, gRPC call, queue publish, thread
   handoff — must carry the ids forward, or the tree silently breaks into
-  disconnected fragments. The W3C standard is a single header:
+  disconnected fragments. The W3C Trace Context standard (a W3C Recommendation, updated November
+  2021) defines a <code>traceparent</code> header, plus an optional
+  <code>tracestate</code> header for vendor-specific data:
 </p>
 <pre><code>traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
              ^   ^                                ^                ^
@@ -257,6 +269,23 @@ now add one label: user_id, 20,000,000 values
   <tr><td>Tail-based</td><td>Buffer all spans of a trace at the collector, decide once it completes: keep if slow, errored, or rare</td><td>Collector must hold every in-flight trace in memory for the duration; needs all spans of a trace routed to the same collector</td><td>You specifically need the pathological traces — which, since those are the ones you debug, is most serious deployments.</td></tr>
 </table>
 
+<div class="sticky mint">
+  <span class="ttl">Four pieces of vocabulary that make the rest practical</span>
+  <b>OpenTelemetry</b> is the vendor-neutral standard for generating and
+  shipping all three signals: an instrumentation API and SDKs, the OTLP wire
+  format, and a Collector that receives, processes (including tail-based
+  sampling) and exports to whichever backend you choose. <b>RED</b> (rate,
+  errors, duration; Tom Wilkie) is the per-service dashboard; <b>USE</b>
+  (utilisation, saturation, errors; Brendan Gregg) is the per-resource
+  checklist for hosts, disks and pools. <b>Percentiles cannot be averaged</b>:
+  the mean of ten instances' p99 values is not the fleet's p99. Record
+  latency as a histogram (counts per bucket), sum the buckets across
+  instances, and compute the percentile from the sum; Prometheus
+  summaries, which pre-compute quantiles per instance, cannot be aggregated.
+  <b>Exemplars</b> attach a trace id to a histogram bucket, so you can click
+  from "the p99 spike" straight to a slow trace.
+</div>
+
 <h3>Structured logging, and the volume problem behind it</h3>
 <p>
   A log line that is a sentence is a log line you can only grep. A log line
@@ -273,7 +302,7 @@ now add one label: user_id, 20,000,000 values
 </p>
 <pre><code>100,000 * 500 B          = 50 MB/s
 50 MB/s * 86,400 s       = 4.3 TB/day
-4.3 TB/day at $0.50/GB   ~ $2,150/day  ~ $780,000/year   <span class="c">// for one log line per request</span></code></pre>
+4.3 TB/day at $0.50/GB   ~ $2,150/day  ~ $780,000/year   <span class="c">// $0.50/GB is illustrative; one log line per request</span></code></pre>
 <p class="sub">
   That number is why sampling is not optional at scale, and why the sampling
   policy should be asymmetric: keep <b>100% of errors and warnings</b>, keep
@@ -297,10 +326,15 @@ now add one label: user_id, 20,000,000 values
 <p>
   Alert on <b>symptoms</b> instead: the things a user would complain about.
   Google's four golden signals are latency, traffic, errors, and saturation;
-  the first three are symptoms and the fourth is the leading indicator you use
-  for capacity planning, not for paging. Keep cause metrics — you need them
+  the first three are symptoms, and saturation is the early warning. The SRE
+  book's rule is to page when one signal is problematic or, in the case of
+  saturation, <em>nearly</em> problematic: a disk or quota about to fill
+  deserves a page before it causes errors. Page on that kind of imminent
+  exhaustion, and leave a generic "CPU above 80%" on the dashboard. Keep cause metrics — you need them
   the moment you start debugging — but put them on dashboards, not on the
-  pager.
+  pager. Every page should link to a runbook and have an owner, and every
+  serious incident should end in a blameless postmortem; an alert that nobody
+  can act on is noise, however well it was measured.
 </p>
 <table>
   <tr><th>Don't page on this (cause)</th><th>Page on this instead (symptom)</th><th>Why</th></tr>
@@ -323,8 +357,8 @@ now add one label: user_id, 20,000,000 values
   <tr><th>Availability target</th><th>Budget per 30 days</th><th>Budget per year</th><th>What it implies</th></tr>
   <tr><td>99%</td><td>7.2 hours</td><td>3.65 days</td><td>An internal tool. One long maintenance window is fine.</td></tr>
   <tr><td>99.9% ("three nines")</td><td>43.2 minutes</td><td>8.8 hours</td><td>A normal SaaS product. Achievable with a single region done well.</td></tr>
-  <tr><td>99.95%</td><td>21.6 minutes</td><td>4.4 hours</td><td>Multi-AZ, automated failover, no manual step in the recovery path.</td></tr>
-  <tr><td>99.99%</td><td>4.3 minutes</td><td>52.6 minutes</td><td>Multi-region active-active. A human cannot even read the page in the budget.</td></tr>
+  <tr><td>99.95%</td><td>21.6 minutes</td><td>4.4 hours</td><td>Multi-AZ done well, automated failover, no manual step in the recovery path.</td></tr>
+  <tr><td>99.99%</td><td>4.3 minutes</td><td>52.6 minutes</td><td>Multi-AZ with no shared single point of failure; multi-region active-active can go further but costs far more, and bad deploys hit every region. A human cannot even read the page in the budget.</td></tr>
   <tr><td>99.999%</td><td>26 seconds</td><td>5.3 minutes</td><td>Almost never the right answer. Say so out loud when someone asks for it.</td></tr>
 </table>
 <p>
@@ -332,7 +366,10 @@ now add one label: user_id, 20,000,000 values
   blip trips it. Alerting on the whole window is too slow: you find out you
   blew the budget on day 29. The standard answer is <b>multi-window burn-rate
   alerting</b> — page on how fast the budget is being consumed, measured over
-  both a long and a short window so a recovered blip stops paging.
+  both a long and a short window so a recovered blip stops paging. The table
+  below is the recommended policy for a 99.9% SLO from the Google SRE
+  Workbook chapter "Alerting on SLOs"; the short window is about one twelfth
+  of the long one.
 </p>
 <table>
   <tr><th>Burn rate</th><th>Budget consumed</th><th>Windows (long + short)</th><th>Response</th></tr>
@@ -343,21 +380,27 @@ now add one label: user_id, 20,000,000 values
 
 
 <h4>Dry run: a 20-minute incident through a multi-window burn-rate alert</h4>
-<p class="sub">SLO: 99.9% over 30 days → an allowed error rate of 0.1%. Page when <em>both</em> the 1-hour and the 5-minute burn rate exceed 14.4× (an error rate of 1.44%).</p>
+<p class="sub">SLO: 99.9% over 30 days → an allowed error rate of 0.1%. Page when <em>both</em> the 1-hour and the 5-minute burn rate exceed 14.4× (an error rate of 1.44%). Traffic is steady; baseline error rate is 0.05%; the incident runs 10:00–10:20 at a 5% error rate.</p>
 <table>
   <tr><th>Time</th><th>What's happening</th><th>5-min error rate → burn rate</th><th>1-hr error rate → burn rate</th><th>Both exceed 14.4×?</th><th>Alert state</th></tr>
-  <tr><td>t = 10:00</td><td>Baseline, healthy</td><td>0.05% → 0.5×</td><td>0.05% → 0.5×</td><td>No</td><td>Quiet</td></tr>
-  <tr><td>t = 10:05</td><td>Incident starts; error rate jumps to 5%</td><td>5% → 50×</td><td>0.46% → 4.6× (only 5 of the last 60 min are bad)</td><td>No — long window hasn't caught up</td><td>Still quiet</td></tr>
-  <tr><td>t = 10:20</td><td>Incident continues, 20 minutes in</td><td>5% → 50×</td><td>1.7% → 17× (20 of 60 min bad)</td><td><b>Yes</b> — both windows now exceed 14.4×</td><td><b>Pages</b></td></tr>
-  <tr><td>t = 10:25</td><td>Incident ends at 10:20; 5 minutes of healthy traffic since</td><td>0.05% → 0.5×</td><td>1.7% → 17× (the bad 20 min are still inside the trailing hour)</td><td>No — short window recovered</td><td><b>Clears</b></td></tr>
+  <tr><td>t = 09:55</td><td>Baseline, healthy</td><td>0.05% → 0.5×</td><td>0.05% → 0.5×</td><td>No</td><td>Quiet</td></tr>
+  <tr><td>t = 10:05</td><td>5 minutes into the incident</td><td>5% → 50×</td><td>0.46% → 4.6× (5 bad minutes of the last 60)</td><td>No — long window hasn't caught up</td><td>Still quiet</td></tr>
+  <tr><td>t = 10:17</td><td>17 minutes in</td><td>5% → 50×</td><td>1.45% → 14.5× (17 bad minutes of 60)</td><td><b>Yes</b> — the 1-hour window just crossed 14.4× (it needs about 16.9 bad minutes)</td><td><b>Pages</b></td></tr>
+  <tr><td>t = 10:20</td><td>Incident ends</td><td>5% → 50×</td><td>1.70% → 17× (20 bad minutes of 60)</td><td>Yes</td><td>Still paging</td></tr>
+  <tr><td>t = 10:23</td><td>3 healthy minutes since the end</td><td>2.03% → 20× (2 bad minutes still in the 5-minute window)</td><td>1.70% → 17×</td><td>Yes</td><td>Still paging</td></tr>
+  <tr><td>t = 10:24</td><td>4 healthy minutes since the end</td><td>1.04% → 10.4× (1 bad minute left)</td><td>1.70% → 17× (the bad 20 min are still inside the trailing hour)</td><td>No — short window recovered</td><td><b>Clears</b> (the crossing is at about 3.6 minutes after the end)</td></tr>
 </table>
 <p class="sub">
   The alert only fires once both windows agree, which is why it waits until
-  10:20 rather than paging on the first bad minute — and it clears at 10:25
-  even though the 1-hour window is still showing a 17× burn, because the
-  5-minute window is what tells the alert the incident is actually over.
-  Without that short window, this page would stay lit for most of the
-  remaining hour after the problem was already fixed.
+  about 10:17 rather than paging on the first bad minute — and it clears
+  at about 10:24 even though the 1-hour window is still showing a 17×
+  burn, because the 5-minute window is what tells the alert the incident
+  is actually over. Without that short window, this page would stay lit for
+  most of the remaining hour after the problem was already fixed. The price of
+  the long window is the 17-minute wait; a total outage burns the budget
+  far faster than 14.4× and trips the same rule in about 1 minute (a 100%
+  error rate gives a burn rate of 1000×, and the 1-hour window crosses 14.4×
+  after 0.86 bad minutes).
 </p>
 <p class="sub">
   The error budget also has a second,
@@ -388,10 +431,26 @@ now add one label: user_id, 20,000,000 values
   <span class="ttl">Before you move on</span>
   <ul>
     <li>Say, in order, which of metrics, traces or logs you'd reach for first during an incident, and why running that order backwards means grepping.</li>
-    <li>Walk through the burn-rate dry run above and explain why the page fires at 10:20 rather than 10:05, and clears at 10:25.</li>
-    <li>Compute the user-visible p99 of a request that fans out to 10 services each at 99% availability, and say what complexity that pushes onto each service.</li>
+    <li>Walk through the burn-rate dry run above and explain why the page fires at about 10:17 rather than 10:05, and clears at about 10:24 although the 1-hour window still shows 17×.</li>
+    <li>Compute the chance that a request fanning out to 10 services is fast on all of them when each has a 1% chance of landing in its slow tail (about 90%), and say which per-service percentile you need to hold a 99% user-facing target (p99.9).</li>
     <li>Explain why a metric label needs a cardinality bound but a log field doesn't, using the <code>user_id</code> example.</li>
     <li>Name two things you would alert on and two you would only dashboard, and justify the split using the symptom-vs-cause distinction.</li>
   </ul>
+</div>
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://sre.google/sre-book/monitoring-distributed-systems/" rel="noopener noreferrer">Google SRE book: monitoring distributed systems</a> — the four golden signals, symptoms versus causes, and paging on nearly-saturated resources</li>
+    <li><a href="https://sre.google/workbook/alerting-on-slos/" rel="noopener noreferrer">Google SRE Workbook: alerting on SLOs</a> — the multi-window burn-rate table (14.4x, 6x, 1x) used in this chapter</li>
+    <li><a href="https://research.google/pubs/the-tail-at-scale/" rel="noopener noreferrer">The Tail at Scale (Dean and Barroso, 2013)</a> — why fan-out amplifies tail latency and how hedged requests help</li>
+    <li><a href="https://www.w3.org/TR/trace-context/" rel="noopener noreferrer">W3C Trace Context</a> — the traceparent and tracestate headers and the sampled flag</li>
+    <li><a href="https://opentelemetry.io/docs/what-is-opentelemetry/" rel="noopener noreferrer">OpenTelemetry overview</a> — vendor-neutral signals, the OTLP format and the Collector</li>
+    <li><a href="https://prometheus.io/docs/practices/histograms/" rel="noopener noreferrer">Prometheus: histograms and summaries</a> — why quantiles cannot be averaged but histogram buckets can be summed</li>
+    <li><a href="https://prometheus.io/docs/prometheus/latest/feature_flags/" rel="noopener noreferrer">Prometheus feature flags (exemplar storage)</a> — exemplars as references from metrics to trace ids</li>
+    <li><a href="https://aws.amazon.com/cloudwatch/pricing/" rel="noopener noreferrer">Amazon CloudWatch pricing</a> — one real per-GB log ingestion price to anchor the cost arithmetic</li>
+    <li><a href="https://www.brendangregg.com/usemethod.html" rel="noopener noreferrer">The USE method (Brendan Gregg)</a> — utilisation, saturation and errors for every resource</li>
+    <li><a href="https://grafana.com/blog/the-red-method-how-to-instrument-your-services/" rel="noopener noreferrer">The RED method (Grafana Labs)</a> — rate, errors and duration for every service</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees.</p>
 </div>`,
 };

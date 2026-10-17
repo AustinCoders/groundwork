@@ -18,7 +18,7 @@ export const sysdesRateLimiting: Chapter = {
   to drop instead of failing at random.
 </p>
 <ul>
-  <li><b>Abuse and security.</b> Credential stuffing, scraping, enumeration. 5 login attempts per account per 15 minutes turns an online brute force from hours into centuries.</li>
+  <li><b>Abuse and security.</b> Credential stuffing, scraping, enumeration. 5 login attempts per account per 15 minutes caps an online guess against one account at about 480 a day. Note what that does <em>not</em> stop: credential stuffing is one or two tries on each of millions of accounts, so a per-account limit barely sees it (you need per-IP, per-device and breached-password signals, and MFA), and a hard per-account lockout hands attackers a way to lock real users out. Prefer a soft throttle or a challenge over a lockout.</li>
   <li><b>Fairness / multi-tenancy.</b> One customer's runaway integration script must not consume the capacity everyone else paid for. This is the noisy-neighbour problem, and the limiter is the fix.</li>
   <li><b>Cost control.</b> When a request costs real money downstream — an LLM call, an SMS, a third-party API billed per call — the limiter is a spend cap that works in real time rather than on the invoice.</li>
   <li><b>Cascading-failure protection.</b> The subtle one. When a dependency slows down, in-flight requests pile up, threads and connections are exhausted, and a slow dependency becomes a total outage. A limiter bounds concurrency so the system sheds load at the edge instead of dying in the middle. It is the same family as circuit breakers and bulkheads: <em>controlled</em> failure beats uncontrolled.</li>
@@ -58,9 +58,13 @@ export const sysdesRateLimiting: Chapter = {
 <p>
   It is perfectly accurate — no boundary artefact, no approximation. It is
   also the only algorithm here whose memory scales with your
-  <em>limit</em>: 16-24 bytes per retained timestamp. At 5,000 requests per
-  hour per key and 1 million active keys, that's roughly
-  <b>100 GB of Redis</b>, versus ~16 MB for a counter-based approach. Use
+  <em>limit</em>: 16-24 bytes per retained timestamp as raw data, and a
+  Redis sorted set costs several times that per element once it is large
+  (skiplist plus hash table, on the order of 100 bytes; a planning figure). At 5,000 requests per
+  hour per key and 1 million active keys, that's 5 billion timestamps: about
+  100 GB even at the raw size and plausibly several hundred GB in a sorted set,
+  versus ~16 MB of raw counters (on the order of 100 MB once Redis's per-key
+  overhead is counted) for a counter-based approach. Use
   it where the limit is small and precision matters — login attempts, OTP
   sends, password resets — and nowhere else.
 </p>
@@ -69,10 +73,17 @@ export const sysdesRateLimiting: Chapter = {
 <p>
   Keep two counters, the current window and the previous one, and weight
   the previous by how much of it still overlaps the trailing window. It
-  costs two integers per key, has no boundary burst, and its error is
-  bounded and small — it slightly over-counts when traffic is bursty and
-  slightly under-counts when it's idle, on the assumption that the previous
-  window's requests were uniformly distributed.
+  costs two integers per key and removes the boundary burst for ordinary
+  traffic. It is an approximation: it assumes the previous window's requests
+  were spread evenly. If they were bunched near the start of that window it
+  over-counts and rejects a little early; if they were bunched at the end it
+  under-counts and admits a little extra. Against an adversary that times it,
+  the error is not small: 100 requests in the last instant of window 1, then
+  about 99 at the very end of window 2 (when window 1's weight is near zero),
+  puts nearly 200 inside one real trailing minute. On real traffic it is
+  excellent: Cloudflare, which popularised it, measured 0.003% of 400 million
+  requests wrongly allowed or limited, with a 6% average difference from the
+  true rate.
 </p>
 <pre><code><span class="c">// state per key: { windowStart, count, prevCount } — two integers plus a boundary</span>
 function allow(state, now, limit, windowMs) {
@@ -213,10 +224,11 @@ function allow(state, now, limit, windowMs) {
 <table>
   <tr><th>Algorithm</th><th>Memory per key</th><th>Accuracy</th><th>Bursts</th><th>Reach for this when</th></tr>
   <tr><td>Fixed window</td><td>1 counter</td><td>Poor — up to 2x the limit at the boundary</td><td>Uncontrolled at boundaries</td><td>Rough abuse protection where a 2x overshoot is harmless, or you need the absolute simplest thing (one Redis INCR)</td></tr>
-  <tr><td>Sliding window log</td><td>O(limit) timestamps, ~16-24 B each</td><td>Exact</td><td>Fully prevented</td><td>Small limits where precision is a security property: 5 logins / 15 min, 3 OTPs / hour</td></tr>
+  <tr><td>Sliding window log</td><td>O(limit) timestamps, ~16-24 B raw, ~100 B each in a Redis sorted set (planning figure)</td><td>Exact</td><td>Fully prevented</td><td>Small limits where precision is a security property: 5 logins / 15 min, 3 OTPs / hour</td></tr>
   <tr><td>Sliding window counter</td><td>2 counters</td><td>Small bounded error (assumes uniform prior window)</td><td>Effectively prevented</td><td>The general-purpose default for user-facing API quotas at scale</td></tr>
   <tr><td>Token bucket</td><td>2 numbers (tokens + timestamp)</td><td>Exact w.r.t. its own definition</td><td><em>Allows</em> them, up to B — deliberately</td><td>APIs where clients legitimately batch; anywhere you want burst and rate as separate knobs; variable-cost endpoints</td></tr>
-  <tr><td>Leaky bucket (queue)</td><td>Queue of pending requests</td><td>Exact output rate</td><td>Smoothed, not rejected</td><td>Shaping traffic <em>towards</em> a fragile downstream — it queues and paces rather than rejecting, at the cost of added latency</td></tr>
+  <tr><td>GCRA (generic cell rate algorithm)</td><td>1 timestamp (the "theoretical arrival time")</td><td>Exact, same behaviour as a token bucket</td><td>Allows a configured burst</td><td>You want token-bucket semantics in the smallest possible state, or a ready-made library or Redis module; see Brandur's write-up</td></tr>
+  <tr><td>Leaky bucket (queue)</td><td>Queue of pending requests</td><td>Exact output rate</td><td>Smoothed, not rejected</td><td>Shaping traffic <em>towards</em> a fragile downstream — it queues and paces rather than rejecting, at the cost of added latency. (Used as a <em>meter</em> that counts and rejects instead of queueing, it behaves like a token bucket.)</td></tr>
 </table>
 
 <h3>Where the limiter lives</h3>
@@ -248,7 +260,7 @@ function allow(state, now, limit, windowMs) {
     <text class="sm" x="16" y="158">but only the innermost layer knows what the request actually costs.</text>
     <text class="sm rd" x="16" y="240">each layer rejects a different attacker: volumetric abuse, quota overrun, and expensive-query exhaustion</text>
   </svg>
-  <figcaption>These are complementary, not alternatives. Dropping at the edge is 1000x cheaper; only the service knows that this particular query will scan 40 million rows.</figcaption>
+  <figcaption>These are complementary, not alternatives. Dropping at the edge is orders of magnitude cheaper (a rough figure); only the service knows that this particular query will scan 40 million rows.</figcaption>
 </figure>
 
 <h3>The distributed problem: one limit, many nodes</h3>
@@ -262,7 +274,7 @@ function allow(state, now, limit, windowMs) {
   <tr><th>Approach</th><th>Accuracy</th><th>Added latency</th><th>Failure mode</th></tr>
   <tr><td><b>Central Redis</b> — every node does an atomic INCR or Lua script</td><td>Exact (single serialisation point)</td><td>~0.3-1 ms same-AZ, 1-2 ms cross-AZ, on <em>every</em> request</td><td>Redis is now on the critical path for 100% of traffic. Needs a fail-open policy and replication</td></tr>
   <tr><td><b>Local buckets, limit/N per node</b></td><td>Poor under uneven load — a node with 3x traffic throttles at a third of the intended rate while others sit idle</td><td>Zero</td><td>Degrades quietly; gets worse as N grows and during deploys when N changes</td></tr>
-  <tr><td><b>Local buckets + async reconciliation</b> (gossip, or periodic flush to Redis every 100-500 ms)</td><td>Approximate: overshoot bounded by (nodes × per-node drift) per sync interval</td><td>Zero on the request path</td><td>Overshoot spikes during a sync outage, but the limiter keeps working — this is the design most large gateways actually run</td></tr>
+  <tr><td><b>Local buckets + async reconciliation</b> (gossip, or periodic flush to Redis every 100-500 ms)</td><td>Approximate: overshoot bounded by (nodes × per-node drift) per sync interval</td><td>Zero on the request path</td><td>Overshoot spikes during a sync outage, but the limiter keeps working. Cloudflare describes counting in each PoP and incrementing asynchronously, off the request path; Stripe describes Redis-backed token buckets. Pick by how much overshoot you can tolerate</td></tr>
   </table>
 <p>
   If you do go to Redis, the operation must be <b>atomic</b>. This is wrong:
@@ -272,25 +284,33 @@ if (n === 1) await redis.expire(key, 60); <span class="c">// crash between these
 <p>
   A key that never expires is a key whose counter never resets — the user
   is banned forever. Do the whole read-modify-write in one round trip with
-  a Lua script (Redis executes it atomically), which also collapses two
-  RTTs into one:
+  a Lua script (Redis executes it atomically in one round trip). For a plain
+  fixed-window counter you do not even need Lua: <code>INCR</code> followed by
+  <code>EXPIRE key 60 NX</code> (the NX option exists since Redis 7.0, and
+  sets the expiry only if none is set) inside one <code>MULTI</code>/<code>EXEC</code>
+  or pipeline is also atomic. The token-bucket script below needs Lua because
+  it reads, computes and writes:
 </p>
-<pre><code><span class="c">-- KEYS[1] = bucket key, ARGV = now_ms, refill_per_sec, capacity, cost</span>
+<pre><code><span class="c">-- KEYS[1] = bucket key, ARGV = refill_per_sec, capacity, cost</span>
 <span class="c">-- Returns {allowed, tokens_remaining}. One round trip, atomic, no race.</span>
 local st   = redis.call('HMGET', KEYS[1], 'tokens', 'ts')
-local now  = tonumber(ARGV[1])
-local rate = tonumber(ARGV[2])
-local cap  = tonumber(ARGV[3])
-local cost = tonumber(ARGV[4])
+<span class="c">-- Time comes from Redis, not the caller: client clocks skew, and a client</span>
+<span class="c">-- that sends a far-future "now" would refill its own bucket. (TIME inside</span>
+<span class="c">-- scripts needs Redis 5+.)</span>
+local t    = redis.call('TIME')
+local now  = tonumber(t[1]) * 1000 + math.floor(tonumber(t[2]) / 1000)
+local rate = tonumber(ARGV[1])
+local cap  = tonumber(ARGV[2])
+local cost = tonumber(ARGV[3])
 
 local tokens = tonumber(st[1]) or cap
 local ts     = tonumber(st[2]) or now
-tokens = math.min(cap, tokens + ((now - ts) / 1000) * rate)
+tokens = math.min(cap, tokens + (math.max(0, now - ts) / 1000) * rate)
 
 local allowed = 0
 if tokens &gt;= cost then tokens = tokens - cost; allowed = 1 end
 
-redis.call('HMSET', KEYS[1], 'tokens', tokens, 'ts', now)
+redis.call('HSET', KEYS[1], 'tokens', tokens, 'ts', now)
 redis.call('PEXPIRE', KEYS[1], math.ceil((cap / rate) * 1000) + 1000)
 return { allowed, tokens }</code></pre>
 <div class="warn">
@@ -328,7 +348,8 @@ return { allowed, tokens }</code></pre>
 <ul>
   <li><b>429 Too Many Requests</b> for a client exceeding its quota. Use <b>503 with Retry-After</b> for server-side overload shedding — the distinction tells the client whether the problem is theirs or yours.</li>
   <li><b>Retry-After: 12</b> (seconds, or an HTTP date). The single most valuable header: it converts guesswork into a schedule. Compute it from the limiter itself, as the token-bucket code above does.</li>
-  <li><b>Standard quota headers on <em>every</em> response, not just rejections</b> — <code>RateLimit-Limit</code>, <code>RateLimit-Remaining</code>, <code>RateLimit-Reset</code>. A well-behaved client slows down before it gets rejected, which is strictly better for both sides.</li>
+  <li><b>Quota headers on <em>every</em> response, not just rejections.</b> The IETF's <code>draft-ietf-httpapi-ratelimit-headers</code> (revision 11, May 2026) is still an Internet-Draft, not an RFC; it defines <code>RateLimit</code> and <code>RateLimit-Policy</code>. The older trio <code>RateLimit-Limit</code>, <code>RateLimit-Remaining</code>, <code>RateLimit-Reset</code> (and the <code>X-RateLimit-*</code> variants) is widely deployed but not a standard, so document whichever you pick. A well-behaved client slows down before it gets rejected, which is strictly better for both sides.</li>
+  <li><b>Hard versus soft limits.</b> A hard limit rejects. A soft limit lets the request through but queues it, degrades it, or marks it low priority. Decide per limiter which one a breach deserves.</li>
   <li><b>Never 200 with an error body.</b> Clients and their HTTP libraries key retry behaviour off the status code.</li>
 </ul>
 <p>
@@ -366,6 +387,35 @@ async function callWithRetry(fn, maxAttempts = 6) {
   threshold. Even with a server hint, add a small random offset if
   thousands of clients share the same reset instant.
 </p>
+<p>
+  Retries also compound across layers. If each of three layers makes up to 3
+  attempts (2 retries), one user action can become 3 × 3 × 3 = <b>27</b>
+  calls at the bottom; the Google SRE book's "3 retries" example is 4 × 4 × 4 =
+  <b>64</b>. Two defences from the SRE book: a per-client <b>retry budget</b>
+  (retry only while retries are under about 10% of your requests, which holds
+  the amplification near 1.1x instead of nearly 3x), and
+  <b>client-side adaptive throttling</b> (once requests exceed K times the
+  accepted count over a two-minute window, K = 2 by default, start rejecting
+  locally with rising probability). Both make the client part of the limiter.
+</p>
+
+<h3>Limit concurrency, not just rate</h3>
+<p>
+  A rate limit bounds arrivals; it does not bound work in flight. Little's law
+  says in-flight requests = arrival rate × latency. At 200 requests/s and
+  250 ms each, about 50 are in flight. Let the dependency slow to 5 seconds and
+  the <em>same</em> 200/s means 1,000 in flight, with exhausted threads and
+  connection pools, while the rate limiter happily reports that nobody
+  exceeded their quota. That is why Stripe, in its published write-up, runs four
+  mechanisms rather than one: a request-rate limiter, a <b>concurrent-requests
+  limiter</b> (cap on in-progress requests per user), and two load shedders
+  (one reserving fleet capacity for critical endpoints, one dropping
+  lower-priority traffic when workers are saturated). Cost-based limits
+  (charging tokens by estimated work, as the variable-cost bucket above does)
+  and request criticality (the SRE book tags requests from CRITICAL_PLUS down to
+  SHEDDABLE so overload sheds the least important first) are the same idea at
+  finer grain.
+</p>
 
 <h3>Recognizing it in an unseen problem</h3>
 <ul>
@@ -383,8 +433,23 @@ async function callWithRetry(fn, maxAttempts = 6) {
     <li>Explain why a fixed window can let through up to 2x its limit at the boundary, and why the sliding window counter doesn't have that flaw.</li>
     <li>Trace a token bucket by hand for a given capacity and refill rate, including computing <code>retryAfter</code> for a request that arrives with an empty bucket.</li>
     <li>Match each algorithm to its use case: login attempts, general-purpose API quotas, an API where clients legitimately batch, and shaping traffic into a fragile downstream.</li>
+    <li>Compute in-flight requests from arrival rate and latency (Little's law), and say why that needs a concurrency limit on top of a rate limit.</li>
     <li>Describe the stale-previous-window bug in the sliding window counter and why the adjacency guard (checking the previous window is truly the one before) fixes it.</li>
     <li>State, unprompted, whether your limiter fails open or fails closed when its datastore is unreachable, and why fail-open to a local backstop bucket is the usual answer.</li>
   </ul>
+</div>
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://stripe.com/blog/rate-limiters" rel="noopener noreferrer">Stripe: scaling your API with rate limiters</a> — token buckets in Redis, the concurrent-requests limiter and the two load shedders</li>
+    <li><a href="https://blog.cloudflare.com/counting-things-a-lot-of-different-things/" rel="noopener noreferrer">Cloudflare: counting things, a lot of different things</a> — the sliding window counter, its measured error, and asynchronous per-PoP counting</li>
+    <li><a href="https://datatracker.ietf.org/doc/draft-ietf-httpapi-ratelimit-headers/" rel="noopener noreferrer">IETF draft: RateLimit header fields for HTTP</a> — still a draft; defines RateLimit and RateLimit-Policy</li>
+    <li><a href="https://sre.google/sre-book/handling-overload/" rel="noopener noreferrer">Google SRE book: handling overload</a> — client-side adaptive throttling, criticality and retry budgets</li>
+    <li><a href="https://brandur.org/rate-limiting" rel="noopener noreferrer">Brandur: rate limiting and GCRA</a> — the one-timestamp generic cell rate algorithm</li>
+    <li><a href="https://redis.io/docs/latest/commands/expire/" rel="noopener noreferrer">Redis documentation: EXPIRE</a> — the NX option (Redis 7.0 onward)</li>
+    <li><a href="https://redis.io/docs/latest/commands/hmset/" rel="noopener noreferrer">Redis documentation: HMSET</a> — deprecated since Redis 4.0 in favour of HSET</li>
+    <li><a href="https://redis.io/docs/latest/commands/time/" rel="noopener noreferrer">Redis documentation: TIME</a> — server clock for limiter scripts</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees.</p>
 </div>`,
 };

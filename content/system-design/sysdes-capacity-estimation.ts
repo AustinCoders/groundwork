@@ -9,7 +9,7 @@ export const sysdesCapacityEstimation: Chapter = {
   practice: [],
   ready: true,
   subtitle:
-    "The whiteboard arithmetic that turns hand-waving into a design — no calculator, under two minutes, out loud.",
+    "The whiteboard arithmetic that turns hand-waving into a design — no calculator, about three minutes, out loud.",
   body: `<h3>Why they make you do arithmetic</h3>
 <p>
   Capacity estimation looks like a party trick and is actually the load-bearing
@@ -39,7 +39,7 @@ export const sysdesCapacityEstimation: Chapter = {
   <tr><td>Seconds in a day</td><td>86,400</td><td>100,000 = 10<sup>5</sup></td><td>Rate estimates come out ~14% low. Irrelevant next to a 3× peak multiplier.</td></tr>
   <tr><td>Seconds in a month</td><td>2,592,000</td><td>2.5 × 10<sup>6</sup></td><td>Under 4% off.</td></tr>
   <tr><td>Seconds in a year</td><td>31,536,000</td><td>3 × 10<sup>7</sup></td><td>~5% low. (The famous mnemonic: π × 10<sup>7</sup>.)</td></tr>
-  <tr><td>Days in 5 years</td><td>1,825</td><td>2,000</td><td>~10% high — conservative, which is the right direction for storage.</td></tr>
+  <tr><td>Days in 5 years</td><td>1,825</td><td>2,000</td><td>~10% high — conservative, which is the right direction for storage. (The worked example below uses the exact 1,825 to keep its totals checkable.)</td></tr>
   <tr><td>1 KB / MB / GB / TB / PB</td><td>2<sup>10</sup>, 2<sup>20</sup>, 2<sup>30</sup>, 2<sup>40</sup>, 2<sup>50</sup></td><td>10<sup>3</sup>, 10<sup>6</sup>, 10<sup>9</sup>, 10<sup>12</sup>, 10<sup>15</sup></td><td>7% low at GB, 10% at TB. Say "I'm using powers of ten" once and move on.</td></tr>
   <tr><td>Peak-to-average traffic</td><td>varies</td><td>2-3× (10× if event-driven: ticket sales, live sport, New Year)</td><td>State which one you chose and why.</td></tr>
   <tr><td>Fraction of DAU concurrent at peak</td><td>varies</td><td>10-25%</td><td>Only matters for connection-oriented systems.</td></tr>
@@ -83,7 +83,7 @@ export const sysdesCapacityEstimation: Chapter = {
     <text class="sm" x="560" y="60"  text-anchor="middle">4. storage/day</text>
     <text class="sm" x="560" y="78"  text-anchor="middle">writes × bytes</text>
     <text class="sm" x="80"  y="170" text-anchor="middle">5. storage / 5 yr</text>
-    <text class="sm" x="80"  y="188" text-anchor="middle">× 2,000 × replicas</text>
+    <text class="sm" x="80"  y="188" text-anchor="middle">× 365 × 5 × copies</text>
     <text class="sm" x="240" y="170" text-anchor="middle">6. bandwidth</text>
     <text class="sm" x="240" y="188" text-anchor="middle">bytes/s → Gbps</text>
     <text class="sm" x="400" y="170" text-anchor="middle">7. cache RAM</text>
@@ -104,32 +104,42 @@ export const sysdesCapacityEstimation: Chapter = {
 </p>
 
 <h3>Numbers worth memorizing</h3>
+<p class="sub">
+  These are <b>rounded planning numbers</b>, not measurements. They blend the
+  original list usually credited to Jeff Dean (and, before him, Peter Norvig)
+  with Colin Scott's 2020 extrapolation, and the two disagree in places: the
+  original has an L1 reference at 0.5 ns, a branch mispredict at 5 ns, a
+  mutex at 25 ns, 1 MB read from memory at 250 µs, and a 150 ms round trip
+  between California and the Netherlands; the 2020 extrapolation has L1 at 1 ns, 1 MB from memory at 3 µs, an SSD random read at
+  16 µs and a disk seek at 3 ms. Memorise the orders of magnitude, not the
+  digits.
+</p>
 <table>
-  <tr><th>Operation</th><th>Time</th><th>Anchor</th></tr>
-  <tr><td>L1 cache reference</td><td>1 ns</td><td>the unit everything else is measured in</td></tr>
-  <tr><td>Branch mispredict</td><td>3 ns</td><td></td></tr>
-  <tr><td>L2 cache reference</td><td>4 ns</td><td></td></tr>
-  <tr><td>Mutex lock/unlock, uncontended</td><td>20 ns</td><td></td></tr>
+  <tr><th>Operation</th><th>Time (rounded)</th><th>Anchor</th></tr>
+  <tr><td>L1 cache reference</td><td>~1 ns</td><td>the unit everything else is measured in</td></tr>
+  <tr><td>Branch mispredict</td><td>~3-5 ns</td><td></td></tr>
+  <tr><td>L2 cache reference</td><td>~4-7 ns</td><td></td></tr>
+  <tr><td>Mutex lock/unlock, uncontended</td><td>~20-25 ns</td><td></td></tr>
   <tr><td>Main memory reference</td><td>100 ns</td><td>100× slower than L1 — this is why cache locality wins</td></tr>
-  <tr><td>Compress 1 KB</td><td>2 µs</td><td>compression is nearly always cheaper than the network hop it saves</td></tr>
-  <tr><td>Read 1 MB sequentially from RAM</td><td>~50 µs</td><td>≈ 20 GB/s</td></tr>
-  <tr><td>SSD random read (NVMe, with queueing)</td><td>~100 µs</td><td>~16 µs is the flash; the rest is the software stack</td></tr>
+  <tr><td>Compress 1 KB</td><td>~2 µs</td><td>compression is nearly always cheaper than the network hop it saves</td></tr>
+  <tr><td>Read 1 MB sequentially from RAM</td><td>~50 µs</td><td>≈ 20 GB/s on current servers; the old list says 250 µs, and a naive extrapolation says 3 µs</td></tr>
+  <tr><td>SSD random read (NVMe, with queueing)</td><td>~100 µs</td><td>ultra-low-latency flash does ~10-20 µs; ordinary TLC NVMe is typically 50 µs and up, and the rest is the software stack</td></tr>
   <tr><td>Read 1 MB from NVMe SSD</td><td>~300 µs</td><td>≈ 3 GB/s</td></tr>
-  <tr><td>Round trip within one datacenter</td><td>0.5 ms</td><td>your budget for a service-to-service hop</td></tr>
-  <tr><td>Read 1 MB sequentially from spinning disk</td><td>~10 ms</td><td>≈ 100 MB/s</td></tr>
-  <tr><td>Disk seek (HDD)</td><td>~10 ms</td><td>why random I/O on HDD is a design error, not a tuning problem</td></tr>
-  <tr><td>Round trip US coast to coast</td><td>~50 ms</td><td>4,800 km at 200,000 km/s in fibre = 24 ms each way. Physics, not engineering.</td></tr>
-  <tr><td>Round trip US to Europe</td><td>~80 ms</td><td></td></tr>
-  <tr><td>Round trip US to India / Australia</td><td>~200 ms</td><td>the reason "just put it in one region" fails a global product</td></tr>
+  <tr><td>Round trip within one availability zone</td><td>~0.5 ms</td><td>your budget for a service-to-service hop; cross-AZ in one region is 1-2 ms</td></tr>
+  <tr><td>Read 1 MB sequentially from spinning disk</td><td>~10 ms</td><td>≈ 100 MB/s (the old list says 20 ms)</td></tr>
+  <tr><td>Disk seek (HDD)</td><td>~3-10 ms</td><td>why random I/O on HDD is a design error, not a tuning problem</td></tr>
+  <tr><td>Round trip US east to US west</td><td>~60-70 ms</td><td>the straight-line floor is 4,800 km at 200,000 km/s in fibre = 24 ms each way, ~48 ms round trip; real routes are longer. Physics sets the floor, not engineering.</td></tr>
+  <tr><td>Round trip US east to western Europe</td><td>~70-90 ms</td><td>New York to London is about 70 ms</td></tr>
+  <tr><td>Round trip US east to India / Singapore / Australia</td><td>~200-230 ms</td><td>the reason "just put it in one region" fails a global product</td></tr>
 </table>
 <table>
   <tr><th>Component</th><th>Throughput to assume</th><th>Note</th></tr>
-  <tr><td>Single Postgres/MySQL box, indexed and warm</td><td>5,000-10,000 simple reads/s; 1,000-5,000 writes/s</td><td>Writes are fsync-bound. A single box with an NVMe WAL goes higher; do not claim more than 10k writes/s without saying why.</td></tr>
-  <tr><td>Read replica</td><td>Adds another 5,000-10,000 reads/s each</td><td>Replicas scale reads, never writes. Say this every time you add one.</td></tr>
-  <tr><td>Redis, single instance</td><td>~100,000 ops/s; up to ~1,000,000 pipelined</td><td>Single-threaded for command execution — one hot key cannot be scaled by adding RAM.</td></tr>
+  <tr><td>Single relational primary (Postgres/MySQL), modern NVMe server, warm cache</td><td>Planning figure: ~20,000 simple indexed point reads/s and ~5,000 committed writes/s</td><td>Conservative planning numbers, not limits. With batching and group commit, strong hardware does several times more (reports of 100,000+ reads/s and 20,000-50,000 writes/s), and OpenAI has described running ChatGPT on one Azure PostgreSQL primary with about 50 replicas at millions of aggregate queries per second. Plan a change when sustained reads pass ~20k/s or sustained writes pass ~5k/s, and treat ~20k+ sustained writes as "I am sharding or queueing now". Measure; do not assume.</td></tr>
+  <tr><td>Read replica</td><td>Planning figure: another ~20,000 simple reads/s each</td><td>Replicas scale reads, never writes. Say this every time you add one.</td></tr>
+  <tr><td>Redis, single instance</td><td>~100,000 ops/s; up to ~1,000,000 pipelined (the Redis docs show 70,000-190,000 non-pipelined and 1.5 million+ pipelined on commodity hardware)</td><td>Single-threaded for command execution — one hot key cannot be scaled by adding RAM.</td></tr>
   <tr><td>Application server, real JSON handler with a DB call</td><td>1,000-5,000 rps</td><td>Use 1,000 for sizing. It is conservative and defensible.</td></tr>
   <tr><td>nginx / envoy serving static or proxying</td><td>50,000+ rps per box</td><td></td></tr>
-  <tr><td>Kafka broker</td><td>100 MB/s-1 GB/s sustained</td><td>Sequential disk writes; the bottleneck is usually the NIC.</td></tr>
+  <tr><td>Kafka broker</td><td>Planning figure: ~100 MB/s sustained per broker</td><td>Sequential disk writes; the bottleneck is usually the NIC or disk. Tuned clusters on better hardware do several times more; LinkedIn's well-known 2014 benchmark reached about 190 MB/s across three small machines.</td></tr>
   <tr><td>One 10 / 25 Gbps NIC</td><td>1.25 / 3.1 GB/s</td><td>Divide by 8. Bandwidth is quoted in bits, storage in bytes — this is the classic slip.</td></tr>
   <tr><td>One commodity server, 2026</td><td>64-128 cores, 256 GB-2 TB RAM, tens of TB NVMe</td><td>Bigger than most candidates assume. Vertical scaling gets you further than the folklore suggests.</td></tr>
 </table>
@@ -202,6 +212,18 @@ SERVERS
   interesting results: metadata is small enough for one machine, and blob
   egress is large enough to make the CDN non-negotiable.
 </p>
+<p class="sub">
+  Three refinements worth one sentence each. <b>Cache sizing:</b> a common
+  rule of thumb is that about 20% of the data serves about 80% of the reads,
+  so start by caching the hottest fifth of a day's read volume (a planning
+  figure, not a law; measure the real skew). <b>Headroom:</b> the flat "×2"
+  above is a planning multiplier; in practice you load-test to the point
+  where p99 latency starts to climb and keep peak utilisation around 60-70%
+  of that, because queues grow faster than linearly as a server fills. <b>Cost:</b> once
+  you have a byte count and a server count, multiply by a price (storage per
+  GB-month, egress per GB, instance-hours) before you propose something
+  exotic; the bill is often what decides between two designs that both fit.
+</p>
 <div class="warn">
   <span class="ttl">⚠ The three misses that cost candidates the most</span>
   <b>(1)</b> Forgetting replication and derived data — a 55 PB answer that
@@ -242,10 +264,10 @@ STORAGE (if you keep only the undelivered)
 
 CONNECTIONS
   concurrent at peak       500e6 x 20% = 100,000,000 sockets
-  memory / socket          ~10 KB                <span class="c">// kernel buffers + per-user state</span>
-  total connection RAM     1e8 x 1e4 = 10^12 B = 1 TB
-  sockets / gateway box    1,000,000             <span class="c">// tuned kernel, event-driven runtime</span>
-  gateway boxes            100, call it 150 with headroom
+  memory / socket          10-50 KB, use 20 KB   <span class="c">// kernel buffers + TLS + per-user state</span>
+  total connection RAM     1e8 x 2e4 = 2 x 10^12 B = 2 TB
+  sockets / gateway box    250,000               <span class="c">// planning figure 250k-500k; not the 2M+ record below</span>
+  gateway boxes            100e6 / 250e3 = 400, call it 500 with headroom
 
 BANDWIDTH
   peak                     1.8e6 deliveries/s x 200 B = 3.6 x 10^8 B/s
@@ -253,10 +275,18 @@ BANDWIDTH
 
 ROUTING TABLE (which gateway holds each live socket?)
   100e6 entries x 50 B  =  5 GB                  <span class="c">// fits in one Redis. Do not use a database.</span></code></pre>
+<p class="sub">
+  On the per-box number: WhatsApp reported more than 2 million simultaneous
+  connections on one tuned FreeBSD/Erlang server in 2012 (24 logical CPUs,
+  about 96 GB of RAM, roughly 15 KB per connection by the arithmetic). That is
+  a record, not a plan: use 250,000-500,000 per box unless you are told the
+  hardware and the runtime.
+</p>
 <div class="say">
   <span class="ttl">Say it like this →</span> "The interesting result is that
-  chat is a <em>connection</em> problem, not a bandwidth problem — 3 Gbps at
-  peak is nothing, but 100 million concurrent sockets means the gateway tier
+  chat is a <em>connection</em> problem, not a bandwidth problem — for text,
+  3 Gbps at peak is nothing (photos, voice notes and video go down the blob
+  and CDN path and would dwarf it, so I'd estimate them separately), but 100 million concurrent sockets means the gateway tier
   is stateful and I need a routing layer to find a user's socket. And notice
   that 'do we retain history?' swings storage from 40 GB to 4.4 PB a year.
   That is a product decision with a five-order-of-magnitude infrastructure
@@ -278,7 +308,7 @@ ROUTING TABLE (which gateway holds each live socket?)
     <text class="sm" x="275" y="88"  text-anchor="middle">CDN edge</text>
     <text class="sm" x="275" y="106" text-anchor="middle">95% hit ratio</text>
     <text class="sm" x="545" y="92"  text-anchor="middle">origin + object store</text>
-    <text class="sm" x="545" y="110" text-anchor="middle">55 PB, erasure coded</text>
+    <text class="sm" x="545" y="110" text-anchor="middle">55 PB raw, ~77 PB coded</text>
     <text class="sm rd" x="163" y="82" text-anchor="middle">~960 Gbps</text>
     <text class="sm" x="410" y="82"  text-anchor="middle">~48 Gbps</text>
     <text class="lbl" x="16" y="168" style="font-size:14px">the hit ratio is the whole design: at 80% the origin needs ~190 Gbps,</text>
@@ -290,12 +320,12 @@ ROUTING TABLE (which gateway holds each live socket?)
 <h3>How each number cashes out as a design decision</h3>
 <table>
   <tr><th>The number you computed</th><th>What it rules out</th><th>What it rules in</th></tr>
-  <tr><td>60,000 peak reads/sec</td><td>A single database primary serving reads</td><td>Cache tier in front, read replicas behind, ~120 stateless app servers</td></tr>
+  <tr><td>60,000 peak reads/sec</td><td>A single database primary serving reads (60k/s is three times the ~20k/s planning figure)</td><td>Cache tier in front, read replicas behind, ~120 stateless app servers</td></tr>
   <tr><td>100:1 read:write ratio</td><td>Optimising for write throughput; normalised schemas with joins on the read path</td><td>Denormalised read models, aggressive caching, fan-out-on-write (see the case-studies chapter)</td></tr>
   <tr><td>30 TB/day of blobs</td><td>Storing images in the database. Ever.</td><td>Object storage + CDN; the DB holds a 500-byte row with a URL</td></tr>
   <tr><td>18 TB of metadata over 5 years</td><td>Sharding into 100 shards on day one</td><td>One primary + replicas, with a shard key chosen now and applied later</td></tr>
   <tr><td>~1 Tbps peak egress</td><td>Serving from origin, single-region</td><td>CDN with an explicit hit-ratio target; cache keys designed for hit ratio</td></tr>
-  <tr><td>100 M concurrent sockets</td><td>Stateless HTTP polling; a stateless gateway tier</td><td>Persistent connections, sticky routing, a socket-location registry, graceful drain on deploy</td></tr>
+  <tr><td>100 M concurrent sockets</td><td>Stateless HTTP polling; a stateless gateway tier</td><td>Persistent connections (~400-500 gateway boxes at 250k each), sticky routing, a socket-location registry, graceful drain on deploy</td></tr>
   <tr><td>5 GB routing table</td><td>A database lookup on every message delivery</td><td>In-memory table, replicated, rebuilt from connection state on restart</td></tr>
   <tr><td>600,000 peak writes/sec</td><td>A relational primary; synchronous cross-region replication</td><td>LSM-tree store partitioned by conversation id, tunable quorum (see the sharding and consistency chapters)</td></tr>
 </table>
@@ -317,7 +347,7 @@ ROUTING TABLE (which gateway holds each live socket?)
   <tr><td>2</td><td>Avg feed reads/sec</td><td>(200M × 10 opens) ÷ 100,000 s</td><td>20,000/s</td></tr>
   <tr><td>3</td><td>Peak feed reads/sec</td><td>20,000 × 3</td><td>60,000/s — sizes the fleet</td></tr>
   <tr><td>4</td><td>Blob storage/day</td><td>20M posters × 1.5 MB</td><td>30 TB/day</td></tr>
-  <tr><td>5</td><td>Blob storage / 5 yr</td><td>30 TB × 365 × 5, × 3 replicas, × 1.4 erasure coding</td><td>~77 PB — chooses object storage, not the DB</td></tr>
+  <tr><td>5</td><td>Blob storage / 5 yr</td><td>30 TB × 365 × 5 = 54.75 PB raw; then × 3 replicas, or × 1.4 erasure coding</td><td>~55 PB raw; ~165 PB replicated or ~77 PB erasure-coded — chooses object storage, not the DB</td></tr>
   <tr><td>6</td><td>Peak bandwidth</td><td>2 MB/page × 60,000 pages/s × 8 bits/byte</td><td>~960 Gbps — makes a CDN non-negotiable</td></tr>
   <tr><td>7</td><td>Cache RAM</td><td>7 days × 20M posts/day × 500 B</td><td>70 GB — trivial, fits a small Redis tier</td></tr>
   <tr><td>8</td><td>Servers</td><td>60,000 peak rps ÷ 1,000 rps/box, × 2 headroom</td><td>~120 app servers</td></tr>
@@ -325,10 +355,11 @@ ROUTING TABLE (which gateway holds each live socket?)
 <p class="sub">
   Each step is an input to the next: step 3 sizes the fleet used in step 8,
   and step 6 is the number that rules out serving images from origin at all.
-  Notice the four-order-of-magnitude spread between the "easy" number (step
-  7's 70 GB, one small Redis cluster) and the "hard" one (step 6's 960 Gbps,
-  an entire CDN strategy) — that gap is the actual point of doing all eight
-  steps instead of stopping at storage.
+  Notice how differently the answers land: step 7's 70 GB is one small Redis
+  cluster, while step 6's 960 Gbps is roughly forty 25-gigabit links, an
+  entire CDN strategy. Quantities in different units are not comparable by
+  size, which is exactly why you do all eight steps instead of stopping at
+  storage.
 </p>
 
 <h3>Recognizing it in an unseen problem</h3>
@@ -349,6 +380,19 @@ ROUTING TABLE (which gateway holds each live socket?)
     <li>Can you explain why a "how would this scale" prompt needs both a storage AND a bandwidth calculation?</li>
     <li>Can you name the three most common estimation mistakes — forgetting replication, confusing bits and bytes, sizing from average load — and catch them in your own numbers?</li>
     <li>Can you say, for a given system, which computed number is merely large versus which one is genuinely hard (e.g. 18 TB of metadata versus 100M concurrent sockets)?</li>
+    <li>Can you state the 5-year blob storage for the photo example as raw, 3x replicated and erasure-coded (about 55, 165 and 77 PB) and say why the planning figure for one relational primary (20,000 reads/s, 5,000 writes/s) is a starting point rather than a limit?</li>
   </ul>
+</div>
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://gist.github.com/jboner/2841832" rel="noopener noreferrer">Latency Numbers Every Programmer Should Know (original list)</a> — the original figures credited to Jeff Dean and Peter Norvig, including the 150 ms transatlantic round trip</li>
+    <li><a href="https://colin-scott.github.io/personal_website/research/interactive_latency.html" rel="noopener noreferrer">Interactive latency numbers by year (Colin Scott)</a> — the 2020 extrapolation: 1 MB from memory in 3 µs, SSD read 16 µs, disk seek 3 ms</li>
+    <li><a href="https://openai.com/index/scaling-postgresql/" rel="noopener noreferrer">OpenAI: scaling PostgreSQL</a> — one primary plus many replicas at very high aggregate query rates, so single-primary limits are far above planning figures</li>
+    <li><a href="https://blog.whatsapp.com/1-million-is-so-2011" rel="noopener noreferrer">WhatsApp: 1 million is so 2011</a> — 2.28 million simultaneous connections on one tuned server, 24 CPUs and about 96 GB of RAM</li>
+    <li><a href="https://redis.io/docs/latest/operate/oss_and_stack/management/optimization/benchmarks/" rel="noopener noreferrer">Redis benchmarks documentation</a> — non-pipelined versus pipelined throughput and the single-threaded command execution caveat</li>
+    <li><a href="https://engineering.linkedin.com/kafka/benchmarking-apache-kafka-2-million-writes-second-three-cheap-machines" rel="noopener noreferrer">LinkedIn: benchmarking Kafka on three cheap machines</a> — the throughput numbers behind the per-broker planning figure</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees.</p>
 </div>`,
 };

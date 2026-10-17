@@ -32,7 +32,7 @@ export const sysdesTradeoffThinking: Chapter = {
   different signal.
 </p>
 <figure>
-  <svg viewBox="0 0 640 290" class="dg" role="img" aria-label="A frontier chart plotting consistency strength against write availability and latency, with eventual, quorum, single-primary and consensus designs sitting along an achievable curve, and an unreachable point above it labelled strong plus always-writable plus fast">
+  <svg viewBox="0 0 640 290" class="dg" role="img" aria-label="A frontier chart plotting consistency strength against write availability and latency, with eventual, tunable quorum, consensus and single-primary-with-synchronous-replica designs sitting along an achievable curve, and an unreachable point above it labelled strong plus always-writable plus fast">
     <g class="rough">
       <path class="ln" d="M70,240 L610,240" />
       <path class="ln" d="M70,30 L70,240" />
@@ -46,13 +46,13 @@ export const sysdesTradeoffThinking: Chapter = {
     <text class="sm" x="70"  y="22"  >write availability and low latency ↑</text>
     <text class="sm" x="610" y="264" text-anchor="end">stronger consistency →</text>
     <text class="sm" x="146" y="64"  >eventual — Dynamo-style</text>
-    <text class="sm" x="286" y="114" >quorum — R + W &gt; N</text>
-    <text class="sm" x="416" y="166" >single primary + sync replica</text>
-    <text class="sm" x="508" y="206" text-anchor="end">consensus — Raft, Spanner</text>
+    <text class="sm" x="286" y="114" >tunable quorum — R + W &gt; N</text>
+    <text class="sm" x="416" y="166" >consensus — Raft, Spanner</text>
+    <text class="sm" x="508" y="206" text-anchor="end">single primary + sync replica</text>
     <text class="sm rd" x="470" y="40" text-anchor="middle">unreachable</text>
     <text class="lbl" x="70" y="286" style="font-size:14px">you choose a point on the curve; you do not get to leave it</text>
   </svg>
-  <figcaption>Every named system is a point on the same frontier, not a different quality of engineering. When someone asks for the red dot, your job is to say which axis they are willing to give up on — that conversation is the design.</figcaption>
+  <figcaption>Every named system is a point on the same frontier, not a different quality of engineering. When someone asks for the red dot, your job is to say which axis they are willing to give up on — that conversation is the design. Placement is approximate: quorum reads and writes with R + W &gt; N are not linearizable on their own (concurrent writes, sloppy quorums and clock-based conflict resolution all leak), and consensus sits above a lone primary with a synchronous replica because a majority survives one failure while a single sync replica stalls commits whenever it is down.</figcaption>
 </figure>
 
 <h3>The six axes, and the sentence for each</h3>
@@ -67,8 +67,8 @@ export const sysdesTradeoffThinking: Chapter = {
   <tr>
     <td>Consistency vs availability</td>
     <td>Every reader sees the latest write</td>
-    <td>Writes must fail or block during a partition; higher write latency</td>
-    <td>"During a partition I'd rather reject the write than serve a stale balance — this is a money path."</td>
+    <td>During a partition, the side that cannot reach a quorum must fail or block some operations (writes, and often reads too); even with no partition, higher latency (the PACELC refinement of CAP)</td>
+    <td>"During a partition I'd rather reject the withdrawal than approve it against a possibly stale balance — this is a money path."</td>
   </tr>
   <tr>
     <td>Latency vs throughput</td>
@@ -80,7 +80,7 @@ export const sysdesTradeoffThinking: Chapter = {
     <td>Cost vs performance</td>
     <td>Headroom, replicas, more cache, more regions</td>
     <td>Money, linearly, forever — plus the opportunity cost of the team maintaining it</td>
-    <td>"A second region roughly doubles infra spend to move availability from three nines to four. Is that worth it for this product?"</td>
+    <td>"A second region roughly doubles infrastructure spend and helps only against regional failures; a single region across availability zones is already roughly 99.95-99.99%, and many outages are deploys and config changes that a second region does not fix. Is that worth it for this product?"</td>
   </tr>
   <tr>
     <td>Complexity vs capability</td>
@@ -108,6 +108,18 @@ export const sysdesTradeoffThinking: Chapter = {
   product pivots, the optimisation becomes the migration. Saying "this shard
   key assumes we always query by user, and if we later need query-by-region
   that's a full reshard" is the kind of foresight that reads as staff-level.
+</p>
+<p>
+  Two more pieces of vocabulary make the price tag concrete. Reliability has
+  a currency: the <b>SLO and its error budget</b>. A 99.9% monthly target
+  leaves about 43 minutes of allowed unavailability; a risky launch, a
+  migration or a deploy freeze is a decision about how that budget gets spent,
+  and each extra nine costs more than the last, so the question is whether the
+  revenue it protects justifies it. And price decisions by <b>reversibility</b>:
+  a feature flag, a cache or an index is cheap to be wrong about, while a shard
+  key, a public API field or a choice of primary datastore is a one-way door
+  that deserves the arithmetic. Include how you would roll the change back, and
+  how you would find out within minutes that it was wrong.
 </p>
 
 <h3>The four-beat move that makes a decision defensible</h3>
@@ -221,10 +233,16 @@ export const sysdesTradeoffThinking: Chapter = {
   consumer groups over the same stream, or sustained throughput a database
   cannot absorb. It does not earn its place because a request is
   asynchronous — a table with a status column and a worker polling it handles
-  thousands of jobs per second and can be operated by anyone. If you propose a
+  on the order of a thousand or more jobs per second (each job costs at least
+  three writes: enqueue, claim, complete, so it spends your ~5,000 writes/sec
+  budget three times over) and can be operated by anyone. If you propose a
   queue, say which of the three properties you need. If none apply, say "a
   jobs table is enough here, and I'd move to a broker when we need replay or a
-  second consumer."
+  second consumer." Also keep your facts current: Kafka 4.x runs on KRaft
+  only, and since Kafka 4.2 its share groups (KIP-932, "queues for Kafka")
+  give queue-style consumption, while RabbitMQ Streams offer non-destructive
+  replay. "Needs replay" no longer points at exactly one product, so name the
+  property, then the product.
 </div>
 <p>
   The counterintuitive part: <b>proposing the simple thing is a higher-risk,
@@ -285,16 +303,16 @@ export const sysdesTradeoffThinking: Chapter = {
 </div>
 
 <h4>Dry run: the four-beat move, then pushback, on one concrete decision</h4>
-<p class="sub">Scenario: 200M DAU, 5 push notifications/user/day. Should the fan-out run on Kafka or a jobs table?</p>
+<p class="sub">Scenario: 5M DAU, 5 push notifications/user/day. Should the fan-out run on Kafka or a jobs table?</p>
 <table>
   <tr><th>Step</th><th>Applied here</th><th>Conclusion</th></tr>
-  <tr><td>1. Assumption</td><td>200M × 5 / 100,000 s = 10,000/sec average, ~30,000/sec at peak (×3); today there is exactly one consumer, the push sender</td><td>"Thousands per second, one consumer" — none of Kafka's justifying properties are present yet</td></tr>
-  <tr><td>2. Choice</td><td>A Postgres jobs table with a status column and a worker pool polling it</td><td>Matches the chapter's own claim: a polled jobs table "handles thousands of jobs per second and can be operated by anyone"</td></tr>
+  <tr><td>1. Assumption</td><td>5M × 5 = 25M/day; at ~12 per second per million per day that is ~300 jobs/sec average, ~900/sec at peak (×3). A jobs table costs at least 3 writes per job, so ~2,700 writes/sec at peak, under the ~5,000 writes/sec planning figure. Today there is exactly one consumer, the push sender</td><td>"Hundreds of jobs per second, one consumer" — none of Kafka's justifying properties are present yet. (At 200M DAU the same arithmetic gives ~10,000/sec average and ~90,000 writes/sec at peak: you would be queueing now, and the answer flips.)</td></tr>
+  <tr><td>2. Choice</td><td>A Postgres jobs table with a status column and a worker pool polling it</td><td>Matches the chapter's own claim: a polled jobs table handles on the order of a thousand or more jobs per second and can be operated by anyone, and peak here is under that</td></tr>
   <tr><td>3. Cost</td><td>No durable replay if a consumer ever needs to reprocess history; polling adds latency a broker's push model wouldn't</td><td>Naming the cost, not just the choice, is what beats 1-2 alone don't do</td></tr>
-  <tr><td>4. Trigger</td><td>"I'd move to Kafka the moment we need durable replay, a second independent consumer group on this stream, or throughput a polled table can't absorb"</td><td>Restates the chapter's exact three conditions for when Kafka earns its place</td></tr>
+  <tr><td>4. Trigger</td><td>"I'd move to a log or broker the moment we need durable replay, a second independent consumer group on this stream, or throughput a polled table can't absorb — roughly when peak jobs approach 1,500 per second"</td><td>Restates the chapter's exact three conditions for when Kafka earns its place</td></tr>
   <tr><td>5. Pushback</td><td>Interviewer: "Email digests next quarter will need the same event stream." Restate: "So a second consumer is coming, not hypothetical."</td><td>Restating first, per the disagree-well move, confirms what was actually heard</td></tr>
   <tr><td>6. Locate the axis</td><td>This isn't a new fact — it's beat 4's own trigger condition ("a second independent consumer group") arriving on a known timeline</td><td>The disagreement is about timing, not about whether the trigger is real</td></tr>
-  <tr><td>7. Update or hold</td><td>Update explicitly: switch the choice to Kafka now, before the fan-out ships, rather than migrating under load later</td><td>"Be conspicuous about it" — the chapter's own guidance for genuinely updating on new information</td></tr>
+  <tr><td>7. Update or hold</td><td>Update explicitly: switch the choice to Kafka (or another log-based broker) now, before the fan-out ships, rather than migrating under load later</td><td>"Be conspicuous about it" — the chapter's own guidance for genuinely updating on new information</td></tr>
 </table>
 <p class="sub">
   Nothing in row 7 contradicts row 2 — the jobs table was the right call
@@ -324,6 +342,21 @@ export const sysdesTradeoffThinking: Chapter = {
     <li>Complete an "it depends" with both the branching condition and what you would do in each branch.</li>
     <li>Apply the three-part disagree-well move to interviewer pushback: restate their point, locate the disagreement on an axis, then update explicitly or hold with a stated cost.</li>
     <li>For a given DAU/QPS number, say whether the bigger risk is under-engineering or over-engineering, and name the specific component you'd cut or add.</li>
+    <li>Say what an error budget is, and name one decision you would classify as a reversible two-way door and one as a one-way door.</li>
   </ul>
+</div>
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://dbmsmusings.blogspot.com/2010/04/problems-with-cap-and-yahoos-little.html" rel="noopener noreferrer">Problems with CAP, and Yahoo's little known NoSQL system</a> — Daniel Abadi's original statement of PACELC: latency versus consistency when there is no partition</li>
+    <li><a href="https://sre.google/sre-book/embracing-risk/" rel="noopener noreferrer">Google SRE book: embracing risk</a> — error budgets, and weighing the cost of each extra nine against what it protects</li>
+    <li><a href="https://sre.google/sre-book/service-level-objectives/" rel="noopener noreferrer">Google SRE book: service level objectives</a> — SLIs, SLOs and how targets are chosen</li>
+    <li><a href="https://www.postgresql.org/docs/current/high-availability.html" rel="noopener noreferrer">PostgreSQL docs: high availability and replication</a> — a synchronous standby delays commits until it confirms</li>
+    <li><a href="https://kafka.apache.org/42/getting-started/upgrade/" rel="noopener noreferrer">Apache Kafka 4.2 upgrade notes</a> — KRaft-only since 4.0, and share groups (KIP-932) production-ready in 4.2</li>
+    <li><a href="https://www.rabbitmq.com/docs/streams" rel="noopener noreferrer">RabbitMQ streams</a> — an append-only log with non-destructive consumption and replay</li>
+    <li><a href="https://openai.com/index/scaling-postgresql/" rel="noopener noreferrer">OpenAI: scaling PostgreSQL</a> — why "simple, with a stated trigger" can reach very far</li>
+    <li><a href="https://martin.kleppmann.com/2026/03/24/designing-data-intensive-applications-2e.html" rel="noopener noreferrer">Designing Data-Intensive Applications, second edition</a> — the reference for the consistency, replication and consensus tradeoffs named here</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees.</p>
 </div>`,
 };

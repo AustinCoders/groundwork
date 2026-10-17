@@ -81,6 +81,15 @@ export const sysdesCapTheoremDepth: Chapter = {
   causal consistency) sit below it and are perfectly compatible with staying
   available during a partition. "AP" does not mean "no guarantees."
 </p>
+<p class="sub">
+  CAP's own authors and critics say the same. Brewer's 2012 retrospective
+  calls "2 of 3" misleading, because partitions are rare and the choice can
+  differ by operation and data. Kleppmann's critique points out that the
+  formal definitions are ambiguous, that "available" in the proof does not
+  match what operators mean, and proposes reasoning about how operation
+  latency responds to network delay instead. Treat CAP as a vocabulary for
+  partition-time behaviour, not a classification scheme for products.
+</p>
 
 <h3>What CP actually looks like from the client's seat</h3>
 <p>
@@ -106,9 +115,9 @@ export const sysdesCapTheoremDepth: Chapter = {
   <tr><th>Time</th><th>Event</th><th>Majority side (3 nodes)</th><th>Minority side (2 nodes)</th></tr>
   <tr><td>t=0</td><td>Network partition occurs; the old leader happens to be on the majority side</td><td>Continues as leader, no interruption</td><td>Isolated, cannot reach the leader</td></tr>
   <tr><td>t=0 to t=1000 ms</td><td>A client on the minority side sends a write</td><td>—</td><td>No quorum reachable — write fails with a timeout, not a wrong answer</td></tr>
-  <tr><td>t≈1000 ms</td><td>Minority nodes hit their election timeout (etcd default 1000 ms)</td><td>—</td><td>A node becomes a candidate but can win at most 2 of 5 votes — no majority, election stalls</td></tr>
+  <tr><td>t≈1000 ms</td><td>Minority nodes hit their election timeout (etcd default 1000 ms)</td><td>—</td><td>With PreVote (etcd's <code>--pre-vote</code> flag defaults to true in 3.6) a node first asks "would you vote for me?", gets at most 2 of 5 yes answers, and does not bump its term. In plain Raft it becomes a candidate, increments its term, and keeps retrying with ever higher terms</td></tr>
   <tr><td>t=1000 ms onward</td><td>Majority-side clients keep reading and writing</td><td>Fully available, fully consistent — commits proceed normally</td><td>Still returning errors or refusing to serve</td></tr>
-  <tr><td>partition heals</td><td>Minority nodes see a higher term from the majority leader</td><td>Unchanged — still leader</td><td>Steps down to follower, catches up on the log</td></tr>
+  <tr><td>partition heals</td><td>Minority nodes contact the majority leader</td><td>With PreVote or CheckQuorum: unchanged, the leader's heartbeats pull the minority back as followers at the current term. In plain Raft, a rejoining node with an inflated term forces the healthy leader to step down and triggers a needless election</td><td>Steps down to follower, catches up on the log</td></tr>
 </table>
 <p class="sub">
   Nothing in this timeline ever returns a stale or wrong value — that is the
@@ -120,12 +129,22 @@ export const sysdesCapTheoremDepth: Chapter = {
 
 <h3>What AP actually looks like from the client's seat</h3>
 <p>
-  Now the same partition in Cassandra at consistency level ONE, or DynamoDB
-  with eventually-consistent reads, or Riak. Both sides accept writes.
-  Every client gets a 200. Nothing appears wrong — and that is precisely
-  the danger, because the damage is deferred to reconciliation time. When
-  the partition heals you have two divergent histories, and something has
-  to merge them:
+  Now the same partition in Cassandra at consistency level ONE, or Riak.
+  Both sides accept writes. Every client gets a 200. Nothing appears wrong
+  — and that is precisely the danger, because the damage is deferred to
+  reconciliation time. When the partition heals you have two divergent
+  histories, and something has to merge them:
+</p>
+<p class="sub">
+  DynamoDB is a common wrong example here. Inside a Region, each partition
+  has a single Multi-Paxos leader and writes need a majority of its three
+  replicas, so it does not let both sides of a split accept writes; only the
+  eventually consistent <em>reads</em> are served by any replica. Divergent
+  writes appear in global tables in their default multi-Region eventual
+  consistency mode, where last-writer-wins resolves conflicts. Since 30 June
+  2025 global tables can instead be created with multi-Region strong
+  consistency, which replicates synchronously to at least one other Region
+  and trades write latency for a zero recovery point.
 </p>
 <table>
   <tr><th>Reconciliation strategy</th><th>What it costs</th><th>Reach for it when…</th></tr>
@@ -141,9 +160,11 @@ export const sysdesCapTheoremDepth: Chapter = {
   <em>this</em> data, you have taken AP's availability without paying AP's
   price. "Eventually consistent" describes an outcome, not a mechanism.
   The canonical example is the Dynamo shopping cart: under LWW, a partition
-  loses items a customer added; modelled as an OR-Set, the merge is a union
-  and the worst case is a deleted item reappearing — which Amazon judged
-  strictly better than a lost sale.
+  loses items a customer added. The Dynamo paper instead merges divergent
+  carts by union, so the worst case is a deleted item reappearing — which
+  Amazon judged strictly better than a lost sale. (A real OR-Set CRDT goes
+  further: it tags each add, so a remove deletes only the adds it has seen
+  and deletions are not resurrected.)
 </div>
 
 <h3>PACELC — the framing that actually predicts database behaviour</h3>
@@ -157,31 +178,32 @@ export const sysdesCapTheoremDepth: Chapter = {
 </p>
 <table>
   <tr><th>Hop</th><th>Typical RTT</th><th>What that means for a quorum write</th></tr>
-  <tr><td>Same rack / same AZ</td><td>0.2–0.5 ms</td><td>Consistency is nearly free; take it.</td></tr>
-  <tr><td>Cross-AZ, same region</td><td>0.5–2 ms</td><td>Still cheap. This is why a 3-AZ quorum inside one region is the default shape for most CP systems.</td></tr>
-  <tr><td>us-east ↔ us-west</td><td>60–70 ms</td><td>A cross-region quorum write costs at minimum the second-fastest RTT. Your write p50 now starts at ~35 ms.</td></tr>
-  <tr><td>us-east ↔ eu-west</td><td>75–90 ms</td><td>Global linearizable writes are tens of milliseconds, permanently. No amount of engineering removes this.</td></tr>
+  <tr><td>Same AZ</td><td>~0.5 ms</td><td>Consistency is nearly free; take it.</td></tr>
+  <tr><td>Cross-AZ, same region</td><td>1–2 ms</td><td>Still cheap. This is why a 3-AZ quorum inside one region is the default shape for most CP systems.</td></tr>
+  <tr><td>us-east ↔ us-west</td><td>60–70 ms</td><td>The leader needs an ack from its nearest follower (a majority of 3 is the leader plus one), and that is a full round trip, not the one-way delay. If the nearest follower is across the continent, the write p50 starts at 60–70 ms, before any disk or queueing time.</td></tr>
+  <tr><td>us-east ↔ eu-west</td><td>70–90 ms</td><td>Global linearizable writes cost a transatlantic round trip, permanently. No amount of engineering removes this; you can only place the quorum so the nearest follower is close (three regions, leader near the writers).</td></tr>
 </table>
 <p>
   Spanner is the clearest illustration of choosing consistency in the
   "else" branch and simply paying: it is PC/EC, it commits through Paxos
   across regions, and it adds a deliberate <b>commit wait</b> of roughly
-  twice the TrueTime clock uncertainty (single-digit milliseconds) so that
-  commit timestamps are globally meaningful. Writes land in the tens of
-  milliseconds. In exchange you get external consistency across a planet,
-  and read-only transactions at a past timestamp that any replica can serve
-  locally with no coordination at all.
+  twice the TrueTime clock uncertainty (a few milliseconds, per the Spanner
+  paper) so that commit timestamps are globally meaningful. Writes land in
+  the tens of milliseconds. In exchange you get external consistency across
+  a planet, and reads at a past timestamp that a nearby replica can serve
+  without talking to the leader, provided that replica has caught up to the
+  read timestamp (otherwise the read waits for it, so it can still block).
 </p>
 
 <h3>Where real systems sit — the honest, tunable version</h3>
 <table>
   <tr><th>System</th><th>PACELC</th><th>Why, and where the knob is</th></tr>
   <tr><td><b>Postgres</b>, single primary + sync standby</td><td>PC/EC</td><td>With <code>synchronous_commit = on</code> and a named standby, a commit waits for the standby. Lose the standby and writes block — that is CP behaving as advertised. Switch to <code>local</code>/async and you become EL with replica reads stale by the replication lag (sub-ms idle, seconds-to-minutes under a heavy write burst or a long-running query on the replica).</td></tr>
-  <tr><td><b>DynamoDB</b></td><td>PA/EL (default)<br />PC/EC (per read)</td><td>Reads are eventually consistent by default and served by any of the three AZ replicas. Pass <code>ConsistentRead=true</code> and you route to the leader replica: 2× the read cost, a few extra ms, and unavailable if that partition has no leader. The letter is chosen <em>per API call</em>.</td></tr>
-  <tr><td><b>Cassandra / ScyllaDB</b></td><td>PA/EL (default)<br />PC/EC (QUORUM)</td><td>Consistency level is per query. ONE is fast and stale-tolerant; QUORUM read + QUORUM write gives R + W &gt; N and single-key linearizability-ish behaviour at the cost of latency; LOCAL_QUORUM keeps you inside one DC. Note that sloppy quorums with hinted handoff can violate the overlap guarantee during a partition — worth knowing.</td></tr>
+  <tr><td><b>DynamoDB</b></td><td>Writes: consensus (PC)<br />Reads: EL by default, EC per read</td><td>Each partition has a Multi-Paxos leader; writes and strongly consistent reads go through it, so a partition that loses its leader majority cannot accept writes. Reads are eventually consistent by default and may be served by any of the three AZ replicas. Pass <code>ConsistentRead=true</code> and you route to the leader: 2× the read cost, a few extra ms, and unavailable if that partition has no leader. The letter is chosen <em>per API call</em>. Global tables add a second axis: the default multi-Region eventual consistency mode resolves conflicts by last-writer-wins, while multi-Region strong consistency (GA 30 June 2025) is synchronous.</td></tr>
+  <tr><td><b>Cassandra / ScyllaDB</b></td><td>PA/EL (default)<br />PC/EC (QUORUM)</td><td>Consistency level is per query. ONE is fast and stale-tolerant; LOCAL_QUORUM keeps you inside one DC. QUORUM read + QUORUM write gives R + W &gt; N, so a read sees the latest acknowledged write in the normal case, but it is not linearizable: concurrent writes are resolved by timestamp (last-write-wins) and a partially failed write can surface later. Linearizable compare-and-set needs lightweight transactions (Paxos-based, SERIAL consistency). Cassandra does not use sloppy quorums: a hint satisfies a write only at CL=ANY, so at QUORUM the acks must come from real replicas.</td></tr>
   <tr><td><b>Spanner / CockroachDB</b></td><td>PC/EC</td><td>Paxos/Raft per range, majority commit. Consistency is not negotiable; latency is the bill. Follower reads and bounded-staleness reads are the escape hatch when you want EL for a specific query.</td></tr>
-  <tr><td><b>ZooKeeper</b></td><td>PC/EC (writes)</td><td>Zab totally orders writes through a leader with a majority. But <b>reads are served locally by any follower and may be stale</b> — you must call <code>sync()</code> first for a linearizable read. Saying this unprompted is a strong signal.</td></tr>
-  <tr><td><b>etcd</b></td><td>PC/EC</td><td>Raft; linearizable reads by default via read-index. Minority members return errors. This is the coordination substrate for Kubernetes precisely because it refuses to guess.</td></tr>
+  <tr><td><b>ZooKeeper</b></td><td>PC/EC (writes)</td><td>Zab totally orders writes through a leader with a majority. But <b>reads are served locally by whichever server the client is connected to and may be stale</b> — call <code>sync()</code> first when you must see the latest committed write. Within one session reads never go backwards, which is a session guarantee, not linearizability. Saying this unprompted is a strong signal.</td></tr>
+  <tr><td><b>etcd</b></td><td>PC/EC</td><td>Raft; linearizable reads by default via read-index, atomic multi-key transactions, and documented strict serializability for KV operations. Minority members return errors. Opt-in <code>serializable</code> reads trade that for latency and may be stale. This is the coordination substrate for Kubernetes precisely because it refuses to guess.</td></tr>
   <tr><td><b>MongoDB</b></td><td>PC/EC or PA/EL</td><td><code>w:majority</code> + <code>readConcern:majority</code> is CP-ish; <code>w:1</code> plus reads from secondaries is AP-ish and can lose acknowledged writes on failover (rollback files).</td></tr>
   <tr><td><b>Redis</b> (Sentinel or Cluster)</td><td>Neither, honestly</td><td>Replication is always asynchronous, so a failover can lose writes the primary already acknowledged. It is AP-shaped <em>without</em> AP's conflict resolution — the losing writes just vanish. <code>WAIT</code> reduces the window but is not a quorum commit. Treat Redis as a cache or a lossy store, and never as your source of truth for money.</td></tr>
 </table>
@@ -235,6 +257,15 @@ export const sysdesCapTheoremDepth: Chapter = {
   <tr><td>W=3, R=1</td><td>Reads are single-hop fast; any node down makes writes unavailable.</td><td>Read-dominated config data written rarely.</td></tr>
   <tr><td>W=1, R=3</td><td>Writes are single-hop fast; any node down makes reads unavailable.</td><td>Rarely correct — usually a sign the workload wants W=2, R=2.</td></tr>
 </table>
+<p class="sub">
+  The overlap argument assumes the W acks come from the key's real
+  replicas. Riak and the original Dynamo relax that with sloppy quorums and
+  hinted handoff, which keeps writes available during a partition but can
+  leave a read set and a write set disjoint. Cassandra only does so at
+  CL=ANY. And even with strict quorums, R + W &gt; N is not linearizability:
+  concurrent writes need a conflict rule, and a failed write may still
+  surface later.
+</p>
 <div class="say">
   <span class="ttl">Say it like this →</span> "I'll run N=3 across three
   AZs with quorum reads and writes for the orders table — cross-AZ RTT is
@@ -284,5 +315,23 @@ export const sysdesCapTheoremDepth: Chapter = {
     <li>Can you explain what R + W &gt; N guarantees, and one thing it does NOT guarantee?</li>
     <li>Can you classify one real system's PACELC behaviour and name where its tunable knob lives (e.g. DynamoDB's ConsistentRead)?</li>
   </ul>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://www.infoq.com/articles/cap-twelve-years-later-how-the-rules-have-changed/" rel="noopener noreferrer">Brewer, CAP twelve years later</a> — why "2 of 3" misleads and how partition mode and recovery work</li>
+    <li><a href="https://arxiv.org/abs/1509.05393" rel="noopener noreferrer">Kleppmann, A critique of the CAP theorem</a> — ambiguities in the formal definitions and a latency-based alternative</li>
+    <li><a href="https://www.cs.umd.edu/~abadi/papers/abadi-pacelc.pdf" rel="noopener noreferrer">Abadi, PACELC</a> — the latency-versus-consistency trade-off when there is no partition</li>
+    <li><a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" rel="noopener noreferrer">Dynamo paper (SOSP 2007)</a> — sloppy quorums, hinted handoff, and the shopping cart merge</li>
+    <li><a href="https://brooker.co.za/blog/2022/07/12/dynamodb.html" rel="noopener noreferrer">Brooker, DynamoDB paper review</a> — a Multi-Paxos leader per partition and who serves which reads</li>
+    <li><a href="https://aws.amazon.com/about-aws/whats-new/2025/06/amazon-dynamo-db-global-tables-multi-region-strong-consistency-generally-available/" rel="noopener noreferrer">AWS: global tables with multi-Region strong consistency</a> — general availability on 30 June 2025</li>
+    <li><a href="https://cassandra.apache.org/doc/latest/cassandra/architecture/dynamo.html" rel="noopener noreferrer">Cassandra architecture: Dynamo</a> — hints satisfy only consistency level ANY</li>
+    <li><a href="https://etcd.io/docs/v3.6/learning/api_guarantees/" rel="noopener noreferrer">etcd API guarantees</a> — strict serializability, transactions, and stale serializable reads</li>
+    <li><a href="https://etcd.io/docs/v3.6/op-guide/configuration/" rel="noopener noreferrer">etcd configuration flags</a> — pre-vote default, 100 ms heartbeat and 1000 ms election timeout</li>
+    <li><a href="https://zookeeper.apache.org/doc/current/zookeeperProgrammers.html" rel="noopener noreferrer">ZooKeeper programmer's guide</a> — local reads can be stale; use sync when it matters</li>
+    <li><a href="https://research.google/pubs/spanner-googles-globally-distributed-database-2/" rel="noopener noreferrer">Spanner paper (OSDI 2012)</a> — TrueTime, commit wait and external consistency</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees.</p>
 </div>`,
 };

@@ -61,7 +61,7 @@ export const sysdesLoadBalancingDepth: Chapter = {
     <text class="sm" x="160" y="180" text-anchor="middle">millions of conn/sec, direct server return possible</text>
     <text class="sm rd" x="160" y="200" text-anchor="middle">cannot retry, cannot route by path</text>
     <text class="sm" x="480" y="160" text-anchor="middle">terminates TLS, parses every request</text>
-    <text class="sm" x="480" y="180" text-anchor="middle">10-50k rps per core, adds 0.5-2 ms</text>
+    <text class="sm" x="480" y="180" text-anchor="middle">adds roughly 0.5-2 ms (planning figure)</text>
     <text class="sm gr" x="480" y="200" text-anchor="middle">retries, path routing, header injection</text>
     <text class="sm" x="320" y="228" text-anchor="middle">on HTTP/2 only L7 balances individual streams — L4 pins them all to one backend</text>
   </svg>
@@ -73,9 +73,11 @@ export const sysdesLoadBalancingDepth: Chapter = {
   An L4 balancer picks a backend once, per <em>connection</em>, from the
   5-tuple, then shovels bytes. It never decrypts, never parses, and therefore
   costs almost nothing — a software L4 on commodity hardware handles millions
-  of concurrent flows and tens of gigabits, and with direct server return the
+  of concurrent flows and tens of gigabits, and with direct server return (DSR) the
   response never traverses the balancer at all, which matters enormously for
-  video and download workloads. An L7 proxy terminates the connection, does
+  video and download workloads. The trade-off is that a pure L4 hop hides the
+  client IP from the backend unless you use DSR or pass it along with the
+  PROXY protocol header. An L7 proxy terminates the connection, does
   the TLS handshake, parses the HTTP request, and makes a fresh decision per
   <em>request</em>.
 </p>
@@ -87,18 +89,18 @@ export const sysdesLoadBalancingDepth: Chapter = {
   <tr><td>TLS termination, mTLS, cert management</td><td>Passthrough only</td><td>Yes</td><td>Centralised certificates; backends speak plaintext or mesh mTLS</td></tr>
   <tr><td>Inject <code>X-Forwarded-For</code>, trace ids</td><td>No</td><td>Yes</td><td>Without it, every backend log shows the balancer's IP and distributed tracing has no root span</td></tr>
   <tr><td>Rate limiting, WAF, response caching, compression</td><td>No</td><td>Yes</td><td>Per-route policy in one place</td></tr>
-  <tr><td>Cost and latency</td><td>Microseconds; near-zero CPU</td><td>0.5-2 ms; a full RSA-2048 handshake is 1-2 ms of CPU, ECDSA far less, and session resumption removes most of it</td><td>At a million rps the L7 fleet is a real line item</td></tr>
+  <tr><td>Cost and latency</td><td>Microseconds; near-zero CPU</td><td>Roughly 0.5-2 ms (a planning figure; benchmark your proxy and request mix); a full RSA-2048 handshake is 1-2 ms of CPU, ECDSA far less, and session resumption removes most of it</td><td>At a million rps the L7 fleet is a real line item</td></tr>
   <tr><td>Reach for this when…</td><td>Raw throughput, non-HTTP protocols, huge egress, or as the first tier absorbing volume before L7</td><td>Anything HTTP where you need routing, retries, observability or per-request fairness — which is nearly every application tier</td><td>Real systems use both, in that order</td></tr>
 </table>
 
 <h3>Algorithms, and when each one is right</h3>
 <table>
   <tr><th>Algorithm</th><th>How it decides</th><th>Fails when</th><th>Reach for this when…</th></tr>
-  <tr><td><b>Round robin</b></td><td>Next backend in sequence</td><td>Requests vary in cost, or backends vary in size — a slow request pins a server while the rotation keeps feeding it</td><td>Homogeneous backends and roughly uniform request cost. Still the correct default for a stateless web tier</td></tr>
+  <tr><td><b>Round robin</b></td><td>Next backend in sequence</td><td>Requests vary in cost, or backends vary in size — a slow request pins a server while the rotation keeps feeding it</td><td>Homogeneous backends and roughly uniform request cost. Still a sound default for a stateless web tier (and Envoy's stock policy)</td></tr>
   <tr><td><b>Weighted round robin</b></td><td>Proportional to a static weight</td><td>Weights are guesses and go stale after a hardware refresh</td><td>Mixed instance sizes, or ramping a canary from 1% to 100%</td></tr>
   <tr><td><b>Least connections</b></td><td>Fewest in-flight connections</td><td>Each balancer only sees its own connections; with many balancers they all pick the same "idle" backend at once and stampede it</td><td>Long-lived or highly variable requests: WebSockets, streaming, uploads, slow queries</td></tr>
   <tr><td><b>Least request / peak-EWMA</b></td><td>Fewest outstanding requests, weighted by observed latency</td><td>Needs per-backend latency state; reacts to noise if the window is too short</td><td>Service-to-service traffic behind a mesh, where a degraded backend must be shed automatically</td></tr>
-  <tr><td><b>Power of two choices</b></td><td>Pick two backends at random, send to the less loaded of the two</td><td>Almost nothing — this is the quiet best-in-class default</td><td>Any fleet with multiple independent balancers. It needs no global state and drops the expected maximum load from roughly log n to log log n</td></tr>
+  <tr><td><b>Power of two choices</b></td><td>Pick two backends at random, send to the less loaded of the two</td><td>It needs a load signal per backend, and a stale signal still herds; weighted backends need a variant</td><td>Any fleet with multiple independent balancers. It needs no global state and drops the expected maximum load from roughly log n / log log n to log log n</td></tr>
   <tr><td><b>Consistent hashing</b></td><td>Hash a key onto a ring; take the first node clockwise</td><td>Hot keys — one popular key means one hot backend, permanently</td><td>Cache tiers, sharded stateful services, session affinity without cookies. See below</td></tr>
   <tr><td><b>Source-IP hash</b></td><td>Hash the client IP</td><td>Carrier-grade NAT — an entire mobile network arrives as one IP and lands on one backend</td><td>Rarely. Use a cookie or a real key instead</td></tr>
 </table>
@@ -108,8 +110,11 @@ export const sysdesLoadBalancingDepth: Chapter = {
   the busiest server with roughly log n / log log n times the average queue;
   sampling just two and taking the shorter queue reduces that to about log log
   n — an exponential improvement bought with zero coordination. It is why
-  modern proxies default to it rather than to true least-connections, and
-  mentioning it is a cheap, genuine seniority signal.
+  modern proxies offer it instead of true least-connections: Envoy's
+  least-request policy, for instance, samples two random hosts by default
+  (<code>choice_count</code> of 2) and picks the one with fewer active
+  requests, though you opt in to it and round robin is the stock policy.
+  Mentioning it is a cheap, genuine seniority signal.
 </p>
 <div class="warn">
   <span class="ttl">⚠ A brand-new backend is not ready for its full share</span>
@@ -118,7 +123,7 @@ export const sysdesLoadBalancingDepth: Chapter = {
   connection pool and un-JITed code. It gets slow, fails a health check, drops
   out, comes back, and oscillates. Every serious balancer has a slow-start or
   warm-up setting that ramps a new backend's weight from near zero to full
-  over 30-120 seconds. It is one config line and it is the difference between
+  over tens of seconds to a couple of minutes. It is one config line and it is the difference between
   a deploy nobody notices and a deploy that pages someone.
 </div>
 
@@ -239,11 +244,19 @@ export const sysdesLoadBalancingDepth: Chapter = {
   10/8 = 1.25× the load — 87.5% CPU. Two more go slow and get ejected. The
   last six carry 10/6 = 1.67× — <b>117% of capacity</b> — and the fleet is
   gone. The health check did precisely what it was told: it removed capacity
-  from a system whose problem was insufficient capacity. Real balancers guard
-  this with a <b>panic threshold</b> (Envoy's default: if fewer than 50% of
-  hosts are healthy, ignore health status entirely and spread load across all
-  of them, on the theory that a struggling backend beats no backend). The
-  other half of the fix belongs to the backend: enforce a concurrency limit
+  from a system whose problem was insufficient capacity. Real balancers have
+  two guardrails, and it matters which one fires when. The first is a
+  <b>cap on ejections</b>: Envoy's outlier detection ejects a host after 5
+  consecutive 5xx responses, for a base time of 30 seconds, and by default
+  will not eject more than 10% of the cluster, so passive ejection alone cannot
+  walk the fleet from ten hosts down to six. The second is the <b>panic
+  threshold</b> (Envoy's default is 50%: when fewer than half of the hosts are
+  available, ignore health status and spread load across all of them, on the
+  theory that a struggling backend beats no backend). Note the arithmetic: six
+  of ten healthy is 60%, so the default panic threshold would <em>not</em> yet
+  have engaged in the story above; it would only trigger at four of ten.
+  Which is why you want both guardrails, plus the capacity headroom to survive
+  them. The other half of the fix belongs to the backend: enforce a concurrency limit
   and shed excess load with a fast 503 rather than degrading into timeouts,
   so an overloaded server stays <em>honest</em> instead of looking dead.
 </div>
@@ -257,7 +270,10 @@ export const sysdesLoadBalancingDepth: Chapter = {
   overhead. Past a certain fleet size you stop having every proxy probe every
   backend and move to a control plane that distributes health state (xDS-style
   push), which is also what makes ejection decisions consistent across the
-  fleet instead of each proxy holding its own private opinion.
+  fleet instead of each proxy holding its own private opinion. Large
+  client-to-backend meshes also limit connection counts with
+  <em>deterministic subsetting</em>, as described in the Google SRE book:
+  each client talks to a fixed-size subset of backends.
 </p>
 
 <h3>Connection draining, and the deploy that drops requests</h3>
@@ -269,7 +285,7 @@ export const sysdesLoadBalancingDepth: Chapter = {
 <ul>
   <li><b>1. Stop being advertised.</b> Fail the readiness probe or deregister from the pool. New requests stop arriving — <em>eventually</em>.</li>
   <li><b>2. Wait for that to propagate.</b> This is the step everyone omits. The balancer may not notice for a full health-check interval, and in Kubernetes the SIGTERM and the endpoint removal happen <em>concurrently</em>, so a container that exits promptly on SIGTERM will drop requests that were routed a moment earlier. A <code>preStop</code> sleep of 5-10 seconds before you begin shutting down is the standard fix.</li>
-  <li><b>3. Drain in-flight work</b> up to a deadline — 30 s for a web tier, longer for uploads. Reject anything new with a clean 503.</li>
+  <li><b>3. Drain in-flight work</b> (a "lame duck" state: still listening, but telling clients to stop sending new requests, as the Google SRE book puts it) up to a deadline — 30 s for a web tier, longer for uploads. Reject anything new with a clean 503.</li>
   <li><b>4. Close keep-alive connections deliberately.</b> Send <code>Connection: close</code> on the last response (or an HTTP/2 <code>GOAWAY</code>), otherwise a client holds an idle socket to a process that is about to vanish and its next request fails.</li>
   <li><b>5. Then exit.</b></li>
 </ul>
@@ -315,6 +331,21 @@ export const sysdesLoadBalancingDepth: Chapter = {
   first breaks when a node dies; the second just gets slower for a moment.
   Same routing trick, opposite blast radius.
 </div>
+
+<h3>Who balances the balancer?</h3>
+<p>
+  A load balancer is a single point of failure unless you make it not one.
+  The common answers, from simplest to largest: an <b>active-passive pair</b>
+  sharing a virtual IP (VRRP, as in keepalived), which fails over in seconds
+  but wastes the standby and caps throughput at one box; an <b>active-active
+  L4 tier behind ECMP</b>, where the upstream router spreads flows across many
+  identical L4 machines by hashing the 5-tuple, and consistent hashing (Google's
+  Maglev design) keeps existing connections on the same backend even as L4
+  machines come and go; and <b>anycast</b>, where many sites announce the same
+  address and BGP delivers each packet to a nearby healthy one. Managed cloud
+  balancers are exactly these designs, run for you, so "I'd use the cloud LB"
+  is a fine answer once you can say what is underneath it.
+</p>
 
 <h3>Multi-tier balancing: DNS, global, regional</h3>
 <p>
@@ -365,7 +396,7 @@ export const sysdesLoadBalancingDepth: Chapter = {
 </figure>
 <table>
   <tr><th>Tier</th><th>Chooses</th><th>Failover speed</th><th>Gotcha</th></tr>
-  <tr><td><b>DNS / GeoDNS</b></td><td>Which region's IP the client gets</td><td>Minutes, and not really yours to control</td><td>TTL is advisory. Resolvers, OSes and browsers all cache; assume 5-15 minutes of residual traffic to a withdrawn record no matter what TTL you set</td></tr>
+  <tr><td><b>DNS / GeoDNS</b></td><td>Which region's IP the client gets</td><td>Minutes, and not really yours to control</td><td>TTL is advisory. Resolvers, OSes and browsers all cache; plan for roughly 5-15 minutes of residual traffic to a withdrawn record no matter what TTL you set (a planning figure; a tail of clients can take longer)</td></tr>
   <tr><td><b>Anycast</b></td><td>Which POP the packets reach, via BGP</td><td>Seconds</td><td>Immune to DNS caching, which is why it's the preferred top tier — but a BGP reconvergence can move a flow mid-connection and reset TCP</td></tr>
   <tr><td><b>Regional L4</b></td><td>Which L7 proxy gets the flow</td><td>Seconds, per flow</td><td>Use Maglev-style consistent hashing so scaling the L4 tier doesn't reshuffle every existing connection</td></tr>
   <tr><td><b>Regional L7</b></td><td>Which backend gets each request</td><td>Immediate, per request</td><td>The only tier that can retry. Also the only tier that can be zone-aware</td></tr>
@@ -373,8 +404,9 @@ export const sysdesLoadBalancingDepth: Chapter = {
 </table>
 <p class="sub">
   One practical detail from the bottom tier that interviewers like:
-  <b>zone-aware routing</b>. Cross-AZ traffic costs real money (roughly one to
-  two cents per GB, charged in both directions) and adds a millisecond or two.
+  <b>zone-aware routing</b>. Cross-AZ traffic costs real money (AWS lists about one cent per GB in each
+  direction, so two cents per GB end to end; check your provider's current
+  price sheet) and adds 1-2 ms of round trip.
   Configuring the L7 tier to prefer backends in its own availability zone, and
   only spill across zones when the local ones are unhealthy or saturated, cuts
   both. Say it as a cost decision, because it is one, and cost awareness is
@@ -397,8 +429,22 @@ export const sysdesLoadBalancingDepth: Chapter = {
     <li>Explain why round robin can pin a fast request behind a slow one, using the R4 trace above.</li>
     <li>Compute how many keys move when a consistent-hashing ring grows from 4 to 5 nodes, versus mod-N, and say why the gap matters for a cache's hit rate.</li>
     <li>Explain why an L4 balancer produces permanent hotspots in front of gRPC or HTTP/2, while an L7 balancer doesn't.</li>
-    <li>Walk through the health-check cascade in the warning box — ten backends down to six — and say what a panic threshold does to stop it.</li>
+    <li>Walk through the health-check cascade in the warning box — ten backends down to six — and say what an ejection cap and a panic threshold each do to stop it (and why 60% healthy does not trigger a 50% panic threshold).</li>
+    <li>Say how the load balancer itself avoids being a single point of failure.</li>
     <li>Explain why sticky sessions are "affinity you depend on for correctness" while consistent hashing is "affinity you exploit for performance," and what breaks differently in each when a node dies.</li>
   </ul>
+</div>
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/load_balancing/load_balancers" rel="noopener noreferrer">Envoy: load balancers</a> — least-request with two random choices, ring hash and Maglev</li>
+    <li><a href="https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/load_balancing/panic_threshold" rel="noopener noreferrer">Envoy: panic threshold</a> — the 50% default and what happens below it</li>
+    <li><a href="https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/cluster/v3/outlier_detection.proto" rel="noopener noreferrer">Envoy: outlier detection settings</a> — consecutive 5xx, ejection time and the 10% ejection cap</li>
+    <li><a href="https://research.google/pubs/maglev-a-fast-and-reliable-software-network-load-balancer/" rel="noopener noreferrer">Maglev: a fast and reliable software network load balancer (NSDI 2016)</a> — ECMP in front of consistent-hashing L4 balancers</li>
+    <li><a href="https://sre.google/sre-book/load-balancing-datacenter/" rel="noopener noreferrer">Google SRE book: load balancing in the datacenter</a> — deterministic subsetting, lame duck state and load-weighted round robin</li>
+    <li><a href="https://www.eecs.harvard.edu/~michaelm/postscripts/tpds2001.pdf" rel="noopener noreferrer">The power of two choices in randomized load balancing (Mitzenmacher)</a> — the analysis behind sampling two backends and taking the less loaded</li>
+    <li><a href="https://aws.amazon.com/vpc/pricing/" rel="noopener noreferrer">AWS VPC pricing</a> — cross-AZ transfer charged per GB in each direction</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees.</p>
 </div>`,
 };
