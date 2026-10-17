@@ -22,10 +22,10 @@ export const sysdesShardingPartitioning: Chapter = {
 </p>
 <table>
   <tr><th>Do this first</th><th>Buys you</th><th>Runs out when…</th></tr>
-  <tr><td>Vertical scaling</td><td>A modern cloud box tops out around 400+ vCPU and 24 TB of RAM. A well-tuned Postgres on NVMe handles roughly 5–10k simple indexed reads/sec per core-rich box and low thousands of write TPS.</td><td>Price becomes superlinear, and the single-writer ceiling is fixed no matter how big the box is.</td></tr>
+  <tr><td>Vertical scaling</td><td>The biggest cloud boxes reach 896 vCPU and 32 TiB of RAM (AWS u7in-32tb). As conservative planning figures, one relational primary on NVMe with a warm cache handles about 20,000 simple indexed point reads/sec and 5,000 committed writes/sec. These are not limits: strong hardware with batching and group commit does several times more (100,000+ reads/sec and 20,000–50,000 writes/sec are reported), and OpenAI runs ChatGPT on one Azure PostgreSQL primary plus about 50 read replicas at millions of aggregate queries per second, while moving shardable write-heavy workloads elsewhere. Rule of thumb: start planning a change when sustained reads pass ~20k/s (cache, replicas) or sustained writes pass ~5k/s (partitioning or a queue), and treat 20k+ sustained writes as "you are sharding or queueing now". Measure, do not assume.</td><td>Price becomes superlinear, and the single-writer ceiling is fixed no matter how big the box is.</td></tr>
   <tr><td>Read replicas</td><td>Scales reads ~linearly. Five replicas, five times the read capacity.</td><td>Writes still all land on one primary. Replication lag becomes a correctness problem for read-your-writes.</td></tr>
-  <tr><td>Caching (see the caching chapter)</td><td>Removes 80–95% of reads for skewed workloads at ~0.3 ms per hit.</td><td>The write path and cache-miss path are unchanged; a cold cache now takes the DB down.</td></tr>
-  <tr><td>Archiving cold rows / table partitioning on one host</td><td>Keeps the hot working set in RAM. Postgres declarative partitioning and index-only scans often buy a full order of magnitude.</td><td>The <em>hot</em> set alone exceeds RAM, or write throughput exceeds one primary.</td></tr>
+  <tr><td>Caching (see the caching chapter)</td><td>Can remove most reads for skewed workloads (a planning figure is 80–95% of reads, at well under 1 ms per hit). Measure your own hit rate.</td><td>The write path and cache-miss path are unchanged; a cold cache now takes the DB down.</td></tr>
+  <tr><td>Archiving cold rows / table partitioning on one host</td><td>Keeps the hot working set in RAM. Postgres declarative partitioning lets queries prune to the hot partitions and makes dropping old data a cheap metadata operation. How much it speeds up reads depends entirely on the workload; measure before promising a number.</td><td>The <em>hot</em> set alone exceeds RAM, or write throughput exceeds one primary.</td></tr>
 </table>
 <p>
   You shard when one of three things is true: the working set no longer
@@ -59,13 +59,16 @@ export const sysdesShardingPartitioning: Chapter = {
     <text class="sm" x="150" y="218" text-anchor="middle">same rows, fewer columns each</text>
     <text class="sm" x="490" y="218" text-anchor="middle">same columns, fewer rows each</text>
   </svg>
-  <figcaption>Vertical partitioning shrinks the row so more rows fit in a cache line and in RAM; horizontal partitioning is the only one that removes the single-machine ceiling.</figcaption>
+  <figcaption>Vertical partitioning shrinks the row so more rows fit in a page and in RAM; horizontal partitioning is the only one that removes the single-machine ceiling.</figcaption>
 </figure>
 <p>
-  <b>Vertical partitioning</b> splits a table by column — move the 40 KB
-  <code>bio_text</code> and the blob out to a separate store so the hot
-  60-byte row stays cache-resident. It is cheap, reversible, and often
-  worth a 3–5× improvement in rows-per-page. Taken to its extreme across
+  <b>Vertical partitioning</b> splits a table by column — move rarely read
+  wide columns out to a separate table or store so the hot row stays small
+  and many rows fit in each page of RAM. Note that Postgres (TOAST) and
+  InnoDB already move very large values off-row automatically, so the gain
+  comes mostly from mid-sized columns (hundreds of bytes to a few KB) that
+  bloat every page; the rows-per-page improvement is whatever the ratio of
+  hot to cold bytes works out to. It is cheap and reversible. Taken to its extreme across
   services it becomes "each service owns its own database", which is the
   microservices decomposition, not a scaling technique. It never removes
   the write ceiling, because the hot table still lives on one machine.
@@ -116,7 +119,7 @@ export const sysdesShardingPartitioning: Chapter = {
 <h3>Range vs hash vs directory</h3>
 <table>
   <tr><th>Strategy</th><th>How it routes</th><th>Wins</th><th>Loses</th><th>Reach for it when…</th></tr>
-  <tr><td><b>Range</b></td><td>Sorted key space cut into contiguous intervals; a metadata service maps interval → shard.</td><td>Range scans and ordered pagination are one shard. Splits are cheap — cut a hot range in half.</td><td>Sequential keys create a permanent hotspot on the newest range.</td><td>You need ordered scans: time-series reads, "next 50 rows after X". HBase, Bigtable, Spanner, CockroachDB, MongoDB ranged sharding.</td></tr>
+  <tr><td><b>Range</b></td><td>Sorted key space cut into contiguous intervals; a metadata service maps interval → shard.</td><td>Range scans and ordered pagination are one shard. Splits are cheap — cut a hot range in half (systems like Spanner, CockroachDB, HBase and Vitess split and merge ranges online).</td><td>Sequential keys create a permanent hotspot on the newest range.</td><td>You need ordered scans: time-series reads, "next 50 rows after X". HBase, Bigtable, Spanner, CockroachDB, MongoDB ranged sharding.</td></tr>
   <tr><td><b>Hash</b></td><td><code>shard = hash(key) mod N</code>, or a token on a consistent-hashing ring.</td><td>Near-perfect distribution with no thought. Routing is a pure function — no lookup hop.</td><td>Range scans are dead (adjacent keys are on different shards). Naive <code>mod N</code> makes resizing catastrophic.</td><td>Point lookups dominate and you want zero routing state. Cassandra (Murmur3 token), DynamoDB partition key, Vitess hash vindex.</td></tr>
   <tr><td><b>Directory / lookup</b></td><td>An explicit key → shard map held in a coordination service, cached at the client.</td><td>Total control: move one noisy tenant to dedicated hardware with a single row update. Heterogeneous shard sizes are fine.</td><td>An extra hop, and the directory becomes a critical HA dependency. A stale cached map routes writes to the wrong shard — you need versioning and a redirect.</td><td>B2B SaaS with wildly uneven tenants, or any time "give this customer its own database" is a product requirement. Vitess-style keyspaces, and how most large multi-tenant apps actually work.</td></tr>
 </table>
@@ -136,7 +139,9 @@ export const sysdesShardingPartitioning: Chapter = {
   this by hashing both keys and nodes onto the same circular space
   (typically 2<sup>64</sup> or 2<sup>32</sup> points). A key belongs to the
   first node found by walking clockwise. Adding an (N+1)th node moves only
-  about 1/(N+1) of the keys — and only from its immediate successor.
+  about 1/(N+1) of the keys. With one point per node they all come from its
+  immediate clockwise successor; with virtual nodes (below) they come in
+  small slices from many nodes.
 </p>
 <figure>
   <svg viewBox="0 0 640 320" class="dg" role="img" aria-label="A consistent hashing ring with twelve virtual nodes belonging to three physical nodes A, B and C interleaved around the circle, showing a key hashing to a point on the ring and walking clockwise to the next virtual node">
@@ -187,18 +192,19 @@ export const sysdesShardingPartitioning: Chapter = {
 </figure>
 <p>
   Plain consistent hashing with one point per node has two flaws. Random
-  placement of 10 points on a circle gives wildly uneven arcs — shard sizes
-  routinely vary by 2–3×. And when a node dies, its <em>entire</em> range
+  placement of 10 points on a circle gives wildly uneven arcs — in
+  expectation the largest arc is about 2.9× the mean and the smallest about
+  0.1×, a spread of roughly 30× between the luckiest and unluckiest node. And when a node dies, its <em>entire</em> range
   falls on its single clockwise successor, which promptly gets double load
   and often dies too. Virtual nodes fix both: give each physical node V
-  positions on the ring (Dynamo used ~100–200; Cassandra's
+  positions on the ring (deployments commonly use tens to a few hundred; Cassandra's
   <code>num_tokens</code> defaulted to 256 historically and 16 in modern
   versions with the token allocation algorithm). Load variance shrinks
   roughly as 1/√V, and a departing node's data is refilled from every
   survivor in parallel. As a bonus, a machine with twice the RAM simply
   gets twice the vnodes.
 </p>
-<pre><code><span class="c">// Ring = sorted array of {token, node}. Lookup is a binary search, ~50ns.</span>
+<pre><code><span class="c">// Ring = sorted array of {token, node}. Lookup is a binary search, O(log n).</span>
 function buildRing(nodes, vnodesPerNode) {
   const ring = [];
   for (const node of nodes) {
@@ -225,26 +231,57 @@ function lookup(ring, key) {
   with all three replicas of a key on one machine.
 </p>
 
-<h4>Dry run: a 3-node ring with 4 vnodes each (positions 0–999, via MD5), then removing node B</h4>
+<p>
+  Consistent hashing with vnodes is not the only way to avoid the
+  <code>mod N</code> reshuffle. <b>Rendezvous (highest-random-weight)
+  hashing</b> scores every node against the key and picks the highest, so
+  removing a node moves only that node's keys and there is no ring to
+  maintain, at O(N) cost per lookup. <b>Jump consistent hash</b> maps a key
+  to one of N numbered buckets in O(log N) with no memory, but buckets can
+  only be added or removed at the end, which suits caches and sharded
+  stores that grow, not clusters where an arbitrary node dies.
+  <b>Bounded-load consistent hashing</b> caps each node at a multiple of the
+  average load and spills the excess to the next node, which tames hot nodes
+  in a cache fleet. All of these decide placement of keys; none helps with one
+  key that is itself too hot.
+</p>
+<p>
+  Separately, someone has to answer "which shard holds this key?" at request
+  time. There are three common shapes: the client sends to any node, which
+  forwards (Cassandra, Dynamo); a routing tier looks the key up in the shard
+  map and proxies (Vitess vtgate, mongos); or a shard-aware client library
+  caches the map and talks directly (Redis Cluster clients, Kafka producers),
+  refreshing on a redirect. Whatever you choose, the shard map is the thing
+  that needs a coordination service and versioning. Related placement tools:
+  geo-partitioning pins a row to the region of its owner for latency and data
+  residency, and co-located or interleaved tables keep a parent and its
+  children on the same shard so joins and transactions stay local.
+</p>
+
+<h4>Dry run: a 3-node ring with 4 vnodes each (positions 0–999, chosen for illustration), then removing node B</h4>
 <table>
-  <tr><th>Vnode</th><th>Position</th><th>Arc it owns (previous position, this one]</th></tr>
-  <tr><td>A3</td><td>49</td><td>(931, 49] — wraps past 999</td></tr>
-  <tr><td>A2</td><td>100</td><td>(49, 100]</td></tr>
-  <tr><td>A0</td><td>134</td><td>(100, 134]</td></tr>
-  <tr><td>C1</td><td>283</td><td>(134, 283]</td></tr>
-  <tr><td>C2</td><td>331</td><td>(283, 331]</td></tr>
-  <tr><td>B2</td><td>434</td><td>(331, 434]</td></tr>
-  <tr><td>B1</td><td>659</td><td>(434, 659]</td></tr>
-  <tr><td>C3</td><td>724</td><td>(659, 724]</td></tr>
-  <tr><td>B0</td><td>738</td><td>(724, 738]</td></tr>
-  <tr><td>B3</td><td>832</td><td>(738, 832]</td></tr>
-  <tr><td>A1</td><td>927</td><td>(832, 927]</td></tr>
-  <tr><td>C0</td><td>931</td><td>(927, 931]</td></tr>
+  <tr><th>Vnode</th><th>Position</th><th>Arc it owns (previous position, this one]</th><th>Size</th></tr>
+  <tr><td>A3</td><td>49</td><td>(931, 49] — wraps past 999</td><td>118</td></tr>
+  <tr><td>A2</td><td>100</td><td>(49, 100]</td><td>51</td></tr>
+  <tr><td>A0</td><td>134</td><td>(100, 134]</td><td>34</td></tr>
+  <tr><td>C1</td><td>283</td><td>(134, 283]</td><td>149</td></tr>
+  <tr><td>C2</td><td>331</td><td>(283, 331]</td><td>48</td></tr>
+  <tr><td>B2</td><td>434</td><td>(331, 434]</td><td>103</td></tr>
+  <tr><td>B1</td><td>659</td><td>(434, 659]</td><td>225</td></tr>
+  <tr><td>C3</td><td>724</td><td>(659, 724]</td><td>65</td></tr>
+  <tr><td>B0</td><td>738</td><td>(724, 738]</td><td>14</td></tr>
+  <tr><td>B3</td><td>832</td><td>(738, 832]</td><td>94</td></tr>
+  <tr><td>A1</td><td>927</td><td>(832, 927]</td><td>95</td></tr>
+  <tr><td>C0</td><td>931</td><td>(927, 931]</td><td>4</td></tr>
 </table>
 <p class="sub">
-  Two real keys pinned to that ring: <code>hash("user:7") = 806</code> falls
-  in B3's arc (738, 832], served by node B. <code>hash("order:1") = 975</code>
-  falls in A3's wraparound arc (931, 49], served by node A.
+  Node shares before any removal: A owns 118 + 51 + 34 + 95 = 298 of 1000
+  (29.8%), B owns 103 + 225 + 14 + 94 = 436 (43.6%), C owns 149 + 48 + 65 + 4
+  = 266 (26.6%). With only four vnodes each the split is visibly lumpy, which
+  is the 1/√V effect in action. Two real keys (MD5 of the key string, mod
+  1000) pinned to that ring: <code>hash("user:7") = 559</code> falls in B1's
+  arc (434, 659], served by node B. <code>hash("order:39") = 982</code> falls
+  in A3's wraparound arc (931, 49], served by node A.
 </p>
 <table>
   <tr><th>B's arc before removal</th><th>New owner after B leaves the ring</th></tr>
@@ -254,18 +291,22 @@ function lookup(ring, key) {
   <tr><td>(738, 832] — was B3</td><td>A1 @ 927</td></tr>
 </table>
 <p class="sub">
-  B's total arc — roughly a third of the ring — splits cleanly between C and
-  A instead of landing entirely on one neighbor, exactly the vnode benefit
-  the figure above claims. <code>user:7</code> (hash 806), previously on B,
-  now resolves to A1's expanded arc (724, 927] — it moved, but only one of
-  its four possible neighbors absorbed it, not the whole ring's worth of
-  B's traffic at once.
+  B owned 436 of 1000 positions. After it leaves, C3 absorbs 103 + 225 = 328
+  of them (75%) and A1 absorbs 14 + 94 = 108 (25%), so B's data lands on two
+  nodes instead of one neighbour. The final shares are A 40.6% and C 59.4%
+  (A 298 + 108 = 406; C 266 + 328 = 594). That is better than dumping all of
+  B on one successor, but the 75/25 split shows the limit of four vnodes: with
+  128 or more per node each survivor would take close to an equal slice.
+  <code>user:7</code> (hash 559), previously on B1, now resolves to C3's
+  expanded arc (331, 724] and moves to node C; every key owned by A or C
+  before the removal stays where it was.
 </p>
 
 <h3>Hot shards and the celebrity problem</h3>
 <p>
-  Real access distributions are Zipfian: the top 0.1% of keys often carry
-  40–60% of the traffic. Hashing gives you an even spread of <em>keys</em>,
+  Real access distributions are heavily skewed (Zipfian): in many
+  workloads a tiny fraction of keys carries a large share of the traffic
+  (illustratively, tens of percent from the top fraction of a percent). Hashing gives you an even spread of <em>keys</em>,
   not of <em>requests</em>. One artist with 80 million followers, one
   enterprise tenant with 200× the average volume, or one viral post will
   saturate a single shard while the other 63 idle — and you cannot fix it
@@ -284,8 +325,8 @@ function lookup(ring, key) {
 <table>
   <tr><th>What you lose</th><th>What you do instead</th></tr>
   <tr><td><b>Cross-shard joins</b></td><td>Application-side joins (fetch IDs, then batch-fetch by shard — never row by row, or you have built an N+1 over the network), or denormalize the joined columns into the child row and accept the update cost.</td></tr>
-  <tr><td><b>Cross-shard transactions</b></td><td>Two-phase commit works but adds a coordinator, blocks if the coordinator dies mid-commit, and typically multiplies write latency by 3–10×. The alternatives are sagas with explicit compensating actions, or — far better — choosing a shard key that keeps transactions single-shard in the first place.</td></tr>
-  <tr><td><b>Global unique constraints</b></td><td>The database can only enforce uniqueness within a shard. Use UUIDs/Snowflake IDs so uniqueness is probabilistic-by-construction, or keep a small dedicated uniqueness table (email → user_id) that is itself sharded by the constrained column.</td></tr>
+  <tr><td><b>Cross-shard transactions</b></td><td>Two-phase commit works but adds a coordinator, blocks if the coordinator dies mid-commit, and adds durable prepare and commit round trips while holding locks, so a distributed commit typically costs a small multiple of a single-shard commit (measure it). The alternatives are sagas with explicit compensating actions, or — far better — choosing a shard key that keeps transactions single-shard in the first place.</td></tr>
+  <tr><td><b>Global unique constraints</b></td><td>The database can only enforce uniqueness within a shard. Generate IDs that are unique without coordination: UUIDs (random, with negligible collision probability) or Snowflake-style IDs (deterministic: timestamp, worker ID and sequence). That only covers surrogate IDs. Business keys such as email still need a small dedicated uniqueness table (email → user_id) that is itself sharded by the constrained column.</td></tr>
   <tr><td><b>Cheap secondary indexes</b></td><td><b>Local index:</b> lives on each shard, cheap to write, but a lookup by that column must scatter-gather across all shards. <b>Global index:</b> a separate table sharded by the indexed column — one hop to read, but writing it is a cross-shard write, which is why it is maintained asynchronously and why DynamoDB's Global Secondary Indexes are eventually consistent.</td></tr>
   <tr><td><b>Cheap <code>ORDER BY</code> / <code>LIMIT</code> / <code>COUNT</code></b></td><td>Top-K across shards needs each shard to return its own top K and the router to merge. Deep offset pagination is pathological — use keyset ("seek") pagination on a sortable cursor instead.</td></tr>
 </table>
@@ -330,7 +371,7 @@ function lookup(ring, key) {
 <ul>
   <li><b>1. Stand up the new topology</b> alongside the old. Nothing reads from it.</li>
   <li><b>2. Backfill</b> historical rows in throttled chunks, watching replication lag and IO on the source. For a multi-TB table this runs for days; make it resumable and idempotent.</li>
-  <li><b>3. Dual-write</b> every mutation to both topologies, with the old one remaining the source of truth. Failures writing to the new side are logged, not fatal.</li>
+  <li><b>3. Keep the new side in sync</b> while the old one remains the source of truth. The safer default is change data capture: tail the old database's WAL or binlog and apply it to the new topology, so there is one writer and an ordered stream. An application-level dual-write is not atomic (one side can succeed while the other fails), so if you do it — Notion did, with an audit log and a catch-up script replaying missed writes — build in reconciliation.</li>
   <li><b>4. Shadow-read and diff:</b> serve from old, also read from new, compare, emit a mismatch counter. You want a full day at zero mismatches before proceeding. This step is the one people skip and the one that catches the bugs.</li>
   <li><b>5. Flip reads gradually</b> — 1% of tenants, then 10%, then 50% — with an instant rollback that requires no deploy.</li>
   <li><b>6. Flip the source of truth</b>, keep dual-writing for a week as your undo button, then stop and drop the old topology.</li>
@@ -341,9 +382,15 @@ function lookup(ring, key) {
   4,096 — and map many logical shards onto each physical machine. Growing
   the cluster then means <em>moving whole logical shards</em>, never
   rehashing a single key: the shard key and the routing function never
-  change, only the placement map does. Vitess, Slack, Notion and most
-  well-run sharded fleets are built exactly this way, and it converts the
-  irreversible decision above into a routine capacity operation.
+  change, only the placement map does. Notion did exactly this: 480 logical
+  shards across 32 Postgres databases, routed in the application, with no
+  Vitess. Designing Data-Intensive Applications lists this fixed partition count as
+  the simple strategy. The alternative is dynamic
+  splitting, used by Vitess, HBase, Spanner and CockroachDB: each shard owns a
+  range of the key space and is split or merged online as it grows, which
+  adapts without a guess at the right count but needs split-and-merge
+  machinery. Either way, the irreversible decision above becomes a routine
+  capacity operation.
 </div>
 <div class="say">
   <span class="ttl">Say it like this →</span> "I'll shard by tenant ID into
@@ -374,5 +421,20 @@ function lookup(ring, key) {
     <li>Name at least two mitigations for a hot shard caused by one celebrity key, and say which to reach for first and why.</li>
     <li>Explain why choosing a large fixed number of logical shards up front means you never have to rehash a key again when the cluster grows.</li>
   </ul>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://openai.com/index/scaling-postgresql/" rel="noopener noreferrer">OpenAI: scaling PostgreSQL</a> — one primary and about 50 replicas at millions of queries per second, with shardable writes moved elsewhere</li>
+    <li><a href="https://www.notion.com/blog/sharding-postgres-at-notion" rel="noopener noreferrer">Notion: sharding Postgres</a> — 480 logical shards on 32 databases, application-level routing, and the dual-write migration</li>
+    <li><a href="https://vitess.io/docs/reference/features/sharding/" rel="noopener noreferrer">Vitess sharding</a> — keyspace ID ranges per shard, vindexes, and splitting or merging shards</li>
+    <li><a href="https://vitess.io/docs/reference/vreplication/reshard/" rel="noopener noreferrer">Vitess Reshard</a> — online resharding workflow and its brief cutover</li>
+    <li><a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-design.html" rel="noopener noreferrer">DynamoDB partition key design</a> — the 3,000 read and 1,000 write units per partition limits</li>
+    <li><a href="https://aws.amazon.com/ec2/instance-types/high-memory/" rel="noopener noreferrer">EC2 High Memory instances</a> — the family of very large single machines (u7in-32tb: 896 vCPU, 32 TiB)</li>
+    <li><a href="https://cassandra.apache.org/doc/latest/cassandra/architecture/dynamo.html" rel="noopener noreferrer">Cassandra architecture: Dynamo</a> — token rings, virtual nodes and how token counts evolved</li>
+    <li><a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" rel="noopener noreferrer">Dynamo paper (SOSP 2007)</a> — consistent hashing with virtual nodes and the load-balancing strategies compared</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees. The ring dry run uses illustrative vnode positions; the key hashes are real MD5 values mod 1000.</p>
 </div>`,
 };

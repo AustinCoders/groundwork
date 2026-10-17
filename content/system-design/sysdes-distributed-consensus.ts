@@ -122,22 +122,47 @@ export const sysdesDistributedConsensus: Chapter = {
   Randomization is not a tuning detail; it is the liveness mechanism.
 </p>
 
-<h4>Dry run: a five-node election where randomized timeouts avoid a split vote</h4>
+<h4>Dry run: a five-node election where two candidates collide and one still wins</h4>
+<p class="sub">
+  Assume one-way message delays of 1–2 ms, with n2 and n3 close to n1 and n4
+  close to n5. This matches the figure above.
+</p>
 <table>
   <tr><th>Time (ms)</th><th>Event</th><th>Votes for n1</th><th>Votes for n5</th><th>Cluster state</th></tr>
   <tr><td>0</td><td>Leader's heartbeats stop arriving</td><td>0</td><td>0</td><td>Term 4, all five nodes idle followers</td></tr>
-  <tr><td>147</td><td>n1's randomized timeout fires first; it becomes a candidate, votes for itself, increments to term 5</td><td>1 (self)</td><td>0</td><td>n1 sends RequestVote(term 5) to n2, n3, n4, n5</td></tr>
-  <tr><td>150</td><td>n2, n3, n4 receive the request; none has voted in term 5 yet, so all grant it</td><td>4</td><td>0</td><td>n1 reaches 4/5 — majority of 3 already cleared — <b>n1 becomes leader</b></td></tr>
-  <tr><td>155</td><td>n5's own (later) timeout fires; it had not yet heard from n1. It becomes a candidate, increments to term 5, votes for itself</td><td>4</td><td>1 (self)</td><td>n5 sends RequestVote(term 5) to the others</td></tr>
-  <tr><td>156</td><td>n1, n2, n3, n4 each already voted in term 5 (for n1) — a node grants at most one vote per term, so all reject n5</td><td>4</td><td>1</td><td>n5 cannot reach a majority; remains candidate</td></tr>
-  <tr><td>160</td><td>n1's first heartbeat (AppendEntries, term 5) reaches n5</td><td>4</td><td>1</td><td>n5 sees term 5 ≥ its own current term, steps down to follower — no second election needed</td></tr>
+  <tr><td>147</td><td>n1's randomized timeout fires first; it becomes a candidate, increments to term 5, votes for itself</td><td>1 (self)</td><td>0</td><td>n1 sends RequestVote(term 5) to n2, n3, n4, n5</td></tr>
+  <tr><td>148</td><td>n5's timeout fires 1 ms later, before n1's request can reach it; it also becomes a candidate in term 5 and votes for itself</td><td>1</td><td>1 (self)</td><td>n5 sends RequestVote(term 5) to n1, n2, n3, n4</td></tr>
+  <tr><td>149</td><td>n2 and n3 receive n1's request first and grant it; n4 receives n5's request first and grants that</td><td>3</td><td>2</td><td>Each voter has now used its single term-5 vote</td></tr>
+  <tr><td>150</td><td>The second requests arrive: n4 rejects n1, n2 and n3 reject n5, and n1 and n5 reject each other (each already voted for itself)</td><td>3</td><td>2</td><td>Nobody can gain another vote in term 5</td></tr>
+  <tr><td>151</td><td>The grants from n2 and n3 reach n1; it now holds 3 of 5, a majority</td><td>3</td><td>2</td><td><b>n1 becomes leader of term 5</b> and sends heartbeats at once; n5 stays stuck at 2 of 5</td></tr>
+  <tr><td>~153</td><td>n1's first heartbeat (AppendEntries, term 5) reaches n5</td><td>3</td><td>2</td><td>n5 is a candidate in term 5 and sees a leader for term 5, so it steps down to follower — no second election</td></tr>
 </table>
 <p class="sub">
-  The whole outcome turns on n1's timer firing 8 ms before n5's. Because the
-  timeouts were drawn from a random range instead of a fixed value, that head
-  start was likely rather than coincidental — which is exactly why
-  randomization is described above as the liveness mechanism, not a tuning
-  knob: it is what keeps this scenario from repeating every single term.
+  With two candidates among five nodes, the three other voters can never split
+  evenly, so one candidate always reaches three votes. Randomization earns its
+  keep when three or more nodes time out together (votes can split 2-2-1 and
+  nobody wins): without randomization they would retry on the same schedule
+  and collide again and again, while with it one node almost always wakes
+  first. That is why it is called the liveness mechanism, not a tuning knob.
+  If n1 and n5 had fired in the same millisecond the table would look the
+  same, with arrival order at each voter deciding the 3-2 split.
+</p>
+
+<h4>PreVote and CheckQuorum: keeping a rejoining node from disrupting the cluster</h4>
+<p>
+  Plain Raft has a nasty edge. A node cut off from the majority keeps timing
+  out, becoming a candidate, and incrementing its term, so after a long
+  partition it holds a very high term. When it rejoins, its first message
+  makes the healthy leader see a higher term and step down, forcing an
+  election the cluster did not need. Two refinements from the Raft
+  dissertation fix it. <b>PreVote</b>: before bumping its term, a would-be
+  candidate asks peers whether they would vote for it; peers that still hear
+  from a live leader say no, so a minority node never inflates its term.
+  <b>CheckQuorum</b>: a leader that has not heard from a majority within an
+  election timeout steps down on its own, and nodes that recently heard from a
+  leader ignore vote requests. Production implementations enable them
+  (etcd's <code>--pre-vote</code> flag defaults to true in 3.6), and this
+  is why a rejoining minority node is usually a non-event.
 </p>
 
 <h3>Log replication and the commit rule</h3>
@@ -167,8 +192,10 @@ export const sysdesDistributedConsensus: Chapter = {
   linearizability violation. Real systems fix this with a read-index (confirm
   leadership with a heartbeat round before answering) or a leader lease
   (answer locally, but only within a lease shorter than the election
-  timeout). This is also exactly why ZooKeeper reads are not linearizable
-  unless you call <code>sync()</code> first.
+  timeout). ZooKeeper makes a different trade: any server answers reads
+  from its own local state, so reads can be stale by design and you call
+  <code>sync()</code> first when you need the latest committed write. That
+  is a separate issue from the stale-leader problem above.
 </div>
 
 <h3>Cluster sizing — always odd, almost always 3 or 5</h3>
@@ -184,9 +211,29 @@ export const sysdesDistributedConsensus: Chapter = {
   they grow, because every decision needs a majority ack. You scale them by
   <em>sharding the keyspace across many independent consensus groups</em>,
   which is exactly what Spanner (one Paxos group per range) and CockroachDB
-  (one Raft group per range) do. Expect single-digit-millisecond writes for
-  a same-region etcd cluster, and tens of milliseconds if you stretch the
-  members across regions.
+  (one Raft group per range) do. As a planning figure, expect writes of a
+  few milliseconds for a same-region etcd cluster (dominated by the disk
+  fsync), and a full inter-region round trip, 60 ms or more across the US,
+  if you stretch the members across regions.
+</p>
+
+<h3>Consensus and its cousins</h3>
+<p>
+  Three equivalences are worth one sentence each. <b>Total order
+  broadcast</b> (every node delivers the same messages in the same order) is
+  equivalent to consensus: a replicated log is repeated consensus. A
+  linearizable compare-and-set register is too, which is why leader election
+  and locks reduce to it. <b>Two-phase commit is not consensus</b>: it is
+  atomic commit with a single coordinator, and if that coordinator dies
+  after participants vote yes, they block holding locks. Spanner and
+  CockroachDB run two-phase commit <em>across</em> consensus groups, so each
+  participant and the coordinator state are themselves replicated. And Raft
+  and Multi-Paxos tolerate crash faults only; nodes that lie or are
+  compromised need a Byzantine-fault-tolerant protocol with 3f+1 replicas,
+  which is a different (and rarely needed) problem. Related variants you may
+  meet: non-voting <em>learner</em> members that catch up before being
+  promoted, <em>leader leases</em> for local reads, and Flexible Paxos and
+  EPaxos, which relax the "one majority on every decision" rule.
 </p>
 
 <h3>Paxos, briefly</h3>
@@ -210,7 +257,7 @@ export const sysdesDistributedConsensus: Chapter = {
 <table>
   <tr><th>Service</th><th>Protocol</th><th>Shape of the API</th><th>Reach for it when…</th></tr>
   <tr><td><b>etcd</b></td><td>Raft</td><td>Key-value with revisions, leases, compare-and-swap, watches. Every write returns a monotonically increasing revision.</td><td>Kubernetes-adjacent infrastructure, service discovery, leader election, config. The default modern choice.</td></tr>
-  <tr><td><b>ZooKeeper</b></td><td>Zab</td><td>Hierarchical znodes, ephemeral and sequential nodes, watches. Ephemeral+sequential is the classic leader-election recipe.</td><td>The JVM ecosystem — Kafka (historically), HBase, Solr. Battle-tested for well over a decade.</td></tr>
+  <tr><td><b>ZooKeeper</b></td><td>Zab</td><td>Hierarchical znodes, ephemeral and sequential nodes, watches. Ephemeral+sequential is the classic leader-election recipe.</td><td>The JVM ecosystem — HBase, Solr, and Kafka before 4.0 (which is KRaft-only). Battle-tested for well over a decade.</td></tr>
   <tr><td><b>Consul</b></td><td>Raft</td><td>KV, sessions, health checks, service catalogue, DNS interface.</td><td>Service discovery where health checking and multi-datacenter federation matter as much as the KV store.</td></tr>
   <tr><td><b>Your database</b></td><td>varies</td><td>A row with a unique constraint plus a lease column is a perfectly good lock if you already have a strongly consistent database.</td><td>You don't want another stateful system to operate. Often the correct, boring answer.</td></tr>
 </table>
@@ -264,9 +311,12 @@ export const sysdesDistributedConsensus: Chapter = {
   <figcaption>The lock never actually prevented the race — the resource did. Any lock without a fencing token is only advisory.</figcaption>
 </figure>
 <p class="sub">
-  You usually get the token for free: ZooKeeper's <code>zxid</code> and
-  sequential znode number, etcd's revision or lease ID, or a
-  <code>version</code> column you compare-and-swap on in your own database.
+  You usually get the token for free: ZooKeeper's <code>zxid</code> or znode
+  version, etcd's revision of the lock key (its create or mod revision; do
+  not use the lease ID, which is an opaque identifier, not an ordered
+  counter), or a <code>version</code> column you compare-and-swap on in your
+  own database. Kleppmann's essay on distributed locking is the standard
+  reference for why the token is needed and why Redis-based locks lack one.
   This is also the honest answer to the long-running argument about
   Redis-based distributed locks: a multi-node Redis lock relies on bounded
   clock drift and bounded process pauses, and neither is guaranteed — so if
@@ -276,7 +326,7 @@ export const sysdesDistributedConsensus: Chapter = {
 <div class="say">
   <span class="ttl">Say it like this →</span> "I'll use an etcd lease for
   the leader lock, but I won't trust the lock on its own — the leader
-  attaches the etcd revision as a fencing token to every write, and the
+  attaches the lock key's etcd revision as a fencing token to every write, and the
   storage layer rejects any write whose token is lower than the highest it
   has seen. That way a leader that was partitioned away and doesn't know it
   yet can't corrupt anything when it comes back."
@@ -328,6 +378,23 @@ export const sysdesDistributedConsensus: Chapter = {
     <li>Explain why randomized election timeouts are a liveness mechanism, not a tuning detail.</li>
     <li>Describe what a fencing token fixes that a lock service alone cannot, and trace it through the client-A / client-B scenario in this chapter.</li>
     <li>Say, for a design you're sketching, exactly which piece of state needs consensus and which pieces don't — and why reaching for etcd or ZooKeeper is usually right instead of writing Raft yourself.</li>
+    <li>Explain what PreVote prevents and why a long-partitioned minority node can otherwise unseat a healthy leader when it rejoins.</li>
   </ul>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://raft.github.io/raft.pdf" rel="noopener noreferrer">In search of an understandable consensus algorithm (the Raft paper)</a> — terms, elections, log matching, the commit rule and the 150-300 ms timeout suggestion</li>
+    <li><a href="https://web.stanford.edu/~ouster/cgi-bin/papers/OngaroPhD.pdf" rel="noopener noreferrer">Ongaro's Raft dissertation</a> — PreVote, CheckQuorum, membership changes and read-only queries</li>
+    <li><a href="https://raft.github.io/" rel="noopener noreferrer">The Raft website</a> — visualisation and a list of implementations</li>
+    <li><a href="https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html" rel="noopener noreferrer">Kleppmann, how to do distributed locking</a> — fencing tokens, and why Redis-based locks lack them</li>
+    <li><a href="https://etcd.io/docs/v3.6/learning/api/" rel="noopener noreferrer">etcd API</a> — revisions, create and mod revision, and what a lease ID is</li>
+    <li><a href="https://etcd.io/docs/v3.6/op-guide/configuration/" rel="noopener noreferrer">etcd configuration flags</a> — pre-vote default, heartbeat and election timeout defaults</li>
+    <li><a href="https://etcd.io/docs/v3.6/learning/api_guarantees/" rel="noopener noreferrer">etcd API guarantees</a> — linearizable reads by default, strict serializability, opt-in stale reads</li>
+    <li><a href="https://zookeeper.apache.org/doc/current/zookeeperProgrammers.html" rel="noopener noreferrer">ZooKeeper programmer's guide</a> — local reads can be stale; sync before reading when it matters</li>
+    <li><a href="https://research.google/pubs/spanner-googles-globally-distributed-database-2/" rel="noopener noreferrer">Spanner paper (OSDI 2012)</a> — a Paxos group per tablet with two-phase commit across groups</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees.</p>
 </div>`,
 };

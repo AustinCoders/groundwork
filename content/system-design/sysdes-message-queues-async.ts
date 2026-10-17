@@ -86,31 +86,36 @@ export const sysdesMessageQueuesAsync: Chapter = {
 <p>
   A <b>log</b> (Kafka, Pulsar, Kinesis, Redpanda) is an append-only file
   per partition. Consumers hold an <b>offset</b> — a number — and the
-  broker deletes nothing until the retention window expires. Reads are
-  sequential disk scans, which is why a single broker sustains hundreds of
-  MB/s. Because messages aren't deleted on read, you can rewind the offset
+  broker deletes nothing until the retention window expires. Reads and writes
+  are mostly sequential and lean on the operating system's page cache, which is
+  why a single broker can sustain hundreds of MB/s. Because messages aren't deleted on read, you can rewind the offset
   and replay a week of history into a new consumer, which is the
-  capability queues fundamentally lack.
+  capability classic queues lack. The two shapes are converging: RabbitMQ
+  Streams add a replicated, non-destructive log (with offset and timestamp
+  replay) inside RabbitMQ, and Kafka 4.2 made share groups ("queues for
+  Kafka", KIP-932) production-ready, giving per-record acknowledgement on top of
+  a log. Pick by the semantics you need, not by the product name.
 </p>
 
 <figure>
-  <svg viewBox="0 0 640 320" class="dg" role="img" aria-label="A producer hashing a key into three partitions of a topic, with a consumer group of three where the first consumer owns two partitions, the second owns one, and the third sits idle because there are no partitions left">
+  <svg viewBox="0 0 640 320" class="dg" role="img" aria-label="A producer hashing a key into three partitions of a topic, with a consumer group of four where consumers A, B and C each own one partition and consumer D sits idle because there are no partitions left">
     <g class="rough">
       <path class="ln" d="M124,148 L170,66" />
       <path class="ln" d="M124,152 L170,146" />
       <path class="ln" d="M124,158 L170,226" />
-      <path class="lng" d="M330,66 L440,84" />
-      <path class="lng" d="M330,146 L440,96" />
-      <path class="lng" d="M330,226 L440,206" />
+      <path class="lng" d="M330,66 L440,66" />
+      <path class="lng" d="M330,146 L440,146" />
+      <path class="lng" d="M330,226 L440,226" />
     </g>
     <g class="rough">
       <rect class="box"  x="16"  y="130" width="108" height="46" rx="6" />
       <rect class="boxy" x="170" y="44"  width="160" height="44" rx="6" />
       <rect class="boxy" x="170" y="124" width="160" height="44" rx="6" />
       <rect class="boxy" x="170" y="204" width="160" height="44" rx="6" />
-      <rect class="boxg" x="440" y="64"  width="164" height="46" rx="6" />
-      <rect class="boxg" x="440" y="184" width="164" height="46" rx="6" />
-      <rect class="boxr" x="440" y="258" width="164" height="46" rx="6" />
+      <rect class="boxg" x="440" y="44"  width="164" height="44" rx="6" />
+      <rect class="boxg" x="440" y="124" width="164" height="44" rx="6" />
+      <rect class="boxg" x="440" y="204" width="164" height="44" rx="6" />
+      <rect class="boxr" x="440" y="262" width="164" height="46" rx="6" />
     </g>
     <text class="sm" x="70"  y="150" text-anchor="middle">producer</text>
     <text class="sm" x="70"  y="166" text-anchor="middle">key = userId</text>
@@ -118,35 +123,41 @@ export const sysdesMessageQueuesAsync: Chapter = {
     <text class="sm" x="250" y="72" text-anchor="middle">partition 0</text>
     <text class="sm" x="250" y="152" text-anchor="middle">partition 1</text>
     <text class="sm" x="250" y="232" text-anchor="middle">partition 2</text>
-    <text class="sm" x="522" y="86"  text-anchor="middle">consumer A</text>
-    <text class="sm" x="522" y="102" text-anchor="middle">owns P0 + P1</text>
-    <text class="sm" x="522" y="206" text-anchor="middle">consumer B</text>
-    <text class="sm" x="522" y="222" text-anchor="middle">owns P2</text>
-    <text class="sm rd" x="522" y="280" text-anchor="middle">consumer C</text>
-    <text class="sm rd" x="522" y="296" text-anchor="middle">idle — no partition</text>
+    <text class="sm" x="522" y="64"  text-anchor="middle">consumer A</text>
+    <text class="sm" x="522" y="80"  text-anchor="middle">owns P0</text>
+    <text class="sm" x="522" y="144" text-anchor="middle">consumer B</text>
+    <text class="sm" x="522" y="160" text-anchor="middle">owns P1</text>
+    <text class="sm" x="522" y="224" text-anchor="middle">consumer C</text>
+    <text class="sm" x="522" y="240" text-anchor="middle">owns P2</text>
+    <text class="sm rd" x="522" y="282" text-anchor="middle">consumer D</text>
+    <text class="sm rd" x="522" y="298" text-anchor="middle">idle — no partition</text>
     <text class="lbl" x="16" y="270" style="font-size:14px">one partition has exactly one owner in a group,</text>
     <text class="lbl" x="16" y="292" style="font-size:14px">so partition count is your parallelism ceiling</text>
   </svg>
-  <figcaption>Consumer C is the whole lesson: you scale a Kafka consumer group by adding partitions, not by adding pods. Pick the partition count for the parallelism you'll want in a year.</figcaption>
+  <figcaption>Consumer D is the whole lesson: in a classic Kafka consumer group you scale by adding partitions, not by adding pods, because a fourth consumer on three partitions has nothing to read. (Assignors balance partitions to within one of each other, so with three consumers each would own one.) Pick the partition count for the parallelism you'll want in a year, within the cost limits described below.</figcaption>
 </figure>
 
 <table>
-  <tr><th>&nbsp;</th><th>Queue broker (RabbitMQ, SQS)</th><th>Log (Kafka, Pulsar)</th></tr>
+  <tr><th>&nbsp;</th><th>Queue broker (RabbitMQ queues, SQS)</th><th>Log (Kafka, Pulsar, RabbitMQ Streams)</th></tr>
   <tr><td>Unit of progress</td><td>Per-message ack / nack</td><td>Per-partition offset commit</td></tr>
   <tr><td>After a message is consumed</td><td>Deleted</td><td>Still there until retention expires (hours to forever)</td></tr>
-  <tr><td>Replay</td><td>Not possible — you must have kept a copy yourself</td><td>Seek the offset backwards; a brand-new consumer can read all history</td></tr>
+  <tr><td>Replay</td><td>Not in a classic or quorum queue — you must have kept a copy yourself (RabbitMQ Streams are the log-shaped exception)</td><td>Seek the offset backwards (or to a timestamp); a brand-new consumer can read all history</td></tr>
   <tr><td>Ordering</td><td>Per-queue, and lost the moment you add a second consumer</td><td>Total order <em>within a partition</em>; none across partitions</td></tr>
-  <tr><td>Parallelism</td><td>Add consumers freely — the broker load-balances messages</td><td>Capped at partition count per consumer group</td></tr>
-  <tr><td>Throughput, single node</td><td>~20-50 k msg/s (much lower with persistence + per-message routing)</td><td>Hundreds of MB/s; ~10 MB/s per partition is a comfortable planning figure</td></tr>
+  <tr><td>Parallelism</td><td>Add consumers freely — the broker load-balances messages</td><td>Capped at partition count per consumer group. Exceptions that trade away per-key order: Kafka 4.2 share groups and Pulsar shared subscriptions allow more consumers than partitions</td></tr>
+  <tr><td>Throughput, single node</td><td>Tens of thousands of msg/s per node is a common planning figure for RabbitMQ, far lower with persistence, confirms and rich routing; benchmark your own</td><td>Hundreds of MB/s; ~10 MB/s per partition is a comfortable planning figure</td></tr>
   <tr><td>Routing</td><td>Rich: topic/fanout/header exchanges, per-message TTL, delayed delivery</td><td>Deliberately dumb: topic + partition. Routing is the consumer's job</td></tr>
   <tr><td>Reach for this when</td><td>Task/job semantics — "someone do this one thing", varied per-message delays, complex routing, modest volume</td><td>Event-stream semantics — many independent consumers of the same events, replay for backfills or new services, ordered per-entity change streams, high volume</td></tr>
 </table>
 <p class="sub">
   A cheap tell that you've thought about it: "SQS standard gives me
-  unbounded throughput but no ordering; SQS FIFO gives me ordering per
-  message-group at ~300 messages/second per group (3,000 batched), which
-  is fine per user and useless as a global pipe." Named limits beat
-  adjectives.
+  nearly unlimited throughput but no ordering. SQS FIFO orders messages within
+  a message group; by default each queue partition is limited to 300 API calls
+  per second per action (3,000 messages/s with 10-message batches), and high
+  throughput mode raises that to as much as 70,000 TPS (700,000 messages/s
+  batched) in us-east-1, us-west-2 and eu-west-1, scaling with the number of
+  distinct message groups. So I'd use a high-cardinality group id such as the
+  user id, never one global group." Named limits beat adjectives, and the
+  limits are per queue partition, not per group (check the current quota page).
 </p>
 
 <h3>Delivery semantics, done properly</h3>
@@ -183,7 +194,7 @@ export const sysdesMessageQueuesAsync: Chapter = {
 <ul>
   <li><b>A natural idempotency key.</b> The message carries a stable ID (order ID, event ID). The consumer writes <code>INSERT ... ON CONFLICT DO NOTHING</code> into a processed-events table inside the same transaction as its business write. Second delivery hits the conflict and does nothing. Cheap, obvious, correct.</li>
   <li><b>Naturally idempotent operations.</b> <code>SET status = 'shipped'</code> is safe to repeat; <code>balance = balance + 10</code> is not. Prefer absolute writes over deltas when you get to choose the schema — this single habit removes most duplicate-processing bugs before they exist.</li>
-  <li><b>Idempotency tokens at the boundary.</b> When the side effect leaves your system (Stripe charge, email send), pass a client-generated key that the provider de-duplicates on. Stripe's <code>Idempotency-Key</code> exists for precisely this scenario.</li>
+  <li><b>Idempotency tokens at the boundary.</b> When the side effect leaves your system (Stripe charge, email send), pass a client-generated key that the provider de-duplicates on. Stripe's <code>Idempotency-Key</code> exists for precisely this scenario (the header is being standardised as the IETF draft <code>draft-ietf-httpapi-idempotency-key-header</code>; it is not yet an RFC).</li>
 </ul>
 <div class="say">
   <span class="ttl">Say it like this →</span> "I'll run at-least-once and
@@ -211,6 +222,27 @@ export const sysdesMessageQueuesAsync: Chapter = {
   <li><b>Make the DLQ replayable.</b> Fix the bug, ship it, drain the DLQ back into the main queue. If replay requires a bespoke script written under incident pressure, you don't have a DLQ, you have a graveyard.</li>
   <li><b>In Kafka, sidestep head-of-line blocking</b> by publishing the failure to a retry topic and committing the offset, so the partition keeps moving. You trade strict ordering for liveness, deliberately.</li>
 </ul>
+
+<h3>Durability and the other knobs worth naming</h3>
+<p>
+  A queue is only as durable as its replication settings. For Kafka, the usual
+  production shape is replication factor 3, producers on <code>acks=all</code>
+  and <code>min.insync.replicas=2</code>: a write is acknowledged once the
+  in-sync replicas have it, and the partition refuses writes rather than run
+  on a single copy, trading availability for durability. Kafka guarantees a
+  committed message survives as long as one in-sync replica stays alive. Other
+  features that come up: <b>log compaction</b> (keep at least the latest record
+  per key, with tombstones for deletes, which is how a topic becomes a table
+  changelog); <b>visibility timeout</b> in SQS (a received message is hidden
+  for 30 seconds by default, up to 12 hours; if the consumer does not delete it
+  in time it reappears, which is how at-least-once redelivery works there);
+  <b>delay queues</b> (SQS message timers up to 15 minutes); and
+  <b>consumer prefetch</b> in RabbitMQ (cap the unacknowledged messages per
+  consumer so one slow consumer does not hoard work). For long-running
+  multi-step work across services, the pattern on top of all this is a
+  <b>saga</b>: a sequence of local transactions with compensating actions,
+  driven by events.
+</p>
 
 <h3>Backpressure: the queue is a shock absorber, not a landfill</h3>
 <p>
@@ -251,7 +283,11 @@ export const sysdesMessageQueuesAsync: Chapter = {
   consumer (key-affine worker threads), never round-robin. The related
   trap: adding partitions later re-maps <code>hash(key) % N</code>, so a
   key moves partitions and in-flight events for that key can be reordered
-  across the resize. Over-provision partitions up front instead.
+  across the resize. So leave headroom up front, but not unlimited: each
+  partition adds open files, replication and recovery work on the brokers, and
+  consumer-group rebalance time, so pick a number for the parallelism you
+  expect in a year or two (a planning judgement, with some headroom), not the
+  biggest number you can configure.
 </div>
 
 <h3>The outbox pattern: fixing the dual-write problem</h3>
@@ -267,14 +303,17 @@ await kafka.send("order.created", e); <span class="c">// 2. broker unreachable �
   ordering of two independent systems that is safe, because you cannot
   commit to a database and a broker atomically — that is the
   <b>dual-write problem</b>, and 2PC is not a real answer at this scale
-  (it blocks on coordinator failure and no cloud broker offers it).
+  (it blocks on coordinator failure; XA transactions exist in some classic brokers such as IBM MQ and ActiveMQ, but few teams run them at scale).
 </p>
 <p>
   The fix is to make it a <em>single</em> write. Insert the event into an
   <code>outbox</code> table in the same transaction as the business row.
-  Now either both exist or neither does. A separate relay — a poller, or
-  Debezium tailing the write-ahead log — reads that table and publishes to
-  the broker, marking rows sent.
+  Now either both exist or neither does. A separate relay reads that table and publishes to
+  the broker. There are two kinds. A <b>polling relay</b> queries the table and
+  marks rows sent (or remembers a high-water mark). A <b>log-based relay</b>
+  such as Debezium tails the write-ahead log and sees each insert; its outbox
+  router treats the table as insert-only (updates are not allowed), so there is
+  no sent flag and you simply delete or expire old rows.
 </p>
 
 <figure>
@@ -301,7 +340,7 @@ await kafka.send("order.created", e); <span class="c">// 2. broker unreachable �
     <text class="sm" x="452" y="120" text-anchor="middle">relay / CDC</text>
     <text class="sm" x="452" y="136" text-anchor="middle">(Debezium)</text>
     <text class="sm" x="585" y="128" text-anchor="middle">Kafka</text>
-    <text class="sm" x="364" y="166" text-anchor="middle">mark sent</text>
+    <text class="sm" x="364" y="166" text-anchor="middle">mark sent (polling only)</text>
     <text class="lbl" x="16" y="222" style="font-size:14px">Both rows commit or neither does — the impossible state</text>
     <text class="lbl" x="16" y="244" style="font-size:14px">"order exists, event lost" can no longer occur.</text>
   </svg>
@@ -311,8 +350,11 @@ await kafka.send("order.created", e); <span class="c">// 2. broker unreachable �
 <p class="sub">
   Cost and caveats, stated plainly: the outbox adds a write per event and
   a few hundred milliseconds to a few seconds of publish latency (poll
-  interval; CDC is closer to tens of ms). You must prune sent rows or the
-  table becomes your biggest one. And the relay gives you at-least-once,
+  interval; CDC is closer to tens of ms). You must prune old rows or the
+  table becomes your biggest one. A polling relay that tracks the highest
+  auto-increment id it has seen can also skip a row: id 7 may commit after id 8
+  because its transaction was long-running, so poll with a safety lag or use a
+  log-based relay. And the relay gives you at-least-once,
   never exactly-once — the event ID in the outbox row <em>is</em> the
   consumer's de-duplication key, which is why these two patterns are
   always taught together. The mirror-image pattern on the consumer side is
@@ -324,20 +366,24 @@ await kafka.send("order.created", e); <span class="c">// 2. broker unreachable �
 <table>
   <tr><th>Time</th><th>Event</th><th>Outbox row (event E77)</th><th><code>processed_events</code> table</th><th>Fulfillment record</th></tr>
   <tr><td>t0</td><td>Order service commits: <code>orders</code> row + outbox row, one transaction</td><td>status = pending</td><td>empty</td><td>none yet</td></tr>
-  <tr><td>t1</td><td>Relay polls the outbox, publishes E77 to Kafka, marks it sent</td><td>status = sent</td><td>empty</td><td>none yet</td></tr>
+  <tr><td>t1</td><td>Relay publishes E77 to Kafka (a polling relay then marks the row sent; a log-based relay needs no mark)</td><td>status = sent</td><td>empty</td><td>none yet</td></tr>
   <tr><td>t2</td><td>Consumer reads E77 at offset 42, begins processing</td><td>sent</td><td>empty</td><td>in progress</td></tr>
   <tr><td>t3</td><td>Consumer crashes before committing the offset or writing <code>processed_events</code></td><td>sent</td><td>empty</td><td>lost — never committed</td></tr>
-  <tr><td>t4</td><td>Consumer restarts, resumes from the last committed offset (41) — E77 is redelivered</td><td>sent</td><td>empty</td><td>reprocessing starts</td></tr>
+  <tr><td>t4</td><td>Consumer restarts, resumes from the last committed offset (42, the next record to read) — E77 is redelivered</td><td>sent</td><td>empty</td><td>reprocessing starts</td></tr>
   <tr><td>t5</td><td>Consumer inserts into <code>processed_events(event_id)</code> and writes the fulfillment row, same transaction</td><td>sent</td><td>{E77} — first successful insert</td><td>created, exactly once</td></tr>
-  <tr><td>t6</td><td>Offset committed to 42</td><td>sent</td><td>{E77}</td><td>created</td></tr>
-  <tr><td>t7 (later)</td><td>A consumer-group rebalance redelivers E77 a third time</td><td>sent</td><td>insert hits the unique constraint — conflict, no-op</td><td>unchanged — effect already applied</td></tr>
+  <tr><td>t6</td><td>Offset 43 committed (Kafka commits the position of the <em>next</em> record to read, so after finishing offset 42 you commit 43)</td><td>sent</td><td>{E77}</td><td>created</td></tr>
+  <tr><td>t7 (later)</td><td>The relay had crashed after publishing E77 but before marking it sent, so on restart it publishes E77 again as a new record (say offset 57), and the consumer reads it</td><td>sent (finally marked)</td><td>insert hits the unique constraint — conflict, no-op</td><td>unchanged — effect already applied</td></tr>
 </table>
 <p class="sub">
   The crash at t3 is exactly the case at-least-once delivery is built to
   survive, and it's also exactly the case a naive consumer gets wrong: the
-  guarantee isn't that E77 arrives once, it's that redelivery at t4 and t7
-  both land on the same <code>processed_events</code> row and produce the
-  same state either way — a duplicate delivery, not a duplicate effect.
+  guarantee isn't that E77 arrives once, it's that redelivery at t4 and the
+  duplicate publish at t7 both land on the same <code>processed_events</code>
+  row and produce the same state either way — a duplicate delivery, not a
+  duplicate effect. (A consumer-group rebalance after t6 would <em>not</em>
+  redeliver E77, because the committed offset 43 is already past it; the
+  duplicate here comes from the relay, which is why the consumer still needs
+  its own de-duplication.)
 </p>
 
 <h3>Recognizing it in an unseen problem</h3>
@@ -356,8 +402,22 @@ await kafka.send("order.created", e); <span class="c">// 2. broker unreachable �
     <li>Explain the dual-write problem and why the outbox pattern fixes it by making two writes into one.</li>
     <li>Trace the crash-and-redelivery dry run above and say exactly which row makes the third delivery at t7 a no-op.</li>
     <li>Explain why "exactly-once delivery" is impossible but "exactly-once effect" is achievable, in your own words.</li>
+    <li>Say what replication factor, acks and min.insync.replicas setting you would use for a durable Kafka topic, and what it costs in availability.</li>
     <li>Decide, for a concrete workload, whether you want a queue or a log — and justify it with the "does anyone need to replay this" test.</li>
     <li>Explain why partitioning by entity key gives you ordering where it matters without sacrificing parallelism across keys.</li>
   </ul>
+</div>
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://kafka.apache.org/42/design/design/" rel="noopener noreferrer">Apache Kafka documentation: design</a> — replication guarantees, consumer position as the next offset, log compaction, page cache and sequential I/O</li>
+    <li><a href="https://kafka.apache.org/blog/2026/02/17/apache-kafka-4.2.0-release-announcement/" rel="noopener noreferrer">Apache Kafka 4.2.0 release announcement</a> — share groups (queues for Kafka) declared production-ready</li>
+    <li><a href="https://cwiki.apache.org/confluence/display/KAFKA/KIP-932%3A+Queues+for+Kafka" rel="noopener noreferrer">KIP-932: Queues for Kafka</a> — per-record acknowledgement and more consumers than partitions</li>
+    <li><a href="https://www.rabbitmq.com/docs/streams" rel="noopener noreferrer">RabbitMQ Streams</a> — a replicated log with non-destructive reads and offset replay</li>
+    <li><a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html" rel="noopener noreferrer">Amazon SQS message quotas</a> — FIFO limits, high throughput mode, visibility timeout and message timers</li>
+    <li><a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/high-throughput-fifo.html" rel="noopener noreferrer">Amazon SQS high throughput for FIFO queues</a> — limits are per queue partition and scale with message groups</li>
+    <li><a href="https://debezium.io/documentation/reference/stable/transformations/outbox-event-router.html" rel="noopener noreferrer">Debezium outbox event router</a> — the insert-only outbox table read from the log</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees.</p>
 </div>`,
 };

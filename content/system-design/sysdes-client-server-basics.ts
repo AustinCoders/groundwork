@@ -83,6 +83,16 @@ export const sysdesClientServerBasics: Chapter = {
   move traffic by changing a DNS record, assume a long tail of clients keeps
   using the old answer for hours.
 </p>
+<p>
+  The record types you will actually name in a design are few: <b>A</b> and
+  <b>AAAA</b> map a name to an IPv4 or IPv6 address, <b>CNAME</b> aliases one
+  name to another (not allowed at the zone apex, which is why providers invent
+  "ALIAS" records), <b>NS</b> delegates a zone, <b>MX</b> routes mail, and
+  <b>TXT</b> carries verification and policy strings. When a name returns both
+  A and AAAA records, clients using Happy Eyeballs (RFC 8305) race IPv6 and
+  IPv4 connection attempts and keep whichever completes first, so a broken
+  IPv6 path costs milliseconds rather than a timeout.
+</p>
 <table>
   <tr><th>DNS routing strategy</th><th>Mechanism</th><th>Reach for this when…</th></tr>
   <tr>
@@ -98,7 +108,7 @@ export const sysdesClientServerBasics: Chapter = {
   <tr>
     <td>GeoDNS / latency-based</td>
     <td>Answer depends on the resolver's location or measured latency</td>
-    <td>Multi-region: send European users to the European stack, cutting 80-100 ms off every request</td>
+    <td>Multi-region: send European users to the European stack, so each round trip drops from roughly 80-100 ms to tens of milliseconds or less (a cold connection makes several of them)</td>
   </tr>
   <tr>
     <td>Health-checked failover</td>
@@ -107,8 +117,8 @@ export const sysdesClientServerBasics: Chapter = {
   </tr>
   <tr>
     <td>Anycast</td>
-    <td>One IP announced from many locations; BGP routes to the nearest</td>
-    <td>What CDNs and large services actually use — failover in seconds, no client caching problem, but requires network-level infrastructure</td>
+    <td>One IP announced from many locations; BGP routes each client to the topologically nearest announcement</td>
+    <td>What CDNs and large services actually use — no client caching problem, and failover is a BGP route withdrawal rather than a TTL expiry. "Nearest" means nearest in network terms, not geographic distance, and route convergence can take from seconds to minutes. A routing shift can also break long-lived TCP connections mid-flight. Requires network-level infrastructure</td>
   </tr>
 </table>
 <p class="sub">
@@ -161,7 +171,7 @@ export const sysdesClientServerBasics: Chapter = {
     <text class="sm" x="12" y="198">1 RTT</text>
     <text class="sm" x="12" y="214">HTTP</text>
     <text class="lbl" x="20" y="262" style="font-size:15px">Three round trips before any content. Same datacenter: ~1.5 ms.</text>
-    <text class="lbl rd" x="20" y="284" style="font-size:15px">New York to Sydney at 200 ms RTT: 600 ms of pure handshake.</text>
+    <text class="lbl rd" x="20" y="284" style="font-size:15px">New York to Sydney at 200 ms RTT: 400 ms of handshake, then the request.</text>
   </svg>
   <figcaption>Round trips, not bandwidth, dominate first-byte latency on long paths. Every technique that helps — keep-alive, TLS session resumption, QUIC, terminating TLS at an edge PoP — is a way to delete one of these arrows.</figcaption>
 </figure>
@@ -170,7 +180,12 @@ export const sysdesClientServerBasics: Chapter = {
   an optimisation, it's the baseline</b>: HTTP keep-alive, connection pools in
   your service-to-service clients, and pooled database connections all exist
   to amortise this cost. A service that opens a fresh TLS connection per
-  request has added several RTTs and a public-key operation to every call.
+  request has added several RTTs and a public-key operation to every call. A
+  fresh TCP connection is also slow in a second way: congestion control
+  starts it in <em>slow start</em>, with an initial window of about 10 segments
+  (roughly 14 KB, RFC 6928), so a response bigger than that needs extra round
+  trips to ramp up even after the handshakes. A warm, reused connection has
+  already ramped.
   Second, <b>terminating TLS close to the user matters enormously</b>. A CDN
   PoP 10 ms from the user absorbs the handshake round trips locally and reuses
   a warm connection back to origin, which is often a bigger win than caching
@@ -217,7 +232,7 @@ export const sysdesClientServerBasics: Chapter = {
 <table>
   <tr><th></th><th>L4 (transport)</th><th>L7 (application)</th></tr>
   <tr><td>Sees</td><td>IPs, ports, TCP connections</td><td>Full HTTP: method, path, headers, cookies, body</td></tr>
-  <tr><td>Can do</td><td>Connection-level distribution, extremely high throughput, near-zero added latency</td><td>Path and header routing, TLS termination, retries, rate limiting, request rewriting, sticky sessions, per-request balancing</td></tr>
+  <tr><td>Can do</td><td>Connection-level distribution, extremely high throughput, near-zero added latency. Passes TLS through untouched, or terminates it (for example an AWS Network Load Balancer TLS listener) without ever seeing HTTP</td><td>Path and header routing, retries, rate limiting, request rewriting, sticky sessions, per-request balancing. To read HTTP at all it must terminate TLS (or terminate and re-encrypt)</td></tr>
   <tr><td>Cost</td><td>Blind to application health and to individual requests on a long-lived connection</td><td>More CPU, added latency (typically well under a millisecond), and it must hold the TLS keys</td></tr>
   <tr><td>Reach for this when…</td><td>Raw TCP services, databases, extreme packet rates, or you want the backend to see the real client TLS</td><td>Essentially all HTTP traffic — the routing and observability are worth the overhead</td></tr>
 </table>
@@ -286,39 +301,52 @@ export const sysdesClientServerBasics: Chapter = {
 <p>
   You will be asked to justify a latency budget, and the justification has to
   be built from components. Memorise the orders of magnitude, not the digits.
-  The single most useful mental jump is that each of these tiers is roughly
-  100x apart: nanoseconds in cache, microseconds in memory and SSD,
-  milliseconds on the network, hundreds of milliseconds across the planet.
+  The single most useful mental jump is that each of these tiers is somewhere
+  between 10x and 1,000x slower than the last: nanoseconds in cache and memory
+  (about 1 ns in L1, about 100 ns for main memory), tens of microseconds on
+  SSD, about half a millisecond for a datacenter round trip, and hundreds of
+  milliseconds across the planet. Going from memory to a same-datacenter round
+  trip alone is a factor of about 5,000.
+</p>
+<p class="sub">
+  These are rounded planning numbers, not measurements. The original table
+  attributed to Jeff Dean (mutex 25 ns, 1 MB read from memory 250 µs, disk seek
+  10 ms) describes hardware of roughly that era; Colin Scott's interactive page
+  extrapolates it to today and is where the optimistic 3 µs figure for a
+  sequential memory read comes from. Where the two disagree this table gives a
+  range.
 </p>
 <table>
   <tr><th>Operation</th><th>Time</th><th>What it means for you</th></tr>
   <tr><td>L1 cache reference</td><td>~1 ns</td><td>Free; never a design consideration</td></tr>
   <tr><td>Branch mispredict</td><td>~3 ns</td><td>Free</td></tr>
   <tr><td>Mutex lock/unlock</td><td>~20 ns</td><td>Contention, not the lock itself, is what hurts</td></tr>
-  <tr><td>Main memory reference</td><td>~100 ns</td><td>An in-process cache hit is ~1000x faster than a network cache hit</td></tr>
-  <tr><td>Read 1 MB sequentially from memory</td><td>~3 µs</td><td>Serialisation and copying usually cost more than the read</td></tr>
+  <tr><td>Main memory reference</td><td>~100 ns</td><td>An in-process cache hit is thousands of times faster than a network cache hit</td></tr>
+  <tr><td>Read 1 MB sequentially from memory</td><td>~30-100 µs in practice (classic table: 250 µs; 2020 extrapolation: 3 µs)</td><td>Serialisation and copying cost as much as the read itself</td></tr>
   <tr><td>SSD random read</td><td>~16-100 µs</td><td>A cache miss to local NVMe is survivable; to a remote DB it is not</td></tr>
   <tr><td>Round trip in the same datacenter</td><td>~0.5 ms</td><td>Every internal service hop costs this <em>at minimum</em> — this is why chatty microservices die</td></tr>
   <tr><td>Redis GET over the network</td><td>~0.2-1 ms</td><td>Dominated by the round trip, not by Redis</td></tr>
   <tr><td>Simple indexed DB query, warm</td><td>~1-10 ms</td><td>Your typical read-path floor</td></tr>
   <tr><td>HDD seek</td><td>~2-10 ms</td><td>Why random I/O on spinning disks shaped a generation of storage design</td></tr>
   <tr><td>Cross-region RTT (US East to US West)</td><td>~60-70 ms</td><td>One synchronous cross-country call blows a 100 ms budget on its own</td></tr>
-  <tr><td>Cross-continent RTT (US East to Europe)</td><td>~80-100 ms</td><td>Speed of light in fibre, not an engineering problem you can optimise</td></tr>
-  <tr><td>Cross-planet RTT (US to Singapore/Sydney)</td><td>~200-250 ms</td><td>Multi-region read-local architecture is mandatory, not a nice-to-have</td></tr>
+  <tr><td>Cross-continent RTT (US East to Western Europe)</td><td>~70-90 ms (New York to London is about 65-70)</td><td>Speed of light in fibre, not an engineering problem you can optimise</td></tr>
+  <tr><td>Cross-planet RTT (US East to Singapore or India, New York to Sydney)</td><td>~200-230 ms</td><td>Multi-region read-local architecture is mandatory, not a nice-to-have</td></tr>
 </table>
 <div class="sticky mint">
   <span class="ttl">The budget arithmetic that wins arguments</span>
   For a 200 ms p99 page load with a user 80 ms away: 80 ms is gone to the
-  network round trip before your code runs. Handshakes take more unless the
-  connection is warm. That leaves you well under 100 ms of server time —
-  enough for one cache hit plus one database query, or about five sequential
-  internal service hops. Sequential dependencies, not slow code, are what
+  network round trip before your code runs, leaving about 120 ms. That
+  assumes a warm connection: on a cold one every handshake round trip costs
+  another 80 ms and the budget is gone before the server runs (see the dry run
+  below). Those 120 ms of server time are enough for one cache hit plus one
+  database query, or about five sequential internal service hops. Sequential dependencies, not slow code, are what
   usually eat the budget.
 </div>
 <p class="sub">
   Note that the speed of light in fibre is about 200,000 km/s, so New York to
-  London (5,600 km) has a physical floor near 56 ms round trip; real paths run
-  1.5-2x that. When you say "we cannot make this call synchronous across
+  London (5,600 km) has a physical floor near 55 ms round trip. Measured paths
+  on that route run only about 15% above it (around 64 ms); less direct routes
+  run further above their floor. When you say "we cannot make this call synchronous across
   regions", you are citing physics, and interviewers recognise the difference
   between that and an opinion.
 </p>
@@ -357,8 +385,24 @@ export const sysdesClientServerBasics: Chapter = {
     <li>Can you name each hop in "what happens when I hit enter" and roughly what it costs in milliseconds?</li>
     <li>Can you explain why lowering the DNS TTL alone doesn't give you fast failover, and what actually does?</li>
     <li>Can you compute how many round trips a cold TLS 1.3 connection costs before the first HTTP byte, and explain why connection reuse matters?</li>
-    <li>Can you distinguish an L4 from an L7 load balancer and say when you'd choose each?</li>
+    <li>Can you distinguish an L4 from an L7 load balancer, say when you'd choose each, and explain why an L7 balancer always terminates TLS while an L4 one only may?</li>
     <li>Can you explain what "stateless" means for an app server and where you'd move the state instead?</li>
   </ul>
+</div>
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://www.rfc-editor.org/rfc/rfc8446" rel="noopener noreferrer">RFC 8446: TLS 1.3</a> — the 1-RTT handshake and the replay caveats of 0-RTT data</li>
+    <li><a href="https://www.rfc-editor.org/rfc/rfc9000" rel="noopener noreferrer">RFC 9000: QUIC</a> — combined transport and crypto handshake, and connection migration by connection ID</li>
+    <li><a href="https://www.rfc-editor.org/rfc/rfc9114" rel="noopener noreferrer">RFC 9114: HTTP/3</a> — how HTTP maps onto QUIC streams</li>
+    <li><a href="https://www.rfc-editor.org/rfc/rfc9293" rel="noopener noreferrer">RFC 9293: TCP</a> — the current TCP specification, including required congestion control</li>
+    <li><a href="https://www.rfc-editor.org/rfc/rfc6928" rel="noopener noreferrer">RFC 6928: increasing TCP's initial window</a> — why a fresh connection starts at about 10 segments</li>
+    <li><a href="https://www.rfc-editor.org/rfc/rfc8305" rel="noopener noreferrer">RFC 8305: Happy Eyeballs version 2</a> — racing IPv6 and IPv4 connection attempts</li>
+    <li><a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html" rel="noopener noreferrer">AWS: Network Load Balancer TLS listeners</a> — an L4 balancer that can terminate TLS</li>
+    <li><a href="https://gist.github.com/jboner/2841832" rel="noopener noreferrer">Latency numbers every programmer should know</a> — the classic table usually attributed to Jeff Dean (100 ns memory, 250 µs per MB from memory, 10 ms disk seek)</li>
+    <li><a href="https://colin-scott.github.io/personal_website/research/interactive_latency.html" rel="noopener noreferrer">Interactive latency numbers by year</a> — the extrapolated latency table, labelled as estimates</li>
+    <li><a href="https://hatsnet.io/docs/network/latency/pairs/nyc-lon-rtt" rel="noopener noreferrer">New York to London round-trip measurements</a> — roughly 64 ms measured against a 55 ms fibre floor</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees.</p>
 </div>`,
 };

@@ -23,9 +23,9 @@ export const sysdesStorageSystems: Chapter = {
   <tr><td>Unit</td><td>Fixed-size blocks, no structure</td><td>Files in a POSIX hierarchy</td><td>Immutable blob + key + metadata, flat namespace</td></tr>
   <tr><td>Access</td><td>Attached to one machine as a device</td><td>Mounted by many machines (NFS/SMB)</td><td>HTTP GET/PUT, from anywhere</td></tr>
   <tr><td>Mutation</td><td>Random read/write at any offset</td><td>Random read/write, plus locking semantics</td><td>Replace whole object; no partial in-place edit</td></tr>
-  <tr><td>Scale limit</td><td>One volume, typically up to ~64 TB</td><td>Petabytes, but metadata operations get slow</td><td>Effectively unbounded, per-object up to ~5 TB</td></tr>
-  <tr><td>Latency</td><td>Sub-millisecond</td><td>~1-5 ms</td><td>~20-100 ms first byte</td></tr>
-  <tr><td>Cost / GB-month</td><td>~$0.08 (SSD-backed)</td><td>~$0.30 (managed NFS)</td><td>~$0.023, dropping to ~$0.001 archived</td></tr>
+  <tr><td>Scale limit</td><td>One volume, typically up to ~64 TB</td><td>Petabytes, but metadata operations get slow</td><td>Effectively unbounded; S3 allows objects up to 50 TB (48.8 TiB) since December 2025 (5 TB before)</td></tr>
+  <tr><td>Latency (rough, varies)</td><td>Network-attached SSD such as EBS gp3: single-digit ms; local NVMe: far lower</td><td>Low single-digit ms</td><td>~100-200 ms first byte on S3 Standard (AWS guidance); single-digit ms on S3 Express One Zone</td></tr>
+  <tr><td>Cost / GB-month (approximate US East list prices; check current)</td><td>~$0.08 (SSD-backed)</td><td>~$0.30 (managed NFS)</td><td>~$0.023, dropping to ~$0.001 archived</td></tr>
   <tr><td>Reach for this when…</td><td>A database's data directory, or anything needing real random writes</td><td>Legacy software that insists on a filesystem, or shared build/render scratch space</td><td>User uploads, media, backups, logs, static assets — the default</td></tr>
 </table>
 <p class="sub">
@@ -40,18 +40,24 @@ export const sysdesStorageSystems: Chapter = {
 <p>
   S3-class object stores advertise something like <b>eleven nines of
   durability</b> (99.999999999%). That is not marketing noise, but it also
-  does not mean what people assume. It is an annual expected-loss figure:
-  store ten million objects and you would statistically expect to lose one
-  roughly every ten thousand years. It is achieved by <b>erasure coding</b> —
-  the object is split into k data fragments plus m parity fragments spread
-  across independent failure domains, and any k of the k+m fragments
-  reconstruct it. Losing several disks, or an entire facility, loses nothing.
+  does not mean what people assume. It is a design target for annual
+  expected object loss, not a contractual guarantee: store ten million
+  objects and you would statistically expect to lose one roughly every ten
+  thousand years. AWS describes how it gets there as redundant storage on
+  multiple devices across at least three Availability Zones, continuous
+  checksum verification, and fast detection and repair of lost redundancy, so
+  that the loss of a whole AZ loses nothing. The generic technique behind
+  object stores of this kind is <b>erasure coding</b> — split the object into
+  k data fragments plus m parity fragments spread across independent failure
+  domains, where any k of the k+m fragments reconstruct it — but treat that as
+  the textbook mechanism, not a statement of S3's internals.
 </p>
 <div class="warn">
   <span class="ttl">⚠ Durability and availability are different properties, and conflating them is a tell</span>
   <b>Durability</b> is "the bytes still exist." <b>Availability</b> is "you
-  can read them right now." S3 Standard offers eleven nines of durability but
-  only four nines of availability, backed by a three-nines SLA. Those are not
+  can read them right now." S3 Standard is designed for eleven nines of durability but
+  only 99.99% availability, and the SLA that credits you if it falls short
+  starts at a lower, 99.9% threshold. Those are not
   in tension — a regional API outage means you cannot reach a perfectly
   intact object. And critically, <b>durability protects against hardware, not
   against you</b>. Eleven nines does nothing about a bad deploy that deletes
@@ -61,13 +67,20 @@ export const sysdesStorageSystems: Chapter = {
 </div>
 <p>
   The other property to name explicitly is <b>consistency</b>. Modern S3 is
-  strongly read-after-write consistent for new objects and overwrites, which
-  removed a class of bug that used to bite everyone. But two caveats survive
-  and are worth knowing: <em>listing</em> a bucket can still lag behind
-  individual object writes at scale, and any CDN or client cache in front of
-  the bucket reintroduces staleness that the storage layer's guarantee says
-  nothing about. Cache-busting by putting a content hash in the key —
-  writing new objects instead of overwriting them — sidesteps both.
+  strongly read-after-write consistent for PUT, DELETE and LIST, in every
+  Region, since December 2020 — a listing issued after a successful write
+  shows it. That removed a class of bug that used to bite everyone. The
+  caveats that survive are different ones: bucket-level configuration (for
+  example, enabling versioning, or deleting a bucket then listing buckets) is
+  still eventually consistent; there is no atomic update across keys; two
+  concurrent writers to one key are last-writer-wins; and any CDN or client
+  cache in front of the bucket reintroduces staleness that the storage
+  layer's guarantee says nothing about. For the concurrent-writer case S3
+  now supports conditional writes (<code>If-None-Match: *</code> to create
+  only if absent, <code>If-Match</code> with an ETag to overwrite only if
+  unchanged), which gives you a compare-and-set on a single key. Cache-busting
+  by putting a content hash in the key — writing new objects instead of
+  overwriting them — sidesteps the cache problem and the overwrite race.
 </p>
 
 <h3>Presigned URLs: get your app servers out of the byte path</h3>
@@ -117,7 +130,7 @@ export const sysdesStorageSystems: Chapter = {
     <text class="sm" x="412" y="158" text-anchor="middle">5 event</text>
     <text class="sm" x="612" y="212" text-anchor="end">6 marks it ready</text>
   </svg>
-  <figcaption>The green path carries every byte and never touches the app tier. The app tier only ever handles two small JSON requests per upload, whatever the file size.</figcaption>
+  <figcaption>The green path carries every byte and never touches the app tier. The app tier only ever handles a few small JSON requests per upload, whatever the file size.</figcaption>
 </figure>
 <p>
   A presigned URL is a normal storage URL with a signature, an expiry and a
@@ -128,10 +141,13 @@ export const sysdesStorageSystems: Chapter = {
 </p>
 <p>
   The constraints matter, and interviewers probe them. A presigned PUT should
-  pin: <b>expiry</b> (5-15 minutes, not 7 days), <b>a maximum content
-  length</b> so a client cannot upload 500 GB, <b>the exact object key</b>
+  pin: <b>expiry</b> (5-15 minutes, not 7 days), <b>the exact object key</b>
   which your server generates so clients cannot overwrite each other's
-  objects, and ideally <b>content type</b>. The key should be
+  objects, and <b>content type</b>. Size needs care: you can sign the exact
+  Content-Length you expect, but a presigned PUT cannot express "any size up
+  to N". For a size ceiling use a presigned POST with a
+  <code>content-length-range</code> condition, or re-check the size from the
+  object-created event and delete oversize objects. The key should be
   server-chosen and unguessable — a UUID or content hash, never
   a user-supplied filename, which is both a collision problem and a path
   traversal problem.
@@ -158,15 +174,16 @@ export const sysdesStorageSystems: Chapter = {
 
 <h3>Large media: chunked, resumable, and parallel</h3>
 <p>
-  A single PUT is fine to about 100 MB and is capped around 5 GB. Beyond
+  A single PUT is fine up to about 100 MB (AWS suggests multipart from there) and is capped at 5 GB. Beyond
   that, and on any mobile network, one long-lived request is the wrong shape:
   a dropped connection at 95% costs you the whole transfer.
 </p>
 <p>
   <b>Multipart upload</b> solves this. The client initiates an upload and gets
-  an upload ID, then uploads independent parts (minimum 5 MB each, up to
-  10,000 parts, which is what gets you to a 5 TB object), each returning an
-  ETag. When all parts are in, the client sends a complete request listing the
+  an upload ID, then uploads independent parts (5 MiB to 5 GiB each, up to 10,000 parts), each
+  returning an ETag. The part-count cap sets the part size: a 5 TB object over
+  10,000 parts needs parts of at least ~524 MiB, and the maximum 48.8 TiB
+  object needs parts near 5 GiB. When all parts are in, the client sends a complete request listing the
   parts and their ETags, and the storage service assembles the object. Three
   properties fall out of that design and each is worth stating:
 </p>
@@ -190,12 +207,12 @@ export const sysdesStorageSystems: Chapter = {
   <tr><td>2. pending row</td><td>App server</td><td>Insert metadata row {id, key, size: 2.3 GB, status: "pending"}</td><td>A row exists; no bytes exist anywhere yet</td></tr>
   <tr><td>3. signed URL(s)</td><td>App server</td><td>2.3 GB is past the single-PUT comfort zone, so sign a multipart upload at 100 MB/part: ⌈2,300 MB / 100 MB⌉ = 23 presigned part URLs, 10-minute expiry each</td><td>Client holds 23 URLs; app server has still never seen a byte</td></tr>
   <tr><td>4. PUT bytes</td><td>Client</td><td>Uploads parts 1-23 directly to the bucket, 6 in parallel; part 14 drops mid-transfer and is retried alone</td><td>Bytes land in the bucket; metadata row is still "pending"</td></tr>
-  <tr><td>5. event</td><td>Object storage</td><td>CompleteMultipartUpload assembles the 23 parts into one object and emits an object-created event</td><td>Event lands on the queue; the object exists but nothing has confirmed it yet</td></tr>
+  <tr><td>5. event</td><td>Object storage</td><td>The client reports the 23 part ETags to the app server (one more small JSON call), which sends CompleteMultipartUpload; storage assembles the parts into one object and emits an object-created event</td><td>Event lands on the queue; the object exists but nothing has confirmed it yet</td></tr>
   <tr><td>6. ready</td><td>Worker</td><td>Consumes the event, verifies the checksum and scans the file, flips the row to "ready"</td><td>Only now is the video visible to any reader</td></tr>
 </table>
 <p class="sub">
   Track which actor touches the file's bytes: the app server never does — it
-  only ever handles the two small JSON calls in steps 1 and 3, regardless of
+  only ever handles the few small JSON calls in steps 1, 3 and 5 (a multipart upload adds the part-signing and complete calls), independent of
   whether the upload is 200 KB or 200 GB. And the pending → ready transition
   is driven entirely by the storage layer's own event in steps 5-6, never by
   the client's word that it finished — exactly the trust boundary the
@@ -295,19 +312,32 @@ export const sysdesStorageSystems: Chapter = {
 </p>
 <table>
   <tr><th>Tier</th><th>$/GB-month</th><th>Retrieval</th><th>First-byte latency</th><th>Right for</th></tr>
-  <tr><td>Standard (hot)</td><td>~$0.023</td><td>free</td><td>tens of ms</td><td>Anything read this month</td></tr>
-  <tr><td>Infrequent access (warm)</td><td>~$0.0125</td><td>~$0.01/GB</td><td>tens of ms</td><td>Read a few times a year; 30-day minimum charge</td></tr>
-  <tr><td>Archive instant</td><td>~$0.004</td><td>~$0.03/GB</td><td>tens of ms</td><td>Compliance copies you must be able to produce immediately</td></tr>
+  <tr><td>Standard (hot)</td><td>~$0.023</td><td>free</td><td>~100-200 ms</td><td>Anything read this month</td></tr>
+  <tr><td>Infrequent access (warm)</td><td>~$0.0125</td><td>~$0.01/GB</td><td>like Standard</td><td>Read a few times a year; 30-day minimum charge</td></tr>
+  <tr><td>Archive instant</td><td>~$0.004</td><td>~$0.03/GB</td><td>like Standard</td><td>Compliance copies you must be able to produce immediately</td></tr>
   <tr><td>Archive flexible</td><td>~$0.0036</td><td>~$0.01/GB</td><td>minutes to hours</td><td>Backups, old media</td></tr>
   <tr><td>Deep archive (cold)</td><td>~$0.00099</td><td>~$0.02/GB</td><td>up to 12 hours</td><td>Legal retention you hope never to read</td></tr>
 </table>
+<p class="sub">
+  Prices are approximate US East list prices at the time of checking; they
+  vary by region and change, so confirm on the provider's pricing page.
+</p>
 <p>
   Make the saving concrete. Take 5 PB of user media where 5% is read in any
   given month. All-hot costs about 5,000,000 GB × $0.023 = <b>$115,000 a
   month</b>. Move the 95% cold portion to deep archive and it becomes
   250,000 × $0.023 + 4,750,000 × $0.00099 ≈ 5,750 + 4,700 = <b>about $10,500
   a month</b> — a 90% cut, with the tradeoff that a rare access takes hours
-  and costs a retrieval fee.
+  and costs a retrieval fee. That is the steady-state number; getting there
+  has a bill of its own. Lifecycle transitions are charged per object (about
+  $0.05 per 1,000 objects into Deep Archive), and Glacier-class storage adds
+  roughly 40 KB of metadata overhead per object (8 KB billed at Standard
+  rates, 32 KB at archive rates). If the 4.75 PB being archived is 500 KB
+  photos, that is about 9.5 billion objects and a one-time transition charge
+  near $475,000, against savings of roughly $104,000 a month: about four and a
+  half months to pay back, plus the 180-day minimum storage charge if you
+  delete early. With 100 MB videos the same transition is a rounding error,
+  so object size decides whether tiering is worth it.
 </p>
 <div class="warn">
   <span class="ttl">⚠ Aggressive tiering can cost more than it saves</span>
@@ -321,11 +351,21 @@ export const sysdesStorageSystems: Chapter = {
 </div>
 <p class="sub">
   One more line item people forget entirely: <b>egress</b>. Pulling data out
-  of a cloud region runs around $0.05-0.09 per GB, which is roughly four
-  times the monthly cost of storing it. For a media-heavy product, bandwidth
+  of a cloud region to the internet lists at up to about $0.09 per GB for the
+  first tier (the first 100 GB a month is free, and the rate falls with volume),
+  which is on the order of four times the monthly price of storing the same
+  gigabyte. For a media-heavy product, bandwidth
   out of the CDN is usually a larger bill than the storage itself, which is
   the real financial argument for high cache-hit ratios.
 </p>
+
+<h3>Operational details worth one sentence each</h3>
+<ul>
+  <li><b>Request rates.</b> S3 scales per prefix: at least 3,500 write and 5,500 read requests per second per prefix, with no limit on the number of prefixes. Spreading keys across prefixes parallelises hot workloads, and a 503 "Slow Down" means you are scaling faster than the prefix has partitioned.</li>
+  <li><b>Small files.</b> Billions of tiny objects make per-request cost and per-object overhead dominate. Systems built for photos (Facebook's Haystack and f4) pack many small blobs into large files with an in-memory index to avoid a metadata lookup per read; the lesson for a design is to batch small items into larger objects when you control the write path.</li>
+  <li><b>Recovery targets.</b> Say the recovery point objective (how much data you can lose) and recovery time objective (how long you can be down) for the blob store, and back them with a 3-2-1 plan (three copies, two media, one off-site or cross-account) and versioning plus object lock against deletion.</li>
+  <li><b>Origin protection.</b> Put the CDN in front and restrict the bucket to the CDN's identity, so a cache miss storm or a scraper cannot hit the bucket at full price.</li>
+</ul>
 
 <h3>Recognizing it in an unseen problem</h3>
 <ul>
@@ -340,11 +380,27 @@ export const sysdesStorageSystems: Chapter = {
 <div class="bx is-ref">
   <span class="ttl">Before you move on</span>
   <ul>
-    <li>Explain why the app server should never see upload bytes, and name the two small JSON calls it handles instead, whatever the file size.</li>
-    <li>Given a file size and a part size, compute how many parts a multipart upload needs, and state the two limits (minimum part size, maximum part count) that bound the choice.</li>
+    <li>Explain why the app server should never see upload bytes, and name the few small JSON calls it handles instead, whatever the file size.</li>
+    <li>Given a file size and a part size, compute how many parts a multipart upload needs, and state the limits (5 MiB to 5 GiB per part, 10,000 parts) that bound the choice.</li>
     <li>Explain the difference between durability and availability using S3's own numbers, and say what neither one protects against.</li>
     <li>Name at least two of the five reasons storing blobs in a relational database breaks down at scale.</li>
     <li>Given an access-frequency split, compute the monthly cost difference between all-hot storage and a hot/cold tiering split, and say what you trade away for the savings.</li>
+    <li>Explain why a lifecycle transition of billions of small objects can take months to pay back, and what you would measure first.</li>
   </ul>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html" rel="noopener noreferrer">What is Amazon S3?</a> — the consistency model (strong for PUT, DELETE and LIST; bucket configuration eventual) and S3 Express One Zone</li>
+    <li><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/qfacts.html" rel="noopener noreferrer">S3 multipart upload limits</a> — 48.8 TiB objects, 10,000 parts, 5 MiB to 5 GiB parts</li>
+    <li><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/DataDurability.html" rel="noopener noreferrer">S3 data protection and durability</a> — three Availability Zones, checksums, repair, and the 11 nines design target</li>
+    <li><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/optimizing-performance.html" rel="noopener noreferrer">Optimizing S3 performance</a> — 3,500 and 5,500 requests per second per prefix and the 100-200 ms first-byte guidance</li>
+    <li><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-writes.html" rel="noopener noreferrer">S3 conditional writes</a> — If-None-Match and If-Match for create-if-absent and compare-and-set</li>
+    <li><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/PresignedUrlUploadObject.html" rel="noopener noreferrer">Uploading with presigned URLs</a> — what a presigned PUT does and signs, and the 7-day SDK maximum</li>
+    <li><a href="https://aws.amazon.com/s3/pricing/" rel="noopener noreferrer">S3 pricing</a> — minimum storage durations, per-object overhead, and the free egress allowance</li>
+    <li><a href="https://alestic.com/2012/12/s3-glacier-costs/" rel="noopener noreferrer">Cost of transitioning S3 objects to Glacier</a> — why per-object transition fees dominate for small objects</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees. Prices are approximate US East list prices and change.</p>
 </div>`,
 };

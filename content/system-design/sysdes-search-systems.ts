@@ -17,14 +17,16 @@ export const sysdesSearchSystems: Chapter = {
   state precisely rather than waving at.
 </p>
 <ul>
-  <li><b>The leading wildcard defeats the index.</b> A B-tree orders by prefix, so it can answer "starts with run" but has no way to jump to rows containing <em>run</em> somewhere in the middle. Every query becomes a full table scan.</li>
+  <li><b>The leading wildcard defeats the index.</b> A B-tree orders by prefix, so it can answer "starts with run" but has no way to jump to rows containing <em>run</em> somewhere in the middle, so with a plain B-tree every such query becomes a full table scan. (Postgres's <code>pg_trgm</code> extension can index infix <code>LIKE</code> with a trigram GIN index, which fixes this one point, but not ranking or linguistic matching.)</li>
   <li><b>Scans do not fit the latency budget.</b> 50 million rows at 2 KB each is 100 GB. Even reading purely from page cache at several GB/s that is tens of seconds, and it burns the CPU and I/O of the database your writes depend on.</li>
   <li><b>It is literal.</b> "running shoes" does not match "shoes for running", "Running Shoe", or "sneakers". No stemming, no reordering, no synonyms.</li>
   <li><b>There is no ranking at all.</b> <code>LIKE</code> returns a set, not an order. With 40,000 matches you have no principled way to pick the 10 to show, and the ordering is the entire product.</li>
 </ul>
 <p>
   Postgres full-text search (<code>tsvector</code> plus a GIN index) fixes the
-  first three and part of the fourth, and is genuinely the right answer up to
+  first three and part of the fourth (its <code>ts_rank</code> ranks from
+  per-document information; the Postgres docs note the ranking functions use no
+  global information, so it is not corpus-aware BM25), and is genuinely the right answer up to
   a few million documents with modest query volume. Say so — reaching for
   Elasticsearch on day one is over-engineering and a good interviewer will
   say as much. But both roads lead to the same data structure, so understand
@@ -74,8 +76,10 @@ export const sysdesSearchSystems: Chapter = {
   Adding fifty million documents that contain neither <em>red</em> nor
   <em>run</em> costs those queries nothing. And because the lists are sorted
   integer sequences, they compress viciously well (delta encoding plus
-  variable-byte or bitpacking), so a 100 GB corpus produces an index in the
-  low tens of GB that largely lives in page cache.
+  variable-byte or bitpacking), so the index is often a fraction of the raw corpus size and can
+  largely live in page cache (how much smaller depends on what you store:
+  positions, stored fields and doc values change it a lot, so treat any ratio as
+  a planning figure and measure).
 </p>
 <p class="sub">
   Postings usually store more than IDs. Term frequency per document powers
@@ -104,17 +108,21 @@ export const sysdesSearchSystems: Chapter = {
 
 <h3>Analysis: the pipeline that decides what a term even is</h3>
 <p>
-  Notice that "running" became "run" and "for" disappeared. That transform is
-  the <b>analyzer</b>, and it runs identically at index time and at query
-  time — the non-negotiable rule of search, because a query term that was
-  analyzed differently from the document term will simply never match.
+  Notice that "running" became "run" and "for" disappeared (this example uses a
+  classic stop-word list). That transform is the <b>analyzer</b>, and it must
+  produce <em>compatible</em> terms at index time and at query time — the
+  non-negotiable rule of search, because a query term that was analyzed
+  incompatibly with the document term will simply never match. Usually that
+  means the same analyzer; Elasticsearch also lets a field have a separate
+  <code>search_analyzer</code>, which is exactly how edge n-gram autocomplete
+  works: the index side emits n-grams, the query side does not.
 </p>
 <table>
   <tr><th>Stage</th><th>Does</th><th>"Red Running Shoes, for Kids!" becomes</th></tr>
   <tr><td>Character filter</td><td>Strip HTML, normalize punctuation and accents</td><td>Red Running Shoes for Kids</td></tr>
   <tr><td>Tokenizer</td><td>Split into terms on whitespace/punctuation rules</td><td>[Red] [Running] [Shoes] [for] [Kids]</td></tr>
   <tr><td>Lowercase</td><td>Case-fold</td><td>[red] [running] [shoes] [for] [kids]</td></tr>
-  <tr><td>Stop words</td><td>Drop extremely common, low-information terms</td><td>[red] [running] [shoes] [kids]</td></tr>
+  <tr><td>Stop words (classic pipelines)</td><td>Drop extremely common, low-information terms</td><td>[red] [running] [shoes] [kids]</td></tr>
   <tr><td>Stemming</td><td>Reduce inflections to a common root</td><td>[red] [run] [shoe] [kid]</td></tr>
   <tr><td>Synonyms (optional)</td><td>Expand or normalize equivalents</td><td>[red] [run] [shoe] [sneaker] [kid]</td></tr>
 </table>
@@ -128,15 +136,20 @@ export const sysdesSearchSystems: Chapter = {
   "oper"; lemmatization is the dictionary-based, slower, more accurate
   alternative. <b>Stop words are no longer a clear win</b>: they were a
   compression trick from when index size dominated, and dropping them breaks
-  phrase queries like "to be or not to be" and "The Who". Modern engines
-  usually keep them and let IDF discount them automatically.
+  phrase queries like "to be or not to be" and "The Who". Modern setups
+  usually keep them and let IDF discount them automatically: Elasticsearch's
+  standard analyzer, for instance, has stop words off by default.
 </p>
 <div class="warn">
-  <span class="ttl">⚠ Changing the analyzer means reindexing everything</span>
-  The analyzer's output is baked into the index. Add a synonym list or switch
-  stemmers and every existing document is now tokenized under the old rules
-  while queries use the new ones — matches silently disappear. This is why
-  production search runs <b>index aliases</b>: build the new index in
+  <span class="ttl">⚠ Changing index-time analysis means reindexing everything</span>
+  Whatever the analyzer emitted at index time is baked into the index. Switch
+  stemmers or tokenizers, or add synonyms at index time, and existing documents
+  keep terms produced by the old rules while queries use the new ones —
+  matches silently disappear until you reindex. The exception is worth knowing:
+  search-time-only synonyms (a <code>synonym_graph</code> filter marked
+  <code>updateable</code> in a search analyzer) can be reloaded with the
+  <code>_reload_search_analyzers</code> API without reindexing. For everything
+  else, production search runs <b>index aliases</b>: build the new index in
   parallel, backfill it, then atomically swing the alias. Volunteering that
   operational detail is a strong signal, because it is the thing that hurts
   in real life.
@@ -166,7 +179,19 @@ export const sysdesSearchSystems: Chapter = {
   Lucene" demonstrates exactly the right depth for a system design round. If
   someone pushes further, the honest frontier is that BM25 is a lexical
   score, and modern stacks add a <b>vector/embedding</b> retrieval arm to
-  catch semantic matches BM25 misses, then fuse the two result sets.
+  catch semantic matches BM25 misses, then fuse the two result sets. The
+  vector side is approximate nearest-neighbour search (HNSW graphs are the
+  common index), and a simple, robust fusion is <b>reciprocal rank fusion</b>:
+  each document scores the sum of 1 / (k + rank) across the lists, with k = 60
+  by default in Elasticsearch, so no score normalisation is needed.
+</p>
+<p class="sub">
+  Two more terms that come up: <b>spell correction</b> ("did you mean", usually
+  edit distance against the vocabulary, or a model trained on query logs) and
+  <b>learning to rank</b> (a trained model, often gradient-boosted trees, that
+  reorders the few hundred candidates using many features). And how do you know
+  any of it is good? Offline, humans or click logs label results and you report
+  NDCG@10 or MRR; online, you A/B test click-through and reformulation rate.
 </p>
 
 <h3>Textual relevance is not business relevance</h3>
@@ -212,9 +237,9 @@ export const sysdesSearchSystems: Chapter = {
   becomes searchable.
 </p>
 <ul>
-  <li><b>Shards</b> partition the index. Each shard is an independent Lucene index; a query fans out to every shard, each returns its local top-k, and a coordinating node merges them. Practical sizing is <b>10-50 GB per shard</b>. Over-sharding is the common mistake — every query pays coordination overhead on every shard, so a 20 GB index split into 100 shards is dramatically slower than the same data in 2.</li>
-  <li><b>Replicas</b> are full copies of a shard. They provide both availability (a lost node loses no data) and read throughput (queries round-robin across copies). Writes go to the primary and replicate; read scaling is therefore cheap, write scaling requires more primaries, which requires more shards, which you cannot change without reindexing.</li>
-  <li><b>Near-real-time.</b> Lucene segments are immutable. A new document goes to an in-memory buffer and is not searchable until a <em>refresh</em> creates a new segment — by default every 1 second. That one second is not a bug you can configure away for free: refreshing more often produces more tiny segments and more merge pressure. For bulk loads the standard move is to disable refresh entirely, index, then refresh once.</li>
+  <li><b>Shards</b> partition the index. Each shard is an independent Lucene index; a query fans out to every shard, each returns its local top-k, and a coordinating node merges them. Elastic's sizing guidance is <b>10-50 GB per shard</b> and under about 200 million documents. Over-sharding is the common mistake — each shard's search runs on a CPU thread, every query pays coordination overhead on every shard, and a 20 GB index split into 100 shards is dramatically slower than the same data in 2. Fan-out also amplifies tail latency: the query finishes when the slowest shard does, so if each of 100 shards is slow on 1% of requests, about 63% of queries (1 − 0.99^100) hit at least one slow shard. Note the shape: this is a <em>document-partitioned</em> (local) secondary index, where each shard indexes whole documents and every query scatters to all shards; a <em>term-partitioned</em> index would send a query only to the shards owning its terms but makes writes touch many shards (the trade-off is laid out in Designing Data-Intensive Applications). Because each shard scores with its own statistics, tiny or skewed shards can distort IDF; <code>dfs_query_then_fetch</code> collects global term statistics first, at the cost of an extra round trip.</li>
+  <li><b>Replicas</b> are full copies of a shard. They provide both availability (a lost node loses no data) and read throughput (queries round-robin across copies). Writes go to the primary and replicate; read scaling is therefore cheap, write scaling requires more primaries, which requires more shards. The primary-shard count of an existing index cannot be edited in place, but the split API creates a new index with a multiple of the shard count from a read-only source without a full reindex, and time-based data uses rollover to start each new index with a fresh shard count.</li>
+  <li><b>Near-real-time.</b> Lucene segments are immutable. A new document goes to an in-memory buffer and is not searchable until a <em>refresh</em> creates a new segment — by default every 1 second (with one wrinkle: if you have not set <code>refresh_interval</code> explicitly, a shard that has had no search for 30 seconds, <code>index.search.idle.after</code>, stops refreshing in the background until the next search arrives, and that search triggers the refresh). That one second is not a bug you can configure away for free: refreshing more often produces more tiny segments and more merge pressure. For bulk loads the standard move is to disable refresh entirely, index, then refresh once.</li>
 </ul>
 <p class="sub">
   Immutable segments also explain deletes and updates. A delete just marks a
@@ -222,7 +247,12 @@ export const sysdesSearchSystems: Chapter = {
   when background <b>merges</b> rewrite segments together, so a
   heavily-updated index carries dead weight and periodic merge I/O spikes.
   This is why Elasticsearch is a poor primary datastore for
-  frequently-mutating rows and a great one for append-heavy documents.
+  frequently-mutating rows and a great one for append-heavy documents. (Segments
+  that are written immutably and merged in the background are the same idea as
+  a log-structured merge tree.) One more practical limit:
+  <code>from</code> + <code>size</code> paging stops at 10,000 hits by default;
+  deep pagination uses <code>search_after</code> with a point in time, so
+  "jump to page 5,000" is not a feature you promise.
 </p>
 
 <h3>Search is a secondary index, fed asynchronously</h3>
@@ -274,7 +304,7 @@ export const sysdesSearchSystems: Chapter = {
 <ul>
   <li><b>No read-your-writes.</b> A user edits a listing and immediately searches for it; the change is committed but not yet indexed. Fixes, in increasing order of effort: tell the UI it may take a moment; read the just-written record from the primary and splice it into the results; or make the write path wait for an index acknowledgement, which trades latency for consistency and is rarely worth it.</li>
   <li><b>Never dual-write.</b> The tempting implementation is "write to Postgres, then write to Elasticsearch" in the same request handler. It fails the instant the second write errors or the process dies between them, and it leaves permanent, silent divergence. Use the <b>transactional outbox</b> (write the row and an outbox event in one transaction, a relay publishes the event) or <b>change data capture</b> from the database's replication log. Either way there is exactly one atomic commit.</li>
-  <li><b>It is disposable, and that is the point.</b> Because the index is derived, you can always rebuild it from source. This is what makes the alias-swap reindex safe, and it means a corrupted search cluster is an availability incident, not a data-loss incident. It also means search should degrade gracefully — if the cluster is down, fall back to a database prefix lookup or a "search is temporarily unavailable" state rather than failing the whole page.</li>
+  <li><b>It is disposable, and that is the point.</b> Because the index is derived, you can always rebuild it from source. This is what makes the alias-swap reindex safe, and it means a corrupted search cluster is an availability incident, not a data-loss incident. Recovery is a choice: restoring a snapshot is usually the faster way back for a large index, and a reindex from source is the fallback (and the only way to apply a mapping or analyzer change). It also means search should degrade gracefully — if the cluster is down, fall back to a database prefix lookup or a "search is temporarily unavailable" state rather than failing the whole page.</li>
 </ul>
 <div class="say">
   <span class="ttl">Say it like this →</span> "Search is a secondary index. The
@@ -282,14 +312,14 @@ export const sysdesSearchSystems: Chapter = {
   CDC or a transactional outbox into a stream, with an indexer doing bulk
   writes into Elasticsearch. That gives me eventual consistency on the order
   of a second, so I'd handle read-your-writes at the API layer by merging the
-  freshly-written record into results. If the cluster dies I rebuild it from
-  the source rather than restore it from backup."
+  freshly-written record into results. If the cluster dies I restore the latest snapshot, or
+  rebuild from the source if that is faster or the mapping changed."
 </div>
 
 <h3>Autocomplete is a different problem with a different index</h3>
 <p>
-  Autocomplete fires on every keystroke, so its budget is roughly 50 ms
-  end-to-end including the network, and it must handle a 2-character prefix
+  Autocomplete fires on every keystroke, so its budget is tight (roughly 50 ms
+  server-side is a common target, a planning figure rather than a standard), and it must handle a 2-character prefix
   matching millions of entries. Running a full BM25 query per keystroke is
   both too slow and semantically wrong — "shoe" typed as "sho" is not a term.
 </p>
@@ -305,8 +335,10 @@ export const sysdesSearchSystems: Chapter = {
   <em>search for</em>, not by what exists in the catalogue. Build the
   suggestion index from query logs weighted by frequency and click-through,
   which also means it is small, offline-rebuildable, and can be pushed
-  entirely into memory. And debounce on the client at 100-150 ms — the
-  cheapest 60% traffic reduction in the whole design.
+  entirely into memory. And debounce on the client (wait 100-150 ms after the last keystroke, a typical
+  starting value) — typically the cheapest large traffic reduction in the whole
+  design; measure your own savings. At very large scale the suggestion service is
+  usually sharded by prefix, with the top-k completions per prefix cached.
 </p>
 
 <h3>Recognizing it in an unseen problem</h3>
@@ -327,6 +359,22 @@ export const sysdesSearchSystems: Chapter = {
     <li>Name the two defects BM25 fixes relative to raw TF-IDF, and why both matter for a real corpus.</li>
     <li>Explain why hard filters (permissions, in-stock) must be applied during retrieval rather than after ranking, and what goes wrong if they aren't.</li>
     <li>Describe the write path from a database commit to a document becoming searchable, including where staleness enters and how you'd handle read-your-writes.</li>
+    <li>Say which analyzer changes need a reindex and which can be reloaded, and why a separate search analyzer exists.</li>
   </ul>
+</div>
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://www.elastic.co/docs/deploy-manage/production-guidance/optimize-performance/size-shards" rel="noopener noreferrer">Elastic: size your shards</a> — the 10-50 GB guidance, document limits and oversharding effects</li>
+    <li><a href="https://www.elastic.co/docs/reference/elasticsearch/index-settings/index-modules" rel="noopener noreferrer">Elastic: index settings (refresh and search idle)</a> — the 1 second refresh and the 30 second idle behaviour</li>
+    <li><a href="https://www.elastic.co/docs/reference/text-analysis/analysis-synonym-graph-tokenfilter" rel="noopener noreferrer">Elastic: synonym graph token filter</a> — updateable search-time synonyms</li>
+    <li><a href="https://www.elastic.co/docs/reference/text-analysis/analysis-standard-analyzer" rel="noopener noreferrer">Elastic: standard analyzer</a> — stop words off by default</li>
+    <li><a href="https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-indices-split" rel="noopener noreferrer">Elastic: split index API</a> — adding primary shards without a full reindex</li>
+    <li><a href="https://www.elastic.co/docs/reference/elasticsearch/rest-apis/paginate-search-results" rel="noopener noreferrer">Elastic: paginate search results</a> — the 10,000 hit window and search_after</li>
+    <li><a href="https://www.elastic.co/docs/reference/elasticsearch/rest-apis/reciprocal-rank-fusion" rel="noopener noreferrer">Elastic: reciprocal rank fusion</a> — fusing lexical and vector rankings</li>
+    <li><a href="https://www.postgresql.org/docs/current/pgtrgm.html" rel="noopener noreferrer">PostgreSQL documentation: pg_trgm</a> — trigram indexes for infix LIKE</li>
+    <li><a href="https://www.postgresql.org/docs/current/textsearch-controls.html" rel="noopener noreferrer">PostgreSQL documentation: ranking search results</a> — ts_rank uses no global information</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees.</p>
 </div>`,
 };

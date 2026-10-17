@@ -9,7 +9,7 @@ export const sysdesCachingFundamentals: Chapter = {
   practice: [],
   ready: true,
   subtitle:
-    "A cache is one bet placed at seven distances — and the interesting number is never the hit rate, it's the miss rate.",
+    "A cache is one bet placed at six distances — and the interesting number is never the hit rate, it's the miss rate.",
   body: `<h3>Every cache is the same bet, made at a different distance</h3>
 <p>
   A cache exists because of exactly one wager: <b>this answer will be asked
@@ -56,20 +56,20 @@ export const sysdesCachingFundamentals: Chapter = {
     <text class="sm gr" x="268" y="134" text-anchor="middle">1-3 ms</text>
     <text class="sm gr" x="372" y="134" text-anchor="middle">~100 ns</text>
     <text class="sm gr" x="476" y="134" text-anchor="middle">0.3-1 ms</text>
-    <text class="sm gr" x="580" y="134" text-anchor="middle">~0.1 ms</text>
+    <text class="sm gr" x="580" y="134" text-anchor="middle">0.1-1 ms</text>
     <text class="sm rd" x="580" y="203" text-anchor="middle">SSD 0.1-1 ms</text>
     <text class="sm" x="262" y="160" text-anchor="middle">each layer removes work from every layer to its right</text>
-    <text class="sm" x="262" y="182" text-anchor="middle">the leftmost hit is the cheapest — and the hardest to invalidate</text>
+    <text class="sm" x="262" y="182" text-anchor="middle">the leftmost hit saves the most work — and is the hardest to invalidate</text>
     <text class="sm" x="262" y="204" text-anchor="middle">a full miss pays every hop, not just the last one</text>
   </svg>
-  <figcaption>Notice the asymmetry: latency improves by four orders of magnitude as you move left, and your ability to revoke a stale copy gets worse by roughly the same amount.</figcaption>
+  <figcaption>The numbers are what the asker pays, so they are not one monotonic scale: the first two are the user's network distance, the rest are your servers' lookup costs (an in-process hit at ~100 ns beats a CDN hit, but it saves no user network time). What does move monotonically is the asymmetry: the further left a hit lands, the more work it removes, and the harder it is to revoke a stale copy.</figcaption>
 </figure>
 
 <h3>What each layer actually buys you</h3>
 <table>
   <tr><th>Layer</th><th>Caches</th><th>Typical TTL</th><th>Who can invalidate it</th><th>What it really buys</th></tr>
-  <tr><td>Browser / HTTP cache</td><td>Static assets, GET responses, service-worker data</td><td>Minutes to a year (fingerprinted assets)</td><td><b>Nobody.</b> Once served, it is gone until it expires</td><td>Removes the request entirely — the only layer that saves network, not just work</td></tr>
-  <tr><td>CDN edge</td><td>Assets, whole pages, API GETs, images</td><td>Seconds to days</td><td>You, via purge — but propagation takes 1-30 s</td><td>Cuts RTT from ~120 ms to ~20 ms and absorbs 80-99% of read traffic before it reaches your region</td></tr>
+  <tr><td>Browser / HTTP cache</td><td>Static assets, GET responses, service-worker data</td><td>Minutes to a year (fingerprinted assets)</td><td><b>Nobody.</b> Once served, it is gone until it expires</td><td>Removes the request entirely — no network, no server work at all</td></tr>
+  <tr><td>CDN edge</td><td>Assets, whole pages, API GETs, images</td><td>Seconds to days</td><td>You, via purge — propagation is sub-second to a few seconds on modern CDNs (Cloudflare reports a p50 under 150 ms for tag purge); budget tens of seconds for slow or tiered setups</td><td>Cuts a distant user's RTT (70-230 ms cross-region) to a nearby edge's 10-30 ms, and can absorb 80-99% of requests for highly cacheable content before they reach your region</td></tr>
   <tr><td>Reverse proxy (nginx, Varnish, Envoy)</td><td>Rendered fragments, upstream responses</td><td>Seconds to minutes</td><td>You, instantly — it's your box</td><td>Shields origin from duplicate work; the natural home for request coalescing</td></tr>
   <tr><td>In-process (Caffeine, an LRU Map)</td><td>Config, feature flags, hot rows, compiled templates</td><td>Seconds to minutes</td><td>Only that process; every instance has its own copy</td><td>~100 ns lookups, zero network — but N instances means N copies and N stale windows</td></tr>
   <tr><td>Shared cache tier (Redis, Memcached)</td><td>Objects, session state, computed aggregates, rate-limit counters</td><td>Seconds to hours</td><td>You, atomically, for the whole fleet</td><td>One consistent copy across all app servers; the workhorse layer</td></tr>
@@ -81,7 +81,7 @@ export const sysdesCachingFundamentals: Chapter = {
   already serving nearly every read from memory. Adding Redis in front of it
   does not save you a disk seek — it saves you connection setup, query
   parsing, planning, MVCC visibility checks and result serialisation. That is
-  still worth 5-20× on latency, but say <em>why</em>, because "the database
+  often still a several-fold latency win (workload-dependent; measure it), but say <em>why</em>, because "the database
   reads from disk" is frequently wrong and an interviewer who runs databases
   will notice.
 </p>
@@ -105,8 +105,9 @@ export const sysdesCachingFundamentals: Chapter = {
   const key = \`user:v3:\${id}\`;                <span class="c">// v3 = payload schema version; see invalidation</span>
   const hit = await redis.get(key);
 
-  <span class="c">// !== null, not truthy: a legitimately cached 0, "" or false is a HIT.</span>
-  <span class="c">// if (hit) is the single most common bug in this function.</span>
+  <span class="c">// null is the miss signal. Test for it explicitly. The classic bug is testing</span>
+  <span class="c">// the *deserialised* value for truthiness (or a client that returns raw</span>
+  <span class="c">// values): a legitimately cached 0, "" or false then looks like a miss.</span>
   if (hit !== null) return JSON.parse(hit);
 
   const row = await db.users.findById(id);    <span class="c">// the miss path — the expensive part</span>
@@ -135,9 +136,14 @@ export const sysdesCachingFundamentals: Chapter = {
   application only ever talks to the cache and the cache knows how to load a
   miss. Cleaner code, one place to implement coalescing and metrics — but the
   cache is now on the critical path for correctness, not just speed. With
-  cache-aside, Redis being down means slow. With read-through, Redis being
-  down means down. That distinction is the whole answer when an interviewer
-  asks which you'd pick.
+  cache-aside, Redis being down <em>can</em> degrade to slow, because the
+  application can fall through to the database; with read-through, Redis
+  being down means down unless the cache layer itself has a bypass. But
+  "degrades to slow" only holds while the database can absorb the full read
+  load, and at a 99% hit rate it usually cannot (see the node-loss box
+  below). So the real answer when an interviewer asks which you'd pick is:
+  cache-aside gives you the option of failing open, and you still need load
+  shedding to make that option survivable.
 </p>
 
 <h3>Write strategies, and when each is right</h3>
@@ -170,7 +176,7 @@ export const sysdesCachingFundamentals: Chapter = {
   <tr><th>Policy</th><th>Keeps</th><th>Breaks on</th><th>Reach for this when…</th></tr>
   <tr><td><b>LRU</b></td><td>Recently accessed keys</td><td>Scans — one analytics query touching a million cold rows flushes your entire working set</td><td>General purpose, access is recency-correlated (sessions, recent items)</td></tr>
   <tr><td><b>LFU</b></td><td>Frequently accessed keys</td><td>Aging — yesterday's viral post keeps a slot forever unless counters decay</td><td>A stable long-tail popularity distribution; scan resistance matters</td></tr>
-  <tr><td><b>FIFO / random</b></td><td>Nothing in particular</td><td>Nothing badly, surprisingly</td><td>You need O(1) with zero bookkeeping; random eviction is within a few points of LRU in practice</td></tr>
+  <tr><td><b>FIFO / random</b></td><td>Nothing in particular</td><td>Nothing badly, surprisingly</td><td>You need O(1) with zero bookkeeping; random is a sensible choice when keys are accessed roughly uniformly (Redis docs: a repeating cycle), and worse than LRU on skewed workloads</td></tr>
   <tr><td><b>TTL-only (volatile-ttl)</b></td><td>Entries furthest from expiry</td><td>Keys written without a TTL — they become unevictable</td><td>Every entry genuinely has a natural lifetime</td></tr>
   <tr><td><b>W-TinyLFU (Caffeine)</b></td><td>Whatever a frequency sketch says earns its slot</td><td>Very little; near-optimal hit rates</td><td>In-process JVM caches where the extra few percent of hit rate is worth a real library</td></tr>
 </table>
@@ -178,12 +184,14 @@ export const sysdesCachingFundamentals: Chapter = {
   Two implementation details worth knowing because they get asked. First,
   Redis does not implement true LRU: it samples a handful of keys
   (<code>maxmemory-samples</code>, default 5) and evicts the least recently
-  used <em>of the sample</em>. It gets within a percent or two of exact LRU
-  for a fraction of the bookkeeping, and it is a nice example of the
+  used <em>of the sample</em>. Redis's docs describe it as a close
+  approximation of true LRU (a sample size of 10 gets very close, at some extra
+  CPU), and minimal or no difference on power-law access, for much less
+  bookkeeping memory. It is a nice example of the
   approximate-is-fine reasoning these systems are built on. Second, Redis LFU
   counters are 8-bit probabilistic counters with logarithmic increment and
   time-based decay — you cannot store a true frequency for a billion keys, so
-  you store something that ranks them correctly and costs one byte.
+  you store something that ranks them well enough and costs one byte.
 </p>
 
 <h4>Dry run: an LRU cache, capacity 3, through five operations</h4>
@@ -266,9 +274,10 @@ export const sysdesCachingFundamentals: Chapter = {
 <ul>
   <li><b>TTL.</b> The honest answer. It does not prevent staleness, it bounds it. A 60-second TTL means the worst case above resolves in at most 60 seconds. Most systems are correct <em>because of</em> TTL, not because of clever invalidation, and saying so is a sign of experience rather than a concession.</li>
   <li><b>Delete, never update.</b> On write, <code>DEL</code> the key; do not compute the new value and <code>SET</code> it. Two concurrent writers who both <code>SET</code> can land in either order and the loser's value sticks. Two concurrent writers who both <code>DEL</code> converge on "empty", and the next read repopulates from the committed source of truth.</li>
-  <li><b>Versioned keys.</b> The strongest pattern. Never mutate an entry — put the version in the key: <code>user:42:v17</code>, where 17 comes from a row counter, an ETag, or the row's <code>updated_at</code>. A write bumps the version, so it is writing to a key nobody will ever read again. The race above becomes harmless: A's stale <code>SET</code> lands on <code>v16</code>, which no reader will ever request. Old entries cost memory until LRU reaps them, and that is the entire price.</li>
-  <li><b>Explicit purge / surrogate keys.</b> What CDNs give you: tag a response <code>product:42</code> and purge every edge copy carrying that tag in one call. Essential at the CDN layer, but remember purge is itself a distributed system — it takes seconds, and it can fail.</li>
-  <li><b>CDC-driven invalidation.</b> Tail the database's write-ahead log (Debezium and friends) and emit invalidations from there. This is the only approach where invalidation is derived from <em>committed</em> state, in commit order, with no dual write. It costs you a pipeline; buy it when correctness matters more than simplicity.</li>
+  <li><b>Versioned keys.</b> The strongest pattern. Never mutate an entry — put the version in the key: <code>user:42:v17</code>, where 17 comes from a row counter, an ETag, or the row's <code>updated_at</code>. A write bumps the version, so new readers ask for a key nobody has written stale data into. The race above becomes harmless <em>provided readers learn the current version from an authoritative source</em>: A's stale <code>SET</code> lands on <code>v16</code>, which no reader asks for once they know the current version is 17. The catch is that "learn the current version" is itself a read of authoritative state (a cheap version-column or ETag lookup). If you cache that version pointer, you have moved the staleness problem up one level rather than removed it. Old entries cost memory until eviction reaps them.</li>
+  <li><b>Explicit purge / surrogate keys.</b> What CDNs give you: tag a response <code>product:42</code> and purge every edge copy carrying that tag in one call. Essential at the CDN layer, but remember purge is itself a distributed system — it is fast on modern CDNs (sub-second to a few seconds) and it can still fail or lag.</li>
+  <li><b>CDC-driven invalidation.</b> Tail the database's write-ahead log (Debezium and friends) and emit invalidations from there. This is the only approach where invalidation is derived from <em>committed</em> state, in commit order, with no dual write. It costs you a pipeline; buy it when correctness matters more than simplicity. The principle behind it: treat the cache as <em>derived data</em> built from one authoritative write, not as a second place you also write (a dual write, which can diverge on any partial failure).</li>
+  <li><b>Leases.</b> Facebook's memcache fix for exactly the race above: a miss returns a lease token to the one reader allowed to repopulate, and a delete invalidates outstanding tokens, so the stale <code>SET</code> from reader A is rejected. The same token rate-limits stampedes (see the Facebook paper in the sources).</li>
 </ul>
 <div class="sticky mint">
   <span class="ttl">The one that dissolves the problem</span>
@@ -280,7 +289,7 @@ export const sysdesCachingFundamentals: Chapter = {
 </div>
 <div class="warn">
   <span class="ttl">⚠ The layer you cannot take back</span>
-  You can purge Redis in a millisecond and a CDN in ten seconds, but a
+  You can purge Redis in a millisecond and a CDN in about a second or a few, but a
   response you served with <code>Cache-Control: max-age=3600</code> is sitting
   in a browser you will never speak to again for the next hour. This is why
   HTML gets <code>no-cache</code> or a short max-age while fingerprinted JS
@@ -368,27 +377,42 @@ function coalesce(key, loader) {
   <code>now − delta × beta × ln(random()) ≥ expiry</code>, with
   <code>beta</code> around 1. Expensive-to-compute entries and entries close
   to expiry refresh sooner, probabilistically, so exactly one unlucky reader
-  usually does the work before anyone has to wait for it.
+  usually does the work before anyone has to wait for it (the technique is from
+  Vattani et al., VLDB 2015, linked below).
+</p>
+<p class="sub">
+  Vocabulary you will hear, and which failure each word names: <b>penetration</b>
+  is requests for keys that never exist (fix: negative caching, a Bloom filter);
+  <b>breakdown</b> is one hot key expiring (fix: coalescing, refresh-ahead);
+  <b>avalanche</b> is many keys expiring together, or the whole cache tier going
+  away (fix: jittered TTLs, replicas, a gutter pool, load shedding). Two more
+  operational notes: a freshly started or flushed cache is a 0% hit-rate
+  cache, so warm it from replayed traffic or ramp traffic onto it gradually
+  rather than cutting over cold; and a cache tier is a single point of failure
+  unless you have sized the database for its absence.
 </p>
 
 <h3>Hit-rate arithmetic: why 90% is not a good number</h3>
 <p>
   This is the section that wins interviews, because almost nobody does the
   arithmetic. Take a read tier serving <b>500,000 reads/sec</b>, backed by
-  replicas that each sustain about <b>8,000 point reads/sec</b> before p99
-  degrades.
+  replicas that each sustain about <b>20,000 simple indexed point reads/sec</b>.
+  That is this course's conservative planning figure, not a limit: strong
+  hardware does several times more, and OpenAI runs ChatGPT on one Azure
+  PostgreSQL primary plus nearly 50 replicas at millions of aggregate queries
+  per second. Measure your own.
 </p>
 <table>
   <tr><th>Hit rate</th><th>Miss rate</th><th>Reads reaching the database</th><th>Replicas required</th></tr>
-  <tr><td>90%</td><td>10%</td><td>500,000 × 0.10 = <b>50,000/s</b></td><td>50,000 ÷ 8,000 = <b>7</b></td></tr>
-  <tr><td>95%</td><td>5%</td><td>500,000 × 0.05 = <b>25,000/s</b></td><td><b>4</b></td></tr>
-  <tr><td>99%</td><td>1%</td><td>500,000 × 0.01 = <b>5,000/s</b></td><td><b>1</b></td></tr>
-  <tr><td>99.9%</td><td>0.1%</td><td>500,000 × 0.001 = <b>500/s</b></td><td><b>1</b>, at 6% utilisation</td></tr>
+  <tr><td>90%</td><td>10%</td><td>500,000 × 0.10 = <b>50,000/s</b></td><td>50,000 ÷ 20,000 = 2.5, so <b>3</b></td></tr>
+  <tr><td>95%</td><td>5%</td><td>500,000 × 0.05 = <b>25,000/s</b></td><td>25,000 ÷ 20,000 = 1.25, so <b>2</b></td></tr>
+  <tr><td>99%</td><td>1%</td><td>500,000 × 0.01 = <b>5,000/s</b></td><td><b>1</b>, at 25% utilisation</td></tr>
+  <tr><td>99.9%</td><td>0.1%</td><td>500,000 × 0.001 = <b>500/s</b></td><td><b>1</b>, at 2.5% utilisation</td></tr>
 </table>
 <p>
   Going from 90% to 99% is described in conversation as "nine percentage
-  points". In load terms it is a <b>10× reduction</b> and it deletes six
-  database replicas. Going the other way is worse: a hit rate slipping from
+  points". In load terms it is a <b>10× reduction</b> and it takes you from
+  three replicas to one. Going the other way is worse: a hit rate slipping from
   99% to 98% <em>doubles</em> database load overnight, and no dashboard
   labelled "cache hit rate 98%" looks alarming. <b>Always reason in miss
   rate.</b> Hit rate is a vanity metric; miss rate is the thing that is
@@ -401,27 +425,35 @@ function coalesce(key, loader) {
 <ul>
   <li>99% hit: mean = 0.99 × 0.5 + 0.01 × 20 = <b>0.695 ms</b></li>
   <li>90% hit: mean = 0.90 × 0.5 + 0.10 × 20 = <b>2.45 ms</b> — 3.5× worse from a number that "sounds fine"</li>
-  <li>And the percentile that matters: at a 10% miss rate, <b>every request above p90 is a cache miss by definition</b>. Your p95 and p99 are not "the cache is a bit slower sometimes" — they are raw database latency, including its tail. A 99% hit rate is what moves the database out of p99 entirely.</li>
+  <li>And the percentile that matters: at a 10% miss rate, <b>every request above p90 is a cache miss by definition</b>. Your p95 and p99 are not "the cache is a bit slower sometimes" — they are raw database latency, including its tail. At a 99% hit rate the miss tail begins exactly at p99, so p99 sits on the boundary between cache and database latency; you need roughly a 99.9% hit rate before p99 is a pure cache hit and only p99.9 is the database.</li>
 </ul>
 <div class="warn">
   <span class="ttl">⚠ The failure nobody sizes for: losing a cache node</span>
   Five Redis nodes, 99% hit rate, 5,000 reads/sec reaching the database.
-  One node dies. Its 20% of the keyspace now misses on every request, so the
+  One node dies. Its 20% of the keyspace (this already assumes consistent
+  hashing; with naive modulo hashing nearly every key would move and the
+  miss rate would approach 100%) now misses on every request, so the
   new miss rate is 0.20 + 0.80 × 0.01 = <b>0.208</b>, and the database
   receives 500,000 × 0.208 = <b>104,000 reads/sec</b> — a <b>20.8×</b> spike
-  against a tier provisioned for 5,000. The database falls over, the cache
+  against a tier provisioned for 5,000, and more than five times what one
+  20,000/s replica serves. The database falls over, the cache
   cannot be refilled, and the outage is now self-sustaining. This is how
-  cache tiers kill databases, and it is why the answers are consistent
-  hashing (so a lost node redistributes rather than reshuffles), load
-  shedding at the origin, and being honest that your database floor is set by
-  your <em>degraded</em> miss rate, not your healthy one.
+  cache tiers kill databases. Consistent hashing is what <em>caps the damage
+  at the lost node's share</em>; it does not remove it. What shrinks the
+  spike: replicas of the hot shards, a small <em>gutter pool</em> of spare
+  cache servers that temporarily takes over a failed node's keys with short
+  TTLs (Facebook's memcache design), request coalescing and leases so a
+  thousand misses on one key become one query, and load shedding at the
+  origin. Be honest that your database floor is set by your
+  <em>degraded</em> miss rate, not your healthy one.
 </div>
 <p class="sub">
   Sizing follows the same logic in reverse. Hit rate is a function of how
   much of the working set fits in memory, and real access distributions are
-  Zipf-ish: the top ~20% of keys serve ~80% of requests. That means the first
+  Zipf-ish: often roughly the top 20% of keys serve 80% of requests. That means the first
   gigabyte buys you an enormous amount and the climb from 90% to 99% can cost
-  4-8× the memory, because you are now paying to hold the long tail. Knowing
+  several times the memory (workload-dependent; this is an illustrative
+  shape, not a measured constant), because you are now paying to hold the long tail. Knowing
   where you are on that curve is what makes "should we double the cache?" a
   calculable question rather than an argument.
 </p>
@@ -432,18 +464,31 @@ function coalesce(key, loader) {
   <li>A naive design adds a cache and stops there: no TTL policy, no invalidation story, no eviction policy, no stampede protection, and no answer for what happens when a cache node dies. Each of those is a follow-up question the interviewer already has queued.</li>
   <li>Distinguish caching from <b>replication</b>: a read replica is authoritative and eventually consistent; a cache is non-authoritative and arbitrarily stale. If the prompt needs "must reflect the last write", a replica with read-your-writes routing is the answer, not a cache.</li>
   <li>Distinguish it from a <b>CDN</b> question: if the payload is large, static and geographically distributed, the win is bandwidth and RTT at the edge, not query offload. Different layer, different invalidation story, same bet.</li>
-  <li>Hot-key language ("a celebrity posts", "a flash sale", "one video goes viral") is the interviewer explicitly asking for stampede handling and hot-key mitigation — coalescing, a per-instance L1 in front of the shared tier, or key splitting.</li>
+  <li>Hot-key language ("a celebrity posts", "a flash sale", "one video goes viral") is the interviewer explicitly asking for stampede handling and hot-key mitigation — coalescing, a per-instance L1 in front of the shared tier, key splitting, or replicating the one hot key across several cache nodes so no single node carries it.</li>
   <li>Pitfall: caching writes. If the prompt is write-heavy or the data is read once and never again, a cache adds latency and memory cost for nothing. Say "I would not cache this, and here's why" at least once during a loop — knowing where a cache does not belong reads as strongly as knowing where it does.</li>
 </ul>
 
 <div class="bx is-ref">
   <span class="ttl">Before you move on</span>
   <ul>
-    <li>Can you explain why <code>if (hit)</code> instead of <code>if (hit !== null)</code> is a real bug in cache-aside code?</li>
+    <li>Can you explain why a cache hit must be detected with an explicit miss check (<code>!== null</code>), not by testing the cached value for truthiness, and what breaks when a legitimate <code>0</code> or empty string is cached?</li>
     <li>Can you compute how database load changes when hit rate drops from 99% to 90%, and explain why you should reason in miss rate, not hit rate?</li>
     <li>Can you name which invalidation pattern — TTL, delete-not-update, versioned keys — fits a given scenario, and why the others don't?</li>
+    <li>Can you say what happens to the database when the cache tier fails, and which of coalescing, a gutter pool, replicas or load shedding you would use to survive it?</li>
     <li>Can you compute what happens to your database when one node in a 5-node, 99%-hit-rate Redis cluster dies?</li>
     <li>Can you trace an LRU cache's contents through a short sequence of gets on a small, fixed-capacity cache?</li>
   </ul>
+</div>
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://www.usenix.org/conference/nsdi13/technical-sessions/presentation/nishtala" rel="noopener noreferrer">Scaling Memcache at Facebook (NSDI 2013)</a> — leases against stale sets and stampedes, gutter pools for failed servers, and look-aside caching at very large scale</li>
+    <li><a href="https://redis.io/docs/latest/develop/reference/eviction/" rel="noopener noreferrer">Redis documentation: key eviction</a> — the policies, approximated LRU, and LFU counters with decay</li>
+    <li><a href="https://www.rfc-editor.org/rfc/rfc5861" rel="noopener noreferrer">RFC 5861: stale-while-revalidate and stale-if-error</a> — how the stale windows are counted from expiry</li>
+    <li><a href="https://doi.org/10.14778/2757807.2757813" rel="noopener noreferrer">Optimal probabilistic cache stampede prevention (VLDB 2015)</a> — the early-recompute rule described in this chapter</li>
+    <li><a href="https://blog.cloudflare.com/instant-purge/" rel="noopener noreferrer">Cloudflare: instant purge</a> — reported purge latency, including tag purge</li>
+    <li><a href="https://openai.com/index/scaling-postgresql/" rel="noopener noreferrer">OpenAI: scaling PostgreSQL</a> — one primary plus about fifty replicas at millions of queries per second, as a reality check on planning numbers</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees.</p>
 </div>`,
 };

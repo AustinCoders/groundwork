@@ -21,7 +21,7 @@ export const sysdesAvailabilityDesign: Chapter = {
   have signalled seniority in about fifteen seconds.
 </p>
 <figure>
-  <svg viewBox="0 0 640 300" class="dg" role="img" aria-label="One API service depending on five backend services that each promise 99.9 percent availability, with the product of those five numbers working out to 99.5 percent, or 43.8 hours of downtime a year">
+  <svg viewBox="0 0 640 300" class="dg" role="img" aria-label="One API service depending on five backend services that each promise 99.9 percent availability, with the product of those five numbers working out to 99.5 percent, or 43.7 hours of downtime a year">
     <g class="rough">
       <path class="ln" d="M320,54 L66,110" />
       <path class="ln" d="M320,54 L190,110" />
@@ -49,7 +49,7 @@ export const sysdesAvailabilityDesign: Chapter = {
     <text class="sm" x="438" y="170" text-anchor="middle">99.9%</text>
     <text class="sm" x="562" y="170" text-anchor="middle">99.9%</text>
     <text class="lbl" x="320" y="212" text-anchor="middle" style="font-size:15px">0.999 × 0.999 × 0.999 × 0.999 × 0.999 = 0.99501</text>
-    <text class="lbl rd" x="320" y="240" text-anchor="middle" style="font-size:14px">= 99.50% → 43.8 hours a year, from five that each promised 8.8</text>
+    <text class="lbl rd" x="320" y="240" text-anchor="middle" style="font-size:14px">= 99.50% → 43.7 hours a year, from five that each promised 8.8</text>
     <text class="lbl gr" x="320" y="270" text-anchor="middle" style="font-size:14px">make one of them optional and its 0.1% stops counting: 99.60%</text>
   </svg>
   <figcaption>Serial dependencies multiply. Adding a sixth 99.9% service costs you another 8.8 hours a year before you have written a line of your own code.</figcaption>
@@ -63,11 +63,11 @@ export const sysdesAvailabilityDesign: Chapter = {
   <tr><td>2</td><td>+ profiles (99.9%)</td><td>× 0.999 = 0.997003</td><td>99.70%</td><td>26.3 h</td></tr>
   <tr><td>3</td><td>+ social graph (99.9%)</td><td>× 0.999 = 0.996006</td><td>99.60%</td><td>35.0 h</td></tr>
   <tr><td>4</td><td>+ media meta (99.9%)</td><td>× 0.999 = 0.995010</td><td>99.50%</td><td>43.7 h</td></tr>
-  <tr><td>5</td><td>+ payments (99.9%)</td><td>× 0.999 = 0.994015</td><td>99.40%</td><td>52.4 h</td></tr>
+  <tr><td>5</td><td>+ payments (99.9%)</td><td>× 0.999 = 0.994015</td><td>99.40%</td><td>52.5 h</td></tr>
   <tr><td>6</td><td>Make payments optional (degrade instead of hard-fail)</td><td>back to step 4's product</td><td>99.50%</td><td>43.7 h</td></tr>
 </table>
 <p class="sub">
-  Each additional hard dependency costs roughly another 8-9 hours a year at
+  (Downtime figures use a 365.25-day year, 8,766 hours.) Each additional hard dependency costs roughly another 8-9 hours a year at
   three nines, regardless of which one it is — the multiplication doesn't
   care about names. Step 6 is the only row that recovers availability, and it
   does it without touching a single server: converting payments from a hard
@@ -80,6 +80,18 @@ export const sysdesAvailabilityDesign: Chapter = {
   <b>you cannot buy availability you did not design for</b>. If the target
   is four nines end-to-end, either every hop is five nines (expensive) or
   most hops stop being hard dependencies (design work).
+</p>
+<p>
+  The parallel case runs the other way: if any one of n redundant copies is
+  enough, availability is 1 − (1 − a)<sup>n</sup>, so two independent
+  99.9% copies give 99.9999% on paper. The caveat is the word
+  <em>independent</em>. Copies that share a deploy pipeline, a config push, a
+  region, a dependency or a bug fail together, so the real figure is far lower
+  than the formula, which is why shared-fate failures dominate real outages.
+  Availability is also MTBF / (MTBF + MTTR) (mean time between failures over
+  that plus mean time to repair), which shows the two levers: fail less often,
+  or recover faster. Automatic recovery attacks MTTR, which is usually the
+  cheaper lever.
 </p>
 
 <h3>What the nines actually cost you in wall-clock time</h3>
@@ -143,7 +155,7 @@ export const sysdesAvailabilityDesign: Chapter = {
     <text class="sm gr" x="110" y="178" text-anchor="middle">failure is a capacity event</text>
     <text class="sm" x="110" y="200" text-anchor="middle">each node must run under 50%</text>
     <text class="sm" x="430" y="178" text-anchor="middle">failure is a state transition</text>
-    <text class="sm rd" x="430" y="200" text-anchor="middle">30 s to 5 min of unavailability</text>
+    <text class="sm rd" x="430" y="200" text-anchor="middle">tens of seconds to minutes down</text>
     <text class="sm" x="320" y="230" text-anchor="middle">the standby path is the one that is never exercised</text>
   </svg>
   <figcaption>Active-active degrades; active-passive switches. Switching is a discrete event that can fail, which is why the passive side needs deliberate, scheduled exercise.</figcaption>
@@ -151,7 +163,7 @@ export const sysdesAvailabilityDesign: Chapter = {
 <table>
   <tr><th></th><th>Active-active</th><th>Active-passive</th></tr>
   <tr><td>Failure behaviour</td><td>Remaining nodes absorb the load — no transition</td><td>Detect, promote, redirect — a transition that can fail</td></tr>
-  <tr><td>Recovery time</td><td>Effectively zero (a few in-flight requests)</td><td>Detection window + promotion + DNS/connection churn</td></tr>
+  <tr><td>Recovery time</td><td>Effectively zero (a few in-flight requests)</td><td>Detection window + promotion + DNS/connection churn: commonly tens of seconds to a few minutes (planning range, measure yours)</td></tr>
   <tr><td>Cost</td><td>You pay for N+1 but you use it</td><td>You pay for the standby and get nothing back</td></tr>
   <tr><td>Hard part</td><td>Every node writes: conflicts, split state, sticky sessions</td><td>Keeping the standby warm, current, and actually working</td></tr>
   <tr><td>Reach for this when…</td><td>The work is stateless or the store already does multi-writer (Cassandra, Dynamo-style)</td><td>There is a single logical writer — a relational primary, a leader-elected coordinator</td></tr>
@@ -197,9 +209,9 @@ export const sysdesAvailabilityDesign: Chapter = {
   <figcaption>Nothing crashed. Two healthy nodes lost sight of each other and each did the responsible thing, which is exactly how split brain happens.</figcaption>
 </figure>
 <ul>
-  <li><b>Split brain.</b> A partition, not a crash. Both replicas promote and accept writes; when the network heals you have two divergent histories and no principled way to merge them. The fix is not a smarter heartbeat — it is <b>quorum</b>: an odd number of voters, and a node refuses to serve as primary unless it can see a majority. A two-node cluster cannot do this, which is why "two nodes for HA" is often worse than one.</li>
+  <li><b>Split brain.</b> A partition, not a crash. Both replicas promote and accept writes; when the network heals you have two divergent histories and no principled way to merge them. The fix is not a smarter heartbeat — it is <b>quorum</b>: an odd number of voters, and a node refuses to serve as primary unless it can see a majority. A two-node cluster cannot do this: if the rule is "a majority must agree", losing either node stops the cluster, so it is less available than one node (and without a quorum rule it split-brains instead). That is why "two nodes for HA" is often worse than one.</li>
   <li><b>Failback storms.</b> The recovered node comes back, is declared healthy, and instantly receives its full share of traffic — with cold caches, cold connection pools and cold JIT. It falls over, gets marked unhealthy, and the loop repeats while the healthy nodes absorb the oscillation. The fix is slow-start / connection ramping: bring a returning node up to full weight over 30-120 seconds, and require it to pass health checks for a sustained window, not a single probe.</li>
-  <li><b>Retry amplification.</b> One dependency slows down, every caller retries three times, and the dependency now receives 4× the traffic at exactly the moment it can least handle it. Retries need exponential backoff <em>with jitter</em>, a retry budget (e.g. retries capped at 10% of requests), and a circuit breaker that stops calling a failing dependency entirely rather than politely queueing for it.</li>
+  <li><b>Retry amplification.</b> One dependency slows down and every caller retries; with 3 retries (4 attempts) the dependency now receives up to 4× the traffic at exactly the moment it can least handle it. Across layers it compounds: if three stacked layers each make up to 3 attempts (2 retries), one user action becomes 3<sup>3</sup> = 27 attempts at the bottom, and the Google SRE book's example of 3 retries per layer over three layers is 4<sup>3</sup> = 64. Retries need exponential backoff <em>with jitter</em>, a retry budget (e.g. retries capped at 10% of requests), and a circuit breaker that stops calling a failing dependency entirely rather than politely queueing for it.</li>
 </ul>
 <div class="say">
   <span class="ttl">Say it like this →</span> "I'd use quorum-based leader
@@ -220,7 +232,7 @@ export const sysdesAvailabilityDesign: Chapter = {
 <table>
   <tr><th>Probe</th><th>Asks</th><th>Failure action</th><th>Must NOT check</th></tr>
   <tr><td>Liveness</td><td>Is this process wedged and unrecoverable?</td><td>Restart the instance</td><td>Dependencies — a DB outage would restart your whole fleet</td></tr>
-  <tr><td>Readiness</td><td>Can this instance serve a request right now?</td><td>Remove from the load-balancer pool</td><td>Anything slow — the probe itself must be cheap</td></tr>
+  <tr><td>Readiness</td><td>Can this instance serve a request right now?</td><td>Remove from the load-balancer pool</td><td>Shared dependencies (a DB blip would drain the whole fleet at once) or anything slow — the probe must be cheap and reflect this instance's own state: warmed up, not overloaded</td></tr>
   <tr><td>Deep / synthetic</td><td>Does a real user journey still work end to end?</td><td>Page a human, drive dashboards</td><td>Nothing — this one is allowed to be expensive, run it from outside</td></tr>
 </table>
 <div class="warn">
@@ -289,10 +301,10 @@ export const sysdesAvailabilityDesign: Chapter = {
 <table>
   <tr><th></th><th>Multi-AZ</th><th>Multi-region</th></tr>
   <tr><td>Protects against</td><td>Rack, power, cooling, one datacenter</td><td>Regional outage, regional network, fibre cut, regulatory isolation</td></tr>
-  <tr><td>Inter-node latency</td><td>~1-2 ms — synchronous replication is fine</td><td>30-150 ms cross-continent — synchronous replication is not fine</td></tr>
-  <tr><td>Data cost</td><td>Cross-AZ transfer, roughly 1-2 cents per GB</td><td>Cross-region transfer plus a full second copy of everything</td></tr>
+  <tr><td>Inter-node latency</td><td>~1-2 ms — synchronous replication is fine</td><td>60-230 ms round trip between distant regions (US east to west 60-70, to Western Europe 70-90, to Singapore or Sydney 200-230) — synchronous replication on every write is not fine</td></tr>
+  <tr><td>Data cost</td><td>Cross-AZ transfer, on the order of 1 cent per GB each way on major clouds</td><td>Cross-region transfer plus a full second copy of everything</td></tr>
   <tr><td>Consistency impact</td><td>Essentially none; you keep a single primary</td><td>You must choose: single writer with slow remote writes, or multi-writer with conflict resolution</td></tr>
-  <tr><td>Realistic ceiling</td><td>99.95-99.99%</td><td>99.99%+ — and only if failover is genuinely automatic</td></tr>
+  <tr><td>Realistic ceiling</td><td>Roughly 99.95-99.99%, depending on shared dependencies (planning range)</td><td>Can exceed that — and only if failover is genuinely automatic. Many outages are deploy- or config-induced, which a second region does not fix</td></tr>
   <tr><td>Reach for this when…</td><td>Almost always — it is close to free and the default answer</td><td>The business loses serious money per minute of downtime, or law requires data residency</td></tr>
 </table>
 <p>
@@ -305,6 +317,31 @@ export const sysdesAvailabilityDesign: Chapter = {
   <b>Untested failover is decoration.</b> Say you would run scheduled
   region-evacuation drills — that one sentence separates people who have
   operated multi-region from people who have read about it.
+</p>
+
+<h3>Limiting blast radius and recovering from disaster</h3>
+<p>
+  Redundancy handles the failures you expected. These techniques limit the
+  damage from the ones you did not.
+</p>
+<ul>
+  <li><b>Bulkheads.</b> Give each dependency or customer tier its own thread pool, connection pool or queue, so a slow payments call exhausts only the payments pool, not every worker.</li>
+  <li><b>Load shedding and deadlines.</b> Reject excess work early and cheaply (a 503 beats a 30-second queue), and propagate one absolute deadline down the call tree so no hop works on a request whose caller has already given up. Both are described in the Google SRE book chapter on cascading failures.</li>
+  <li><b>Cells.</b> Partition the fleet into independent cells that each serve a slice of users with their own copy of the stack. A bad deploy or poisoned input then takes out one cell, say 5% of users, instead of everyone.</li>
+  <li><b>Safe change.</b> Most outages follow a change, so ship through canaries and gradual rollouts with automatic rollback, and rehearse failure with game days and chaos experiments.</li>
+  <li><b>Measure and learn.</b> Watch the four golden signals (latency, traffic, errors, saturation) and run blameless postmortems, so the fix targets the system and not the person.</li>
+</ul>
+<p>
+  For regional disaster recovery, two numbers set the design: the
+  <b>recovery point objective</b> (how much data you can lose) and the
+  <b>recovery time objective</b> (how long you can be down). AWS's disaster
+  recovery guidance describes four tiers in rising cost and falling recovery
+  time: <b>backup and restore</b> (restore from copies in another region,
+  hours), <b>pilot light</b> (data replicated and core infrastructure defined
+  but switched off), <b>warm standby</b> (a scaled-down copy that already
+  serves traffic), and <b>multi-site active-active</b> (every region serves
+  traffic). Pick the cheapest tier that meets the RTO and RPO the business
+  signed up for, and test the restore; an untested backup is a hope.
 </p>
 
 <h3>SLA, SLO, SLI and the error budget</h3>
@@ -320,7 +357,7 @@ export const sysdesAvailabilityDesign: Chapter = {
   money. If your SLO equals your SLA you have no warning zone.
 </p>
 <p>
-  The <b>error budget</b> is the inverse of the SLO, and it is the most
+  The <b>error budget</b> (a Google SRE idea) is the inverse of the SLO, and it is the most
   useful idea here because it turns reliability from an argument into a
   number. A 99.95% SLO over 28 days permits about 20 minutes of failure.
   That budget is a resource: spend it on risky deploys, experiments and
@@ -360,6 +397,19 @@ export const sysdesAvailabilityDesign: Chapter = {
     <li>Can you distinguish liveness, readiness and deep health checks, and say what each must never check?</li>
     <li>Can you name three single points of failure that aren't the database, and where they hide?</li>
     <li>Can you explain what an error budget is and what happens to feature work once it's exhausted?</li>
+    <li>Can you explain why two independent copies give 1 − (1 − a)<sup>2</sup> on paper and why shared fate makes the real number lower?</li>
   </ul>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://sre.google/sre-book/embracing-risk/" rel="noopener noreferrer">Google SRE book: embracing risk</a> — SLOs, error budgets and halting releases when the budget is spent</li>
+    <li><a href="https://sre.google/sre-book/addressing-cascading-failures/" rel="noopener noreferrer">Google SRE book: addressing cascading failures</a> — retry amplification (4<sup>3</sup> = 64), retry budgets, load shedding and deadline propagation</li>
+    <li><a href="https://sre.google/sre-book/monitoring-distributed-systems/" rel="noopener noreferrer">Google SRE book: monitoring distributed systems</a> — the four golden signals</li>
+    <li><a href="https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-options-in-the-cloud.html" rel="noopener noreferrer">AWS: disaster recovery options in the cloud</a> — backup and restore, pilot light, warm standby and active-active</li>
+    <li><a href="https://raft.github.io/raft.pdf" rel="noopener noreferrer">The Raft paper</a> — why a majority quorum prevents two leaders, and what that means for two-node clusters</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" or "planning range" are rules of thumb, not guarantees. Downtime figures use a 365.25-day year.</p>
 </div>`,
 };

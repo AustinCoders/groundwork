@@ -15,11 +15,11 @@ export const sysdesCdns: Chapter = {
   You already know caching: put a copy of an expensive result somewhere
   faster than recomputing it. A CDN applies that idea to the one cost you
   cannot optimise away in your own datacentre — <b>the speed of light</b>.
-  A round trip from Singapore to us-east-1 is ~180 ms on fibre and no
+  A round trip from Singapore to us-east-1 is ~200-230 ms on fibre and no
   amount of Redis fixes it. A CDN is a network of <b>PoPs</b> (points of
   presence — racks of caching proxies in ~100-600 metros depending on the
   vendor) that terminate the user's TCP and TLS locally and serve the
-  response from a disk 10 ms away.
+  response from a cache 10 ms away.
 </p>
 <p>
   Interviewers ask about CDNs because it is the fastest read on whether you
@@ -30,7 +30,7 @@ export const sysdesCdns: Chapter = {
 </p>
 
 <figure>
-  <svg viewBox="0 0 640 250" class="dg" role="img" aria-label="A request from a client reaching a nearby edge point of presence, served from cache in twelve milliseconds on a hit, or forwarded across the ocean to origin adding one hundred and sixty milliseconds on a miss">
+  <svg viewBox="0 0 640 250" class="dg" role="img" aria-label="A request from a client reaching a nearby edge point of presence, served from cache in about twelve milliseconds on a hit, or forwarded across the ocean to origin adding about two hundred and ten milliseconds on a miss">
     <g class="rough">
       <path class="lng" d="M118,124 L214,124" />
       <path class="ln dash" d="M356,124 L456,124" />
@@ -48,12 +48,12 @@ export const sysdesCdns: Chapter = {
     <text class="sm"  x="539" y="141" text-anchor="middle">us-east-1</text>
     <text class="sm gr" x="166" y="110" text-anchor="middle">8 ms RTT</text>
     <text class="sm" x="406" y="112" text-anchor="middle">only on MISS</text>
-    <text class="sm" x="406" y="168" text-anchor="middle">+160 ms RTT</text>
+    <text class="sm" x="406" y="168" text-anchor="middle">+~210 ms RTT</text>
     <text class="lbl gr" x="18" y="196" style="font-size:15px">HIT: ~12 ms to first byte — TLS terminated locally, warm connection</text>
-    <text class="lbl rd" x="18" y="220" style="font-size:15px">MISS: ~190 ms — and 3 round trips if the origin link is cold</text>
-    <text class="sm" x="18" y="240">at 95% hit rate the weighted average is ~21 ms, and origin sees 1/20th the traffic</text>
+    <text class="lbl rd" x="18" y="220" style="font-size:15px">MISS: ~230 ms — and ~3 round trips (~630 ms) if the origin link is cold</text>
+    <text class="sm" x="18" y="240">at 95% hit rate the weighted average is ~23 ms (0.95 × 12 + 0.05 × 230), and origin sees 1/20th the traffic</text>
   </svg>
-  <figcaption>The interesting number is not the hit latency, it's the hit <em>rate</em> — everything in this chapter is a lever on that one percentage.</figcaption>
+  <figcaption>The interesting number is not the hit latency, it's the hit <em>rate</em> — everything in this chapter is a lever on that one percentage. The latencies are illustrative planning figures: Singapore to us-east is roughly 200-230 ms round trip, a nearby edge 5-30 ms.</figcaption>
 </figure>
 
 <h3>How the request finds the nearest edge: anycast and DNS steering</h3>
@@ -82,18 +82,30 @@ export const sysdesCdns: Chapter = {
   </li>
 </ul>
 <p class="sub">
-  Most large CDNs do both: anycast to reach a metro, then internal
-  layer-4 load balancing inside the PoP. Say "anycast for the coarse
-  routing, DNS or GeoIP steering when I need per-PoP control" and you have
-  covered it.
+  Vendors differ: Cloudflare and Fastly lean on anycast, while AWS documents
+  CloudFront as using DNS to route each viewer to the best edge location.
+  Either way there is layer-4 load balancing inside the PoP. Say "anycast
+  for the coarse routing, DNS or GeoIP steering when I need per-PoP
+  control" and you have covered both families without claiming that any one
+  vendor does everything.
 </p>
 <div class="say">
   <span class="ttl">Say it like this →</span> "The edge terminates TLS
-  ~8 ms from the user instead of 180 ms away. Even for a full miss that's
+  ~8 ms from the user instead of ~210 ms away. Even for a full miss that's
   a win, because the handshake round trips happen locally and the edge
   keeps a warm, tuned connection pool to origin — I'm paying one long RTT
   instead of three."
 </div>
+
+<p class="sub">
+  The handshake arithmetic behind that claim: a brand-new TCP connection plus
+  a TLS 1.3 handshake costs two round trips before the first request byte
+  goes out, and the request itself is a third. To an origin 210 ms away that
+  is about 630 ms before the first byte arrives; to an edge 8 ms away it is
+  about 24 ms. HTTP/3 over QUIC folds the transport and TLS handshakes into
+  one round trip, and resumed sessions can send data at once (0-RTT), which
+  shrinks the gap for returning users but not the physics of an uncached miss.
+</p>
 
 <h3>Push vs pull: who decides what lives at the edge</h3>
 <table>
@@ -108,22 +120,25 @@ export const sysdesCdns: Chapter = {
   The honest answer in an interview is "pull, with an origin shield." A
   <b>shield</b> is a designated mid-tier PoP that all other PoPs miss
   through, so a cold object costs one origin fetch globally instead of one
-  per PoP. On a 300-PoP network that is the difference between a launch
-  and an origin outage.
+  per PoP. Vendors name it differently (Cloudflare's tiered cache, CloudFront's
+  regional edge caches, which AWS puts between the PoPs and your origin).
+  Edges also collapse concurrent misses for the same object into a single
+  origin fetch (request collapsing). On a network with hundreds of PoPs that
+  is the difference between a launch and an origin outage.
 </p>
 
 <h3>Cache-Control: the directives and what they actually do</h3>
 <table>
   <tr><th>Directive</th><th>What it actually does</th><th>The part people get wrong</th></tr>
   <tr><td><code>max-age=N</code></td><td>Fresh for N seconds in <em>any</em> cache, including the browser</td><td>Once sent, you cannot recall it from a browser. Deploying a bad 1-year max-age is unfixable without changing the URL</td></tr>
-  <tr><td><code>s-maxage=N</code></td><td>Same, but only for shared caches (CDN, proxy). Overrides max-age there</td><td>The lever you want: <code>max-age=0, s-maxage=600</code> means browsers always revalidate but the CDN absorbs the load</td></tr>
+  <tr><td><code>s-maxage=N</code></td><td>Same, but only for shared caches (CDN, proxy). Overrides max-age there</td><td>Looks like the lever you want (<code>max-age=0, s-maxage=600</code>: browsers revalidate, CDN absorbs the load), but RFC 9111 says it also carries the semantics of <code>proxy-revalidate</code>, so a shared cache may not serve it stale. Cloudflare documents that it disables stale-while-revalidate and stale-if-error. Prefer a CDN-targeted header (below)</td></tr>
   <tr><td><code>public</code></td><td>Cacheable by shared caches even when the request had an Authorization header</td><td>Setting this on an authenticated endpoint is exactly how personalised pages leak</td></tr>
   <tr><td><code>private</code></td><td>Browser may cache; shared caches must not</td><td>It is not a security control — it's a hint. Don't rely on it for secrets</td></tr>
   <tr><td><code>no-cache</code></td><td>Store it, but revalidate with the origin before every reuse</td><td>Does <em>not</em> mean "don't cache". That's <code>no-store</code>. This is the single most common misreading in the whole spec</td></tr>
-  <tr><td><code>no-store</code></td><td>Never write it to disk or memory anywhere</td><td>Correct for account pages and API responses with PII; wasteful everywhere else</td></tr>
+  <tr><td><code>no-store</code></td><td>Caches must not store the response or reuse it for other requests</td><td>Correct for account pages and API responses with PII; wasteful everywhere else. RFC 9111 itself says it is not a reliable or sufficient privacy mechanism, so it never replaces authentication and per-user keys</td></tr>
   <tr><td><code>must-revalidate</code></td><td>Once stale, you may not serve it — even if the origin is down</td><td>Turns an origin outage into a user-visible outage. Usually you want the opposite</td></tr>
-  <tr><td><code>stale-while-revalidate=N</code></td><td>For N seconds past expiry, serve the stale copy <em>immediately</em> and refresh in the background</td><td>The highest-value directive in the table and the most under-used — it decouples freshness from latency</td></tr>
-  <tr><td><code>stale-if-error=N</code></td><td>If the origin returns 5xx or times out, keep serving the stale copy for N seconds</td><td>Free availability. Your CDN becomes a static failover for the whole site</td></tr>
+  <tr><td><code>stale-while-revalidate=N</code></td><td>For N seconds past expiry, serve the stale copy <em>immediately</em> and refresh in the background</td><td>The highest-value directive in the table and the most under-used — it decouples freshness from latency. It needs a request to arrive to trigger the refresh</td></tr>
+  <tr><td><code>stale-if-error=N</code></td><td>If revalidation hits an error (RFC 5861: a 500, 502, 503 or 504; vendors also treat an unreachable origin that way), keep serving the stale copy for N seconds <em>past expiry</em></td><td>Free availability. Your CDN becomes a static failover for the whole site. Support and error definitions vary by vendor, so test it</td></tr>
   <tr><td><code>immutable</code></td><td>Don't even conditionally revalidate on a user reload</td><td>Only safe with content-hashed filenames. Pair with <code>max-age=31536000</code></td></tr>
   <tr><td><code>Vary: H</code></td><td>Adds request header H to the cache key</td><td><code>Vary: User-Agent</code> shatters your hit rate into thousands of fragments. <code>Vary: Accept-Encoding</code> is fine (3 values)</td></tr>
 </table>
@@ -131,7 +146,7 @@ export const sysdesCdns: Chapter = {
   <span class="ttl">The three header sets worth memorising</span>
   <ul style="margin:8px 0 0">
     <li><b>Hashed static asset</b> (<code>/app.9f2c1a.js</code>): <code>Cache-Control: public, max-age=31536000, immutable</code></li>
-    <li><b>Shared HTML or a hot read API</b>: <code>Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=600, stale-if-error=86400</code></li>
+    <li><b>Shared HTML or a hot read API</b>: <code>Cache-Control: public, max-age=60, stale-while-revalidate=600, stale-if-error=86400</code> (CloudFront documents exactly this max-age plus SWR plus SIE form). If you want browsers to revalidate while only the CDN holds the copy, send the CDN its own directives with the RFC 9213 <code>CDN-Cache-Control</code> header (or a vendor equivalent such as <code>Surrogate-Control</code>) and keep <code>Cache-Control: max-age=0</code> for browsers. Do <em>not</em> reach for <code>s-maxage</code> here, and check each vendor's stale-handling docs: they differ.</li>
     <li><b>Anything user-specific</b>: <code>Cache-Control: private, no-store</code> — and check that no CDN rule overrides it</li>
   </ul>
 </div>
@@ -139,23 +154,27 @@ export const sysdesCdns: Chapter = {
 <h4>Dry run: one URL's cache state through a stale-while-revalidate and stale-if-error cycle</h4>
 <p class="sub">
   <code>/api/products/42</code> is served with <code>Cache-Control: public,
-  max-age=0, s-maxage=60, stale-while-revalidate=600, stale-if-error=86400</code>.
+  max-age=60, stale-while-revalidate=600, stale-if-error=86400</code>, and the
+  edge applies these directives with RFC 5861 semantics: both stale windows
+  are counted from the moment the entry <em>expires</em>, not from the last
+  fetch.
 </p>
 <table>
   <tr><th>Time</th><th>Event</th><th>Edge cache state</th><th>Response served</th><th>Why</th></tr>
   <tr><td>t = 0s</td><td>First request</td><td>MISS</td><td>Fetch origin, store, return 200 — origin RTT paid once</td><td>Nothing cached yet</td></tr>
-  <tr><td>t = 30s</td><td>Second request</td><td>Fresh (age 30s ≤ 60s)</td><td>200 straight from the edge, no origin call</td><td>Inside the s-maxage window</td></tr>
-  <tr><td>t = 65s</td><td>Third request</td><td>Stale (age 65s &gt; 60s, but ≤ 660s)</td><td>200 from the edge <em>immediately</em>, background revalidation fired</td><td>Inside the stale-while-revalidate window — the user never waits on origin</td></tr>
-  <tr><td>t = 66s</td><td>Background revalidation completes</td><td>Fresh again (age resets to 0)</td><td>No client-visible response — this refresh happened off the request path</td><td>The SWR fetch from t=65s just landed</td></tr>
-  <tr><td>t = 8,000s</td><td>Request arrives; origin is down for maintenance</td><td>Stale (age 7,934s since last good fetch), swr window long expired</td><td>200, serving the stale copy anyway</td><td>7,934s &lt; 86,400s — inside the stale-if-error window, so a failed origin still gets a stale-but-valid response</td></tr>
-  <tr><td>t = 90,000s</td><td>Request arrives; origin still down</td><td>Stale, 89,934s since last good fetch</td><td>5xx propagated to the client</td><td>89,934s &gt; 86,400s — the stale-if-error window has expired, so there is nothing left to fall back to</td></tr>
+  <tr><td>t = 30s</td><td>Second request</td><td>Fresh (age 30s ≤ 60s)</td><td>200 straight from the edge, no origin call</td><td>Inside the max-age window</td></tr>
+  <tr><td>t = 65s</td><td>Third request</td><td>Stale (expired 5s ago; the SWR window runs 60s to 660s)</td><td>200 from the edge <em>immediately</em>, background revalidation fired</td><td>Inside the stale-while-revalidate window — the user never waits on origin</td></tr>
+  <tr><td>t = 66s</td><td>Background revalidation completes</td><td>Fresh again (age resets to 0, so the entry now expires at t = 126s)</td><td>No client-visible response — this refresh happened off the request path</td><td>The SWR fetch from t=65s just landed</td></tr>
+  <tr><td>t = 8,000s</td><td>Request arrives; origin is down for maintenance</td><td>Stale (expired at t = 126s, so 7,874s past expiry); SWR window long over; the revalidation fails</td><td>200, serving the stale copy anyway</td><td>7,874s &lt; 86,400s — inside the stale-if-error window (counted from expiry), so a failed origin still gets a stale-but-valid response</td></tr>
+  <tr><td>t = 90,000s</td><td>Request arrives; origin still down</td><td>Stale, 89,874s past expiry</td><td>The origin error (for example a 503) is passed to the client</td><td>89,874s &gt; 86,400s — the stale-if-error window has expired, so there is nothing left to fall back to</td></tr>
 </table>
 <p class="sub">
-  Three directives, three different jobs: s-maxage bounds normal staleness,
+  Three directives, three different jobs: max-age bounds normal staleness,
   stale-while-revalidate hides a slow refresh behind a stale response instead
   of making the user wait, and stale-if-error turns a dead origin into a
-  non-event for up to a full day before it finally becomes the client's
-  problem.
+  non-event for up to a full day past expiry before it finally becomes the
+  client's problem. (CloudFront also caps all of this at the distribution's
+  maximum TTL, so a vendor setting can end the window sooner than the header.)
 </p>
 
 <h3>ETags and revalidation: paying for freshness in bytes, not seconds</h3>
@@ -199,9 +218,9 @@ export const sysdesCdns: Chapter = {
   <tr><th>Content</th><th>TTL</th><th>Reasoning</th></tr>
   <tr><td>Hashed JS/CSS/fonts</td><td>1 year, immutable</td><td>The URL changes when the bytes change, so staleness is impossible by construction</td></tr>
   <tr><td>Un-hashed images, PDFs</td><td>1-7 days at the CDN, minutes in the browser</td><td>You can purge the CDN in seconds; you cannot purge browsers</td></tr>
-  <tr><td>Marketing / docs HTML</td><td><code>s-maxage=300</code> + <code>swr=86400</code></td><td>Editors expect changes within minutes, not instantly; SWR means nobody ever waits for the refresh</td></tr>
-  <tr><td>Product listing / search results</td><td><code>s-maxage=10-60</code> + swr</td><td>60 s of staleness on a catalogue is invisible to users and removes 99% of origin reads on a hot query</td></tr>
-  <tr><td>Price, inventory count</td><td><code>s-maxage=0-5</code>, or don't cache</td><td>Wrong price is a business incident. Cache the page shell, fetch the number client-side</td></tr>
+  <tr><td>Marketing / docs HTML</td><td>CDN TTL 300 s + <code>stale-while-revalidate=86400</code></td><td>Editors expect changes within minutes, not instantly; SWR means nobody ever waits for the refresh</td></tr>
+  <tr><td>Product listing / search results</td><td>CDN TTL 10-60 s + stale-while-revalidate</td><td>60 s of staleness on a catalogue is invisible to users and removes 99% of origin reads on a hot query</td></tr>
+  <tr><td>Price, inventory count</td><td>CDN TTL 0-5 s, or don't cache</td><td>Wrong price is a business incident. Cache the page shell, fetch the number client-side</td></tr>
   <tr><td>Anything per-user</td><td>no-store at the CDN</td><td>Cache key cardinality equals user count — the hit rate is ~0 even if it were safe</td></tr>
 </table>
 <p class="sub">
@@ -245,7 +264,7 @@ export const sysdesCdns: Chapter = {
     <text class="sm rd" x="16" y="228">Bob requests the same path, hits Alice's cached entry, and reads her order history.</text>
     <text class="sm rd" x="16" y="248">One request poisons the entry for every user in that PoP until the TTL expires.</text>
   </svg>
-  <figcaption>The green row is a good key: coarse enough to be shared, precise enough to be correct. The red row is the same bug that has taken down Steam, several banks, and at least one airline.</figcaption>
+  <figcaption>The green row is a good key: coarse enough to be shared, precise enough to be correct. The red row is the class of bug behind Valve's Steam incident in December 2015, when an aggressive caching change served some users' store pages (account details included) to other users; Valve put the exposure at about 34,000 users.</figcaption>
 </figure>
 
 <div class="warn">
@@ -284,9 +303,9 @@ export const sysdesCdns: Chapter = {
 <table>
   <tr><th>Mechanism</th><th>Propagation</th><th>Reach for this when</th></tr>
   <tr><td>Versioned / hashed URL</td><td>Instant, by construction</td><td>Default for every build artefact — JS, CSS, images, fonts</td></tr>
-  <tr><td>Purge single URL</td><td>Seconds globally</td><td>One asset was published wrong; a legal takedown</td></tr>
-  <tr><td>Surrogate-key / cache-tag purge</td><td>~150 ms - a few seconds</td><td>The real tool for dynamic sites: tag every response with the entity IDs it contains (<code>Surrogate-Key: product-42 category-9</code>) and purge by tag when the entity changes. One product edit invalidates exactly the pages that mention it</td></tr>
-  <tr><td>Purge everything</td><td>Seconds, then a stampede</td><td>Almost never. Every PoP simultaneously misses, origin takes 20-50x its normal read load, and you find out whether your database was ever really sized for it</td></tr>
+  <tr><td>Purge single URL</td><td>Sub-second to seconds globally (Cloudflare reports single-file purge p50 around 234 ms); budget tens of seconds for slow or tiered setups</td><td>One asset was published wrong; a legal takedown</td></tr>
+  <tr><td>Surrogate-key / cache-tag purge</td><td>Sub-second to a few seconds on modern CDNs (Cloudflare reports a global p50 under 150 ms; AWS reports CloudFront tag invalidation under 5 s at p95)</td><td>The real tool for dynamic sites: tag every response with the entity IDs it contains (<code>Surrogate-Key: product-42 category-9</code>) and purge by tag when the entity changes. One product edit invalidates exactly the pages that mention it</td></tr>
+  <tr><td>Purge everything</td><td>Seconds, then a stampede</td><td>Almost never. Every PoP simultaneously misses, origin takes roughly 1 ÷ (1 − hit rate) times its normal read load (20x at 95%, 100x at 99%), and you find out whether your database was ever really sized for it</td></tr>
 </table>
 <div class="say">
   <span class="ttl">Say it like this →</span> "I'd tag responses with
@@ -299,22 +318,31 @@ export const sysdesCdns: Chapter = {
 
 <h3>Edge compute: the CDN stops being read-only</h3>
 <p>
-  Every major CDN now runs your code in the PoP — Cloudflare Workers,
-  Lambda@Edge and CloudFront Functions, Fastly Compute — typically a V8
-  isolate or WASM sandbox with sub-millisecond cold start and a ~5-50 ms
-  CPU budget. That converts several origin round trips into edge-local
-  work:
+  Every major CDN now runs your code in the PoP, but the runtimes are
+  not interchangeable. CloudFront Functions are tiny JavaScript (ES 5.1)
+  handlers with sub-millisecond duration, 2 MB of memory and no network
+  access. Lambda@Edge is a full Node.js or Python function: up to 30 seconds,
+  network access, 128 MB (viewer events) or up to 10 GB (origin events), and
+  a container start that can add real latency. Cloudflare Workers run in V8
+  isolates with very fast starts; CPU time is capped at 10 ms on the free plan
+  and defaults to 30 seconds (max 5 minutes) on the paid plan, with 128 MB per
+  isolate. Fastly Compute runs WebAssembly. Pick by what the code must do, then
+  read that vendor's current limits. Used well, edge code converts several
+  origin round trips into edge-local work:
 </p>
 <ul>
   <li><b>Cache key rewriting.</b> Normalise the query string, bucket the A/B variant, downgrade a cookie to a boolean — the normalisation rules above, implemented rather than configured.</li>
-  <li><b>Auth at the edge.</b> Verify a JWT signature locally and reject unauthenticated traffic 170 ms before it would have reached your origin. Revocation still needs an origin check, so keep tokens short-lived.</li>
+  <li><b>Auth at the edge.</b> Verify a JWT signature locally and reject unauthenticated traffic 200+ ms (for a distant user) before it would have reached your origin. Revocation still needs an origin check, so keep tokens short-lived.</li>
   <li><b>Personalisation without breaking the cache.</b> Cache one shared, anonymous HTML shell aggressively, then have the Worker stitch in the per-user fragment (name, cart count) from a KV lookup. You get a cacheable page <em>and</em> a personalised one.</li>
   <li><b>Geo / consent routing, redirects, signed URLs, bot scoring</b> — all decisions that only need the request itself.</li>
 </ul>
 <p class="sub">
-  Be honest about the limits: edge runtimes have tight memory, no
-  persistent TCP to your primary database (a 180 ms hop back to origin
-  eats the entire win), and eventually-consistent edge KV. Edge compute is
+  Be honest about the limits: edge runtimes have tight memory and CPU budgets, and
+  eventually-consistent edge KV. They can open outbound TCP (Workers have
+  <code>connect()</code>, and Cloudflare's Hyperdrive pools Postgres
+  connections), but every query still pays the RTT from the PoP back to the
+  database, and a chatty request that makes four of them at 200 ms each
+  eats the entire win. Edge compute is
   for decisions about the request, not for business logic that needs your
   transactional store.
 </p>
@@ -322,7 +350,7 @@ export const sysdesCdns: Chapter = {
 <h3>When a CDN is a 10x win, and when it changes nothing</h3>
 <table>
   <tr><th>Workload</th><th>Effect</th><th>Why</th></tr>
-  <tr><td>Static assets, images, video, downloads</td><td>Enormous</td><td>95-99% offload; origin egress drops 20-50x, and CDN egress is often 5-10x cheaper per GB than cloud egress</td></tr>
+  <tr><td>Static assets, images, video, downloads</td><td>Enormous</td><td>95-99% offload; origin egress drops 20-100x. CDN per-GB prices are often close to cloud egress list prices, so the saving is mostly offload (plus free or discounted origin-to-CDN transfer; AWS waives it for AWS origins)</td></tr>
   <tr><td>Mostly-anonymous read pages (news, docs, catalogue, marketing)</td><td>Large</td><td>One cached copy serves millions; the long tail is where hit rate goes, so watch p50 not just totals</td></tr>
   <tr><td>Read-heavy public API (prices, timetables, feature flags)</td><td>Real, with 5-60 s TTLs</td><td>The traffic is spiky and repetitive — exactly what a cache is for</td></tr>
   <tr><td>Highly personalised API (<code>/me/feed</code>)</td><td>~Nothing on cacheability</td><td>Key cardinality equals user count. You still get TLS termination and a warm origin connection — worth maybe 30-50% off TTFB, not 10x</td></tr>
@@ -331,8 +359,13 @@ export const sysdesCdns: Chapter = {
 </table>
 <p class="sub">
   The load-bearing metric in all six rows is the same:
-  <b>hit rate</b>. A CDN at 50% hit rate is a rounding error; at 95% it
-  removes 20x the load; at 99% it removes 100x. When an interviewer asks
+  <b>hit rate</b>. Origin load scales with the miss rate: a 50% hit rate
+  halves origin load (real, but not a 10x story); 90% removes 10x, 95%
+  removes 20x and 99% removes 100x. Track both the <em>request</em> hit ratio
+  and the <em>byte</em> hit ratio, because a few huge uncached video segments
+  can dominate egress while the request ratio looks healthy, and use the
+  standard <code>Cache-Status</code> response header (RFC 9211) to see which
+  cache in the chain served a response. When an interviewer asks
   "how would you know it's working", the answer is hit rate by content
   type and origin egress per user — not "latency looks better."
 </p>
@@ -342,8 +375,9 @@ export const sysdesCdns: Chapter = {
   <li><b>Signals:</b> "global users", "millions of images", "video streaming", "our site is slow in India", or a read:write ratio quoted above about 20:1. Any of those and the CDN belongs in your first drawing, before you touch the database.</li>
   <li><b>The naive design</b> puts one app tier in one region behind a load balancer and tries to fix the 200 ms of physics with more replicas. Replicas cut queue time; they cannot cut propagation delay.</li>
   <li><b>Distinguishing it from application caching:</b> a CDN caches <em>HTTP responses keyed by URL, near the user</em>; Redis caches <em>arbitrary values keyed by anything, near the service</em>. If the thing you want to reuse isn't addressable by URL, or is per-user, it belongs in Redis — this is a layered-cache question, not an either/or.</li>
-  <li><b>Estimate before you commit.</b> 10 M daily users × 2 MB of assets ≈ 20 TB/day. At cloud egress that's roughly $1,800/day; at 95% CDN offload with cheaper per-GB pricing it's a small fraction of that. Cost is a legitimate reason to reach for a CDN and it scores well.</li>
+  <li><b>Estimate before you commit.</b> 10 M daily users × 2 MB of assets ≈ 20 TB/day. If every byte left your origin at a list price near $0.09/GB, that's roughly $1,800/day. Browser caching removes some of those requests first; at 95% CDN offload only about 1 TB/day is fetched from your origin, and that origin-to-CDN leg is often discounted or free. Cost is a legitimate reason to reach for a CDN and it scores well, but credit the offload, not a cheaper per-GB rate.</li>
   <li><b>The pitfall to name unprompted:</b> personalised content in a shared cache. Say the words "I'd default authenticated routes to <code>private, no-store</code> and make the CDN opt-in rather than opt-out" and you have pre-empted the follow-up question.</li>
+  <li><b>Two named attacks to know.</b> <em>Web cache deception</em> tricks a cache that decides by file extension into storing a victim's private page under a static-looking path (<code>/account/orders/x.css</code>); <em>cache poisoning</em> abuses request inputs that affect the response but are not in the key. Defences: honour the origin's <code>Cache-Control</code>, mark dynamic responses <code>private</code>/<code>no-store</code>, and do not cache by extension alone. Also worth a sentence: signed URLs or cookies for paid or private media, negative caching (a short TTL on 404s), range or segment caching for video, and multi-CDN for resilience.</li>
   <li><b>The second pitfall:</b> full purges and cold-start stampedes. If the design has a global purge in it, pair it with a shield tier or staggered TTLs, or say out loud that the origin must be sized for the miss storm.</li>
 </ul>
 
@@ -355,6 +389,25 @@ export const sysdesCdns: Chapter = {
     <li>Explain why an over-precise cache key (keyed on the raw Cookie header, or an unstripped query string) destroys hit rate, and how you'd fix it.</li>
     <li>Describe the cache-key bug that leaks one user's personalised response to another, and the two-layer defence against it.</li>
     <li>Explain why versioned or hashed URLs are the default invalidation strategy, with purge as the fallback rather than the plan.</li>
+    <li>Explain why <code>s-maxage</code> and <code>stale-while-revalidate</code> do not combine well, and how both stale windows are counted from expiry.</li>
   </ul>
+</div>
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://www.rfc-editor.org/rfc/rfc9111" rel="noopener noreferrer">RFC 9111: HTTP Caching</a> — s-maxage implying proxy-revalidate, the no-store caveat, and no-cache semantics</li>
+    <li><a href="https://www.rfc-editor.org/rfc/rfc5861" rel="noopener noreferrer">RFC 5861: stale-while-revalidate and stale-if-error</a> — stale windows counted from expiry, and the error definition</li>
+    <li><a href="https://www.rfc-editor.org/rfc/rfc9213" rel="noopener noreferrer">RFC 9213: Targeted HTTP Cache Control</a> — the CDN-Cache-Control header for CDN-only directives</li>
+    <li><a href="https://www.bleepingcomputer.com/news/security/steam-caching-error-leads-to-account-disclosure/" rel="noopener noreferrer">BleepingComputer: Steam caching error</a> — the December 2015 incident behind the personalised-cache warning</li>
+    <li><a href="https://developers.cloudflare.com/cache/concepts/cache-control/" rel="noopener noreferrer">Cloudflare: Cache-Control behaviour</a> — how s-maxage interacts with stale-while-revalidate and stale-if-error</li>
+    <li><a href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Expiration.html" rel="noopener noreferrer">AWS: CloudFront expiration and serving stale content</a> — max-age with SWR and SIE, and the maximum TTL cap</li>
+    <li><a href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/HowCloudFrontWorks.html" rel="noopener noreferrer">AWS: how CloudFront delivers content</a> — DNS-based routing and regional edge caches</li>
+    <li><a href="https://developers.cloudflare.com/workers/platform/limits/" rel="noopener noreferrer">Cloudflare Workers limits</a> — CPU time, memory and subrequest limits</li>
+    <li><a href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/edge-functions-choosing.html" rel="noopener noreferrer">AWS: CloudFront Functions versus Lambda@Edge</a> — duration, memory, language and network differences</li>
+    <li><a href="https://blog.cloudflare.com/instant-purge/" rel="noopener noreferrer">Cloudflare: instant purge</a> — reported purge latency, including tag purge</li>
+    <li><a href="https://aws.amazon.com/about-aws/whats-new/2026/04/cloudfront-invalidation-cache-tag/" rel="noopener noreferrer">AWS: CloudFront cache-tag invalidation</a> — tag-based invalidation and its reported propagation time</li>
+    <li><a href="https://portswigger.net/web-security/web-cache-deception" rel="noopener noreferrer">PortSwigger: web cache deception</a> — how private pages end up in shared caches</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees.</p>
 </div>`,
 };

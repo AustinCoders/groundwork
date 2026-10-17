@@ -47,7 +47,7 @@ export const sysdesConsistencyModels: Chapter = {
     <text class="sm gr" x="140" y="76">t=0 write v2, committed</text>
     <text class="sm rd" x="140" y="176">t=2 ms read → 100</text>
     <text class="sm" x="330" y="145">replication lag 40 ms</text>
-    <text class="lbl rd" x="18" y="248" style="font-size:15px">Alice deposited 20 and her balance went down. Nothing is broken — the system is behaving exactly as specified.</text>
+    <text class="lbl rd" x="18" y="248" style="font-size:15px">Alice deposited 20 and her deposit is not there. Nothing is broken — the system is behaving exactly as specified.</text>
   </svg>
   <figcaption>Every consistency anomaly you will ever discuss is a variation on this picture. The models differ only in which arrow they forbid.</figcaption>
 </figure>
@@ -63,7 +63,7 @@ export const sysdesConsistencyModels: Chapter = {
   <tr><th>Setup</th><th>Typical lag</th><th>Tail behaviour</th></tr>
   <tr><td>Same-AZ async replica</td><td>0.5-2 ms</td><td>Tens of ms under write bursts</td></tr>
   <tr><td>Cross-AZ, same region</td><td>2-10 ms</td><td>100 ms+ during compaction or vacuum</td></tr>
-  <tr><td>Cross-region (us-east → eu-west)</td><td>70-120 ms, floor set by RTT</td><td>Seconds if the link saturates</td></tr>
+  <tr><td>Cross-region (us-east → eu-west)</td><td>Roughly 50-150 ms; the floor is the one-way delay of about 35-45 ms (half of a 70-90 ms round trip), plus apply time</td><td>Seconds if the link saturates</td></tr>
   <tr><td>Any replica during a bulk write, index build, or long transaction</td><td>seconds to minutes</td><td>Single-threaded replay (classic MySQL) can fall <em>hours</em> behind and never catch up until write traffic drops</td></tr>
   <tr><td>Read-through cache with 60 s TTL</td><td>up to 60 s</td><td>This is replication lag too. People forget caches are replicas</td></tr>
 </table>
@@ -79,10 +79,14 @@ export const sysdesConsistencyModels: Chapter = {
 <h3>The two poles, and the useful middle</h3>
 <p>
   <b>Strong consistency</b> (informally: every read sees the latest
-  committed write) requires the read to be coordinated with the write —
-  route to the leader, or read a quorum, or hold a lease. Cost: at least
-  one extra round trip, and unavailability whenever the leader is
-  unreachable. <b>Eventual consistency</b> promises only that if writes
+  committed write) requires the read to be coordinated with the write. The
+  usual ways are to send the read through the leader after it has confirmed
+  it is still the leader (Raft's ReadIndex, or a clock-based leader lease),
+  or, in a leaderless register, to read a quorum and write the newest value
+  back to a quorum before returning (the ABD algorithm). A plain "read R
+  replicas and take the newest" is not enough, as the warning below shows.
+  Cost: at least one extra round trip, and unavailability whenever the leader
+  or a quorum is unreachable. <b>Eventual consistency</b> promises only that if writes
   stop, replicas converge. Cost: nothing; guarantee: nearly nothing. Any
   stale value is legal, in any order, on any read.
 </p>
@@ -96,6 +100,8 @@ export const sysdesConsistencyModels: Chapter = {
   <tr><td>Read-your-writes</td><td>You post a comment and it isn't there on refresh</td><td>Route a user's reads to the primary for N seconds after their write; or return a version token (Postgres LSN, MySQL GTID) with the write and have the read wait for a replica that has caught up to it</td></tr>
   <tr><td>Monotonic reads</td><td>Refreshing shows a comment, then it vanishes, then it's back</td><td>Sticky routing: hash the user to one replica so they never move backwards in the replication stream</td></tr>
   <tr><td>Consistent prefix</td><td>Seeing the reply "because he's late" before the question "why?"</td><td>Preserve write order per partition; don't shard causally-related rows across independently-replicated partitions</td></tr>
+  <tr><td>Monotonic writes</td><td>Your second write being applied before your first (set a name, then fix a typo, and the typo wins)</td><td>Apply one client's writes in the order issued: per-session sequence numbers, or route a session's writes through one leader or one partition log</td></tr>
+  <tr><td>Writes-follow-reads</td><td>Replying to a post and having the reply replicate somewhere the post has not reached yet</td><td>Carry the version you read (token or dependency) on the write, and apply the write only where that version is already present</td></tr>
   <tr><td>Causal consistency</td><td>Any effect visible before its cause, across users</td><td>Track happens-before with vector clocks or dependency metadata and delay applying an update until its dependencies have landed</td></tr>
 </table>
 <div class="say">
@@ -180,7 +186,7 @@ export const sysdesConsistencyModels: Chapter = {
   <tr><td>t1</td><td>read</td><td>contacts R2, R3 (R=2)</td><td>sees v1 (R2), v0 (R3)</td><td>Yes — R2 is in both the write set {R1,R2} and the read set {R2,R3}</td><td>Returns v1 — correct</td></tr>
   <tr><td>t2</td><td>write v2</td><td>acks from R1, R3 (W=2)</td><td>R1=v2, R2=v1, R3=v2</td><td>—</td><td>Write succeeds</td></tr>
   <tr><td>t3</td><td>read</td><td>contacts R1, R2 (R=2)</td><td>sees v2 (R1), v1 (R2)</td><td>Yes — R1 is in both {R1,R3} and {R1,R2}</td><td>Returns v2 — correct</td></tr>
-  <tr><td>t4</td><td>write v3, during a partition — R1 and R2 unreachable</td><td><b>sloppy quorum</b> acks from R3 (real member) + R4 (hinted handoff, not in the preference list)</td><td>R3=v3; hint queued on R4</td><td>The acking set {R3,R4} is no longer a subset of {R1,R2,R3}</td><td>Write "succeeds" (W=2 met)</td></tr>
+  <tr><td>t4</td><td>write v3, during a partition — R1 and R2 unreachable (a Riak or original-Dynamo style store)</td><td><b>sloppy quorum</b> acks from R3 (real member) + R4 (hinted handoff, not in the preference list)</td><td>R3=v3; hint queued on R4</td><td>The acking set {R3,R4} is no longer a subset of {R1,R2,R3}</td><td>Write "succeeds" (W=2 met)</td></tr>
   <tr><td>t5</td><td>read, partition healed, hint not yet delivered</td><td>contacts R1, R2 (R=2)</td><td>sees v2 (R1), v1 (R2)</td><td><b>No</b> — write set was {R3,R4}, read set is {R1,R2}: disjoint</td><td>Returns v2 — <b>v3 is silently missed</b></td></tr>
 </table>
 <p class="sub">
@@ -188,7 +194,11 @@ export const sysdesConsistencyModels: Chapter = {
   member of the key's preference list. The moment a sloppy quorum lets an
   outsider count toward W, the read set and write set can miss each other
   entirely — which is exactly why R + W &gt; N is a normal-operation
-  guarantee, not a partition-tolerant one.
+  guarantee, not a partition-tolerant one. Which systems do this? Riak and
+  the original Dynamo paper use sloppy quorums by design. Cassandra does
+  not: its hinted handoff lets a hint satisfy a write only at consistency
+  level ANY, so at ONE, QUORUM or higher the acks must come from real
+  replicas and the overlap argument holds.
 </p>
 
 <div class="warn">
@@ -198,11 +208,15 @@ export const sysdesConsistencyModels: Chapter = {
   a different pair and produce siblings), it does not make a failed write
   disappear (a write that reached one node and then failed can still be
   read later and repaired into existence), and <b>sloppy quorums</b> with
-  hinted handoff — the default in Dynamo-style systems during a
-  partition — accept W acks from nodes that aren't even in the key's
-  preference list, which breaks the overlap argument outright. Quorums buy
-  you strong-ish reads under normal operation, not consensus. For real
-  linearizability you need Raft or Paxos with a leader lease.
+  hinted handoff — used by Riak and the original Dynamo, and by Cassandra
+  only at CL=ANY — accept W acks from nodes that aren't even in the key's
+  preference list, which breaks the overlap argument outright. Even with
+  strict quorums, last-write-wins timestamps can pick the wrong winner under
+  clock skew. Quorums buy you strong-ish reads under normal operation, not
+  consensus. For real linearizability you need a consensus-backed log (Raft,
+  Paxos) with reads confirmed by the leader (log, ReadIndex or a lease), or
+  a read-repair-before-return protocol such as ABD. In Cassandra that means
+  lightweight transactions and SERIAL reads, not QUORUM plus QUORUM.
 </div>
 
 <h3>Linearizability vs serializability — telling them apart for good</h3>
@@ -229,9 +243,12 @@ export const sysdesConsistencyModels: Chapter = {
   </li>
   <li>
     <b>Strict serializability</b> is both: a serial order that also
-    respects real time. This is what Spanner (via TrueTime), FaunaDB and
-    CockroachDB market as "external consistency", and it is the strongest
-    practical model.
+    respects real time. Spanner (via TrueTime) is the system that uses the
+    term "external consistency" for it; FoundationDB documents strictly
+    serializable transactions too. CockroachDB deliberately claims only
+    serializability, because clock skew can produce a "causal reverse"
+    anomaly between transactions that touch disjoint keys. Strict
+    serializability is the strongest practical model.
   </li>
 </ul>
 
@@ -260,8 +277,27 @@ export const sysdesConsistencyModels: Chapter = {
   The one-liner worth memorising: <b>linearizability is about recency of a
   single key; serializability is about the illusion of one-at-a-time
   transactions.</b> A database can be serializable and still let you read
-  stale data (Postgres SERIALIZABLE on a replica); a store can be
-  linearizable per key and have no transactions at all (etcd, ZooKeeper).
+  stale data: a transaction run against a lagging follower snapshot, or one
+  serialised at an old timestamp, is a valid serial order that is not the
+  newest one. (Postgres sidesteps this: a hot standby refuses SERIALIZABLE
+  transactions outright.) And linearizable does not mean "no transactions":
+  etcd offers atomic multi-key transactions and documents strict
+  serializability for its default reads, while a single register with
+  compare-and-set is linearizable with no multi-object transactions at all.
+  ZooKeeper is the cautionary case: writes go through a leader in a total
+  order, but reads are served locally by whichever server you are connected
+  to and can be stale unless you call <code>sync()</code> first.
+</p>
+<p>
+  Between these sits <b>snapshot isolation</b>, which many databases ship
+  as the strongest level they call "serializable" or as the default
+  "repeatable read". It prevents dirty and non-repeatable reads, but still
+  allows <b>write skew</b> (two doctors each see the other on call and both
+  go off call), lost updates in some engines, and phantoms for range
+  checks. The fix is a true serializable level, or an explicit constraint,
+  <code>SELECT ... FOR UPDATE</code>, or a conditional write. Isolation
+  levels get their own chapter; the point here is that "transactional" does
+  not automatically mean "serializable".
 </p>
 
 <h3>Choosing per operation: model, cost, and what it looks like to a user</h3>
@@ -311,5 +347,21 @@ export const sysdesConsistencyModels: Chapter = {
     <li>Pick a consistency model per operation for a concrete feature (a like count versus a username reservation, say) and justify each choice.</li>
     <li>Explain why "we'll use eventual consistency" is an incomplete answer without also naming which specific operations need read-your-writes or strong consistency.</li>
   </ul>
+</div>
+
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://etcd.io/docs/v3.6/learning/api_guarantees/" rel="noopener noreferrer">etcd API guarantees</a> — atomic multi-key transactions, strict serializability, and the opt-in stale serializable reads</li>
+    <li><a href="https://zookeeper.apache.org/doc/current/zookeeperProgrammers.html" rel="noopener noreferrer">ZooKeeper programmer's guide</a> — the stated guarantees, why reads can be stale, and when to call sync</li>
+    <li><a href="https://cassandra.apache.org/doc/latest/cassandra/architecture/dynamo.html" rel="noopener noreferrer">Cassandra architecture: Dynamo</a> — hinted handoff, and that a stored hint satisfies only consistency level ANY</li>
+    <li><a href="https://www.postgresql.org/docs/current/hot-standby.html" rel="noopener noreferrer">PostgreSQL hot standby</a> — SERIALIZABLE is not available on a standby</li>
+    <li><a href="https://www.cockroachlabs.com/blog/living-without-atomic-clocks/" rel="noopener noreferrer">CockroachDB: living without atomic clocks</a> — why it claims serializability, not external consistency, and the causal reverse anomaly</li>
+    <li><a href="https://research.google/pubs/spanner-googles-globally-distributed-database-2/" rel="noopener noreferrer">Spanner paper (OSDI 2012)</a> — external consistency, TrueTime and commit wait</li>
+    <li><a href="https://docs.cloud.google.com/spanner/docs/timestamp-bounds" rel="noopener noreferrer">Spanner timestamp bounds</a> — strong versus stale reads, and when stale reads can still block</li>
+    <li><a href="https://jepsen.io/consistency/models/strict-serializable" rel="noopener noreferrer">Jepsen: strong serializability</a> — the formal definition, and why it cannot stay available through a partition</li>
+    <li><a href="https://apple.github.io/foundationdb/transaction-manifesto.html" rel="noopener noreferrer">FoundationDB transaction manifesto</a> — strictly serializable transactions as a design goal</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees.</p>
 </div>`,
 };

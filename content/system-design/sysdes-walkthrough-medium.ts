@@ -39,9 +39,12 @@ export const sysdesWalkthroughMedium: Chapter = {
   within <b>a few seconds</b> (eventual consistency is fine and the product
   does not need better); <b>read-heavy by roughly 100:1</b>;
   availability 99.9% — a briefly stale feed is acceptable, an unavailable one
-  is not. That last sentence already tells you the system should favour
-  availability over consistency, which is the CAP-chapter tradeoff arriving
-  as a product requirement rather than a theory question.
+  is not. That last sentence tells you the system should favour availability
+  and low latency over strict consistency. Be careful with the label: this is
+  a product-level choice to accept eventual consistency, not the CAP theorem
+  itself, which only describes what a system must give up during a network
+  partition (the PACELC framing, which also covers the latency-versus-consistency
+  tradeoff in normal operation, is closer to what the requirement says).
 </p>
 
 <h3>Capacity estimation, with the arithmetic shown</h3>
@@ -54,18 +57,18 @@ export const sysdesWalkthroughMedium: Chapter = {
   <tr><th>Quantity</th><th>Arithmetic</th><th>Result</th></tr>
   <tr><td>Daily active users</td><td>given</td><td>500 M</td></tr>
   <tr><td>Feed opens</td><td>500 M × 15 per day ÷ 86,400 s</td><td>~87,000 reads/s average</td></tr>
-  <tr><td>Peak reads</td><td>× 3 for daily peak</td><td>~250,000 reads/s</td></tr>
-  <tr><td>Posts</td><td>10% of DAU × 1.5 posts ÷ 86,400 s</td><td>~870 writes/s average, ~2,500/s peak</td></tr>
+  <tr><td>Peak reads</td><td>87,000 × 3 for daily peak</td><td>~260,000 reads/s</td></tr>
+  <tr><td>Posts</td><td>10% of DAU × 1.5 posts ÷ 86,400 s</td><td>~870 writes/s average, ~2,600/s peak</td></tr>
   <tr><td>Read : write ratio</td><td>87,000 ÷ 870</td><td>~100 : 1</td></tr>
   <tr><td>Average accounts followed</td><td>given (mean; median far lower)</td><td>200</td></tr>
   <tr><td>Post metadata storage</td><td>75 M/day × 500 B × 365</td><td>~14 TB/year — trivial</td></tr>
   <tr><td>Media storage</td><td>30% of 75 M × ~800 KB (all renditions) × 365</td><td>~6.6 PB/year — object storage, not a database</td></tr>
-  <tr><td>Media egress at peak</td><td>250,000 feeds/s × ~6 images × 150 KB</td><td>~200 GB/s — a CDN problem, not an origin problem</td></tr>
+  <tr><td>Media egress at peak</td><td>260,000 feeds/s × ~6 images × 150 KB</td><td>~230 GB/s — a CDN problem, not an origin problem</td></tr>
 </table>
 <p>
   Two of those numbers decide the architecture. <b>100:1 read-heavy</b> says
   precompute: it is worth doing substantially more work per write to make
-  reads cheap. And <b>6.6 PB/year of media at 200 GB/s</b> says the media
+  reads cheap. And <b>6.6 PB/year of media at ~230 GB/s</b> says the media
   path is completely separate from the feed path — object storage behind a
   CDN, with the feed API returning URLs, never bytes. Neither of those is a
   close call, and saying so quickly buys you time for the decision that is.
@@ -147,17 +150,24 @@ export const sysdesWalkthroughMedium: Chapter = {
 </figure>
 <p>
   The arithmetic: 870 posts/s × 200 followers = <b>~174,000 feed appends per
-  second</b> average, and roughly 500,000/s at peak. That is a lot but it is
-  entirely tractable — these are tiny appends to a sorted structure, spread
-  across a sharded Redis or Cassandra cluster, and they are asynchronous so
-  they can absorb a queue.
+  second</b> average, and roughly 520,000/s at peak (2,600 × 200). That is a
+  lot but it is entirely tractable — these are tiny appends to a sorted
+  structure, spread across a sharded Redis or Cassandra cluster, and they are
+  asynchronous so they can absorb a queue. Read the 200 as a planning figure,
+  not a measurement: the real fan-out per post is the author's own follower
+  count, so the total is the sum over posts of followers(author), weighted by
+  how often each author posts. Accounts that post a lot tend to have more
+  followers than the mean, so expect the true average to sit above 174,000/s,
+  with a long tail of a few accounts far above it. That tail is the next
+  section.
 </p>
 <p>
   Two optimizations cut it substantially and both are worth volunteering.
   <b>Fan out only to active users</b>: with 2 B registered accounts and 500 M
   daily actives, most followers will not open the app today, so writing to
-  them is pure waste. Fan out to accounts active in the last 30 days and
-  lazily build the feed for anyone else on their next login. And <b>cap the
+  them is pure waste. Fan out to accounts active in the last 30 days (assume about 1 B of the 2 B,
+  a planning figure) and lazily build the feed for anyone else on their next
+  login. That can cut the write rate by up to roughly half. And <b>cap the
   feed</b> at ~500 entries — nobody scrolls past that, and an uncapped list
   grows without bound.
 </p>
@@ -196,8 +206,8 @@ export const sysdesWalkthroughMedium: Chapter = {
 </figure>
 <table>
   <tr><th></th><th>Fan-out on write</th><th>Fan-out on read</th></tr>
-  <tr><td>Write cost</td><td>O(followers) — 200 appends, up to 150 M for a celebrity</td><td>O(1) — one insert</td></tr>
-  <tr><td>Read cost</td><td>O(1) — one range scan, p99 under 10 ms from cache</td><td>O(following) — 200 lookups plus a merge, per request</td></tr>
+  <tr><td>Write cost</td><td>O(followers) — 200 appends, up to 150 M for an extreme celebrity</td><td>O(1) — one insert</td></tr>
+  <tr><td>Read cost</td><td>O(1) — one range scan, p99 target under 10 ms from cache</td><td>O(following) — 200 lookups plus a merge, per request</td></tr>
   <tr><td>Total ops at our numbers</td><td>174 k writes/s, 87 k cheap reads/s</td><td>870 writes/s, 17.4 M lookups/s</td></tr>
   <tr><td>Storage</td><td>Duplicated per follower</td><td>Single copy of each post</td></tr>
   <tr><td>Freshness</td><td>Seconds of lag while fan-out drains</td><td>Perfectly fresh by construction</td></tr>
@@ -213,7 +223,9 @@ export const sysdesWalkthroughMedium: Chapter = {
 
 <h3>The celebrity problem, and the hybrid that answers it</h3>
 <p>
-  An account with <b>150 million followers</b> posts. Under pure fan-out on
+  An account with <b>150 million followers</b> posts (a deliberately extreme
+  but plausible assumption; the case-studies chapter reports a 31-million-follower
+  account in Twitter's 2013 talks). Under pure fan-out on
   write that is 150 million feed appends for one tweet. Even at a dedicated
   100,000 appends/s you are looking at <b>1,500 seconds — 25 minutes</b>
   before the last follower sees it. Worse, it is bursty and it starves
@@ -221,12 +233,18 @@ export const sysdesWalkthroughMedium: Chapter = {
   posting in the same minute is a self-inflicted denial of service.
 </p>
 <p>
-  The answer every real system converges on: <b>fan out on write for normal
+  The answer many large feed systems reach: <b>fan out on write for normal
   accounts, fan out on read for the handful of accounts above a follower
-  threshold, and merge the two at request time.</b>
+  threshold, and merge the two at request time.</b> It is not universal. The
+  published design space is push, pull, or a hybrid chosen per producer and
+  consumer (the SIGMOD 2010 "Feeding Frenzy" paper frames it exactly that
+  way), and real systems differ: Twitter's 2013 talks describe push, with an
+  exception for very large accounts reported as being explored, while other feeds compute more at read
+  time. What is universal is that you must justify where the work happens
+  with numbers.
 </p>
 <figure>
-  <svg viewBox="0 0 640 260" class="dg" role="img" aria-label="A hybrid feed built by merging a precomputed materialized feed written at post time with a small number of celebrity timelines pulled at request time">
+  <svg viewBox="0 0 640 272" class="dg" role="img" aria-label="A hybrid feed built by merging a precomputed materialized feed written at post time with a small number of celebrity timelines pulled at request time">
     <g class="rough">
       <path class="lng" d="M220,65 L300,100" />
       <path class="ln" d="M220,155 L300,125" />
@@ -241,27 +259,34 @@ export const sysdesWalkthroughMedium: Chapter = {
     <text class="lbl" x="130" y="64" text-anchor="middle">materialized feed</text>
     <text class="sm" x="130" y="82" text-anchor="middle">normal accounts</text>
     <text class="lbl" x="130" y="154" text-anchor="middle">celebrity pull</text>
-    <text class="sm" x="130" y="172" text-anchor="middle">~6 timelines</text>
+    <text class="sm" x="130" y="172" text-anchor="middle">~6 timelines (assumed)</text>
     <text class="lbl" x="370" y="107" text-anchor="middle">merge</text>
     <text class="sm" x="370" y="125" text-anchor="middle">+ rank + dedupe</text>
     <text class="lbl" x="560" y="115" text-anchor="middle">client</text>
     <text class="sm gr" x="130" y="108" text-anchor="middle">written at post time</text>
     <text class="sm" x="130" y="198" text-anchor="middle">read at request time</text>
-    <text class="lbl" x="320" y="238" text-anchor="middle" style="font-size:14px">threshold ~100 k followers; a user follows fewer than 10 of them, so the merge is cheap</text>
+    <text class="lbl" x="320" y="236" text-anchor="middle" style="font-size:14px">threshold is a tunable (100 k to 1 M followers); this walkthrough uses 100 k</text>
+    <text class="lbl" x="320" y="256" text-anchor="middle" style="font-size:14px">assume a reader follows ~6 accounts above it, so the merge is cheap</text>
   </svg>
   <figcaption>The asymmetry that makes this work: celebrity accounts are rare, so the read-time pull is tiny, while their follower counts are enormous, so the write-time push was ruinous.</figcaption>
 </figure>
 <p>
   Why this is cheap: the number of accounts above 100,000 followers is small,
-  and crucially <b>the number of them any one user follows is small</b> —
-  typically under ten. So a feed read becomes one range scan of the
-  materialized feed plus perhaps six cached "recent posts by author" lookups,
-  merged and re-sorted. That is a bounded, predictable cost, unlike the 200
-  lookups of pure fan-out on read.
+  and, as an <em>assumption</em> you should state, <b>the number of them any
+  one user follows is small</b> — say around six for a typical reader. That
+  figure is illustrative, not a measurement: follow graphs are skewed, so a
+  heavy user may follow dozens of large accounts. Measure the distribution,
+  and if the tail is long, cap the pull (for example, the top 20 large
+  accounts by affinity). With the assumption, a feed read becomes one range
+  scan of the materialized feed plus perhaps six cached "recent posts by
+  author" lookups, merged and re-sorted. That is a bounded, predictable cost,
+  unlike the 200 lookups of pure fan-out on read.
 </p>
 <p>
-  Two refinements, if the interviewer digs. The threshold should ideally be
-  dynamic rather than a magic constant — the real cost driver is
+  Two refinements, if the interviewer digs. The threshold is a tunable chosen
+  from a cost model, anywhere from roughly 100,000 to 1,000,000 followers
+  (the case-studies chapter notes Twitter-era talks around the top of that
+  range), and ideally dynamic rather than a magic constant — the real cost driver is
   <em>followers × posting rate</em>, so an account with 80,000 followers
   posting 50 times a day may deserve pull treatment while a 200,000-follower
   account posting monthly does not. And the celebrity's recent posts are a
@@ -281,8 +306,8 @@ export const sysdesWalkthroughMedium: Chapter = {
   <tr><td>Post time</td><td>Fan-out worker appends the post ID to 200 followers' materialized feeds — finishes in well under a second</td><td>Follower count is past the ~100k threshold, so no fan-out happens — the post is written once, to the posts table, and nothing else</td></tr>
   <tr><td>What pure fan-out on write would have cost</td><td>(this is what actually happens) 200 appends</td><td>150,000,000 appends; even at a dedicated 100,000 appends/s that's 1,500s — 25 minutes before the last follower sees it</td></tr>
   <tr><td>Read time — a follower opens their feed</td><td>One range scan of their materialized feed, which already contains this post's ID — O(1), p99 under 10 ms from cache</td><td>Not in the materialized feed. The read instead pulls the celebrity's cached "recent posts" list (~100% hit rate) and merges it in</td></tr>
-  <tr><td>How many celebrity lists does that one request pull?</td><td>0, if the reader follows no account above the threshold</td><td>Typically under 10 — the chapter's own claim that any one user follows very few accounts above 100k followers</td></tr>
-  <tr><td>Total read cost for this feed request</td><td>1 range scan</td><td>1 range scan + ~6 cached celebrity-list lookups, merged and re-sorted — bounded, unlike the 17.4M lookups/s of pure fan-out on read</td></tr>
+  <tr><td>How many celebrity lists does that one request pull?</td><td>0, if the reader follows no account above the threshold</td><td>Around six, under this chapter's stated assumption about a typical reader (measure it; cap the pull if the tail is long)</td></tr>
+  <tr><td>Total read cost for this feed request</td><td>1 range scan</td><td>1 range scan + ~6 cached celebrity-list lookups (assumed), merged and re-sorted — bounded, unlike the 17.4M lookups/s of pure fan-out on read</td></tr>
 </table>
 <p class="sub">
   Same mechanism, same merge code path — what changes is only which side of
@@ -318,31 +343,37 @@ export const sysdesWalkthroughMedium: Chapter = {
   <span class="ttl">⚠ OFFSET is also a performance trap, not just a correctness one</span>
   Even with a static dataset, <code>OFFSET 10000</code> makes the database
   produce and discard 10,000 rows before returning yours. Deep pagination
-  costs grow linearly with depth. Cursors are O(1) regardless of how far the
-  user has scrolled, because they seek directly into the index.
+  costs grow linearly with depth. A cursor costs an index seek (O(log n))
+  plus the page itself, regardless of how far the user has scrolled, because
+  it seeks directly into the index.
 </div>
 <table>
-  <tr><th>Layer</th><th>Key</th><th>Hit rate</th><th>Why it exists</th></tr>
-  <tr><td>CDN</td><td>media URL</td><td>&gt;95%</td><td>Media is 200 GB/s at peak — this is the only layer that can carry it</td></tr>
-  <tr><td>Feed list cache</td><td>feed:user_id</td><td>~90% for active users</td><td>The top ~100 IDs for active users; ~2 TB across the fleet, the tail lives in Cassandra</td></tr>
+  <tr><th>Layer</th><th>Key</th><th>Hit rate (target)</th><th>Why it exists</th></tr>
+  <tr><td>CDN</td><td>media URL</td><td>&gt;95%</td><td>Media is ~230 GB/s at peak — this is the only layer that can carry it</td></tr>
+  <tr><td>Feed list cache</td><td>feed:user_id</td><td>~90% for active users</td><td>The top ~100 IDs for 30-day active users; ~4 TB across the fleet (sizing below), the tail lives in Cassandra</td></tr>
   <tr><td>Post hydration cache</td><td>post:post_id</td><td>&gt;95%</td><td>One copy read by everyone. A multi-get of 20 IDs replaces 20 database reads</td></tr>
   <tr><td>Celebrity timeline cache</td><td>author:recent</td><td>~100%</td><td>Makes the pull half of the hybrid essentially free</td></tr>
   <tr><td>Counter cache</td><td>counts:post_id</td><td>high, written back in batches</td><td>Like counts change far faster than posts; do not make the post cache churn for them</td></tr>
 </table>
 <p class="sub">
-  Feed store sizing, since interviewers ask: 500 M active users × 500 entries
-  × 40 bytes = ~10 TB if you keep everything hot. Keeping only the top 100
-  entries in memory is 500 M × 100 × 40 = 2 TB, which is a manageable
-  Redis cluster, with the remainder paged in from a disk-backed store on the
-  rare deep scroll.
+  Feed store sizing, since interviewers ask. Size it for the accounts you
+  actually fan out to, the 30-day actives (assume 1 B, a planning figure of
+  about twice the DAU): 1 B users × 500 entries × 40 bytes = 20 TB if you keep
+  everything hot. Keeping only the top 100 entries in memory is 1 B × 100 × 40
+  = 4 TB, which is a manageable Redis cluster, with the remainder paged in
+  from a disk-backed store on the rare deep scroll. (Sizing for the 500 M DAU
+  alone would give 10 TB and 2 TB, but those users are only half the accounts
+  you write to.) The hit rates in the table above are targets to design for,
+  not measurements.
 </p>
 
 <h3>Part two: the same reasoning applied to chat</h3>
 <p>
   Chat looks like a different problem and is largely the same one with the
   latency requirement tightened and the connection made persistent. Targets:
-  message delivery <b>p99 under 500 ms</b>, <b>10 M concurrent connections</b>,
-  ~20 B messages/day (~230,000/s average, ~600,000/s peak), and — unlike the
+  message delivery <b>p99 under 500 ms</b>, <b>100 M concurrent connections</b>
+  (20% of 500 M DAU, as in the capacity chapter), ~20 B messages/day
+  (~230,000/s average, ~700,000/s peak), and — unlike the
   feed — <b>ordering and delivery guarantees actually matter</b>. A feed
   showing posts slightly out of order is fine. A conversation showing the
   answer before the question is broken.
@@ -382,16 +413,18 @@ export const sysdesWalkthroughMedium: Chapter = {
     <text class="sm" x="345" y="104" text-anchor="middle">3 publish</text>
     <text class="sm gr" x="345" y="168" text-anchor="middle">4 deliver</text>
     <text class="sm" x="452" y="178">5 persist</text>
-    <text class="lbl" x="320" y="262" text-anchor="middle" style="font-size:14px">the hard part is not the socket — it is knowing which of 40 gateway nodes holds it</text>
+    <text class="lbl" x="320" y="262" text-anchor="middle" style="font-size:14px">the hard part is not the socket — it is knowing which of ~400 gateway nodes holds it</text>
   </svg>
   <figcaption>Gateways are stateful in exactly one way: they own live sockets. Everything else is stateless, which is what lets you scale and restart them.</figcaption>
 </figure>
 <p>
   <b>Connection management.</b> A tuned Linux box holds 250,000-500,000 idle
-  WebSockets — the constraint is memory (roughly 20-50 KB per connection in
-  kernel and userspace buffers) and file descriptors, not the mythical 65,535
-  port limit, which applies to outbound tuples rather than accepted
-  connections. So 10 M concurrent needs about 40 gateway nodes plus headroom.
+  WebSockets (a planning figure; WhatsApp reached 2 M+ on one tuned box in 2012,
+  but that is a record, not a plan) — the constraint is memory (roughly 10-50 KB
+  per connection in kernel and userspace buffers) and file descriptors, not the
+  mythical 65,535 port limit, which applies to outbound tuples rather than
+  accepted connections. So 100 M concurrent needs 100 M ÷ 250,000 = 400
+  gateway nodes at the conservative figure (200 at 500,000), plus headroom.
   Gateways must be as thin as possible: terminate TLS, hold the socket,
   translate frames to internal messages. The routing state lives in a
   <b>registry</b> (Redis: <code>user_id → gateway_node_id</code>, with a TTL
@@ -408,7 +441,11 @@ export const sysdesWalkthroughMedium: Chapter = {
   backoff on the client (mandatory), a connection-rate limit at the gateway
   that sheds rather than queues, and rolling restarts that drain slowly
   instead of dropping everything at once. This is the availability chapter's
-  failback storm, in its most common real-world costume.
+  failback storm, in its most common real-world costume. Also decide what
+  happens when the registry itself is lost: treat it as a cache that gateways
+  re-populate on their next heartbeat, and rely on the durable message store
+  so that nothing is lost, only delayed until the recipient's gateway
+  re-registers.
 </div>
 <p>
   <b>Ordering.</b> Never order by client timestamp — clocks are skewed by
@@ -426,8 +463,8 @@ export const sysdesWalkthroughMedium: Chapter = {
   delivered to device, read — and each transition is itself a message that
   must be stored and routed. That doubles or triples your message volume, so
   batch them: acknowledge up to a sequence number rather than per message.
-  <b>Presence</b> looks trivial and is not: 10 M online users heartbeating
-  every 30 seconds is ~330,000 writes/s just to say "still here," and a
+  <b>Presence</b> looks trivial and is not: 100 M online users heartbeating
+  every 30 seconds is ~3.3 M writes/s just to say "still here," and a
   single online/offline transition must notify everyone watching. Only
   subscribe to presence for contacts currently visible on screen, and batch
   transitions into a periodic digest rather than pushing each one.
@@ -446,6 +483,19 @@ export const sysdesWalkthroughMedium: Chapter = {
   readers × M messages of receipt traffic exceeds the traffic of the
   conversation itself.
 </p>
+<p>
+  <b>Four details that come up as follow-ups.</b> <em>Transport:</em> WebSocket
+  is the default for a persistent bidirectional channel, with long polling as
+  the fallback for networks that block it. <em>Offline users:</em> a message for
+  a device with no live socket is stored, and a push notification
+  (APNs on iOS, FCM on Android) wakes the app, which then syncs by sequence
+  number. <em>Multiple devices:</em> each device tracks its own last-seen
+  sequence number per conversation and pulls the gap, which is the same
+  mechanism as large-group pull. <em>Encryption:</em> with end-to-end
+  encryption the servers route and store ciphertext only, so server-side
+  search, spam filtering and link previews move to the client or need explicit
+  design.
+</p>
 <div class="say">
   <span class="ttl">Say it like this →</span> "Chat is the same fan-out
   decision with a tighter latency budget. Small conversations fan out on
@@ -462,7 +512,7 @@ export const sysdesWalkthroughMedium: Chapter = {
   <li><b>Did the numbers drive the design, or decorate it?</b> Estimating 87,000 reads/s and then not using it is worse than not estimating. The chain that scores is: 100:1 read ratio → precompute → 150 M followers breaks precompute → hybrid. Each number must eliminate an option.</li>
   <li><b>Did you reach the hybrid unprompted?</b> Proposing pure fan-out on write and defending it until the interviewer says "what about a celebrity" is a mid-level performance. Anticipating the tail of the follower distribution yourself is a senior one.</li>
   <li><b>Did you state what you gave up?</b> Every choice here costs something: the hybrid adds merge complexity and two code paths that can disagree; capped feeds mean deep scroll needs a fallback; async fan-out means seconds of staleness. Naming the cost of your own design is the strongest single behaviour in the whole loop.</li>
-  <li><b>Did you separate the media path?</b> Candidates who route 200 GB/s of images through their API tier have quietly designed something that cannot exist. Object storage plus CDN, with the feed returning URLs, should be a throwaway sentence — but it has to be said.</li>
+  <li><b>Did you separate the media path?</b> Candidates who route 230 GB/s of images through their API tier have quietly designed something that cannot exist. Object storage plus CDN, with the feed returning URLs, should be a throwaway sentence — but it has to be said.</li>
   <li><b>Did you handle the boring correctness details?</b> Cursor pagination instead of OFFSET, idempotent writes, IDs-not-bodies in the feed. These separate people who have shipped this from people who have read about it, and they cost one sentence each.</li>
   <li><b>Did you scope, and did you push back?</b> Saying "reverse-chronological for v1, and here's where ranking would slot in" is stronger than hand-waving an ML system you cannot describe. Interviewers are calibrating judgement about what to build now, not enthusiasm for building everything.</li>
 </ul>
@@ -475,6 +525,19 @@ export const sysdesWalkthroughMedium: Chapter = {
     <li>Explain why chat assigns a per-conversation monotonic sequence number instead of trusting client timestamps, and how a client-generated message UUID makes retried sends idempotent.</li>
     <li>Explain why OFFSET-based pagination breaks on a feed with items constantly inserted at the head, and what a cursor encodes instead.</li>
     <li>Describe a reconnect storm and name at least two mitigations that stop one gateway restart from cascading into the next.</li>
+    <li>Say which of this chapter's numbers are assumptions you would measure (average followers, large accounts per reader, hit rates) and which are arithmetic (87,000 reads/s, 25 minutes, 400 gateways).</li>
   </ul>
+</div>
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://doi.org/10.1145/1807167.1807257" rel="noopener noreferrer">Feeding Frenzy: selectively materializing users' event feeds (SIGMOD 2010)</a> — push, pull and a hybrid decided per producer and consumer pair from update and view rates</li>
+    <li><a href="https://www.infoq.com/presentations/Twitter-Timeline-Scalability" rel="noopener noreferrer">InfoQ: Timelines at Scale (Raffi Krikorian, 2013)</a> — Twitter's published push-based timeline design</li>
+    <li><a href="https://highscalability.com/the-architecture-twitter-uses-to-deal-with-150m-active-users/" rel="noopener noreferrer">High Scalability: Twitter's architecture (2013 summary)</a> — the 300k read and 6,000 write figures and the large-account exception</li>
+    <li><a href="https://blog.whatsapp.com/1-million-is-so-2011" rel="noopener noreferrer">WhatsApp: 1 million is so 2011</a> — the 2.28 million connections on one server record cited as an upper bound</li>
+    <li><a href="https://dataintensive.net/" rel="noopener noreferrer">Designing Data-Intensive Applications (Martin Kleppmann)</a> — the standard reference for describing load with parameters and percentiles, and its Twitter timeline example</li>
+    <li><a href="https://sre.google/sre-book/addressing-cascading-failures/" rel="noopener noreferrer">Google SRE book: addressing cascading failures</a> — why clients must back off with jitter, relevant to the reconnect storm</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees.</p>
 </div>`,
 };

@@ -78,10 +78,10 @@ export const sysdesScalingVerticalHorizontal: Chapter = {
 </p>
 <table>
   <tr><th>Resource</th><th>What one rentable machine offers today</th></tr>
-  <tr><td>CPU</td><td>Up to ~900 vCPUs on the largest high-memory cloud instances; 128-192 vCPUs is an ordinary large instance</td></tr>
-  <tr><td>Memory</td><td>Up to 24-32 TiB on high-memory instances; 768 GiB is routine and cheap-ish</td></tr>
-  <tr><td>Local storage</td><td>Tens of terabytes of NVMe on storage-optimised instances, at millions of random IOPS and single-digit-microsecond latency</td></tr>
-  <tr><td>Network</td><td>100 Gbps and above on large instances — roughly 12 GB/s, more than most systems' entire dataset per minute</td></tr>
+  <tr><td>CPU</td><td>Up to 1,920 vCPUs on the largest high-memory cloud instance (AWS U7inh, 32 TiB, built for in-memory databases such as SAP HANA); 128-192 vCPUs is an ordinary large instance</td></tr>
+  <tr><td>Memory</td><td>Up to 32 TiB on the largest high-memory instance; 768 GiB is routine and cheap-ish</td></tr>
+  <tr><td>Local storage</td><td>Tens of terabytes of NVMe on storage-optimised instances, at hundreds of thousands of random IOPS or more and read latencies in the tens of microseconds</td></tr>
+  <tr><td>Network</td><td>100 Gbps and above on large instances — roughly 12 GB/s at line rate, which is rarely the first bottleneck for a typical JSON API</td></tr>
 </table>
 <p>
   What that translates to in throughput terms is more useful than the specs:
@@ -91,16 +91,28 @@ export const sysdesScalingVerticalHorizontal: Chapter = {
   <tr><td>nginx or Envoy proxying HTTP</td><td>50,000-100,000+ requests/sec</td></tr>
   <tr><td>A typical JSON API server doing real work per request</td><td>500-5,000 requests/sec per instance</td></tr>
   <tr><td>Redis, single node</td><td>~100,000 ops/sec, into the millions with pipelining</td></tr>
-  <tr><td>Postgres, indexed point reads, working set in RAM</td><td>~10,000-50,000 reads/sec</td></tr>
-  <tr><td>Postgres writes (WAL and fsync bound)</td><td>~1,000-10,000 transactions/sec, higher with batching and group commit</td></tr>
+  <tr><td>Postgres, indexed point reads, working set in RAM</td><td>Planning figure ~20,000 reads/sec; 100,000+ is reported on strong hardware</td></tr>
+  <tr><td>Postgres writes (WAL and fsync bound)</td><td>Planning figure ~5,000 committed writes/sec; 20,000-50,000 is reported with batching and group commit</td></tr>
   <tr><td>Dataset that fits entirely in RAM</td><td>Hundreds of gigabytes to a few terabytes — which is most companies' entire production database</td></tr>
 </table>
+<p class="sub">
+  The Postgres rows are conservative planning numbers, not limits. The course
+  rule: start planning a change when sustained reads pass ~20k/s (add a cache
+  or replicas) or sustained writes pass ~5k/s (partition or queue), and treat
+  ~20k+ sustained writes as "you are sharding or queueing now". How far past
+  that a single primary can go depends on hardware and batching: OpenAI has
+  described running ChatGPT on one Azure PostgreSQL primary with about 50 read
+  replicas at millions of aggregate queries per second. Measure, do not assume.
+</p>
 <div class="sticky mint">
-  <span class="ttl">The anchor worth remembering</span>
-  Stack Overflow served hundreds of millions of page views a month from about
-  nine web servers and a two-node SQL Server cluster, with the database
-  machines sitting at single-digit CPU utilisation. If your design needs more
-  than that, be able to say <em>why</em> your workload is different. Usually
+  <span class="ttl">The anchor worth remembering (2016 data)</span>
+  In Nick Craver's 2016 write-up of Stack Overflow's architecture, the site
+  handled about 66 million page loads a day (209 million HTTP requests) with
+  nine primary web servers and two SQL Server availability-group clusters,
+  each a primary with replicas, and the team aimed to keep database CPU very
+  low. That is 2016 hardware and a 2016 workload, so treat it as an anchor for
+  the idea, not a current benchmark. If your design needs more than a setup
+  like that, be able to say <em>why</em> your workload is different. Usually
   the honest answer is media, machine learning, or genuine consumer scale —
   and if it is none of those, one big box plus a replica is the correct
   design.
@@ -292,33 +304,36 @@ function allowRequest(userId) {
   want to know what's actually saturated. If it's read CPU on the database,
   a cache and a replica fix it for a fraction of the complexity of sharding.
   I'd shard when a single primary can no longer absorb the write rate or the
-  dataset no longer fits — those are the two triggers, and neither is true at
-  the numbers we estimated."
+  dataset no longer fits — those are the two main triggers, and neither is
+  true at the numbers we estimated. There are others: one hot partition or an
+  IOPS ceiling that a bigger box cannot lift, a blast radius that has grown
+  too large to tolerate, or data-residency rules that force data to live in a
+  particular region."
 </div>
 
 <h4>Dry run: applying "when not to scale out" to one incident before reaching for a shard</h4>
 <p class="sub">Scenario: p99 latency on checkout climbs from 120 ms to 800 ms during a flash sale, and the team's first instinct is to shard the primary database.</p>
 <table>
   <tr><th>Step</th><th>Applied to this incident</th><th>Conclusion</th></tr>
-  <tr><td>1. Measure</td><td>App-tier CPU is 40%; database CPU is 95%, but disk IOPS is low and the connection pool sits at 198/200</td><td>Connections are the saturated resource, not raw CPU or disk — sharding wouldn't even be aimed at the actual bottleneck</td></tr>
+  <tr><td>1. Measure</td><td>App-tier CPU is 40%; database CPU is 95% with low disk IOPS, and the connection pool sits at 198/200</td><td>The database is CPU-bound, and the full pool is a symptom (queries take so long that connections stay checked out). Something specific is burning that CPU, so find it before changing the database's shape</td></tr>
   <tr><td>2. The missing index</td><td>The slow query log shows a full scan over 40M rows on <code>orders.customer_id</code>, no index present</td><td>Add the index first — the chapter's own claim is that one index has fixed more dying databases than every scaling technique combined</td></tr>
   <tr><td>3. N+1 queries</td><td>Checkout issues one query per line item — about 12 round trips per request</td><td>Batch into one query — an application bug, not a capacity problem, and it generates load even on a well-sized database</td></tr>
-  <tr><td>4. Connection pool configuration</td><td>20 app instances × a 50-connection pool each = up to 1,000 connections against a 200-connection database limit</td><td>The pool, not the box, is exhausted — fix the pool sizing (or add a pooler) before resizing anything else</td></tr>
+  <tr><td>4. Connection pool configuration</td><td>20 app instances × a 50-connection pool each = up to 1,000 connections against a 200-connection database limit</td><td>Far more connections than cores makes a CPU-bound database slower, not faster. Cap the total, size pools to a small multiple of the core count, and add a pooler if needed</td></tr>
   <tr><td>5. Caching the hot 1%</td><td>90% of reads during the sale hit the same ~500 discounted SKUs</td><td>A small Redis cache in front absorbs nearly all of that traffic — a textbook power-law read distribution</td></tr>
   <tr><td>6. Move work off the request path</td><td>Order-confirmation emails and analytics events are sent synchronously inside the checkout request</td><td>Move both to a queue — neither belongs in the user's 200 ms budget</td></tr>
   <tr><td>7. Then buy the bigger box</td><td>If the primary is still CPU-bound after steps 1–6</td><td>Resize vertically — "a one-line change that buys months" — before sharding, which is a one-way door</td></tr>
 </table>
 <p class="sub">
-  Six of the seven fixes never touch the database's shape at all — the
-  incident that looked like "we need to shard" turned out, on closer
-  measurement, to be an index, a query pattern, a pool setting, a cache,
-  and a queue. Sharding stays the last resort precisely because the
+  Five of the seven steps never touch the database's shape at all, and the
+  first step, measuring, is what pointed at them — the incident that looked
+  like "we need to shard" turned out to be an index, a query pattern, a pool
+  setting, a cache, and a queue. Sharding stays the last resort precisely because the
   chapter orders the checklist that way.
 </p>
 
 <h3>Recognizing it in an unseen problem</h3>
 <ul>
-  <li>Do the scale math first: below roughly 10,000 writes/sec or a few terabytes, one primary plus replicas is a defensible design and reaching past it needs justification</li>
+  <li>Do the scale math first: below roughly 5,000 sustained writes/sec or a few terabytes, one primary plus replicas is a defensible design and reaching past it needs justification</li>
   <li>Any prompt with "high availability" is a horizontal question even at tiny scale — you add the second node for failure tolerance, and it happens to also add capacity</li>
   <li>Read-heavy with tolerable staleness (feeds, catalogs, profiles) → cache then replicas; write-heavy or strongly consistent (ledgers, inventory, counters) → replicas do not help and you should say so</li>
   <li>If the design keeps anything per-user in process memory — sessions, WebSocket maps, rate limit counters, upload buffers — that component is stateful and cannot simply be autoscaled; decide where the state goes before you add the second instance</li>
@@ -331,9 +346,22 @@ function allowRequest(userId) {
   <ul>
     <li>Walk the "when not to scale out" checklist against a real incident, in order, before proposing sharding or adding nodes.</li>
     <li>Explain how a missing index or N+1 queries can masquerade as "we need more capacity," and how measuring the saturated resource tells them apart.</li>
-    <li>State the two triggers that actually justify sharding a database, and explain why "traffic went up" on its own is not one of them.</li>
+    <li>State the main triggers that actually justify sharding a database (write rate, dataset size, hot-partition limits, blast radius, data residency), and explain why "traffic went up" on its own is not one of them.</li>
     <li>Explain why adding a read replica adds write work rather than absorbing it, and name a fix for the read-your-own-writes staleness trap.</li>
     <li>Given a design, point to the component holding per-user state in process memory and explain why it can't simply be autoscaled like the rest of the app tier.</li>
   </ul>
+</div>
+<div class="bx is-ref">
+  <span class="ttl">Sources and further reading</span>
+  <ul>
+    <li><a href="https://nickcraver.com/blog/2016/02/17/stack-overflow-the-architecture-2016-edition/" rel="noopener noreferrer">Stack Overflow: the architecture, 2016 edition</a> — the dated anchor for a small fleet serving a very large site</li>
+    <li><a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/memory-optimized-instances.html" rel="noopener noreferrer">AWS: memory optimized instances</a> — the largest rentable single machines, including the 1,920 vCPU and 32 TiB U7inh</li>
+    <li><a href="https://aws.amazon.com/ec2/instance-types/i4i/" rel="noopener noreferrer">AWS: I4i storage-optimized instances</a> — up to 30 TB of local NVMe per instance</li>
+    <li><a href="https://openai.com/index/scaling-postgresql/" rel="noopener noreferrer">OpenAI: scaling PostgreSQL</a> — one primary plus about 50 replicas at millions of queries per second</li>
+    <li><a href="https://www.postgresql.org/docs/current/high-availability.html" rel="noopener noreferrer">PostgreSQL docs: high availability and replication</a> — synchronous versus asynchronous replication and what each costs</li>
+    <li><a href="https://www.citusdata.com/blog/2020/10/08/analyzing-connection-scalability/" rel="noopener noreferrer">Analyzing the limits of connection scalability in Postgres</a> — why very large connection counts hurt even when idle</li>
+    <li><a href="https://martin.kleppmann.com/2026/03/24/designing-data-intensive-applications-2e.html" rel="noopener noreferrer">Designing Data-Intensive Applications, second edition</a> — replication, partitioning and the scaling tradeoffs behind this chapter</li>
+  </ul>
+  <p class="sub">Claims in this chapter were checked against these sources in October 2026. Figures marked "planning figure" are rules of thumb, not guarantees.</p>
 </div>`,
 };
