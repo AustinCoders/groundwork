@@ -14,6 +14,12 @@ Read this and the memory index first in a new session. Update it at the end of e
 - Each chapter was fact-checked by an independent reviewer and every finding fixed; the audit file lists the counts. The claims sync was run, and the search index is 99.3 KB gzip of its 140 KB budget.
 - Still missing: batch and stream processing, release safety, microservices and security basics, Xu walkthroughs, a practice layer (see `docs/content-audit/system-design.md`).
 
+## System Design batch 2 (2026-10-17)
+
+- Five chapters added on `feature/system-design-batch-2`: batch and stream processing, and walkthroughs for a key-value store, notifications, a web crawler and payments. The section is 33 chapters; the search index is 118.2 KB gzip of its 140 KB budget.
+- Each chapter was fact-checked by an independent reviewer and every finding fixed; the audit file lists the counts. Numbers are guarded in `tests/system-design-quality.test.ts`.
+- Still missing: release safety, microservices and security basics, the other Xu walkthroughs (proximity, metrics, ad clicks as its own walkthrough, wallet, leaderboard, stock exchange), a practice layer.
+
 ## Next
 
 1. Commit and push the content standard (on a `feature/` branch, or on `feature/dsa-rebuild` if the owner says so).

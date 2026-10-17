@@ -27,11 +27,16 @@ import { sysdesReplication } from "./system-design/sysdes-replication";
 import { sysdesTransactionsIsolation } from "./system-design/sysdes-transactions-isolation";
 import { sysdesStorageEngines } from "./system-design/sysdes-storage-engines";
 import { sysdesTimeOrderingIds } from "./system-design/sysdes-time-ordering-ids";
+import { sysdesBatchStreamProcessing } from "./system-design/sysdes-batch-stream-processing";
+import { sysdesWalkthroughKvStore } from "./system-design/sysdes-walkthrough-kv-store";
+import { sysdesWalkthroughNotifications } from "./system-design/sysdes-walkthrough-notifications";
+import { sysdesWalkthroughCrawler } from "./system-design/sysdes-walkthrough-crawler";
+import { sysdesWalkthroughPayments } from "./system-design/sysdes-walkthrough-payments";
 
 export const systemDesignNotes: NotesFile = {
   meta: {
     title: "System Design — the whole map",
-    subtitle: "28 sections across three levels — beginner through advanced, all written.",
+    subtitle: "33 sections across three levels — beginner through advanced, all written.",
     lead: "Pick a level and you'll get these sections in the order that makes sense, from the request lifecycle to sharding, consensus and the tradeoff thinking the interview is actually scoring.",
     author: "Akshat",
     updated: "October 2026",
@@ -57,16 +62,21 @@ export const systemDesignNotes: NotesFile = {
     sysdesStorageSystems,
     sysdesSearchSystems,
     sysdesWalkthroughMedium,
+    sysdesWalkthroughNotifications,
     sysdesCapTheoremDepth,
     sysdesTransactionsIsolation,
     sysdesStorageEngines,
     sysdesShardingPartitioning,
     sysdesTimeOrderingIds,
     sysdesDistributedConsensus,
+    sysdesBatchStreamProcessing,
     sysdesFaultTolerance,
     sysdesObservabilityScale,
     sysdesCapacityEstimation,
     sysdesCaseStudies,
+    sysdesWalkthroughKvStore,
+    sysdesWalkthroughCrawler,
+    sysdesWalkthroughPayments,
     sysdesTradeoffThinking,
   ],
 };

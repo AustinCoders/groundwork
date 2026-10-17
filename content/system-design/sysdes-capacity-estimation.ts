@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const sysdesCapacityEstimation: Chapter = {
   id: "sysdes-capacity-estimation",
-  num: "A9",
+  num: "A10",
   title: "Capacity estimation",
   short: "Capacity estimation",
   levels: ["advanced"],
