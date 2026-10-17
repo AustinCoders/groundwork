@@ -191,13 +191,17 @@ export function RoadmapOrbit({ roadmap }: { roadmap: Roadmap }) {
                   type="button"
                   className={styles.circle}
                   aria-haspopup="dialog"
-                  aria-label={`Stage ${at + 1}: ${entry.title}. ${summary.finished} of ${summary.readable} steps built.`}
+                  aria-label={`Stage ${at + 1}: ${entry.title}. ${
+                    summary.readable
+                      ? `${summary.finished} of ${summary.readable} steps built.`
+                      : "Nothing here is written yet."
+                  }`}
                   onClick={() => openStage(at)}
                 >
                   <span className={styles.disc}>
                     <span className={styles.num}>{pad(at + 1)}</span>
                     <span className={styles.ratio}>
-                      {summary.finished}/{summary.readable}
+                      {summary.readable ? `${summary.finished}/${summary.readable}` : "Soon"}
                     </span>
                   </span>
                   {at === nextStage && (
@@ -211,6 +215,26 @@ export function RoadmapOrbit({ roadmap }: { roadmap: Roadmap }) {
                   <span className={styles.labelBlurb}>{entry.blurb}</span>
                   <span className={styles.labelMeta}>
                     {plural(entry.steps.length, "step")} · {entry.order === "any-order" ? "any order" : "in order"}
+                    {summary.readable < entry.steps.length &&
+                      ` · ${summary.readable ? `${summary.readable} ready` : "coming soon"}`}
+                  </span>
+                  <span className={styles.mini}>
+                    {entry.steps.map((step) => {
+                      const state = progress.steps[step.key];
+                      const isNext = nextKey === step.key;
+                      return (
+                        <button
+                          key={step.key}
+                          type="button"
+                          className={styles.miniDot}
+                          data-status={state.status}
+                          data-next={isNext}
+                          aria-haspopup="dialog"
+                          aria-label={`${step.title}. ${statusLabel(state)}.${isNext ? " Next stop." : ""}`}
+                          onClick={() => openStep(step.key)}
+                        />
+                      );
+                    })}
                   </span>
                 </div>
               </li>

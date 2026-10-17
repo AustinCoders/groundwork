@@ -544,7 +544,18 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
                 ready={ready}
                 soon={soon}
                 head={
-                  <Head no="04" label="Paths" id="paths-h" size="sm">
+                  <Head
+                    no="04"
+                    label="Paths"
+                    id="paths-h"
+                    size="sm"
+                    sub={
+                      <>
+                        Want the whole route, stage by stage, with your progress on it?{" "}
+                        <Link href="/roadmap">Open the roadmaps →</Link>
+                      </>
+                    }
+                  >
                     <Words text="Where are you now? There is a path that starts there." />
                   </Head>
                 }
@@ -639,6 +650,7 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
                 </Link>
               ))}
               <Link href="/interview">Interview book</Link>
+              <Link href="/roadmap">Roadmaps</Link>
             </nav>
             <nav aria-label="Practice">
               <p className={styles.label}>Practice</p>

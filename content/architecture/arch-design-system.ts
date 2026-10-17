@@ -194,7 +194,7 @@ export const archDesignSystem: Chapter = {
 <p>
   The server cannot know a reader's theme, so the root layout renders
   <code>&lt;html data-theme="light" suppressHydrationWarning&gt;</code>. A
-  <code>next/script</code> with <code>strategy="beforeInteractive"</code> runs the string in
+  plain inline <code>&lt;script&gt;</code> in the <code>&lt;head&gt;</code> runs the string in
   <code>lib/themeInitScript.ts</code> before the page paints. It reads <code>jsnotes:theme</code>,
   falls back to <code>prefers-color-scheme</code>, and sets <code>data-theme</code>. It reads
   <code>jsnotes:font</code> and sets <code>data-font</code>, defaulting to
