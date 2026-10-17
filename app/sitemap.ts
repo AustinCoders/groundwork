@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { topics, notesData, notesHref, topicHome, chapterHref, chapters, exercises } from "@/lib/content";
 import { problemHref } from "@/lib/practiceLinks";
+import { roadmapIds } from "@/lib/roadmap";
 import { SITE_URL, UNDATED_CONTENT_LAST_CHANGED } from "@/lib/site";
 import { GIT_CHAPTERS } from "@/content/git-body";
 
@@ -37,6 +38,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/interview/questions`, lastModified: stale, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/privacy`, lastModified: stale, changeFrequency: "yearly", priority: 0.3 },
     { url: `${SITE_URL}/whiteboard`, lastModified: stale, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${SITE_URL}/roadmap`, lastModified: stale, changeFrequency: "monthly", priority: 0.7 },
+    ...roadmapIds().map((id) => ({
+      url: `${SITE_URL}/roadmap/${id}`,
+      lastModified: stale,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
     ...GIT_CHAPTERS.map((s) => ({
       url: `${SITE_URL}/git/${s.id}`,
       lastModified: stale,

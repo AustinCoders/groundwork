@@ -21,6 +21,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
   { href: "/practice?id=free", label: "Playground", icon: "playground", mark: "✎" },
   { href: "/mock", label: "Mock interview", icon: "mock", mark: "⏱" },
   { href: "/whiteboard", label: "Whiteboard", icon: "whiteboard", mark: "▱" },
+  { href: "/roadmap", label: "Roadmaps", icon: "roadmap", mark: "⌖" },
   { href: "/review", label: "Review", icon: "review", mark: "↻" },
   { href: "/progress", label: "Progress", icon: "progress", mark: "▤" },
 ];

@@ -129,7 +129,7 @@ export const archBuild: Chapter = {
 <p>
   The 21 search indexes are <code>force-static</code> route handlers too. The
   <a href="/architecture/arch-search">search chapter</a> covers what goes in them.
-  <code>app/sitemap.ts</code> reads the same interface and lists 1192 URLs. Outlines are left out.
+  <code>app/sitemap.ts</code> reads the same interface and lists 1197 URLs. Outlines are left out.
   A topic's pages carry the <code>meta.updated</code> month from its notes file as
   <code>lastModified</code>; everything with no such date, including every problem page, carries one
   shared constant that moves only when that content actually changes, so deploys stop telling
