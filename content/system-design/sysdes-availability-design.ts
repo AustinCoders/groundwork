@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const sysdesAvailabilityDesign: Chapter = {
   id: "sysdes-availability-design",
-  num: "I6",
+  num: "I7",
   title: "Designing for availability",
   short: "Designing for availability",
   levels: ["intermediate"],

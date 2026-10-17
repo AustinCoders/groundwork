@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const sysdesShardingPartitioning: Chapter = {
   id: "sysdes-sharding-partitioning",
-  num: "A2",
+  num: "A4",
   title: "Sharding & partitioning at scale",
   short: "Sharding at scale",
   levels: ["advanced"],

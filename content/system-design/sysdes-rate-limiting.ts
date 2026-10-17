@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const sysdesRateLimiting: Chapter = {
   id: "sysdes-rate-limiting",
-  num: "I5",
+  num: "I6",
   title: "Rate limiting & throttling",
   short: "Rate limiting & throttling",
   levels: ["intermediate"],

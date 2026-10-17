@@ -3447,6 +3447,11 @@ export const topics: TopicsData = {
               items: ["Strong vs eventual consistency"],
             },
             {
+              title: "Replication",
+              chapter: "sysdes-replication",
+              items: ["Leaders and followers, failover, multi-leader and leaderless"],
+            },
+            {
               title: "Rate limiting & throttling",
               chapter: "sysdes-rate-limiting",
               items: ["Strategies and where they live in the stack"],
@@ -3494,9 +3499,24 @@ export const topics: TopicsData = {
               items: ["Consistency tradeoffs, real-world examples"],
             },
             {
+              title: "Transactions & isolation",
+              chapter: "sysdes-transactions-isolation",
+              items: ["Isolation levels, write skew, two-phase commit, sagas"],
+            },
+            {
+              title: "Storage engines",
+              chapter: "sysdes-storage-engines",
+              items: ["LSM trees vs B-trees, write-ahead logs, column stores"],
+            },
+            {
               title: "Sharding & partitioning at scale",
               chapter: "sysdes-sharding-partitioning",
               items: ["Strategies, rebalancing, hot shards"],
+            },
+            {
+              title: "Time, ordering & IDs",
+              chapter: "sysdes-time-ordering-ids",
+              items: ["Clocks, Lamport and vector clocks, TrueTime, ID schemes"],
             },
             {
               title: "Distributed consensus (surface)",

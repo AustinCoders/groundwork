@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const sysdesStorageSystems: Chapter = {
   id: "sysdes-storage-systems",
-  num: "I7",
+  num: "I8",
   title: "Storage systems",
   short: "Storage systems",
   levels: ["intermediate"],

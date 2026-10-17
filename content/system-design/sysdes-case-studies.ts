@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const sysdesCaseStudies: Chapter = {
   id: "sysdes-case-studies",
-  num: "A7",
+  num: "A10",
   title: "Real-world case studies",
   short: "Case studies",
   levels: ["advanced"],
