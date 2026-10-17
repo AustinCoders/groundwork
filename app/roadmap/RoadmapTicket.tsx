@@ -19,6 +19,7 @@ export function RoadmapTicket({
   after,
   onGo,
   onClose,
+  closeLabel = "Close",
   onKeyDown,
 }: {
   step: RoadmapStep;
@@ -31,6 +32,7 @@ export function RoadmapTicket({
   after: RoadmapStep | null;
   onGo: (key: string) => void;
   onClose: () => void;
+  closeLabel?: string;
   onKeyDown: (event: KeyboardEvent<HTMLElement>) => void;
 }) {
   const verb = progress.status === "done" ? "Ride again" : progress.done > 0 ? "Continue" : "Board";
@@ -42,7 +44,7 @@ export function RoadmapTicket({
         <span>Platform {String(platform).padStart(2, "0")}</span>
         <span className={styles.route}>{routeName}</span>
         <button type="button" className={styles.close} onClick={onClose}>
-          Close
+          {closeLabel}
         </button>
       </header>
 

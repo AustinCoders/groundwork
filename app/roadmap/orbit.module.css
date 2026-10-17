@@ -13,6 +13,10 @@
   container-type: inline-size;
 }
 
+.map[data-seen="false"] :is(.link, .hub, .dot, .stage) {
+  animation-play-state: paused;
+}
+
 .links {
   position: absolute;
   inset: 0;
@@ -28,6 +32,8 @@
   stroke-dasharray: 1 9;
   opacity: 0.5;
   transition: opacity 0.2s ease;
+  animation: fadeIn 0.7s ease both;
+  animation-delay: calc(0.5s + var(--i, 0) * 0.12s);
 }
 
 .link[data-active="true"] {
@@ -41,6 +47,7 @@
   width: 25.6cqw;
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
+  animation: grow 0.8s cubic-bezier(0.2, 0.9, 0.3, 1) both;
 }
 
 .hub::before {
@@ -109,6 +116,8 @@
   cursor: pointer;
   transform: translate(-50%, -50%);
   transition: transform 0.12s ease;
+  animation: grow 0.45s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  animation-delay: calc(0.6s + var(--i, 0) * 0.07s);
 }
 
 .dot::after {
@@ -133,7 +142,10 @@
 }
 
 .dot[data-next="true"] {
-  animation: pulse 1.8s ease-in-out infinite;
+  animation:
+    grow 0.45s cubic-bezier(0.3, 1.5, 0.5, 1) both,
+    pulse 1.8s ease-in-out 1.6s infinite;
+  animation-delay: calc(0.6s + var(--i, 0) * 0.07s), 1.6s;
 }
 
 .dot:hover {
@@ -141,8 +153,7 @@
 }
 
 .dot:focus-visible,
-.circle:focus-visible,
-.tile:focus-visible {
+.circle:focus-visible {
   outline: 3px solid var(--primary);
   outline-offset: 5px;
 }
@@ -161,6 +172,8 @@
   width: 0;
   height: 0;
   perspective: 800px;
+  animation: rise 0.7s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  animation-delay: calc(0.25s + var(--i, 0) * 0.13s);
 }
 
 .circle {
@@ -216,21 +229,35 @@
   color: var(--ink-soft);
 }
 
-.circle:hover,
-.circle[aria-pressed="true"] {
+.circle:hover {
   transform: rotateX(9deg) rotateY(-11deg) translateZ(18px) scale(1.04);
 }
 
-.circle[aria-pressed="true"] {
+.stage[data-active="true"] .circle {
+  transform: rotateX(9deg) rotateY(-11deg) translateZ(18px) scale(1.04);
   animation: bob 3.2s ease-in-out infinite;
+}
+
+.nextBadge {
+  position: absolute;
+  top: -0.4cqw;
+  right: -1.6cqw;
+  padding: 1px 10px;
+  font-size: var(--t-kicker);
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--on-primary);
+  background: var(--primary);
+  border-radius: 99px;
+  transform: translateZ(30px);
 }
 
 .label {
   position: absolute;
   top: 0;
-  left: 9.8cqw;
+  left: 11.8cqw;
   display: grid;
-  gap: 3px;
+  gap: 7px;
   width: calc(var(--lw) * 1cqw);
   transform: translateY(-50%);
   pointer-events: none;
@@ -239,7 +266,8 @@
 .labelTitle {
   font-size: clamp(15px, 2.3cqw, 21px);
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
   color: var(--ink);
 }
 
@@ -247,169 +275,41 @@
   display: -webkit-box;
   overflow: hidden;
   font-size: var(--t-meta);
-  line-height: 1.4;
+  line-height: 1.55;
   color: var(--ink-soft);
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
 }
 
 .labelMeta {
+  margin-top: 2px;
   font-family: var(--font-mono);
   font-size: var(--t-kicker);
   color: var(--ink-soft);
-}
-
-.panel {
-  padding: 18px 20px 20px;
-  color: var(--ink);
-  background: var(--sheet);
-  border: 2px solid var(--tint);
-  border-radius: 18px;
-  box-shadow: 8px 10px 0 color-mix(in srgb, var(--tint) 30%, transparent);
-}
-
-.panelHead {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 16px;
-}
-
-.panelHead > div {
-  flex: 1;
-}
-
-.panelNo {
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  font-family: var(--font-mono);
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--paper);
-  background: var(--tint);
-  border-radius: 50%;
-  box-shadow: 3px 4px 0 color-mix(in srgb, var(--ink) 25%, transparent);
-}
-
-.panelTitle {
-  margin: 0;
-  font-size: var(--t-title);
-  line-height: 1.2;
-}
-
-.panelBlurb {
-  margin: 2px 0 0;
-  font-size: var(--t-meta);
-  color: var(--ink-soft);
-}
-
-.panelOrder {
-  font-family: var(--font-mono);
-  font-size: var(--t-kicker);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-}
-
-.tiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 12px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.tile {
-  position: relative;
-  display: grid;
-  gap: 3px;
-  width: 100%;
-  min-height: 112px;
-  padding: 12px 14px 12px 58px;
-  align-content: start;
-  font: inherit;
-  text-align: left;
-  color: var(--ink);
-  background: var(--sheet-2);
-  border: 2px solid var(--line);
-  border-radius: 14px;
-  cursor: pointer;
-  transition:
-    transform 0.12s ease,
-    border-color 0.12s ease;
-}
-
-.tile:hover,
-.tile[data-open="true"] {
-  border-color: var(--tint);
-  transform: translateY(-2px);
-}
-
-.tile[data-status="done"] {
-  border-color: var(--success);
-}
-
-.tile[data-status="outline"] {
-  color: var(--ink-soft);
-  border-style: dashed;
-}
-
-.tile[data-next="true"] {
-  box-shadow:
-    0 0 0 3px var(--paper),
-    0 0 0 6px var(--primary);
-}
-
-.tileMark {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  display: grid;
-  place-items: center;
-  box-sizing: border-box;
-  width: 34px;
-  height: 34px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 800;
-  background: var(--sheet);
-  border: 3px solid var(--tint);
-  border-radius: 50%;
-  box-shadow: 2px 3px 0 color-mix(in srgb, var(--ink) 22%, transparent);
-}
-
-.tile[data-status="done"] .tileMark {
-  color: var(--paper);
-  background: var(--success);
-}
-
-.tileTitle {
-  font-weight: 800;
-  line-height: 1.25;
-}
-
-.tileMeta,
-.tileState {
-  font-family: var(--font-mono);
-  font-size: var(--t-kicker);
-  color: var(--ink-soft);
-}
-
-.tileState {
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.ticket {
-  max-width: 580px;
-  margin-top: 18px;
 }
 
 .pending .dot {
   opacity: 0.6;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    translate: 0 28px;
+  }
+}
+
+@keyframes grow {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
 }
 
 @keyframes pulse {
@@ -510,13 +410,15 @@
 
 @media (prefers-reduced-motion: reduce) {
   .circle,
-  .dot,
-  .tile {
+  .dot {
     transition: none;
   }
 
-  .circle[aria-pressed="true"],
-  .dot[data-next="true"] {
+  .dot[data-next="true"],
+  .stage,
+  .hub,
+  .dot,
+  .link {
     animation: none;
   }
 }
