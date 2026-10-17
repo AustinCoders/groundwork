@@ -22,8 +22,8 @@ function sourcesBlock(body: string): string {
 }
 
 describe("the sources every System Design chapter ends with", () => {
-  it("covers all 28 chapters", () => {
-    expect(written.length).toBeGreaterThanOrEqual(28);
+  it("covers all 33 chapters", () => {
+    expect(written.length).toBeGreaterThanOrEqual(33);
   });
 
   it.each(written.map((chapter) => [chapter.id, String(chapter.body ?? "")]))(
@@ -146,6 +146,36 @@ const WRONG_CLAIMS: { id: string; pattern: RegExp; why: string }[] = [
     id: "sysdes-storage-engines",
     pattern: /optimise any two at the cost of the third/i,
     why: "the RocksDB space-amplification paper only says all three cannot be reduced at once",
+  },
+  {
+    id: "sysdes-batch-stream-processing",
+    pattern: /without using that label/i,
+    why: "Kreps half-jokingly names the Kappa Architecture in his 2014 post",
+  },
+  {
+    id: "sysdes-batch-stream-processing",
+    pattern: /e3 and the rest would have been dropped/i,
+    why: "e3 is above the watermark in the dry run, so only e6 and e7 are late",
+  },
+  {
+    id: "sysdes-batch-stream-processing",
+    pattern: /partitioned by ad\s+id\.\s+A Flink|and key by ad id\./i,
+    why: "partitioning the topic by ad id puts a viral ad on one partition, and local pre-aggregation cannot help a task that must still read every event",
+  },
+  {
+    id: "sysdes-walkthrough-kv-store",
+    pattern: /seventh chapter/i,
+    why: "the key-value store is chapter 6 of System Design Interview volume 1",
+  },
+  {
+    id: "sysdes-walkthrough-notifications",
+    pattern: /still failing after 60 minutes\. A passcode/i,
+    why: "Google's FCM guidance asks for a maximum retry age but gives no number",
+  },
+  {
+    id: "sysdes-walkthrough-notifications",
+    pattern: /floor you cannot beat/i,
+    why: "Google lets a project request up to 25% more FCM quota, so 33 minutes is the floor at the default quota only",
   },
 ];
 
@@ -360,5 +390,245 @@ describe("the time, ordering and IDs chapter's numbers", () => {
     const l = Math.max(Math.max(9.9, 10.0, 9.96), 0);
     expect(l).toBe(10.0);
     inText("sysdes-time-ordering-ids", "(10.000, 2) beats (10.000, 0)");
+  });
+});
+
+describe("the batch and stream processing chapter's numbers", () => {
+  it("1 billion clicks a day is 11,574 a second, 57,870 at a 5x peak, and 72 million minute rows are 2.88 GB", () => {
+    const perSecond = 1e9 / 86400;
+    expect(Math.round(perSecond)).toBe(11574);
+    expect(Math.round(perSecond * 5)).toBe(57870);
+    expect(100 * 1e9).toBe(100e9);
+    expect(50_000 * 1440).toBe(72_000_000);
+    expect((72_000_000 * 40) / 1e9).toBeCloseTo(2.88, 2);
+    inText("sysdes-batch-stream-processing", "11,574", "57,870", "100 GB a day", "2.88 GB a day");
+  });
+
+  it("a viral ad with 20% of clicks exceeds one task, and a one hour window sliding every minute makes 694,440 assignments", () => {
+    expect(Math.round(0.2 * 57870)).toBe(11574);
+    expect(11574).toBeGreaterThan(10_000);
+    expect(11574 * 60).toBe(694_440);
+    inText("sysdes-batch-stream-processing", "694,440");
+  });
+
+  it("a crash 20 s after a checkpoint and a 60 s restart need 80 s to catch up at twice the arrival rate", () => {
+    const arrival = 11574;
+    const backlog = (20 + 60) * arrival;
+    expect(backlog).toBe(925_920);
+    expect(backlog / (2 * arrival - arrival)).toBe(80);
+    inText("sysdes-batch-stream-processing", "925,920", "80 seconds");
+  });
+
+  it("the watermark dry run ends at 4 in the stream and 5 in truth, with only e7 reaching the side output", () => {
+    const events = [
+      { id: "e1", ts: 5, at: 6 },
+      { id: "e2", ts: 58, at: 59 },
+      { id: "e3", ts: 52, at: 64 },
+      { id: "e4", ts: 63, at: 64 },
+      { id: "e5", ts: 80, at: 81 },
+      { id: "e6", ts: 40, at: 85 },
+      { id: "e7", ts: 30, at: 180 },
+    ];
+    let maxTs = 0;
+    const inWindow: string[] = [];
+    const side: string[] = [];
+    let fired = false;
+    const firings: number[] = [];
+    for (const e of events) {
+      maxTs = Math.max(maxTs, e.ts);
+      if (e.id === "e7") maxTs = 180;
+      const watermark = maxTs - 10;
+      if (e.ts < 60) {
+        if (watermark >= 120) side.push(e.id);
+        else {
+          inWindow.push(e.id);
+          if (watermark >= 60 && fired) firings.push(inWindow.length);
+        }
+      }
+      if (!fired && watermark >= 60) {
+        fired = true;
+        firings.push(inWindow.length);
+      }
+    }
+    expect(firings).toEqual([3, 4]);
+    expect(inWindow).toEqual(["e1", "e2", "e3", "e6"]);
+    expect(side).toEqual(["e7"]);
+    expect(events.filter((e) => e.ts < 60).length).toBe(5);
+    inText("sysdes-batch-stream-processing", "final value for W is <b>4</b>".replace(/<\/?b>/g, ""));
+  });
+
+  it("a 64-bit simhash needs 41,664 probes for distance 3 and 20 tables from 6 blocks", () => {
+    expect((64 * 63 * 62) / 6).toBe(41_664);
+    expect((6 * 5 * 4) / 6).toBe(20);
+  });
+});
+
+describe("the key-value store chapter's numbers", () => {
+  it("350,000 replica operations at 6,000 usable a node need 60 nodes of 250 GB, and the 61st node pulls 246 GB", () => {
+    const ops = 100_000 * 2 + 50_000 * 3;
+    expect(ops).toBe(350_000);
+    expect(Math.ceil(ops / 6000 / 20) * 20).toBe(60);
+    expect(15_000 / 60).toBe(250);
+    expect(Math.round(15_000 / 61)).toBe(246);
+    expect(Math.round((15_000 / 61 / 0.1) * 1)).toBe(2459);
+    inText("sysdes-walkthrough-kv-store", "350,000", "250 GB", "246 GB");
+  });
+
+  it("with 99.9% replicas a 2-of-3 write is 0.999997 available and a 3-of-3 write 0.997003", () => {
+    const p = 0.999;
+    const two = 3 * p * p * (1 - p) + p ** 3;
+    expect(two).toBeCloseTo(0.999997, 6);
+    expect(p ** 3).toBeCloseTo(0.997003, 6);
+    expect((1 - two) * 525_960).toBeCloseTo(1.58, 1);
+    expect((1 - p ** 3) * 8766).toBeCloseTo(26.3, 1);
+    inText("sysdes-walkthrough-kv-store", "0.999997", "0.997003");
+  });
+
+  it("key 250 on a ring of 100, 300, 500, 700, 900 has coordinator B and preference list B, C, D", () => {
+    const ring = [
+      ["A", 100],
+      ["B", 300],
+      ["C", 500],
+      ["D", 700],
+      ["E", 900],
+    ] as const;
+    const start = ring.findIndex(([, position]) => position >= 250);
+    const list = [0, 1, 2].map((i) => ring[(start + i) % ring.length][0]);
+    expect(list).toEqual(["B", "C", "D"]);
+    expect(ring[(start + 3) % ring.length][0]).toBe("E");
+  });
+
+  it("a 65,536 leaf Merkle tree over 250 GB costs 33 hash exchanges and 3.8 MB leaves", () => {
+    expect(2 ** 16).toBe(65_536);
+    expect(1 + 16 * 2).toBe(33);
+    expect(250e9 / 65_536 / 1e6).toBeCloseTo(3.8, 1);
+  });
+
+  it("the Dynamo paper's D1 to D5 clocks: D3 and D4 are concurrent and D5 merges them", () => {
+    type Clock = Record<string, number>;
+    const descends = (a: Clock, b: Clock) => Object.keys(b).every((k) => (a[k] ?? 0) >= b[k]);
+    const d3: Clock = { Sx: 2, Sy: 1 };
+    const d4: Clock = { Sx: 2, Sz: 1 };
+    expect(descends(d3, d4) || descends(d4, d3)).toBe(false);
+    const d5: Clock = { Sx: 3, Sy: 1, Sz: 1 };
+    expect(descends(d5, d3) && descends(d5, d4)).toBe(true);
+  });
+});
+
+describe("the notifications chapter's numbers", () => {
+  it("a 20 million push campaign is 5,556 a second, 61% of FCM's default quota with the baseline peak and 33 minutes at the quota", () => {
+    const campaign = 20e6 / 3600;
+    const baseline = (10e6 / 86400) * 5;
+    expect(Math.round(campaign)).toBe(5556);
+    expect(Math.round(baseline)).toBe(579);
+    expect(Math.round(((campaign + baseline) / 10_000) * 100)).toBe(61);
+    expect(Math.round((campaign / 10_000) * 100)).toBe(56);
+    expect(20e6 / 10_000 / 60).toBeCloseTo(33.3, 1);
+    expect(Math.round(campaign * 0.05)).toBe(278);
+    inText("sysdes-walkthrough-notifications", "5,556", "579", "61% of quota");
+  });
+
+  it("a million SMS segments take 11.6 days on a long code and 2.8 hours on a short code; 10 hours holds 36,000 segments", () => {
+    expect(1e6 / 86400).toBeCloseTo(11.57, 2);
+    expect(1e6 / 100 / 3600).toBeCloseTo(2.78, 2);
+    expect(10 * 3600).toBe(36_000);
+    inText("sysdes-walkthrough-notifications", "11.6 days", "2.8 hours", "36,000");
+  });
+
+  it("161 GSM-7 characters are 2 segments and 100 characters with an emoji are 2 UCS-2 segments", () => {
+    const segments = (chars: number, single: number, split: number) => (chars <= single ? 1 : Math.ceil(chars / split));
+    expect(segments(161, 160, 153)).toBe(2);
+    expect(segments(100, 160, 153)).toBe(1);
+    expect(segments(100, 70, 67)).toBe(2);
+  });
+
+  it("the delivery log is 12 GB a day and 1.08 TB over 90 days, and dedupe keys cost 3 GB", () => {
+    expect((30e6 * 4 * 100) / 1e9).toBe(12);
+    expect((12 * 90) / 1000).toBeCloseTo(1.08, 2);
+    expect((30e6 * 100) / 1e9).toBe(3);
+  });
+});
+
+describe("the web crawler chapter's numbers", () => {
+  it("600 pages a second is 51.8 million a day and 480 Mbps at 100 KB, and 6,000 URL checks a second", () => {
+    expect(600 * 86400).toBe(51_840_000);
+    expect((600 * 100 * 8) / 1000).toBe(480);
+    expect(600 * 10).toBe(6000);
+    inText("sysdes-walkthrough-crawler", "51.8 million pages a day", "480 Mbps", "6,000 URL-seen lookups");
+  });
+
+  it("a 1% Bloom filter needs 9.585 bits an item, 6.0 GB for 5 billion URLs, against 25 GB exact", () => {
+    const bits = -Math.log(0.01) / Math.log(2) ** 2;
+    expect(bits).toBeCloseTo(9.585, 3);
+    expect((5e9 * bits) / 8 / 1e9).toBeCloseTo(6.0, 1);
+    expect(5 * 5).toBe(25);
+    expect(Math.round(Math.LN2 * bits * 10) / 10).toBe(6.6);
+  });
+
+  it("the one-thread frontier dry run is busy 2.4 s of 5.0 s, 48%", () => {
+    const busy = 0.4 + 0.2 + 1.0 + 0.2 + 0.4 + 0.2;
+    const idle = 1.0 + 1.6;
+    expect(busy).toBeCloseTo(2.4, 5);
+    expect(busy + idle).toBeCloseTo(5.0, 5);
+    expect(Math.round((busy / 5) * 100)).toBe(48);
+  });
+
+  it("3,300 hosts must be ready at 600 pages a second with 0.5 s fetches and a 10x gap", () => {
+    expect(600 * 11 * 0.5).toBe(3300);
+  });
+
+  it("the freshness tiers use 401 fetches a second and leave 199 for discovery", () => {
+    const hot = 5e6 / 86400;
+    const warm = 95e6 / (7 * 86400);
+    const cold = 900e6 / (56 * 86400);
+    expect(hot).toBeCloseTo(57.9, 1);
+    expect(warm).toBeCloseTo(157.1, 1);
+    expect(cold).toBeCloseTo(186.0, 1);
+    expect(Math.round(hot + warm + cold)).toBe(401);
+    expect(600 - 401).toBe(199);
+    expect((10e6 * 2) / 86400).toBeCloseTo(231.5, 1);
+  });
+
+  it("the normalized URL in the table follows RFC 3986", () => {
+    const url = new URL("HTTP://Example.COM:80/a/./b/../c/%7ejo?utm=1#top");
+    expect(url.host).toBe("example.com");
+    expect(url.pathname).toBe("/a/c/%7ejo");
+    expect(url.pathname.replace(/%7e/gi, "~")).toBe("/a/c/~jo");
+  });
+});
+
+describe("the payments chapter's numbers", () => {
+  it("the 100.00 USD payment's three ledger transactions each sum to zero and clearing ends at zero", () => {
+    const fee = Math.round(10_000 * 0.029) + 30;
+    expect(fee).toBe(320);
+    const capture = [10_000, -9_000, -1_000];
+    const feeTxn = [fee, -fee];
+    const payout = [10_000 - fee, -(10_000 - fee)];
+    for (const entries of [capture, feeTxn, payout]) expect(entries.reduce((a, b) => a + b, 0)).toBe(0);
+    expect(10_000 - fee - (10_000 - fee)).toBe(0);
+    inText("sysdes-walkthrough-payments", "+9,680", "320");
+  });
+
+  it("the seven-payment day has a gross gap of 2,110 that decomposes into P3, P4, P6 and P7", () => {
+    const ours = [10_000, 2_500, 7_000, 3_000, 9_900];
+    const psp = [10_000, 2_500, 4_200, 3_000, 9_090, 1_500];
+    const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
+    expect(sum(ours)).toBe(32_400);
+    expect(sum(psp)).toBe(30_290);
+    expect(sum(psp) - 3_000).toBe(27_290);
+    expect(sum(ours) - sum(psp)).toBe(2_110);
+    expect(7_000 - 4_200 + 810 - 1_500).toBe(2_110);
+    expect(sum(ours) - (sum(psp) - 3_000)).toBe(5_110);
+    inText("sysdes-walkthrough-payments", "2,110", "5,110");
+  });
+
+  it("the payment capacity figures hold", () => {
+    expect(Math.round(1e6 / 86400)).toBe(12);
+    expect(Math.round((1e6 / 86400) * 10)).toBe(116);
+    expect(116 * 3).toBe(348);
+    expect(Math.round((348 / 5000) * 100)).toBe(7);
+    expect((7e6 * 100) / 1e6).toBe(700);
+    expect(0.7 * 365).toBeCloseTo(255.5, 1);
+    expect(Math.round((4e6 / 86400) * 10) / 10).toBe(46.3);
   });
 });

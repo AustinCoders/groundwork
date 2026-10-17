@@ -27,7 +27,7 @@ export const archContentModel: Chapter = {
 <text class="lbl" x="300" y="126" text-anchor="middle">Level</text>
 <text class="sm" x="300" y="148" text-anchor="middle">3 per topic</text>
 <text class="lbl" x="511" y="126" text-anchor="middle">Chapter</text>
-<text class="sm" x="511" y="148" text-anchor="middle">245 written</text>
+<text class="sm" x="511" y="148" text-anchor="middle">250 written</text>
 <text class="lbl" x="732" y="126" text-anchor="middle">Exercise</text>
 <text class="sm" x="732" y="148" text-anchor="middle">934 with tests</text>
 <text class="sm" x="194" y="114" text-anchor="middle">1..3</text>
@@ -165,7 +165,7 @@ export const archContentModel: Chapter = {
   card — the syllabus section's items, plus a "Meanwhile" link to a related written topic — instead
   of a body, is marked <code>noindex</code>, has no Listen button and no "mark as read", is left out
   of the sitemap and the cross-topic search index, and counts no reading time. The
-  syllabus marks it with an open circle instead of a tick. It is why the site can show 603 chapters while honestly claiming 245.
+  syllabus marks it with an open circle instead of a tick. It is why the site can show 608 chapters while honestly claiming 250.
 </p>
 
 <h3>One interface in the middle</h3>
