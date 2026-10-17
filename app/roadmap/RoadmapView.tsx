@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { PageFrame } from "@/components/frame/PageFrame";
 import {
   Actions,
@@ -18,6 +18,7 @@ import {
 } from "@/components/topic/TopicKit";
 import { formatSpan, plural } from "@/lib/format";
 import type { Roadmap } from "@/lib/roadmap";
+import { RoadmapOrbit } from "./RoadmapOrbit";
 import { RoadmapRail } from "./RoadmapRail";
 import { roadmapProgress } from "./roadmapModel";
 import { useDone } from "./useDone";
@@ -30,6 +31,7 @@ const LINKS = [
 
 export function RoadmapView({ roadmap }: { roadmap: Roadmap }) {
   const { done, loaded } = useDone();
+  const [view, setView] = useState<"hub" | "track">("hub");
   const progress = useMemo(() => roadmapProgress(roadmap, done), [roadmap, done]);
   const { totals } = roadmap;
   const start = progress.next;
@@ -83,7 +85,19 @@ export function RoadmapView({ roadmap }: { roadmap: Roadmap }) {
         </Wrap>
 
         <Wrap>
-          <RoadmapRail roadmap={roadmap} />
+          <div className={styles.views} role="group" aria-label="Choose how to see the route">
+            {(
+              [
+                ["hub", "Hub"],
+                ["track", "Track"],
+              ] as const
+            ).map(([id, label]) => (
+              <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)}>
+                {label}
+              </button>
+            ))}
+          </div>
+          {view === "hub" ? <RoadmapOrbit roadmap={roadmap} /> : <RoadmapRail roadmap={roadmap} />}
           {outlines > 0 && (
             <p className={styles.honest}>
               {plural(outlines, "step")} on this path {outlines === 1 ? "is" : "are"} marked <b>not written yet</b>: the

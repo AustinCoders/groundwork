@@ -92,3 +92,36 @@
     transition: none;
   }
 }
+
+.views {
+  display: flex;
+  gap: 6px;
+  width: fit-content;
+  margin: 0 auto 18px;
+  padding: 4px;
+  background: var(--sheet-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.views button {
+  min-height: 38px;
+  padding: 0 20px;
+  font: inherit;
+  font-weight: 700;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.views button[aria-pressed="true"] {
+  color: var(--on-primary);
+  background: var(--primary);
+}
+
+.views button:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}

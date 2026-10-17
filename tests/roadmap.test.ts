@@ -200,4 +200,8 @@ describe("the resolved roadmaps", () => {
       }
     }
   });
+
+  it("keeps every roadmap to five stages or fewer, which is what the round map has room for", () => {
+    for (const entry of built) expect(entry.stages.length, entry.id).toBeLessThanOrEqual(5);
+  });
 });
