@@ -1,6 +1,7 @@
 import {
   bounds,
   heads,
+  labelPoint,
   polygonPoints,
   STICKY_FILL,
   textBox,
@@ -44,6 +45,27 @@ function dashArray(el: El): string | undefined {
   if (el.style.dash === "dashed") return `${w * 4} ${w * 3}`;
   if (el.style.dash === "dotted") return `${w} ${w * 2.5}`;
   return undefined;
+}
+
+function cornerPath(points: Point[], ox: number, oy: number, radius = 10): string {
+  const abs = points.map(([x, y]) => [x + ox, y + oy] as Point);
+  let d = `M${abs[0][0]} ${abs[0][1]}`;
+  for (let i = 1; i < abs.length - 1; i++) {
+    const [px, py] = abs[i - 1];
+    const [cx, cy] = abs[i];
+    const [nx, ny] = abs[i + 1];
+    const before = Math.hypot(cx - px, cy - py);
+    const after = Math.hypot(nx - cx, ny - cy);
+    if (!before || !after) continue;
+    const r = Math.min(radius, before / 2, after / 2);
+    const inX = cx - ((cx - px) / before) * r;
+    const inY = cy - ((cy - py) / before) * r;
+    const outX = cx + ((nx - cx) / after) * r;
+    const outY = cy + ((ny - cy) / after) * r;
+    d += ` L${inX} ${inY} Q${cx} ${cy} ${outX} ${outY}`;
+  }
+  const last = abs[abs.length - 1];
+  return `${d} L${last[0]} ${last[1]}`;
 }
 
 function smoothPath(points: Point[], ox: number, oy: number): string {
@@ -206,7 +228,9 @@ export function describe(el: El, palette: Palette): Part[] {
     case "line":
     case "arrow": {
       const pts = el.points ?? [];
-      parts.push({ tag: "path", attrs: { ...common, d: smoothPath(pts, el.x, el.y), fill: "none" } });
+      const elbow = el.kind === "arrow" && el.style.route === "elbow" && pts.length > 2;
+      const d = elbow ? cornerPath(pts, el.x, el.y) : smoothPath(pts, el.x, el.y);
+      parts.push({ tag: "path", attrs: { ...common, d, fill: "none" } });
       if (pts.length >= 2) {
         const h = heads(el);
         const head = { ...common };
@@ -218,6 +242,16 @@ export function describe(el: El, palette: Palette): Part[] {
         const fromStart: Point = [el.x + pts[1][0], el.y + pts[1][1]];
         parts.push(...headParts(h.end, tipEnd, fromEnd, el.style.width, head, stroke));
         parts.push(...headParts(h.start, tipStart, fromStart, el.style.width, head, stroke));
+        if (el.kind === "arrow" && el.text) {
+          const [mx, my] = labelPoint(el);
+          const size = textBox(el.text, el.style.fontSize);
+          const area = { x: el.x + mx - size.w / 2, y: el.y + my - size.h / 2, w: size.w, h: size.h };
+          parts.push({
+            tag: "rect",
+            attrs: { x: area.x, y: area.y, width: area.w, height: area.h, rx: 6, fill: palette.paper, stroke: "none" },
+          });
+          label(stroke, area, "middle", 0);
+        }
       }
       break;
     }

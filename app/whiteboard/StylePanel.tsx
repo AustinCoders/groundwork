@@ -7,6 +7,7 @@ import {
   type Align,
   type Dash,
   type Head,
+  type Route,
   paletteToken,
   type Kind,
   type Style,
@@ -111,7 +112,8 @@ export function StylePanel({
   onDelete: () => void;
 }) {
   const fillable = kinds.some((k) => isBoxKind(k) || k === "sticky");
-  const hasText = kinds.some((k) => k === "text" || k === "sticky" || isBoxKind(k));
+  const hasText = kinds.some((k) => k === "text" || k === "sticky" || k === "arrow" || isBoxKind(k));
+  const hasArrow = kinds.some((k) => k === "arrow");
   const stroked = kinds.some((k) => k !== "image" && k !== "sticky" && k !== "highlighter");
   const linear = kinds.some((k) => k === "line" || k === "arrow");
   const arrowDefault = kinds.every((k) => k === "arrow");
@@ -174,6 +176,23 @@ export function StylePanel({
             {(["solid", "dashed", "dotted"] as Dash[]).map((d) => (
               <button key={d} type="button" aria-pressed={style.dash === d} onClick={() => onStyle({ dash: d })}>
                 {d}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      )}
+      {hasArrow && (
+        <fieldset className={styles.group}>
+          <legend>Path</legend>
+          <div className={styles.seg}>
+            {(["straight", "elbow"] as Route[]).map((r) => (
+              <button
+                key={r}
+                type="button"
+                aria-pressed={(style.route ?? "straight") === r}
+                onClick={() => onStyle({ route: r })}
+              >
+                {r}
               </button>
             ))}
           </div>

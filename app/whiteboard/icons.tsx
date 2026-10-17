@@ -21,6 +21,7 @@ type Extra =
   | "shapes"
   | "share"
   | "templates"
+  | "library"
   | "fullscreen"
   | "help"
   | "lock"
@@ -67,6 +68,7 @@ const PATHS: Record<Tool | Extra, React.ReactNode> = {
     </>
   ),
   share: <path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 002 2h10a2 2 0 002-2v-6" />,
+  library: <path d="M4 5h6v6H4zM14 5h6v6h-6zM4 15h6v4H4zM14 17h6M17 14v6" />,
   templates: <path d="M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z" />,
   fullscreen: <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />,
   help: (

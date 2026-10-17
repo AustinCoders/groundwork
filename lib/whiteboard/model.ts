@@ -13,6 +13,8 @@ export type Head = "none" | "arrow" | "triangle" | "dot" | "bar";
 
 export type Dash = "solid" | "dashed" | "dotted";
 
+export type Route = "straight" | "elbow";
+
 export interface Style {
   stroke: string;
   fill: string;
@@ -22,6 +24,7 @@ export interface Style {
   fontSize: number;
   startHead?: Head;
   endHead?: Head;
+  route?: Route;
 }
 
 export type Point = [number, number];
@@ -124,7 +127,7 @@ export function isBoxKind(kind: string): kind is BoxKind {
 }
 
 export function holdsText(el: El): boolean {
-  return el.kind === "text" || el.kind === "sticky" || isBoxKind(el.kind);
+  return el.kind === "text" || el.kind === "sticky" || el.kind === "arrow" || isBoxKind(el.kind);
 }
 
 export function heads(el: El): { start: Head; end: Head } {
@@ -330,20 +333,97 @@ export function edgeToward(el: El, toward: Point, gap = 6): Point {
   return [cx + dx * Math.min(k, 1), cy + dy * Math.min(k, 1)];
 }
 
+export function pathMidpoint(points: readonly Point[]): Point {
+  if (!points.length) return [0, 0];
+  let total = 0;
+  for (let i = 1; i < points.length; i++)
+    total += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]);
+  let left = total / 2;
+  for (let i = 1; i < points.length; i++) {
+    const len = Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]);
+    if (len >= left && len > 0) {
+      const t = left / len;
+      return [
+        points[i - 1][0] + (points[i][0] - points[i - 1][0]) * t,
+        points[i - 1][1] + (points[i][1] - points[i - 1][1]) * t,
+      ];
+    }
+    left -= len;
+  }
+  return points[points.length - 1];
+}
+
+export function labelPoint(el: El, text = el.text ?? ""): Point {
+  const pts = el.points ?? [];
+  if (el.style.route !== "elbow" || pts.length < 4) return pathMidpoint(pts);
+  const [from, to] = pts.slice(-2);
+  const size = textBox(text, el.style.fontSize);
+  const horizontal = from[1] === to[1];
+  const room = Math.abs(horizontal ? to[0] - from[0] : to[1] - from[1]);
+  if (room >= (horizontal ? size.w : size.h) + 24) return pathMidpoint([from, to]);
+  return pathMidpoint(pts.slice(1, -1));
+}
+
+function pointBox(p: Point): Box {
+  return { x: p[0], y: p[1], w: 0, h: 0 };
+}
+
+export function elbowPath(from: Box, to: Box, gap = 6): Point[] {
+  const [fx, fy] = centre(from);
+  const [tx, ty] = centre(to);
+  const gapX = Math.max(to.x - (from.x + from.w), from.x - (to.x + to.w));
+  const gapY = Math.max(to.y - (from.y + from.h), from.y - (to.y + to.h));
+  const horizontal = gapX > 0 && gapX >= gapY ? true : gapY > 0 ? false : Math.abs(tx - fx) >= Math.abs(ty - fy);
+  const out: Point[] = [];
+  if (horizontal) {
+    const dir = tx >= fx ? 1 : -1;
+    const a: Point = [from.w ? (dir > 0 ? from.x + from.w + gap : from.x - gap) : fx, fy];
+    const b: Point = [to.w ? (dir > 0 ? to.x - gap : to.x + to.w + gap) : tx, ty];
+    const mx = (a[0] + b[0]) / 2;
+    out.push(a, [mx, a[1]], [mx, b[1]], b);
+  } else {
+    const dir = ty >= fy ? 1 : -1;
+    const a: Point = [fx, from.h ? (dir > 0 ? from.y + from.h + gap : from.y - gap) : fy];
+    const b: Point = [tx, to.h ? (dir > 0 ? to.y - gap : to.y + to.h + gap) : ty];
+    const my = (a[1] + b[1]) / 2;
+    out.push(a, [a[0], my], [b[0], my], b);
+  }
+  return out.filter((p, i) => {
+    const prev = out[i - 1];
+    const next = out[i + 1];
+    if (prev && Math.hypot(p[0] - prev[0], p[1] - prev[1]) < 0.5) return false;
+    if (prev && next && ((prev[0] === p[0] && p[0] === next[0]) || (prev[1] === p[1] && p[1] === next[1])))
+      return false;
+    return true;
+  });
+}
+
 export function routeArrows(els: El[], changed?: ReadonlySet<string>): El[] {
   const byId = new Map(els.map((e) => [e.id, e]));
   return els.map((el) => {
-    if (el.kind !== "arrow" || (!el.start && !el.end)) return el;
+    const elbow = el.style.route === "elbow";
+    if (el.kind !== "arrow" || (!el.start && !el.end && !elbow)) return el;
     if (changed && !changed.has(el.id) && !(el.start && changed.has(el.start)) && !(el.end && changed.has(el.end)))
       return el;
     const pts = el.points ?? [
       [0, 0],
       [0, 0],
     ];
+    const last = pts[pts.length - 1];
     const absStart: Point = [el.x + pts[0][0], el.y + pts[0][1]];
-    const absEnd: Point = [el.x + pts[pts.length - 1][0], el.y + pts[pts.length - 1][1]];
+    const absEnd: Point = [el.x + last[0], el.y + last[1]];
     const from = el.start ? byId.get(el.start) : undefined;
     const to = el.end ? byId.get(el.end) : undefined;
+    if (elbow) {
+      const path = elbowPath(from ? bounds(from) : pointBox(absStart), to ? bounds(to) : pointBox(absEnd));
+      if (
+        path.length < 2 ||
+        Math.hypot(path[path.length - 1][0] - path[0][0], path[path.length - 1][1] - path[0][1]) < 2
+      )
+        return el;
+      const [ox, oy] = path[0];
+      return { ...el, x: ox, y: oy, points: path.map(([px, py]) => [px - ox, py - oy] as Point) };
+    }
     const target: Point = to ? centre(bounds(to)) : absEnd;
     const source: Point = from ? centre(bounds(from)) : absStart;
     const a = from ? edgeToward(from, target) : absStart;
@@ -359,6 +439,16 @@ export function routeArrows(els: El[], changed?: ReadonlySet<string>): El[] {
       ],
     };
   });
+}
+
+export function setRoute(els: El[], ids: ReadonlySet<string>, route: Route): El[] {
+  const next = els.map((e) => {
+    if (!ids.has(e.id) || e.kind !== "arrow" || e.locked) return e;
+    const pts = e.points ?? [[0, 0]];
+    const straight: Point[] = [pts[0], pts[pts.length - 1]];
+    return { ...e, style: { ...e.style, route }, ...(route === "straight" ? { points: straight } : {}) };
+  });
+  return routeArrows(next, ids);
 }
 
 export function moveEls(els: El[], ids: ReadonlySet<string>, dx: number, dy: number): El[] {
@@ -637,6 +727,7 @@ function cleanStyle(v: unknown): Style {
   };
   if (HEAD_KINDS.includes(s.startHead as Head)) style.startHead = s.startHead as Head;
   if (HEAD_KINDS.includes(s.endHead as Head)) style.endHead = s.endHead as Head;
+  if (s.route === "elbow") style.route = "elbow";
   return style;
 }
 
@@ -680,6 +771,7 @@ export function sanitizeEls(list: unknown, limit = 5000): El[] {
       el.start = str(r.start, 64) ?? null;
       el.end = str(r.end, 64) ?? null;
     }
+    if (kind !== "arrow") delete el.style.route;
     if (r.locked === true) el.locked = true;
     const group = str(r.group, 64);
     if (group) el.group = group;

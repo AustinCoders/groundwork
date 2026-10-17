@@ -33,7 +33,7 @@ const GROUPS: { title: string; rows: [string, string][] }[] = [
       ["⌘/Ctrl ⇧ L", "Lock or unlock"],
       ["⌘/Ctrl ⇧ C", "Copy as PNG"],
       ["Delete", "Delete"],
-      ["Enter", "Edit text"],
+      ["Enter or double-click", "Edit text, or label an arrow"],
       ["Arrows (⇧ for 10)", "Nudge"],
       ["[ ]  (⇧ for all the way)", "Send back / bring forward"],
     ],

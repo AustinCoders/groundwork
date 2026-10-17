@@ -1,4 +1,4 @@
-import { sanitizeEls, type El } from "@/lib/whiteboard/model";
+import { newId, sanitizeEls, type El } from "@/lib/whiteboard/model";
 
 export interface BoardMeta {
   id: string;
@@ -102,4 +102,40 @@ export function loadPrefs(): BoardPrefs {
 
 export function savePrefs(prefs: BoardPrefs) {
   write(PREFS, prefs);
+}
+
+const PARTS = "groundwork:whiteboard:parts";
+const MAX_PARTS = 40;
+
+export interface SavedPart {
+  id: string;
+  name: string;
+  els: El[];
+}
+
+export function listSavedParts(): SavedPart[] {
+  const raw = read<unknown>(PARTS, []);
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((p): p is { id: string; name: string; els: unknown } => Boolean(p) && typeof p.id === "string")
+    .map((p) => ({
+      id: p.id,
+      name: typeof p.name === "string" ? p.name.slice(0, 40) : "Saved part",
+      els: sanitizeEls(p.els, 500),
+    }))
+    .filter((p) => p.els.length > 0);
+}
+
+export function addSavedPart(name: string, els: readonly El[]): boolean {
+  const kept = els.filter((e) => e.kind !== "image");
+  if (!kept.length) return false;
+  const part: SavedPart = { id: newId(), name: name.trim().slice(0, 40) || "Saved part", els: kept };
+  return write(PARTS, [part, ...listSavedParts()].slice(0, MAX_PARTS));
+}
+
+export function removeSavedPart(id: string) {
+  write(
+    PARTS,
+    listSavedParts().filter((p) => p.id !== id)
+  );
 }

@@ -7,11 +7,11 @@ export interface Template {
   build: () => El[];
 }
 
-function box(kind: Kind, x: number, y: number, w: number, h: number, text = "", style: Partial<Style> = {}): El {
+export function box(kind: Kind, x: number, y: number, w: number, h: number, text = "", style: Partial<Style> = {}): El {
   return { id: newId(), kind, x, y, w, h, text, style: { ...DEFAULT_STYLE, ...style } };
 }
 
-function link(a: El, b: El, style: Partial<Style> = {}): El {
+export function link(a: El, b: El, style: Partial<Style> = {}, text?: string): El {
   return {
     id: newId(),
     kind: "arrow",
@@ -26,6 +26,7 @@ function link(a: El, b: El, style: Partial<Style> = {}): El {
     start: a.id,
     end: b.id,
     style: { ...DEFAULT_STYLE, ...style },
+    ...(text ? { text } : {}),
   };
 }
 
@@ -46,8 +47,6 @@ function flowchart(): El[] {
   const work = box("rect", 50, 460, 200, 80, "Process it");
   const fix = box("rect", 340, 295, 180, 80, "Show an error", { fill: "red-soft" });
   const end = box("ellipse", 60, 600, 180, 70, "End", { fill: "green-soft" });
-  const yes = label(160, 410, "yes", 18);
-  const no = label(262, 300, "no", 18);
   return [
     start,
     input,
@@ -55,12 +54,10 @@ function flowchart(): El[] {
     work,
     fix,
     end,
-    yes,
-    no,
     link(start, input),
     link(input, decide),
-    link(decide, work),
-    link(decide, fix),
+    link(decide, work, { fontSize: 18 }, "yes"),
+    link(decide, fix, { fontSize: 18 }, "no"),
     link(fix, input, { dash: "dashed" }),
     link(work, end),
   ];
@@ -86,14 +83,14 @@ function systemDesign(): El[] {
     db,
     queue,
     worker,
-    link(client, cdn, { dash: "dashed" }),
-    link(client, lb),
+    link(client, cdn, { dash: "dashed" }, "static"),
+    link(client, lb, {}, "HTTPS"),
     link(lb, api1),
     link(lb, api2),
-    link(api1, cache),
+    link(api1, cache, {}, "read"),
     link(api1, db),
-    link(api2, db),
-    link(api2, queue),
+    link(api2, db, {}, "write"),
+    link(api2, queue, {}, "enqueue"),
     link(queue, worker),
   ];
 }
@@ -166,7 +163,7 @@ export const TEMPLATES: Template[] = [
   { id: "retro", label: "Retro", hint: "Went well, to improve, actions", build: retro },
 ];
 
-export function placeTemplate(t: Template, centre: [number, number]): El[] {
+export function placeTemplate(t: Pick<Template, "build">, centre: [number, number]): El[] {
   const els = routeArrows(t.build());
   const b = unionBounds(els)!;
   const dx = centre[0] - (b.x + b.w / 2);

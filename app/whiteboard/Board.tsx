@@ -9,6 +9,7 @@ import { ContextMenu, type MenuItem } from "./ContextMenu";
 import { ConfirmDialog, NameDialog } from "@/components/Modal";
 import { Shortcuts } from "./Shortcuts";
 import { TemplatesMenu } from "./TemplatesMenu";
+import { LibraryMenu } from "./LibraryMenu";
 import { PagePicker, PaperPattern, paperOf, paperVisible, tintOf, tintVars } from "./Paper";
 import { colour, CSS_PALETTE, textBox } from "@/lib/whiteboard/geometry";
 import {
@@ -42,6 +43,7 @@ import {
   movableIds,
   moveEls,
   newId,
+  labelPoint,
   normalize,
   redo,
   removeEls,
@@ -52,6 +54,7 @@ import {
   routeArrows,
   sameEls,
   setLocked,
+  setRoute,
   simplify,
   snap,
   STICKY_FILL,
@@ -68,6 +71,7 @@ import {
   type Style,
   type Tool,
 } from "@/lib/whiteboard/model";
+import { clearOf } from "@/lib/whiteboard/library";
 import { placeTemplate, TEMPLATES, type Template } from "@/lib/whiteboard/templates";
 import {
   deleteBoard,
@@ -449,7 +453,10 @@ export function Board() {
   const anyLocked = selected.some((e) => e.locked);
   const single = selected.length === 1 ? selected[0] : null;
   const endpointEl =
-    single && (single.kind === "line" || single.kind === "arrow") && single.points?.length === 2 && !single.locked
+    single &&
+    (single.kind === "line" || single.kind === "arrow") &&
+    (single.points?.length === 2 || single.style.route === "elbow") &&
+    !single.locked
       ? single
       : null;
 
@@ -675,8 +682,9 @@ export function Board() {
     if (g.kind === "endpoint") {
       const el = g.el;
       const pts = el.points!;
+      const tail = pts[pts.length - 1];
       const absStart: Point = [el.x + pts[0][0], el.y + pts[0][1]];
-      const absEnd: Point = [el.x + pts[1][0], el.y + pts[1][1]];
+      const absEnd: Point = [el.x + tail[0], el.y + tail[1]];
       const q = snapPoint(p);
       const a = g.which === "start" ? q : absStart;
       const b = g.which === "end" ? q : absEnd;
@@ -735,16 +743,17 @@ export function Board() {
           dx = Math.cos(angle) * len;
           dy = Math.sin(angle) * len;
         }
-        setLive([
+        const live = [
           ...g.base,
           {
             ...el,
             points: [
               [0, 0],
               [dx, dy],
-            ],
+            ] as Point[],
           },
-        ]);
+        ];
+        setLive(el.style.route === "elbow" ? routeArrows(live, new Set([el.id])) : live);
       } else {
         if (shift) {
           const side = Math.max(Math.abs(dx), Math.abs(dy));
@@ -809,7 +818,8 @@ export function Board() {
       const made = current.find((e) => e.id === g.id);
       if (made && made.kind === "arrow" && made.points) {
         const pts = made.points;
-        const at: Point = g.which === "start" ? [made.x, made.y] : [made.x + pts[1][0], made.y + pts[1][1]];
+        const tail = pts[pts.length - 1];
+        const at: Point = g.which === "start" ? [made.x, made.y] : [made.x + tail[0], made.y + tail[1]];
         const other = g.which === "start" ? made.end : made.start;
         const target = bindTarget(at, other, made.id);
         next = routeArrows(
@@ -1043,8 +1053,8 @@ export function Board() {
     else say("Full screen is not available here.");
   }
 
-  function insertTemplate(t: Template) {
-    const made = placeTemplate(t, viewCentre());
+  function insertTemplate(t: Pick<Template, "build">) {
+    const made = clearOf(stateRef.current.els, placeTemplate(t, viewCentre()));
     apply([...stateRef.current.els, ...made]);
     setSel(new Set(made.map((e) => e.id)));
     setTool("select");
@@ -1245,7 +1255,7 @@ export function Board() {
   function setStyleFor(patch: Partial<Style>) {
     setStyle((s) => ({ ...s, ...patch }));
     if (!sel.size) return;
-    const next = restyle(hist.present, sel, patch);
+    const next = patch.route ? setRoute(hist.present, sel, patch.route) : restyle(hist.present, sel, patch);
     if (patch.opacity !== undefined) return applyCoalesced(`opacity:${[...sel].join()}`, next);
     apply(
       patch.fontSize
@@ -1324,7 +1334,13 @@ export function Board() {
         ...(selectedGrouped ? [{ label: "Ungroup", keys: "⌘⇧G", run: () => groupSelection(false) }] : []),
         { label: anyLocked ? "Unlock" : "Lock", keys: "⌘⇧L", run: toggleLock },
         ...(single && holdsText(single) && !single.locked
-          ? [{ label: "Edit text", keys: "Enter", run: () => startEditing(single.id) }]
+          ? [
+              {
+                label: single.kind === "arrow" ? "Edit label" : "Edit text",
+                keys: "Enter",
+                run: () => startEditing(single.id),
+              },
+            ]
           : []),
         { label: "Copy as PNG", keys: "⌘⇧C", run: () => void copyPng() },
         { label: "Zoom to selection", keys: "⇧2", run: () => fitTo(selBox) },
@@ -1414,7 +1430,11 @@ export function Board() {
             )}
             <g key={boardId} className={styles.boardFade}>
               {shown.map((el) => (
-                <ElementView key={el.id} el={el} hidden={el.id === editing && el.kind === "text"} />
+                <ElementView
+                  key={el.id}
+                  el={el.id === editing && el.kind === "arrow" ? { ...el, text: "" } : el}
+                  hidden={el.id === editing && el.kind === "text"}
+                />
               ))}
             </g>
             {selBox && !editing && (
@@ -1433,7 +1453,7 @@ export function Board() {
                   (endpointEl
                     ? (["start", "end"] as const).map((which) => {
                         const pts = endpointEl.points!;
-                        const [px, py] = which === "start" ? pts[0] : pts[1];
+                        const [px, py] = which === "start" ? pts[0] : pts[pts.length - 1];
                         return (
                           <circle
                             key={which}
@@ -1607,6 +1627,7 @@ export function Board() {
           </div>
         ))}
         <div className={styles.toolGroup}>
+          <LibraryMenu selection={selected} onPick={(build) => insertTemplate({ build })} />
           <TemplatesMenu onPick={insertTemplate} />
           <button
             type="button"
@@ -1804,9 +1825,15 @@ export function Board() {
 function TextEditor({ el, cam, onDone }: { el: El; cam: Camera; onDone: (text: string) => void }) {
   const [text, setText] = useState(el.text ?? "");
   const ref = useRef<HTMLTextAreaElement>(null);
+  const arrow = el.kind === "arrow";
   const b = bounds(el);
   const boxed = el.kind !== "text";
-  const fit = el.kind === "text" ? textBox(text || " ", el.style.fontSize) : { w: b.w, h: b.h };
+  const fit = el.kind === "text" || arrow ? textBox(text || " ", el.style.fontSize) : { w: b.w, h: b.h };
+  const width = Math.max(60, fit.w + 24);
+  const height = Math.max(fit.h, el.style.fontSize * 1.6);
+  const mid = arrow ? labelPoint(el, text) : null;
+  const left = mid ? el.x + mid[0] - width / 2 : b.x;
+  const top = mid ? el.y + mid[1] - height / 2 : b.y;
   const done = useRef(false);
   const finish = (value: string) => {
     if (done.current) return;
@@ -1831,10 +1858,10 @@ function TextEditor({ el, cam, onDone }: { el: El; cam: Camera; onDone: (text: s
       value={text}
       spellCheck={false}
       style={{
-        left: (b.x + cam.x) * cam.zoom,
-        top: (b.y + cam.y) * cam.zoom,
-        width: Math.max(60, fit.w + 24) * cam.zoom,
-        height: Math.max(fit.h, el.style.fontSize * 1.6) * cam.zoom,
+        left: (left + cam.x) * cam.zoom,
+        top: (top + cam.y) * cam.zoom,
+        width: width * cam.zoom,
+        height: height * cam.zoom,
         fontSize: el.style.fontSize * cam.zoom,
         color: el.kind === "sticky" ? "var(--wb-ink)" : colour(el.style.stroke, CSS_PALETTE),
         textAlign: boxed && el.kind !== "sticky" ? "center" : "left",
