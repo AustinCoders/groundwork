@@ -1,10 +1,10 @@
 export const VIEW_W = 1000;
-export const VIEW_H = 760;
-export const HUB = { x: 226, y: 380, r: 128 };
+export const VIEW_H = 800;
+export const HUB = { x: 226, y: 400, r: 128 };
 export const RING_R = 172;
-export const CIRCLE_R = 74;
-export const RX = 396;
-export const RY = 288;
+export const CIRCLE_R = 64;
+export const RX = 360;
+export const RY = 316;
 export const STAGE_ARC = 144;
 export const DOT_ARC = 164;
 
@@ -17,7 +17,9 @@ const radians = (degrees: number) => (degrees * Math.PI) / 180;
 
 export function stageAngle(index: number, count: number): number {
   if (count <= 1) return 0;
-  return -STAGE_ARC / 2 + (index * STAGE_ARC) / (count - 1);
+  const reach = Math.sin(radians(STAGE_ARC / 2));
+  const along = (2 * index) / (count - 1) - 1;
+  return (Math.asin(along * reach) * 180) / Math.PI;
 }
 
 export function stageCenter(index: number, count: number): Point {
@@ -27,6 +29,18 @@ export function stageCenter(index: number, count: number): Point {
 
 export function ringPoint(angle: number, radius = RING_R): Point {
   return { x: HUB.x + radius * Math.cos(radians(angle)), y: HUB.y + radius * Math.sin(radians(angle)) };
+}
+
+export function arcPath(from: number, to: number, radius = RING_R): string {
+  const start = ringPoint(from, radius);
+  const end = ringPoint(to, radius);
+  return `M${start.x.toFixed(1)} ${start.y.toFixed(1)} A${radius} ${radius} 0 0 1 ${end.x.toFixed(1)} ${end.y.toFixed(1)}`;
+}
+
+export function spokePath(angle: number, from = RING_R, to = RING_R + 22): string {
+  const start = ringPoint(angle, from);
+  const end = ringPoint(angle, to);
+  return `M${start.x.toFixed(1)} ${start.y.toFixed(1)} L${end.x.toFixed(1)} ${end.y.toFixed(1)}`;
 }
 
 export function dotAngles(groups: readonly number[]): number[][] {

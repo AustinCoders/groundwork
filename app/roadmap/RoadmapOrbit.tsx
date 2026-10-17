@@ -9,6 +9,7 @@ import {
   RING_R,
   VIEW_H,
   VIEW_W,
+  arcPath,
   circleEdge,
   connectorPath,
   dotAngles,
@@ -16,6 +17,7 @@ import {
   percentX,
   percentY,
   ringPoint,
+  spokePath,
   stageCenter,
 } from "./orbitLayout";
 import { RoadmapDrawer } from "./RoadmapDrawer";
@@ -65,7 +67,7 @@ export function RoadmapOrbit({ roadmap }: { roadmap: Roadmap }) {
           watcher.disconnect();
         }
       },
-      { threshold: 0.35 }
+      { rootMargin: "0px 0px -20% 0px" }
     );
     watcher.observe(map);
     return () => watcher.disconnect();
@@ -87,15 +89,34 @@ export function RoadmapOrbit({ roadmap }: { roadmap: Roadmap }) {
         style={{ "--ratio": `${VIEW_W} / ${VIEW_H}` } as CSSProperties}
       >
         <svg className={styles.links} viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} aria-hidden="true" focusable="false">
-          {stages.map((entry, at) => (
-            <path
-              key={entry.id}
-              className={styles.link}
-              data-active={drawer?.stage === at}
-              d={connectorPath(ringPoint(middle(angles[at]), RING_R + 18), circleEdge(at, count))}
-              style={{ stroke: tintOf(at), "--i": at } as CSSProperties}
-            />
-          ))}
+          {stages.map((entry, at) => {
+            const group = angles[at];
+            const mid = middle(group);
+            const anchor = ringPoint(mid, RING_R + 22);
+            const active = drawer?.stage === at;
+            const style = { stroke: tintOf(at), "--i": at } as CSSProperties;
+            return (
+              <g key={entry.id} className={styles.group} data-active={active}>
+                {group.length > 1 && (
+                  <path className={styles.chain} d={arcPath(group[0], group[group.length - 1])} style={style} />
+                )}
+                <path className={styles.spoke} d={spokePath(mid)} style={style} />
+                <circle
+                  className={styles.node}
+                  cx={anchor.x}
+                  cy={anchor.y}
+                  r="6"
+                  style={{ fill: tintOf(at), "--i": at } as CSSProperties}
+                />
+                <path
+                  className={styles.link}
+                  data-active={active}
+                  d={connectorPath(anchor, circleEdge(at, count))}
+                  style={style}
+                />
+              </g>
+            );
+          })}
         </svg>
 
         <div
@@ -149,7 +170,7 @@ export function RoadmapOrbit({ roadmap }: { roadmap: Roadmap }) {
           {stages.map((entry, at) => {
             const centre = stageCenter(at, count);
             const summary = stageSummary(roadmap, at, progress);
-            const labelLeft = centre.x + CIRCLE_R + 42;
+            const labelLeft = centre.x + CIRCLE_R + 38;
             return (
               <li
                 key={entry.id}

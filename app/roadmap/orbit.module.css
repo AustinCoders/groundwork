@@ -13,7 +13,7 @@
   container-type: inline-size;
 }
 
-.map[data-seen="false"] :is(.link, .hub, .dot, .stage) {
+.map[data-seen="false"] :is(.link, .chain, .spoke, .node, .hub, .dot, .stage) {
   animation-play-state: paused;
 }
 
@@ -34,6 +34,31 @@
   transition: opacity 0.2s ease;
   animation: fadeIn 0.7s ease both;
   animation-delay: calc(0.5s + var(--i, 0) * 0.12s);
+}
+
+.chain,
+.spoke {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+  opacity: 0.4;
+  animation: fadeIn 0.7s ease both;
+  animation-delay: calc(0.5s + var(--i, 0) * 0.12s);
+}
+
+.spoke {
+  stroke-width: 3;
+  opacity: 0.7;
+}
+
+.node {
+  opacity: 0.9;
+  animation: fadeIn 0.7s ease both;
+  animation-delay: calc(0.5s + var(--i, 0) * 0.12s);
+}
+
+.group[data-active="true"] > .chain {
+  opacity: 0.85;
 }
 
 .link[data-active="true"] {
@@ -178,9 +203,9 @@
 
 .circle {
   position: absolute;
-  top: -7.4cqw;
-  left: -7.4cqw;
-  width: 14.8cqw;
+  top: -6.4cqw;
+  left: -6.4cqw;
+  width: 12.8cqw;
   aspect-ratio: 1;
   padding: 0;
   background: conic-gradient(var(--tint) calc(var(--pct) * 1%), color-mix(in srgb, var(--tint) 24%, var(--sheet)) 0);
@@ -255,7 +280,7 @@
 .label {
   position: absolute;
   top: 0;
-  left: 11.8cqw;
+  left: 9.9cqw;
   display: grid;
   gap: 7px;
   width: calc(var(--lw) * 1cqw);
@@ -278,7 +303,7 @@
   line-height: 1.55;
   color: var(--ink-soft);
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
 }
 
 .labelMeta {
@@ -323,6 +348,12 @@
 @keyframes bob {
   50% {
     translate: 0 -5px;
+  }
+}
+
+@container (max-width: 880px) {
+  .labelBlurb {
+    display: none;
   }
 }
 
@@ -418,7 +449,10 @@
   .stage,
   .hub,
   .dot,
-  .link {
+  .link,
+  .chain,
+  .spoke,
+  .node {
     animation: none;
   }
 }
