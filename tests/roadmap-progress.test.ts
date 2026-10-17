@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { roadmap } from "@/lib/roadmap";
-import { EMPTY_DONE, parseDone, roadmapProgress, statusLabel, stepProgress } from "@/app/roadmap/roadmapModel";
+import {
+  EMPTY_DONE,
+  neighbours,
+  parseDone,
+  roadmapProgress,
+  statusLabel,
+  stepProgress,
+} from "@/app/roadmap/roadmapModel";
 
 const frontend = roadmap("frontend")!;
 const stepsOf = (id: string) => roadmap(id)!.stages.flatMap((stage) => stage.steps);
@@ -78,5 +85,33 @@ describe("the state of a whole roadmap", () => {
     expect(progress.next).toBeNull();
     expect(progress.stepsDone).toBe(progress.stepsReadable);
     expect(progress.chaptersDone).toBe(progress.chaptersTotal);
+  });
+});
+
+describe("what comes before and after a step", () => {
+  it("is the neighbouring step when a stage goes in order", () => {
+    const interview = roadmap("interview")!;
+    expect(neighbours(interview, "round:r1").before?.key).toBe("round:scout");
+    expect(neighbours(interview, "round:r1").after?.key).toBe("round:r1oa");
+  });
+
+  it("crosses into the next stage at the end of one", () => {
+    const frontend = roadmap("frontend")!;
+    expect(neighbours(frontend, "topic:js").before?.key).toBe("topic:git");
+    expect(neighbours(frontend, "topic:js").after?.key).toBe("topic:typescript");
+  });
+
+  it("does not order steps inside a stage that allows any order", () => {
+    const frontend = roadmap("frontend")!;
+    expect(neighbours(frontend, "topic:css").before).toBeNull();
+    expect(neighbours(frontend, "topic:css").after?.key).toBe("topic:js");
+    expect(neighbours(frontend, "topic:html").after?.key).toBe("topic:js");
+  });
+
+  it("has nothing before the first step and nothing after the last", () => {
+    const interview = roadmap("interview")!;
+    expect(neighbours(interview, "round:scout").before).toBeNull();
+    expect(neighbours(interview, "round:plan").after).toBeNull();
+    expect(neighbours(interview, "round:nope")).toEqual({ before: null, after: null });
   });
 });

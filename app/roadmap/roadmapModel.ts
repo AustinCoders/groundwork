@@ -52,3 +52,21 @@ export function statusLabel(progress: StepProgress): string {
   if (progress.status === "doing") return `In progress, ${progress.done} of ${progress.total}`;
   return "Not started";
 }
+
+export interface Neighbours {
+  before: RoadmapStep | null;
+  after: RoadmapStep | null;
+}
+
+export function neighbours(roadmap: Roadmap, key: string): Neighbours {
+  const stageAt = roadmap.stages.findIndex((stage) => stage.steps.some((step) => step.key === key));
+  if (stageAt === -1) return { before: null, after: null };
+  const stage = roadmap.stages[stageAt];
+  const at = stage.steps.findIndex((step) => step.key === key);
+  const previousStage = roadmap.stages[stageAt - 1];
+  const nextStage = roadmap.stages[stageAt + 1];
+  const inOrder = stage.order === "in-order";
+  const before = inOrder && at > 0 ? stage.steps[at - 1] : (previousStage?.steps.at(-1) ?? null);
+  const after = inOrder && at < stage.steps.length - 1 ? stage.steps[at + 1] : (nextStage?.steps[0] ?? null);
+  return { before, after };
+}
