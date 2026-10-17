@@ -11,10 +11,7 @@
     "package-lock.json",
     "tsconfig.tsbuildinfo",
     ".vercel/**",
-    ".claude/**",
-    "_bmad/**",
-    "_bmad-output/**",
-    "skills-lock.json"
+    ".claude/**"
   ],
   "ignoreRegExpList": ["/<code>[\\s\\S]*?<\\/code>/g", "/<pre>[\\s\\S]*?<\\/pre>/g"],
   "dictionaryDefinitions": [

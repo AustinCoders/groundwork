@@ -8,20 +8,16 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-<!-- bmad:context -->
-<!-- Verified 2026-09-28 against a5ca1c2. Managed by bmad-project-context; edits inside this block are replaced on refresh. Keep anything you want preserved outside the markers. -->
-
 ## groundwork
 
-A free study site for JavaScript and interview prep: notes, runnable exercises, an interview book, mock interviews and a whiteboard. Next.js 16 App Router, React 19, TypeScript, CSS modules, no backend; progress lives in localStorage. BMad planning output lives in `_bmad-output/`, and it is committed.
+A free study site for JavaScript and interview prep: notes, runnable exercises, an interview book, mock interviews and a whiteboard. Next.js 16 App Router, React 19, TypeScript, CSS modules, no backend; progress lives in localStorage.
 
 ## Policy
 
 - Do each task on its own `feature/<name>` branch cut from an up-to-date `main`; never commit to `main` directly.
 - Merge by fast-forwarding `main` and pushing `origin` (the AustinCoders remote); then delete the branch locally and on GitHub.
-- Delete tickets once they are done and merged: mark them done (`tickets.py mark <ref> done`), then run `npm run tickets:prune` (add `-- --review` to include built stories nobody has marked) and commit the deletions with the work. Plans of built work in `_bmad-output/implementation-artifacts/` go too, except blocked ones and `deferred-work.md`.
 - Commit, push or merge only when the user asks; commits stay authored as akshataustin, with no AI co-author trailer.
-- Never edit `.claude/skills/` or `_bmad/`; update them with `npx skills update`, then run the `bmad` skill's setup.
+- Planned and open work lives in `docs/ROADMAP.md`; keep it current when something is built or dropped.
 - Never stop or reuse the user's dev server on port 3000; run your own on another port (e2e uses 3100).
 
 ## Running and verifying
@@ -60,5 +56,3 @@ Long chats get expensive because every message re-reads the whole context. Keep 
 
 - Numbers stated in `content/architecture/` are asserted by `tests/claims.test.ts`; update the chapter when a count changes.
 - Scroll reveals leave elements part-transparent mid-animation; any contrast or visibility check in a browser needs reduced motion on.
-
-<!-- /bmad:context -->

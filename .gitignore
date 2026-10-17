@@ -54,4 +54,3 @@ next-env.d.ts
 # lighthouse
 /.lighthouseci
 .claude/worktrees/
-_bmad/render/

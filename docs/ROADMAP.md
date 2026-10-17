@@ -404,6 +404,44 @@ those before starting.
 - No layout-shift check for the loading skeleton (TP-4).
 - The Chapters-sheet and keyboard test (`e2e/keyboard.spec.ts`) runs only on a Git chapter, not on a How-this-is-built chapter (TP-8).
 
+## Open work carried over from the retired planning tickets
+
+These were the open entries in the BMad planning folder before it was removed. The full ticket text, specs and audits are in git history: `git show 2da0b19:_bmad-output/<path>` (list them with `git ls-tree -r --name-only 2da0b19 _bmad-output`).
+
+**DSA: the Play it engine**
+
+- Layout views for the player: grid, graph, tree and forest, each state labelled in text.
+- List views: linked list, call stack, hash buckets, chips and bars.
+- Port the array and grid demos (two pointers, sliding window, next greater, LCS) to tested tracers and remove their inline scripts.
+- Port the heap, graph (BFS and DFS) and union-find demos to tracers.
+- Presets, a "Try your own input" control with parser limits, and a table view of every frame's variables.
+- Puzzles built from a tracer's frames: order the steps and pick the next step.
+- Per-language code in the player (JavaScript, Python, Java and C++) with the highlight following the frame.
+
+**DSA: chapter checks and placement**
+
+- Show check states (checked, not checked, read before checks, tested out) in text on the rail, the cover and the path.
+- Generated trace questions from tracer frames, and a predict-the-next-step mode in the player.
+- A placement flow: three doors on `/dsa`, a static `/dsa/placement` route with no timer and at most 18 questions, a plan, and Re-check.
+- An end-of-chapter popup that asks "Mark this chapter done?" once.
+- A complexity round of two questions at the end of a chapter.
+- Badges: First check passed and A level checked.
+
+**DSA: understanding aids and the release**
+
+- `/review` asks two check questions of a due DSA chapter.
+- A which-pattern drill at `/dsa/patterns`.
+- Cheat-sheet pages at `/dsa/cheat-sheet/<pattern>` and an index.
+- A shaky list on `/review` made of questions missed in checks, the complexity round and review.
+- A revision list on `/dsa` by interview style and by pattern.
+- Release gate: a completeness test, the nine themes and a phone walk; then merge and a production check.
+
+**Refactor sweeps**, one at the end of each DSA group (foundations, play engine, checks, beginner, intermediate, advanced, aids): one voice, one box style, cross-links, and a Python, Java and C++ translation for every chapter code block and tracer that still lacks one.
+
+**Groundwork**
+
+- Turn on error reporting (set `NEXT_PUBLIC_SENTRY_DSN` for Production on Vercel) and submit the sitemap in Search Console and Bing.
+
 ## Sources
 
 Primary: [GitHub Octoverse 2025][octoverse] · [Stack Overflow Developer Survey 2025][so] ·

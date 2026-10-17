@@ -22,7 +22,6 @@
     "prepare": "husky",
     "test:e2e": "playwright test",
     "claims:sync": "UPDATE_CLAIMS=1 vitest run tests/claims.test.ts",
-    "tickets:prune": "uv run scripts/prune-tickets.py",
     "test:perf": "npx --yes @lhci/cli@0.15 autorun",
     "comments": "node scripts/comments.mjs",
     "comments:fix": "node scripts/comments.mjs --fix"

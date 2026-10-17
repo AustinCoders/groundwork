@@ -5,7 +5,7 @@ Read this and the memory index first in a new session. Update it at the end of e
 ## State (2026-10-16)
 
 - `main` = `origin/main` = `8d7cd7b`: the DSA course is live (48 written chapters, a question pool for each, 934 exercises). Branches `feature/dsa-rebuild` and `feature/platform-topics` are kept.
-- Tickets: finished and merged tickets are deleted (`npm run tickets:prune`); what remains is only open work: 28 DSA tickets (player, checks, aids and release, refactor sweeps) and one groundwork ticket (error reporting and sitemap).
+- Planned work: the BMad planning folder and skills were removed; the open entries (28 DSA, 1 groundwork) now live in `docs/ROADMAP.md`, and the old text is in git history up to commit `2da0b19`.
 - Uncommitted: the content standard (`AGENTS.md`, `docs/content-standard.md`, `docs/handoff.md`), `tests/chapter-standards*.ts`, `npm run claims:sync`. `npm run check` passes (78 files, 1630 tests).
 
 ## Next
