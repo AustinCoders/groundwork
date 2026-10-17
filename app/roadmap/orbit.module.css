@@ -313,6 +313,10 @@
   color: var(--ink-soft);
 }
 
+.mini {
+  display: none;
+}
+
 .pending .dot {
   opacity: 0.6;
 }
@@ -374,8 +378,8 @@
     position: relative;
     top: auto !important;
     left: auto !important;
-    width: min(260px, 70%);
-    margin: 14px auto 6px;
+    width: min(200px, 56%);
+    margin: 8px auto 0;
     transform: none;
   }
 
@@ -436,6 +440,68 @@
 
   .labelTitle {
     font-size: 18px;
+  }
+
+  .mini {
+    position: relative;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    width: fit-content;
+    margin-top: 8px;
+    pointer-events: auto;
+  }
+
+  .mini::before {
+    content: "";
+    position: absolute;
+    inset-inline: 10px;
+    top: 50%;
+    height: 4px;
+    background: color-mix(in srgb, var(--tint) 45%, transparent);
+    border-radius: 2px;
+    transform: translateY(-50%);
+  }
+
+  .miniDot {
+    position: relative;
+    box-sizing: border-box;
+    width: 22px;
+    aspect-ratio: 1;
+    padding: 0;
+    background: color-mix(in srgb, var(--tint) 38%, var(--sheet));
+    border: 2px solid var(--tint);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .miniDot::after {
+    content: "";
+    position: absolute;
+    inset: -10px;
+  }
+
+  .miniDot[data-status="done"] {
+    background: var(--tint);
+  }
+
+  .miniDot[data-status="doing"] {
+    background: conic-gradient(var(--tint) 0 50%, var(--sheet) 50% 100%);
+  }
+
+  .miniDot[data-status="outline"] {
+    background: var(--sheet);
+    border-style: dashed;
+    opacity: 0.8;
+  }
+
+  .miniDot[data-next="true"] {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 45%, transparent);
+  }
+
+  .miniDot:focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 4px;
   }
 }
 

@@ -76,9 +76,7 @@ export function RoadmapDrawer({
         <span className={styles.orb} aria-hidden="true">
           <span className={styles.orbDisc}>
             <b>{pad(stageAt + 1)}</b>
-            <small>
-              {finished}/{readable.length}
-            </small>
+            <small>{readable.length ? `${finished}/${readable.length}` : "Soon"}</small>
           </span>
         </span>
         <div className={styles.headText}>

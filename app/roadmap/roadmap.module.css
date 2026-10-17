@@ -1,7 +1,38 @@
 .hero {
   display: grid;
   gap: 14px;
-  padding-block: clamp(32px, 6vh, 72px) clamp(16px, 3vh, 32px);
+  padding-block: clamp(20px, 4vh, 48px) clamp(12px, 2vh, 24px);
+}
+
+@media (min-width: 1000px) {
+  .hero {
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+    column-gap: 40px;
+    row-gap: 12px;
+    align-items: start;
+  }
+
+  .hero > :nth-child(1) {
+    grid-column: 1 / -1;
+  }
+
+  .hero > :nth-child(2),
+  .hero > :nth-child(3),
+  .hero > :nth-child(4) {
+    grid-column: 1;
+  }
+
+  .hero > :nth-child(5) {
+    grid-column: 2;
+    grid-row: 2 / span 2;
+    align-self: end;
+  }
+
+  .hero > :nth-child(6) {
+    grid-column: 2;
+    grid-row: 4;
+    align-self: start;
+  }
 }
 
 .heroMeter {

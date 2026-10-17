@@ -269,7 +269,7 @@ export const archRendering: Chapter = {
 <p>
   <b>theme-init.</b> <code>app/layout.tsx</code> renders <code>&lt;html data-theme="light"&gt;</code>
   because the server cannot know your theme. Before the page paints, a
-  <code>next/script</code> with <code>strategy="beforeInteractive"</code> runs the inline code in
+  blocking inline <code>&lt;script&gt;</code> in the <code>&lt;head&gt;</code> runs the code in
   <code>lib/themeInitScript.ts</code>. It reads <code>jsnotes:theme</code> and
   <code>jsnotes:font</code>, falls back to <code>prefers-color-scheme</code>, and sets
   <code>data-theme</code> and <code>data-font</code> on the root element. There are nine themes and
