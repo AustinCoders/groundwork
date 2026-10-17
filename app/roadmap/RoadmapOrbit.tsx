@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
-import { formatSpan, plural } from "@/lib/format";
-import type { Roadmap, RoadmapStep } from "@/lib/roadmap";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { plural } from "@/lib/format";
+import type { Roadmap } from "@/lib/roadmap";
 import {
   CIRCLE_R,
   HUB,
@@ -18,8 +18,8 @@ import {
   ringPoint,
   stageCenter,
 } from "./orbitLayout";
-import { RoadmapTicket } from "./RoadmapTicket";
-import { neighbours, roadmapProgress, statusLabel, type RoadmapProgress, type StepStatus } from "./roadmapModel";
+import { RoadmapDrawer } from "./RoadmapDrawer";
+import { roadmapProgress, statusLabel, type RoadmapProgress } from "./roadmapModel";
 import { useDone } from "./useDone";
 import styles from "./orbit.module.css";
 
@@ -27,20 +27,12 @@ const TINTS = ["blue", "green", "orange", "purple", "red", "teal"] as const;
 const tintOf = (stageAt: number) => `var(--c-${TINTS[stageAt % TINTS.length]})`;
 const pad = (n: number) => String(n).padStart(2, "0");
 
-const MARK: Record<StepStatus, string> = { done: "✓", doing: "", todo: "", outline: "" };
-
 function stageSummary(roadmap: Roadmap, stageAt: number, progress: RoadmapProgress) {
   const steps = roadmap.stages[stageAt].steps;
   const readable = steps.filter((step) => progress.steps[step.key].status !== "outline");
   const finished = readable.filter((step) => progress.steps[step.key].status === "done").length;
   const percent = readable.length ? Math.round((finished / readable.length) * 100) : 0;
   return { readable: readable.length, finished, percent };
-}
-
-function shortMeta(step: RoadmapStep): string {
-  if (step.written === 0) return "coming soon";
-  if (step.kind === "round") return formatSpan(step.minutes);
-  return `${plural(step.written, "chapter")} · ${formatSpan(step.minutes)}`;
 }
 
 export function RoadmapOrbit({ roadmap }: { roadmap: Roadmap }) {
@@ -54,55 +46,43 @@ export function RoadmapOrbit({ roadmap }: { roadmap: Roadmap }) {
   );
   const angles = useMemo(() => dotAngles(stages.map((stage) => stage.steps.length)), [stages]);
   const nextKey = progress.next?.key ?? null;
-  const nextStage = flat.find((entry) => entry.step.key === nextKey)?.stageAt ?? 0;
-  const [picked, setPicked] = useState<number | null>(null);
-  const [openKey, setOpenKey] = useState<string | null>(null);
-  const panelRef = useRef<HTMLElement>(null);
-  const moved = useRef(false);
-  const stageAt = picked ?? nextStage;
-  const stage = stages[stageAt];
-  const tint = tintOf(stageAt);
+  const nextStage = flat.find((entry) => entry.step.key === nextKey)?.stageAt ?? -1;
+  const [drawer, setDrawer] = useState<{ stage: number; step: string | null } | null>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [seen, setSeen] = useState(false);
   const overall = progress.stepsReadable ? Math.round((progress.stepsDone / progress.stepsReadable) * 100) : 0;
 
   useEffect(() => {
-    if (!moved.current) return;
-    panelRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  }, [stageAt, openKey]);
+    const map = mapRef.current;
+    if (!map || typeof IntersectionObserver === "undefined") {
+      setSeen(true);
+      return;
+    }
+    const watcher = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setSeen(true);
+          watcher.disconnect();
+        }
+      },
+      { threshold: 0.35 }
+    );
+    watcher.observe(map);
+    return () => watcher.disconnect();
+  }, []);
 
-  useEffect(() => {
-    if (!openKey) return;
-    const away = (event: PointerEvent) => {
-      const target = event.target as Element | null;
-      if (target?.closest("[data-keep-open]")) return;
-      setOpenKey(null);
-    };
-    document.addEventListener("pointerdown", away);
-    return () => document.removeEventListener("pointerdown", away);
-  }, [openKey]);
-
-  const chooseStage = (at: number) => {
-    moved.current = true;
-    setPicked(at);
-    setOpenKey(null);
+  const openStage = (stage: number) => setDrawer({ stage, step: null });
+  const openStep = (key: string) => {
+    const stage = flat.find((entry) => entry.step.key === key)?.stageAt;
+    if (stage !== undefined) setDrawer({ stage, step: key });
   };
-  const chooseStep = (key: string) => {
-    const at = flat.find((entry) => entry.step.key === key)?.stageAt ?? stageAt;
-    moved.current = true;
-    setPicked(at);
-    setOpenKey((current) => (current === key ? null : key));
-  };
-  const closeOnEscape = (event: KeyboardEvent<HTMLElement>) => {
-    if (event.key !== "Escape") return;
-    event.stopPropagation();
-    setOpenKey(null);
-  };
-
-  const open = flat.find((entry) => entry.step.key === openKey) ?? null;
-  const platform = open ? flat.findIndex((entry) => entry.step.key === open.step.key) + 1 : 0;
+  const platformOf = (key: string) => flat.findIndex((entry) => entry.step.key === key) + 1;
 
   return (
     <section className={styles.wrap} aria-label={`${roadmap.title} roadmap`}>
       <div
+        ref={mapRef}
+        data-seen={seen}
         className={`${styles.map} ${loaded ? "" : styles.pending}`}
         style={{ "--ratio": `${VIEW_W} / ${VIEW_H}` } as CSSProperties}
       >
@@ -111,9 +91,9 @@ export function RoadmapOrbit({ roadmap }: { roadmap: Roadmap }) {
             <path
               key={entry.id}
               className={styles.link}
-              data-active={at === stageAt}
+              data-active={drawer?.stage === at}
               d={connectorPath(ringPoint(middle(angles[at]), RING_R + 18), circleEdge(at, count))}
-              style={{ stroke: tintOf(at) }}
+              style={{ stroke: tintOf(at), "--i": at } as CSSProperties}
             />
           ))}
         </svg>
@@ -156,10 +136,11 @@ export function RoadmapOrbit({ roadmap }: { roadmap: Roadmap }) {
                   left: `${percentX(point.x)}%`,
                   top: `${percentY(point.y)}%`,
                   "--tint": tintOf(at),
+                  "--i": index,
                 } as CSSProperties
               }
               aria-label={`${step.title}. ${statusLabel(state)}.${isNext ? " Next stop." : ""}`}
-              onClick={() => chooseStep(step.key)}
+              onClick={() => openStep(step.key)}
             />
           );
         })}
@@ -168,18 +149,19 @@ export function RoadmapOrbit({ roadmap }: { roadmap: Roadmap }) {
           {stages.map((entry, at) => {
             const centre = stageCenter(at, count);
             const summary = stageSummary(roadmap, at, progress);
-            const labelLeft = centre.x + CIRCLE_R + 26;
+            const labelLeft = centre.x + CIRCLE_R + 42;
             return (
               <li
                 key={entry.id}
                 className={styles.stage}
-                data-active={at === stageAt}
+                data-active={drawer?.stage === at}
                 style={
                   {
                     left: `${percentX(centre.x)}%`,
                     top: `${percentY(centre.y)}%`,
                     "--tint": tintOf(at),
                     "--pct": summary.percent,
+                    "--i": at,
                     "--lw": (VIEW_W - labelLeft - 6) / 10,
                   } as CSSProperties
                 }
@@ -187,9 +169,9 @@ export function RoadmapOrbit({ roadmap }: { roadmap: Roadmap }) {
                 <button
                   type="button"
                   className={styles.circle}
-                  aria-pressed={at === stageAt}
+                  aria-haspopup="dialog"
                   aria-label={`Stage ${at + 1}: ${entry.title}. ${summary.finished} of ${summary.readable} steps built.`}
-                  onClick={() => chooseStage(at)}
+                  onClick={() => openStage(at)}
                 >
                   <span className={styles.disc}>
                     <span className={styles.num}>{pad(at + 1)}</span>
@@ -197,6 +179,11 @@ export function RoadmapOrbit({ roadmap }: { roadmap: Roadmap }) {
                       {summary.finished}/{summary.readable}
                     </span>
                   </span>
+                  {at === nextStage && (
+                    <span className={styles.nextBadge} aria-hidden="true">
+                      Next up
+                    </span>
+                  )}
                 </button>
                 <div className={styles.label}>
                   <span className={styles.labelTitle}>{entry.title}</span>
@@ -211,72 +198,21 @@ export function RoadmapOrbit({ roadmap }: { roadmap: Roadmap }) {
         </ol>
       </div>
 
-      <section
-        ref={panelRef}
-        className={styles.panel}
-        aria-label={`Stage ${stageAt + 1}: ${stage.title}`}
-        style={{ "--tint": tint } as CSSProperties}
-      >
-        <header className={styles.panelHead}>
-          <span className={styles.panelNo}>{pad(stageAt + 1)}</span>
-          <div>
-            <h2 className={styles.panelTitle}>{stage.title}</h2>
-            <p className={styles.panelBlurb}>{stage.blurb}</p>
-          </div>
-          <span className={styles.panelOrder}>{stage.order === "any-order" ? "any order" : "in this order"}</span>
-        </header>
-
-        <ul className={styles.tiles}>
-          {stage.steps.map((step) => {
-            const state = progress.steps[step.key];
-            const isNext = nextKey === step.key;
-            const isOpen = openKey === step.key;
-            return (
-              <li key={step.key}>
-                <button
-                  type="button"
-                  className={styles.tile}
-                  data-status={state.status}
-                  data-next={isNext}
-                  data-open={isOpen}
-                  data-keep-open
-                  aria-expanded={isOpen}
-                  aria-label={`${step.title}. ${statusLabel(state)}.${isNext ? " Next stop." : ""}`}
-                  onClick={() => chooseStep(step.key)}
-                >
-                  <span className={styles.tileMark} aria-hidden="true">
-                    {MARK[state.status] || step.mark}
-                  </span>
-                  <span className={styles.tileTitle}>{step.title}</span>
-                  <span className={styles.tileMeta}>{shortMeta(step)}</span>
-                  <span className={styles.tileState}>
-                    {statusLabel(state)}
-                    {isNext ? " · next" : ""}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-
-        {open && (
-          <div className={styles.ticket} data-keep-open>
-            <RoadmapTicket
-              step={open.step}
-              platform={platform}
-              routeName={roadmap.title}
-              progress={progress.steps[open.step.key]}
-              done={done}
-              next={nextKey === open.step.key}
-              before={neighbours(roadmap, open.step.key).before}
-              after={neighbours(roadmap, open.step.key).after}
-              onGo={chooseStep}
-              onClose={() => setOpenKey(null)}
-              onKeyDown={closeOnEscape}
-            />
-          </div>
-        )}
-      </section>
+      {drawer && (
+        <RoadmapDrawer
+          roadmap={roadmap}
+          stageAt={drawer.stage}
+          stepKey={drawer.step}
+          tint={tintOf(drawer.stage)}
+          progress={progress}
+          done={done}
+          nextKey={nextKey}
+          platformOf={platformOf}
+          onStep={openStep}
+          onBack={() => setDrawer((current) => (current ? { stage: current.stage, step: null } : null))}
+          onClose={() => setDrawer(null)}
+        />
+      )}
     </section>
   );
 }

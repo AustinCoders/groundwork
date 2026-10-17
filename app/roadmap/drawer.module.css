@@ -1,0 +1,314 @@
+.drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(500px, 100%);
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  color: var(--ink);
+  background:
+    radial-gradient(120% 55% at 100% 0%, color-mix(in srgb, var(--tint) 24%, transparent), transparent 62%),
+    radial-gradient(90% 40% at 0% 100%, color-mix(in srgb, var(--tint) 12%, transparent), transparent 70%), var(--paper);
+  border: 0;
+  border-left: 3px solid var(--tint);
+  box-shadow: -28px 0 70px color-mix(in srgb, var(--ink) 34%, transparent);
+}
+
+.drawer[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  animation: slide 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.drawer::backdrop {
+  background: color-mix(in srgb, var(--ink) 48%, transparent);
+  backdrop-filter: blur(2px);
+  animation: fade 0.25s ease;
+}
+
+.head {
+  position: relative;
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  padding: 26px 64px 20px 24px;
+}
+
+.orb {
+  display: block;
+  width: 92px;
+  aspect-ratio: 1;
+  padding: 7px;
+  background: conic-gradient(var(--tint) calc(var(--pct) * 1%), color-mix(in srgb, var(--tint) 24%, var(--sheet)) 0);
+  border-radius: 50%;
+  filter: drop-shadow(5px 7px 0 color-mix(in srgb, var(--tint) 38%, transparent))
+    drop-shadow(0 10px 12px color-mix(in srgb, var(--ink) 30%, transparent));
+  animation: bob 4s ease-in-out infinite;
+}
+
+.orbDisc {
+  display: grid;
+  place-content: center;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  background: radial-gradient(
+    circle at 34% 26%,
+    color-mix(in srgb, var(--ink) 9%, var(--sheet)),
+    var(--sheet) 58%,
+    var(--sheet-2)
+  );
+  border-radius: 50%;
+  box-shadow:
+    inset 0 3px 7px color-mix(in srgb, var(--ink) 14%, transparent),
+    inset 0 -8px 14px color-mix(in srgb, var(--ink) 20%, transparent);
+}
+
+.orbDisc b {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  line-height: 1;
+}
+
+.orbDisc small {
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+}
+
+.kicker {
+  margin: 0 0 4px;
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.title {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.15;
+}
+
+.blurb {
+  margin: 6px 0 0;
+  font-size: var(--t-meta);
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  font: inherit;
+  font-size: 16px;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 50%;
+  box-shadow: 2px 3px 0 color-mix(in srgb, var(--ink) 22%, transparent);
+  cursor: pointer;
+}
+
+.close:hover {
+  border-color: var(--tint);
+}
+
+.close:focus-visible,
+.card:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.body {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 4px 24px 32px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.steps {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps li {
+  animation: rise 0.4s ease both;
+  animation-delay: calc(var(--i) * 60ms + 120ms);
+}
+
+.card {
+  position: relative;
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  padding: 14px 16px 14px 74px;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 4px 6px 0 color-mix(in srgb, var(--tint) 22%, transparent);
+  cursor: pointer;
+  transition:
+    transform 0.14s ease,
+    border-color 0.14s ease,
+    box-shadow 0.14s ease;
+}
+
+.card:hover {
+  border-color: var(--tint);
+  box-shadow: 6px 9px 0 color-mix(in srgb, var(--tint) 32%, transparent);
+  transform: translate(-1px, -3px);
+}
+
+.card[data-status="done"] {
+  border-color: var(--success);
+}
+
+.card[data-status="outline"] {
+  color: var(--ink-soft);
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.card[data-next="true"] {
+  border-color: var(--primary);
+}
+
+.mark {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 800;
+  background: var(--paper);
+  border: 4px solid var(--tint);
+  border-radius: 50%;
+  box-shadow: 3px 4px 0 color-mix(in srgb, var(--ink) 22%, transparent);
+  transform: translateY(-50%);
+}
+
+.card[data-status="done"] .mark {
+  color: var(--paper);
+  background: var(--success);
+}
+
+.card[data-status="outline"] .mark {
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.cardTitle {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.cardMeta,
+.cardState {
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+}
+
+.cardState {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.next {
+  position: absolute;
+  top: -10px;
+  right: 14px;
+  padding: 1px 10px;
+  font-size: var(--t-kicker);
+  font-weight: 700;
+  color: var(--on-primary);
+  background: var(--primary);
+  border-radius: 99px;
+}
+
+@keyframes slide {
+  from {
+    opacity: 0;
+    transform: translateX(48px);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@keyframes bob {
+  50% {
+    translate: 0 -3px;
+  }
+}
+
+@media (max-width: 520px) {
+  .head {
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 14px;
+    padding: 22px 56px 16px 18px;
+  }
+
+  .orb {
+    width: 72px;
+  }
+
+  .orbDisc b {
+    font-size: 21px;
+  }
+
+  .title {
+    font-size: 21px;
+  }
+
+  .body {
+    padding-inline: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer[open],
+  .drawer::backdrop,
+  .steps li,
+  .orb {
+    animation: none;
+  }
+
+  .card {
+    transition: none;
+  }
+}
