@@ -72,6 +72,7 @@ import {
   type Tool,
 } from "@/lib/whiteboard/model";
 import { clearOf } from "@/lib/whiteboard/library";
+import { buildDrillBoard, drillBoard } from "@/lib/whiteboard/drillBoards";
 import { placeTemplate, TEMPLATES, type Template } from "@/lib/whiteboard/templates";
 import {
   deleteBoard,
@@ -447,6 +448,25 @@ export function Board() {
   }, []);
 
   const fitToContent = useCallback(() => fitTo(unionBounds(stateRef.current.els)), [fitTo]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (!params.has("template")) return;
+    const frame = requestAnimationFrame(() => {
+      history.replaceState(null, "", location.pathname + location.hash);
+      const starter = drillBoard(params.get("template") ?? "");
+      if (!starter) return;
+      const els0 = buildDrillBoard(starter);
+      const id = newId();
+      saveBoard(id, els0, starter.title);
+      setBoards(listBoards());
+      openBoard(id);
+      const bounds = unionBounds(els0);
+      fitTo(bounds && { ...bounds, y: bounds.y - 90, h: bounds.h + 90 });
+      say(`\u201c${starter.title}\u201d is open as a new board \u2014 yours are untouched.`);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [openBoard, fitTo, say]);
 
   const selected = useMemo(() => els.filter((e) => sel.has(e.id)), [els, sel]);
   const selBox = useMemo(() => unionBounds(selected), [selected]);

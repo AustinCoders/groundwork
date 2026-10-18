@@ -1,0 +1,261 @@
+.drill {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  color: var(--ink);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--t-heading);
+  line-height: 1.3;
+}
+
+.title:focus,
+.heading:focus {
+  outline: none;
+}
+
+.title:focus-visible,
+.heading:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.prompt {
+  min-width: 0;
+  font-size: var(--t-control);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.prompt > :first-child {
+  margin-top: 0;
+}
+
+.prompt > :last-child {
+  margin-bottom: 0;
+}
+
+.prompt p {
+  margin: 0 0 10px;
+}
+
+.prompt ul {
+  margin: 0 0 10px;
+  padding-left: 22px;
+}
+
+.prompt code,
+.itemText code {
+  overflow-wrap: anywhere;
+}
+
+.note {
+  margin: 0;
+  font-size: var(--t-body);
+  color: var(--ink-soft);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 6px 16px;
+  font: inherit;
+  font-size: var(--t-body);
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.secondary {
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+}
+
+.secondary:hover {
+  border-color: var(--ink-soft);
+}
+
+.primary {
+  color: var(--on-primary);
+  background: var(--primary);
+  border: 1.5px solid var(--primary);
+}
+
+.primary:hover {
+  filter: brightness(1.08);
+}
+
+.primary:focus-visible,
+.secondary:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.scoring {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.heading {
+  margin: 6px 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.status {
+  justify-self: start;
+  margin: 0;
+  padding: 4px 12px;
+  font-family: var(--font-mono);
+  font-size: var(--t-meta);
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--sheet-2);
+  border: 1.5px solid var(--ink-soft);
+  border-radius: 999px;
+}
+
+.status[data-complete="true"] {
+  background: var(--success-soft);
+  border: 3px double var(--success);
+}
+
+.verdict {
+  margin: 0;
+  font-size: var(--t-body);
+  color: var(--ink-soft);
+}
+
+.items,
+.mistakes {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item,
+.mistake {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px 14px;
+  background: var(--sheet);
+  border: 2px solid var(--line);
+  border-radius: 16px;
+}
+
+.item[data-state="covered"] {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+
+.itemLabel {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  cursor: pointer;
+}
+
+.itemLabel:has(.box:focus-visible) {
+  outline: 3px solid var(--primary);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+.box {
+  display: grid;
+  place-content: center;
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  appearance: none;
+  background: var(--sheet);
+  border: 2px solid var(--ink-soft);
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.box::after {
+  content: "";
+  width: 6px;
+  height: 11px;
+  border: solid var(--on-primary);
+  border-width: 0 2.5px 2.5px 0;
+  rotate: 45deg;
+  translate: 0 -1px;
+  scale: 0;
+}
+
+.box:checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.box:checked::after {
+  scale: 1;
+}
+
+.itemText {
+  min-width: 0;
+  font-size: var(--t-control);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.itemText > :first-child {
+  margin-top: 0;
+}
+
+.itemText > :last-child {
+  margin-bottom: 0;
+}
+
+.sectionLink {
+  justify-self: start;
+  padding-left: 36px;
+  font-size: var(--t-body);
+  font-weight: 700;
+  color: var(--primary);
+  text-underline-offset: 3px;
+}
+
+.mistake .sectionLink {
+  padding-left: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .item {
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease;
+  }
+}
+
+@media print {
+  .drill {
+    display: none;
+  }
+}

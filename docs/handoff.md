@@ -26,6 +26,12 @@ Read this and the memory index first in a new session. Update it at the end of e
 - Every pool was written from the chapter and its sources, reviewed blind by an independent agent (about 160 findings, all re-verified), and the rewritten questions had a second review round. Numeric answers are recomputed in `tests/design-estimates/`.
 - Still open: design-prompt drills per walkthrough chapter and a whiteboard link (`/whiteboard` has no parameters), recorded in `docs/ROADMAP.md`; persistent practice scores (practice mode saves nothing).
 
+## System Design design drills (2026-10-18)
+
+- The six walkthroughs have a design drill (prompt, checklist, mistakes, self-scoring, nothing saved) in `content/system-design/drills/`, shown after the practice card, with a `/whiteboard?template=<chapter id>` starter board (`lib/whiteboard/drillBoards.ts`). Branch `feature/system-design-drills`, not merged.
+- Each drill went through an author and three blind review rounds; chapter errors found on the way are listed in the audit file (batch 4) and are not fixed: payments "even a 500", crawler robots 5xx, URL shortener "a few TB".
+- Still open: a drill for each walkthrough yet to be written; `sysdes-case-studies` has none by decision.
+
 ## Next
 
 1. Commit and push the content standard (on a `feature/` branch, or on `feature/dsa-rebuild` if the owner says so).

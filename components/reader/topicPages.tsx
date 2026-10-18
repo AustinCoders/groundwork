@@ -2,6 +2,7 @@ import { splitIslands } from "@/lib/chapterIslands";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { CheckIsland } from "@/components/check/CheckIsland";
+import { DrillIsland } from "@/components/check/DrillIsland";
 import { PlayIsland } from "@/components/play/PlayIsland";
 import { TopicReader } from "@/components/topic/TopicReader";
 import { TopicOutlineChapter } from "@/components/topic/TopicOutlineChapter";
@@ -203,7 +204,12 @@ export async function TopicChapterPage({ topicId, chapterId }: { topicId: string
         levelExerciseTotal={exercisesForLevel(cards[cardIndex].levels[0], topicId).length}
         completion={t?.completion}
         checkChapterIds={checkChapterIds()}
-        check={<CheckIsland chapterId={chapter.id} basePath={basePath} practice={!requiresCheck(t?.completion)} />}
+        check={
+          <>
+            <CheckIsland chapterId={chapter.id} basePath={basePath} practice={!requiresCheck(t?.completion)} />
+            <DrillIsland topicId={topicId} chapterId={chapter.id} />
+          </>
+        }
         codeBlocks={chapter.body.includes('data-code="')}
         unwritten={list.filter((c) => !c.ready).length}
       />

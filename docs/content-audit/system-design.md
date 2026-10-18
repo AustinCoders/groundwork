@@ -118,34 +118,34 @@ outdated, 99 misleading, 12 unverified.
 
 ## Coverage against the benchmarks, after the fixes
 
-| Topic                                                                                                                                 | DDIA   | Xu   | Primer | SRE | Status here                                                                                   |
-| ------------------------------------------------------------------------------------------------------------------------------------- | ------ | ---- | ------ | --- | --------------------------------------------------------------------------------------------- |
-| Capacity estimation, latency numbers                                                                                                  |        | 1    | yes    |     | Covered                                                                                       |
-| Scaling, load balancing, CDN, caching, rate limiting                                                                                  |        | 1    | yes    | yes | Covered                                                                                       |
-| Consistent hashing, sharding                                                                                                          | 6      | 1    | yes    |     | Covered                                                                                       |
-| Consistency models, CAP, PACELC                                                                                                       | 9      |      | yes    |     | Covered                                                                                       |
-| Consensus (Raft, Paxos)                                                                                                               | 9      |      |        | yes | Covered                                                                                       |
-| Message queues and logs                                                                                                               | 11     | 2    | yes    |     | Covered                                                                                       |
-| SLOs, error budgets, monitoring, overload, cascading failure                                                                          |        | 2    |        | yes | Covered                                                                                       |
-| Search                                                                                                                                | 3      | 1    |        |     | Covered (surface)                                                                             |
-| Object storage                                                                                                                        |        | 2    |        |     | Covered                                                                                       |
-| URL shortener, news feed, chat (part), autocomplete (part), rate limiter                                                              |        | 1    | yes    |     | Covered                                                                                       |
-| Replication: leaders, followers, multi-leader, leaderless, conflict resolution                                                        | 5      |      | yes    |     | Covered (`sysdes-replication`)                                                                |
-| Transactions: ACID, isolation levels, 2PC, sagas                                                                                      | 7      | 2    |        |     | Covered (`sysdes-transactions-isolation`)                                                     |
-| Storage engines: LSM, B-tree, WAL, columnar                                                                                           | 3      | 2    | yes    |     | Covered (`sysdes-storage-engines`)                                                            |
-| Clocks, ordering, unique IDs                                                                                                          | 8      | 1    |        |     | Covered (`sysdes-time-ordering-ids`)                                                          |
-| Batch and stream processing                                                                                                           | 10, 11 | 2    |        | yes | Covered (`sysdes-batch-stream-processing`)                                                    |
-| Encoding and schema evolution                                                                                                         | 4      |      |        |     | **Partial.** API versioning only                                                              |
-| Release safety, incidents, postmortems                                                                                                |        |      |        | yes | **Partial.** Short additions                                                                  |
-| Microservices, service discovery, service mesh                                                                                        |        |      | yes    |     | **Partial.** API gateway only                                                                 |
-| Security in design                                                                                                                    |        |      | yes    |     | **Missing**                                                                                   |
-| Geospatial indexes, probabilistic structures                                                                                          |        | 2    |        |     | **Partial.** Mentions only                                                                    |
-| Key-value store                                                                                                                       |        | 1    |        |     | Covered (`sysdes-walkthrough-kv-store`)                                                       |
-| Notification system                                                                                                                   |        | 1    |        |     | Covered (`sysdes-walkthrough-notifications`)                                                  |
-| Web crawler                                                                                                                           |        | 1    |        |     | Covered (`sysdes-walkthrough-crawler`)                                                        |
-| Payment system                                                                                                                        |        | 2    |        |     | Covered (`sysdes-walkthrough-payments`)                                                       |
-| Proximity, metrics monitoring, wallet, leaderboard, stock exchange (ad-click aggregation is the worked example in the stream chapter) |        | 1, 2 |        |     | **Missing** as walkthroughs                                                                   |
-| Exercises and quizzes                                                                                                                 |        | 1, 2 | yes    |     | Covered as practice pools (`content/system-design/quiz/`); design-prompt drills still missing |
+| Topic                                                                                                                                 | DDIA   | Xu   | Primer | SRE | Status here                                                                                                                              |
+| ------------------------------------------------------------------------------------------------------------------------------------- | ------ | ---- | ------ | --- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Capacity estimation, latency numbers                                                                                                  |        | 1    | yes    |     | Covered                                                                                                                                  |
+| Scaling, load balancing, CDN, caching, rate limiting                                                                                  |        | 1    | yes    | yes | Covered                                                                                                                                  |
+| Consistent hashing, sharding                                                                                                          | 6      | 1    | yes    |     | Covered                                                                                                                                  |
+| Consistency models, CAP, PACELC                                                                                                       | 9      |      | yes    |     | Covered                                                                                                                                  |
+| Consensus (Raft, Paxos)                                                                                                               | 9      |      |        | yes | Covered                                                                                                                                  |
+| Message queues and logs                                                                                                               | 11     | 2    | yes    |     | Covered                                                                                                                                  |
+| SLOs, error budgets, monitoring, overload, cascading failure                                                                          |        | 2    |        | yes | Covered                                                                                                                                  |
+| Search                                                                                                                                | 3      | 1    |        |     | Covered (surface)                                                                                                                        |
+| Object storage                                                                                                                        |        | 2    |        |     | Covered                                                                                                                                  |
+| URL shortener, news feed, chat (part), autocomplete (part), rate limiter                                                              |        | 1    | yes    |     | Covered                                                                                                                                  |
+| Replication: leaders, followers, multi-leader, leaderless, conflict resolution                                                        | 5      |      | yes    |     | Covered (`sysdes-replication`)                                                                                                           |
+| Transactions: ACID, isolation levels, 2PC, sagas                                                                                      | 7      | 2    |        |     | Covered (`sysdes-transactions-isolation`)                                                                                                |
+| Storage engines: LSM, B-tree, WAL, columnar                                                                                           | 3      | 2    | yes    |     | Covered (`sysdes-storage-engines`)                                                                                                       |
+| Clocks, ordering, unique IDs                                                                                                          | 8      | 1    |        |     | Covered (`sysdes-time-ordering-ids`)                                                                                                     |
+| Batch and stream processing                                                                                                           | 10, 11 | 2    |        | yes | Covered (`sysdes-batch-stream-processing`)                                                                                               |
+| Encoding and schema evolution                                                                                                         | 4      |      |        |     | **Partial.** API versioning only                                                                                                         |
+| Release safety, incidents, postmortems                                                                                                |        |      |        | yes | **Partial.** Short additions                                                                                                             |
+| Microservices, service discovery, service mesh                                                                                        |        |      | yes    |     | **Partial.** API gateway only                                                                                                            |
+| Security in design                                                                                                                    |        |      | yes    |     | **Missing**                                                                                                                              |
+| Geospatial indexes, probabilistic structures                                                                                          |        | 2    |        |     | **Partial.** Mentions only                                                                                                               |
+| Key-value store                                                                                                                       |        | 1    |        |     | Covered (`sysdes-walkthrough-kv-store`)                                                                                                  |
+| Notification system                                                                                                                   |        | 1    |        |     | Covered (`sysdes-walkthrough-notifications`)                                                                                             |
+| Web crawler                                                                                                                           |        | 1    |        |     | Covered (`sysdes-walkthrough-crawler`)                                                                                                   |
+| Payment system                                                                                                                        |        | 2    |        |     | Covered (`sysdes-walkthrough-payments`)                                                                                                  |
+| Proximity, metrics monitoring, wallet, leaderboard, stock exchange (ad-click aggregation is the worked example in the stream chapter) |        | 1, 2 |        |     | **Missing** as walkthroughs                                                                                                              |
+| Exercises and quizzes                                                                                                                 |        | 1, 2 | yes    |     | Covered as practice pools (`content/system-design/quiz/`) and, for the six walkthroughs, design drills (`content/system-design/drills/`) |
 
 ## Still missing, in the order worth building
 
@@ -157,9 +157,8 @@ and payments walkthroughs were written in batch 2; the practice layer was built 
 2. Microservices and service discovery; security basics for design interviews.
 3. Walkthroughs from Xu's volumes that nothing here covers: proximity service, metrics monitoring, digital
    wallet, gaming leaderboard, stock exchange (and ad-click aggregation as a walkthrough of its own).
-4. Design-prompt drills: a short prompt per walkthrough chapter with a scoring checklist and common mistakes, and a link
-   from the drill to the whiteboard (`/whiteboard` takes no parameters today). The practice pools cover the questions;
-   the drills need a small self-scoring component and a whiteboard template.
+4. Design drills for the walkthroughs listed in item 3, one per new walkthrough (the six written walkthroughs have one;
+   `sysdes-case-studies` has none because it is a survey of six real systems, not a single design prompt).
 
 ## Batch 1: four new chapters (October 2026)
 
@@ -245,6 +244,53 @@ raised about 160 findings across the 33 pools, and every one was re-verified bef
 The pool tests are in `tests/system-design-quiz.test.ts`: ids and answer keys, every `section` against the chapter's real
 headings, no empty explanations, five to eight questions with at least three skills, the numeric recomputation, answer
 balance across the topic, the import boundary, and a guard that no chapter has `practice: []` and no pool.
+
+## Batch 4: design drills (October 2026)
+
+Each of the six walkthrough chapters (URL shortener, news feed, key-value store, notification system, web crawler,
+payment system) now ends with a design drill next to its practice card, in `content/system-design/drills/`, registered
+lazily in `lib/designDrill.ts`. A drill is a prompt that states its own planning assumptions, a self-scoring checklist
+of 8 or 9 items (each tied to the chapter heading that teaches it) and 4 or 5 common mistakes (each with its heading and
+the reason it fails). The learner works the prompt on a whiteboard or on paper, asks for the checklist, ticks what the
+answer covered, sees the count with a one-line verdict, and gets a "Read" link to the heading for each unticked item.
+Nothing is saved: the card holds its state in memory only and never touches reading progress or `groundwork:quiz`.
+
+| Decision                                  | Why                                                                                                                                                                                                                                                               |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The checklist is hidden until asked for   | Showing it with the prompt would hand over the answer; the card says so and offers the whiteboard first.                                                                                                                                                          |
+| No `sysdes-case-studies` drill            | The chapter compares six real systems and has no design prompt of its own; a prompt invented for it would test material the chapter does not teach.                                                                                                               |
+| `?template=<chapter id>` on `/whiteboard` | The link opens a new starter board (title, four lane notes, a frame) and strips the parameter, so a refresh does not add a second board and the reader's other boards are untouched. Boards live in `lib/whiteboard/drillBoards.ts`; `templates.ts` is unchanged. |
+| Data under `content/`, loaded lazily      | Same rule as the quiz pools: `tests/client-bundle.test.ts` forbids client files reaching `content/`, so a server component loads the drill and passes it to the client card.                                                                                      |
+
+How the drills were made: an author read the whole chapter and its quiz pool, fetched the sources the claims rest on and
+wrote the prompt, checklist and mistakes; an independent reviewer who had not seen the author's reasoning then wrote their
+own expected checklist from the prompt alone, compared it, and checked every item against primary sources. The first round
+found false or over-claimed statements (for example a 5xx retried "with the same key" when Stripe replays the saved 500, a
+"never" about robots.txt errors where Google and RFC 9309 differ, a quorum rule that contradicted the availability goal),
+items that tested material the chapter does not teach, items that a correct alternative design would fail, and mistakes
+that merely negated a checklist item. Authors revised, a second blind round re-reviewed, and a final round reported only
+false claims, wrong numbers, wrong sections and mis-scored correct designs; its findings were fixed.
+
+Chapter text the reviewers found wrong or thin, not yet corrected (the drills do not build on them):
+
+- `sysdes-walkthrough-payments`: the timeouts table says to retry "even a 500" with the same key; Stripe replays the saved
+  response, including a 500, so a repeat only returns the same error and the outcome must be reconciled instead.
+- `sysdes-walkthrough-crawler`: robots.txt 5xx is stated as "assume disallow" without saying that Google's crawler pauses
+  for 12 hours and then uses its last good copy (or none) while RFC 9309 says complete disallow; 429 and Retry-After
+  backoff are not taught; per-domain budgets are described but the shard key is the host, which cannot enforce them.
+- `sysdes-walkthrough-simple`: the scaling table shards at "a few TB" while the sizing says 9 TB is small.
+- `sysdes-walkthrough-notifications`: the dedupe design (set the key, then enqueue) has a crash window that loses the event;
+  "delete the token" is given for every permanent push error although an oversized payload should go to the dead-letter
+  queue; "never fall back across channels for marketing" is absolute where a consent-checked fallback is valid.
+- `sysdes-walkthrough-kv-store`: "the hint window has expired so Merkle repair does the work" is Cassandra's behaviour
+  (hints stored before the window are still replayed), not Dynamo's.
+- `sysdes-walkthrough-medium`: the hybrid threshold is given as followers times posting rate, but a threshold on follower
+  count alone is the right driver when the freshness target bounds one post's fan-out.
+
+The drill tests are in `tests/system-design-drills.test.ts`: the registry against the written walkthroughs, one file per
+registered drill, ids, headings against the chapter's real sections, non-empty checklists and mistakes, size limits,
+failure cases for every rule, the starter boards (one per drill, titled like the drill), the verdict bands, and the
+import boundary.
 
 ## What this audit could not check
 
