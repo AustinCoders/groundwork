@@ -21,7 +21,7 @@ import {
 } from "@/lib/content";
 import { requiresCheck } from "@/lib/completion";
 import { coverCards, coverParts } from "@/lib/coverData";
-import { poolChapterIds } from "@/lib/quizPool";
+import { checkChapterIds } from "@/lib/checkPool";
 import { pageMetadata } from "@/lib/metadata";
 import { curriculumNotes, levels, levelsNav, relatedInterviewRound, topic } from "@/lib/topics";
 import { plannedRelatedTopicId, relatedTopicId } from "@/lib/topicRelated";
@@ -57,7 +57,7 @@ export function TopicCoverPage({ topicId }: { topicId: string }) {
         relatedRoundLabel={round ? `${round.code} · ${round.navTitle}` : null}
         curriculumNotes={curriculumNotes(topicId)}
         completion={t?.completion}
-        checkChapterIds={poolChapterIds()}
+        checkChapterIds={checkChapterIds()}
       />
     );
   }
@@ -202,8 +202,8 @@ export async function TopicChapterPage({ topicId, chapterId }: { topicId: string
         exercises={exercises}
         levelExerciseTotal={exercisesForLevel(cards[cardIndex].levels[0], topicId).length}
         completion={t?.completion}
-        checkChapterIds={poolChapterIds()}
-        check={requiresCheck(t?.completion) ? <CheckIsland chapterId={chapter.id} basePath={basePath} /> : null}
+        checkChapterIds={checkChapterIds()}
+        check={<CheckIsland chapterId={chapter.id} basePath={basePath} practice={!requiresCheck(t?.completion)} />}
         codeBlocks={chapter.body.includes('data-code="')}
         unwritten={list.filter((c) => !c.ready).length}
       />

@@ -1,4 +1,4 @@
-import type { Question } from "@/content/quiz-types";
+import type { CheckQuestion } from "@/content/quiz-types";
 
 export const CHECK_SIZE = 5;
 export const PASS_MARK = 4;
@@ -14,19 +14,19 @@ export function shuffled<T>(items: readonly T[], random: () => number): T[] {
   return copy;
 }
 
-function isTrace(question: Question): boolean {
+function isTrace(question: CheckQuestion): boolean {
   return question.skill === "trace";
 }
 
-function isRecogniseOrComplexity(question: Question): boolean {
+function isRecogniseOrComplexity(question: CheckQuestion): boolean {
   return question.skill === "recognise" || question.skill === "complexity";
 }
 
-export function drawCheck(
-  questions: readonly Question[],
+export function drawCheck<Q extends CheckQuestion>(
+  questions: readonly Q[],
   random: () => number,
   avoid: readonly string[] = []
-): Question[] {
+): Q[] {
   if (questions.length <= CHECK_SIZE) return shuffled(questions, random);
 
   const previous = new Set(avoid);
@@ -40,8 +40,8 @@ export function drawCheck(
   );
   const priority = [...fresh, ...repeated];
 
-  const chosen: Question[] = [];
-  const take = (question: Question | undefined) => {
+  const chosen: Q[] = [];
+  const take = (question: Q | undefined) => {
     if (question && !chosen.includes(question)) chosen.push(question);
   };
 
@@ -61,7 +61,7 @@ function sameSet(left: readonly string[], right: readonly string[]): boolean {
   return wanted.size === right.length && left.every((id) => wanted.has(id)) && new Set(left).size === left.length;
 }
 
-export function correctAnswer(question: Question): Answer {
+export function correctAnswer(question: CheckQuestion): Answer {
   switch (question.kind) {
     case "multi":
       return question.answers;
@@ -72,7 +72,7 @@ export function correctAnswer(question: Question): Answer {
   }
 }
 
-export function gradeAnswer(question: Question, answer: Answer | null | undefined): boolean {
+export function gradeAnswer(question: CheckQuestion, answer: Answer | null | undefined): boolean {
   if (answer === null || answer === undefined) return false;
   switch (question.kind) {
     case "single":

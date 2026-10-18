@@ -19,7 +19,8 @@ import { pageMetadata } from "@/lib/metadata";
 import { coverCards, coverParts } from "@/lib/coverData";
 import { placementData } from "@/lib/placementChapters";
 import { summarizeBank } from "@/lib/placementBank";
-import { loadPlacementBank, poolChapterIds } from "@/lib/quizPool";
+import { checkChapterIds } from "@/lib/checkPool";
+import { loadPlacementBank } from "@/lib/quizPool";
 import { bookRound } from "@/lib/interviewBook";
 import { relatedInterviewRound } from "@/lib/topics";
 import { topicStats } from "@/lib/topicStats";
@@ -77,7 +78,7 @@ export default async function LevelPage({ params }: { params: Promise<{ topic: s
         curriculumNotes={curriculumNotes(topic.id)}
         parts={coverParts(topic.id)}
         cards={coverCards(topic.id)}
-        checkChapterIds={poolChapterIds()}
+        checkChapterIds={checkChapterIds()}
         placementData={placement}
         placementSummary={placementSummary}
         relatedRoundHref={round ? `/interview/${roundId}` : null}

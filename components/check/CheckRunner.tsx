@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent } from "react";
-import type { Question } from "@/content/quiz-types";
+import type { CheckQuestion as Question } from "@/content/quiz-types";
 import { Confetti } from "@/components/practice/Confetti";
 import { ATTENTION_MS, arrivedAtCheck, passBannerText, sameGesture, startedMessage } from "@/lib/checkBanner";
 import {
@@ -88,10 +88,12 @@ export function CheckRunner({
   chapterId,
   basePath,
   questions,
+  practice = false,
 }: {
   chapterId: string;
   basePath: string;
   questions: Question[];
+  practice?: boolean;
 }) {
   const mounted = useMounted();
   const done = useProgressValue(() => progress.isChapterDone(chapterId), false);
@@ -143,7 +145,7 @@ export function CheckRunner({
     };
   }, [attention]);
 
-  const view: Phase = phase.name === "result" && phase.passed && !done ? { name: "start" } : phase;
+  const view: Phase = !practice && phase.name === "result" && phase.passed && !done ? { name: "start" } : phase;
 
   function show(next: Phase) {
     phaseRef.current = next;
@@ -197,6 +199,7 @@ export function CheckRunner({
   });
 
   useEffect(() => {
+    if (practice) return;
     const open = () => {
       lastOpenedAt.current = Date.now();
       openRef.current();
@@ -211,7 +214,7 @@ export function CheckRunner({
       forget();
       window.removeEventListener("hashchange", onHashChange);
     };
-  }, []);
+  }, [practice]);
 
   function choose(question: Question, picked: string[]) {
     if (phase.name !== "asking") return;
@@ -234,10 +237,11 @@ export function CheckRunner({
     const score = asking.questions.filter((question) => asking.verdicts[question.id]).length;
     const missed = asking.questions.filter((question) => !asking.verdicts[question.id]);
     const passed = passes(score, asking.questions.length);
-    const alreadyRead = progress.isChapterDone(chapterId);
-    if (passed && !alreadyRead) progress.setChapterDone(chapterId, true);
-    quizStore.recordAttempt(chapterId, { score, missed: missed.map((question) => question.id), passed });
-    const note = reviewNote(progress.all().chapters[chapterId], Date.now());
+    if (!practice) {
+      if (passed && !progress.isChapterDone(chapterId)) progress.setChapterDone(chapterId, true);
+      quizStore.recordAttempt(chapterId, { score, missed: missed.map((question) => question.id), passed });
+    }
+    const note = practice ? null : reviewNote(progress.all().chapters[chapterId], Date.now());
     const sectionTitles: Record<string, string> = {};
     for (const question of missed) {
       sectionTitles[question.id] =
@@ -263,7 +267,7 @@ export function CheckRunner({
     show({ name: "start" });
   }
 
-  const statusLine = mounted && status !== "unread" && (
+  const statusLine = !practice && mounted && status !== "unread" && (
     <div className={styles.statusBlock}>
       <p className={styles.status} data-status={status} tabIndex={-1}>
         {status === "passed"
@@ -282,12 +286,14 @@ export function CheckRunner({
 
   let body;
   if (view.name === "start") {
-    const readAlready = mounted && done;
+    const readAlready = !practice && mounted && done;
     body = (
       <>
         {statusLine}
         <p className={styles.text}>
-          {`${total} ${total === 1 ? "question" : "questions"}, pass at ${need}. The check runs in your browser and the result stays on this device, so it is a self-check and not a certificate.`}
+          {practice
+            ? `${total} questions drawn from ${questions.length}, scored out of ${total}. This is practice: it runs in your browser, saves nothing and does not change what you have marked read.`
+            : `${total} ${total === 1 ? "question" : "questions"}, pass at ${need}. The check runs in your browser and the result stays on this device, so it is a self-check and not a certificate.`}
         </p>
         {status === "read-before-checks" && (
           <p className={styles.text}>
@@ -297,9 +303,9 @@ export function CheckRunner({
         )}
         <div className={styles.actions}>
           <button type="button" className={styles.primary} onClick={() => begin()}>
-            {readAlready ? "Check yourself" : "Start the check"}
+            {practice ? "Start practice" : readAlready ? "Check yourself" : "Start the check"}
           </button>
-          {!readAlready && (
+          {!practice && !readAlready && (
             <button type="button" className={styles.secondary} onClick={markReadAnyway}>
               Mark as read without the check
             </button>
@@ -403,7 +409,9 @@ export function CheckRunner({
           {result.score} of {result.questions.length}
         </p>
         <p className={styles.text}>
-          {`This chapter is marked read.${result.reviewNote ? ` ${result.reviewNote}` : ""}`}
+          {practice
+            ? "Nothing was saved."
+            : `This chapter is marked read.${result.reviewNote ? ` ${result.reviewNote}` : ""}`}
         </p>
         {missed.length > 0 && (
           <p className={styles.text}>
@@ -415,7 +423,7 @@ export function CheckRunner({
         )}
         <div className={styles.actions}>
           <button type="button" className={styles.secondary} onClick={() => begin()}>
-            Check again
+            {practice ? "Practise again" : "Check again"}
           </button>
         </div>
         <Confetti fire />
@@ -438,7 +446,7 @@ export function CheckRunner({
           <button type="button" className={styles.primary} onClick={() => begin()}>
             Try again
           </button>
-          {!done && (
+          {!practice && !done && (
             <button type="button" className={styles.secondary} onClick={markReadAnyway}>
               Mark as read anyway (not checked)
             </button>

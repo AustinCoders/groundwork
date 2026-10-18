@@ -20,6 +20,12 @@ Read this and the memory index first in a new session. Update it at the end of e
 - Each chapter was fact-checked by an independent reviewer and every finding fixed; the audit file lists the counts. Numbers are guarded in `tests/system-design-quality.test.ts`.
 - Still missing: release safety, microservices and security basics, the other Xu walkthroughs (proximity, metrics, ad clicks as its own walkthrough, wallet, leaderboard, stock exchange), a practice layer.
 
+## System Design practice layer (2026-10-18)
+
+- All 33 chapters have a pool of 7 or 8 questions in `content/system-design/quiz/` (258 in all), registered in `lib/designPool.ts` and shown as a practice card (no progress, no saved state); System Design stays `completion: "read"` because `"quiz"` would route it through the DSA placement flow and its single `groundwork:dsa:placement` key.
+- Every pool was written from the chapter and its sources, reviewed blind by an independent agent (about 160 findings, all re-verified), and the rewritten questions had a second review round. Numeric answers are recomputed in `tests/design-estimates/`.
+- Still open: design-prompt drills per walkthrough chapter and a whiteboard link (`/whiteboard` has no parameters), recorded in `docs/ROADMAP.md`; persistent practice scores (practice mode saves nothing).
+
 ## Next
 
 1. Commit and push the content standard (on a `feature/` branch, or on `feature/dsa-rebuild` if the owner says so).

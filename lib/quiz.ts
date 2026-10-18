@@ -1,4 +1,4 @@
-import type { ChapterPool, PatternRecord, Question } from "@/content/quiz-types";
+import type { ChapterPool, CheckQuestion, PatternRecord, Question } from "@/content/quiz-types";
 import type { LevelId } from "@/content/types";
 
 export const PATTERNS = [
@@ -143,7 +143,7 @@ export function htmlProblem(html: string): string | null {
   return null;
 }
 
-function structureProblem(question: Question): string | null {
+function structureProblem(question: CheckQuestion): string | null {
   const loose = question as unknown as Record<string, unknown>;
   switch (loose.kind) {
     case "order":
@@ -169,7 +169,7 @@ function stringsOf(value: unknown): string[] {
   return [];
 }
 
-function htmlFragments(question: Question): string[] {
+function htmlFragments(question: CheckQuestion): string[] {
   const fragments = [question.prompt];
   if (structureProblem(question)) return fragments;
   if (question.kind === "order") {
@@ -180,7 +180,7 @@ function htmlFragments(question: Question): string[] {
   return fragments;
 }
 
-export function htmlProblems(question: Question): string[] {
+export function htmlProblems(question: CheckQuestion): string[] {
   const problems: string[] = [];
   for (const fragment of htmlFragments(question)) {
     const problem = htmlProblem(fragment);
@@ -189,7 +189,7 @@ export function htmlProblems(question: Question): string[] {
   return problems;
 }
 
-export function answerProblems(question: Question): string[] {
+export function answerProblems(question: CheckQuestion): string[] {
   if (structureProblem(question) || question.kind === "order") return [];
   const ids = question.choices.map((choice) => choice.id);
   if (question.kind === "multi") {
@@ -207,7 +207,7 @@ export function answerProblems(question: Question): string[] {
   return ids.includes(question.answer) ? [] : [`${question.id}: answer "${question.answer}" is not a choice`];
 }
 
-export function shapeProblems(question: Question): string[] {
+export function shapeProblems(question: CheckQuestion): string[] {
   const problems: string[] = [];
   const say = (message: string) => problems.push(`${question.id}: ${message}`);
   const broken = structureProblem(question);
@@ -242,7 +242,7 @@ export function vocabularyProblems(question: Question): string[] {
   return problems;
 }
 
-export function sectionProblems(question: Question, sections: string[]): string[] {
+export function sectionProblems(question: CheckQuestion, sections: string[]): string[] {
   return sections.includes(question.section)
     ? []
     : [`${question.id}: section "${question.section}" is not a heading of the chapter`];
@@ -261,7 +261,7 @@ export function chapterProblems(pool: ChapterPool, facts: ChapterFacts | null, p
   return problems;
 }
 
-export function idProblems(questions: Question[]): string[] {
+export function idProblems(questions: CheckQuestion[]): string[] {
   const problems: string[] = [];
   const prefixes = new Set(questions.map((question) => question.id.split("-")[0]));
   if (prefixes.size > 1) problems.push(`ids share no prefix: ${[...prefixes].join(", ")}`);
@@ -274,7 +274,7 @@ export function idProblems(questions: Question[]): string[] {
   return problems;
 }
 
-export function duplicateIdProblems(pools: Record<string, ChapterPool>): string[] {
+export function duplicateIdProblems(pools: Record<string, { questions: readonly CheckQuestion[] }>): string[] {
   const owner = new Map<string, string>();
   const problems: string[] = [];
   for (const [poolId, pool] of Object.entries(pools)) {

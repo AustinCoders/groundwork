@@ -17,8 +17,8 @@ The fixes make the 24 chapters correct. They did not make the topic complete: ag
 replication, transactions and isolation, storage engines, and time and ordering had no chapter of their own.
 Four new chapters (batch 1, October 2026, below) now cover them, bringing the section to 28 chapters. Five more
 (batch 2, October 2026, below) add batch and stream processing and four design walkthroughs from Xu's books,
-bringing it to 33. Release safety, the other walkthroughs and the practice layer are still missing; see "Still
-missing".
+bringing it to 33. Release safety and the other walkthroughs are still missing, and a practice layer (batch 3, October
+2026, below) now gives every chapter a pool of questions; see "Still missing".
 
 ## Method
 
@@ -118,47 +118,48 @@ outdated, 99 misleading, 12 unverified.
 
 ## Coverage against the benchmarks, after the fixes
 
-| Topic                                                                                                                                 | DDIA   | Xu   | Primer | SRE | Status here                                   |
-| ------------------------------------------------------------------------------------------------------------------------------------- | ------ | ---- | ------ | --- | --------------------------------------------- |
-| Capacity estimation, latency numbers                                                                                                  |        | 1    | yes    |     | Covered                                       |
-| Scaling, load balancing, CDN, caching, rate limiting                                                                                  |        | 1    | yes    | yes | Covered                                       |
-| Consistent hashing, sharding                                                                                                          | 6      | 1    | yes    |     | Covered                                       |
-| Consistency models, CAP, PACELC                                                                                                       | 9      |      | yes    |     | Covered                                       |
-| Consensus (Raft, Paxos)                                                                                                               | 9      |      |        | yes | Covered                                       |
-| Message queues and logs                                                                                                               | 11     | 2    | yes    |     | Covered                                       |
-| SLOs, error budgets, monitoring, overload, cascading failure                                                                          |        | 2    |        | yes | Covered                                       |
-| Search                                                                                                                                | 3      | 1    |        |     | Covered (surface)                             |
-| Object storage                                                                                                                        |        | 2    |        |     | Covered                                       |
-| URL shortener, news feed, chat (part), autocomplete (part), rate limiter                                                              |        | 1    | yes    |     | Covered                                       |
-| Replication: leaders, followers, multi-leader, leaderless, conflict resolution                                                        | 5      |      | yes    |     | Covered (`sysdes-replication`)                |
-| Transactions: ACID, isolation levels, 2PC, sagas                                                                                      | 7      | 2    |        |     | Covered (`sysdes-transactions-isolation`)     |
-| Storage engines: LSM, B-tree, WAL, columnar                                                                                           | 3      | 2    | yes    |     | Covered (`sysdes-storage-engines`)            |
-| Clocks, ordering, unique IDs                                                                                                          | 8      | 1    |        |     | Covered (`sysdes-time-ordering-ids`)          |
-| Batch and stream processing                                                                                                           | 10, 11 | 2    |        | yes | Covered (`sysdes-batch-stream-processing`)    |
-| Encoding and schema evolution                                                                                                         | 4      |      |        |     | **Partial.** API versioning only              |
-| Release safety, incidents, postmortems                                                                                                |        |      |        | yes | **Partial.** Short additions                  |
-| Microservices, service discovery, service mesh                                                                                        |        |      | yes    |     | **Partial.** API gateway only                 |
-| Security in design                                                                                                                    |        |      | yes    |     | **Missing**                                   |
-| Geospatial indexes, probabilistic structures                                                                                          |        | 2    |        |     | **Partial.** Mentions only                    |
-| Key-value store                                                                                                                       |        | 1    |        |     | Covered (`sysdes-walkthrough-kv-store`)       |
-| Notification system                                                                                                                   |        | 1    |        |     | Covered (`sysdes-walkthrough-notifications`)  |
-| Web crawler                                                                                                                           |        | 1    |        |     | Covered (`sysdes-walkthrough-crawler`)        |
-| Payment system                                                                                                                        |        | 2    |        |     | Covered (`sysdes-walkthrough-payments`)       |
-| Proximity, metrics monitoring, wallet, leaderboard, stock exchange (ad-click aggregation is the worked example in the stream chapter) |        | 1, 2 |        |     | **Missing** as walkthroughs                   |
-| Exercises and quizzes                                                                                                                 |        | 1, 2 | yes    |     | **Missing.** Every chapter has `practice: []` |
+| Topic                                                                                                                                 | DDIA   | Xu   | Primer | SRE | Status here                                                                                   |
+| ------------------------------------------------------------------------------------------------------------------------------------- | ------ | ---- | ------ | --- | --------------------------------------------------------------------------------------------- |
+| Capacity estimation, latency numbers                                                                                                  |        | 1    | yes    |     | Covered                                                                                       |
+| Scaling, load balancing, CDN, caching, rate limiting                                                                                  |        | 1    | yes    | yes | Covered                                                                                       |
+| Consistent hashing, sharding                                                                                                          | 6      | 1    | yes    |     | Covered                                                                                       |
+| Consistency models, CAP, PACELC                                                                                                       | 9      |      | yes    |     | Covered                                                                                       |
+| Consensus (Raft, Paxos)                                                                                                               | 9      |      |        | yes | Covered                                                                                       |
+| Message queues and logs                                                                                                               | 11     | 2    | yes    |     | Covered                                                                                       |
+| SLOs, error budgets, monitoring, overload, cascading failure                                                                          |        | 2    |        | yes | Covered                                                                                       |
+| Search                                                                                                                                | 3      | 1    |        |     | Covered (surface)                                                                             |
+| Object storage                                                                                                                        |        | 2    |        |     | Covered                                                                                       |
+| URL shortener, news feed, chat (part), autocomplete (part), rate limiter                                                              |        | 1    | yes    |     | Covered                                                                                       |
+| Replication: leaders, followers, multi-leader, leaderless, conflict resolution                                                        | 5      |      | yes    |     | Covered (`sysdes-replication`)                                                                |
+| Transactions: ACID, isolation levels, 2PC, sagas                                                                                      | 7      | 2    |        |     | Covered (`sysdes-transactions-isolation`)                                                     |
+| Storage engines: LSM, B-tree, WAL, columnar                                                                                           | 3      | 2    | yes    |     | Covered (`sysdes-storage-engines`)                                                            |
+| Clocks, ordering, unique IDs                                                                                                          | 8      | 1    |        |     | Covered (`sysdes-time-ordering-ids`)                                                          |
+| Batch and stream processing                                                                                                           | 10, 11 | 2    |        | yes | Covered (`sysdes-batch-stream-processing`)                                                    |
+| Encoding and schema evolution                                                                                                         | 4      |      |        |     | **Partial.** API versioning only                                                              |
+| Release safety, incidents, postmortems                                                                                                |        |      |        | yes | **Partial.** Short additions                                                                  |
+| Microservices, service discovery, service mesh                                                                                        |        |      | yes    |     | **Partial.** API gateway only                                                                 |
+| Security in design                                                                                                                    |        |      | yes    |     | **Missing**                                                                                   |
+| Geospatial indexes, probabilistic structures                                                                                          |        | 2    |        |     | **Partial.** Mentions only                                                                    |
+| Key-value store                                                                                                                       |        | 1    |        |     | Covered (`sysdes-walkthrough-kv-store`)                                                       |
+| Notification system                                                                                                                   |        | 1    |        |     | Covered (`sysdes-walkthrough-notifications`)                                                  |
+| Web crawler                                                                                                                           |        | 1    |        |     | Covered (`sysdes-walkthrough-crawler`)                                                        |
+| Payment system                                                                                                                        |        | 2    |        |     | Covered (`sysdes-walkthrough-payments`)                                                       |
+| Proximity, metrics monitoring, wallet, leaderboard, stock exchange (ad-click aggregation is the worked example in the stream chapter) |        | 1, 2 |        |     | **Missing** as walkthroughs                                                                   |
+| Exercises and quizzes                                                                                                                 |        | 1, 2 | yes    |     | Covered as practice pools (`content/system-design/quiz/`); design-prompt drills still missing |
 
 ## Still missing, in the order worth building
 
 Items 1 to 4 of the original list (replication, transactions and isolation, storage engines, time and
 ordering) were written in batch 1; batch and stream processing and the key-value store, notifications, crawler
-and payments walkthroughs were written in batch 2; see below.
+and payments walkthroughs were written in batch 2; the practice layer was built in batch 3; see below.
 
 1. Release safety and incident practice: canaries, rollback, feature flags, config pushes, postmortems.
 2. Microservices and service discovery; security basics for design interviews.
 3. Walkthroughs from Xu's volumes that nothing here covers: proximity service, metrics monitoring, digital
    wallet, gaming leaderboard, stock exchange (and ad-click aggregation as a walkthrough of its own).
-4. A practice layer. The quiz machinery is built around DSA patterns today, so System Design needs its own
-   question format (design prompts with a scoring checklist, and trade-off multiple choice).
+4. Design-prompt drills: a short prompt per walkthrough chapter with a scoring checklist and common mistakes, and a link
+   from the drill to the whiteboard (`/whiteboard` takes no parameters today). The practice pools cover the questions;
+   the drills need a small self-scoring component and a whiteboard template.
 
 ## Batch 1: four new chapters (October 2026)
 
@@ -211,6 +212,39 @@ The numbers that matter and the claims the reviews proved wrong are guarded in
 (84%), so the budget did not need to move. Chapter numbers were re-sequenced again: batch and stream
 processing is A7, the three advanced walkthroughs follow the case studies as A12 to A14, and notifications is
 I11.
+
+## Batch 3: the practice layer (October 2026)
+
+Every one of the 33 chapters now has a pool of 7 or 8 questions in `content/system-design/quiz/`, registered lazily in
+`lib/designPool.ts`. A question is a single choice, a multi select or an order question, tagged with its chapter, its level,
+the heading that teaches it (the "Read again" link on a miss) and one of five design skills: concept, trade-off,
+diagnose, estimate and sequence. Every choice carries a written explanation. The questions are drawn five at a time in a
+practice card at the end of each chapter.
+
+| Decision                                 | Why                                                                                                                                                                                                                                                            |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| System Design stays `completion: "read"` | `"quiz"` would turn `/level/system-design` into the DSA placement flow, which saves to one global key (`groundwork:dsa:placement`) and would overwrite a reader's DSA plan; the placement bank holds only DSA questions; ticks would become links to `#check`. |
+| A practice mode instead                  | The card appears for a topic that does not require checks, never marks a chapter read, never writes to `groundwork:quiz`, ignores `#check` and the tick events, and shows no "mark as read without the check" button.                                          |
+| Design questions have no DSA tags        | `DesignQuestion` has a design skill and no pattern or placement flag; the DSA pools, their vocabularies and `loadPlacementBank` are unchanged.                                                                                                                 |
+| Numbers are recomputed                   | Each estimate question has an entry in `tests/design-estimates/` that recomputes its answer from the inputs in the stem; the test checks that the right choice (and no other) states that value.                                                               |
+
+How the pools were made: for each chapter an author read the whole chapter, fetched the sources it relies on, and wrote the
+questions; an independent reviewer who had not seen the author's reasoning then answered every question blind, re-checked
+every explanation (including those of the wrong choices), recomputed every number and fetched primary sources. The reviewers
+raised about 160 findings across the 33 pools, and every one was re-verified before it was applied or skipped.
+
+| Kind of finding                       | Typical problems                                                                                                                                                                                                                                                       |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Order questions with two valid orders | A stem that named no rule (graceful shutdown, a write path, a cache race, a crawl loop whose order disagreed with Mercator), fixed by stating the rule or the dependency in the stem                                                                                   |
+| Explanations that over-claimed        | "Never", "every" and "silently" where a source gave a conditional; a phantom defined too narrowly; a fast 503 that would trip the passive ejection it was meant to prevent                                                                                             |
+| Stems that gave the answer away       | A stem that restated the keyed choice, or stated the cost that decided the question                                                                                                                                                                                    |
+| Wrong keys                            | No reviewer found a wrong key; they did find several multi selects and single-choice questions where a second answer could be defended, and those were reworded                                                                                                        |
+| Length tells                          | The keyed choice was the longest in 44 of the first 79 single-choice questions; `answerBalanceProblems` now fails a pool set where it is the longest in over 40 percent                                                                                                |
+| Chapter errors found on the way       | A per-window figure that was per second, an 80 percent remap said of a like-for-like replacement, a CheckQuorum claim that etcd's source contradicts, a Steam figure with no source, a dry run whose row was marked sent too early, DR tiers described as AWS does not |
+
+The pool tests are in `tests/system-design-quiz.test.ts`: ids and answer keys, every `section` against the chapter's real
+headings, no empty explanations, five to eight questions with at least three skills, the numeric recomputation, answer
+balance across the topic, the import boundary, and a guard that no chapter has `practice: []` and no pool.
 
 ## What this audit could not check
 

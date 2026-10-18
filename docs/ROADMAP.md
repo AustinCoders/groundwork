@@ -161,6 +161,7 @@ Priority is market signal against what already exists here. "Planned" is the cur
 | P1  | Testing                          | 24 planned         | Playwright and Vitest, this repo's CI as the example                     |
 | P1  | Docker + CI/CD                   | 22 + part of 24    | Merge with the CI half of Cloud & DevOps                                 |
 | P1  | System Design: frontend + GenAI  | ~12 proposed       | Two missing tracks inside a written topic                                |
+| P1  | System Design: design drills     | 9 walkthroughs     | Prompt, checklist, mistakes, whiteboard link; 33 quiz pools exist        |
 | P1  | Interview book: new rounds       | 3 rounds           | AI-assisted coding, code comprehension, frontend system design           |
 | P2  | Nest.js                          | 26 planned         | Strong in Indian listings; after Node                                    |
 | P2  | Web Security                     | 24 planned         | Restructure on OWASP Top 10:2025                                         |
