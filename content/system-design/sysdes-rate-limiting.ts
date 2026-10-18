@@ -11,8 +11,8 @@ export const sysdesRateLimiting: Chapter = {
   subtitle: "The only thing standing between one badly-behaved client and everybody else's latency.",
   body: `<h3>Four reasons to rate limit, and they need different limits</h3>
 <p>
-  A rate limiter answers "may this request proceed right now?" in a few
-  microseconds, before any expensive work happens. It looks like a small
+  A rate limiter answers "may this request proceed right now?" in well under
+  a millisecond, before any expensive work happens. It looks like a small
   component and it is one of the highest-leverage ones in a design,
   because it is the only mechanism that lets a system <em>choose</em> what
   to drop instead of failing at random.
@@ -109,7 +109,7 @@ function allow(state, now, limit, windowMs) {
   One second into window 2, <code>elapsed = 0.017</code>, so the estimate
   is <code>100 × 0.983 = 98.3</code> — only 2 requests get through, instead
   of the 100 a fixed window would have allowed. Halfway through window 2
-  the previous window is weighted at 0.5, so 50 more are admitted. The
+  the previous window is weighted at 0.5, so about 50 have been admitted in total. The
   boundary burst is gone for the cost of one extra integer.
 </p>
 <div class="warn">
@@ -319,8 +319,8 @@ return { allowed, tokens }</code></pre>
   reject everything? Fail-closed on a public API means a Redis blip is a
   full outage. Fail-open means an attacker who can degrade Redis gets
   unlimited access. The usual answer is <b>fail open to a conservative
-  local bucket</b>: keep an in-process token bucket sized generously per
-  node as a backstop, so you lose precision rather than protection. Say
+  local bucket</b>: keep an in-process token bucket per node as a
+  backstop, sized so the nodes together stay near the intended limit, so you lose precision rather than protection. Say
   this unprompted — it is the difference between having designed a limiter
   and having read about one.
 </div>
@@ -445,6 +445,7 @@ async function callWithRetry(fn, maxAttempts = 6) {
     <li><a href="https://blog.cloudflare.com/counting-things-a-lot-of-different-things/" rel="noopener noreferrer">Cloudflare: counting things, a lot of different things</a> — the sliding window counter, its measured error, and asynchronous per-PoP counting</li>
     <li><a href="https://datatracker.ietf.org/doc/draft-ietf-httpapi-ratelimit-headers/" rel="noopener noreferrer">IETF draft: RateLimit header fields for HTTP</a> — still a draft; defines RateLimit and RateLimit-Policy</li>
     <li><a href="https://sre.google/sre-book/handling-overload/" rel="noopener noreferrer">Google SRE book: handling overload</a> — client-side adaptive throttling, criticality and retry budgets</li>
+    <li><a href="https://sre.google/sre-book/addressing-cascading-failures/" rel="noopener noreferrer">Google SRE book: addressing cascading failures</a> — the 3-retries-per-layer example that reaches 64 calls</li>
     <li><a href="https://brandur.org/rate-limiting" rel="noopener noreferrer">Brandur: rate limiting and GCRA</a> — the one-timestamp generic cell rate algorithm</li>
     <li><a href="https://redis.io/docs/latest/commands/expire/" rel="noopener noreferrer">Redis documentation: EXPIRE</a> — the NX option (Redis 7.0 onward)</li>
     <li><a href="https://redis.io/docs/latest/commands/hmset/" rel="noopener noreferrer">Redis documentation: HMSET</a> — deprecated since Redis 4.0 in favour of HSET</li>

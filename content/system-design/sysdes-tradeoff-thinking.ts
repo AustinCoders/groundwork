@@ -12,7 +12,7 @@ export const sysdesTradeoffThinking: Chapter = {
     "Nobody is grading your architecture. They are grading whether you knew what you were giving up, and said so.",
   body: `<h3>The thing that is actually being scored</h3>
 <p>
-  Twenty-three chapters of this topic have been about mechanisms. This one is
+  The earlier chapters of this topic have been about mechanisms. This one is
   about the only skill that is graded directly. Interviewers at this level are
   not comparing your diagram against a reference answer — for most prompts
   there isn't one, and the interviewer has seen a dozen different designs pass.
@@ -74,13 +74,13 @@ export const sysdesTradeoffThinking: Chapter = {
     <td>Latency vs throughput</td>
     <td>Fast individual responses</td>
     <td>Less batching, less pipelining, worse hardware utilisation, higher cost per request</td>
-    <td>"Batching to 50 ms windows triples throughput and adds 50 ms of latency — for an analytics write path that's free, for a chat send it isn't."</td>
+    <td>"If batching to 50 ms windows triples throughput, it also adds 50 ms of latency — for an analytics write path that's free, for a chat send it isn't." (The tripling is an illustrative figure.)</td>
   </tr>
   <tr>
     <td>Cost vs performance</td>
     <td>Headroom, replicas, more cache, more regions</td>
     <td>Money, linearly, forever — plus the opportunity cost of the team maintaining it</td>
-    <td>"A second region roughly doubles infrastructure spend and helps only against regional failures; a single region across availability zones is already roughly 99.95-99.99%, and many outages are deploys and config changes that a second region does not fix. Is that worth it for this product?"</td>
+    <td>"A second region roughly doubles infrastructure spend and helps only against regional failures; a single region across availability zones is already, as a rough planning figure and not a guarantee, 99.95-99.99%, and many outages are deploys and config changes that a second region does not fix. Is that worth it for this product?"</td>
   </tr>
   <tr>
     <td>Complexity vs capability</td>
@@ -234,8 +234,8 @@ export const sysdesTradeoffThinking: Chapter = {
   cannot absorb. It does not earn its place because a request is
   asynchronous — a table with a status column and a worker polling it handles
   on the order of a thousand or more jobs per second (each job costs at least
-  three writes: enqueue, claim, complete, so it spends your ~5,000 writes/sec
-  budget three times over) and can be operated by anyone. If you propose a
+  three writes: enqueue, claim, complete, so a thousand jobs per second is about
+  3,000 writes/sec, 60% of a ~5,000 writes/sec planning figure on a shared primary) and can be operated by anyone. If you propose a
   queue, say which of the three properties you need. If none apply, say "a
   jobs table is enough here, and I'd move to a broker when we need replay or a
   second consumer." Also keep your facts current: Kafka 4.x runs on KRaft
@@ -290,8 +290,8 @@ export const sysdesTradeoffThinking: Chapter = {
   And when you are genuinely wrong, be conspicuous about it: "You're right, I
   had the read-write ratio backwards — that changes my answer, let me redo it."
   Visibly updating on evidence is a positive signal, not a recovery from a
-  negative one. Nobody in the history of these interviews has been downgraded
-  for correcting themselves cleanly.
+  negative one. Correcting yourself cleanly is a positive signal in a design
+  review, not a mark against you.
 </p>
 
 <div class="sticky mint">
@@ -306,10 +306,10 @@ export const sysdesTradeoffThinking: Chapter = {
 <p class="sub">Scenario: 5M DAU, 5 push notifications/user/day. Should the fan-out run on Kafka or a jobs table?</p>
 <table>
   <tr><th>Step</th><th>Applied here</th><th>Conclusion</th></tr>
-  <tr><td>1. Assumption</td><td>5M × 5 = 25M/day; at ~12 per second per million per day that is ~300 jobs/sec average, ~900/sec at peak (×3). A jobs table costs at least 3 writes per job, so ~2,700 writes/sec at peak, under the ~5,000 writes/sec planning figure. Today there is exactly one consumer, the push sender</td><td>"Hundreds of jobs per second, one consumer" — none of Kafka's justifying properties are present yet. (At 200M DAU the same arithmetic gives ~10,000/sec average and ~90,000 writes/sec at peak: you would be queueing now, and the answer flips.)</td></tr>
+  <tr><td>1. Assumption</td><td>5M × 5 = 25M/day; at ~12 per second per million per day that is ~300 jobs/sec average, ~900/sec at peak (×3). A jobs table costs at least 3 writes per job, so ~2,700 writes/sec at peak from the jobs alone, under the ~5,000 writes/sec planning figure. Today there is exactly one consumer, the push sender</td><td>"Hundreds of jobs per second, one consumer" — none of Kafka's justifying properties are present yet. (At 200M DAU the same arithmetic gives ~12,000/sec average and ~100,000 writes/sec at peak: you would be queueing now, and the answer flips.)</td></tr>
   <tr><td>2. Choice</td><td>A Postgres jobs table with a status column and a worker pool polling it</td><td>Matches the chapter's own claim: a polled jobs table handles on the order of a thousand or more jobs per second and can be operated by anyone, and peak here is under that</td></tr>
-  <tr><td>3. Cost</td><td>No durable replay if a consumer ever needs to reprocess history; polling adds latency a broker's push model wouldn't</td><td>Naming the cost, not just the choice, is what beats 1-2 alone don't do</td></tr>
-  <tr><td>4. Trigger</td><td>"I'd move to a log or broker the moment we need durable replay, a second independent consumer group on this stream, or throughput a polled table can't absorb — roughly when peak jobs approach 1,500 per second"</td><td>Restates the chapter's exact three conditions for when Kafka earns its place</td></tr>
+  <tr><td>3. Cost</td><td>No durable replay if a consumer ever needs to reprocess history; polling adds latency a broker's push model wouldn't</td><td>Naming the cost, not just the choice, is what separates this from an answer that stops at steps 1 and 2</td></tr>
+  <tr><td>4. Trigger</td><td>"I'd move to a log or broker the moment we need durable replay, a second independent consumer group on this stream, or throughput a polled table can't absorb — roughly when peak jobs approach 1,000 per second, sooner if the rest of the product already uses much of the primary"</td><td>Restates the chapter's exact three conditions for when Kafka earns its place</td></tr>
   <tr><td>5. Pushback</td><td>Interviewer: "Email digests next quarter will need the same event stream." Restate: "So a second consumer is coming, not hypothetical."</td><td>Restating first, per the disagree-well move, confirms what was actually heard</td></tr>
   <tr><td>6. Locate the axis</td><td>This isn't a new fact — it's beat 4's own trigger condition ("a second independent consumer group") arriving on a known timeline</td><td>The disagreement is about timing, not about whether the trigger is real</td></tr>
   <tr><td>7. Update or hold</td><td>Update explicitly: switch the choice to Kafka (or another log-based broker) now, before the fan-out ships, rather than migrating under load later</td><td>"Be conspicuous about it" — the chapter's own guidance for genuinely updating on new information</td></tr>

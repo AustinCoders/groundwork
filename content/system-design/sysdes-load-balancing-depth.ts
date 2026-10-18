@@ -75,9 +75,10 @@ export const sysdesLoadBalancingDepth: Chapter = {
   costs almost nothing — a software L4 on commodity hardware handles millions
   of concurrent flows and tens of gigabits, and with direct server return (DSR) the
   response never traverses the balancer at all, which matters enormously for
-  video and download workloads. The trade-off is that a pure L4 hop hides the
-  client IP from the backend unless you use DSR or pass it along with the
-  PROXY protocol header. An L7 proxy terminates the connection, does
+  video and download workloads. The trade-off is that an L4 proxy that opens its own
+  connection to the backend hides the client IP from it unless you pass it
+  along with the PROXY protocol header (DSR and NAT-style forwarding keep the
+  source address). An L7 proxy terminates the connection, does
   the TLS handshake, parses the HTTP request, and makes a fresh decision per
   <em>request</em>.
 </p>
@@ -222,8 +223,8 @@ export const sysdesLoadBalancingDepth: Chapter = {
 <div class="say">
   <span class="ttl">Say it like this →</span> "I'd shard the cache with
   consistent hashing and about 150 virtual nodes per machine. The reason isn't
-  elegance — with plain modulo, replacing one failed node out of five remaps
-  roughly 80% of keys, which takes the hit rate from 95% to about 19% and
+  elegance — with plain modulo, losing one node out of five (so the pool goes
+  from five to four) remaps roughly 80% of keys, which takes the hit rate from 95% to about 19% and
   sends 16× the normal load at the database at the exact moment I'm already
   degraded. The ring keeps that blast radius to one node's share."
 </div>
@@ -257,7 +258,7 @@ export const sysdesLoadBalancingDepth: Chapter = {
   have engaged in the story above; it would only trigger at four of ten.
   Which is why you want both guardrails, plus the capacity headroom to survive
   them. The other half of the fix belongs to the backend: enforce a concurrency limit
-  and shed excess load with a fast 503 rather than degrading into timeouts,
+  and shed excess load with a fast rejection rather than degrading into timeouts (mind the status code: Envoy's passive ejection counts every 5xx, so a shed 503 can feed the ejection it is meant to prevent unless you use a non-5xx code such as 429 or configure around it),
   so an overloaded server stays <em>honest</em> instead of looking dead.
 </div>
 <p class="sub">

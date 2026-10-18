@@ -199,7 +199,8 @@ export const sysdesApisCommunication: Chapter = {
   authorisation synchronous, because the user has to be told yes or no before
   they leave the page. Everything else — receipt email, analytics, warehouse
   pick, loyalty points — becomes an <code>order.placed</code> event. That
-  takes checkout from 830 ms and five hard dependencies down to 250 ms, one
+  takes checkout from 830 ms (the three services drawn take 730 ms; I assume
+  analytics and loyalty add about 50 ms each) and five hard dependencies down to 250 ms, one
   hard dependency on the payment path, plus the event bus. Adding a sixth
   consumer later doesn't touch the checkout service at all."
 </div>
@@ -378,7 +379,7 @@ COMMIT;</code></pre>
 </p>
 <p class="sub">
   Retry hygiene is the other half. Retry only on timeouts, connection errors,
-  <code>429</code> and <code>5xx</code> — never on <code>4xx</code>, which
+  <code>408</code>, <code>429</code> and <code>5xx</code> — never on other <code>4xx</code> codes, which
   will fail identically forever. Use exponential backoff with <em>full
   jitter</em>, cap attempts, and add a retry budget (for example, stop retrying
   once retries exceed ~10% of requests, a common starting point) so a
@@ -482,6 +483,7 @@ COMMIT;</code></pre>
     <li><a href="https://www.postgresql.org/docs/current/index-unique-checks.html" rel="noopener noreferrer">PostgreSQL docs: index uniqueness checks</a> — a second inserter of the same key waits for the first transaction to finish</li>
     <li><a href="https://microservices.io/patterns/data/transactional-outbox.html" rel="noopener noreferrer">Transactional outbox pattern</a> — publishing an event atomically with a database change</li>
     <li><a href="https://sre.google/sre-book/addressing-cascading-failures/" rel="noopener noreferrer">Google SRE book: addressing cascading failures</a> — retry amplification (the 64x example), retry budgets and jittered backoff</li>
+    <li><a href="https://sre.google/sre-book/handling-overload/" rel="noopener noreferrer">Google SRE book: handling overload</a> — the retry budget of about 10% of requests</li>
     <li><a href="https://grpc.io/docs/guides/deadlines/" rel="noopener noreferrer">gRPC: deadlines</a> — deadline propagation is on by default only in some languages</li>
     <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events" rel="noopener noreferrer">MDN: using server-sent events</a> — automatic reconnection and the per-domain connection cap on HTTP/1</li>
     <li><a href="https://www.rfc-editor.org/rfc/rfc9110" rel="noopener noreferrer">RFC 9110: HTTP semantics</a> — idempotent methods, status codes and conditional requests</li>

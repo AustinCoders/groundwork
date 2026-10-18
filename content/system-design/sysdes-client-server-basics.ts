@@ -89,9 +89,10 @@ export const sysdesClientServerBasics: Chapter = {
   name to another (not allowed at the zone apex, which is why providers invent
   "ALIAS" records), <b>NS</b> delegates a zone, <b>MX</b> routes mail, and
   <b>TXT</b> carries verification and policy strings. When a name returns both
-  A and AAAA records, clients using Happy Eyeballs (RFC 8305) race IPv6 and
-  IPv4 connection attempts and keep whichever completes first, so a broken
-  IPv6 path costs milliseconds rather than a timeout.
+  A and AAAA records, clients using Happy Eyeballs (RFC 8305) start IPv6
+  first and, if it has not connected after a short delay (RFC 8305 recommends
+  250 ms), start IPv4 and keep whichever completes first, so a broken IPv6 path
+  costs a fraction of a second rather than a full timeout.
 </p>
 <table>
   <tr><th>DNS routing strategy</th><th>Mechanism</th><th>Reach for this when…</th></tr>
@@ -233,7 +234,7 @@ export const sysdesClientServerBasics: Chapter = {
   <tr><th></th><th>L4 (transport)</th><th>L7 (application)</th></tr>
   <tr><td>Sees</td><td>IPs, ports, TCP connections</td><td>Full HTTP: method, path, headers, cookies, body</td></tr>
   <tr><td>Can do</td><td>Connection-level distribution, extremely high throughput, near-zero added latency. Passes TLS through untouched, or terminates it (for example an AWS Network Load Balancer TLS listener) without ever seeing HTTP</td><td>Path and header routing, retries, rate limiting, request rewriting, sticky sessions, per-request balancing. To read HTTP at all it must terminate TLS (or terminate and re-encrypt)</td></tr>
-  <tr><td>Cost</td><td>Blind to application health and to individual requests on a long-lived connection</td><td>More CPU, added latency (typically well under a millisecond), and it must hold the TLS keys</td></tr>
+  <tr><td>Cost</td><td>Cannot see individual requests or per-request errors on a long-lived connection</td><td>More CPU, added latency (typically well under a millisecond), and it must hold the TLS keys</td></tr>
   <tr><td>Reach for this when…</td><td>Raw TCP services, databases, extreme packet rates, or you want the backend to see the real client TLS</td><td>Essentially all HTTP traffic — the routing and observability are worth the overhead</td></tr>
 </table>
 <p>
@@ -328,7 +329,7 @@ export const sysdesClientServerBasics: Chapter = {
   <tr><td>Redis GET over the network</td><td>~0.2-1 ms</td><td>Dominated by the round trip, not by Redis</td></tr>
   <tr><td>Simple indexed DB query, warm</td><td>~1-10 ms</td><td>Your typical read-path floor</td></tr>
   <tr><td>HDD seek</td><td>~2-10 ms</td><td>Why random I/O on spinning disks shaped a generation of storage design</td></tr>
-  <tr><td>Cross-region RTT (US East to US West)</td><td>~60-70 ms</td><td>One synchronous cross-country call blows a 100 ms budget on its own</td></tr>
+  <tr><td>Cross-region RTT (US East to US West)</td><td>~60-70 ms</td><td>One synchronous cross-country call eats most of a 100 ms budget, and two blow it</td></tr>
   <tr><td>Cross-continent RTT (US East to Western Europe)</td><td>~70-90 ms (New York to London is about 65-70)</td><td>Speed of light in fibre, not an engineering problem you can optimise</td></tr>
   <tr><td>Cross-planet RTT (US East to Singapore or India, New York to Sydney)</td><td>~200-230 ms</td><td>Multi-region read-local architecture is mandatory, not a nice-to-have</td></tr>
 </table>
@@ -339,7 +340,7 @@ export const sysdesClientServerBasics: Chapter = {
   assumes a warm connection: on a cold one every handshake round trip costs
   another 80 ms and the budget is gone before the server runs (see the dry run
   below). Those 120 ms of server time are enough for one cache hit plus one
-  database query, or about five sequential internal service hops. Sequential dependencies, not slow code, are what
+  database query, or about five sequential internal service calls if each does around 20 ms of real work. Sequential dependencies, not slow code, are what
   usually eat the budget.
 </div>
 <p class="sub">

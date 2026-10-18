@@ -68,7 +68,7 @@ export const sysdesCachingFundamentals: Chapter = {
 <h3>What each layer actually buys you</h3>
 <table>
   <tr><th>Layer</th><th>Caches</th><th>Typical TTL</th><th>Who can invalidate it</th><th>What it really buys</th></tr>
-  <tr><td>Browser / HTTP cache</td><td>Static assets, GET responses, service-worker data</td><td>Minutes to a year (fingerprinted assets)</td><td><b>Nobody.</b> Once served, it is gone until it expires</td><td>Removes the request entirely — no network, no server work at all</td></tr>
+  <tr><td>Browser / HTTP cache</td><td>Static assets, GET responses, service-worker data</td><td>Minutes to a year (fingerprinted assets)</td><td><b>Nobody.</b> Once served, it is gone until it expires or the URL changes</td><td>Removes the request entirely — no network, no server work at all</td></tr>
   <tr><td>CDN edge</td><td>Assets, whole pages, API GETs, images</td><td>Seconds to days</td><td>You, via purge — propagation is sub-second to a few seconds on modern CDNs (Cloudflare reports a p50 under 150 ms for tag purge); budget tens of seconds for slow or tiered setups</td><td>Cuts a distant user's RTT (70-230 ms cross-region) to a nearby edge's 10-30 ms, and can absorb 80-99% of requests for highly cacheable content before they reach your region</td></tr>
   <tr><td>Reverse proxy (nginx, Varnish, Envoy)</td><td>Rendered fragments, upstream responses</td><td>Seconds to minutes</td><td>You, instantly — it's your box</td><td>Shields origin from duplicate work; the natural home for request coalescing</td></tr>
   <tr><td>In-process (Caffeine, an LRU Map)</td><td>Config, feature flags, hot rows, compiled templates</td><td>Seconds to minutes</td><td>Only that process; every instance has its own copy</td><td>~100 ns lookups, zero network — but N instances means N copies and N stale windows</td></tr>
@@ -297,7 +297,7 @@ export const sysdesCachingFundamentals: Chapter = {
   a bad deploy is unfixable for everyone who loaded the page.
 </div>
 
-<h3>Thundering herd, and the four ways to stop it</h3>
+<h3>Thundering herd, and the five ways to stop it</h3>
 <p>
   A single key serving 50,000 requests a second expires. Recomputing it takes
   20 ms. In that window <b>50,000 × 0.020 = 1,000 requests</b> all miss, all

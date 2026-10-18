@@ -166,8 +166,8 @@ export const sysdesObservabilityScale: Chapter = {
   A standard fix, described in that paper, is a <em>hedged request</em>: if a
   replica hasn't answered by p95, fire a second request to another replica
   and take the first response. That converts a tail event into a
-  p95-plus-a-bit event for about 5% extra traffic (the paper's benchmark
-  figure). The failure mode is that when the system is already
+  p95-plus-a-bit event for about 5% extra traffic (the paper's figure for
+  deferring to p95). The failure mode is that when the system is already
   degraded, <em>everything</em> exceeds p95, so every request hedges, load
   doubles, and you have built a retry storm. Always pair hedging with a
   circuit breaker and a budget ("at most 5% of requests may hedge") — the same
@@ -212,9 +212,8 @@ now add one label: user_id, 20,000,000 values
   contains an id or a timestamp; and a pod name or container id as a label in
   an autoscaling deployment, which creates a fresh series for every new pod.
   Prometheus does age out series that stop receiving samples, but the number
-  of series it has seen inside the retention window, and the memory and
-  index that go with them, grows with churn rather than with the size of
-  the current fleet. Each one of these has taken down a real monitoring
+  of distinct series it has to hold, and the memory and index space that go
+  with them, grows with churn rather than with the size of the current fleet. Each one of these has taken down a real monitoring
   cluster.
 </div>
 
@@ -338,7 +337,7 @@ now add one label: user_id, 20,000,000 values
 </p>
 <table>
   <tr><th>Don't page on this (cause)</th><th>Page on this instead (symptom)</th><th>Why</th></tr>
-  <tr><td>CPU above 80% on app tier</td><td>p99 request latency above the SLO threshold</td><td>High CPU with acceptable latency is a well-utilised fleet, not an incident.</td></tr>
+  <tr><td>CPU above 80% on app tier</td><td>Latency SLO burning its budget fast (multi-window burn rate on p99 requests)</td><td>High CPU with acceptable latency is a well-utilised fleet, not an incident.</td></tr>
   <tr><td>Read replica lag above 5 s</td><td>Rate of stale-read complaints / stale-read guard trips</td><td>Lag only matters if a user reads their own write and doesn't see it.</td></tr>
   <tr><td>Queue depth above 10,000</td><td>Oldest-message age above 5 minutes</td><td>Depth depends on message size and consumer count; age is directly the user-visible delay.</td></tr>
   <tr><td>A single host is unreachable</td><td>Error rate above the error budget burn threshold</td><td>If losing one host pages you, you did not build the fault tolerance you claimed.</td></tr>
@@ -400,7 +399,7 @@ now add one label: user_id, 20,000,000 values
   the long window is the 17-minute wait; a total outage burns the budget
   far faster than 14.4× and trips the same rule in about 1 minute (a 100%
   error rate gives a burn rate of 1000×, and the 1-hour window crosses 14.4×
-  after 0.86 bad minutes).
+  after about 0.83 bad minutes).
 </p>
 <p class="sub">
   The error budget also has a second,

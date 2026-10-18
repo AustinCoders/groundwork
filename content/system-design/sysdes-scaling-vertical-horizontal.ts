@@ -250,6 +250,12 @@ function allowRequest(userId) {
   <tr><td>Scaling mechanism</td><td>Autoscaling group behind a load balancer</td><td>Replication, then partitioning/sharding, each with real consistency consequences</td></tr>
   <tr><td>Practical limit</td><td>Whatever the data tier behind it can take</td><td>The write throughput of a single partition</td></tr>
 </table>
+<p>
+  Linear capacity turns sizing into a division: peak load over the load one
+  instance may safely carry, which is its tested throughput times a utilisation
+  ceiling you choose. At 12,000 requests a second peak, an instance tested at
+  800 and held to 60% carries 480, so the tier needs 12,000 ÷ 480 = 25 instances.
+</p>
 <p class="sub">
   This is why "make the app tier stateless" is not a style preference. It is
   the move that concentrates all the hard problems into one tier, where you

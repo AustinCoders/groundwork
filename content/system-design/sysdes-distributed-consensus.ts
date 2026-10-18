@@ -128,7 +128,7 @@ export const sysdesDistributedConsensus: Chapter = {
   close to n5. This matches the figure above.
 </p>
 <table>
-  <tr><th>Time (ms)</th><th>Event</th><th>Votes for n1</th><th>Votes for n5</th><th>Cluster state</th></tr>
+  <tr><th>Time (ms)</th><th>Event</th><th>Votes granted to n1</th><th>Votes granted to n5</th><th>Cluster state</th></tr>
   <tr><td>0</td><td>Leader's heartbeats stop arriving</td><td>0</td><td>0</td><td>Term 4, all five nodes idle followers</td></tr>
   <tr><td>147</td><td>n1's randomized timeout fires first; it becomes a candidate, increments to term 5, votes for itself</td><td>1 (self)</td><td>0</td><td>n1 sends RequestVote(term 5) to n2, n3, n4, n5</td></tr>
   <tr><td>148</td><td>n5's timeout fires 1 ms later, before n1's request can reach it; it also becomes a candidate in term 5 and votes for itself</td><td>1</td><td>1 (self)</td><td>n5 sends RequestVote(term 5) to n1, n2, n3, n4</td></tr>
@@ -138,8 +138,8 @@ export const sysdesDistributedConsensus: Chapter = {
   <tr><td>~153</td><td>n1's first heartbeat (AppendEntries, term 5) reaches n5</td><td>3</td><td>2</td><td>n5 is a candidate in term 5 and sees a leader for term 5, so it steps down to follower — no second election</td></tr>
 </table>
 <p class="sub">
-  With two candidates among five nodes, the three other voters can never split
-  evenly, so one candidate always reaches three votes. Randomization earns its
+  With two candidates among five nodes, when all three other voters respond they cannot split
+  evenly, so one candidate reaches three votes. Randomization earns its
   keep when three or more nodes time out together (votes can split 2-2-1 and
   nobody wins): without randomization they would retry on the same schedule
   and collide again and again, while with it one node almost always wakes
@@ -159,8 +159,8 @@ export const sysdesDistributedConsensus: Chapter = {
   candidate asks peers whether they would vote for it; peers that still hear
   from a live leader say no, so a minority node never inflates its term.
   <b>CheckQuorum</b>: a leader that has not heard from a majority within an
-  election timeout steps down on its own, and nodes that recently heard from a
-  leader ignore vote requests. Production implementations enable them
+  election timeout steps down on its own. A related rule in the dissertation
+  has nodes that recently heard from a leader ignore vote requests. Production implementations enable them
   (etcd's <code>--pre-vote</code> flag defaults to true in 3.6), and this
   is why a rejoining minority node is usually a non-event.
 </p>
@@ -202,7 +202,7 @@ export const sysdesDistributedConsensus: Chapter = {
 <table>
   <tr><th>Nodes</th><th>Majority</th><th>Failures tolerated</th><th>Comment</th></tr>
   <tr><td>3</td><td>2</td><td>1</td><td>The default. Survives one node or one AZ.</td></tr>
-  <tr><td>4</td><td>3</td><td>1</td><td><b>Strictly worse than 3</b> — same fault tolerance, more nodes to ack every write. Never do this.</td></tr>
+  <tr><td>4</td><td>3</td><td>1</td><td><b>Strictly worse than 3</b> — same fault tolerance, more nodes to ack every write. Avoid it.</td></tr>
   <tr><td>5</td><td>3</td><td>2</td><td>The right answer for anything critical: survives a node failure <em>during</em> a maintenance window.</td></tr>
   <tr><td>7</td><td>4</td><td>3</td><td>Rarely worth it. Every write waits for the 4th-fastest node, so latency gets worse as you add members.</td></tr>
 </table>
@@ -313,8 +313,7 @@ export const sysdesDistributedConsensus: Chapter = {
 <p class="sub">
   You usually get the token for free: ZooKeeper's <code>zxid</code> or znode
   version, etcd's revision of the lock key (its create or mod revision; do
-  not use the lease ID, which is an opaque identifier, not an ordered
-  counter), or a <code>version</code> column you compare-and-swap on in your
+  not use the lease ID, which does not record the order of writes), or a <code>version</code> column you compare-and-swap on in your
   own database. Kleppmann's essay on distributed locking is the standard
   reference for why the token is needed and why Redis-based locks lack one.
   This is also the honest answer to the long-running argument about

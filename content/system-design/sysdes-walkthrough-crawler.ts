@@ -47,7 +47,7 @@ export const sysdesWalkthroughCrawler: Chapter = {
 
 <h3>The loop</h3>
 <figure>
-  <svg viewBox="0 0 640 270" class="dg" role="img" aria-label="The crawl loop: seed URLs feed a URL frontier, which hands URLs to a fetcher that uses DNS and robots caches, then a parser that checks content against fingerprints and writes to a content store. A link extractor normalizes and filters links, a URL-seen check drops known URLs, and a router sends new URLs to the frontier of the node that owns their host.">
+  <svg viewBox="0 0 640 270" class="dg" role="img" aria-label="The crawl loop: seed URLs feed a URL frontier, which hands URLs to a fetcher that uses DNS and robots caches, then a parser that checks content against fingerprints and writes to a content store. A link extractor normalizes and filters links, a router sends each URL to the node that owns its host, and that node's URL-seen check drops known URLs before the rest enter its frontier.">
     <g class="rough">
       <path class="lng" d="M96,60 L126,60" />
       <path class="lng" d="M236,60 L270,60" />
@@ -77,14 +77,14 @@ export const sysdesWalkthroughCrawler: Chapter = {
     <text class="sm" x="586" y="72" text-anchor="middle">store</text>
     <text class="sm" x="469" y="170" text-anchor="middle">link extractor</text>
     <text class="sm" x="469" y="186" text-anchor="middle">normalize, filter</text>
-    <text class="sm" x="325" y="170" text-anchor="middle">URL-seen</text>
-    <text class="sm" x="325" y="186" text-anchor="middle">seen URLs dropped</text>
-    <text class="sm" x="181" y="170" text-anchor="middle">route by host</text>
-    <text class="sm" x="181" y="186" text-anchor="middle">to owning node</text>
+    <text class="sm" x="325" y="170" text-anchor="middle">route by host</text>
+    <text class="sm" x="325" y="186" text-anchor="middle">to owning node</text>
+    <text class="sm" x="181" y="170" text-anchor="middle">URL-seen</text>
+    <text class="sm" x="181" y="186" text-anchor="middle">seen URLs dropped</text>
     <text class="lbl" x="16" y="226" style="font-size:14px">Every box is a place to say no: robots, trap budget, duplicate URL, duplicate content.</text>
     <text class="lbl" x="16" y="248" style="font-size:14px">The frontier is the only box that decides what happens next.</text>
   </svg>
-  <figcaption>The crawl loop. The structure matches the one in the Mercator paper (frontier, fetcher, content-seen test, link extractor, duplicate URL eliminator); the router and the per-node ownership are the distributed addition discussed later.</figcaption>
+  <figcaption>The crawl loop. The structure matches the one in the Mercator paper (frontier, fetcher, content-seen test, link extractor, duplicate URL eliminator). In its distributed form a host splitter routes each URL to the process that owns its host, and only then does that process's duplicate URL eliminator check it, so each node keeps a URL-seen set for its own hosts only; the per-node ownership is discussed later.</figcaption>
 </figure>
 
 <h3>The URL frontier: priority in front, politeness behind</h3>

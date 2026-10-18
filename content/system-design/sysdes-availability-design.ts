@@ -337,9 +337,9 @@ export const sysdesAvailabilityDesign: Chapter = {
   <b>recovery time objective</b> (how long you can be down). AWS's disaster
   recovery guidance describes four tiers in rising cost and falling recovery
   time: <b>backup and restore</b> (restore from copies in another region,
-  hours), <b>pilot light</b> (data replicated and core infrastructure defined
-  but switched off), <b>warm standby</b> (a scaled-down copy that already
-  serves traffic), and <b>multi-site active-active</b> (every region serves
+  hours), <b>pilot light</b> (data replicated and databases running, with the
+  application servers defined but switched off), <b>warm standby</b> (a
+  scaled-down but fully running copy that can take traffic right away), and <b>multi-site active-active</b> (every region serves
   traffic). Pick the cheapest tier that meets the RTO and RPO the business
   signed up for, and test the restore; an untested backup is a hope.
 </p>

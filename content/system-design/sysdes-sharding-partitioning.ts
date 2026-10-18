@@ -199,8 +199,8 @@ export const sysdesShardingPartitioning: Chapter = {
   and often dies too. Virtual nodes fix both: give each physical node V
   positions on the ring (deployments commonly use tens to a few hundred; Cassandra's
   <code>num_tokens</code> defaulted to 256 historically and 16 in modern
-  versions with the token allocation algorithm). Load variance shrinks
-  roughly as 1/√V, and a departing node's data is refilled from every
+  versions with the token allocation algorithm). The relative spread of load
+  (its standard deviation) shrinks roughly as 1/√V, and a departing node's data is refilled from every
   survivor in parallel. As a bonus, a machine with twice the RAM simply
   gets twice the vnodes.
 </p>
@@ -371,7 +371,7 @@ function lookup(ring, key) {
 <ul>
   <li><b>1. Stand up the new topology</b> alongside the old. Nothing reads from it.</li>
   <li><b>2. Backfill</b> historical rows in throttled chunks, watching replication lag and IO on the source. For a multi-TB table this runs for days; make it resumable and idempotent.</li>
-  <li><b>3. Keep the new side in sync</b> while the old one remains the source of truth. The safer default is change data capture: tail the old database's WAL or binlog and apply it to the new topology, so there is one writer and an ordered stream. An application-level dual-write is not atomic (one side can succeed while the other fails), so if you do it — Notion did, with an audit log and a catch-up script replaying missed writes — build in reconciliation.</li>
+  <li><b>3. Keep the new side in sync</b> while the old one remains the source of truth. Start capturing changes before the backfill begins (or from the snapshot position it reads), so no write falls into a gap between the two. The safer default is change data capture: tail the old database's WAL or binlog and apply it to the new topology, so there is one writer and an ordered stream. An application-level dual-write is not atomic (one side can succeed while the other fails), so if you do it — Notion did, with an audit log and a catch-up script replaying missed writes — build in reconciliation.</li>
   <li><b>4. Shadow-read and diff:</b> serve from old, also read from new, compare, emit a mismatch counter. You want a full day at zero mismatches before proceeding. This step is the one people skip and the one that catches the bugs.</li>
   <li><b>5. Flip reads gradually</b> — 1% of tenants, then 10%, then 50% — with an instant rollback that requires no deploy.</li>
   <li><b>6. Flip the source of truth</b>, keep dual-writing for a week as your undo button, then stop and drop the old topology.</li>
@@ -382,9 +382,9 @@ function lookup(ring, key) {
   4,096 — and map many logical shards onto each physical machine. Growing
   the cluster then means <em>moving whole logical shards</em>, never
   rehashing a single key: the shard key and the routing function never
-  change, only the placement map does. Notion did exactly this: 480 logical
+  change, only the placement map does. Notion runs this shape: 480 logical
   shards across 32 Postgres databases, routed in the application, with no
-  Vitess. Designing Data-Intensive Applications lists this fixed partition count as
+  Vitess (480 divides evenly across 32, 40 or 48 hosts). Designing Data-Intensive Applications lists this fixed partition count as
   the simple strategy. The alternative is dynamic
   splitting, used by Vitess, HBase, Spanner and CockroachDB: each shard owns a
   range of the key space and is split or merged online as it grows, which
@@ -416,7 +416,7 @@ function lookup(ring, key) {
   <span class="ttl">Before you move on</span>
   <ul>
     <li>Given a candidate shard key, check it against all five required properties — cardinality, access distribution, immutability, query coverage, transaction alignment — and say which ones it fails.</li>
-    <li>Explain why <code>hash(key) mod N</code> breaks under resizing, and how consistent hashing with virtual nodes fixes it, including why load variance shrinks as vnode count V grows.</li>
+    <li>Explain why <code>hash(key) mod N</code> breaks under resizing, and how consistent hashing with virtual nodes fixes it, including why the relative spread of load shrinks as vnode count V grows.</li>
     <li>Trace, by hand, which surviving nodes absorb a failed node's arcs on a small consistent-hashing ring — and explain why that split, not a single overloaded neighbor, is what vnodes buy you.</li>
     <li>Name at least two mitigations for a hot shard caused by one celebrity key, and say which to reach for first and why.</li>
     <li>Explain why choosing a large fixed number of logical shards up front means you never have to rehash a key again when the cluster grows.</li>

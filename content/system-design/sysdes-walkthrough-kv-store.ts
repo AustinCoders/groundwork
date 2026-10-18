@@ -309,7 +309,7 @@ export const sysdesWalkthroughKvStore: Chapter = {
     <text class="sm" x="60"  y="62" text-anchor="middle">write</text>
     <text class="sm" x="60"  y="78" text-anchor="middle">mutation</text>
     <text class="sm" x="184" y="62" text-anchor="middle">commit log</text>
-    <text class="sm" x="184" y="78" text-anchor="middle">append, fsync</text>
+    <text class="sm" x="184" y="78" text-anchor="middle">append, sync</text>
     <text class="sm" x="308" y="62" text-anchor="middle">memtable</text>
     <text class="sm" x="308" y="78" text-anchor="middle">sorted, in RAM</text>
     <text class="sm" x="432" y="62" text-anchor="middle">SSTable</text>
@@ -367,7 +367,7 @@ export const sysdesWalkthroughKvStore: Chapter = {
 <ul>
   <li><b>Hot keys.</b> Partitioning spreads keys, not requests. The Dynamo paper's design assumes there are enough popular keys to spread their load; a single hot key stays on its N replicas. Answer with a cache in front, key splitting (a counter as several keys summed on read) or client-side batching.</li>
   <li><b>Deletes.</b> A delete is a write of a tombstone; purge it only after every replica has it, which is the repair-within-grace-period rule above. Otherwise deleted data returns.</li>
-  <li><b>Multi-region.</b> Put replicas of a preference list in several data centers, as the paper describes, as the paper describes. Cassandra additionally lets you choose per request between a local and a global quorum (LOCAL_QUORUM and EACH_QUORUM); waiting globally costs cross-region latency of 60 to 230 ms (the course's round-trip figures).</li>
+  <li><b>Multi-region.</b> Put replicas of a preference list in several data centers, as the paper describes. Cassandra additionally lets you choose per request between a local and a global quorum (LOCAL_QUORUM and EACH_QUORUM); waiting globally costs cross-region latency of 60 to 230 ms (the course's round-trip figures).</li>
   <li><b>Large values.</b> Dynamo targets objects under 1 MB. Beyond that, store a pointer and keep the blob in object storage.</li>
   <li><b>Overload on recovery.</b> A node that returns after hours is flooded by hint replay and repair streaming at the same moment it is cold. Throttle both.</li>
 </ul>

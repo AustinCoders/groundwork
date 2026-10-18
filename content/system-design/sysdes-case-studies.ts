@@ -232,7 +232,7 @@ export const sysdesCaseStudies: Chapter = {
   tuning of socket buffers and file descriptor limits. The post does not
   state a per-connection memory figure; dividing the 35 GB of active memory
   in its output by 2.28 million sockets gives roughly 15 KB each, which is our
-  arithmetic and an upper bound. (The Erlang runtime properties above are
+  rough estimate from active memory alone, not a figure from the post. (The Erlang runtime properties above are
   general features of that platform, not claims from the post.)
 </p>
 <p>
@@ -297,7 +297,7 @@ export const sysdesCaseStudies: Chapter = {
 </p>
 <pre><code>64-bit id =  41 bits  millisecond timestamp   <span class="c">// 2^41 ms is ~69.7 years from a custom epoch (the 2012 post says "41 years")</span>
            + 13 bits  logical shard id        <span class="c">// 8,192 logical shards</span>
-           + 10 bits  per-shard sequence      <span class="c">// 1,024 ids per ms per shard</span>
+           + 10 bits  per-shard sequence      <span class="c">// per-table auto-increment mod 1,024: unique only while a shard mints at most 1,024 ids per ms</span>
 
   ids are roughly time-sortable  -> good index locality on an append-heavy table
   the shard is IN the id         -> route a request without a lookup table
@@ -427,7 +427,7 @@ export const sysdesCaseStudies: Chapter = {
   <li><b>Date it and hedge it.</b> "As of their 2017 write-up" costs you four words and protects you completely — the interviewer may work there and know it changed.</li>
   <li><b>Always state the cost.</b> A candidate who says "and that cost them cross-shard joins" has understood the decision. A candidate who lists only the benefit has memorised it.</li>
   <li><b>Never argue from authority.</b> "Netflix does it" is not a reason. "Our demand is predictable in the same way theirs is, which is what makes precomputed placement work here" is a reason.</li>
-  <li><b>Scale-check the analogy out loud.</b> Most of these solve problems that appear above roughly 10 million users. If the prompt is a 100k-user product, the correct use of the case study is to explain why you are <em>not</em> doing it yet — which sets up the tradeoff-thinking chapter's central point.</li>
+  <li><b>Scale-check the analogy out loud.</b> Most of these solve problems that appear at a much larger scale than a small product has. If the prompt is a 100k-user product, the correct use of the case study is to explain why you are <em>not</em> doing it yet — which sets up the tradeoff-thinking chapter's central point.</li>
   <li><b>The pitfall:</b> importing a whole architecture instead of one idea. These companies each had a specific constraint that justified a specific cost. Steal the reasoning; leave the org chart.</li>
 </ul>
 
@@ -439,7 +439,7 @@ export const sysdesCaseStudies: Chapter = {
   <tr><td>2. Date it and hedge it</td><td>"As Twitter's engineering team described it around 2013 — this may well have changed since."</td><td>Four words of hedging protects you if the interviewer knows it changed</td></tr>
   <tr><td>3. Always state the cost</td><td>"The fix was fan-out on write, but it cost real write amplification at the tail — a 30M-follower account means 30M list insertions per tweet."</td><td>Shows you understood the decision, not just the punchline</td></tr>
   <tr><td>4. Never argue from authority</td><td>"Our load isn't Twitter's, but if our follower distribution is similarly power-law, the same split should hold for the same reason — it's write cost that explodes, not read cost."</td><td>Reasons from the property, not from "Twitter does it"</td></tr>
-  <tr><td>5. Scale-check the analogy</td><td>"This only pays off once the account tail is large enough for 30M-insert fan-outs to happen regularly. At a few hundred thousand users I'd skip the hybrid and fan out on write for everyone."</td><td>Matches the chapter's own point that most of these solve problems above ~10M users</td></tr>
+  <tr><td>5. Scale-check the analogy</td><td>"This only pays off once the account tail is large enough for 30M-insert fan-outs to happen regularly. At a few hundred thousand users I'd skip the hybrid and fan out on write for everyone."</td><td>Matches the chapter's own point that most of these solve problems at a scale a small product has not reached</td></tr>
   <tr><td>6. The pitfall, avoided</td><td>"I'm borrowing the specific idea — split head and tail, make the threshold a tunable — not the rest of Twitter's stack."</td><td>Steals the reasoning, leaves the org chart</td></tr>
 </table>
 <p class="sub">

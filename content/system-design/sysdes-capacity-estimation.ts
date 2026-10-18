@@ -91,7 +91,7 @@ export const sysdesCapacityEstimation: Chapter = {
     <text class="sm" x="560" y="170" text-anchor="middle">8. servers</text>
     <text class="sm" x="560" y="188" text-anchor="middle">peak ÷ per-box</text>
   </svg>
-  <figcaption>Step 3 sizes the fleet, step 5 chooses the storage engine, step 6 decides whether you need a CDN. Do them in order and each answer is an input to the next; skip one and you will be caught out by the interviewer who asks "so how many machines?"</figcaption>
+  <figcaption>Step 3 sizes the fleet, step 5 chooses the storage engine, step 6 decides whether you need a CDN. Do them in this order: the average becomes the peak, storage per day becomes storage over the retention period, and the peak feeds the server count at the end; skip one and you will be caught out by the interviewer who asks "so how many machines?"</figcaption>
 </figure>
 <p class="sub">
   Two habits make this fluent. First, <b>write the assumptions on the board
@@ -121,7 +121,7 @@ export const sysdesCapacityEstimation: Chapter = {
   <tr><td>L2 cache reference</td><td>~4-7 ns</td><td></td></tr>
   <tr><td>Mutex lock/unlock, uncontended</td><td>~20-25 ns</td><td></td></tr>
   <tr><td>Main memory reference</td><td>100 ns</td><td>100× slower than L1 — this is why cache locality wins</td></tr>
-  <tr><td>Compress 1 KB</td><td>~2 µs</td><td>compression is nearly always cheaper than the network hop it saves</td></tr>
+  <tr><td>Compress 1 KB</td><td>~2 µs</td><td>compression usually costs less than the network hop it saves, when the data compresses well</td></tr>
   <tr><td>Read 1 MB sequentially from RAM</td><td>~50 µs</td><td>≈ 20 GB/s on current servers; the old list says 250 µs, and a naive extrapolation says 3 µs</td></tr>
   <tr><td>SSD random read (NVMe, with queueing)</td><td>~100 µs</td><td>ultra-low-latency flash does ~10-20 µs; ordinary TLC NVMe is typically 50 µs and up, and the rest is the software stack</td></tr>
   <tr><td>Read 1 MB from NVMe SSD</td><td>~300 µs</td><td>≈ 3 GB/s</td></tr>
@@ -138,8 +138,8 @@ export const sysdesCapacityEstimation: Chapter = {
   <tr><td>Read replica</td><td>Planning figure: another ~20,000 simple reads/s each</td><td>Replicas scale reads, never writes. Say this every time you add one.</td></tr>
   <tr><td>Redis, single instance</td><td>~100,000 ops/s; up to ~1,000,000 pipelined (the Redis docs show 70,000-190,000 non-pipelined and 1.5 million+ pipelined on commodity hardware)</td><td>Single-threaded for command execution — one hot key cannot be scaled by adding RAM.</td></tr>
   <tr><td>Application server, real JSON handler with a DB call</td><td>1,000-5,000 rps</td><td>Use 1,000 for sizing. It is conservative and defensible.</td></tr>
-  <tr><td>nginx / envoy serving static or proxying</td><td>50,000+ rps per box</td><td></td></tr>
-  <tr><td>Kafka broker</td><td>Planning figure: ~100 MB/s sustained per broker</td><td>Sequential disk writes; the bottleneck is usually the NIC or disk. Tuned clusters on better hardware do several times more; LinkedIn's well-known 2014 benchmark reached about 190 MB/s across three small machines.</td></tr>
+  <tr><td>nginx / envoy serving static or proxying</td><td>Planning figure: ~50,000 rps per box</td><td></td></tr>
+  <tr><td>Kafka broker</td><td>Planning figure: ~100 MB/s sustained per broker</td><td>Sequential disk writes; the bottleneck is usually the NIC or disk. Tuned clusters on better hardware can do more. LinkedIn's well-known 2014 benchmark reached about 190 MB/s of producer traffic into a three-broker cluster with replication factor 3, so each broker wrote roughly that much on six disks: a tuned best case, which shows the planning figure is conservative rather than a rate to expect by default.</td></tr>
   <tr><td>One 10 / 25 Gbps NIC</td><td>1.25 / 3.1 GB/s</td><td>Divide by 8. Bandwidth is quoted in bits, storage in bytes — this is the classic slip.</td></tr>
   <tr><td>One commodity server, 2026</td><td>64-128 cores, 256 GB-2 TB RAM, tens of TB NVMe</td><td>Bigger than most candidates assume. Vertical scaling gets you further than the folklore suggests.</td></tr>
 </table>
@@ -278,7 +278,7 @@ ROUTING TABLE (which gateway holds each live socket?)
 <p class="sub">
   On the per-box number: WhatsApp reported more than 2 million simultaneous
   connections on one tuned FreeBSD/Erlang server in 2012 (24 logical CPUs,
-  about 96 GB of RAM, roughly 15 KB per connection by the arithmetic). That is
+  about 96 GB of RAM; the post gives no per-connection memory figure). That is
   a record, not a plan: use 250,000-500,000 per box unless you are told the
   hardware and the runtime.
 </p>

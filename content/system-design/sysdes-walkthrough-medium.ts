@@ -284,9 +284,7 @@ export const sysdesWalkthroughMedium: Chapter = {
 </p>
 <p>
   Two refinements, if the interviewer digs. The threshold is a tunable chosen
-  from a cost model, anywhere from roughly 100,000 to 1,000,000 followers
-  (the case-studies chapter notes Twitter-era talks around the top of that
-  range), and ideally dynamic rather than a magic constant — the real cost driver is
+  from a cost model, anywhere from roughly 100,000 to 1,000,000 followers, and ideally dynamic rather than a magic constant — the real cost driver is
   <em>followers × posting rate</em>, so an account with 80,000 followers
   posting 50 times a day may deserve pull treatment while a 200,000-follower
   account posting monthly does not. And the celebrity's recent posts are a

@@ -307,8 +307,7 @@ export const sysdesWalkthroughSimple: Chapter = {
   is about <b>9,600× fewer</b> write transactions; the redirect path itself now
   performs <em>zero</em> writes. Be honest about the other number, though: a
   flush writes one delta per <em>distinct</em> link that instance saw in the
-  10-second window. Each instance handles about 11,574 ÷ 12 ≈ 965 redirects per
-  window, so if they touch an illustrative 500 distinct links, a flush carries
+  10-second window. Each instance handles about 11,574 ÷ 12 ≈ 965 redirects a second, about 9,650 in a window. If they touch an illustrative 500 distinct links, a flush carries
   about 500 rows and the fleet writes 72 × 500 = 36,000 row updates a minute,
   roughly 19× fewer rows than the naive 694,440. With a long tail where nearly
   every click is a different link, the row count barely falls; with a viral link

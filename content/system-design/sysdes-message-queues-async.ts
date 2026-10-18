@@ -142,7 +142,7 @@ export const sysdesMessageQueuesAsync: Chapter = {
   <tr><td>Unit of progress</td><td>Per-message ack / nack</td><td>Per-partition offset commit</td></tr>
   <tr><td>After a message is consumed</td><td>Deleted</td><td>Still there until retention expires (hours to forever)</td></tr>
   <tr><td>Replay</td><td>Not in a classic or quorum queue — you must have kept a copy yourself (RabbitMQ Streams are the log-shaped exception)</td><td>Seek the offset backwards (or to a timestamp); a brand-new consumer can read all history</td></tr>
-  <tr><td>Ordering</td><td>Per-queue, and lost the moment you add a second consumer</td><td>Total order <em>within a partition</em>; none across partitions</td></tr>
+  <tr><td>Ordering</td><td>Per queue while one consumer reads it; lost once competing consumers share a RabbitMQ queue (SQS FIFO keeps order within a message group)</td><td>Total order <em>within a partition</em>; none across partitions</td></tr>
   <tr><td>Parallelism</td><td>Add consumers freely — the broker load-balances messages</td><td>Capped at partition count per consumer group. Exceptions that trade away per-key order: Kafka 4.2 share groups and Pulsar shared subscriptions allow more consumers than partitions</td></tr>
   <tr><td>Throughput, single node</td><td>Tens of thousands of msg/s per node is a common planning figure for RabbitMQ, far lower with persistence, confirms and rich routing; benchmark your own</td><td>Hundreds of MB/s; ~10 MB/s per partition is a comfortable planning figure</td></tr>
   <tr><td>Routing</td><td>Rich: topic/fanout/header exchanges, per-message TTL, delayed delivery</td><td>Deliberately dumb: topic + partition. Routing is the consumer's job</td></tr>
@@ -194,7 +194,7 @@ export const sysdesMessageQueuesAsync: Chapter = {
 <ul>
   <li><b>A natural idempotency key.</b> The message carries a stable ID (order ID, event ID). The consumer writes <code>INSERT ... ON CONFLICT DO NOTHING</code> into a processed-events table inside the same transaction as its business write. Second delivery hits the conflict and does nothing. Cheap, obvious, correct.</li>
   <li><b>Naturally idempotent operations.</b> <code>SET status = 'shipped'</code> is safe to repeat; <code>balance = balance + 10</code> is not. Prefer absolute writes over deltas when you get to choose the schema — this single habit removes most duplicate-processing bugs before they exist.</li>
-  <li><b>Idempotency tokens at the boundary.</b> When the side effect leaves your system (Stripe charge, email send), pass a client-generated key that the provider de-duplicates on. Stripe's <code>Idempotency-Key</code> exists for precisely this scenario (the header is being standardised as the IETF draft <code>draft-ietf-httpapi-idempotency-key-header</code>; it is not yet an RFC).</li>
+  <li><b>Idempotency tokens at the boundary.</b> When the side effect leaves your system (Stripe charge, email send), pass a client-generated key that the provider de-duplicates on. Stripe's <code>Idempotency-Key</code> exists for precisely this scenario (the header is described in the IETF draft <code>draft-ietf-httpapi-idempotency-key-header</code>, which is an Internet-Draft, last revised in October 2025 and not an RFC).</li>
 </ul>
 <div class="say">
   <span class="ttl">Say it like this →</span> "I'll run at-least-once and
@@ -366,12 +366,12 @@ await kafka.send("order.created", e); <span class="c">// 2. broker unreachable �
 <table>
   <tr><th>Time</th><th>Event</th><th>Outbox row (event E77)</th><th><code>processed_events</code> table</th><th>Fulfillment record</th></tr>
   <tr><td>t0</td><td>Order service commits: <code>orders</code> row + outbox row, one transaction</td><td>status = pending</td><td>empty</td><td>none yet</td></tr>
-  <tr><td>t1</td><td>Relay publishes E77 to Kafka (a polling relay then marks the row sent; a log-based relay needs no mark)</td><td>status = sent</td><td>empty</td><td>none yet</td></tr>
-  <tr><td>t2</td><td>Consumer reads E77 at offset 42, begins processing</td><td>sent</td><td>empty</td><td>in progress</td></tr>
-  <tr><td>t3</td><td>Consumer crashes before committing the offset or writing <code>processed_events</code></td><td>sent</td><td>empty</td><td>lost — never committed</td></tr>
-  <tr><td>t4</td><td>Consumer restarts, resumes from the last committed offset (42, the next record to read) — E77 is redelivered</td><td>sent</td><td>empty</td><td>reprocessing starts</td></tr>
-  <tr><td>t5</td><td>Consumer inserts into <code>processed_events(event_id)</code> and writes the fulfillment row, same transaction</td><td>sent</td><td>{E77} — first successful insert</td><td>created, exactly once</td></tr>
-  <tr><td>t6</td><td>Offset 43 committed (Kafka commits the position of the <em>next</em> record to read, so after finishing offset 42 you commit 43)</td><td>sent</td><td>{E77}</td><td>created</td></tr>
+  <tr><td>t1</td><td>Relay publishes E77 to Kafka (a polling relay would then mark the row sent, but in this trace it crashes first; see t7)</td><td>status = pending (published, not yet marked)</td><td>empty</td><td>none yet</td></tr>
+  <tr><td>t2</td><td>Consumer reads E77 at offset 42, begins processing</td><td>pending</td><td>empty</td><td>in progress</td></tr>
+  <tr><td>t3</td><td>Consumer crashes before committing the offset or writing <code>processed_events</code></td><td>pending</td><td>empty</td><td>lost — never committed</td></tr>
+  <tr><td>t4</td><td>Consumer restarts, resumes from the last committed offset (42, the next record to read) — E77 is redelivered</td><td>pending</td><td>empty</td><td>reprocessing starts</td></tr>
+  <tr><td>t5</td><td>Consumer inserts into <code>processed_events(event_id)</code> and writes the fulfillment row, same transaction</td><td>pending</td><td>{E77} — first successful insert</td><td>created, exactly once</td></tr>
+  <tr><td>t6</td><td>Offset 43 committed (Kafka commits the position of the <em>next</em> record to read, so after finishing offset 42 you commit 43)</td><td>pending</td><td>{E77}</td><td>created</td></tr>
   <tr><td>t7 (later)</td><td>The relay had crashed after publishing E77 but before marking it sent, so on restart it publishes E77 again as a new record (say offset 57), and the consumer reads it</td><td>sent (finally marked)</td><td>insert hits the unique constraint — conflict, no-op</td><td>unchanged — effect already applied</td></tr>
 </table>
 <p class="sub">

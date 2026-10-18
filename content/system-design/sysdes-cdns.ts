@@ -264,7 +264,7 @@ export const sysdesCdns: Chapter = {
     <text class="sm rd" x="16" y="228">Bob requests the same path, hits Alice's cached entry, and reads her order history.</text>
     <text class="sm rd" x="16" y="248">One request poisons the entry for every user in that PoP until the TTL expires.</text>
   </svg>
-  <figcaption>The green row is a good key: coarse enough to be shared, precise enough to be correct. The red row is the class of bug behind Valve's Steam incident in December 2015, when an aggressive caching change served some users' store pages (account details included) to other users; Valve put the exposure at about 34,000 users.</figcaption>
+  <figcaption>The green row is a good key: coarse enough to be shared, precise enough to be correct. The red row is the class of bug behind Valve's Steam incident in December 2015, when an aggressive caching change served some users' store pages (account details included) to other users.</figcaption>
 </figure>
 
 <div class="warn">
@@ -354,7 +354,7 @@ export const sysdesCdns: Chapter = {
   <tr><td>Mostly-anonymous read pages (news, docs, catalogue, marketing)</td><td>Large</td><td>One cached copy serves millions; the long tail is where hit rate goes, so watch p50 not just totals</td></tr>
   <tr><td>Read-heavy public API (prices, timetables, feature flags)</td><td>Real, with 5-60 s TTLs</td><td>The traffic is spiky and repetitive — exactly what a cache is for</td></tr>
   <tr><td>Highly personalised API (<code>/me/feed</code>)</td><td>~Nothing on cacheability</td><td>Key cardinality equals user count. You still get TLS termination and a warm origin connection — worth maybe 30-50% off TTFB, not 10x</td></tr>
-  <tr><td>Write-heavy endpoints (checkout, messaging, uploads)</td><td>Nothing, by definition</td><td>POST/PUT/PATCH are never cached. A CDN can still shed abusive traffic and terminate TLS, but it is not a scaling story</td></tr>
+  <tr><td>Write-heavy endpoints (checkout, messaging, uploads)</td><td>Nothing, by definition</td><td>In practice CDNs cache only GET and HEAD responses. A CDN can still shed abusive traffic and terminate TLS, but it is not a scaling story</td></tr>
   <tr><td>Real-time, sub-second freshness (live trading, presence)</td><td>Nothing, and it can hurt</td><td>Any TTL is too long; caching here converts a latency problem into a correctness problem</td></tr>
 </table>
 <p class="sub">

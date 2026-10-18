@@ -117,7 +117,7 @@ export const sysdesCapTheoremDepth: Chapter = {
   <tr><td>t=0 to t=1000 ms</td><td>A client on the minority side sends a write</td><td>—</td><td>No quorum reachable — write fails with a timeout, not a wrong answer</td></tr>
   <tr><td>t≈1000 ms</td><td>Minority nodes hit their election timeout (etcd default 1000 ms)</td><td>—</td><td>With PreVote (etcd's <code>--pre-vote</code> flag defaults to true in 3.6) a node first asks "would you vote for me?", gets at most 2 of 5 yes answers, and does not bump its term. In plain Raft it becomes a candidate, increments its term, and keeps retrying with ever higher terms</td></tr>
   <tr><td>t=1000 ms onward</td><td>Majority-side clients keep reading and writing</td><td>Fully available, fully consistent — commits proceed normally</td><td>Still returning errors or refusing to serve</td></tr>
-  <tr><td>partition heals</td><td>Minority nodes contact the majority leader</td><td>With PreVote or CheckQuorum: unchanged, the leader's heartbeats pull the minority back as followers at the current term. In plain Raft, a rejoining node with an inflated term forces the healthy leader to step down and triggers a needless election</td><td>Steps down to follower, catches up on the log</td></tr>
+  <tr><td>partition heals</td><td>Minority nodes contact the majority leader</td><td>With PreVote: unchanged, the leader's heartbeats pull the minority back as followers at the current term. In plain Raft, and with CheckQuorum alone, a rejoining node with an inflated term forces the healthy leader to step down and triggers a needless election</td><td>Steps down to follower, catches up on the log</td></tr>
 </table>
 <p class="sub">
   Nothing in this timeline ever returns a stale or wrong value — that is the

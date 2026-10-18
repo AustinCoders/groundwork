@@ -103,7 +103,7 @@ export const sysdesReplication: Chapter = {
 <table>
   <tr><th>Setting</th><th>Commit returns after</th><th>Acknowledged write can be lost if…</th></tr>
   <tr><td>Asynchronous (<code>synchronous_standby_names</code> empty, the default)</td><td>The leader's own WAL flush</td><td>The leader dies before the standby received the record</td></tr>
-  <tr><td><code>remote_write</code></td><td>The standby has received the record and handed it to its operating system, not necessarily flushed it</td><td>Both machines crash and the primary's database is also corrupted or lost at the same time (the manual's wording)</td></tr>
+  <tr><td><code>remote_write</code></td><td>The standby has received the record and handed it to its operating system, not necessarily flushed it</td><td>The primary is lost and the standby's operating system crashes before it flushes the record (the manual: the write survives a crash of the standby's PostgreSQL, not of its operating system)</td></tr>
   <tr><td><code>on</code> with a standby named</td><td>The standby has flushed the commit record to durable storage</td><td>Both machines lose their storage (the manual: the primary and every synchronous standby suffer corruption of their database storage)</td></tr>
   <tr><td><code>remote_apply</code></td><td>The standby has replayed the record, so it is visible to queries there</td><td>Same as <code>on</code>, and a read from a synchronous standby that acknowledged sees the write</td></tr>
 </table>
