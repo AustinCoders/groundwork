@@ -398,3 +398,32 @@ growth rate, wrong complexities, slips that were not real mistakes). Not done: t
 reports is thin because LeetCode, Glassdoor and Medium return 403; levels are mostly not stated.
 
 `npm run sources` now also reads the `url:` fields of the data files, so these 84 added links are checked too.
+
+## Company questions, Phase 1: company pages, Indian startups, sync with the problems (October 2026)
+
+What was added. A page per company (`/company-questions/<company>`, 22 of them) showing the interview process as a
+timeline of rounds, with for each round the format, what it tests, how well it is reported, the questions to practise
+and "what can be asked" for that kind of round (`rounds.ts`). Ten Indian startups were researched and added (Zomato,
+CRED, Meesho, Zerodha, Groww, Paytm, Ola, Dream11, Juspay, Myntra), with 8 new design answers (with diagrams) and 16
+new coding answers. In total the section now has 38 design answers, 52 coding answers, 80 diagrams and 22 processes.
+The hub became company cards (each with a strip of its rounds), a round guide and a filtered list of every answer.
+
+Evidence for the startups is thin and old: no 2025-2026 first-hand report was readable for most of them (LeetCode,
+Glassdoor, AmbitionBox and Medium return 403), Zerodha and CRED have no verified coding problem, and several GeeksforGeeks
+pages show only a "last updated" date. The pages say so, grades are strict, and unwritten reported prompts are listed
+as "Reported" with a source link instead of being invented answers.
+
+Verification. Every process was re-fetched against its cited pages by a second set of agents, which downgraded the grades it could
+not support (Microsoft's recruiter and CS rounds, Zomato's HR round, one reported prompt), removed unsupported claims
+(a Bar Raiser "veto", invented years, platform names, durations) and reworded about 200 round entries. The new answers went through the same independent review as the first batch (design answers, diagrams, coding
+traces re-derived by instrumenting the code).
+
+Sync. Each coding answer links to a playground problem (`dsa-exercises.ts`; 28 existed, 15 were generated from the
+verified solutions into `content/practice/company.ts` and tested to pass with the solution and fail with the starter).
+Problem pages show "Asked at <company>" with a link to the explained answer; company pages and the hub count a
+question as done when it is marked practised or its exercise is solved. The Interview book is kept and links to the
+company section from its rounds; the mock interview is untouched.
+
+Not done (Phase 2 and 3, written in `docs/ROADMAP.md`): machine coding and low-level design answers, CS fundamentals
+and SQL answers, behavioural and HR sets per company, deeper "what can be asked" answers, whiteboard boards for every
+design answer.

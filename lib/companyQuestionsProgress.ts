@@ -1,7 +1,8 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { store } from "@/lib/storage";
+import { useProgressValue } from "@/lib/hooks";
+import { progress, store } from "@/lib/storage";
 
 const KEY = "groundwork:company-questions:practised";
 const MAX_ENTRIES = 500;
@@ -57,4 +58,25 @@ export const practised = {
 
 export function usePractised(): Record<string, true> {
   return useSyncExternalStore(subscribe, read, () => EMPTY);
+}
+
+export interface Trackable {
+  id: string;
+  exercise?: string;
+}
+
+export function useDoneIds(items: Trackable[]): Set<string> {
+  const marked = usePractised();
+  const solvedKey = useProgressValue(
+    () =>
+      items
+        .filter((item) => item.exercise && progress.isExerciseSolved(item.exercise))
+        .map((item) => item.id)
+        .join(","),
+    ""
+  );
+  const out = new Set<string>();
+  for (const item of items) if (marked[item.id]) out.add(item.id);
+  for (const id of solvedKey ? solvedKey.split(",") : []) out.add(id);
+  return out;
 }

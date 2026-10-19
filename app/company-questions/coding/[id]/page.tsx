@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -11,10 +12,12 @@ import { chapters } from "@/lib/content";
 import { pageMetadata } from "@/lib/metadata";
 import { AnswerRail } from "../../AnswerRail";
 import { CodeBlock } from "../../CodeBlock";
+import { DoneMark } from "../../DoneMark";
 import { PatternGlyph } from "../../PatternGlyph";
 import { AfterActions, ChapterLinks, Pager, RelatedList, SourcesList } from "../../ReaderParts";
 import { TryFirst } from "../../TryFirst";
 import { highlight } from "../../highlight";
+import { exerciseOf } from "../../data";
 import { CODING_PHASES, HUB_PATH, codingPath, evidenceCopy, withArticle } from "../../shared";
 import styles from "../../company-questions.module.css";
 import coding from "../../coding.module.css";
@@ -87,6 +90,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     slips: answer.slips,
   };
   const copy = evidenceCopy("coding", question.evidence);
+  const exercise = exerciseOf(question.id);
   const tint = { "--accent": accentVar(company.accent) } as CSSProperties;
 
   return (
@@ -96,7 +100,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       accent="yellow"
       layout="reader"
       links={[
-        { href: "/dsa", label: "DSA" },
+        { href: "/level/dsa", label: "DSA" },
         { href: HUB_PATH, label: "All questions" },
       ]}
       back={{ href: HUB_PATH, label: "Company questions" }}
@@ -145,6 +149,15 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                 )}
               </ul>
               <p className={styles.qHint}>{copy.hint}</p>
+              {exercise && (
+                <p className={styles.solveRow}>
+                  <Link className={styles.primaryBtn} href={`/problems/${exercise}`} prefetch={false}>
+                    Solve it in the playground, with tests <span aria-hidden="true">→</span>
+                  </Link>
+                  <DoneMark id={question.id} exercise={exercise} />
+                  <span>The playground checks your code against test cases and has hints.</span>
+                </p>
+              )}
               <figure className={styles.prompt}>
                 <span className={styles.promptTape} aria-hidden="true" />
                 <figcaption>The problem</figcaption>
@@ -266,7 +279,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             <AfterActions
               id={question.id}
               extra={[
-                { href: "/practice?id=free", label: "Try it in the playground" },
+                ...(exercise ? [{ href: `/problems/${exercise}`, label: "Solve it with tests" }] : []),
                 { href: "/mock", label: "Run a mock interview" },
               ]}
             />
@@ -282,7 +295,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
         <Foot>
           <FootLink href={HUB_PATH}>All company questions</FootLink>
-          <FootLink href="/dsa">DSA course</FootLink>
+          <FootLink href="/level/dsa">DSA course</FootLink>
           <FootLink href="/interview">Interview book</FootLink>
         </Foot>
       </TopicPage>

@@ -46,4 +46,12 @@ export const THEME_OF: Readonly<Record<string, ThemeId>> = {
   "meta-coding-platform": "platforms",
   "apple-github-clone": "platforms",
   "microsoft-firmware-updates": "platforms",
+  "zomato-live-order-tracking": "realtime",
+  "cred-dropbox-file-storage": "platforms",
+  "groww-trade-order-pipeline": "money",
+  "paytm-upi-payment-flow": "money",
+  "zerodha-market-data-fanout": "pipelines",
+  "ola-nearby-cabs": "realtime",
+  "dream11-lineup-reminder": "pipelines",
+  "myntra-review-feed": "ranking",
 };

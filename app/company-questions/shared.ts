@@ -66,6 +66,7 @@ export interface HubItem {
   time?: string;
   space?: string;
   leetcode?: number;
+  exercise?: string;
   search: string;
 }
 
@@ -74,8 +75,6 @@ export interface HubCompany {
   name: string;
   group: string;
   accent: string;
-  designIds: string[];
-  codingIds: string[];
 }
 
 export interface HubTopic {

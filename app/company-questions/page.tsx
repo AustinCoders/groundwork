@@ -21,6 +21,9 @@ import { DIAGRAMS } from "@/content/system-design/company-questions/diagrams";
 import { THEMES, THEME_OF } from "@/content/system-design/company-questions/themes";
 import { pageMetadata } from "@/lib/metadata";
 import { Browser } from "./Browser";
+import { CompanyCard } from "./CompanyCard";
+import { RoundGuide } from "./RoundGuide";
+import { companyViews, exerciseOf } from "./data";
 import { Diagram } from "./Diagram";
 import { HeroArt } from "./HeroArt";
 import { PatternGlyph } from "./PatternGlyph";
@@ -38,7 +41,6 @@ export const metadata: Metadata = pageMetadata({
 
 const LINKS = [
   { href: "/system-design", label: "System design" },
-  { href: "/dsa", label: "DSA" },
   { href: "/interview", label: "Interview book" },
 ];
 
@@ -107,19 +109,19 @@ export default function Page() {
       time: question.complexity.time,
       space: question.complexity.space,
       leetcode: question.leetcode?.number,
+      exercise: exerciseOf(question.id),
       search:
         `${company.name} ${question.title} ${question.prompt} ${question.pattern} ${PATTERN_NAMES[question.patternId]} ${question.difficulty} coding dsa leetcode ${question.leetcode?.number ?? ""}`.toLowerCase(),
     });
   }
 
-  const companies: HubCompany[] = COMPANIES.map((company) => ({
-    id: company.id,
-    name: company.name,
-    group: company.group,
-    accent: company.accent,
-    designIds: items.filter((item) => item.kind === "design" && item.company === company.id).map((item) => item.id),
-    codingIds: items.filter((item) => item.kind === "coding" && item.company === company.id).map((item) => item.id),
-  })).filter((company) => company.designIds.length + company.codingIds.length > 0);
+  const views = companyViews();
+  const companies: HubCompany[] = views.map((view) => ({
+    id: view.company.id,
+    name: view.company.name,
+    group: view.company.group,
+    accent: view.company.accent,
+  }));
 
   const topics: HubTopic[] = [
     ...THEMES.map((theme) => ({
@@ -172,8 +174,8 @@ export default function Page() {
                 clock, then compare.
               </Lead>
               <Actions>
-                <Button href="#questions">
-                  Browse the questions <span aria-hidden="true">↓</span>
+                <Button href="#companies">
+                  Pick a company <span aria-hidden="true">↓</span>
                 </Button>
                 <Button ghost href="/system-design">
                   Learn the chapters first
@@ -239,10 +241,49 @@ export default function Page() {
 
         <Band
           no="01"
+          id="companies-h"
+          sectionId="companies"
+          label="Companies"
+          title="Pick a company, see its whole process"
+          sub="Each page lays out the rounds in order, what gets asked in each, and the questions to practise."
+          count={`${views.length} companies`}
+        >
+          {(["global", "india"] as const).map((group) => (
+            <div className={styles.companyGroup} key={group}>
+              <p className={styles.companyGroupLabel}>
+                <b>{group === "global" ? "Global" : "India"}</b>
+                <span>
+                  {group === "global" ? "Big tech and product companies" : "Indian product companies and startups"}
+                </span>
+              </p>
+              <div className={styles.companies}>
+                {views
+                  .filter((view) => view.company.group === group)
+                  .map((view) => (
+                    <CompanyCard key={view.company.id} view={view} />
+                  ))}
+              </div>
+            </div>
+          ))}
+        </Band>
+
+        <Band
+          no="02"
+          id="rounds-h"
+          sectionId="rounds"
+          label="Rounds"
+          title="Every kind of round, and what it can ask"
+          sub="Open one to see what is usually asked, and where to prepare for it on this site."
+        >
+          <RoundGuide />
+        </Band>
+
+        <Band
+          no="03"
           id="questions-h"
           sectionId="questions"
-          label="The questions"
-          title="Pick a company, or pick a topic"
+          label="All questions"
+          title="Or browse every answer"
           sub="Open one, cover the answer, and talk it through out loud before you compare."
           count={`${items.length} questions`}
         >
@@ -251,7 +292,7 @@ export default function Page() {
 
         <Foot>
           <FootLink href="/system-design">System design chapters</FootLink>
-          <FootLink href="/dsa">DSA course</FootLink>
+          <FootLink href="/level/dsa">DSA course</FootLink>
           <FootLink href="/interview">Interview book</FootLink>
           <FootLink href="/mock">Mock interview</FootLink>
           <FootLink href="/whiteboard">Whiteboard</FootLink>

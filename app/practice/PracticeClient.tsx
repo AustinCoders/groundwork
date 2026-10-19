@@ -19,15 +19,31 @@ export interface NeighbourLink {
   title: string;
 }
 
+export interface AskedAtLink {
+  company: string;
+  href: string;
+  title: string;
+}
+
 export interface PracticeClientProps {
   exercise?: PracticeExercise;
+  askedAt?: AskedAtLink[];
   chapter?: ChapterLink | null;
   prev?: NeighbourLink | null;
   next?: NeighbourLink | null;
 }
 
-export default function PracticeClient({ exercise, chapter = null, prev = null, next = null }: PracticeClientProps) {
-  if (exercise) return <PracticeBody exercise={exercise} isFree={false} chapter={chapter} prev={prev} next={next} />;
+export default function PracticeClient({
+  exercise,
+  chapter = null,
+  prev = null,
+  next = null,
+  askedAt = [],
+}: PracticeClientProps) {
+  if (exercise)
+    return (
+      <PracticeBody exercise={exercise} isFree={false} chapter={chapter} prev={prev} next={next} askedAt={askedAt} />
+    );
   return (
     <Suspense fallback={<PracticeBody exercise={FREE_EXERCISE} isFree chapter={null} prev={null} next={null} />}>
       <PracticeFromQuery />
@@ -59,12 +75,14 @@ function PracticeBody({
   chapter,
   prev,
   next,
+  askedAt = [],
 }: {
   exercise: PracticeExercise;
   isFree: boolean;
   chapter: ChapterLink | null;
   prev: NeighbourLink | null;
   next: NeighbourLink | null;
+  askedAt?: AskedAtLink[];
 }) {
   return (
     <>
@@ -79,6 +97,7 @@ function PracticeBody({
           chapter={chapter}
           prev={prev}
           next={next}
+          askedAt={askedAt}
         />
       </main>
     </>

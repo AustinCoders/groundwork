@@ -192,6 +192,7 @@ export function PracticeWorkspace({
   prev,
   next,
   interview = false,
+  askedAt = [],
   onOutcome,
 }: {
   exercise: PracticeExercise;
@@ -200,6 +201,7 @@ export function PracticeWorkspace({
   prev: NeighbourLink | null;
   next: NeighbourLink | null;
   interview?: boolean;
+  askedAt?: { company: string; href: string; title: string }[];
   onOutcome?: (outcome: WorkspaceOutcome) => void;
 }) {
   const editorRef = useRef<CodeEditorHandle | null>(null);
@@ -1246,6 +1248,16 @@ export function PracticeWorkspace({
                     suppressHydrationWarning
                     dangerouslySetInnerHTML={{ __html: exercise.brief }}
                   />
+                  {!interview && !isFree && askedAt.length > 0 && (
+                    <p className={styles.briefFoot}>
+                      <span className={styles.briefFootTitle}>
+                        Asked at {askedAt.map((entry) => entry.company).join(", ")}
+                      </span>
+                      <Link className={styles.briefFootLink} href={askedAt[0].href}>
+                        Read the explained answer <span aria-hidden="true">→</span>
+                      </Link>
+                    </p>
+                  )}
                   {!interview && !isFree && chapter && (
                     <p className={styles.briefFoot}>
                       <span className={styles.briefFootTitle}>Stuck on the idea?</span>

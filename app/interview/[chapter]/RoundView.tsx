@@ -131,6 +131,8 @@ function QuestionSection({
   );
 }
 
+const COMPANY_ROUNDS = new Set(["r1oa", "r1tp", "r2", "r7", "r8", "r10", "r11", "r11lp", "r12"]);
+
 export function RoundView({
   topic,
   round,
@@ -146,6 +148,7 @@ export function RoundView({
   parts: SeriesPart<string>[];
   cards: SeriesCard<string>[];
 }) {
+  const inCompanySection = COMPANY_ROUNDS.has(round.id);
   const mounted = useMounted();
   const mode = useSyncExternalStore(subscribeMode, readMode, () => "read" as Mode);
   const conf = useConfidence();
@@ -276,7 +279,7 @@ export function RoundView({
             read={mounted && isDone}
           />
 
-          {(round.meta.length > 0 || round.companies.length > 0 || round.mockStage) && (
+          {(round.meta.length > 0 || round.companies.length > 0 || round.mockStage || inCompanySection) && (
             <section className={styles.glance} aria-label="This round at a glance">
               {round.meta.length > 0 && (
                 <dl className={styles.meta}>
@@ -288,7 +291,7 @@ export function RoundView({
                   ))}
                 </dl>
               )}
-              {(round.companies.length > 0 || round.mockStage) && (
+              {(round.companies.length > 0 || round.mockStage || inCompanySection) && (
                 <div className={styles.glanceFoot}>
                   {round.companies.length > 0 && (
                     <div className={styles.companiesRow}>
@@ -308,6 +311,11 @@ export function RoundView({
                   {round.mockStage && (
                     <Link href="/mock" className={styles.mockLink} prefetch={false}>
                       Practise this round as a mock →
+                    </Link>
+                  )}
+                  {inCompanySection && (
+                    <Link href="/company-questions#rounds" className={styles.mockLink} prefetch={false}>
+                      See which companies run this round →
                     </Link>
                   )}
                 </div>

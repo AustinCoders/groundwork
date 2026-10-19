@@ -726,3 +726,17 @@
     margin-left: 0;
   }
 }
+
+.solveRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+  margin: 0;
+  font-size: var(--t-meta);
+  color: var(--ink-soft);
+}
+
+.solveRow a {
+  text-decoration: none;
+}

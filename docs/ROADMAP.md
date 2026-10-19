@@ -482,3 +482,36 @@ Secondary and directional: [Naukri JobSpeak July 2026 summary][naukri-jul] · [I
 [dice]: https://www.dice.com/career-advice/the-new-junior-developer-harder-to-land-harder-to-replace
 [flipkart]: https://roundz.substack.com/p/flipkart-interview-experience-frontend-engineer-sde2
 [recall]: https://www.sciencedirect.com/science/article/abs/pii/S187712972500231X
+
+## Company questions: Phase 2 and Phase 3 (planned, not started)
+
+Phase 1 shipped the structure: `/company-questions` hub, a page per company (22, including ten Indian startups) with
+its interview process as a timeline of rounds, 38 design answers with diagrams, 52 coding answers, problems linked to
+the playground exercises, and "Asked at" on problem pages. Decisions already made with the owner: the Interview book
+stays (it teaches, the company section reports; they link both ways and share data, never copy); the mock interview
+is not given a company option; every claim carries an evidence label, because companies do not publish questions.
+
+**Phase 2: round content (the biggest piece).**
+
+- Machine coding and low-level design: reported prompts per company (parking lot, Splitwise, inventory, wallet, cache,
+  scheduler) with class design, patterns, a runnable skeleton and tests. The research JSON already lists reported
+  prompts (`process-startups-reported.ts`); only the written answers are missing.
+- CS fundamentals and SQL: OS, DBMS, networks and query questions per round, with worked answers and links to the
+  `/os`, `/dbms`, `/networks` and `/databases` topics.
+- Behavioural, manager and HR rounds: a worked set per company from the Interview book data (single source of
+  truth), including Amazon-style leadership principles and the compensation conversation.
+- "What can be asked" per round type, written in depth (each list item with a short model answer and a link).
+- Thin companies: more reported coding questions for CRED and Zerodha (none yet), SDE-2 and SDE-3 coverage for the
+  startups, 2025-2026 reports when LeetCode, Glassdoor and Medium become readable.
+- Same pipeline as Phase 1: research agent, writer, independent reviewer, code run against test cases, link check.
+
+**Phase 3: whiteboard.**
+
+- A converter from the diagram data (`diagrams/d*.ts`) to whiteboard elements so every design answer has an
+  "Open on whiteboard" button with a pre-filled board (the whiteboard has six drill boards today,
+  `lib/whiteboard/drillBoards.ts`).
+- A step-by-step walkthrough mode (numbered steps appear one at a time).
+- Coding answers: a board with the data structure and pointers drawn per step of the dry run.
+
+**Also open:** other themes (only dark and Paper were checked), a yearly refresh of the evidence labels, running a
+coding solution in place on the answer page.

@@ -19,14 +19,15 @@ const everything = (question: CompanyQuestion) =>
   [question.prompt, ...SECTIONS.map((key) => question.answer[key]), ...question.answer.followups].join(" ");
 
 describe("the company questions page data", () => {
-  it("holds thirty questions with unique ids", () => {
-    expect(COMPANY_QUESTIONS).toHaveLength(30);
+  it("holds thirty-eight questions with unique ids", () => {
+    expect(COMPANY_QUESTIONS).toHaveLength(38);
     const ids = COMPANY_QUESTIONS.map((question) => question.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("covers every listed company, global and India", () => {
-    const used = new Set(COMPANY_QUESTIONS.map((question) => question.company));
+  it("covers every listed company with at least one answer, global and India", async () => {
+    const { COMPANY_DSA } = await import("@/content/system-design/company-questions/dsa-index");
+    const used = new Set([...COMPANY_QUESTIONS, ...COMPANY_DSA].map((question) => question.company));
     for (const company of COMPANIES) expect(used.has(company.id), `${company.name} has no question`).toBe(true);
     expect(COMPANIES.some((company) => company.group === "india")).toBe(true);
     expect(COMPANIES.some((company) => company.group === "global")).toBe(true);

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { usePractised } from "@/lib/companyQuestionsProgress";
+import { useDoneIds } from "@/lib/companyQuestionsProgress";
 import { accentVar } from "@/lib/accent";
 import {
   EVIDENCE_ORDER,
@@ -46,7 +46,8 @@ export function Browser({
   thumbs: Record<string, ReactNode>;
 }) {
   const router = useRouter();
-  const done = usePractised();
+  const trackable = useMemo(() => items.map((item) => ({ id: item.id, exercise: item.exercise })), [items]);
+  const done = useDoneIds(trackable);
   const [mode, setMode] = useState<Mode>("all");
   const [company, setCompany] = useState("all");
   const [topic, setTopic] = useState("all");
@@ -76,7 +77,7 @@ export function Browser({
 
   const visibleTopics = topics.filter((entry) => mode === "all" || entry.kind === mode);
   const inMode = items.filter((item) => mode === "all" || item.kind === mode);
-  const practisedCount = items.filter((item) => done[item.id]).length;
+  const practisedCount = items.filter((item) => done.has(item.id)).length;
   const filtered = company !== "all" || topic !== "all" || evidence !== "all" || needle !== "";
   const modeCount = (id: Mode) => items.filter((item) => id === "all" || item.kind === id).length;
 
@@ -84,12 +85,6 @@ export function Browser({
     setMode(next);
     if (topic !== "all" && !topics.some((entry) => entry.id === topic && (next === "all" || entry.kind === next)))
       setTopic("all");
-  }
-
-  function pickCompany(id: string) {
-    const next = company === id ? "all" : id;
-    setCompany(next);
-    if (next !== "all") bar.current?.scrollIntoView({ block: "start", behavior: "smooth" });
   }
 
   function clear() {
@@ -101,7 +96,7 @@ export function Browser({
 
   function surprise() {
     const pool = shown.length > 0 ? shown : inMode;
-    const unseen = pool.filter((item) => !done[item.id]);
+    const unseen = pool.filter((item) => !done.has(item.id));
     const from = unseen.length > 0 ? unseen : pool;
     router.push(from[Math.floor(Math.random() * from.length)].href);
   }
@@ -115,59 +110,6 @@ export function Browser({
             <span>{modeCount(entry.id)}</span>
           </button>
         ))}
-      </div>
-
-      <div className={styles.wall} role="group" aria-label="Pick a company">
-        {GROUPS.map((group) => {
-          const inGroup = companies.filter((entry) => entry.group === group.id);
-          return (
-            <div className={styles.wallGroup} key={group.id}>
-              <p className={styles.wallLabel}>
-                <b>{group.label}</b>
-                <span>{group.note}</span>
-              </p>
-              <ul className={styles.tiles}>
-                {inGroup.map((entry, index) => {
-                  const ids = [
-                    ...(mode === "coding" ? [] : entry.designIds),
-                    ...(mode === "design" ? [] : entry.codingIds),
-                  ];
-                  const finished = ids.filter((id) => done[id]).length;
-                  const on = company === entry.id;
-                  return (
-                    <li key={entry.id}>
-                      <button
-                        type="button"
-                        className={styles.tile}
-                        style={
-                          { ...tint(entry.accent), "--tilt": `${[-0.9, 0.7, -0.4, 1][index % 4]}deg` } as CSSProperties
-                        }
-                        aria-pressed={on}
-                        onClick={() => pickCompany(entry.id)}
-                      >
-                        <span className={styles.monogram} aria-hidden="true">
-                          {entry.name.charAt(0)}
-                        </span>
-                        <span className={styles.tileName}>{entry.name}</span>
-                        <span className={styles.tileCount}>
-                          {mode !== "coding" && <>{entry.designIds.length} design</>}
-                          {mode === "all" && " · "}
-                          {mode !== "design" && <>{entry.codingIds.length} coding</>}
-                        </span>
-                        <span className={styles.dots} aria-hidden="true">
-                          {ids.map((id) => (
-                            <i key={id} data-done={done[id] ? "" : undefined} />
-                          ))}
-                        </span>
-                        {finished > 0 && <span className={styles.visuallyHidden}>{finished} practised</span>}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          );
-        })}
       </div>
 
       <div className={styles.bar} ref={bar}>
@@ -208,23 +150,43 @@ export function Browser({
             Surprise me
           </button>
         </div>
-        <div className={styles.topics} role="group" aria-label="Practise by topic">
-          <span className={styles.topicsLabel}>Topic</span>
-          <button type="button" aria-pressed={topic === "all"} onClick={() => setTopic("all")}>
-            Everything
-          </button>
-          {visibleTopics.map((entry) => (
-            <button
-              key={`${entry.kind}-${entry.id}`}
-              type="button"
-              data-kind={entry.kind}
-              aria-pressed={topic === entry.id}
-              title={entry.blurb}
-              onClick={() => setTopic(topic === entry.id ? "all" : entry.id)}
-            >
-              {entry.name} <span>{entry.count}</span>
-            </button>
-          ))}
+        <div className={styles.selects}>
+          <label>
+            <span>Company</span>
+            <select value={company} onChange={(event) => setCompany(event.target.value)}>
+              <option value="all">All companies</option>
+              {GROUPS.map((group) => (
+                <optgroup key={group.id} label={group.label}>
+                  {companies
+                    .filter((entry) => entry.group === group.id)
+                    .map((entry) => (
+                      <option key={entry.id} value={entry.id}>
+                        {entry.name}
+                      </option>
+                    ))}
+                </optgroup>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>Topic</span>
+            <select value={topic} onChange={(event) => setTopic(event.target.value)}>
+              <option value="all">Every topic</option>
+              {(["design", "coding"] as const)
+                .filter((kind) => mode === "all" || mode === kind)
+                .map((kind) => (
+                  <optgroup key={kind} label={kind === "design" ? "System design" : "Coding patterns"}>
+                    {visibleTopics
+                      .filter((entry) => entry.kind === kind)
+                      .map((entry) => (
+                        <option key={`${entry.kind}-${entry.id}`} value={entry.id}>
+                          {entry.name} ({entry.count})
+                        </option>
+                      ))}
+                  </optgroup>
+                ))}
+            </select>
+          </label>
         </div>
         <div className={styles.status}>
           <p role="status">
@@ -303,7 +265,7 @@ export function Browser({
                           {item.level && <span>{item.level}</span>}
                         </>
                       )}
-                      {done[item.id] ? (
+                      {done.has(item.id) ? (
                         <span className={styles.practised}>Practised ✓</span>
                       ) : (
                         <span className={styles.open}>

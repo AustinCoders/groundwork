@@ -12,7 +12,17 @@ export type CompanyId =
   | "razorpay"
   | "flipkart"
   | "swiggy"
-  | "phonepe";
+  | "phonepe"
+  | "zomato"
+  | "cred"
+  | "meesho"
+  | "zerodha"
+  | "groww"
+  | "paytm"
+  | "ola"
+  | "dream11"
+  | "juspay"
+  | "myntra";
 
 export type CompanyAccent = "blue" | "purple" | "orange" | "teal" | "grey" | "yellow";
 

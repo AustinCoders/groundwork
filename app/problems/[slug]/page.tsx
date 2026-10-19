@@ -4,6 +4,7 @@ import PracticeClient from "@/app/practice/PracticeClient";
 import { chapter as findChapter, exercise, exercises, topics } from "@/lib/content";
 import { pageMetadata } from "@/lib/metadata";
 import { practiceChapterLinks } from "@/lib/practiceLinks";
+import { askedAtFor } from "@/app/company-questions/data";
 
 const LEVEL_NAME: Record<string, string> = {
   beginner: "Beginner",
@@ -58,6 +59,7 @@ export default async function ProblemPage({ params }: { params: Promise<{ slug: 
       chapter={practiceChapterLinks()[ex.chapter] ?? null}
       prev={link(all[index - 1])}
       next={link(all[index + 1])}
+      askedAt={askedAtFor(ex.id)}
     />
   );
 }
