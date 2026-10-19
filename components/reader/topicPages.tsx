@@ -30,6 +30,7 @@ import { topicStats } from "@/lib/topicStats";
 import { plural } from "@/lib/format";
 import { CompanyQuestionsTeaser } from "@/components/topic/CompanyQuestionsTeaser";
 import { COMPANY_QUESTIONS } from "@/content/system-design/company-questions";
+import { COMPANY_DSA } from "@/content/system-design/company-questions/dsa-index";
 import { withHeadingIds } from "@/lib/headingToc";
 import type { SeriesCard, SeriesPart } from "@/components/chapter/types";
 import type { LevelId } from "@/content/types";
@@ -62,17 +63,19 @@ export function TopicCoverPage({ topicId }: { topicId: string }) {
         completion={t?.completion}
         checkChapterIds={checkChapterIds()}
         aside={
-          topicId === "system-design" ? (
+          topicId === "system-design" || topicId === "dsa" ? (
             <CompanyQuestionsTeaser
-              href={`${basePath}/company-questions`}
-              questions={COMPANY_QUESTIONS.length}
+              href="/company-questions"
+              topic={topicId === "dsa" ? "coding" : "design"}
+              count={topicId === "dsa" ? COMPANY_DSA.length : COMPANY_QUESTIONS.length}
+              other={topicId === "dsa" ? COMPANY_QUESTIONS.length : COMPANY_DSA.length}
               companies={new Set(COMPANY_QUESTIONS.map((question) => question.company)).size}
             />
           ) : undefined
         }
         extraLink={
-          topicId === "system-design"
-            ? { href: `${basePath}/company-questions`, label: "Company questions" }
+          topicId === "system-design" || topicId === "dsa"
+            ? { href: "/company-questions", label: "Company questions" }
             : undefined
         }
       />

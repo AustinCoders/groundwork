@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { PACING, ROUND_MINUTES } from "./shared";
+import type { Phase } from "./shared";
 import styles from "./company-questions.module.css";
 
 type Mode = "open" | "covered" | "done";
-
-const ROUND_SECONDS = ROUND_MINUTES * 60;
 
 function clock(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -14,16 +12,26 @@ function clock(seconds: number): string {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-function phaseAt(seconds: number) {
+function phaseAt(phases: readonly Phase[], seconds: number) {
   let end = 0;
-  for (const phase of PACING) {
+  for (const phase of phases) {
     end += phase.minutes * 60;
     if (seconds < end) return { label: phase.label, left: end - seconds };
   }
   return null;
 }
 
-export function TryFirst({ rail, children }: { rail: ReactNode; children: ReactNode }) {
+export function TryFirst({
+  rail,
+  phases,
+  children,
+}: {
+  rail: ReactNode;
+  phases: readonly Phase[];
+  children: ReactNode;
+}) {
+  const total = phases.reduce((sum, phase) => sum + phase.minutes, 0);
+  const roundSeconds = total * 60;
   const [mode, setMode] = useState<Mode>("open");
   const [startedAt, setStartedAt] = useState(0);
   const [elapsed, setElapsed] = useState(0);
@@ -45,8 +53,8 @@ export function TryFirst({ rail, children }: { rail: ReactNode; children: ReactN
     setMode("done");
   }
 
-  const phase = phaseAt(elapsed);
-  const progress = Math.min(elapsed / ROUND_SECONDS, 1) * 100;
+  const phase = phaseAt(phases, elapsed);
+  const progress = Math.min(elapsed / roundSeconds, 1) * 100;
 
   return (
     <div className={styles.trial} data-mode={mode}>
@@ -55,7 +63,7 @@ export function TryFirst({ rail, children }: { rail: ReactNode; children: ReactN
           {mode === "open" && (
             <>
               <b>Try it first.</b>
-              <span>Cover the answer, start a 45 minute clock and talk it through. Then compare.</span>
+              <span>Cover the answer, start a {total} minute clock and talk it through. Then compare.</span>
             </>
           )}
           {mode === "covered" && (
@@ -69,7 +77,7 @@ export function TryFirst({ rail, children }: { rail: ReactNode; children: ReactN
                     Now: <b>{phase.label}</b>, about {Math.ceil(phase.left / 60)} min left in this part.
                   </>
                 ) : (
-                  <>Past the usual 45 minutes. Wrap up and compare.</>
+                  <>Past the usual {total} minutes. Wrap up and compare.</>
                 )}
               </span>
             </>
@@ -79,7 +87,7 @@ export function TryFirst({ rail, children }: { rail: ReactNode; children: ReactN
               <b className={styles.clock}>{clock(elapsed)}</b>
               <span>
                 {elapsed > 0 && elapsed < 60 ? "That was quick. " : ""}
-                {elapsed <= ROUND_SECONDS ? "Inside a normal round." : "Over a normal round."} Compare your sketch with
+                {elapsed <= roundSeconds ? "Inside a normal round." : "Over a normal round."} Compare your sketch with
                 the answer below.
               </span>
             </>
@@ -108,7 +116,7 @@ export function TryFirst({ rail, children }: { rail: ReactNode; children: ReactN
           )}
         </div>
         <div className={styles.pace} aria-hidden="true">
-          {PACING.map((entry) => (
+          {phases.map((entry) => (
             <span key={entry.id} style={{ flexGrow: entry.minutes }}>
               {entry.label}
             </span>

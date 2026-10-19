@@ -90,6 +90,16 @@ const nextConfig: NextConfig = {
         permanent: true,
       })),
       {
+        source: "/system-design/company-questions",
+        destination: "/company-questions",
+        permanent: true,
+      },
+      {
+        source: "/system-design/company-questions/:id",
+        destination: "/company-questions/design/:id",
+        permanent: true,
+      },
+      {
         source: "/soon",
         has: [{ type: "query" as const, key: "topic", value: `(?<topic>${outlineIds})` }],
         destination: "/:topic",

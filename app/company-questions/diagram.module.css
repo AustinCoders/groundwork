@@ -1,0 +1,219 @@
+.figure {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 22px;
+  padding: 16px;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 24px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 24px 100%,
+    var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+}
+
+.head {
+  display: grid;
+  gap: 2px;
+}
+
+.head b {
+  font-family: var(--font-heading);
+  font-size: var(--t-title);
+  color: var(--ink);
+}
+
+.head span {
+  font-size: var(--t-meta);
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.scroll {
+  overflow-x: auto;
+  border-radius: 10px;
+}
+
+.scroll:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.mini {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.node rect {
+  fill: color-mix(in srgb, var(--tone, var(--c-blue)) 14%, var(--sheet));
+  stroke: var(--tone, var(--c-blue));
+  stroke-width: 2;
+}
+
+.node[data-kind="client"] {
+  --tone: var(--c-grey);
+}
+
+.node[data-kind="service"] {
+  --tone: var(--c-blue);
+}
+
+.node[data-kind="store"] {
+  --tone: var(--c-teal);
+}
+
+.node[data-kind="queue"] {
+  --tone: var(--caution);
+}
+
+.node[data-kind="cache"] {
+  --tone: var(--c-purple);
+}
+
+.node[data-kind="worker"] {
+  --tone: var(--c-blue);
+}
+
+.node[data-kind="decision"] {
+  --tone: var(--success);
+}
+
+.node[data-kind="external"] {
+  --tone: var(--c-grey);
+}
+
+.node[data-kind="external"] rect {
+  stroke-dasharray: 6 4;
+  fill: var(--sheet-2);
+}
+
+.icon path {
+  fill: none;
+  stroke: var(--tone, var(--c-blue));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.label {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+
+.sub {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  fill: var(--ink-soft);
+}
+
+.edge {
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-linecap: round;
+  stroke-width: 2;
+}
+
+.edge[data-style="dashed"] {
+  stroke-dasharray: 7 5;
+}
+
+.edge[data-style="async"] {
+  stroke: var(--primary);
+  stroke-dasharray: 2 7;
+  stroke-width: 2.6;
+  animation: flow 1.1s linear infinite;
+}
+
+@keyframes flow {
+  to {
+    stroke-dashoffset: -9;
+  }
+}
+
+.arrow {
+  fill: var(--ink-soft);
+}
+
+.arrowAsync {
+  fill: var(--primary);
+}
+
+.pill {
+  fill: var(--sheet);
+  stroke: var(--line);
+  stroke-width: 1.5;
+}
+
+.pillText {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--ink);
+}
+
+.badge {
+  fill: var(--primary);
+}
+
+.badgeText {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--on-primary);
+}
+
+.life {
+  stroke: var(--line-soft);
+  stroke-dasharray: 5 5;
+  stroke-width: 1.5;
+}
+
+.seqText {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  fill: var(--ink);
+}
+
+.steps {
+  display: grid;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: var(--t-meta);
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.steps li span {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--on-primary);
+  background: var(--primary);
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edge[data-style="async"] {
+    animation: none;
+  }
+}

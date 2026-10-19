@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = process.argv[2] ?? "content/system-design";
-const LINK = /href="(https?:\/\/[^"#]+)/g;
+const LINK = /(?:href="|\burl:\s*")(https?:\/\/[^"#]+)/g;
 const CONCURRENCY = 6;
 const TIMEOUT_MS = 20000;
 const BLOCKED = new Set([401, 403, 405, 406, 429, 999]);

@@ -1,0 +1,53 @@
+.glyph {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cell {
+  fill: var(--sheet);
+  stroke: var(--line-soft);
+  stroke-width: 1.6;
+}
+
+.cell[data-on] {
+  fill: color-mix(in srgb, var(--accent, var(--primary)) 28%, var(--sheet));
+  stroke: var(--accent, var(--primary));
+  stroke-width: 2;
+}
+
+.cell[data-dim] {
+  fill: var(--sheet-2);
+  stroke: var(--line);
+  stroke-dasharray: 3 3;
+}
+
+.dot {
+  fill: var(--sheet);
+  stroke: var(--line-soft);
+  stroke-width: 1.8;
+}
+
+.dot[data-on] {
+  fill: color-mix(in srgb, var(--accent, var(--primary)) 28%, var(--sheet));
+  stroke: var(--accent, var(--primary));
+}
+
+.line {
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.line[data-hot] {
+  stroke: var(--danger);
+  stroke-width: 2.4;
+}
+
+.tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  fill: var(--ink-soft);
+}

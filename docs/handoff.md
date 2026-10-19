@@ -48,8 +48,8 @@ Read this and the memory index first in a new session. Update it at the end of e
 
 Who the learner is, languages beyond JavaScript, one release or level by level, placement in v1, the player rule, LeetCode names; marking stories 3.9 and 3.7 done; sharding the DSA search index by level.
 
-## Company questions page and redesign (2026-10-19)
+## Company questions section (2026-10-19)
 
-- `/system-design/company-questions` (30 reported prompts, answers written here and fact-checked by three reviewers) and one page per question; data in `content/system-design/company-questions/`, UI in `app/system-design/company-questions/`, notes at the end of `docs/content-audit/system-design.md`.
-- Redesign is on `feature/company-questions-redesign` (committed, not merged or pushed unless the owner said so). Checked in dark and Paper themes, desktop and 375px.
-- Open: other themes unchecked, yearly refresh of the evidence labels, design drills for these prompts.
+- `/company-questions` hub, `/company-questions/design/<id>` (30, with 63 diagrams) and `/company-questions/coding/<id>` (36, with dry run and runnable code). Data in `content/system-design/company-questions/`, UI in `app/company-questions/`, notes at the end of `docs/content-audit/system-design.md`.
+- Branch `feature/company-questions-diagrams-dsa`: committed locally, not merged or pushed unless the owner said so. Checked in dark and Paper themes, desktop and 375px; other themes unchecked.
+- Open: evidence labels need a yearly refresh; design drills for these prompts; run each coding solution in the playground (only a copy button for now).

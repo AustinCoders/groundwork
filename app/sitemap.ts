@@ -5,6 +5,7 @@ import { roadmapIds } from "@/lib/roadmap";
 import { SITE_URL, UNDATED_CONTENT_LAST_CHANGED } from "@/lib/site";
 import { GIT_CHAPTERS } from "@/content/git-body";
 import { COMPANY_QUESTIONS } from "@/content/system-design/company-questions";
+import { COMPANY_DSA } from "@/content/system-design/company-questions/dsa-index";
 
 const MONTH_NAMES = [
   "january",
@@ -41,13 +42,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/whiteboard`, lastModified: stale, changeFrequency: "monthly", priority: 0.5 },
     { url: `${SITE_URL}/roadmap`, lastModified: stale, changeFrequency: "monthly", priority: 0.7 },
     {
-      url: `${SITE_URL}/system-design/company-questions`,
+      url: `${SITE_URL}/company-questions`,
       lastModified: stale,
       changeFrequency: "monthly",
       priority: 0.6,
     },
     ...COMPANY_QUESTIONS.map((question) => ({
-      url: `${SITE_URL}/system-design/company-questions/${question.id}`,
+      url: `${SITE_URL}/company-questions/design/${question.id}`,
+      lastModified: stale,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    })),
+    ...COMPANY_DSA.map((question) => ({
+      url: `${SITE_URL}/company-questions/coding/${question.id}`,
       lastModified: stale,
       changeFrequency: "monthly" as const,
       priority: 0.5,

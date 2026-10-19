@@ -371,3 +371,30 @@ the tiles. Entry points: the menu's Go to list, the System Design cover (button,
 interview book landing, the hub and per-question URLs in the sitemap.
 
 Still open: refresh the evidence labels yearly (reports go stale), and a design drill for any of these prompts.
+
+## Company questions: diagrams, coding questions and the move to /company-questions (October 2026)
+
+The section moved out of System Design to `/company-questions` (old `/system-design/company-questions/...` URLs
+redirect) because it now holds two kinds of question: 30 system design answers at `/company-questions/design/<id>` and 36
+coding answers at `/company-questions/coding/<id>`.
+
+Diagrams. Every design answer has two or three diagrams, drawn from data (`content/system-design/company-questions/diagrams/`)
+by one renderer (`app/company-questions/Diagram.tsx`, layout in `diagramLayout.ts`): flow diagrams on a grid with numbered
+steps and a sequence diagram of the hard part. `scripts/check-diagrams.mjs` and `tests/company-diagrams.test.ts` fail on
+a missing node, a label that cannot fit, numbered edges without a steps list, or an edge routed through a third node. Three
+reviewers compared all 63 diagrams with the answer text and corrected about 40 claims, mostly edge directions
+(a read drawn as a write), sync against async, invented numbers, and steps that did not match their edge. The card
+thumbnails on the hub are the same diagrams drawn without text.
+
+Coding questions. 36 problems, three per company, chosen from reports found by four research agents (candidate
+write-ups on GeeksforGeeks, Roundz, DEV, FrontendGeek, Jointaro; company-tagged lists from GitHub, PracHub, Scoutify and
+others). The evidence label is derived from the sources by a rule the test enforces: a candidate report plus at least
+one more source is "several", one candidate report is "one", lists only is "company lists". 14 are "several", 13 "one"
+and 9 lists-only; Apple is lists-only for all three, so the page says so. Each has a prompt restated in our words, a brute
+force, the insight, a dry-run table, runnable JavaScript, edge cases, follow-ups and slips. `tests/company-dsa.test.ts`
+runs every solution against its cases (8 to 16 each). Authors also fuzzed each against a brute force (400 to 3,000 random
+inputs), and three reviewers re-derived every trace cell by instrumenting the code and fixed about 40 prose claims (a
+growth rate, wrong complexities, slips that were not real mistakes). Not done: the evidence for most 2025 and 2026
+reports is thin because LeetCode, Glassdoor and Medium return 403; levels are mostly not stated.
+
+`npm run sources` now also reads the `url:` fields of the data files, so these 84 added links are checked too.

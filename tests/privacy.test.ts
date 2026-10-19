@@ -24,6 +24,10 @@ const UPSTREAMS = [
 ];
 
 const NOT_CALLED: Record<string, { only: string; why: string }> = {
+  "leetcode.com": {
+    only: "app/company-questions/coding/[id]/page.tsx",
+    why: "a plain link to the original problem statement, never fetched",
+  },
   localhost: { only: "lib/site.ts", why: "the site's own address when it runs locally" },
   "127.0.0.1": { only: "playwright.config.ts", why: "the end-to-end test server" },
   "www.w3.org": { only: "lib/whiteboard/exporter.ts", why: "the SVG namespace, never fetched" },

@@ -23,7 +23,7 @@ export interface Company {
   accent: CompanyAccent;
 }
 
-export type SourceKind = "candidate-report" | "prep-guide" | "official";
+export type SourceKind = "candidate-report" | "prep-guide" | "company-list" | "official";
 
 export interface ReportSource {
   label: string;

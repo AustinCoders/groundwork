@@ -192,8 +192,8 @@ export function InterviewLanding({
                 <Button ghost href="/interview/questions">
                   Browse all {totals.questions} questions
                 </Button>
-                <Button ghost href="/system-design/company-questions">
-                  Company design questions
+                <Button ghost href="/company-questions">
+                  Company questions
                 </Button>
               </Actions>
             </div>
@@ -367,7 +367,7 @@ export function InterviewLanding({
           <FootLink href="/">All topics</FootLink>
           <FootLink href="/mock">Mock interview</FootLink>
           <FootLink href="/interview/questions">Question bank</FootLink>
-          <FootLink href="/system-design/company-questions">Company design questions</FootLink>
+          <FootLink href="/company-questions">Company questions</FootLink>
         </Foot>
       </TopicPage>
     </BookFrame>

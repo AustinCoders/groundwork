@@ -1,20 +1,21 @@
 import type { CSSProperties } from "react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PageFrame } from "@/components/frame/PageFrame";
 import { Foot, FootLink, Kicker, TopicPage, Wrap } from "@/components/topic/TopicKit";
 import { COMPANIES } from "@/content/system-design/company-questions/companies";
 import { COMPANY_QUESTIONS } from "@/content/system-design/company-questions";
+import { DIAGRAMS } from "@/content/system-design/company-questions/diagrams";
 import { THEMES, THEME_OF } from "@/content/system-design/company-questions/themes";
 import { accentVar } from "@/lib/accent";
 import { chapters } from "@/lib/content";
 import { pageMetadata } from "@/lib/metadata";
-import { AnswerRail } from "../AnswerRail";
-import { PractisedButton } from "../PractisedButton";
-import { TryFirst } from "../TryFirst";
-import { EVIDENCE_COPY, HUB_PATH, questionPath } from "../shared";
-import styles from "../company-questions.module.css";
+import { AnswerRail } from "../../AnswerRail";
+import { Diagram } from "../../Diagram";
+import { AfterActions, ChapterLinks, Pager, RelatedList, SourcesList } from "../../ReaderParts";
+import { TryFirst } from "../../TryFirst";
+import { DESIGN_PHASES, EVIDENCE_COPY, HUB_PATH, questionPath, withArticle } from "../../shared";
+import styles from "../../company-questions.module.css";
 
 export const dynamicParams = false;
 
@@ -22,16 +23,10 @@ export function generateStaticParams() {
   return COMPANY_QUESTIONS.map((question) => ({ id: question.id }));
 }
 
-const KIND_LABEL = {
-  "candidate-report": "Candidate write-up",
-  "prep-guide": "Prep guide",
-  official: "Official",
-} as const;
-
 const STEPS = [
   { id: "ask", title: "Ask first", hint: "Clarify the problem before you draw anything." },
   { id: "numbers", title: "Numbers", hint: "A back-of-envelope that decides the shape." },
-  { id: "design", title: "The design", hint: "Components, data and the hard parts." },
+  { id: "design", title: "The design", hint: "Diagrams first, then components, data and the hard parts." },
   { id: "tradeoffs", title: "Trade-offs", hint: "What you chose, and when you would flip." },
   { id: "followups", title: "Follow-ups to expect", hint: "Where the interviewer pushes next." },
   { id: "slips", title: "Where candidates slip", hint: "The mistakes this question punishes." },
@@ -45,8 +40,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!question) return {};
   const company = COMPANIES.find((entry) => entry.id === question.company)!;
   return pageMetadata({
-    title: `${question.title}: a ${company.name} system design question`,
-    description: `${question.prompt} A worked answer with the numbers, the design, the trade-offs and the follow-ups. ${EVIDENCE_COPY[question.evidence].label}.`,
+    title: `${question.title}: ${withArticle(company.name)} system design question`,
+    description: `${question.prompt} A worked answer with diagrams, the numbers, the design, the trade-offs and the follow-ups. ${EVIDENCE_COPY[question.evidence].label}.`,
     path: questionPath(question.id),
     type: "article",
   });
@@ -65,7 +60,17 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const theme = THEMES.find((entry) => entry.id === THEME_OF[question.id]);
   const related = COMPANY_QUESTIONS.filter(
     (other) => other.id !== question.id && THEME_OF[other.id] === THEME_OF[question.id]
-  ).slice(0, 3);
+  )
+    .slice(0, 3)
+    .map((other) => {
+      const otherCompany = COMPANIES.find((entry) => entry.id === other.company)!;
+      return {
+        href: questionPath(other.id),
+        company: otherCompany.name,
+        title: other.title,
+        accent: accentVar(otherCompany.accent),
+      };
+    });
   const { answer } = question;
   const bodies: Record<string, string> = {
     ask: answer.ask,
@@ -74,12 +79,13 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     tradeoffs: answer.tradeoffs,
     slips: answer.slips,
   };
+  const diagrams = DIAGRAMS[question.id] ?? [];
   const tint = { "--accent": accentVar(company.accent) } as CSSProperties;
 
   return (
     <PageFrame
       title={company.name}
-      mark="SD"
+      mark="CQ"
       accent="yellow"
       layout="reader"
       links={[
@@ -94,8 +100,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         <Wrap>
           <div style={tint}>
             <header className={styles.qHead}>
-              <Kicker mark="SD">
-                {company.name} · {theme?.name ?? "System design"}
+              <Kicker mark="CQ">
+                {company.name} · System design · {theme?.name ?? ""}
               </Kicker>
               <div className={styles.qTitleRow}>
                 <span className={styles.monogramLg} aria-hidden="true">
@@ -111,6 +117,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                   {EVIDENCE_COPY[question.evidence].label}
                 </li>
                 {!question.level.startsWith("level not stated") && <li>{question.level}</li>}
+                <li>{diagrams.length} diagrams</li>
                 <li>
                   <a href="#sources">
                     {question.sources.length} {question.sources.length === 1 ? "source" : "sources"}
@@ -129,7 +136,10 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
               </figure>
             </header>
 
-            <TryFirst rail={<AnswerRail items={STEPS.map((step) => ({ id: step.id, label: step.title }))} />}>
+            <TryFirst
+              phases={DESIGN_PHASES}
+              rail={<AnswerRail items={STEPS.map((step) => ({ id: step.id, label: step.title }))} />}
+            >
               {STEPS.map((step, position) => (
                 <section
                   className={styles.step}
@@ -157,93 +167,37 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                       ))}
                     </ol>
                   ) : (
-                    <div className={`prose ${styles.body}`} dangerouslySetInnerHTML={{ __html: bodies[step.id] }} />
+                    <>
+                      {step.id === "design" &&
+                        diagrams.map((diagram, at) => (
+                          <Diagram key={diagram.title} diagram={diagram} uid={`${question.id}-${at}`} />
+                        ))}
+                      <div className={`prose ${styles.body}`} dangerouslySetInnerHTML={{ __html: bodies[step.id] }} />
+                    </>
                   )}
                 </section>
               ))}
             </TryFirst>
 
-            <section className={styles.after} aria-labelledby="after-h">
-              <h2 id="after-h">Now make it stick</h2>
-              <div className={styles.afterRow}>
-                <PractisedButton id={question.id} />
-                <Link className={styles.ghostBtn} href="/whiteboard" prefetch={false}>
-                  Redraw it on the whiteboard
-                </Link>
-                <Link className={styles.ghostBtn} href="/mock" prefetch={false}>
-                  Run a mock interview
-                </Link>
-              </div>
-            </section>
-
-            <section className={styles.refs} id="sources" aria-labelledby="sources-h">
-              <h2 id="sources-h">Where this was reported</h2>
-              <p className={styles.refsNote}>
-                Public pages only. Companies do not confirm these, and they rotate their questions, so treat each link
-                as one person&apos;s account.
-              </p>
-              <ul className={styles.sources}>
-                {question.sources.map((source) => (
-                  <li key={source.url}>
-                    <a href={source.url} rel="noopener noreferrer" target="_blank">
-                      <span className={styles.sourceKind}>
-                        {KIND_LABEL[source.kind]}
-                        {source.year ? ` · ${source.year}` : ""}
-                      </span>
-                      <span className={styles.sourceLabel}>{source.label}</span>
-                      <span className={styles.sourceGo} aria-hidden="true">
-                        ↗
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            {question.chapters.length > 0 && (
-              <section className={styles.refs} aria-labelledby="read-h">
-                <h2 id="read-h">Read these chapters first</h2>
-                <ul className={styles.chapterLinks}>
-                  {question.chapters.map((chapterId) => (
-                    <li key={chapterId}>
-                      <Link href={`/system-design/${chapterId}`} prefetch={false}>
-                        {titles[chapterId] ?? chapterId} <span aria-hidden="true">→</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {related.length > 0 && (
-              <section className={styles.refs} aria-labelledby="related-h">
-                <h2 id="related-h">More on {theme?.name.toLowerCase()}</h2>
-                <ul className={styles.related}>
-                  {related.map((other) => {
-                    const otherCompany = COMPANIES.find((entry) => entry.id === other.company)!;
-                    return (
-                      <li key={other.id} style={{ "--accent": accentVar(otherCompany.accent) } as CSSProperties}>
-                        <Link href={questionPath(other.id)} prefetch={false}>
-                          <span>{otherCompany.name}</span>
-                          {other.title}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
-            )}
-
-            <nav className={styles.pager} aria-label="Other questions">
-              <Link href={questionPath(previous.id)} prefetch={false}>
-                <span>← Previous</span>
-                {previous.title}
-              </Link>
-              <Link href={questionPath(next.id)} prefetch={false}>
-                <span>Next →</span>
-                {next.title}
-              </Link>
-            </nav>
+            <AfterActions
+              id={question.id}
+              extra={[
+                { href: "/whiteboard", label: "Redraw it on the whiteboard" },
+                { href: "/mock", label: "Run a mock interview" },
+              ]}
+            />
+            <SourcesList sources={question.sources} />
+            <ChapterLinks
+              heading="Read these chapters first"
+              ids={question.chapters}
+              base="/system-design"
+              titles={titles}
+            />
+            <RelatedList heading={`More on ${theme?.name.toLowerCase() ?? "this topic"}`} items={related} />
+            <Pager
+              previous={{ href: questionPath(previous.id), title: previous.title }}
+              next={{ href: questionPath(next.id), title: next.title }}
+            />
           </div>
         </Wrap>
 
