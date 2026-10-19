@@ -362,4 +362,12 @@ key that rejected the adjustment rows the design relied on, an idempotency key t
 key, an outbox row written after commit (a dual write), a counter that drifted from its database, and a load balancer
 count that left too little capacity after losing a zone.
 
+Redesign (same day). The page became a hub plus one page per question: `/system-design/company-questions` has a
+company wall (tiles are the filter), an evidence filter, six topic chips (`themes.ts`), search and "Surprise me";
+`/system-design/company-questions/<id>` has the prompt, a "try it first" bar (cover the answer, 45 minute clock with a
+pacing strip, reveal), a sticky section rail, the six answer sections, sources, chapters to read first, related
+questions and previous/next. "Practised" is saved in `groundwork:company-questions:practised` and drawn as dots on
+the tiles. Entry points: the menu's Go to list, the System Design cover (button, teaser card, footer link), the
+interview book landing, the hub and per-question URLs in the sitemap.
+
 Still open: refresh the evidence labels yearly (reports go stale), and a design drill for any of these prompts.

@@ -107,7 +107,7 @@ export function TopicCover({
           <Compose live layout="stack">
             <UpNextAndBudget progress={progress} basePath={basePath} />
             {aside && (
-              <Card at="c" tilt={1}>
+              <Card at="c" tilt={1} style={{ marginTop: 48 }}>
                 {aside}
               </Card>
             )}

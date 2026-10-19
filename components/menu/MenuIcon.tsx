@@ -7,6 +7,7 @@ const PATHS = {
   progress: "M5 20V11M12 20V5M19 20v-6",
   roadmap: "M6 19a2 2 0 100-4 2 2 0 000 4zM18 7a2 2 0 100-4 2 2 0 000 4zM8 17h6a3 3 0 000-6h-4a3 3 0 010-6h6",
   home: "M4 11l8-7 8 7M6 9.5V20h12V9.5M10 20v-5h4v5",
+  companies: "M4 21V8l8-5 8 5v13M9 21v-5h6v5M8 11h.01M12 11h.01M16 11h.01M8 14h.01M16 14h.01",
   interview: "M12 21a9 9 0 100-18 9 9 0 000 18zM12 16a4 4 0 100-8 4 4 0 000 8zM12 12h.01",
   architecture: "M12 3l9 5-9 5-9-5zM3 13l9 5 9-5M3 17.5l9 5 9-5",
   narrator: "M4 9h4l5-4v14l-5-4H4zM16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12",

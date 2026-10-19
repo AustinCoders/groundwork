@@ -14,10 +14,13 @@ export type CompanyId =
   | "swiggy"
   | "phonepe";
 
+export type CompanyAccent = "blue" | "purple" | "orange" | "teal" | "grey" | "yellow";
+
 export interface Company {
   id: CompanyId;
   name: string;
   group: CompanyGroup;
+  accent: CompanyAccent;
 }
 
 export type SourceKind = "candidate-report" | "prep-guide" | "official";

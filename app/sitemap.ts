@@ -4,6 +4,7 @@ import { problemHref } from "@/lib/practiceLinks";
 import { roadmapIds } from "@/lib/roadmap";
 import { SITE_URL, UNDATED_CONTENT_LAST_CHANGED } from "@/lib/site";
 import { GIT_CHAPTERS } from "@/content/git-body";
+import { COMPANY_QUESTIONS } from "@/content/system-design/company-questions";
 
 const MONTH_NAMES = [
   "january",
@@ -45,6 +46,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.6,
     },
+    ...COMPANY_QUESTIONS.map((question) => ({
+      url: `${SITE_URL}/system-design/company-questions/${question.id}`,
+      lastModified: stale,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    })),
     ...roadmapIds().map((id) => ({
       url: `${SITE_URL}/roadmap/${id}`,
       lastModified: stale,

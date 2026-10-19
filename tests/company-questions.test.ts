@@ -108,3 +108,25 @@ describe("the company questions page data", () => {
     });
   });
 });
+
+describe("the company questions themes and companies", () => {
+  it("gives every question exactly one known theme and keeps every theme in use", async () => {
+    const { THEMES, THEME_OF } = await import("@/content/system-design/company-questions/themes");
+    const known = new Set(THEMES.map((theme) => theme.id));
+    for (const question of COMPANY_QUESTIONS) {
+      expect(known.has(THEME_OF[question.id]), `${question.id} has no theme`).toBe(true);
+    }
+    expect(Object.keys(THEME_OF).sort()).toEqual(COMPANY_QUESTIONS.map((question) => question.id).sort());
+    for (const theme of THEMES) {
+      expect(
+        COMPANY_QUESTIONS.some((question) => THEME_OF[question.id] === theme.id),
+        `${theme.id} is empty`
+      ).toBe(true);
+    }
+  });
+
+  it("gives every company an accent that exists as a theme token", () => {
+    const accents = new Set(["blue", "purple", "orange", "teal", "grey", "yellow"]);
+    for (const company of COMPANIES) expect(accents.has(company.accent), `${company.id} accent`).toBe(true);
+  });
+});

@@ -28,6 +28,8 @@ import { curriculumNotes, levels, levelsNav, relatedInterviewRound, topic } from
 import { plannedRelatedTopicId, relatedTopicId } from "@/lib/topicRelated";
 import { topicStats } from "@/lib/topicStats";
 import { plural } from "@/lib/format";
+import { CompanyQuestionsTeaser } from "@/components/topic/CompanyQuestionsTeaser";
+import { COMPANY_QUESTIONS } from "@/content/system-design/company-questions";
 import { withHeadingIds } from "@/lib/headingToc";
 import type { SeriesCard, SeriesPart } from "@/components/chapter/types";
 import type { LevelId } from "@/content/types";
@@ -59,6 +61,15 @@ export function TopicCoverPage({ topicId }: { topicId: string }) {
         curriculumNotes={curriculumNotes(topicId)}
         completion={t?.completion}
         checkChapterIds={checkChapterIds()}
+        aside={
+          topicId === "system-design" ? (
+            <CompanyQuestionsTeaser
+              href={`${basePath}/company-questions`}
+              questions={COMPANY_QUESTIONS.length}
+              companies={new Set(COMPANY_QUESTIONS.map((question) => question.company)).size}
+            />
+          ) : undefined
+        }
         extraLink={
           topicId === "system-design"
             ? { href: `${basePath}/company-questions`, label: "Company questions" }

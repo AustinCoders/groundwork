@@ -1,0 +1,30 @@
+.teaser {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  color: var(--ink);
+}
+
+.kicker {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--t-heading);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.sub {
+  margin: 0 0 6px;
+  font-size: var(--t-meta);
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
