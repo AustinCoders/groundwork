@@ -9,7 +9,7 @@ import type {
 
 export const NODE_W = 196;
 export const NODE_H = 64;
-const GAP_X = 84;
+const GAP_X = 80;
 const GAP_Y = 64;
 const PAD = 30;
 const LABEL_CHARS = 20;
@@ -79,6 +79,21 @@ function segmentMid(points: Point[]): Point {
   return at;
 }
 
+function pointOnLongest(points: Point[], t: number): Point {
+  let best = 0;
+  let at: [Point, Point] = [points[0], points[1]];
+  for (let i = 0; i < points.length - 1; i++) {
+    const [ax, ay] = points[i];
+    const [bx, by] = points[i + 1];
+    const length = Math.abs(bx - ax) + Math.abs(by - ay);
+    if (length > best) {
+      best = length;
+      at = [points[i], points[i + 1]];
+    }
+  }
+  return [at[0][0] + (at[1][0] - at[0][0]) * t, at[0][1] + (at[1][1] - at[0][1]) * t];
+}
+
 function along(points: Point[], distance: number): Point {
   const [ax, ay] = points[0];
   const [bx, by] = points[1];
@@ -88,9 +103,28 @@ function along(points: Point[], distance: number): Point {
 }
 
 export function layoutFlow(diagram: FlowDiagram): FlowLayout {
+  const pillWidth = (edge: FlowEdge) => (edge.label ? edge.label.length * 6.4 + 18 + (edge.step ? 24 : 0) : 0);
+  const columns = Math.max(...diagram.nodes.map((node) => Math.ceil(node.col))) + 1;
+  const gaps: number[] = Array.from({ length: columns }, () => GAP_X);
+  const byNode = new Map(diagram.nodes.map((node) => [node.id, node]));
+  for (const edge of diagram.edges) {
+    const from = byNode.get(edge.from);
+    const to = byNode.get(edge.to);
+    if (!from || !to || !edge.label) continue;
+    if (Math.abs(from.row - to.row) < 0.01 && Math.abs(from.col - to.col) === 1) {
+      const at = Math.min(from.col, to.col);
+      gaps[at] = Math.max(gaps[at], pillWidth(edge) + 26);
+    }
+  }
+  const colX: number[] = [PAD];
+  for (let c = 0; c < columns; c++) colX.push(colX[c] + NODE_W + gaps[c]);
+  const xOf = (col: number) => {
+    const base = Math.floor(col);
+    return colX[base] + (col - base) * (NODE_W + (gaps[base] ?? GAP_X));
+  };
   const place = (node: FlowNode): LaidNode => ({
     node,
-    x: PAD + node.col * (NODE_W + GAP_X),
+    x: xOf(node.col),
     y: PAD + node.row * (NODE_H + GAP_Y),
     lines: wrapLabel(node.label),
   });
@@ -106,7 +140,7 @@ export function layoutFlow(diagram: FlowDiagram): FlowLayout {
     const dx = tc[0] - sc[0];
     const dy = tc[1] - sc[1];
     const reverse = pairs.has(`${edge.to}>${edge.from}`);
-    const shift = reverse ? (edge.from < edge.to ? -9 : 9) : 0;
+    const shift = reverse ? (edge.from < edge.to ? -13 : 13) : 0;
     let points: Point[];
     if (Math.abs(dy) < 1) {
       const y = sc[1] + shift;
@@ -148,7 +182,7 @@ export function layoutFlow(diagram: FlowDiagram): FlowLayout {
     const label = edge.label
       ? (() => {
           const [x, y] = segmentMid(points);
-          return { x, y, width: edge.label.length * 6.8 + 16 + (edge.step ? 24 : 0), shift: edge.step ? 12 : 0 };
+          return { x, y, width: pillWidth(edge), shift: edge.step ? 12 : 0 };
         })()
       : undefined;
     const badge: Point | undefined = edge.step
@@ -164,6 +198,57 @@ export function layoutFlow(diagram: FlowDiagram): FlowLayout {
       style: edge.style ?? "solid",
     };
   });
+
+  const taken: { x1: number; x2: number; y1: number; y2: number }[] = [];
+  const clear = (x: number, y: number, width: number) => {
+    const box = { x1: x - width / 2, x2: x + width / 2, y1: y - 11, y2: y + 11 };
+    const hitsPill = taken.some(
+      (other) => box.x2 > other.x1 && box.x1 < other.x2 && box.y2 > other.y1 && box.y1 < other.y2
+    );
+    const hitsNode = nodes.some(
+      (entry) => box.x2 > entry.x && box.x1 < entry.x + NODE_W && box.y2 > entry.y && box.y1 < entry.y + NODE_H
+    );
+    return { box, ok: !hitsPill && !hitsNode };
+  };
+  for (const laid of edges) {
+    if (!laid.label) continue;
+    let chosen: { x: number; y: number } | null = null;
+    const segments = laid.points
+      .slice(0, -1)
+      .map((start, index) => ({ start, end: laid.points[index + 1] }))
+      .sort(
+        (a, b) =>
+          Math.abs(b.end[0] - b.start[0]) +
+          Math.abs(b.end[1] - b.start[1]) -
+          (Math.abs(a.end[0] - a.start[0]) + Math.abs(a.end[1] - a.start[1]))
+      );
+    const vertical = laid.points.length === 2 && laid.points[0][0] === laid.points[1][0];
+    const partner = edges.some(
+      (other) => other !== laid && other.edge.from === laid.edge.to && other.edge.to === laid.edge.from
+    );
+    if (vertical && partner) {
+      const top = Math.min(laid.points[0][1], laid.points[1][1]);
+      const length = Math.abs(laid.points[1][1] - laid.points[0][1]);
+      const y = top + length * (laid.edge.from < laid.edge.to ? 0.3 : 0.7);
+      if (clear(laid.points[0][0], y, laid.label.width).ok) chosen = { x: laid.points[0][0], y };
+    }
+    const tries: [number, number][] = [];
+    for (const dy of [0, -15, 15]) for (const t of [0.5, 0.3, 0.7, 0.18, 0.82]) tries.push([t, dy]);
+    outer: for (const [t, dy] of chosen ? [] : tries) {
+      for (const seg of segments) {
+        const x = seg.start[0] + (seg.end[0] - seg.start[0]) * t;
+        const y = seg.start[1] + (seg.end[1] - seg.start[1]) * t + (seg.start[1] === seg.end[1] ? dy : 0);
+        if (clear(x, y, laid.label.width).ok) {
+          chosen = { x, y };
+          break outer;
+        }
+      }
+    }
+    const final = chosen ?? { x: laid.label.x, y: laid.label.y };
+    laid.label = { ...laid.label, x: final.x, y: final.y };
+    if (laid.edge.step) laid.badge = [final.x - laid.label.width / 2 + 15, final.y];
+    taken.push(clear(final.x, final.y, laid.label.width).box);
+  }
 
   const width = Math.max(...nodes.map((entry) => entry.x + NODE_W)) + PAD;
   const height = Math.max(...nodes.map((entry) => entry.y + NODE_H)) + PAD;
@@ -210,6 +295,34 @@ export function crossings(layout: FlowLayout): string[] {
           y1 < entry.y + NODE_H - margin;
         if (hits) found.push(`${laid.edge.from}>${laid.edge.to} passes through ${entry.node.id}`);
       }
+    }
+  }
+  return found;
+}
+
+export function pillOverlaps(layout: FlowLayout): string[] {
+  const found: string[] = [];
+  const pills = layout.edges.filter((laid) => laid.label);
+  const rect = (laid: LaidEdge) => ({
+    x1: laid.label!.x - laid.label!.width / 2,
+    x2: laid.label!.x + laid.label!.width / 2,
+    y1: laid.label!.y - 11,
+    y2: laid.label!.y + 11,
+    name: `${laid.edge.from}>${laid.edge.to}`,
+  });
+  for (const laid of pills) {
+    const r = rect(laid);
+    for (const entry of layout.nodes) {
+      if (r.x2 > entry.x && r.x1 < entry.x + NODE_W && r.y2 > entry.y && r.y1 < entry.y + NODE_H)
+        found.push(`label of ${r.name} covers node ${entry.node.id}`);
+    }
+  }
+  for (let i = 0; i < pills.length; i++) {
+    for (let j = i + 1; j < pills.length; j++) {
+      const a = rect(pills[i]);
+      const b = rect(pills[j]);
+      if (a.x2 > b.x1 && a.x1 < b.x2 && a.y2 > b.y1 && a.y1 < b.y2)
+        found.push(`labels ${a.name} and ${b.name} overlap`);
     }
   }
   return found;
@@ -293,7 +406,10 @@ export function diagramProblems(diagram: Diagram): string[] {
       if (diagram.steps.length !== steps.length) out.push("steps list must have one entry per numbered edge");
       if (steps.some((n) => n < 1 || n > diagram.steps!.length)) out.push("step numbers must run 1..n");
     } else if (steps.length > 0) out.push("numbered edges need a steps list");
-    if (out.length === 0) out.push(...crossings(layoutFlow(diagram)));
+    if (out.length === 0) {
+      const laid = layoutFlow(diagram);
+      out.push(...crossings(laid), ...pillOverlaps(laid));
+    }
   } else {
     const ids = diagram.actors.map((actor) => actor.id);
     if (new Set(ids).size !== ids.length) out.push("duplicate actor ids");

@@ -3,7 +3,9 @@ import type {
   FlowDiagram,
   SequenceDiagram,
 } from "@/content/system-design/company-questions/diagram-types";
+import type { SVGProps } from "react";
 import { NODE_H, NODE_W, SEQ, layoutFlow, layoutSequence, roundedPath } from "./diagramLayout";
+import { SvgFit } from "./SvgFit";
 import styles from "./diagram.module.css";
 
 const ICONS: Record<string, string> = {
@@ -18,6 +20,10 @@ const ICONS: Record<string, string> = {
     "M10 7a3 3 0 100 6 3 3 0 000-6zM10 2v2M10 16v2M2 10h2M16 10h2M4.3 4.3l1.4 1.4M14.3 14.3l1.4 1.4M4.3 15.7l1.4-1.4M14.3 5.7l1.4-1.4",
   decision: "M10 2l8 8-8 8-8-8z",
 };
+
+function Canvas({ mini, children, ...props }: SVGProps<SVGSVGElement> & { mini?: boolean }) {
+  return mini ? <svg {...props}>{children}</svg> : <SvgFit {...props}>{children}</SvgFit>;
+}
 
 function Defs({ uid }: { uid: string }) {
   return (
@@ -35,7 +41,8 @@ function Defs({ uid }: { uid: string }) {
 function Flow({ diagram, uid, mini, bare }: { diagram: FlowDiagram; uid: string; mini?: boolean; bare?: boolean }) {
   const layout = layoutFlow(diagram);
   return (
-    <svg
+    <Canvas
+      mini={mini}
       viewBox={`0 0 ${layout.width} ${layout.height}`}
       className={mini ? styles.mini : styles.svg}
       role={mini ? undefined : "img"}
@@ -72,13 +79,13 @@ function Flow({ diagram, uid, mini, bare }: { diagram: FlowDiagram; uid: string;
                 className={styles.label}
               >
                 {entry.lines.map((line, i) => (
-                  <tspan key={line} x={44} dy={i === 0 ? 0 : 19}>
+                  <tspan key={line} x={44} dy={i === 0 ? 0 : 19} data-max={NODE_W - 54}>
                     {line}
                   </tspan>
                 ))}
               </text>
               {entry.node.sub && (
-                <text x={44} y={NODE_H / 2 + 16} className={styles.sub}>
+                <text x={44} y={NODE_H / 2 + 16} className={styles.sub} data-max={NODE_W - 54}>
                   {entry.node.sub}
                 </text>
               )}
@@ -99,7 +106,13 @@ function Flow({ diagram, uid, mini, bare }: { diagram: FlowDiagram; uid: string;
                   rx={11}
                   className={styles.pill}
                 />
-                <text textAnchor="middle" x={laid.label.shift} y={4} className={styles.pillText}>
+                <text
+                  textAnchor="middle"
+                  x={laid.label.shift}
+                  y={4}
+                  className={styles.pillText}
+                  data-max={laid.label.width - 14 - (laid.edge.step ? 22 : 0)}
+                >
                   {laid.edge.label}
                 </text>
               </g>
@@ -117,7 +130,7 @@ function Flow({ diagram, uid, mini, bare }: { diagram: FlowDiagram; uid: string;
               </g>
             )
         )}
-    </svg>
+    </Canvas>
   );
 }
 
@@ -134,7 +147,8 @@ function Sequence({
 }) {
   const layout = layoutSequence(diagram);
   return (
-    <svg
+    <Canvas
+      mini={mini}
       viewBox={`0 0 ${layout.width} ${layout.height}`}
       className={mini ? styles.mini : styles.svg}
       role={mini ? undefined : "img"}
@@ -149,7 +163,7 @@ function Sequence({
           <g className={styles.node} data-kind={actor.kind} transform={`translate(${actor.cx - 66} ${SEQ.top})`}>
             <rect width={132} height={SEQ.head} rx={mini ? 8 : 14} />
             {!mini && (
-              <text x={66} y={SEQ.head / 2 + 5} textAnchor="middle" className={styles.label}>
+              <text x={66} y={SEQ.head / 2 + 5} textAnchor="middle" className={styles.label} data-max={116}>
                 {actor.label}
               </text>
             )}
@@ -169,7 +183,7 @@ function Sequence({
                 markerEnd={marker}
               />
               {!mini && (
-                <text x={x + 52} y={row.y + 5} className={styles.seqText}>
+                <text x={x + 52} y={row.y + 5} className={styles.seqText} data-max={SEQ.colW - 70}>
                   {row.label}
                 </text>
               )}
@@ -198,7 +212,13 @@ function Sequence({
             />
             {!mini && (
               <>
-                <text x={(row.x1 + row.x2) / 2} y={row.y - 9} textAnchor="middle" className={styles.seqText}>
+                <text
+                  x={(row.x1 + row.x2) / 2}
+                  y={row.y - 9}
+                  textAnchor="middle"
+                  className={styles.seqText}
+                  data-max={Math.max(60, Math.abs(row.x2 - row.x1) - 44)}
+                >
                   {row.label}
                 </text>
                 <g transform={`translate(${row.x1 + (toRight ? 16 : -16)} ${row.y})`}>
@@ -212,7 +232,7 @@ function Sequence({
           </g>
         );
       })}
-    </svg>
+    </Canvas>
   );
 }
 

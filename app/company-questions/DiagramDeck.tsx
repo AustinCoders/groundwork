@@ -1,10 +1,15 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import styles from "./detail.module.css";
 
 export function DiagramDeck({ items }: { items: { id: string; title: string; node: ReactNode }[] }) {
   const [at, setAt] = useState(0);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
+    return () => window.cancelAnimationFrame(frame);
+  }, [at]);
   if (items.length === 1) return <div className={styles.deck}>{items[0].node}</div>;
   return (
     <div className={styles.deck}>

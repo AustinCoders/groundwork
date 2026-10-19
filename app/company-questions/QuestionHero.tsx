@@ -52,36 +52,46 @@ export function QuestionHero(props: QuestionHeroProps) {
           </ul>
           <p className={styles.hint}>{copy.hint}</p>
           {actions}
+          <figure className={styles.prompt}>
+            <span className={styles.tape} aria-hidden="true" />
+            <figcaption>{promptLabel}</figcaption>
+            <blockquote>{prompt}</blockquote>
+            <p>{disclaimer}</p>
+          </figure>
         </div>
 
-        <aside className={styles.glance} aria-label="At a glance">
-          {glyph && <div className={styles.glyph}>{glyph}</div>}
-          <Link href={`${HUB_PATH}/${company.id}`} className={styles.companyLink} prefetch={false}>
-            <span className={styles.monogram} aria-hidden="true">
-              {company.name.charAt(0)}
-            </span>
-            <span>
-              <b>{company.name}</b>
-              <em>See the whole interview process →</em>
-            </span>
-          </Link>
-          <dl>
-            {glance.map((row) => (
-              <div key={row.label}>
-                <dt>{row.label}</dt>
-                <dd>{row.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </aside>
+        <div className={styles.side}>
+          <aside className={styles.glance} aria-label="At a glance">
+            {glyph && <div className={styles.glyph}>{glyph}</div>}
+            <Link href={`${HUB_PATH}/${company.id}`} className={styles.companyLink} prefetch={false}>
+              <span className={styles.monogram} aria-hidden="true">
+                {company.name.charAt(0)}
+              </span>
+              <span>
+                <b>{company.name}</b>
+                <em>See the whole interview process →</em>
+              </span>
+            </Link>
+            <dl>
+              {glance.map((row) => (
+                <div key={row.label}>
+                  <dt>{row.label}</dt>
+                  <dd>{row.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </aside>
+          <aside className={styles.quick} aria-label="How to use this page">
+            <h2>Practise it like the real round</h2>
+            <ol>
+              <li>Read the prompt and clarify out loud.</li>
+              <li>Cover the answer and start the clock.</li>
+              <li>Compare, then mark it practised.</li>
+            </ol>
+            <a href="#try">Go to the interview clock ↓</a>
+          </aside>
+        </div>
       </div>
-
-      <figure className={styles.prompt}>
-        <span className={styles.tape} aria-hidden="true" />
-        <figcaption>{promptLabel}</figcaption>
-        <blockquote>{prompt}</blockquote>
-        <p>{disclaimer}</p>
-      </figure>
     </header>
   );
 }

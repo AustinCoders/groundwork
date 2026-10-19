@@ -57,7 +57,7 @@ export function TryFirst({
   const progress = Math.min(elapsed / roundSeconds, 1) * 100;
 
   return (
-    <div className={styles.trial} data-mode={mode}>
+    <div className={styles.trial} data-mode={mode} id="try">
       <div className={styles.trialBar}>
         <div className={styles.trialCopy}>
           {mode === "open" && (
