@@ -39,6 +39,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/privacy`, lastModified: stale, changeFrequency: "yearly", priority: 0.3 },
     { url: `${SITE_URL}/whiteboard`, lastModified: stale, changeFrequency: "monthly", priority: 0.5 },
     { url: `${SITE_URL}/roadmap`, lastModified: stale, changeFrequency: "monthly", priority: 0.7 },
+    {
+      url: `${SITE_URL}/system-design/company-questions`,
+      lastModified: stale,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
     ...roadmapIds().map((id) => ({
       url: `${SITE_URL}/roadmap/${id}`,
       lastModified: stale,

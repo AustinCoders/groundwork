@@ -337,3 +337,29 @@ noticed, so the chapter now shows both detection times; and "human error is neve
 wider safety literature, not the SRE book, so the chapter says so. Not added, to keep the chapters short: readiness
 and liveness probes, contract tests and schema evolution, cell-based architecture, Zanzibar's consistency tokens,
 and the NIST password rules.
+
+## Company questions page (October 2026)
+
+`/system-design/company-questions` lists 30 design prompts that candidates and prep guides say big companies use
+(Google, Meta, Amazon, Microsoft, Apple, Netflix, Uber, Atlassian, Flipkart, Swiggy, Razorpay, PhonePe), each with a
+full answer written for this site: what to ask first, the numbers, the design, trade-offs, follow-ups and where
+candidates slip. Data lives in `content/system-design/company-questions/` (six `batch*.ts` files merged by
+`index.ts`); the page is a server component, with a small client filter that only toggles `hidden` on the cards, so
+the answers stay out of the client bundle.
+
+How honest labelling works. Companies do not publish their questions, so every card carries an evidence label and
+links to the public pages it came from: "Reported in several places" (two or more independent pages, at least one a
+candidate write-up), "Reported once" (one candidate write-up), "Listed in prep guides" (no candidate write-up found).
+Reposts of the same write-up count once. The answers never say a company asked something or how it builds anything;
+the prompts are representative, not quotes. Research found 6 questions with several reports, 16 with one and 8 in
+guides only; Glassdoor, LeetCode and Medium could not be read, so those are not cited.
+
+Checks. `tests/company-questions.test.ts` guards the shape (30 unique ids, all 12 companies, real chapter links,
+https sources, evidence consistent with source kinds, allowed markup only, no "company asked" claims).
+`npm run sources` covers the new links. Three independent reviewers re-derived the arithmetic and design of all 30
+answers and changed 22 of them; the findings worth remembering: lock ordering inside one multi-row UPDATE, a unique
+key that rejected the adjustment rows the design relied on, an idempotency key that could not work across the shard
+key, an outbox row written after commit (a dual write), a counter that drifted from its database, and a load balancer
+count that left too little capacity after losing a zone.
+
+Still open: refresh the evidence labels yearly (reports go stale), and a design drill for any of these prompts.

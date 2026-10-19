@@ -42,6 +42,7 @@ export function TopicCover({
   completion,
   checkChapterIds,
   aside,
+  extraLink,
 }: {
   topicId: string;
   topicName: string;
@@ -57,6 +58,7 @@ export function TopicCover({
   completion?: Completion;
   checkChapterIds?: string[];
   aside?: ReactNode;
+  extraLink?: { href: string; label: string };
 }) {
   const progress = useCoverProgress({ topicId, basePath, cards, completion, checkChapterIds });
   const { plan, written, firstReadyId, totalExercises, continueHref, continueLabel } = progress;
@@ -94,6 +96,11 @@ export function TopicCover({
               <Button ghost href={`/level/${topicId}`}>
                 Pick your level
               </Button>
+              {extraLink && (
+                <Button ghost href={extraLink.href}>
+                  {extraLink.label}
+                </Button>
+              )}
             </Actions>
             <ProgressChips progress={progress} />
           </Copy>
@@ -145,6 +152,7 @@ export function TopicCover({
           {relatedRoundHref && (
             <FootLink href={relatedRoundHref}>Practise this as {relatedRoundLabel} in the interview book →</FootLink>
           )}
+          {extraLink && <FootLink href={extraLink.href}>{extraLink.label} →</FootLink>}
           <FootLink href="/">Switch topic</FootLink>
         </Foot>
       </TopicPage>

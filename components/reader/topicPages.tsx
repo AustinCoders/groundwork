@@ -59,6 +59,11 @@ export function TopicCoverPage({ topicId }: { topicId: string }) {
         curriculumNotes={curriculumNotes(topicId)}
         completion={t?.completion}
         checkChapterIds={checkChapterIds()}
+        extraLink={
+          topicId === "system-design"
+            ? { href: `${basePath}/company-questions`, label: "Company questions" }
+            : undefined
+        }
       />
     );
   }
