@@ -121,7 +121,6 @@ export function Browser({
   const visibleTopics = topics.filter((entry) => mode === "all" || entry.kind === mode);
   const inMode = items.filter((item) => mode === "all" || item.kind === mode);
   const practisedCount = items.filter((item) => done.has(item.id)).length;
-  const filtered = company !== "all" || topic !== "all" || evidence !== "all" || needle !== "";
   const modeCount = (id: Mode) => items.filter((item) => id === "all" || item.kind === id).length;
 
   function chooseMode(next: Mode) {

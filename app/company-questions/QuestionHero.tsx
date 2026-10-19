@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { accentVar } from "@/lib/accent";
 import { HUB_PATH, evidenceCopy, type EvidenceKey, type Kind } from "./shared";
+import { ShaderHero } from "./ShaderHero";
 import styles from "./detail.module.css";
 
 export interface QuestionHeroProps {
@@ -25,6 +26,7 @@ export function QuestionHero(props: QuestionHeroProps) {
   const copy = evidenceCopy(kind, evidence);
   return (
     <header className={styles.hero} style={{ "--accent": accentVar(company.accent) } as CSSProperties}>
+      <ShaderHero />
       <nav className={styles.crumbs} aria-label="Breadcrumb">
         <Link href={HUB_PATH} prefetch={false}>
           Company questions

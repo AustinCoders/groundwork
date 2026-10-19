@@ -8,6 +8,8 @@
 }
 
 .hero {
+  position: relative;
+  isolation: isolate;
   display: grid;
   gap: clamp(28px, 4vw, 64px);
   align-items: center;
@@ -20,10 +22,51 @@
   }
 }
 
+.heroFx {
+  position: absolute;
+  inset: -8% -6%;
+  z-index: -1;
+  pointer-events: none;
+  mask-image: radial-gradient(closest-side, var(--ink) 35%, transparent 100%);
+}
+
 .heroCopy {
   display: grid;
   gap: 14px;
   justify-items: start;
+}
+
+.heroCopy > * {
+  animation: heroRise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+
+.heroCopy > :nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.heroCopy > :nth-child(3) {
+  animation-delay: 140ms;
+}
+
+.heroCopy > :nth-child(4) {
+  animation-delay: 210ms;
+}
+
+.heroCopy > :nth-child(5) {
+  animation-delay: 280ms;
+}
+
+@keyframes heroRise {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroCopy > * {
+    animation: none;
+  }
 }
 
 .stats {
@@ -1285,151 +1328,242 @@
 
 .explorer {
   display: grid;
-  gap: 20px;
-  align-items: start;
+  gap: 18px;
 }
 
-@media (min-width: 900px) {
-  .explorer {
-    grid-template-columns: 290px minmax(0, 1fr);
-  }
-}
-
-.kindList {
-  display: flex;
-  gap: 6px;
+.kindGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
   margin: 0;
-  padding: 0 0 6px;
-  overflow-x: auto;
+  padding: 0;
   list-style: none;
 }
 
-@media (min-width: 900px) {
-  .kindList {
-    position: sticky;
-    top: calc(var(--header-h, 60px) + 16px);
-    flex-direction: column;
-    max-height: calc(100vh - var(--header-h, 60px) - 40px);
-    padding: 0;
-    overflow-y: auto;
+@media (min-width: 640px) {
+  .kindGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-.kindList button {
-  display: flex;
-  flex: none;
-  gap: 10px;
+@media (min-width: 1040px) {
+  .kindGrid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.kindGrid button {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 10px;
   align-items: center;
   width: 100%;
-  min-height: 48px;
-  padding: 6px 12px 6px 6px;
+  min-height: 84px;
+  padding: 12px 12px 16px;
+  overflow: hidden;
   font: inherit;
   color: var(--ink);
   text-align: left;
   cursor: pointer;
   background: var(--sheet);
   border: 1.5px solid var(--line);
-  border-radius: 14px;
+  border-radius: 16px;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.kindList button:hover {
+.kindGrid button:hover {
   border-color: var(--tone);
+  transform: translateY(-2px);
 }
 
-.kindList button[aria-selected="true"] {
+.kindGrid button[aria-selected="true"] {
   background: color-mix(in srgb, var(--tone) 16%, var(--sheet));
   border-color: var(--tone);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--tone) 40%, transparent);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--tone) 40%, transparent),
+    var(--shadow-sm);
 }
 
-.kindList button:focus-visible {
+.kindGrid button:focus-visible {
   outline: 2.5px solid var(--primary);
   outline-offset: 2px;
 }
 
 .kindIcon {
   display: grid;
-  flex: none;
+  grid-row: span 2;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   color: var(--ink);
   background: color-mix(in srgb, var(--tone) 20%, var(--sheet));
   border: 1.5px solid var(--tone);
-  border-radius: 10px;
+  border-radius: 12px;
+  transition: rotate 0.25s ease;
+}
+
+.kindGrid button:hover .kindIcon,
+.kindGrid button[aria-selected="true"] .kindIcon {
+  rotate: -6deg;
 }
 
 .kindName {
-  flex: 1;
+  align-self: end;
   font-family: var(--font-heading);
   font-size: var(--t-title);
   font-weight: 700;
   line-height: 1.15;
-  white-space: nowrap;
+  text-wrap: balance;
 }
 
 .kindCount {
+  align-self: start;
   font-family: var(--font-mono);
   font-size: var(--t-kicker);
   color: var(--ink-soft);
 }
 
+.kindMeter {
+  position: absolute;
+  right: 12px;
+  bottom: 7px;
+  left: 12px;
+  height: 4px;
+  overflow: hidden;
+  background: var(--line);
+  border-radius: 99px;
+}
+
+.kindMeter i {
+  display: block;
+  height: 100%;
+  background: var(--tone);
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+
 .kindPanel {
+  position: relative;
   display: grid;
-  gap: 14px;
-  min-height: 420px;
-  padding: clamp(18px, 2.6vw, 30px);
+  gap: 22px;
+  padding: clamp(18px, 2.6vw, 32px);
+  overflow: hidden;
   background:
-    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--tone) 16%, transparent), transparent 55%), var(--sheet);
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--tone) 18%, transparent), transparent 55%), var(--sheet);
   border: 1.5px solid color-mix(in srgb, var(--tone) 55%, var(--line));
   border-radius: 22px;
   box-shadow: var(--shadow-md);
+  animation: kindIn 0.38s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-.kindPanel header {
-  display: flex;
-  gap: 16px;
+@keyframes kindIn {
+  from {
+    opacity: 0;
+    translate: 0 14px;
+  }
+}
+
+.panelTop {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px 20px;
   align-items: center;
+}
+
+@media (max-width: 700px) {
+  .panelTop {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
 }
 
 .kindIconLg {
   display: grid;
-  flex: none;
   place-items: center;
-  width: 60px;
-  height: 60px;
+  width: 68px;
+  height: 68px;
   color: var(--ink);
   background: color-mix(in srgb, var(--tone) 22%, var(--sheet));
   border: 2px solid var(--tone);
-  border-radius: 18px;
-  box-shadow: 3px 3px 0 var(--tone);
+  border-radius: 20px;
+  box-shadow: 4px 4px 0 var(--tone);
 }
 
-.kindPanel h3 {
+.panelTitle h3 {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: clamp(1.8rem, 1.4rem + 1.4vw, 2.6rem);
+  font-size: clamp(1.9rem, 1.4rem + 1.6vw, 2.8rem);
   line-height: 1.05;
   color: var(--ink);
 }
 
-.kindPanel header p {
-  margin: 2px 0 0;
-  font-family: var(--font-mono);
-  font-size: var(--t-kicker);
-  color: var(--ink-soft);
-}
-
 .kindWhat {
-  max-width: 72ch;
-  margin: 0;
+  max-width: 78ch;
+  margin: 6px 0 0;
   font-size: var(--t-body);
   line-height: 1.6;
   color: var(--ink);
 }
 
-.kindPanel h4 {
-  margin: 8px 0 0;
+.stat {
+  display: grid;
+  gap: 4px;
+  min-width: 150px;
+  padding: 10px 16px;
+  text-align: center;
+  background: color-mix(in srgb, var(--tone) 12%, var(--sheet));
+  border: 1.5px solid color-mix(in srgb, var(--tone) 50%, var(--line));
+  border-radius: 16px;
+}
+
+@media (max-width: 700px) {
+  .stat {
+    grid-column: 1 / -1;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: center;
+    text-align: left;
+  }
+}
+
+.stat b {
+  font-family: var(--font-heading);
+  font-size: 2.4rem;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.stat span {
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+}
+
+.panelCols {
+  display: grid;
+  gap: 22px;
+}
+
+@media (min-width: 980px) {
+  .panelCols {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 28px;
+  }
+}
+
+.col {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  min-width: 0;
+}
+
+.col h4 {
+  margin: 0;
   font-family: var(--font-mono);
   font-size: var(--t-kicker);
   letter-spacing: 0.08em;
@@ -1439,8 +1573,7 @@
 
 .askedGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
-  gap: 10px;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1449,22 +1582,24 @@
 .askedGrid li {
   display: flex;
   gap: 12px;
-  align-items: flex-start;
-  padding: 12px 14px;
-  font-size: var(--t-meta);
-  line-height: 1.5;
+  align-items: center;
+  padding: 11px 14px;
+  font-size: var(--t-body);
+  line-height: 1.45;
   color: var(--ink);
   background: var(--sheet);
   border: 1.5px solid var(--line);
   border-radius: 14px;
+  animation: kindIn 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 55ms);
 }
 
 .askedGrid li span {
   display: grid;
   flex: none;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   font-family: var(--font-heading);
   color: var(--ink);
   background: color-mix(in srgb, var(--tone) 24%, var(--sheet));
@@ -1472,8 +1607,8 @@
 }
 
 .kindCompanies {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 136px), 1fr));
   gap: 8px;
   margin: 0;
   padding: 0;
@@ -1481,10 +1616,10 @@
 }
 
 .kindCompanies a {
-  display: inline-flex;
+  display: flex;
   gap: 8px;
   align-items: center;
-  padding: 4px 12px 4px 5px;
+  padding: 5px 12px 5px 5px;
   font-size: var(--t-meta);
   font-weight: 700;
   color: var(--ink);
@@ -1492,10 +1627,14 @@
   background: var(--sheet);
   border: 1.5px solid var(--line);
   border-radius: 99px;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .kindCompanies a:hover {
   border-color: var(--accent);
+  transform: translateY(-1px);
 }
 
 .kindCompanies a:focus-visible,
@@ -1506,9 +1645,10 @@
 
 .kindCompanies a b {
   display: grid;
+  flex: none;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   font-family: var(--font-heading);
   background: color-mix(in srgb, var(--accent) 22%, var(--sheet));
   border: 1.5px solid var(--accent);
@@ -1516,13 +1656,48 @@
 }
 
 .kindLinks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
+  display: grid;
+  gap: 8px;
   margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .kindLinks a {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
   font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+  background: color-mix(in srgb, var(--tone) 8%, var(--sheet));
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.kindLinks a:hover {
+  border-color: var(--tone);
+  transform: translateX(3px);
+}
+
+.kindLinks a span {
   color: var(--primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kindPanel,
+  .askedGrid li {
+    animation: none;
+  }
+
+  .kindGrid button,
+  .kindCompanies a,
+  .kindLinks a {
+    transition: none;
+  }
 }

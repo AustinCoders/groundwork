@@ -79,21 +79,6 @@ function segmentMid(points: Point[]): Point {
   return at;
 }
 
-function pointOnLongest(points: Point[], t: number): Point {
-  let best = 0;
-  let at: [Point, Point] = [points[0], points[1]];
-  for (let i = 0; i < points.length - 1; i++) {
-    const [ax, ay] = points[i];
-    const [bx, by] = points[i + 1];
-    const length = Math.abs(bx - ax) + Math.abs(by - ay);
-    if (length > best) {
-      best = length;
-      at = [points[i], points[i + 1]];
-    }
-  }
-  return [at[0][0] + (at[1][0] - at[0][0]) * t, at[0][1] + (at[1][1] - at[0][1]) * t];
-}
-
 function along(points: Point[], distance: number): Point {
   const [ax, ay] = points[0];
   const [bx, by] = points[1];

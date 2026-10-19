@@ -1,10 +1,36 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import type { Phase } from "./shared";
 import styles from "./company-questions.module.css";
 
-type Mode = "open" | "covered" | "done";
+type Mode = "choose" | "open" | "covered" | "done";
+
+const READ_FIRST = "groundwork:company-questions:read-first";
+const READ_FIRST_EVENT = "groundwork:read-first";
+
+function subscribe(listener: () => void) {
+  window.addEventListener("hashchange", listener);
+  window.addEventListener(READ_FIRST_EVENT, listener);
+  return () => {
+    window.removeEventListener("hashchange", listener);
+    window.removeEventListener(READ_FIRST_EVENT, listener);
+  };
+}
+
+function stored(): boolean {
+  try {
+    return window.localStorage.getItem(READ_FIRST) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function wantsAnswer(): boolean {
+  return stored() || (window.location.hash.length > 1 && window.location.hash !== "#try");
+}
+
+const noop = () => () => {};
 
 function clock(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -32,7 +58,15 @@ export function TryFirst({
 }) {
   const total = phases.reduce((sum, phase) => sum + phase.minutes, 0);
   const roundSeconds = total * 60;
-  const [mode, setMode] = useState<Mode>("open");
+  const [picked, setPicked] = useState<Mode | null>(null);
+  const hydrated = useSyncExternalStore(
+    noop,
+    () => true,
+    () => false
+  );
+  const skip = useSyncExternalStore(subscribe, wantsAnswer, () => false);
+  const mode: Mode = picked ?? (skip ? "open" : "choose");
+  const setMode = setPicked;
   const [startedAt, setStartedAt] = useState(0);
   const [elapsed, setElapsed] = useState(0);
 
@@ -48,6 +82,16 @@ export function TryFirst({
     setMode("covered");
   }
 
+  function remember(on: boolean) {
+    try {
+      if (on) window.localStorage.setItem(READ_FIRST, "1");
+      else window.localStorage.removeItem(READ_FIRST);
+    } catch {
+      return;
+    }
+    window.dispatchEvent(new Event(READ_FIRST_EVENT));
+  }
+
   function reveal() {
     setElapsed(Math.floor((Date.now() - startedAt) / 1000));
     setMode("done");
@@ -58,12 +102,21 @@ export function TryFirst({
 
   return (
     <div className={styles.trial} data-mode={mode} id="try">
+      <div className={styles.readBar} aria-hidden="true" />
       <div className={styles.trialBar}>
         <div className={styles.trialCopy}>
-          {mode === "open" && (
+          {mode === "choose" && (
             <>
               <b>Try it first.</b>
-              <span>Cover the answer, start a {total} minute clock and talk it through. Then compare.</span>
+              <span>
+                The answer is covered until you pick. Talk it through against a {total} minute clock, or just read it.
+              </span>
+            </>
+          )}
+          {mode === "open" && (
+            <>
+              <b>Reading the answer.</b>
+              <span>Want to test yourself? Cover it and run a {total} minute clock, then compare.</span>
             </>
           )}
           {mode === "covered" && (
@@ -96,7 +149,7 @@ export function TryFirst({
         <div className={styles.trialActions}>
           {mode === "open" && (
             <button type="button" className={styles.primaryBtn} onClick={cover}>
-              Cover and start the clock
+              Cover it and start the clock
             </button>
           )}
           {mode === "covered" && (
@@ -121,16 +174,40 @@ export function TryFirst({
               {entry.label}
             </span>
           ))}
-          {mode !== "open" && <i style={{ left: `${progress}%` }} />}
+          {(mode === "covered" || mode === "done") && <i style={{ left: `${progress}%` }} />}
         </div>
       </div>
 
       <div className={styles.reader}>
         <aside className={styles.rail}>{rail}</aside>
         <div className={styles.answerWrap}>
-          <div className={styles.answer} inert={mode === "covered"}>
+          <div className={styles.answer} inert={hydrated && (mode === "covered" || mode === "choose")}>
             {children}
           </div>
+          {mode === "choose" && (
+            <div className={styles.veil}>
+              <div className={styles.veilCard}>
+                <p>
+                  <b>Have a go before you read.</b>
+                </p>
+                <p>
+                  Interviews reward the sketch you make cold. Clarify out loud, draw it, then compare with the answer.
+                </p>
+                <div className={styles.veilRow}>
+                  <button type="button" className={styles.primaryBtn} onClick={cover}>
+                    Start the {total} minute clock
+                  </button>
+                  <button type="button" className={styles.ghostBtn} onClick={() => setMode("open")}>
+                    Just show me the answer
+                  </button>
+                </div>
+                <label className={styles.veilRemember}>
+                  <input type="checkbox" onChange={(event) => remember(event.target.checked)} /> Always show the answer
+                  straight away
+                </label>
+              </div>
+            </div>
+          )}
           {mode === "covered" && (
             <div className={styles.veil}>
               <div className={styles.veilCard}>

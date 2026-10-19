@@ -2,6 +2,8 @@ import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { RevealRoot } from "../RevealRoot";
+import { ShaderHero } from "../ShaderHero";
 import { PageFrame } from "@/components/frame/PageFrame";
 import { Foot, FootLink, Kicker, TopicPage, Wrap } from "@/components/topic/TopicKit";
 import { accentVar } from "@/lib/accent";
@@ -63,7 +65,9 @@ export default async function Page({ params }: { params: Promise<{ company: stri
       <TopicPage accent="yellow">
         <Wrap>
           <div style={tint}>
+            <RevealRoot />
             <header className={styles.hero}>
+              <ShaderHero />
               <span className={styles.heroMonogram} aria-hidden="true">
                 {view.company.name.charAt(0)}
               </span>
@@ -131,7 +135,7 @@ export default async function Page({ params }: { params: Promise<{ company: stri
               </section>
 
               <aside className={styles.aside} aria-label="Questions and related companies">
-                <div className={styles.asideCard}>
+                <div className={styles.asideCard} data-reveal="">
                   <h2>All {view.company.name} answers</h2>
                   {tracked.length === 0 ? (
                     <p>No written answer yet. The rounds above list what was reported.</p>
@@ -158,7 +162,7 @@ export default async function Page({ params }: { params: Promise<{ company: stri
                     </ul>
                   )}
                 </div>
-                <div className={styles.asideCard}>
+                <div className={styles.asideCard} data-reveal="">
                   <h2>How to read the labels</h2>
                   <ul className={styles.legend}>
                     <li>
@@ -174,7 +178,7 @@ export default async function Page({ params }: { params: Promise<{ company: stri
                   <p>Companies do not publish their questions and rotate them, so every round here is anecdotal.</p>
                 </div>
                 {others.length > 0 && (
-                  <div className={styles.asideCard}>
+                  <div className={styles.asideCard} data-reveal="">
                     <h2>More {view.company.group === "global" ? "global" : "Indian"} companies</h2>
                     <div className={styles.chips}>
                       {others.map((entry) => (

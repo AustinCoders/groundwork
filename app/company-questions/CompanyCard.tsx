@@ -12,7 +12,7 @@ const firstSentence = (text: string, cap: number) => {
   return first.length > cap ? `${first.slice(0, cap - 1).trimEnd()}…` : first;
 };
 
-export function CompanyCard({ view }: { view: CompanyView }) {
+export function CompanyCard({ view, index = 0 }: { view: CompanyView; index?: number }) {
   const { company, process, design, coding } = view;
   const rounds = process?.rounds ?? [];
   const tracked = [
@@ -23,7 +23,8 @@ export function CompanyCard({ view }: { view: CompanyView }) {
     <Link
       href={`${HUB_PATH}/${company.id}`}
       className={hub.company}
-      style={{ "--accent": accentVar(company.accent) } as CSSProperties}
+      style={{ "--accent": accentVar(company.accent), "--i": index % 4 } as CSSProperties}
+      data-reveal=""
       prefetch={false}
     >
       <span className={hub.companyTop}>

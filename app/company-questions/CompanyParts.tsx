@@ -111,6 +111,7 @@ export function RoundTimeline({
             key={`${round.name}-${index}`}
             id={`round-${index + 1}`}
             className={styles.round}
+            data-reveal=""
             style={tone(kind.accent || accent)}
           >
             <span className={styles.node} aria-hidden="true">

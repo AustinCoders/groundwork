@@ -185,7 +185,8 @@
   box-shadow: 4px 4px 0 var(--ink);
 }
 
-.trial[data-mode="covered"] .trialBar {
+.trial[data-mode="covered"] .trialBar,
+.trial[data-mode="choose"] .trialBar {
   background: color-mix(in srgb, var(--primary) 10%, var(--sheet));
 }
 
@@ -400,7 +401,8 @@
   transition: filter 0.3s ease;
 }
 
-.trial[data-mode="covered"] .answer {
+.trial[data-mode="covered"] .answer,
+.trial[data-mode="choose"] .answer {
   user-select: none;
   filter: blur(9px);
   opacity: 0.6;
@@ -420,7 +422,7 @@
   gap: 10px;
   justify-items: start;
   align-self: start;
-  max-width: 420px;
+  max-width: 470px;
   margin-top: 40px;
   padding: 22px;
   color: var(--ink);
@@ -435,6 +437,27 @@
   font-size: var(--t-body);
 }
 
+.veilRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.veilRemember {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: var(--t-meta);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.veilRemember input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+}
+
 .step {
   scroll-margin-top: calc(var(--header-h, 60px) + 20px);
   padding: clamp(18px, 2.4vw, 28px);
@@ -442,6 +465,38 @@
   border: 1.5px solid var(--line);
   border-radius: 16px;
   box-shadow: var(--shadow-sm);
+}
+
+.step:not([data-step="design"]) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 480px;
+}
+
+.readBar {
+  display: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  .readBar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 60;
+    display: block;
+    width: 100%;
+    height: 3px;
+    background: var(--accent, var(--primary));
+    transform-origin: 0 50%;
+    scale: 0 1;
+    animation: readGrow linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+@keyframes readGrow {
+  to {
+    scale: 1 1;
+  }
 }
 
 .step[data-step="numbers"] {
@@ -499,7 +554,7 @@
 }
 
 .body {
-  max-width: 78ch;
+  max-width: none;
 }
 
 .followups {
@@ -515,7 +570,6 @@
   display: flex;
   gap: 14px;
   align-items: baseline;
-  max-width: 78ch;
   padding: 14px 18px;
   font-size: var(--t-body);
   line-height: 1.5;

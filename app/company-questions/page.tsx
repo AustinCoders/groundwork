@@ -22,7 +22,9 @@ import { THEMES, THEME_OF } from "@/content/system-design/company-questions/them
 import { pageMetadata } from "@/lib/metadata";
 import { Browser } from "./Browser";
 import { CompanyCard } from "./CompanyCard";
+import { RevealRoot } from "./RevealRoot";
 import { RoundGuide } from "./RoundGuide";
+import { ShaderHero } from "./ShaderHero";
 import { companyViews, exerciseOf } from "./data";
 import { Diagram } from "./Diagram";
 import { HeroArt } from "./HeroArt";
@@ -162,7 +164,11 @@ export default function Page() {
     >
       <TopicPage accent="yellow">
         <Wrap>
+          <RevealRoot />
           <div className={styles.hero}>
+            <div className={styles.heroFx}>
+              <ShaderHero />
+            </div>
             <div className={styles.heroCopy}>
               <Kicker mark="CQ">Interview prep · reported by candidates</Kicker>
               <Heading id="company-questions-title">
@@ -205,7 +211,7 @@ export default function Page() {
             />
           </div>
 
-          <div className={styles.how}>
+          <div className={styles.how} data-reveal="">
             <ol className={styles.steps}>
               {STEPS.map((step) => (
                 <li key={step.n}>
@@ -249,7 +255,7 @@ export default function Page() {
           count={`${views.length} companies`}
         >
           {(["global", "india"] as const).map((group) => (
-            <div className={styles.companyGroup} key={group}>
+            <div className={styles.companyGroup} key={group} data-reveal="">
               <p className={styles.companyGroupLabel}>
                 <b>{group === "global" ? "Global" : "India"}</b>
                 <span>
@@ -259,8 +265,8 @@ export default function Page() {
               <div className={styles.companies}>
                 {views
                   .filter((view) => view.company.group === group)
-                  .map((view) => (
-                    <CompanyCard key={view.company.id} view={view} />
+                  .map((view, at) => (
+                    <CompanyCard key={view.company.id} view={view} index={at} />
                   ))}
               </div>
             </div>
@@ -275,7 +281,9 @@ export default function Page() {
           title="Every kind of round, and what it can ask"
           sub="Open one to see what is usually asked, and where to prepare for it on this site."
         >
-          <RoundGuide />
+          <div data-reveal="">
+            <RoundGuide />
+          </div>
         </Band>
 
         <Band

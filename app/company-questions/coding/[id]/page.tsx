@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { RevealRoot } from "../../RevealRoot";
 import { PageFrame } from "@/components/frame/PageFrame";
 import { Foot, FootLink, TopicPage, Wrap } from "@/components/topic/TopicKit";
 import { COMPANIES } from "@/content/system-design/company-questions/companies";
@@ -91,7 +92,6 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     edges: answer.edges,
     slips: answer.slips,
   };
-  const copy = evidenceCopy("coding", question.evidence);
   const exercise = exerciseOf(question.id);
   const tint = { "--accent": accentVar(company.accent) } as CSSProperties;
 
@@ -112,6 +112,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       <TopicPage accent="yellow">
         <Wrap>
           <div style={tint}>
+            <RevealRoot />
             <QuestionHero
               company={company}
               kind="coding"
@@ -171,6 +172,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                   id={step.id}
                   key={step.id}
                   data-step={step.id}
+                  data-reveal=""
                   aria-labelledby={`${step.id}-h`}
                 >
                   <header className={styles.stepHead}>

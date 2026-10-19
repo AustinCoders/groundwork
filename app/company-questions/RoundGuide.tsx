@@ -26,5 +26,5 @@ export function RoundGuide() {
       topics: kind.topics,
     };
   });
-  return <RoundExplorer kinds={kinds} />;
+  return <RoundExplorer kinds={kinds} total={COMPANIES.length} />;
 }
