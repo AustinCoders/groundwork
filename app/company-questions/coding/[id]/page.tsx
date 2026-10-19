@@ -3,7 +3,7 @@ import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PageFrame } from "@/components/frame/PageFrame";
-import { Foot, FootLink, Kicker, TopicPage, Wrap } from "@/components/topic/TopicKit";
+import { Foot, FootLink, TopicPage, Wrap } from "@/components/topic/TopicKit";
 import { COMPANIES } from "@/content/system-design/company-questions/companies";
 import { COMPANY_DSA } from "@/content/system-design/company-questions/dsa-index";
 import { PATTERN_NAMES } from "@/content/system-design/company-questions/dsa-patterns";
@@ -14,6 +14,8 @@ import { AnswerRail } from "../../AnswerRail";
 import { CodeBlock } from "../../CodeBlock";
 import { DoneMark } from "../../DoneMark";
 import { PatternGlyph } from "../../PatternGlyph";
+import { QuestionHero } from "../../QuestionHero";
+import { TraceStepper } from "../../TraceStepper";
 import { AfterActions, ChapterLinks, Pager, RelatedList, SourcesList } from "../../ReaderParts";
 import { TryFirst } from "../../TryFirst";
 import { highlight } from "../../highlight";
@@ -110,64 +112,54 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       <TopicPage accent="yellow">
         <Wrap>
           <div style={tint}>
-            <header className={styles.qHead}>
-              <Kicker mark="CQ">
-                {company.name} · Coding · {PATTERN_NAMES[question.patternId]}
-              </Kicker>
-              <div className={styles.qTitleRow}>
-                <span className={coding.titleGlyph} aria-hidden="true">
-                  <PatternGlyph pattern={question.patternId} />
-                </span>
-                <h1 className={styles.qTitle} id="question-title">
-                  {question.title}
-                </h1>
-              </div>
-              <ul className={styles.qMeta}>
-                <li className={styles.badge} data-evidence={question.evidence}>
-                  <i aria-hidden="true" />
-                  {copy.label}
-                </li>
-                <li className={coding.difficulty} data-level={question.difficulty}>
-                  {question.difficulty}
-                </li>
-                {!question.level.startsWith("level not stated") && <li>{question.level}</li>}
-                <li>
-                  <a href="#sources">
-                    {question.sources.length} {question.sources.length === 1 ? "source" : "sources"}
-                  </a>
-                </li>
-                {question.leetcode && (
-                  <li>
-                    <a
-                      href={`https://leetcode.com/problems/${question.leetcode.slug}/`}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      LeetCode {question.leetcode.number} ↗
-                    </a>
-                  </li>
-                )}
-              </ul>
-              <p className={styles.qHint}>{copy.hint}</p>
-              {exercise && (
-                <p className={styles.solveRow}>
-                  <Link className={styles.primaryBtn} href={`/problems/${exercise}`} prefetch={false}>
-                    Solve it in the playground, with tests <span aria-hidden="true">→</span>
-                  </Link>
-                  <DoneMark id={question.id} exercise={exercise} />
-                  <span>The playground checks your code against test cases and has hints.</span>
-                </p>
-              )}
-              <figure className={styles.prompt}>
-                <span className={styles.promptTape} aria-hidden="true" />
-                <figcaption>The problem</figcaption>
-                <blockquote>{question.prompt}</blockquote>
-                <p>
-                  Restated in our own words, not a quote from {company.name} or any page. The answer below is written
-                  for this site.
-                </p>
-              </figure>
-            </header>
+            <QuestionHero
+              company={company}
+              kind="coding"
+              topic={`Coding · ${PATTERN_NAMES[question.patternId]}`}
+              title={question.title}
+              evidence={question.evidence}
+              chips={[
+                question.difficulty,
+                ...(question.level.startsWith("level not stated") ? [] : [question.level]),
+                `${question.sources.length} ${question.sources.length === 1 ? "source" : "sources"}`,
+              ]}
+              promptLabel="The problem"
+              prompt={question.prompt}
+              disclaimer={`Restated in our own words, not a quote from ${company.name} or any page. The answer below is written for this site.`}
+              glyph={<PatternGlyph pattern={question.patternId} />}
+              glance={[
+                { label: "Pattern", value: question.pattern },
+                { label: "Difficulty", value: question.difficulty },
+                { label: "Time", value: complexity.time },
+                { label: "Space", value: complexity.space },
+                ...(question.leetcode
+                  ? [
+                      {
+                        label: "Original",
+                        value: (
+                          <a
+                            href={`https://leetcode.com/problems/${question.leetcode.slug}/`}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            LeetCode {question.leetcode.number} ↗
+                          </a>
+                        ),
+                      },
+                    ]
+                  : []),
+              ]}
+              actions={
+                exercise ? (
+                  <p className={styles.solveRow}>
+                    <Link className={styles.primaryBtn} href={`/problems/${exercise}`} prefetch={false}>
+                      Solve it in the playground, with tests <span aria-hidden="true">→</span>
+                    </Link>
+                    <DoneMark id={question.id} exercise={exercise} />
+                  </p>
+                ) : undefined
+              }
+            />
 
             <TryFirst
               phases={CODING_PHASES}
@@ -217,36 +209,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                     </dl>
                   )}
                   {step.id === "walkthrough" && (
-                    <figure className={coding.trace}>
-                      <figcaption>{trace.caption}</figcaption>
-                      <div
-                        className={coding.traceScroll}
-                        tabIndex={0}
-                        role="group"
-                        aria-label="Dry run table, scrollable"
-                      >
-                        <table>
-                          <thead>
-                            <tr>
-                              {trace.head.map((cell) => (
-                                <th key={cell} scope="col">
-                                  {cell}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {trace.rows.map((row, at) => (
-                              <tr key={at}>
-                                {row.map((cell, column) => (
-                                  <td key={column}>{cell}</td>
-                                ))}
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </figure>
+                    <TraceStepper caption={trace.caption} head={trace.head} rows={trace.rows} />
                   )}
                   {step.id === "code" && (
                     <>

@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PageFrame } from "@/components/frame/PageFrame";
-import { Foot, FootLink, Kicker, TopicPage, Wrap } from "@/components/topic/TopicKit";
+import { Foot, FootLink, TopicPage, Wrap } from "@/components/topic/TopicKit";
 import { COMPANIES } from "@/content/system-design/company-questions/companies";
 import { COMPANY_QUESTIONS } from "@/content/system-design/company-questions";
 import { DIAGRAMS } from "@/content/system-design/company-questions/diagrams";
@@ -12,6 +12,8 @@ import { chapters } from "@/lib/content";
 import { pageMetadata } from "@/lib/metadata";
 import { AnswerRail } from "../../AnswerRail";
 import { Diagram } from "../../Diagram";
+import { DiagramDeck } from "../../DiagramDeck";
+import { QuestionHero } from "../../QuestionHero";
 import { AfterActions, ChapterLinks, Pager, RelatedList, SourcesList } from "../../ReaderParts";
 import { TryFirst } from "../../TryFirst";
 import { DESIGN_PHASES, EVIDENCE_COPY, HUB_PATH, questionPath, withArticle } from "../../shared";
@@ -99,42 +101,28 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       <TopicPage accent="yellow">
         <Wrap>
           <div style={tint}>
-            <header className={styles.qHead}>
-              <Kicker mark="CQ">
-                {company.name} · System design · {theme?.name ?? ""}
-              </Kicker>
-              <div className={styles.qTitleRow}>
-                <span className={styles.monogramLg} aria-hidden="true">
-                  {company.name.charAt(0)}
-                </span>
-                <h1 className={styles.qTitle} id="question-title">
-                  {question.title}
-                </h1>
-              </div>
-              <ul className={styles.qMeta}>
-                <li className={styles.badge} data-evidence={question.evidence}>
-                  <i aria-hidden="true" />
-                  {EVIDENCE_COPY[question.evidence].label}
-                </li>
-                {!question.level.startsWith("level not stated") && <li>{question.level}</li>}
-                <li>{diagrams.length} diagrams</li>
-                <li>
-                  <a href="#sources">
-                    {question.sources.length} {question.sources.length === 1 ? "source" : "sources"}
-                  </a>
-                </li>
-              </ul>
-              <p className={styles.qHint}>{EVIDENCE_COPY[question.evidence].hint}</p>
-              <figure className={styles.prompt}>
-                <span className={styles.promptTape} aria-hidden="true" />
-                <figcaption>The prompt</figcaption>
-                <blockquote>{question.prompt}</blockquote>
-                <p>
-                  A representative prompt in the style reported, not a quote from {company.name}. The answer below is
-                  written for this site.
-                </p>
-              </figure>
-            </header>
+            <QuestionHero
+              company={company}
+              kind="design"
+              topic={`System design · ${theme?.name ?? ""}`}
+              title={question.title}
+              evidence={question.evidence}
+              chips={[
+                ...(question.level.startsWith("level not stated") ? [] : [question.level]),
+                `${diagrams.length} diagrams`,
+                `${question.sources.length} ${question.sources.length === 1 ? "source" : "sources"}`,
+              ]}
+              promptLabel="The prompt"
+              prompt={question.prompt}
+              disclaimer={`A representative prompt in the style reported, not a quote from ${company.name}. The answer below is written for this site.`}
+              glance={[
+                { label: "Round", value: "System design" },
+                { label: "Topic", value: theme?.name ?? "" },
+                { label: "Diagrams", value: diagrams.length },
+                { label: "Read first", value: `${question.chapters.length} chapters` },
+                { label: "Sources", value: <a href="#sources">{question.sources.length} reports</a> },
+              ]}
+            />
 
             <TryFirst
               phases={DESIGN_PHASES}
@@ -168,10 +156,15 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                     </ol>
                   ) : (
                     <>
-                      {step.id === "design" &&
-                        diagrams.map((diagram, at) => (
-                          <Diagram key={diagram.title} diagram={diagram} uid={`${question.id}-${at}`} />
-                        ))}
+                      {step.id === "design" && diagrams.length > 0 && (
+                        <DiagramDeck
+                          items={diagrams.map((diagram, at) => ({
+                            id: `${question.id}-d${at}`,
+                            title: diagram.title,
+                            node: <Diagram diagram={diagram} uid={`${question.id}-${at}`} />,
+                          }))}
+                        />
+                      )}
                       <div className={`prose ${styles.body}`} dangerouslySetInnerHTML={{ __html: bodies[step.id] }} />
                     </>
                   )}
