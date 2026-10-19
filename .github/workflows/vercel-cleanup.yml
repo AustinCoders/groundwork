@@ -1,11 +1,13 @@
 name: Vercel deployment cleanup
+run-name: Vercel deployment cleanup${{ github.event.inputs.dry_run == 'true' && ' (dry run)' || '' }}
 
 # Vercel keeps every deployment's build output on disk indefinitely — there's
 # no automatic expiry on the Hobby plan — so a project that deploys on every
 # push accumulates storage without bound (each deployment of this site is
 # ~190 MB). This runs daily and prunes everything except the live production
 # deployment, the 3 most recent production deployments, the 2 most recent
-# previews, and anything under 6h old. See scripts/vercel-cleanup.mjs.
+# previews, and anything under 6h old (1h when the pre-push hook starts it).
+# See scripts/vercel-cleanup.mjs and scripts/pre-push-cleanup.mjs.
 
 on:
   schedule:
@@ -16,6 +18,10 @@ on:
         description: "Preview only, don't actually delete"
         type: boolean
         default: false
+      min_age_hours:
+        description: "Keep anything younger than this many hours (the push hook passes 1)"
+        type: string
+        default: "6"
 
 permissions:
   contents: read
@@ -41,7 +47,7 @@ jobs:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           KEEP_PRODUCTION: "3"
           KEEP_PREVIEW: "2"
-          MIN_AGE_HOURS: "6"
+          MIN_AGE_HOURS: ${{ github.event.inputs.min_age_hours || '6' }}
         run: |
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
             node scripts/vercel-cleanup.mjs

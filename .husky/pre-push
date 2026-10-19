@@ -1,1 +1,3 @@
+refs=$(cat)
 npm run comments
+printf '%s\n' "$refs" | node scripts/pre-push-cleanup.mjs
