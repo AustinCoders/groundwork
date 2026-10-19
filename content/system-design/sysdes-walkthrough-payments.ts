@@ -195,7 +195,7 @@ export const sysdesWalkthroughPayments: Chapter = {
     <text class="sm" x="281" y="174" text-anchor="middle">canceled</text>
     <text class="sm" x="496" y="174" text-anchor="middle">refunded</text>
     <text class="sm" x="16" y="216">unknown is a real state: a timeout means the PSP may have charged.</text>
-    <text class="sm" x="16" y="234">A check (retry with the same key, or retrieve by our id) moves it forward.</text>
+    <text class="sm" x="16" y="234">A check (retry a timeout with the same key, or retrieve by our id) moves it forward.</text>
   </svg>
   <figcaption>States do not move backwards past a settled outcome. (A declined attempt leaves the payment retryable with another payment method, as Stripe's PaymentIntent returns to requires payment method.) The state that interviews skip is <em>unknown</em>: the PSP call timed out and the outcome is not yet known. Stripe's own PaymentIntent states are named differently (requires payment method, requires confirmation, requires action, processing, requires capture, succeeded, canceled) but cover the same ground.</figcaption>
 </figure>
@@ -215,7 +215,8 @@ export const sysdesWalkthroughPayments: Chapter = {
 </p>
 <ul>
   <li><b>A timeout or a 5xx is indeterminate.</b> The operation might have produced side effects. Treat a 500 as unknown, not as failed.</li>
-  <li><b>Retry with the same key and the same parameters</b> while the key is retained (Stripe: at least 24 hours; limit retries of an unresolved operation to that window). Do not generate a new key until the first outcome is settled, because a new key can start a second charge.</li>
+  <li><b>After a timeout, retry with the same key and the same parameters</b> while the key is retained (Stripe: at least 24 hours; limit retries of an unresolved operation to that window). If the first request never arrived, the retry runs it once; if it did run, the retry gets the saved result. Do not generate a new key until the first outcome is settled, because a new key can start a second charge.</li>
+  <li><b>A 500 is different: the retry only repeats it.</b> Stripe saves the 500 response and replays it for the same key, so looping on the key returns the same error and tells you nothing new. Do not retry with a new key either. Reconcile instead: retrieve the object, inspect the request in the dashboard and wait for webhook events, because Stripe's own incident recovery may complete the operation later without changing the cached response.</li>
   <li><b>When the window ends, stop and reconcile.</b> Retrieve the object, check the PSP's dashboard and webhooks, and only then decide. Put your own identifier in the PSP object's metadata when you create it, so a charge that appears through a webhook can be matched to your records, including after the PSP's own incident recovery.</li>
   <li><b>While a payment is unknown, do nothing irreversible.</b> Do not fulfil the order, do not release the reserved stock, do not email "payment failed". Show "processing". A reaper job asks the PSP about every payment stuck in authorizing or unknown for more than a couple of minutes.</li>
   <li><b>Distinguish a declined card from an error.</b> A decline is a definitive answer (402 in Stripe's table: valid parameters, request failed): the attempt is over and the payment is left retryable with another payment method (Stripe's PaymentIntent returns to requires payment method), whereas <em>failed</em> in the figure is a payment you have given up on. An error is not an answer.</li>

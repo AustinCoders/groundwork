@@ -101,6 +101,7 @@ export const sysdesWalkthroughCrawler: Chapter = {
   <li><b>Front queues (priority).</b> F queues, numbered by priority. A prioritizer assigns each URL an integer from 1 to F from its history (whether the page has changed since the last download, its estimated quality). Selection is random but biased to high-priority queues.</li>
   <li><b>Back queues (politeness).</b> B queues, each holding URLs from <b>one host only</b>, plus a table from host to queue. A <b>min-heap</b> has one entry per back queue, keyed by the earliest time that host may be contacted again. A fetch thread pops the root, waits until its time, fetches the head URL, and re-inserts the queue with a new time. When a back queue empties, it is refilled from a front queue.</li>
   <li><b>The gap.</b> A common heuristic, in the Stanford text and in Mercator's production settings, is to wait about 10 times as long as the last download from that host took before contacting it again.</li>
+  <li><b>Back off when told to.</b> A 429 (Too Many Requests, RFC 6585) or a 503 may carry a <code>Retry-After</code> header, either a number of seconds or an HTTP date (RFC 9110). Treat it as a floor: push that host's heap entry out to at least that time, and without the header back off exponentially while the errors continue. Google's crawlers treat 5xx and 429 as a sign the server is overloaded, slow down, and speed up gradually after 2xx responses return. The header is optional, so the crawler cannot rely on it.</li>
 </ul>
 
 <figure>
@@ -192,7 +193,7 @@ export const sysdesWalkthroughCrawler: Chapter = {
 <ul>
   <li><b>Matching.</b> The most specific rule wins, meaning the match with the most octets; if an allow and a disallow are equivalent, allow is used; if nothing matches, the URL is allowed. User-agent matching is case-insensitive and falls back to the <code>*</code> group.</li>
   <li><b>Caching.</b> A crawler may cache the file but should not use a copy older than 24 hours, unless the file is unreachable. Google's crawler says it generally caches for up to 24 hours too. Mercator kept a fixed-size LRU cache of robots rules (2<sup>18</sup> hosts by default).</li>
-  <li><b>Failure modes.</b> If the server says the file is unavailable (a 4xx), the crawler may access any resource. If it is unreachable (a 5xx or a timeout), the crawler must assume <em>complete disallow</em>, and may treat it as unavailable only after a long outage, for which the RFC's example is 30 days.</li>
+  <li><b>Failure modes.</b> If the server says the file is unavailable (a 4xx), the crawler may access any resource. If it is unreachable (a 5xx or a timeout), RFC 9309 says the crawler must assume <em>complete disallow</em>, and may treat the file as unavailable, or keep using a cached copy, only after a long outage, for which the RFC's example is 30 days. Google's crawler is less strict than the RFC: it stops crawling the site for the first 12 hours while it keeps retrying, then uses the last good copy for up to 30 days, and if it never had one it assumes no restrictions. Choose the RFC's rule when you have no cached copy and want the safe default; if you copy Google's, say so, because it crawls on a stale copy or an empty one.</li>
   <li><b>Size and redirects.</b> Parse at least the first 500 kibibytes (Google ignores content past 500 KiB), and follow at least five redirects.</li>
   <li><b>Not in the standard.</b> <code>Crawl-delay</code> is not part of RFC 9309, and Google's crawler does not support it. Some other crawlers support it, so you may honour it where present, but do not rely on it; derive your own per-host gap, as above. Also: robots.txt is not access control. The RFC says so explicitly, and a disallowed URL can still be listed by search engines without a snippet.</li>
 </ul>
@@ -289,7 +290,7 @@ export const sysdesWalkthroughCrawler: Chapter = {
 <ul>
   <li><b>Hard limits.</b> A maximum URL length, a maximum path depth and a maximum number of query parameters, chosen as policy (the values are yours to tune) and logged when hit. Detect repeating path segments.</li>
   <li><b>Normalize first.</b> Many traps are just un-normalized duplicates: drop known session parameters and sort the remaining ones.</li>
-  <li><b>Per-host and per-domain budgets.</b> Cap the pages fetched from a host per day. IRLbot's STAR algorithm lets a domain's budget grow with the number of in-links it receives from other domains, because spammers can create unlimited pages and hosts but must pay for each additional domain that could link to them (in the run reported, budgets were conservative: the top 10,000 ranked domains got budgets linearly interpolated between 10 and 10,000 pages, and every other domain got 10); a companion mechanism, BEAST, keeps over-budget URLs in ever-lower-frequency queues so the crawler does not keep rescanning them. In the run described, the crawler handicapped quickly branching spam and over 30 million low-ranked domains.</li>
+  <li><b>Per-host and per-domain budgets.</b> Cap the pages fetched from a host per day. A per-domain budget needs every host of the domain on one node (see the next section). IRLbot's STAR algorithm lets a domain's budget grow with the number of in-links it receives from other domains, because spammers can create unlimited pages and hosts but must pay for each additional domain that could link to them (in the run reported, budgets were conservative: the top 10,000 ranked domains got budgets linearly interpolated between 10 and 10,000 pages, and every other domain got 10); a companion mechanism, BEAST, keeps over-budget URLs in ever-lower-frequency queues so the crawler does not keep rescanning them. In the run described, the crawler handicapped quickly branching spam and over 30 million low-ranked domains.</li>
   <li><b>Content signals.</b> Near-duplicate pages (simhash) from one host at a high rate are a trap signature: lower that host's priority.</li>
   <li><b>Timeouts.</b> A slow server that trickles bytes can pin a thread: cap time and size per fetch. IRLbot also lists deliberate DNS and HTTP delays as an attack.</li>
 </ul>
@@ -334,6 +335,16 @@ export const sysdesWalkthroughCrawler: Chapter = {
   URL instead, ten nodes might fetch from the same server at once and no node could
   enforce the gap.
 </p>
+<p>
+  A <b>per-domain</b> budget breaks that arrangement if the shard key is the host: the
+  hosts <code>a.example.com</code> and <code>b.example.com</code> would hash to different
+  nodes, and no node could see the domain's total. If you enforce domain budgets, hash the
+  registrable domain (<code>example.com</code>, or <code>example.co.uk</code>, using the Public Suffix List) instead. All of a
+  domain's hosts then share a node, the host queues and timers stay local, and the domain counter is
+  one number in one place. The cost is coarser balance, since a domain with thousands of
+  hosts is one unit; the alternative is to keep host sharding and give each node a fixed
+  share of each domain's budget.
+</p>
 <ul>
   <li><b>Forwarding.</b> A node that extracts a link for another node's host sends it there, in batches. At 6,000 extracted URLs a second across 20 nodes, if link targets were uniformly random 19 of 20 (95%) would leave the node. Real pages link mostly within their own host, which stays on the node, so that is an upper bound. Batch aggressively; even at 95%, 5,700 × about 100 bytes is 0.57 MB/s, well under 1 MB/s, so it is not a bottleneck.</li>
   <li><b>Resizing.</b> Adding a node moves roughly 1 ÷ 21 of the hosts, about 4.8% of the frontier, with consistent hashing. Their pending URLs, robots cache and politeness timers move with them, and the timers may simply reset.</li>
@@ -348,7 +359,7 @@ export const sysdesWalkthroughCrawler: Chapter = {
   queues by priority, and one back queue per host, with a heap keyed by the next
   time that host may be touched, using a gap of ten times the last fetch time.
   robots.txt is cached per host for up to a day, and a 5xx on it means assume
-  disallow. URLs are normalized per RFC 3986 and checked against a URL-seen set, a
+  disallow under RFC 9309 (Google pauses 12 hours, then uses its last good copy). URLs are normalized per RFC 3986 and checked against a URL-seen set, a
   Bloom filter at 1% is about 6 GB for five billion URLs, with the false-positive
   direction explained. Page bodies go through an exact fingerprint and a 64-bit
   simhash with a distance of 3. I'd defend against traps with URL limits and
@@ -388,9 +399,12 @@ export const sysdesWalkthroughCrawler: Chapter = {
     <li><a href="https://nlp.stanford.edu/IR-book/html/htmledition/the-url-frontier-1.html" rel="noopener noreferrer">Manning, Raghavan and Schütze, Introduction to Information Retrieval: the URL frontier</a> — front queues, back queues, the heap, politeness gaps</li>
     <li><a href="https://nlp.stanford.edu/IR-book/html/htmledition/near-duplicates-and-shingling-1.html" rel="noopener noreferrer">Introduction to Information Retrieval: near-duplicates and shingling</a> — shingles, Jaccard, min-hash sketches</li>
     <li><a href="https://www.rfc-editor.org/rfc/rfc9309.html" rel="noopener noreferrer">RFC 9309: Robots Exclusion Protocol</a> — matching, status-code handling, 24-hour caching, 500 KiB, not authorization</li>
-    <li><a href="https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt" rel="noopener noreferrer">Google: how it interprets robots.txt</a> — 500 KiB limit, caching, no crawl-delay support, 5xx handling</li>
+    <li><a href="https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt" rel="noopener noreferrer">Google: how it interprets robots.txt</a> — 500 KiB limit, caching, no crawl-delay support, the 12-hour pause and 30-day last good copy on 5xx</li>
+    <li><a href="https://developers.google.com/search/docs/crawling-indexing/http-network-errors" rel="noopener noreferrer">Google: HTTP status codes, network and DNS errors</a> — 429 and 5xx as overload, a slower crawl, a gradual return to the normal rate</li>
     <li><a href="https://www.rfc-editor.org/rfc/rfc3986.html" rel="noopener noreferrer">RFC 3986: URI generic syntax</a> — syntax-based and scheme-based normalization</li>
-    <li><a href="https://www.rfc-editor.org/rfc/rfc9110.html" rel="noopener noreferrer">RFC 9110: HTTP semantics</a> — conditional requests and 304 Not Modified</li>
+    <li><a href="https://www.rfc-editor.org/rfc/rfc9110.html" rel="noopener noreferrer">RFC 9110: HTTP semantics</a> — conditional requests and 304 Not Modified, and the Retry-After field (seconds or an HTTP date)</li>
+    <li><a href="https://www.rfc-editor.org/rfc/rfc6585.html" rel="noopener noreferrer">RFC 6585: additional HTTP status codes</a> — 429 Too Many Requests, with an optional Retry-After</li>
+    <li><a href="https://publicsuffix.org/" rel="noopener noreferrer">Public Suffix List</a> — how to find the registrable domain of a host</li>
     <li><a href="https://www.sitemaps.org/protocol.html" rel="noopener noreferrer">Sitemaps protocol</a> — 50,000 URLs and 50 MB per file, lastmod, changefreq as a hint</li>
     <li><a href="https://www.eecs.harvard.edu/~michaelm/postscripts/im2005b.pdf" rel="noopener noreferrer">Broder and Mitzenmacher, Network applications of Bloom filters: a survey</a> — optimal hash count and the false-positive rate</li>
   </ul>
