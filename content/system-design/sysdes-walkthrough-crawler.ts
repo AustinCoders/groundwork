@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const sysdesWalkthroughCrawler: Chapter = {
   id: "sysdes-walkthrough-crawler",
-  num: "A13",
+  num: "A14",
   title: "Walkthrough: a web crawler",
   short: "Walkthrough: web crawler",
   levels: ["advanced"],

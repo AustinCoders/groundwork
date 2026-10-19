@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const sysdesWalkthroughNotifications: Chapter = {
   id: "sysdes-walkthrough-notifications",
-  num: "I11",
+  num: "I13",
   title: "Walkthrough: a notification system",
   short: "Walkthrough: notifications",
   levels: ["intermediate"],

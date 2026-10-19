@@ -88,6 +88,21 @@ const WRONG_CLAIMS: { id: string; pattern: RegExp; why: string }[] = [
   },
   { id: "sysdes-cdns", pattern: /no persistent TCP/i, why: "Workers have had connect() since 2023" },
   {
+    id: "sysdes-security-basics",
+    pattern: /holds a master key/i,
+    why: "AWS now calls it a KMS key or root key, and rotation keeps the old key material",
+  },
+  {
+    id: "sysdes-release-safety",
+    pattern: /A large share of the biggest outages/i,
+    why: "the claim had no source; it now names two dated incidents",
+  },
+  {
+    id: "sysdes-microservices-discovery",
+    pattern: /retries three times in front/i,
+    why: "three retries are four attempts, so say attempts: 3 x 3 x 3 = 27, or 4^3 = 64 for three retries",
+  },
+  {
     id: "sysdes-replication",
     pattern: /standby has flushed the commit record to durable storage Both machines crash at the same time/,
     why: "synchronous_commit on loses data only if the primary and every synchronous standby lose their storage, not on a simultaneous crash",
@@ -630,5 +645,58 @@ describe("the payments chapter's numbers", () => {
     expect((7e6 * 100) / 1e6).toBe(700);
     expect(0.7 * 365).toBeCloseTo(255.5, 1);
     expect(Math.round((4e6 / 86400) * 10) / 10).toBe(46.3);
+  });
+});
+
+describe("the arithmetic in the microservices, security and release chapters still adds up", () => {
+  it("a page of five services: 160 ms in series, 80 ms with four in parallel, 99.50% and 99.70% available", () => {
+    const text = textOf("sysdes-microservices-discovery");
+    const times = [20, 15, 25, 40, 60];
+    expect(text).toContain(`${times.join(" + ")} = ${times.reduce((sum, ms) => sum + ms, 0)} ms`);
+    expect(text).toContain(`20 + max(15, 25, 40, 60) = ${20 + Math.max(15, 25, 40, 60)} ms`);
+    expect(text).toContain(`${(0.999 ** 5 * 100).toFixed(2)}%`);
+    expect(text).toContain(`${(0.999 ** 3 * 100).toFixed(2)}%`);
+  });
+
+  it("the downtime a year for those two designs matches the availability chapter's 365.25-day year", () => {
+    const text = textOf("sysdes-microservices-discovery");
+    for (const calls of [5, 3]) expect(text).toContain(`${((1 - 0.999 ** calls) * 8766).toFixed(1)} hours`);
+  });
+
+  it("450 pods need at least five slices of 100 endpoints, and a dead instance lingers 30 + 15 seconds", () => {
+    const text = textOf("sysdes-microservices-discovery");
+    expect(Math.ceil(450 / 100)).toBe(5);
+    expect(text).toContain("at least 5 slices");
+    expect(text).toContain("t = 45 s");
+  });
+
+  it("an eight-letter lowercase password falls in about 21 seconds at 10 billion hashes a second", () => {
+    const text = textOf("sysdes-security-basics");
+    const space = 26 ** 8;
+    expect(space).toBe(208_827_064_576);
+    expect(text).toContain(space.toLocaleString("en-US"));
+    expect(Math.round(space / 1e10)).toBe(21);
+    expect(text).toContain("about 21 seconds");
+  });
+
+  it("a 99.9% objective over 30 days is 43.2 outage minutes, and the canary costs 0.23% against 13.9% and 4.6%", () => {
+    const text = textOf("sysdes-release-safety");
+    const budget = 0.001 * 30 * 24 * 60;
+    expect(budget).toBeCloseTo(43.2, 10);
+    expect(text).toContain("43.2 full-outage minutes");
+    const share = (spent: number) => ((spent / budget) * 100).toFixed(1);
+    expect(text).toContain(`${share(0.2 * 30)}%`);
+    expect(text).toContain(`${share(0.2 * 10)}%`);
+    expect(text).toContain(`${((0.05 * 0.2 * 10 * 100) / budget).toFixed(2)}%`);
+  });
+
+  it("3,000 canary requests a minute at 20% failure is 600 errors against 3 expected", () => {
+    const text = textOf("sysdes-release-safety");
+    const requestsPerMinute = 1000 * 0.05 * 60;
+    expect(requestsPerMinute).toBe(3000);
+    expect(requestsPerMinute * 0.2).toBe(600);
+    expect(requestsPerMinute * 0.001).toBe(3);
+    expect(text).toContain("600 errors");
+    expect(text).toContain("90 against 30");
   });
 });

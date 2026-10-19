@@ -32,11 +32,14 @@ import { sysdesWalkthroughKvStore } from "./system-design/sysdes-walkthrough-kv-
 import { sysdesWalkthroughNotifications } from "./system-design/sysdes-walkthrough-notifications";
 import { sysdesWalkthroughCrawler } from "./system-design/sysdes-walkthrough-crawler";
 import { sysdesWalkthroughPayments } from "./system-design/sysdes-walkthrough-payments";
+import { sysdesMicroservicesDiscovery } from "./system-design/sysdes-microservices-discovery";
+import { sysdesSecurityBasics } from "./system-design/sysdes-security-basics";
+import { sysdesReleaseSafety } from "./system-design/sysdes-release-safety";
 
 export const systemDesignNotes: NotesFile = {
   meta: {
     title: "System Design — the whole map",
-    subtitle: "33 sections across three levels — beginner through advanced, all written.",
+    subtitle: "36 sections across three levels — beginner through advanced, all written.",
     lead: "Pick a level and you'll get these sections in the order that makes sense, from the request lifecycle to sharding, consensus and the tradeoff thinking the interview is actually scoring.",
     author: "Akshat",
     updated: "October 2026",
@@ -61,6 +64,8 @@ export const systemDesignNotes: NotesFile = {
     sysdesAvailabilityDesign,
     sysdesStorageSystems,
     sysdesSearchSystems,
+    sysdesMicroservicesDiscovery,
+    sysdesSecurityBasics,
     sysdesWalkthroughMedium,
     sysdesWalkthroughNotifications,
     sysdesCapTheoremDepth,
@@ -72,6 +77,7 @@ export const systemDesignNotes: NotesFile = {
     sysdesBatchStreamProcessing,
     sysdesFaultTolerance,
     sysdesObservabilityScale,
+    sysdesReleaseSafety,
     sysdesCapacityEstimation,
     sysdesCaseStudies,
     sysdesWalkthroughKvStore,

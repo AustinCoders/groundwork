@@ -17,8 +17,9 @@ The fixes make the 24 chapters correct. They did not make the topic complete: ag
 replication, transactions and isolation, storage engines, and time and ordering had no chapter of their own.
 Four new chapters (batch 1, October 2026, below) now cover them, bringing the section to 28 chapters. Five more
 (batch 2, October 2026, below) add batch and stream processing and four design walkthroughs from Xu's books,
-bringing it to 33. Release safety and the other walkthroughs are still missing, and a practice layer (batch 3, October
-2026, below) now gives every chapter a pool of questions; see "Still missing".
+bringing it to 33. A practice layer (batch 3, October 2026, below) gives every chapter a pool of questions, and three
+more chapters (batch 4, October 2026, below) cover microservices and service discovery, security basics, and release
+safety with incident response, bringing it to 36. Some of the Xu walkthroughs are still missing; see "Still missing".
 
 ## Method
 
@@ -136,9 +137,9 @@ outdated, 99 misleading, 12 unverified.
 | Clocks, ordering, unique IDs                                                                                                          | 8      | 1    |        |     | Covered (`sysdes-time-ordering-ids`)                                                                                                     |
 | Batch and stream processing                                                                                                           | 10, 11 | 2    |        | yes | Covered (`sysdes-batch-stream-processing`)                                                                                               |
 | Encoding and schema evolution                                                                                                         | 4      |      |        |     | **Partial.** API versioning only                                                                                                         |
-| Release safety, incidents, postmortems                                                                                                |        |      |        | yes | **Partial.** Short additions                                                                                                             |
-| Microservices, service discovery, service mesh                                                                                        |        |      | yes    |     | **Partial.** API gateway only                                                                                                            |
-| Security in design                                                                                                                    |        |      | yes    |     | **Missing**                                                                                                                              |
+| Release safety, incidents, postmortems                                                                                                |        |      |        | yes | Covered (`sysdes-release-safety`)                                                                                                        |
+| Microservices, service discovery, service mesh                                                                                        |        |      | yes    |     | Covered (`sysdes-microservices-discovery`)                                                                                               |
+| Security in design                                                                                                                    |        |      | yes    |     | Covered (`sysdes-security-basics`)                                                                                                       |
 | Geospatial indexes, probabilistic structures                                                                                          |        | 2    |        |     | **Partial.** Mentions only                                                                                                               |
 | Key-value store                                                                                                                       |        | 1    |        |     | Covered (`sysdes-walkthrough-kv-store`)                                                                                                  |
 | Notification system                                                                                                                   |        | 1    |        |     | Covered (`sysdes-walkthrough-notifications`)                                                                                             |
@@ -151,13 +152,12 @@ outdated, 99 misleading, 12 unverified.
 
 Items 1 to 4 of the original list (replication, transactions and isolation, storage engines, time and
 ordering) were written in batch 1; batch and stream processing and the key-value store, notifications, crawler
-and payments walkthroughs were written in batch 2; the practice layer was built in batch 3; see below.
+and payments walkthroughs were written in batch 2; the practice layer was built in batch 3; release safety,
+microservices and security basics were written in batch 4; see below.
 
-1. Release safety and incident practice: canaries, rollback, feature flags, config pushes, postmortems.
-2. Microservices and service discovery; security basics for design interviews.
-3. Walkthroughs from Xu's volumes that nothing here covers: proximity service, metrics monitoring, digital
+1. Walkthroughs from Xu's volumes that nothing here covers: proximity service, metrics monitoring, digital
    wallet, gaming leaderboard, stock exchange (and ad-click aggregation as a walkthrough of its own).
-4. Design drills for the walkthroughs listed in item 3, one per new walkthrough (the six written walkthroughs have one;
+2. Design drills for the walkthroughs listed in item 1, one per new walkthrough (the six written walkthroughs have one;
    `sysdes-case-studies` has none because it is a survey of six real systems, not a single design prompt).
 
 ## Batch 1: four new chapters (October 2026)
@@ -318,3 +318,22 @@ import boundary.
 npm run check      # includes tests/system-design-quality.test.ts
 npm run sources    # fetches every external link in content/system-design/
 ```
+
+## Batch 4: three short chapters (October 2026)
+
+| Chapter                          | Level        | Covers                                                                                                                                                                       |
+| -------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sysdes-microservices-discovery` | Intermediate | When to split, data ownership as the boundary, the distributed monolith, discovery patterns, Kubernetes Services, gateway against mesh, strangler fig                        |
+| `sysdes-security-basics`         | Intermediate | Threat model, authentication against authorization, sessions, JWT and OAuth with PKCE, password hashing, authorization models, envelope encryption, the named attacks        |
+| `sysdes-release-safety`          | Advanced     | Deploy against release, flags, rollout strategies, canary analysis and error-budget arithmetic, rollback-safe data and schema changes, incident roles, blameless postmortems |
+
+These were kept short on purpose (about 2,500 words each). Each has a sources box, a practice pool of seven questions
+checked by the same tests as the rest, and numbers guarded in `tests/system-design-quality.test.ts`. One independent
+reviewer read all three chapters and their pools against primary sources and raised 29 findings (3 errors, 3 outdated,
+17 misleading, 5 unverified, plus ambiguities in three questions); every one was re-checked and applied or reworded.
+The ones worth remembering: the retry arithmetic contradicted the SRE book it cited (three retries are four attempts);
+the cloud key service no longer calls its key a master key; the canary savings depend on how fast each rollout is
+noticed, so the chapter now shows both detection times; and "human error is never a root cause" is a view from the
+wider safety literature, not the SRE book, so the chapter says so. Not added, to keep the chapters short: readiness
+and liveness probes, contract tests and schema evolution, cell-based architecture, Zanzibar's consistency tokens,
+and the NIST password rules.

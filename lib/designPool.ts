@@ -37,6 +37,9 @@ const pools = new Map<string, () => Promise<{ pool: DesignPool }>>([
   ["sysdes-walkthrough-notifications", () => import("@/content/system-design/quiz/sysdes-walkthrough-notifications")],
   ["sysdes-walkthrough-crawler", () => import("@/content/system-design/quiz/sysdes-walkthrough-crawler")],
   ["sysdes-walkthrough-payments", () => import("@/content/system-design/quiz/sysdes-walkthrough-payments")],
+  ["sysdes-microservices-discovery", () => import("@/content/system-design/quiz/sysdes-microservices-discovery")],
+  ["sysdes-security-basics", () => import("@/content/system-design/quiz/sysdes-security-basics")],
+  ["sysdes-release-safety", () => import("@/content/system-design/quiz/sysdes-release-safety")],
 ]);
 
 export function designPoolChapterIds(): string[] {

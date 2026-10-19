@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const sysdesWalkthroughPayments: Chapter = {
   id: "sysdes-walkthrough-payments",
-  num: "A14",
+  num: "A15",
   title: "Walkthrough: a payment system",
   short: "Walkthrough: payments",
   levels: ["advanced"],

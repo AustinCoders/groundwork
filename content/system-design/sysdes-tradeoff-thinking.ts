@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const sysdesTradeoffThinking: Chapter = {
   id: "sysdes-tradeoff-thinking",
-  num: "A15",
+  num: "A16",
   title: "Tradeoff thinking",
   short: "Tradeoff thinking",
   levels: ["advanced"],

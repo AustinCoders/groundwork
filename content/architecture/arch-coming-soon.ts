@@ -39,7 +39,7 @@ export const archComingSoon: Chapter = {
 </table></div>
 
 <p class="sub">
-  250 chapters written, 358 outlined. By chapter that is 38% of the plan; by topic it is 7 of 32.
+  253 chapters written, 358 outlined. By chapter that is 38% of the plan; by topic it is 7 of 32.
 </p>
 
 <figure>

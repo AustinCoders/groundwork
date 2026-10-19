@@ -2,7 +2,7 @@ import type { Chapter } from "../types";
 
 export const sysdesWalkthroughKvStore: Chapter = {
   id: "sysdes-walkthrough-kv-store",
-  num: "A12",
+  num: "A13",
   title: "Walkthrough: a key-value store",
   short: "Walkthrough: key-value store",
   levels: ["advanced"],

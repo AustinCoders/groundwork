@@ -3472,6 +3472,16 @@ export const topics: TopicsData = {
               items: ["Inverted indexes, Elasticsearch basics"],
             },
             {
+              title: "Microservices & service discovery",
+              chapter: "sysdes-microservices-discovery",
+              items: ["When to split, data ownership, discovery, gateway and mesh"],
+            },
+            {
+              title: "Security basics for design",
+              chapter: "sysdes-security-basics",
+              items: ["Authn vs authz, OAuth and PKCE, JWT pitfalls, password hashing, envelope encryption"],
+            },
+            {
               title: "Walkthrough: a news feed / chat app",
               chapter: "sysdes-walkthrough-medium",
               items: ["A medium end-to-end design, start to finish"],
@@ -3542,6 +3552,11 @@ export const topics: TopicsData = {
               title: "Observability at scale",
               chapter: "sysdes-observability-scale",
               items: ["SLIs/SLOs/SLAs, distributed tracing"],
+            },
+            {
+              title: "Release safety & incident response",
+              chapter: "sysdes-release-safety",
+              items: ["Canaries, flags, rollback-safe changes, incident command, postmortems"],
             },
             {
               title: "Capacity estimation",
