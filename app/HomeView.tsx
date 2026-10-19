@@ -625,49 +625,98 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
           </section>
         </main>
         <footer className={styles.foot}>
-          <svg className={styles.bigBrand} viewBox="0 0 1000 190" aria-hidden="true" focusable="false" data-fx="brand">
-            <text x="500" y="150" textAnchor="middle">
-              {SITE_NAME}
-            </text>
-          </svg>
-          <div className={styles.footCols}>
-            <div>
-              <p className={styles.footBrand}>
-                <span className="brand__mark" aria-hidden="true">
-                  G
-                </span>
-                {SITE_NAME}
-              </p>
-              <p className={styles.muted}>
-                Written by hand, rendered by a browser. Your progress stays on your device.
-              </p>
-            </div>
-            <nav aria-label="Learn">
-              <p className={styles.label}>Learn</p>
-              {ready.slice(0, 5).map((t) => (
-                <Link key={t.id} href={t.href} prefetch={false}>
-                  {t.name}
+          <div className={styles.brandBg} aria-hidden="true" data-fx="brand">
+            <svg className={styles.bigBrand} viewBox="0 0 1000 190" focusable="false">
+              <defs>
+                <linearGradient id="foot-brand-fill" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0" className={styles.brandTop} />
+                  <stop offset="1" className={styles.brandBottom} />
+                </linearGradient>
+              </defs>
+              <text
+                className={styles.brandL}
+                x="14"
+                y="150"
+                textLength="566"
+                lengthAdjust="spacingAndGlyphs"
+                fill="url(#foot-brand-fill)"
+              >
+                Ground
+              </text>
+              <text
+                className={styles.brandR}
+                x="582"
+                y="150"
+                textLength="404"
+                lengthAdjust="spacingAndGlyphs"
+                fill="url(#foot-brand-fill)"
+              >
+                work
+              </text>
+            </svg>
+          </div>
+          <div className={styles.footInner}>
+            <div className={styles.footCols}>
+              <div className={styles.footAbout}>
+                <p className={styles.footBrand}>
+                  <span className="brand__mark" aria-hidden="true">
+                    G
+                  </span>
+                  {SITE_NAME}
+                </p>
+                <p className={styles.muted}>
+                  Written by hand, rendered by a browser. Your progress stays on your device.
+                </p>
+                <div className={styles.footCta}>
+                  <Link className={styles.footPrimary} href="/company-questions" prefetch={false}>
+                    Company questions <span aria-hidden="true">→</span>
+                  </Link>
+                  <Link className={styles.footGhost} href="/interview">
+                    Interview book
+                  </Link>
+                </div>
+              </div>
+              <nav aria-label="Learn" className={styles.footNav}>
+                <p className={styles.footHead}>Learn</p>
+                {ready.slice(0, 5).map((t) => (
+                  <Link key={t.id} href={t.href} prefetch={false}>
+                    {t.name}
+                  </Link>
+                ))}
+                <Link href="/interview">Interview book</Link>
+                <Link href="/roadmap">Roadmaps</Link>
+              </nav>
+              <nav aria-label="Practice" className={styles.footNav}>
+                <p className={styles.footHead}>Practice</p>
+                <Link href="/problems">Problems</Link>
+                <Link href="/practice?id=free" prefetch={false}>
+                  Playground
                 </Link>
-              ))}
-              <Link href="/interview">Interview book</Link>
-              <Link href="/roadmap">Roadmaps</Link>
-            </nav>
-            <nav aria-label="Practice">
-              <p className={styles.label}>Practice</p>
-              <Link href="/problems">Problems</Link>
-              <Link href="/practice?id=free" prefetch={false}>
-                Playground
-              </Link>
-              <Link href="/mock">Mock interview</Link>
-              <Link href="/whiteboard">Whiteboard</Link>
-            </nav>
-            <nav aria-label="You">
-              <p className={styles.label}>You</p>
-              <Link href="/progress">Progress</Link>
-              <Link href="/review">Review</Link>
-              <Link href="/architecture">How this is built</Link>
-              <Link href="/privacy">Privacy</Link>
-            </nav>
+                <Link href="/company-questions" prefetch={false}>
+                  Company questions
+                </Link>
+                <Link href="/mock">Mock interview</Link>
+                <Link href="/whiteboard">Whiteboard</Link>
+              </nav>
+              <nav aria-label="You" className={styles.footNav}>
+                <p className={styles.footHead}>You</p>
+                <Link href="/progress">Progress</Link>
+                <Link href="/review">Review</Link>
+                <Link href="/architecture">How this is built</Link>
+                <Link href="/privacy">Privacy</Link>
+              </nav>
+            </div>
+
+            <div className={styles.footBase}>
+              <span>{SITE_NAME}. Free to read, nothing to sign up for.</span>
+              <button
+                type="button"
+                className={styles.footTop}
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              >
+                Back to top <span aria-hidden="true">↑</span>
+              </button>
+            </div>
           </div>
         </footer>
       </div>
