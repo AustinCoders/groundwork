@@ -605,6 +605,20 @@
   color: var(--ink);
 }
 
+.boardRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
+  margin: 0 0 22px;
+}
+
+.boardRow span {
+  flex: 1 1 240px;
+  font-size: var(--t-meta);
+  color: var(--ink-soft);
+}
+
 .afterRow {
   display: flex;
   flex-wrap: wrap;

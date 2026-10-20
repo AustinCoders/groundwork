@@ -65,12 +65,12 @@ export const archHealth: Chapter = {
 </p>
 
 <figure>
-<svg viewBox="0 0 900 274" class="dg" role="img" aria-label="Bar chart of the largest files by line count, as of 11 October 2026: app/globals.css 7,288; content/interview-data.ts 4,745; content/topics.ts 4,626; whiteboard/Board.tsx 1,852; PracticeWorkspace.tsx 1,825; whiteboard/whiteboard.module.css 1,636.">
+<svg viewBox="0 0 900 274" class="dg" role="img" aria-label="Bar chart of the largest files by line count, as of 11 October 2026: app/globals.css 7,288; content/interview-data.ts 4,745; content/topics.ts 4,626; whiteboard/Board.tsx 1,993; PracticeWorkspace.tsx 1,825; whiteboard/whiteboard.module.css 1,636.">
 <g class="rough">
 <rect x="245" y="24" width="426" height="22" rx="4" style="fill: var(--dg-box-red); stroke: var(--red); stroke-width: 1.6" />
 <rect x="245" y="62" width="277" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
 <rect x="245" y="100" width="270" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
-<rect x="245" y="138" width="108" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
+<rect x="245" y="138" width="117" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <rect x="245" y="176" width="107" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <rect x="245" y="214" width="96" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
 <path class="ln" d="M245 16 V244" />
@@ -84,7 +84,7 @@ export const archHealth: Chapter = {
 <text class="sm" x="681" y="40">7,288</text>
 <text class="sm" x="532" y="78">4,745</text>
 <text class="sm" x="525" y="116">4,626</text>
-<text class="sm" x="363" y="154">1,852</text>
+<text class="sm" x="372" y="154">1,993</text>
 <text class="sm" x="362" y="192">1,825</text>
 <text class="sm" x="351" y="230">1,636</text>
 <text class="sm" x="245" y="264">lines as of 11 October 2026, one bar length per line count</text>
@@ -107,7 +107,7 @@ export const archHealth: Chapter = {
 <div class="table-scroll"><table>
 <thead><tr><th>Component</th><th>Lines</th><th><code>useState</code></th><th><code>useEffect</code></th><th><code>useRef</code></th></tr></thead>
 <tbody>
-<tr><td><code>app/whiteboard/Board.tsx</code></td><td>1,852</td><td>24</td><td>15</td><td>24</td></tr>
+<tr><td><code>app/whiteboard/Board.tsx</code></td><td>1,993</td><td>25</td><td>17</td><td>24</td></tr>
 <tr><td><code>components/practice/PracticeWorkspace.tsx</code></td><td>1,825</td><td>26</td><td>8</td><td>15</td></tr>
 <tr><td><code>components/practice/CodeEditor.tsx</code></td><td>1,118</td><td>22</td><td>8</td><td>13</td></tr>
 </tbody>

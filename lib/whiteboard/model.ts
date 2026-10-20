@@ -44,6 +44,7 @@ export interface El {
   end?: string | null;
   locked?: boolean;
   group?: string;
+  labelAt?: number;
 }
 
 export interface Box {
@@ -333,12 +334,12 @@ export function edgeToward(el: El, toward: Point, gap = 6): Point {
   return [cx + dx * Math.min(k, 1), cy + dy * Math.min(k, 1)];
 }
 
-export function pathMidpoint(points: readonly Point[]): Point {
+export function pathPoint(points: readonly Point[], at: number): Point {
   if (!points.length) return [0, 0];
   let total = 0;
   for (let i = 1; i < points.length; i++)
     total += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]);
-  let left = total / 2;
+  let left = total * Math.min(1, Math.max(0, at));
   for (let i = 1; i < points.length; i++) {
     const len = Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]);
     if (len >= left && len > 0) {
@@ -353,8 +354,13 @@ export function pathMidpoint(points: readonly Point[]): Point {
   return points[points.length - 1];
 }
 
+export function pathMidpoint(points: readonly Point[]): Point {
+  return pathPoint(points, 0.5);
+}
+
 export function labelPoint(el: El, text = el.text ?? ""): Point {
   const pts = el.points ?? [];
+  if (el.labelAt !== undefined) return pathPoint(pts, el.labelAt);
   if (el.style.route !== "elbow" || pts.length < 4) return pathMidpoint(pts);
   const [from, to] = pts.slice(-2);
   const size = textBox(text, el.style.fontSize);
@@ -773,6 +779,7 @@ export function sanitizeEls(list: unknown, limit = 5000): El[] {
     }
     if (kind !== "arrow") delete el.style.route;
     if (r.locked === true) el.locked = true;
+    if (kind === "arrow" && typeof r.labelAt === "number" && r.labelAt >= 0 && r.labelAt <= 1) el.labelAt = r.labelAt;
     const group = str(r.group, 64);
     if (group) el.group = group;
     seen.add(id);

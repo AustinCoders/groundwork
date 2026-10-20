@@ -483,7 +483,7 @@ Secondary and directional: [Naukri JobSpeak July 2026 summary][naukri-jul] · [I
 [flipkart]: https://roundz.substack.com/p/flipkart-interview-experience-frontend-engineer-sde2
 [recall]: https://www.sciencedirect.com/science/article/abs/pii/S187712972500231X
 
-## Company questions: Phase 2 (shipped) and Phase 3 (planned, not started)
+## Company questions: Phase 2 and Phase 3 (both shipped on branches)
 
 Phase 1 shipped the structure: `/company-questions` hub, a page per company (22, including ten Indian startups) with
 its interview process as a timeline of rounds, design and coding answers, problems linked to the playground, and
@@ -515,13 +515,34 @@ an evidence label, because companies do not publish questions.
 - Naukri Code 360, LeetCode Discuss and Medium pages are bot-walled; they were read in a browser by reviewers and
   `npm run sources` lists them as "needs a manual look".
 
-**Phase 3: whiteboard.**
+**Phase 3: whiteboard (shipped on branch `feature/company-whiteboard`).**
 
-- A converter from the diagram data (`diagrams/d*.ts`, `lld-diagrams*.ts`) to whiteboard elements so every answer has
-  an "Open on whiteboard" button with a pre-filled board (the whiteboard has six drill boards today,
-  `lib/whiteboard/drillBoards.ts`).
-- A step-by-step walkthrough mode (numbered steps appear one at a time).
-- Coding answers: a board with the data structure and pointers drawn per step of the dry run.
+- Every design (38) and LLD (26) answer has an "Open on the whiteboard" button under its diagrams, and coding answers
+  have one under the dry-run table. It opens `/whiteboard?from=<design|lld|coding>/<id>`, which fetches
+  `/company-boards/<kind>/<id>` (a static route handler, `app/company-boards/`) and saves the result as a new board, so
+  `content/` never reaches the client bundle and the user's own boards are untouched.
+- `lib/whiteboard/diagramBoard.ts` converts the flow and sequence diagrams: it reuses `layoutFlow` for node cells and
+  edge routes (scaled 1.25 by 1.4), maps node kinds to shapes (store and cache to cylinders, queue to a parallelogram,
+  external to a cloud, decision to a hexagon), keeps arrows attached to their nodes, and places each arrow label
+  where it hits neither a node nor another label (`El.labelAt`, a new optional fraction along the arrow).
+  All diagrams of an answer stack on one board.
+- Walkthrough mode (`lib/whiteboard/walk.ts`, `WalkBar.tsx`): one step per numbered edge or sequence message, with its
+  caption, the new arrow highlighted, and the camera following. A flow without numbered edges is one step with its
+  caption. Arrow keys step, Escape or "Show everything" leaves. The board is read-only while walking; the walk itself is
+  not saved, only the board.
+- `lib/whiteboard/traceBoard.ts` draws coding dry runs, one strip per table row, with pointers: array and string
+  traces with left, right, slow, fast, i, centre or window pointers, search-space traces (low, mid, high over a range),
+  one linked-list trace, and four tree traces with the visited node marked. The structure comes from the first test
+  case that agrees with the trace (value and character columns are checked against it); a trace that does not fit
+  is skipped, so no wrong picture is drawn. 15 of the 66 coding answers qualify (list in
+  `tests/company-trace-boards.test.ts`); the other 51 (hash maps, stacks, heaps, graphs, DP tables, intervals, design
+  classes) have no button.
+- Tests: `tests/company-boards.test.ts` converts all 64 answers and checks no shape or label overlaps, no dangling or
+  crossing arrows, unique ids, load round trip and a well-formed walk; `tests/company-trace-boards.test.ts` does the
+  same for the 15 traces and pins their arrays and trees.
+- Still open: the walk is not saved with the board (reopening the board shows it all); graph, DP-table, interval, stack
+  and hash-map traces; tree traces where the tree is built or annotated (distribute coins, lock tree, in and post
+  order); text on phones is small at the zoom a whole step needs, pinch to read more.
 
 **Also open:** other themes (only dark and Paper were checked), a yearly refresh of the evidence labels, running a
 coding or machine coding solution in place on the answer page.

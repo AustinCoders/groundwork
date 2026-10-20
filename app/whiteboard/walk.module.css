@@ -1,0 +1,83 @@
+.bar {
+  position: absolute;
+  z-index: 7;
+  left: 50%;
+  bottom: 64px;
+  display: grid;
+  gap: 6px;
+  width: min(640px, calc(100% - 2 * var(--gap)));
+  padding: 10px 14px 12px;
+  color: var(--ink);
+  background: var(--island-bg);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  transform: translateX(-50%);
+}
+
+.count {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--pencil);
+}
+
+.caption {
+  margin: 0;
+  min-height: 2.8em;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.row button {
+  min-height: 36px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: transparent;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.row button:hover:not(:disabled) {
+  border-color: var(--primary);
+}
+
+.row button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.row .next {
+  color: var(--on-primary);
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.row .exit {
+  margin-left: auto;
+}
+
+@media (max-width: 720px) {
+  .bar {
+    bottom: 56px;
+    padding: 8px 12px 10px;
+  }
+
+  .caption {
+    font-size: 14px;
+  }
+}

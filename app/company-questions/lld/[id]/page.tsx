@@ -10,12 +10,13 @@ import { LLD_TOPIC_NAME } from "@/content/system-design/company-questions/lld-to
 import { accentVar } from "@/lib/accent";
 import { chapters } from "@/lib/content";
 import { pageMetadata } from "@/lib/metadata";
+import { whiteboardLink } from "@/lib/whiteboard/walk";
 import { AnswerRail } from "../../AnswerRail";
 import { CodeBlock } from "../../CodeBlock";
 import { Diagram } from "../../Diagram";
 import { DiagramDeck } from "../../DiagramDeck";
 import { QuestionHero } from "../../QuestionHero";
-import { AfterActions, ChapterLinks, Pager, RelatedList, SourcesList } from "../../ReaderParts";
+import { AfterActions, BoardLink, ChapterLinks, Pager, RelatedList, SourcesList } from "../../ReaderParts";
 import { RevealRoot } from "../../RevealRoot";
 import { TryFirst } from "../../TryFirst";
 import { highlight } from "../../highlight";
@@ -172,6 +173,13 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                       }))}
                     />
                   )}
+                  {step.id === "design" && diagrams.length > 0 && (
+                    <BoardLink
+                      source="lld"
+                      id={question.id}
+                      note={`All ${diagrams.length} diagrams on one tidy board, with a step-by-step walkthrough.`}
+                    />
+                  )}
                   {step.id === "code" && (
                     <>
                       <CodeBlock text={question.code} title={`${question.id}.js`}>
@@ -201,7 +209,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             <AfterActions
               id={question.id}
               extra={[
-                { href: "/whiteboard", label: "Sketch the class map on the whiteboard" },
+                { href: whiteboardLink("lld", question.id), label: "Sketch the class map on the whiteboard" },
                 { href: "/mock", label: "Run a mock interview" },
               ]}
             />

@@ -51,7 +51,14 @@ Who the learner is, languages beyond JavaScript, one release or level by level, 
 ## Company questions section (2026-10-19)
 
 - Shipped to main: hub, per-question pages, 30 design answers with diagrams, 36 coding answers. Phase 1 of the company pages (22 company pages with process timelines, 10 Indian startups, 38 design and 52 coding answers, problems and playground sync) is on `feature/company-pages-phase1`, committed locally and not merged or pushed unless the owner said so.
-- PHASE 2 (machine coding and LLD, CS and SQL sets, people rounds, model answers, thin companies) is on `feature/company-pages-phase2`; PHASE 3 (whiteboard boards from the diagram data) is planned, not started. See the last section of `docs/ROADMAP.md`. Decisions: keep the Interview book (link, share data); never add a company option to the mock interview.
+- PHASE 2 (machine coding and LLD, CS and SQL sets, people rounds, model answers, thin companies) is on `feature/company-pages-phase2`; PHASE 3 (whiteboard boards from the answer diagrams, walkthrough mode, coding trace boards) is on `feature/company-whiteboard`, cut from the Phase 2 tip, uncommitted until the owner asks. See the last section of `docs/ROADMAP.md`. Decisions: keep the Interview book (link, share data); never add a company option to the mock interview.
 - Detail pages were redesigned too: gradient hero with an at-a-glance card and company link, diagram tabs, a step-through dry run for coding answers, sticky command-bar filters on the hub.
 - Data: `content/system-design/company-questions/` (process-main.ts, process-startups.ts, rounds.ts, batch1-8, dsa-batch1-9, diagrams/d1-d8). UI: `app/company-questions/`.
 - Open: other themes unchecked (dark and Paper only), a yearly refresh of the evidence labels.
+
+## Company questions: Phase 3 whiteboard (2026-10-20)
+
+- Buttons on design, LLD and coding answer pages open `/whiteboard?from=<kind>/<id>`; the board JSON comes from a static route handler `/company-boards/<kind>/<id>` (`lib/companyBoards.ts`), converters are `lib/whiteboard/diagramBoard.ts` and `traceBoard.ts`, the walk model is `lib/whiteboard/walk.ts`.
+- 64 design and LLD answers convert (141 diagrams); 15 of 66 coding traces qualify (array, search range, one list, four trees), the rest are skipped on purpose.
+- Edited by hand for `tests/claims.test.ts`: CSS modules 83, `use client` files 157, Board.tsx chart 1,993 lines (`content/architecture/arch-*.ts`).
+- Open: save the walk with the board, more trace shapes, small text on phones. Detail in `docs/ROADMAP.md`.

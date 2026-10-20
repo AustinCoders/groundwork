@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReportSource } from "@/content/system-design/company-questions/types";
 import { PractisedButton } from "./PractisedButton";
 import { SOURCE_KIND_LABEL } from "./shared";
+import { whiteboardLink, type BoardSource } from "@/lib/whiteboard/walk";
 import styles from "./company-questions.module.css";
 
 export function AfterActions({ id, extra }: { id: string; extra: { href: string; label: string }[] }) {
@@ -18,6 +19,17 @@ export function AfterActions({ id, extra }: { id: string; extra: { href: string;
         ))}
       </div>
     </section>
+  );
+}
+
+export function BoardLink({ source, id, note }: { source: BoardSource; id: string; note: string }) {
+  return (
+    <p className={styles.boardRow}>
+      <Link className={styles.ghostBtn} href={whiteboardLink(source, id)} prefetch={false}>
+        Open on the whiteboard
+      </Link>
+      <span>{note}</span>
+    </p>
   );
 }
 

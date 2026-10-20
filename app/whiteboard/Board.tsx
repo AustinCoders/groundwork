@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ElementView } from "./ElementView";
+import { WalkBar } from "./WalkBar";
 import { Icon, type IconName } from "./icons";
 import { StylePanel } from "./StylePanel";
 import { BoardMenu } from "./BoardMenu";
@@ -43,6 +44,7 @@ import {
   movableIds,
   moveEls,
   newId,
+  sanitizeEls,
   labelPoint,
   normalize,
   redo,
@@ -73,6 +75,7 @@ import {
 } from "@/lib/whiteboard/model";
 import { clearOf } from "@/lib/whiteboard/library";
 import { buildDrillBoard, drillBoard } from "@/lib/whiteboard/drillBoards";
+import { boardPath, isWalk, parseSource, visibleAt, type Walk } from "@/lib/whiteboard/walk";
 import { placeTemplate, TEMPLATES, type Template } from "@/lib/whiteboard/templates";
 import {
   deleteBoard,
@@ -273,6 +276,7 @@ export function Board() {
   const [ctx, setCtx] = useState<{ x: number; y: number } | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  const [walk, setWalk] = useState<{ title: string; data: Walk; step: number } | null>(null);
   const [dialog, setDialog] = useState<
     { kind: "new" } | { kind: "delete"; id: string; name: string; count: number } | { kind: "clear" } | null
   >(null);
@@ -293,9 +297,10 @@ export function Board() {
   const laserRef = useRef<LaserPoint[]>([]);
   const laserFrame = useRef(0);
   const noticeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const stateRef = useRef({ els, sel, cam, tool, style, hist, grid, editing, snapStep, extraShape });
+  const walking = walk !== null;
+  const stateRef = useRef({ els, sel, cam, tool, style, hist, grid, editing, snapStep, extraShape, walking });
   useEffect(() => {
-    stateRef.current = { els, sel, cam, tool, style, hist, grid, editing, snapStep, extraShape };
+    stateRef.current = { els, sel, cam, tool, style, hist, grid, editing, snapStep, extraShape, walking };
   });
 
   const say = useCallback((text: string) => {
@@ -398,6 +403,7 @@ export function Board() {
     setHist(historyOf(els0));
     setSel(new Set());
     setEditing(null);
+    setWalk(null);
     setCam({ x: 0, y: 0, zoom: 1 });
   }, []);
 
@@ -440,10 +446,14 @@ export function Board() {
     });
   }, []);
 
-  const fitTo = useCallback((b: Box | null) => {
+  const fitTo = useCallback((b: Box | null, tight = false) => {
     const r = svgRef.current?.getBoundingClientRect();
     if (!b || !r) return setCam({ x: 0, y: 0, zoom: 1 });
-    const zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Math.min(r.width / (b.w + 160), r.height / (b.h + 200), 2)));
+    const [mx, my] = tight ? [48, 60] : [160, 200];
+    const zoom = Math.min(
+      MAX_ZOOM,
+      Math.max(MIN_ZOOM, Math.min(r.width / (b.w + mx), r.height / (b.h + my), tight ? 1.2 : 2))
+    );
     setCam({ zoom, x: r.width / zoom / 2 - (b.x + b.w / 2), y: r.height / zoom / 2 - (b.y + b.h / 2) });
   }, []);
 
@@ -467,6 +477,58 @@ export function Board() {
     });
     return () => cancelAnimationFrame(frame);
   }, [openBoard, fitTo, say]);
+
+  useEffect(() => {
+    const source = parseSource(new URLSearchParams(location.search).get("from"));
+    if (!source) return;
+    const controller = new AbortController();
+    async function open(from: NonNullable<typeof source>) {
+      try {
+        const res = await fetch(boardPath(from.source, from.id), { signal: controller.signal });
+        if (!res.ok) throw new Error("missing");
+        const data = (await res.json()) as { title?: unknown; els?: unknown; walk?: unknown };
+        const opened = sanitizeEls(data.els, 2000);
+        if (!opened.length) throw new Error("empty");
+        const title = typeof data.title === "string" && data.title.trim() ? data.title.trim().slice(0, 60) : "Answer";
+        history.replaceState(null, "", location.pathname + location.hash);
+        const id = newId();
+        saveBoard(id, opened, title);
+        setBoards(listBoards());
+        openBoard(id);
+        if (isWalk(data.walk)) setWalk({ title, data: data.walk, step: 1 });
+        else {
+          fitTo(unionBounds(opened));
+          say(`\u201c${title}\u201d is open as a new board \u2014 yours are untouched.`);
+        }
+      } catch {
+        if (controller.signal.aborted) return;
+        history.replaceState(null, "", location.pathname + location.hash);
+        say("That answer could not be put on the board.");
+      }
+    }
+    void open(source);
+    return () => controller.abort();
+  }, [openBoard, fitTo, say]);
+
+  const walkStep = walk?.step;
+  const walkViews = walk?.data.views;
+  const walkFocus = walk?.data.focus;
+  useEffect(() => {
+    if (!walkStep || !walkViews || !walkFocus) return;
+    const frame = requestAnimationFrame(() => {
+      const view = walkViews[walkStep - 1];
+      const r = svgRef.current?.getBoundingClientRect();
+      const whole = { ...view, y: view.y - 90, h: view.h + 320 };
+      if (!r) return fitTo(whole);
+      const readable = Math.min(r.width / (whole.w + 160), r.height / (whole.h + 200)) >= 0.55;
+      const ids = new Set(walkFocus[walkStep - 1]);
+      const near = unionBounds(stateRef.current.els.filter((e) => ids.has(e.id)));
+      if (readable || !near) return fitTo(whole);
+      if (r.width < 720) return fitTo({ x: near.x, y: near.y - 90, w: near.w, h: near.h + 320 }, true);
+      fitTo({ x: near.x - 260, y: near.y - 250, w: near.w + 520, h: near.h + 710 });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [walkStep, walkViews, walkFocus, fitTo]);
 
   const selected = useMemo(() => els.filter((e) => sel.has(e.id)), [els, sel]);
   const selBox = useMemo(() => unionBounds(selected), [selected]);
@@ -547,11 +609,11 @@ export function Board() {
       };
       return;
     }
-    const { tool: t, els: all, sel: current } = stateRef.current;
+    const { tool: t, els: all, sel: current, walking: touring } = stateRef.current;
     const p = toWorld(e.clientX, e.clientY);
     const sp = snapPoint(p);
 
-    if (t === "hand" || spaceHeld || e.button === 1) {
+    if (t === "hand" || spaceHeld || e.button === 1 || touring) {
       gesture.current = { kind: "pan", sx: e.clientX, sy: e.clientY, cam: stateRef.current.cam };
       return;
     }
@@ -898,6 +960,7 @@ export function Board() {
   }
 
   function onDoubleClick(e: React.MouseEvent<SVGSVGElement>) {
+    if (stateRef.current.walking) return;
     const t = stateRef.current.tool;
     if (t !== "select" && t !== "hand") return;
     const p = toWorld(e.clientX, e.clientY);
@@ -914,7 +977,7 @@ export function Board() {
 
   function onContextMenu(e: React.MouseEvent<SVGSVGElement>) {
     e.preventDefault();
-    if (gesture.current || stateRef.current.editing) return;
+    if (gesture.current || stateRef.current.editing || stateRef.current.walking) return;
     const { els: all, sel: current } = stateRef.current;
     const hit = elementAt(all, toWorld(e.clientX, e.clientY), tolerance());
     if (hit && !current.has(hit.id)) setSel(expandGroups(all, new Set([hit.id])));
@@ -1094,6 +1157,16 @@ export function Board() {
     function onKey(e: KeyboardEvent) {
       if (typingInField(e) || ownsKey(e) || stateRef.current.editing) return;
       if ((e.target as HTMLElement | null)?.closest?.("dialog, [data-overlay]")) return;
+      if (stateRef.current.walking) {
+        const move = (by: number) =>
+          setWalk((w) => w && { ...w, step: Math.min(w.data.captions.length, Math.max(1, w.step + by)) });
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") move(1);
+        else if (e.key === "ArrowLeft" || e.key === "ArrowUp") move(-1);
+        else if (e.key === "Escape") setWalk(null);
+        else return;
+        e.preventDefault();
+        return;
+      }
       const mod = e.metaKey || e.ctrlKey;
       const { sel: current, els: all, hist: h } = stateRef.current;
       const k = e.key.toLowerCase();
@@ -1321,8 +1394,18 @@ export function Board() {
   const visible = { x: -cam.x, y: -cam.y, w: size.w / cam.zoom, h: size.h / cam.zoom };
   const pad = 200 / cam.zoom;
   const view = { x: visible.x - pad, y: visible.y - pad, w: visible.w + pad * 2, h: visible.h + pad * 2 };
+  const focusIds = walk ? new Set(walk.data.focus[walk.step - 1]) : null;
+  const staged = walk
+    ? els
+        .filter((el) => visibleAt(walk.data, walk.step, el.id))
+        .map((el) =>
+          focusIds?.has(el.id) ? { ...el, style: { ...el.style, stroke: "blue", width: el.style.width + 1.5 } } : el
+        )
+    : els;
   const shown =
-    els.length > 150 ? els.filter((el) => sel.has(el.id) || el.id === editing || overlaps(view, bounds(el))) : els;
+    staged.length > 150
+      ? staged.filter((el) => sel.has(el.id) || el.id === editing || overlaps(view, bounds(el)))
+      : staged;
   const editingEl = editing ? els.find((e) => e.id === editing) : null;
   const handleSize = 9 / cam.zoom;
   const cursor =
@@ -1583,93 +1666,110 @@ export function Board() {
         />
       </div>
 
-      <div className={`${styles.island} ${styles.dock}`} role="toolbar" aria-label="Drawing tools">
-        {TOOL_GROUPS.map((group, gi) => (
-          <div key={gi} className={styles.toolGroup}>
-            {group.map(toolButton)}
-            {gi === 2 && (
-              <div className={styles.popWrap} ref={shapesRef}>
-                <button
-                  type="button"
-                  className={styles.tool}
-                  aria-pressed={(EXTRA_SHAPES as Tool[]).includes(tool)}
-                  aria-label={`More shapes: ${SHAPE_NAMES[extraShape]} (S)`}
-                  aria-expanded={shapesOpen}
-                  aria-haspopup="menu"
-                  data-tip="More shapes — S"
-                  onClick={() => {
-                    if (tool !== extraShape) setTool(extraShape);
-                    setShapesOpen((v) => !v);
-                  }}
-                >
-                  <Icon name={extraShape} />
-                  <span className={styles.toolMore} aria-hidden="true" />
-                  <span className={styles.toolKey} aria-hidden="true">
-                    S
-                  </span>
-                </button>
-                {shapesOpen && (
-                  <div className={styles.shapesPop} role="menu" aria-label="More shapes">
-                    {EXTRA_SHAPES.map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        role="menuitemradio"
-                        aria-checked={tool === s}
-                        className={styles.tool}
-                        aria-label={SHAPE_NAMES[s]}
-                        data-tip={SHAPE_NAMES[s]}
-                        onClick={() => pickExtraShape(s)}
-                      >
-                        <Icon name={s} />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            {gi === 3 && (
-              <label className={styles.tool} data-tip="Insert an image — I" aria-label="Insert an image (I)">
-                <Icon name="image" />
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  className="visually-hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) void addImage(f);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-            )}
+      {!walk && (
+        <div className={`${styles.island} ${styles.dock}`} role="toolbar" aria-label="Drawing tools">
+          {TOOL_GROUPS.map((group, gi) => (
+            <div key={gi} className={styles.toolGroup}>
+              {group.map(toolButton)}
+              {gi === 2 && (
+                <div className={styles.popWrap} ref={shapesRef}>
+                  <button
+                    type="button"
+                    className={styles.tool}
+                    aria-pressed={(EXTRA_SHAPES as Tool[]).includes(tool)}
+                    aria-label={`More shapes: ${SHAPE_NAMES[extraShape]} (S)`}
+                    aria-expanded={shapesOpen}
+                    aria-haspopup="menu"
+                    data-tip="More shapes — S"
+                    onClick={() => {
+                      if (tool !== extraShape) setTool(extraShape);
+                      setShapesOpen((v) => !v);
+                    }}
+                  >
+                    <Icon name={extraShape} />
+                    <span className={styles.toolMore} aria-hidden="true" />
+                    <span className={styles.toolKey} aria-hidden="true">
+                      S
+                    </span>
+                  </button>
+                  {shapesOpen && (
+                    <div className={styles.shapesPop} role="menu" aria-label="More shapes">
+                      {EXTRA_SHAPES.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          role="menuitemradio"
+                          aria-checked={tool === s}
+                          className={styles.tool}
+                          aria-label={SHAPE_NAMES[s]}
+                          data-tip={SHAPE_NAMES[s]}
+                          onClick={() => pickExtraShape(s)}
+                        >
+                          <Icon name={s} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              {gi === 3 && (
+                <label className={styles.tool} data-tip="Insert an image — I" aria-label="Insert an image (I)">
+                  <Icon name="image" />
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    className="visually-hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) void addImage(f);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+          ))}
+          <div className={styles.toolGroup}>
+            <LibraryMenu selection={selected} onPick={(build) => insertTemplate({ build })} />
+            <TemplatesMenu onPick={insertTemplate} />
+            <button
+              type="button"
+              className={`${styles.tool} ${styles.hideSmall}`}
+              aria-label="Full screen (F)"
+              aria-pressed={fullscreen}
+              data-tip="Full screen — F"
+              onClick={toggleFullscreen}
+            >
+              <Icon name="fullscreen" />
+            </button>
+            <button
+              type="button"
+              className={styles.tool}
+              aria-label="Keyboard shortcuts (?)"
+              data-tip="Shortcuts — ?"
+              onClick={() => setHelpOpen(true)}
+            >
+              <Icon name="help" />
+            </button>
           </div>
-        ))}
-        <div className={styles.toolGroup}>
-          <LibraryMenu selection={selected} onPick={(build) => insertTemplate({ build })} />
-          <TemplatesMenu onPick={insertTemplate} />
-          <button
-            type="button"
-            className={`${styles.tool} ${styles.hideSmall}`}
-            aria-label="Full screen (F)"
-            aria-pressed={fullscreen}
-            data-tip="Full screen — F"
-            onClick={toggleFullscreen}
-          >
-            <Icon name="fullscreen" />
-          </button>
-          <button
-            type="button"
-            className={styles.tool}
-            aria-label="Keyboard shortcuts (?)"
-            data-tip="Shortcuts — ?"
-            onClick={() => setHelpOpen(true)}
-          >
-            <Icon name="help" />
-          </button>
         </div>
-      </div>
+      )}
+
+      {walk && (
+        <WalkBar
+          title={walk.title}
+          step={walk.step}
+          total={walk.data.captions.length}
+          caption={walk.data.captions[walk.step - 1]}
+          onStep={(next) => setWalk((w) => w && { ...w, step: Math.min(w.data.captions.length, Math.max(1, next)) })}
+          onExit={() => {
+            setWalk(null);
+            const all = unionBounds(stateRef.current.els);
+            fitTo(all && { ...all, y: all.y - 120, h: all.h + 120 });
+          }}
+        />
+      )}
 
       <div className={`${styles.island} ${styles.islandBL}`}>
         <button

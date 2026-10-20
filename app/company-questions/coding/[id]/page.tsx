@@ -10,6 +10,7 @@ import { COMPANY_DSA } from "@/content/system-design/company-questions/dsa-index
 import { PATTERN_NAMES } from "@/content/system-design/company-questions/dsa-patterns";
 import { accentVar } from "@/lib/accent";
 import { chapters } from "@/lib/content";
+import { hasCompanyBoard } from "@/lib/companyBoards";
 import { pageMetadata } from "@/lib/metadata";
 import { AnswerRail } from "../../AnswerRail";
 import { CodeBlock } from "../../CodeBlock";
@@ -17,7 +18,7 @@ import { DoneMark } from "../../DoneMark";
 import { PatternGlyph } from "../../PatternGlyph";
 import { QuestionHero } from "../../QuestionHero";
 import { TraceStepper } from "../../TraceStepper";
-import { AfterActions, ChapterLinks, Pager, RelatedList, SourcesList } from "../../ReaderParts";
+import { AfterActions, BoardLink, ChapterLinks, Pager, RelatedList, SourcesList } from "../../ReaderParts";
 import { TryFirst } from "../../TryFirst";
 import { highlight } from "../../highlight";
 import { exerciseOf } from "../../data";
@@ -84,6 +85,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       };
     });
   const { answer, solution, trace, complexity } = question;
+  const onBoard = hasCompanyBoard("coding", question.id);
   const bodies: Record<string, string> = {
     ask: answer.ask,
     brute: answer.brute,
@@ -211,7 +213,16 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                     </dl>
                   )}
                   {step.id === "walkthrough" && (
-                    <TraceStepper caption={trace.caption} head={trace.head} rows={trace.rows} />
+                    <>
+                      <TraceStepper caption={trace.caption} head={trace.head} rows={trace.rows} />
+                      {onBoard && (
+                        <BoardLink
+                          source="coding"
+                          id={question.id}
+                          note="Draws the structure and its pointers for every row of this dry run, one step at a time."
+                        />
+                      )}
+                    </>
                   )}
                   {step.id === "code" && (
                     <>

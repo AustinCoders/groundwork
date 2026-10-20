@@ -11,11 +11,12 @@ import { THEMES, THEME_OF } from "@/content/system-design/company-questions/them
 import { accentVar } from "@/lib/accent";
 import { chapters } from "@/lib/content";
 import { pageMetadata } from "@/lib/metadata";
+import { whiteboardLink } from "@/lib/whiteboard/walk";
 import { AnswerRail } from "../../AnswerRail";
 import { Diagram } from "../../Diagram";
 import { DiagramDeck } from "../../DiagramDeck";
 import { QuestionHero } from "../../QuestionHero";
-import { AfterActions, ChapterLinks, Pager, RelatedList, SourcesList } from "../../ReaderParts";
+import { AfterActions, BoardLink, ChapterLinks, Pager, RelatedList, SourcesList } from "../../ReaderParts";
 import { TryFirst } from "../../TryFirst";
 import { DESIGN_PHASES, EVIDENCE_COPY, HUB_PATH, questionPath, withArticle } from "../../shared";
 import styles from "../../company-questions.module.css";
@@ -168,6 +169,13 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                           }))}
                         />
                       )}
+                      {step.id === "design" && diagrams.length > 0 && (
+                        <BoardLink
+                          source="design"
+                          id={question.id}
+                          note={`All ${diagrams.length} diagrams on one tidy board, with a step-by-step walkthrough.`}
+                        />
+                      )}
                       <div className={`prose ${styles.body}`} dangerouslySetInnerHTML={{ __html: bodies[step.id] }} />
                     </>
                   )}
@@ -178,7 +186,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             <AfterActions
               id={question.id}
               extra={[
-                { href: "/whiteboard", label: "Redraw it on the whiteboard" },
+                { href: whiteboardLink("design", question.id), label: "Redraw it on the whiteboard" },
                 { href: "/mock", label: "Run a mock interview" },
               ]}
             />
