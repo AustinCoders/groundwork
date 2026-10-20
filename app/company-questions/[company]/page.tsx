@@ -8,10 +8,12 @@ import { PageFrame } from "@/components/frame/PageFrame";
 import { Foot, FootLink, Kicker, TopicPage, Wrap } from "@/components/topic/TopicKit";
 import { accentVar } from "@/lib/accent";
 import { pageMetadata } from "@/lib/metadata";
+import { PEOPLE } from "@/content/system-design/company-questions/people";
+import { PeopleSection } from "../PeopleSection";
 import { RoundStrip, RoundTimeline } from "../CompanyParts";
 import { CompanyRing, DoneMark } from "../DoneMark";
 import { companyView, companyViews, exerciseOf } from "../data";
-import { HUB_PATH, codingPath, questionPath } from "../shared";
+import { HUB_PATH, codingPath, lldPath, questionPath } from "../shared";
 import styles from "../company.module.css";
 
 export const dynamicParams = false;
@@ -36,8 +38,9 @@ export default async function Page({ params }: { params: Promise<{ company: stri
   const { company } = await params;
   const view = companyView(company);
   if (!view) notFound();
-  const { process, design, coding, reported } = view;
+  const { process, design, coding, lld, reported } = view;
   const rounds = process?.rounds ?? [];
+  const people = PEOPLE.find((entry) => entry.company === view.company.id);
   const tint = { "--accent": accentVar(view.company.accent) } as CSSProperties;
   const others = companyViews()
     .filter((entry) => entry.company.group === view.company.group && entry.company.id !== view.company.id)
@@ -45,6 +48,7 @@ export default async function Page({ params }: { params: Promise<{ company: stri
   const tracked = [
     ...design.map((question) => ({ id: question.id })),
     ...coding.map((question) => ({ id: question.id, exercise: exerciseOf(question.id) })),
+    ...lld.map((question) => ({ id: question.id })),
   ];
   const wellReported = rounds.filter((round) => round.grade === "several").length;
 
@@ -109,7 +113,7 @@ export default async function Page({ params }: { params: Promise<{ company: stri
               <CompanyRing items={tracked} />
             </header>
 
-            {rounds.length > 0 && <RoundStrip rounds={rounds} />}
+            {rounds.length > 0 && <RoundStrip rounds={rounds} people={!!people} />}
 
             <div className={styles.layout}>
               <section aria-labelledby="rounds-h">
@@ -125,8 +129,10 @@ export default async function Page({ params }: { params: Promise<{ company: stri
                   accent={view.company.accent}
                   design={design}
                   coding={coding}
+                  lld={lld}
                   reported={reported}
                 />
+                {people && <PeopleSection name={view.company.name} people={people} />}
                 {process?.gaps && (
                   <p className={styles.gaps}>
                     <b>What we could not verify.</b> {process.gaps}
@@ -157,6 +163,15 @@ export default async function Page({ params }: { params: Promise<{ company: stri
                             {question.title}
                           </Link>
                           <DoneMark id={question.id} exercise={exerciseOf(question.id)} />
+                        </li>
+                      ))}
+                      {lld.map((question) => (
+                        <li key={question.id}>
+                          <Link href={lldPath(question.id)} prefetch={false}>
+                            <span>{question.round === "lld" ? "LLD" : "Machine"}</span>
+                            {question.title}
+                          </Link>
+                          <DoneMark id={question.id} />
                         </li>
                       ))}
                     </ul>

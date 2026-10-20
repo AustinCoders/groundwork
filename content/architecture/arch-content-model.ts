@@ -29,7 +29,7 @@ export const archContentModel: Chapter = {
 <text class="lbl" x="511" y="126" text-anchor="middle">Chapter</text>
 <text class="sm" x="511" y="148" text-anchor="middle">253 written</text>
 <text class="lbl" x="732" y="126" text-anchor="middle">Exercise</text>
-<text class="sm" x="732" y="148" text-anchor="middle">950 with tests</text>
+<text class="sm" x="732" y="148" text-anchor="middle">955 with tests</text>
 <text class="sm" x="194" y="114" text-anchor="middle">1..3</text>
 <text class="sm" x="400" y="114" text-anchor="middle">syllabus</text>
 <text class="sm" x="616" y="114" text-anchor="middle">practice[]</text>

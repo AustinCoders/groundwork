@@ -1580,10 +1580,6 @@
 }
 
 .askedGrid li {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  padding: 11px 14px;
   font-size: var(--t-body);
   line-height: 1.45;
   color: var(--ink);
@@ -1592,6 +1588,56 @@
   border-radius: 14px;
   animation: kindIn 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
   animation-delay: calc(var(--i, 0) * 55ms);
+}
+
+.askedGrid summary {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 14px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.askedGrid summary::-webkit-details-marker {
+  display: none;
+}
+
+.askedGrid summary::after {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  color: var(--ink-soft);
+  content: "+";
+}
+
+.askedGrid details[open] summary::after {
+  content: "−";
+}
+
+.askedGrid summary:focus-visible,
+.askedGrid details a:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.askedGrid details[open] {
+  background: color-mix(in srgb, var(--tone) 8%, var(--sheet));
+  border-radius: 14px;
+}
+
+.askedGrid details p {
+  margin: 0;
+  padding: 0 14px 10px 54px;
+  font-size: var(--t-meta);
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.askedGrid details a {
+  display: inline-block;
+  margin: 0 14px 12px 54px;
+  font-weight: 700;
+  color: var(--primary);
 }
 
 .askedGrid li span {
@@ -1700,4 +1746,11 @@
   .kindLinks a {
     transition: none;
   }
+}
+
+.setGlyph {
+  font-family: var(--font-heading);
+  font-size: clamp(2.6rem, 6vw, 3.6rem);
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--primary) 55%, var(--ink-soft));
 }

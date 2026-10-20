@@ -23,13 +23,11 @@ function deriveEvidence(kinds: string[]): "several" | "one" | "guide" {
 }
 
 describe("the company coding questions", () => {
-  it("has coding questions for the established companies and most startups", () => {
-    expect(COMPANY_DSA).toHaveLength(52);
-    const none = new Set(["cred", "zerodha"]);
+  it("has at least two coding questions for every company", () => {
+    expect(COMPANY_DSA).toHaveLength(66);
     for (const company of COMPANIES) {
       const own = COMPANY_DSA.filter((question) => question.company === company.id).length;
-      if (none.has(company.id)) expect(own, company.id).toBe(0);
-      else expect(own, company.id).toBeGreaterThanOrEqual(2);
+      expect(own, company.id).toBeGreaterThanOrEqual(2);
     }
   });
 

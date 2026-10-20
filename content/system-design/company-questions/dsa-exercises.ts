@@ -1,4 +1,7 @@
-export const EXERCISE_OF: Readonly<Record<string, string>> = {
+import { EXERCISE_OF_10 } from "./dsa-exercises10";
+import { EXERCISE_OF_11 } from "./dsa-exercises11";
+
+const BASE: Record<string, string> = {
   "google-merge-intervals": "ex-merge-intervals",
   "google-word-break-ii": "ex-word-break-ii",
   "google-players-and-trainers": "ex-players-and-trainers",
@@ -52,3 +55,5 @@ export const EXERCISE_OF: Readonly<Record<string, string>> = {
   "myntra-max-overlapping-intervals": "ex-max-overlapping-intervals",
   "myntra-first-non-repeating-stream": "ex-first-non-repeating-stream",
 };
+
+export const EXERCISE_OF: Readonly<Record<string, string>> = { ...BASE, ...EXERCISE_OF_10, ...EXERCISE_OF_11 };

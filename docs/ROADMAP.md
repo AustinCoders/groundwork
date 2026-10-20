@@ -483,35 +483,45 @@ Secondary and directional: [Naukri JobSpeak July 2026 summary][naukri-jul] · [I
 [flipkart]: https://roundz.substack.com/p/flipkart-interview-experience-frontend-engineer-sde2
 [recall]: https://www.sciencedirect.com/science/article/abs/pii/S187712972500231X
 
-## Company questions: Phase 2 and Phase 3 (planned, not started)
+## Company questions: Phase 2 (shipped) and Phase 3 (planned, not started)
 
 Phase 1 shipped the structure: `/company-questions` hub, a page per company (22, including ten Indian startups) with
-its interview process as a timeline of rounds, 38 design answers with diagrams, 52 coding answers, problems linked to
-the playground exercises, and "Asked at" on problem pages. Decisions already made with the owner: the Interview book
-stays (it teaches, the company section reports; they link both ways and share data, never copy); the mock interview
-is not given a company option; every claim carries an evidence label, because companies do not publish questions.
+its interview process as a timeline of rounds, design and coding answers, problems linked to the playground, and
+"Asked at" on problem pages. Decisions made with the owner: the Interview book stays (it teaches, the company section
+reports; they link both ways and share data, never copy); the mock interview gets no company option; every claim carries
+an evidence label, because companies do not publish questions.
 
-**Phase 2: round content (the biggest piece).**
+**Phase 2 shipped (branch `feature/company-pages-phase2`):**
 
-- Machine coding and low-level design: reported prompts per company (parking lot, Splitwise, inventory, wallet, cache,
-  scheduler) with class design, patterns, a runnable skeleton and tests. The research JSON already lists reported
-  prompts (`process-startups-reported.ts`); only the written answers are missing.
-- CS fundamentals and SQL: OS, DBMS, networks and query questions per round, with worked answers and links to the
-  `/os`, `/dbms`, `/networks` and `/databases` topics.
-- Behavioural, manager and HR rounds: a worked set per company from the Interview book data (single source of
-  truth), including Amazon-style leadership principles and the compensation conversation.
-- "What can be asked" per round type, written in depth (each list item with a short model answer and a link).
-- Thin companies: more reported coding questions for CRED and Zerodha (none yet), SDE-2 and SDE-3 coverage for the
-  startups, 2025-2026 reports when LeetCode, Glassdoor and Medium become readable.
-- Same pipeline as Phase 1: research agent, writer, independent reviewer, code run against test cases, link check.
+- 26 machine coding and LLD answers (`/company-questions/lld/<id>`): class map and sequence diagrams, runnable
+  deterministic JavaScript with 6 to 10 checks, extend-it follow-ups. Data: `lld-batch1-5.ts`, `lld-diagrams1-5.ts`.
+- Five CS and SQL sets (`/company-questions/cs/<os|dbms|networks|sql|oop>`), 93 questions with short model answers,
+  company tags and sources. The SQL set carries a schema, queries and results verified on sqlite3. Data: `cs-*.ts`.
+- People rounds on all 22 company pages: values, probed themes, questions with what is checked and how to frame it,
+  Interview-book links, offer conversation notes, gaps. All 16 Amazon Leadership Principles. Data: `people-a/b/c.ts`.
+- "What can be asked" model answers for every item of every round type (`rounds-model.ts`), shown in the round explorer
+  and on company pages.
+- Fourteen coding answers for thin companies (CRED 4, Zerodha 4, plus Zomato, Myntra, PhonePe, Flipkart, Swiggy,
+  Razorpay), with seven new playground exercises. Zerodha is guide level only: no candidate reports are readable.
+- Pipeline as before: research agent, writer, independent reviewer (code re-run and fuzzed, claims and sources
+  re-checked). Reviewers changed most output; LLD alone had about 50 real bugs fixed.
+
+**Still open from Phase 2:**
+
+- The `/os`, `/dbms`, `/networks` and `/databases` topics have no written chapters, so the sets link to topic roots only.
+  Add deep links once chapters exist.
+- SQL set leaves out four topics that have no single query (DDL, keys, injection, query tuning); the DBMS set covers them.
+- Senior (SDE-3 and above) CS and behavioural evidence is thin; Google, Meta, Netflix and Zerodha have almost no CS reports.
+- Naukri Code 360, LeetCode Discuss and Medium pages are bot-walled; they were read in a browser by reviewers and
+  `npm run sources` lists them as "needs a manual look".
 
 **Phase 3: whiteboard.**
 
-- A converter from the diagram data (`diagrams/d*.ts`) to whiteboard elements so every design answer has an
-  "Open on whiteboard" button with a pre-filled board (the whiteboard has six drill boards today,
+- A converter from the diagram data (`diagrams/d*.ts`, `lld-diagrams*.ts`) to whiteboard elements so every answer has
+  an "Open on whiteboard" button with a pre-filled board (the whiteboard has six drill boards today,
   `lib/whiteboard/drillBoards.ts`).
 - A step-by-step walkthrough mode (numbered steps appear one at a time).
 - Coding answers: a board with the data structure and pointers drawn per step of the dry run.
 
 **Also open:** other themes (only dark and Paper were checked), a yearly refresh of the evidence labels, running a
-coding solution in place on the answer page.
+coding or machine coding solution in place on the answer page.

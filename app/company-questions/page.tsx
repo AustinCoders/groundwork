@@ -15,6 +15,10 @@ import {
 } from "@/components/topic/TopicKit";
 import { COMPANIES } from "@/content/system-design/company-questions/companies";
 import { COMPANY_QUESTIONS } from "@/content/system-design/company-questions";
+import { CS_SETS } from "@/content/system-design/company-questions/cs-index";
+import { LLD_DIAGRAMS } from "@/content/system-design/company-questions/lld-diagrams";
+import { COMPANY_LLD } from "@/content/system-design/company-questions/lld-index";
+import { LLD_TOPICS, LLD_TOPIC_NAME } from "@/content/system-design/company-questions/lld-topics";
 import { COMPANY_DSA } from "@/content/system-design/company-questions/dsa-index";
 import { PATTERN_NAMES } from "@/content/system-design/company-questions/dsa-patterns";
 import { DIAGRAMS } from "@/content/system-design/company-questions/diagrams";
@@ -29,7 +33,16 @@ import { companyViews, exerciseOf } from "./data";
 import { Diagram } from "./Diagram";
 import { HeroArt } from "./HeroArt";
 import { PatternGlyph } from "./PatternGlyph";
-import { HUB_PATH, codingPath, questionPath, type HubCompany, type HubItem, type HubTopic } from "./shared";
+import {
+  HUB_PATH,
+  codingPath,
+  csPath,
+  lldPath,
+  questionPath,
+  type HubCompany,
+  type HubItem,
+  type HubTopic,
+} from "./shared";
 import { accentVar } from "@/lib/accent";
 import type { CSSProperties, ReactNode } from "react";
 import styles from "./hub.module.css";
@@ -37,7 +50,7 @@ import styles from "./hub.module.css";
 export const metadata: Metadata = pageMetadata({
   title: "Interview questions big companies reported",
   description:
-    "System design and coding questions that candidates, prep guides and company-tagged lists report for Google, Meta, Amazon, Flipkart, Swiggy and more. Each has a worked answer, diagrams or a dry run, the numbers, the trade-offs, runnable code and a link to where it was reported.",
+    "System design, machine coding, coding and CS questions that candidates, prep guides and company-tagged lists report for Google, Meta, Amazon, Flipkart, Swiggy and more. Each has a worked answer, diagrams or a dry run, the numbers, the trade-offs, runnable code and a link to where it was reported.",
   path: HUB_PATH,
 });
 
@@ -117,6 +130,56 @@ export default function Page() {
     });
   }
 
+  for (const question of COMPANY_LLD) {
+    const company = byCompany.get(question.company)!;
+    const first = LLD_DIAGRAMS[question.id]?.[0];
+    thumbs[`lld:${question.id}`] = first ? <Diagram diagram={first} uid={`thumb-${question.id}`} mini /> : null;
+    items.push({
+      kind: "lld",
+      id: question.id,
+      href: lldPath(question.id),
+      company: company.id,
+      companyName: company.name,
+      group: company.group,
+      accent: company.accent,
+      title: question.title,
+      prompt: question.prompt,
+      level: question.level.startsWith("level not stated") ? "" : question.level,
+      evidence: question.evidence,
+      topic: question.topic,
+      topicName: LLD_TOPIC_NAME[question.topic],
+      search:
+        `${company.name} ${question.title} ${question.prompt} ${LLD_TOPIC_NAME[question.topic]} ${question.patterns.join(" ")} machine coding low level design lld oop`.toLowerCase(),
+    });
+  }
+
+  for (const set of CS_SETS) {
+    const strong = set.questions.filter((question) => question.evidence === "several").length;
+    const backed = set.questions.filter((question) => question.evidence !== "guide").length;
+    thumbs[`cs:${set.id}`] = (
+      <span className={styles.glyphWrap}>
+        <b className={styles.setGlyph}>{set.id.toUpperCase()}</b>
+      </span>
+    );
+    items.push({
+      kind: "cs",
+      id: `cs-${set.id}`,
+      href: csPath(set.id),
+      company: "various",
+      companyName: "Many companies",
+      group: "global",
+      accent: "grey",
+      title: `${set.title}: ${set.questions.length} reported questions`,
+      prompt: set.intro,
+      level: "",
+      evidence: strong * 2 >= set.questions.length ? "several" : backed * 2 >= set.questions.length ? "one" : "guide",
+      topic: set.id,
+      topicName: set.title,
+      search:
+        `${set.title} ${set.intro} cs fundamentals computer science interview ${set.questions.map((question) => question.q).join(" ")}`.toLowerCase(),
+    });
+  }
+
   const views = companyViews();
   const companies: HubCompany[] = views.map((view) => ({
     id: view.company.id,
@@ -132,6 +195,20 @@ export default function Page() {
       name: theme.name,
       blurb: theme.blurb,
       count: items.filter((item) => item.kind === "design" && item.topic === theme.id).length,
+    })),
+    ...LLD_TOPICS.map((topic) => ({
+      id: topic.id,
+      kind: "lld" as const,
+      name: topic.name,
+      blurb: topic.blurb,
+      count: items.filter((item) => item.kind === "lld" && item.topic === topic.id).length,
+    })).filter((entry) => entry.count > 0),
+    ...CS_SETS.map((set) => ({
+      id: set.id,
+      kind: "cs" as const,
+      name: set.title,
+      blurb: `${set.questions.length} reported ${set.title.toLowerCase()} questions`,
+      count: 1,
     })),
     ...(Object.keys(PATTERN_NAMES) as (keyof typeof PATTERN_NAMES)[])
       .map((id) => ({
@@ -175,9 +252,10 @@ export default function Page() {
                 What big companies <Underlined>reportedly asked</Underlined>
               </Heading>
               <Lead>
-                {COMPANY_QUESTIONS.length} system design questions with diagrams and {COMPANY_DSA.length} coding
-                questions with a dry run and runnable code, for {companies.length} companies. Cover the answer, run the
-                clock, then compare.
+                {COMPANY_QUESTIONS.length} system design questions with diagrams, {COMPANY_LLD.length} machine coding
+                answers with runnable code, {COMPANY_DSA.length} coding questions with a dry run, and{" "}
+                {CS_SETS.reduce((sum, set) => sum + set.questions.length, 0)} CS and SQL questions with model answers,
+                for {companies.length} companies. Cover the answer, run the clock, then compare.
               </Lead>
               <Actions>
                 <Button href="#companies">
@@ -191,6 +269,7 @@ export default function Page() {
                 {[
                   { value: COMPANY_QUESTIONS.length, label: "design" },
                   { value: COMPANY_DSA.length, label: "coding" },
+                  { value: COMPANY_LLD.length, label: "machine coding" },
                   { value: diagramCount, label: "diagrams" },
                   { value: several, label: "widely reported" },
                 ].map((stat) => (

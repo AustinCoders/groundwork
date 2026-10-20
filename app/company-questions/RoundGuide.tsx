@@ -1,6 +1,7 @@
 import { COMPANIES } from "@/content/system-design/company-questions/companies";
 import { PROCESSES } from "@/content/system-design/company-questions/process";
 import { ROUND_KINDS, ROUND_ORDER } from "@/content/system-design/company-questions/rounds";
+import { ASKED_MODEL } from "@/content/system-design/company-questions/rounds-model";
 import { accentVar } from "@/lib/accent";
 import { RoundExplorer, type ExplorerKind } from "./RoundExplorer";
 import { bookRoundTitle } from "./data";
@@ -16,7 +17,7 @@ export function RoundGuide() {
       id: type,
       label: kind.label,
       what: kind.what,
-      asked: kind.asked,
+      asked: kind.asked.map((item, at) => ({ item, a: ASKED_MODEL[type][at].a, link: ASKED_MODEL[type][at].link })),
       icon: kind.icon,
       tone: accentVar(kind.accent),
       companies: runners,

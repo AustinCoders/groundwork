@@ -13,11 +13,12 @@ const firstSentence = (text: string, cap: number) => {
 };
 
 export function CompanyCard({ view, index = 0 }: { view: CompanyView; index?: number }) {
-  const { company, process, design, coding } = view;
+  const { company, process, design, coding, lld } = view;
   const rounds = process?.rounds ?? [];
   const tracked = [
     ...design.map((question) => ({ id: question.id })),
     ...coding.map((question) => ({ id: question.id, exercise: exerciseOf(question.id) })),
+    ...lld.map((question) => ({ id: question.id })),
   ];
   return (
     <Link
@@ -55,7 +56,7 @@ export function CompanyCard({ view, index = 0 }: { view: CompanyView; index?: nu
       <span className={hub.companyFoot}>
         <span>
           {rounds.length > 0 && `${rounds.length} rounds · `}
-          {design.length} design · {coding.length} coding
+          {design.length} design · {coding.length} coding{lld.length > 0 && ` · ${lld.length} machine coding`}
         </span>
         <CardProgress items={tracked} />
       </span>

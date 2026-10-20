@@ -427,3 +427,20 @@ company section from its rounds; the mock interview is untouched.
 Not done (Phase 2 and 3, written in `docs/ROADMAP.md`): machine coding and low-level design answers, CS fundamentals
 and SQL answers, behavioural and HR sets per company, deeper "what can be asked" answers, whiteboard boards for every
 design answer.
+
+## Company questions, Phase 2: round content (October 2026)
+
+What was added: 26 machine coding and LLD answers with runnable code and checks, five CS and SQL question sets (93
+questions), people-rounds sections for all 22 companies, model answers for every "what can be asked" item, and 14 coding
+answers for the thin companies with 7 new exercises.
+
+How it was checked: each batch had a research agent (sources fetched and read), a writer, and an independent reviewer. The
+reviewers re-ran every program and fuzzed the algorithmic cores against brute-force references; they found real defects in
+almost every LLD answer (lost bookings, oversold stock, negative balances, wrong tie-breaks, NaN inputs) and in several
+prose claims. The SQL set was re-run query by query on sqlite3 3.51 and one dataset row was moved so a tie claim holds.
+People sections lost unsupported claims in every company (offer notes, "candidates report" wording, mismatched book
+links); Zerodha, Dream11 and Paytm have no official values list and say so in `gaps`.
+
+What this could not check: Naukri Code 360, LeetCode Discuss and Medium return 403 to scripts, so those sources were read
+through a browser pane and are listed by `npm run sources` as needing a manual look. Zerodha coding answers are guide
+level. Java and C++ specifics in the OOP and OS sets were checked against official sources where a number is quoted.

@@ -6,6 +6,8 @@ import { SITE_URL, UNDATED_CONTENT_LAST_CHANGED } from "@/lib/site";
 import { GIT_CHAPTERS } from "@/content/git-body";
 import { COMPANY_QUESTIONS } from "@/content/system-design/company-questions";
 import { COMPANY_DSA } from "@/content/system-design/company-questions/dsa-index";
+import { CS_SETS } from "@/content/system-design/company-questions/cs-index";
+import { COMPANY_LLD } from "@/content/system-design/company-questions/lld-index";
 import { companyViews } from "@/app/company-questions/data";
 
 const MONTH_NAMES = [
@@ -62,6 +64,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
     ...COMPANY_DSA.map((question) => ({
       url: `${SITE_URL}/company-questions/coding/${question.id}`,
+      lastModified: stale,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    })),
+    ...COMPANY_LLD.map((question) => ({
+      url: `${SITE_URL}/company-questions/lld/${question.id}`,
+      lastModified: stale,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    })),
+    ...CS_SETS.map((set) => ({
+      url: `${SITE_URL}/company-questions/cs/${set.id}`,
       lastModified: stale,
       changeFrequency: "monthly" as const,
       priority: 0.5,

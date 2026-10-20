@@ -1,9 +1,12 @@
 import assert from "node:assert";
 import { describe, expect, it } from "vitest";
-import { company } from "@/content/practice/company";
+import { company as company1 } from "@/content/practice/company";
+import { company2 } from "@/content/practice/company2";
+import { company3 } from "@/content/practice/company3";
 import { exercise, exercises } from "@/lib/content";
 import { chapters } from "@/lib/content";
 
+const company = [...company1, ...company2, ...company3];
 const chapterIds = new Set(chapters("dsa").map((chapter) => chapter.id));
 
 const run = (code: string, body: string) => new Function("assert", `${code}\n${body}`)(assert);

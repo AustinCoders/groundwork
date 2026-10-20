@@ -8,6 +8,8 @@ import { questions as batch6 } from "./dsa-batch6";
 import { questions as batch7 } from "./dsa-batch7";
 import { questions as batch8 } from "./dsa-batch8";
 import { questions as batch9 } from "./dsa-batch9";
+import { questions as batch10 } from "./dsa-batch10";
+import { questions as batch11 } from "./dsa-batch11";
 
 export const COMPANY_DSA: readonly DsaQuestion[] = [
   ...batch1,
@@ -19,4 +21,6 @@ export const COMPANY_DSA: readonly DsaQuestion[] = [
   ...batch7,
   ...batch8,
   ...batch9,
+  ...batch10,
+  ...batch11,
 ];

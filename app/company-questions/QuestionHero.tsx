@@ -36,7 +36,7 @@ export function QuestionHero(props: QuestionHeroProps) {
           {company.name}
         </Link>
         <span aria-hidden="true">/</span>
-        <span>{kind === "design" ? "System design" : "Coding"}</span>
+        <span>{kind === "design" ? "System design" : kind === "lld" ? "Machine coding" : "Coding"}</span>
       </nav>
 
       <div className={styles.heroGrid}>

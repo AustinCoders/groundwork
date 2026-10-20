@@ -3,7 +3,13 @@
 import { useEffect, useState } from "react";
 import styles from "./company-questions.module.css";
 
-export function AnswerRail({ items }: { items: { id: string; label: string }[] }) {
+export function AnswerRail({
+  items,
+  title = "In this answer",
+}: {
+  items: { id: string; label: string }[];
+  title?: string;
+}) {
   const [active, setActive] = useState(items[0]?.id ?? "");
 
   useEffect(() => {
@@ -20,8 +26,8 @@ export function AnswerRail({ items }: { items: { id: string; label: string }[] }
   }, [items]);
 
   return (
-    <nav aria-label="In this answer" className={styles.railNav}>
-      <p className={styles.railLabel}>In this answer</p>
+    <nav aria-label={title} className={styles.railNav}>
+      <p className={styles.railLabel}>{title}</p>
       <ol>
         {items.map((item, index) => (
           <li key={item.id}>

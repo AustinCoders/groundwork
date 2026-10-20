@@ -7,6 +7,8 @@ import type { CompanyProcess, ReportedPrompt } from "@/content/system-design/com
 import { ROUND_KINDS, type RoundType } from "@/content/system-design/company-questions/rounds";
 import type { Company, CompanyQuestion } from "@/content/system-design/company-questions/types";
 import type { DsaQuestion } from "@/content/system-design/company-questions/dsa-types";
+import { COMPANY_LLD } from "@/content/system-design/company-questions/lld-index";
+import type { LldQuestion } from "@/content/system-design/company-questions/lld-types";
 import { bookRound } from "@/lib/interviewBook";
 
 export interface CompanyView {
@@ -14,6 +16,7 @@ export interface CompanyView {
   process: CompanyProcess | undefined;
   design: CompanyQuestion[];
   coding: DsaQuestion[];
+  lld: LldQuestion[];
   reported: ReportedPrompt[];
 }
 
@@ -23,8 +26,9 @@ export function companyViews(): CompanyView[] {
     process: PROCESSES.find((entry) => entry.company === company.id),
     design: COMPANY_QUESTIONS.filter((question) => question.company === company.id),
     coding: COMPANY_DSA.filter((question) => question.company === company.id),
+    lld: COMPANY_LLD.filter((question) => question.company === company.id),
     reported: REPORTED.filter((entry) => entry.company === company.id),
-  })).filter((view) => view.process || view.design.length + view.coding.length > 0);
+  })).filter((view) => view.process || view.design.length + view.coding.length + view.lld.length > 0);
 }
 
 export function companyView(id: string): CompanyView | undefined {

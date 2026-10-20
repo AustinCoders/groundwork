@@ -1,20 +1,33 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { ROUND_KINDS, type RoundType } from "@/content/system-design/company-questions/rounds";
+import { ASKED_MODEL } from "@/content/system-design/company-questions/rounds-model";
 import type { Round, ReportedPrompt } from "@/content/system-design/company-questions/process-types";
 import type { DsaQuestion } from "@/content/system-design/company-questions/dsa-types";
+import { CS_SETS } from "@/content/system-design/company-questions/cs-index";
+import type { LldQuestion } from "@/content/system-design/company-questions/lld-types";
 import type { CompanyQuestion } from "@/content/system-design/company-questions/types";
 import { accentVar } from "@/lib/accent";
 import { DoneMark } from "./DoneMark";
 import { RoundIcon } from "./RoundIcon";
 import { bookRoundTitle, bookSamples, exerciseOf } from "./data";
-import { SOURCE_KIND_LABEL, codingPath, evidenceCopy, questionPath } from "./shared";
+import { SOURCE_KIND_LABEL, codingPath, csPath, evidenceCopy, lldPath, questionPath } from "./shared";
 import styles from "./company.module.css";
 
 const CODING_HOSTS: RoundType[] = ["dsa", "oa", "loop", "phone"];
 const DESIGN_HOSTS: RoundType[] = ["hld", "loop"];
 
 const tone = (accent: string): CSSProperties => ({ "--tone": accentVar(accent) }) as CSSProperties;
+
+const LLD_ROUNDS: RoundType[] = ["machine-coding", "lld"];
+
+function lldHost(rounds: Round[], question: LldQuestion): number {
+  const exact = rounds.findIndex((round) => round.type === question.round);
+  if (exact >= 0) return exact;
+  const either = rounds.findIndex((round) => LLD_ROUNDS.includes(round.type));
+  if (either >= 0) return either;
+  return firstHost(rounds, DESIGN_HOSTS);
+}
 
 function firstHost(rounds: Round[], hosts: RoundType[]): number {
   for (const host of hosts) {
@@ -24,7 +37,7 @@ function firstHost(rounds: Round[], hosts: RoundType[]): number {
   return -1;
 }
 
-export function RoundStrip({ rounds }: { rounds: Round[] }) {
+export function RoundStrip({ rounds, people }: { rounds: Round[]; people?: boolean }) {
   return (
     <ol className={styles.strip} aria-label="Rounds in order">
       {rounds.map((round, index) => (
@@ -35,6 +48,14 @@ export function RoundStrip({ rounds }: { rounds: Round[] }) {
           </a>
         </li>
       ))}
+      {people && (
+        <li style={tone("purple")}>
+          <a href="#people">
+            <span aria-hidden="true">★</span>
+            People rounds
+          </a>
+        </li>
+      )}
     </ol>
   );
 }
@@ -74,12 +95,14 @@ export function RoundTimeline({
   accent,
   design,
   coding,
+  lld,
   reported,
 }: {
   rounds: Round[];
   accent: string;
   design: CompanyQuestion[];
   coding: DsaQuestion[];
+  lld: LldQuestion[];
   reported: ReportedPrompt[];
 }) {
   const codingAt = firstHost(rounds, CODING_HOSTS);
@@ -106,6 +129,13 @@ export function RoundTimeline({
           .filter((entry): entry is { id: string; title: string } => entry.title !== null);
         const hostsCoding = index === codingAt && coding.length > 0;
         const hostsDesign = index === designAt && design.length > 0;
+        const setsHere =
+          round.type === "sql"
+            ? CS_SETS.filter((set) => set.id === "sql")
+            : round.type === "cs"
+              ? CS_SETS.filter((set) => set.id !== "sql")
+              : [];
+        const lldHere = lld.filter((question) => lldHost(rounds, question) === index);
         return (
           <li
             key={`${round.name}-${index}`}
@@ -148,7 +178,12 @@ export function RoundTimeline({
                 </p>
               )}
 
-              {(hostsCoding || hostsDesign || samples.length > 0 || reportedHere.length > 0) && (
+              {(hostsCoding ||
+                hostsDesign ||
+                lldHere.length > 0 ||
+                setsHere.length > 0 ||
+                samples.length > 0 ||
+                reportedHere.length > 0) && (
                 <div className={styles.practice}>
                   <h4>Practise for this round</h4>
                   <ul>
@@ -175,6 +210,26 @@ export function RoundTimeline({
                           id={question.id}
                         />
                       ))}
+                    {lldHere.map((question) => (
+                      <QuestionRow
+                        key={question.id}
+                        href={lldPath(question.id)}
+                        kind={question.round === "lld" ? "LLD" : "Machine coding"}
+                        title={question.title}
+                        meta={`${question.patterns.join(", ")} · runnable code`}
+                        id={question.id}
+                      />
+                    ))}
+                    {setsHere.map((set) => (
+                      <QuestionRow
+                        key={set.id}
+                        href={csPath(set.id)}
+                        kind="Fundamentals"
+                        title={`${set.title}: ${set.questions.length} reported questions`}
+                        meta="model answers"
+                        id={`cs-${set.id}`}
+                      />
+                    ))}
                     {samples.map((sample) => (
                       <li key={sample.id}>
                         <Link
@@ -220,8 +275,18 @@ export function RoundTimeline({
                 <summary>What can be asked in a {kind.label.toLowerCase()} round</summary>
                 <p>{kind.what}</p>
                 <ul>
-                  {kind.asked.map((item) => (
-                    <li key={item}>{item}</li>
+                  {kind.asked.map((item, at) => (
+                    <li key={item}>
+                      <details className={styles.model}>
+                        <summary>{item}</summary>
+                        <p>{ASKED_MODEL[round.type][at].a}</p>
+                        {ASKED_MODEL[round.type][at].link && (
+                          <Link href={ASKED_MODEL[round.type][at].link!.href} prefetch={false}>
+                            {ASKED_MODEL[round.type][at].link!.label} →
+                          </Link>
+                        )}
+                      </details>
+                    </li>
                   ))}
                 </ul>
                 {(bookLinks.length > 0 || kind.topics.length > 0) && (

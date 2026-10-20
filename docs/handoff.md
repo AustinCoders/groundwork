@@ -51,7 +51,7 @@ Who the learner is, languages beyond JavaScript, one release or level by level, 
 ## Company questions section (2026-10-19)
 
 - Shipped to main: hub, per-question pages, 30 design answers with diagrams, 36 coding answers. Phase 1 of the company pages (22 company pages with process timelines, 10 Indian startups, 38 design and 52 coding answers, problems and playground sync) is on `feature/company-pages-phase1`, committed locally and not merged or pushed unless the owner said so.
-- PHASE 2 AND 3 ARE PLANNED, NOT STARTED: see the last section of `docs/ROADMAP.md` (machine coding and LLD, CS and SQL answers, behavioural and HR per company, whiteboard boards from the diagram data). Decisions: keep the Interview book (link, share data); never add a company option to the mock interview.
+- PHASE 2 (machine coding and LLD, CS and SQL sets, people rounds, model answers, thin companies) is on `feature/company-pages-phase2`; PHASE 3 (whiteboard boards from the diagram data) is planned, not started. See the last section of `docs/ROADMAP.md`. Decisions: keep the Interview book (link, share data); never add a company option to the mock interview.
 - Detail pages were redesigned too: gradient hero with an at-a-glance card and company link, diagram tabs, a step-through dry run for coding answers, sticky command-bar filters on the hub.
 - Data: `content/system-design/company-questions/` (process-main.ts, process-startups.ts, rounds.ts, batch1-8, dsa-batch1-9, diagrams/d1-d8). UI: `app/company-questions/`.
 - Open: other themes unchecked (dark and Paper only), a yearly refresh of the evidence labels.

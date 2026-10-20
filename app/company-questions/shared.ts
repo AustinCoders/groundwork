@@ -4,7 +4,11 @@ export const questionPath = (id: string) => `${HUB_PATH}/design/${id}`;
 
 export const codingPath = (id: string) => `${HUB_PATH}/coding/${id}`;
 
-export type Kind = "design" | "coding";
+export const lldPath = (id: string) => `${HUB_PATH}/lld/${id}`;
+
+export const csPath = (id: string) => `${HUB_PATH}/cs/${id}`;
+
+export type Kind = "design" | "coding" | "lld" | "cs";
 
 export type EvidenceKey = "several" | "one" | "guide";
 
@@ -90,6 +94,14 @@ export interface Phase {
   label: string;
   minutes: number;
 }
+
+export const LLD_PHASES: readonly Phase[] = [
+  { id: "ask", label: "Clarify", minutes: 5 },
+  { id: "entities", label: "Entities", minutes: 8 },
+  { id: "design", label: "Design", minutes: 12 },
+  { id: "code", label: "Code", minutes: 30 },
+  { id: "extend", label: "Extend", minutes: 5 },
+];
 
 export const DESIGN_PHASES: readonly Phase[] = [
   { id: "ask", label: "Ask", minutes: 5 },

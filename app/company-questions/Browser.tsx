@@ -28,7 +28,22 @@ const MODES: { id: Mode; label: string }[] = [
   { id: "all", label: "Everything" },
   { id: "design", label: "System design" },
   { id: "coding", label: "Coding" },
+  { id: "lld", label: "Machine coding" },
+  { id: "cs", label: "Fundamentals" },
 ];
+
+const KIND_NAME: Record<Kind, string> = {
+  design: "System design",
+  coding: "Coding",
+  lld: "Machine coding",
+  cs: "Fundamentals",
+};
+const TOPIC_GROUP: Record<Kind, string> = {
+  design: "System design",
+  coding: "Coding patterns",
+  lld: "Machine coding",
+  cs: "CS and SQL",
+};
 
 function tint(accent: string): CSSProperties {
   return { "--accent": accentVar(accent) } as CSSProperties;
@@ -264,11 +279,11 @@ export function Browser({
             >
               Every topic
             </button>
-            {(["design", "coding"] as const)
+            {(["design", "coding", "lld", "cs"] as const)
               .filter((kind) => mode === "all" || mode === kind)
               .map((kind) => (
                 <div className={styles.optGroup} key={kind}>
-                  <p>{kind === "design" ? "System design" : "Coding patterns"}</p>
+                  <p>{TOPIC_GROUP[kind]}</p>
                   <div className={styles.tagGrid}>
                     {visibleTopics
                       .filter((entry) => entry.kind === kind)
@@ -393,7 +408,7 @@ export function Browser({
                 >
                   <span className={styles.thumb}>
                     <span className={styles.thumbArt}>{thumbs[`${item.kind}:${item.id}`]}</span>
-                    <span className={styles.kindTag}>{item.kind === "design" ? "System design" : "Coding"}</span>
+                    <span className={styles.kindTag}>{KIND_NAME[item.kind]}</span>
                     {item.difficulty && (
                       <span className={styles.difficulty} data-level={item.difficulty}>
                         {item.difficulty}

@@ -9,7 +9,7 @@ export interface ExplorerKind {
   id: string;
   label: string;
   what: string;
-  asked: string[];
+  asked: { item: string; a: string; link?: { href: string; label: string } }[];
   icon: string;
   tone: string;
   companies: { id: string; name: string; accent: string }[];
@@ -97,10 +97,20 @@ export function RoundExplorer({ kinds, total }: { kinds: ExplorerKind[]; total: 
           <div className={styles.col}>
             <h4>What gets asked</h4>
             <ol className={styles.askedGrid}>
-              {kind.asked.map((item, index) => (
-                <li key={item} style={{ "--i": index } as CSSProperties}>
-                  <span aria-hidden="true">{index + 1}</span>
-                  {item}
+              {kind.asked.map((entry, index) => (
+                <li key={entry.item} style={{ "--i": index } as CSSProperties}>
+                  <details>
+                    <summary>
+                      <span aria-hidden="true">{index + 1}</span>
+                      {entry.item}
+                    </summary>
+                    <p>{entry.a}</p>
+                    {entry.link && (
+                      <Link href={entry.link.href} prefetch={false}>
+                        {entry.link.label} <span aria-hidden="true">→</span>
+                      </Link>
+                    )}
+                  </details>
                 </li>
               ))}
             </ol>
