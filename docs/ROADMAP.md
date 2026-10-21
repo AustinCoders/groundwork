@@ -544,5 +544,7 @@ an evidence label, because companies do not publish questions.
   and hash-map traces; tree traces where the tree is built or annotated (distribute coins, lock tree, in and post
   order); text on phones is small at the zoom a whole step needs, pinch to read more.
 
-**Also open:** other themes (only dark and Paper were checked), a yearly refresh of the evidence labels, running a
-coding or machine coding solution in place on the answer page.
+**Also open:** a yearly refresh of the evidence labels. Done since: every theme (nine) was checked on the hub, company,
+design, machine coding, coding and CS pages (text contrast at least 4.5 on all of them, heroes and diagrams looked
+right), and coding and machine coding answers now run in place (`RunPanel`: runs the shipped code against its test
+cases in the existing sandboxed worker, plus a "try your own input" box).

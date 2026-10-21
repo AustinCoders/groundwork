@@ -14,6 +14,8 @@ import { hasCompanyBoard } from "@/lib/companyBoards";
 import { pageMetadata } from "@/lib/metadata";
 import { AnswerRail } from "../../AnswerRail";
 import { CodeBlock } from "../../CodeBlock";
+import { RunPanel } from "../../RunPanel";
+import { codingChecks, codingPrefill } from "@/lib/companyRun";
 import { DoneMark } from "../../DoneMark";
 import { PatternGlyph } from "../../PatternGlyph";
 import { QuestionHero } from "../../QuestionHero";
@@ -57,11 +59,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     type: "article",
   });
 }
-
-const short = (value: unknown) => {
-  const text = JSON.stringify(value);
-  return text.length > 70 ? `${text.slice(0, 67)}…` : text;
-};
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -229,20 +226,12 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                       <CodeBlock text={solution.code} title={`${solution.entry}.js`}>
                         {highlight(solution.code)}
                       </CodeBlock>
-                      <details className={coding.cases}>
-                        <summary>Checked on {solution.cases.length} test cases</summary>
-                        <ul>
-                          {solution.cases.map((testCase, at) => (
-                            <li key={at}>
-                              <code>
-                                {solution.entry}({testCase.args.map(short).join(", ")})
-                              </code>
-                              <span aria-hidden="true">→</span>
-                              <code>{short(testCase.expected)}</code>
-                            </li>
-                          ))}
-                        </ul>
-                      </details>
+                      <RunPanel
+                        code={solution.code}
+                        checks={codingChecks(solution.entry, solution.cases)}
+                        prefill={codingPrefill(solution.entry, solution.cases)}
+                        noun="test cases"
+                      />
                     </>
                   )}
                   {step.id !== "followups" && step.id !== "code" && (

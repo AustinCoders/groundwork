@@ -1,0 +1,186 @@
+.panel {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: var(--sheet-2);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+}
+
+.run,
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 16px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid var(--primary);
+  border-radius: 12px;
+}
+
+.run {
+  color: var(--on-primary);
+  background: var(--primary);
+}
+
+.ghost {
+  color: var(--ink);
+  background: var(--sheet);
+  border-color: var(--line);
+}
+
+.run:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.run:focus-visible,
+.ghost:focus-visible,
+.try summary:focus-visible,
+.try textarea:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.status {
+  flex: 1 1 240px;
+  margin: 0;
+  font-size: var(--t-meta);
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.status[data-state="pass"] {
+  font-weight: 700;
+  color: var(--success);
+}
+
+.status[data-state="fail"] {
+  font-weight: 700;
+  color: var(--danger);
+}
+
+.results {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.results li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: baseline;
+  padding: 6px 10px;
+  font-size: var(--t-meta);
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  animation: pop 0.3s ease backwards;
+}
+
+.results li[data-ok="yes"] > span {
+  color: var(--success);
+}
+
+.results li[data-ok="no"] {
+  border-color: var(--danger);
+}
+
+.results li[data-ok="no"] > span {
+  color: var(--danger);
+}
+
+.results code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono);
+  color: var(--ink);
+}
+
+.results em {
+  flex-basis: 100%;
+  font-style: normal;
+  color: var(--danger);
+}
+
+.try summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.try p {
+  margin: 8px 0;
+  font-size: var(--t-meta);
+  color: var(--ink-soft);
+}
+
+.try textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: var(--t-meta);
+  line-height: 1.5;
+  color: var(--ink);
+  resize: vertical;
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+}
+
+.tryRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.output {
+  max-height: 260px;
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: var(--t-meta);
+  line-height: 1.5;
+  color: var(--ink);
+  white-space: pre-wrap;
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+}
+
+.output [data-kind="error"] {
+  color: var(--danger);
+}
+
+.output [data-kind="warn"] {
+  color: var(--caution);
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .results li {
+    animation: none;
+  }
+}

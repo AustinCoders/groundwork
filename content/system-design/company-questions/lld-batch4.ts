@@ -342,9 +342,9 @@ class MultiLevelCache {
     cache.put("b", 2);
     cache.delete("a");
     const spill = cache.put("c", 3);
-    return [spill, cache.dump(), cache.get("a")];
+    return [spill, cache.dump(), cache.get("a") ?? null];
   })()`,
-        expected: [null, [["b", "c"]], undefined],
+        expected: [null, [["b", "c"]], null],
       },
       {
         name: "overwriting a key restarts its frequency under LFU",

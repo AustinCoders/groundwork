@@ -13,6 +13,8 @@ import { pageMetadata } from "@/lib/metadata";
 import { whiteboardLink } from "@/lib/whiteboard/walk";
 import { AnswerRail } from "../../AnswerRail";
 import { CodeBlock } from "../../CodeBlock";
+import { RunPanel } from "../../RunPanel";
+import { lldChecks, lldPrefill } from "@/lib/companyRun";
 import { Diagram } from "../../Diagram";
 import { DiagramDeck } from "../../DiagramDeck";
 import { QuestionHero } from "../../QuestionHero";
@@ -22,7 +24,6 @@ import { TryFirst } from "../../TryFirst";
 import { highlight } from "../../highlight";
 import { EVIDENCE_COPY, HUB_PATH, LLD_PHASES, lldPath, withArticle } from "../../shared";
 import styles from "../../company-questions.module.css";
-import coding from "../../coding.module.css";
 
 export const dynamicParams = false;
 
@@ -54,11 +55,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     type: "article",
   });
 }
-
-const short = (value: unknown) => {
-  const text = JSON.stringify(value);
-  return text.length > 60 ? `${text.slice(0, 57)}…` : text;
-};
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -185,18 +181,12 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                       <CodeBlock text={question.code} title={`${question.id}.js`}>
                         {highlight(question.code)}
                       </CodeBlock>
-                      <details className={coding.cases}>
-                        <summary>Passes {question.checks.length} checks</summary>
-                        <ul>
-                          {question.checks.map((check) => (
-                            <li key={check.name}>
-                              <span>{check.name}</span>
-                              <span aria-hidden="true">→</span>
-                              <code>{short(check.expected)}</code>
-                            </li>
-                          ))}
-                        </ul>
-                      </details>
+                      <RunPanel
+                        code={question.code}
+                        checks={lldChecks(question.checks)}
+                        prefill={lldPrefill(question.checks)}
+                        noun="checks"
+                      />
                     </>
                   )}
                   {step.id !== "extend" && step.id !== "code" && (
