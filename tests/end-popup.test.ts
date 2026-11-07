@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { END_POPUP_DWELL_MS, PLAIN_KEYS, reachedEnd, shouldOpenEndPopup, type EndPopupState } from "@/lib/endPopup";
+import {
+  END_POPUP_DWELL_MS,
+  PLAIN_KEYS,
+  reachedEnd,
+  reachedFooter,
+  shouldOpenEndPopup,
+  type EndPopupState,
+} from "@/lib/endPopup";
 
 const ready: EndPopupState = {
   mounted: true,
@@ -58,5 +65,15 @@ describe("having reached the end card", () => {
 
   it("does not count the marker still below the fold", () => {
     expect(reachedEnd({ isIntersecting: false, top: 900 }, true)).toBe(false);
+  });
+});
+
+describe("having reached the site footer", () => {
+  it("counts a reader who has scrolled the footer into view, however they got there", () => {
+    expect(reachedFooter({ isIntersecting: true })).toBe(true);
+  });
+
+  it("does not count the footer being out of view", () => {
+    expect(reachedFooter({ isIntersecting: false })).toBe(false);
   });
 });

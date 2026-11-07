@@ -3,7 +3,14 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { arrivedAtCheck } from "@/lib/checkBanner";
 import { requestCheck } from "@/lib/checkOpen";
-import { END_POPUP_DWELL_MS, END_POPUP_LOOKAHEAD, reachedEnd, shouldOpenEndPopup } from "@/lib/endPopup";
+import {
+  END_POPUP_DWELL_MS,
+  END_POPUP_LOOKAHEAD,
+  SITE_FOOTER,
+  reachedEnd,
+  reachedFooter,
+  shouldOpenEndPopup,
+} from "@/lib/endPopup";
 import { useMounted } from "@/lib/hooks";
 import { quizStore, useQuizRecord } from "@/lib/quizStore";
 
@@ -41,14 +48,22 @@ export function EndPopup({
     void loadDialog();
     let timer = 0;
     let firstReport = true;
+    let cardReached = false;
+    let footerReached = false;
     const observer = new IntersectionObserver(
       (entries) => {
-        const entry = entries[entries.length - 1];
         window.clearTimeout(timer);
-        const reached = reachedEnd(
-          { isIntersecting: entry.isIntersecting, top: entry.boundingClientRect.top },
-          firstReport
-        );
+        for (const entry of entries) {
+          if (entry.target === target) {
+            cardReached = reachedEnd(
+              { isIntersecting: entry.isIntersecting, top: entry.boundingClientRect.top },
+              firstReport
+            );
+          } else {
+            footerReached = reachedFooter(entry);
+          }
+        }
+        const reached = cardReached || footerReached;
         firstReport = false;
         if (!reached) return;
         timer = window.setTimeout(() => {
@@ -68,6 +83,8 @@ export function EndPopup({
       { rootMargin: END_POPUP_LOOKAHEAD }
     );
     observer.observe(target);
+    const footer = document.querySelector(SITE_FOOTER);
+    if (footer) observer.observe(footer);
     return () => {
       observer.disconnect();
       window.clearTimeout(timer);

@@ -18,8 +18,14 @@ export function shouldOpenEndPopup(state: EndPopupState): boolean {
   return !state.checking && !state.modalOpen;
 }
 
+export const SITE_FOOTER = "footer[aria-label='Site']";
+
 export const PLAIN_KEYS: ReadonlySet<string> = new Set(["n", "p", "t", "[", "]", "/"]);
 
 export function reachedEnd(entry: { isIntersecting: boolean; top: number }, firstReport: boolean): boolean {
   return entry.isIntersecting || (firstReport && entry.top < 0);
+}
+
+export function reachedFooter(entry: { isIntersecting: boolean }): boolean {
+  return entry.isIntersecting;
 }

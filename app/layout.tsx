@@ -9,6 +9,7 @@ import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { TopicsNavProvider } from "@/lib/topicNav";
 import { guidesNav } from "@/lib/guidesNav";
 import { NavTrail } from "@/components/NavTrail";
+import { SiteFooter } from "@/components/footer/SiteFooter";
 import { coverPaths } from "@/components/tour/tourRules";
 import { TourTrigger } from "@/components/tour/TourTrigger";
 import { topicsNavWithStats } from "@/lib/topicStats";
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <TopicsNavProvider topics={topics} guides={guides}>
           <RouteFade>{children}</RouteFade>
+          <SiteFooter />
           <TourTrigger
             covers={coverPaths(
               topics,

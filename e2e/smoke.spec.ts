@@ -902,3 +902,29 @@ test("the exercise page header keeps Run, Debug and Submit inside the bar at eve
   }
   expect(problems).toEqual([]);
 });
+
+test("the site footer is on every reading page once, follows the section, and stays out of the workspaces", async ({
+  page,
+}) => {
+  const problems = collectProblems(page);
+  for (const path of ["/", "/dsa/dsa-trees", "/company-questions", "/problems", "/about", "/progress"]) {
+    await page.goto(path, { waitUntil: "networkidle" });
+    const footer = page.getByRole("contentinfo", { name: "Site" });
+    await expect(footer, path).toHaveCount(1);
+    await expect(footer.getByRole("link", { name: "Privacy" })).toHaveCount(1);
+    await expect(footer.getByRole("link", { name: "Accessibility" })).toHaveCount(1);
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflow, `${path} scrolls sideways`).toBeLessThanOrEqual(0);
+  }
+  await page.goto("/dsa/dsa-trees", { waitUntil: "networkidle" });
+  const footer = page.getByRole("contentinfo", { name: "Site" });
+  await expect(footer.getByRole("link", { name: "DSA" })).toHaveAttribute("aria-current", "page");
+  await expect(footer.getByRole("link", { name: "Company coding questions" })).toHaveCount(1);
+  await page.goto("/system-design/sysdes-rate-limiting", { waitUntil: "networkidle" });
+  await expect(footer.getByRole("link", { name: "System Design" })).toHaveAttribute("aria-current", "page");
+  for (const path of ["/problems/ex-tdz-order", "/practice?id=free", "/whiteboard"]) {
+    await page.goto(path, { waitUntil: "networkidle" });
+    await expect(page.getByRole("contentinfo", { name: "Site" }), path).toHaveCount(0);
+  }
+  expect(problems).toEqual([]);
+});

@@ -12,6 +12,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
       "Four new pages that say how the site is made and checked, what changed, how to reach us, and what is and is not accessible yet.",
       "Fixes from the October benchmark: DSA audit bugs corrected, an iterative reference for the large-grid islands problem, and seven missing NeetCode 150 problems added.",
       "Fixed the exercise page header, where Run, Debug and Submit were cut off at the top on windows between about 1000 and 1200 pixels wide.",
+      "One site footer on every reading page, with links that follow the section you are in. The workspaces (exercises, playground, whiteboard) stay without it.",
     ],
   },
   {
