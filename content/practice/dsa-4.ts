@@ -1053,7 +1053,7 @@ export const dsa4: Exercise[] = [
       "class ListNode {\n  constructor(val, next) {\n    this.val = val === undefined ? 0 : val;\n    this.next = next === undefined ? null : next;\n  }\n}\nfunction build(arr) {\n  let head = null;\n  for (let i = arr.length - 1; i >= 0; i--) head = new ListNode(arr[i], head);\n  return head;\n}\nfunction toArray(head) {\n  const out = [];\n  for (let n = head; n; n = n.next) out.push(n.val);\n  return out;\n}\n\nfunction detectCycle(head) {\n  // TODO: find the loop first, then work out where it starts\n}\n",
     hints: [
       "Start the same way as plain cycle detection: a slow and a fast pointer that meet somewhere inside the loop.",
-      "The meeting point is not the loop entrance. Let the distance from head to the entrance be A and the distance from the entrance to the meeting point be B — the maths says the remaining loop distance back to the entrance is also A.",
+      "The meeting point is not the loop entrance. Let the distance from head to the entrance be A and the distance from the entrance to the meeting point be B — the maths says the remaining loop distance back to the entrance equals A, give or take whole laps of the loop.",
       "So after they meet, reset one pointer to head and advance both one step at a time; they collide exactly at the entrance.",
     ],
     solution:

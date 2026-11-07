@@ -473,22 +473,31 @@ rotateClockwiseCopy([[1, 2, 3], [4, 5, 6]]); <span class="c">// [[4, 1], [5, 2],
   const rows = grid.length, cols = grid[0].length;
   let islands = 0;
 
-  function sink(r, c) {
-    if (r < 0 || r >= rows || c < 0 || c >= cols || grid[r][c] !== "1") return;
-    grid[r][c] = "0"; <span class="c">// mark visited by mutating the grid — avoids a separate visited set</span>
-    sink(r + 1, c); sink(r - 1, c); sink(r, c + 1); sink(r, c - 1);
-  }
-
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      if (grid[r][c] === "1") {
-        islands++;
-        sink(r, c); <span class="c">// flood-fill the whole island so it's never counted twice</span>
+  for (let r = 0; r &lt; rows; r++) {
+    for (let c = 0; c &lt; cols; c++) {
+      if (grid[r][c] !== "1") continue;
+      islands++; <span class="c">// first unvisited land cell of a new island</span>
+      grid[r][c] = "0"; <span class="c">// mark visited by mutating the grid — avoids a separate visited set</span>
+      const stack = [[r, c]];
+      while (stack.length &gt; 0) {
+        const [cr, cc] = stack.pop();
+        for (const [nr, nc] of [[cr + 1, cc], [cr - 1, cc], [cr, cc + 1], [cr, cc - 1]]) {
+          if (nr &lt; 0 || nr &gt;= rows || nc &lt; 0 || nc &gt;= cols || grid[nr][nc] !== "1") continue;
+          grid[nr][nc] = "0"; <span class="c">// mark when pushed, so no cell is ever pushed twice</span>
+          stack.push([nr, nc]);
+        }
       }
     }
   }
   return islands;
 }</code></pre>
+<p class="sub">
+  The flood fill keeps its own stack instead of recursing. A recursive
+  version that calls itself on all four neighbours is shorter, but on an
+  all-land grid its depth reaches the number of cells, and in Node it throws a
+  <code>RangeError</code> from about 95 by 95 cells, while the problem allows
+  300 by 300. The explicit stack lives on the heap, so only memory limits it.
+</p>
 <div class="say">
   <span class="ttl">Say it like this →</span> "I'll treat each cell as a
   graph node with up to four neighbors and reuse a flood-fill DFS — this

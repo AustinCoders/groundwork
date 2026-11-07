@@ -246,14 +246,14 @@ export const dsaAddStringAlgorithms: Exercise[] = [
     "chapter": "dsa-string-algorithms",
     "level": "advanced",
     "title": "Count Distinct Substrings",
-    "brief": "<p>Write <code>countDistinctSubstrings(s)</code> returning how many <b>different</b> non-empty substrings <code>s</code> has. Equal substrings found at different positions count once.</p><ul><li><code>\"banana\"</code> has 15; <code>\"aaa\"</code> has 3 (<code>\"a\"</code>, <code>\"aa\"</code>, <code>\"aaa\"</code>); the empty string has 0</li><li>Putting every substring in a Set is O(n^3) in time and memory</li><li>A target of O(n log^2 n) is reachable with sorted suffixes</li></ul>",
+    "brief": "<p>Write <code>countDistinctSubstrings(s)</code> returning how many <b>different</b> non-empty substrings <code>s</code> has. Equal substrings found at different positions count once.</p><ul><li><code>\"banana\"</code> has 15; <code>\"aaa\"</code> has 3 (<code>\"a\"</code>, <code>\"aa\"</code>, <code>\"aaa\"</code>); the empty string has 0</li><li>Substrings are made of UTF-16 code units, as <code>s.length</code> and <code>s[i]</code> see them, so a character outside the Basic Multilingual Plane such as an emoji counts as two units</li><li>Putting every substring in a Set is O(n^3) in time and memory</li><li>A target of O(n log^2 n) is reachable with sorted suffixes</li></ul>",
     "starter": "function countDistinctSubstrings(s) {\n  // TODO\n}\n",
     "hints": [
       "There are n(n+1)/2 substrings if you count repeats. Think about which ones were counted twice.",
       "Sort all suffixes. Every substring is a prefix of some suffix, and a suffix adds new substrings only beyond the prefix it shares with the suffix just before it in sorted order.",
       "Build the suffix array by prefix doubling (sort by the first 2^t characters, using pairs of ranks), then get the common-prefix length of neighbouring suffixes with Kasai's algorithm. The answer is n(n+1)/2 minus the sum of those lengths."
     ],
-    "solution": "function countDistinctSubstrings(s) {\n  const n = s.length;\n  if (n === 0) return 0;\n  const sa = Array.from({ length: n }, (_, i) => i);\n  let rank = Array.from(s, (c) => c.charCodeAt(0));\n  for (let k = 1; ; k *= 2) {\n    const second = (i) => (i + k < n ? rank[i + k] : -1);\n    sa.sort((a, b) => rank[a] - rank[b] || second(a) - second(b));\n    const next = new Array(n).fill(0);\n    for (let i = 1; i < n; i++) {\n      const same = rank[sa[i - 1]] === rank[sa[i]] && second(sa[i - 1]) === second(sa[i]);\n      next[sa[i]] = next[sa[i - 1]] + (same ? 0 : 1);\n    }\n    rank = next;\n    if (rank[sa[n - 1]] === n - 1) break;\n  }\n  const position = new Array(n);\n  for (let i = 0; i < n; i++) position[sa[i]] = i;\n  let common = 0;\n  let h = 0;\n  for (let i = 0; i < n; i++) {\n    if (position[i] === n - 1) {\n      h = 0;\n      continue;\n    }\n    const j = sa[position[i] + 1];\n    while (i + h < n && j + h < n && s[i + h] === s[j + h]) h++;\n    common += h;\n    if (h > 0) h--;\n  }\n  return (n * (n + 1)) / 2 - common;\n}\n",
+    "solution": "function countDistinctSubstrings(s) {\n  const n = s.length;\n  if (n === 0) return 0;\n  const sa = Array.from({ length: n }, (_, i) => i);\n  let rank = Array.from({ length: n }, (_, i) => s.charCodeAt(i));\n  for (let k = 1; ; k *= 2) {\n    const second = (i) => (i + k < n ? rank[i + k] : -1);\n    sa.sort((a, b) => rank[a] - rank[b] || second(a) - second(b));\n    const next = new Array(n).fill(0);\n    for (let i = 1; i < n; i++) {\n      const same = rank[sa[i - 1]] === rank[sa[i]] && second(sa[i - 1]) === second(sa[i]);\n      next[sa[i]] = next[sa[i - 1]] + (same ? 0 : 1);\n    }\n    rank = next;\n    if (rank[sa[n - 1]] === n - 1) break;\n  }\n  const position = new Array(n);\n  for (let i = 0; i < n; i++) position[sa[i]] = i;\n  let common = 0;\n  let h = 0;\n  for (let i = 0; i < n; i++) {\n    if (position[i] === n - 1) {\n      h = 0;\n      continue;\n    }\n    const j = sa[position[i] + 1];\n    while (i + h < n && j + h < n && s[i + h] === s[j + h]) h++;\n    common += h;\n    if (h > 0) h--;\n  }\n  return (n * (n + 1)) / 2 - common;\n}\n",
     "tests": [
       {
         "name": "banana",
@@ -278,6 +278,10 @@ export const dsaAddStringAlgorithms: Exercise[] = [
       {
         "name": "two letters",
         "body": "assert.equal(countDistinctSubstrings(\"ab\"), 3);\nassert.equal(countDistinctSubstrings(\"aab\"), 5);"
+      },
+      {
+        "name": "characters outside the BMP are two code units each",
+        "body": "assert.equal(countDistinctSubstrings(\"a\u{1F600}b\"), 10);\nassert.equal(countDistinctSubstrings(\"\u{1F600}\u{1F600}\"), 7);\nassert.equal(countDistinctSubstrings(\"\u{1F600}\"), 3);"
       },
       {
         "name": "a longer string finishes quickly",
@@ -322,6 +326,10 @@ export const dsaAddStringAlgorithms: Exercise[] = [
       {
         "name": "a repeated word is counted for each copy",
         "body": "assert.deepEqual(countKeywordOccurrences(\"abcabc\", [\"abc\", \"abc\"]), [2, 2]);"
+      },
+      {
+        "name": "words and text with characters outside the BMP",
+        "body": "assert.deepEqual(countKeywordOccurrences(\"a\u{1F600}b\u{1F600}\", [\"\u{1F600}\", \"b\u{1F600}\", \"a\"]), [2, 1, 1]);\nassert.deepEqual(countKeywordOccurrences(\"\u{1F600}\u{1F600}\u{1F600}\", [\"\u{1F600}\u{1F600}\"]), [2]);"
       },
       {
         "name": "a word as long as the text",

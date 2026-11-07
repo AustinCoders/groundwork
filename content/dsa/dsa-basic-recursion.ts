@@ -535,7 +535,7 @@ function fibSlow(n) {
   and the loop form of the halving, which walks the bits of the exponent:
 </p>
 <pre><code>function powMod(base, exp, mod) {                 <span class="c">// all three are BigInt</span>
-  let result = 1n;
+  let result = 1n % mod;                           <span class="c">// 1n % 1n is 0n: every residue modulo 1 is 0</span>
   base %= mod;
   while (exp &gt; 0n) {
     if (exp &amp; 1n) result = (result * base) % mod;   <span class="c">// this bit of the exponent is set</span>
@@ -544,7 +544,7 @@ function fibSlow(n) {
   }
   return result;
 }
-<span class="c">// powMod(2n, 1000000n, 1000000007n) → 235042059n</span></code></pre>
+<span class="c">// powMod(2n, 1000000n, 1000000007n) → 235042059n, powMod(5n, 0n, 1n) → 0n</span></code></pre>
 
 <h3>Choose or don't choose: generating subsets</h3>
 <p>

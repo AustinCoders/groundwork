@@ -290,6 +290,14 @@ export function SiteDrawer({
               <span aria-hidden="true">·</span>{" "}
               <Link href="/privacy" onClick={onClose}>
                 Privacy
+              </Link>{" "}
+              <span aria-hidden="true">·</span>{" "}
+              <Link href="/about" onClick={onClose}>
+                About
+              </Link>{" "}
+              <span aria-hidden="true">·</span>{" "}
+              <Link href="/contact" onClick={onClose}>
+                Contact
               </Link>
             </p>
           </div>

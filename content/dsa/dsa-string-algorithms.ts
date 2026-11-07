@@ -903,7 +903,8 @@ function buildAhoCorasick(patterns) {
 
   patterns.forEach((word, id) => {
     let node = 0;
-    for (const ch of word) {
+    for (let j = 0; j &lt; word.length; j++) {
+      const ch = word[j]; <span class="c">// by code unit, like the text below, so both sides agree on what a character is</span>
       if (!next[node].has(ch)) {
         next[node].set(ch, next.length);
         next.push(new Map());
@@ -929,7 +930,8 @@ function buildAhoCorasick(patterns) {
   return { next, link, out };
 }
 
-<span class="c">// every occurrence as [startIndex, patternId] — O(text length + matches) after the build</span>
+<span class="c">// every occurrence as [startIndex, patternId] — O(text length + matches) after the build.
+// Indices count UTF-16 code units, like indexOf; an emoji is two units, and build and search must both walk by unit.</span>
 function ahoCorasickSearch(text, patterns) {
   const { next, link, out } = buildAhoCorasick(patterns);
   const hits = [];
@@ -943,7 +945,8 @@ function ahoCorasickSearch(text, patterns) {
   return hits;
 }
 
-ahoCorasickSearch("ushers", ["he", "she", "his", "hers"]); <span class="c">// [[1, 1], [2, 0], [2, 3]]</span></code></pre>
+ahoCorasickSearch("ushers", ["he", "she", "his", "hers"]); <span class="c">// [[1, 1], [2, 0], [2, 3]]</span>
+ahoCorasickSearch("a😀b", ["😀"]); <span class="c">// [[1, 0]]: the pattern is two code units long</span></code></pre>
 <h4>Dry run: patterns he, she, his, hers, text "ushers"</h4>
 <p>The trie has ten nodes. The ones that matter for the search:</p>
 <table>
@@ -1019,12 +1022,13 @@ ahoCorasickSearch("ushers", ["he", "she", "his", "hers"]); <span class="c">// [[
   the suffix that starts k later). After about log₂ n rounds all ranks are
   distinct.
 </p>
-<pre><code><span class="c">// O(n log² n) time (about log n rounds of a comparison sort), O(n) space</span>
+<pre><code><span class="c">// O(n log² n) time (about log n rounds of a comparison sort), O(n) space.
+// Positions are code units, so suffixArray("a😀b") is [0, 3, 1, 2]; Array.from(s, ...) would go by code point and break.</span>
 function suffixArray(s) {
   const n = s.length;
   if (n === 0) return [];
   const sa = Array.from({ length: n }, (_, i) => i);
-  let rank = Array.from(s, (c) => c.charCodeAt(0)); <span class="c">// round 0: rank by the first character</span>
+  let rank = Array.from({ length: n }, (_, i) => s.charCodeAt(i)); <span class="c">// round 0: rank by the first code unit</span>
 
   for (let k = 1; ; k *= 2) {
     const second = (i) => (i + k &lt; n ? rank[i + k] : -1); <span class="c">// a suffix shorter than k sorts first</span>

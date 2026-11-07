@@ -40,6 +40,7 @@ export const dsaArraysStrings: Chapter = {
     "ex-find-all-duplicates",
     "ex-first-missing-positive",
     "ex-reverse-string-code-points",
+    "ex-plus-one",
   ],
   ready: true,
   subtitle: "The two data structures every other pattern is built on top of.",
@@ -426,7 +427,7 @@ function countCodePoints(s) {
 <pre><code><span class="c">// remove all occurrences of val, in place, return new length</span>
 function removeElement(nums, val) {
   let write = 0;
-  for (let read = 0; read < nums.length; read++) {
+  for (let read = 0; read &lt; nums.length; read++) {
     if (nums[read] !== val) {
       nums[write] = nums[read];
       write++;
@@ -566,7 +567,7 @@ function removeElement(nums, val) {
   if (nums.length === 0) return [];
   const prefix = new Array(nums.length);
   prefix[0] = nums[0];
-  for (let i = 1; i < nums.length; i++) {
+  for (let i = 1; i &lt; nums.length; i++) {
     prefix[i] = prefix[i - 1] + nums[i];
   }
   return prefix;
@@ -603,7 +604,7 @@ function rangeSum(prefix, left, right) {
   let bestSoFar = nums[0];
   let bestEndingHere = nums[0];
 
-  for (let i = 1; i < nums.length; i++) {
+  for (let i = 1; i &lt; nums.length; i++) {
     bestEndingHere = Math.max(nums[i], bestEndingHere + nums[i]);
     bestSoFar = Math.max(bestSoFar, bestEndingHere);
   }
@@ -923,15 +924,15 @@ function rangeSum(prefix, left, right) {
 }
 
 function reverse(arr, lo, hi) {
-  while (lo < hi) {
+  while (lo &lt; hi) {
     [arr[lo], arr[hi]] = [arr[hi], arr[lo]];
     lo++; hi--;
   }
 }
 <span class="c">// [1,2,3,4,5,6,7], k=3
-   reverse all    → [7,6,5,4,3,2,1]
-   reverse [0,k)  → [5,6,7,4,3,2,1]
-   reverse [k,n)  → [5,6,7,1,2,3,4]  ← correctly rotated right by 3</span></code></pre>
+// reverse all    → [7,6,5,4,3,2,1]
+// reverse [0,k)  → [5,6,7,4,3,2,1]
+// reverse [k,n)  → [5,6,7,1,2,3,4]  ← correctly rotated right by 3</span></code></pre>
 <p class="sub">
   Three O(n) reversals is still O(n) total, but O(1) extra space instead
   of O(n) — the kind of tradeoff interviewers specifically probe for with
@@ -1116,8 +1117,8 @@ function reverse(arr, lo, hi) {
 </figure>
 <pre><code><span class="c">// row-major traversal — the standard order, matches memory/cache-friendly access</span>
 function traverse2D(grid) {
-  for (let row = 0; row < grid.length; row++) {
-    for (let col = 0; col < grid[row].length; col++) {
+  for (let row = 0; row &lt; grid.length; row++) {
+    for (let col = 0; col &lt; grid[row].length; col++) {
       console.log(grid[row][col]);
     }
   }

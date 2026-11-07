@@ -863,10 +863,13 @@ function sumRecursive(arr, i = 0) {
 </table>
 <p class="sub">
   Total actual cost of the first five pushes is 1 + 2 + 3 + 1 + 5 = 12,
-  against a budget of 3 × 5 = 15. The expensive pushes (3 and 5) are exactly
-  the ones where Φ drops. For n = 1,000 the simulation gives a total actual
-  cost of 2,023 and a largest amortized value of 3. The first push shows 2
-  rather than 3 only because the model starts from capacity 0.
+  against a budget of 3 × 5 = 15. The pushes that copy are 2, 3 and 5. Φ
+  rises on push 2 and stays flat on push 3, because those copies are small
+  enough for the amortized 3 to cover; from push 5 on, each copy makes Φ drop
+  (4 → 2 on push 5, and 8 → 2 on push 9), and that drop pays for it. For
+  n = 1,000 the simulation gives a total actual cost of 2,023 and a largest
+  amortized value of 3. The first push shows 2 rather than 3 only because the
+  model starts from capacity 0.
 </p>
 <div class="warn">
   <span class="ttl">⚠ The potential has two jobs, and both can be forgotten</span>

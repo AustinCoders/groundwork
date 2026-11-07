@@ -55,6 +55,7 @@ import { dsaAddTrees } from "./dsa-add-trees";
 import { dsaAddTries } from "./dsa-add-tries";
 import { dsaAddTwoPointers } from "./dsa-add-two-pointers";
 import { dsaAddUnionFind } from "./dsa-add-union-find";
+import { dsaAddNeetcodeGaps } from "./dsa-add-neetcode-gaps";
 
 export const dsa: Exercise[] = [...dsa1, ...dsa2, ...dsa3, ...dsa4, ...dsa5, ...dsa6, ...dsa7, ...dsa8,
   ...dsaAddAdvancedDp,
@@ -105,4 +106,5 @@ export const dsa: Exercise[] = [...dsa1, ...dsa2, ...dsa3, ...dsa4, ...dsa5, ...
   ...dsaAddGamesProbabilityDp,
   ...dsaAddOrderedStructures,
   ...dsaAddSweepLineGeometry,
+  ...dsaAddNeetcodeGaps,
 ];

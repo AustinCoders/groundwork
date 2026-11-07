@@ -33,7 +33,7 @@ export const dsaSortingAlgorithms: Chapter = {
   <tr><td>Merge sort</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n)</td><td>yes</td></tr>
   <tr><td>Quicksort</td><td>O(n log n)</td><td>O(n²)</td><td>O(log n)</td><td>no</td></tr>
   <tr><td>Heapsort</td><td>O(n log n)</td><td>O(n log n)</td><td>O(1)</td><td>no</td></tr>
-  <tr><td>Counting sort</td><td>O(n + k)</td><td>O(n + k)</td><td>O(k)</td><td>yes</td></tr>
+  <tr><td>Counting sort</td><td>O(n + k)</td><td>O(n + k)</td><td>Θ(n + k)</td><td>yes</td></tr>
 </table>
 <p class="sub">
   "Stable" means equal elements keep their original relative order —
@@ -926,9 +926,9 @@ staff.sort((a, b) =&gt;
 
 <h3>Counting sort — when the range is small</h3>
 <p>
-  If values are bounded integers in a small known range (say, 0–100), you
-  can sort in O(n + k) instead of O(n log n) by counting occurrences
-  directly instead of comparing elements at all.
+  If values are integers in a small range (say, 0–100), you can
+  sort in O(n + k) instead of O(n log n) by counting instead of comparing,
+  with Θ(n + k) space.
 </p>
 <pre><code>function countingSort(arr, maxVal) {
   const counts = new Array(maxVal + 1).fill(0);

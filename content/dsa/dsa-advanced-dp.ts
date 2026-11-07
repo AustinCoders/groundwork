@@ -1257,7 +1257,7 @@ dp[i][i+1] = 0   <span class="c">// two vertices are an edge, not a polygon</spa
   <tr><td>Rolling array</td><td>dp[i] only reads dp[i-1]</td><td>O(n·m) → O(m) memory; keep <code>prev</code> and <code>cur</code></td></tr>
   <tr><td>Pack dimensions into one integer key</td><td>small, bounded dimensions</td><td><code>pos * 100 + prev * 2 + started</code> beats a string key or nested Map</td></tr>
   <tr><td>Derive a dimension</td><td>one index is a function of another</td><td>popcount(mask) removes a whole dimension, as in the assignment DP</td></tr>
-  <tr><td>Typed arrays</td><td>numeric dp with known bounds</td><td><code>Int32Array(1 &lt;&lt; n)</code> is ~4× smaller and faster than a JS array</td></tr>
+  <tr><td>Typed arrays</td><td>numeric dp with known bounds</td><td><code>Int32Array(1 &lt;&lt; n)</code> halves memory, but <code>Infinity</code> becomes 0 (use <code>1e9</code>)</td></tr>
 </table>
 <div class="warn">
   <span class="ttl">⚠ String keys are where advanced DP silently gets slow</span>

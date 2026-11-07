@@ -255,8 +255,8 @@ export const dsaTreeProblems: Chapter = {
   <span class="ttl">⚠ "Check left &lt; node &lt; right at every node" is NOT enough</span>
   It's tempting to just compare each node against its immediate children.
   That misses violations further down: a right-subtree node can be
-  smaller than a distant ancestor even while being bigger than its direct
-  parent. The BST property is about <b>every node in the entire left
+  smaller than a distant ancestor even while sitting on the correct side of
+  its direct parent. The BST property is about <b>every node in the entire left
   subtree, and every node in the entire right subtree</b> — not just
   direct children.
 </div>

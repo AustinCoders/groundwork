@@ -150,14 +150,14 @@ export const dsaAddMinimumSpanningTree: Exercise[] = [
     "chapter": "dsa-minimum-spanning-tree",
     "level": "advanced",
     "title": "Second-Best Minimum Spanning Tree",
-    "brief": "<p>A weighted, undirected graph on <code>n</code> vertices is given as <code>edges[i] = [u, v, weight]</code> (no self-loops, parallel edges allowed). The <b>second-best spanning tree</b> is the cheapest spanning tree that is not the minimum spanning tree you started from. If the MST is not unique, another tree of the same weight is itself a second-best tree.</p><p>Write <code>secondBestMSTWeight(n, edges)</code> returning the weight of the second-best spanning tree, or <code>-1</code> when there is none: the graph is disconnected, or it is already a tree with no spare edge.</p>",
+    "brief": "<p>A weighted, undirected graph on <code>n</code> vertices is given as <code>edges[i] = [u, v, weight]</code> (weights may be negative; parallel edges and self-loops are allowed). The <b>second-best spanning tree</b> is the cheapest spanning tree that is not the minimum spanning tree you started from. If the MST is not unique, another tree of the same weight is itself a second-best tree.</p><p>Write <code>secondBestMSTWeight(n, edges)</code> returning the weight of the second-best spanning tree, or <code>-1</code> when there is none: the graph is disconnected, or it is already a tree with no spare edge.</p>",
     "starter": "function secondBestMSTWeight(n, edges) {\n  // TODO\n}\n",
     "hints": [
       "Build an ordinary MST first and remember which edges are in it. A second-best tree never needs to differ from the MST by more than one edge.",
       "Adding a non-tree edge (u, v) to the MST closes exactly one cycle: the tree path from u to v plus that edge. To get a tree back, delete an edge on that path, and the best choice is the heaviest one.",
-      "For every non-tree edge, the candidate weight is total + w(edge) - heaviestOnTreePath(u, v). Take the minimum. Walking the tree once per non-tree edge is fast enough; use an explicit stack so a long path does not overflow the call stack."
+      "For every non-tree edge, the candidate weight is total + w(edge) - heaviestOnTreePath(u, v). Take the minimum. Walking the tree once per non-tree edge is fast enough; use an explicit stack so a long path does not overflow the call stack. Start the running maximum at -Infinity, not 0, so negative weights and self-loops come out right."
     ],
-    "solution": "class DSU {\n  constructor(n) {\n    this.parent = Array.from({ length: n }, (_, i) => i);\n  }\n  find(x) {\n    while (this.parent[x] !== x) {\n      this.parent[x] = this.parent[this.parent[x]];\n      x = this.parent[x];\n    }\n    return x;\n  }\n  union(a, b) {\n    const ra = this.find(a);\n    const rb = this.find(b);\n    if (ra === rb) return false;\n    this.parent[rb] = ra;\n    return true;\n  }\n}\n\nfunction secondBestMSTWeight(n, edges) {\n  const order = edges.map(([u, v, w], i) => [u, v, w, i]).sort((a, b) => a[2] - b[2]);\n  const dsu = new DSU(n);\n  const adj = Array.from({ length: n }, () => []);\n  const inTree = new Array(edges.length).fill(false);\n  let total = 0;\n  let used = 0;\n  for (const [u, v, w, i] of order) {\n    if (dsu.union(u, v)) {\n      inTree[i] = true;\n      adj[u].push([v, w]);\n      adj[v].push([u, w]);\n      total += w;\n      used++;\n    }\n  }\n  if (used !== n - 1) return -1;\n\n  function heaviestOnPath(from, to) {\n    const stack = [[from, -1, 0]];\n    while (stack.length > 0) {\n      const [node, parent, heaviest] = stack.pop();\n      if (node === to) return heaviest;\n      for (const [next, w] of adj[node]) {\n        if (next !== parent) stack.push([next, node, Math.max(heaviest, w)]);\n      }\n    }\n    return -Infinity;\n  }\n\n  let best = Infinity;\n  for (let i = 0; i < edges.length; i++) {\n    if (inTree[i]) continue;\n    const [u, v, w] = edges[i];\n    best = Math.min(best, total + w - heaviestOnPath(u, v));\n  }\n  return best === Infinity ? -1 : best;\n}\n",
+    "solution": "class DSU {\n  constructor(n) {\n    this.parent = Array.from({ length: n }, (_, i) => i);\n  }\n  find(x) {\n    while (this.parent[x] !== x) {\n      this.parent[x] = this.parent[this.parent[x]];\n      x = this.parent[x];\n    }\n    return x;\n  }\n  union(a, b) {\n    const ra = this.find(a);\n    const rb = this.find(b);\n    if (ra === rb) return false;\n    this.parent[rb] = ra;\n    return true;\n  }\n}\n\nfunction secondBestMSTWeight(n, edges) {\n  const order = edges.map(([u, v, w], i) => [u, v, w, i]).sort((a, b) => a[2] - b[2]);\n  const dsu = new DSU(n);\n  const adj = Array.from({ length: n }, () => []);\n  const inTree = new Array(edges.length).fill(false);\n  let total = 0;\n  let used = 0;\n  for (const [u, v, w, i] of order) {\n    if (dsu.union(u, v)) {\n      inTree[i] = true;\n      adj[u].push([v, w]);\n      adj[v].push([u, w]);\n      total += w;\n      used++;\n    }\n  }\n  if (used !== n - 1) return -1;\n\n  function heaviestOnPath(from, to) {\n    const stack = [[from, -1, -Infinity]];\n    while (stack.length > 0) {\n      const [node, parent, heaviest] = stack.pop();\n      if (node === to) return heaviest;\n      for (const [next, w] of adj[node]) {\n        if (next !== parent) stack.push([next, node, Math.max(heaviest, w)]);\n      }\n    }\n    return -Infinity;\n  }\n\n  let best = Infinity;\n  for (let i = 0; i < edges.length; i++) {\n    if (inTree[i]) continue;\n    const [u, v, w] = edges[i];\n    best = Math.min(best, total + w - heaviestOnPath(u, v));\n  }\n  return best === Infinity ? -1 : best;\n}\n",
     "tests": [
       {
         "name": "a small graph with a unique MST",
@@ -182,6 +182,18 @@ export const dsaAddMinimumSpanningTree: Exercise[] = [
       {
         "name": "parallel edges give a swap",
         "body": "assert.equal(secondBestMSTWeight(2, [[0, 1, 3], [0, 1, 7]]), 7);"
+      },
+      {
+        "name": "all-negative weights: the swap lands on -6, not on a weight below the MST",
+        "body": "assert.equal(secondBestMSTWeight(3, [[0, 1, -5], [1, 2, -3], [0, 2, -1]]), -6);"
+      },
+      {
+        "name": "all weights negative, with a tie",
+        "body": "assert.equal(secondBestMSTWeight(3, [[0, 1, -2], [1, 2, -2], [0, 2, -2]]), -4);"
+      },
+      {
+        "name": "a self-loop is never a swap",
+        "body": "assert.equal(secondBestMSTWeight(3, [[0, 1, 1], [1, 2, 2], [1, 1, 6]]), -1);\nassert.equal(secondBestMSTWeight(3, [[0, 1, 1], [1, 2, 2], [0, 2, 3], [2, 2, -4]]), 4);"
       },
       {
         "name": "a long path graph does not overflow the call stack",

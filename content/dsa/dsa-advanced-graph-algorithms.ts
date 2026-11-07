@@ -22,6 +22,7 @@ export const dsaAdvancedGraphAlgorithms: Chapter = {
     "ex-floyd-warshall-paths",
     "ex-spfa-negative-cycle",
     "ex-word-ladder",
+    "ex-swim-in-rising-water",
   ],
   ready: true,
   subtitle: "BFS is shortest path when every edge costs 1 — here is what to do when they don't.",

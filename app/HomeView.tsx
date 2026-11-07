@@ -704,6 +704,10 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
                 <Link href="/review">Review</Link>
                 <Link href="/architecture">How this is built</Link>
                 <Link href="/privacy">Privacy</Link>
+                <Link href="/about">About</Link>
+                <Link href="/changelog">Changelog</Link>
+                <Link href="/contact">Contact</Link>
+                <Link href="/accessibility">Accessibility</Link>
               </nav>
             </div>
 

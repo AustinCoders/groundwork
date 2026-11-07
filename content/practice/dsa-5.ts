@@ -709,8 +709,8 @@ export const dsa5: Exercise[] = [
     starter: "function gameOfLife(board) {\n  // TODO\n}\n\nconsole.log(gameOfLife([[0, 1, 0], [0, 0, 1], [1, 1, 1], [0, 0, 0]]));\n// [[0, 0, 0], [1, 0, 1], [0, 1, 1], [0, 1, 0]]\n",
     hints: [
       "Updating as you go corrupts the neighbour counts. Store the next state without losing the old one.",
-      "Encode transitions in the same cell: for example 2 = was alive, dies; 3 = was dead, becomes alive. Count neighbours with (value & 1).",
-      "A final pass turns the encoded values into 0 or 1 (value >> 1).",
+      "Keep two bits per cell: bit 0 is the old state and bit 1 is the new state. Count live neighbours with (value & 1), which still reads the old state after a neighbour has been updated, and store the new state with value |= next << 1.",
+      "A final pass turns each encoded value into its new state with value >> 1.",
     ],
     solution: "function gameOfLife(board) {\n  const rows = board.length;\n  if (rows === 0) return board;\n  const cols = board[0].length;\n  for (let r = 0; r < rows; r++) {\n    for (let c = 0; c < cols; c++) {\n      let live = 0;\n      for (let dr = -1; dr <= 1; dr++) {\n        for (let dc = -1; dc <= 1; dc++) {\n          if (dr === 0 && dc === 0) continue;\n          const nr = r + dr;\n          const nc = c + dc;\n          if (nr >= 0 && nc >= 0 && nr < rows && nc < cols) live += board[nr][nc] & 1;\n        }\n      }\n      const alive = board[r][c] & 1;\n      const next = alive ? (live === 2 || live === 3 ? 1 : 0) : live === 3 ? 1 : 0;\n      board[r][c] |= next << 1;\n    }\n  }\n  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) board[r][c] >>= 1;\n  return board;\n}\n",
     tests: [

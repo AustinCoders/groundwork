@@ -42,6 +42,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/mock`, lastModified: stale, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/interview/questions`, lastModified: stale, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/privacy`, lastModified: stale, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${SITE_URL}/about`, lastModified: stale, changeFrequency: "yearly", priority: 0.4 },
+    { url: `${SITE_URL}/changelog`, lastModified: stale, changeFrequency: "monthly", priority: 0.3 },
+    { url: `${SITE_URL}/contact`, lastModified: stale, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${SITE_URL}/accessibility`, lastModified: stale, changeFrequency: "yearly", priority: 0.3 },
     { url: `${SITE_URL}/whiteboard`, lastModified: stale, changeFrequency: "monthly", priority: 0.5 },
     { url: `${SITE_URL}/roadmap`, lastModified: stale, changeFrequency: "monthly", priority: 0.7 },
     {

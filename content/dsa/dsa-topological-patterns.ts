@@ -151,9 +151,12 @@ function topoSortKahn(n, edges) {
 <p>
   The DFS version comes at it from the opposite end. Recurse into all of a
   node's descendants first, and only <em>after</em> they have all been emitted,
-  append the node itself. That builds the order backwards: a node always lands
-  after everything it depends on, so reversing the finished list gives a valid
-  topological order.
+  append the node itself. That builds the order backwards: with an edge
+  <code>u → v</code> meaning <code>u</code> comes first, a node always lands
+  after everything reachable from it, so the finished list is the topological
+  order read from the end, and reversing it gives a valid one. For the single
+  edge <code>0 → 1</code> the list is <code>[1, 0]</code> and the reversal is
+  <code>[0, 1]</code>.
 </p>
 <p>
   Cycle detection is where this version earns its keep — and where it is most
@@ -392,20 +395,17 @@ function longestPath(n, edges) {
 
   const order = [];
   const queue = [];
-  const remaining = indeg.slice(); <span class="c">// copy — we still need the original to seed sources</span>
-  for (let i = 0; i &lt; n; i++) if (remaining[i] === 0) queue.push(i);
+  for (let i = 0; i &lt; n; i++) if (indeg[i] === 0) queue.push(i);
   for (let head = 0; head &lt; queue.length; head++) {
     const u = queue[head];
     order.push(u);
-    for (const [v] of adj[u]) if (--remaining[v] === 0) queue.push(v);
+    for (const [v] of adj[u]) if (--indeg[v] === 0) queue.push(v);
   }
   if (order.length !== n) throw new Error("cycle: longest path is unbounded");
 
-  const dist = new Array(n).fill(-Infinity);
-  for (let i = 0; i &lt; n; i++) if (indeg[i] === 0) dist[i] = 0; <span class="c">// any source can start a path</span>
+  const dist = new Array(n).fill(0); <span class="c">// a path may start at ANY node, so every node can begin with length 0</span>
 
   for (const u of order) {
-    if (dist[u] === -Infinity) continue;
     for (const [v, w] of adj[u]) {
       dist[v] = Math.max(dist[v], dist[u] + w); <span class="c">// dist[u] is FINAL — topo order guarantees it</span>
     }
@@ -413,6 +413,13 @@ function longestPath(n, edges) {
 
   return Math.max(...dist);
 }</code></pre>
+<p class="sub">
+  Seeding only the in-degree 0 nodes with 0 is a tempting shortcut and it is
+  wrong once weights can be negative: for edges <code>0 → 1</code> of weight
+  <code>-5</code> and <code>1 → 2</code> of weight <code>10</code>, the best path
+  starts at node 1 and has length 10, but a source-only seed reports 5. Seeding
+  every node with 0 lets each path start wherever it pays most.
+</p>
 <p class="sub">
   Start every distance at <code>Infinity</code> (0 only for the source), skip
   nodes still at <code>Infinity</code>, flip <code>Math.max</code> to
@@ -437,10 +444,11 @@ function longestPath(n, edges) {
 <div class="sticky mint">
   <span class="ttl">The reframe that unlocks the family</span>
   Memoized DFS on a DAG <em>is</em> a topological sort — the recursion's return
-  order is exactly reverse post-order. So any DP whose subproblem dependencies
-  never cycle can be written either as top-down memoization or as a bottom-up
-  loop over a topological order. When someone asks you to "convert your
-  recursion to iteration," what they are asking for is the topological order.
+  order is a post-order, and a post-order puts every subproblem after the ones
+  it needs. So any DP whose subproblem dependencies never cycle can be written
+  either as top-down memoization or as a bottom-up loop over a topological
+  order. When someone asks you to "convert your recursion to iteration," what
+  they are asking for is the topological order.
 </div>
 
 <h3>Minimum Height Trees — peeling leaves is Kahn on a tree</h3>

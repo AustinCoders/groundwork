@@ -7,7 +7,7 @@ export const dsa2: Exercise[] = [
     level: "intermediate",
     title: "Gas Station",
     brief:
-      "<p>There are <code>n</code> gas stations in a circle. Station <code>i</code> gives you <code>gas[i]</code> fuel, and driving from station <code>i</code> to the next one costs <code>cost[i]</code> fuel. You start with an empty tank.</p><ul><li>Return the index you must start from to complete the full loop</li><li>Return <code>-1</code> if no starting point works</li><li>When a solution exists it is unique. Aim for one pass</li></ul>",
+      "<p>There are <code>n</code> gas stations in a circle. Station <code>i</code> gives you <code>gas[i]</code> fuel, and driving from station <code>i</code> to the next one costs <code>cost[i]</code> fuel. You start with an empty tank.</p><ul><li>Return the index you must start from to complete the full loop</li><li>Return <code>-1</code> if no starting point works</li><li>When several starting points work, return the smallest index (the original problem promises a unique answer, so this only matters for inputs such as all zeros). Aim for one pass</li></ul>",
     starter:
       "function canCompleteCircuit(gas, cost) {\n  // TODO: return the starting index that completes the loop, or -1\n}\n",
     hints: [
@@ -38,7 +38,7 @@ export const dsa2: Exercise[] = [
         name: "start at index 0 when it already works",
         body: "assert.equal(canCompleteCircuit([4,1,1], [1,2,2]), 0);",
       },
-      { name: "all stations break even, start is index 0", body: "assert.equal(canCompleteCircuit([0,0,0,0],[0,0,0,0]), 0);" },
+      { name: "all stations break even: every start works, so the smallest index is returned", body: "assert.equal(canCompleteCircuit([0,0,0,0],[0,0,0,0]), 0);" },
       { name: "the deficit sits near the end of the array", body: "const gas=[4,3,1,1,5];\nconst cost=[1,2,7,3,1];\nfunction ref(g,c){const n=g.length; for(let s=0;s<n;s++){let tank=0; let ok=true; for(let k=0;k<n;k++){const i=(s+k)%n; tank+=g[i]-c[i]; if(tank<0){ok=false;break;}} if(ok) return s;} return -1;}\nassert.equal(canCompleteCircuit(gas,cost), ref(gas,cost));" },
       { name: "agrees with a brute-force simulation on a mixed array", body: "const gas=[3,4,1,6,2,0,5];\nconst cost=[2,5,3,1,1,4,3];\nfunction ref(g,c){const n=g.length; for(let s=0;s<n;s++){let tank=0; let ok=true; for(let k=0;k<n;k++){const i=(s+k)%n; tank+=g[i]-c[i]; if(tank<0){ok=false;break;}} if(ok) return s;} return -1;}\nassert.equal(canCompleteCircuit(gas,cost), ref(gas,cost));" },
     ],
@@ -1268,8 +1268,8 @@ export const dsa2: Exercise[] = [
         name: "count and distinctness for a larger set",
         body: "const out = subsets([1, 2, 3, 4, 5]);\nassert.equal(out.length, 32);\nconst keys = new Set(out.map((s) => JSON.stringify(s.slice().sort((a, b) => a - b))));\nassert.equal(keys.size, 32);",
       },
-      { name: "each subset's elements keep their original relative order", body: "const nums=[2,4,6,8];\nconst out=subsets(nums);\nassert.equal(out.length, 16);\nfor(const s of out){ for(let k=1;k<s.length;k++){ assert.ok(nums.indexOf(s[k-1])<nums.indexOf(s[k])); } }" },
-      { name: "the full set and the empty set are both present", body: "const nums=[1,2,3];\nconst out=subsets(nums).map((s)=>JSON.stringify(s));\nassert.ok(out.indexOf('[]')!==-1);\nassert.ok(out.indexOf(JSON.stringify(nums))!==-1);" },
+      { name: "every subset only holds elements of the input, each at most once, in any order", body: "const nums=[2,4,6,8];\nconst out=subsets(nums);\nassert.equal(out.length, 16);\nfor(const s of out){ assert.equal(new Set(s).size, s.length); for(const x of s){ assert.ok(nums.indexOf(x)!==-1); } }" },
+      { name: "the full set and the empty set are both present, whatever the order inside each subset", body: "const nums=[1,2,3];\nconst out=subsets(nums).map((s)=>JSON.stringify(s.slice().sort((a,b)=>a-b)));\nassert.ok(out.indexOf('[]')!==-1);\nassert.ok(out.indexOf(JSON.stringify(nums))!==-1);" },
       { name: "no two subsets are identical", body: "const out=subsets([5,10,15,20]);\nconst keys=out.map((s)=>s.slice().sort((a,b)=>a-b).join(','));\nassert.equal(new Set(keys).size, 16);" },
     ],
   },

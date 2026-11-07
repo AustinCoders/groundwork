@@ -27,6 +27,7 @@ export const dsaMath: Chapter = {
     "ex-roman-to-integer",
     "ex-fibonacci-mod-matrix",
     "ex-number-to-words",
+    "ex-multiply-strings",
   ],
   ready: true,
   subtitle:

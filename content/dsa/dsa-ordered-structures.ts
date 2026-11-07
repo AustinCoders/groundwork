@@ -1184,7 +1184,7 @@ class MyCalendarThree {
   <tr><td>3</td><td>1, ends at 1; 1 ≠ 3 − 1, so no merge</td><td>none</td><td>[1, 1] [3, 3]</td></tr>
   <tr><td>7</td><td>3, ends at 3; no merge</td><td>none</td><td>[1, 1] [3, 3] [7, 7]</td></tr>
   <tr><td>2</td><td>1, ends at 1 = 2 − 1: extend, so start = 1</td><td>3 = 2 + 1: absorb it, end = 3 and remove key 3</td><td>[1, 3] [7, 7]</td></tr>
-  <tr><td>6</td><td>3, ends at 3; no merge</td><td>7 = 6 + 1: absorb it, end = 7</td><td>[1, 3] [6, 7]</td></tr>
+  <tr><td>6</td><td>1, ends at 3; no merge</td><td>7 = 6 + 1: absorb it, end = 7</td><td>[1, 3] [6, 7]</td></tr>
 </table>
 <p class="sub">
   <code>addNum</code> costs O(log n) expected; <code>getIntervals</code> costs

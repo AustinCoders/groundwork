@@ -1,0 +1,229 @@
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(20px, 3vw, 40px);
+  align-items: start;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.6vh, 16px);
+  min-width: 0;
+}
+
+.panel {
+  min-width: 0;
+  padding: clamp(22px, 3vw, 44px);
+  background: var(--sheet);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+}
+
+.panel :global(.prose) > :last-child {
+  margin-bottom: 0;
+}
+
+.panel .rows {
+  padding: 0;
+  list-style: none;
+}
+
+.panel .rows > li {
+  margin: 0;
+  padding: 1.1em 0;
+  border-top: 1.5px dashed var(--line);
+}
+
+.panel .rows > li:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.panel .rows > li:last-child {
+  padding-bottom: 0;
+}
+
+.rows b {
+  display: block;
+  margin-bottom: 0.2em;
+  font-family: var(--font-heading);
+  font-size: var(--t-display);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.toc {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toc li {
+  margin: 0;
+  padding: 0;
+  border-top: 1.5px dashed var(--line);
+}
+
+.toc li:first-child {
+  border-top: 0;
+}
+
+.toc li::before {
+  content: none;
+}
+
+.toc a {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  min-height: 44px;
+  padding: 9px 4px;
+  font-family: var(--font-heading);
+  font-size: var(--t-title);
+  line-height: 1.2;
+  color: var(--ink);
+  text-decoration: none;
+  border-radius: 10px;
+}
+
+.toc a:hover {
+  color: var(--primary);
+  background: var(--sheet-2);
+}
+
+.toc a:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.num {
+  flex: none;
+  min-width: 1.6rem;
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+}
+
+.short {
+  margin: 0;
+  font-size: var(--t-control);
+  line-height: 1.55;
+}
+
+.contact {
+  font-family: var(--font-heading);
+  font-size: var(--t-title);
+  line-height: 1.2;
+  color: var(--ink);
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+.contact:hover {
+  color: var(--primary);
+}
+
+.contact:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@media (min-width: 1000px) {
+  .grid {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  }
+
+  .head {
+    position: sticky;
+    top: calc(var(--header-h, 60px) + 24px);
+  }
+}
+
+.updates {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.updates > li {
+  display: grid;
+  gap: 4px 20px;
+  padding: 1.1em 0;
+  border-top: 1.5px dashed var(--line);
+}
+
+.updates > li::before {
+  content: none;
+}
+
+.updates > li:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.updates > li:last-child {
+  padding-bottom: 0;
+}
+
+.panel .updates h3::before,
+.panel .updates h3::after {
+  content: none;
+}
+
+.panel .updates h3 {
+  padding: 0;
+  margin: 0;
+}
+
+.updates time {
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+}
+
+.updates h3 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--t-title);
+  line-height: 1.2;
+}
+
+.updates ul {
+  margin: 0.4em 0 0;
+}
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+  gap: 10px;
+  margin: 0 0 1.2em;
+  padding: 0;
+  list-style: none;
+}
+
+.figures li {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--sheet-2);
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+}
+
+.figures b {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.figures span {
+  font-size: var(--t-meta);
+  color: var(--ink-soft);
+}

@@ -28,7 +28,6 @@ export const OVER_LENGTH_CHAPTERS: Record<string, number> = {
 export const UNPARSED_CODE_BLOCKS: Record<string, number> = {
   "dsa-advanced-dp": 4,
   "dsa-advanced-graph-algorithms": 1,
-  "dsa-arrays-strings": 3,
   "dsa-backtracking": 5,
   "dsa-basic-recursion": 2,
   "dsa-binary-search": 2,

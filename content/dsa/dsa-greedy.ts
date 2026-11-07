@@ -24,6 +24,8 @@ export const dsaGreedy: Chapter = {
     "ex-task-scheduler",
     "ex-reorganize-string",
     "ex-min-cost-connect-sticks",
+    "ex-hand-of-straights",
+    "ex-merge-triplets-to-form-target",
   ],
   ready: true,
   subtitle: "The best DP alternative — when the locally best choice happens to be globally best too.",

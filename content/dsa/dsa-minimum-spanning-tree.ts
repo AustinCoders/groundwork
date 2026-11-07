@@ -750,7 +750,7 @@ function findCriticalAndPseudoCriticalEdges(n, edges) {
   second best = w(T) + min over non-tree edges e of ( w(e) − heaviest edge on the tree path between e's endpoints )
 </p>
 <pre><code><span class="c">// O(E log E + E·V): one DFS per non-tree edge. Returns null if the graph is disconnected,</span>
-<span class="c">// Infinity if the graph is already a tree (no swap exists).</span>
+<span class="c">// Infinity if there is no swap (the graph is already a tree, or its only spare edges are self-loops).</span>
 function secondBestMSTWeight(n, edges) {
   const order = edges.map(([u, v, w], i) => [u, v, w, i]).sort((a, b) => a[2] - b[2]);
   const dsu = new DSU(n);
@@ -770,7 +770,7 @@ function secondBestMSTWeight(n, edges) {
   if (used !== n - 1) return null;
 
   function heaviestOnPath(from, to) {
-    const stack = [[from, -1, 0]]; <span class="c">// [node, parent, heaviest edge so far]; iterative, so a path graph cannot overflow the call stack</span>
+    const stack = [[from, -1, -Infinity]]; <span class="c">// [node, parent, heaviest edge so far]; starts at -Infinity so negative weights and from === to work; iterative, so a path graph cannot overflow the call stack</span>
     while (stack.length > 0) {
       const [node, parent, heaviest] = stack.pop();
       if (node === to) return heaviest;

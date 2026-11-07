@@ -228,8 +228,10 @@ find(x) {
   per operation.</li>
   <li><b>Together</b>, the trees flatten faster than they can grow. The
   rigorous bound is α(n), the inverse of a function that grows so violently
-  that α(n) ≤ 4 for any n you can physically store — n = 2<sup>65536</sup>
-  still gives α = 5.</li>
+  that α(n) ≤ 4 for any n you can physically store. In CLRS's definition,
+  α(n) is the smallest k with A<sub>k</sub>(1) ≥ n, and A<sub>4</sub>(1) is a
+  tower of exponentials roughly 2048 levels tall, so even n = 2<sup>65536</sup>
+  still gives α = 4.</li>
 </ul>
 <table>
   <tr><th>Variant</th><th>find / union (amortized)</th><th>Comment</th></tr>

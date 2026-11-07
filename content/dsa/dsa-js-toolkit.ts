@@ -490,12 +490,12 @@ Number(""); <span class="c">// → 0</span>
 <p>
   In the model, <code>s += piece</code> creates a new string holding a copy of
   everything so far, which would make a loop of n appends O(n²), the same shape
-  as the array copies above. Node 24 does better in practice: a loop of
-  1,000,000 single-character appends took 52 ms with <code>+=</code> and 14 ms
-  with an array of pieces and one <code>join</code>, with no quadratic growth
-  visible. So in JavaScript, <code>+=</code> in a loop is not the disaster it is
-  elsewhere. The habit is still cheap and portable: push the pieces into an
-  array and call <code>join("")</code> once. For interview analysis, say that
+  as the array copies above. Engines do better in practice: on Node 20 to 26,
+  1,000,000 appends took 20 to 35 ms with <code>+=</code> and 12 to 20 ms with
+  an array and one <code>join</code>, and neither grew quadratically. In
+  JavaScript, <code>+=</code> in a loop is not the disaster it is elsewhere.
+  The habit is still cheap and portable: push the pieces into an array and call
+  <code>join("")</code> once. For interview analysis, say that
   the join is O(total length).
 </p>
 <pre><code>"hello".slice(-3); <span class="c">// → 'llo'</span>

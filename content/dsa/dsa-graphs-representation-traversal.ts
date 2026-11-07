@@ -266,7 +266,7 @@ function dfs(graph, start, visited = new Set()) {
   return visited;
 }
 
-<span class="c">// iterative DFS — an explicit stack instead of recursion; reaches the same nodes, but not always in the same order</span>
+<span class="c">// iterative DFS — an explicit stack instead of recursion; reaches the same nodes, but not always in the same order, and not always a true depth-first order</span>
 function dfsIterative(graph, start) {
   const visited = new Set([start]);
   const stack = [start];
@@ -287,7 +287,12 @@ function dfsIterative(graph, start) {
   the diamond <code>0:[1,2]</code>, <code>1:[3]</code>,
   <code>2:[3]</code> the recursive version prints 0, 1, 3, 2, while the
   iterative one pushes 1 then 2 and pops 2 first, so it prints 0, 2, 3, 1.
-  Both are valid depth-first orders. To get the recursive order exactly,
+  Both of those happen to be valid depth-first orders, but that is luck of the
+  example. Marking a node when it is pushed can produce an order that no
+  depth-first search could. Take <code>0:[1,2,3]</code>, <code>3:[1]</code>: the
+  iterative version pushes 1, 2 and 3, pops 3 first, and prints 0, 3, 2, 1. A
+  real DFS that has gone from 0 to 3 would visit 1 straight away, from 3,
+  before backing out to 2. To get the recursive order exactly,
   mark a node visited when you pop it (skipping it if it is already
   visited) and push its neighbours in reverse, as the demo below does.
 </p>

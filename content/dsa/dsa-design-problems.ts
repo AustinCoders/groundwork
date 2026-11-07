@@ -21,6 +21,7 @@ export const dsaDesignProblems: Chapter = {
     "ex-bounded-median",
     "ex-design-hashmap",
     "ex-encode-decode-strings",
+    "ex-detect-squares",
   ],
   ready: true,
   subtitle:

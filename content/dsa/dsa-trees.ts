@@ -271,7 +271,7 @@ function inOrderIterative(root) {
 <p class="sub">
   Post-order iteratively is the fiddly one — the cleanest trick is to
   compute pre-order but visiting <em>right before left</em> (swap the push
-  order above), collect that into a list, then reverse it. Right-Node-Left
+  order above), collect that into a list, then reverse it. Node-Right-Left
   reversed is exactly Left-Right-Node, which is post-order — worth
   remembering as a shortcut rather than deriving a true post-order stack
   machine from scratch under interview pressure.

@@ -32,6 +32,7 @@ export const dsaHeapsPriorityQueues: Chapter = {
     "ex-heapsort-in-place",
     "ex-sliding-window-median",
     "ex-single-threaded-cpu",
+    "ex-kth-largest-in-a-stream",
   ],
   ready: true,
   subtitle: "You don't need the whole thing sorted — you need the extreme value, fast, repeatedly.",

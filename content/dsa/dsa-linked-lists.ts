@@ -69,7 +69,7 @@ export const dsaLinkedLists: Chapter = {
   <tr><th>Operation</th><th>Array</th><th>Linked list</th></tr>
   <tr><td>Access by index</td><td>O(1)</td><td>O(n) — must walk from head</td></tr>
   <tr><td>Insert/delete at the front</td><td>O(n) — shifts everything</td><td>O(1) — just repoint</td></tr>
-  <tr><td>Insert/delete at a known node</td><td>O(n)</td><td>O(1)</td></tr>
+  <tr><td>Insert after, or delete (doubly linked), a known node</td><td>O(n)</td><td>O(1)</td></tr>
   <tr><td>Search by value</td><td>O(n)</td><td>O(n)</td></tr>
   <tr><td>Memory layout</td><td>contiguous</td><td>scattered, +overhead per node for the pointer</td></tr>
 </table>
@@ -238,11 +238,10 @@ function traverse(head) {
   Why this works comes down to the math: if the distance from head to the
   cycle's start is <code>a</code>, and slow/fast meet <code>b</code> steps
   into the cycle, it can be shown that <code>a</code> equals the remaining
-  distance around the cycle back to the start from the meeting point —
-  which is exactly why walking both pointers at equal speed from those two
-  starting points lands them on the same node. You don't need to re-derive
-  this live; knowing the two-phase shape and being able to state the
-  result is enough.
+  distance around the cycle from the meeting point, plus whole laps
+  (a tail of 5 and a cycle of 3 gives <code>a</code> = 5, remaining
+  distance 2). So two pointers at equal speed meet at the start. You don't
+  need to re-derive this live; know the two-phase shape.
 </p>
 
 <h3>Floyd on an array — finding the duplicate number</h3>
