@@ -204,6 +204,11 @@ a.title:hover {
   .topTool {
     flex: none;
   }
+
+  .topTool .actions {
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+  }
 }
 
 @media (max-width: 720px) {

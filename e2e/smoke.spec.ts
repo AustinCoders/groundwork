@@ -867,3 +867,38 @@ test("corrupt saved data never takes a page down, and the bare /path/dsa and /ds
   await expect(page).toHaveURL(/\/level\/dsa$/);
   expect(problems).toEqual([]);
 });
+
+test("the exercise page header keeps Run, Debug and Submit inside the bar at every desktop and tablet width", async ({
+  page,
+}) => {
+  const problems = collectProblems(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/problems/ex-tdz-order", { waitUntil: "networkidle" });
+  await hydrated(page.getByRole("button", { name: "Run the code" }));
+  for (const width of [1800, 1440, 1180, 1100, 1024, 1001, 1000, 900, 768, 540, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    const clipped = await page.evaluate(() => {
+      const bar = document.querySelector("header");
+      if (!bar) return ["no header"];
+      const frame = bar.getBoundingClientRect();
+      return [...bar.querySelectorAll("button, a")]
+        .map((el) => ({
+          label: el.getAttribute("aria-label") ?? el.textContent?.trim() ?? "",
+          box: el.getBoundingClientRect(),
+        }))
+        .filter(({ box }) => box.width > 0 && box.height > 0)
+        .filter(
+          ({ box }) =>
+            box.top < frame.top - 0.5 ||
+            box.bottom > frame.bottom + 0.5 ||
+            box.left < -0.5 ||
+            box.right > window.innerWidth + 0.5
+        )
+        .map(({ label }) => label);
+    });
+    expect(clipped, `${width} wide`).toEqual([]);
+    await expect(page.getByRole("button", { name: "Run the code" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Submit" })).toBeVisible();
+  }
+  expect(problems).toEqual([]);
+});
