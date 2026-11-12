@@ -127,9 +127,10 @@ export const dsaAddAdvancedDp: Exercise[] = [
     "hints": [
       "A parent needs to know only whether the subtree's root is looked after. That gives three states per node: it has a camera, it is covered by a child, or it is not covered and is waiting for its parent.",
       "cam = 1 + min(all states of the left) + min(all states of the right). cov = one child has a camera and the other is cam or cov. need = both children are cov. A missing child is (cam: Infinity, cov: 0, need: Infinity).",
-      "The root has no parent to rescue it, so the answer is min(cam, cov), never need. Test a single node: the answer must be 1."
+      "The root has no parent to rescue it, so the answer is min(cam, cov), never need. Test a single node: the answer must be 1.",
+      "The last test is a 10,000-node chain. Recursion that goes one frame per level overflows the call stack there, so once the recursive version passes the small tests, redo the walk with an explicit stack or queue."
     ],
-    "solution": "class TreeNode {\n  constructor(val, left, right) {\n    this.val = val;\n    this.left = left === undefined ? null : left;\n    this.right = right === undefined ? null : right;\n  }\n}\n\nfunction buildTree(values) {\n  if (!values || values.length === 0 || values[0] === null) return null;\n  const root = new TreeNode(values[0]);\n  const queue = [root];\n  let i = 1;\n  while (queue.length > 0 && i < values.length) {\n    const node = queue.shift();\n    const l = values[i++];\n    if (l !== null && l !== undefined) {\n      node.left = new TreeNode(l);\n      queue.push(node.left);\n    }\n    if (i < values.length) {\n      const r = values[i++];\n      if (r !== null && r !== undefined) {\n        node.right = new TreeNode(r);\n        queue.push(node.right);\n      }\n    }\n  }\n  return root;\n}\n\nfunction minCameraCover(root) {\n  function dfs(node) {\n    if (!node) return { cam: Infinity, cov: 0, need: Infinity };\n    const L = dfs(node.left);\n    const R = dfs(node.right);\n    const cam = 1 + Math.min(L.cam, L.cov, L.need) + Math.min(R.cam, R.cov, R.need);\n    const cov = Math.min(L.cam + Math.min(R.cam, R.cov), R.cam + Math.min(L.cam, L.cov));\n    const need = L.cov + R.cov;\n    return { cam, cov, need };\n  }\n  const { cam, cov } = dfs(root);\n  return Math.min(cam, cov);\n}\n",
+    "solution": "class TreeNode {\n  constructor(val, left, right) {\n    this.val = val;\n    this.left = left === undefined ? null : left;\n    this.right = right === undefined ? null : right;\n  }\n}\n\nfunction buildTree(values) {\n  if (!values || values.length === 0 || values[0] === null) return null;\n  const root = new TreeNode(values[0]);\n  const queue = [root];\n  let i = 1;\n  while (queue.length > 0 && i < values.length) {\n    const node = queue.shift();\n    const l = values[i++];\n    if (l !== null && l !== undefined) {\n      node.left = new TreeNode(l);\n      queue.push(node.left);\n    }\n    if (i < values.length) {\n      const r = values[i++];\n      if (r !== null && r !== undefined) {\n        node.right = new TreeNode(r);\n        queue.push(node.right);\n      }\n    }\n  }\n  return root;\n}\n\nfunction minCameraCover(root) {\n  // List the nodes top-down, then combine the three states bottom-up, so a skewed tree cannot overflow the call stack.\n  const order = [];\n  const stack = root ? [root] : [];\n  while (stack.length > 0) {\n    const node = stack.pop();\n    order.push(node);\n    if (node.left) stack.push(node.left);\n    if (node.right) stack.push(node.right);\n  }\n  const MISSING = { cam: Infinity, cov: 0, need: Infinity };\n  const state = new Map();\n  const stateOf = (node) => (node ? state.get(node) : MISSING);\n  for (let i = order.length - 1; i >= 0; i--) {\n    const node = order[i];\n    const L = stateOf(node.left);\n    const R = stateOf(node.right);\n    const cam = 1 + Math.min(L.cam, L.cov, L.need) + Math.min(R.cam, R.cov, R.need);\n    const cov = Math.min(L.cam + Math.min(R.cam, R.cov), R.cam + Math.min(L.cam, L.cov));\n    const need = L.cov + R.cov;\n    state.set(node, { cam, cov, need });\n  }\n  const { cam, cov } = stateOf(root);\n  return Math.min(cam, cov);\n}\n",
     "tests": [
       {
         "name": "a single node needs its own camera",
@@ -174,6 +175,10 @@ export const dsaAddAdvancedDp: Exercise[] = [
       {
         "name": "matches an exhaustive search on a random tree 4",
         "body": "assert.equal(minCameraCover(buildTree([0,null,0,0,0,0,0,null,null,0,0])), 3);"
+      },
+      {
+        "name": "a 10,000-node spine does not overflow the call stack",
+        "body": "let root = null;\nfor (let i = 0; i < 10000; i++) root = new TreeNode(0, root, null);\nassert.equal(minCameraCover(root), 3334);"
       }
     ]
   },

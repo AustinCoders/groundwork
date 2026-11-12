@@ -423,14 +423,14 @@ export function TopicsScene({
               pick a stop
             </Note>
             <Chip
-              fact={`${interview.questions}`}
+              fact={`${interview.answered}`}
               rot={-3}
               depth={12}
               speed={46}
               className={styles.chipA}
               style={placed(DECOR.chipA)}
             >
-              {interview.questions}+ questions
+              {interview.answered} full answers
             </Chip>
             <Chip
               fact={`${interview.rounds}`}

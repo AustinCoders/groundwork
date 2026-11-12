@@ -21,6 +21,6 @@ export interface HomeViewProps {
   ready: ShelfCard[];
   soon: ShelfCard[];
   languages: { total: number; runnable: number; runs: string[] };
-  interview: { rounds: number; questions: number };
+  interview: { rounds: number; questions: number; answered: number };
   bookRounds: HomeRound[];
 }

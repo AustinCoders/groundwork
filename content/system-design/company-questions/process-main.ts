@@ -2638,10 +2638,20 @@ export const PROCESS_MAIN: CompanyProcess[] = [
         name: "Machine coding",
         type: "machine-coding",
         format:
-          "Guides call this Swiggy's signature round: build a runnable system from written requirements (parking lot or expense-sharing style) and be judged on structure and ease of adding features. None of the candidate reports I could read include it.",
+          "Guides call this Swiggy's signature round: build a runnable system from written requirements (parking lot or expense-sharing style) and be judged on structure and ease of adding features. A public LeetCode Discuss post describes a 90-minute machine-coding or LLD round on an inventory system for Instamart, and a GeeksforGeeks SDE-2 write-up lists a machine coding round. The SDE-3 report and a July 2025 SDE-2 offer post describe loops without one.",
         tested: ["runnable modular code", "class organisation", "extensibility"],
-        grade: "guide",
+        grade: "one",
         sources: [
+          {
+            label: "LeetCode Discuss: Swiggy SDE-2 (Instamart inventory machine coding)",
+            url: "https://leetcode.com/discuss/post/8314817/swiggy-sde-2-by-anonymous_user-izkb/",
+            kind: "candidate-report",
+          },
+          {
+            label: "GeeksforGeeks: Swiggy interview experience, set 3 (SDE-2)",
+            url: "https://geeksforgeeks.org/swiggy-interview-experience-set-3-sde-2",
+            kind: "candidate-report",
+          },
           {
             label: "TechPrep: Swiggy's interview process",
             url: "https://www.techprep.app/blog/swiggy-interview-process",
@@ -2656,7 +2666,7 @@ export const PROCESS_MAIN: CompanyProcess[] = [
         ],
         duration: "90-120 min",
         variesBy:
-          "Guides say experienced hires only; campus drives skip it. The SDE-3 loop I read had a separate 60-minute LLD round instead.",
+          "Guides say experienced hires only; campus drives skip it. The SDE-3 loop read here had a separate 60-minute LLD round instead, so the round exists in some loops, not all.",
       },
       {
         name: "Low-level design",

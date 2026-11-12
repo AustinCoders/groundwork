@@ -12,6 +12,6 @@ export const SITE_URL = (
 export const SITE_NAME = "Groundwork";
 
 export const SITE_DESCRIPTION =
-  "Handwritten notes for software developers: languages, web, data, computer science and AI. Pick a topic, pick your level, get a reading path with practice, and prepare for the interview.";
+  "Free notes and practice for software developers: JavaScript, React, Git, data structures and algorithms, and system design. Pick a topic, pick your level, get a reading path with practice, and prepare for the interview.";
 
 export const UNDATED_CONTENT_LAST_CHANGED = "2026-09-30";

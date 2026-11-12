@@ -46,7 +46,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <meta name="color-scheme" content="light dark" />
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <TopicsNavProvider topics={topics} guides={guides}>
           <RouteFade>{children}</RouteFade>
           <SiteFooter />

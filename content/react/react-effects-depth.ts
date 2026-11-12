@@ -38,6 +38,7 @@ setCount((c) =&gt; c + 1);
 }, [count]);
 
 <span class="c">// 3. useEffectEvent — read the latest value without depending on it</span>
+const [increment, setIncrement] = useState(1);   <span class="c">// the step can change while the timer runs</span>
 const onTick = useEffectEvent(() =&gt; setCount(count + increment));
 useEffect(() =&gt; {
   const id = setInterval(onTick, 1000);

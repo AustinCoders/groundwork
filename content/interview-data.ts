@@ -802,7 +802,7 @@ poll          <span class="c">// I/O — where the loop actually waits</span>
 check         <span class="c">// setImmediate</span>
 close         <span class="c">// 'close' events (socket.on('close'))</span>
 
-<span class="c">// between EVERY phase transition: drain nextTick queue, then microtasks</span>`},
+<span class="c">// after EVERY callback (Node 11+) and between phases: drain nextTick queue, then microtasks</span>`},
 {label:'the ordering question they will actually ask',code:`console.log('1')
 setTimeout(() =&gt; console.log('2'), 0)
 Promise.resolve().then(() =&gt; console.log('3'))
@@ -812,7 +812,8 @@ console.log('6')
 
 <span class="c">// 1 6 4 3 5 2</span>
 <span class="c">// sync first (1,6), then nextTick (4) — its own queue, ahead of</span>
-<span class="c">// promises — then microtasks in scheduling order (3,5), then timers (2)</span>`}],
+<span class="c">// promises — then microtasks in scheduling order (3,5), then timers (2)</span>
+<span class="c">// that order is CommonJS; in an ES module the promise jobs run before nextTick</span>`}],
 after:`<div class="ladder">
 <span class="ttl">The same answer at three levels</span>
 <div class="rung">
@@ -1029,14 +1030,14 @@ fu:['Does the same happen with a for…of loop?','What about const in a for loop
 {
 q:'Explain <code>this</code>. How is an arrow function different?',
 test:'Whether you know that <code>this</code> is decided at call time, not at definition time.',
-a:`<p><code>this</code> is determined by <b>how the function is called</b>, and there are exactly five rules, checked in this order:</p>
+a:`<p><code>this</code> is determined by <b>how the function is called</b>, and there are four rules, checked in this order, plus arrow functions, which sit outside them:</p>
 <ol>
 <li><code>new Fn()</code> → the newly created object.</li>
 <li><code>fn.call(x)</code> / <code>apply</code> / <code>bind</code> → whatever you passed.</li>
 <li><code>obj.fn()</code> → <code>obj</code>, the thing before the dot.</li>
 <li>Plain <code>fn()</code> → <code>undefined</code> in strict mode and modules, <code>globalThis</code> in sloppy mode.</li>
-<li>Arrow function → none of the above. Arrows have no <code>this</code> binding at all; they resolve it lexically from the enclosing scope, and <code>bind</code> cannot change it.</li>
-</ol>`,
+</ol>
+<p>Arrow functions follow none of the four. They have no <code>this</code> binding at all; they resolve it lexically from the enclosing scope, and <code>bind</code> cannot change it.</p>`,
 code:[{label:'the losing-this bug, and the three fixes',code:`class Counter {
   count = 0
   inc() { this.count++ }
@@ -1664,7 +1665,8 @@ export async function getProducts() {
 }
 
 <span class="c">// invalidate after a write, from a Server Action or route handler</span>
-revalidateTag('products')`}],
+revalidateTag('products', 'max')   <span class="c">// Next 16: second argument is a cacheLife profile</span>
+<span class="c">// inside a Server Action that must show the new data at once: updateTag('products')</span>`}],
 trap:`<p>"Next caches every fetch by default, so you opt out with <code>no-store</code>." That was Next 14. Since 15 the default is uncached, and in 16 caching is explicit with <code>'use cache'</code> — the answer that was right two years ago is now the one that dates you.</p>`,
 fu:['How do you invalidate after a mutation?','What is the difference between revalidatePath and revalidateTag?','Why did the default change?']
 },
@@ -1700,7 +1702,7 @@ export async function createBooking(prev, formData) {
   const parsed = BookingSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) return { error: 'Check the dates' }
   await db.booking.create({ data: parsed.data })
-  revalidateTag('bookings')
+  updateTag('bookings')   <span class="c">// Next 16: read-your-own-writes inside a Server Action</span>
   return { ok: true }
 }
 

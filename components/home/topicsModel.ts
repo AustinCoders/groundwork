@@ -73,7 +73,7 @@ export function buildTopics(ready: ShelfCard[], soon: ShelfCard[], interview: Ho
     written: true,
     chapters: 0,
     chip: plural(interview.rounds, "round"),
-    meta: `${interview.questions}+ questions`,
+    meta: `${interview.answered} full answers`,
     label: `Interview book, ${plural(interview.rounds, "round")}, written`,
   };
   const hubRank = TOPIC_CATEGORIES.findIndex((category) => category.id === HUB_LINE) + 0.5;

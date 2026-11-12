@@ -6,7 +6,7 @@ import { pageMetadata } from "@/lib/metadata";
 export function generateMetadata(): Metadata {
   return pageMetadata({
     title: "All problems",
-    description: `${exercises().length} runnable interview problems, grouped by the pattern each one teaches. Write the solution in the browser and check it against real tests.`,
+    description: `${exercises().length} runnable practice problems, ${exercises().filter((entry) => entry.chapter.startsWith("dsa-")).length} of them data structures and algorithms, grouped by the pattern each one teaches. Write the solution in the browser and check it against real tests.`,
     path: "/problems",
   });
 }

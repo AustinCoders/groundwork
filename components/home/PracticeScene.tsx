@@ -62,7 +62,7 @@ export function PracticeScene({
     { n: String(stats.exercises), l: "exercises graded by real tests" },
     { n: String(languages.runnable), l: "languages the editor runs" },
     { n: String(interview.rounds), l: "interview rounds, in order" },
-    { n: `${interview.questions}+`, l: "interview questions answered" },
+    { n: String(interview.answered), l: "interview questions with full answers" },
   ];
   const chips = languages.runs.slice(0, 7);
 
@@ -202,8 +202,8 @@ export function PracticeScene({
         <Chip fact={String(interview.rounds)} rot={2} depth={-8} speed={-36} className={styles.chipB}>
           {interview.rounds} rounds
         </Chip>
-        <Chip fact={`${interview.questions}`} rot={-2} depth={18} speed={70} className={styles.chipC}>
-          {interview.questions}+ questions
+        <Chip fact={`${interview.answered}`} rot={-2} depth={18} speed={70} className={styles.chipC}>
+          {interview.answered} full answers
         </Chip>
       </Stage>
     </Scene>

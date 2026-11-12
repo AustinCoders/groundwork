@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { HomeView } from "@/app/HomeView";
+import { bookFullAnswerCount } from "@/lib/interviewBook";
 import { INTERVIEW_TOTAL_QUESTIONS, INTERVIEW_TOTAL_ROUNDS } from "@/lib/interviewContent";
 import { LANG_ORDER, LANGUAGES } from "@/lib/codeLanguages";
 import { homeRounds } from "@/lib/homeRounds";
@@ -40,7 +41,11 @@ export default function HomePage() {
       ready={shelf.filter((t) => t.written > 0).map(card)}
       soon={shelf.filter((t) => t.written === 0).map(card)}
       languages={{ total: LANG_ORDER.length, runnable: runnable.length, runs: runnable.map((k) => LANGUAGES[k].label) }}
-      interview={{ rounds: INTERVIEW_TOTAL_ROUNDS, questions: INTERVIEW_TOTAL_QUESTIONS }}
+      interview={{
+        rounds: INTERVIEW_TOTAL_ROUNDS,
+        questions: INTERVIEW_TOTAL_QUESTIONS,
+        answered: bookFullAnswerCount(),
+      }}
       bookRounds={homeRounds(bookRounds(), bankQuestions())}
     />
   );

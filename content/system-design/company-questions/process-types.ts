@@ -1,6 +1,8 @@
 import type { Evidence, ReportSource } from "./types";
 import type { RoundType } from "./rounds";
 
+export const PROCESS_CHECKED = "October 2026";
+
 export interface Round {
   name: string;
   type: RoundType;

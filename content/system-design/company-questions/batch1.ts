@@ -213,7 +213,7 @@ export const questions: CompanyQuestion[] = [
       "Design a rate limiter for a public API served by 50 gateway nodes across three regions. Each API key gets 1,000 requests a minute, the limiter may add at most about 2 ms at p99, and the API must keep working if the limiter's store is down.",
     level: "SDE-2",
     kind: "hld",
-    evidence: "several",
+    evidence: "one",
     sources: [
       {
         label: "Blind: Microsoft Office 365 interview thread (comment)",

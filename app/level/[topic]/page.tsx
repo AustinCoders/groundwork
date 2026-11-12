@@ -23,6 +23,7 @@ import { checkChapterIds } from "@/lib/checkPool";
 import { loadPlacementBank } from "@/lib/quizPool";
 import { bookRound } from "@/lib/interviewBook";
 import { relatedInterviewRound } from "@/lib/topics";
+import { onShelf } from "@/lib/topicShelf";
 import { topicStats } from "@/lib/topicStats";
 
 export function generateStaticParams() {
@@ -49,7 +50,7 @@ export default async function LevelPage({ params }: { params: Promise<{ topic: s
   const topic = findTopic(topicId);
 
   if (!topic) notFound();
-  if (topicStats()[topic.id]?.written === 0) redirect(`/${topic.id}`);
+  if (!onShelf(topic.id) || topicStats()[topic.id]?.written === 0) redirect(`/${topic.id}`);
 
   const levels = levelsFor(topic.id);
   const metas = chapterMetas(topic.id);

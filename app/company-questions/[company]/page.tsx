@@ -9,6 +9,7 @@ import { Foot, FootLink, Kicker, TopicPage, Wrap } from "@/components/topic/Topi
 import { accentVar } from "@/lib/accent";
 import { pageMetadata } from "@/lib/metadata";
 import { PEOPLE } from "@/content/system-design/company-questions/people";
+import { PROCESS_CHECKED } from "@/content/system-design/company-questions/process-types";
 import { PeopleSection } from "../PeopleSection";
 import { RoundStrip, RoundTimeline } from "../CompanyParts";
 import { CompanyRing, DoneMark } from "../DoneMark";
@@ -122,7 +123,7 @@ export default async function Page({ params }: { params: Promise<{ company: stri
                 </h2>
                 <p className={styles.sectionSub}>
                   Reported by candidates and, where we found one, the company itself. Each round shows how well it is
-                  reported. Processes change by team, level and year.
+                  reported. Processes change by team, level and year. Last researched {PROCESS_CHECKED}.
                 </p>
                 <RoundTimeline
                   rounds={rounds}

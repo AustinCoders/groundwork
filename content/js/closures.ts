@@ -629,9 +629,10 @@ for (let j = 0; j &lt; 3; j++) setTimeout(() =&gt; console.log(j), 0);   <span c
 
 <h3>Closures and memory — the part that bites in production</h3>
 <p>
-  A closure is a reference, and a reference stops collection. Almost
-  every JavaScript memory leak is a closure that outlived its usefulness
-  while still holding something large.
+  A closure is a reference, and a reference stops collection. A
+  common cause of JavaScript memory leaks is a closure that outlived its
+  usefulness while still holding something large (detached DOM nodes and
+  global caches can leak without any closure involved).
 </p>
 <pre><code><span class="c">// The listener never gets removed, so the closure lives forever —
 // and it is holding a reference to a huge object it barely uses.</span>

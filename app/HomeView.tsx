@@ -436,7 +436,8 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
                 </span>
               </h1>
               <p className={styles.lead}>
-                Handwritten notes for software developers, from languages and the web to data, computer science and AI.
+                Free notes and practice for software developers. Today that means JavaScript, React, Git, data
+                structures and algorithms and system design, and the rest of the map fills in as chapters are written.
                 Nothing uses a word before it is explained, exercises are graded by real tests right in the page, and an
                 interview book walks every round up to the offer.
               </p>
@@ -453,7 +454,7 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
                   { n: stats.writtenChapters, s: "", l: "chapters" },
                   { n: stats.exercises, s: "", l: "runnable exercises" },
                   { n: hours, s: "h", l: "of reading" },
-                  { n: interview.questions, s: "+", l: "interview questions" },
+                  { n: interview.answered, s: "", l: "full interview answers" },
                 ].map((x) => (
                   <div key={x.l}>
                     <dt>{x.l}</dt>

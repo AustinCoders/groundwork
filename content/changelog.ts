@@ -6,6 +6,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-11-12",
+    title: "Honest claims, author and date on chapters, and content fixes",
+    items: [
+      "Site descriptions and counts were corrected on the home page, in search previews and in the interview book, so they no longer claim more than is written.",
+      "Chapters in JavaScript, React, DSA and system design show who wrote them, when that topic's notes were last updated, and a link to how the site is made. Git and the architecture series do not have this yet.",
+      "Fixed six errors in JavaScript and React chapters and the interview book, including a broken regular expression, the number of rules for this, and the Next 16 form of revalidateTag.",
+      "Two company grades were lowered or raised to match their sources (Microsoft rate limiter, Swiggy machine coding), and company pages now say when they were last researched.",
+      "25 tree exercises now have iterative reference solutions and a test on a 10,000-node chain, with a hint that says so. A few tree exercises are still recursive. The kraft theme's code comments are easier to read.",
+      "Two dead links fixed: topic level pages for topics that are not on the shelf, and /playground.",
+    ],
+  },
+  {
     date: "2026-11-07",
     title: "About, changelog, contact and accessibility pages",
     items: [

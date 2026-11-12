@@ -16,7 +16,7 @@ const COMPARE = [
   {
     them: "Video courses",
     gap: "You watch someone else type. Nothing checks that you understood, and you cannot search a video.",
-    us: "Every idea is written down, searchable, and followed by an exercise graded by real tests.",
+    us: "Every idea is written down and searchable. JavaScript, React and DSA chapters come with exercises graded by real tests, and system design chapters with drills and quizzes.",
   },
   {
     them: "Grinding problem sites",

@@ -9,6 +9,7 @@ import { LANG_ORDER, LANGUAGES } from "@/lib/codeLanguages";
 import { bankQuestions, bookRounds } from "@/lib/interviewBook";
 import { INTERVIEW_TOTAL_QUESTIONS, INTERVIEW_TOTAL_ROUNDS } from "@/lib/interviewContent";
 import { siteStats, topicStats } from "@/lib/topicStats";
+import { onShelf } from "@/lib/topicShelf";
 import { hasColourLiteral } from "./colour-literal";
 
 const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
@@ -28,6 +29,7 @@ const jsChapters = chapters("js").length;
 const topicsWithLevels = all.filter((t) => t.levels).length;
 const writtenTopicsWithLevels = all.filter((t) => t.levels && chapters(t.id).some((c) => c.ready)).length;
 const outlinedTopicsWithLevels = topicsWithLevels - writtenTopicsWithLevels;
+const renderedLevelPages = all.filter((t) => t.levels && onShelf(t.id) && chapters(t.id).some((c) => c.ready)).length;
 const runnableLanguages = LANG_ORDER.filter((key) => LANGUAGES[key].runnable);
 const runnableCount = runnableLanguages.length;
 const namedRunnable = runnableLanguages.map((key) => LANGUAGES[key].label);
@@ -46,12 +48,12 @@ const cases: { file: string; claim: string; about: string }[] = [
   },
   {
     file: "content/architecture/arch-routes.ts",
-    claim: `${topicsWithLevels} pages, one per topic with levels. ${writtenTopicsWithLevels} render the three levels with chapter, minute and exercise counts; the other ${outlinedTopicsWithLevels}, which have nothing written, redirect to the topic's own cover instead`,
+    claim: `${topicsWithLevels} pages, one per topic with levels. ${renderedLevelPages} render the three levels with chapter, minute and exercise counts; the other ${topicsWithLevels - renderedLevelPages} redirect to the topic's own cover instead: ${outlinedTopicsWithLevels} have nothing written`,
     about: "the /level/<topic> row's written vs outline split",
   },
   {
     file: "content/architecture/arch-routes.ts",
-    claim: `Your progress through each level, for the ${writtenTopicsWithLevels} that render`,
+    claim: `Your progress through each level, for the ${renderedLevelPages} that render`,
     about: "the /level/<topic> row's browser column",
   },
   {

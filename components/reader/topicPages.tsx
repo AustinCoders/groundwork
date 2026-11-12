@@ -212,6 +212,7 @@ export async function TopicChapterPage({ topicId, chapterId }: { topicId: string
         parts={parts}
         chapter={cards[cardIndex]}
         chapters={cards}
+        byline={data.meta.author ? { author: data.meta.author, updated: data.meta.updated } : undefined}
         html={segments ? "" : html}
         segments={segments}
         islands={segments?.map((segment, i) =>

@@ -77,7 +77,7 @@ export const reactReviewJudgement: Chapter = {
 </tbody>
 </table></div>
 <pre><code>function SafeLink({ href, children }) {
-  const ok = /^(https?:|mailto:|\/)/i.test(href ?? "");
+  const ok = /^(https?:|mailto:|\\/)/i.test(href ?? "");
   return ok ? &lt;a href={href}&gt;{children}&lt;/a&gt; : &lt;span&gt;{children}&lt;/span&gt;;
 }</code></pre>
 <p class="sub">

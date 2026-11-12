@@ -183,6 +183,10 @@ export function bookRound(id: string): BookRound | null {
   return bookRounds().find((r) => r.id === id) ?? null;
 }
 
+export function bookFullAnswerCount(): number {
+  return bookRounds().reduce((sum, round) => sum + round.questions.filter((entry) => !entry.bulk).length, 0);
+}
+
 export interface RoundCard {
   id: string;
   code: string;

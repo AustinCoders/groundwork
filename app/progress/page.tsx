@@ -5,6 +5,7 @@ import { chapterMetas, topics } from "@/lib/content";
 import { GIT_PROGRESS_PREFIX } from "@/lib/gitSeries";
 import { bookRounds } from "@/lib/interviewBook";
 import { pageMetadata } from "@/lib/metadata";
+import { onShelf } from "@/lib/topicShelf";
 
 export const metadata: Metadata = pageMetadata({
   title: "Your progress",
@@ -21,7 +22,7 @@ export default function ProgressPage() {
       name: t.name,
       mark: t.mark,
       accent: t.accent,
-      href: `/level/${t.id}`,
+      href: onShelf(t.id) ? `/level/${t.id}` : `/${t.id}`,
       ids: chapterMetas(t.id)
         .filter((c) => c.ready)
         .map((c) => c.id),

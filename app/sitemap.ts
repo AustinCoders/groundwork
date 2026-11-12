@@ -3,6 +3,7 @@ import { topics, notesData, notesHref, topicHome, chapterHref, chapters, exercis
 import { problemHref } from "@/lib/practiceLinks";
 import { roadmapIds } from "@/lib/roadmap";
 import { SITE_URL, UNDATED_CONTENT_LAST_CHANGED } from "@/lib/site";
+import { onShelf } from "@/lib/topicShelf";
 import { GIT_CHAPTERS } from "@/content/git-body";
 import { COMPANY_QUESTIONS } from "@/content/system-design/company-questions";
 import { COMPANY_DSA } from "@/content/system-design/company-questions/dsa-index";
@@ -126,7 +127,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority: 0.9,
       });
 
-      if (t.levels && written.length && home === notesHref(t.id)) {
+      if (t.levels && written.length && onShelf(t.id) && home === notesHref(t.id)) {
         levelRoutes.push({
           url: `${SITE_URL}/level/${t.id}`,
           lastModified,

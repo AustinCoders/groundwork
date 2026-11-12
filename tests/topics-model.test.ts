@@ -30,7 +30,7 @@ const card = (id: string, name: string, category: ShelfCard["category"], chapter
 
 const ready = [card("react", "React", "web", 57), card("js", "JavaScript", "languages", 41)];
 const soon = [card("rust", "Rust", "languages"), card("go", "Go", "languages"), card("css", "CSS", "web")];
-const topics = buildTopics(ready, soon, { rounds: 27, questions: 420 });
+const topics = buildTopics(ready, soon, { rounds: 27, questions: 420, answered: 226 });
 
 describe("the home topic model", () => {
   it("orders topics by category with the written ones first and the interview book after computer science", () => {
@@ -60,7 +60,7 @@ describe("the home topic model", () => {
     const named = buildTopics(
       [card("js", "JavaScript", "languages", 4), card("nextjs", "Next.js", "web", 2)],
       [card("node", "Node.js", "backend"), card("cpp", "C++", "languages")],
-      { rounds: 1, questions: 1 }
+      { rounds: 1, questions: 1, answered: 1 }
     );
     expect(findTopics(named, "node js").map((t) => t.id)).toEqual(["node"]);
     expect(findTopics(named, "Next JS").map((t) => t.id)).toEqual(["nextjs"]);
@@ -82,7 +82,7 @@ describe("the home topic model", () => {
         card("ai", "Claude & AI tools", "ai"),
         card("node", "Node.js", "backend"),
       ],
-      { rounds: 1, questions: 1 }
+      { rounds: 1, questions: 1, answered: 1 }
     );
     expect(findTopics(all, "k8s").map((t) => t.id)).toContain("kubernetes");
     expect(findTopics(all, "golang").map((t) => t.id)).toContain("go");
@@ -100,6 +100,7 @@ describe("the home topic model", () => {
     const java = buildTopics([card("js", "JavaScript", "languages", 4)], [card("java", "Java", "languages")], {
       rounds: 1,
       questions: 1,
+      answered: 1,
     });
     expect(findTopics(java, "java")).toHaveLength(2);
     expect(exactTopic(java, "Java")?.id).toBe("java");

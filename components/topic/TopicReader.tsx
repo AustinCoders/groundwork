@@ -1,10 +1,12 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { CodeLanguageNote } from "@/components/dsa/CodeLanguageNote";
 import { EndPopup } from "@/components/check/EndPopup";
 import { TopicFrame } from "@/components/topic/TopicFrame";
+import { topicKit } from "@/components/topic/TopicKit";
 import { useChapterBody } from "@/components/reader/useChapterBody";
 import { quizStore } from "@/lib/quizStore";
 import { useChapterStates } from "@/lib/useChapterStates";
@@ -61,6 +63,7 @@ export function TopicReader({
   check,
   checkChapterIds,
   codeBlocks,
+  byline,
   unwritten = 0,
 }: {
   topicId: string;
@@ -78,6 +81,7 @@ export function TopicReader({
   toc: TocItem[];
   diagrams: number;
   exercises: PracticeLink[];
+  byline?: { author: string; updated: string };
   levelExerciseTotal: number;
   completion?: Completion;
   check?: ReactNode;
@@ -228,6 +232,7 @@ export function TopicReader({
               ...(diagrams ? [`${diagrams} ${diagrams === 1 ? "diagram" : "diagrams"}`] : []),
               `${toc.length} sections`,
               `${exercises.length} ${exercises.length === 1 ? "exercise" : "exercises"}`,
+              ...(byline ? [`By ${byline.author}`, `Notes updated ${byline.updated}`] : []),
             ]}
             listenId={chapter.id}
             learn={toc.map((t) => t.text)}
@@ -235,11 +240,18 @@ export function TopicReader({
             position={{ index: index + 1, total: chapters.length }}
             read={mounted && isDone}
             extra={
-              codeBlocks ? (
-                <CodeLanguageSwitch chapterId={chapter.id} bodyRef={bodyRef} />
-              ) : topicId === "dsa" ? (
-                <CodeLanguageNote />
-              ) : undefined
+              <>
+                {codeBlocks ? (
+                  <CodeLanguageSwitch chapterId={chapter.id} bodyRef={bodyRef} />
+                ) : topicId === "dsa" ? (
+                  <CodeLanguageNote />
+                ) : undefined}
+                {byline && (
+                  <Link className={topicKit.chip} href="/about#made" prefetch={false}>
+                    How this is made
+                  </Link>
+                )}
+              </>
             }
           />
 

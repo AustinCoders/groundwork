@@ -95,6 +95,11 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: "/playground",
+        destination: "/practice?id=free",
+        permanent: true,
+      },
+      {
         source: "/system-design/company-questions/:id",
         destination: "/company-questions/design/:id",
         permanent: true,
