@@ -163,7 +163,8 @@ export const archDesignSystem: Chapter = {
 
 <h3>Eight fonts</h3>
 <p>
-  <code>lib/fonts.ts</code> loads 15 families through <code>next/font/google</code>, which serves
+  <code>lib/fonts.ts</code> loads 15 families through <code>next/font/local</code> from the Latin files kept in
+  <code>lib/font-files</code>, so the build downloads nothing. It serves
   them from the site's own origin and exposes each as a variable such as
   <code>--font-caveat</code>. Only the default pair, Caveat and Kalam, is preloaded, with
   <code>display: "optional"</code>, so a slow font never causes a layout shift. The other thirteen
