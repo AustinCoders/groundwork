@@ -217,9 +217,10 @@ export const dsa1: Exercise[] = [
       "A node cannot decide on its own: 'take me' is only worth it if the children were skipped. So one number per subtree is not enough information to pass upward.",
       "Return TWO numbers from each subtree — the best total when this node is robbed, and the best total when it is not.",
       "If the node is robbed you must add the children's 'not robbed' numbers. If it is not robbed each child is free to take whichever of its two numbers is larger. The answer at the root is the max of its pair.",
+      "The last test is a 10,000-node chain. Recursion that goes one frame per level overflows the call stack there, so once the recursive version passes the small tests, redo the walk with an explicit stack or queue.",
     ],
     solution:
-      "class TreeNode {\n  constructor(val, left, right) {\n    this.val = val;\n    this.left = left === undefined ? null : left;\n    this.right = right === undefined ? null : right;\n  }\n}\n\nfunction buildTree(values) {\n  if (!values || values.length === 0 || values[0] === null) return null;\n  const root = new TreeNode(values[0]);\n  const queue = [root];\n  let i = 1;\n  while (queue.length > 0 && i < values.length) {\n    const node = queue.shift();\n    if (i < values.length) {\n      const v = values[i++];\n      if (v !== null) { node.left = new TreeNode(v); queue.push(node.left); }\n    }\n    if (i < values.length) {\n      const v = values[i++];\n      if (v !== null) { node.right = new TreeNode(v); queue.push(node.right); }\n    }\n  }\n  return root;\n}\n\nfunction rob(root) {\n  const go = (node) => {\n    if (node === null) return [0, 0];\n    const left = go(node.left);\n    const right = go(node.right);\n    const skip = Math.max(left[0], left[1]) + Math.max(right[0], right[1]);\n    const take = node.val + left[0] + right[0];\n    return [skip, take];\n  };\n  const pair = go(root);\n  return Math.max(pair[0], pair[1]);\n}\n",
+      "class TreeNode {\n  constructor(val, left, right) {\n    this.val = val;\n    this.left = left === undefined ? null : left;\n    this.right = right === undefined ? null : right;\n  }\n}\n\nfunction buildTree(values) {\n  if (!values || values.length === 0 || values[0] === null) return null;\n  const root = new TreeNode(values[0]);\n  const queue = [root];\n  let i = 1;\n  while (queue.length > 0 && i < values.length) {\n    const node = queue.shift();\n    if (i < values.length) {\n      const v = values[i++];\n      if (v !== null) { node.left = new TreeNode(v); queue.push(node.left); }\n    }\n    if (i < values.length) {\n      const v = values[i++];\n      if (v !== null) { node.right = new TreeNode(v); queue.push(node.right); }\n    }\n  }\n  return root;\n}\n\nfunction rob(root) {\n  // List the nodes top-down with an explicit stack, then fold bottom-up, so a deep tree cannot overflow the call stack.\n  if (root === null) return 0;\n  const order = [];\n  const stack = [root];\n  while (stack.length > 0) {\n    const node = stack.pop();\n    order.push(node);\n    if (node.left) stack.push(node.left);\n    if (node.right) stack.push(node.right);\n  }\n  const best = new Map();\n  for (let i = order.length - 1; i >= 0; i--) {\n    const node = order[i];\n    const left = node.left ? best.get(node.left) : [0, 0];\n    const right = node.right ? best.get(node.right) : [0, 0];\n    const skip = Math.max(left[0], left[1]) + Math.max(right[0], right[1]);\n    const take = node.val + left[0] + right[0];\n    best.set(node, [skip, take]);\n  }\n  const pair = best.get(root);\n  return Math.max(pair[0], pair[1]);\n}\n",
     tests: [
       {
         name: "skips the root to take both grandchildren",
@@ -244,6 +245,10 @@ export const dsa1: Exercise[] = [
       { name: "taking the root can still be right even while skipping a middle node", body: "assert.equal(rob(buildTree([10, 5, 1, 100, 100])), 210);" },
       { name: "a balanced tree of all ones takes every other level", body: "assert.equal(rob(buildTree([1, 1, 1, 1, 1, 1, 1])), 5);" },
       { name: "an asymmetric tree with only a right subtree", body: "assert.equal(rob(buildTree([1, null, 2, 3, 4])), 8);" },
+      {
+        name: "a 10,000-node chain does not overflow the call stack",
+        body: "let root = null;\nfor (let i = 0; i < 10000; i++) root = new TreeNode(1, root, null);\nassert.equal(rob(root), 5000);",
+      },
     ],
   },
 {

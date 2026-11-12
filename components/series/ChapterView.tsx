@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useMemo, useState, useEffect } from "react";
+import { topicKit } from "@/components/topic/TopicKit";
 import { TopicFrame, type FrameTopic } from "@/components/topic/TopicFrame";
 import { useChapterBody } from "@/components/reader/useChapterBody";
 import { progress } from "@/lib/storage";
@@ -36,6 +38,7 @@ export function ChapterView({
   toc,
   chapters,
   diagrams,
+  byline,
 }: {
   topic: FrameTopic;
   seriesTitle: string;
@@ -48,6 +51,7 @@ export function ChapterView({
   toc: TocItem[];
   chapters: SeriesCard<string>[];
   diagrams: number;
+  byline?: { author: string; updated: string };
 }) {
   const mounted = useMounted();
   const [railOpen, setRailOpen] = useState(false);
@@ -142,12 +146,20 @@ export function ChapterView({
               `${chapter.minutes} min read`,
               ...(diagrams ? [`${diagrams} ${diagrams === 1 ? "diagram" : "diagrams"}`] : []),
               `${toc.length} sections`,
+              ...(byline ? [`By ${byline.author}`, `Notes updated ${byline.updated}`] : []),
             ]}
             listenId={chapter.id}
             learn={toc.map((t) => t.text)}
             minutes={chapter.minutes}
             position={{ index: index + 1, total: chapters.length }}
             read={mounted && isDone}
+            extra={
+              byline ? (
+                <Link className={topicKit.chip} href="/about#made" prefetch={false}>
+                  How this is made
+                </Link>
+              ) : undefined
+            }
           />
 
           {toc.length > 2 && <ChapterInlineToc toc={toc} />}

@@ -44,6 +44,7 @@ export default async function Page({ params }: { params: Promise<{ section: stri
       html={html}
       toc={toc}
       chapters={cards}
+      byline={{ author: "Akshat", updated: "October 2026" }}
       diagrams={(s.body.match(/<svg[^>]*class="dg"/g) ?? []).length}
     />
   );
