@@ -178,6 +178,7 @@ export const dsaAddDp2d: Exercise[] = [
       "Let dp[r][c] be the side of the largest all-ones square that has its bottom-right corner at (r, c). It is 0 when the cell is 0.",
       "For a cell holding 1, dp[r][c] = 1 + the minimum of the cell above, the cell to the left and the cell up-left.",
       "dp[r][c] is also the number of squares that end at (r, c): one of each side from 1 up to dp[r][c]. So the answer is the sum of the whole table.",
+      "The last test is a 300 by 300 grid of ones with over nine million squares. Checking the cells of every candidate square is far too slow there; the table of largest squares ending at each cell is O(m * n).",
     ],
     solution:
       "function countSquares(matrix) {\n  const rows = matrix.length;\n  const cols = matrix[0].length;\n  const dp = Array.from({ length: rows + 1 }, () => new Array(cols + 1).fill(0));\n  let total = 0;\n  for (let r = 1; r <= rows; r++) {\n    for (let c = 1; c <= cols; c++) {\n      if (matrix[r - 1][c - 1] === 1) {\n        dp[r][c] = 1 + Math.min(dp[r - 1][c], dp[r][c - 1], dp[r - 1][c - 1]);\n        total += dp[r][c];\n      }\n    }\n  }\n  return total;\n}\n",
@@ -198,6 +199,10 @@ export const dsaAddDp2d: Exercise[] = [
       {
         name: "the input is not changed",
         body: "const matrix = [[1, 1], [1, 1]];\ncountSquares(matrix);\nassert.deepEqual(matrix, [[1, 1], [1, 1]]);",
+      },
+      {
+        name: "a large input finishes in time (300 by 300)",
+        body: "const size = 300;\nconst matrix = Array.from({ length: size }, () => new Array(size).fill(1));\n// In a grid of ones there are (size - s + 1)^2 squares of side s.\nlet expected = 0;\nfor (let s = 1; s <= size; s++) expected += (size - s + 1) * (size - s + 1);\nassert.equal(countSquares(matrix), expected);",
       },
     ],
   },

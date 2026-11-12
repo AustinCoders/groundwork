@@ -734,6 +734,10 @@ export const dsaAddSweepLineGeometry: Exercise[] = [
       {
         "name": "handles a few thousand points",
         "body": "let seed = 13;\nconst rnd = (m) => { seed = (seed * 48271) % 2147483647; return seed % m; };\nconst pts = Array.from({ length: 4000 }, () => [rnd(1000000) - 500000, rnd(1000000) - 500000]);\nconst got = closestPairSquared(pts);\nlet expected = Infinity;\nfor (let i = 0; i < pts.length; i++) {\n  for (let j = i + 1; j < pts.length; j++) {\n    const d = (pts[i][0] - pts[j][0]) ** 2 + (pts[i][1] - pts[j][1]) ** 2;\n    if (d < expected) expected = d;\n  }\n}\nassert.equal(got, expected);"
+      },
+      {
+        "name": "a large input finishes in time (n = 80,001)",
+        "body": "const n = 80000;\nconst points = new Array(n);\n// Spread along x in steps of 10, stored in a scrambled order, so no two of these are closer than 10.\nfor (let i = 0; i < n; i++) points[(i * 7919) % n] = [10 * i - 400000, (i % 100) * 10];\n// One extra point 1 right and 2 up from the point with i = 12345.\npoints.push([10 * 12345 - 400000 + 1, (12345 % 100) * 10 + 2]);\nassert.equal(closestPairSquared(points), 5);"
       }
     ]
   }

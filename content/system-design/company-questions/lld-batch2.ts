@@ -17,6 +17,7 @@ export const questions: LldQuestion[] = [
         label: "Atlassian Interview Experience for SDE-2, off-campus (GeeksforGeeks)",
         url: "https://www.geeksforgeeks.org/atlassian-interview-experience-for-sde-2-off-campus",
         kind: "candidate-report",
+        year: 2020,
       },
       {
         label: "Atlassian Interview Experience for Internship, on-campus (GeeksforGeeks)",
@@ -329,6 +330,7 @@ function classifyPings(timestamps, spec) {
         label: "Atlassian Interview Experience for Senior Software Engineer (GeeksforGeeks)",
         url: "https://www.geeksforgeeks.org/interview-experiences/atlassian-interview-experience-for-senior-software-engineer/",
         kind: "candidate-report",
+        year: 2023,
       },
     ],
     chapters: [],
@@ -1211,6 +1213,7 @@ function names(cards) {
         label: "Groww internship experience (GfG)",
         url: "https://www.geeksforgeeks.org/interview-experiences/groww-internship-interview-experience-for-software-developer/",
         kind: "candidate-report",
+        year: 2020,
       },
     ],
     chapters: [],

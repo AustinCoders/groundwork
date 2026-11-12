@@ -98,6 +98,10 @@ export const dsaAddDesignProblems: Exercise[] = [
       {
         "name": "agrees with a plain counter on 800 random operations",
         "body": "function seeded(seed) {\n  let s = seed >>> 0;\n  return () => {\n    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;\n    return s / 4294967296;\n  };\n}\nfor (let seed = 1; seed <= 8; seed++) {\n  const next = seeded(seed);\n  const a = new AllOne();\n  const counts = new Map();\n  for (let op = 0; op < 100; op++) {\n    const key = 'abcde'[Math.floor(next() * 5)];\n    if (next() < 0.6) {\n      a.inc(key);\n      counts.set(key, (counts.get(key) || 0) + 1);\n    } else {\n      a.dec(key);\n      if (counts.has(key)) {\n        if (counts.get(key) === 1) counts.delete(key);\n        else counts.set(key, counts.get(key) - 1);\n      }\n    }\n    const values = [...counts.values()];\n    if (values.length === 0) {\n      assert.equal(a.getMaxKey(), '');\n      assert.equal(a.getMinKey(), '');\n    } else {\n      assert.equal(counts.get(a.getMaxKey()), Math.max(...values), 'max, seed ' + seed + ' op ' + op);\n      assert.equal(counts.get(a.getMinKey()), Math.min(...values), 'min, seed ' + seed + ' op ' + op);\n    }\n  }\n}"
+      },
+      {
+        "name": "a large input finishes in time (30,000 keys, 60,000 reads)",
+        "body": "const a = new AllOne();\nconst keys = 30000;\nfor (let i = 0; i < keys; i++) {\n  a.inc('k' + i);\n  a.inc('k' + i);\n}\na.inc('low');\nfor (let i = 0; i < 3; i++) a.inc('high');\n// Every 'k' key stays at 2, 'low' stays at 1 and 'high' only grows.\nfor (let q = 0; q < 30000; q++) {\n  a.inc('high');\n  assert.equal(a.getMaxKey(), 'high');\n  assert.equal(a.getMinKey(), 'low');\n}"
       }
     ]
   },
@@ -255,7 +259,8 @@ export const dsaAddDesignProblems: Exercise[] = [
     "hints": [
       "Keep each key's versions in an array sorted by timestamp, and answer get with a binary search for the last version whose time is <= the query.",
       "Because writes can arrive late, set cannot just push. Binary search for the insertion point and splice the new version in there, so the array stays sorted.",
-      "A write at an existing timestamp must overwrite, not insert a second entry: after finding the position, look at the entry just before it and compare its timestamp."
+      "A write at an existing timestamp must overwrite, not insert a second entry: after finding the position, look at the entry just before it and compare its timestamp.",
+      "The last test reads one key with 50,000 versions 100,000 times. Scanning the versions on every get is O(n) each and too slow there; binary search the sorted list."
     ],
     "solution": "class TimeMap {\n  constructor() {\n    this.versions = new Map();\n  }\n\n  firstAfter(list, timestamp) {\n    let lo = 0;\n    let hi = list.length;\n    while (lo < hi) {\n      const mid = (lo + hi) >> 1;\n      if (list[mid][0] <= timestamp) lo = mid + 1;\n      else hi = mid;\n    }\n    return lo;\n  }\n\n  set(key, value, timestamp) {\n    if (!this.versions.has(key)) this.versions.set(key, []);\n    const list = this.versions.get(key);\n    const at = this.firstAfter(list, timestamp);\n    if (at > 0 && list[at - 1][0] === timestamp) list[at - 1][1] = value;\n    else list.splice(at, 0, [timestamp, value]);\n  }\n\n  get(key, timestamp) {\n    const list = this.versions.get(key);\n    if (!list) return '';\n    const at = this.firstAfter(list, timestamp);\n    return at === 0 ? '' : list[at - 1][1];\n  }\n}\n",
     "tests": [
@@ -290,6 +295,10 @@ export const dsaAddDesignProblems: Exercise[] = [
       {
         "name": "agrees with a list of every write on 900 random operations",
         "body": "function seeded(seed) {\n  let s = seed >>> 0;\n  return () => {\n    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;\n    return s / 4294967296;\n  };\n}\nfor (let seed = 1; seed <= 9; seed++) {\n  const next = seeded(seed);\n  const t = new TimeMap();\n  const writes = [];\n  for (let op = 0; op < 100; op++) {\n    const key = 'k' + Math.floor(next() * 3);\n    if (next() < 0.5) {\n      const ts = Math.floor(next() * 30);\n      const value = 'v' + op;\n      t.set(key, value, ts);\n      writes.push({ key, ts, value });\n    } else {\n      const ts = Math.floor(next() * 35);\n      let best = null;\n      for (const w of writes) if (w.key === key && w.ts <= ts && (best === null || w.ts >= best.ts)) best = w;\n      assert.equal(t.get(key, ts), best ? best.value : '', 'seed ' + seed + ' op ' + op);\n    }\n  }\n}"
+      },
+      {
+        "name": "a large input finishes in time (50,000 versions of one key, 100,000 reads)",
+        "body": "const t = new TimeMap();\nconst versions = 50000;\nfor (let i = 0; i < versions; i++) t.set('k', 'v' + i, 2 * i);\nt.set('k', 'late', 49999);\nfor (let q = 0; q < 100000; q++) {\n  const i = (q * 7919) % versions;\n  // An odd time falls just after version i, except where the late write was slotted in.\n  assert.equal(t.get('k', 2 * i + 1), i === 24999 ? 'late' : 'v' + i);\n}"
       }
     ]
   }

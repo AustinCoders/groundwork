@@ -18,6 +18,7 @@ export const questions: DsaQuestion[] = [
         label: "Aced: a Google software engineer interview (L3)",
         url: "https://www.aced.io/experiences/google-software-engineer-interview-4c0584",
         kind: "candidate-report",
+        year: 2026,
       },
       {
         label: "Company-tagged list: Google (LeetCode tag export)",
@@ -524,11 +525,13 @@ export const questions: DsaQuestion[] = [
         label: "GeeksforGeeks: Meta interview experience",
         url: "https://www.geeksforgeeks.org/meta-interview-experience/",
         kind: "candidate-report",
+        year: 2024,
       },
       {
         label: "Hello Interview: Meta E5 guide",
         url: "https://www.hellointerview.com/guides/meta/e5",
         kind: "prep-guide",
+        year: 2026,
       },
       {
         label: "TechInterview.org: top coding problems by company",
@@ -669,6 +672,7 @@ function buildTree(values) {
         label: "GeeksforGeeks: Meta E4/L4 Canada remote interview experience",
         url: "https://www.geeksforgeeks.org/interview-experiences/meta-interview-experience-e4l4-canada-remote-apr-2024offer/",
         kind: "candidate-report",
+        year: 2024,
       },
       {
         label: "TechInterview.org: top coding problems by company",
@@ -782,6 +786,7 @@ function buildTree(values) {
         label: "GeeksforGeeks: Meta E4/L4 Canada remote interview experience",
         url: "https://www.geeksforgeeks.org/interview-experiences/meta-interview-experience-e4l4-canada-remote-apr-2024offer/",
         kind: "candidate-report",
+        year: 2024,
       },
       {
         label: "TechInterview.org: top coding problems by company",

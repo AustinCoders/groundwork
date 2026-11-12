@@ -46,6 +46,10 @@ export const dsaAddSegmentFenwickTrees: Exercise[] = [
       {
         "name": "agrees with sorting after every change on random operations",
         "body": "let seed = 11;\nconst rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;\nconst ri = (a, b) => a + Math.floor(rnd() * (b - a + 1));\nconst maxValue = 37;\nconst ops = [];\nconst model = [];\nconst expected = [];\nfor (let step = 0; step < 600; step++) {\n  const roll = rnd();\n  if (roll < 0.45) {\n    const x = ri(1, maxValue);\n    ops.push([\"add\", x]);\n    model.push(x);\n  } else if (roll < 0.7) {\n    const x = ri(1, maxValue);\n    ops.push([\"remove\", x]);\n    const at = model.indexOf(x);\n    if (at !== -1) model.splice(at, 1);\n  } else {\n    const k = ri(1, model.length + 2);\n    ops.push([\"kth\", k]);\n    const sorted = model.slice().sort((a, b) => a - b);\n    expected.push(k <= sorted.length ? sorted[k - 1] : -1);\n  }\n}\nassert.deepEqual(kthSmallest(maxValue, ops), expected);"
+      },
+      {
+        "name": "a large input finishes in time (maxValue = 200,000 with 100,000 operations)",
+        "body": "const maxValue = 200000;\nconst m = 50000;\nconst ops = [];\nconst expected = [];\nfor (let i = 0; i < m; i++) ops.push([\"add\", maxValue - i]);\n// The multiset is now every value from maxValue - m + 1 to maxValue, once each.\nfor (let q = 0; q < m; q++) {\n  const k = 1 + ((q * 7919) % (m + 10));\n  ops.push([\"kth\", k]);\n  expected.push(k <= m ? maxValue - m + k : -1);\n}\nassert.deepEqual(kthSmallest(maxValue, ops), expected);"
       }
     ]
   },
@@ -299,7 +303,8 @@ export const dsaAddSegmentFenwickTrees: Exercise[] = [
     "hints": [
       "For each fruit you need the leftmost position whose capacity is at least a given amount, and then that position must stop being available.",
       "Build a segment tree where every node stores the maximum capacity in its range. If the root's maximum is below the fruit's quantity, the fruit is unplaced. Otherwise descend: go to the left child if its maximum is enough, else to the right child.",
-      "After placing a fruit, set that basket's capacity to -1 (or 0 when every quantity is positive) with a point update, so the basket is never chosen again. Count the fruits for which the descent fails."
+      "After placing a fruit, set that basket's capacity to -1 (or 0 when every quantity is positive) with a point update, so the basket is never chosen again. Count the fruits for which the descent fails.",
+      "The last test has 100,000 fruits and 100,000 baskets. Scanning the baskets from the left for every fruit is O(n * m) and too slow there; descending a max segment tree finds the leftmost fit in O(log m)."
     ],
     "solution": "function numOfUnplacedFruits(fruits, baskets) {\n  const n = baskets.length;\n  if (n === 0) return fruits.length;\n  const tree = new Array(4 * n).fill(-1);\n  const build = (node, lo, hi) => {\n    if (lo === hi) {\n      tree[node] = baskets[lo];\n      return;\n    }\n    const mid = (lo + hi) >> 1;\n    build(2 * node, lo, mid);\n    build(2 * node + 1, mid + 1, hi);\n    tree[node] = Math.max(tree[2 * node], tree[2 * node + 1]);\n  };\n  build(1, 0, n - 1);\n  let unplaced = 0;\n  for (const amount of fruits) {\n    if (tree[1] < amount) {\n      unplaced++;\n      continue;\n    }\n    let node = 1;\n    let lo = 0;\n    let hi = n - 1;\n    while (lo < hi) {\n      const mid = (lo + hi) >> 1;\n      if (tree[2 * node] >= amount) {\n        node = 2 * node;\n        hi = mid;\n      } else {\n        node = 2 * node + 1;\n        lo = mid + 1;\n      }\n    }\n    tree[node] = -1;\n    while (node > 1) {\n      node >>= 1;\n      tree[node] = Math.max(tree[2 * node], tree[2 * node + 1]);\n    }\n  }\n  return unplaced;\n}\n",
     "tests": [
@@ -334,6 +339,10 @@ export const dsaAddSegmentFenwickTrees: Exercise[] = [
       {
         "name": "agrees with a leftmost-fit scan on random inputs",
         "body": "let seed = 11;\nconst rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;\nconst ri = (a, b) => a + Math.floor(rnd() * (b - a + 1));\nfor (let round = 0; round < 300; round++) {\n  const fruits = Array.from({ length: ri(0, 12) }, () => ri(1, 9));\n  const baskets = Array.from({ length: ri(0, 12) }, () => ri(1, 9));\n  const free = baskets.slice();\n  let expected = 0;\n  for (const amount of fruits) {\n    const at = free.findIndex((capacity) => capacity >= amount);\n    if (at === -1) expected++;\n    else free[at] = -1;\n  }\n  assert.equal(numOfUnplacedFruits(fruits, baskets), expected);\n}"
+      },
+      {
+        "name": "a large input finishes in time (n = 100,000)",
+        "body": "const n = 100000;\nconst baskets = Array.from({ length: n }, (_, i) => i + 1);\nconst fruits = Array.from({ length: n }, (_, i) => n - i);\nfor (let i = 0; i < 1000; i++) fruits.push(1);\n// Fruit of size s only fits from basket s onwards, so the first n fill every basket and the last 1,000 are left over.\nassert.equal(numOfUnplacedFruits(fruits, baskets), 1000);"
       }
     ]
   }

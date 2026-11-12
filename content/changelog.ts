@@ -7,6 +7,16 @@ export interface ChangelogEntry {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-11-12",
+    title: "Large-input tests, source years and self-hosted fonts",
+    items: [
+      "94 DSA exercises have a new large-input test, so a solution slower than the stated complexity no longer passes quietly.",
+      "547 company-question sources now show a year, taken from the page's own publish or last-updated date. Sources with no visible date stay without one.",
+      "Two wrong source years were corrected (an Amazon report from 2021 and a PhonePe report from 2025).",
+      "Fonts are served from files kept with the site, so a build no longer downloads them.",
+    ],
+  },
+  {
+    date: "2026-11-12",
     title: "Honest claims, author and date on chapters, and content fixes",
     items: [
       "Site descriptions and counts were corrected on the home page, in search previews and in the interview book, so they no longer claim more than is written.",

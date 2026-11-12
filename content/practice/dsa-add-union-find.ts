@@ -71,7 +71,8 @@ export const dsaAddUnionFind: Exercise[] = [
     "hints": [
       "Stones that share a row or a column are linked. Within one linked group you can remove stones one by one until a single stone is left, and you can never remove that last one.",
       "So the answer is (number of stones) - (number of groups). Count groups with union-find.",
-      "Union the stones' rows and columns instead of the stones: give each distinct row and each distinct column its own id (a row and a column with the same number are different elements) and union row-id with column-id for every stone."
+      "Union the stones' rows and columns instead of the stones: give each distinct row and each distinct column its own id (a row and a column with the same number are different elements) and union row-id with column-id for every stone.",
+      "The last test has 100,000 stones. Comparing every pair of stones to see whether they share a line is O(n^2) and too slow there; uniting each stone's row with its column needs one union per stone."
     ],
     "solution": "class DSU {\n  constructor(n) {\n    this.parent = Array.from({ length: n }, (_, i) => i);\n    this.size = new Array(n).fill(1);\n    this.components = n;\n  }\n\n  find(x) {\n    let root = x;\n    while (this.parent[root] !== root) root = this.parent[root];\n    while (this.parent[x] !== root) {\n      const next = this.parent[x];\n      this.parent[x] = root;\n      x = next;\n    }\n    return root;\n  }\n\n  union(a, b) {\n    let ra = this.find(a);\n    let rb = this.find(b);\n    if (ra === rb) return false;\n    if (this.size[ra] < this.size[rb]) [ra, rb] = [rb, ra];\n    this.parent[rb] = ra;\n    this.size[ra] += this.size[rb];\n    this.components--;\n    return true;\n  }\n\n  setSize(x) {\n    return this.size[this.find(x)];\n  }\n}\n\nfunction removeStones(stones) {\n  const rowId = new Map();\n  const colId = new Map();\n  let next = 0;\n  const links = [];\n  for (const [r, c] of stones) {\n    if (!rowId.has(r)) rowId.set(r, next++);\n    if (!colId.has(c)) colId.set(c, next++);\n    links.push([rowId.get(r), colId.get(c)]);\n  }\n  const dsu = new DSU(next);\n  for (const [a, b] of links) dsu.union(a, b);\n  return stones.length - dsu.components;\n}\n",
     "tests": [
@@ -118,6 +119,10 @@ export const dsaAddUnionFind: Exercise[] = [
       {
         "name": "1000 stones on a staircase are all linked",
         "body": "const stones = [];\nfor (let i = 0; i < 500; i++) { stones.push([i, i]); stones.push([i, i + 1]); }\nassert.equal(removeStones(stones), 999);"
+      },
+      {
+        "name": "a large input finishes in time (n = 100,000)",
+        "body": "const stones = [];\n// 100 separate staircases of 1,000 stones: (o, o), (o, o + 1), (o + 1, o + 1), (o + 1, o + 2), ...\nfor (let g = 0; g < 100; g++) {\n  const o = g * 10000;\n  for (let j = 0; j < 1000; j++) stones.push(j % 2 === 0 ? [o + j / 2, o + j / 2] : [o + (j - 1) / 2, o + (j + 1) / 2]);\n}\n// Each staircase is one linked group, and a group can be removed down to its last stone.\nassert.equal(removeStones(stones), stones.length - 100);"
       }
     ]
   },

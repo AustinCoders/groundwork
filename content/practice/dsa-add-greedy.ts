@@ -83,6 +83,7 @@ export const dsaAddGreedy: Exercise[] = [
       "Pick the balloon that ends first. Where is the best place to shoot so that it is hit?",
       "Shoot at its right end: that is as far right as you can go and still hit it, so it reaches the most balloons.",
       "Sort by right end. A balloon that starts after the last arrow position needs a new arrow; otherwise it is already burst.",
+      "The last test has 100,000 balloons. Searching all the remaining balloons for the one that ends first before every shot is O(n^2) and too slow there; sort by right end once and sweep.",
     ],
     solution:
       "function findMinArrowShots(points) {\n  if (points.length === 0) return 0;\n  const sorted = [...points].sort((a, b) => a[1] - b[1]);\n  let arrows = 1;\n  let arrowAt = sorted[0][1];\n  for (let i = 1; i < sorted.length; i++) {\n    if (sorted[i][0] > arrowAt) {\n      arrows++;\n      arrowAt = sorted[i][1];\n    }\n  }\n  return arrows;\n}\n",
@@ -95,6 +96,7 @@ export const dsaAddGreedy: Exercise[] = [
       { name: "extreme coordinates", body: "assert.equal(findMinArrowShots([[-2147483646, -2147483645], [2147483646, 2147483647]]), 2);" },
       { name: "sorting by start would fail", body: "assert.equal(findMinArrowShots([[1, 10], [2, 3], [4, 5], [6, 7]]), 3);" },
       { name: "the input is not changed", body: "const points = [[3, 4], [1, 2]];\nfindMinArrowShots(points);\nassert.deepEqual(points, [[3, 4], [1, 2]]);" },
+      { name: "a large input finishes in time (n = 100,000)", body: "const n = 100000;\nconst points = new Array(n);\n// Balloon i spans [10i, 10i + 15], stored in a scrambled order: it overlaps balloon i + 1 but not i + 2,\n// so one arrow can never take more than two neighbours.\nfor (let i = 0; i < n; i++) points[(i * 7919) % n] = [10 * i, 10 * i + 15];\nassert.equal(findMinArrowShots(points), n / 2);" },
     ],
   },
   {

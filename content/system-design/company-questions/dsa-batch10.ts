@@ -1117,6 +1117,7 @@ function run(ops, args) {
         label: "PhonePe Interview Experience for SDE (2 - 5 Years Experienced), DS/Algo round (GeeksforGeeks)",
         url: "https://www.geeksforgeeks.org/interview-experiences/phonepe-interview-experience-for-sde-2-5-years-experienced/",
         kind: "candidate-report",
+        year: 2022,
       },
       {
         label: "PhonePe Prep, onsite rounds, Round 2 problem solving (LeetCode Discuss, Oct 2025)",

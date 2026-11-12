@@ -46,6 +46,10 @@ export const dsaAddTries: Exercise[] = [
       {
         "name": "many roots on a longer sentence",
         "body": "let seed = 20260103;\nconst rand = (n) => { seed = (seed * 16807) % 2147483647; return seed % n; };\nconst roots = Array.from({ length: 30 }, () => Array.from({ length: 1 + rand(3) }, () => \"abc\"[rand(3)]).join(\"\"));\nconst words = Array.from({ length: 80 }, () => Array.from({ length: 1 + rand(7) }, () => \"abc\"[rand(3)]).join(\"\"));\nconst expected = words.map((w) => {\n  let best = w;\n  for (const root of roots) if (w.startsWith(root) && root.length < best.length) best = root;\n  return best;\n}).join(\" \");\nassert.equal(replaceWords(roots, words.join(\" \")), expected);"
+      },
+      {
+        "name": "a large input finishes in time (4,913 roots, 150,000 words)",
+        "body": "const letters = 'abcdefghijklmnopq';\nconst roots = [];\n// Every three-letter string over a..q is a root: 17 * 17 * 17 = 4,913 of them.\nfor (const x of letters) for (const y of letters) for (const z of letters) roots.push(x + y + z);\nconst words = [];\nconst expected = [];\nfor (let i = 0; i < 75000; i++) {\n  const root = roots[(i * 7919) % roots.length];\n  // A word that starts with a root shrinks to it; a word that starts with z has no root.\n  words.push(root + 'xyz');\n  expected.push(root);\n  words.push('z' + root);\n  expected.push('z' + root);\n}\nassert.equal(replaceWords(roots, words.join(' ')), expected.join(' '));"
       }
     ]
   },
@@ -107,7 +111,8 @@ export const dsaAddTries: Exercise[] = [
     "hints": [
       "Store on every trie node the total of the values of all keys that pass through it. Then sum(prefix) is the number on the prefix node.",
       "A replaced key must not be added twice. Keep a Map from key to its current value and compute delta = val - oldValue.",
-      "insert adds delta to every node on the key's path, so a new key (old value 0) adds val and a replaced key adds only the difference."
+      "insert adds delta to every node on the key's path, so a new key (old value 0) adds val and a replaced key adds only the difference.",
+      "The last test stores 20,280 keys and asks for 20,000 sums. Scanning every key for each sum is O(keys) per call and too slow there; keeping a running total on every trie node answers in the length of the prefix."
     ],
     "solution": "class MapSum {\n  constructor() {\n    this.root = { sum: 0, children: new Map() };\n    this.values = new Map();\n  }\n\n  insert(key, val) {\n    const delta = val - (this.values.get(key) ?? 0);\n    this.values.set(key, val);\n    let node = this.root;\n    node.sum += delta;\n    for (const ch of key) {\n      if (!node.children.has(ch)) node.children.set(ch, { sum: 0, children: new Map() });\n      node = node.children.get(ch);\n      node.sum += delta;\n    }\n  }\n\n  sum(prefix) {\n    let node = this.root;\n    for (const ch of prefix) {\n      node = node.children.get(ch);\n      if (!node) return 0;\n    }\n    return node.sum;\n  }\n}\n",
     "tests": [
@@ -142,6 +147,10 @@ export const dsaAddTries: Exercise[] = [
       {
         "name": "matches a scan over all keys on pseudo-random operations",
         "body": "let seed = 20260103;\nconst rand = (n) => { seed = (seed * 16807) % 2147483647; return seed % n; };\nconst m = new MapSum();\nconst truth = new Map();\nfor (let i = 0; i < 400; i++) {\n  const key = Array.from({ length: 1 + rand(4) }, () => 'abc'[rand(3)]).join('');\n  const val = rand(21) - 10;\n  m.insert(key, val);\n  truth.set(key, val);\n  const prefix = Array.from({ length: rand(3) }, () => 'abc'[rand(3)]).join('');\n  let expected = 0;\n  for (const [k, v] of truth) if (k.startsWith(prefix)) expected += v;\n  assert.equal(m.sum(prefix), expected);\n}"
+      },
+      {
+        "name": "a large input finishes in time (20,280 keys, 20,000 sums)",
+        "body": "const letters = 'abcdefghijklmnopqrstuvwxyz';\n// Key i is i written as four base-26 digits, so each two-letter prefix covers 676 consecutive keys.\nconst key = (i) => letters[Math.floor(i / 17576) % 26] + letters[Math.floor(i / 676) % 26] + letters[Math.floor(i / 26) % 26] + letters[i % 26];\nconst count = 30 * 676;\nconst m = new MapSum();\nfor (let i = 0; i < count; i++) m.insert(key((i * 7919) % count), 2);\n// Replacing one key under the first prefix raises that prefix's total by 3.\nm.insert(key(5), 5);\nfor (let q = 0; q < 20000; q++) {\n  const block = q % 30;\n  assert.equal(m.sum(key(block * 676).slice(0, 2)), block === 0 ? 2 * 676 + 3 : 2 * 676);\n}\nassert.equal(m.sum(''), 2 * count + 3);"
       }
     ]
   },

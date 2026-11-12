@@ -14,6 +14,7 @@ export const dsa2: Exercise[] = [
       "If the total gas is less than the total cost, no start can possibly work — check that first.",
       "If you run dry somewhere between start s and station i, then no station in s..i can be a valid start either.",
       "So carry a running tank; the moment it goes negative, reset it to 0 and set the candidate start to i + 1.",
+      "The last test has 100,000 stations. Simulating the loop from every start is O(n^2) and too slow there; one pass that resets the candidate start whenever the tank goes negative is O(n).",
     ],
     solution:
       "function canCompleteCircuit(gas, cost) {\n  let total = 0;\n  let tank = 0;\n  let start = 0;\n  for (let i = 0; i < gas.length; i++) {\n    const diff = gas[i] - cost[i];\n    total += diff;\n    tank += diff;\n    if (tank < 0) {\n      start = i + 1;\n      tank = 0;\n    }\n  }\n  return total < 0 ? -1 : start;\n}\n",
@@ -41,6 +42,10 @@ export const dsa2: Exercise[] = [
       { name: "all stations break even: every start works, so the smallest index is returned", body: "assert.equal(canCompleteCircuit([0,0,0,0],[0,0,0,0]), 0);" },
       { name: "the deficit sits near the end of the array", body: "const gas=[4,3,1,1,5];\nconst cost=[1,2,7,3,1];\nfunction ref(g,c){const n=g.length; for(let s=0;s<n;s++){let tank=0; let ok=true; for(let k=0;k<n;k++){const i=(s+k)%n; tank+=g[i]-c[i]; if(tank<0){ok=false;break;}} if(ok) return s;} return -1;}\nassert.equal(canCompleteCircuit(gas,cost), ref(gas,cost));" },
       { name: "agrees with a brute-force simulation on a mixed array", body: "const gas=[3,4,1,6,2,0,5];\nconst cost=[2,5,3,1,1,4,3];\nfunction ref(g,c){const n=g.length; for(let s=0;s<n;s++){let tank=0; let ok=true; for(let k=0;k<n;k++){const i=(s+k)%n; tank+=g[i]-c[i]; if(tank<0){ok=false;break;}} if(ok) return s;} return -1;}\nassert.equal(canCompleteCircuit(gas,cost), ref(gas,cost));" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst gas = new Array(n).fill(1);\nconst cost = new Array(n).fill(1);\n// Every leg breaks even except the one out of station n - 2, which costs 1 extra, and station n - 1 gives 1 extra.\n// Only a start at n - 1 has that spare unit in the tank when it is needed.\ncost[n - 2] = 2;\ngas[n - 1] = 2;\nassert.equal(canCompleteCircuit(gas, cost), n - 1);",
+      },
     ],
   },
 {
@@ -55,6 +60,7 @@ export const dsa2: Exercise[] = [
       "You do not need to know WHICH jumps you take — only how far you could possibly get.",
       "Sweep left to right tracking the furthest index reachable so far.",
       "If your current index ever exceeds that reach, you are stuck and the answer is false.",
+      "The last test has 100,000 positions. Marking every index each position can reach is O(n^2) and too slow there; tracking only the furthest reachable index is one pass.",
     ],
     solution:
       "function canJump(nums) {\n  let reach = 0;\n  for (let i = 0; i < nums.length; i++) {\n    if (i > reach) return false;\n    reach = Math.max(reach, i + nums[i]);\n  }\n  return true;\n}\n",
@@ -82,6 +88,10 @@ export const dsa2: Exercise[] = [
       { name: "one big jump from the start covers a run of zeros to the last index", body: "assert.equal(canJump([5,0,0,0,0,0]), true);" },
       { name: "gets stuck one step short of the end", body: "assert.equal(canJump([1,1,0,1]), false);" },
       { name: "does not mutate the input", body: "const nums=[2,3,1,1,4];\ncanJump(nums);\nassert.deepEqual(nums,[2,3,1,1,4]);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\n// n - 2, n - 3, ..., 1, 0, 0: every jump lands on or before the wall at index n - 2.\nconst nums = Array.from({ length: n }, (_, i) => Math.max(0, n - 2 - i));\nassert.equal(canJump(nums), false);\n// One more step of reach from the start clears the wall.\nnums[0] = n - 1;\nassert.equal(canJump(nums), true);",
+      },
     ],
   },
 {
@@ -96,6 +106,7 @@ export const dsa2: Exercise[] = [
       "Treat it as a breadth-first walk: indices 0, then everything one jump away, then two jumps away.",
       "Track the end of the current level and the furthest index any element in this level can reach.",
       "When your scan reaches the end of the level, increment the jump count and extend the level to that furthest reach.",
+      "The last test has 100,000 positions with long jumps. Updating a table entry for every landing spot of every position is O(n^2) and too slow there; the level-by-level sweep is O(n).",
     ],
     solution:
       "function jump(nums) {\n  let jumps = 0;\n  let currentEnd = 0;\n  let farthest = 0;\n  for (let i = 0; i < nums.length - 1; i++) {\n    farthest = Math.max(farthest, i + nums[i]);\n    if (i === currentEnd) {\n      jumps++;\n      currentEnd = farthest;\n    }\n  }\n  return jumps;\n}\n",
@@ -123,6 +134,10 @@ export const dsa2: Exercise[] = [
       { name: "reaches the end optimally with an early large jump", body: "const nums=[3,1,1,1,2,1];\nfunction ref(a){const n=a.length; if(n<=1) return 0; const dist=new Array(n).fill(Infinity); dist[0]=0; for(let i=0;i<n;i++){ if(dist[i]===Infinity) continue; for(let s=1;s<=a[i]&&i+s<n;s++){ if(dist[i]+1<dist[i+s]) dist[i+s]=dist[i]+1; } } return dist[n-1];}\nassert.equal(jump(nums), ref(nums));" },
       { name: "agrees with a BFS reference on a longer array", body: "const nums=[2,3,1,1,4,2,1,1,1,4];\nfunction ref(a){const n=a.length; if(n<=1) return 0; const dist=new Array(n).fill(Infinity); dist[0]=0; for(let i=0;i<n;i++){ if(dist[i]===Infinity) continue; for(let s=1;s<=a[i]&&i+s<n;s++){ if(dist[i]+1<dist[i+s]) dist[i+s]=dist[i]+1; } } return dist[n-1];}\nassert.equal(jump(nums), ref(nums));" },
       { name: "does not mutate the input", body: "const nums=[2,3,1,1,4];\njump(nums);\nassert.deepEqual(nums,[2,3,1,1,4]);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst nums = new Array(n).fill(50000);\n// One jump reaches index 50,000 at most; a second one reaches the end.\nassert.equal(jump(nums), 2);",
+      },
     ],
   },
 {
@@ -138,6 +153,7 @@ export const dsa2: Exercise[] = [
       "Each child has two independent constraints: one against the left neighbour, one against the right.",
       "Satisfy the left-neighbour rule with a forward pass, then the right-neighbour rule with a backward pass.",
       "On the backward pass do not overwrite — take the max of what you already assigned and what the right rule demands.",
+      "The last test has 100,000 children. Sweeping the line again and again until nothing changes takes O(n) sweeps on a long falling run and is too slow there; one forward pass and one backward pass are enough.",
     ],
     solution:
       "function candy(ratings) {\n  const n = ratings.length;\n  if (n === 0) return 0;\n  const give = new Array(n).fill(1);\n  for (let i = 1; i < n; i++) {\n    if (ratings[i] > ratings[i - 1]) give[i] = give[i - 1] + 1;\n  }\n  for (let i = n - 2; i >= 0; i--) {\n    if (ratings[i] > ratings[i + 1]) give[i] = Math.max(give[i], give[i + 1] + 1);\n  }\n  let total = 0;\n  for (const g of give) total += g;\n  return total;\n}\n",
@@ -165,6 +181,10 @@ export const dsa2: Exercise[] = [
       { name: "strictly descending ratings need the classic staircase", body: "assert.equal(candy([5,4,3,2,1]), 15);" },
       { name: "a valley shape needs both passes", body: "assert.equal(candy([1,2,3,2,1]), 9);" },
       { name: "two children tied at the peak", body: "assert.equal(candy([1,2,2,1]), 6);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\n// Ratings climb to the middle and fall back, so child i needs min(i, n - 1 - i) + 1 candies.\nconst ratings = Array.from({ length: n }, (_, i) => Math.min(i, n - 1 - i));\nlet expected = 0;\nfor (let i = 0; i < n; i++) expected += Math.min(i, n - 1 - i) + 1;\nassert.equal(candy(ratings), expected);",
+      },
     ],
   },
 {
@@ -226,6 +246,7 @@ export const dsa2: Exercise[] = [
       "This is a plain binary search with a different fallback: what does `lo` point at once the loop ends?",
       "Think of it as 'the number of elements strictly less than target'.",
       "Run the loop with `lo <= hi`; when it exits, `lo` is exactly the insertion point.",
+      "The last test runs 20,000 searches on 1,000,000 values. Scanning from the left is O(n) per search and too slow there; binary search needs about 20 steps each.",
     ],
     solution:
       "function searchInsert(nums, target) {\n  let lo = 0;\n  let hi = nums.length - 1;\n  while (lo <= hi) {\n    const mid = lo + ((hi - lo) >> 1);\n    if (nums[mid] === target) return mid;\n    if (nums[mid] < target) lo = mid + 1;\n    else hi = mid - 1;\n  }\n  return lo;\n}\n",
@@ -253,6 +274,10 @@ export const dsa2: Exercise[] = [
       { name: "inserts between two existing values", body: "assert.equal(searchInsert([2,4,6,8],5), 2);" },
       { name: "negative and positive values mixed", body: "assert.equal(searchInsert([-5,-2,0,3,7], 1), 3);" },
       { name: "finds every existing value in a longer array", body: "const nums=[2,5,8,11,14,17,20];\nfor(let i=0;i<nums.length;i++) assert.equal(searchInsert(nums, nums[i]), i);" },
+      {
+        name: "a large input finishes in time (n = 1,000,000 with 20,000 searches)",
+        body: "const n = 1000000;\nconst nums = new Array(n);\nfor (let i = 0; i < n; i++) nums[i] = 2 * i;\nfor (let q = 0; q < 20000; q++) {\n  const j = (q * 7919) % n;\n  // 2j is stored at index j; 2j + 1 is missing and belongs just after it.\n  assert.equal(searchInsert(nums, 2 * j), j);\n  assert.equal(searchInsert(nums, 2 * j + 1), j + 1);\n}",
+      },
     ],
   },
 {
@@ -469,6 +494,7 @@ export const dsa2: Exercise[] = [
       "The array has no global order, but it does have local slope. What does nums[mid] < nums[mid + 1] tell you?",
       "If the array is rising at mid, some peak must exist to the right; if it is falling, one exists at mid or to the left.",
       "Loop with `while (lo < hi)` and move `lo = mid + 1` or `hi = mid`; when they meet, that index is a peak.",
+      "The last test searches a 1,000,001-element array 5,000 times. Scanning for the peak is O(n) per search and too slow there; binary search on the slope needs about 20 steps each.",
     ],
     solution:
       "function findPeakElement(nums) {\n  let lo = 0;\n  let hi = nums.length - 1;\n  while (lo < hi) {\n    const mid = lo + ((hi - lo) >> 1);\n    if (nums[mid] < nums[mid + 1]) lo = mid + 1;\n    else hi = mid;\n  }\n  return lo;\n}\n",
@@ -496,6 +522,10 @@ export const dsa2: Exercise[] = [
       { name: "a valley-shaped array has peaks at both ends", body: "const nums=[5,4,3,4,5];\nconst at=(k)=>k>=0&&k<nums.length?nums[k]:-Infinity;\nconst i=findPeakElement(nums);\nassert.ok(at(i)>at(i-1)&&at(i)>at(i+1));\nassert.ok(i===0||i===4);" },
       { name: "finds a genuine peak in a long bumpy array", body: "const nums=[1,2,3,4,5,6,7,8,50,7,6,5,4,3,2,1];\nconst at=(k)=>k>=0&&k<nums.length?nums[k]:-Infinity;\nconst i=findPeakElement(nums);\nassert.ok(at(i)>at(i-1)&&at(i)>at(i+1));" },
       { name: "three elements with the peak in the middle", body: "assert.equal(findPeakElement([1,3,1]), 1);" },
+      {
+        name: "a large input finishes in time (n = 1,000,001 searched 5,000 times)",
+        body: "const half = 500000;\nconst nums = new Array(2 * half + 1);\n// One mountain: rising to the middle, then falling, so the middle is the only peak.\nfor (let i = 0; i <= 2 * half; i++) nums[i] = half - Math.abs(i - half);\nfor (let q = 0; q < 5000; q++) assert.equal(findPeakElement(nums), half);",
+      },
     ],
   },
 {
@@ -511,6 +541,7 @@ export const dsa2: Exercise[] = [
       "Write `hoursNeeded(k)` first: it is a simple loop. Now, is it increasing or decreasing in k?",
       "Because feasibility is monotone, binary search the speed range 1 .. max(piles) instead of the array.",
       "When a speed is feasible, keep it as a candidate and try a slower one (hi = mid); otherwise lo = mid + 1.",
+      "The last test has piles of 1,000,000,000 bananas. Trying every speed from 1 upwards is far too slow there; binary search over the speed range needs about 30 feasibility checks.",
     ],
     solution:
       "function minEatingSpeed(piles, h) {\n  function hoursNeeded(k) {\n    let total = 0;\n    for (const pile of piles) total += Math.ceil(pile / k);\n    return total;\n  }\n  let lo = 1;\n  let hi = 1;\n  for (const pile of piles) if (pile > hi) hi = pile;\n  while (lo < hi) {\n    const mid = lo + Math.floor((hi - lo) / 2);\n    if (hoursNeeded(mid) <= h) hi = mid;\n    else lo = mid + 1;\n  }\n  return lo;\n}\n",
@@ -538,6 +569,10 @@ export const dsa2: Exercise[] = [
       { name: "a single pile forces the smallest speed that still finishes", body: "assert.equal(minEatingSpeed([10], 5), 2);" },
       { name: "many tiny piles need only speed 1", body: "assert.equal(minEatingSpeed([1,1,1,1,1], 5), 1);" },
       { name: "agrees with a brute-force feasibility scan", body: "const piles=[9,12,15,22,7];\nconst h=7;\nfunction hours(k){let t=0; for(const p of piles) t+=Math.ceil(p/k); return t;}\nlet expected=1;\nwhile(hours(expected)>h) expected++;\nassert.equal(minEatingSpeed(piles,h), expected);" },
+      {
+        name: "a large input finishes in time (100 piles of 1,000,000,000)",
+        body: "const piles = new Array(100).fill(1000000000);\n// Two hours per pile: half a pile per hour is the slowest speed that finishes.\nassert.equal(minEatingSpeed(piles, 200), 500000000);",
+      },
     ],
   },
 {

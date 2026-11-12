@@ -55,16 +55,19 @@ export const set: CsSet = {
           label: "Uber Interview Experience | Software Engineer 1 (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/uber-interview-experience-software-engineer-1/",
           kind: "candidate-report",
+          year: 2020,
         },
         {
           label: "Amazon Interview Experience For SDE Intern (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/amazon-interview-experience-for-sde-intern-8/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "Meesho Interview Experience for SDE-1 | On-Campus (Virtual) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/meesho-interview-experience-for-sde-1-on-campus-virtual/",
           kind: "candidate-report",
+          year: 2021,
         },
         {
           label: "Juspay Interview Experience for Internship | On-Campus 2020 (GeeksforGeeks)",
@@ -76,16 +79,19 @@ export const set: CsSet = {
           label: "Phonepe Interview Experience (On-campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/phonepe-interview-experience-on-campus-1/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "PhonePe Interview Questions (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/gfg-academy/phonepe-interview-questions/",
           kind: "prep-guide",
+          year: 2025,
         },
         {
           label: "Member Of Technical Staff (MTS) Interview Questions and Answers (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/member-of-technical-staff-mts-interview-questions-and-answers/",
           kind: "prep-guide",
+          year: 2025,
         },
       ],
       links: [
@@ -108,11 +114,13 @@ export const set: CsSet = {
           label: "Amazon Interview Experience | SDE-I (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/amazon-interview-experience-sde-i/",
           kind: "candidate-report",
+          year: 2019,
         },
         {
           label: "Uber Interview Experience | Software Engineer 1 (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/uber-interview-experience-software-engineer-1/",
           kind: "candidate-report",
+          year: 2020,
         },
         {
           label: "Zomato x Blinkit Interview Experience for SDE-I | On-Campus 2024 (GeeksforGeeks)",
@@ -130,11 +138,13 @@ export const set: CsSet = {
           label: "Phonepe Interview Experience (On-campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/phonepe-interview-experience-on-campus-1/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "Member Of Technical Staff (MTS) Interview Questions and Answers (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/member-of-technical-staff-mts-interview-questions-and-answers/",
           kind: "prep-guide",
+          year: 2025,
         },
       ],
       links: [
@@ -157,16 +167,19 @@ export const set: CsSet = {
           label: "Swiggy Interview Experience | Set 2 (On-Campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/swiggy-interview-experience-set-2-on-campus/",
           kind: "candidate-report",
+          year: 2015,
         },
         {
           label: "Juspay Interview Questions for Technical Profiles (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/juspay-interview-questions-for-technical-profiles/",
           kind: "prep-guide",
+          year: 2025,
         },
         {
           label: "Member Of Technical Staff (MTS) Interview Questions and Answers (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/member-of-technical-staff-mts-interview-questions-and-answers/",
           kind: "prep-guide",
+          year: 2025,
         },
       ],
       links: [
@@ -189,6 +202,7 @@ export const set: CsSet = {
           label: "Juspay Interview Questions for Technical Profiles (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/juspay-interview-questions-for-technical-profiles/",
           kind: "prep-guide",
+          year: 2025,
         },
       ],
       links: [
@@ -211,6 +225,7 @@ export const set: CsSet = {
           label: "Meesho Interview Experience for SDE-1 | On-Campus (Virtual) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/meesho-interview-experience-for-sde-1-on-campus-virtual/",
           kind: "candidate-report",
+          year: 2021,
         },
       ],
       links: [
@@ -239,36 +254,43 @@ export const set: CsSet = {
           label: "Swiggy Interview Experience | Set 2 (On-Campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/swiggy-interview-experience-set-2-on-campus/",
           kind: "candidate-report",
+          year: 2015,
         },
         {
           label: "Meesho Interview Experience for SDE-1 | On-Campus (Virtual) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/meesho-interview-experience-for-sde-1-on-campus-virtual/",
           kind: "candidate-report",
+          year: 2021,
         },
         {
           label: "Amazon Interview Experience For SDE Intern (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/amazon-interview-experience-for-sde-intern-8/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "Apple Interview Experience (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/apple-interview-experience/",
           kind: "candidate-report",
+          year: 2019,
         },
         {
           label: "Atlassian Interview Experience for Product Security Engineer (On-Campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/atlassian-interview-experience-for-product-security-engineer-on-campus/",
           kind: "candidate-report",
+          year: 2023,
         },
         {
           label: "PhonePe Interview Questions (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/gfg-academy/phonepe-interview-questions/",
           kind: "prep-guide",
+          year: 2025,
         },
         {
           label: "Member Of Technical Staff (MTS) Interview Questions and Answers (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/member-of-technical-staff-mts-interview-questions-and-answers/",
           kind: "prep-guide",
+          year: 2025,
         },
       ],
       links: [
@@ -291,16 +313,19 @@ export const set: CsSet = {
           label: "Myntra Interview Experience | Set 9 (On Campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/myntra-interview-experience-set-9-campus/",
           kind: "candidate-report",
+          year: 2017,
         },
         {
           label: "Swiggy Interview Experience for SDE-1 (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/swiggy-interview-experience-for-sde-1/",
           kind: "candidate-report",
+          year: 2021,
         },
         {
           label: "Apple Interview Experience (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/apple-interview-experience/",
           kind: "candidate-report",
+          year: 2019,
         },
       ],
       links: [
@@ -323,6 +348,7 @@ export const set: CsSet = {
           label: "Dream11 Interview Experience for SDE II (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/dream11-interview-experience-for-sde-ii-2/",
           kind: "candidate-report",
+          year: 2024,
         },
       ],
       links: [
@@ -345,6 +371,7 @@ export const set: CsSet = {
           label: "Swiggy Interview Experience for SDE-1 (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/swiggy-interview-experience-for-sde-1/",
           kind: "candidate-report",
+          year: 2021,
         },
         {
           label: "Zomato x Blinkit Interview Experience for SDE-I | On-Campus 2024 (GeeksforGeeks)",
@@ -356,26 +383,31 @@ export const set: CsSet = {
           label: "Flipkart Interview Experience For SDE-2 (Off-Campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/flipkart-interview-experience-for-sde-2-off-campus/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "Dream11 Interview Experience for SDE II (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/dream11-interview-experience-for-sde-ii-2/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "PhonePe Interview Questions (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/gfg-academy/phonepe-interview-questions/",
           kind: "prep-guide",
+          year: 2025,
         },
         {
           label: "Member Of Technical Staff (MTS) Interview Questions and Answers (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/member-of-technical-staff-mts-interview-questions-and-answers/",
           kind: "prep-guide",
+          year: 2025,
         },
         {
           label: "Microsoft Theoretical Interview Questions (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/microsofts-asked-interview-questions/",
           kind: "prep-guide",
+          year: 2026,
         },
       ],
       links: [
@@ -398,16 +430,19 @@ export const set: CsSet = {
           label: "Atlassian Interview Experience for Product Security Engineer (On-Campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/atlassian-interview-experience-for-product-security-engineer-on-campus/",
           kind: "candidate-report",
+          year: 2023,
         },
         {
           label: "PhonePe Interview Questions (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/gfg-academy/phonepe-interview-questions/",
           kind: "prep-guide",
+          year: 2025,
         },
         {
           label: "Member Of Technical Staff (MTS) Interview Questions and Answers (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/member-of-technical-staff-mts-interview-questions-and-answers/",
           kind: "prep-guide",
+          year: 2025,
         },
       ],
       links: [
@@ -430,11 +465,13 @@ export const set: CsSet = {
           label: "PhonePe Interview Questions (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/gfg-academy/phonepe-interview-questions/",
           kind: "prep-guide",
+          year: 2025,
         },
         {
           label: "Juspay Interview Questions for Technical Profiles (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/juspay-interview-questions-for-technical-profiles/",
           kind: "prep-guide",
+          year: 2025,
         },
       ],
       links: [
@@ -457,11 +494,13 @@ export const set: CsSet = {
           label: "Juspay Interview Questions for Technical Profiles (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/juspay-interview-questions-for-technical-profiles/",
           kind: "prep-guide",
+          year: 2025,
         },
         {
           label: "Member Of Technical Staff (MTS) Interview Questions and Answers (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/member-of-technical-staff-mts-interview-questions-and-answers/",
           kind: "prep-guide",
+          year: 2025,
         },
       ],
       links: [
@@ -484,6 +523,7 @@ export const set: CsSet = {
           label: "Phonepe Interview Experience (On-campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/phonepe-interview-experience-on-campus-1/",
           kind: "candidate-report",
+          year: 2024,
         },
       ],
       links: [
@@ -506,26 +546,31 @@ export const set: CsSet = {
           label: "Phonepe Interview Experience (On-campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/phonepe-interview-experience-on-campus-1/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "PhonePe interview experience (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/phonepe-interview-experience-1/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "Ola Interview Experience (1 Year Experienced) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/ola-interview-experience-1-year-experienced/",
           kind: "candidate-report",
+          year: 2021,
         },
         {
           label: "Paytm Interview Experience For Java Backend (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/paytm-interview-experience-for-java-backend/",
           kind: "candidate-report",
+          year: 2023,
         },
         {
           label: "Juspay Interview Questions for Technical Profiles (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/juspay-interview-questions-for-technical-profiles/",
           kind: "prep-guide",
+          year: 2025,
         },
       ],
       links: [
@@ -548,6 +593,7 @@ export const set: CsSet = {
           label: "Paytm Interview Experience For Java Backend (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/paytm-interview-experience-for-java-backend/",
           kind: "candidate-report",
+          year: 2023,
         },
       ],
       links: [
@@ -570,6 +616,7 @@ export const set: CsSet = {
           label: "PhonePe interview experience (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/phonepe-interview-experience-1/",
           kind: "candidate-report",
+          year: 2024,
         },
       ],
       links: [
@@ -592,6 +639,7 @@ export const set: CsSet = {
           label: "Atlassian Interview Experience | On-Campus FTE (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/atlassian-interview-experience-on-campus-fte/",
           kind: "candidate-report",
+          year: 2020,
         },
       ],
       links: [
@@ -618,11 +666,13 @@ export const set: CsSet = {
           label: "Phonepe Interview Experience (On-campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/phonepe-interview-experience-on-campus-1/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "Atlassian Interview Experience for Product Security Engineer (On-Campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/atlassian-interview-experience-for-product-security-engineer-on-campus/",
           kind: "candidate-report",
+          year: 2023,
         },
       ],
       links: [
@@ -645,6 +695,7 @@ export const set: CsSet = {
           label: "Atlassian Interview Experience for Product Security Engineer (On-Campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/atlassian-interview-experience-for-product-security-engineer-on-campus/",
           kind: "candidate-report",
+          year: 2023,
         },
       ],
       links: [
@@ -667,6 +718,7 @@ export const set: CsSet = {
           label: "Atlassian Interview Experience for Product Security Engineer (On-Campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/atlassian-interview-experience-for-product-security-engineer-on-campus/",
           kind: "candidate-report",
+          year: 2023,
         },
       ],
       links: [

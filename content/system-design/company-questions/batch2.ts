@@ -15,11 +15,13 @@ export const questions: CompanyQuestion[] = [
         label: "Hello Interview: Meta E5 system design guide",
         url: "https://www.hellointerview.com/guides/meta/e5",
         kind: "prep-guide",
+        year: 2026,
       },
       {
         label: "DesignGurus: top system design questions for Meta",
         url: "https://www.designgurus.io/answers/detail/what-are-the-top-system-design-interview-questions-for-meta-interview",
         kind: "prep-guide",
+        year: 2024,
       },
     ],
     chapters: [

@@ -5,6 +5,7 @@ const googlePhilosophy: ReportSource = {
   label: "Google: Ten things we know to be true",
   url: "https://about.google/philosophy/",
   kind: "official",
+  year: 2026,
 };
 const gfgGoogle: ReportSource = {
   label: "GeeksforGeeks: Google SDE-2 (Bangalore) experience",
@@ -16,11 +17,13 @@ const acedGoogle: ReportSource = {
   label: "Aced: Google SWE interview guide",
   url: "https://www.aced.io/guides/google-software-engineer-interview",
   kind: "prep-guide",
+  year: 2026,
 };
 const helloGoogle: ReportSource = {
   label: "Hello Interview: Google L4 guide",
   url: "https://www.hellointerview.com/guides/google/l4",
   kind: "prep-guide",
+  year: 2026,
 };
 
 const msValues: ReportSource = {
@@ -37,21 +40,25 @@ const helloMs: ReportSource = {
   label: "Hello Interview: Microsoft guide",
   url: "https://www.hellointerview.com/guides/microsoft",
   kind: "prep-guide",
+  year: 2026,
 };
 const ioMs: ReportSource = {
   label: "interviewing.io: Microsoft interview process",
   url: "https://interviewing.io/guides/hiring-process/microsoft",
   kind: "prep-guide",
+  year: 2024,
 };
 const techprepMs: ReportSource = {
   label: "TechPrep: Microsoft interview process",
   url: "https://www.techprep.app/blog/microsoft-interview-process",
   kind: "prep-guide",
+  year: 2026,
 };
 const acedMs: ReportSource = {
   label: "Aced: Microsoft SWE interview guide",
   url: "https://www.aced.io/guides/microsoft-software-engineer-interview",
   kind: "prep-guide",
+  year: 2026,
 };
 const gfgMs: ReportSource = {
   label: "GeeksforGeeks: Microsoft SDE-I (1+ yr) experience",
@@ -105,6 +112,7 @@ const helloMeta: ReportSource = {
   label: "Hello Interview: Meta E4 guide",
   url: "https://www.hellointerview.com/guides/meta/e4",
   kind: "prep-guide",
+  year: 2026,
 };
 
 const amazonLp: ReportSource = {
@@ -116,21 +124,25 @@ const gfgAmazon: ReportSource = {
   label: "GeeksforGeeks: Amazon SDE-1 interview experience",
   url: "https://www.geeksforgeeks.org/interview-experiences/amazon-interview-experience-for-sde-1-14/",
   kind: "candidate-report",
+  year: 2021,
 };
 const roundzAmazon: ReportSource = {
   label: "Roundz: Amazon SDE-2 (L5) experience",
   url: "https://roundz.substack.com/p/interview-experience-82-amazon-sde2",
   kind: "candidate-report",
+  year: 2025,
 };
 const helloAmazonL4: ReportSource = {
   label: "Hello Interview: Amazon L4 (SDE I) guide",
   url: "https://www.hellointerview.com/guides/amazon/l4",
   kind: "prep-guide",
+  year: 2025,
 };
 const helloAmazonL5: ReportSource = {
   label: "Hello Interview: Amazon L5 (SDE II) guide",
   url: "https://www.hellointerview.com/guides/amazon/l5",
   kind: "prep-guide",
+  year: 2025,
 };
 
 const netflixCulture: ReportSource = {
@@ -142,11 +154,13 @@ const acedNetflix: ReportSource = {
   label: "Aced: Netflix SWE interview guide",
   url: "https://www.aced.io/guides/netflix-software-engineer-interview",
   kind: "prep-guide",
+  year: 2026,
 };
 const prepfullyNetflix: ReportSource = {
   label: "Prepfully: Netflix software engineer guide",
   url: "https://prepfully.com/interview-guides/netflix-software-engineer",
   kind: "prep-guide",
+  year: 2026,
 };
 const taroNetflix: ReportSource = {
   label: "Taro: Netflix software engineer experience (New York)",
@@ -183,17 +197,20 @@ const ioUber: ReportSource = {
   label: "interviewing.io: Uber interview process and questions",
   url: "https://interviewing.io/uber-interview-questions",
   kind: "prep-guide",
+  year: 2026,
 };
 const techprepUber: ReportSource = {
   label: "TechPrep: Uber interview process",
   url: "https://www.techprep.app/blog/uber-interview-process",
   kind: "prep-guide",
+  year: 2026,
 };
 
 const atlassianValues: ReportSource = {
   label: "Atlassian: Company values",
   url: "https://www.atlassian.com/company/values",
   kind: "official",
+  year: 2026,
 };
 const atlassianInterviewing: ReportSource = {
   label: "Atlassian: Engineering interviewing",
@@ -210,6 +227,7 @@ const techprepAtlassian: ReportSource = {
   label: "TechPrep: Atlassian interview process",
   url: "https://www.techprep.app/blog/atlassian-interview-process",
   kind: "prep-guide",
+  year: 2026,
 };
 
 export const people: PeopleSet[] = [

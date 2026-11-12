@@ -186,6 +186,7 @@ export const questions: CompanyQuestion[] = [
         label: "Groww interview process round by round (DesignGurus)",
         url: "https://www.designgurus.io/answers/detail/what-is-the-groww-interview-process-like-round-by-round",
         kind: "prep-guide",
+        year: 2026,
       },
     ],
     chapters: [

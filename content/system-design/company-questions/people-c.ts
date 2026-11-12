@@ -16,16 +16,19 @@ const zerodhaSpaceComplexity: ReportSource = {
   label: "SpaceComplexity: Zerodha onsite interview",
   url: "https://spacecomplexity.ai/blog/zerodha-onsite-interview",
   kind: "prep-guide",
+  year: 2026,
 };
 const zerodhaDesignGurus: ReportSource = {
   label: "DesignGurus: Zerodha interview process, round by round",
   url: "https://www.designgurus.io/answers/detail/what-is-the-zerodha-interview-process-like-round-by-round",
   kind: "prep-guide",
+  year: 2026,
 };
 const zerodhaHyring: ReportSource = {
   label: "Hyring: Zerodha interview process",
   url: "https://hyring.com/jobseeker-toolkit/interview-questions/company/zerodha",
   kind: "prep-guide",
+  year: 2026,
 };
 
 const growwCareers: ReportSource = { label: "Groww Careers", url: "https://groww.in/careers", kind: "official" };
@@ -33,22 +36,26 @@ const growwCodeKerdos: ReportSource = {
   label: "CodeKerdos: Groww SDE-1 interview breakdown",
   url: "https://blog.codekerdos.in/groww-sde-1-interview-a-complete-breakdown/",
   kind: "prep-guide",
+  year: 2025,
 };
 const growwDesignGurus: ReportSource = {
   label: "DesignGurus: Groww interview process, round by round",
   url: "https://www.designgurus.io/answers/detail/what-is-the-groww-interview-process-like-round-by-round",
   kind: "prep-guide",
+  year: 2026,
 };
 
 const paytmTechPrep: ReportSource = {
   label: "TechPrep: Paytm interview process",
   url: "https://www.techprep.app/blog/paytm-interview-process",
   kind: "prep-guide",
+  year: 2026,
 };
 const paytmCampus: ReportSource = {
   label: "GeeksforGeeks: Paytm campus experience (technical plus HR)",
   url: "https://www.geeksforgeeks.org/?p=679857",
   kind: "candidate-report",
+  year: 2021,
 };
 
 const olaCareers: ReportSource = {
@@ -60,21 +67,25 @@ const olaSet4: ReportSource = {
   label: "GeeksforGeeks: Ola Cabs SDE-2 (Set 4)",
   url: "https://geeksforgeeks.org/ola-cabs-interview-experience-set-4-for-sde-2",
   kind: "candidate-report",
+  year: 2015,
 };
 const olaSde2: ReportSource = {
   label: "GeeksforGeeks: Ola SDE-2 experience",
   url: "https://www.geeksforgeeks.org/ola-interview-experience-for-sde-2/",
   kind: "candidate-report",
+  year: 2021,
 };
 const olaOneYear: ReportSource = {
   label: "GeeksforGeeks: Ola (1 yr experience)",
   url: "https://www.geeksforgeeks.org/ola-interview-experience-1-year-experienced/",
   kind: "candidate-report",
+  year: 2021,
 };
 const olaIntern: ReportSource = {
   label: "GeeksforGeeks: Ola internship experience (HR round)",
   url: "https://www.geeksforgeeks.org/?p=751319",
   kind: "candidate-report",
+  year: 2022,
 };
 
 const dreamCareers: ReportSource = {
@@ -94,22 +105,26 @@ const juspaySde1: ReportSource = {
   label: "GeeksforGeeks: Juspay SDE-1 (1 yr experience, via HackerEarth)",
   url: "https://www.geeksforgeeks.org/?p=447763",
   kind: "candidate-report",
+  year: 2020,
 };
 const juspayIntern: ReportSource = {
   label: "GeeksforGeeks: Juspay 6-month SDE intern experience",
   url: "https://www.geeksforgeeks.org/interview-experiences/juspay-interview-experience-for-sde-6m-intern/",
   kind: "candidate-report",
+  year: 2026,
 };
 
 const myntraSenior: ReportSource = {
   label: "GeeksforGeeks: Myntra senior software engineer (5 yrs)",
   url: "https://www.geeksforgeeks.org/?p=370480",
   kind: "candidate-report",
+  year: 2020,
 };
 const myntraDesignGurus: ReportSource = {
   label: "DesignGurus: Myntra interview process, round by round",
   url: "https://www.designgurus.io/answers/detail/what-is-the-myntra-interview-process-like-round-by-round",
   kind: "prep-guide",
+  year: 2026,
 };
 
 export const people: PeopleSet[] = [

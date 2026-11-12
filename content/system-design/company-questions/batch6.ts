@@ -21,6 +21,7 @@ export const questions: CompanyQuestion[] = [
         label: "Hello Interview: Meta E5 system design guide",
         url: "https://www.hellointerview.com/guides/meta/e5",
         kind: "prep-guide",
+        year: 2026,
       },
     ],
     chapters: [
@@ -93,7 +94,7 @@ export const questions: CompanyQuestion[] = [
         label: "Roundz: PhonePe SDE-2 interview experience (2022 process)",
         url: "https://roundz.substack.com/p/interview-experience-130-phonepe-sde2",
         kind: "candidate-report",
-        year: 2022,
+        year: 2025,
       },
     ],
     chapters: [
@@ -172,6 +173,7 @@ export const questions: CompanyQuestion[] = [
         label: "Blind: Atlassian interview questions",
         url: "https://www.teamblind.com/post/atlassian-interview-questions-7cu5isvj",
         kind: "candidate-report",
+        year: 2026,
       },
       {
         label: "CodingKaro: Atlassian LeetCode interview experiences (index of titles)",
@@ -183,6 +185,7 @@ export const questions: CompanyQuestion[] = [
         label: "Intervue: Atlassian interview experience in India",
         url: "https://www.intervue.io/blog/atlassian-interview-experience-india",
         kind: "prep-guide",
+        year: 2026,
       },
     ],
     chapters: [
@@ -264,6 +267,7 @@ export const questions: CompanyQuestion[] = [
         label: "Intervue: Atlassian interview experience in India",
         url: "https://www.intervue.io/blog/atlassian-interview-experience-india",
         kind: "prep-guide",
+        year: 2026,
       },
     ],
     chapters: ["sysdes-batch-stream-processing", "sysdes-caching-fundamentals", "sysdes-search-systems"],

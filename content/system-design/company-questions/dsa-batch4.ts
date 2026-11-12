@@ -910,6 +910,7 @@ function run(ops, args) {
         label: "GeeksforGeeks: Atlassian SDE on-campus interview experience",
         url: "https://www.geeksforgeeks.org/atlassian-interview-experience-for-sde-on-campus/",
         kind: "candidate-report",
+        year: 2023,
       },
     ],
     chapters: ["dsa-hashing", "dsa-arrays-strings"],

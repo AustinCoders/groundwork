@@ -181,6 +181,7 @@ export const questions: CompanyQuestion[] = [
         label: "System Design Handbook: Uber system design interview",
         url: "https://www.systemdesignhandbook.com/guides/uber-system-design-interview/",
         kind: "prep-guide",
+        year: 2026,
       },
     ],
     chapters: [

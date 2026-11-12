@@ -489,6 +489,7 @@ export const questions: DsaQuestion[] = [
         label: "Scoutify: Netflix interview question list",
         url: "https://scoutify.com/companies/netflix/interview/",
         kind: "company-list",
+        year: 2026,
       },
     ],
     chapters: ["dsa-binary-search", "dsa-design-problems"],

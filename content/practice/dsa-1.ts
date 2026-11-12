@@ -703,6 +703,10 @@ export const dsa1: Exercise[] = [
       { name: "two elements only", body: "assert.deepEqual(twoSum([5, -2], 3), [0, 1]);" },
       { name: "the pair sits at the very end of a large array", body: "const n = 10000;\nconst nums = [];\nfor (let i = 0; i < n; i++) nums.push(i);\nassert.deepEqual(twoSum(nums, 19997), [9998, 9999]);" },
       { name: "negative duplicate values", body: "assert.deepEqual(twoSum([-3, -3, 5], -6), [0, 1]);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst nums = Array.from({ length: n }, (_, i) => i);\n// Only the last two values are big enough to reach this target.\nassert.deepEqual(twoSum(nums, 2 * n - 3), [n - 2, n - 1]);",
+      },
     ],
   },
 {
@@ -717,6 +721,7 @@ export const dsa1: Exercise[] = [
       "For any day you might sell on, the only thing that matters is the cheapest price seen before it.",
       "Sweep left to right carrying two running values: the minimum price so far, and the best profit so far.",
       "Update the answer with price - minSoFar, then update minSoFar.",
+      "The last test has 100,000 days. Trying every buy day against every later sell day is O(n^2) and too slow there; one pass with the running minimum is O(n).",
     ],
     solution:
       "function maxProfit(prices) {\n  let min = Infinity;\n  let best = 0;\n  for (const p of prices) {\n    if (p < min) min = p;\n    else if (p - min > best) best = p - min;\n  }\n  return best;\n}\n",
@@ -744,6 +749,10 @@ export const dsa1: Exercise[] = [
       { name: "the best buy is on the very first day", body: "assert.equal(maxProfit([1, 10, 2, 1]), 9);" },
       { name: "two days, ascending and descending", body: "assert.equal(maxProfit([1, 5]), 4);\nassert.equal(maxProfit([5, 1]), 0);" },
       { name: "flat prices yield no profit", body: "assert.equal(maxProfit([3, 3, 3, 3]), 0);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst prices = Array.from({ length: n }, (_, i) => 1000 + ((i * 7919) % 1000));\nprices[10] = 1;\nprices[n - 10] = 5000;\n// Every other price is between 1000 and 1999, so buying at 1 and selling at 5000 is best.\nassert.equal(maxProfit(prices), 4999);",
+      },
     ],
   },
 {
@@ -758,6 +767,7 @@ export const dsa1: Exercise[] = [
       "Ask a smaller question: what is the best subarray that ENDS at index i?",
       "A running sum that has gone negative can only hurt whatever comes next — at that point you are better off starting over.",
       "Keep cur = max(nums[i], cur + nums[i]) and track the maximum cur you have ever seen.",
+      "The last test has 100,000 numbers. Summing every subarray is O(n^2) and too slow there; the running best-ending-here value needs one pass.",
     ],
     solution:
       "function maxSubArray(nums) {\n  let cur = nums[0];\n  let best = nums[0];\n  for (let i = 1; i < nums.length; i++) {\n    cur = Math.max(nums[i], cur + nums[i]);\n    if (cur > best) best = cur;\n  }\n  return best;\n}\n",
@@ -785,6 +795,10 @@ export const dsa1: Exercise[] = [
       { name: "two elements", body: "assert.equal(maxSubArray([-1, -2]), -1);\nassert.equal(maxSubArray([5, -1]), 5);" },
       { name: "zero is the best subarray among negatives and zero", body: "assert.equal(maxSubArray([-3, 0, -2]), 0);" },
       { name: "a long alternating array finds the best run", body: "assert.equal(maxSubArray([1, -2, 3, -1, 2, -4, 5, -1]), 5);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\n// Repeats 1, 1, 1, 1, -3: each block of five adds 1, so the best subarray starts at index 0\n// and stops just before the final -3.\nconst nums = Array.from({ length: n }, (_, i) => (i % 5 === 4 ? -3 : 1));\nassert.equal(maxSubArray(nums), n / 5 - 1 + 4);",
+      },
     ],
   },
 {
@@ -883,6 +897,7 @@ export const dsa1: Exercise[] = [
       "First reduce k with k % nums.length — rotating by the full length changes nothing.",
       "Reversing the whole array puts the last k elements at the front, but each block is backwards.",
       "Reverse everything, then reverse the first k, then reverse the remaining n - k.",
+      "The last test rotates 100,000 values by 50,001 steps. Moving everything one place, k times over, is O(n * k) and too slow there; the three reversals are O(n).",
     ],
     solution:
       "function rotate(nums, k) {\n  const n = nums.length;\n  if (n === 0) return nums;\n  k = ((k % n) + n) % n;\n  const reverse = (lo, hi) => {\n    while (lo < hi) {\n      const t = nums[lo];\n      nums[lo] = nums[hi];\n      nums[hi] = t;\n      lo++;\n      hi--;\n    }\n  };\n  reverse(0, n - 1);\n  reverse(0, k - 1);\n  reverse(k, n - 1);\n  return nums;\n}\n",
@@ -910,6 +925,10 @@ export const dsa1: Exercise[] = [
       { name: "k = 0 leaves the array unchanged", body: "const a = [1, 2, 3, 4];\nrotate(a, 0);\nassert.deepEqual(a, [1, 2, 3, 4]);" },
       { name: "two element array", body: "const a = [1, 2];\nrotate(a, 3);\nassert.deepEqual(a, [2, 1]);" },
       { name: "rotating by n - 1 moves everything but the last element by one", body: "const a = [1, 2, 3, 4, 5];\nrotate(a, 4);\nassert.deepEqual(a, [2, 3, 4, 5, 1]);" },
+      {
+        name: "a large input finishes in time (n = 100,000, k = 50,001)",
+        body: "const n = 100000;\nconst k = 50001;\nconst nums = Array.from({ length: n }, (_, i) => i);\nrotate(nums, k);\nassert.equal(nums.length, n);\n// The value i started at index i and must end at index (i + k) % n.\nfor (let i = 0; i < n; i++) assert.equal(nums[(i + k) % n], i);",
+      },
     ],
   },
 {
@@ -965,6 +984,7 @@ export const dsa1: Exercise[] = [
       "Pair up each occurrence of the majority value with a different value and discard both — something is always left over.",
       "Carry a candidate and a counter. When the counter hits zero, adopt the current value as the new candidate.",
       "Increment when the value matches the candidate, decrement otherwise. The final candidate is the answer.",
+      "The last test has 100,001 values. Counting the occurrences of each value with its own scan is O(n^2) and too slow there; one pass with a Map, or with the candidate and counter, is O(n).",
     ],
     solution:
       "function majorityElement(nums) {\n  let candidate = null;\n  let count = 0;\n  for (const x of nums) {\n    if (count === 0) candidate = x;\n    count += x === candidate ? 1 : -1;\n  }\n  return candidate;\n}\n",
@@ -992,6 +1012,10 @@ export const dsa1: Exercise[] = [
       { name: "clustered occurrences that only just cross the threshold", body: "const nums = [1, 1, 1, 1, 2, 2, 2, 2, 2];\nassert.equal(majorityElement(nums), 2);" },
       { name: "majority element is zero", body: "assert.equal(majorityElement([0, 0, 0, 1, 1]), 0);" },
       { name: "interleaved pattern that cancels evenly before recovering", body: "assert.equal(majorityElement([1, 2, 1, 2, 1, 2, 1]), 1);" },
+      {
+        name: "a large input finishes in time (n = 100,001)",
+        body: "const nums = [];\nfor (let i = 0; i < 50000; i++) nums.push(i + 10);\nfor (let i = 0; i < 50001; i++) nums.push(7);\nassert.equal(majorityElement(nums), 7);",
+      },
     ],
   },
 {
@@ -1033,6 +1057,10 @@ export const dsa1: Exercise[] = [
       { name: "zeroes scattered throughout preserve the order of non-zero values", body: "const a = [0, 7, 0, 0, 9, 0, 3];\nmoveZeroes(a);\nassert.deepEqual(a, [7, 9, 3, 0, 0, 0, 0]);" },
       { name: "negative numbers are treated as non-zero", body: "const a = [-1, 0, -2, 0, -3];\nmoveZeroes(a);\nassert.deepEqual(a, [-1, -2, -3, 0, 0]);" },
       { name: "empty array stays empty", body: "const a = [];\nmoveZeroes(a);\nassert.deepEqual(a, []);" },
+      {
+        name: "a large input finishes in time (n = 200,000)",
+        body: "const n = 200000;\nconst nums = Array.from({ length: n }, (_, i) => (i % 2 === 0 ? 0 : i));\nmoveZeroes(nums);\nassert.equal(nums.length, n);\n// The odd numbers 1, 3, 5, ... come first in order, then n / 2 zeroes.\nfor (let i = 0; i < n / 2; i++) assert.equal(nums[i], 2 * i + 1);\nfor (let i = n / 2; i < n; i++) assert.equal(nums[i], 0);",
+      },
     ],
   },
 {
@@ -1088,6 +1116,7 @@ export const dsa1: Exercise[] = [
       "You know exactly what the sum of 0..n should be: n * (n + 1) / 2.",
       "Subtract the actual sum of the array from that expected total.",
       "XOR works too: XOR every index 0..n together with every value — the pairs cancel out.",
+      "The last test has 300,000 numbers. Searching the array for each candidate in turn is O(n^2) and too slow there; the sum or XOR trick is one pass.",
     ],
     solution:
       "function missingNumber(nums) {\n  const n = nums.length;\n  let total = (n * (n + 1)) / 2;\n  for (const x of nums) total -= x;\n  return total;\n}\n",
@@ -1115,6 +1144,10 @@ export const dsa1: Exercise[] = [
       { name: "a two-element array missing the middle value", body: "assert.equal(missingNumber([0, 2]), 1);" },
       { name: "a larger array missing a value near the end", body: "const n = 1000;\nconst nums = [];\nfor (let i = 0; i <= n; i++) if (i !== n - 1) nums.push(i);\nassert.equal(missingNumber(nums), n - 1);" },
       { name: "values given in reverse order", body: "assert.equal(missingNumber([4, 3, 2, 1, 0]), 5);" },
+      {
+        name: "a large input finishes in time (n = 300,000)",
+        body: "const n = 300000;\n// 7919 and n + 1 share no factor, so this visits every value 0..n once in a scrambled order.\nconst nums = [];\nfor (let i = 0; i <= n; i++) {\n  const v = (i * 7919) % (n + 1);\n  if (v !== n - 1) nums.push(v);\n}\nassert.equal(missingNumber(nums), n - 1);",
+      },
     ],
   },
 {
@@ -1281,6 +1314,10 @@ export const dsa1: Exercise[] = [
       { name: "a single bar traps nothing", body: "assert.equal(trap([5]), 0);" },
       { name: "a symmetric basin between equal walls", body: "assert.equal(trap([3, 0, 3]), 3);" },
       { name: "a wide flat dip between two tall walls", body: "assert.equal(trap([5, 0, 0, 0, 5]), 15);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst height = new Array(n);\nlet expected = 0;\nfor (let i = 0; i < n; i++) {\n  height[i] = i === 0 || i === n - 1 ? 10 : i % 7;\n  expected += 10 - height[i];\n}\nassert.equal(trap(height), expected);",
+      },
     ],
   },
 {
@@ -1295,6 +1332,7 @@ export const dsa1: Exercise[] = [
       "Start with the widest possible container: one pointer at each end.",
       "Moving either pointer inward always loses width, so the only way to win is to gain height.",
       "Move the pointer at the SHORTER line — keeping it can never produce a bigger area.",
+      "The last test has 100,000 lines. Trying every pair is O(n^2) and too slow there; the two pointers moving inward from the ends are O(n).",
     ],
     solution:
       "function maxArea(height) {\n  let lo = 0;\n  let hi = height.length - 1;\n  let best = 0;\n  while (lo < hi) {\n    const h = Math.min(height[lo], height[hi]);\n    const area = h * (hi - lo);\n    if (area > best) best = area;\n    if (height[lo] < height[hi]) lo++;\n    else hi--;\n  }\n  return best;\n}\n",
@@ -1322,6 +1360,10 @@ export const dsa1: Exercise[] = [
       { name: "increasing heights favour width over height", body: "assert.equal(maxArea([1, 2, 3, 4, 5, 6]), 9);" },
       { name: "zero-height lines do not break the scan", body: "assert.equal(maxArea([0, 2, 0, 4, 0]), 4);" },
       { name: "the best pair sits away from either end", body: "assert.equal(maxArea([3, 9, 3, 4, 7, 2, 12, 15]), 54);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\n// A tent: heights rise by 1 to the middle and fall back, so line i and line n - 1 - i are equally tall.\nconst height = Array.from({ length: n }, (_, i) => Math.min(i, n - 1 - i) + 1);\n// For a given water level the widest container uses such a mirrored pair, so only those need checking.\nlet expected = 0;\nfor (let i = 0; i < n / 2; i++) expected = Math.max(expected, (n - 1 - 2 * i) * (i + 1));\nassert.equal(maxArea(height), expected);",
+      },
     ],
   },
 ];

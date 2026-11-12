@@ -18,11 +18,13 @@ const razorpayTechPrep: ReportSource = {
   label: "TechPrep: Razorpay interview process",
   url: "https://www.techprep.app/blog/razorpay-interview-process",
   kind: "prep-guide",
+  year: 2026,
 };
 const razorpaySpace: ReportSource = {
   label: "SpaceComplexity: Razorpay software engineer interview",
   url: "https://spacecomplexity.ai/blog/razorpay-software-engineer-interview",
   kind: "prep-guide",
+  year: 2026,
 };
 
 const flipkartEarly: ReportSource = {
@@ -34,11 +36,13 @@ const flipkartGfg35: ReportSource = {
   label: "GeeksforGeeks: Flipkart SDE-2 (3.5 yrs)",
   url: "https://www.geeksforgeeks.org/interview-experiences/flipkart-interview-experience-for-sde-2-3-5-years-experienced/",
   kind: "candidate-report",
+  year: 2020,
 };
 const flipkartGfgSde2: ReportSource = {
   label: "GeeksforGeeks: Flipkart SDE-2 experience",
   url: "https://www.geeksforgeeks.org/interview-experiences/flipkart-interview-experience-for-sde-2-3/",
   kind: "candidate-report",
+  year: 2024,
 };
 const flipkartRoundz: ReportSource = {
   label: "Roundz: Flipkart frontend engineer SDE-2",
@@ -57,11 +61,13 @@ const swiggySpace: ReportSource = {
   label: "SpaceComplexity: Swiggy software engineer interview",
   url: "https://spacecomplexity.ai/blog/swiggy-software-engineer-interview",
   kind: "prep-guide",
+  year: 2026,
 };
 const swiggyDesignGurus: ReportSource = {
   label: "DesignGurus: Swiggy interview process, round by round",
   url: "https://www.designgurus.io/answers/detail/what-is-the-swiggy-interview-process-like-round-by-round",
   kind: "prep-guide",
+  year: 2026,
 };
 
 const phonepeLife: ReportSource = {
@@ -85,7 +91,7 @@ const phonepe130: ReportSource = {
   label: "Roundz: PhonePe SDE-2 experience 130 (2022)",
   url: "https://roundz.substack.com/p/interview-experience-130-phonepe-sde2",
   kind: "candidate-report",
-  year: 2022,
+  year: 2025,
 };
 const phonepeGfg: ReportSource = {
   label: "GeeksforGeeks: PhonePe techno-HR round (campus-style report)",
@@ -97,22 +103,26 @@ const phonepeTechPrep: ReportSource = {
   label: "TechPrep: PhonePe interview process",
   url: "https://www.techprep.app/blog/phonepe-interview-process",
   kind: "prep-guide",
+  year: 2026,
 };
 
 const zomatoVasanth: ReportSource = {
   label: "CareerWithVasanth: Zomato SDE-2 frontend interview write-up",
   url: "https://www.careerwithvasanth.com/interview-experiences/zomato",
   kind: "prep-guide",
+  year: 2026,
 };
 const zomatoTechPrep: ReportSource = {
   label: "TechPrep: Zomato interview process",
   url: "https://www.techprep.app/companies/zomato",
   kind: "prep-guide",
+  year: 2026,
 };
 const zomatoGfg: ReportSource = {
   label: "GeeksforGeeks: Zomato SDE experience (HR plus technical round)",
   url: "https://www.geeksforgeeks.org/interview-experiences/zomato-interview-experience-for-sde/",
   kind: "candidate-report",
+  year: 2020,
 };
 
 const credPapers: ReportSource = {
@@ -125,6 +135,7 @@ const credDesignGurus: ReportSource = {
   label: "DesignGurus: CRED interview process, round by round",
   url: "https://www.designgurus.io/answers/detail/what-is-the-cred-interview-process-like-round-by-round",
   kind: "prep-guide",
+  year: 2026,
 };
 
 const meeshoLife: ReportSource = {

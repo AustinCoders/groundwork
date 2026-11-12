@@ -14,6 +14,7 @@ export const dsa4: Exercise[] = [
       "You can only arrive at a cell from the cell above it or the cell to its left, so paths(r, c) = paths(r-1, c) + paths(r, c-1).",
       "The whole top row and the whole left column have exactly one path each — that is your base case, and it also handles a 1 x n grid for free.",
       "Fill a table row by row from the top-left. You can even collapse it to a single row of length n, adding the value on the left into each slot in place.",
+      "The last test is an 18 by 18 grid with over two billion paths. Plain recursion walks every one of them; the table computes each cell once, O(m * n).",
     ],
     solution:
       "function uniquePaths(m, n) {\n  const row = new Array(n).fill(1);\n  for (let r = 1; r < m; r++) {\n    for (let c = 1; c < n; c++) {\n      row[c] = row[c] + row[c - 1];\n    }\n  }\n  return row[n - 1];\n}\n",
@@ -41,6 +42,10 @@ export const dsa4: Exercise[] = [
       { name: "a two by two grid", body: "assert.equal(uniquePaths(2, 2), 2);" },
       { name: "swapping rows and columns gives the same answer", body: "assert.equal(uniquePaths(7, 3), 28);" },
       { name: "a four by four grid", body: "assert.equal(uniquePaths(4, 4), 20);" },
+      {
+        name: "a large input finishes in time (18 by 18)",
+        body: "// The answer is the binomial coefficient C(34, 17): choose which 17 of the 34 moves go down.\nlet expected = 1;\nfor (let i = 1; i <= 17; i++) expected = (expected * (17 + i)) / i;\nassert.equal(uniquePaths(18, 18), expected);",
+      },
     ],
   },
 {
@@ -139,6 +144,7 @@ export const dsa4: Exercise[] = [
       "Let table[i][j] be the answer for the first i characters of a and the first j characters of b. Any row or column of index 0 is 0, since an empty string shares nothing.",
       "When a[i-1] === b[j-1] those characters can be paired up: table[i][j] = table[i-1][j-1] + 1.",
       "When they differ you must drop one of them, so take max(table[i-1][j], table[i][j-1]). Fill the table left to right, top to bottom, and read the bottom-right corner.",
+      "The last test compares two strings of 2,000 characters. Plain recursion over keep-or-skip is exponential and never finishes there; the table (or a memo) fills each of the a.length * b.length cells once.",
     ],
     solution:
       "function longestCommonSubsequence(a, b) {\n  const rows = a.length;\n  const cols = b.length;\n  let previous = new Array(cols + 1).fill(0);\n  for (let i = 1; i <= rows; i++) {\n    const current = new Array(cols + 1).fill(0);\n    for (let j = 1; j <= cols; j++) {\n      if (a[i - 1] === b[j - 1]) current[j] = previous[j - 1] + 1;\n      else current[j] = Math.max(previous[j], current[j - 1]);\n    }\n    previous = current;\n  }\n  return previous[cols];\n}\n",
@@ -166,6 +172,10 @@ export const dsa4: Exercise[] = [
       { name: "one string is fully contained in order inside the other", body: "assert.equal(longestCommonSubsequence('abcdef', 'acf'), 3);" },
       { name: "repeated characters cap the match at the shorter run", body: "assert.equal(longestCommonSubsequence('aaaa', 'aa'), 2);" },
       { name: "single character strings", body: "assert.equal(longestCommonSubsequence('a', 'a'), 1);\nassert.equal(longestCommonSubsequence('a', 'b'), 0);" },
+      {
+        name: "a large input finishes in time (two strings of 2,000)",
+        body: "const a = 'a'.repeat(1000) + 'b'.repeat(1000);\nconst b = 'b'.repeat(1000) + 'a'.repeat(1000);\n// In a the a's come before the b's and in b they come after, so a common subsequence cannot mix the two letters:\n// the best is 1,000 of one letter.\nassert.equal(longestCommonSubsequence(a, b), 1000);",
+      },
     ],
   },
 {
@@ -181,6 +191,7 @@ export const dsa4: Exercise[] = [
       "Let table[i][j] be the distance between the first i characters of word1 and the first j of word2. The base cases are table[i][0] = i (delete everything) and table[0][j] = j (insert everything).",
       "If the current characters match, nothing needs doing: table[i][j] = table[i-1][j-1].",
       "If they differ, take 1 + the smallest of three neighbours — table[i-1][j-1] is a replace, table[i-1][j] is a delete, table[i][j-1] is an insert.",
+      "The last test compares strings of 600 and 400 characters. Plain recursion over insert, delete and replace is exponential and never finishes there; the table (or a memo) fills each cell once.",
     ],
     solution:
       "function minDistance(word1, word2) {\n  const rows = word1.length;\n  const cols = word2.length;\n  let previous = new Array(cols + 1).fill(0);\n  for (let j = 0; j <= cols; j++) previous[j] = j;\n  for (let i = 1; i <= rows; i++) {\n    const current = new Array(cols + 1).fill(0);\n    current[0] = i;\n    for (let j = 1; j <= cols; j++) {\n      if (word1[i - 1] === word2[j - 1]) {\n        current[j] = previous[j - 1];\n      } else {\n        current[j] = 1 + Math.min(previous[j - 1], previous[j], current[j - 1]);\n      }\n    }\n    previous = current;\n  }\n  return previous[cols];\n}\n",
@@ -208,6 +219,10 @@ export const dsa4: Exercise[] = [
       { name: "kitten to sitting, the classic example", body: "assert.equal(minDistance('kitten', 'sitting'), 3);" },
       { name: "pure deletions", body: "assert.equal(minDistance('abc', 'a'), 2);" },
       { name: "a single differing character needs one replace", body: "assert.equal(minDistance('a', 'b'), 1);" },
+      {
+        name: "a large input finishes in time (strings of 600 and 400)",
+        body: "const word1 = 'a'.repeat(600);\nconst word2 = 'b'.repeat(400);\n// No a survives, so each of the 600 must be replaced or deleted: 400 replacements and 200 deletions.\nassert.equal(minDistance(word1, word2), 600);",
+      },
     ],
   },
   {
@@ -417,6 +432,10 @@ export const dsa4: Exercise[] = [
       { name: "single element array", body: "assert.equal(longestConsecutive([5]), 1);" },
       { name: "two separate runs picks the longer one", body: "assert.equal(longestConsecutive([1,2,3,10,11]), 3);" },
       { name: "all identical duplicates form a run of one", body: "assert.equal(longestConsecutive([7,7,7,7]), 1);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\n// 7919 and n share no factor, so this is every value from 0 to n - 1 in a scrambled order: one run of length n.\nconst nums = Array.from({ length: n }, (_, i) => (i * 7919) % n);\nassert.equal(longestConsecutive(nums), n);",
+      },
     ],
   },
 {
@@ -473,6 +492,7 @@ export const dsa4: Exercise[] = [
       "The sum of nums[i..j] is prefix[j] - prefix[i-1]. So a subarray ending at j hits k exactly when some earlier prefix equals prefix[j] - k.",
       "Walk the array keeping a running sum and a Map from prefix-sum value -> how many times that prefix has occurred.",
       "Seed the map with { 0: 1 } so that a prefix which itself equals k is counted. Add the map's count for (running - k) to your answer BEFORE recording the current prefix.",
+      "The last test has 100,000 numbers. Summing every subarray is O(n^2) and too slow there; the Map of prefix-sum counts answers each position in O(1).",
     ],
     solution:
       "function subarraySum(nums, k) {\n  const counts = new Map([[0, 1]]);\n  let running = 0;\n  let total = 0;\n  for (const n of nums) {\n    running += n;\n    total += counts.get(running - k) || 0;\n    counts.set(running, (counts.get(running) || 0) + 1);\n  }\n  return total;\n}\n",
@@ -500,6 +520,10 @@ export const dsa4: Exercise[] = [
       { name: "empty array has no subarrays", body: "assert.equal(subarraySum([], 5), 0);" },
       { name: "target zero with no zero-sum subarray", body: "assert.equal(subarraySum([1,2,3], 0), 0);" },
       { name: "negative numbers summing to a negative target", body: "assert.equal(subarraySum([-1,-1,-1], -2), 2);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst nums = new Array(n).fill(1);\n// With all ones, a subarray sums to 1000 exactly when it has 1000 elements.\nassert.equal(subarraySum(nums, 1000), n - 1000 + 1);",
+      },
     ],
   },
 {
@@ -515,6 +539,7 @@ export const dsa4: Exercise[] = [
       "sum(i..j) is a multiple of k exactly when prefix[j] and prefix[i-1] leave the SAME remainder when divided by k.",
       "So keep a Map from remainder -> the earliest index at which that remainder was seen, seeded with remainder 0 at index -1.",
       "When you meet a remainder you have seen before, only return true if the gap between the indices is at least 2 — and never overwrite a remainder's stored index, or you lose the earliest one.",
+      "The last test has 100,000 numbers. Summing every subarray is O(n^2) and too slow there; the Map of first-seen remainders needs one pass.",
     ],
     solution:
       "function checkSubarraySum(nums, k) {\n  const firstIndex = new Map([[0, -1]]);\n  let running = 0;\n  for (let i = 0; i < nums.length; i++) {\n    running += nums[i];\n    const r = running % k;\n    if (firstIndex.has(r)) {\n      if (i - firstIndex.get(r) >= 2) return true;\n    } else {\n      firstIndex.set(r, i);\n    }\n  }\n  return false;\n}\n",
@@ -542,6 +567,10 @@ export const dsa4: Exercise[] = [
       { name: "a single element cannot satisfy the length requirement even if divisible", body: "assert.equal(checkSubarraySum([5], 5), false);" },
       { name: "zeros further apart still form a qualifying subarray", body: "assert.equal(checkSubarraySum([5,0,0,0], 3), true);" },
       { name: "k of 1 makes any subarray of length 2 or more qualify", body: "assert.equal(checkSubarraySum([1,1], 1), true);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst nums = new Array(n).fill(1);\n// No subarray of ones can add up to a multiple of a k larger than the whole array.\nassert.equal(checkSubarraySum(nums, 1000003), false);\n// Putting two zeros at the very end creates the only qualifying subarray.\nnums[n - 2] = 0;\nnums[n - 1] = 0;\nassert.equal(checkSubarraySum(nums, 1000003), true);",
+      },
     ],
   },
 {
@@ -557,6 +586,7 @@ export const dsa4: Exercise[] = [
       "A subarray ending at index j sums to k when some earlier prefix equals prefix[j] - k. Look that up in a Map instead of scanning backwards.",
       "You want the LONGEST subarray, so the map must store the FIRST index at which each prefix sum appeared — never overwrite an existing entry.",
       "Seed the map with prefix 0 at index -1 so a subarray starting at index 0 gets the right length: j - (-1) = j + 1.",
+      "The last test has 100,000 numbers. Summing every subarray is O(n^2) and too slow there; the Map of first-seen prefix sums needs one pass.",
     ],
     solution:
       "function maxSubArrayLen(nums, k) {\n  const firstIndex = new Map([[0, -1]]);\n  let running = 0;\n  let best = 0;\n  for (let i = 0; i < nums.length; i++) {\n    running += nums[i];\n    if (firstIndex.has(running - k)) {\n      const length = i - firstIndex.get(running - k);\n      if (length > best) best = length;\n    }\n    if (!firstIndex.has(running)) firstIndex.set(running, i);\n  }\n  return best;\n}\n",
@@ -584,6 +614,10 @@ export const dsa4: Exercise[] = [
       { name: "negative k with negative numbers", body: "assert.equal(maxSubArrayLen([-1,-1,-1], -2), 2);" },
       { name: "single element equal to k", body: "assert.equal(maxSubArrayLen([5], 5), 1);" },
       { name: "no subarray reaches a negative target", body: "assert.equal(maxSubArrayLen([1,2,3], -5), 0);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst k = 30000;\n// Alternating 0, 1, 0, 1, ...: the longest subarray with k ones starts and ends on a zero.\nconst nums = Array.from({ length: n }, (_, i) => i % 2);\nassert.equal(maxSubArrayLen(nums, k), 2 * k + 1);",
+      },
     ],
   },
 {
@@ -598,6 +632,7 @@ export const dsa4: Exercise[] = [
       "Counting two things is awkward. Re-map the problem: treat 0 as -1 and 1 as +1, and 'equal counts' becomes 'sums to zero'.",
       "Now it is the longest-subarray-summing-to-zero problem: keep a running total and a Map from total -> the first index where that total appeared.",
       "Seed the map with total 0 at index -1. When the running total repeats, the stretch between the two positions balances out.",
+      "The last test has 100,000 bits. Counting every subarray is O(n^2) and too slow there; the Map of first-seen running totals needs one pass.",
     ],
     solution:
       "function findMaxLength(nums) {\n  const firstIndex = new Map([[0, -1]]);\n  let running = 0;\n  let best = 0;\n  for (let i = 0; i < nums.length; i++) {\n    running += nums[i] === 1 ? 1 : -1;\n    if (firstIndex.has(running)) {\n      const length = i - firstIndex.get(running);\n      if (length > best) best = length;\n    } else {\n      firstIndex.set(running, i);\n    }\n  }\n  return best;\n}\n",
@@ -625,6 +660,10 @@ export const dsa4: Exercise[] = [
       { name: "the whole array balances at the end", body: "assert.equal(findMaxLength([1,1,0,0]), 4);" },
       { name: "a single element cannot balance", body: "assert.equal(findMaxLength([1]), 0);" },
       { name: "a fully alternating array balances entirely", body: "assert.equal(findMaxLength([0,1,0,1,0,1]), 6);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const zeros = 60000;\nconst ones = 40000;\nconst nums = [];\nfor (let i = 0; i < zeros; i++) nums.push(0);\nfor (let i = 0; i < ones; i++) nums.push(1);\n// All 40,000 ones balance against the 40,000 zeros just before them.\nassert.equal(findMaxLength(nums), 2 * ones);",
+      },
     ],
   },
 {
@@ -666,6 +705,10 @@ export const dsa4: Exercise[] = [
       { name: "pivot with an empty right side", body: "assert.equal(pivotIndex([0,0,0,0,1]), 4);" },
       { name: "negative numbers still balance", body: "assert.equal(pivotIndex([-1,1,0]), 2);" },
       { name: "a mixed-sign array with the pivot in the middle", body: "assert.equal(pivotIndex([-7,1,5,2,-4,3,0]), 3);" },
+      {
+        name: "a large input finishes in time (n = 100,001)",
+        body: "const n = 100001;\nconst nums = new Array(n).fill(1);\n// With an odd number of equal values the pivot is the middle one.\nassert.equal(pivotIndex(nums), 50000);",
+      },
     ],
   },
 {
@@ -708,6 +751,10 @@ export const dsa4: Exercise[] = [
       { name: "handles an array of all negative numbers", body: "const na = new NumArray([-1,-2,-3,-4]);\nassert.equal(na.sumRange(0, 3), -10);\nassert.equal(na.sumRange(1, 2), -5);" },
       { name: "single element at the last index plus the full range", body: "const na = new NumArray([1,2,3,4,5]);\nassert.equal(na.sumRange(4, 4), 5);\nassert.equal(na.sumRange(0, 4), 15);" },
       { name: "an all-zero array sums to zero everywhere", body: "const na = new NumArray([0,0,0]);\nassert.equal(na.sumRange(0, 2), 0);\nassert.equal(na.sumRange(1, 1), 0);" },
+      {
+        name: "a large input finishes in time (n = 100,000 with 100,000 queries)",
+        body: "const n = 100000;\nconst na = new NumArray(Array.from({ length: n }, (_, i) => i));\nfor (let q = 0; q < 100000; q++) {\n  const i = q % 1000;\n  const j = n - 1 - ((q * 7919) % 1000);\n  // The values i..j are consecutive integers.\n  assert.equal(na.sumRange(i, j), ((i + j) * (j - i + 1)) / 2);\n}",
+      },
     ],
   },
 {
@@ -789,6 +836,10 @@ export const dsa4: Exercise[] = [
       { name: "identical arrays", body: "const out = intersection([1,2,3], [1,2,3]).sort((a, b) => a - b);\nassert.deepEqual(out, [1, 2, 3]);" },
       { name: "both empty", body: "assert.deepEqual(intersection([], []), []);" },
       { name: "one array is entirely repeats of a value in the other", body: "assert.deepEqual(intersection([1,1,1], [1]), [1]);" },
+      {
+        name: "a large input finishes in time (n = 200,000)",
+        body: "const n = 200000;\nconst nums1 = Array.from({ length: n }, (_, i) => i);\nconst nums2 = Array.from({ length: n }, (_, i) => n / 2 + ((i * 7919) % n));\n// nums1 holds 0..n-1 and nums2 holds n/2..3n/2-1, so they share exactly n/2..n-1.\nconst got = intersection(nums1, nums2).slice().sort((a, b) => a - b);\nassert.equal(got.length, n / 2);\nfor (let i = 0; i < got.length; i++) assert.equal(got[i], n / 2 + i);",
+      },
     ],
   },
 {
@@ -1307,6 +1358,7 @@ export const dsa4: Exercise[] = [
       "Start from the two-list merge you already know — the whole problem is deciding which pairs to merge and in what order.",
       "Folding list 2 into list 1, then 3 into that, rescans the growing accumulator every time. Merge them in pairs instead, halving the count each round.",
       "Repeat: walk the array taking lists[i] and lists[i + 1], merge each pair into a new array, until only one list remains.",
+      "The last test has 50,000 one-node lists. Folding them into one accumulator walks the growing result every time, about k^2 / 4 steps; merging in pairs, round after round, is O(n log k).",
     ],
     solution:
       "class ListNode {\n  constructor(val, next) {\n    this.val = val === undefined ? 0 : val;\n    this.next = next === undefined ? null : next;\n  }\n}\nfunction build(arr) {\n  let head = null;\n  for (let i = arr.length - 1; i >= 0; i--) head = new ListNode(arr[i], head);\n  return head;\n}\nfunction toArray(head) {\n  const out = [];\n  for (let n = head; n; n = n.next) out.push(n.val);\n  return out;\n}\n\nfunction mergeTwo(a, b) {\n  const dummy = new ListNode(0);\n  let tail = dummy;\n  while (a && b) {\n    if (a.val <= b.val) {\n      tail.next = a;\n      a = a.next;\n    } else {\n      tail.next = b;\n      b = b.next;\n    }\n    tail = tail.next;\n  }\n  tail.next = a || b;\n  return dummy.next;\n}\n\nfunction mergeKLists(lists) {\n  if (!lists || lists.length === 0) return null;\n  let round = lists.slice();\n  while (round.length > 1) {\n    const next = [];\n    for (let i = 0; i < round.length; i += 2) {\n      next.push(mergeTwo(round[i], i + 1 < round.length ? round[i + 1] : null));\n    }\n    round = next;\n  }\n  return round[0];\n}\n",
@@ -1334,6 +1386,10 @@ export const dsa4: Exercise[] = [
       { name: "two lists only", body: "assert.deepEqual(toArray(mergeKLists([build([1,3]), build([2,4])])), [1,2,3,4]);" },
       { name: "duplicate values across lists", body: "assert.deepEqual(toArray(mergeKLists([build([1,1]), build([1,1])])), [1,1,1,1]);" },
       { name: "four single-node lists", body: "assert.deepEqual(toArray(mergeKLists([build([1]), build([2]), build([3]), build([4])])), [1,2,3,4]);" },
+      {
+        name: "a large input finishes in time (k = 50,000 lists)",
+        body: "const k = 50000;\nconst lists = [];\n// 7919 and k share no factor, so the values are 0..k-1 in a scrambled order.\nfor (let i = 0; i < k; i++) lists.push(build([(i * 7919) % k]));\nlet node = mergeKLists(lists);\nlet count = 0;\nwhile (node) {\n  assert.equal(node.val, count);\n  count++;\n  node = node.next;\n}\nassert.equal(count, k);",
+      },
     ],
   },
 {
@@ -1685,6 +1741,7 @@ export const dsa4: Exercise[] = [
       "Quicksort needs random access; merge sort only needs sequential access, which is all a linked list offers.",
       "Split with slow/fast pointers, and remember to cut the first half loose by nulling the middle node's next.",
       "The base case is a list of length 0 or 1. Merging two sorted lists is the same routine as Merge Two Sorted Lists.",
+      "The last test has 100,000 nodes. Insertion sort walks the sorted part for every node, O(n^2), and is too slow there; merge sort is O(n log n).",
     ],
     solution:
       "class ListNode {\n  constructor(val, next) {\n    this.val = val === undefined ? 0 : val;\n    this.next = next === undefined ? null : next;\n  }\n}\nfunction build(arr) {\n  let head = null;\n  for (let i = arr.length - 1; i >= 0; i--) head = new ListNode(arr[i], head);\n  return head;\n}\nfunction toArray(head) {\n  const out = [];\n  for (let n = head; n; n = n.next) out.push(n.val);\n  return out;\n}\n\nfunction mergeSorted(a, b) {\n  const dummy = new ListNode(0);\n  let tail = dummy;\n  while (a && b) {\n    if (a.val <= b.val) {\n      tail.next = a;\n      a = a.next;\n    } else {\n      tail.next = b;\n      b = b.next;\n    }\n    tail = tail.next;\n  }\n  tail.next = a || b;\n  return dummy.next;\n}\n\nfunction sortList(head) {\n  if (!head || !head.next) return head;\n  let slow = head;\n  let fast = head.next;\n  while (fast && fast.next) {\n    slow = slow.next;\n    fast = fast.next.next;\n  }\n  const second = slow.next;\n  slow.next = null;\n  return mergeSorted(sortList(head), sortList(second));\n}\n",
@@ -1712,6 +1769,10 @@ export const dsa4: Exercise[] = [
       { name: "a two element unordered list", body: "assert.deepEqual(toArray(sortList(build([2,1]))), [1,2]);" },
       { name: "a fully reversed list", body: "assert.deepEqual(toArray(sortList(build([5,4,3,2,1]))), [1,2,3,4,5]);" },
       { name: "every value identical", body: "assert.deepEqual(toArray(sortList(build([3,3,3]))), [3,3,3]);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\n// 7919 and n share no factor, so this is every value from 0 to n - 1 in a scrambled order.\nconst values = Array.from({ length: n }, (_, i) => (i * 7919) % n);\nlet node = sortList(build(values));\nlet count = 0;\nwhile (node) {\n  assert.equal(node.val, count);\n  count++;\n  node = node.next;\n}\nassert.equal(count, n);",
+      },
     ],
   },
 {

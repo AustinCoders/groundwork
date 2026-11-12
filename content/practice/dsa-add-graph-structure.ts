@@ -446,6 +446,10 @@ export const dsaAddGraphStructure: Exercise[] = [
       {
         "name": "random trees agree with walking up one step at a time",
         "body": "let seed = 12345;\nconst rnd = () => (seed = (seed * 48271) % 2147483647) / 2147483647;\nconst pick = (lo, hi) => lo + Math.floor(rnd() * (hi - lo + 1));\nfor (let t = 0; t < 200; t++) {\n  const n = pick(1, 40);\n  const order = Array.from({ length: n }, (_, i) => i).sort(() => rnd() - 0.5);\n  const root = order[0];\n  const parent = new Array(n).fill(-1);\n  for (let i = 1; i < n; i++) parent[order[i]] = order[pick(0, i - 1)];\n  parent[root] = -1;\n  const queries = Array.from({ length: 30 }, () => [pick(0, n - 1), pick(0, n + 2)]);\n  const want = queries.map(([node, k]) => {\n    let v = node;\n    for (let i = 0; i < k && v !== -1; i++) v = parent[v];\n    return v;\n  });\n  assert.deepEqual(kthAncestors(parent, queries), want);\n}"
+      },
+      {
+        "name": "a large input finishes in time (n = 100,000 with 100,000 queries)",
+        "body": "const n = 100000;\nconst parent = Array.from({ length: n }, (_, i) => i - 1);\nconst queries = [];\nconst expected = [];\nfor (let q = 0; q < n; q++) {\n  const node = n - 1 - (q % 100);\n  const k = 50000 + ((q * 7919) % 60000);\n  queries.push([node, k]);\n  // On a line the k-th ancestor of node is node - k.\n  expected.push(node - k >= 0 ? node - k : -1);\n}\nassert.deepEqual(kthAncestors(parent, queries), expected);"
       }
     ]
   },

@@ -18,6 +18,7 @@ export const questions: DsaQuestion[] = [
         label: "GeeksforGeeks: Amazon software engineer interview experience",
         url: "https://www.geeksforgeeks.org/interview-experiences/amazon-interview-experience-for-software-engineer-3/",
         kind: "candidate-report",
+        year: 2024,
       },
       {
         label: "GeeksforGeeks: Amazon SDE-1 off-campus interview experience, 2020",
@@ -396,6 +397,7 @@ function run(ops, args) {
         label: "GeeksforGeeks: Amazon interview experience, technical round 1",
         url: "https://www.geeksforgeeks.org/?p=482934",
         kind: "candidate-report",
+        year: 2020,
       },
       {
         label: "Company-tagged list: Amazon (LeetCode tag export)",
@@ -530,6 +532,7 @@ function run(ops, args) {
         label: "GeeksforGeeks: Amazon software engineer interview experience",
         url: "https://www.geeksforgeeks.org/interview-experiences/amazon-interview-experience-for-software-engineer-3/",
         kind: "candidate-report",
+        year: 2024,
       },
       {
         label: "TechInterview.org: top coding problems by company",

@@ -11,7 +11,8 @@ export const dsaAddSparseTable: Exercise[] = [
     hints: [
       "Keep a list of rows. Row 0 is the array itself. Row j at position i holds the minimum of nums[i .. i + 2^j - 1], which is the smaller of row j - 1 at i and row j - 1 at i + 2^(j - 1).",
       "For a query of length len, let k be the largest integer with 2^k <= len. One block of length 2^k starts at l, and another ends exactly at r. Together they cover [l, r], and they may overlap.",
-      "The overlap does not matter for a minimum, because taking the minimum of a value twice changes nothing. Get k as 31 - Math.clz32(len) and return Math.min(row[k][l], row[k][r - 2^k + 1])."
+      "The overlap does not matter for a minimum, because taking the minimum of a value twice changes nothing. Get k as 31 - Math.clz32(len) and return Math.min(row[k][l], row[k][r - 2^k + 1]).",
+      "The last test asks 100,000 long queries on 100,000 values. Scanning the range on every query is O(n) each and too slow there; two overlapping power-of-two blocks answer in O(1)."
     ],
     solution: "class SparseTableMin {\n  constructor(nums) {\n    this.rows = [nums.slice()];\n    for (let j = 1; (1 << j) <= nums.length; j++) {\n      const prev = this.rows[j - 1];\n      const half = 1 << (j - 1);\n      const row = new Array(nums.length - (1 << j) + 1);\n      for (let i = 0; i < row.length; i++) row[i] = Math.min(prev[i], prev[i + half]);\n      this.rows.push(row);\n    }\n  }\n  query(l, r) {\n    const k = 31 - Math.clz32(r - l + 1);\n    return Math.min(this.rows[k][l], this.rows[k][r - (1 << k) + 1]);\n  }\n}\n",
     tests: [
@@ -46,6 +47,10 @@ export const dsaAddSparseTable: Exercise[] = [
       {
         name: "stays correct on a large array",
         body: "let seed = 77;\nconst rnd = (m) => { seed = (seed * 48271) % 2147483647; return seed % m; };\nconst n = 20000;\nconst nums = Array.from({ length: n }, () => rnd(1000000));\nconst st = new SparseTableMin(nums);\nfor (let q = 0; q < 300; q++) {\n  let l = rnd(n);\n  let r = rnd(n);\n  if (l > r) [l, r] = [r, l];\n  let low = Infinity;\n  for (let i = l; i <= r; i++) if (nums[i] < low) low = nums[i];\n  assert.equal(st.query(l, r), low);\n}"
+      },
+      {
+        name: "a large input finishes in time (n = 100,000 with 100,000 queries)",
+        body: "const n = 100000;\nconst centre = 50000;\nconst nums = Array.from({ length: n }, (_, i) => Math.abs(i - centre));\nconst st = new SparseTableMin(nums);\nfor (let q = 0; q < 100000; q++) {\n  const l = (q * 7919) % n;\n  const r = Math.min(n - 1, l + 20000 + (q % 30000));\n  // The values form a V with its bottom at the centre.\n  const expected = l > centre ? l - centre : r < centre ? centre - r : 0;\n  assert.equal(st.query(l, r), expected);\n}",
       }
     ]
   },
@@ -431,7 +436,8 @@ export const dsaAddSparseTable: Exercise[] = [
     hints: [
       "Keep count[v] for the current window and a running total. Adding one copy of v when count[v] is c changes the total by (c + 1)^2 * v - c^2 * v = (2c + 1) * v. Removing one copy when count is c changes it by -(2c - 1) * v.",
       "Sort an array of query numbers: first by floor(l / B) with B = max(1, floor(sqrt(n))), then by r (ascending). Move a window [curL, curR], starting empty as curL = 0, curR = -1, to each query in that order, and store each answer at the query's original index.",
-      "Move the pointers in the order: grow left, grow right, shrink left, shrink right. Growing first guarantees the window never has a negative length, so you never remove an element that was not added."
+      "Move the pointers in the order: grow left, grow right, shrink left, shrink right. Growing first guarantees the window never has a negative length, so you never remove an element that was not added.",
+      "The last test has 30,000 values and 30,000 queries. Recounting each range from scratch is O(n) per query and too slow there; in Mo's order the two pointers move about n * sqrt(n) steps in total."
     ],
     solution: "function powerfulArray(nums, queries) {\n  const block = Math.max(1, Math.floor(Math.sqrt(nums.length)));\n  const order = queries.map((_, q) => q).sort((a, b) => {\n    const blockA = Math.floor(queries[a][0] / block);\n    const blockB = Math.floor(queries[b][0] / block);\n    return blockA !== blockB ? blockA - blockB : queries[a][1] - queries[b][1];\n  });\n  const count = new Map();\n  let power = 0;\n  const add = (i) => {\n    const c = count.get(nums[i]) ?? 0;\n    power += (2 * c + 1) * nums[i];\n    count.set(nums[i], c + 1);\n  };\n  const remove = (i) => {\n    const c = count.get(nums[i]);\n    power -= (2 * c - 1) * nums[i];\n    count.set(nums[i], c - 1);\n  };\n  let curL = 0;\n  let curR = -1;\n  const answer = new Array(queries.length);\n  for (const q of order) {\n    const [l, r] = queries[q];\n    while (curL > l) add(--curL);\n    while (curR < r) add(++curR);\n    while (curL < l) remove(curL++);\n    while (curR > r) remove(curR--);\n    answer[q] = power;\n  }\n  return answer;\n}\n",
     tests: [
@@ -470,6 +476,10 @@ export const dsaAddSparseTable: Exercise[] = [
       {
         name: "many queries on a larger array",
         body: "let seed = 3;\nconst rnd = (m) => { seed = (seed * 48271) % 2147483647; return seed % m; };\nconst n = 3000;\nconst nums = Array.from({ length: n }, () => 1 + rnd(40));\nconst queries = [];\nfor (let q = 0; q < 3000; q++) {\n  let l = rnd(n);\n  let r = rnd(n);\n  if (l > r) [l, r] = [r, l];\n  queries.push([l, r]);\n}\nconst got = powerfulArray(nums, queries);\nfor (let q = 0; q < 40; q++) {\n  const [l, r] = queries[q * 70];\n  const c = new Map();\n  for (let i = l; i <= r; i++) c.set(nums[i], (c.get(nums[i]) ?? 0) + 1);\n  let total = 0;\n  for (const [v, k] of c) total += k * k * v;\n  assert.equal(got[q * 70], total);\n}"
+      },
+      {
+        name: "a large input finishes in time (n = 30,000 with 30,000 queries)",
+        body: "const n = 30000;\nconst nums = Array.from({ length: n }, (_, i) => 1 + (i % 3));\nconst queries = [];\nconst expected = [];\nfor (let q = 0; q < n; q++) {\n  const l = (q * 7919) % n;\n  const r = l + ((q * 104729) % (n - l));\n  queries.push([l, r]);\n  // Value 1 + c sits at the indexes that leave remainder c when divided by 3.\n  let power = 0;\n  for (let c = 0; c < 3; c++) {\n    const cnt = Math.floor((r - c + 3) / 3) - Math.floor((l - 1 - c + 3) / 3);\n    power += cnt * cnt * (1 + c);\n  }\n  expected.push(power);\n}\nassert.deepEqual(powerfulArray(nums, queries), expected);",
       }
     ]
   }

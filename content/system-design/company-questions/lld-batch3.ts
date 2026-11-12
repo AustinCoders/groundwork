@@ -537,6 +537,7 @@ class Controller {
         label: "Uber Interview Experience for SDE (GeeksforGeeks)",
         url: "https://www.geeksforgeeks.org/interview-experiences/uber-interview-experience-for-sde/",
         kind: "candidate-report",
+        year: 2023,
       },
     ],
     chapters: [],

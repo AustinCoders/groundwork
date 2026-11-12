@@ -471,6 +471,7 @@ export const dsa3: Exercise[] = [
       "Sweep the grid once first: push EVERY rotten cell into the queue as a starting point, and count how many fresh oranges exist.",
       "Process the queue one whole level at a time. Each level is one minute; oranges rotted during a level go into the next level, not the current one.",
       "Decrement the fresh counter as you rot each orange. At the end, a non-zero counter means something was unreachable, so return -1.",
+      "The last test is a single row of 50,000 oranges that takes 49,999 minutes to rot. Re-scanning the whole grid every minute is O(cells * minutes) and too slow there; the queue only ever touches the oranges that have just turned.",
     ],
     solution:
       "function orangesRotting(grid) {\n  const rows = grid.length;\n  const cols = rows > 0 ? grid[0].length : 0;\n  let fresh = 0;\n  let queue = [];\n  for (let r = 0; r < rows; r++) {\n    for (let c = 0; c < cols; c++) {\n      if (grid[r][c] === 1) fresh++;\n      else if (grid[r][c] === 2) queue.push([r, c]);\n    }\n  }\n  if (fresh === 0) return 0;\n  const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];\n  let minutes = 0;\n  while (queue.length > 0 && fresh > 0) {\n    const next = [];\n    for (const cell of queue) {\n      for (const d of dirs) {\n        const nr = cell[0] + d[0];\n        const nc = cell[1] + d[1];\n        if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;\n        if (grid[nr][nc] !== 1) continue;\n        grid[nr][nc] = 2;\n        fresh--;\n        next.push([nr, nc]);\n      }\n    }\n    queue = next;\n    minutes++;\n  }\n  return fresh === 0 ? minutes : -1;\n}\n",
@@ -498,6 +499,10 @@ export const dsa3: Exercise[] = [
       { name: "a single fresh orange with no rotten source never rots", body: "assert.equal(orangesRotting([[1]]), -1);" },
       { name: "a single rotten orange with no fresh oranges", body: "assert.equal(orangesRotting([[2]]), 0);" },
       { name: "a larger grid spreads from one corner", body: "const grid = [\n  [2, 1, 1, 1, 1],\n  [1, 1, 1, 1, 1],\n  [1, 1, 1, 1, 1],\n  [1, 1, 1, 1, 1],\n  [1, 1, 1, 1, 1],\n];\nassert.equal(orangesRotting(grid), 8);" },
+      {
+        name: "a large input finishes in time (1 by 50,000)",
+        body: "const n = 50000;\nconst row = new Array(n).fill(1);\nrow[0] = 2;\n// The rot moves one cell to the right each minute.\nassert.equal(orangesRotting([row]), n - 1);",
+      },
     ],
   },
 {
@@ -716,6 +721,7 @@ export const dsa3: Exercise[] = [
       "Build an adjacency list first. For the pair [a, b], the natural edge is b -> a: 'finishing b unlocks a'.",
       "Kahn's algorithm: count each course's number of unmet prerequisites (its in-degree), queue everything at zero, and repeatedly remove a course and decrement its dependants.",
       "If the number of courses you managed to remove equals numCourses, there was no cycle. Anything left over is stuck in one.",
+      "The last test has 50 layers of two courses, each needing both courses of the layer before: about 2^49 different prerequisite paths. A depth-first search that does not remember which courses it has already cleared walks every path; Kahn's algorithm (or a search with a done mark) touches each edge once, O(V + E).",
     ],
     solution:
       "function canFinish(numCourses, prerequisites) {\n  const next = [];\n  for (let i = 0; i < numCourses; i++) next.push([]);\n  const indegree = new Array(numCourses).fill(0);\n  for (const pair of prerequisites) {\n    next[pair[1]].push(pair[0]);\n    indegree[pair[0]]++;\n  }\n  const queue = [];\n  for (let i = 0; i < numCourses; i++) {\n    if (indegree[i] === 0) queue.push(i);\n  }\n  let done = 0;\n  let head = 0;\n  while (head < queue.length) {\n    const course = queue[head++];\n    done++;\n    for (const dependant of next[course]) {\n      indegree[dependant]--;\n      if (indegree[dependant] === 0) queue.push(dependant);\n    }\n  }\n  return done === numCourses;\n}\n",
@@ -743,6 +749,10 @@ export const dsa3: Exercise[] = [
       { name: "duplicate prerequisites do not cause problems", body: "assert.equal(canFinish(2, [[1, 0], [1, 0]]), true);" },
       { name: "a larger DAG with multiple independent chains", body: "assert.equal(canFinish(6, [[1, 0], [2, 1], [4, 3], [5, 4]]), true);" },
       { name: "a cycle hidden among otherwise valid prerequisites, with isolated nodes", body: "assert.equal(canFinish(5, [[1, 0], [2, 1], [3, 2], [1, 3]]), false);" },
+      {
+        name: "a large input finishes in time (100 courses, 2^49 prerequisite paths)",
+        body: "const layers = 50;\nconst prerequisites = [];\n// Courses 2L and 2L + 1 form layer L, and each needs both courses of layer L - 1.\nfor (let layer = 1; layer < layers; layer++) {\n  for (const a of [2 * layer, 2 * layer + 1]) {\n    for (const b of [2 * layer - 2, 2 * layer - 1]) prerequisites.push([a, b]);\n  }\n}\nassert.equal(canFinish(2 * layers, prerequisites), true);\n// Making a first-layer course depend on a last-layer one closes a cycle.\nprerequisites.push([0, 2 * layers - 1]);\nassert.equal(canFinish(2 * layers, prerequisites), false);",
+      },
     ],
   },
 {
@@ -758,6 +768,7 @@ export const dsa3: Exercise[] = [
       "This is the same cycle check as Course Schedule, except you now record the courses in the order you take them off the queue.",
       "Build edges b -> a and an in-degree count per course. Seed a queue with every course whose in-degree is 0 — those have nothing blocking them.",
       "Pop a course, append it to the result, and decrement each dependant's in-degree, enqueueing any that reach 0. If the result is shorter than numCourses at the end, a cycle exists, so return [].",
+      "The last test has 50 layers of two courses, each needing both courses of the layer before: about 2^49 different prerequisite paths. A search that re-walks a course's prerequisites every time it meets it never finishes; Kahn's algorithm (or a search with a done mark) touches each edge once, O(V + E).",
     ],
     solution:
       "function findOrder(numCourses, prerequisites) {\n  const next = [];\n  for (let i = 0; i < numCourses; i++) next.push([]);\n  const indegree = new Array(numCourses).fill(0);\n  for (const pair of prerequisites) {\n    next[pair[1]].push(pair[0]);\n    indegree[pair[0]]++;\n  }\n  const order = [];\n  for (let i = 0; i < numCourses; i++) {\n    if (indegree[i] === 0) order.push(i);\n  }\n  let head = 0;\n  while (head < order.length) {\n    const course = order[head++];\n    for (const dependant of next[course]) {\n      indegree[dependant]--;\n      if (indegree[dependant] === 0) order.push(dependant);\n    }\n  }\n  return order.length === numCourses ? order : [];\n}\n",
@@ -785,6 +796,10 @@ export const dsa3: Exercise[] = [
       { name: "duplicate prerequisites still produce a valid order", body: "const prereqs = [[1, 0], [1, 0], [2, 1]];\nconst order = findOrder(3, prereqs);\nassert.equal(order.length, 3);\nconst at = new Map();\norder.forEach((c, i) => at.set(c, i));\nfor (const p of prereqs) assert.ok(at.get(p[1]) < at.get(p[0]));" },
       { name: "disconnected components each get ordered correctly", body: "const prereqs = [[1, 0], [3, 2]];\nconst order = findOrder(6, prereqs);\nassert.equal(order.length, 6);\nassert.deepEqual(order.slice().sort((a, b) => a - b), [0, 1, 2, 3, 4, 5]);\nconst at = new Map();\norder.forEach((c, i) => at.set(c, i));\nfor (const p of prereqs) assert.ok(at.get(p[1]) < at.get(p[0]));" },
       { name: "a cycle among only some courses still returns empty", body: "assert.deepEqual(findOrder(4, [[1, 0], [0, 1], [3, 2]]), []);" },
+      {
+        name: "a large input finishes in time (100 courses, 2^49 prerequisite paths)",
+        body: "const layers = 50;\nconst prerequisites = [];\n// Courses 2L and 2L + 1 form layer L, and each needs both courses of layer L - 1.\nfor (let layer = 1; layer < layers; layer++) {\n  for (const a of [2 * layer, 2 * layer + 1]) {\n    for (const b of [2 * layer - 2, 2 * layer - 1]) prerequisites.push([a, b]);\n  }\n}\nconst order = findOrder(2 * layers, prerequisites);\nassert.equal(order.length, 2 * layers);\nconst position = new Array(2 * layers).fill(-1);\norder.forEach((course, i) => { position[course] = i; });\nassert.ok(position.every((p) => p >= 0), 'every course appears once');\nfor (const [a, b] of prerequisites) assert.ok(position[b] < position[a], 'course ' + b + ' must come before ' + a);",
+      },
     ],
   },
 {
@@ -1074,6 +1089,7 @@ export const dsa3: Exercise[] = [
       "Start with a parent array where every node is its own parent, and a counter set to n — each node begins as its own component.",
       "find(x) walks up the parent chain to the root. union(a, b) finds both roots; if they are already the same, the edge is redundant and the count does not change.",
       "Only when the two roots differ do you point one at the other and decrement the counter. Path compression (parent[x] = find(parent[x])) keeps find nearly constant time.",
+      "The last test has about 100,000 nodes and 99,000 edges. Relabelling every node of one group on each union is O(n) per edge and too slow there; pointing one root at the other, with path compression in find, makes each edge almost O(1).",
     ],
     solution:
       "function countComponents(n, edges) {\n  const parent = [];\n  for (let i = 0; i < n; i++) parent.push(i);\n  const find = (x) => {\n    while (parent[x] !== x) {\n      parent[x] = parent[parent[x]];\n      x = parent[x];\n    }\n    return x;\n  };\n  let components = n;\n  for (const e of edges) {\n    const ra = find(e[0]);\n    const rb = find(e[1]);\n    if (ra !== rb) {\n      parent[ra] = rb;\n      components--;\n    }\n  }\n  return components;\n}\n",
@@ -1101,6 +1117,10 @@ export const dsa3: Exercise[] = [
       { name: "a single self-contained triangle", body: "assert.equal(countComponents(3, [[0, 1], [1, 2], [0, 2]]), 1);" },
       { name: "many isolated pairs", body: "assert.equal(countComponents(6, [[0, 1], [2, 3], [4, 5]]), 3);" },
       { name: "a chain of a thousand nodes stays one component", body: "const n = 1000;\nconst edges = [];\nfor (let i = 0; i + 1 < n; i++) edges.push([i, i + 1]);\nassert.equal(countComponents(n, edges), 1);" },
+      {
+        name: "a large input finishes in time (n = 100,010)",
+        body: "const n = 100010;\nconst edges = [];\n// Nodes 0..999 are hubs. Every node from 1,000 to 99,999 hangs off the hub i % 1000; the last 10 nodes have no edges.\nfor (let i = 1000; i < 100000; i++) edges.push(i % 2 === 0 ? [i, i % 1000] : [i % 1000, i]);\nassert.equal(countComponents(n, edges), 1010);",
+      },
     ],
   },
 {
@@ -1116,6 +1136,7 @@ export const dsa3: Exercise[] = [
       "Process the edges in the order given, maintaining a disjoint set. Every edge that joins two previously separate groups is a genuine tree edge.",
       "The moment an edge's two endpoints already share a root, that edge closes a cycle — and because you are scanning in order, it is the last such edge in the input. Return it immediately.",
       "Size the parent array as edges.length + 1 so the 1-based labels index it directly.",
+      "The last test has 100,000 edges. Searching the graph built so far before adding each edge is O(n) per edge and too slow there; a disjoint set answers 'already connected?' in almost O(1).",
     ],
     solution:
       "function findRedundantConnection(edges) {\n  const parent = [];\n  for (let i = 0; i <= edges.length; i++) parent.push(i);\n  const find = (x) => {\n    while (parent[x] !== x) {\n      parent[x] = parent[parent[x]];\n      x = parent[x];\n    }\n    return x;\n  };\n  for (const e of edges) {\n    const ra = find(e[0]);\n    const rb = find(e[1]);\n    if (ra === rb) return e;\n    parent[ra] = rb;\n  }\n  return [];\n}\n",
@@ -1143,6 +1164,10 @@ export const dsa3: Exercise[] = [
       { name: "a two-node graph cannot have a redundant edge from a single pair", body: "assert.deepEqual(findRedundantConnection([[1, 2], [1, 2]]), [1, 2]);" },
       { name: "a larger cycle closed early in the input", body: "assert.deepEqual(findRedundantConnection([[1, 2], [2, 3], [1, 3], [3, 4], [4, 5]]), [1, 3]);" },
       { name: "does not mutate the input edge list", body: "const edges = [[1, 2], [1, 3], [2, 3]];\nconst copy = edges.map((e) => e.slice());\nfindRedundantConnection(edges);\nassert.deepEqual(edges, copy);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst edges = [];\n// A star around node 1, then one extra edge between two of its leaves.\nfor (let i = 2; i <= n; i++) edges.push(i % 2 === 0 ? [1, i] : [i, 1]);\nedges.push([n - 1, n]);\nassert.deepEqual(findRedundantConnection(edges), [n - 1, n]);",
+      },
     ],
   },
   {
@@ -1341,6 +1366,7 @@ export const dsa3: Exercise[] = [
       "At each house you face one binary choice: rob it (and give up the house right before it) or skip it (and keep the best total so far).",
       "So best(i) = max(best(i-1), best(i-2) + nums[i]). Sweep left to right applying that.",
       "Only the last two totals matter, so carry two running numbers instead of a whole array.",
+      "The last test has 1,000 houses. Plain recursion over rob-or-skip recomputes the same suffixes an exponential number of times and never finishes there; carry the last two totals, or memoise, for O(n).",
     ],
     solution:
       "function rob(nums) {\n  let skip = 0;\n  let take = 0;\n  for (const value of nums) {\n    const next = Math.max(take, skip + value);\n    skip = take;\n    take = next;\n  }\n  return take;\n}\n",
@@ -1368,6 +1394,10 @@ export const dsa3: Exercise[] = [
       { name: "two houses, take the larger", body: "assert.equal(rob([3, 7]), 7);\nassert.equal(rob([9, 1]), 9);" },
       { name: "all zeros", body: "assert.equal(rob([0, 0, 0, 0]), 0);" },
       { name: "longer mixed array", body: "assert.equal(rob([5, 1, 1, 5]), 10);\nassert.equal(rob([2, 1, 4, 5, 3, 1, 1, 3]), 12);" },
+      {
+        name: "a large input finishes in time (n = 1,000)",
+        body: "const n = 1000;\n// Alternating 3, 1, 3, 1, ...: robbing every house worth 3 is best.\nconst nums = Array.from({ length: n }, (_, i) => (i % 2 === 0 ? 3 : 1));\nassert.equal(rob(nums), (3 * n) / 2);",
+      },
     ],
   },
 {
@@ -1465,6 +1495,7 @@ export const dsa3: Exercise[] = [
       "Let ways[a] be the number of combinations that make a, starting with ways[0] = 1.",
       "The trap is double counting. Loop over the COINS on the outside and the amounts on the inside — that way each combination is only ever built in one fixed coin order.",
       "For a coin c, sweep a from c upward doing ways[a] += ways[a - c]. Swapping the two loops would count permutations instead.",
+      "The last test asks for an amount of 5,000, which has over a million combinations. Plain recursion counts them one at a time; the table over amounts is O(amount * coins).",
     ],
     solution:
       "function change(amount, coins) {\n  const ways = new Array(amount + 1).fill(0);\n  ways[0] = 1;\n  for (const coin of coins) {\n    for (let a = coin; a <= amount; a++) {\n      ways[a] += ways[a - coin];\n    }\n  }\n  return ways[amount];\n}\n",
@@ -1492,6 +1523,10 @@ export const dsa3: Exercise[] = [
       { name: "no coins at all with a nonzero amount", body: "assert.equal(change(5, []), 0);" },
       { name: "two coin types over a small target", body: "assert.equal(change(4, [1, 2]), 3);" },
       { name: "coins that can only reach even totals", body: "assert.equal(change(7, [2, 4]), 0);\nassert.equal(change(8, [2, 4]), 3);" },
+      {
+        name: "a large input finishes in time (amount = 5,000)",
+        body: "const amount = 5000;\n// Use k coins of 5; the rest is made from 2s and 1s, and the number of 2s can be anything from 0 to floor(rest / 2).\nlet expected = 0;\nfor (let k = 0; 5 * k <= amount; k++) expected += Math.floor((amount - 5 * k) / 2) + 1;\nassert.equal(change(amount, [1, 2, 5]), expected);",
+      },
     ],
   },
 {
@@ -1588,6 +1623,7 @@ export const dsa3: Exercise[] = [
       "Think of it as climbing stairs with two guards: from position i you may consume one digit or two, but only if the piece you consume is a legal code.",
       "Let ways[i] be the number of decodings of the first i characters, with ways[0] = 1. Add ways[i-1] when s[i-1] is not '0', and add ways[i-2] when the two-digit slice sits between 10 and 26.",
       "'0' is the whole difficulty. It contributes nothing on its own, so a '0' that is not preceded by a 1 or a 2 makes the entire answer 0.",
+      "The last test is a string of 70 ones. Plain recursion over one-digit and two-digit steps makes about 10^14 calls there; the table (or a memo) visits each position once, O(n).",
     ],
     solution:
       "function numDecodings(s) {\n  if (s.length === 0) return 0;\n  const ways = new Array(s.length + 1).fill(0);\n  ways[0] = 1;\n  for (let i = 1; i <= s.length; i++) {\n    if (s[i - 1] !== '0') ways[i] += ways[i - 1];\n    if (i >= 2) {\n      const pair = Number(s.slice(i - 2, i));\n      if (pair >= 10 && pair <= 26) ways[i] += ways[i - 2];\n    }\n  }\n  return ways[s.length];\n}\n",
@@ -1615,6 +1651,10 @@ export const dsa3: Exercise[] = [
       { name: "a single valid digit", body: "assert.equal(numDecodings('5'), 1);\nassert.equal(numDecodings('9'), 1);" },
       { name: "a run of ones grows like Fibonacci", body: "assert.equal(numDecodings('111'), 3);" },
       { name: "a two-digit value above 26 only splits one way", body: "assert.equal(numDecodings('27'), 1);\nassert.equal(numDecodings('30'), 0);" },
+      {
+        name: "a large input finishes in time (n = 70)",
+        body: "// Every way of cutting a run of ones into pieces of length 1 or 2 is valid, so the count is a Fibonacci number.\nlet prev = 1;\nlet cur = 1;\nfor (let i = 2; i <= 70; i++) [prev, cur] = [cur, prev + cur];\nassert.equal(numDecodings('1'.repeat(70)), cur);",
+      },
     ],
   },
 {
@@ -1629,6 +1669,7 @@ export const dsa3: Exercise[] = [
       "Unlike maximum sum, tracking only the best running product fails: multiplying a large negative by another negative produces a large positive.",
       "So carry TWO running values as you sweep — the maximum product ending here and the minimum product ending here.",
       "At each element the three candidates are the element alone, element * previousMax, and element * previousMin. Take the max of those for the new max and the min for the new min, computing both from the OLD pair.",
+      "The last test has 100,000 numbers. Multiplying out every subarray is O(n^2) and too slow there; carrying the largest and smallest product ending at each position is one pass.",
     ],
     solution:
       "function maxProduct(nums) {\n  if (nums.length === 0) return 0;\n  let best = nums[0];\n  let curMax = nums[0];\n  let curMin = nums[0];\n  for (let i = 1; i < nums.length; i++) {\n    const value = nums[i];\n    const a = curMax * value;\n    const b = curMin * value;\n    curMax = Math.max(value, a, b);\n    curMin = Math.min(value, a, b);\n    if (curMax > best) best = curMax;\n  }\n  return best;\n}\n",
@@ -1656,6 +1697,10 @@ export const dsa3: Exercise[] = [
       { name: "a single element array", body: "assert.equal(maxProduct([5]), 5);\nassert.equal(maxProduct([-7]), -7);" },
       { name: "scattered zeros still leave a positive best", body: "assert.equal(maxProduct([0, 0, -3, 0, 2, 0]), 2);" },
       { name: "an alternating-sign array where the whole thing wins", body: "assert.equal(maxProduct([-1, 2, -3, 4, -5]), 120);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\n// Mostly 1s, with a -1 at every index that leaves remainder 3 when divided by 7, plus one 2 and one 3.\nconst nums = Array.from({ length: n }, (_, i) => (i % 7 === 3 ? -1 : 1));\nnums[11] = 2;\nnums[n - 11] = 3;\nlet negatives = 0;\nfor (const x of nums) if (x < 0) negatives++;\n// An even number of -1s cancel out, so the whole array is the best subarray.\nassert.equal(negatives % 2, 0);\nassert.equal(maxProduct(nums), 6);",
+      },
     ],
   },
 {
@@ -1697,6 +1742,10 @@ export const dsa3: Exercise[] = [
       { name: "small even and odd multiples of a repeated value", body: "assert.equal(canPartition([2, 2]), true);\nassert.equal(canPartition([2, 2, 2]), false);" },
       { name: "an even total with no subset that works, versus one that does", body: "assert.equal(canPartition([1, 2, 5]), false);\nassert.equal(canPartition([1, 2, 3, 4, 5, 6, 7]), true);" },
       { name: "does not mutate the input array", body: "const nums = [1, 5, 11, 5];\nconst copy = nums.slice();\ncanPartition(nums);\nassert.deepEqual(nums, copy);" },
+      {
+        name: "a large input finishes in time (n = 41)",
+        body: "// 41 twos total 82, so each half would need 41: an odd sum from even numbers. Impossible.\nassert.equal(canPartition(new Array(41).fill(2)), false);\n// 39 twos and one 4 total 82 as well, and here the search has to try combinations before giving up.\nassert.equal(canPartition([4].concat(new Array(39).fill(2))), false);\n// 40 twos split evenly.\nassert.equal(canPartition(new Array(40).fill(2)), true);",
+      },
     ],
   },
 ];

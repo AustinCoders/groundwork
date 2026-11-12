@@ -408,6 +408,10 @@ export const dsa5: Exercise[] = [
       { name: "a chain of touching intervals collapses to one", body: "assert.deepEqual(merge([[1,2],[2,3],[3,4],[4,5]]), [[1,5]]);" },
       { name: "several separate overlapping clusters", body: "assert.deepEqual(merge([[1,4],[0,2],[3,5],[7,8],[9,10]]), [[0,5],[7,8],[9,10]]);" },
       { name: "negative interval bounds", body: "assert.deepEqual(merge([[-5,-2],[-3,0],[1,2]]), [[-5,0],[1,2]]);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst intervals = new Array(n);\n// Pair i is [10i, 10i + 5] and [10i + 3, 10i + 8], stored in a scrambled order. Each pair merges; pairs never touch.\nfor (let i = 0; i < n / 2; i++) {\n  intervals[(2 * i * 7919) % n] = [10 * i, 10 * i + 5];\n  intervals[((2 * i + 1) * 7919) % n] = [10 * i + 3, 10 * i + 8];\n}\nconst got = merge(intervals);\nassert.equal(got.length, n / 2);\nfor (let i = 0; i < got.length; i++) {\n  assert.equal(got[i][0], 10 * i);\n  assert.equal(got[i][1], 10 * i + 8);\n}",
+      },
     ],
   },
 {
@@ -465,6 +469,7 @@ export const dsa5: Exercise[] = [
       "Flip the question: maximise how many intervals you keep, then the answer is total - kept.",
       "This is the classic activity-selection greedy. Sort by END, not by start — the interval that finishes earliest leaves the most room for everything after it.",
       "Sweep the end-sorted list, keeping a running 'last kept end'. Keep an interval when its start is >= that end, and update the end; otherwise skip it.",
+      "The last test has 100,000 intervals. A dynamic programme that compares every interval with every earlier one is O(n^2) and too slow there; the sort by end plus one greedy sweep is O(n log n).",
     ],
     solution:
       "function eraseOverlapIntervals(intervals) {\n  if (intervals.length === 0) return 0;\n  const sorted = intervals.slice().sort((a, b) => a[1] - b[1]);\n  let kept = 1;\n  let end = sorted[0][1];\n  for (let i = 1; i < sorted.length; i++) {\n    if (sorted[i][0] >= end) {\n      kept++;\n      end = sorted[i][1];\n    }\n  }\n  return intervals.length - kept;\n}\n",
@@ -492,6 +497,10 @@ export const dsa5: Exercise[] = [
       { name: "no overlaps at all needs zero removals", body: "assert.equal(eraseOverlapIntervals([[1,2],[3,4],[5,6]]), 0);" },
       { name: "every interval pairwise overlaps a shared centre", body: "assert.equal(eraseOverlapIntervals([[1,10],[2,9],[3,8],[4,7]]), 3);" },
       { name: "negative interval bounds", body: "assert.equal(eraseOverlapIntervals([[-5,-2],[-3,0],[-1,1]]), 1);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst intervals = new Array(n);\n// Half are [2i, 2i + 2], which tile the line without overlapping. The other half are [2i, 2i + 4],\n// each of which would cost two of the short ones, so the best plan removes exactly the long half.\nfor (let i = 0; i < n / 2; i++) {\n  intervals[(2 * i * 7919) % n] = [2 * i, 2 * i + 2];\n  intervals[((2 * i + 1) * 7919) % n] = [2 * i, 2 * i + 4];\n}\nassert.equal(eraseOverlapIntervals(intervals), n / 2);",
+      },
     ],
   },
 {
@@ -532,6 +541,10 @@ export const dsa5: Exercise[] = [
       { name: "three meetings where only the middle one clashes", body: "assert.equal(canAttendMeetings([[1,3],[3,7],[5,6]]), false);" },
       { name: "a sorted schedule with no gaps or overlaps", body: "assert.equal(canAttendMeetings([[0,1],[1,2],[2,3],[3,4]]), true);" },
       { name: "two identical meetings clash", body: "assert.equal(canAttendMeetings([[2,5],[2,5]]), false);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst intervals = new Array(n);\n// Back-to-back meetings [10i, 10i + 10] in a scrambled order: no clash.\nfor (let i = 0; i < n; i++) intervals[(i * 7919) % n] = [10 * i, 10 * i + 10];\nassert.equal(canAttendMeetings(intervals), true);\n// Stretch one meeting by a single minute and it clashes with the next.\nintervals[0] = [intervals[0][0], intervals[0][1] + 1];\nassert.equal(canAttendMeetings(intervals), false);",
+      },
     ],
   },
 {
@@ -671,6 +684,7 @@ export const dsa5: Exercise[] = [
       "Look for a starting cell where the two directions disagree — one makes values larger, the other makes them smaller. The middle is useless here; a corner is not.",
       "Start at the TOP-RIGHT cell. Everything to its left is smaller and everything below is larger, so one comparison eliminates a whole row or a whole column.",
       "If the cell is greater than the target move left, if it is smaller move down, and stop when you fall off the grid. The bottom-left corner works symmetrically.",
+      "The last test runs 4,000 searches on a 1,000 by 1,000 matrix. Looking at every cell is O(m * n) per search and too slow there; the staircase walk from the top-right corner is O(m + n).",
     ],
     solution:
       "function searchMatrix(matrix, target) {\n  if (matrix.length === 0 || matrix[0].length === 0) return false;\n  let r = 0;\n  let c = matrix[0].length - 1;\n  while (r < matrix.length && c >= 0) {\n    const value = matrix[r][c];\n    if (value === target) return true;\n    if (value > target) c--;\n    else r++;\n  }\n  return false;\n}\n",
@@ -698,6 +712,10 @@ export const dsa5: Exercise[] = [
       { name: "values just below the smallest and just above the largest", body: "const m=[[1,4,7],[2,5,8],[3,6,9]];\nassert.equal(searchMatrix(m,0), false);\nassert.equal(searchMatrix(m,10), false);" },
       { name: "a value present in the last row", body: "const m=[[1,4,7],[2,5,8],[3,6,9]];\nassert.equal(searchMatrix(m,3), true);\nassert.equal(searchMatrix(m,9), true);" },
       { name: "a matrix with duplicate values still finds them", body: "const m=[[1,3,3],[3,3,5],[5,5,7]];\nassert.equal(searchMatrix(m,3), true);\nassert.equal(searchMatrix(m,7), true);\nassert.equal(searchMatrix(m,4), false);" },
+      {
+        name: "a large input finishes in time (1,000 by 1,000 with 4,000 searches)",
+        body: "const size = 1000;\n// Cell (r, c) holds 2 * (r + c): every even number from 0 to 3,996 is present and no odd number is.\nconst matrix = Array.from({ length: size }, (_, r) => Array.from({ length: size }, (_, c) => 2 * (r + c)));\nfor (let q = 0; q < 2000; q++) {\n  const t = 1000 + ((q * 7919) % 999);\n  assert.equal(searchMatrix(matrix, 2 * t), true);\n  assert.equal(searchMatrix(matrix, 2 * t + 1), false);\n}",
+      },
     ],
   },
   {
@@ -811,6 +829,7 @@ export const dsa5: Exercise[] = [
       "A node needs two things: a map from the next character to a child node, and a flag saying 'a word ends here'.",
       "search and startsWith share all their work — both walk the characters and bail out when a child is missing. Factor that walk into a helper that returns the node it landed on, or null.",
       "The only difference is the last step: startsWith is happy that the node exists, search additionally requires its end-of-word flag. Without that flag, inserting 'apple' would make 'app' look like a stored word.",
+      "The last test stores 60,000 words and asks 180,000 questions. Keeping the words in a list and scanning it for every prefix is O(words) per question and too slow there; walking the trie costs only the length of the string.",
     ],
     solution:
       "class TrieNode {\n  constructor() {\n    this.children = new Map();\n    this.isWord = false;\n  }\n}\n\nclass Trie {\n  constructor() {\n    this.root = new TrieNode();\n  }\n\n  insert(word) {\n    let node = this.root;\n    for (const ch of word) {\n      if (!node.children.has(ch)) node.children.set(ch, new TrieNode());\n      node = node.children.get(ch);\n    }\n    node.isWord = true;\n  }\n\n  nodeFor(prefix) {\n    let node = this.root;\n    for (const ch of prefix) {\n      if (!node.children.has(ch)) return null;\n      node = node.children.get(ch);\n    }\n    return node;\n  }\n\n  search(word) {\n    const node = this.nodeFor(word);\n    return node !== null && node.isWord;\n  }\n\n  startsWith(prefix) {\n    return this.nodeFor(prefix) !== null;\n  }\n}\n",
@@ -838,6 +857,10 @@ export const dsa5: Exercise[] = [
       { name: "the empty string as both a prefix and a stored word", body: "const t=new Trie();\nassert.equal(t.startsWith(''), true);\nassert.equal(t.search(''), false);\nt.insert('');\nassert.equal(t.search(''), true);" },
       { name: "one word is a prefix of two others inserted later", body: "const t=new Trie();\nt.insert('application');\nt.insert('apply');\nt.insert('app');\nassert.equal(t.search('app'), true);\nassert.equal(t.search('appl'), false);\nassert.equal(t.startsWith('appl'), true);\nassert.equal(t.search('apply'), true);" },
       { name: "two words diverge after sharing a long prefix", body: "const t=new Trie();\nt.insert('interest');\nt.insert('internet');\nassert.equal(t.search('inter'), false);\nassert.equal(t.startsWith('inter'), true);\nassert.equal(t.search('internet'), true);\nassert.equal(t.search('interne'), false);" },
+      {
+        name: "a large input finishes in time (60,000 words, 180,000 lookups)",
+        body: "const letters = 'abcdefghijklmnopqrstuvwxyz';\n// Word i is i written as four base-26 digits: 'aaaa', 'aaab', 'aaac', ...\nconst word = (i) => letters[Math.floor(i / 17576) % 26] + letters[Math.floor(i / 676) % 26] + letters[Math.floor(i / 26) % 26] + letters[i % 26];\nconst count = 60000;\nconst trie = new Trie();\nfor (let i = 0; i < count; i++) trie.insert(word((i * 7919) % count));\nfor (let i = 0; i < count; i++) {\n  const w = word(i);\n  assert.equal(trie.search(w), true);\n  assert.equal(trie.startsWith(w.slice(0, 3)), true);\n  // Every stored word has exactly four letters, so nothing starts with five.\n  assert.equal(trie.startsWith(w + 'a'), false);\n}\nassert.equal(trie.search(word(count)), false);\nassert.equal(trie.search('aaa'), false);",
+      },
     ],
   },
 {
@@ -895,6 +918,7 @@ export const dsa5: Exercise[] = [
       "Insert every word into a trie first. Now one depth-first walk of the board can hunt for all of them at once: the current trie node tells you which letters are still worth trying.",
       "Descend the board and the trie in lockstep. If the current cell's letter has no child in the trie node, that whole branch is dead — return immediately.",
       "Store the finished word on its terminal trie node. When you land on such a node, record the word and then CLEAR it, which both deduplicates the result and prunes the node. As always, restore the board cell after recursing.",
+      "The last test has 625 words that share a 10-letter prefix. Searching the board once per word repeats the same walk 625 times and is too slow there; one walk that follows the trie covers every word at once.",
     ],
     solution:
       "function findWords(board, words) {\n  const root = {};\n  for (const w of words) {\n    let node = root;\n    for (const ch of w) {\n      if (!node[ch]) node[ch] = {};\n      node = node[ch];\n    }\n    node.word = w;\n  }\n  const rows = board.length;\n  const cols = rows > 0 ? board[0].length : 0;\n  const out = [];\n  const walk = (r, c, node) => {\n    if (r < 0 || c < 0 || r >= rows || c >= cols) return;\n    const ch = board[r][c];\n    const next = node[ch];\n    if (!next) return;\n    if (next.word) {\n      out.push(next.word);\n      next.word = null;\n    }\n    board[r][c] = '#';\n    walk(r + 1, c, next);\n    walk(r - 1, c, next);\n    walk(r, c + 1, next);\n    walk(r, c - 1, next);\n    board[r][c] = ch;\n  };\n  for (let r = 0; r < rows; r++) {\n    for (let c = 0; c < cols; c++) walk(r, c, root);\n  }\n  return out;\n}\n",
@@ -922,6 +946,10 @@ export const dsa5: Exercise[] = [
       { name: "single-letter words are found", body: "const board=[['a','b'],['c','d']];\nconst out=findWords(board, ['a','d','z']).slice().sort();\nassert.deepEqual(out, ['a','d']);" },
       { name: "a word requiring a path through the whole small grid", body: "const board=[['a','b'],['c','d']];\nconst out=findWords(board, ['abdc']).slice().sort();\nassert.deepEqual(out, ['abdc']);" },
       { name: "words sharing a common trie prefix but diverging", body: "const board=[['o','a'],['e','t']];\nconst out=findWords(board, ['oa','oe','ot']).slice().sort();\nassert.deepEqual(out, ['oa','oe']);" },
+      {
+        name: "a large input finishes in time (625 words on a 6 by 6 board)",
+        body: "const board = Array.from({ length: 6 }, () => new Array(6).fill('a'));\nconst letters = 'abcdefghijklmnopqrstuvwxyz'.slice(1);\nconst words = [];\n// 625 words that start with ten a's and end in two letters the board does not have.\nfor (const x of letters) for (const y of letters) words.push('aaaaaaaaaa' + x + y);\nwords.push('aaaa');\nassert.deepEqual(findWords(board, words), ['aaaa']);\nassert.ok(board.every((row) => row.length === 6 && row.every((ch) => ch === 'a')));",
+      },
     ],
   },
 {
@@ -964,6 +992,10 @@ export const dsa5: Exercise[] = [
       { name: "putting an existing key at capacity does not evict", body: "const c=new LRUCache(3);\nc.put(1,1); c.put(2,2); c.put(3,3);\nc.put(2,20);\nassert.equal(c.get(1),1);\nassert.equal(c.get(2),20);\nassert.equal(c.get(3),3);" },
       { name: "repeated gets on the same key never evict it", body: "const c=new LRUCache(2);\nc.put(1,1); c.put(2,2);\nc.get(1); c.get(1); c.get(1);\nc.put(3,3);\nassert.equal(c.get(2), -1);\nassert.equal(c.get(1), 1);\nassert.equal(c.get(3), 3);" },
       { name: "eviction order follows least-recent use across many operations", body: "const c=new LRUCache(3);\nc.put(1,'a'); c.put(2,'b'); c.put(3,'c');\nc.get(1);\nc.put(4,'d');\nassert.equal(c.get(2), -1);\nassert.equal(c.get(1), 'a');\nassert.equal(c.get(3), 'c');\nassert.equal(c.get(4), 'd');" },
+      {
+        name: "a large input finishes in time (capacity 50,000, 200,000 operations)",
+        body: "const cap = 50000;\nconst cache = new LRUCache(cap);\nfor (let k = 0; k < cap; k++) cache.put(k, 2 * k);\n// Read every key twice, in two different scrambled orders. The second order is now the recency order.\nfor (let q = 0; q < cap; q++) {\n  const k = (q * 7919) % cap;\n  assert.equal(cache.get(k), 2 * k);\n}\nfor (let q = 0; q < cap; q++) {\n  const k = (q * 104729) % cap;\n  assert.equal(cache.get(k), 2 * k);\n}\n// 1,000 new keys push out the 1,000 least recently read ones.\nfor (let i = 0; i < 1000; i++) cache.put(cap + i, -1 - i);\nfor (let q = 0; q < 1000; q++) assert.equal(cache.get((q * 104729) % cap), -1);\nassert.equal(cache.get((1000 * 104729) % cap), 2 * ((1000 * 104729) % cap));\nassert.equal(cache.get(cap + 999), -1000);",
+      },
     ],
   },
 {
@@ -1090,6 +1122,10 @@ export const dsa5: Exercise[] = [
       { name: "re-inserting after a removal reports newly added", body: "const s=new RandomizedSet((n)=>0);\ns.insert(5);\ns.remove(5);\nassert.equal(s.insert(5), true);\nassert.equal(s.getRandom(), 5);" },
       { name: "getRandom only ever returns a member currently present", body: "const s=new RandomizedSet((n)=>n-1);\ns.insert(1); s.insert(2); s.insert(3);\ns.remove(3);\nconst r=s.getRandom();\nassert.ok(r===1||r===2);" },
       { name: "many inserts and removals stay consistent with a plain set", body: "const s=new RandomizedSet((n)=>0);\nconst ref=new Set();\nconst ops=[[1,'i'],[2,'i'],[3,'i'],[2,'r'],[4,'i'],[1,'r'],[5,'i']];\nfor(const [v,op] of ops){\n  if(op==='i'){ const changed=s.insert(v); assert.equal(changed, !ref.has(v)); ref.add(v); }\n  else { const changed=s.remove(v); assert.equal(changed, ref.has(v)); ref.delete(v); }\n}\nassert.equal(ref.has(s.getRandom()), true);" },
+      {
+        name: "a large input finishes in time (50,000 members, 100,000 picks)",
+        body: "let calls = 0;\nconst set = new RandomizedSet((size) => (calls++ * 7919) % size);\nconst n = 50000;\nfor (let v = 0; v < n; v++) assert.equal(set.insert(v), true);\nfor (let v = 0; v < n; v += 2) assert.equal(set.remove(v), true);\nassert.equal(set.remove(0), false);\nassert.equal(set.insert(1), false);\n// Only the odd values are left, so every pick must be one of them.\nfor (let q = 0; q < 100000; q++) {\n  const got = set.getRandom();\n  assert.ok(Number.isInteger(got) && got > 0 && got < n && got % 2 === 1, 'picked ' + got);\n}\nassert.equal(calls, 100000);",
+      },
     ],
   },
 {

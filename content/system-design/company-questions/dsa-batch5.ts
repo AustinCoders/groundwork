@@ -18,6 +18,7 @@ export const questions: DsaQuestion[] = [
         label: "GeeksforGeeks: Flipkart SDE interview experience (cards problem)",
         url: "https://www.geeksforgeeks.org/?p=1006229",
         kind: "candidate-report",
+        year: 2023,
       },
       {
         label: "Company-tagged list: Flipkart (LeetCode tags)",
@@ -116,6 +117,7 @@ export const questions: DsaQuestion[] = [
         label: "GeeksforGeeks: Flipkart SDE interview experience (unique-character window)",
         url: "https://www.geeksforgeeks.org/?p=1054055",
         kind: "candidate-report",
+        year: 2023,
       },
       {
         label: "Company-tagged list: Flipkart (LeetCode tags)",

@@ -41,6 +41,10 @@ export const dsa7: Exercise[] = [
       { name: "everything is one big group", body: "const norm = (gs) =>\n  gs.map((g) => g.slice().sort()).sort((a, b) => (a.join(',') < b.join(',') ? -1 : 1));\nconst got = groupAnagrams(['abc', 'bca', 'cab']);\nassert.equal(got.length, 1);\nassert.deepEqual(norm(got), norm([['abc', 'bca', 'cab']]));" },
       { name: "single-character words group only with themselves", body: "const norm = (gs) =>\n  gs.map((g) => g.slice().sort()).sort((a, b) => (a.join(',') < b.join(',') ? -1 : 1));\nconst got = groupAnagrams(['a', 'b', 'a']);\nassert.deepEqual(norm(got), norm([['a', 'a'], ['b']]));" },
       { name: "case matters — 'Eat' and 'eat' are not anagrams here", body: "const got = groupAnagrams(['eat', 'Eat']);\nassert.equal(got.length, 2);" },
+      {
+        name: "a large input finishes in time (n = 29,900)",
+        body: "const letters = 'abcdefghijklmnopqrstuvwxyz';\nconst strs = [];\n// Every way of choosing 4 different letters gives one word with its letters in order and one reversed:\n// 14,950 groups of exactly two.\nfor (let a = 0; a < 26; a++) for (let b = a + 1; b < 26; b++) for (let c = b + 1; c < 26; c++) for (let d = c + 1; d < 26; d++) {\n  strs.push(letters[a] + letters[b] + letters[c] + letters[d]);\n  strs.push(letters[d] + letters[c] + letters[b] + letters[a]);\n}\nconst groups = groupAnagrams(strs);\nassert.equal(groups.length, strs.length / 2);\nconst seen = new Set();\nfor (const group of groups) {\n  assert.equal(group.length, 2);\n  const [x, y] = group[0] < group[1] ? group : [group[1], group[0]];\n  assert.equal(y, x[3] + x[2] + x[1] + x[0]);\n  seen.add(x);\n}\nassert.equal(seen.size, strs.length / 2);",
+      },
     ],
   },
 {
@@ -257,6 +261,7 @@ export const dsa7: Exercise[] = [
       "Grow a window to the right until it covers t, then shrink from the left as far as it still covers t. Record the best, then keep growing.",
       "Track counts per character, plus a single counter of how many distinct characters are still short of their required count — that turns 'does the window cover t?' into one comparison.",
       "Only adjust that counter when a character's count crosses its requirement exactly, otherwise repeats will throw it off.",
+      "The last test has a 60,101-character string and a 30,001-character t. Growing a fresh window from every start position is O(n^2) and too slow there; one window whose edges only move right is O(n).",
     ],
     solution:
       "function minWindow(s, t) {\n  if (t.length === 0 || s.length < t.length) return '';\n  const need = new Map();\n  for (const c of t) need.set(c, (need.get(c) || 0) + 1);\n  const have = new Map();\n  let missing = need.size;\n  let best = '';\n  let left = 0;\n  for (let right = 0; right < s.length; right++) {\n    const c = s[right];\n    if (need.has(c)) {\n      have.set(c, (have.get(c) || 0) + 1);\n      if (have.get(c) === need.get(c)) missing--;\n    }\n    while (missing === 0) {\n      if (best === '' || right - left + 1 < best.length) {\n        best = s.slice(left, right + 1);\n      }\n      const d = s[left];\n      if (need.has(d)) {\n        have.set(d, have.get(d) - 1);\n        if (have.get(d) < need.get(d)) missing++;\n      }\n      left++;\n    }\n  }\n  return best;\n}\n",
@@ -284,6 +289,10 @@ export const dsa7: Exercise[] = [
       { name: "t equal to s (as a multiset) returns the whole string", body: "assert.equal(minWindow('abc', 'cba'), 'abc');" },
       { name: "case sensitivity — uppercase and lowercase are different characters", body: "assert.equal(minWindow('aA', 'A'), 'A');\nassert.equal(minWindow('Aa', 'a'), 'a');" },
       { name: "the window can be found right at the start of s", body: "assert.equal(minWindow('abcXYZ', 'abc'), 'abc');" },
+      {
+        name: "a large input finishes in time (n = 60,101)",
+        body: "const s = 'a'.repeat(60000) + 'b' + 'a'.repeat(100);\nconst t = 'a'.repeat(30000) + 'b';\n// The only b has just 100 a's after it, so the window must take the 30,000 a's before it.\nassert.equal(minWindow(s, t), 'a'.repeat(30000) + 'b');",
+      },
     ],
   },
 {
@@ -326,6 +335,10 @@ export const dsa7: Exercise[] = [
       { name: "a single-character pattern", body: "assert.deepEqual(findAnagrams('abc', 'b'), [1]);" },
       { name: "p exactly as long as s: matches only when the whole thing is an anagram", body: "assert.deepEqual(findAnagrams('abc', 'bca'), [0]);\nassert.deepEqual(findAnagrams('abc', 'abd'), []);" },
       { name: "an anagram at the very end of s", body: "assert.deepEqual(findAnagrams('xyzba', 'ab'), [3]);" },
+      {
+        name: "a large input finishes in time (n = 100,000, p of 5,000)",
+        body: "const n = 100000;\nconst m = 5000;\nconst s = 'ab'.repeat(n / 2);\nconst p = 'a'.repeat(m / 2) + 'b'.repeat(m / 2);\n// Every window of even length holds as many a's as b's, so every start index matches.\nconst got = findAnagrams(s, p);\nassert.equal(got.length, n - m + 1);\nfor (let i = 0; i < got.length; i++) assert.equal(got[i], i);",
+      },
     ],
   },
 {

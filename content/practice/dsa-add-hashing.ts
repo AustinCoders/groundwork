@@ -203,7 +203,8 @@ export const dsaAddHashing: Exercise[] = [
   "hints": [
     "Fix the point i as the centre. A boomerang needs two other points at the same distance from i.",
     "For one centre, build a Map from squared distance to how many points have it. Squared distance is dx * dx + dy * dy, which stays an exact integer.",
-    "If c points share a distance from the centre, they form c * (c - 1) ordered pairs (j, k). Sum that over every distance and every centre."
+    "If c points share a distance from the centre, they form c * (c - 1) ordered pairs (j, k). Sum that over every distance and every centre.",
+    "The last test has 1,500 points. Checking every triple is O(n^3) and too slow there; one Map of distances per centre is O(n^2)."
   ],
   "solution": "function numberOfBoomerangs(points) {\n  let total = 0;\n  for (const [x1, y1] of points) {\n    const byDistance = new Map();\n    for (const [x2, y2] of points) {\n      const dx = x1 - x2;\n      const dy = y1 - y2;\n      const d = dx * dx + dy * dy;\n      if (d === 0) continue;\n      byDistance.set(d, (byDistance.get(d) || 0) + 1);\n    }\n    for (const c of byDistance.values()) total += c * (c - 1);\n  }\n  return total;\n}\n",
   "tests": [
@@ -238,6 +239,10 @@ export const dsaAddHashing: Exercise[] = [
     {
       "name": "800 points need the O(n^2) solution",
       "body": "const pts = [];\nfor (let i = 0; i < 800; i++) pts.push([i % 40, Math.floor(i / 40)]);\nconst got = numberOfBoomerangs(pts);\nassert.type(got, \"number\");\nassert.ok(got > 0);"
+    },
+    {
+      "name": "a large input finishes in time (n = 1,500)",
+      "body": "const n = 1500;\nconst points = Array.from({ length: n }, (_, i) => [i, 0]);\n// On a line, centre i has two points at each distance up to min(i, n - 1 - i): two ordered pairs each.\nlet expected = 0;\nfor (let i = 0; i < n; i++) expected += 2 * Math.min(i, n - 1 - i);\nassert.equal(numberOfBoomerangs(points), expected);"
     }
   ]
 }

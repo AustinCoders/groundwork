@@ -323,7 +323,8 @@ export const dsaAddGraphsRepresentationTraversal: Exercise[] = [
     "hints": [
       "The judge has out-degree 0 (trusts nobody) and in-degree n - 1 (trusted by everyone else). Nobody else can have both numbers.",
       "Make two arrays of n + 1 zeros, because people are labelled from 1. For each [a, b]: add one to out[a] and one to in[b].",
-      "Return the person i with out[i] === 0 and in[i] === n - 1, or -1 if none. For n = 1 with no pairs, person 1 has out 0 and in 0 = n - 1, so the same test returns 1."
+      "Return the person i with out[i] === 0 and in[i] === n - 1, or -1 if none. For n = 1 with no pairs, person 1 has out 0 and in 0 = n - 1, so the same test returns 1.",
+      "The last test has 100,000 people. Scanning the whole trust list once per person is O(n * trust.length) and too slow there; two counters per person fill in one pass over the list."
     ],
     "solution": "function findJudge(n, trust) {\n  const trusts = new Array(n + 1).fill(0);\n  const trusted = new Array(n + 1).fill(0);\n  for (const [a, b] of trust) {\n    trusts[a]++;\n    trusted[b]++;\n  }\n  for (let i = 1; i <= n; i++) {\n    if (trusts[i] === 0 && trusted[i] === n - 1) return i;\n  }\n  return -1;\n}\n",
     "tests": [
@@ -358,6 +359,10 @@ export const dsaAddGraphsRepresentationTraversal: Exercise[] = [
       {
         "name": "two candidates, each trusted by only some people, mean no judge",
         "body": "assert.equal(findJudge(4, [[1, 3], [2, 3], [1, 4], [2, 4]]), -1);\nassert.equal(findJudge(4, [[1, 3], [2, 3], [1, 4], [2, 4], [3, 4]]), 4);"
+      },
+      {
+        "name": "a large input finishes in time (n = 100,000)",
+        "body": "const n = 100000;\nconst judge = 50000;\nconst trust = new Array(n - 1);\n// Everyone except the judge trusts the judge, stored in a scrambled order.\nfor (let i = 0; i < n - 1; i++) {\n  const person = i + 1 < judge ? i + 1 : i + 2;\n  trust[(i * 7919) % (n - 1)] = [person, judge];\n}\nassert.equal(findJudge(n, trust), judge);"
       }
     ]
   }

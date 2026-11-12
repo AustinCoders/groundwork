@@ -51,11 +51,13 @@ export const set: CsSet = {
           label: "Zomato Interview Experience (On-Campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/zomato-interview-experience-on-campus/",
           kind: "candidate-report",
+          year: 2023,
         },
         {
           label: "Zomato Interview Experience (On - Campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/zomato-interview-experience-on-campus-2/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "Swiggy Interview Experience for SDE-1 | On-Campus 2021 (GeeksforGeeks)",
@@ -73,26 +75,31 @@ export const set: CsSet = {
           label: "Paytm Interview Experience for Data Engineer (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/paytm-interview-experience-for-data-engineer/",
           kind: "candidate-report",
+          year: 2023,
         },
         {
           label: "Flipkart Interview | Set 14 (For SDET-1) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/flipkart-interview-set-14-sde-1/",
           kind: "candidate-report",
+          year: 2014,
         },
         {
           label: "Atlassian On-Campus Interview Experience (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/atlassian-on-campus-interview-experience/",
           kind: "candidate-report",
+          year: 2019,
         },
         {
           label: "Amazon Interview Experience For SDE Intern (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/amazon-interview-experience-for-sde-intern-8/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "Top 50 SQL Questions For Data Analyst Interview (GeeksforGeeks, generic guide)",
           url: "https://www.geeksforgeeks.org/data-analysis/sql-questions-for-data-analyst-interview/",
           kind: "prep-guide",
+          year: 2026,
         },
       ],
       query:
@@ -152,11 +159,13 @@ export const set: CsSet = {
           label: "Microsoft Interview Experience | Set 59 (On-Campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/microsoft-interview-experience-set-59-on-campus/",
           kind: "candidate-report",
+          year: 2015,
         },
         {
           label: "Top 50 SQL Questions For Data Analyst Interview (GeeksforGeeks, generic guide)",
           url: "https://www.geeksforgeeks.org/data-analysis/sql-questions-for-data-analyst-interview/",
           kind: "prep-guide",
+          year: 2026,
         },
       ],
       query:
@@ -190,6 +199,7 @@ export const set: CsSet = {
           label: "Top 50 SQL Questions For Data Analyst Interview (GeeksforGeeks, generic guide)",
           url: "https://www.geeksforgeeks.org/data-analysis/sql-questions-for-data-analyst-interview/",
           kind: "prep-guide",
+          year: 2026,
         },
       ],
       query: "SELECT c.id, c.name\nFROM customers c\nLEFT JOIN orders o ON o.customer_id = c.id\nWHERE o.id IS NULL",
@@ -223,6 +233,7 @@ export const set: CsSet = {
           label: "Top 100 SQL Interview Questions and Answers (GeeksforGeeks, generic guide)",
           url: "https://www.geeksforgeeks.org/sql/sql-interview-questions/",
           kind: "prep-guide",
+          year: 2026,
         },
       ],
       query:
@@ -280,11 +291,13 @@ export const set: CsSet = {
           label: "Meesho Interview Experience | Full Time (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/meesho-interview-experience-full-time/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "Razorpay Interview Experience (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/razorpay-interview-experience/",
           kind: "candidate-report",
+          year: 2024,
         },
       ],
       query:
@@ -310,21 +323,25 @@ export const set: CsSet = {
           label: "Paytm Interview Experience for Data Engineer (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/paytm-interview-experience-for-data-engineer/",
           kind: "candidate-report",
+          year: 2023,
         },
         {
           label: "Microsoft Interview | Set 5 (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/microsoft-interview-set-5/",
           kind: "candidate-report",
+          year: 2012,
         },
         {
           label: "Zomato Interview Experience (On - Campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/zomato-interview-experience-on-campus-2/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "PhonePe Interview Experience for Software Engineer FTE (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/phonepe-interview-experience-for-software-engineer-fte/",
           kind: "candidate-report",
+          year: 2024,
         },
       ],
       query:
@@ -354,26 +371,31 @@ export const set: CsSet = {
           label: "Meesho Interview Experience | Full Time (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/meesho-interview-experience-full-time/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "Flipkart Interview Experience for BA intern (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/flipkart-interview-experience-for-ba-intern/",
           kind: "candidate-report",
+          year: 2025,
         },
         {
           label: "PhonePe Interview Experience for Software Engineer FTE (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/phonepe-interview-experience-for-software-engineer-fte/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "Paytm Interview Experience for Data Engineer (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/paytm-interview-experience-for-data-engineer/",
           kind: "candidate-report",
+          year: 2023,
         },
         {
           label: "SQL Query to Find Second Highest Salary (GeeksforGeeks, generic guide)",
           url: "https://www.geeksforgeeks.org/sql/sql-query-to-find-second-largest-salary/",
           kind: "prep-guide",
+          year: 2025,
         },
       ],
       query:
@@ -405,11 +427,13 @@ export const set: CsSet = {
           label: "Phonepe Interview Experience (On-campus) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/phonepe-interview-experience-on-campus-1/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "Amazon Interview Experience | Business Analyst (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/amazon-interview-experience-business-analyst/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "Flipkart data engineer interview questions, SQL section (Greenroom, vendor guide)",
@@ -421,11 +445,13 @@ export const set: CsSet = {
           label: "Atlassian Coding Interview Questions (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/atlassian-interview-questions-for-technical-profiles/",
           kind: "prep-guide",
+          year: 2026,
         },
         {
           label: "SQL Query to Find Second Highest Salary (GeeksforGeeks, generic guide)",
           url: "https://www.geeksforgeeks.org/sql/sql-query-to-find-second-largest-salary/",
           kind: "prep-guide",
+          year: 2025,
         },
       ],
       query:
@@ -451,6 +477,7 @@ export const set: CsSet = {
           label: "Amazon Interview Experience | Business Analyst (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/amazon-interview-experience-business-analyst/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "Flipkart data engineer interview questions, SQL section (Greenroom, vendor guide)",
@@ -552,6 +579,7 @@ export const set: CsSet = {
           label: "Amazon Interview Experience | Business Analyst (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/amazon-interview-experience-business-analyst/",
           kind: "candidate-report",
+          year: 2024,
         },
       ],
       query:
@@ -578,11 +606,13 @@ export const set: CsSet = {
           label: "Amazon Interview Experience For SDE Intern (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/amazon-interview-experience-for-sde-intern-8/",
           kind: "candidate-report",
+          year: 2024,
         },
         {
           label: "Top 100 SQL Interview Questions and Answers (GeeksforGeeks, generic guide)",
           url: "https://www.geeksforgeeks.org/sql/sql-interview-questions/",
           kind: "prep-guide",
+          year: 2026,
         },
       ],
       query:
@@ -608,11 +638,13 @@ export const set: CsSet = {
           label: "Paytm Interview Experience for Data Engineer (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/paytm-interview-experience-for-data-engineer/",
           kind: "candidate-report",
+          year: 2023,
         },
         {
           label: "Top 100 SQL Interview Questions and Answers (GeeksforGeeks, generic guide)",
           url: "https://www.geeksforgeeks.org/sql/sql-interview-questions/",
           kind: "prep-guide",
+          year: 2026,
         },
       ],
       query:
@@ -635,11 +667,13 @@ export const set: CsSet = {
           label: "Flipkart Interview | Set 14 (For SDET-1) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/flipkart-interview-set-14-sde-1/",
           kind: "candidate-report",
+          year: 2014,
         },
         {
           label: "Top 50 SQL Questions For Data Analyst Interview (GeeksforGeeks, generic guide)",
           url: "https://www.geeksforgeeks.org/data-analysis/sql-questions-for-data-analyst-interview/",
           kind: "prep-guide",
+          year: 2026,
         },
       ],
       query:
@@ -665,11 +699,13 @@ export const set: CsSet = {
           label: "Flipkart Interview | Set 14 (For SDET-1) (GeeksforGeeks)",
           url: "https://www.geeksforgeeks.org/interview-experiences/flipkart-interview-set-14-sde-1/",
           kind: "candidate-report",
+          year: 2014,
         },
         {
           label: "Top 100 SQL Interview Questions and Answers (GeeksforGeeks, generic guide)",
           url: "https://www.geeksforgeeks.org/sql/sql-interview-questions/",
           kind: "prep-guide",
+          year: 2026,
         },
       ],
       query:

@@ -250,6 +250,7 @@ export const questions: DsaQuestion[] = [
         label: "GfG: Ola Electric SDE on-campus (interview date not stated, page updated 2025)",
         url: "https://www.geeksforgeeks.org/?p=751319",
         kind: "candidate-report",
+        year: 2022,
       },
     ],
     chapters: ["dsa-stacks-queues", "dsa-design-problems"],

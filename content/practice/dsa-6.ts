@@ -14,6 +14,7 @@ export const dsa6: Exercise[] = [
       "While you walk left to right, some earlier days are still 'unresolved'. What order are their temperatures in?",
       "Hold their INDICES on a stack whose temperatures decrease from bottom to top.",
       "When today beats the temperature at the top index, pop it and record today's index minus that index — repeat until the top is warmer than today.",
+      "The last test has 100,000 days. Scanning forward from every day is O(n^2) and too slow there; with the stack each day is pushed and popped once, O(n).",
     ],
     solution:
       "function dailyTemperatures(temperatures) {\n  const answer = new Array(temperatures.length).fill(0);\n  const stack = [];\n  for (let i = 0; i < temperatures.length; i++) {\n    while (stack.length && temperatures[stack[stack.length - 1]] < temperatures[i]) {\n      const day = stack.pop();\n      answer[day] = i - day;\n    }\n    stack.push(i);\n  }\n  return answer;\n}\n",
@@ -41,6 +42,10 @@ export const dsa6: Exercise[] = [
       { name: "empty array", body: "assert.deepEqual(dailyTemperatures([]), []);" },
       { name: "a plateau followed by a single warm day", body: "assert.deepEqual(dailyTemperatures([70, 70, 70, 75]), [3, 2, 1, 0]);" },
       { name: "a zigzag pattern", body: "assert.deepEqual(dailyTemperatures([50, 60, 50, 60, 50]), [1, 0, 1, 0, 0]);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\n// Colder every day, until the final day is the warmest of all.\nconst temperatures = Array.from({ length: n }, (_, i) => n - i);\ntemperatures[n - 1] = n + 1;\nconst answer = dailyTemperatures(temperatures);\nassert.equal(answer.length, n);\nfor (let i = 0; i < n; i++) assert.equal(answer[i], n - 1 - i);",
+      },
     ],
   },
 {
@@ -56,6 +61,7 @@ export const dsa6: Exercise[] = [
       "Solve the harder question first: what is the next greater element for EVERY entry of nums2?",
       "Sweep nums2 once with a stack of values that are still waiting for something bigger.",
       "Store each resolved answer in a Map from value -> next greater, then map nums1 through it with a default of -1.",
+      "The last test has 100,000 values in both arrays. Finding each query in nums2 and scanning to its right is O(n) per query and too slow there; one stack sweep of nums2 fills a Map with every answer.",
     ],
     solution:
       "function nextGreaterElement(nums1, nums2) {\n  const nextGreater = new Map();\n  const stack = [];\n  for (const value of nums2) {\n    while (stack.length && stack[stack.length - 1] < value) {\n      nextGreater.set(stack.pop(), value);\n    }\n    stack.push(value);\n  }\n  return nums1.map((v) => (nextGreater.has(v) ? nextGreater.get(v) : -1));\n}\n",
@@ -83,6 +89,10 @@ export const dsa6: Exercise[] = [
       { name: "nums1 equals nums2 entirely", body: "assert.deepEqual(nextGreaterElement([1, 2, 3, 4], [1, 2, 3, 4]), [2, 3, 4, -1]);" },
       { name: "a single-element query that never has an answer", body: "assert.deepEqual(nextGreaterElement([5], [3, 1, 5]), [-1]);" },
       { name: "values include negative numbers", body: "assert.deepEqual(nextGreaterElement([-1, -3], [-3, -1, -2]), [-1, -1]);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\n// Falling values, then one value larger than all of them at the very end.\nconst nums2 = Array.from({ length: n }, (_, i) => n - i);\nnums2[n - 1] = n + 1;\nconst got = nextGreaterElement(nums2.slice(), nums2);\nassert.equal(got.length, n);\nfor (let i = 0; i < n - 1; i++) assert.equal(got[i], n + 1);\nassert.equal(got[n - 1], -1);",
+      },
     ],
   },
 {
@@ -97,6 +107,7 @@ export const dsa6: Exercise[] = [
       "Wrapping is just 'walk the array twice' — index i maps to nums[i % n].",
       "Run the usual decreasing-stack sweep over 2n steps, but only PUSH indices during the first n steps.",
       "Anything still on the stack after the second pass genuinely has no greater element, so leave those as -1.",
+      "The last test has 100,000 values. Scanning round the circle from every position is O(n^2) and too slow there; the stack sweep over 2n steps pushes and pops each index once.",
     ],
     solution:
       "function nextGreaterElements(nums) {\n  const n = nums.length;\n  const answer = new Array(n).fill(-1);\n  const stack = [];\n  for (let i = 0; i < 2 * n; i++) {\n    const value = nums[i % n];\n    while (stack.length && nums[stack[stack.length - 1]] < value) {\n      answer[stack.pop()] = value;\n    }\n    if (i < n) stack.push(i);\n  }\n  return answer;\n}\n",
@@ -124,6 +135,10 @@ export const dsa6: Exercise[] = [
       { name: "two elements, mutual wraparound", body: "assert.deepEqual(nextGreaterElements([1, 2]), [2, -1]);" },
       { name: "duplicate maximum values across the circle", body: "assert.deepEqual(nextGreaterElements([3, 3, 1, 3]), [-1, -1, 3, -1]);" },
       { name: "all elements equal except one larger", body: "assert.deepEqual(nextGreaterElements([2, 2, 2, 5]), [5, 5, 5, -1]);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\n// Strictly falling: every value has to wrap round to the first one to find something greater.\nconst nums = Array.from({ length: n }, (_, i) => n - i);\nconst got = nextGreaterElements(nums);\nassert.equal(got.length, n);\nassert.equal(got[0], -1);\nfor (let i = 1; i < n; i++) assert.equal(got[i], n);",
+      },
     ],
   },
 {
@@ -139,6 +154,7 @@ export const dsa6: Exercise[] = [
       "Every maximal rectangle is limited by its shortest bar. So ask, for each bar: how wide a run has this bar as its minimum?",
       "Keep a stack of indices with non-decreasing heights. A bar shorter than the top means the top's run has just ended.",
       "When you pop index j, its right edge is the current i and its left edge is one past the new stack top. Push a sentinel height of 0 after the last bar so everything drains.",
+      "The last test has 100,000 bars. Expanding left and right from every bar is O(n^2) and too slow there; with the stack each bar is pushed and popped once, O(n).",
     ],
     solution:
       "function largestRectangleArea(heights) {\n  const stack = [];\n  let best = 0;\n  for (let i = 0; i <= heights.length; i++) {\n    const h = i === heights.length ? 0 : heights[i];\n    while (stack.length && heights[stack[stack.length - 1]] >= h) {\n      const height = heights[stack.pop()];\n      const left = stack.length ? stack[stack.length - 1] + 1 : 0;\n      best = Math.max(best, height * (i - left));\n    }\n    stack.push(i);\n  }\n  return best;\n}\n",
@@ -166,6 +182,10 @@ export const dsa6: Exercise[] = [
       { name: "a strictly increasing histogram", body: "assert.equal(largestRectangleArea([1, 2, 3, 4, 5, 6]), 12);" },
       { name: "a valley between two tall bars", body: "assert.equal(largestRectangleArea([5, 1, 5]), 5);" },
       { name: "equal-height bars with one dip in the middle", body: "assert.equal(largestRectangleArea([4, 4, 4, 1, 4, 4, 4]), 12);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\n// Bars alternate between 1000 and 1001, so the full-width rectangle of height 1000 is the largest.\nconst heights = Array.from({ length: n }, (_, i) => 1000 + (i % 2));\nassert.equal(largestRectangleArea(heights), 1000 * n);",
+      },
     ],
   },
 {
@@ -432,6 +452,7 @@ export const dsa6: Exercise[] = [
       "The median only depends on the one or two values sitting at the boundary between the smaller half and the larger half.",
       "Keep a max-heap of the lower half and a min-heap of the upper half; both boundary values are then just two peeks.",
       "To add: push into the low heap, move its largest across to the high heap, then move back if the high heap became bigger. That keeps low.size() equal to high.size() or one more.",
+      "The last test adds 50,000 numbers and asks for the median after each one. Sorting everything on every query is far too slow there; the two heaps keep each add at O(log n) and each query at O(1).",
     ],
     solution:
       "class MinHeap {\n  constructor(cmp) { this.a = []; this.cmp = cmp || function (x, y) { return x - y; }; }\n  size() { return this.a.length; }\n  peek() { return this.a[0]; }\n  push(v) {\n    const a = this.a;\n    a.push(v);\n    let i = a.length - 1;\n    while (i > 0) {\n      const p = (i - 1) >> 1;\n      if (this.cmp(a[i], a[p]) >= 0) break;\n      const t = a[i]; a[i] = a[p]; a[p] = t;\n      i = p;\n    }\n  }\n  pop() {\n    const a = this.a;\n    const top = a[0];\n    const last = a.pop();\n    if (a.length) {\n      a[0] = last;\n      let i = 0;\n      for (;;) {\n        const l = 2 * i + 1, r = l + 1;\n        let m = i;\n        if (l < a.length && this.cmp(a[l], a[m]) < 0) m = l;\n        if (r < a.length && this.cmp(a[r], a[m]) < 0) m = r;\n        if (m === i) break;\n        const t = a[i]; a[i] = a[m]; a[m] = t;\n        i = m;\n      }\n    }\n    return top;\n  }\n}\n\nclass MedianFinder {\n  constructor() {\n    this.low = new MinHeap(function (a, b) { return b - a; });\n    this.high = new MinHeap();\n  }\n  addNum(num) {\n    this.low.push(num);\n    this.high.push(this.low.pop());\n    if (this.high.size() > this.low.size()) this.low.push(this.high.pop());\n  }\n  findMedian() {\n    if (this.low.size() > this.high.size()) return this.low.peek();\n    return (this.low.peek() + this.high.peek()) / 2;\n  }\n}\n",
@@ -459,6 +480,10 @@ export const dsa6: Exercise[] = [
       { name: "two values give the average", body: "const m = new MedianFinder();\nm.addNum(3);\nm.addNum(7);\nassert.equal(m.findMedian(), 5);" },
       { name: "all identical values", body: "const m = new MedianFinder();\n[4, 4, 4, 4].forEach((n) => m.addNum(n));\nassert.equal(m.findMedian(), 4);" },
       { name: "a longer stream stays correct at every step", body: "const m = new MedianFinder();\nconst vals = [5, 15, 1, 3, 9, 8, 7, 2, 20, 11];\nconst seen = [];\nfor (const v of vals) {\n  m.addNum(v);\n  seen.push(v);\n  const sorted = seen.slice().sort((a, b) => a - b);\n  const mid = sorted.length >> 1;\n  const expected = sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;\n  assert.equal(m.findMedian(), expected, 'after adding ' + v);\n}" },
+      {
+        name: "a large input finishes in time (50,000 adds, a query after each)",
+        body: "const m = new MedianFinder();\n// The stream is 0, 1, -1, 2, -2, ...: after an odd number of values they are balanced around 0,\n// after an even number the two middle values are 0 and 1.\nfor (let i = 0; i < 50000; i++) {\n  const half = Math.ceil(i / 2);\n  m.addNum(i % 2 === 1 ? half : -half);\n  assert.equal(m.findMedian(), i % 2 === 0 ? 0 : 0.5);\n}",
+      },
     ],
   },
 {
@@ -516,6 +541,7 @@ export const dsa6: Exercise[] = [
       "Re-sorting after every smash works but is wasteful — you only ever need the two largest.",
       "Pass a comparator like function (a, b) { return b - a; } so MinHeap behaves as a MAX heap.",
       "Loop while size() > 1: pop twice, and if the two differ push their difference back.",
+      "The last test has 100,001 stones. Re-sorting the pile after every smash is too slow there; a max-heap gives the two heaviest in O(log n).",
     ],
     solution:
       "class MinHeap {\n  constructor(cmp) { this.a = []; this.cmp = cmp || function (x, y) { return x - y; }; }\n  size() { return this.a.length; }\n  peek() { return this.a[0]; }\n  push(v) {\n    const a = this.a;\n    a.push(v);\n    let i = a.length - 1;\n    while (i > 0) {\n      const p = (i - 1) >> 1;\n      if (this.cmp(a[i], a[p]) >= 0) break;\n      const t = a[i]; a[i] = a[p]; a[p] = t;\n      i = p;\n    }\n  }\n  pop() {\n    const a = this.a;\n    const top = a[0];\n    const last = a.pop();\n    if (a.length) {\n      a[0] = last;\n      let i = 0;\n      for (;;) {\n        const l = 2 * i + 1, r = l + 1;\n        let m = i;\n        if (l < a.length && this.cmp(a[l], a[m]) < 0) m = l;\n        if (r < a.length && this.cmp(a[r], a[m]) < 0) m = r;\n        if (m === i) break;\n        const t = a[i]; a[i] = a[m]; a[m] = t;\n        i = m;\n      }\n    }\n    return top;\n  }\n}\n\nfunction lastStoneWeight(stones) {\n  const heap = new MinHeap(function (a, b) { return b - a; });\n  for (const s of stones) heap.push(s);\n  while (heap.size() > 1) {\n    const first = heap.pop();\n    const second = heap.pop();\n    if (first !== second) heap.push(first - second);\n  }\n  return heap.size() ? heap.peek() : 0;\n}\n",
@@ -543,6 +569,10 @@ export const dsa6: Exercise[] = [
       { name: "two stones of different weight", body: "assert.equal(lastStoneWeight([10, 3]), 7);" },
       { name: "three stones where the two largest combine first", body: "assert.equal(lastStoneWeight([2, 3, 7]), 2);" },
       { name: "many equal stones leave one over on an odd count", body: "assert.equal(lastStoneWeight([1, 1, 1, 1, 1]), 1);" },
+      {
+        name: "a large input finishes in time (n = 100,001)",
+        body: "const stones = [];\nfor (let i = 0; i < 50000; i++) stones.push(2);\nfor (let i = 0; i < 50001; i++) stones.push(1);\n// The 2s cancel in pairs, then the 1s cancel in pairs and leave one over.\nassert.equal(lastStoneWeight(stones), 1);",
+      },
     ],
   },
 {
@@ -684,6 +714,7 @@ export const dsa6: Exercise[] = [
       "Sort by start time so you can walk the day forward in order.",
       "The only thing you need to know about the busy rooms is which one frees up SOONEST — that is a min-heap of end times.",
       "For each meeting: if the earliest end time is <= this start, reuse that room (pop it). Then push this meeting's end. The heap size at the end is the answer.",
+      "The last test has 100,000 meetings. Counting, for every meeting, how many others are running when it starts is O(n^2) and too slow there; the sort plus a heap of end times is O(n log n).",
     ],
     solution:
       "class MinHeap {\n  constructor(cmp) { this.a = []; this.cmp = cmp || function (x, y) { return x - y; }; }\n  size() { return this.a.length; }\n  peek() { return this.a[0]; }\n  push(v) {\n    const a = this.a;\n    a.push(v);\n    let i = a.length - 1;\n    while (i > 0) {\n      const p = (i - 1) >> 1;\n      if (this.cmp(a[i], a[p]) >= 0) break;\n      const t = a[i]; a[i] = a[p]; a[p] = t;\n      i = p;\n    }\n  }\n  pop() {\n    const a = this.a;\n    const top = a[0];\n    const last = a.pop();\n    if (a.length) {\n      a[0] = last;\n      let i = 0;\n      for (;;) {\n        const l = 2 * i + 1, r = l + 1;\n        let m = i;\n        if (l < a.length && this.cmp(a[l], a[m]) < 0) m = l;\n        if (r < a.length && this.cmp(a[r], a[m]) < 0) m = r;\n        if (m === i) break;\n        const t = a[i]; a[i] = a[m]; a[m] = t;\n        i = m;\n      }\n    }\n    return top;\n  }\n}\n\nfunction minMeetingRooms(intervals) {\n  if (!intervals.length) return 0;\n  const sorted = intervals.slice().sort((a, b) => a[0] - b[0]);\n  const endTimes = new MinHeap();\n  for (const meeting of sorted) {\n    if (endTimes.size() && endTimes.peek() <= meeting[0]) endTimes.pop();\n    endTimes.push(meeting[1]);\n  }\n  return endTimes.size();\n}\n",
@@ -711,6 +742,10 @@ export const dsa6: Exercise[] = [
       { name: "back-to-back meetings reuse the same room", body: "assert.equal(minMeetingRooms([[1, 5], [5, 10], [10, 15]]), 1);" },
       { name: "two meetings overlapping by one minute need two rooms", body: "assert.equal(minMeetingRooms([[1, 10], [9, 12]]), 2);" },
       { name: "clustered meetings at the start need more rooms than later ones", body: "assert.equal(minMeetingRooms([[0, 5], [0, 5], [0, 5], [6, 7]]), 3);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst intervals = new Array(n);\n// Meeting i runs from i to i + 50, stored in a scrambled order: at any moment 50 are in progress.\nfor (let i = 0; i < n; i++) intervals[(i * 7919) % n] = [i, i + 50];\nassert.equal(minMeetingRooms(intervals), 50);",
+      },
     ],
   },
 {
@@ -894,6 +929,7 @@ export const dsa6: Exercise[] = [
       "A stick's length is paid again in every later join it takes part in — so short sticks should be combined early, while the total is still small.",
       "Greedily join the two SHORTEST remaining sticks, then drop the result back into the pool.",
       "Sorting once is not enough because each new stick has to slot back into the ordering — that is exactly what a min-heap gives you.",
+      "The last test has 65,536 sticks. Re-sorting the pool after every join is too slow there; a min-heap gives the two shortest in O(log n).",
     ],
     solution:
       "class MinHeap {\n  constructor(cmp) { this.a = []; this.cmp = cmp || function (x, y) { return x - y; }; }\n  size() { return this.a.length; }\n  peek() { return this.a[0]; }\n  push(v) {\n    const a = this.a;\n    a.push(v);\n    let i = a.length - 1;\n    while (i > 0) {\n      const p = (i - 1) >> 1;\n      if (this.cmp(a[i], a[p]) >= 0) break;\n      const t = a[i]; a[i] = a[p]; a[p] = t;\n      i = p;\n    }\n  }\n  pop() {\n    const a = this.a;\n    const top = a[0];\n    const last = a.pop();\n    if (a.length) {\n      a[0] = last;\n      let i = 0;\n      for (;;) {\n        const l = 2 * i + 1, r = l + 1;\n        let m = i;\n        if (l < a.length && this.cmp(a[l], a[m]) < 0) m = l;\n        if (r < a.length && this.cmp(a[r], a[m]) < 0) m = r;\n        if (m === i) break;\n        const t = a[i]; a[i] = a[m]; a[m] = t;\n        i = m;\n      }\n    }\n    return top;\n  }\n}\n\nfunction connectSticks(sticks) {\n  const heap = new MinHeap();\n  for (const s of sticks) heap.push(s);\n  let cost = 0;\n  while (heap.size() > 1) {\n    const joined = heap.pop() + heap.pop();\n    cost += joined;\n    heap.push(joined);\n  }\n  return cost;\n}\n",
@@ -921,6 +957,10 @@ export const dsa6: Exercise[] = [
       { name: "many equal-length sticks", body: "assert.equal(connectSticks([2, 2, 2, 2]), 16);" },
       { name: "two sticks of very different lengths", body: "assert.equal(connectSticks([1, 100]), 101);" },
       { name: "five equal sticks, an odd count", body: "assert.equal(connectSticks([3, 3, 3, 3, 3]), 36);" },
+      {
+        name: "a large input finishes in time (n = 65,536)",
+        body: "const n = 65536;\nconst sticks = new Array(n).fill(1);\n// With 2^16 equal sticks the joins go in 16 rounds of pairs, and every round costs n in total.\nassert.equal(connectSticks(sticks), n * 16);",
+      },
     ],
   },
 {
@@ -1322,6 +1362,7 @@ export const dsa6: Exercise[] = [
       "Every palindrome grows outward from a centre. How many centres does a string of length n have?",
       "There are 2n - 1 of them: n single characters and n - 1 gaps between neighbours. Expand from each while the characters on both sides still match.",
       "Keep only the best start index and length as you go, and slice once at the end — no need to store the candidate strings.",
+      "The last test has 3,000 characters. Testing every substring separately is O(n^3) and too slow there; expanding around each of the 2n - 1 centres is O(n^2).",
     ],
     solution:
       "function longestPalindrome(s) {\n  if (s.length < 2) return s;\n  let bestStart = 0;\n  let bestLen = 1;\n  const expand = (lo, hi) => {\n    while (lo >= 0 && hi < s.length && s[lo] === s[hi]) {\n      lo--;\n      hi++;\n    }\n    const len = hi - lo - 1;\n    if (len > bestLen) {\n      bestLen = len;\n      bestStart = lo + 1;\n    }\n  };\n  for (let i = 0; i < s.length; i++) {\n    expand(i, i);\n    expand(i, i + 1);\n  }\n  return s.slice(bestStart, bestStart + bestLen);\n}\n",
@@ -1349,6 +1390,10 @@ export const dsa6: Exercise[] = [
       { name: "two identical characters form the answer", body: "assert.equal(longestPalindrome('aa'), 'aa');" },
       { name: "a short palindrome centred inside a longer non-palindromic string", body: "const s = 'xyzaabyx';\nconst r = longestPalindrome(s);\nassert.equal(r, 'aa');\nassert.ok(s.indexOf(r) !== -1);" },
       { name: "an even-length palindrome hiding at the very end", body: "const s = 'zxabba';\nconst r = longestPalindrome(s);\nassert.equal(r, 'abba');" },
+      {
+        name: "a large input finishes in time (n = 3,000)",
+        body: "const n = 3000;\nconst s = 'a'.repeat(n - 1) + 'b';\nassert.equal(longestPalindrome(s), 'a'.repeat(n - 1));",
+      },
     ],
   },
 {
@@ -1364,6 +1409,7 @@ export const dsa6: Exercise[] = [
       "Keep a window [left, right] that is always duplicate-free, and extend right one character at a time.",
       "When the new character is already inside the window, the left edge has to move past its previous position.",
       "Storing each character's most recent index in a Map lets you jump left straight there instead of shrinking one step at a time — but only move left forward, never backward.",
+      "The last test has 100,000 characters and a longest window of 20,000. Restarting the scan from every start position is O(n * window) and too slow there; the sliding window moves each edge forward only, so it is O(n).",
     ],
     solution:
       "function lengthOfLongestSubstring(s) {\n  const lastSeen = new Map();\n  let left = 0;\n  let best = 0;\n  for (let right = 0; right < s.length; right++) {\n    const c = s[right];\n    if (lastSeen.has(c) && lastSeen.get(c) >= left) {\n      left = lastSeen.get(c) + 1;\n    }\n    lastSeen.set(c, right);\n    const len = right - left + 1;\n    if (len > best) best = len;\n  }\n  return best;\n}\n",
@@ -1391,6 +1437,10 @@ export const dsa6: Exercise[] = [
       { name: "two characters alternating forces a window of two", body: "assert.equal(lengthOfLongestSubstring('abababab'), 2);" },
       { name: "the longest window sits at the very end", body: "assert.equal(lengthOfLongestSubstring('aaabcdef'), 6);" },
       { name: "repeated characters bookend a unique middle", body: "assert.equal(lengthOfLongestSubstring('xyzzyx'), 3);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst period = 20000;\nconst codes = new Array(n);\nfor (let i = 0; i < n; i++) codes[i] = 200 + (i % period);\nlet s = '';\nfor (let i = 0; i < n; i += 10000) s += String.fromCharCode.apply(null, codes.slice(i, i + 10000));\n// 20,000 different characters repeated five times: every window of 20,000 is duplicate-free, and none is longer.\nassert.equal(s.length, n);\nassert.equal(lengthOfLongestSubstring(s), period);",
+      },
     ],
   },
 ];

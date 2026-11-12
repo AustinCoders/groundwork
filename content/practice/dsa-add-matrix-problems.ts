@@ -247,7 +247,8 @@ export const dsaAddMatrixProblems: Exercise[] = [
     "hints": [
       "Rows and columns both decrease, so once a cell is negative, every cell below it in its column and to its right in its row is negative too.",
       "Start at the top-right cell: it is the smallest value in its row and the largest in its column, so one comparison discards a whole row or column.",
-      "If the cell is negative, the whole column from this row down is negative: add rows - r and move left. Otherwise move down. Each step removes a row or a column, so it takes at most rows + cols steps."
+      "If the cell is negative, the whole column from this row down is negative: add rows - r and move left. Otherwise move down. Each step removes a row or a column, so it takes at most rows + cols steps.",
+      "The last test counts a 1,000 by 1,000 grid 3,000 times. Looking at every cell is O(m * n) per count and too slow there; the staircase walk from a corner is O(m + n)."
     ],
     "solution": "function countNegatives(grid) {\n  if (grid.length === 0) return 0;\n  const rows = grid.length;\n  const cols = grid[0].length;\n  let count = 0;\n  let r = 0;\n  let c = cols - 1;\n  while (r < rows && c >= 0) {\n    if (grid[r][c] < 0) {\n      count += rows - r;\n      c--;\n    } else {\n      r++;\n    }\n  }\n  return count;\n}\n",
     "tests": [
@@ -278,6 +279,10 @@ export const dsaAddMatrixProblems: Exercise[] = [
       {
         "name": "matches a full scan on a larger sorted grid",
         "body": "const rows = 40;\nconst cols = 55;\nconst grid = Array.from({ length: rows }, (_, r) => Array.from({ length: cols }, (_, c) => 60 - r - c - Math.floor(c / 3)));\nlet expected = 0;\nfor (const row of grid) for (const v of row) if (v < 0) expected++;\nassert.equal(countNegatives(grid), expected);"
+      },
+      {
+        "name": "a large input finishes in time (1,000 by 1,000 counted 3,000 times)",
+        "body": "const size = 1000;\n// Cell (r, c) holds 1000 - r - c, so row r has r - 1 negatives once r is 2 or more.\nconst grid = Array.from({ length: size }, (_, r) => Array.from({ length: size }, (_, c) => 1000 - r - c));\nlet expected = 0;\nfor (let r = 2; r < size; r++) expected += r - 1;\nfor (let q = 0; q < 3000; q++) assert.equal(countNegatives(grid), expected);"
       }
     ]
   },

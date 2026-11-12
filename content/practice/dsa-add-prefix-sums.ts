@@ -95,6 +95,10 @@ export const dsaAddPrefixSums: Exercise[] = [
         name: "zeros all tie",
         body: "assert.equal(validSplits([0, 0, 0, 0]), 3);",
       },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst nums = new Array(n).fill(1);\n// A split after index i has i + 1 ones on the left and n - i - 1 on the right: valid from the midpoint on.\nassert.equal(validSplits(nums), n / 2);",
+      },
     ],
   },
   {
@@ -204,6 +208,7 @@ export const dsaAddPrefixSums: Exercise[] = [
       "A subarray sum is prefix[r + 1] - prefix[l]. It is divisible by k exactly when the two prefix sums leave the same remainder when divided by k.",
       "Keep a count of how many earlier prefixes had each remainder. Each new prefix adds that count to the answer, then joins the tally. Start the tally with remainder 0 seen once, for the empty prefix.",
       "Normalise the remainder with ((x % k) + k) % k so that -2 and 3 are recognised as the same class when k is 5.",
+      "The last test has 100,000 numbers. Summing every subarray is O(n^2) and too slow there; counting prefix remainders needs one pass, O(n + k).",
     ],
     solution: "function subarraysDivByK(nums, k) {\n  const seen = new Array(k).fill(0);\n  seen[0] = 1;\n  let remainder = 0;\n  let count = 0;\n  for (const x of nums) {\n    remainder = (((remainder + x) % k) + k) % k;\n    count += seen[remainder];\n    seen[remainder]++;\n  }\n  return count;\n}\n",
     tests: [
@@ -239,6 +244,10 @@ export const dsaAddPrefixSums: Exercise[] = [
         name: "an empty array has no subarray",
         body: "assert.equal(subarraysDivByK([], 3), 0);",
       },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst k = 1000;\nconst nums = new Array(n).fill(-1);\n// With every value -1, a subarray's sum is divisible by k exactly when its length is a multiple of k.\nlet expected = 0;\nfor (let len = k; len <= n; len += k) expected += n - len + 1;\nassert.equal(subarraysDivByK(nums, k), expected);",
+      },
     ],
   },
   {
@@ -252,6 +261,7 @@ export const dsaAddPrefixSums: Exercise[] = [
       "Replace every element by 1 if it is odd and 0 if it is even. The question becomes: how many subarrays of this 0/1 array sum to exactly k?",
       "That is Subarray Sum Equals K. Keep a running count of odd numbers and a Map from 'odds so far' to how many times it occurred, seeded with { 0: 1 }.",
       "For each element update the running count, add map.get(running - k) to the answer, and only then record the running count in the map.",
+      "The last test has 100,000 numbers. Counting the odd numbers of every subarray is O(n^2) and too slow there; a Map of how often each running odd-count has occurred needs one pass.",
     ],
     solution: "function numberOfSubarrays(nums, k) {\n  const seen = new Map([[0, 1]]);\n  let odds = 0;\n  let count = 0;\n  for (const x of nums) {\n    if (x % 2 !== 0) odds++;\n    count += seen.get(odds - k) ?? 0;\n    seen.set(odds, (seen.get(odds) ?? 0) + 1);\n  }\n  return count;\n}\n",
     tests: [
@@ -287,6 +297,10 @@ export const dsaAddPrefixSums: Exercise[] = [
         name: "all odd numbers",
         body: "assert.equal(numberOfSubarrays([1, 3, 5, 7], 2), 3);",
       },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst k = 20000;\n// 2, 3, 2, 3, ...: odd numbers sit at the odd indexes, n / 2 of them.\nconst nums = Array.from({ length: n }, (_, i) => (i % 2 === 0 ? 2 : 3));\n// Pick k neighbouring odd numbers (n / 2 - k + 1 ways). The subarray may or may not take the even number\n// before them, and the even number after them: 4 choices, except that the last odd number has nothing after it.\nassert.equal(numberOfSubarrays(nums, k), 4 * (n / 2 - k + 1) - 2);",
+      },
     ],
   },
   {
@@ -300,6 +314,7 @@ export const dsaAddPrefixSums: Exercise[] = [
       "If P[i] is the XOR of the first i elements, the XOR of nums[l..r] is P[r + 1] ^ P[l], because every element in the shared prefix cancels itself.",
       "P[r + 1] ^ P[l] === k exactly when P[l] === P[r + 1] ^ k. So for each new prefix, count the earlier prefixes equal to (prefix ^ k).",
       "Seed the Map with { 0: 1 } for the empty prefix, and add to the answer before recording the current prefix.",
+      "The last test has 100,000 numbers. XOR-ing every subarray is O(n^2) and too slow there; a Map of running-XOR counts needs one pass.",
     ],
     solution: "function subarraysWithXor(nums, k) {\n  const seen = new Map([[0, 1]]);\n  let prefix = 0;\n  let count = 0;\n  for (const x of nums) {\n    prefix ^= x;\n    count += seen.get(prefix ^ k) ?? 0;\n    seen.set(prefix, (seen.get(prefix) ?? 0) + 1);\n  }\n  return count;\n}\n",
     tests: [
@@ -335,6 +350,10 @@ export const dsaAddPrefixSums: Exercise[] = [
         name: "values near the top of the range",
         body: "assert.equal(subarraysWithXor([1073741823, 1073741823, 1], 1), 2);",
       },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst nums = new Array(n).fill(5);\n// An odd number of 5s XOR to 5 and an even number to 0, so exactly the odd-length subarrays count.\nlet expected = 0;\nfor (let len = 1; len <= n; len += 2) expected += n - len + 1;\nassert.equal(subarraysWithXor(nums, 5), expected);",
+      },
     ],
   },
   {
@@ -348,6 +367,7 @@ export const dsaAddPrefixSums: Exercise[] = [
       "Map each day to +1 (hours > 8) or -1. You want the longest subarray whose sum is greater than 0, that is, at least 1.",
       "Track the prefix score. If the prefix after day i is positive, the whole prefix [0..i] qualifies. Otherwise you need an earlier prefix with a smaller value.",
       "The score changes by exactly 1 per day, so every value below the current one has already been seen before any lower value. Record the first index of each prefix value and look up exactly (score - 1).",
+      "The last test has 100,000 days. Scoring every interval is O(n^2) and too slow there; the first-seen Map of prefix scores answers each day in O(1).",
     ],
     solution: "function longestWPI(hours) {\n  const firstSeen = new Map();\n  let score = 0;\n  let best = 0;\n  for (let i = 0; i < hours.length; i++) {\n    score += hours[i] > 8 ? 1 : -1;\n    if (score > 0) {\n      best = i + 1;\n    } else {\n      if (!firstSeen.has(score)) firstSeen.set(score, i);\n      if (firstSeen.has(score - 1)) best = Math.max(best, i - firstSeen.get(score - 1));\n    }\n  }\n  return best;\n}\n",
     tests: [
@@ -383,6 +403,10 @@ export const dsaAddPrefixSums: Exercise[] = [
         name: "alternating days",
         body: "assert.equal(longestWPI([9, 6, 9, 6, 9]), 5);",
       },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const quiet = 60000;\nconst tiring = 40000;\nconst hours = [];\nfor (let i = 0; i < quiet; i++) hours.push(6);\nfor (let i = 0; i < tiring; i++) hours.push(9);\n// The best interval is all 40,000 tiring days plus the 39,999 quiet days just before them.\nassert.equal(longestWPI(hours), 2 * tiring - 1);",
+      },
     ],
   },
   {
@@ -396,6 +420,7 @@ export const dsaAddPrefixSums: Exercise[] = [
       "Let need = total % p. If need is 0 the answer is 0. Otherwise you must remove a subarray whose sum leaves remainder need.",
       "A subarray ending at i with sum remainder need starts after an earlier prefix whose remainder is (prefix - need) mod p. Keep a Map from remainder to the LAST index where it occurred, since a later start means a shorter subarray.",
       "Seed the map with remainder 0 at index -1. If the best length equals nums.length you would remove everything, which is not allowed, so return -1.",
+      "The last test has 100,000 numbers. Trying every subarray is O(n^2) and too slow there; a Map from prefix remainder to its latest index needs one pass.",
     ],
     solution: "function minSubarray(nums, p) {\n  let total = 0;\n  for (const x of nums) total += x;\n  const need = total % p;\n  if (need === 0) return 0;\n  const lastIndex = new Map([[0, -1]]);\n  let remainder = 0;\n  let best = nums.length;\n  for (let i = 0; i < nums.length; i++) {\n    remainder = (remainder + nums[i]) % p;\n    const wanted = (remainder - need + p) % p;\n    if (lastIndex.has(wanted)) best = Math.min(best, i - lastIndex.get(wanted));\n    lastIndex.set(remainder, i);\n  }\n  return best === nums.length ? -1 : best;\n}\n",
     tests: [
@@ -430,6 +455,10 @@ export const dsaAddPrefixSums: Exercise[] = [
       {
         name: "large values stay exact",
         body: "assert.equal(minSubarray([1000000000, 1000000000, 1000000000, 1000000000, 2], 7), 2);",
+      },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst nums = new Array(n).fill(1);\n// The total is 100,000, which is 40,000 more than a multiple of 60,000, so 40,000 ones have to go.\nassert.equal(minSubarray(nums, 60000), 40000);",
       },
     ],
   },
@@ -540,6 +569,7 @@ export const dsaAddPrefixSums: Exercise[] = [
       "Fix two rows, top and bottom. Every rectangle between those rows is a contiguous run of columns, and its sum is the sum of the column totals over that run.",
       "For a fixed pair of rows the column totals form a 1D array, and you want the number of subarrays that sum to target. That is Subarray Sum Equals K with a prefix sum and a Map.",
       "Loop top over all rows, then bottom from top downwards, adding row bottom into a running columnTotals array. Run the 1D count once per (top, bottom) pair.",
+      "The last test is 3 rows by 40,000 columns. Checking every pair of left and right columns for every pair of rows is O(rows^2 * cols^2) and too slow there; with the Map of prefix sums each pair of rows costs one pass over the columns.",
     ],
     solution: "function numSubmatrixSumTarget(matrix, target) {\n  const rows = matrix.length;\n  const cols = matrix[0].length;\n  let count = 0;\n  for (let top = 0; top < rows; top++) {\n    const columnTotals = new Array(cols).fill(0);\n    for (let bottom = top; bottom < rows; bottom++) {\n      for (let c = 0; c < cols; c++) columnTotals[c] += matrix[bottom][c];\n      const seen = new Map([[0, 1]]);\n      let prefix = 0;\n      for (const total of columnTotals) {\n        prefix += total;\n        count += seen.get(prefix - target) ?? 0;\n        seen.set(prefix, (seen.get(prefix) ?? 0) + 1);\n      }\n    }\n  }\n  return count;\n}\n",
     tests: [
@@ -574,6 +604,10 @@ export const dsaAddPrefixSums: Exercise[] = [
       {
         name: "negative values and a negative target",
         body: "assert.equal(numSubmatrixSumTarget([[-1, -1], [-1, -1]], -2), 4);",
+      },
+      {
+        name: "a large input finishes in time (3 rows by 40,000 columns)",
+        body: "const rows = 3;\nconst cols = 40000;\nconst matrix = Array.from({ length: rows }, () => new Array(cols).fill(1));\n// In a grid of ones a rectangle sums to 6 exactly when height * width = 6.\nconst target = 6;\nlet expected = 0;\nfor (let h = 1; h <= rows; h++) {\n  if (target % h === 0) expected += (rows - h + 1) * (cols - target / h + 1);\n}\nassert.equal(numSubmatrixSumTarget(matrix, target), expected);",
       },
     ],
   },

@@ -442,6 +442,7 @@ class Scheduler {
         label: "Flipkart Interview Experience, SDE-1 experienced (GeeksforGeeks)",
         url: "https://www.geeksforgeeks.org/interview-experiences/flipkart-interview-experience-sde-1-experienced/",
         kind: "candidate-report",
+        year: 2018,
       },
     ],
     chapters: [],

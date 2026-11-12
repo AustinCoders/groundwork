@@ -15,6 +15,7 @@ export const questions: CompanyQuestion[] = [
         label: "Zerodha interview process round by round (DesignGurus)",
         url: "https://www.designgurus.io/answers/detail/what-is-the-zerodha-interview-process-like-round-by-round",
         kind: "prep-guide",
+        year: 2026,
       },
     ],
     chapters: [
@@ -169,6 +170,7 @@ export const questions: CompanyQuestion[] = [
         label: "DesignGurus: what to expect in Dream11 system design (course-vendor summary of candidate reports)",
         url: "https://www.designgurus.io/answers/detail/what-to-expect-in-the-dream11-system-design-interview",
         kind: "prep-guide",
+        year: 2026,
       },
     ],
     chapters: [
@@ -245,11 +247,13 @@ export const questions: CompanyQuestion[] = [
         label: "Myntra Interview Experience for Senior SDE (GeeksforGeeks, undated)",
         url: "https://www.geeksforgeeks.org/?p=369559",
         kind: "candidate-report",
+        year: 2019,
       },
       {
         label: "What to expect in the Myntra system design interview (DesignGurus)",
         url: "https://www.designgurus.io/answers/detail/what-to-expect-in-the-myntra-system-design-interview",
         kind: "prep-guide",
+        year: 2026,
       },
     ],
     chapters: [

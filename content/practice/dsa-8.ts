@@ -41,6 +41,10 @@ export const dsa8: Exercise[] = [
       { name: "pair at the very end", body: "assert.deepEqual(twoSumSorted([1, 2, 3, 4, 6], 10), [4, 5]);" },
       { name: "two identical values sum to the target", body: "assert.deepEqual(twoSumSorted([3, 3], 6), [1, 2]);" },
       { name: "a large sorted array stays correct", body: "const n = 2000;\nconst numbers = Array.from({ length: n }, (_, i) => i + 1);\nassert.deepEqual(twoSumSorted(numbers, n * 2 - 1), [n - 1, n]);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst numbers = Array.from({ length: n }, (_, i) => i + 1);\n// Only the last two values are big enough to reach this target.\nassert.deepEqual(twoSumSorted(numbers, 2 * n - 1), [n - 1, n]);",
+      },
     ],
   },
 {
@@ -82,6 +86,10 @@ export const dsa8: Exercise[] = [
       { name: "brute-force cross-check on a mixed array", body: "const nums = [-4, -2, -2, 0, 1, 2, 3];\nconst norm = (rows) => rows.map((t) => t.slice().sort((p, q) => p - q))\n  .sort((x, y) => x[0] - y[0] || x[1] - y[1] || x[2] - y[2]);\nconst brute = [];\nconst seen = new Set();\nfor (let i = 0; i < nums.length; i++)\n  for (let j = i + 1; j < nums.length; j++)\n    for (let k = j + 1; k < nums.length; k++)\n      if (nums[i] + nums[j] + nums[k] === 0) {\n        const key = [nums[i], nums[j], nums[k]].sort((a, b) => a - b).join(',');\n        if (!seen.has(key)) { seen.add(key); brute.push([nums[i], nums[j], nums[k]]); }\n      }\nassert.deepEqual(norm(threeSum(nums)), norm(brute));" },
       { name: "does not mutate the input array", body: "const nums = [-1, 0, 1, 2, -1, -4];\nconst copy = nums.slice();\nthreeSum(nums);\nassert.deepEqual(nums, copy);" },
       { name: "only three zeros can sum to zero without any negatives", body: "assert.deepEqual(threeSum([0, 1, 2, 3]), []);\nassert.deepEqual(threeSum([0, 0, 0, 1, 2]), [[0, 0, 0]]);" },
+      {
+        name: "a large input finishes in time (n = 3,001)",
+        body: "// 3,000 values that are all 1 more than a multiple of 4, so no three of them sum to zero,\n// plus -11990, which only the two largest (5993 and 5997) can cancel.\nconst nums = [];\nfor (let i = 0; i < 3000; i++) nums.push(4 * (((i * 7) % 3000) - 1500) + 1);\nnums.push(-11990);\nconst got = threeSum(nums);\nassert.equal(got.length, 1);\nassert.deepEqual(got[0].slice().sort((a, b) => a - b), [-11990, 5993, 5997]);",
+      },
     ],
   },
 {
@@ -139,6 +147,7 @@ export const dsa8: Exercise[] = [
       "A window is valid when (window length) - (count of the most frequent character in it) <= k, because everything else has to be rewritten.",
       "Keep a frequency map for the window. When the window becomes invalid, shrink from the left until it is valid again.",
       "You do not need an exact running maximum frequency — an over-estimate that never decreases still yields the correct final answer, because the window only ever grows past a record when a real record is beaten.",
+      "The last test has 100,000 characters and an answer of 50,001. Growing a fresh window from every start position is O(n * window) and too slow there; one window whose edges only move right is O(n).",
     ],
     solution:
       "function characterReplacement(s, k) {\n  const count = new Map();\n  let left = 0;\n  let maxCount = 0;\n  let best = 0;\n  for (let right = 0; right < s.length; right++) {\n    const c = s[right];\n    count.set(c, (count.get(c) || 0) + 1);\n    if (count.get(c) > maxCount) maxCount = count.get(c);\n    while (right - left + 1 - maxCount > k) {\n      const gone = s[left];\n      count.set(gone, count.get(gone) - 1);\n      left++;\n    }\n    if (right - left + 1 > best) best = right - left + 1;\n  }\n  return best;\n}\n",
@@ -166,6 +175,10 @@ export const dsa8: Exercise[] = [
       { name: "all identical characters, k never matters", body: "assert.equal(characterReplacement('AAAA', 3), 4);\nassert.equal(characterReplacement('AAAAAAA', 0), 7);" },
       { name: "brute-force cross-check on an alternating string across several k values", body: "const bruteBest = (s, k) => {\n  let best = 0;\n  for (let i = 0; i < s.length; i++) {\n    const counts = {};\n    let maxCount = 0;\n    for (let j = i; j < s.length; j++) {\n      counts[s[j]] = (counts[s[j]] || 0) + 1;\n      if (counts[s[j]] > maxCount) maxCount = counts[s[j]];\n      const len = j - i + 1;\n      if (len - maxCount <= k) best = Math.max(best, len);\n    }\n  }\n  return best;\n};\nconst s = 'ABABABAB';\nfor (const k of [0, 1, 2, 3, 8]) {\n  assert.equal(characterReplacement(s, k), bruteBest(s, k));\n}" },
       { name: "three distinct characters with a small k", body: "assert.equal(characterReplacement('AABCC', 1), 3);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst k = 25000;\nconst s = 'AB'.repeat(n / 2);\n// In an alternating string the best window has k of one letter to change and k + 1 of the other.\nassert.equal(characterReplacement(s, k), 2 * k + 1);",
+      },
     ],
   },
 {
@@ -208,6 +221,10 @@ export const dsa8: Exercise[] = [
       { name: "the whole of s2 is exactly a permutation of s1", body: "assert.equal(checkInclusion('abcd', 'dcba'), true);" },
       { name: "same letters but the wrong counts", body: "assert.equal(checkInclusion('aaa', 'aab'), false);" },
       { name: "a permutation found far into a long string", body: "assert.equal(checkInclusion('abc', 'zzzzzzzzzzzzzzzzzzzzzcab'), true);" },
+      {
+        name: "a large input finishes in time (s2 of 100,001, s1 of 20,001)",
+        body: "const half = 10000;\nconst s1 = 'a'.repeat(half) + 'c' + 'b'.repeat(half);\nconst s2 = 'ab'.repeat(50000) + 'c';\n// The only c is the last character, and the 20,000 before it are half a's and half b's.\nassert.equal(checkInclusion(s1, s2), true);\n// With a second c required, no window can match.\nassert.equal(checkInclusion(s1 + 'c', s2), false);",
+      },
     ],
   },
 {
@@ -250,6 +267,10 @@ export const dsa8: Exercise[] = [
       { name: "a large uniform array", body: "const n = 10000;\nconst nums = new Array(n).fill(1);\nassert.equal(minSubArrayLen(500, nums), 500);" },
       { name: "a late spike shrinks the window to one", body: "assert.equal(minSubArrayLen(15, [1, 1, 1, 1, 1, 1, 15]), 1);" },
       { name: "a target of 1 is always satisfied by one element", body: "assert.equal(minSubArrayLen(1, [5, 4, 3]), 1);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst nums = new Array(n).fill(1);\nassert.equal(minSubArrayLen(50000, nums), 50000);",
+      },
     ],
   },
 {
@@ -264,6 +285,7 @@ export const dsa8: Exercise[] = [
       "Forget the baskets — the question is literally 'longest subarray with at most two distinct values'.",
       "Keep a Map from value -> how many of it sit inside the current window. The number of distinct values is just the map's size.",
       "When the map grows to 3 keys, shrink from the left, decrementing counts and deleting a key the moment its count hits zero.",
+      "The last test has 100,001 trees. Restarting the walk from every tree is O(n^2) and too slow there; one window whose edges only move right is O(n).",
     ],
     solution:
       "function totalFruit(fruits) {\n  const count = new Map();\n  let left = 0;\n  let best = 0;\n  for (let right = 0; right < fruits.length; right++) {\n    const f = fruits[right];\n    count.set(f, (count.get(f) || 0) + 1);\n    while (count.size > 2) {\n      const gone = fruits[left];\n      const next = count.get(gone) - 1;\n      if (next === 0) count.delete(gone);\n      else count.set(gone, next);\n      left++;\n    }\n    if (right - left + 1 > best) best = right - left + 1;\n  }\n  return best;\n}\n",
@@ -291,6 +313,10 @@ export const dsa8: Exercise[] = [
       { name: "the best window sits at the very end", body: "assert.equal(totalFruit([1, 2, 3, 3, 3]), 4);" },
       { name: "a middle type surrounded by two different types", body: "assert.equal(totalFruit([1, 2, 2, 2, 3]), 4);" },
       { name: "a large two-type array is collected whole", body: "const n = 5000;\nconst fruits = Array.from({ length: n }, (_, i) => i % 2);\nassert.equal(totalFruit(fruits), n);" },
+      {
+        name: "a large input finishes in time (n = 100,001)",
+        body: "const fruits = [];\nfor (let i = 0; i < 60000; i++) fruits.push(i % 2);\nfruits.push(2);\nfor (let i = 0; i < 40000; i++) fruits.push(i % 2);\n// The single tree of type 2 splits the row: 60,000 trees of two types on its left, 40,000 on its right.\nassert.equal(totalFruit(fruits), 60000);",
+      },
     ],
   },
 {
@@ -306,6 +332,7 @@ export const dsa8: Exercise[] = [
       "Handle k <= 1 up front and return 0 — otherwise the shrink loop will run off the end of the array trying to divide the product below an impossible bound.",
       "Maintain a window whose product is < k. Multiply in nums[right], then divide out nums[left] while the product is >= k.",
       "Once the window [left, right] is valid, every subarray ending at right and starting anywhere in that window is also valid — that is exactly right - left + 1 new subarrays.",
+      "The last test has 100,000 values. Multiplying out every subarray is O(n^2) and too slow there; the window counts all subarrays ending at each position in one step.",
     ],
     solution:
       "function numSubarrayProductLessThanK(nums, k) {\n  if (k <= 1) return 0;\n  let prod = 1;\n  let left = 0;\n  let count = 0;\n  for (let right = 0; right < nums.length; right++) {\n    prod *= nums[right];\n    while (prod >= k) {\n      prod /= nums[left];\n      left++;\n    }\n    count += right - left + 1;\n  }\n  return count;\n}\n",
@@ -333,6 +360,10 @@ export const dsa8: Exercise[] = [
       { name: "a small array right at the boundary of k", body: "assert.equal(numSubarrayProductLessThanK([2, 3], 7), 3);\nassert.equal(numSubarrayProductLessThanK([2, 3], 6), 2);" },
       { name: "a large all-ones array matches the triangular-number formula", body: "const n = 3000;\nconst nums = new Array(n).fill(1);\nassert.equal(numSubarrayProductLessThanK(nums, 2), (n * (n + 1)) / 2);" },
       { name: "does not mutate the input array", body: "const nums = [10, 5, 2, 6];\nconst copy = nums.slice();\nnumSubarrayProductLessThanK(nums, 100);\nassert.deepEqual(nums, copy);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst nums = new Array(n).fill(1);\n// Every one of the n * (n + 1) / 2 subarrays has product 1.\nassert.equal(numSubarrayProductLessThanK(nums, 2), (n * (n + 1)) / 2);",
+      },
     ],
   },
 {
@@ -347,6 +378,7 @@ export const dsa8: Exercise[] = [
       "Restate it: what is the longest window that contains at most k zeros? The flips are a red herring once you see that.",
       "You do not need a frequency map — a single integer counting zeros inside the window is enough.",
       "When the zero count exceeds k, advance left, decrementing the counter each time you step over a zero. The answer is the largest window width you ever see.",
+      "The last test has 100,000 values and an answer of 50,001. Growing a fresh window from every start position is O(n * window) and too slow there; one window whose edges only move right is O(n).",
     ],
     solution:
       "function longestOnes(nums, k) {\n  let left = 0;\n  let zeros = 0;\n  let best = 0;\n  for (let right = 0; right < nums.length; right++) {\n    if (nums[right] === 0) zeros++;\n    while (zeros > k) {\n      if (nums[left] === 0) zeros--;\n      left++;\n    }\n    if (right - left + 1 > best) best = right - left + 1;\n  }\n  return best;\n}\n",
@@ -374,6 +406,10 @@ export const dsa8: Exercise[] = [
       { name: "all zeros with an insufficient k", body: "assert.equal(longestOnes([0, 0, 0, 0, 0], 2), 2);" },
       { name: "all ones regardless of k", body: "assert.equal(longestOnes([1, 1, 1, 1], 0), 4);\nassert.equal(longestOnes([1, 1, 1, 1], 5), 4);" },
       { name: "a repeating pattern where one flip bridges two runs", body: "const n = 6000;\nconst nums = Array.from({ length: n }, (_, i) => (i % 3 === 0 ? 0 : 1));\nassert.equal(longestOnes(nums, 1), 5);" },
+      {
+        name: "a large input finishes in time (n = 100,000)",
+        body: "const n = 100000;\nconst k = 25000;\n// Alternating 1, 0, 1, 0, ...: the best window flips k zeros and has a one at each end.\nconst nums = Array.from({ length: n }, (_, i) => (i % 2 === 0 ? 1 : 0));\nassert.equal(longestOnes(nums, k), 2 * k + 1);",
+      },
     ],
   },
 {
