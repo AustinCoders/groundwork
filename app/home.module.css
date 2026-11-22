@@ -50,6 +50,9 @@
 }
 
 .navLinks a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   padding: 8px 14px;
   font-size: 15px;
   color: var(--ink-soft);
@@ -58,6 +61,18 @@
   transition:
     color 0.15s ease,
     background 0.15s ease;
+}
+
+.navLinks svg {
+  flex: none;
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.75;
 }
 
 .navLinks a:hover {
@@ -1048,23 +1063,85 @@
   }
 }
 
-@media (max-width: 1080px) {
-  .navLinks {
+@media (max-width: 1280px) and (min-width: 1081px) {
+  .navLinks svg {
     display: none;
-  }
-
-  .navAccount {
-    margin-left: auto;
   }
 }
 
-@media (max-width: 560px) {
-  .navAccount {
+@media (max-width: 1080px) {
+  .navLinks {
+    gap: 2px;
+  }
+
+  .navLinks a {
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+  }
+
+  .navLinks svg {
+    width: 20px;
+    height: 20px;
+    opacity: 1;
+  }
+
+  .navText {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .nav {
+    gap: 8px;
+  }
+
+  .brand > span:last-child {
     display: none;
   }
 
   .nav .btnSmall {
-    margin-left: auto;
+    display: none;
+  }
+
+  .navLinks {
+    margin: 0 0 0 auto;
+  }
+
+  .navLinks a {
+    width: 34px;
+    height: 34px;
+  }
+
+  .navLinks svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 420px) {
+  .nav {
+    gap: 6px;
+  }
+
+  .navLinks {
+    gap: 0;
+  }
+
+  .navLinks a {
+    width: 30px;
+    height: 34px;
+  }
+
+  .navLinks svg {
+    width: 17px;
+    height: 17px;
   }
 }
 

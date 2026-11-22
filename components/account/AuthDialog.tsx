@@ -25,7 +25,9 @@ import {
 import { lastSignInMethod, rememberSignInMethod, type SignInMethod } from "@/lib/account/lastMethod";
 import { isCommonPassword } from "@/lib/account/strength";
 import { Captcha, type CaptchaHandle } from "./Captcha";
+import { Choice } from "./Choice";
 import { PasswordField } from "./PasswordField";
+import { GOALS, LEVELS, ROLES } from "./profileOptions";
 import styles from "./account.module.css";
 
 function GoogleMark() {
@@ -131,26 +133,6 @@ const SLIDE_MS = 750;
 const COVER_MS = 270;
 
 const RESEND_SECONDS = 60;
-
-const GOALS: { value: Goal; label: string }[] = [
-  { value: "learn", label: "Learn the foundations" },
-  { value: "interview", label: "Prepare for interviews" },
-  { value: "switch", label: "Switch jobs or roles" },
-  { value: "upskill", label: "Level up at work" },
-];
-
-const LEVELS: { value: Experience; label: string }[] = [
-  { value: "beginner", label: "Beginner" },
-  { value: "intermediate", label: "Intermediate" },
-  { value: "advanced", label: "Advanced" },
-];
-
-const ROLES: { value: TargetRole; label: string }[] = [
-  { value: "frontend", label: "Frontend" },
-  { value: "backend", label: "Backend" },
-  { value: "fullstack", label: "Full stack" },
-  { value: "other", label: "Something else" },
-];
 
 const BENEFITS = [
   { title: "Progress that follows you", body: "Chapters read and exercises solved, on every device you sign in on." },
@@ -271,39 +253,6 @@ function EmailChip({ email, onChange }: { email: string; onChange: () => void })
         Change
       </button>
     </div>
-  );
-}
-
-function Choice<T extends string>({
-  legend,
-  options,
-  value,
-  onChange,
-}: {
-  legend: string;
-  options: { value: T; label: string }[];
-  value: T | null;
-  onChange: (value: T) => void;
-}) {
-  const name = useId();
-  return (
-    <fieldset className={styles.choice}>
-      <legend className={styles.label}>{legend}</legend>
-      <div className={styles.choiceRow}>
-        {options.map((o) => (
-          <label key={o.value} className={styles.choicePill} data-checked={value === o.value || undefined}>
-            <input
-              type="radio"
-              name={name}
-              value={o.value}
-              checked={value === o.value}
-              onChange={() => onChange(o.value)}
-            />
-            {o.label}
-          </label>
-        ))}
-      </div>
-    </fieldset>
   );
 }
 

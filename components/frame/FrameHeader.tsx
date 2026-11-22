@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { CSSProperties, ReactNode } from "react";
 import { MenuButton } from "@/components/MenuButton";
+import { AccountMenu } from "@/components/account/AccountMenu";
 import { BackButton } from "@/components/practice/BackButton";
 import { accentVar } from "@/lib/accent";
 import { SITE_NAME } from "@/lib/site";
@@ -13,6 +14,23 @@ export interface FrameLink {
   href: string;
   label: string;
   fixed?: boolean;
+}
+
+const LINK_GLYPHS: [string, string][] = [
+  ["/review", "↻"],
+  ["/progress", "▤"],
+  ["/roadmap", "⤳"],
+  ["/interview/questions", "?"],
+  ["/interview", "❝"],
+  ["/mock", "⏱"],
+  ["/problems", "☰"],
+  ["/practice", "›_"],
+  ["/system-design", "⬡"],
+  ["/company-questions", "⌂"],
+];
+
+function glyphFor(link: FrameLink): string {
+  return LINK_GLYPHS.find(([href]) => link.href === href || link.href.startsWith(`${href}/`))?.[1] ?? link.label[0];
 }
 
 export function FrameHeader({
@@ -91,13 +109,21 @@ export function FrameHeader({
       {links.length > 0 && (
         <nav className={styles.links} aria-label="Related pages">
           {links.map((l) => (
-            <Link key={l.href} href={l.href} aria-current={pathname === l.href ? "page" : undefined}>
-              {l.label}
+            <Link key={l.href} href={l.href} title={l.label} aria-current={pathname === l.href ? "page" : undefined}>
+              <span className={styles.linkGlyph} aria-hidden="true">
+                {glyphFor(l)}
+              </span>
+              <span className={styles.linkText}>{l.label}</span>
             </Link>
           ))}
         </nav>
       )}
       {actions && <div className={styles.actions}>{actions}</div>}
+      {!tool && (
+        <div className={styles.account}>
+          <AccountMenu />
+        </div>
+      )}
     </header>
   );
 }

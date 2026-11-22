@@ -4,7 +4,8 @@ import Link from "next/link";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MenuButton } from "@/components/MenuButton";
 import { SiteDrawer } from "@/components/SiteDrawer";
-import { AccountChip } from "@/components/account/AccountChip";
+import { AccountMenu } from "@/components/account/AccountMenu";
+import { NavIcon, type NavIconName } from "@/components/home/NavIcon";
 import { Connectors, type Link as Hop } from "@/components/home/Connectors";
 import { CtaScene } from "@/components/home/CtaScene";
 import { FaqScene, type Faq } from "@/components/home/FaqScene";
@@ -31,6 +32,15 @@ import { useProgressValue } from "@/lib/hooks";
 import { progress } from "@/lib/storage";
 import { SITE_NAME } from "@/lib/site";
 import styles from "./home.module.css";
+
+const NAV: { href: string; label: string; icon: NavIconName }[] = [
+  { href: "#shelf", label: "Topics", icon: "topics" },
+  { href: "#practice", label: "Practice", icon: "practice" },
+  { href: "#how", label: "How it works", icon: "how" },
+  { href: "#paths", label: "Paths", icon: "paths" },
+  { href: "#loop", label: "Interview book", icon: "book" },
+  { href: "#faq", label: "FAQ", icon: "faq" },
+];
 
 const HOME_LERP = 0.14;
 
@@ -405,15 +415,15 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
             <span>{SITE_NAME}</span>
           </Link>
           <nav className={styles.navLinks} aria-label="Sections">
-            <a href="#shelf">Topics</a>
-            <a href="#practice">Practice</a>
-            <a href="#how">How it works</a>
-            <a href="#paths">Paths</a>
-            <a href="#loop">Interview book</a>
-            <a href="#faq">FAQ</a>
+            {NAV.map((item) => (
+              <a key={item.href} href={item.href} title={item.label}>
+                <NavIcon name={item.icon} />
+                <span className={styles.navText}>{item.label}</span>
+              </a>
+            ))}
           </nav>
           <span className={styles.navAccount}>
-            <AccountChip />
+            <AccountMenu />
           </span>
           <a href="#shelf" className={`${styles.btn} ${styles.btnSmall}`}>
             Start reading

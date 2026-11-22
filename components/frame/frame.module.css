@@ -120,6 +120,10 @@ a.title:hover {
   background: var(--sheet-2);
 }
 
+.linkGlyph {
+  display: none;
+}
+
 .links a[aria-current="page"] {
   color: var(--ink);
   background: var(--primary-soft);
@@ -135,6 +139,18 @@ a.title:hover {
 
 .links + .actions {
   margin-left: 0;
+}
+
+.account {
+  display: flex;
+  flex: none;
+  align-items: center;
+  margin-left: auto;
+}
+
+.links + .account,
+.actions + .account {
+  margin-left: 4px;
 }
 
 .main {
@@ -241,9 +257,35 @@ a.title:focus-visible,
 }
 
 @media (max-width: 520px) {
-  .titleMarked,
-  .links {
+  .titleMarked {
     display: none;
+  }
+
+  .links {
+    gap: 2px;
+  }
+
+  .links a {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+  }
+
+  .linkGlyph {
+    display: block;
+    font-size: var(--t-control);
+    line-height: 1;
+  }
+
+  .linkText {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   .top {
