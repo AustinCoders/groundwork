@@ -712,6 +712,8 @@ export const reactComponents: Exercise[] = [
     starter: "function Details({ userPromise }) {\n  const user = use(userPromise);\n  return <h2>{user.name}</h2>;\n}\n\nfunction App({ userPromise }) {\n  // TODO: wrap Details in a Suspense boundary; Sidebar stays outside it\n  return (\n    <div>\n      <Details userPromise={userPromise} />\n      <p>Sidebar</p>\n    </div>\n  );\n}\n",
     hints: [
       "<Suspense fallback={<p>Loading…</p>}><Details userPromise={userPromise} /></Suspense>, with Sidebar as a sibling of the Suspense, not inside it.",
+      "When Details suspends, React shows the nearest boundary above it. With no boundary at all, nothing in the tree can render, which is why the starter shows an empty page.",
+      "Anything inside the boundary is replaced by the fallback while it waits, so keep the boundary as tight as the region that really depends on the data.",
     ],
     solution: "function Details({ userPromise }) {\n  const user = use(userPromise);\n  return <h2>{user.name}</h2>;\n}\n\nfunction App({ userPromise }) {\n  return (\n    <div>\n      <Suspense fallback={<p>Loading…</p>}>\n        <Details userPromise={userPromise} />\n      </Suspense>\n      <p>Sidebar</p>\n    </div>\n  );\n}\n",
     tests: [
@@ -719,6 +721,8 @@ export const reactComponents: Exercise[] = [
       { name: "shows the name once the promise resolves", body: "const promise = delay(10, { name: \"Ana\" });\nrender(<App userPromise={promise} />);\nassert.ok(await screen.findByRole(\"heading\", { name: \"Ana\" }));\nassert.equal(screen.queryByText(\"Loading…\"), null);" },
       { name: "the sidebar is never removed by the suspend/resume cycle", body: "const promise = delay(15, { name: \"Zed\" });\nrender(<App userPromise={promise} />);\nassert.ok(screen.getByText(\"Sidebar\"));\nawait screen.findByRole(\"heading\", { name: \"Zed\" });\nassert.ok(screen.getByText(\"Sidebar\"));" },
       { name: "an already-resolved promise renders immediately", body: "const promise = Promise.resolve({ name: \"Instant\" });\nawait promise;\nrender(<App userPromise={promise} />);\nassert.ok(await screen.findByRole(\"heading\", { name: \"Instant\" }));" },
+      { name: "no heading is shown while the user is loading", body: "render(<App userPromise={delay(30, { name: \"Ana\" })} />);\nassert.ok(screen.getByText(\"Loading…\"));\nassert.equal(screen.queryByRole(\"heading\"), null);" },
+      { name: "a new promise for a different user shows the new name and keeps the sidebar", body: "const view = render(<App userPromise={delay(5, { name: \"One\" })} />);\nawait screen.findByRole(\"heading\", { name: \"One\" });\nview.rerender(<App userPromise={delay(5, { name: \"Two\" })} />);\nassert.ok(await screen.findByRole(\"heading\", { name: \"Two\" }));\nassert.ok(screen.getByText(\"Sidebar\"));" },
     ],
   },
   {
@@ -732,6 +736,7 @@ export const reactComponents: Exercise[] = [
     hints: [
       "const [isPending, startTransition] = useTransition();",
       "setQuery(q) stays outside the transition (urgent); wrap setResults(...) in startTransition(() => setResults(slowFilter(NAMES, q))).",
+      "Render something such as <span>updating…</span> only while isPending is true; it disappears on its own when the transition render commits.",
     ],
     solution: "const NAMES = Array.from({ length: 500 }, (_, i) => \"Person \" + i);\nfunction slowFilter(list, q) {\n  let out = [];\n  for (const name of list) if (name.includes(q)) out.push(name);\n  return out;\n}\n\nfunction Search() {\n  const [query, setQuery] = useState(\"\");\n  const [results, setResults] = useState(NAMES);\n  const [isPending, startTransition] = useTransition();\n\n  function handleChange(e) {\n    const q = e.target.value;\n    setQuery(q);\n    startTransition(() => {\n      setResults(slowFilter(NAMES, q));\n    });\n  }\n\n  return (\n    <div>\n      <input value={query} onChange={handleChange} />\n      {isPending && <span>updating…</span>}\n      <p>{results.length} results</p>\n    </div>\n  );\n}\n\nfunction App() {\n  return <Search />;\n}\n",
     tests: [
@@ -740,6 +745,7 @@ export const reactComponents: Exercise[] = [
       { name: "the results eventually narrow down", body: "render(<App />);\nawait type(screen.getByRole(\"textbox\"), \"Person 499\");\nawait waitFor(() => screen.getByText(\"1 results\"));" },
       { name: "clearing the query restores all results", body: "render(<App />);\nawait type(screen.getByRole(\"textbox\"), \"Person 1\");\nawait clear(screen.getByRole(\"textbox\"));\nawait waitFor(() => screen.getByText(\"500 results\"));" },
       { name: "typing shows a pending indicator in the instant right after, before the list catches up", body: "const { container } = render(<App />);\nconst input = screen.getByRole(\"textbox\");\nconst setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, \"value\").set;\nflushSync(() => {\n  setter.call(input, \"Person 1\");\n  input.dispatchEvent(new InputEvent(\"input\", { bubbles: true }));\n});\nassert.ok(screen.getByText(\"updating…\"), \"expected a pending indicator right after typing, before the filtered list lands\");\nawait waitFor(() => assert.equal(screen.queryByText(\"updating…\"), null));" },
+      { name: "a query that matches nothing shows zero results", body: "render(<App />);\nawait type(screen.getByRole(\"textbox\"), \"zzz\");\nawait waitFor(() => screen.getByText(\"0 results\"));\nassert.equal(screen.getByRole(\"textbox\").value, \"zzz\");" },
     ],
   },
   {
@@ -753,6 +759,7 @@ export const reactComponents: Exercise[] = [
     hints: [
       "const deferredQuery = useDeferredValue(query); pass deferredQuery to Results, not query.",
       "isStale = query !== deferredQuery, to add a stale class or indicator.",
+      "The input keeps reading query, never the deferred copy, or typing itself would lag behind.",
     ],
     solution: "const NAMES = [\"Ana\", \"Bo\", \"Chi\", \"Dana\", \"Eli\"];\n\nfunction Results({ query }) {\n  const items = NAMES.filter((n) => n.toLowerCase().includes(query.toLowerCase()));\n  return (\n    <ul>\n      {items.map((n) => (\n        <li key={n}>{n}</li>\n      ))}\n    </ul>\n  );\n}\n\nfunction Search() {\n  const [query, setQuery] = useState(\"\");\n  const deferredQuery = useDeferredValue(query);\n  const isStale = query !== deferredQuery;\n  return (\n    <div>\n      <input value={query} onChange={(e) => setQuery(e.target.value)} />\n      <div className={isStale ? \"stale\" : \"\"}>\n        <Results query={deferredQuery} />\n      </div>\n    </div>\n  );\n}\n\nfunction App() {\n  return <Search />;\n}\n",
     tests: [
@@ -761,6 +768,7 @@ export const reactComponents: Exercise[] = [
       { name: "the input always reflects exactly what was typed", body: "render(<App />);\nawait type(screen.getByRole(\"textbox\"), \"Chi\");\nassert.equal(screen.getByRole(\"textbox\").value, \"Chi\");" },
       { name: "clearing the input eventually shows everyone again", body: "render(<App />);\nawait type(screen.getByRole(\"textbox\"), \"an\");\nawait clear(screen.getByRole(\"textbox\"));\nawait waitFor(() => assert.equal(screen.getAllByRole(\"listitem\").length, 5));" },
       { name: "the list is marked stale in the instant right after a keystroke, before it catches up", body: "const { container } = render(<App />);\nconst input = screen.getByRole(\"textbox\");\nconst setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, \"value\").set;\nflushSync(() => {\n  setter.call(input, \"an\");\n  input.dispatchEvent(new InputEvent(\"input\", { bubbles: true }));\n});\nassert.ok(container.querySelector(\".stale\"), \"expected a stale marker right after the keystroke, before the deferred list updates\");\nawait waitFor(() => assert.equal(container.querySelector(\".stale\"), null));" },
+      { name: "nothing is marked stale at rest", body: "const { container } = render(<App />);\nassert.equal(container.querySelector(\".stale\"), null);\nawait type(screen.getByRole(\"textbox\"), \"Bo\");\nawait waitFor(() => assert.equal(screen.getAllByRole(\"listitem\").length, 1));\nassert.equal(container.querySelector(\".stale\"), null);" },
     ],
   },
   {
@@ -1252,6 +1260,8 @@ export const reactComponents: Exercise[] = [
     starter: "function Panel({ label, dataPromise }) {\n  const data = use(dataPromise);\n  return <p>{label}: {data}</p>;\n}\n\nfunction App({ aPromise, bPromise }) {\n  // TODO: wrap Panel A and Panel B in their OWN Suspense boundaries\n  return (\n    <div>\n      <Panel label=\"A\" dataPromise={aPromise} />\n      <Panel label=\"B\" dataPromise={bPromise} />\n    </div>\n  );\n}\n",
     hints: [
       "Two separate <Suspense> elements, each with its own fallback, each wrapping only one Panel.",
+      "One boundary around both panels would make A wait for B: a boundary shows its children only when everything inside it is ready.",
+      "The boundaries are siblings, so neither is nested in the other; each one only reacts to the component inside it.",
     ],
     solution: "function Panel({ label, dataPromise }) {\n  const data = use(dataPromise);\n  return (\n    <p>\n      {label}: {data}\n    </p>\n  );\n}\n\nfunction App({ aPromise, bPromise }) {\n  return (\n    <div>\n      <Suspense fallback={<p>Loading A…</p>}>\n        <Panel label=\"A\" dataPromise={aPromise} />\n      </Suspense>\n      <Suspense fallback={<p>Loading B…</p>}>\n        <Panel label=\"B\" dataPromise={bPromise} />\n      </Suspense>\n    </div>\n  );\n}\n",
     tests: [
@@ -1260,6 +1270,7 @@ export const reactComponents: Exercise[] = [
       { name: "B resolving first does not affect A's fallback", body: "let resolveA;\nconst aPromise = new Promise((r) => { resolveA = r; });\nrender(<App aPromise={aPromise} bPromise={Promise.resolve(\"y\")} />);\nawait screen.findByText(\"B: y\");\nassert.ok(screen.getByText(\"Loading A…\"));\nresolveA(\"x\");\nassert.ok(await screen.findByText(\"A: x\"));" },
       { name: "both eventually show their own data", body: "render(<App aPromise={delay(5, \"x\")} bPromise={delay(10, \"y\")} />);\nassert.ok(await screen.findByText(\"A: x\"));\nassert.ok(await screen.findByText(\"B: y\"));" },
       { name: "two already-resolved promises render immediately", body: "const a = Promise.resolve(\"done-a\");\nconst b = Promise.resolve(\"done-b\");\nawait a;\nawait b;\nrender(<App aPromise={a} bPromise={b} />);\nassert.ok(await screen.findByText(\"A: done-a\"));\nassert.ok(await screen.findByText(\"B: done-b\"));" },
+      { name: "while both are pending there are exactly two fallbacks", body: "render(<App aPromise={delay(30, \"x\")} bPromise={delay(30, \"y\")} />);\nassert.equal(screen.getAllByText(/^Loading [AB]…$/).length, 2);" },
     ],
   },
   {

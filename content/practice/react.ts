@@ -1436,8 +1436,9 @@ export const react: Exercise[] = [
     hints: [
       "A pending state update rules out a bailout immediately, regardless of props.",
       "Compare the same set of keys on both sides with Object.is — a missing or extra key is a difference too.",
+      "Equal key counts can still hide a renamed key: { a: undefined } and { b: undefined } have one key each, so also check that every previous key exists in the next props.",
     ],
-    solution: "function wouldBailOut({ prevProps, nextProps, hasPendingState }) {\n  if (hasPendingState) return false;\n  const prevKeys = Object.keys(prevProps);\n  const nextKeys = Object.keys(nextProps);\n  if (prevKeys.length !== nextKeys.length) return false;\n  return prevKeys.every((key) => Object.is(prevProps[key], nextProps[key]));\n}\n",
+    solution: "function wouldBailOut({ prevProps, nextProps, hasPendingState }) {\n  if (hasPendingState) return false;\n  const prevKeys = Object.keys(prevProps);\n  const nextKeys = Object.keys(nextProps);\n  if (prevKeys.length !== nextKeys.length) return false;\n  return prevKeys.every((key) => Object.prototype.hasOwnProperty.call(nextProps, key) && Object.is(prevProps[key], nextProps[key]));\n}\n",
     tests: [
       { name: "identical props, no pending state: bails out", body: "assert.equal(wouldBailOut({ prevProps: { id: 1 }, nextProps: { id: 1 }, hasPendingState: false }), true);" },
       { name: "a changed prop: does not bail out", body: "assert.equal(wouldBailOut({ prevProps: { id: 1 }, nextProps: { id: 2 }, hasPendingState: false }), false);" },
@@ -1447,6 +1448,7 @@ export const react: Exercise[] = [
       { name: "an extra prop key means it did not bail out", body: "assert.equal(wouldBailOut({ prevProps: { id: 1 }, nextProps: { id: 1, extra: true }, hasPendingState: false }), false);" },
       { name: "NaN compares equal to itself via Object.is, unlike ===", body: "assert.equal(wouldBailOut({ prevProps: { v: NaN }, nextProps: { v: NaN }, hasPendingState: false }), true);" },
       { name: "no props at all on either side still bails out", body: "assert.equal(wouldBailOut({ prevProps: {}, nextProps: {}, hasPendingState: false }), true);" },
+      { name: "a renamed prop with an undefined value is still a change", body: "assert.equal(wouldBailOut({ prevProps: { a: undefined }, nextProps: { b: undefined }, hasPendingState: false }), false);" },
     ],
   },
   {
