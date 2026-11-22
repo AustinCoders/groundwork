@@ -35,7 +35,7 @@ import {
   type TotpEnrollment,
   type TotpFactor,
 } from "@/lib/account/session";
-import { computeStats, type Stats } from "@/lib/gamification";
+import { computeStats, recentActivity, type Stats } from "@/lib/gamification";
 import { useProgressValue } from "@/lib/hooks";
 import styles from "./account.module.css";
 
@@ -601,6 +601,10 @@ function sinceLabel(at: number | null): string {
   return `synced ${when(at)}`;
 }
 
+function StreakCount({ value }: { value: number }) {
+  return <>{useCountUp(value)}</>;
+}
+
 function StatTile({ label, value, sub, i }: { label: string; value: number; sub?: string; i: number }) {
   const shown = useCountUp(value);
   return (
@@ -643,6 +647,7 @@ function Signed() {
   const sync = useSyncStatus();
   const active = useActiveSection();
   const statsKey = useProgressValue(() => JSON.stringify(computeStats()), "");
+  const weekKey = useProgressValue(() => JSON.stringify(recentActivity(7)), "");
   const [pending, setPending] = useState<Pending>(null);
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
@@ -653,6 +658,7 @@ function Signed() {
   const first = name.split(/\s+/)[0] || name;
   const usesPassword = user.providers.includes("email");
   const stats: Stats | null = statsKey ? (JSON.parse(statsKey) as Stats) : null;
+  const week: { day: string; count: number }[] = weekKey ? JSON.parse(weekKey) : [];
   const levelPct = stats && stats.xpForNextLevel ? Math.round((stats.xpIntoLevel / stats.xpForNextLevel) * 100) : 0;
 
   function download() {
@@ -677,67 +683,144 @@ function Signed() {
 
   return (
     <div className={styles.dash}>
-      <header className={styles.banner}>
-        <div className={styles.bannerWho}>
-          <span className={styles.ring} aria-hidden="true">
-            <span className={styles.hugeAvatar}>{initials(name)}</span>
-          </span>
-          <div className={styles.bannerText}>
-            <p className={styles.bannerKicker}>Your account</p>
-            <h1 className={styles.bannerTitle}>Hello, {first}</h1>
-            <p className={styles.bannerEmail}>{user.email}</p>
-            <ul className={styles.pills}>
-              <li className={styles.pill} data-tone={account.profile?.plan === "pro" ? "pro" : undefined}>
-                {account.profile?.plan === "pro" ? "★ Pro" : "Free plan"}
-              </li>
-              <li className={styles.pill}>
-                Member since{" "}
-                {new Date(user.createdAt).toLocaleDateString(undefined, { month: "short", year: "numeric" })}
-              </li>
-              <li className={styles.pill}>
+      <header className={styles.hero}>
+        <div className={styles.idCard}>
+          <span className={styles.idTape} aria-hidden="true" />
+          <p className={styles.idStrip}>
+            <span>Groundwork</span>
+            <span>Member card</span>
+          </p>
+          <div className={styles.idBody}>
+            <span className={styles.idAvatar} aria-hidden="true">
+              {initials(name)}
+            </span>
+            <div className={styles.idText}>
+              <p className={styles.idHello}>Hello,</p>
+              <h1 className={styles.idName}>{first}</h1>
+              <p className={styles.idEmail}>{user.email}</p>
+            </div>
+          </div>
+          <dl className={styles.idRows}>
+            <div>
+              <dt>Since</dt>
+              <dd>{new Date(user.createdAt).toLocaleDateString(undefined, { month: "short", year: "numeric" })}</dd>
+            </div>
+            <div>
+              <dt>Signs in with</dt>
+              <dd>{user.providers.map((p) => PROVIDER_NAME[p] ?? p).join(", ") || "Email"}</dd>
+            </div>
+            <div>
+              <dt>Sync</dt>
+              <dd>
                 <span className={styles.dot} data-state={sync.state} aria-hidden="true" />{" "}
                 {sinceLabel(sync.lastSyncedAt)}
-              </li>
-              <li className={styles.pill}>{user.providers.map((p) => PROVIDER_NAME[p] ?? p).join(" · ") || "Email"}</li>
-            </ul>
+              </dd>
+            </div>
+          </dl>
+          <span className={styles.stamp} data-tone={account.profile?.plan === "pro" ? "pro" : undefined}>
+            {account.profile?.plan === "pro" ? "Pro" : "Free"}
+          </span>
+        </div>
+
+        <div className={styles.levelCard}>
+          <p className={styles.cardKicker}>Your level</p>
+          <div className={styles.ringWrap}>
+            <svg className={styles.levelRing} viewBox="0 0 120 120" aria-hidden="true">
+              <circle className={styles.levelTrack} cx="60" cy="60" r="50" />
+              <circle
+                className={styles.levelArc}
+                cx="60"
+                cy="60"
+                r="50"
+                style={{ "--pct": Math.max(levelPct, 2) } as CSSProperties}
+              />
+            </svg>
+            <div className={styles.levelFace}>
+              <span>level</span>
+              <strong>{stats?.level ?? 1}</strong>
+            </div>
+          </div>
+          <p className={styles.levelNext}>
+            {stats
+              ? `${stats.xpForNextLevel - stats.xpIntoLevel} XP to level ${stats.level + 1}`
+              : "Read a chapter to start"}
+          </p>
+          <StatTile label="XP in total" value={stats?.xp ?? 0} i={0} />
+        </div>
+
+        <div className={styles.notes}>
+          <div className={styles.streakCard}>
+            <p className={styles.cardKicker}>Streak</p>
+            <p className={styles.streakValue}>
+              <span aria-hidden="true">🔥</span> <StreakCount value={stats?.streak ?? 0} />
+              <small> {(stats?.streak ?? 0) === 1 ? "day" : "days"}</small>
+            </p>
+            <ol className={styles.week} aria-label="The last seven days">
+              {week.map((day, i) => (
+                <li
+                  key={day.day}
+                  data-on={day.count > 0 || undefined}
+                  style={{ "--i": i } as CSSProperties}
+                  title={day.day}
+                >
+                  {new Date(`${day.day}T12:00:00`).toLocaleDateString(undefined, { weekday: "narrow" })}
+                </li>
+              ))}
+            </ol>
+            <p className={styles.statSub}>Best run: {stats?.bestStreak ?? 0} days</p>
+          </div>
+          <div className={styles.sticky} data-tone="yellow">
+            <StatTile label="Chapters read" value={stats?.chaptersRead ?? 0} sub="+5 XP each" i={1} />
+            <span className={styles.stickyMark} aria-hidden="true">
+              📖
+            </span>
+          </div>
+          <div className={styles.sticky} data-tone="mint">
+            <StatTile label="Exercises solved" value={stats?.exercisesSolved ?? 0} sub="+10 XP each" i={2} />
+            <span className={styles.stickyMark} aria-hidden="true">
+              ✓
+            </span>
           </div>
         </div>
-        <div className={styles.stats}>
-          <div className={`${styles.stat} ${styles.statLevel}`} style={{ "--i": 0 } as CSSProperties}>
-            <span className={styles.statLabel}>Level</span>
-            <strong className={styles.statValue}>{stats?.level ?? 1}</strong>
-            <span className={styles.levelBar} aria-hidden="true">
-              <span style={{ width: `${levelPct}%` }} />
+
+        <nav className={styles.quick} aria-label="Shortcuts">
+          <Link href="/progress" className={styles.quickTile} prefetch={false}>
+            <span className={styles.quickIcon} aria-hidden="true">
+              ▤
             </span>
-            <span className={styles.statSub}>
-              {stats
-                ? `${stats.xpForNextLevel - stats.xpIntoLevel} XP to level ${stats.level + 1}`
-                : "Read a chapter to start"}
+            <span>
+              <strong>Your progress</strong>
+              <small>Calendar, badges and topics</small>
             </span>
-          </div>
-          <StatTile label="XP" value={stats?.xp ?? 0} sub="from chapters, exercises and reviews" i={1} />
-          <StatTile label="Day streak" value={stats?.streak ?? 0} sub={`best ${stats?.bestStreak ?? 0}`} i={2} />
-          <StatTile
-            label="Chapters read"
-            value={stats?.chaptersRead ?? 0}
-            sub={`${stats?.exercisesSolved ?? 0} exercises solved`}
-            i={3}
-          />
-        </div>
-        <div className={styles.quick}>
-          <Link href="/progress" className={styles.quickLink} prefetch={false}>
-            <span aria-hidden="true">▤</span> Your progress
           </Link>
-          <Link href="/review" className={styles.quickLink} prefetch={false}>
-            <span aria-hidden="true">↻</span> Review queue
+          <Link href="/review" className={styles.quickTile} prefetch={false}>
+            <span className={styles.quickIcon} aria-hidden="true">
+              ↻
+            </span>
+            <span>
+              <strong>Review queue</strong>
+              <small>What is due today</small>
+            </span>
           </Link>
-          <button type="button" className={styles.quickLink} onClick={download}>
-            <span aria-hidden="true">⤓</span> Download my data
+          <button type="button" className={styles.quickTile} onClick={download}>
+            <span className={styles.quickIcon} aria-hidden="true">
+              ⤓
+            </span>
+            <span>
+              <strong>Download my data</strong>
+              <small>Everything as one file</small>
+            </span>
           </button>
-          <button type="button" className={styles.quickLink} onClick={() => void syncAccountNow()}>
-            <span aria-hidden="true">⟳</span> Sync now
+          <button type="button" className={styles.quickTile} onClick={() => void syncAccountNow()}>
+            <span className={styles.quickIcon} aria-hidden="true">
+              ⟳
+            </span>
+            <span>
+              <strong>Sync now</strong>
+              <small>{sinceLabel(sync.lastSyncedAt)}</small>
+            </span>
           </button>
-        </div>
+        </nav>
       </header>
 
       <div className={styles.layout}>
