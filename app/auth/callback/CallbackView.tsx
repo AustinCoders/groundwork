@@ -3,7 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { openAuth, safeNext } from "@/lib/account/config";
-import { passwordChecks, passwordProblem } from "@/lib/account/errors";
+import { passwordProblem } from "@/lib/account/errors";
+import { isCommonPassword } from "@/lib/account/strength";
+import { PasswordField } from "@/components/account/PasswordField";
 import { connectAccount, updatePassword, useAccount } from "@/lib/account/session";
 import styles from "@/app/account/account.module.css";
 
@@ -40,12 +42,16 @@ function NewPassword({ next }: { next: string }) {
   const [tried, setTried] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const problem = tried ? passwordProblem(password) : null;
+  const account = useAccount();
+  const problem = tried
+    ? (passwordProblem(password) ??
+      (isCommonPassword(password) ? "That password is too common. Choose another." : null))
+    : null;
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
     setTried(true);
-    if (passwordProblem(password)) return;
+    if (passwordProblem(password) || isCommonPassword(password)) return;
     setBusy(true);
     const result = await updatePassword(password);
     setBusy(false);
@@ -57,25 +63,15 @@ function NewPassword({ next }: { next: string }) {
     <form className={styles.status} onSubmit={save} noValidate>
       <h1>Choose a new password</h1>
       <p>Use at least 8 characters, with a letter and a number.</p>
-      <label className={styles.field}>
-        <span className={styles.label}>New password</span>
-        <input
-          className={styles.input}
-          type="password"
-          value={password}
-          autoComplete="new-password"
-          autoFocus
-          maxLength={72}
-          aria-invalid={problem ? true : undefined}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <span className={problem ? styles.error : styles.hint}>
-          {problem ??
-            passwordChecks(password)
-              .map((c) => `${c.met ? "●" : "○"} ${c.label}`)
-              .join("   ")}
-        </span>
-      </label>
+      <PasswordField
+        label="New password"
+        value={password}
+        onChange={setPassword}
+        error={problem}
+        autoComplete="new-password"
+        autoFocus
+        strengthHints={[account.user?.email ?? ""]}
+      />
       {error && (
         <p className={styles.error} role="alert">
           {error}

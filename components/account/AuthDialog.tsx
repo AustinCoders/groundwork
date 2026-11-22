@@ -3,31 +3,26 @@
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { authProviders, type AuthMode } from "@/lib/account/config";
-import { codeProblem, emailProblem, nameProblem, passwordChecks, passwordProblem } from "@/lib/account/errors";
+import { codeProblem, emailProblem, nameProblem, passwordProblem } from "@/lib/account/errors";
+import { markOnboardingDone } from "@/lib/account/onboarding";
 import {
+  resendSignupEmail,
   sendMagicLink,
   sendPasswordReset,
   signInWithPassword,
   signInWithProvider,
   signUpWithPassword,
+  updateProfile,
+  useAccount,
   verifyEmailCode,
+  type Experience,
+  type Goal,
   type OAuthProvider,
+  type TargetRole,
 } from "@/lib/account/session";
+import { isCommonPassword } from "@/lib/account/strength";
+import { PasswordField } from "./PasswordField";
 import styles from "./account.module.css";
-
-const TITLES: Record<AuthMode, string> = {
-  "sign-in": "Sign in to Groundwork",
-  "sign-up": "Create your free account",
-  magic: "Sign in with an email link",
-  forgot: "Reset your password",
-};
-
-const LEADS: Record<AuthMode, string> = {
-  "sign-in": "Your progress, mock results and boards follow you to every device.",
-  "sign-up": "An account is optional. It keeps your progress, mock results and boards in sync across devices.",
-  magic: "We email you a link and a 6-digit code. No password needed.",
-  forgot: "Enter the email you signed up with and we will send you a link to choose a new password.",
-};
 
 function GoogleMark() {
   return (
@@ -69,10 +64,9 @@ interface FieldProps {
   autoComplete: string;
   autoFocus?: boolean;
   hint?: React.ReactNode;
-  aside?: React.ReactNode;
-  reveal?: boolean;
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   maxLength?: number;
+  code?: boolean;
 }
 
 function Field({
@@ -84,59 +78,262 @@ function Field({
   autoComplete,
   autoFocus,
   hint,
-  aside,
-  reveal,
   inputMode,
   maxLength,
+  code,
 }: FieldProps) {
   const id = useId();
   const noteId = useId();
-  const [shown, setShown] = useState(false);
-  const input = (
-    <input
-      id={id}
-      className={styles.input}
-      type={reveal && shown ? "text" : type}
-      value={value}
-      autoComplete={autoComplete}
-      autoFocus={autoFocus}
-      inputMode={inputMode}
-      maxLength={maxLength}
-      spellCheck={false}
-      autoCapitalize="off"
-      aria-invalid={error ? true : undefined}
-      aria-describedby={noteId}
-      onChange={(e) => onChange(e.target.value)}
-    />
-  );
   return (
     <div className={styles.field}>
       <div className={styles.labelRow}>
         <label htmlFor={id} className={styles.label}>
           {label}
         </label>
-        {aside}
       </div>
-      {reveal ? (
-        <div className={styles.inputWrap}>
-          {input}
-          <button
-            type="button"
-            className={styles.reveal}
-            aria-pressed={shown}
-            aria-controls={id}
-            onClick={() => setShown((s) => !s)}
-          >
-            {shown ? "Hide" : "Show"}
-          </button>
-        </div>
-      ) : (
-        input
-      )}
+      <input
+        id={id}
+        className={code ? `${styles.input} ${styles.codeInput}` : styles.input}
+        type={type}
+        value={value}
+        autoComplete={autoComplete}
+        autoFocus={autoFocus}
+        inputMode={inputMode}
+        maxLength={maxLength}
+        spellCheck={false}
+        autoCapitalize="off"
+        aria-invalid={error ? true : undefined}
+        aria-describedby={noteId}
+        onChange={(e) => onChange(e.target.value)}
+      />
       <div id={noteId} className={error ? styles.fieldError : styles.fieldHint} aria-live="polite">
         {error ?? hint ?? ""}
       </div>
     </div>
+  );
+}
+
+type Step = "email" | "password" | "create" | "code" | "forgot" | "confirm" | "reset" | "welcome";
+type Intent = "sign-in" | "sign-up" | "code";
+
+const RESEND_SECONDS = 60;
+
+const GOALS: { value: Goal; label: string }[] = [
+  { value: "learn", label: "Learn the foundations" },
+  { value: "interview", label: "Prepare for interviews" },
+  { value: "switch", label: "Switch jobs or roles" },
+  { value: "upskill", label: "Level up at work" },
+];
+
+const LEVELS: { value: Experience; label: string }[] = [
+  { value: "beginner", label: "Beginner" },
+  { value: "intermediate", label: "Intermediate" },
+  { value: "advanced", label: "Advanced" },
+];
+
+const ROLES: { value: TargetRole; label: string }[] = [
+  { value: "frontend", label: "Frontend" },
+  { value: "backend", label: "Backend" },
+  { value: "fullstack", label: "Full stack" },
+  { value: "other", label: "Something else" },
+];
+
+const BENEFITS = [
+  { title: "Progress that follows you", body: "Chapters read and exercises solved, on every device you sign in on." },
+  { title: "A review queue that remembers", body: "Notes you marked for later come back when they are due." },
+  { title: "Mock interview history", body: "Every run, with the scores, kept in one place." },
+  { title: "Saved whiteboards", body: "Your system design boards, ready to reopen." },
+];
+
+function startFor(mode: AuthMode): { step: Step; intent: Intent } {
+  if (mode === "sign-up") return { step: "email", intent: "sign-up" };
+  if (mode === "magic") return { step: "email", intent: "code" };
+  if (mode === "forgot") return { step: "forgot", intent: "sign-in" };
+  if (mode === "welcome") return { step: "welcome", intent: "sign-in" };
+  return { step: "email", intent: "sign-in" };
+}
+
+function titleFor(step: Step, intent: Intent): string {
+  switch (step) {
+    case "email":
+      return intent === "sign-up"
+        ? "Create your free account"
+        : intent === "code"
+          ? "Sign in with a code"
+          : "Sign in to Groundwork";
+    case "password":
+      return "Welcome back";
+    case "create":
+      return "Set up your account";
+    case "code":
+      return "Check your email";
+    case "forgot":
+      return "Reset your password";
+    case "confirm":
+      return "Confirm your email";
+    case "reset":
+      return "Check your email";
+    case "welcome":
+      return "Make it yours";
+  }
+}
+
+function leadFor(step: Step, intent: Intent): string | null {
+  switch (step) {
+    case "email":
+      return intent === "sign-up"
+        ? "Start with your email. You can use a password or a one-time code."
+        : intent === "code"
+          ? "We email you a 6-digit code. No password needed, and it works for new accounts too."
+          : "Use the email you signed up with.";
+    case "password":
+      return null;
+    case "create":
+      return "Two more details and you are in.";
+    case "forgot":
+      return "Enter the email you signed up with and we will send a link to choose a new password.";
+    case "welcome":
+      return "Three quick choices so Groundwork can point you at the right chapters. You can change them later on your account page.";
+    default:
+      return null;
+  }
+}
+
+function SyncDoodle() {
+  return (
+    <svg viewBox="0 0 220 110" className={styles.doodle} aria-hidden="true">
+      <rect x="10" y="18" width="92" height="60" rx="6" />
+      <path d="M2 86h108" />
+      <path d="M22 34h50M22 46h66M22 58h40" />
+      <rect x="160" y="22" width="44" height="72" rx="8" />
+      <path d="M172 40h20M172 52h16M172 64h20" />
+      <path className={styles.doodleArrow} d="M112 38c14-12 30-12 42-2" />
+      <path className={styles.doodleArrow} d="M148 30l7 6-8 4" />
+      <path className={styles.doodleArrow} d="M154 72c-14 12-30 12-42 2" />
+      <path className={styles.doodleArrow} d="M118 80l-7-6 8-4" />
+    </svg>
+  );
+}
+
+function Aside() {
+  return (
+    <aside className={styles.aside} aria-label="What an account adds">
+      <p className={styles.asideKicker}>Optional, and free</p>
+      <p className={styles.asideTitle}>Your notebook, on every device</p>
+      <SyncDoodle />
+      <ul className={styles.benefits}>
+        {BENEFITS.map((b) => (
+          <li key={b.title}>
+            <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" className={styles.benefitTick}>
+              <path d="M3 8.5 6.5 12 13 4.5" />
+            </svg>
+            <span>
+              <strong>{b.title}</strong>
+              <span className={styles.benefitBody}>{b.body}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className={styles.asideNote}>Every chapter and exercise still works without an account.</p>
+    </aside>
+  );
+}
+
+function EmailChip({ email, onChange }: { email: string; onChange: () => void }) {
+  return (
+    <div className={styles.emailChip}>
+      <span className={styles.emailChipText}>{email.trim()}</span>
+      <button type="button" className={styles.textLink} onClick={onChange}>
+        Change
+      </button>
+    </div>
+  );
+}
+
+function Choice<T extends string>({
+  legend,
+  options,
+  value,
+  onChange,
+}: {
+  legend: string;
+  options: { value: T; label: string }[];
+  value: T | null;
+  onChange: (value: T) => void;
+}) {
+  const name = useId();
+  return (
+    <fieldset className={styles.choice}>
+      <legend className={styles.label}>{legend}</legend>
+      <div className={styles.choiceRow}>
+        {options.map((o) => (
+          <label key={o.value} className={styles.choicePill} data-checked={value === o.value || undefined}>
+            <input
+              type="radio"
+              name={name}
+              value={o.value}
+              checked={value === o.value}
+              onChange={() => onChange(o.value)}
+            />
+            {o.label}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+function Welcome({ onDone }: { onDone: () => void }) {
+  const { user, profile } = useAccount();
+  const [goal, setGoal] = useState<Goal | null>(profile?.goal ?? null);
+  const [experience, setExperience] = useState<Experience | null>(profile?.experience ?? null);
+  const [role, setRole] = useState<TargetRole | null>(profile?.targetRole ?? null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function finish() {
+    if (user) markOnboardingDone(user.id);
+    onDone();
+  }
+
+  async function save(event: React.FormEvent) {
+    event.preventDefault();
+    if (!goal && !experience && !role) {
+      finish();
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    const result = await updateProfile({ goal, experience, targetRole: role });
+    setBusy(false);
+    if (result.ok) finish();
+    else setError(result.error);
+  }
+
+  return (
+    <form noValidate onSubmit={save}>
+      {user && (
+        <p className={styles.welcomeHello}>
+          Signed in as <strong>{profile?.displayName || user.email}</strong>.
+        </p>
+      )}
+      <Choice legend="What brings you here?" options={GOALS} value={goal} onChange={setGoal} />
+      <Choice legend="How much have you built so far?" options={LEVELS} value={experience} onChange={setExperience} />
+      <Choice legend="Which role are you aiming for?" options={ROLES} value={role} onChange={setRole} />
+      {error && (
+        <p className={styles.formError} role="alert">
+          {error}
+        </p>
+      )}
+      <button type="submit" className={styles.submit} disabled={busy}>
+        {busy ? "Saving…" : "Save and continue"}
+      </button>
+      <p className={styles.switch}>
+        <button type="button" className={styles.textLink} onClick={finish}>
+          Skip for now
+        </button>
+      </p>
+    </form>
   );
 }
 
@@ -151,7 +348,9 @@ export function AuthDialog({
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
-  const [mode, setMode] = useState<AuthMode>(initialMode);
+  const start = startFor(initialMode);
+  const [step, setStep] = useState<Step>(start.step);
+  const [intent, setIntent] = useState<Intent>(start.intent);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -159,29 +358,28 @@ export function AuthDialog({
   const [tried, setTried] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
-  const [sent, setSent] = useState<null | "confirm" | "magic" | "reset">(null);
+  const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
     const dialog = ref.current;
-    if (dialog && !dialog.open) dialog.showModal();
+    if (!dialog || dialog.open) return;
+    dialog.showModal();
+    dialog.querySelector<HTMLInputElement>("input[type=email], input[type=text], input[type=password]")?.focus();
   }, []);
 
-  function go(nextMode: AuthMode) {
-    setMode(nextMode);
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = window.setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => window.clearTimeout(id);
+  }, [cooldown]);
+
+  function go(nextStep: Step, nextIntent?: Intent) {
+    setStep(nextStep);
+    if (nextIntent) setIntent(nextIntent);
     setTried(false);
     setFormError(null);
-    setSent(null);
-    setCode("");
+    if (nextStep !== "code") setCode("");
   }
-
-  const emailError = tried ? emailProblem(email) : null;
-  const nameError = tried && mode === "sign-up" ? nameProblem(name) : null;
-  const passwordError =
-    tried && mode === "sign-up"
-      ? passwordProblem(password)
-      : tried && mode === "sign-in" && !password
-        ? "Enter your password."
-        : null;
 
   async function run(label: string, task: () => Promise<{ ok: boolean; error?: string }>) {
     setBusy(label);
@@ -192,264 +390,379 @@ export function AuthDialog({
     return result.ok;
   }
 
-  async function onProvider(provider: OAuthProvider) {
-    await run(provider, () => signInWithProvider(provider, next));
+  async function sendCode() {
+    if (await run("code", () => sendMagicLink(email, next))) {
+      setCooldown(RESEND_SECONDS);
+      go("code");
+    }
+  }
+
+  async function verify(value: string) {
+    if (codeProblem(value)) {
+      setFormError(codeProblem(value));
+      return;
+    }
+    if (await run("submit", () => verifyEmailCode(email, value))) onClose();
   }
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     setTried(true);
     if (busy) return;
-    if (mode === "sign-up") {
-      if (nameProblem(name) || emailProblem(email) || passwordProblem(password)) return;
+    if (step === "email") {
+      if (emailProblem(email)) return;
+      if (intent === "code") await sendCode();
+      else go(intent === "sign-up" ? "create" : "password");
+      return;
+    }
+    if (step === "password") {
+      if (!password) return;
+      if (await run("submit", () => signInWithPassword(email, password))) onClose();
+      return;
+    }
+    if (step === "create") {
+      if (nameProblem(name) || passwordProblem(password) || isCommonPassword(password)) return;
       setBusy("submit");
       setFormError(null);
       const result = await signUpWithPassword(name, email, password, next);
       setBusy(null);
       if (!result.ok) setFormError(result.error);
-      else if (result.value.confirm) setSent("confirm");
-      else onClose();
+      else if (result.value.confirm) {
+        setCooldown(RESEND_SECONDS);
+        go("confirm");
+      } else onClose();
       return;
     }
-    if (mode === "sign-in") {
-      if (emailProblem(email) || !password) return;
-      if (await run("submit", () => signInWithPassword(email, password))) onClose();
+    if (step === "code") {
+      await verify(code);
       return;
     }
-    if (mode === "magic") {
+    if (step === "forgot") {
       if (emailProblem(email)) return;
-      if (sent === "magic") {
-        if (codeProblem(code)) {
-          setFormError(codeProblem(code));
-          return;
-        }
-        if (await run("submit", () => verifyEmailCode(email, code))) onClose();
-        return;
-      }
-      if (await run("submit", () => sendMagicLink(email, next))) setSent("magic");
-      return;
+      if (await run("submit", () => sendPasswordReset(email))) go("reset");
     }
-    if (emailProblem(email)) return;
-    if (await run("submit", () => sendPasswordReset(email))) setSent("reset");
   }
 
-  const submitLabel = {
-    "sign-in": "Sign in",
-    "sign-up": "Create account",
-    magic: sent === "magic" ? "Verify code" : "Email me a link",
-    forgot: "Send reset link",
-  }[mode];
+  async function onProvider(provider: OAuthProvider) {
+    await run(provider, () => signInWithProvider(provider, next));
+  }
+
+  const emailError = tried ? emailProblem(email) : null;
+  const nameError = tried && step === "create" ? nameProblem(name) : null;
+  const passwordError =
+    tried && step === "create"
+      ? (passwordProblem(password) ??
+        (isCommonPassword(password) ? "That password is too common. Choose another." : null))
+      : tried && step === "password" && !password
+        ? "Enter your password."
+        : null;
 
   const providers = authProviders();
-  const showProviders = (mode === "sign-in" || mode === "sign-up") && sent === null && providers.length > 0;
-  const checks = passwordChecks(password);
+  const showProviders = step === "email" && intent !== "code" && providers.length > 0;
+  const showAside = step !== "welcome";
+  const lead = leadFor(step, intent);
+  const submitLabel: Record<Step, string> = {
+    email: intent === "code" ? "Email me a code" : "Continue",
+    password: "Sign in",
+    create: "Create account",
+    code: "Verify and sign in",
+    forgot: "Send reset link",
+    confirm: "",
+    reset: "",
+    welcome: "",
+  };
 
   return (
     <dialog
       ref={ref}
-      className={styles.dialog}
+      className={showAside ? `${styles.dialog} ${styles.dialogWide}` : styles.dialog}
       aria-labelledby={titleId}
       onClose={onClose}
       onClick={(e) => {
         if (e.target === ref.current) onClose();
       }}
     >
-      <div className={styles.inner}>
-        <button type="button" className={styles.close} aria-label="Close" onClick={onClose}>
-          ×
-        </button>
-        <h2 id={titleId} className={styles.title}>
-          {sent === "confirm" ? "Check your email" : TITLES[mode]}
-        </h2>
+      <div className={showAside ? styles.shell : undefined}>
+        {showAside && <Aside />}
+        <div className={styles.inner}>
+          <button type="button" className={styles.close} aria-label="Close" onClick={onClose}>
+            ×
+          </button>
+          <h2 id={titleId} className={styles.title}>
+            {titleFor(step, intent)}
+          </h2>
+          {lead && <p className={styles.lead}>{lead}</p>}
 
-        {sent === "confirm" ? (
-          <>
-            <p className={styles.notice} role="status">
-              We sent a confirmation link to <strong>{email.trim()}</strong>. Open it on this device to finish creating
-              your account. It can take a minute; check spam if it does not arrive.
-            </p>
-            <p className={styles.switch}>
-              Already confirmed?{" "}
-              <button type="button" className={styles.textLink} onClick={() => go("sign-in")}>
-                Sign in
-              </button>
-            </p>
-          </>
-        ) : sent === "reset" ? (
-          <>
-            <p className={styles.notice} role="status">
-              If an account uses <strong>{email.trim()}</strong>, a reset link is on its way. Open it on this device to
-              choose a new password.
-            </p>
-            <p className={styles.switch}>
-              <button type="button" className={styles.textLink} onClick={() => go("sign-in")}>
-                Back to sign in
-              </button>
-            </p>
-          </>
-        ) : (
-          <>
-            <p className={styles.lead}>{LEADS[mode]}</p>
-
-            {showProviders && (
-              <>
-                <div className={styles.providers}>
-                  {providers.includes("google") && (
-                    <button
-                      type="button"
-                      className={styles.provider}
-                      disabled={busy !== null}
-                      onClick={() => onProvider("google")}
-                    >
-                      <GoogleMark />
-                      {busy === "google" ? "Opening Google…" : "Continue with Google"}
-                    </button>
-                  )}
-                  {providers.includes("github") && (
-                    <button
-                      type="button"
-                      className={styles.provider}
-                      disabled={busy !== null}
-                      onClick={() => onProvider("github")}
-                    >
-                      <GitHubMark />
-                      {busy === "github" ? "Opening GitHub…" : "Continue with GitHub"}
-                    </button>
-                  )}
-                </div>
-                <p className={styles.or}>or use your email</p>
-              </>
-            )}
-
-            <form noValidate onSubmit={onSubmit}>
-              {mode === "sign-up" && (
-                <Field
-                  label="Name"
-                  type="text"
-                  value={name}
-                  onChange={setName}
-                  error={nameError}
-                  autoComplete="name"
-                  autoFocus
-                  maxLength={60}
-                  hint="Shown on your progress page. You can change it later."
-                />
-              )}
-              <Field
-                label="Email"
-                type="email"
-                value={email}
-                onChange={(v) => {
-                  setEmail(v);
-                  if (sent === "magic") setSent(null);
-                }}
-                error={emailError}
-                autoComplete="email"
-                autoFocus={mode !== "sign-up"}
-                inputMode="email"
-                maxLength={254}
-              />
-              {(mode === "sign-in" || mode === "sign-up") && (
-                <Field
-                  label="Password"
-                  type="password"
-                  value={password}
-                  onChange={setPassword}
-                  error={passwordError}
-                  autoComplete={mode === "sign-up" ? "new-password" : "current-password"}
-                  reveal
-                  maxLength={72}
-                  aside={
-                    mode === "sign-in" ? (
-                      <button type="button" className={styles.textLink} onClick={() => go("forgot")}>
-                        Forgot password?
-                      </button>
-                    ) : undefined
-                  }
-                  hint={
-                    mode === "sign-up" ? (
-                      <ul className={styles.checks} aria-label="Password rules">
-                        {checks.map((c) => (
-                          <li key={c.label} className={c.met ? styles.met : undefined}>
-                            {c.label}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : undefined
-                  }
-                />
-              )}
-              {mode === "magic" && sent === "magic" && (
-                <>
-                  <p className={styles.notice} role="status">
-                    Check <strong>{email.trim()}</strong>. Open the link on this device, or type the 6-digit code here.
-                  </p>
-                  <Field
-                    label="6-digit code"
-                    type="text"
-                    value={code}
-                    onChange={(v) => setCode(v.replace(/\D/g, "").slice(0, 6))}
-                    error={null}
-                    autoComplete="one-time-code"
-                    inputMode="numeric"
-                    autoFocus
-                    maxLength={6}
-                  />
-                </>
-              )}
-
+          {step === "welcome" ? (
+            <Welcome onDone={onClose} />
+          ) : step === "confirm" ? (
+            <>
+              <p className={styles.notice} role="status">
+                We sent a link to <strong>{email.trim()}</strong>. Open it on this device to finish creating your
+                account. It can take a minute; check spam if it does not arrive.
+              </p>
               {formError && (
                 <p className={styles.formError} role="alert">
                   {formError}
                 </p>
               )}
-
-              <button type="submit" className={styles.submit} disabled={busy !== null}>
-                {busy === "submit" ? "Please wait…" : submitLabel}
+              <button
+                type="button"
+                className={styles.secondary}
+                disabled={busy !== null || cooldown > 0}
+                onClick={async () => {
+                  if (await run("resend", () => resendSignupEmail(email, next))) setCooldown(RESEND_SECONDS);
+                }}
+              >
+                {busy === "resend" ? "Sending…" : cooldown > 0 ? `Resend the link in ${cooldown}s` : "Resend the link"}
               </button>
-            </form>
-
-            {mode === "sign-in" && (
-              <>
-                <p className={styles.switch}>
-                  <button type="button" className={styles.textLink} onClick={() => go("magic")}>
-                    Email me a sign-in link instead
-                  </button>
-                </p>
-                <p className={styles.switch}>
-                  New here?{" "}
-                  <button type="button" className={styles.textLink} onClick={() => go("sign-up")}>
-                    Create a free account
-                  </button>
-                </p>
-              </>
-            )}
-            {mode === "sign-up" && (
               <p className={styles.switch}>
-                Already have an account?{" "}
-                <button type="button" className={styles.textLink} onClick={() => go("sign-in")}>
+                Already confirmed?{" "}
+                <button type="button" className={styles.textLink} onClick={() => go("password", "sign-in")}>
                   Sign in
                 </button>
               </p>
-            )}
-            {(mode === "magic" || mode === "forgot") && (
+            </>
+          ) : step === "reset" ? (
+            <>
+              <p className={styles.notice} role="status">
+                If an account uses <strong>{email.trim()}</strong>, a reset link is on its way. Open it on this device
+                to choose a new password.
+              </p>
               <p className={styles.switch}>
-                <button type="button" className={styles.textLink} onClick={() => go("sign-in")}>
+                <button
+                  type="button"
+                  className={styles.textLink}
+                  onClick={() => go(email ? "password" : "email", "sign-in")}
+                >
                   Back to sign in
                 </button>
               </p>
-            )}
-            {mode === "sign-up" && (
-              <p className={styles.fine}>
-                By creating an account you agree to how we handle your data in the{" "}
-                <Link href="/privacy" onClick={onClose}>
-                  privacy note
-                </Link>
-                .
-              </p>
-            )}
-          </>
-        )}
+            </>
+          ) : (
+            <>
+              {showProviders && (
+                <>
+                  <div className={styles.providers}>
+                    {providers.includes("google") && (
+                      <button
+                        type="button"
+                        className={styles.provider}
+                        disabled={busy !== null}
+                        onClick={() => onProvider("google")}
+                      >
+                        <GoogleMark />
+                        {busy === "google" ? "Opening Google…" : "Continue with Google"}
+                      </button>
+                    )}
+                    {providers.includes("github") && (
+                      <button
+                        type="button"
+                        className={styles.provider}
+                        disabled={busy !== null}
+                        onClick={() => onProvider("github")}
+                      >
+                        <GitHubMark />
+                        {busy === "github" ? "Opening GitHub…" : "Continue with GitHub"}
+                      </button>
+                    )}
+                  </div>
+                  <p className={styles.or}>or continue with email</p>
+                </>
+              )}
+
+              <form key={step} noValidate onSubmit={onSubmit}>
+                {(step === "email" || step === "forgot") && (
+                  <Field
+                    label="Email"
+                    type="email"
+                    value={email}
+                    onChange={setEmail}
+                    error={emailError}
+                    autoComplete="email"
+                    autoFocus
+                    inputMode="email"
+                    maxLength={254}
+                  />
+                )}
+
+                {(step === "password" || step === "create" || step === "code") && (
+                  <EmailChip email={email} onChange={() => go("email")} />
+                )}
+
+                {step === "password" && (
+                  <PasswordField
+                    label="Password"
+                    value={password}
+                    onChange={setPassword}
+                    error={passwordError}
+                    autoComplete="current-password"
+                    autoFocus
+                    aside={
+                      <button type="button" className={styles.textLink} onClick={() => go("forgot")}>
+                        Forgot password?
+                      </button>
+                    }
+                  />
+                )}
+
+                {step === "create" && (
+                  <>
+                    <Field
+                      label="Name"
+                      type="text"
+                      value={name}
+                      onChange={setName}
+                      error={nameError}
+                      autoComplete="name"
+                      autoFocus
+                      maxLength={60}
+                      hint="Shown on your progress page. You can change it later."
+                    />
+                    <PasswordField
+                      label="Password"
+                      value={password}
+                      onChange={setPassword}
+                      error={passwordError}
+                      autoComplete="new-password"
+                      strengthHints={[email, name]}
+                    />
+                  </>
+                )}
+
+                {step === "code" && (
+                  <>
+                    <p className={styles.notice} role="status">
+                      We sent a 6-digit code to <strong>{email.trim()}</strong>. The same email has a link you can open
+                      on this device instead.
+                    </p>
+                    <Field
+                      label="6-digit code"
+                      type="text"
+                      value={code}
+                      onChange={(v) => {
+                        const digits = v.replace(/\D/g, "").slice(0, 6);
+                        setCode(digits);
+                        setFormError(null);
+                        if (digits.length === 6 && busy === null) void verify(digits);
+                      }}
+                      error={null}
+                      autoComplete="one-time-code"
+                      inputMode="numeric"
+                      autoFocus
+                      maxLength={6}
+                      code
+                    />
+                  </>
+                )}
+
+                {formError && (
+                  <p className={styles.formError} role="alert">
+                    {formError}
+                  </p>
+                )}
+
+                <button type="submit" className={styles.submit} disabled={busy !== null}>
+                  {busy === "submit" || (busy === "code" && step === "email") ? "Please wait…" : submitLabel[step]}
+                </button>
+              </form>
+
+              {step === "email" && intent === "sign-in" && (
+                <>
+                  <p className={styles.switch}>
+                    New here?{" "}
+                    <button type="button" className={styles.textLink} onClick={() => go("email", "sign-up")}>
+                      Create a free account
+                    </button>
+                  </p>
+                  <p className={styles.switch}>
+                    <button type="button" className={styles.textLink} onClick={() => go("email", "code")}>
+                      Sign in with a one-time code instead
+                    </button>
+                  </p>
+                </>
+              )}
+              {step === "email" && intent === "sign-up" && (
+                <p className={styles.switch}>
+                  Already have an account?{" "}
+                  <button type="button" className={styles.textLink} onClick={() => go("email", "sign-in")}>
+                    Sign in
+                  </button>
+                </p>
+              )}
+              {step === "email" && intent === "code" && (
+                <p className={styles.switch}>
+                  <button type="button" className={styles.textLink} onClick={() => go("email", "sign-in")}>
+                    Use a password instead
+                  </button>
+                </p>
+              )}
+              {step === "password" && (
+                <>
+                  <p className={styles.switch}>
+                    <button type="button" className={styles.textLink} disabled={busy !== null} onClick={sendCode}>
+                      {busy === "code" ? "Sending a code…" : "Email me a code instead"}
+                    </button>
+                  </p>
+                  <p className={styles.switch}>
+                    New here?{" "}
+                    <button type="button" className={styles.textLink} onClick={() => go("create", "sign-up")}>
+                      Create an account with this email
+                    </button>
+                  </p>
+                </>
+              )}
+              {step === "create" && (
+                <>
+                  <p className={styles.switch}>
+                    <button type="button" className={styles.textLink} disabled={busy !== null} onClick={sendCode}>
+                      {busy === "code" ? "Sending a code…" : "Rather not have a password? Email me a code"}
+                    </button>
+                  </p>
+                  <p className={styles.switch}>
+                    Already have an account?{" "}
+                    <button type="button" className={styles.textLink} onClick={() => go("password", "sign-in")}>
+                      Sign in
+                    </button>
+                  </p>
+                </>
+              )}
+              {step === "code" && (
+                <p className={styles.switch}>
+                  Nothing arrived?{" "}
+                  <button
+                    type="button"
+                    className={styles.textLink}
+                    disabled={busy !== null || cooldown > 0}
+                    onClick={sendCode}
+                  >
+                    {cooldown > 0 ? `Send a new code in ${cooldown}s` : "Send a new code"}
+                  </button>
+                </p>
+              )}
+              {step === "forgot" && (
+                <p className={styles.switch}>
+                  <button
+                    type="button"
+                    className={styles.textLink}
+                    onClick={() => go(email ? "password" : "email", "sign-in")}
+                  >
+                    Back to sign in
+                  </button>
+                </p>
+              )}
+              {((step === "email" && intent === "sign-up") || step === "create") && (
+                <p className={styles.fine}>
+                  By creating an account you agree to how we handle your data in the{" "}
+                  <Link href="/privacy" onClick={onClose}>
+                    privacy note
+                  </Link>
+                  .
+                </p>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </dialog>
   );

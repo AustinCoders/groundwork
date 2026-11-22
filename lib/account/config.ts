@@ -2,7 +2,7 @@ export const AUTH_STORAGE_KEY = "gw-auth";
 export const SYNC_META_KEY = "gw-sync";
 export const OPEN_AUTH_EVENT = "groundwork:open-auth";
 
-export type AuthMode = "sign-in" | "sign-up" | "magic" | "forgot";
+export type AuthMode = "sign-in" | "sign-up" | "magic" | "forgot" | "welcome";
 
 export type OAuthProviderId = "google" | "github";
 

@@ -3,13 +3,14 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { OPEN_AUTH_EVENT, safeNext, type AuthMode } from "@/lib/account/config";
-import { bootAccount } from "@/lib/account/session";
+import { needsOnboarding, onboardingDone } from "@/lib/account/onboarding";
+import { bootAccount, useAccount } from "@/lib/account/session";
 
 const AuthDialog = dynamic(() => import("@/components/account/AuthDialog").then((m) => m.AuthDialog), {
   ssr: false,
 });
 
-const MODES: readonly string[] = ["sign-in", "sign-up", "magic", "forgot"];
+const MODES: readonly string[] = ["sign-in", "sign-up", "magic", "forgot", "welcome"];
 
 export function AuthHost() {
   const [open, setOpen] = useState<{ mode: AuthMode; next: string } | null>(null);
@@ -25,6 +26,15 @@ export function AuthHost() {
     window.addEventListener(OPEN_AUTH_EVENT, onOpen);
     return () => window.removeEventListener(OPEN_AUTH_EVENT, onOpen);
   }, []);
+
+  const { status, user, profile } = useAccount();
+  const askWelcome = !open && status === "in" && user !== null && needsOnboarding(profile) && !onboardingDone(user.id);
+
+  useEffect(() => {
+    if (!askWelcome) return;
+    const id = window.setTimeout(() => setOpen({ mode: "welcome", next: "/" }), 600);
+    return () => window.clearTimeout(id);
+  }, [askWelcome]);
 
   if (!open) return null;
   return <AuthDialog initialMode={open.mode} next={open.next} onClose={() => setOpen(null)} />;

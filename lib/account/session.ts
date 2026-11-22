@@ -231,6 +231,17 @@ export function signUpWithPassword(
   });
 }
 
+export function resendSignupEmail(email: string, next: string): Promise<Result> {
+  return withClient(async (db) => {
+    const { error } = await db.auth.resend({
+      type: "signup",
+      email: email.trim(),
+      options: { emailRedirectTo: callbackUrl(next) },
+    });
+    return error ? { ok: false, error: friendlyAuthError(error) } : { ok: true, value: undefined };
+  });
+}
+
 export function sendMagicLink(email: string, next: string): Promise<Result> {
   return withClient(async (db) => {
     const { error } = await db.auth.signInWithOtp({

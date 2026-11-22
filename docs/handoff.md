@@ -82,3 +82,11 @@ Who the learner is, languages beyond JavaScript, one release or level by level, 
 - Behaviour quoted was run against React 19.3.1 in jsdom first, including: hooks share logic not state, the `useLocalStorage` changing-key overwrite, `useEffectEvent` and its render-time error, derived-state and effect-chain render counts, memo outcomes for five prop shapes, immutable list toggles rendering one row, begin and completion order, which changes keep state, transition and deferred render pairs, async action pending states, the suspend and transition sequence for one boundary, the uncached promise loop, and `useSyncExternalStore` loops, resubscription and hydration. The 19.3 transition change was checked against the release notes.
 - Exercises: every exercise on the 15 chapters now has three hints and at least six tests. `ex-react-would-bail-out`'s solution now treats a renamed undefined prop as a change, with a test.
 - The React search index budget is 160 KB (`tests/search-index.test.ts`).
+
+## Sign-in dialog, second version (2026-11-22)
+
+- `components/account/AuthDialog.tsx` is now email-first: the email comes first, then a password (returning), name and password (new), or a 6-digit code. Sign-in and sign-up switch without losing the email, and the code can be resent after 60 seconds. On wide screens it has a left panel listing what an account adds; under 760 px it is one column.
+- `components/account/PasswordField.tsx` (also used for the new password after a reset link) has an eye toggle, a Caps Lock notice, a four-step strength meter from `lib/account/strength.ts` that marks down common passwords, runs and the person's own name or email, and ticked rules. Common passwords are refused on sign-up and reset.
+- A confirmation email can be resent (`resendSignupEmail` in `lib/account/session.ts`).
+- After the first sign-in, `AuthHost` opens a short "Make it yours" step (goal, experience, target role) when the profile has none of the three. Saving or skipping records `gw-onboarded:<user id>` in this browser, so it asks once per device.
+- Tests: `tests/account-auth.test.ts`.

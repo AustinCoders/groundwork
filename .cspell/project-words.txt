@@ -1054,3 +1054,14 @@ plpgsql
 errcode
 wlyfdbfqwwqvfbfxmeay
 Brevo
+passw
+qwertyuiop
+letmein
+iloveyou
+trustno
+asdfghjkl
+zxcvbnm
+boatlamp
+boatlamps
+zebraaaaamoon
+zebrafarmmoon
