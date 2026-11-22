@@ -69,3 +69,9 @@ Who the learner is, languages beyond JavaScript, one release or level by level, 
 - `feature/p0-accounts-sync`: optional Supabase accounts (project `groundwork`, ref `wlyfdbfqwwqvfbfxmeay`, `ap-south-1`, migration applied), sync engine in `lib/account/`, sign-in dialog, `/account`, `/auth/callback`, gates on `/progress`, `/review`, the mock readiness board and the saved-boards list; site copy and architecture chapters updated; `.github/workflows/check.yml`; README without "Handwritten".
 - Owner to do before launch: Vercel variables, Supabase redirect URLs, custom SMTP, Google and GitHub OAuth apps; checklist in `docs/accounts.md`. Live sign-in was not exercised from the agent sandbox (Supabase is not reachable from it); RLS was checked against the migration in PGlite.
 - Not started, recorded at the top of `docs/ROADMAP.md`: the 15 React chapters to the standard, and JS and React self-checks. Do each as its own session.
+
+## React P0 chapters, batch 1 (2026-11-22)
+
+- `react-usestate`, `react-lists-keys`, `react-useeffect-basics` rewritten to the standard on `feature/p0-accounts-sync` (4,044 / 3,561 / 3,545 words by the chapter-standards count). Every behaviour claimed (update queue, batching, bail-out, Strict Mode double calls, index-key bug, reorder DOM moves, effect and cleanup order, the fetch race) was run against React 19.3.1 in jsdom first.
+- Their exercises now have three hints each; two new tests (two independent counters, a re-render with the same title).
+- Self-checks for these chapters wait for the JS and React check work (ROADMAP P0 table). Next batch: `react-useref`, `react-context`, `react-usereducer`.
