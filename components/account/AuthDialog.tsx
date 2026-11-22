@@ -127,7 +127,8 @@ const ASIDE_COPY: Record<Side, { kicker: string; title: string }> = {
 };
 
 const TILT_LIMIT = 0.5;
-const SLIDE_MS = 650;
+const SLIDE_MS = 750;
+const COVER_MS = 270;
 
 const RESEND_SECONDS = 60;
 
@@ -238,12 +239,12 @@ function Aside({ side }: { side: Side }) {
   return (
     <aside className={styles.aside} aria-label="What an account adds">
       <div className={styles.asideContent}>
-        <div key={side} className={styles.asideHead}>
+        <div key={`head-${side}`} className={styles.asideHead}>
           <p className={styles.asideKicker}>{copy.kicker}</p>
           <p className={styles.asideTitle}>{copy.title}</p>
         </div>
         <SyncDoodle />
-        <ul className={styles.benefits}>
+        <ul key={`list-${side}`} className={styles.benefits}>
           {BENEFITS.map((b) => (
             <li key={b.title}>
               <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" className={styles.benefitTick}>
@@ -386,6 +387,8 @@ export function AuthDialog({
   const frame = useRef(0);
   const frozenUntil = useRef(0);
   const [slid, setSlid] = useState(false);
+  const [sweep, setSweep] = useState<{ id: number; to: Side } | null>(null);
+  const cover = useRef(0);
   const captcha = useRef<CaptchaHandle>(null);
   const [lastUsed] = useState<SignInMethod | null>(() => lastSignInMethod());
 
@@ -400,7 +403,13 @@ export function AuthDialog({
     dialog.querySelector<HTMLInputElement>("input[type=email], input[type=text], input[type=password]")?.focus();
   }, []);
 
-  useEffect(() => () => window.cancelAnimationFrame(frame.current), []);
+  useEffect(
+    () => () => {
+      window.cancelAnimationFrame(frame.current);
+      window.clearTimeout(cover.current);
+    },
+    []
+  );
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -408,15 +417,30 @@ export function AuthDialog({
     return () => window.clearTimeout(id);
   }, [cooldown]);
 
-  function go(nextStep: Step, nextIntent?: Intent) {
-    const slides = ((nextIntent ?? intent) === "sign-up") !== (intent === "sign-up");
-    if (slides) frozenUntil.current = performance.now() + SLIDE_MS;
+  function apply(nextStep: Step, nextIntent: Intent | undefined, slides: boolean) {
     setSlid(slides);
     setStep(nextStep);
     if (nextIntent) setIntent(nextIntent);
     setTried(false);
     setFormError(null);
     if (nextStep !== "code") setCode("");
+  }
+
+  function go(nextStep: Step, nextIntent?: Intent) {
+    const slides = ((nextIntent ?? intent) === "sign-up") !== (intent === "sign-up");
+    window.clearTimeout(cover.current);
+    const animate =
+      slides &&
+      showAside &&
+      window.matchMedia("(min-width: 761px) and (prefers-reduced-motion: no-preference)").matches;
+    if (!animate) {
+      setSweep(null);
+      apply(nextStep, nextIntent, slides);
+      return;
+    }
+    frozenUntil.current = performance.now() + SLIDE_MS;
+    setSweep((now) => ({ id: (now?.id ?? 0) + 1, to: (nextIntent ?? intent) === "sign-up" ? "right" : "left" }));
+    cover.current = window.setTimeout(() => apply(nextStep, nextIntent, true), COVER_MS);
   }
 
   async function run(label: string, task: () => Promise<{ ok: boolean; error?: string }>) {
@@ -572,8 +596,21 @@ export function AuthDialog({
       <button type="button" className={styles.close} aria-label="Close" onClick={onClose}>
         ×
       </button>
-      <div className={showAside ? styles.shell : undefined} data-side={showAside ? side : undefined}>
+      <div
+        className={showAside ? styles.shell : undefined}
+        data-side={showAside ? side : undefined}
+        data-slid={showAside && slid ? "" : undefined}
+      >
         {showAside && <Aside side={side} />}
+        {showAside && sweep && (
+          <span
+            key={sweep.id}
+            className={styles.sweep}
+            data-to={sweep.to}
+            aria-hidden="true"
+            onAnimationEnd={() => setSweep((now) => (now?.id === sweep.id ? null : now))}
+          />
+        )}
         <div className={styles.inner}>
           <div key={step + intent} className={`${styles.body} ${slid ? styles.sideIn : styles.stepIn}`}>
             <h2 id={titleId} className={styles.title}>

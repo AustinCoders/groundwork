@@ -40,7 +40,7 @@
   border: 0;
   border-radius: 999px;
   cursor: pointer;
-  z-index: 3;
+  z-index: 4;
   transition:
     color 0.4s ease,
     background-color 0.15s ease;
@@ -625,24 +625,27 @@
 }
 
 .shell {
+  --slide: 0.7s cubic-bezier(0.77, 0, 0.18, 1);
+  --from: 22px;
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   min-height: 590px;
 }
 
+.shell[data-side="right"] {
+  --from: -22px;
+}
+
 .shell > .aside,
 .shell > .inner {
   grid-row: 1;
-  transition: transform 0.62s cubic-bezier(0.65, 0, 0.35, 1);
-  will-change: transform;
-  backface-visibility: hidden;
 }
 
 .shell > .aside {
   z-index: 2;
   grid-column: 1;
   contain: layout paint;
-  animation: swingLeft 0.62s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 .shell > .inner {
@@ -651,11 +654,29 @@
 
 .shell[data-side="right"] > .aside {
   transform: translateX(100%);
-  animation-name: swingRight;
 }
 
 .shell[data-side="right"] > .inner {
   transform: translateX(-100%);
+}
+
+.sweep {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--on-primary) 16%, transparent) 1px, transparent 0) 0 0 /
+      18px 18px,
+    linear-gradient(155deg, var(--primary), color-mix(in srgb, var(--primary) 62%, var(--ink)));
+  opacity: 0;
+  transform-origin: left center;
+  will-change: transform;
+  animation: sweepToRight var(--slide);
+}
+
+.sweep[data-to="left"] {
+  animation-name: sweepToLeft;
 }
 
 .asideContent {
@@ -670,11 +691,48 @@
 .asideHead {
   display: grid;
   gap: 16px;
-  animation: asideSwap 0.45s 0.1s cubic-bezier(0.33, 1, 0.68, 1) both;
+  animation: asideSwap 0.45s 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.sideIn {
-  animation: sideIn 0.5s cubic-bezier(0.33, 1, 0.68, 1) both;
+.sideIn > * {
+  animation: sideItem 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.08s;
+}
+
+.sideIn > :nth-child(2) {
+  animation-delay: 0.13s;
+}
+
+.sideIn > :nth-child(3) {
+  animation-delay: 0.18s;
+}
+
+.sideIn > :nth-child(4) {
+  animation-delay: 0.23s;
+}
+
+.sideIn > :nth-child(5) {
+  animation-delay: 0.28s;
+}
+
+.sideIn > :nth-child(n + 6) {
+  animation-delay: 0.33s;
+}
+
+.shell[data-slid] .benefits li {
+  animation-delay: 0.42s;
+}
+
+.shell[data-slid] .benefits li:nth-child(2) {
+  animation-delay: 0.48s;
+}
+
+.shell[data-slid] .benefits li:nth-child(3) {
+  animation-delay: 0.54s;
+}
+
+.shell[data-slid] .benefits li:nth-child(4) {
+  animation-delay: 0.6s;
 }
 
 .asideTitle,
@@ -697,28 +755,63 @@
   }
 }
 
-@keyframes swingLeft {
-  50% {
-    scale: 1.03;
-  }
-}
-
-@keyframes swingRight {
-  50% {
-    scale: 1.03;
-  }
-}
-
-@keyframes sideIn {
+@keyframes sweepToRight {
   from {
-    opacity: 0.15;
+    opacity: 0;
+    transform: translateX(0) scaleX(0.5);
+  }
+
+  10% {
+    opacity: 1;
+    transform: translateX(0) scaleX(0.55);
+  }
+
+  36%,
+  46% {
+    opacity: 1;
+    transform: translateX(0) scaleX(1);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(50%) scaleX(0.5);
+  }
+}
+
+@keyframes sweepToLeft {
+  from {
+    opacity: 0;
+    transform: translateX(50%) scaleX(0.5);
+  }
+
+  10% {
+    opacity: 1;
+    transform: translateX(45%) scaleX(0.55);
+  }
+
+  36%,
+  46% {
+    opacity: 1;
+    transform: translateX(0) scaleX(1);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scaleX(0.5);
+  }
+}
+
+@keyframes sideItem {
+  from {
+    opacity: 0;
+    transform: translateX(var(--from));
   }
 }
 
 @keyframes asideSwap {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateX(calc(var(--from) * -1.5));
   }
 }
 
@@ -1102,6 +1195,10 @@
     transform: none;
   }
 
+  .sweep {
+    display: none;
+  }
+
   .dialogWide {
     transform: none;
   }
@@ -1120,6 +1217,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .sweep {
+    display: none;
+  }
+
   .bar,
   .barOn,
   .choicePill,
@@ -1151,8 +1252,9 @@
   .dialogWide[open],
   .shell > .aside,
   .asideHead,
-  .sideIn,
+  .sideIn > *,
   .aside::after,
+  .shell[data-slid] .benefits li,
   .doodle,
   .doodleArrow,
   .benefits li,
