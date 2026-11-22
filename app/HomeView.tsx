@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MenuButton } from "@/components/MenuButton";
 import { SiteDrawer } from "@/components/SiteDrawer";
+import { AccountChip } from "@/components/account/AccountChip";
 import { Connectors, type Link as Hop } from "@/components/home/Connectors";
 import { CtaScene } from "@/components/home/CtaScene";
 import { FaqScene, type Faq } from "@/components/home/FaqScene";
@@ -411,6 +412,9 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
             <a href="#loop">Interview book</a>
             <a href="#faq">FAQ</a>
           </nav>
+          <span className={styles.navAccount}>
+            <AccountChip />
+          </span>
           <a href="#shelf" className={`${styles.btn} ${styles.btnSmall}`}>
             Start reading
           </a>
