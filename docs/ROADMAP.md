@@ -231,25 +231,35 @@ now that Next.js 16 changed a default that most existing writing still describes
 
 ---
 
+## P0 from the November 2026 benchmark (status 2026-11-22)
+
+| Item                                         | Status                                                                                                                                                                                                                                                                                                                                                                                                |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Optional login and cross-device sync         | Built on `feature/p0-accounts-sync`; owner setup in `docs/accounts.md`                                                                                                                                                                                                                                                                                                                                |
+| README "Handwritten" claim                   | Fixed                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `feature/chapter-sources`                    | Merged to `main`                                                                                                                                                                                                                                                                                                                                                                                      |
+| CI running `npm run check`                   | `.github/workflows/check.yml`: check, build and the e2e smoke spec on pull requests and pushes to `main`                                                                                                                                                                                                                                                                                              |
+| React: 15 interview chapters to the standard | Not started. In order: `react-usestate`, `react-lists-keys`, `react-useeffect-basics`, `react-useref`, `react-context`, `react-usereducer`, `react-custom-hooks`, `react-effects-depth`, `react-memoisation`, `react-fiber`, `react-concurrent`, `react-suspense`, `react-server-components`, `react-sync-external-store`, `react-performance` (now 564 to 1,763 words each; standard 3,500 to 5,000) |
+| JS and React 5-question self-checks          | Not started. Reuse the System Design practice-card path (`lib/designPool.ts`, no saved state) rather than the DSA check, which routes through placement                                                                                                                                                                                                                                               |
+| Dependabot dev-tooling PR                    | Held: it moves `typescript` to 7, which ships without the JavaScript compiler API the playground imports in the browser. `.github/dependabot.yml` now ignores TypeScript majors; close that PR and let the next run open one without it                                                                                                                                                               |
+
+---
+
 ## 1. Progress that survives the browser
 
-**The single biggest product gap.** Everything a reader earns — chapters read, exercises solved,
-streaks, review schedule, narration settings, unsaved editor code — lives in `localStorage` on one
-device. Clear the browser and it is gone. Open the site on a phone and it starts from zero.
+**Built on `feature/p0-accounts-sync` (2026-11-22).** Optional accounts on Supabase (project `groundwork`,
+`ap-south-1`), called from the browser so pages stay static. One `user_state` row per synced
+`localStorage` key, merged per key type (union for progress and lists, newer side for drafts and
+settings), migrated from local data at first sign-in, and gated views for `/progress`, `/review`, the
+mock readiness board and the saved-boards list. Setup and what is still to do by hand (SMTP, Google
+and GitHub apps, Vercel variables) are in `docs/accounts.md`.
 
-**What it takes**
+Still open:
 
-- Accounts. Given the stack, the least new machinery is a hosted auth provider with a Postgres
-  behind it — Supabase (auth and database together) or Neon with Auth.js are the short paths.
-- Tables mirroring what `lib/storage.ts` writes today: `progress` keyed by user and chapter,
-  `exercise_progress`, `activity` by day, and `settings`.
-- **Migration, not replacement.** A reader with months of localStorage progress must not lose it at
-  sign-in. Read local, push once, then treat the server as the source of truth.
-- Keep working signed out. The account adds sync; it does not gate reading.
-
-**Where the code already helps:** every progress-aware component reads through `useSyncExternalStore`
-via `useProgressValue`, and `progress`, `activity` and `code` each expose `subscribe()`. The storage
-layer is one seam — a synced implementation behind it touches no components.
+- Custom SMTP and the two OAuth apps (owner, in dashboards).
+- CAPTCHA (Turnstile) on sign-up before heavy traffic; needs a CSP change.
+- Deletions do not travel between devices (union merge); a tombstone per chapter would fix it.
+- The paywall: `profiles.plan` exists and only the service role can write it; a payment webhook is next.
 
 ---
 
@@ -378,7 +388,7 @@ section 0.2; this is the engineering that should run alongside it.
 | 4   | Error service         | **0.5–1 day** | Wanted before there are accounts to break              |
 | 5   | New exercise formats  | **2–3 days**  | Machine coding, code comprehension, design rubrics     |
 | 6   | Offline reading       | **2–3 days**  | Content is static; mostly a caching problem            |
-| 7   | Accounts and sync     | **5–8 days**  | The biggest product gap, and the biggest commitment    |
+| 7   | Accounts and sync     | **Built**     | `feature/p0-accounts-sync`; see section 1              |
 
 **Total: roughly 11 to 17.5 focused days.** The first four come to about two and a half days together
 and none depends on another. The search index trim that led this list has shipped (section 3).

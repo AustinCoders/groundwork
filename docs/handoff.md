@@ -62,3 +62,10 @@ Who the learner is, languages beyond JavaScript, one release or level by level, 
 - 64 design and LLD answers convert (141 diagrams); 15 of 66 coding traces qualify (array, search range, one list, four trees), the rest are skipped on purpose.
 - Edited by hand for `tests/claims.test.ts`: CSS modules 83, `use client` files 157, Board.tsx chart 1,993 lines (`content/architecture/arch-*.ts`).
 - Open: save the walk with the board, more trace shapes, small text on phones. Detail in `docs/ROADMAP.md`.
+
+## Merges, accounts and CI (2026-11-22)
+
+- `main` now has `feature/chapter-sources` (committed, with its client-bundle, claims and spelling fixes) and six Dependabot branches (CodeMirror, Next 16.4.6, React 19.3.1, Sentry 11.7, checkout v7.0.1, setup-node v7.1.0), each checked with `npm run check`, a build and the 29 e2e tests. Held: the dev-tooling PR (TypeScript 7 drops the compiler API the playground imports); the older CodeMirror PR is superseded. `feature/roadmap-building` is a kept WIP and was not merged.
+- `feature/p0-accounts-sync`: optional Supabase accounts (project `groundwork`, ref `wlyfdbfqwwqvfbfxmeay`, `ap-south-1`, migration applied), sync engine in `lib/account/`, sign-in dialog, `/account`, `/auth/callback`, gates on `/progress`, `/review`, the mock readiness board and the saved-boards list; site copy and architecture chapters updated; `.github/workflows/check.yml`; README without "Handwritten".
+- Owner to do before launch: Vercel variables, Supabase redirect URLs, custom SMTP, Google and GitHub OAuth apps; checklist in `docs/accounts.md`. Live sign-in was not exercised from the agent sandbox (Supabase is not reachable from it); RLS was checked against the migration in PGlite.
+- Not started, recorded at the top of `docs/ROADMAP.md`: the 15 React chapters to the standard, and JS and React self-checks. Do each as its own session.
