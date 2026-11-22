@@ -7,6 +7,7 @@ import { SignInGate } from "@/components/account/SignInGate";
 import { initials } from "@/components/account/AccountChip";
 import { AppearancePicker } from "@/components/AppearancePicker";
 import { useCountUp } from "@/components/account/useCountUp";
+import { avatarStyle } from "@/lib/account/avatar";
 import { authProviders, type OAuthProviderId } from "@/lib/account/config";
 import { codeProblem, emailProblem, nameProblem, passwordChecks, passwordProblem } from "@/lib/account/errors";
 import {
@@ -691,7 +692,7 @@ function Signed() {
             <span>Member card</span>
           </p>
           <div className={styles.idBody}>
-            <span className={styles.idAvatar} aria-hidden="true">
+            <span className={styles.idAvatar} style={avatarStyle(user.extras.avatarColor)} aria-hidden="true">
               {initials(name)}
             </span>
             <div className={styles.idText}>
@@ -846,6 +847,14 @@ function Signed() {
 
         <div className={styles.sections}>
           <Panel id="account-profile" title="About you" sub="Used to suggest where to start. Optional.">
+            <Link href="/account/profile" className={styles.profileLink} prefetch={false}>
+              <span aria-hidden="true">✎</span>
+              <span>
+                <strong>Open the full profile editor</strong>
+                <small>Headline, location, links and avatar colour, with a live preview</small>
+              </span>
+              <span aria-hidden="true">→</span>
+            </Link>
             <ProfileForm
               key={account.profile ? "loaded" : "empty"}
               profile={account.profile}

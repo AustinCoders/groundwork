@@ -405,11 +405,11 @@
   font-size: var(--t-display);
   font-weight: 700;
   color: var(--on-primary);
-  background: var(--primary);
+  background: var(--avatar, var(--primary));
   border: 4px solid var(--sheet);
   border-radius: 22px;
   box-shadow:
-    0 0 0 2px var(--primary),
+    0 0 0 2px var(--avatar, var(--primary)),
     var(--shadow-md);
   rotate: 3deg;
 }
@@ -940,6 +940,50 @@
   font-size: var(--t-body);
   line-height: 1.5;
   color: var(--pencil);
+}
+
+.profileLink {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  color: var(--ink);
+  text-decoration: none;
+  background: var(--primary-soft);
+  border: 1.5px dashed color-mix(in srgb, var(--primary) 45%, var(--line));
+  border-radius: 16px;
+  transition: translate 0.15s ease;
+}
+
+.profileLink:hover {
+  translate: 0 -2px;
+}
+
+.profileLink > span:first-child {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  font-size: var(--t-title);
+  color: var(--on-primary);
+  background: var(--primary);
+  border-radius: 12px;
+}
+
+.profileLink > span:nth-child(2) {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+}
+
+.profileLink small {
+  font-size: var(--t-meta);
+  color: var(--pencil);
+}
+
+.profileLink > span:last-child {
+  font-size: var(--t-title);
+  color: var(--primary);
 }
 
 .split {

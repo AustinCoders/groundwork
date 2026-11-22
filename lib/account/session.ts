@@ -16,6 +16,7 @@ import {
   syncStatus,
   type SyncStatus,
 } from "@/lib/account/sync";
+import { extrasToMetadata, readExtras, type ProfileExtras } from "@/lib/account/profileExtras";
 import { isSyncedKey } from "@/lib/account/syncRules";
 import { isPlainObject } from "@/lib/storage";
 
@@ -41,6 +42,7 @@ export interface AccountUser {
   providers: string[];
   createdAt: string;
   emailConfirmed: boolean;
+  extras: ProfileExtras;
 }
 
 export type MfaState = "none" | "needed" | "on";
@@ -109,6 +111,7 @@ function toUser(user: User): AccountUser {
     providers,
     createdAt: user.created_at,
     emailConfirmed: Boolean(user.email_confirmed_at),
+    extras: readExtras(meta),
   };
 }
 
@@ -465,6 +468,15 @@ export function updateProfile(patch: ProfilePatch): Promise<Result> {
     const { error } = await db.from("profiles").update(row).eq("id", user.id);
     if (error) return { ok: false, error: friendlyAuthError(error) };
     await loadProfile(db, user);
+    return { ok: true, value: undefined };
+  });
+}
+
+export function updateProfileExtras(extras: ProfileExtras): Promise<Result> {
+  return withClient(async (db) => {
+    const { data, error } = await db.auth.updateUser({ data: extrasToMetadata(extras) });
+    if (error) return { ok: false, error: friendlyAuthError(error) };
+    if (data.user && state.user?.id === data.user.id) set({ user: toUser(data.user) });
     return { ok: true, value: undefined };
   });
 }

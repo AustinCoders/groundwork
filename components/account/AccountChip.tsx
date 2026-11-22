@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { avatarStyle } from "@/lib/account/avatar";
 import { openAuth } from "@/lib/account/config";
 import { useAccount, useSyncStatus } from "@/lib/account/session";
 import styles from "./account.module.css";
@@ -48,7 +49,7 @@ export function AccountChip({ onNavigate }: { onNavigate?: () => void }) {
       onClick={onNavigate}
       aria-label={`Your account, ${name}, ${SYNC_LABEL[sync.state] ?? "synced"}`}
     >
-      <span className={styles.avatar} aria-hidden="true">
+      <span className={styles.avatar} style={avatarStyle(account.user.extras.avatarColor)} aria-hidden="true">
         {initials(name)}
       </span>
       <span className={styles.chipName}>{name}</span>

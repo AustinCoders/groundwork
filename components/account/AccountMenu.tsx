@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { lazy, Suspense, useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { avatarStyle } from "@/lib/account/avatar";
 import { openAuth } from "@/lib/account/config";
 import { signOut, syncAccountNow, useAccount, useSyncStatus } from "@/lib/account/session";
 import { computeStats, type Stats } from "@/lib/gamification";
@@ -11,7 +12,7 @@ import { progress } from "@/lib/storage";
 import { initials } from "./AccountChip";
 import styles from "./menu.module.css";
 
-type Overlay = "profile" | "look" | null;
+type Overlay = "look" | null;
 
 const SYNC_TEXT: Record<string, string> = {
   idle: "Synced",
@@ -21,7 +22,6 @@ const SYNC_TEXT: Record<string, string> = {
   off: "Not syncing",
 };
 
-const ProfileDialog = lazy(() => import("./ProfileDialog").then((m) => ({ default: m.ProfileDialog })));
 const LookDialog = lazy(() => import("@/components/tour/LookDialog").then((m) => ({ default: m.LookDialog })));
 
 export function AccountMenu({ compact }: { compact?: boolean }) {
@@ -134,7 +134,7 @@ export function AccountMenu({ compact }: { compact?: boolean }) {
           }
         }}
       >
-        <span className={styles.avatar} aria-hidden="true">
+        <span className={styles.avatar} style={avatarStyle(user.extras.avatarColor)} aria-hidden="true">
           {initials(name)}
           <span className={styles.status} data-state={sync.state} />
         </span>
@@ -147,7 +147,7 @@ export function AccountMenu({ compact }: { compact?: boolean }) {
       {open && (
         <div id={menuId} className={styles.menu} role="menu" aria-label="Account" onKeyDown={onMenuKey}>
           <div className={styles.head}>
-            <span className={styles.bigAvatar} aria-hidden="true">
+            <span className={styles.bigAvatar} style={avatarStyle(user.extras.avatarColor)} aria-hidden="true">
               {initials(name)}
             </span>
             <div className={styles.who}>
@@ -175,15 +175,21 @@ export function AccountMenu({ compact }: { compact?: boolean }) {
           </div>
 
           <div className={styles.group} role="group" aria-label="You">
-            <button type="button" role="menuitem" className={styles.item} onClick={() => pick("profile")}>
+            <Link
+              href="/account/profile"
+              role="menuitem"
+              className={styles.item}
+              prefetch={false}
+              onClick={() => close(false)}
+            >
               <span className={styles.icon} aria-hidden="true">
                 ✎
               </span>
               <span className={styles.itemText}>
                 Edit profile
-                <small>Name, goal and level</small>
+                <small>Name, headline, links and goals</small>
               </span>
-            </button>
+            </Link>
             <Link href="/account" role="menuitem" className={styles.item} prefetch={false} onClick={() => close(false)}>
               <span className={styles.icon} aria-hidden="true">
                 ⚙
@@ -257,7 +263,7 @@ export function AccountMenu({ compact }: { compact?: boolean }) {
 
       {overlay && (
         <Suspense fallback={null}>
-          {overlay === "profile" ? <ProfileDialog onClose={closeOverlay} /> : <LookDialog onClose={closeOverlay} />}
+          <LookDialog onClose={closeOverlay} />
         </Suspense>
       )}
     </div>

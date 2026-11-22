@@ -62,7 +62,7 @@
   font-size: var(--t-kicker);
   font-weight: 700;
   color: var(--on-primary);
-  background: var(--primary);
+  background: var(--avatar, var(--primary));
   border-radius: 999px;
 }
 
@@ -190,7 +190,7 @@
   font-size: var(--t-title);
   font-weight: 700;
   color: var(--on-primary);
-  background: var(--primary);
+  background: var(--avatar, var(--primary));
   border-radius: 16px;
   rotate: -4deg;
 }

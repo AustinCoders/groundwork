@@ -400,7 +400,7 @@
   font-size: var(--t-kicker);
   font-weight: 700;
   color: var(--on-primary);
-  background: var(--primary);
+  background: var(--avatar, var(--primary));
   border-radius: 999px;
 }
 
@@ -1295,85 +1295,4 @@
 
 .captcha:empty {
   display: none;
-}
-
-.profileDialog {
-  width: min(560px, calc(100vw - 24px));
-}
-
-.profileTop {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 16px;
-}
-
-.profileAvatar {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 60px;
-  height: 60px;
-  font-family: var(--font-heading);
-  font-size: var(--t-title);
-  font-weight: 700;
-  color: var(--on-primary);
-  background: var(--primary);
-  border-radius: 18px;
-  rotate: -4deg;
-  transition: rotate 0.2s ease;
-}
-
-.profileAvatar:hover {
-  rotate: 4deg;
-}
-
-.profileTitle {
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-heading);
-  font-size: var(--t-heading);
-  font-weight: 700;
-  background: none;
-  border: 0;
-}
-
-.profileTitle::before,
-.profileTitle::after {
-  content: none !important;
-  display: none !important;
-}
-
-.profileActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 18px;
-}
-
-.profileActions .submit {
-  width: auto;
-  margin: 0;
-  padding: 0 22px;
-}
-
-.submit[data-saved] {
-  background: var(--success);
-  border-color: var(--success);
-}
-
-.profileCancel {
-  min-height: 44px;
-  padding: 0 18px;
-  font: inherit;
-  font-weight: 700;
-  color: var(--ink);
-  cursor: pointer;
-  background: var(--sheet);
-  border: 1.5px solid var(--line);
-  border-radius: 12px;
-}
-
-.profileCancel:hover {
-  border-color: var(--ink-soft);
 }

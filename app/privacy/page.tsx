@@ -33,9 +33,10 @@ export default function PrivacyPage() {
             You can read, practise and run mock interviews without an account, and the site sets no cookies of its own.
             If you create one, Supabase, the service that runs our accounts, stores it in its Mumbai region
             (ap-south-1): your email address, a hash of your password if you chose one, the name and the optional goal,
-            level and role you give, and the date you joined. Signing in with Google or GitHub shares your name and
-            email from that service, nothing else. If you turn on two-step sign-in, Supabase also keeps the secret your
-            authenticator app shares with it.
+            level and role you give, the headline, location, links and avatar colour if you add them on your profile,
+            and the date you joined. Signing in with Google or GitHub shares your name and email from that service,
+            nothing else. If you turn on two-step sign-in, Supabase also keeps the secret your authenticator app shares
+            with it.
           </p>
           <p>
             When you sign in, sign up or ask for an email code, Cloudflare Turnstile checks that a person is asking and
