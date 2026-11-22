@@ -534,6 +534,26 @@
   width: min(860px, calc(100vw - 24px));
 }
 
+.shell > .inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 44px 32px 32px;
+}
+
+.body {
+  width: 100%;
+  max-width: 360px;
+  margin-inline: auto;
+}
+
+.shell .title,
+.shell .lead {
+  display: block;
+  margin-right: 0;
+  text-align: center;
+}
+
 .shell {
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);

@@ -488,259 +488,52 @@ export function AuthDialog({
           <button type="button" className={styles.close} aria-label="Close" onClick={onClose}>
             ×
           </button>
-          <h2 id={titleId} className={styles.title}>
-            {titleFor(step, intent)}
-          </h2>
-          {lead && <p className={styles.lead}>{lead}</p>}
+          <div className={styles.body}>
+            <h2 id={titleId} className={styles.title}>
+              {titleFor(step, intent)}
+            </h2>
+            {lead && <p className={styles.lead}>{lead}</p>}
 
-          {step === "welcome" ? (
-            <Welcome onDone={onClose} />
-          ) : step === "confirm" ? (
-            <>
-              <p className={styles.notice} role="status">
-                We sent a link to <strong>{email.trim()}</strong>. Open it on this device to finish creating your
-                account. It can take a minute; check spam if it does not arrive.
-              </p>
-              {formError && (
-                <p className={styles.formError} role="alert">
-                  {formError}
+            {step === "welcome" ? (
+              <Welcome onDone={onClose} />
+            ) : step === "confirm" ? (
+              <>
+                <p className={styles.notice} role="status">
+                  We sent a link to <strong>{email.trim()}</strong>. Open it on this device to finish creating your
+                  account. It can take a minute; check spam if it does not arrive.
                 </p>
-              )}
-              <button
-                type="button"
-                className={styles.secondary}
-                disabled={busy !== null || cooldown > 0}
-                onClick={async () => {
-                  if (await run("resend", () => resendSignupEmail(email, next))) setCooldown(RESEND_SECONDS);
-                }}
-              >
-                {busy === "resend" ? "Sending…" : cooldown > 0 ? `Resend the link in ${cooldown}s` : "Resend the link"}
-              </button>
-              <p className={styles.switch}>
-                Already confirmed?{" "}
-                <button type="button" className={styles.textLink} onClick={() => go("password", "sign-in")}>
-                  Sign in
-                </button>
-              </p>
-            </>
-          ) : step === "reset" ? (
-            <>
-              <p className={styles.notice} role="status">
-                If an account uses <strong>{email.trim()}</strong>, a reset link is on its way. Open it on this device
-                to choose a new password.
-              </p>
-              <p className={styles.switch}>
-                <button
-                  type="button"
-                  className={styles.textLink}
-                  onClick={() => go(email ? "password" : "email", "sign-in")}
-                >
-                  Back to sign in
-                </button>
-              </p>
-            </>
-          ) : (
-            <>
-              {showProviders && (
-                <>
-                  <div className={styles.providers}>
-                    {providers.includes("google") && (
-                      <button
-                        type="button"
-                        className={styles.provider}
-                        disabled={busy !== null}
-                        onClick={() => onProvider("google")}
-                      >
-                        <GoogleMark />
-                        {busy === "google" ? "Opening Google…" : "Continue with Google"}
-                      </button>
-                    )}
-                    {providers.includes("github") && (
-                      <button
-                        type="button"
-                        className={styles.provider}
-                        disabled={busy !== null}
-                        onClick={() => onProvider("github")}
-                      >
-                        <GitHubMark />
-                        {busy === "github" ? "Opening GitHub…" : "Continue with GitHub"}
-                      </button>
-                    )}
-                  </div>
-                  <p className={styles.or}>or continue with email</p>
-                </>
-              )}
-
-              <form key={step} noValidate onSubmit={onSubmit}>
-                {(step === "email" || step === "forgot") && (
-                  <Field
-                    label="Email"
-                    type="email"
-                    value={email}
-                    onChange={setEmail}
-                    error={emailError}
-                    autoComplete="email"
-                    autoFocus
-                    inputMode="email"
-                    maxLength={254}
-                  />
-                )}
-
-                {(step === "password" || step === "create" || step === "code") && (
-                  <EmailChip email={email} onChange={() => go("email")} />
-                )}
-
-                {step === "password" && (
-                  <PasswordField
-                    label="Password"
-                    value={password}
-                    onChange={setPassword}
-                    error={passwordError}
-                    autoComplete="current-password"
-                    autoFocus
-                    aside={
-                      <button type="button" className={styles.textLink} onClick={() => go("forgot")}>
-                        Forgot password?
-                      </button>
-                    }
-                  />
-                )}
-
-                {step === "create" && (
-                  <>
-                    <Field
-                      label="Name"
-                      type="text"
-                      value={name}
-                      onChange={setName}
-                      error={nameError}
-                      autoComplete="name"
-                      autoFocus
-                      maxLength={60}
-                      hint="Shown on your progress page. You can change it later."
-                    />
-                    <PasswordField
-                      label="Password"
-                      value={password}
-                      onChange={setPassword}
-                      error={passwordError}
-                      autoComplete="new-password"
-                      strengthHints={[email, name]}
-                    />
-                  </>
-                )}
-
-                {step === "code" && (
-                  <>
-                    <p className={styles.notice} role="status">
-                      We sent a 6-digit code to <strong>{email.trim()}</strong>. The same email has a link you can open
-                      on this device instead.
-                    </p>
-                    <Field
-                      label="6-digit code"
-                      type="text"
-                      value={code}
-                      onChange={(v) => {
-                        const digits = v.replace(/\D/g, "").slice(0, 6);
-                        setCode(digits);
-                        setFormError(null);
-                        if (digits.length === 6 && busy === null) void verify(digits);
-                      }}
-                      error={null}
-                      autoComplete="one-time-code"
-                      inputMode="numeric"
-                      autoFocus
-                      maxLength={6}
-                      code
-                    />
-                  </>
-                )}
-
                 {formError && (
                   <p className={styles.formError} role="alert">
                     {formError}
                   </p>
                 )}
-
-                <button type="submit" className={styles.submit} disabled={busy !== null}>
-                  {busy === "submit" || (busy === "code" && step === "email") ? "Please wait…" : submitLabel[step]}
+                <button
+                  type="button"
+                  className={styles.secondary}
+                  disabled={busy !== null || cooldown > 0}
+                  onClick={async () => {
+                    if (await run("resend", () => resendSignupEmail(email, next))) setCooldown(RESEND_SECONDS);
+                  }}
+                >
+                  {busy === "resend"
+                    ? "Sending…"
+                    : cooldown > 0
+                      ? `Resend the link in ${cooldown}s`
+                      : "Resend the link"}
                 </button>
-              </form>
-
-              {step === "email" && intent === "sign-in" && (
-                <>
-                  <p className={styles.switch}>
-                    New here?{" "}
-                    <button type="button" className={styles.textLink} onClick={() => go("email", "sign-up")}>
-                      Create a free account
-                    </button>
-                  </p>
-                  <p className={styles.switch}>
-                    <button type="button" className={styles.textLink} onClick={() => go("email", "code")}>
-                      Sign in with a one-time code instead
-                    </button>
-                  </p>
-                </>
-              )}
-              {step === "email" && intent === "sign-up" && (
                 <p className={styles.switch}>
-                  Already have an account?{" "}
-                  <button type="button" className={styles.textLink} onClick={() => go("email", "sign-in")}>
+                  Already confirmed?{" "}
+                  <button type="button" className={styles.textLink} onClick={() => go("password", "sign-in")}>
                     Sign in
                   </button>
                 </p>
-              )}
-              {step === "email" && intent === "code" && (
-                <p className={styles.switch}>
-                  <button type="button" className={styles.textLink} onClick={() => go("email", "sign-in")}>
-                    Use a password instead
-                  </button>
+              </>
+            ) : step === "reset" ? (
+              <>
+                <p className={styles.notice} role="status">
+                  If an account uses <strong>{email.trim()}</strong>, a reset link is on its way. Open it on this device
+                  to choose a new password.
                 </p>
-              )}
-              {step === "password" && (
-                <>
-                  <p className={styles.switch}>
-                    <button type="button" className={styles.textLink} disabled={busy !== null} onClick={sendCode}>
-                      {busy === "code" ? "Sending a code…" : "Email me a code instead"}
-                    </button>
-                  </p>
-                  <p className={styles.switch}>
-                    New here?{" "}
-                    <button type="button" className={styles.textLink} onClick={() => go("create", "sign-up")}>
-                      Create an account with this email
-                    </button>
-                  </p>
-                </>
-              )}
-              {step === "create" && (
-                <>
-                  <p className={styles.switch}>
-                    <button type="button" className={styles.textLink} disabled={busy !== null} onClick={sendCode}>
-                      {busy === "code" ? "Sending a code…" : "Rather not have a password? Email me a code"}
-                    </button>
-                  </p>
-                  <p className={styles.switch}>
-                    Already have an account?{" "}
-                    <button type="button" className={styles.textLink} onClick={() => go("password", "sign-in")}>
-                      Sign in
-                    </button>
-                  </p>
-                </>
-              )}
-              {step === "code" && (
-                <p className={styles.switch}>
-                  Nothing arrived?{" "}
-                  <button
-                    type="button"
-                    className={styles.textLink}
-                    disabled={busy !== null || cooldown > 0}
-                    onClick={sendCode}
-                  >
-                    {cooldown > 0 ? `Send a new code in ${cooldown}s` : "Send a new code"}
-                  </button>
-                </p>
-              )}
-              {step === "forgot" && (
                 <p className={styles.switch}>
                   <button
                     type="button"
@@ -750,18 +543,231 @@ export function AuthDialog({
                     Back to sign in
                   </button>
                 </p>
-              )}
-              {((step === "email" && intent === "sign-up") || step === "create") && (
-                <p className={styles.fine}>
-                  By creating an account you agree to how we handle your data in the{" "}
-                  <Link href="/privacy" onClick={onClose}>
-                    privacy note
-                  </Link>
-                  .
-                </p>
-              )}
-            </>
-          )}
+              </>
+            ) : (
+              <>
+                {showProviders && (
+                  <>
+                    <div className={styles.providers}>
+                      {providers.includes("google") && (
+                        <button
+                          type="button"
+                          className={styles.provider}
+                          disabled={busy !== null}
+                          onClick={() => onProvider("google")}
+                        >
+                          <GoogleMark />
+                          {busy === "google" ? "Opening Google…" : "Continue with Google"}
+                        </button>
+                      )}
+                      {providers.includes("github") && (
+                        <button
+                          type="button"
+                          className={styles.provider}
+                          disabled={busy !== null}
+                          onClick={() => onProvider("github")}
+                        >
+                          <GitHubMark />
+                          {busy === "github" ? "Opening GitHub…" : "Continue with GitHub"}
+                        </button>
+                      )}
+                    </div>
+                    <p className={styles.or}>or continue with email</p>
+                  </>
+                )}
+
+                <form key={step} noValidate onSubmit={onSubmit}>
+                  {(step === "email" || step === "forgot") && (
+                    <Field
+                      label="Email"
+                      type="email"
+                      value={email}
+                      onChange={setEmail}
+                      error={emailError}
+                      autoComplete="email"
+                      autoFocus
+                      inputMode="email"
+                      maxLength={254}
+                    />
+                  )}
+
+                  {(step === "password" || step === "create" || step === "code") && (
+                    <EmailChip email={email} onChange={() => go("email")} />
+                  )}
+
+                  {step === "password" && (
+                    <PasswordField
+                      label="Password"
+                      value={password}
+                      onChange={setPassword}
+                      error={passwordError}
+                      autoComplete="current-password"
+                      autoFocus
+                      aside={
+                        <button type="button" className={styles.textLink} onClick={() => go("forgot")}>
+                          Forgot password?
+                        </button>
+                      }
+                    />
+                  )}
+
+                  {step === "create" && (
+                    <>
+                      <Field
+                        label="Name"
+                        type="text"
+                        value={name}
+                        onChange={setName}
+                        error={nameError}
+                        autoComplete="name"
+                        autoFocus
+                        maxLength={60}
+                        hint="Shown on your progress page. You can change it later."
+                      />
+                      <PasswordField
+                        label="Password"
+                        value={password}
+                        onChange={setPassword}
+                        error={passwordError}
+                        autoComplete="new-password"
+                        strengthHints={[email, name]}
+                      />
+                    </>
+                  )}
+
+                  {step === "code" && (
+                    <>
+                      <p className={styles.notice} role="status">
+                        We sent a 6-digit code to <strong>{email.trim()}</strong>. The same email has a link you can
+                        open on this device instead.
+                      </p>
+                      <Field
+                        label="6-digit code"
+                        type="text"
+                        value={code}
+                        onChange={(v) => {
+                          const digits = v.replace(/\D/g, "").slice(0, 6);
+                          setCode(digits);
+                          setFormError(null);
+                          if (digits.length === 6 && busy === null) void verify(digits);
+                        }}
+                        error={null}
+                        autoComplete="one-time-code"
+                        inputMode="numeric"
+                        autoFocus
+                        maxLength={6}
+                        code
+                      />
+                    </>
+                  )}
+
+                  {formError && (
+                    <p className={styles.formError} role="alert">
+                      {formError}
+                    </p>
+                  )}
+
+                  <button type="submit" className={styles.submit} disabled={busy !== null}>
+                    {busy === "submit" || (busy === "code" && step === "email") ? "Please wait…" : submitLabel[step]}
+                  </button>
+                </form>
+
+                {step === "email" && intent === "sign-in" && (
+                  <>
+                    <p className={styles.switch}>
+                      New here?{" "}
+                      <button type="button" className={styles.textLink} onClick={() => go("email", "sign-up")}>
+                        Create a free account
+                      </button>
+                    </p>
+                    <p className={styles.switch}>
+                      <button type="button" className={styles.textLink} onClick={() => go("email", "code")}>
+                        Sign in with a one-time code instead
+                      </button>
+                    </p>
+                  </>
+                )}
+                {step === "email" && intent === "sign-up" && (
+                  <p className={styles.switch}>
+                    Already have an account?{" "}
+                    <button type="button" className={styles.textLink} onClick={() => go("email", "sign-in")}>
+                      Sign in
+                    </button>
+                  </p>
+                )}
+                {step === "email" && intent === "code" && (
+                  <p className={styles.switch}>
+                    <button type="button" className={styles.textLink} onClick={() => go("email", "sign-in")}>
+                      Use a password instead
+                    </button>
+                  </p>
+                )}
+                {step === "password" && (
+                  <>
+                    <p className={styles.switch}>
+                      <button type="button" className={styles.textLink} disabled={busy !== null} onClick={sendCode}>
+                        {busy === "code" ? "Sending a code…" : "Email me a code instead"}
+                      </button>
+                    </p>
+                    <p className={styles.switch}>
+                      New here?{" "}
+                      <button type="button" className={styles.textLink} onClick={() => go("create", "sign-up")}>
+                        Create an account with this email
+                      </button>
+                    </p>
+                  </>
+                )}
+                {step === "create" && (
+                  <>
+                    <p className={styles.switch}>
+                      <button type="button" className={styles.textLink} disabled={busy !== null} onClick={sendCode}>
+                        {busy === "code" ? "Sending a code…" : "Rather not have a password? Email me a code"}
+                      </button>
+                    </p>
+                    <p className={styles.switch}>
+                      Already have an account?{" "}
+                      <button type="button" className={styles.textLink} onClick={() => go("password", "sign-in")}>
+                        Sign in
+                      </button>
+                    </p>
+                  </>
+                )}
+                {step === "code" && (
+                  <p className={styles.switch}>
+                    Nothing arrived?{" "}
+                    <button
+                      type="button"
+                      className={styles.textLink}
+                      disabled={busy !== null || cooldown > 0}
+                      onClick={sendCode}
+                    >
+                      {cooldown > 0 ? `Send a new code in ${cooldown}s` : "Send a new code"}
+                    </button>
+                  </p>
+                )}
+                {step === "forgot" && (
+                  <p className={styles.switch}>
+                    <button
+                      type="button"
+                      className={styles.textLink}
+                      onClick={() => go(email ? "password" : "email", "sign-in")}
+                    >
+                      Back to sign in
+                    </button>
+                  </p>
+                )}
+                {((step === "email" && intent === "sign-up") || step === "create") && (
+                  <p className={styles.fine}>
+                    By creating an account you agree to how we handle your data in the{" "}
+                    <Link href="/privacy" onClick={onClose}>
+                      privacy note
+                    </Link>
+                    .
+                  </p>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </dialog>
