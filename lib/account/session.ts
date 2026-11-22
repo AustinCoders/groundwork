@@ -167,7 +167,7 @@ async function mfaState(db: SupabaseClient): Promise<MfaState> {
 async function loadPhoto(db: SupabaseClient, user: AccountUser) {
   const path = user.extras.avatarPath;
   photoFor = path;
-  if (!path) {
+  if (!path || !path.startsWith(`${user.id}/`)) {
     set({ photo: null });
     return;
   }
@@ -175,10 +175,17 @@ async function loadPhoto(db: SupabaseClient, user: AccountUser) {
   if (photoFor === path && state.user?.id === user.id) set({ photo: data?.signedUrl ?? null });
 }
 
-async function clearPhotos(db: SupabaseClient, userId: string, keep?: string) {
-  const { data } = await db.storage.from(AVATAR_BUCKET).list(userId, { limit: 100 });
-  const stale = (data ?? []).map((file) => `${userId}/${file.name}`).filter((path) => path !== keep);
-  if (stale.length) await db.storage.from(AVATAR_BUCKET).remove(stale);
+async function clearPhotos(db: SupabaseClient, userId: string, keep?: string): Promise<boolean> {
+  try {
+    const listed = await db.storage.from(AVATAR_BUCKET).list(userId, { limit: 100 });
+    if (listed.error) return false;
+    const stale = (listed.data ?? []).map((file) => `${userId}/${file.name}`).filter((path) => path !== keep);
+    if (!stale.length) return true;
+    const removed = await db.storage.from(AVATAR_BUCKET).remove(stale);
+    return !removed.error;
+  } catch {
+    return false;
+  }
 }
 
 async function handleSession(db: SupabaseClient, event: AuthChangeEvent | "INITIAL", session: Session | null) {
@@ -519,11 +526,14 @@ export function uploadAvatar(image: Blob): Promise<Result> {
     if (image.size > 512 * 1024) return { ok: false, error: "That picture is still too large. Try a smaller one." };
     const webp = image.type === "image/webp";
     const path = `${user.id}/avatar-${Date.now()}.${webp ? "webp" : "jpg"}`;
-    const uploaded = await db.storage.from(AVATAR_BUCKET).upload(path, image, {
-      contentType: webp ? "image/webp" : "image/jpeg",
-      cacheControl: "31536000",
-      upsert: false,
-    });
+    const send = () =>
+      db.storage.from(AVATAR_BUCKET).upload(path, image, {
+        contentType: webp ? "image/webp" : "image/jpeg",
+        cacheControl: "31536000",
+        upsert: false,
+      });
+    let uploaded = await send();
+    if (uploaded.error && (await clearPhotos(db, user.id, user.extras.avatarPath))) uploaded = await send();
     if (uploaded.error) return { ok: false, error: "Could not upload the picture. Try again in a moment." };
     const { data, error } = await db.auth.updateUser({ data: { avatar_path: path } });
     if (error) {
@@ -544,9 +554,11 @@ export function removeAvatar(): Promise<Result> {
   return withClient(async (db) => {
     const user = state.user;
     if (!user) return { ok: false, error: "Sign in first." };
+    if (!(await clearPhotos(db, user.id))) {
+      return { ok: false, error: "Could not delete the photo just now. Try again in a moment." };
+    }
     const { data, error } = await db.auth.updateUser({ data: { avatar_path: "" } });
     if (error) return { ok: false, error: friendlyAuthError(error) };
-    await clearPhotos(db, user.id);
     if (data.user) set({ user: toUser(data.user), photo: null });
     photoFor = "";
     return { ok: true, value: undefined };
@@ -584,7 +596,9 @@ export function eraseSavedProgress(): Promise<Result> {
 
 export function deleteAccount(): Promise<Result> {
   return withClient(async (db) => {
-    if (state.user) await clearPhotos(db, state.user.id).catch(() => undefined);
+    if (state.user && !(await clearPhotos(db, state.user.id))) {
+      return { ok: false, error: "Could not delete your photo first, so the account was kept. Try again in a moment." };
+    }
     const { error } = await db.rpc("delete_my_account");
     if (error) return { ok: false, error: friendlyAuthError(error) };
     stopSync();

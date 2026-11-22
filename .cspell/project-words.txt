@@ -1067,3 +1067,5 @@ zebraaaaamoon
 zebrafarmmoon
 totp
 Authy
+xact
+hashtextextended
