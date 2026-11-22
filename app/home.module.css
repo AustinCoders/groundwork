@@ -51,16 +51,46 @@
 
 .navLinks a {
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: 7px;
   padding: 8px 14px;
   font-size: 15px;
+  white-space: nowrap;
   color: var(--ink-soft);
   text-decoration: none;
   border-radius: 999px;
   transition:
     color 0.15s ease,
     background 0.15s ease;
+}
+
+.navGhost {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  gap: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.navGhost > span {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  font-size: 15px;
+}
+
+.navGhost svg {
+  width: 17px;
+  height: 17px;
 }
 
 .navLinks svg {
@@ -1064,30 +1094,38 @@
 }
 
 @media (max-width: 1280px) and (min-width: 1081px) {
-  .navLinks svg {
+  .nav:not([data-fit]) .navLinks svg {
     display: none;
   }
 }
 
+.nav[data-fit="text"] .navLinks svg {
+  display: none;
+}
+
+.nav[data-fit="tight"] [data-fit-drop] {
+  display: none;
+}
+
 @media (max-width: 1080px) {
-  .navLinks {
+  .nav:not([data-fit]) .navLinks {
     gap: 2px;
   }
 
-  .navLinks a {
+  .nav:not([data-fit]) .navLinks a {
     justify-content: center;
     width: 40px;
     height: 40px;
     padding: 0;
   }
 
-  .navLinks svg {
+  .nav:not([data-fit]) .navLinks svg {
     width: 20px;
     height: 20px;
     opacity: 1;
   }
 
-  .navText {
+  .nav:not([data-fit]) .navText {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -1095,6 +1133,36 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
+}
+
+.nav[data-fit="icons"] .navLinks,
+.nav[data-fit="tight"] .navLinks {
+  gap: 2px;
+}
+
+.nav[data-fit="icons"] .navLinks a,
+.nav[data-fit="tight"] .navLinks a {
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
+
+.nav[data-fit="icons"] .navLinks svg,
+.nav[data-fit="tight"] .navLinks svg {
+  width: 20px;
+  height: 20px;
+  opacity: 1;
+}
+
+.nav[data-fit="icons"] .navText,
+.nav[data-fit="tight"] .navText {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 @media (max-width: 640px) {
@@ -1114,12 +1182,14 @@
     margin: 0 0 0 auto;
   }
 
-  .navLinks a {
+  .nav .navLinks a,
+  .nav[data-fit] .navLinks a {
     width: 34px;
     height: 34px;
   }
 
-  .navLinks svg {
+  .nav .navLinks svg,
+  .nav[data-fit] .navLinks svg {
     width: 18px;
     height: 18px;
   }
@@ -1134,12 +1204,14 @@
     gap: 0;
   }
 
-  .navLinks a {
+  .nav .navLinks a,
+  .nav[data-fit] .navLinks a {
     width: 30px;
     height: 34px;
   }
 
-  .navLinks svg {
+  .nav .navLinks svg,
+  .nav[data-fit] .navLinks svg {
     width: 17px;
     height: 17px;
   }

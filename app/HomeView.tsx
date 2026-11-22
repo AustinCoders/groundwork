@@ -6,6 +6,7 @@ import { MenuButton } from "@/components/MenuButton";
 import { SiteDrawer } from "@/components/SiteDrawer";
 import { AccountMenu } from "@/components/account/AccountMenu";
 import { NavIcon, type NavIconName } from "@/components/home/NavIcon";
+import { useNavFit } from "@/components/home/useNavFit";
 import { Connectors, type Link as Hop } from "@/components/home/Connectors";
 import { CtaScene } from "@/components/home/CtaScene";
 import { FaqScene, type Faq } from "@/components/home/FaqScene";
@@ -292,6 +293,10 @@ function Head({
 export function HomeView({ stats, tally, ready, soon, languages, interview, bookRounds }: HomeViewProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const ghostRef = useRef<HTMLSpanElement>(null);
+  const navFit = useNavFit(headerRef, navRef, ghostRef);
   const closeMenu = useCallback(() => {
     setMenuOpen(false);
     smoothScroll.start();
@@ -400,7 +405,12 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
       </a>
       <div className={styles.page} ref={pageRef}>
         <Connectors liveRef={connectorsRef} links={hops} />
-        <header className={styles.nav} data-scrolled={scrolled || undefined}>
+        <header
+          ref={headerRef}
+          className={styles.nav}
+          data-scrolled={scrolled || undefined}
+          data-fit={navFit ?? undefined}
+        >
           <MenuButton
             open={menuOpen}
             onOpen={() => {
@@ -414,7 +424,7 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
             </span>
             <span>{SITE_NAME}</span>
           </Link>
-          <nav className={styles.navLinks} aria-label="Sections">
+          <nav ref={navRef} className={styles.navLinks} aria-label="Sections">
             {NAV.map((item) => (
               <a key={item.href} href={item.href} title={item.label}>
                 <NavIcon name={item.icon} />
@@ -422,10 +432,18 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
               </a>
             ))}
           </nav>
+          <span ref={ghostRef} className={styles.navGhost} aria-hidden="true">
+            {NAV.map((item) => (
+              <span key={item.href}>
+                <NavIcon name={item.icon} />
+                {item.label}
+              </span>
+            ))}
+          </span>
           <span className={styles.navAccount}>
             <AccountMenu />
           </span>
-          <a href="#shelf" className={`${styles.btn} ${styles.btnSmall}`}>
+          <a href="#shelf" className={`${styles.btn} ${styles.btnSmall}`} data-fit-drop>
             Start reading
           </a>
           <span className={styles.scrollBar} data-scrollbar aria-hidden="true" />
