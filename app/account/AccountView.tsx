@@ -238,6 +238,7 @@ function Signed() {
 
   return (
     <>
+      <h1 className="visually-hidden">Your account</h1>
       <Band no="01" id="account-who" label="Account" title={`Hello, ${name}`}>
         <div className={styles.card}>
           <div className={styles.who}>

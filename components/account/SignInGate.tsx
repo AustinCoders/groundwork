@@ -47,14 +47,15 @@ export function SignInGate({
   if (account.status === "off" || account.status === "in") return <>{children}</>;
   if (account.status === "loading") return <div className={styles.gateWait} aria-busy="true" />;
   const copy = COPY[feature];
+  const Heading = compact ? "h2" : "h1";
   return (
     <section className={`${styles.gate}${compact ? ` ${styles.gateCompact}` : ""}`} aria-labelledby={`gate-${feature}`}>
       <span className={styles.gateMark} aria-hidden="true">
         {copy.mark}
       </span>
-      <h2 id={`gate-${feature}`} className={styles.gateTitle}>
+      <Heading id={`gate-${feature}`} className={styles.gateTitle}>
         {copy.title}
-      </h2>
+      </Heading>
       <p className={styles.gateBody}>{copy.body}</p>
       <div className={styles.gateActions}>
         <button type="button" className={`${styles.gateBtn} ${styles.gatePrimary}`} onClick={() => openAuth("sign-up")}>
