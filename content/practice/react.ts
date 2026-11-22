@@ -94,6 +94,7 @@ export const react: Exercise[] = [
     hints: [
       "Array.prototype.reduce does exactly this: (acc, fn) => fn(acc).",
       "The starting value for reduce is start.",
+      "This is exactly how React walks a state queue: each updater receives the value the previous one returned.",
     ],
     solution: "function applyUpdates(start, updaters) {\n  return updaters.reduce((value, fn) => fn(value), start);\n}\n",
     tests: [
@@ -126,7 +127,11 @@ export const react: Exercise[] = [
       "<p>Write <code>toggleField(state, key)</code> that returns a <b>new</b> object with the boolean at <code>key</code> flipped. Every other field, and the original object, must be untouched.</p>",
     starter:
       'function toggleField(state, key) {\n  // TODO\n}\n\nconst s = { loggedIn: false, name: "A" };\nconsole.log(toggleField(s, "loggedIn")); // { loggedIn: true, name: "A" }\nconsole.log(s.loggedIn);                 // still false\n',
-    hints: ["Spread the object, then override one key.", "!state[key] flips a boolean without an if statement."],
+    hints: [
+      "Spread the object, then override one key.",
+      "!state[key] flips a boolean without an if statement.",
+      "A computed key, { [key]: value }, lets one function handle any field name.",
+    ],
     solution: "function toggleField(state, key) {\n  return { ...state, [key]: !state[key] };\n}\n",
     tests: [
       { name: "flips the named field", body: 'assert.equal(toggleField({ open: false }, "open").open, true);' },

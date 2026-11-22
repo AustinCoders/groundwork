@@ -251,6 +251,7 @@ export const reactComponents: Exercise[] = [
     hints: [
       "useState(expensiveCount()) calls the function immediately, on every render, before useState even sees the result.",
       "Pass the function itself, not its result: useState(expensiveCount). React only calls it on the first render.",
+      "useState(() => expensiveCount()) works too; what matters is that useState receives a function, not a number.",
     ],
     solution: "let calls = 0;\nfunction expensiveCount() {\n  calls++;\n  return 0;\n}\n\nfunction Board() {\n  const [value] = useState(expensiveCount);\n  const [tick, setTick] = useState(0);\n  return (\n    <div>\n      <p>{value}</p>\n      <button onClick={() => setTick(tick + 1)}>Tick {tick}</button>\n    </div>\n  );\n}\n\nfunction App() {\n  return <Board />;\n}\n",
     tests: [
@@ -273,6 +274,7 @@ export const reactComponents: Exercise[] = [
     hints: [
       "Both calls close over the same count from this render, so the second call overwrites the first — it does not add to it.",
       "Use the updater form: setCount((c) => c + 1), twice.",
+      "Each updater receives the value the previous one produced, so two of them add two even though there is only one render.",
     ],
     solution: "function Counter() {\n  const [count, setCount] = useState(0);\n\n  function addTwo() {\n    setCount((c) => c + 1);\n    setCount((c) => c + 1);\n  }\n\n  return (\n    <div>\n      <p>{count}</p>\n      <button onClick={addTwo}>+2</button>\n    </div>\n  );\n}\n\nfunction App() {\n  return <Counter />;\n}\n",
     tests: [
@@ -281,6 +283,7 @@ export const reactComponents: Exercise[] = [
       { name: "two clicks add 4", body: "render(<App />);\nawait click(screen.getByRole(\"button\"));\nawait click(screen.getByRole(\"button\"));\nassert.ok(screen.getByText(\"4\"));" },
       { name: "five clicks add 10", body: "render(<App />);\nfor (let i = 0; i < 5; i++) await click(screen.getByRole(\"button\"));\nassert.ok(screen.getByText(\"10\"));" },
       { name: "the button always reads +2", body: "render(<App />);\nassert.ok(screen.getByRole(\"button\", { name: \"+2\" }));\nawait click(screen.getByRole(\"button\"));\nassert.ok(screen.getByRole(\"button\", { name: \"+2\" }));" },
+      { name: "two counters keep separate counts", body: "render(<div><Counter /><Counter /></div>);\nconst [first, second] = screen.getAllByRole(\"button\");\nawait click(first);\nawait click(first);\nawait click(second);\nconst values = screen.getAllByText(/^\\d+$/).map((el) => el.textContent);\nassert.deepEqual(values, [\"4\", \"2\"]);" },
     ],
   },
   {
