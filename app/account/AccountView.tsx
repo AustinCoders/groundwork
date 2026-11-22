@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useEffect, useState, type CSSProperties } from "react";
 import { ConfirmDialog } from "@/components/Modal";
 import { SignInGate } from "@/components/account/SignInGate";
 import { initials } from "@/components/account/AccountChip";
-import { Band, TopicPage } from "@/components/topic/TopicKit";
+import { AppearancePicker } from "@/components/AppearancePicker";
+import { useCountUp } from "@/components/account/useCountUp";
 import { authProviders, type OAuthProviderId } from "@/lib/account/config";
 import { codeProblem, emailProblem, nameProblem, passwordChecks, passwordProblem } from "@/lib/account/errors";
 import {
@@ -33,6 +35,8 @@ import {
   type TotpEnrollment,
   type TotpFactor,
 } from "@/lib/account/session";
+import { computeStats, type Stats } from "@/lib/gamification";
+import { useProgressValue } from "@/lib/hooks";
 import styles from "./account.module.css";
 
 const GOALS: { value: Goal; label: string }[] = [
@@ -550,9 +554,95 @@ function TwoStep() {
 
 type Pending = "erase" | "delete" | "sign-out-clear" | "everywhere" | null;
 
+const SECTIONS = [
+  { id: "account-profile", label: "Profile", icon: "◉" },
+  { id: "account-look", label: "Look and feel", icon: "✎" },
+  { id: "account-sign-in", label: "Ways to sign in", icon: "⇄" },
+  { id: "account-two-step", label: "Two-step sign-in", icon: "⛨" },
+  { id: "account-sync", label: "Sync and data", icon: "↻" },
+  { id: "account-session", label: "Sign out", icon: "⏻" },
+  { id: "account-delete", label: "Delete account", icon: "✕" },
+] as const;
+
+function useActiveSection(): string {
+  const [active, setActive] = useState<string>(SECTIONS[0].id);
+  useEffect(() => {
+    const seen = new Map<string, number>();
+    const watcher = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) seen.set(entry.target.id, entry.isIntersecting ? entry.intersectionRatio : 0);
+        let best: string | null = null;
+        let ratio = 0;
+        for (const section of SECTIONS) {
+          const r = seen.get(section.id) ?? 0;
+          if (r > ratio) {
+            ratio = r;
+            best = section.id;
+          }
+        }
+        if (best) setActive(best);
+      },
+      { rootMargin: "-20% 0px -45% 0px", threshold: [0, 0.2, 0.5, 1] }
+    );
+    for (const section of SECTIONS) {
+      const el = document.getElementById(section.id);
+      if (el) watcher.observe(el);
+    }
+    return () => watcher.disconnect();
+  }, []);
+  return active;
+}
+
+function sinceLabel(at: number | null): string {
+  if (!at) return "not synced yet";
+  const minutes = Math.round((Date.now() - at) / 60000);
+  if (minutes < 1) return "synced just now";
+  if (minutes < 60) return `synced ${minutes} min ago`;
+  return `synced ${when(at)}`;
+}
+
+function StatTile({ label, value, sub, i }: { label: string; value: number; sub?: string; i: number }) {
+  const shown = useCountUp(value);
+  return (
+    <div className={styles.stat} style={{ "--i": i } as CSSProperties}>
+      <span className={styles.statLabel}>{label}</span>
+      <strong className={styles.statValue}>{shown.toLocaleString()}</strong>
+      {sub && <span className={styles.statSub}>{sub}</span>}
+    </div>
+  );
+}
+
+function Panel({
+  id,
+  title,
+  sub,
+  tone,
+  children,
+}: {
+  id: string;
+  title: string;
+  sub?: string;
+  tone?: "danger";
+  children: React.ReactNode;
+}) {
+  return (
+    <section id={id} className={styles.panel} data-tone={tone} aria-labelledby={`${id}-title`}>
+      <header className={styles.panelHead}>
+        <h2 id={`${id}-title`} className={styles.panelTitle}>
+          {title}
+        </h2>
+        {sub && <p className={styles.panelSub}>{sub}</p>}
+      </header>
+      {children}
+    </section>
+  );
+}
+
 function Signed() {
   const account = useAccount();
   const sync = useSyncStatus();
+  const active = useActiveSection();
+  const statsKey = useProgressValue(() => JSON.stringify(computeStats()), "");
   const [pending, setPending] = useState<Pending>(null);
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
@@ -560,7 +650,10 @@ function Signed() {
   const user = account.user;
   if (!user) return null;
   const name = account.profile?.displayName || user.name;
+  const first = name.split(/\s+/)[0] || name;
   const usesPassword = user.providers.includes("email");
+  const stats: Stats | null = statsKey ? (JSON.parse(statsKey) as Stats) : null;
+  const levelPct = stats && stats.xpForNextLevel ? Math.round((stats.xpIntoLevel / stats.xpForNextLevel) * 100) : 0;
 
   function download() {
     const blob = new Blob([exportMyData()], { type: "application/json" });
@@ -583,151 +676,246 @@ function Signed() {
   }
 
   return (
-    <>
-      <h1 className="visually-hidden">Your account</h1>
-      <Band no="01" id="account-who" label="Account" title={`Hello, ${name}`}>
-        <div className={styles.card}>
-          <div className={styles.who}>
-            <span className={styles.bigAvatar} aria-hidden="true">
-              {initials(name)}
+    <div className={styles.dash}>
+      <header className={styles.banner}>
+        <div className={styles.bannerWho}>
+          <span className={styles.ring} aria-hidden="true">
+            <span className={styles.hugeAvatar}>{initials(name)}</span>
+          </span>
+          <div className={styles.bannerText}>
+            <p className={styles.bannerKicker}>Your account</p>
+            <h1 className={styles.bannerTitle}>Hello, {first}</h1>
+            <p className={styles.bannerEmail}>{user.email}</p>
+            <ul className={styles.pills}>
+              <li className={styles.pill} data-tone={account.profile?.plan === "pro" ? "pro" : undefined}>
+                {account.profile?.plan === "pro" ? "★ Pro" : "Free plan"}
+              </li>
+              <li className={styles.pill}>
+                Member since{" "}
+                {new Date(user.createdAt).toLocaleDateString(undefined, { month: "short", year: "numeric" })}
+              </li>
+              <li className={styles.pill}>
+                <span className={styles.dot} data-state={sync.state} aria-hidden="true" />{" "}
+                {sinceLabel(sync.lastSyncedAt)}
+              </li>
+              <li className={styles.pill}>{user.providers.map((p) => PROVIDER_NAME[p] ?? p).join(" · ") || "Email"}</li>
+            </ul>
+          </div>
+        </div>
+        <div className={styles.stats}>
+          <div className={`${styles.stat} ${styles.statLevel}`} style={{ "--i": 0 } as CSSProperties}>
+            <span className={styles.statLabel}>Level</span>
+            <strong className={styles.statValue}>{stats?.level ?? 1}</strong>
+            <span className={styles.levelBar} aria-hidden="true">
+              <span style={{ width: `${levelPct}%` }} />
             </span>
-            <div>
-              <p className={styles.email}>{user.email}</p>
-              <p className={styles.meta}>
-                Signed in with {user.providers.map((p) => PROVIDER_NAME[p] ?? p).join(", ") || "email"} · member since{" "}
-                {new Date(user.createdAt).toLocaleDateString(undefined, { dateStyle: "medium" })}
-                {account.profile?.plan === "pro" ? " · Pro" : " · Free plan"}
-              </p>
-            </div>
+            <span className={styles.statSub}>
+              {stats
+                ? `${stats.xpForNextLevel - stats.xpIntoLevel} XP to level ${stats.level + 1}`
+                : "Read a chapter to start"}
+            </span>
           </div>
+          <StatTile label="XP" value={stats?.xp ?? 0} sub="from chapters, exercises and reviews" i={1} />
+          <StatTile label="Day streak" value={stats?.streak ?? 0} sub={`best ${stats?.bestStreak ?? 0}`} i={2} />
+          <StatTile
+            label="Chapters read"
+            value={stats?.chaptersRead ?? 0}
+            sub={`${stats?.exercisesSolved ?? 0} exercises solved`}
+            i={3}
+          />
         </div>
-      </Band>
-
-      <Band
-        no="02"
-        id="account-profile"
-        label="Profile"
-        title="About you"
-        sub="Used to suggest where to start. Optional."
-      >
-        <ProfileForm key={account.profile ? "loaded" : "empty"} profile={account.profile} fallbackName={user.name} />
-      </Band>
-
-      <Band
-        no="03"
-        id="account-sync"
-        label="Sync"
-        title="Your saved progress"
-        sub="Progress, review marks, quiz results, mock history, boards and code drafts are saved to your account and merged across devices."
-      >
-        <div className={styles.card}>
-          <dl className={styles.facts}>
-            <div>
-              <dt>Status</dt>
-              <dd>
-                <span className={styles.dot} data-state={sync.state} aria-hidden="true" /> {SYNC_TEXT[sync.state]}
-              </dd>
-            </div>
-            <div>
-              <dt>Last synced</dt>
-              <dd>{when(sync.lastSyncedAt)}</dd>
-            </div>
-            <div>
-              <dt>Items saved</dt>
-              <dd>{sync.keys}</dd>
-            </div>
-          </dl>
-          {sync.error && sync.state === "error" && <p className={styles.error}>{sync.error}</p>}
-          <div className={styles.row}>
-            <button type="button" className={styles.btn} onClick={() => void syncAccountNow()}>
-              Sync now
-            </button>
-            <button type="button" className={styles.btn} onClick={download}>
-              Download my data
-            </button>
-            <button type="button" className={`${styles.btn} ${styles.ghostDanger}`} onClick={() => setPending("erase")}>
-              Erase saved progress
-            </button>
-          </div>
+        <div className={styles.quick}>
+          <Link href="/progress" className={styles.quickLink} prefetch={false}>
+            <span aria-hidden="true">▤</span> Your progress
+          </Link>
+          <Link href="/review" className={styles.quickLink} prefetch={false}>
+            <span aria-hidden="true">↻</span> Review queue
+          </Link>
+          <button type="button" className={styles.quickLink} onClick={download}>
+            <span aria-hidden="true">⤓</span> Download my data
+          </button>
+          <button type="button" className={styles.quickLink} onClick={() => void syncAccountNow()}>
+            <span aria-hidden="true">⟳</span> Sync now
+          </button>
         </div>
-      </Band>
+      </header>
 
-      <Band
-        no="04"
-        id="account-sign-in"
-        label="Sign-in"
-        title="Ways to sign in"
-        sub="Connect Google or GitHub to the same account, change your email, or set a password."
-      >
-        <div className={styles.stack}>
-          <Methods />
-          <EmailForm current={user.email} />
-          <PasswordForm setting={!usesPassword} />
-        </div>
-      </Band>
+      <div className={styles.layout}>
+        <nav className={styles.side} aria-label="Account sections">
+          <ol>
+            {SECTIONS.map((section) => (
+              <li key={section.id}>
+                <a
+                  href={`#${section.id}`}
+                  className={styles.sideLink}
+                  aria-current={active === section.id ? "true" : undefined}
+                  data-tone={section.id === "account-delete" ? "danger" : undefined}
+                >
+                  <span className={styles.sideIcon} aria-hidden="true">
+                    {section.icon}
+                  </span>
+                  {section.label}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
 
-      <Band
-        no="05"
-        id="account-two-step"
-        label="Security"
-        title="Two-step sign-in"
-        sub="A second check from an app on your phone. Optional."
-      >
-        <TwoStep />
-      </Band>
-
-      <Band no="06" id="account-session" label="Session" title="Sign out">
-        <div className={styles.card}>
-          <p className={styles.meta}>
-            On a shared computer, remove this device&rsquo;s copy when you sign out. Your account keeps everything.
-          </p>
-          <div className={styles.row}>
-            <button type="button" className={styles.btn} disabled={busy} onClick={() => void act(() => signOut())}>
-              Sign out
-            </button>
-            <button type="button" className={styles.btn} disabled={busy} onClick={() => setPending("sign-out-clear")}>
-              Sign out and remove this device&rsquo;s copy
-            </button>
-            <button type="button" className={styles.btn} disabled={busy} onClick={() => setPending("everywhere")}>
-              Sign out on every device
-            </button>
-          </div>
-          {error && (
-            <p className={styles.error} role="alert">
-              {error}
-            </p>
-          )}
-        </div>
-      </Band>
-
-      <Band no="07" id="account-delete" label="Danger zone" title="Delete account">
-        <div className={`${styles.card} ${styles.dangerCard}`}>
-          <p className={styles.meta}>
-            Deletes your account, your profile and everything saved to it, right away. This cannot be undone. The copy
-            on this device stays until you clear it.
-          </p>
-          <label className={styles.field}>
-            <span className={styles.label}>Type DELETE to confirm</span>
-            <input
-              className={styles.input}
-              value={typed}
-              autoComplete="off"
-              spellCheck={false}
-              onChange={(e) => setTyped(e.target.value)}
+        <div className={styles.sections}>
+          <Panel id="account-profile" title="About you" sub="Used to suggest where to start. Optional.">
+            <ProfileForm
+              key={account.profile ? "loaded" : "empty"}
+              profile={account.profile}
+              fallbackName={user.name}
             />
-          </label>
-          <div className={styles.row}>
-            <button
-              type="button"
-              className={`${styles.btn} ${styles.danger}`}
-              disabled={typed !== "DELETE" || busy}
-              onClick={() => setPending("delete")}
-            >
-              Delete my account
-            </button>
-          </div>
+          </Panel>
+
+          <Panel
+            id="account-look"
+            title="Look and feel"
+            sub="The theme and handwriting on this device. Changes apply as you click."
+          >
+            <div className={`${styles.card} ${styles.lookCard}`}>
+              <AppearancePicker idPrefix="account-look" headingClass={styles.lookHeading} />
+            </div>
+          </Panel>
+
+          <Panel
+            id="account-sign-in"
+            title="Ways to sign in"
+            sub="Connect Google or GitHub to the same account, change your email, or set a password."
+          >
+            <div className={styles.split}>
+              <Methods />
+              <div className={styles.stack}>
+                <EmailForm current={user.email} />
+                <PasswordForm setting={!usesPassword} />
+              </div>
+            </div>
+          </Panel>
+
+          <Panel
+            id="account-two-step"
+            title="Two-step sign-in"
+            sub="A second check from an app on your phone. Optional."
+          >
+            <TwoStep />
+          </Panel>
+
+          <Panel
+            id="account-sync"
+            title="Sync and your data"
+            sub="Progress, review marks, quiz results, mock history, boards and code drafts are saved to your account and merged across devices."
+          >
+            <div className={styles.split}>
+              <div className={styles.card}>
+                <dl className={styles.facts}>
+                  <div>
+                    <dt>Status</dt>
+                    <dd>
+                      <span className={styles.dot} data-state={sync.state} aria-hidden="true" /> {SYNC_TEXT[sync.state]}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Last synced</dt>
+                    <dd>{when(sync.lastSyncedAt)}</dd>
+                  </div>
+                  <div>
+                    <dt>Items saved</dt>
+                    <dd>{sync.keys}</dd>
+                  </div>
+                </dl>
+                {sync.error && sync.state === "error" && <p className={styles.error}>{sync.error}</p>}
+                <div className={styles.row}>
+                  <button
+                    type="button"
+                    className={`${styles.btn} ${styles.primary}`}
+                    onClick={() => void syncAccountNow()}
+                  >
+                    Sync now
+                  </button>
+                </div>
+              </div>
+              <div className={styles.card}>
+                <p className={styles.cardTitle}>Your data</p>
+                <p className={styles.meta}>
+                  Download everything as one JSON file, or erase what is saved to your account and this device.
+                </p>
+                <div className={styles.row}>
+                  <button type="button" className={styles.btn} onClick={download}>
+                    Download my data
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.btn} ${styles.ghostDanger}`}
+                    onClick={() => setPending("erase")}
+                  >
+                    Erase saved progress
+                  </button>
+                </div>
+              </div>
+            </div>
+          </Panel>
+
+          <Panel id="account-session" title="Sign out">
+            <div className={styles.card}>
+              <p className={styles.meta}>
+                On a shared computer, remove this device&rsquo;s copy when you sign out. Your account keeps everything.
+              </p>
+              <div className={styles.row}>
+                <button type="button" className={styles.btn} disabled={busy} onClick={() => void act(() => signOut())}>
+                  Sign out
+                </button>
+                <button
+                  type="button"
+                  className={styles.btn}
+                  disabled={busy}
+                  onClick={() => setPending("sign-out-clear")}
+                >
+                  Sign out and remove this device&rsquo;s copy
+                </button>
+                <button type="button" className={styles.btn} disabled={busy} onClick={() => setPending("everywhere")}>
+                  Sign out on every device
+                </button>
+              </div>
+              {error && (
+                <p className={styles.error} role="alert">
+                  {error}
+                </p>
+              )}
+            </div>
+          </Panel>
+
+          <Panel id="account-delete" title="Delete account" tone="danger">
+            <div className={`${styles.card} ${styles.dangerCard}`}>
+              <p className={styles.meta}>
+                Deletes your account, your profile and everything saved to it, right away. This cannot be undone. The
+                copy on this device stays until you clear it.
+              </p>
+              <label className={styles.field}>
+                <span className={styles.label}>Type DELETE to confirm</span>
+                <input
+                  className={styles.input}
+                  value={typed}
+                  autoComplete="off"
+                  spellCheck={false}
+                  onChange={(e) => setTyped(e.target.value)}
+                />
+              </label>
+              <div className={styles.row}>
+                <button
+                  type="button"
+                  className={`${styles.btn} ${styles.danger}`}
+                  disabled={typed !== "DELETE" || busy}
+                  onClick={() => setPending("delete")}
+                >
+                  Delete my account
+                </button>
+              </div>
+            </div>
+          </Panel>
         </div>
-      </Band>
+      </div>
 
       {pending === "erase" && (
         <ConfirmDialog
@@ -772,16 +960,14 @@ function Signed() {
           onClose={() => setPending(null)}
         />
       )}
-    </>
+    </div>
   );
 }
 
 export function AccountView() {
   return (
     <SignInGate feature="account">
-      <TopicPage accent="blue">
-        <Signed />
-      </TopicPage>
+      <Signed />
     </SignInGate>
   );
 }

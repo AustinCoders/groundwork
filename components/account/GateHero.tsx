@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
+import { useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { Card, Compose, Remark, Tag } from "@/components/topic/Compose";
 import { CardKicker } from "@/components/topic/TopicKit";
 import { openAuth } from "@/lib/account/config";
 import styles from "./gate.module.css";
+import { useCountUp } from "./useCountUp";
 
 export type HeroFeature = "progress" | "review" | "account";
 
@@ -56,26 +57,6 @@ const DAYS = 35;
 const WEEK = [0.45, 0.7, 0.3, 0.9, 0.6, 1, 0.5];
 const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
 const STARTING_DAYS = [1, 2, 3, 5, 8, 9, 10, 11, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 29, 30, 31, 32, 33];
-
-function useCountUp(target: number, ms = 1100): number {
-  const [value, setValue] = useState(0);
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      const id = window.setTimeout(() => setValue(target), 0);
-      return () => window.clearTimeout(id);
-    }
-    let frame = 0;
-    const start = performance.now();
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / ms);
-      setValue(Math.round(target * (1 - Math.pow(1 - t, 3))));
-      if (t < 1) frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [target, ms]);
-  return value;
-}
 
 function ProgressStage() {
   const [days, setDays] = useState<Set<number>>(() => new Set(STARTING_DAYS));
