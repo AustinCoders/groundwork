@@ -3,7 +3,7 @@ import { CANONICAL_ORIGIN, LEGACY_HOSTS } from "./lib/site";
 import { PINNED_LEVEL_HOME_TOPIC_IDS } from "./lib/pinnedRoutes";
 import { wasmOrigins } from "./lib/wasmAssets";
 import { sentryOrigin } from "./lib/errorTracking";
-import { accountOrigin } from "./lib/account/config";
+import { accountOrigin, CAPTCHA_ORIGIN, captchaSiteKey } from "./lib/account/config";
 
 export const PATH_LEVEL_IDS = ["beginner", "intermediate", "advanced"];
 
@@ -45,15 +45,21 @@ const reportingOrigin = sentryOrigin() || "";
 
 const accountsOrigin = accountOrigin();
 
+const captchaOrigin = captchaSiteKey() ? CAPTCHA_ORIGIN : "";
+
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com ${runtimeOrigins}`.trim(),
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com ${runtimeOrigins} ${captchaOrigin}`
+    .trim()
+    .replace(/\s+/g, " "),
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob:",
   "media-src 'self' blob:",
-  `connect-src 'self' ${runtimeOrigins} ${reportingOrigin} ${accountsOrigin}`.trim().replace(/\s+/g, " "),
-  "frame-src 'self' blob:",
+  `connect-src 'self' ${runtimeOrigins} ${reportingOrigin} ${accountsOrigin} ${captchaOrigin}`
+    .trim()
+    .replace(/\s+/g, " "),
+  `frame-src 'self' blob: ${captchaOrigin}`.trim(),
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

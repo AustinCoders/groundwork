@@ -43,20 +43,24 @@ export interface AccountUser {
   emailConfirmed: boolean;
 }
 
+export type MfaState = "none" | "needed" | "on";
+
 export interface AccountState {
   status: AccountStatus;
   user: AccountUser | null;
   profile: Profile | null;
   recovery: boolean;
+  mfa: MfaState;
 }
 
 export type Result<T = void> = { ok: true; value: T } | { ok: false; error: string };
 
-const SERVER_STATE: AccountState = { status: "loading", user: null, profile: null, recovery: false };
+const SERVER_STATE: AccountState = { status: "loading", user: null, profile: null, recovery: false, mfa: "none" };
 
 let state: AccountState = SERVER_STATE;
 let booted = false;
 let subscribed = false;
+let syncingFor: string | null = null;
 const listeners = new Set<() => void>();
 
 function set(next: Partial<AccountState>) {
@@ -135,18 +139,39 @@ async function loadProfile(db: SupabaseClient, user: AccountUser) {
   if (state.user?.id === user.id) set({ profile: toProfile(data, user.name) });
 }
 
-function handleSession(db: SupabaseClient, event: AuthChangeEvent | "INITIAL", session: Session | null) {
+async function mfaState(db: SupabaseClient): Promise<MfaState> {
+  try {
+    const { data } = await db.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (!data || data.nextLevel !== "aal2") return "none";
+    return data.currentLevel === "aal2" ? "on" : "needed";
+  } catch {
+    return "none";
+  }
+}
+
+async function handleSession(db: SupabaseClient, event: AuthChangeEvent | "INITIAL", session: Session | null) {
   if (event === "PASSWORD_RECOVERY") set({ recovery: true });
   if (!session) {
     stopSync();
-    set({ status: "out", user: null, profile: null, recovery: false });
+    syncingFor = null;
+    set({ status: "out", user: null, profile: null, recovery: false, mfa: "none" });
     return;
   }
   const user = toUser(session.user);
+  const mfa = await mfaState(db);
   const changed = state.user?.id !== user.id;
-  set({ status: "in", user, profile: changed ? null : state.profile });
-  if (changed || event === "USER_UPDATED") void loadProfile(db, user);
-  if (changed) void startSync(db, user.id);
+  set({ status: "in", user, mfa, profile: changed ? null : state.profile });
+  if (mfa === "needed") {
+    if (syncingFor) stopSync();
+    syncingFor = null;
+    return;
+  }
+  const fresh = syncingFor !== user.id;
+  if (changed || fresh || event === "USER_UPDATED") void loadProfile(db, user);
+  if (fresh) {
+    syncingFor = user.id;
+    void startSync(db, user.id);
+  }
 }
 
 async function connect(): Promise<SupabaseClient | null> {
@@ -158,10 +183,10 @@ async function connect(): Promise<SupabaseClient | null> {
   if (!subscribed) {
     subscribed = true;
     db.auth.onAuthStateChange((event, session) => {
-      setTimeout(() => handleSession(db, event, session), 0);
+      setTimeout(() => void handleSession(db, event, session), 0);
     });
     const { data } = await db.auth.getSession();
-    handleSession(db, "INITIAL", data.session);
+    await handleSession(db, "INITIAL", data.session);
   }
   return db;
 }
@@ -207,9 +232,9 @@ async function withClient<T>(run: (db: SupabaseClient) => Promise<Result<T>>): P
   }
 }
 
-export function signInWithPassword(email: string, password: string): Promise<Result> {
+export function signInWithPassword(email: string, password: string, captchaToken?: string): Promise<Result> {
   return withClient(async (db) => {
-    const { error } = await db.auth.signInWithPassword({ email: email.trim(), password });
+    const { error } = await db.auth.signInWithPassword({ email: email.trim(), password, options: { captchaToken } });
     return error ? { ok: false, error: friendlyAuthError(error) } : { ok: true, value: undefined };
   });
 }
@@ -218,35 +243,40 @@ export function signUpWithPassword(
   name: string,
   email: string,
   password: string,
-  next: string
+  next: string,
+  captchaToken?: string
 ): Promise<Result<{ confirm: boolean }>> {
   return withClient(async (db) => {
     const { data, error } = await db.auth.signUp({
       email: email.trim(),
       password,
-      options: { emailRedirectTo: callbackUrl(next), data: { display_name: name.trim().slice(0, 60) } },
+      options: {
+        emailRedirectTo: callbackUrl(next),
+        data: { display_name: name.trim().slice(0, 60) },
+        captchaToken,
+      },
     });
     if (error) return { ok: false, error: friendlyAuthError(error) };
     return { ok: true, value: { confirm: !data.session } };
   });
 }
 
-export function resendSignupEmail(email: string, next: string): Promise<Result> {
+export function resendSignupEmail(email: string, next: string, captchaToken?: string): Promise<Result> {
   return withClient(async (db) => {
     const { error } = await db.auth.resend({
       type: "signup",
       email: email.trim(),
-      options: { emailRedirectTo: callbackUrl(next) },
+      options: { emailRedirectTo: callbackUrl(next), captchaToken },
     });
     return error ? { ok: false, error: friendlyAuthError(error) } : { ok: true, value: undefined };
   });
 }
 
-export function sendMagicLink(email: string, next: string): Promise<Result> {
+export function sendMagicLink(email: string, next: string, captchaToken?: string): Promise<Result> {
   return withClient(async (db) => {
     const { error } = await db.auth.signInWithOtp({
       email: email.trim(),
-      options: { emailRedirectTo: callbackUrl(next), shouldCreateUser: true },
+      options: { emailRedirectTo: callbackUrl(next), shouldCreateUser: true, captchaToken },
     });
     return error ? { ok: false, error: friendlyAuthError(error) } : { ok: true, value: undefined };
   });
@@ -277,10 +307,11 @@ export function signInWithProvider(provider: OAuthProvider, next: string): Promi
   });
 }
 
-export function sendPasswordReset(email: string): Promise<Result> {
+export function sendPasswordReset(email: string, captchaToken?: string): Promise<Result> {
   return withClient(async (db) => {
     const { error } = await db.auth.resetPasswordForEmail(email.trim(), {
       redirectTo: callbackUrl("/account", "recovery"),
+      captchaToken,
     });
     return error ? { ok: false, error: friendlyAuthError(error) } : { ok: true, value: undefined };
   });
@@ -291,6 +322,126 @@ export function updatePassword(password: string): Promise<Result> {
     const { error } = await db.auth.updateUser({ password });
     if (error) return { ok: false, error: friendlyAuthError(error) };
     set({ recovery: false });
+    return { ok: true, value: undefined };
+  });
+}
+
+export function changeEmail(email: string): Promise<Result> {
+  return withClient(async (db) => {
+    const { error } = await db.auth.updateUser({ email: email.trim() }, { emailRedirectTo: callbackUrl("/account") });
+    return error ? { ok: false, error: friendlyAuthError(error) } : { ok: true, value: undefined };
+  });
+}
+
+export interface LinkedIdentity {
+  provider: string;
+  email: string | null;
+}
+
+export function linkedIdentities(): Promise<Result<LinkedIdentity[]>> {
+  return withClient(async (db) => {
+    const { data, error } = await db.auth.getUserIdentities();
+    if (error) return { ok: false, error: friendlyAuthError(error) };
+    return {
+      ok: true,
+      value: (data?.identities ?? []).map((identity) => ({
+        provider: identity.provider,
+        email: typeof identity.identity_data?.email === "string" ? identity.identity_data.email : null,
+      })),
+    };
+  });
+}
+
+export function linkProvider(provider: OAuthProvider): Promise<Result> {
+  return withClient(async (db) => {
+    const { error } = await db.auth.linkIdentity({ provider, options: { redirectTo: callbackUrl("/account") } });
+    return error ? { ok: false, error: friendlyAuthError(error) } : { ok: true, value: undefined };
+  });
+}
+
+export function unlinkProvider(provider: string): Promise<Result> {
+  return withClient(async (db) => {
+    const { data, error } = await db.auth.getUserIdentities();
+    if (error) return { ok: false, error: friendlyAuthError(error) };
+    const identities = data?.identities ?? [];
+    if (identities.length < 2) return { ok: false, error: "Keep at least one way to sign in." };
+    const identity = identities.find((item) => item.provider === provider);
+    if (!identity) return { ok: true, value: undefined };
+    const unlinked = await db.auth.unlinkIdentity(identity);
+    if (unlinked.error) return { ok: false, error: friendlyAuthError(unlinked.error) };
+    await db.auth.refreshSession();
+    return { ok: true, value: undefined };
+  });
+}
+
+export interface TotpEnrollment {
+  factorId: string;
+  qr: string;
+  secret: string;
+}
+
+export interface TotpFactor {
+  id: string;
+  createdAt: string;
+}
+
+export function totpFactors(): Promise<Result<TotpFactor[]>> {
+  return withClient(async (db) => {
+    const { data, error } = await db.auth.mfa.listFactors();
+    if (error) return { ok: false, error: friendlyAuthError(error) };
+    return { ok: true, value: (data?.totp ?? []).map((f) => ({ id: f.id, createdAt: f.created_at })) };
+  });
+}
+
+function qrDataUrl(raw: string): string {
+  let svg = raw;
+  while (svg.startsWith("data:")) svg = svg.slice(svg.indexOf(",") + 1);
+  let text = svg;
+  try {
+    text = decodeURIComponent(svg);
+  } catch {}
+  return `data:image/svg+xml,${encodeURIComponent(text)}`;
+}
+
+export function startTotp(): Promise<Result<TotpEnrollment>> {
+  return withClient(async (db) => {
+    const listed = await db.auth.mfa.listFactors();
+    for (const factor of listed.data?.all ?? []) {
+      if (factor.status !== "verified") await db.auth.mfa.unenroll({ factorId: factor.id });
+    }
+    const { data, error } = await db.auth.mfa.enroll({
+      factorType: "totp",
+      issuer: "Groundwork",
+      friendlyName: `Authenticator ${new Date().toISOString().slice(0, 16)}`,
+    });
+    if (error || !data) return { ok: false, error: friendlyAuthError(error) };
+    return { ok: true, value: { factorId: data.id, qr: qrDataUrl(data.totp.qr_code), secret: data.totp.secret } };
+  });
+}
+
+export function confirmTotp(factorId: string, code: string): Promise<Result> {
+  return withClient(async (db) => {
+    const { error } = await db.auth.mfa.challengeAndVerify({ factorId, code: code.trim() });
+    return error ? { ok: false, error: friendlyAuthError(error) } : { ok: true, value: undefined };
+  });
+}
+
+export function verifyTotpSignIn(code: string): Promise<Result> {
+  return withClient(async (db) => {
+    const { data, error } = await db.auth.mfa.listFactors();
+    if (error) return { ok: false, error: friendlyAuthError(error) };
+    const factor = data?.totp[0];
+    if (!factor) return { ok: false, error: "No authenticator app is set up on this account." };
+    const verified = await db.auth.mfa.challengeAndVerify({ factorId: factor.id, code: code.trim() });
+    return verified.error ? { ok: false, error: friendlyAuthError(verified.error) } : { ok: true, value: undefined };
+  });
+}
+
+export function removeTotp(factorId: string): Promise<Result> {
+  return withClient(async (db) => {
+    const { error } = await db.auth.mfa.unenroll({ factorId });
+    if (error) return { ok: false, error: friendlyAuthError(error) };
+    await db.auth.refreshSession();
     return { ok: true, value: undefined };
   });
 }
@@ -329,7 +480,8 @@ export function signOut(options: { clearDevice?: boolean; everywhere?: boolean }
     if (error) await db.auth.signOut({ scope: "local" });
     stopSync();
     if (options.clearDevice) forgetDeviceCopy();
-    set({ status: "out", user: null, profile: null, recovery: false });
+    syncingFor = null;
+    set({ status: "out", user: null, profile: null, recovery: false, mfa: "none" });
     return { ok: true, value: undefined };
   });
 }
@@ -355,7 +507,8 @@ export function deleteAccount(): Promise<Result> {
     try {
       localStorage.removeItem(SYNC_META_KEY);
     } catch {}
-    set({ status: "out", user: null, profile: null, recovery: false });
+    syncingFor = null;
+    set({ status: "out", user: null, profile: null, recovery: false, mfa: "none" });
     return { ok: true, value: undefined };
   });
 }

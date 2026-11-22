@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { OPEN_AUTH_EVENT, safeNext, type AuthMode } from "@/lib/account/config";
 import { needsOnboarding, onboardingDone } from "@/lib/account/onboarding";
-import { bootAccount, useAccount } from "@/lib/account/session";
+import { bootAccount, signOut, useAccount } from "@/lib/account/session";
 
 const AuthDialog = dynamic(() => import("@/components/account/AuthDialog").then((m) => m.AuthDialog), {
   ssr: false,
@@ -27,8 +27,10 @@ export function AuthHost() {
     return () => window.removeEventListener(OPEN_AUTH_EVENT, onOpen);
   }, []);
 
-  const { status, user, profile } = useAccount();
-  const askWelcome = !open && status === "in" && user !== null && needsOnboarding(profile) && !onboardingDone(user.id);
+  const { status, user, profile, mfa } = useAccount();
+  const askCode = status === "in" && mfa === "needed";
+  const askWelcome =
+    !open && !askCode && status === "in" && user !== null && needsOnboarding(profile) && !onboardingDone(user.id);
 
   useEffect(() => {
     if (!askWelcome) return;
@@ -36,6 +38,19 @@ export function AuthHost() {
     return () => window.clearTimeout(id);
   }, [askWelcome]);
 
+  if (askCode) {
+    return (
+      <AuthDialog
+        key="mfa"
+        initialMode="mfa"
+        next="/"
+        onClose={() => {
+          setOpen(null);
+          void signOut();
+        }}
+      />
+    );
+  }
   if (!open) return null;
   return <AuthDialog initialMode={open.mode} next={open.next} onClose={() => setOpen(null)} />;
 }

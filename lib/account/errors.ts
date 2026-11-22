@@ -22,6 +22,16 @@ const BY_CODE: Record<string, string> = {
   flow_state_not_found: "This link was opened in a different browser. Sign in here instead.",
   bad_code_verifier: "This link was opened in a different browser. Sign in here instead.",
   reauthentication_needed: "Sign in again before changing your password.",
+  captcha_failed: "We could not check that you are a person. Reload the page and try again.",
+  mfa_verification_failed: "That code did not match. Use the newest code from your authenticator app.",
+  mfa_challenge_expired: "That code took too long. Use the newest code from your authenticator app.",
+  mfa_factor_not_found: "That authenticator is no longer set up. Reload the page and try again.",
+  insufficient_aal: "Enter the code from your authenticator app first.",
+  too_many_enrolled_mfa_factors: "This account already has the most authenticators it can hold. Remove one first.",
+  identity_already_exists: "That account is already linked to a different Groundwork account.",
+  manual_linking_disabled: "Linking another sign-in is not turned on yet. Try again later.",
+  single_identity_not_deletable: "Keep at least one way to sign in.",
+  email_changed_recently: "You changed your email a moment ago. Wait a minute, then try again.",
 };
 
 export function friendlyAuthError(error: unknown): string {

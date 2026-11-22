@@ -2,7 +2,7 @@ export const AUTH_STORAGE_KEY = "gw-auth";
 export const SYNC_META_KEY = "gw-sync";
 export const OPEN_AUTH_EVENT = "groundwork:open-auth";
 
-export type AuthMode = "sign-in" | "sign-up" | "magic" | "forgot" | "welcome";
+export type AuthMode = "sign-in" | "sign-up" | "magic" | "forgot" | "welcome" | "mfa";
 
 export type OAuthProviderId = "google" | "github";
 
@@ -29,6 +29,13 @@ export function authProviders(): OAuthProviderId[] {
     .map((part) => part.trim().toLowerCase())
     .filter((part): part is OAuthProviderId => part === "google" || part === "github");
   return [...new Set(found)];
+}
+
+export const CAPTCHA_ORIGIN = "https://challenges.cloudflare.com";
+
+export function captchaSiteKey(): string {
+  const key = (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "").trim();
+  return /^[0-9A-Za-z_-]{10,100}$/.test(key) ? key : "";
 }
 
 export function accountOrigin(): string {

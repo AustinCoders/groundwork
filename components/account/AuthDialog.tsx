@@ -16,12 +16,15 @@ import {
   useAccount,
   verifyEmailCode,
   verifySignupCode,
+  verifyTotpSignIn,
   type Experience,
   type Goal,
   type OAuthProvider,
   type TargetRole,
 } from "@/lib/account/session";
+import { lastSignInMethod, rememberSignInMethod, type SignInMethod } from "@/lib/account/lastMethod";
 import { isCommonPassword } from "@/lib/account/strength";
+import { Captcha, type CaptchaHandle } from "./Captcha";
 import { PasswordField } from "./PasswordField";
 import styles from "./account.module.css";
 
@@ -114,7 +117,7 @@ function Field({
   );
 }
 
-type Step = "email" | "password" | "create" | "code" | "forgot" | "confirm" | "reset" | "welcome";
+type Step = "email" | "password" | "create" | "code" | "forgot" | "confirm" | "reset" | "welcome" | "mfa";
 type Intent = "sign-in" | "sign-up" | "code";
 type Side = "left" | "right";
 
@@ -160,6 +163,7 @@ function startFor(mode: AuthMode): { step: Step; intent: Intent } {
   if (mode === "magic") return { step: "email", intent: "code" };
   if (mode === "forgot") return { step: "forgot", intent: "sign-in" };
   if (mode === "welcome") return { step: "welcome", intent: "sign-in" };
+  if (mode === "mfa") return { step: "mfa", intent: "sign-in" };
   return { step: "email", intent: "sign-in" };
 }
 
@@ -185,6 +189,8 @@ function titleFor(step: Step, intent: Intent): string {
       return "Check your email";
     case "welcome":
       return "Make it yours";
+    case "mfa":
+      return "One more step";
   }
 }
 
@@ -202,6 +208,8 @@ function leadFor(step: Step, intent: Intent): string | null {
       return "Two more details and you are in.";
     case "forgot":
       return "Enter the email you signed up with and we will send a link to choose a new password.";
+    case "mfa":
+      return "Open your authenticator app and type the 6-digit code it shows for Groundwork.";
     case "welcome":
       return "Three quick choices so Groundwork can point you at the right chapters. You can change them later on your account page.";
     default:
@@ -378,6 +386,12 @@ export function AuthDialog({
   const frame = useRef(0);
   const frozenUntil = useRef(0);
   const [slid, setSlid] = useState(false);
+  const captcha = useRef<CaptchaHandle>(null);
+  const [lastUsed] = useState<SignInMethod | null>(() => lastSignInMethod());
+
+  function human(): Promise<string | undefined> {
+    return captcha.current?.token() ?? Promise.resolve(undefined);
+  }
 
   useEffect(() => {
     const dialog = ref.current;
@@ -415,7 +429,7 @@ export function AuthDialog({
   }
 
   async function sendCode() {
-    if (await run("code", () => sendMagicLink(email, next))) {
+    if (await run("code", async () => sendMagicLink(email, next, await human()))) {
       setCooldown(RESEND_SECONDS);
       go("code");
     }
@@ -426,8 +440,15 @@ export function AuthDialog({
       setFormError(codeProblem(value));
       return;
     }
+    if (step === "mfa") {
+      await run("submit", () => verifyTotpSignIn(value));
+      return;
+    }
     const check = step === "confirm" ? verifySignupCode : verifyEmailCode;
-    if (await run("submit", () => check(email, value))) onClose();
+    if (await run("submit", () => check(email, value))) {
+      rememberSignInMethod("code");
+      onClose();
+    }
   }
 
   async function onSubmit(event: React.FormEvent) {
@@ -442,33 +463,40 @@ export function AuthDialog({
     }
     if (step === "password") {
       if (!password) return;
-      if (await run("submit", () => signInWithPassword(email, password))) onClose();
+      if (await run("submit", async () => signInWithPassword(email, password, await human()))) {
+        rememberSignInMethod("password");
+        onClose();
+      }
       return;
     }
     if (step === "create") {
       if (nameProblem(name) || passwordProblem(password) || isCommonPassword(password)) return;
       setBusy("submit");
       setFormError(null);
-      const result = await signUpWithPassword(name, email, password, next);
+      const result = await signUpWithPassword(name, email, password, next, await human());
       setBusy(null);
       if (!result.ok) setFormError(result.error);
       else if (result.value.confirm) {
         setCooldown(RESEND_SECONDS);
         go("confirm");
-      } else onClose();
+      } else {
+        rememberSignInMethod("password");
+        onClose();
+      }
       return;
     }
-    if (step === "code") {
+    if (step === "code" || step === "mfa") {
       await verify(code);
       return;
     }
     if (step === "forgot") {
       if (emailProblem(email)) return;
-      if (await run("submit", () => sendPasswordReset(email))) go("reset");
+      if (await run("submit", async () => sendPasswordReset(email, await human()))) go("reset");
     }
   }
 
   async function onProvider(provider: OAuthProvider) {
+    rememberSignInMethod(provider);
     await run(provider, () => signInWithProvider(provider, next));
   }
 
@@ -525,6 +553,7 @@ export function AuthDialog({
     confirm: "",
     reset: "",
     welcome: "",
+    mfa: "Verify and sign in",
   };
 
   return (
@@ -554,6 +583,59 @@ export function AuthDialog({
 
             {step === "welcome" ? (
               <Welcome onDone={onClose} />
+            ) : step === "mfa" ? (
+              <>
+                <form
+                  noValidate
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void verify(code);
+                  }}
+                >
+                  <Field
+                    label="Authenticator code"
+                    type="text"
+                    value={code}
+                    onChange={(v) => {
+                      const digits = v.replace(/\D/g, "").slice(0, 6);
+                      setCode(digits);
+                      setFormError(null);
+                      if (digits.length === 6 && busy === null) void verify(digits);
+                    }}
+                    error={null}
+                    autoComplete="one-time-code"
+                    inputMode="numeric"
+                    autoFocus
+                    maxLength={6}
+                    code
+                  />
+                  {formError && (
+                    <p className={styles.formError} role="alert">
+                      {formError}
+                    </p>
+                  )}
+                  <button type="submit" className={styles.submit} disabled={busy !== null}>
+                    {busy === "submit" ? (
+                      <>
+                        <span className={styles.spinner} aria-hidden="true" />
+                        Checking…
+                      </>
+                    ) : (
+                      submitLabel.mfa
+                    )}
+                  </button>
+                </form>
+                <p className={styles.switch}>
+                  Lost your phone?{" "}
+                  <button type="button" className={styles.textLink} disabled={busy !== null} onClick={onClose}>
+                    Sign out
+                  </button>
+                </p>
+                <p className={styles.fine}>
+                  Without the app you cannot finish signing in. Write to help@austincoders.com from this email address
+                  and we will help.
+                </p>
+              </>
             ) : step === "confirm" ? (
               <>
                 <p className={styles.notice} role="status">
@@ -607,7 +689,8 @@ export function AuthDialog({
                     className={styles.textLink}
                     disabled={busy !== null || cooldown > 0}
                     onClick={async () => {
-                      if (await run("resend", () => resendSignupEmail(email, next))) setCooldown(RESEND_SECONDS);
+                      if (await run("resend", async () => resendSignupEmail(email, next, await human())))
+                        setCooldown(RESEND_SECONDS);
                     }}
                   >
                     {busy === "resend"
@@ -654,6 +737,7 @@ export function AuthDialog({
                         >
                           <GoogleMark />
                           {busy === "google" ? "Opening Google…" : "Continue with Google"}
+                          {lastUsed === "google" && <span className={styles.lastUsed}>Last used</span>}
                         </button>
                       )}
                       {providers.includes("github") && (
@@ -665,10 +749,16 @@ export function AuthDialog({
                         >
                           <GitHubMark />
                           {busy === "github" ? "Opening GitHub…" : "Continue with GitHub"}
+                          {lastUsed === "github" && <span className={styles.lastUsed}>Last used</span>}
                         </button>
                       )}
                     </div>
-                    <p className={styles.or}>or continue with email</p>
+                    <p className={styles.or}>
+                      or continue with email
+                      {(lastUsed === "password" || lastUsed === "code") && (
+                        <span className={styles.lastUsed}>Last used</span>
+                      )}
+                    </p>
                   </>
                 )}
 
@@ -871,6 +961,7 @@ export function AuthDialog({
               </>
             )}
           </div>
+          {step !== "welcome" && step !== "mfa" && <Captcha ref={captcha} />}
         </div>
       </div>
     </dialog>

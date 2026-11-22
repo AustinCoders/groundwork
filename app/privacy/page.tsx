@@ -34,7 +34,13 @@ export default function PrivacyPage() {
             If you create one, Supabase, the service that runs our accounts, stores it in its Mumbai region
             (ap-south-1): your email address, a hash of your password if you chose one, the name and the optional goal,
             level and role you give, and the date you joined. Signing in with Google or GitHub shares your name and
-            email from that service, nothing else.
+            email from that service, nothing else. If you turn on two-step sign-in, Supabase also keeps the secret your
+            authenticator app shares with it.
+          </p>
+          <p>
+            When you sign in, sign up or ask for an email code, Cloudflare Turnstile checks that a person is asking and
+            not a bot. Your browser loads its script from Cloudflare, which sees your IP address and some browser
+            signals for that check. It sets no cookie for this site.
           </p>
           <p>
             While you are signed in, the browser copies your learning data to your account so it follows you: chapter

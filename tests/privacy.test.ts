@@ -21,6 +21,12 @@ const UPSTREAMS = [
   { file: "lib/wasmAssets.ts", signal: "cdn.jsdelivr.net", hosts: ["cdn.jsdelivr.net"], service: "jsDelivr" },
   { file: "app/api/joke/route.ts", signal: "v2.jokeapi.dev", hosts: ["v2.jokeapi.dev"], service: "JokeAPI" },
   { file: "instrumentation-client.ts", signal: "@sentry", hosts: [], service: "Sentry" },
+  {
+    file: "lib/account/config.ts",
+    signal: "challenges.cloudflare.com",
+    hosts: ["challenges.cloudflare.com"],
+    service: "Cloudflare Turnstile",
+  },
 ];
 
 const NOT_CALLED: Record<string, { only: string; why: string }> = {
