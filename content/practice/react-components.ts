@@ -562,7 +562,9 @@ export const reactComponents: Exercise[] = [
     brief: "<p>Build <code>PageTitle({ title })</code>: it sets <code>document.title</code> to <code>title</code> while mounted, and restores the <em>previous</em> title when it unmounts. It renders nothing.</p>",
     starter: "function PageTitle({ title }) {\n  // TODO\n  return null;\n}\n\nfunction App() {\n  const [show, setShow] = useState(true);\n  return (\n    <div>\n      {show && <PageTitle title=\"Dashboard\" />}\n      <button onClick={() => setShow(false)}>Hide</button>\n    </div>\n  );\n}\n",
     hints: [
-      "useEffect(() => { const prev = document.title; document.title = title; return () => { document.title = prev; }; }, [title]);",
+      "Setting document.title is a side effect, so it belongs in useEffect with title as the dependency.",
+      "Read document.title into a variable inside the effect before you overwrite it, then put that value back in the cleanup.",
+      "With [title] as the dependency, a title change runs the old cleanup first, which restores the previous title before the new one is set, so the very first title is the one left at unmount.",
     ],
     solution: "function PageTitle({ title }) {\n  useEffect(() => {\n    const previous = document.title;\n    document.title = title;\n    return () => {\n      document.title = previous;\n    };\n  }, [title]);\n  return null;\n}\n\nfunction App() {\n  const [show, setShow] = useState(true);\n  return (\n    <div>\n      {show && <PageTitle title=\"Dashboard\" />}\n      <button onClick={() => setShow(false)}>Hide</button>\n    </div>\n  );\n}\n",
     tests: [
@@ -571,6 +573,7 @@ export const reactComponents: Exercise[] = [
       { name: "a changed title prop updates document.title", body: "document.title = \"Home\";\nconst view = render(<PageTitle title=\"Settings\" />);\nassert.equal(document.title, \"Settings\");\nview.rerender(<PageTitle title=\"Billing\" />);\nassert.equal(document.title, \"Billing\");" },
       { name: "unmounting after a title change restores the very first title", body: "document.title = \"Home\";\nconst view = render(<PageTitle title=\"Settings\" />);\nview.rerender(<PageTitle title=\"Billing\" />);\nview.unmount();\nassert.equal(document.title, \"Home\");" },
       { name: "renders nothing itself", body: "const { container } = render(<PageTitle title=\"X\" />);\nassert.equal(container.innerHTML, \"\");" },
+      { name: "re-rendering with the same title leaves it set", body: "document.title = \"Home\";\nconst view = render(<PageTitle title=\"Settings\" />);\nview.rerender(<PageTitle title=\"Settings\" />);\nassert.equal(document.title, \"Settings\");\nview.unmount();\nassert.equal(document.title, \"Home\");" },
     ],
   },
   {
@@ -974,6 +977,7 @@ export const reactComponents: Exercise[] = [
     hints: [
       "Build a map from category to its items (in order seen), then Object.entries it or track category order in an array.",
       "Key each section by category, each <li> by item.id.",
+      "Item ids only need to be unique within their own group's <ul>, because keys are compared among siblings.",
     ],
     solution: "function GroupedList({ items }) {\n  const groups = [];\n  const byCategory = new Map();\n  for (const item of items) {\n    if (!byCategory.has(item.category)) {\n      byCategory.set(item.category, []);\n      groups.push(item.category);\n    }\n    byCategory.get(item.category).push(item);\n  }\n\n  return (\n    <div>\n      {groups.map((category) => (\n        <section key={category}>\n          <h3>{category}</h3>\n          <ul>\n            {byCategory.get(category).map((item) => (\n              <li key={item.id}>{item.name}</li>\n            ))}\n          </ul>\n        </section>\n      ))}\n    </div>\n  );\n}\n\nfunction App() {\n  return (\n    <GroupedList\n      items={[\n        { id: 1, name: \"Apple\", category: \"Fruit\" },\n        { id: 2, name: \"Carrot\", category: \"Veg\" },\n        { id: 3, name: \"Banana\", category: \"Fruit\" },\n      ]}\n    />\n  );\n}\n",
     tests: [

@@ -218,7 +218,11 @@ export const react: Exercise[] = [
       "<p>Write <code>findDuplicateKeys(items)</code> returning the <code>id</code>s that appear more than once. React would silently reuse the DOM node for the second one &mdash; this is the check that catches it before it ships.</p>",
     starter:
       'function findDuplicateKeys(items) {\n  // TODO: return each duplicated id once, in first-seen order\n}\n\nconsole.log(findDuplicateKeys([{ id: "a" }, { id: "b" }, { id: "a" }])); // ["a"]\n',
-    hints: ["A Map from id to count gets you there in one pass.", "Only push an id into the result the first time its count crosses 1."],
+    hints: [
+      "A Map from id to count gets you there in one pass.",
+      "Only push an id into the result the first time its count crosses 1.",
+      "Keys only have to be unique among siblings, so this check runs on one list at a time, not the whole page.",
+    ],
     solution:
       'function findDuplicateKeys(items) {\n  const seen = new Map();\n  const dupes = [];\n  for (const item of items) {\n    const count = (seen.get(item.id) || 0) + 1;\n    seen.set(item.id, count);\n    if (count === 2) dupes.push(item.id);\n  }\n  return dupes;\n}\n',
     tests: [
@@ -245,6 +249,7 @@ export const react: Exercise[] = [
     hints: [
       "Copy the array first, then splice the copy — splice mutates whatever it's called on.",
       "Removing the item first shifts every later index down by one, including toIndex if it was after fromIndex.",
+      "Moving an item to its own index must leave the order exactly as it was; trace that case by hand before you run the tests.",
     ],
     solution:
       "function reorder(list, fromIndex, toIndex) {\n  const copy = list.slice();\n  const [item] = copy.splice(fromIndex, 1);\n  copy.splice(toIndex, 0, item);\n  return copy;\n}\n",
@@ -320,6 +325,7 @@ export const react: Exercise[] = [
     hints: [
       "Object.is(NaN, NaN) is true, unlike ===  — use Object.is, the same comparison React uses.",
       "A null prevDeps means there was no previous render to compare against.",
+      "Check the lengths before the loop, then return true on the first entry that differs.",
     ],
     solution:
       "function depsChanged(prevDeps, nextDeps) {\n  if (prevDeps === null) return true;\n  if (prevDeps.length !== nextDeps.length) return true;\n  for (let i = 0; i < nextDeps.length; i++) {\n    if (!Object.is(prevDeps[i], nextDeps[i])) return true;\n  }\n  return false;\n}\n",
@@ -343,7 +349,11 @@ export const react: Exercise[] = [
       "<p>Write <code>changedIndexes(prevDeps, nextDeps)</code> returning the indexes that differ &mdash; the debugging step after <code>depsChanged</code> says yes and you need to know which one.</p>",
     starter:
       "function changedIndexes(prevDeps, nextDeps) {\n  // TODO\n}\n\nconsole.log(changedIndexes([1, 2, 3], [1, 5, 3])); // [1]\n",
-    hints: ["Map each index to whether it changed, then filter for the ones that did."],
+    hints: [
+      "Map each index to whether it changed, then filter for the ones that did.",
+      "Compare with Object.is, the comparison React uses, so NaN equals NaN and 0 differs from -0.",
+      "Loop over nextDeps: an entry with no counterpart in prevDeps compares against undefined, so it counts as changed.",
+    ],
     solution:
       "function changedIndexes(prevDeps, nextDeps) {\n  const out = [];\n  for (let i = 0; i < nextDeps.length; i++) {\n    if (!Object.is(prevDeps[i], nextDeps[i])) out.push(i);\n  }\n  return out;\n}\n",
     tests: [
