@@ -1,5 +1,5 @@
 export interface KeyLike {
-  key: string;
+  key?: string;
   ctrlKey: boolean;
   metaKey: boolean;
   altKey: boolean;
@@ -7,6 +7,7 @@ export interface KeyLike {
 }
 
 export function isMenuShortcut(event: KeyLike): boolean {
+  if (typeof event.key !== "string") return false;
   return event.key.toLowerCase() === "k" && (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey;
 }
 

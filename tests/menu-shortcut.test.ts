@@ -14,6 +14,7 @@ describe("the menu shortcut", () => {
   it("is Ctrl or Command plus K and nothing wider", () => {
     expect(isMenuShortcut(press({ ctrlKey: true }))).toBe(true);
     expect(isMenuShortcut(press({ metaKey: true }))).toBe(true);
+    expect(isMenuShortcut({ ctrlKey: false, metaKey: false, altKey: false, shiftKey: false })).toBe(false);
     expect(isMenuShortcut(press({ ctrlKey: true, key: "K" }))).toBe(true);
     expect(isMenuShortcut(press({}))).toBe(false);
     expect(isMenuShortcut(press({ ctrlKey: true, shiftKey: true }))).toBe(false);

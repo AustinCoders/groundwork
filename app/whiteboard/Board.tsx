@@ -195,7 +195,7 @@ function ownsKey(e: KeyboardEvent): boolean {
   const control = t.closest("button, a, input, [role=menuitem], [role=tab]");
   if (!control) return false;
   if (e.key === " " || e.key === "Enter") return true;
-  return t.tagName === "INPUT" && e.key.startsWith("Arrow");
+  return t.tagName === "INPUT" && typeof e.key === "string" && e.key.startsWith("Arrow");
 }
 
 function useSmallScreen(): boolean {
@@ -1155,6 +1155,7 @@ export function Board() {
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
+      if (typeof e.key !== "string") return;
       if (typingInField(e) || ownsKey(e) || stateRef.current.editing) return;
       if ((e.target as HTMLElement | null)?.closest?.("dialog, [data-overlay]")) return;
       if (stateRef.current.walking) {
