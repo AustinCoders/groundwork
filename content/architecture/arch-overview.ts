@@ -37,7 +37,7 @@ export const archOverview: Chapter = {
   looks like computation had to move to the reader. When you run Python on a problem, the Python
   interpreter is WebAssembly running in a Web Worker in your tab. When you compile C++, the compiler
   is clang, compiled to WebAssembly, downloaded once and cached by your browser. When you save a
-  whiteboard, it goes to <code>localStorage</code>. The server never receives your code, your boards or your interview answers, because it has nowhere to put them.
+  whiteboard, it goes to <code>localStorage</code>. Without an account, the server never receives your code, your boards or your interview answers. An account is optional: if you sign in, the browser itself copies those saved keys to your own rows in a hosted Postgres database, guarded by row-level security, so they follow you to another device. The pages are still built ahead of time; the account is a layer on top, not a server the pages depend on.
 </p>
 
 <div class="table-scroll"><table>
@@ -45,7 +45,7 @@ export const archOverview: Chapter = {
 <tbody>
 <tr><td>Prerendered routes</td><td>1,803 in a local production build of this branch, counted from <code>.next/prerender-manifest.json</code></td></tr>
 <tr><td>Server functions</td><td>3, all under <code>/api/</code></td></tr>
-<tr><td>Databases</td><td>0</td></tr>
+<tr><td>Databases</td><td>1 hosted Postgres (Supabase), used only by optional accounts</td></tr>
 <tr><td>Topics</td><td>32 — 5 written, 25 outlined, 2 standalone</td></tr>
 <tr><td>Written chapters</td><td>253, plus 358 outlines</td></tr>
 <tr><td>Exercises with tests</td><td>962</td></tr>

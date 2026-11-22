@@ -9,7 +9,7 @@ export const archState: Chapter = {
   practice: [],
   ready: true,
   subtitle:
-    "Thirty-six localStorage keys, two sessionStorage keys, a query string and a URL hash. There are no accounts, no cookies and no database.",
+    "Thirty-six localStorage keys, two sessionStorage keys, a query string and a URL hash. There are no cookies; an optional account copies the learning keys to a database so they follow you.",
   body: `<h3>Everything is in the browser</h3>
 <p>
   This site keeps nothing about its readers on a server. No file under <code>app/</code> uses

@@ -139,8 +139,8 @@ export const archScaling: Chapter = {
   hold in your head.
 </p>
 <ul>
-<li><strong>No database.</strong> The content is the repository, and the reader's state is their browser.</li>
-<li><strong>No authentication.</strong> Nothing is gated, so there is no session, no reset flow and no account to breach.</li>
+<li><strong>No database in the page path.</strong> The content is the repository, and the reader's state is their browser. Optional accounts copy that state to Supabase from the browser; no page waits on it to render.</li>
+<li><strong>Authentication without a server of its own.</strong> Sign-in, sessions and password resets are Supabase Auth, called from the browser. The site's own functions never see a password or a token.</li>
 <li><strong>No cache layer of its own.</strong> The CDN is the cache and the build is the invalidation.</li>
 <li><strong>No queue, no background jobs.</strong> Anything slow happens at build time or in the reader's browser. The daily cleanup runs on GitHub, not in the app.</li>
 <li><strong>No server-side code execution.</strong> The playground runs on the reader's machine, so untrusted code never reaches the server.</li>

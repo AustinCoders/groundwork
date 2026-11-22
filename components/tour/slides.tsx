@@ -164,7 +164,7 @@ function MenuStage() {
             { value: 3, label: "day streak" },
           ]}
         />
-        <p className={styles.cardFoot}>Saved in this browser, no account.</p>
+        <p className={styles.cardFoot}>Saved in this browser; sign in to sync.</p>
       </Card>
       <Card at="c" tone="note" tilt={-1}>
         <CardKicker>Always in the header</CardKicker>

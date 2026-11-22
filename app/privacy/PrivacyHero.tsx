@@ -37,8 +37,9 @@ export function PrivacyHero({
           <Underlined>Privacy</Underlined>
         </Heading>
         <Lead>
-          There is no account and no database behind this site. Most of what you do stays in this browser. This page
-          lists everything that does not, and the service that receives it.
+          An account is optional. Without one, what you do stays in this browser. With one, your saved progress is
+          copied to your account so it follows you. This page lists everything that leaves the browser, and who receives
+          it.
         </Lead>
         <Actions>
           <Button href="#leaves">
@@ -70,9 +71,12 @@ export function PrivacyHero({
           <Remark>jump to any of them</Remark>
         </Card>
         <Card at="b" tone="note" tilt={1}>
-          <Tag tone="success">✓ no account</Tag>
+          <Tag tone="success">✓ account optional</Tag>
           <CardKicker>In short</CardKicker>
-          <p className={styles.short}>There is nothing to sign up for, and the site sets no cookies of its own.</p>
+          <p className={styles.short}>
+            You can use the site without signing up. It sets no cookies of its own, and an account can be deleted in one
+            step.
+          </p>
         </Card>
         <Card at="c" tilt={-1}>
           <CardKicker>Questions</CardKicker>

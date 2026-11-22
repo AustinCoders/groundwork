@@ -44,10 +44,10 @@ export default function AboutPage() {
           mark="i"
           kicker="What this site is"
           title="About"
-          lead="A free place to learn programming fundamentals and prepare for interviews, with no account. This page says how the content is made, how it is checked, and where it is still thin."
+          lead="A free place to learn programming fundamentals and prepare for interviews; an account is optional. This page says how the content is made, how it is checked, and where it is still thin."
           entries={ENTRIES}
           updated="Last updated 7 November 2026"
-          tag="✓ no account"
+          tag="✓ account optional"
           short="Written with AI assistance under a written standard, checked by tests and independent reviews, and run by one person."
           contact="help@austincoders.com"
           jump={{ href: "#made", label: "How it is made" }}
@@ -57,7 +57,8 @@ export default function AboutPage() {
           <p>
             Groundwork is a set of chapters, practice problems and interview answers for developers. You read a chapter,
             run its code in the browser, solve exercises that are graded by real tests, and review what you got wrong.
-            Everything works without signing up, and your progress stays in your browser.
+            Reading, the playground, exercises and mock interviews work without signing up. A free account keeps your
+            progress, review queue, mock history and boards in sync across devices.
           </p>
           <p>
             It is not a course with a teacher or a certificate. It is a reference and a practice room, and it says

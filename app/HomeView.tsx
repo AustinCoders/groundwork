@@ -334,7 +334,7 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
       },
       {
         q: "Do I need to sign up?",
-        a: "No. There is no account. Your progress, streak and boards are saved in this browser. Some things do leave it: anonymous page analytics, the text the narrator reads aloud, error reports, requests to a CDN for the playground's language runtimes, and the request logs every web host keeps.",
+        a: "No. Reading, exercises, the playground and mock interviews work without an account, and your progress is saved in this browser. A free account is optional: it keeps your progress, review queue, mock history and boards in sync across devices. Some things leave the browser either way: anonymous page analytics, the text the narrator reads aloud, error reports, requests to a CDN for the playground's language runtimes, and the request logs every web host keeps.",
         link: { href: "/privacy", label: "What leaves, and where it goes →" },
       },
       {

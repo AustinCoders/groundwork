@@ -223,8 +223,8 @@ export const archRoutes: Chapter = {
 </ul>
 <p>
   The limit of this design is the length of a URL. A large board makes a long link, and a link that
-  contains the data cannot be edited after it is sent. For a site with no accounts, that is the right
-  trade.
+  contains the data cannot be edited after it is sent. Accounts are optional, so a link
+  still has to work for someone who never signs in, and that keeps it the right trade.
 </p>
 
 <h3>The page frames</h3>

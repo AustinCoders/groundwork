@@ -26,8 +26,9 @@ export const archDelivery: Chapter = {
   to the same path on the real domain.
 </p>
 <p>
-  There is no CI service. The checks run on the author's machine, by hand: <code>npm run check</code>, a build and
-  <code>npm run test:e2e</code>. A preview can be live before any of them has run. Vercel's commit status, called
+  GitHub Actions runs the checks on every pull request and every push to <code>main</code>:
+  <code>npm run check</code>, then a build and <code>npm run test:e2e</code> (<code>.github/workflows/check.yml</code>).
+  Vercel builds the preview at the same time, so a preview can be live before the checks finish. Vercel's commit status, called
   <code>Vercel</code>, says whether the preview built.
 </p>
 
@@ -94,8 +95,8 @@ export const archDelivery: Chapter = {
   The whole file is one rule: <code>"git": { "deploymentEnabled": { "dependabot/**": false } }</code>.
   Dependabot opens grouped pull requests every week, one each for Next, React, CodeMirror and the dev
   tooling, plus monthly ones for GitHub Actions. Each would otherwise build a full preview
-  deployment that nobody would ever open. Nothing runs on those branches either: with no CI service, a bump is checked only when
-  someone pulls the branch and runs <code>npm run check</code> and a build, which answer whether it breaks anything without a deployment.
+  deployment that nobody would ever open. The check workflow does run on those pull requests, so a bump shows whether it breaks the
+  checks, the build or the smoke spec without a deployment.
 </p>
 
 <h3>Why the storage filled up</h3>

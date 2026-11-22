@@ -36,9 +36,13 @@ const COMPARE = [
 ];
 
 const NOTES = [
-  { title: "No account", text: "No sign-up and no card. Open a chapter and read.", tone: "mark" },
+  { title: "Account optional", text: "No card, and no sign-up needed to read. Sign in only to sync.", tone: "mark" },
   { title: "All of it free", text: "Every chapter, exercise, mock and the whiteboard.", tone: "info" },
-  { title: "Stays on this device", text: "Progress, streak and boards are saved in this browser.", tone: "success" },
+  {
+    title: "Yours to keep",
+    text: "Progress and boards save in this browser, and sync if you sign in.",
+    tone: "success",
+  },
 ];
 
 export function FaqScene({ head, faqs, languages }: { head: ReactNode; faqs: Faq[]; languages: number }) {

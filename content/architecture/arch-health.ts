@@ -155,7 +155,7 @@ export const archHealth: Chapter = {
 <tr><td>The heaviest pages have no Lighthouse budget</td><td><span class="chip tone-warn">Real</span></td><td><code>/practice</code> and the problem pages ship 422 KB of gzipped script and are not on the URL list.</td></tr>
 <tr><td>The narrator depends on an unofficial service</td><td>Accepted</td><td><code>msedge-tts</code> was a known risk when it went in. It degrades to no narration, not to a broken page.</td></tr>
 <tr><td>The policy allows inline scripts and <code>eval</code></td><td>Accepted</td><td>Needed by the theme script and the playground. Nothing a reader controls is rendered as HTML.</td></tr>
-<tr><td>Progress lives in one browser</td><td>Accepted, for now</td><td>No accounts means no sync. See the roadmap chapter.</td></tr>
+<tr><td>Progress lives in one browser</td><td>Fixed</td><td>Optional accounts sync progress, quiz and mock results, boards and code drafts across devices; without one, progress stays in the browser.</td></tr>
 </tbody>
 </table></div>
 

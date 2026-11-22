@@ -19,9 +19,10 @@ export const archTesting: Chapter = {
 <li><strong>Playwright</strong> in a real browser, against a production build: one small smoke spec.</li>
 </ul>
 <p>
-  There is no CI service. A GitHub workflow used to run the compiler, the linters, the unit tests, the build, about 570
-  browser tests and Lighthouse on every push and pull request; it was removed, and nothing runs these checks for the author
-  now. The browser suite was cut to the smoke spec described below. The test counts in this chapter are counted from the
+  A GitHub workflow, <code>.github/workflows/check.yml</code>, runs <code>npm run check</code> on every pull request
+  and every push to <code>main</code>, then the production build and the smoke spec described below. An earlier, larger
+  workflow ran about 570 browser tests and Lighthouse; it was removed, and the browser suite was cut to the smoke spec.
+  Lighthouse still runs only by hand. The test counts in this chapter are counted from the
   working tree of the branch it was last edited on.
 </p>
 

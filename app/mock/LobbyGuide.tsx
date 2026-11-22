@@ -317,7 +317,7 @@ const FAQS = [
   },
   {
     q: "Is any of this sent anywhere?",
-    a: "No. Your loops, scores and notes stay in this browser. There is no account and nothing to sign up for.",
+    a: "Not unless you sign in. Without an account your loops, scores and notes stay in this browser. With a free account, your mock history is copied to it so the readiness board follows you to other devices.",
   },
 ];
 

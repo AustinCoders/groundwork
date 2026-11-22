@@ -11,17 +11,17 @@ export const archTechStack: Chapter = {
   subtitle: "Every dependency, what it does here, where it runs, and what it would cost to remove.",
   body: `<h3>The frame</h3>
 <p>
-  <code>package.json</code> lists 43 runtime dependencies and 16 development ones. That sounds like a
-  lot for a static site, and it is: 20 of the 43 are <code>@codemirror/</code> packages, and most of the
+  <code>package.json</code> lists 43 runtime dependencies and 15 development ones. That sounds like a
+  lot for a static site, and it is: 18 of the 43 are <code>@codemirror/</code> packages, and most of the
   rest exist for the editor. The frame the site actually sits in is small.
 </p>
 <div class="table-scroll"><table>
 <thead><tr><th>Thing</th><th>Version</th><th>What it does here</th></tr></thead>
 <tbody>
-<tr><td><b>Next.js</b> (App Router)</td><td>16.3.0</td><td>Routing, the build, static generation, metadata routes, the server/client split</td></tr>
-<tr><td><b>React</b></td><td>19.2.8</td><td>Components; server components for everything that does not need a browser</td></tr>
+<tr><td><b>Next.js</b> (App Router)</td><td>16.4.6</td><td>Routing, the build, static generation, metadata routes, the server/client split</td></tr>
+<tr><td><b>React</b></td><td>19.3.1</td><td>Components; server components for everything that does not need a browser</td></tr>
 <tr><td><b>TypeScript</b></td><td>5.9.3</td><td>Types the code and the content, so a malformed chapter fails the build. The same package also runs in the browser as the playground's TypeScript compiler</td></tr>
-<tr><td><b>CSS</b></td><td>&mdash;</td><td><code>app/globals.css</code> at about 7,400 lines, plus 87 CSS modules for the pages and tools that carry their own styles</td></tr>
+<tr><td><b>CSS</b></td><td>&mdash;</td><td><code>app/globals.css</code> at about 7,400 lines, plus 89 CSS modules for the pages and tools that carry their own styles</td></tr>
 <tr><td><b>Tailwind</b></td><td>4</td><td>Imported for its theme and utilities layers only, with no preflight reset. The site is styled with custom properties and its own class names</td></tr>
 <tr><td><b>Vercel</b></td><td>&mdash;</td><td>Host, CDN, firewall, analytics</td></tr>
 <tr><td><b>Node</b></td><td>24.x</td><td>Pinned in <code>engines</code> and to 24 in <code>.nvmrc</code>, so the local tools, Vercel and the project settings agree</td></tr>
@@ -137,6 +137,7 @@ export const archTechStack: Chapter = {
 <li><b>clsx</b> and <b>tailwind-merge</b> &mdash; one helper, <code>cn()</code> in <code>lib/utils.ts</code>, for that Select.</li>
 <li><b>next/font</b> &mdash; 13 Google font families behind the 7 font styles in the display picker, alongside 9 colour themes.</li>
 <li><b>Vercel Analytics and Speed Insights</b> &mdash; pageviews and field Core Web Vitals.</li>
+<li><b>@supabase/supabase-js</b> &mdash; optional accounts: sign-in, sessions and the sync of saved progress, in <code>lib/account/</code>. Loaded on demand, so a reader who never signs in never downloads it.</li>
 <li><b>@sentry/nextjs</b> &mdash; imported only when <code>NEXT_PUBLIC_SENTRY_DSN</code> is set. Without it, browser errors are posted to <code>/api/client-error</code> and land in the function log instead.</li>
 </ul>
 
@@ -160,8 +161,10 @@ export const archTechStack: Chapter = {
 <p>
   No state management library: <code>useSyncExternalStore</code> over small storage modules covers it.
   No component library beyond that one Select: the site has its own vocabulary and its own stylesheet.
-  No ORM, because there is no database. No CMS, because the content is the repository. No auth, because
-  there is nothing per-user on the server. And no code-execution service: every language that runs, runs
+  No ORM: the one database, behind the optional accounts, is reached through <code>@supabase/supabase-js</code>
+  from the browser, and the SDK is only downloaded once someone opens sign-in or already has a session. No
+  CMS, because the content is the repository. No auth server of its own: Supabase Auth issues the sessions and
+  row-level security keeps each reader to their own rows. And no code-execution service: every language that runs, runs
   in the reader's tab, which is why the playground costs nothing to operate however much it is used.
 </p>
 </div>`,

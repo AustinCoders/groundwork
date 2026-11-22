@@ -157,7 +157,8 @@ export function SiteFooter() {
               {SITE_NAME}
             </p>
             <p className={styles.about}>
-              Written with AI assistance and checked by tests. Your progress stays on your device.
+              Written with AI assistance and checked by tests. Progress stays on your device unless you sign in to sync
+              it.
             </p>
             <div className={styles.footCta}>
               <Link className={styles.footPrimary} href={next.primary.href} prefetch={false}>

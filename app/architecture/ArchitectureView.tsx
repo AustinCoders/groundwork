@@ -76,7 +76,7 @@ const LANES: Lane[] = [
         note: "An SVG board with undo, arrows that follow and share links",
       },
       { chapter: "arch-mock", label: "Mock interviews", note: "Planner, rubric scoring and an adaptive interviewer" },
-      { chapter: "arch-state", label: "State", note: "localStorage, the URL and share hashes; no accounts" },
+      { chapter: "arch-state", label: "State", note: "localStorage, the URL and share hashes; optional account sync" },
     ],
   },
   {

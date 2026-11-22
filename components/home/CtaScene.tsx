@@ -19,7 +19,7 @@ export function CtaScene({ head }: { head: ReactNode }) {
             Solve a problem
           </Link>
         </div>
-        <p className={styles.micro}>Open a chapter. No account, no card, no catch.</p>
+        <p className={styles.micro}>Open a chapter. No card, no catch, and an account only if you want sync.</p>
       </Copy>
       <Stage tone="orange" className={styles.ctaStage}>
         <StageCard rot={-3} depth={-14} i={1} className={styles.cChapter}>
