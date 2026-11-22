@@ -2,6 +2,7 @@
 
 import { openAuth } from "@/lib/account/config";
 import { useAccount } from "@/lib/account/session";
+import { GateHero } from "./GateHero";
 import styles from "./account.module.css";
 
 export type GatedFeature = "progress" | "review" | "mock-history" | "boards" | "account";
@@ -46,6 +47,9 @@ export function SignInGate({
   const account = useAccount();
   if (account.status === "off" || account.status === "in") return <>{children}</>;
   if (account.status === "loading") return <div className={styles.gateWait} aria-busy="true" />;
+  if (!compact && (feature === "progress" || feature === "review" || feature === "account")) {
+    return <GateHero feature={feature} />;
+  }
   const copy = COPY[feature];
   const Heading = compact ? "h2" : "h1";
   return (

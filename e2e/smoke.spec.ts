@@ -110,7 +110,7 @@ const PAGES = [
   { path: "/interview", heading: /From the first call to the offer/i },
   { path: "/mock", heading: /mock interview/i },
   { path: "/review", heading: /due today|nothing to review|Sign in to open your review queue/i },
-  { path: "/progress", heading: /Level \d+|Sign in to see your progress/ },
+  { path: "/progress", heading: /Level \d+|Your progress/ },
   { path: "/privacy", heading: /Privacy/ },
   { path: "/architecture", heading: /How this site is built/i },
   { path: "/git", heading: /Git/i },
