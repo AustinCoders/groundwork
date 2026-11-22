@@ -22,6 +22,10 @@ updates:
       # @types/node tracks the runtime in .nvmrc, not the newest release.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      # TypeScript 7 ships without the JavaScript compiler API; the playground imports
+      # "typescript" in the browser to type-check and transpile, so a major bump breaks it.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /

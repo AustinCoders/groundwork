@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## groundwork
 
-A free study site for JavaScript and interview prep: notes, runnable exercises, an interview book, mock interviews and a whiteboard. Next.js 16 App Router, React 19, TypeScript, CSS modules, no backend; progress lives in localStorage.
+A free study site for JavaScript and interview prep: notes, runnable exercises, an interview book, mock interviews and a whiteboard. Next.js 16 App Router, React 19, TypeScript, CSS modules. Pages are static; progress lives in localStorage, and optional accounts (Supabase, called from the browser, `lib/account/`) sync it across devices. Supabase schema changes go in `supabase/migrations/`; see `docs/accounts.md`.
 
 ## Policy
 
@@ -23,7 +23,7 @@ A free study site for JavaScript and interview prep: notes, runnable exercises, 
 ## Running and verifying
 
 - Use Node 24 (`.nvmrc`): the default shell here is Node 22, so prefix commands with `PATH=~/.nvm/versions/node/v24.14.1/bin:$PATH`.
-- There is no CI service: nothing runs the checks unless you do. `npm run check` (typecheck, lint, comments, format, spell, unit tests) skips the build and e2e. `npm run build` then `npm run test:e2e` runs the one small Playwright smoke spec (about 19 tests, around ten seconds) against the production build on port 3100.
+- GitHub Actions (`.github/workflows/check.yml`) runs `npm run check`, the build and the e2e spec on every pull request and push to `main`; still run them locally before pushing. `npm run check` (typecheck, lint, comments, format, spell, unit tests) skips the build and e2e. `npm run build` then `npm run test:e2e` runs the one small Playwright smoke spec (29 tests, about two minutes) against the production build on port 3100.
 - The unit tests (`npm test`) carry most of the checking, including `tests/claims.test.ts` (numbers in the "How this is built" chapters) and the contrast and theme tests. The old browser suite (axe in nine themes, composition probes, per-page specs) was cut; layout, focus and hydration on the pages it covered are checked by looking.
 - Lighthouse budgets (`.lighthouserc.json`) run only on request: `npm run build && npm run test:perf`.
 - Tip: pushing a branch makes Vercel build a preview; its commit status `Vercel` shows whether it built, and it links the preview URL to open.
