@@ -29,7 +29,8 @@ function fontName(value: FontValue): string {
   return plain(FONT_ITEMS.find((item) => item.value === value)?.label ?? value);
 }
 
-export function LookDialog({ onClose }: { onClose: () => void }) {
+export function LookDialog({ onClose, onStart }: { onClose: () => void; onStart?: () => void }) {
+  const welcome = onStart !== undefined;
   const titleId = useId();
   const done = useRef<HTMLButtonElement>(null);
   const [theme] = useThemeChoice();
@@ -73,13 +74,21 @@ export function LookDialog({ onClose }: { onClose: () => void }) {
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
+          data-tour-prompt={welcome || undefined}
         >
           <header className={styles.head}>
-            <p className={styles.headTitle} id={titleId}>
-              Make it yours
-            </p>
+            <div className={styles.lookHead}>
+              <p className={styles.headTitle} id={titleId}>
+                {welcome ? "Welcome to Groundwork" : "Make it yours"}
+              </p>
+              {welcome && (
+                <p className={styles.lookLead}>
+                  First time here? Pick how your notebook looks, then take a 30-second tour of where everything lives.
+                </p>
+              )}
+            </div>
             <button type="button" className={styles.skip} onClick={onClose}>
-              Close
+              {welcome ? "Skip" : "Close"}
             </button>
           </header>
           <div className={`${styles.body} ${styles.lookBody}`}>
@@ -116,9 +125,20 @@ export function LookDialog({ onClose }: { onClose: () => void }) {
           </div>
           <footer className={styles.foot}>
             <p className={styles.lookNote}>Change it any time from the Menu, under Appearance.</p>
-            <button type="button" className={styles.primary} ref={done} onClick={onClose}>
-              Done
-            </button>
+            {welcome ? (
+              <div className={styles.steps}>
+                <button type="button" className={styles.ghost} onClick={onClose}>
+                  Skip the tour
+                </button>
+                <button type="button" className={styles.primary} ref={done} onClick={onStart}>
+                  Start the tour →
+                </button>
+              </div>
+            ) : (
+              <button type="button" className={styles.primary} ref={done} onClick={onClose}>
+                Done
+              </button>
+            )}
           </footer>
         </div>
       </FocusTrap>

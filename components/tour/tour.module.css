@@ -1,117 +1,18 @@
-.prompt {
-  position: fixed;
-  left: 24px;
-  bottom: max(20px, env(safe-area-inset-bottom));
-  z-index: 120;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: min(360px, calc(100vw - 32px));
-  padding: 24px 22px 18px;
-  color: var(--ink);
-  background: var(--sheet);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  box-shadow: var(--shadow-lg);
-}
-
-.promptTape {
-  position: absolute;
-  top: -12px;
-  left: 50%;
-  width: 88px;
-  height: 24px;
-  background: var(--tape);
-  border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
-  border-radius: 2px;
-  translate: -50% 0;
-  rotate: -2deg;
-}
-
-.promptTitle {
-  margin: 0;
-  font-family: var(--font-heading);
-  font-size: var(--t-heading);
-  font-weight: 700;
-  line-height: 1.1;
-}
-
-.promptText {
-  margin: 0;
-  font-size: var(--t-body);
-  line-height: 1.5;
-  color: var(--ink-soft);
-}
-
-.promptActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.promptLook {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  padding-top: 10px;
-  border-top: 1px dashed var(--line);
-}
-
-.promptLookLabel {
-  margin-right: 2px;
-  font-size: var(--t-kicker);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--pencil);
-}
-
-.promptLookButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 0 14px 0 8px;
-  font-family: var(--font-heading);
-  font-size: var(--t-control);
-  font-weight: 700;
-  color: var(--ink);
-  cursor: pointer;
-  background: var(--sheet-2);
-  border: 1.5px solid var(--line);
-  border-radius: 12px;
-  transition: border-color 0.15s ease;
-}
-
-.promptLookButton:hover {
-  border-color: var(--primary);
-}
-
-.promptLookButton:focus-visible {
-  outline: 2.5px solid var(--primary);
-  outline-offset: 2px;
-}
-
-.promptSwatch {
-  display: inline-flex;
-  gap: 3px;
-  padding: 5px 6px;
-  background: var(--sheet);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-}
-
-.promptSwatch span {
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
-}
-
 .lookDialog {
   width: min(980px, 100%);
+}
+
+.lookHead {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.lookLead {
+  margin: 0;
+  font-size: var(--t-body);
+  line-height: 1.45;
+  color: var(--ink-soft);
 }
 
 .lookBody {
@@ -253,15 +154,10 @@
     order: -1;
     padding-top: 6px;
   }
-}
 
-.lookStage {
-  display: grid;
-  align-content: center;
-  gap: 8px;
-  width: min(100%, 520px);
-  margin: auto;
-  padding: 8px 12px;
+  .lookNote {
+    display: none;
+  }
 }
 
 .lookHeading {
@@ -271,47 +167,6 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--pencil);
-}
-
-@media (min-width: 1101px) {
-  .prompt {
-    right: 88px;
-    left: auto;
-    display: grid;
-    grid-template-areas:
-      "title actions"
-      "text actions"
-      "look look";
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    column-gap: 16px;
-    row-gap: 2px;
-    width: min(600px, 42vw);
-    padding: 12px 16px;
-  }
-
-  .promptTape {
-    display: none;
-  }
-
-  .promptTitle {
-    grid-area: title;
-  }
-
-  .promptText {
-    grid-area: text;
-    line-height: 1.35;
-  }
-
-  .promptLook {
-    grid-area: look;
-  }
-
-  .promptActions {
-    grid-area: actions;
-    margin-top: 0;
-    flex-wrap: nowrap;
-  }
 }
 
 .primary,
@@ -752,10 +607,6 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .prompt {
-    animation: promptIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
-  }
-
   .backdrop {
     animation: scrimIn 0.25s ease-out backwards;
   }
@@ -785,12 +636,6 @@
   .stage .flipCard .flip {
     transform-style: preserve-3d;
     animation: flipOver 1s 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
-  }
-}
-
-@keyframes promptIn {
-  from {
-    transform: translateY(28px) rotate(1.5deg);
   }
 }
 
@@ -825,15 +670,6 @@
 }
 
 @media (max-width: 720px) {
-  .prompt {
-    right: 12px;
-    bottom: max(12px, env(safe-area-inset-bottom));
-    left: 12px;
-    width: auto;
-    max-width: 480px;
-    margin-inline: auto;
-  }
-
   .root {
     padding: 10px;
   }

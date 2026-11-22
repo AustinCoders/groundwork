@@ -185,19 +185,21 @@ describe("whether to offer the tour", () => {
 });
 
 describe("the tour's slides", () => {
-  it("are six, each with real text and one composed stage", () => {
-    expect(SLIDES).toHaveLength(6);
+  it("are five, each with real text and one composed stage", () => {
+    expect(SLIDES).toHaveLength(5);
     for (const slide of SLIDES) {
       expect(slide.title.length, slide.id).toBeGreaterThan(10);
       expect(slide.lead.length, slide.id).toBeGreaterThan(60);
       expect(slide.stage, slide.id).toBeTruthy();
     }
-    expect(new Set(SLIDES.map((slide) => slide.id)).size).toBe(6);
+    expect(new Set(SLIDES.map((slide) => slide.id)).size).toBe(5);
   });
 
-  it("open on the look of the site, with every theme and handwriting", () => {
-    expect(SLIDES[0].id).toBe("look");
-    expect(SLIDES[0].lead).toMatch(/Appearance/);
+  it("greets a first visit in a centred dialog that sets the look before the tour", () => {
+    const prompt = read("components/tour/TourPrompt.tsx");
+    expect(prompt).toContain("<LookDialog");
+    expect(prompt).toContain("onStart={onStart}");
+    expect(read("components/tour/LookDialog.tsx")).toContain('aria-modal="true"');
   });
 
   it("send every action to a page the tour does not cover", () => {
