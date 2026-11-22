@@ -15,6 +15,7 @@ import {
   updateProfile,
   useAccount,
   verifyEmailCode,
+  verifySignupCode,
   type Experience,
   type Goal,
   type OAuthProvider,
@@ -402,7 +403,8 @@ export function AuthDialog({
       setFormError(codeProblem(value));
       return;
     }
-    if (await run("submit", () => verifyEmailCode(email, value))) onClose();
+    const check = step === "confirm" ? verifySignupCode : verifyEmailCode;
+    if (await run("submit", () => check(email, value))) onClose();
   }
 
   async function onSubmit(event: React.FormEvent) {
@@ -499,28 +501,66 @@ export function AuthDialog({
             ) : step === "confirm" ? (
               <>
                 <p className={styles.notice} role="status">
-                  We sent a link to <strong>{email.trim()}</strong>. Open it on this device to finish creating your
-                  account. It can take a minute; check spam if it does not arrive.
+                  We sent a 6-digit code to <strong>{email.trim()}</strong>. Type it here, or open the link in the same
+                  email on this device.
                 </p>
-                {formError && (
-                  <p className={styles.formError} role="alert">
-                    {formError}
-                  </p>
-                )}
-                <button
-                  type="button"
-                  className={styles.secondary}
-                  disabled={busy !== null || cooldown > 0}
-                  onClick={async () => {
-                    if (await run("resend", () => resendSignupEmail(email, next))) setCooldown(RESEND_SECONDS);
+                <form
+                  noValidate
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void verify(code);
                   }}
                 >
-                  {busy === "resend"
-                    ? "Sending…"
-                    : cooldown > 0
-                      ? `Resend the link in ${cooldown}s`
-                      : "Resend the link"}
-                </button>
+                  <Field
+                    label="6-digit code"
+                    type="text"
+                    value={code}
+                    onChange={(v) => {
+                      const digits = v.replace(/\D/g, "").slice(0, 6);
+                      setCode(digits);
+                      setFormError(null);
+                      if (digits.length === 6 && busy === null) void verify(digits);
+                    }}
+                    error={null}
+                    autoComplete="one-time-code"
+                    inputMode="numeric"
+                    autoFocus
+                    maxLength={6}
+                    code
+                  />
+                  {formError && (
+                    <p className={styles.formError} role="alert">
+                      {formError}
+                    </p>
+                  )}
+                  <button type="submit" className={styles.submit} disabled={busy !== null}>
+                    {busy === "submit" ? (
+                      <>
+                        <span className={styles.spinner} aria-hidden="true" />
+                        Checking…
+                      </>
+                    ) : (
+                      "Verify and continue"
+                    )}
+                  </button>
+                </form>
+                <p className={styles.switch}>
+                  Nothing arrived?{" "}
+                  <button
+                    type="button"
+                    className={styles.textLink}
+                    disabled={busy !== null || cooldown > 0}
+                    onClick={async () => {
+                      if (await run("resend", () => resendSignupEmail(email, next))) setCooldown(RESEND_SECONDS);
+                    }}
+                  >
+                    {busy === "resend"
+                      ? "Sending…"
+                      : cooldown > 0
+                        ? `Send a new code in ${cooldown}s`
+                        : "Send a new code"}
+                  </button>
+                </p>
                 <p className={styles.switch}>
                   Already confirmed?{" "}
                   <button type="button" className={styles.textLink} onClick={() => go("password", "sign-in")}>

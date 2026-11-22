@@ -259,6 +259,15 @@ export function verifyEmailCode(email: string, code: string): Promise<Result> {
   });
 }
 
+export function verifySignupCode(email: string, code: string): Promise<Result> {
+  return withClient(async (db) => {
+    const first = await db.auth.verifyOtp({ email: email.trim(), token: code.trim(), type: "email" });
+    if (!first.error) return { ok: true, value: undefined };
+    const second = await db.auth.verifyOtp({ email: email.trim(), token: code.trim(), type: "signup" });
+    return second.error ? { ok: false, error: friendlyAuthError(first.error) } : { ok: true, value: undefined };
+  });
+}
+
 export type OAuthProvider = OAuthProviderId;
 
 export function signInWithProvider(provider: OAuthProvider, next: string): Promise<Result> {

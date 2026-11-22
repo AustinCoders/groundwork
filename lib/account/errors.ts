@@ -13,7 +13,7 @@ const BY_CODE: Record<string, string> = {
   signup_disabled: "New accounts are paused for now. Try again later.",
   email_address_not_authorized:
     "We cannot send email to that address yet. Sign in with Google or GitHub, or try again later.",
-  otp_expired: "That code or link has expired. Ask for a new one.",
+  otp_expired: "That code is wrong or has expired. Check the newest email, or send a new code.",
   otp_disabled: "Email sign-in links are turned off right now. Use your password instead.",
   provider_disabled: "This sign-in option is not turned on yet. Use your email instead.",
   session_not_found: "Your session ended. Sign in again.",
@@ -31,6 +31,7 @@ export function friendlyAuthError(error: unknown): string {
     const status = typeof error.status === "number" ? error.status : 0;
     if (status === 429) return BY_CODE.over_request_rate_limit;
     const message = typeof error.message === "string" ? error.message : "";
+    if (/token has expired or is invalid/i.test(message)) return BY_CODE.otp_expired;
     if (/failed to fetch|network|load failed/i.test(message)) {
       return "Could not reach the server. Check your connection and try again.";
     }
