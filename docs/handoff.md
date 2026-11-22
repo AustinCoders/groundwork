@@ -74,4 +74,11 @@ Who the learner is, languages beyond JavaScript, one release or level by level, 
 
 - `react-usestate`, `react-lists-keys`, `react-useeffect-basics` rewritten to the standard on `feature/p0-accounts-sync` (4,044 / 3,561 / 3,545 words by the chapter-standards count). Every behaviour claimed (update queue, batching, bail-out, Strict Mode double calls, index-key bug, reorder DOM moves, effect and cleanup order, the fetch race) was run against React 19.3.1 in jsdom first.
 - Their exercises now have three hints each; two new tests (two independent counters, a re-render with the same title).
-- Self-checks for these chapters wait for the JS and React check work (ROADMAP P0 table). Next batch: `react-useref`, `react-context`, `react-usereducer`.
+- Self-checks for these chapters wait for the JS and React check work (ROADMAP P0 table).
+
+## React P0 chapters, batches 2 to 5 (2026-11-22)
+
+- The other 12 interview chapters are rewritten to the standard on `feature/p0-accounts-sync`: `react-useref`, `react-context`, `react-usereducer`, `react-custom-hooks`, `react-effects-depth`, `react-memoisation`, `react-fiber`, `react-concurrent`, `react-suspense`, `react-server-components`, `react-sync-external-store`, `react-performance` (3,502 to 3,531 words each). Each gained `prerequisites`.
+- Behaviour quoted was run against React 19.3.1 in jsdom first, including: hooks share logic not state, the `useLocalStorage` changing-key overwrite, `useEffectEvent` and its render-time error, derived-state and effect-chain render counts, memo outcomes for five prop shapes, immutable list toggles rendering one row, begin and completion order, which changes keep state, transition and deferred render pairs, async action pending states, the suspend and transition sequence for one boundary, the uncached promise loop, and `useSyncExternalStore` loops, resubscription and hydration. The 19.3 transition change was checked against the release notes.
+- Exercises: every exercise on the 15 chapters now has three hints and at least six tests. `ex-react-would-bail-out`'s solution now treats a renamed undefined prop as a change, with a test.
+- The React search index budget is 160 KB (`tests/search-index.test.ts`).
