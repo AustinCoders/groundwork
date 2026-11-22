@@ -81,7 +81,7 @@ export function FrameHeader({
     .join(" ");
 
   return (
-    <header className={headerClass}>
+    <header className={headerClass} style={{ viewTransitionName: "gw-header" }}>
       <BackButton
         variant="bar"
         className="head-back"

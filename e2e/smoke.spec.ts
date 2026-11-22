@@ -109,7 +109,10 @@ const PAGES = [
   { path: "/problems", heading: /problem/i },
   { path: "/interview", heading: /From the first call to the offer/i },
   { path: "/mock", heading: /mock interview/i },
-  { path: "/review", heading: /due today|nothing to review|Sign in to open your review queue/i },
+  {
+    path: "/review",
+    heading: /due today|nothing to review|Sign in to open your review queue|Remember it next month too/i,
+  },
   { path: "/progress", heading: /Level \d+|Your progress/ },
   { path: "/privacy", heading: /Privacy/ },
   { path: "/architecture", heading: /How this site is built/i },

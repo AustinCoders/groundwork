@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AuthHost } from "@/components/account/AuthHost";
 import { ErrorReporter } from "@/components/ErrorReporter";
+import { NavProgress } from "@/components/NavProgress";
 import { RouteFade } from "@/components/RouteFade";
+import { Splash } from "@/components/Splash";
 import { fontVariables } from "@/lib/fonts";
+import { SPLASH_SCRIPT } from "@/lib/splashScript";
 import { THEME_INIT_SCRIPT } from "@/lib/themeInitScript";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { TopicsNavProvider } from "@/lib/topicNav";
@@ -46,8 +50,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <meta name="color-scheme" content="light dark" />
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: SPLASH_SCRIPT }} />
       </head>
       <body suppressHydrationWarning>
+        <Splash />
+        <Suspense fallback={null}>
+          <NavProgress />
+        </Suspense>
         <TopicsNavProvider topics={topics} guides={guides}>
           <RouteFade>{children}</RouteFade>
           <SiteFooter />

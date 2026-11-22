@@ -65,9 +65,9 @@ export const archHealth: Chapter = {
 </p>
 
 <figure>
-<svg viewBox="0 0 900 274" class="dg" role="img" aria-label="Bar chart of the largest files by line count, as of 11 October 2026: app/globals.css 7,288; content/interview-data.ts 4,745; content/topics.ts 4,626; whiteboard/Board.tsx 1,993; PracticeWorkspace.tsx 1,825; whiteboard/whiteboard.module.css 1,636.">
+<svg viewBox="0 0 900 274" class="dg" role="img" aria-label="Bar chart of the largest files by line count, as of 11 October 2026: app/globals.css 7,674; content/interview-data.ts 4,745; content/topics.ts 4,626; whiteboard/Board.tsx 1,993; PracticeWorkspace.tsx 1,825; whiteboard/whiteboard.module.css 1,636.">
 <g class="rough">
-<rect x="245" y="24" width="426" height="22" rx="4" style="fill: var(--dg-box-red); stroke: var(--red); stroke-width: 1.6" />
+<rect x="245" y="24" width="449" height="22" rx="4" style="fill: var(--dg-box-red); stroke: var(--red); stroke-width: 1.6" />
 <rect x="245" y="62" width="277" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
 <rect x="245" y="100" width="270" height="22" rx="4" style="fill: var(--dg-box-yellow); stroke: var(--dg-yellow-stroke); stroke-width: 1.6" />
 <rect x="245" y="138" width="117" height="22" rx="4" style="fill: var(--sheet-2); stroke: var(--ink); stroke-width: 1.6" />
@@ -81,7 +81,7 @@ export const archHealth: Chapter = {
 <text class="lbl" x="232" y="155" text-anchor="end">whiteboard/Board.tsx</text>
 <text class="lbl" x="232" y="193" text-anchor="end">PracticeWorkspace.tsx</text>
 <text class="lbl" x="232" y="231" text-anchor="end">whiteboard/whiteboard.module.css</text>
-<text class="sm" x="681" y="40">7,288</text>
+<text class="sm" x="704" y="40">7,674</text>
 <text class="sm" x="532" y="78">4,745</text>
 <text class="sm" x="525" y="116">4,626</text>
 <text class="sm" x="372" y="154">1,993</text>
@@ -96,7 +96,7 @@ export const archHealth: Chapter = {
 </figure>
 
 <p>
-  <strong><code>app/globals.css</code>, about 7,400 lines</strong>, is the largest single piece of debt.
+  <strong><code>app/globals.css</code>, about 7,700 lines</strong>, is the largest single piece of debt.
   The newer parts of the site (the mock interview, the whiteboard and the problems page) use CSS
   modules, and the older reader and editor styles still live in the global sheet. Every page
   downloads all of it, and nothing tells you which rules are dead.
