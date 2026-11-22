@@ -488,7 +488,7 @@ export function AuthDialog({
           <button type="button" className={styles.close} aria-label="Close" onClick={onClose}>
             ×
           </button>
-          <div className={styles.body}>
+          <div key={step + intent} className={`${styles.body} ${styles.stepIn}`}>
             <h2 id={titleId} className={styles.title}>
               {titleFor(step, intent)}
             </h2>
@@ -668,7 +668,14 @@ export function AuthDialog({
                   )}
 
                   <button type="submit" className={styles.submit} disabled={busy !== null}>
-                    {busy === "submit" || (busy === "code" && step === "email") ? "Please wait…" : submitLabel[step]}
+                    {busy === "submit" || (busy === "code" && step === "email") ? (
+                      <>
+                        <span className={styles.spinner} aria-hidden="true" />
+                        Please wait…
+                      </>
+                    ) : (
+                      submitLabel[step]
+                    )}
                   </button>
                 </form>
 

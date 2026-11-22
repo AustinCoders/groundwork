@@ -16,6 +16,7 @@
 
 .dialog::backdrop {
   background: color-mix(in srgb, var(--scrim) 45%, transparent);
+  backdrop-filter: blur(3px);
 }
 
 .inner {
@@ -89,10 +90,20 @@
   border: 1.5px solid var(--line);
   border-radius: 12px;
   cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .provider:hover:not(:disabled) {
   border-color: var(--ink-soft);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.provider:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .provider:disabled {
@@ -154,7 +165,9 @@
   background: var(--sheet-2);
   border: 1.5px solid var(--line);
   border-radius: 12px;
-  transition: border-color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .inputWrap .input {
@@ -164,6 +177,7 @@
 .input:focus {
   border-color: var(--primary);
   outline: none;
+  box-shadow: 0 0 0 4px var(--primary-soft);
 }
 
 .input[aria-invalid="true"] {
@@ -261,10 +275,32 @@
   border: 0;
   border-radius: 12px;
   cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
 }
 
 .submit:hover:not(:disabled) {
   filter: brightness(1.08);
+  box-shadow: 0 8px 20px -8px var(--primary);
+  transform: translateY(-1px);
+}
+
+.submit:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+}
+
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+  vertical-align: -2px;
+  border: 2px solid color-mix(in srgb, var(--on-primary) 35%, transparent);
+  border-top-color: var(--on-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
 }
 
 .submit:disabled {
@@ -563,16 +599,20 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 34px 28px 26px;
-  background: var(--sheet-2);
-  border-right: 1px dashed var(--line);
+  gap: 16px;
+  padding: 36px 30px 28px;
+  overflow: hidden;
+  color: var(--on-primary);
+  background:
+    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--on-primary) 16%, transparent) 1px, transparent 0) 0 0 /
+      18px 18px,
+    linear-gradient(155deg, var(--primary), color-mix(in srgb, var(--primary) 62%, var(--ink)));
 }
 
 .aside::before {
   content: "";
   position: absolute;
-  top: 6px;
+  top: 8px;
   left: 50%;
   width: 96px;
   height: 22px;
@@ -580,40 +620,57 @@
   transform: translateX(-50%) rotate(-2deg);
 }
 
+.aside::after {
+  content: "";
+  position: absolute;
+  right: -70px;
+  bottom: -70px;
+  width: 220px;
+  height: 220px;
+  border: 2px dashed color-mix(in srgb, var(--on-primary) 28%, transparent);
+  border-radius: 50%;
+  animation: spin 40s linear infinite;
+}
+
 .asideKicker {
   margin: 0;
   font-size: var(--t-kicker);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--pencil);
+  color: color-mix(in srgb, var(--on-primary) 78%, transparent);
 }
 
 .asideTitle {
   margin: -6px 0 0;
   font-family: var(--font-heading);
-  font-size: var(--t-heading);
+  font-size: calc(var(--t-heading) * 1.25);
   font-weight: 700;
-  line-height: 1.15;
-  color: var(--ink);
+  line-height: 1.1;
+  color: var(--on-primary);
 }
 
 .doodle {
   width: 100%;
-  max-width: 240px;
+  max-width: 250px;
   height: auto;
   fill: none;
-  stroke: var(--ink-soft);
+  stroke: var(--on-primary);
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+  animation: float 5s ease-in-out infinite;
 }
 
 .doodleArrow {
-  stroke: var(--primary);
+  stroke: var(--on-primary);
+  stroke-dasharray: 6 6;
+  animation: flow 1.2s linear infinite;
 }
 
 .benefits {
+  position: relative;
+  z-index: 1;
   display: grid;
   gap: 12px;
   margin: 0;
@@ -623,12 +680,25 @@
 
 .benefits li {
   display: grid;
-  grid-template-columns: 18px 1fr;
+  grid-template-columns: 26px 1fr;
   gap: 10px;
   align-items: start;
   font-size: var(--t-meta);
   line-height: 1.45;
-  color: var(--ink);
+  color: var(--on-primary);
+  animation: slideIn 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.benefits li:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.benefits li:nth-child(3) {
+  animation-delay: 0.16s;
+}
+
+.benefits li:nth-child(4) {
+  animation-delay: 0.24s;
 }
 
 .benefits strong {
@@ -637,26 +707,69 @@
 }
 
 .benefitTick {
-  margin-top: 2px;
+  box-sizing: content-box;
+  width: 14px;
+  height: 14px;
+  padding: 4px;
   fill: none;
-  stroke: var(--success);
-  stroke-width: 2;
+  stroke: var(--on-primary);
+  stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
+  background: color-mix(in srgb, var(--on-primary) 18%, transparent);
+  border-radius: 999px;
 }
 
 .benefitBody {
   display: block;
-  color: var(--pencil);
+  color: color-mix(in srgb, var(--on-primary) 80%, transparent);
 }
 
 .asideNote {
+  position: relative;
+  z-index: 1;
   margin: auto 0 0;
-  padding-top: 10px;
+  padding-top: 12px;
   font-size: var(--t-kicker);
   line-height: 1.5;
-  color: var(--pencil);
-  border-top: 1px dashed var(--line);
+  color: color-mix(in srgb, var(--on-primary) 80%, transparent);
+  border-top: 1px dashed color-mix(in srgb, var(--on-primary) 35%, transparent);
+}
+
+.stepIn {
+  animation: stepIn 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes stepIn {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes float {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes flow {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .eye {
@@ -869,7 +982,23 @@
 @media (prefers-reduced-motion: reduce) {
   .bar,
   .barOn,
-  .choicePill {
+  .choicePill,
+  .provider,
+  .submit {
     transition: none;
+  }
+
+  .aside::after,
+  .doodle,
+  .doodleArrow,
+  .benefits li,
+  .stepIn,
+  .spinner {
+    animation: none;
+  }
+
+  .provider:hover:not(:disabled),
+  .submit:hover:not(:disabled) {
+    transform: none;
   }
 }
