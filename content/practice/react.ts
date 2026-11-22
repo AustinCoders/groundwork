@@ -446,6 +446,7 @@ export const react: Exercise[] = [
     hints: [
       "Wrap JSON.parse in try/catch — it throws on malformed input.",
       "typeof parsed === \"object\" && parsed !== null catches the case where raw was valid JSON but not an object, like \"5\" or \"null\".",
+      "Check for null or undefined before parsing: JSON.parse(null) returns null rather than throwing, so the object check would catch it, but an early return makes the intent clear.",
     ],
     solution:
       'function safeParse(raw, fallback) {\n  if (raw === null || raw === undefined) return fallback;\n  try {\n    const parsed = JSON.parse(raw);\n    return typeof parsed === "object" && parsed !== null ? parsed : fallback;\n  } catch {\n    return fallback;\n  }\n}\n',
@@ -471,7 +472,11 @@ export const react: Exercise[] = [
       "<p>Write <code>paginate(items, page, pageSize)</code> returning <code>{ slice, pageCount }</code>. Pages are 1-indexed. A <code>page</code> past the end should return an empty <code>slice</code>, not throw.</p>",
     starter:
       "function paginate(items, page, pageSize) {\n  // TODO\n}\n\nconsole.log(paginate([1, 2, 3, 4, 5], 2, 2)); // { slice: [3, 4], pageCount: 3 }\n",
-    hints: ["Math.ceil(items.length / pageSize) is the page count.", "The slice starts at (page - 1) * pageSize."],
+    hints: [
+      "Math.ceil(items.length / pageSize) is the page count.",
+      "The slice starts at (page - 1) * pageSize.",
+      "Array.prototype.slice never throws on a start past the end; it returns an empty array, which is exactly what a page past the end needs.",
+    ],
     solution:
       "function paginate(items, page, pageSize) {\n  const start = (page - 1) * pageSize;\n  return {\n    slice: items.slice(start, start + pageSize),\n    pageCount: Math.ceil(items.length / pageSize),\n  };\n}\n",
     tests: [
@@ -496,7 +501,11 @@ export const react: Exercise[] = [
       "<p>Write <code>shallowEqual(a, b)</code>: <code>true</code> if <code>a</code> and <code>b</code> have the same keys and every value is <code>===</code>-equal (one level deep, no recursion) &mdash; the default comparison <code>React.memo</code> runs on props.</p>",
     starter:
       "function shallowEqual(a, b) {\n  // TODO\n}\n\nconsole.log(shallowEqual({ x: 1 }, { x: 1 }));            // true\nconsole.log(shallowEqual({ x: {} }, { x: {} }));          // false — different object references\n",
-    hints: ["Compare key counts first as a cheap early exit.", "Object.is on each value catches NaN correctly, the way React's real check does."],
+    hints: [
+      "Compare key counts first as a cheap early exit.",
+      "Object.is on each value catches NaN correctly, the way React's real check does.",
+      "Equal key counts are not enough: check that every key of a is an own property of b, so { a: undefined } and { b: undefined } stay unequal.",
+    ],
     solution:
       "function shallowEqual(a, b) {\n  const keysA = Object.keys(a);\n  const keysB = Object.keys(b);\n  if (keysA.length !== keysB.length) return false;\n  return keysA.every((key) => Object.prototype.hasOwnProperty.call(b, key) && Object.is(a[key], b[key]));\n}\n",
     tests: [
@@ -522,7 +531,11 @@ export const react: Exercise[] = [
       "<p>Write <code>memoize(fn)</code> returning a wrapped function that caches by its single argument (via <code>JSON.stringify</code>) and only calls <code>fn</code> once per distinct argument.</p>",
     starter:
       "function memoize(fn) {\n  // TODO\n}\n\nlet calls = 0;\nconst double = memoize((n) => { calls++; return n * 2; });\ndouble(3); double(3); double(4);\nconsole.log(calls); // 2\n",
-    hints: ["A Map keyed by JSON.stringify(arg) is enough for this exercise's inputs."],
+    hints: [
+      "A Map keyed by JSON.stringify(arg) is enough for this exercise's inputs.",
+      "Use cache.has(key), not a truthiness check on cache.get(key), or results like 0 and false are recomputed every time.",
+      "JSON.stringify(3) is \"3\" but JSON.stringify(\"3\") is \"\\\"3\\\"\", so numbers and strings get different keys without extra work.",
+    ],
     solution:
       "function memoize(fn) {\n  const cache = new Map();\n  return function (arg) {\n    const key = JSON.stringify(arg);\n    if (cache.has(key)) return cache.get(key);\n    const result = fn(arg);\n    cache.set(key, result);\n    return result;\n  };\n}\n",
     tests: [

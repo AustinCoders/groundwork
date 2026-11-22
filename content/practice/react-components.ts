@@ -381,6 +381,7 @@ export const reactComponents: Exercise[] = [
     hints: [
       "{ color: 'blue' } creates a new object on every App render, so memo's shallow comparison always sees a changed prop.",
       "Move the style object out of the render — a module-level constant, or useMemo(() => ({ color: 'blue' }), []).",
+      "The label is a string literal, which is already equal to itself every render; only the object needs to become stable.",
     ],
     solution: "let renders = 0;\nconst Row = memo(function Row({ label, style }) {\n  renders++;\n  return <li style={style}>{label}</li>;\n});\n\nconst fixedStyle = { color: \"blue\" };\n\nfunction App() {\n  const [tick, setTick] = useState(0);\n  return (\n    <div>\n      <button onClick={() => setTick(tick + 1)}>Tick {tick}</button>\n      <ul>\n        <Row label=\"Fixed\" style={fixedStyle} />\n      </ul>\n    </div>\n  );\n}\n",
     tests: [
@@ -389,6 +390,7 @@ export const reactComponents: Exercise[] = [
       { name: "clicking Tick does not re-render Row", body: "renders = 0;\nrender(<App />);\nawait click(screen.getByRole(\"button\"));\nawait click(screen.getByRole(\"button\"));\nawait click(screen.getByRole(\"button\"));\nassert.equal(renders, 1, \"Row rendered \" + renders + \" times\");" },
       { name: "the tick counter itself still updates", body: "render(<App />);\nawait click(screen.getByRole(\"button\"));\nassert.ok(screen.getByText(\"Tick 1\"));" },
       { name: "the row keeps its style", body: "const { container } = render(<App />);\nassert.equal(container.querySelector(\"li\").style.color, \"blue\");" },
+      { name: "a re-render of App from its parent does not re-render Row", body: "renders = 0;\nconst view = render(<App />);\nview.rerender(<App />);\nview.rerender(<App />);\nassert.equal(renders, 1, \"Row rendered \" + renders + \" times\");" },
     ],
   },
   {
@@ -955,6 +957,7 @@ export const reactComponents: Exercise[] = [
     hints: [
       "useEffect(() => { const unsub = subscribe(roomId, setLast); return unsub; }, [roomId]);",
       "The cleanup function from the previous effect run always fires before the next run — that is what keeps the count at one.",
+      "Return the unsubscribe function straight from the effect. Storing it in state or a ref and calling it later is how two subscriptions end up alive at once.",
     ],
     solution: "let activeSubs = 0;\nlet lastSubscribedRoom = null;\nfunction subscribe(room, cb) {\n  activeSubs++;\n  lastSubscribedRoom = room;\n  const id = setInterval(() => cb(room + \": ping\"), 1000);\n  return () => {\n    activeSubs--;\n    clearInterval(id);\n  };\n}\n\nfunction ChatRoom({ roomId }) {\n  const [last, setLast] = useState(\"—\");\n\n  useEffect(() => {\n    setLast(\"—\");\n    return subscribe(roomId, setLast);\n  }, [roomId]);\n\n  return <p>{last}</p>;\n}\n\nfunction App({ roomId }) {\n  return <ChatRoom roomId={roomId} />;\n}\n",
     tests: [
