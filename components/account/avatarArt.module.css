@@ -1,0 +1,48 @@
+.art {
+  display: block;
+  width: 84%;
+  height: 84%;
+  overflow: visible;
+  color: var(--avatar, var(--primary));
+}
+
+.body {
+  fill: var(--on-primary);
+}
+
+.shade {
+  fill: var(--on-primary);
+  opacity: 0.55;
+}
+
+.feature {
+  fill: currentcolor;
+}
+
+.line {
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+
+.thick {
+  fill: none;
+  stroke: var(--on-primary);
+  stroke-linecap: round;
+  stroke-width: 6;
+}
+
+.gap {
+  fill: none;
+  stroke: var(--on-primary);
+  stroke-width: 1.5;
+}
+
+.shine {
+  fill: none;
+  stroke: var(--on-primary);
+  stroke-linecap: round;
+  stroke-width: 2.5;
+  opacity: 0.8;
+}

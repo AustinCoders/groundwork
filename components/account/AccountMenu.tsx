@@ -9,7 +9,7 @@ import { signOut, syncAccountNow, useAccount, useSyncStatus } from "@/lib/accoun
 import { computeStats, type Stats } from "@/lib/gamification";
 import { useProgressValue } from "@/lib/hooks";
 import { progress } from "@/lib/storage";
-import { initials } from "./AccountChip";
+import { AvatarFace } from "./AccountChip";
 import styles from "./menu.module.css";
 
 type Overlay = "look" | null;
@@ -134,8 +134,8 @@ export function AccountMenu({ compact }: { compact?: boolean }) {
           }
         }}
       >
-        <span className={styles.avatar} style={avatarStyle(user.extras.avatarColor)} aria-hidden="true">
-          {initials(name)}
+        <span className={styles.avatar} style={avatarStyle(user.extras.avatarColor, account.photo)} aria-hidden="true">
+          <AvatarFace name={name} art={user.extras.avatarArt} photo={account.photo} />
           <span className={styles.status} data-state={sync.state} />
         </span>
         <span className={styles.label}>{name}</span>
@@ -147,8 +147,12 @@ export function AccountMenu({ compact }: { compact?: boolean }) {
       {open && (
         <div id={menuId} className={styles.menu} role="menu" aria-label="Account" onKeyDown={onMenuKey}>
           <div className={styles.head}>
-            <span className={styles.bigAvatar} style={avatarStyle(user.extras.avatarColor)} aria-hidden="true">
-              {initials(name)}
+            <span
+              className={styles.bigAvatar}
+              style={avatarStyle(user.extras.avatarColor, account.photo)}
+              aria-hidden="true"
+            >
+              <AvatarFace name={name} art={user.extras.avatarArt} photo={account.photo} />
             </span>
             <div className={styles.who}>
               <strong>{name}</strong>

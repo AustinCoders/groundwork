@@ -16,7 +16,7 @@ import {
   syncStatus,
   type SyncStatus,
 } from "@/lib/account/sync";
-import { extrasToMetadata, readExtras, type ProfileExtras } from "@/lib/account/profileExtras";
+import { extrasToMetadata, readExtras, type EditableExtras, type ProfileExtras } from "@/lib/account/profileExtras";
 import { isSyncedKey } from "@/lib/account/syncRules";
 import { isPlainObject } from "@/lib/storage";
 
@@ -53,11 +53,23 @@ export interface AccountState {
   profile: Profile | null;
   recovery: boolean;
   mfa: MfaState;
+  photo: string | null;
 }
 
 export type Result<T = void> = { ok: true; value: T } | { ok: false; error: string };
 
-const SERVER_STATE: AccountState = { status: "loading", user: null, profile: null, recovery: false, mfa: "none" };
+const SERVER_STATE: AccountState = {
+  status: "loading",
+  user: null,
+  profile: null,
+  recovery: false,
+  mfa: "none",
+  photo: null,
+};
+
+const AVATAR_BUCKET = "avatars";
+const PHOTO_SECONDS = 60 * 60 * 24 * 7;
+let photoFor: string | null = null;
 
 let state: AccountState = SERVER_STATE;
 let booted = false;
@@ -152,12 +164,30 @@ async function mfaState(db: SupabaseClient): Promise<MfaState> {
   }
 }
 
+async function loadPhoto(db: SupabaseClient, user: AccountUser) {
+  const path = user.extras.avatarPath;
+  photoFor = path;
+  if (!path) {
+    set({ photo: null });
+    return;
+  }
+  const { data } = await db.storage.from(AVATAR_BUCKET).createSignedUrl(path, PHOTO_SECONDS);
+  if (photoFor === path && state.user?.id === user.id) set({ photo: data?.signedUrl ?? null });
+}
+
+async function clearPhotos(db: SupabaseClient, userId: string, keep?: string) {
+  const { data } = await db.storage.from(AVATAR_BUCKET).list(userId, { limit: 100 });
+  const stale = (data ?? []).map((file) => `${userId}/${file.name}`).filter((path) => path !== keep);
+  if (stale.length) await db.storage.from(AVATAR_BUCKET).remove(stale);
+}
+
 async function handleSession(db: SupabaseClient, event: AuthChangeEvent | "INITIAL", session: Session | null) {
   if (event === "PASSWORD_RECOVERY") set({ recovery: true });
   if (!session) {
     stopSync();
     syncingFor = null;
-    set({ status: "out", user: null, profile: null, recovery: false, mfa: "none" });
+    photoFor = null;
+    set({ status: "out", user: null, profile: null, recovery: false, mfa: "none", photo: null });
     return;
   }
   const user = toUser(session.user);
@@ -169,6 +199,7 @@ async function handleSession(db: SupabaseClient, event: AuthChangeEvent | "INITI
     syncingFor = null;
     return;
   }
+  if (photoFor !== user.extras.avatarPath) void loadPhoto(db, user);
   const fresh = syncingFor !== user.id;
   if (changed || fresh || event === "USER_UPDATED") void loadProfile(db, user);
   if (fresh) {
@@ -472,11 +503,52 @@ export function updateProfile(patch: ProfilePatch): Promise<Result> {
   });
 }
 
-export function updateProfileExtras(extras: ProfileExtras): Promise<Result> {
+export function updateProfileExtras(extras: EditableExtras): Promise<Result> {
   return withClient(async (db) => {
     const { data, error } = await db.auth.updateUser({ data: extrasToMetadata(extras) });
     if (error) return { ok: false, error: friendlyAuthError(error) };
     if (data.user && state.user?.id === data.user.id) set({ user: toUser(data.user) });
+    return { ok: true, value: undefined };
+  });
+}
+
+export function uploadAvatar(image: Blob): Promise<Result> {
+  return withClient(async (db) => {
+    const user = state.user;
+    if (!user) return { ok: false, error: "Sign in first." };
+    if (image.size > 512 * 1024) return { ok: false, error: "That picture is still too large. Try a smaller one." };
+    const webp = image.type === "image/webp";
+    const path = `${user.id}/avatar-${Date.now()}.${webp ? "webp" : "jpg"}`;
+    const uploaded = await db.storage.from(AVATAR_BUCKET).upload(path, image, {
+      contentType: webp ? "image/webp" : "image/jpeg",
+      cacheControl: "31536000",
+      upsert: false,
+    });
+    if (uploaded.error) return { ok: false, error: "Could not upload the picture. Try again in a moment." };
+    const { data, error } = await db.auth.updateUser({ data: { avatar_path: path } });
+    if (error) {
+      await db.storage.from(AVATAR_BUCKET).remove([path]);
+      return { ok: false, error: friendlyAuthError(error) };
+    }
+    await clearPhotos(db, user.id, path);
+    if (data.user) {
+      const next = toUser(data.user);
+      set({ user: next });
+      await loadPhoto(db, next);
+    }
+    return { ok: true, value: undefined };
+  });
+}
+
+export function removeAvatar(): Promise<Result> {
+  return withClient(async (db) => {
+    const user = state.user;
+    if (!user) return { ok: false, error: "Sign in first." };
+    const { data, error } = await db.auth.updateUser({ data: { avatar_path: "" } });
+    if (error) return { ok: false, error: friendlyAuthError(error) };
+    await clearPhotos(db, user.id);
+    if (data.user) set({ user: toUser(data.user), photo: null });
+    photoFor = "";
     return { ok: true, value: undefined };
   });
 }
@@ -493,7 +565,7 @@ export function signOut(options: { clearDevice?: boolean; everywhere?: boolean }
     stopSync();
     if (options.clearDevice) forgetDeviceCopy();
     syncingFor = null;
-    set({ status: "out", user: null, profile: null, recovery: false, mfa: "none" });
+    set({ status: "out", user: null, profile: null, recovery: false, mfa: "none", photo: null });
     return { ok: true, value: undefined };
   });
 }
@@ -512,6 +584,7 @@ export function eraseSavedProgress(): Promise<Result> {
 
 export function deleteAccount(): Promise<Result> {
   return withClient(async (db) => {
+    if (state.user) await clearPhotos(db, state.user.id).catch(() => undefined);
     const { error } = await db.rpc("delete_my_account");
     if (error) return { ok: false, error: friendlyAuthError(error) };
     stopSync();
@@ -520,7 +593,7 @@ export function deleteAccount(): Promise<Result> {
       localStorage.removeItem(SYNC_META_KEY);
     } catch {}
     syncingFor = null;
-    set({ status: "out", user: null, profile: null, recovery: false, mfa: "none" });
+    set({ status: "out", user: null, profile: null, recovery: false, mfa: "none", photo: null });
     return { ok: true, value: undefined };
   });
 }

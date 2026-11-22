@@ -4,6 +4,27 @@ export const AVATAR_COLORS = ["blue", "purple", "green", "orange", "red"] as con
 
 export type AvatarColor = (typeof AVATAR_COLORS)[number];
 
+export const AVATAR_ARTS = [
+  "cat",
+  "owl",
+  "fox",
+  "bear",
+  "bunny",
+  "penguin",
+  "robot",
+  "astronaut",
+  "alien",
+  "ghost",
+  "octopus",
+  "dino",
+] as const;
+
+export type AvatarArt = (typeof AVATAR_ARTS)[number];
+
+export function isAvatarArt(value: unknown): value is AvatarArt {
+  return AVATAR_ARTS.some((art) => art === value);
+}
+
 export interface ProfileExtras {
   headline: string;
   location: string;
@@ -11,6 +32,8 @@ export interface ProfileExtras {
   linkedin: string;
   website: string;
   avatarColor: AvatarColor;
+  avatarArt: AvatarArt | "";
+  avatarPath: string;
 }
 
 export const EMPTY_EXTRAS: ProfileExtras = {
@@ -20,7 +43,15 @@ export const EMPTY_EXTRAS: ProfileExtras = {
   linkedin: "",
   website: "",
   avatarColor: "blue",
+  avatarArt: "",
+  avatarPath: "",
 };
+
+const AVATAR_PATH = /^[0-9a-f-]{36}\/avatar-\d{10,16}\.(webp|jpg)$/;
+
+export function isAvatarPath(value: unknown): value is string {
+  return typeof value === "string" && AVATAR_PATH.test(value);
+}
 
 const LIMITS = { headline: 80, location: 60, github: 39, linkedin: 100, website: 200 };
 
@@ -38,10 +69,14 @@ export function readExtras(meta: unknown): ProfileExtras {
     linkedin: text(m.linkedin, LIMITS.linkedin),
     website: text(m.website, LIMITS.website),
     avatarColor: color,
+    avatarArt: isAvatarArt(m.avatar_art) ? m.avatar_art : "",
+    avatarPath: isAvatarPath(m.avatar_path) ? m.avatar_path : "",
   };
 }
 
-export function extrasToMetadata(extras: ProfileExtras): Record<string, string> {
+export type EditableExtras = Omit<ProfileExtras, "avatarPath">;
+
+export function extrasToMetadata(extras: EditableExtras): Record<string, string> {
   return {
     headline: extras.headline.trim(),
     location: extras.location.trim(),
@@ -49,6 +84,7 @@ export function extrasToMetadata(extras: ProfileExtras): Record<string, string> 
     linkedin: withScheme(extras.linkedin),
     website: withScheme(extras.website),
     avatar_color: extras.avatarColor,
+    avatar_art: extras.avatarArt,
   };
 }
 
@@ -57,8 +93,8 @@ function withScheme(value: string): string {
   return trimmed && !/^[a-z]+:/i.test(trimmed) ? `https://${trimmed}` : trimmed;
 }
 
-export function extrasProblems(extras: ProfileExtras): Partial<Record<keyof ProfileExtras, string>> {
-  const problems: Partial<Record<keyof ProfileExtras, string>> = {};
+export function extrasProblems(extras: EditableExtras): Partial<Record<keyof EditableExtras, string>> {
+  const problems: Partial<Record<keyof EditableExtras, string>> = {};
   if (extras.headline.length > LIMITS.headline) problems.headline = `Keep it under ${LIMITS.headline} characters.`;
   if (extras.location.length > LIMITS.location) problems.location = `Keep it under ${LIMITS.location} characters.`;
   const github = extras.github.trim().replace(/^@/, "");

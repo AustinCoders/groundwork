@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
 import { ConfirmDialog } from "@/components/Modal";
 import { SignInGate } from "@/components/account/SignInGate";
-import { initials } from "@/components/account/AccountChip";
+import { AvatarFace } from "@/components/account/AccountChip";
 import { AppearancePicker } from "@/components/AppearancePicker";
 import { useCountUp } from "@/components/account/useCountUp";
 import { avatarStyle } from "@/lib/account/avatar";
@@ -692,8 +692,12 @@ function Signed() {
             <span>Member card</span>
           </p>
           <div className={styles.idBody}>
-            <span className={styles.idAvatar} style={avatarStyle(user.extras.avatarColor)} aria-hidden="true">
-              {initials(name)}
+            <span
+              className={styles.idAvatar}
+              style={avatarStyle(user.extras.avatarColor, account.photo)}
+              aria-hidden="true"
+            >
+              <AvatarFace name={name} art={user.extras.avatarArt} photo={account.photo} />
             </span>
             <div className={styles.idText}>
               <p className={styles.idHello}>Hello,</p>

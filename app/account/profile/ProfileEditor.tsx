@@ -2,24 +2,28 @@
 
 import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
-import { initials } from "@/components/account/AccountChip";
+import { AvatarFace, initials } from "@/components/account/AccountChip";
+import { ART_NAMES, AvatarArt } from "@/components/account/AvatarArt";
 import { Choice } from "@/components/account/Choice";
 import { SignInGate } from "@/components/account/SignInGate";
 import { GOALS, LEVELS, ROLES } from "@/components/account/profileOptions";
 import { avatarStyle } from "@/lib/account/avatar";
 import { nameProblem } from "@/lib/account/errors";
-import { AVATAR_COLORS, extrasProblems, type ProfileExtras } from "@/lib/account/profileExtras";
+import { AVATAR_ARTS, AVATAR_COLORS, extrasProblems, type EditableExtras } from "@/lib/account/profileExtras";
 import {
+  removeAvatar,
   updateProfile,
+  uploadAvatar,
   updateProfileExtras,
   useAccount,
   type Experience,
   type Goal,
   type TargetRole,
 } from "@/lib/account/session";
+import { PhotoCropper } from "./PhotoCropper";
 import styles from "./profile.module.css";
 
-interface Draft extends ProfileExtras {
+interface Draft extends EditableExtras {
   name: string;
   goal: Goal | null;
   experience: Experience | null;
@@ -51,21 +55,24 @@ function Counter({ value, max }: { value: string; max: number }) {
 }
 
 function Editor() {
-  const { user, profile } = useAccount();
+  const { user, profile, photo } = useAccount();
+  const [picked, setPicked] = useState<File | null>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoNote, setPhotoNote] = useState<{ ok: boolean; text: string } | null>(null);
   const start: Draft = {
     name: profile?.displayName || user?.name || "",
     goal: profile?.goal ?? null,
     experience: profile?.experience ?? null,
     role: profile?.targetRole ?? null,
-    ...(user?.extras ?? {
-      headline: "",
-      location: "",
-      github: "",
-      linkedin: "",
-      website: "",
-      avatarColor: "blue" as const,
-    }),
+    headline: user?.extras.headline ?? "",
+    location: user?.extras.location ?? "",
+    github: user?.extras.github ?? "",
+    linkedin: user?.extras.linkedin ?? "",
+    website: user?.extras.website ?? "",
+    avatarColor: user?.extras.avatarColor ?? "blue",
+    avatarArt: user?.extras.avatarArt ?? "",
   };
+
   const [saved, setSaved] = useState<Draft>(start);
   const [draft, setDraft] = useState<Draft>(start);
   const [tried, setTried] = useState(false);
@@ -93,6 +100,36 @@ function Editor() {
   function edit<K extends keyof Draft>(key: K, value: Draft[K]) {
     setDraft((now) => ({ ...now, [key]: value }));
     setMessage(null);
+  }
+
+  function choose(file: File | undefined) {
+    setPhotoNote(null);
+    if (!file) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+      setPhotoNote({ ok: false, text: "Pick a JPG, PNG or WebP picture." });
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setPhotoNote({ ok: false, text: "That picture is over 10 MB. Pick a smaller one." });
+      return;
+    }
+    setPicked(file);
+  }
+
+  async function upload(image: Blob): Promise<string | null> {
+    const result = await uploadAvatar(image);
+    if (!result.ok) return result.error;
+    setPicked(null);
+    setPhotoNote({ ok: true, text: "Photo updated." });
+    return null;
+  }
+
+  async function dropPhoto() {
+    setPhotoBusy(true);
+    setPhotoNote(null);
+    const result = await removeAvatar();
+    setPhotoBusy(false);
+    setPhotoNote(result.ok ? { ok: true, text: "Photo removed." } : { ok: false, text: result.error });
   }
 
   async function save() {
@@ -151,11 +188,11 @@ function Editor() {
             <div className={styles.previewBody}>
               <span
                 className={styles.previewAvatar}
-                style={avatarStyle(draft.avatarColor)}
-                key={draft.avatarColor}
+                style={avatarStyle(draft.avatarColor, photo)}
+                key={`${draft.avatarColor}${draft.avatarArt}${photo ?? ""}`}
                 aria-hidden="true"
               >
-                {initials(draft.name || "?")}
+                <AvatarFace name={draft.name || "?"} art={draft.avatarArt} photo={photo} />
               </span>
               <p className={styles.previewName}>{draft.name.trim() || "Your name"}</p>
               <p className={styles.previewHeadline} data-empty={!draft.headline.trim() || undefined}>
@@ -193,8 +230,78 @@ function Editor() {
         >
           <section className={styles.card} aria-labelledby="profile-look">
             <h2 id="profile-look" className={styles.cardTitle}>
-              Avatar colour
+              Photo, character and colour
             </h2>
+            <div className={styles.photoRow}>
+              <span className={styles.photoBig} style={avatarStyle(draft.avatarColor, photo)} aria-hidden="true">
+                <AvatarFace name={draft.name || "?"} art={draft.avatarArt} photo={photo} />
+              </span>
+              <div className={styles.photoSide}>
+                <div className={styles.photoActions}>
+                  <label className={styles.uploadButton}>
+                    {photo ? "Change photo" : "Upload a photo"}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className={styles.fileInput}
+                      onChange={(e) => {
+                        choose(e.target.files?.[0]);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                  {photo && (
+                    <button
+                      type="button"
+                      className={styles.ghost}
+                      disabled={photoBusy}
+                      onClick={() => void dropPhoto()}
+                    >
+                      {photoBusy ? "Removing…" : "Remove photo"}
+                    </button>
+                  )}
+                </div>
+                <p className={styles.hint}>
+                  JPG, PNG or WebP, up to 10 MB. It is cropped to a square and shrunk in your browser before it is
+                  uploaded, and only you can see it.
+                </p>
+                {photoNote && (
+                  <p className={photoNote.ok ? styles.ok : styles.error} role="status">
+                    {photoNote.text}
+                  </p>
+                )}
+              </div>
+            </div>
+            <p className={styles.label}>Character, shown when there is no photo</p>
+            <div className={styles.arts} role="radiogroup" aria-label="Avatar character">
+              <button
+                type="button"
+                role="radio"
+                aria-checked={draft.avatarArt === ""}
+                aria-label="Your initials"
+                className={styles.artPick}
+                style={avatarStyle(draft.avatarColor)}
+                onClick={() => edit("avatarArt", "")}
+              >
+                <span>{initials(draft.name || "?")}</span>
+              </button>
+              {AVATAR_ARTS.map((art) => (
+                <button
+                  key={art}
+                  type="button"
+                  role="radio"
+                  aria-checked={draft.avatarArt === art}
+                  aria-label={ART_NAMES[art]}
+                  title={ART_NAMES[art]}
+                  className={styles.artPick}
+                  style={avatarStyle(draft.avatarColor)}
+                  onClick={() => edit("avatarArt", art)}
+                >
+                  <AvatarArt art={art} />
+                </button>
+              ))}
+            </div>
+            <p className={styles.label}>Colour</p>
             <div className={styles.colors} role="radiogroup" aria-label="Avatar colour">
               {AVATAR_COLORS.map((color) => (
                 <button
@@ -204,13 +311,14 @@ function Editor() {
                   aria-checked={draft.avatarColor === color}
                   aria-label={COLOR_NAMES[color]}
                   className={styles.color}
-                  style={{ "--swatch": `var(--c-${color})` } as CSSProperties}
+                  style={{ "--swatch": `var(--c-${color})`, "--avatar": "var(--swatch)" } as CSSProperties}
                   onClick={() => edit("avatarColor", color)}
                 >
-                  <span>{initials(draft.name || "?")}</span>
+                  {draft.avatarArt ? <AvatarArt art={draft.avatarArt} /> : <span>{initials(draft.name || "?")}</span>}
                 </button>
               ))}
             </div>
+            {picked && <PhotoCropper file={picked} onCancel={() => setPicked(null)} onDone={upload} />}
           </section>
 
           <section className={styles.card} aria-labelledby="profile-basics">
