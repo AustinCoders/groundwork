@@ -9,6 +9,7 @@ const STOPS = [
   { id: "how", label: "How it works" },
   { id: "paths", label: "Paths" },
   { id: "loop", label: "Interview book" },
+  { id: "resume", label: "Resume lab" },
   { id: "faq", label: "FAQ" },
   { id: "cta", label: "Start here" },
 ];

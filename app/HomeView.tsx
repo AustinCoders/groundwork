@@ -14,6 +14,7 @@ import { HowScene } from "@/components/home/HowScene";
 import { InterviewScene } from "@/components/home/InterviewScene";
 import { PathsScene } from "@/components/home/PathsScene";
 import { PracticeScene } from "@/components/home/PracticeScene";
+import { ResumeScene } from "@/components/home/ResumeScene";
 import { SectionRail } from "@/components/home/SectionRail";
 import { TopicsScene } from "@/components/home/TopicsScene";
 import { useSceneScroll } from "@/components/home/useSceneScroll";
@@ -625,6 +626,24 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
             </div>
           </section>
 
+          <section className={styles.section} id="resume" aria-labelledby="resume-h" data-scene>
+            <div className={styles.pin} data-pin-box>
+              <ResumeScene
+                questions={50}
+                head={
+                  <Head
+                    no="06"
+                    label="Resume lab"
+                    id="resume-h"
+                    sub="Upload your resume and see the questions it invites: about your own bullets and numbers, your roles and gaps, and every skill you list."
+                  >
+                    <Words text="Your resume, their questions." />
+                  </Head>
+                }
+              />
+            </div>
+          </section>
+
           <section className={styles.section} id="faq" aria-labelledby="faq-h" data-scene>
             <div className={styles.pin} data-pin-box>
               <FaqScene
@@ -632,7 +651,7 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
                 languages={languages.runnable}
                 head={
                   <Head
-                    no="06"
+                    no="07"
                     label="FAQ"
                     id="faq-h"
                     size="lg"
@@ -649,7 +668,7 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
             <div className={styles.pin} data-pin-box>
               <CtaScene
                 head={
-                  <Head no="07" label="Start here" id="cta-h">
+                  <Head no="08" label="Start here" id="cta-h">
                     <Words text="Ten minutes from now, you could understand one thing properly." />
                   </Head>
                 }

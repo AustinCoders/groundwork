@@ -11,8 +11,8 @@ export const archTechStack: Chapter = {
   subtitle: "Every dependency, what it does here, where it runs, and what it would cost to remove.",
   body: `<h3>The frame</h3>
 <p>
-  <code>package.json</code> lists 43 runtime dependencies and 15 development ones. That sounds like a
-  lot for a static site, and it is: 18 of the 43 are <code>@codemirror/</code> packages, and most of the
+  <code>package.json</code> lists 45 runtime dependencies and 15 development ones. That sounds like a
+  lot for a static site, and it is: 18 of the 45 are <code>@codemirror/</code> packages, and most of the
   rest exist for the editor. The frame the site actually sits in is small.
 </p>
 <div class="table-scroll"><table>
@@ -21,7 +21,7 @@ export const archTechStack: Chapter = {
 <tr><td><b>Next.js</b> (App Router)</td><td>16.4.6</td><td>Routing, the build, static generation, metadata routes, the server/client split</td></tr>
 <tr><td><b>React</b></td><td>19.3.1</td><td>Components; server components for everything that does not need a browser</td></tr>
 <tr><td><b>TypeScript</b></td><td>5.9.3</td><td>Types the code and the content, so a malformed chapter fails the build. The same package also runs in the browser as the playground's TypeScript compiler</td></tr>
-<tr><td><b>CSS</b></td><td>&mdash;</td><td><code>app/globals.css</code> at about 7,700 lines, plus 95 CSS modules for the pages and tools that carry their own styles</td></tr>
+<tr><td><b>CSS</b></td><td>&mdash;</td><td><code>app/globals.css</code> at about 7,700 lines, plus 97 CSS modules for the pages and tools that carry their own styles</td></tr>
 <tr><td><b>Tailwind</b></td><td>4</td><td>Imported for its theme and utilities layers only, with no preflight reset. The site is styled with custom properties and its own class names</td></tr>
 <tr><td><b>Vercel</b></td><td>&mdash;</td><td>Host, CDN, firewall, analytics</td></tr>
 <tr><td><b>Node</b></td><td>24.x</td><td>Pinned in <code>engines</code> and to 24 in <code>.nvmrc</code>, so the local tools, Vercel and the project settings agree</td></tr>
@@ -132,6 +132,7 @@ export const archTechStack: Chapter = {
 
 <h3>Small pieces</h3>
 <ul>
+<li><b>pdfjs-dist</b> and <b>fflate</b> &mdash; the resume lab's file readers: PDF.js pulls the text out of a PDF in a Web Worker, and fflate unzips a Word file so its XML can be read. Both load only on <code>/resume</code>, after a file is chosen.</li>
 <li><b>msedge-tts</b> &mdash; the narrator's voice, behind <code>/api/tts</code>. Unofficial, free, and the one real single point of failure among the server functions. See <a href="/architecture/arch-apis">the endpoints chapter</a>.</li>
 <li><b>Radix</b> &mdash; <code>@radix-ui/react-focus-scope</code> traps focus in the shortcut help, loaded dynamically, and inside the shared <code>FocusTrap</code>, imported statically, which holds focus in the site menu, the Chapters sheet and the Filters sheet. The <code>radix-ui</code> package supplies one component, the Select in <code>components/ui/select.tsx</code>, used by four files.</li>
 <li><b>clsx</b> and <b>tailwind-merge</b> &mdash; one helper, <code>cn()</code> in <code>lib/utils.ts</code>, for that Select.</li>

@@ -1,0 +1,227 @@
+div.resumeScene {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.resumeCopy {
+  gap: clamp(14px, 2.4vh, 24px);
+}
+
+.points {
+  display: grid;
+  gap: 10px;
+  max-width: 54ch;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.points li {
+  position: relative;
+  padding-left: 26px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.points li::before {
+  position: absolute;
+  top: 0.15em;
+  left: 0;
+  content: "✓";
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.points b {
+  color: var(--ink);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.micro {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+
+.resumeStage .cPaper {
+  top: 2%;
+  left: 0;
+  z-index: 1;
+  display: grid;
+  gap: 6px;
+  width: 60%;
+  padding: 18px 20px 22px;
+}
+
+.paperName {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: calc(26px * var(--ds, 1));
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.paperRole {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.paperBullet {
+  margin: 0;
+  padding-left: 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink);
+  border-left: 2px solid var(--line);
+}
+
+.paperBullet mark {
+  padding: 0 3px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--mark) 55%, transparent);
+  border-radius: 3px;
+}
+
+.paperBullet.weak s {
+  text-decoration-color: var(--danger);
+  text-decoration-thickness: 2px;
+}
+
+.resumeStage .cAsk {
+  top: 12%;
+  right: 0;
+  z-index: 3;
+  display: grid;
+  gap: 6px;
+  width: 50%;
+  padding: 16px 18px 18px;
+}
+
+.askText {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: calc(20px * var(--ds, 1));
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.follow {
+  margin: 0;
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+.resumeStage .cFix {
+  bottom: 20%;
+  left: 6%;
+  z-index: 4;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 54%;
+  padding: 14px 18px;
+}
+
+.fixTag {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--on-primary);
+  background: var(--success);
+  border-radius: 12px;
+}
+
+.cFix b,
+.cGap small {
+  display: block;
+}
+
+.cFix b {
+  font-family: var(--font-heading);
+  font-size: calc(19px * var(--ds, 1));
+  line-height: 1.1;
+}
+
+.cFix small,
+.cGap small {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.resumeStage .cGap {
+  right: 2%;
+  bottom: 6%;
+  z-index: 5;
+  display: grid;
+  gap: 6px;
+  width: 44%;
+  padding: 14px 18px;
+}
+
+.gapChip {
+  justify-self: start;
+  padding: 3px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--caution-soft);
+  border: 1px dashed var(--caution);
+  border-radius: 99px;
+}
+
+.resumeStage .cCount {
+  top: 0;
+  right: 36%;
+}
+
+.resumeStage .cNote {
+  bottom: 2%;
+  left: 4%;
+}
+
+.cSpark {
+  top: 52%;
+  right: 6%;
+}
+
+.chipA {
+  top: 40%;
+  left: 3%;
+}
+
+.chipB {
+  top: 54%;
+  left: 30%;
+}
+
+.chipC {
+  top: 66%;
+  right: 4%;
+}
+
+@media (max-width: 1080px) {
+  div.resumeScene {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .resumeStage .cPaper,
+  .resumeStage .cAsk,
+  .resumeStage .cFix,
+  .resumeStage .cGap {
+    width: min(100%, 360px);
+  }
+}

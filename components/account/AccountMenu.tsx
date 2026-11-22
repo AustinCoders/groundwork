@@ -234,6 +234,12 @@ export function AccountMenu({ compact }: { compact?: boolean }) {
               <span className={styles.itemText}>Review queue</span>
               {due > 0 && <span className={styles.badge}>{due} due</span>}
             </Link>
+            <Link href="/resume" role="menuitem" className={styles.item} prefetch={false} onClick={() => close(false)}>
+              <span className={styles.icon} aria-hidden="true">
+                ✦
+              </span>
+              <span className={styles.itemText}>Resume lab</span>
+            </Link>
             <button
               type="button"
               role="menuitem"

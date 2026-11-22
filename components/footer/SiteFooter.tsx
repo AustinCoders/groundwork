@@ -181,6 +181,7 @@ export function SiteFooter() {
             {link("/practice?id=free", "Playground", undefined, false)}
             {link("/company-questions", "Company questions", undefined, false)}
             {link("/mock", "Mock interview")}
+            {link("/resume", "Resume lab")}
             {link("/whiteboard", "Whiteboard")}
           </nav>
           <nav aria-label="You and the site" className={styles.footNav}>

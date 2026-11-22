@@ -24,6 +24,7 @@ const PATHS = {
   user: "M12 12a4 4 0 100-8 4 4 0 000 8zM4.5 20c.8-3.6 3.8-5.5 7.5-5.5s6.7 1.9 7.5 5.5",
   tour: "M12 21a9 9 0 100-18 9 9 0 000 18zM15.5 8.5l-2 5-5 2 2-5z",
   print: "M7 9V3h10v6M7 17H5a2 2 0 01-2-2v-4a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2h-2M7 14h10v7H7z",
+  resume: "M6 3h9l4 4v14H6zM15 3v4h4M9 11h7M9 15h7M9 18h4",
 } as const;
 
 export type MenuIconName = keyof typeof PATHS;

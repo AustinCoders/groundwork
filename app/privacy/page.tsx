@@ -50,6 +50,13 @@ export default function PrivacyPage() {
             you typed.
           </p>
           <p>
+            The resume lab reads the PDF or Word file you choose inside your browser. The file is never uploaded and no
+            AI service sees it. If you keep the result, your account stores what was read from it (your roles, bullets,
+            projects and skills) with the questions and fixes, and the marks you make. Your phone number, email and
+            personal details such as date of birth are left out. You can keep five, and deleting one removes it for
+            good.
+          </p>
+          <p>
             While you are signed in, the browser copies your learning data to your account so it follows you: chapter
             progress and review marks, quiz and check results, interview confidence marks, mock interview history,
             boards, saved whiteboard parts and code drafts. Settings that belong to one device, such as the theme, font,
