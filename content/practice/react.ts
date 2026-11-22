@@ -419,7 +419,11 @@ export const react: Exercise[] = [
       "<p>Write <code>counterReducer(state, action)</code> where <code>state</code> is a number. Support <code>{ type: \"increment\" }</code>, <code>{ type: \"decrement\" }</code>, <code>{ type: \"reset\" }</code> (back to 0), and <code>{ type: \"set\", value }</code>.</p>",
     starter:
       'function counterReducer(state, action) {\n  // TODO\n}\n\nconsole.log(counterReducer(0, { type: "increment" })); // 1\nconsole.log(counterReducer(5, { type: "set", value: 10 })); // 10\n',
-    hints: ["A switch on action.type, one case per type, is clearer here than nested ifs."],
+    hints: [
+      "A switch on action.type, one case per type, is clearer here than nested ifs.",
+      "Return the new number from each case; a reducer never changes the state it was given.",
+      "End with a default case that returns state unchanged, so an unknown action leaves the counter where it was.",
+    ],
     solution:
       'function counterReducer(state, action) {\n  switch (action.type) {\n    case "increment":\n      return state + 1;\n    case "decrement":\n      return state - 1;\n    case "reset":\n      return 0;\n    case "set":\n      return action.value;\n    default:\n      return state;\n  }\n}\n',
     tests: [
@@ -564,7 +568,11 @@ export const react: Exercise[] = [
       "<p>Write <code>pickFields(obj, keys)</code> returning a new object with only the listed keys &mdash; the shape of a selector that reads one slice out of a large context value.</p>",
     starter:
       'function pickFields(obj, keys) {\n  // TODO\n}\n\nconsole.log(pickFields({ theme: "dark", user: {}, locale: "en" }, ["theme"]));\n// { theme: "dark" }\n',
-    hints: ["Build the result with reduce, or a for...of over keys — either works."],
+    hints: [
+      "Build the result with reduce, or a for...of over keys — either works.",
+      "Start from a new empty object, so the source is never modified and the result is a different object.",
+      "Copy values as they are, without cloning them: a selector should hand back the same references the context holds.",
+    ],
     solution: "function pickFields(obj, keys) {\n  const out = {};\n  for (const key of keys) out[key] = obj[key];\n  return out;\n}\n",
     tests: [
       { name: "keeps only the requested keys", body: 'assert.deepEqual(pickFields({ a: 1, b: 2, c: 3 }, ["a", "c"]), { a: 1, c: 3 });' },
@@ -587,7 +595,11 @@ export const react: Exercise[] = [
       "<p>Write <code>hasRelevantChange(prev, next, keys)</code>: <code>true</code> if any of the listed keys differ between <code>prev</code> and <code>next</code>. This is the reasoning behind splitting one big context into several &mdash; a consumer should only re-render for the keys it actually reads.</p>",
     starter:
       'function hasRelevantChange(prev, next, keys) {\n  // TODO\n}\n\nconsole.log(hasRelevantChange({ theme: "dark", user: "a" }, { theme: "dark", user: "b" }, ["theme"]));\n// false — user changed, but this consumer doesn\'t read it\n',
-    hints: ["Object.is per key, same as shallowEqual, but only over the given key list rather than every key."],
+    hints: [
+      "Object.is per key, same as shallowEqual, but only over the given key list rather than every key.",
+      "Array.prototype.some stops at the first key that differs, which is all the answer needs.",
+      "An empty key list can never have a relevant change, and some() on an empty array already returns false.",
+    ],
     solution: "function hasRelevantChange(prev, next, keys) {\n  return keys.some((key) => !Object.is(prev[key], next[key]));\n}\n",
     tests: [
       {
@@ -825,6 +837,7 @@ export const react: Exercise[] = [
     hints: [
       "Hold the last value in a variable inside createPreviousTracker; that variable is your ref.current.",
       "Read the old value into a local before overwriting it, then return the local.",
+      "Each call to createPreviousTracker must create its own variable, so two trackers never share memory.",
     ],
     solution:
       "function createPreviousTracker() {\n  let current;\n  return function track(value) {\n    const previous = current;\n    current = value;\n    return previous;\n  };\n}\n",

@@ -296,6 +296,8 @@ export const reactComponents: Exercise[] = [
     starter: "const ThemeContext = createContext(\"light\");\n\nfunction ThemeLabel() {\n  // TODO\n  return <p>?</p>;\n}\n\nfunction App() {\n  return (\n    <div>\n      <ThemeLabel />\n      <ThemeContext value=\"dark\">\n        <ThemeLabel />\n      </ThemeContext>\n    </div>\n  );\n}\n",
     hints: [
       "useContext(ThemeContext) reads the nearest provider above the component, or the default if there is none.",
+      "The default passed to createContext is only used when no provider exists above the component at all; it is not a fallback for a provider whose value is undefined.",
+      "Render the value inside a <p>, so the first label shows light and the wrapped one shows dark.",
     ],
     solution: "const ThemeContext = createContext(\"light\");\n\nfunction ThemeLabel() {\n  const theme = useContext(ThemeContext);\n  return <p>{theme}</p>;\n}\n\nfunction App() {\n  return (\n    <div>\n      <ThemeLabel />\n      <ThemeContext value=\"dark\">\n        <ThemeLabel />\n      </ThemeContext>\n    </div>\n  );\n}\n",
     tests: [
@@ -317,6 +319,8 @@ export const reactComponents: Exercise[] = [
     starter: "const CountContext = createContext(0);\n\nfunction Display() {\n  // TODO\n  return <span>?</span>;\n}\n\nfunction App() {\n  return (\n    <CountContext value={1}>\n      <Display />\n      <Display />\n      <CountContext value={99}>\n        <Display />\n      </CountContext>\n    </CountContext>\n  );\n}\n",
     hints: [
       "useContext looks upward for the nearest provider — only the one component actually inside the inner provider sees 99.",
+      "Providers do not merge or add up: the inner value replaces the outer one for everything inside it.",
+      "Display needs no props at all; the position in the tree decides which value it reads.",
     ],
     solution: "const CountContext = createContext(0);\n\nfunction Display() {\n  const count = useContext(CountContext);\n  return <span>{count}</span>;\n}\n\nfunction App() {\n  return (\n    <CountContext value={1}>\n      <Display />\n      <Display />\n      <CountContext value={99}>\n        <Display />\n      </CountContext>\n    </CountContext>\n  );\n}\n",
     tests: [
@@ -325,6 +329,7 @@ export const reactComponents: Exercise[] = [
       { name: "one shows the overridden value", body: "const { container } = render(<App />);\nconst spans = [...container.querySelectorAll(\"span\")].map((s) => s.textContent);\nassert.equal(spans.filter((t) => t === \"99\").length, 1);" },
       { name: "the override is the last span", body: "const { container } = render(<App />);\nconst spans = [...container.querySelectorAll(\"span\")];\nassert.equal(spans[2].textContent, \"99\");" },
       { name: "a display outside any provider uses the default", body: "render(<Display />);\nassert.ok(screen.getByText(\"0\"));" },
+      { name: "other provider values are read the same way", body: "const { container } = render(\n  <CountContext value={5}>\n    <Display />\n    <CountContext value={7}>\n      <Display />\n    </CountContext>\n  </CountContext>\n);\nassert.deepEqual([...container.querySelectorAll(\"span\")].map((s) => s.textContent), [\"5\", \"7\"]);" },
     ],
   },
   {
@@ -403,6 +408,8 @@ export const reactComponents: Exercise[] = [
     starter: "let slowCalls = 0;\nfunction slowSum(list) {\n  slowCalls++;\n  return list.reduce((a, b) => a + b, 0);\n}\n\nfunction Totals({ items, tick }) {\n  const total = slowSum(items);\n  return (\n    <p>\n      Total: {total} (tick {tick})\n    </p>\n  );\n}\n\nfunction App() {\n  return <Totals items={[1, 2, 3]} tick={0} />;\n}\n",
     hints: [
       "useMemo(() => slowSum(items), [items]) — the dependency array controls when it re-runs, not tick.",
+      "Dependencies are compared by reference: the same array object skips the calculation, a new array with the same numbers runs it again.",
+      "Leave tick out of the dependency array; it is only displayed, and the sum does not depend on it.",
     ],
     solution: "let slowCalls = 0;\nfunction slowSum(list) {\n  slowCalls++;\n  return list.reduce((a, b) => a + b, 0);\n}\n\nfunction Totals({ items, tick }) {\n  const total = useMemo(() => slowSum(items), [items]);\n  return (\n    <p>\n      Total: {total} (tick {tick})\n    </p>\n  );\n}\n\nfunction App() {\n  return <Totals items={[1, 2, 3]} tick={0} />;\n}\n",
     tests: [
@@ -411,6 +418,7 @@ export const reactComponents: Exercise[] = [
       { name: "changing only tick does not recompute", body: "slowCalls = 0;\nconst items = [1, 2, 3];\nconst view = render(<Totals items={items} tick={0} />);\nview.rerender(<Totals items={items} tick={1} />);\nview.rerender(<Totals items={items} tick={2} />);\nassert.equal(slowCalls, 1);\nassert.ok(screen.getByText(/tick 2/));" },
       { name: "a new items array recomputes", body: "slowCalls = 0;\nconst view = render(<Totals items={[1, 2, 3]} tick={0} />);\nview.rerender(<Totals items={[4, 5]} tick={0} />);\nassert.equal(slowCalls, 2);\nassert.ok(screen.getByText(/Total: 9/));" },
       { name: "the tick still displays correctly", body: "render(<Totals items={[1]} tick={7} />);\nassert.ok(screen.getByText(/tick 7/));" },
+      { name: "a new array with the same numbers recomputes, because dependencies compare by reference", body: "slowCalls = 0;\nconst view = render(<Totals items={[1, 2, 3]} tick={0} />);\nview.rerender(<Totals items={[1, 2, 3]} tick={1} />);\nassert.equal(slowCalls, 2);\nassert.ok(screen.getByText(/Total: 6/));" },
     ],
   },
   {
@@ -546,6 +554,7 @@ export const reactComponents: Exercise[] = [
     hints: [
       "const nodesRef = useRef(new Map()); set it with a callback ref: ref={(el) => nodesRef.current.set(i, el)}.",
       "On click: nodesRef.current.get(label)?.scrollIntoView().",
+      "In React 19 a callback ref can return a cleanup: ref={(el) => { map.set(i, el); return () => map.delete(i); }} keeps the Map free of removed items.",
     ],
     solution: "const ITEMS = [\"a\", \"b\", \"c\", \"d\"];\n\nfunction JumpList() {\n  const nodesRef = useRef(new Map());\n\n  return (\n    <div>\n      <div>\n        {ITEMS.map((i) => (\n          <button key={i} onClick={() => nodesRef.current.get(i)?.scrollIntoView()}>\n            Jump to {i}\n          </button>\n        ))}\n      </div>\n      <ul>\n        {ITEMS.map((i) => (\n          <li key={i} ref={(el) => nodesRef.current.set(i, el)}>\n            {i}\n          </li>\n        ))}\n      </ul>\n    </div>\n  );\n}\n\nfunction App() {\n  return <JumpList />;\n}\n",
     tests: [
@@ -553,6 +562,8 @@ export const reactComponents: Exercise[] = [
       { name: "clicking a jump button calls scrollIntoView on the matching item", body: "const { container } = render(<App />);\nlet called = null;\nconst items = container.querySelectorAll(\"li\");\nitems.forEach((li) => (li.scrollIntoView = () => (called = li.textContent)));\nawait click(screen.getByRole(\"button\", { name: \"Jump to c\" }));\nassert.equal(called, \"c\");" },
       { name: "clicking a different button scrolls a different item", body: "const { container } = render(<App />);\nconst calls = [];\ncontainer.querySelectorAll(\"li\").forEach((li) => (li.scrollIntoView = () => calls.push(li.textContent)));\nawait click(screen.getByRole(\"button\", { name: \"Jump to a\" }));\nassert.deepEqual(calls, [\"a\"]);" },
       { name: "there are four jump buttons", body: "render(<App />);\nassert.equal(screen.getAllByRole(\"button\").length, 4);" },
+      { name: "every item can be reached from its own button", body: "const { container } = render(<App />);\nconst calls = [];\ncontainer.querySelectorAll(\"li\").forEach((li) => (li.scrollIntoView = () => calls.push(li.textContent)));\nfor (const label of [\"a\", \"b\", \"c\", \"d\"]) await click(screen.getByRole(\"button\", { name: \"Jump to \" + label }));\nassert.deepEqual(calls, [\"a\", \"b\", \"c\", \"d\"]);" },
+      { name: "clicking does not change what is rendered", body: "const { container } = render(<App />);\ncontainer.querySelectorAll(\"li\").forEach((li) => (li.scrollIntoView = () => {}));\nconst before = container.innerHTML;\nawait click(screen.getByRole(\"button\", { name: \"Jump to b\" }));\nassert.equal(container.innerHTML, before);" },
     ],
   },
   {
@@ -693,6 +704,7 @@ export const reactComponents: Exercise[] = [
     hints: [
       "subscribe: (cb) => { mql.addEventListener('change', cb); return () => mql.removeEventListener('change', cb); }",
       "getSnapshot: () => mql.matches",
+      "matches is a boolean, so the snapshot is stable by nature. In real code wrap subscribe in useCallback(..., [mql]) so React does not resubscribe on every render.",
     ],
     solution: "function useMatches(mql) {\n  return useSyncExternalStore(\n    (callback) => {\n      mql.addEventListener(\"change\", callback);\n      return () => mql.removeEventListener(\"change\", callback);\n    },\n    () => mql.matches\n  );\n}\n\nfunction Layout({ mql }) {\n  const isWide = useMatches(mql);\n  return <p>{isWide ? \"wide\" : \"narrow\"}</p>;\n}\n\nfunction makeMql(initial) {\n  const listeners = new Set();\n  return {\n    matches: initial,\n    addEventListener(_type, cb) {\n      listeners.add(cb);\n    },\n    removeEventListener(_type, cb) {\n      listeners.delete(cb);\n    },\n  };\n}\n\nfunction App() {\n  return <Layout mql={makeMql(false)} />;\n}\n",
     tests: [
@@ -700,6 +712,8 @@ export const reactComponents: Exercise[] = [
       { name: "starts wide when the query already matches", body: "const mql = { matches: true, addEventListener() {}, removeEventListener() {} };\nrender(<Layout mql={mql} />);\nassert.ok(screen.getByText(\"wide\"));" },
       { name: "a change event flips the display", body: "const listeners = new Set();\nconst mql = {\n  matches: false,\n  addEventListener(_t, cb) { listeners.add(cb); },\n  removeEventListener(_t, cb) { listeners.delete(cb); },\n};\nrender(<Layout mql={mql} />);\nmql.matches = true;\nflushSync(() => listeners.forEach((l) => l()));\nassert.ok(screen.getByText(\"wide\"));" },
       { name: "unmounting removes the listener", body: "const listeners = new Set();\nconst mql = {\n  matches: false,\n  addEventListener(_t, cb) { listeners.add(cb); },\n  removeEventListener(_t, cb) { listeners.delete(cb); },\n};\nconst view = render(<Layout mql={mql} />);\nview.unmount();\nassert.equal(listeners.size, 0);" },
+      { name: "a change back to not matching shows narrow again", body: "const listeners = new Set();\nconst mql = {\n  matches: true,\n  addEventListener(_t, cb) { listeners.add(cb); },\n  removeEventListener(_t, cb) { listeners.delete(cb); },\n};\nrender(<Layout mql={mql} />);\nassert.ok(screen.getByText(\"wide\"));\nmql.matches = false;\nflushSync(() => listeners.forEach((l) => l()));\nassert.ok(screen.getByText(\"narrow\"));" },
+      { name: "the listener is registered for the change event", body: "const types = [];\nconst mql = {\n  matches: false,\n  addEventListener(t) { types.push(t); },\n  removeEventListener() {},\n};\nrender(<Layout mql={mql} />);\nassert.ok(types.length > 0, \"no listener was registered\");\nassert.ok(types.every((t) => t === \"change\"), \"registered for \" + types.join(\", \"));" },
     ],
   },
   {
@@ -1077,6 +1091,7 @@ export const reactComponents: Exercise[] = [
     hints: [
       "start = Math.floor(scrollTop / itemHeight); count = Math.ceil(viewportHeight / itemHeight) + 1.",
       "Slice items[start, start+count]. Wrap in a container with height = items.length * itemHeight so the scrollbar is the right size, and position the slice with a top offset of start * itemHeight.",
+      "slice() simply returns fewer items near the end of the list, so the last rows need no special case.",
     ],
     solution: "function VirtualList({ items, itemHeight, viewportHeight, scrollTop }) {\n  const start = Math.max(0, Math.floor(scrollTop / itemHeight));\n  const count = Math.ceil(viewportHeight / itemHeight) + 1;\n  const visible = items.slice(start, start + count);\n\n  return (\n    <div style={{ height: items.length * itemHeight, position: \"relative\" }}>\n      <ul style={{ position: \"absolute\", top: start * itemHeight, margin: 0, padding: 0, listStyle: \"none\" }}>\n        {visible.map((item, i) => (\n          <li key={start + i} style={{ height: itemHeight }}>\n            {item}\n          </li>\n        ))}\n      </ul>\n    </div>\n  );\n}\n\nfunction App() {\n  const items = Array.from({ length: 1000 }, (_, i) => \"Row \" + i);\n  return <VirtualList items={items} itemHeight={30} viewportHeight={150} scrollTop={0} />;\n}\n",
     tests: [
@@ -1085,6 +1100,7 @@ export const reactComponents: Exercise[] = [
       { name: "does not render a row far down the list", body: "render(<App />);\nassert.equal(screen.queryByText(\"Row 500\"), null);" },
       { name: "scrolling down renders the rows now in view", body: "const view = render(<VirtualList items={Array.from({ length: 1000 }, (_, i) => \"Row \" + i)} itemHeight={30} viewportHeight={150} scrollTop={0} />);\nview.rerender(<VirtualList items={Array.from({ length: 1000 }, (_, i) => \"Row \" + i)} itemHeight={30} viewportHeight={150} scrollTop={3000} />);\nassert.ok(screen.getByText(\"Row 100\"));\nassert.equal(screen.queryByText(\"Row 0\"), null);" },
       { name: "the outer container reserves the full scrollable height", body: "const { container } = render(<App />);\nassert.equal(container.querySelector(\"div\").style.height, \"30000px\");" },
+      { name: "scrolled to the very end, the last row renders and the slice stays small", body: "render(<VirtualList items={Array.from({ length: 1000 }, (_, i) => \"Row \" + i)} itemHeight={30} viewportHeight={150} scrollTop={29850} />);\nassert.ok(screen.getByText(\"Row 999\"));\nassert.ok(screen.getAllByRole(\"listitem\").length <= 7);" },
     ],
   },
   {
@@ -1305,6 +1321,7 @@ export const reactComponents: Exercise[] = [
     hints: [
       "subscribe: add keydown/keyup listeners on document that update heldKeys and call the callback; unsubscribe removes them.",
       "getSnapshot: () => heldKeys.has(key).",
+      "Ignore events for other keys before touching heldKeys, so pressing Control never notifies React about Shift.",
     ],
     solution: "const heldKeys = new Set();\n\nfunction useKeyHeld(key) {\n  return useSyncExternalStore(\n    (callback) => {\n      function down(e) {\n        if (e.key === key) {\n          heldKeys.add(key);\n          callback();\n        }\n      }\n      function up(e) {\n        if (e.key === key) {\n          heldKeys.delete(key);\n          callback();\n        }\n      }\n      document.addEventListener(\"keydown\", down);\n      document.addEventListener(\"keyup\", up);\n      return () => {\n        document.removeEventListener(\"keydown\", down);\n        document.removeEventListener(\"keyup\", up);\n      };\n    },\n    () => heldKeys.has(key)\n  );\n}\n\nfunction ShiftIndicator() {\n  const held = useKeyHeld(\"Shift\");\n  return <p>{held ? \"Shift held\" : \"Shift up\"}</p>;\n}\n\nfunction App() {\n  return <ShiftIndicator />;\n}\n",
     tests: [
