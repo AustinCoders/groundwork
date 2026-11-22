@@ -273,6 +273,34 @@ async function withClient<T>(run: (db: SupabaseClient) => Promise<Result<T>>): P
   }
 }
 
+export type EmailStatus =
+  | { status: "none" }
+  | { status: "exists"; password: boolean; confirmed: boolean; providers: ("email" | "google" | "github")[] }
+  | { status: "unknown" };
+
+const EMAIL_PROVIDERS = ["email", "google", "github"] as const;
+
+export function readEmailStatus(value: unknown): EmailStatus {
+  if (!isPlainObject(value)) return { status: "unknown" };
+  if (value.status === "none") return { status: "none" };
+  if (value.status !== "exists") return { status: "unknown" };
+  const providers = Array.isArray(value.providers)
+    ? EMAIL_PROVIDERS.filter((provider) => (value.providers as unknown[]).includes(provider))
+    : [];
+  return { status: "exists", password: value.password === true, confirmed: value.confirmed !== false, providers };
+}
+
+export async function emailStatus(email: string): Promise<EmailStatus> {
+  try {
+    const db = await connect();
+    if (!db) return { status: "unknown" };
+    const { data, error } = await db.rpc("email_status", { address: email.trim() });
+    return error ? { status: "unknown" } : readEmailStatus(data);
+  } catch {
+    return { status: "unknown" };
+  }
+}
+
 export function signInWithPassword(email: string, password: string, captchaToken?: string): Promise<Result> {
   return withClient(async (db) => {
     const { error } = await db.auth.signInWithPassword({ email: email.trim(), password, options: { captchaToken } });
@@ -286,7 +314,7 @@ export function signUpWithPassword(
   password: string,
   next: string,
   captchaToken?: string
-): Promise<Result<{ confirm: boolean }>> {
+): Promise<Result<{ confirm: boolean; taken: boolean }>> {
   return withClient(async (db) => {
     const { data, error } = await db.auth.signUp({
       email: email.trim(),
@@ -298,7 +326,8 @@ export function signUpWithPassword(
       },
     });
     if (error) return { ok: false, error: friendlyAuthError(error) };
-    return { ok: true, value: { confirm: !data.session } };
+    const taken = !data.session && Array.isArray(data.user?.identities) && data.user.identities.length === 0;
+    return { ok: true, value: { confirm: !data.session && !taken, taken } };
   });
 }
 

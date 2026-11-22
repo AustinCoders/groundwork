@@ -32,6 +32,7 @@ export function PasswordField({
   autoFocus,
   aside,
   strengthHints,
+  onBlur,
 }: {
   label: string;
   value: string;
@@ -41,6 +42,7 @@ export function PasswordField({
   autoFocus?: boolean;
   aside?: React.ReactNode;
   strengthHints?: readonly string[];
+  onBlur?: () => void;
 }) {
   const id = useId();
   const noteId = useId();
@@ -79,7 +81,10 @@ export function PasswordField({
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={readCaps}
           onKeyUp={readCaps}
-          onBlur={() => setCaps(false)}
+          onBlur={() => {
+            setCaps(false);
+            onBlur?.();
+          }}
         />
         <button
           type="button"

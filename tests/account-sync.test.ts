@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { safeNext } from "@/lib/account/config";
-import { codeProblem, emailProblem, friendlyAuthError, nameProblem, passwordProblem } from "@/lib/account/errors";
+import {
+  codeProblem,
+  emailProblem,
+  emailSuggestion,
+  friendlyAuthError,
+  nameProblem,
+  passwordProblem,
+} from "@/lib/account/errors";
 import { isSyncedKey, mergeValues, syncStrategy, type MergeStrategy } from "@/lib/account/syncRules";
 
 function strategy(key: string): MergeStrategy {
@@ -193,9 +200,49 @@ describe("form checks", () => {
     expect(codeProblem("123456")).toBeNull();
   });
 
+  it("says what is wrong with an email address", () => {
+    expect(emailProblem("dev example.com")).toMatch(/spaces/);
+    expect(emailProblem("dev.example.com")).toMatch(/@/);
+    expect(emailProblem("a@b@example.com")).toMatch(/one @/);
+    expect(emailProblem("@example.com")).toMatch(/before the @/);
+    expect(emailProblem("dev@")).toMatch(/after the @/);
+    expect(emailProblem("dev..x@example.com")).toMatch(/before the @/);
+    expect(emailProblem("dev@-example.com")).toMatch(/after the @/);
+    expect(emailProblem("dev@example.c0m")).toMatch(/after the @/);
+    expect(emailProblem(`${"a".repeat(65)}@example.com`)).toMatch(/too long/);
+    expect(emailProblem("first.last+tag@mail.example.co.in")).toBeNull();
+  });
+
+  it("suggests a fix for a misspelt common email domain", () => {
+    expect(emailSuggestion("ada@gmial.com")).toBe("ada@gmail.com");
+    expect(emailSuggestion("ada@gmail.con")).toBe("ada@gmail.com");
+    expect(emailSuggestion("ada@hotmial.com")).toBe("ada@hotmail.com");
+    expect(emailSuggestion("ada@gmail.com")).toBeNull();
+    expect(emailSuggestion("ada@mail.com")).toBeNull();
+    expect(emailSuggestion("ada@austincoders.com")).toBeNull();
+    expect(emailSuggestion("not an email")).toBeNull();
+  });
+
+  it("keeps links and markup out of names", () => {
+    expect(nameProblem("Visit www.spam.example")).toMatch(/links/);
+    expect(nameProblem("me@example.com")).toMatch(/links/);
+    expect(nameProblem("<b>Ada</b>")).toMatch(/symbols/);
+    expect(nameProblem("1234")).toMatch(/letter/);
+    expect(nameProblem("Zoë O'Neil-Smith")).toBeNull();
+    expect(nameProblem("José Ramos")).toBeNull();
+  });
+
+  it("keeps spaces at the ends and personal details out of a new password", () => {
+    expect(passwordProblem(" groundwork1")).toMatch(/space/);
+    expect(passwordProblem("akshat2026!", ["akshat@example.com"])).toMatch(/name and email/);
+    expect(passwordProblem("Ada lovelace 1815", ["", "Ada Lovelace"])).toMatch(/name and email/);
+    expect(passwordProblem("pink ocean 1815", ["ada.lovelace@example.com", "Ada Lovelace"])).toBeNull();
+    expect(passwordProblem("lovelace1815", ["lovelace@example.com"])).toMatch(/name and email/);
+  });
+
   it("turns auth errors into plain sentences", () => {
     expect(friendlyAuthError({ code: "invalid_credentials", message: "Invalid login credentials" })).toMatch(
-      /do not match/
+      /not right/
     );
     expect(friendlyAuthError({ status: 429, message: "x" })).toMatch(/Wait a minute/);
     expect(friendlyAuthError({ message: "Failed to fetch" })).toMatch(/connection/);

@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useEffect, useId, useRef, useState, type PointerEvent } from "react";
 import { authProviders, type AuthMode } from "@/lib/account/config";
-import { codeProblem, emailProblem, nameProblem, passwordProblem } from "@/lib/account/errors";
+import { codeProblem, emailProblem, emailSuggestion, nameProblem, passwordProblem } from "@/lib/account/errors";
 import { markOnboardingDone } from "@/lib/account/onboarding";
 import {
+  emailStatus,
   resendSignupEmail,
   sendMagicLink,
   sendPasswordReset,
@@ -17,6 +18,7 @@ import {
   verifyEmailCode,
   verifySignupCode,
   verifyTotpSignIn,
+  type EmailStatus,
   type Experience,
   type Goal,
   type OAuthProvider,
@@ -73,6 +75,8 @@ interface FieldProps {
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   maxLength?: number;
   code?: boolean;
+  onBlur?: () => void;
+  after?: React.ReactNode;
 }
 
 function Field({
@@ -87,6 +91,8 @@ function Field({
   inputMode,
   maxLength,
   code,
+  onBlur,
+  after,
 }: FieldProps) {
   const id = useId();
   const noteId = useId();
@@ -111,10 +117,12 @@ function Field({
         aria-invalid={error ? true : undefined}
         aria-describedby={noteId}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
       />
       <div id={noteId} className={error ? styles.fieldError : styles.fieldHint} aria-live="polite">
         {error ?? hint ?? ""}
       </div>
+      {after}
     </div>
   );
 }
@@ -329,6 +337,9 @@ export function AuthDialog({
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [tried, setTried] = useState(false);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [lookup, setLookup] = useState<{ email: string; result: EmailStatus } | null>(null);
+  const known = useRef(new Map<string, EmailStatus>());
   const [busy, setBusy] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
@@ -371,6 +382,7 @@ export function AuthDialog({
     setStep(nextStep);
     if (nextIntent) setIntent(nextIntent);
     setTried(false);
+    setTouched({});
     setFormError(null);
     if (nextStep !== "code") setCode("");
   }
@@ -390,6 +402,40 @@ export function AuthDialog({
     frozenUntil.current = performance.now() + SLIDE_MS;
     setSweep((now) => ({ id: (now?.id ?? 0) + 1, to: (nextIntent ?? intent) === "sign-up" ? "right" : "left" }));
     cover.current = window.setTimeout(() => apply(nextStep, nextIntent, true), COVER_MS);
+  }
+
+  const checksEmail = (step === "email" && intent !== "code") || step === "forgot";
+  const emailKey = email.trim().toLowerCase();
+
+  async function lookUp(address: string): Promise<EmailStatus> {
+    const key = address.trim().toLowerCase();
+    const cached = known.current.get(key);
+    if (cached) return cached;
+    const result = await emailStatus(key);
+    if (result.status !== "unknown") known.current.set(key, result);
+    setLookup((now) => (now?.email === key && now.result === result ? now : { email: key, result }));
+    return result;
+  }
+
+  useEffect(() => {
+    if (!checksEmail || emailProblem(emailKey)) return;
+    const cached = known.current.get(emailKey);
+    if (cached) {
+      setLookup((now) => (now?.email === emailKey ? now : { email: emailKey, result: cached }));
+      return;
+    }
+    const id = window.setTimeout(() => void lookUp(emailKey), 650);
+    return () => window.clearTimeout(id);
+  }, [checksEmail, emailKey]);
+
+  const status = lookup && lookup.email === emailKey ? lookup.result : null;
+
+  function emailBlocker(result: EmailStatus | null): boolean {
+    if (!result || result.status === "unknown") return false;
+    if (step === "forgot") return result.status === "none" || !result.password;
+    if (intent === "sign-in") return result.status === "none" || !result.password;
+    if (intent === "sign-up") return result.status === "exists";
+    return false;
   }
 
   async function run(label: string, task: () => Promise<{ ok: boolean; error?: string }>) {
@@ -430,8 +476,15 @@ export function AuthDialog({
     if (busy) return;
     if (step === "email") {
       if (emailProblem(email)) return;
-      if (intent === "code") await sendCode();
-      else go(intent === "sign-up" ? "create" : "password");
+      if (intent === "code") {
+        await sendCode();
+        return;
+      }
+      setBusy("submit");
+      const result = await lookUp(email);
+      setBusy(null);
+      if (emailBlocker(result)) return;
+      go(intent === "sign-up" ? "create" : "password");
       return;
     }
     if (step === "password") {
@@ -443,13 +496,18 @@ export function AuthDialog({
       return;
     }
     if (step === "create") {
-      if (nameProblem(name) || passwordProblem(password) || isCommonPassword(password)) return;
+      if (nameProblem(name) || passwordProblem(password, [email, name]) || isCommonPassword(password)) return;
       setBusy("submit");
       setFormError(null);
       const result = await signUpWithPassword(name, email, password, next, await human());
       setBusy(null);
       if (!result.ok) setFormError(result.error);
-      else if (result.value.confirm) {
+      else if (result.value.taken) {
+        const taken: EmailStatus = { status: "exists", password: true, confirmed: true, providers: ["email"] };
+        known.current.set(emailKey, taken);
+        setLookup({ email: emailKey, result: taken });
+        go("email");
+      } else if (result.value.confirm) {
         setCooldown(RESEND_SECONDS);
         go("confirm");
       } else {
@@ -464,6 +522,10 @@ export function AuthDialog({
     }
     if (step === "forgot") {
       if (emailProblem(email)) return;
+      setBusy("submit");
+      const result = await lookUp(email);
+      setBusy(null);
+      if (emailBlocker(result)) return;
       if (await run("submit", async () => sendPasswordReset(email, await human()))) go("reset");
     }
   }
@@ -473,17 +535,71 @@ export function AuthDialog({
     await run(provider, () => signInWithProvider(provider, next));
   }
 
-  const emailError = tried ? emailProblem(email) : null;
-  const nameError = tried && step === "create" ? nameProblem(name) : null;
+  const emailError = tried || touched.email ? emailProblem(email) : null;
+  const nameError = (tried || touched.name) && step === "create" ? nameProblem(name) : null;
   const passwordError =
-    tried && step === "create"
-      ? (passwordProblem(password) ??
+    (tried || touched.password) && step === "create" && password
+      ? (passwordProblem(password, [email, name]) ??
         (isCommonPassword(password) ? "That password is too common. Choose another." : null))
-      : tried && step === "password" && !password
-        ? "Enter your password."
-        : null;
+      : tried && step === "create" && !password
+        ? "Choose a password."
+        : tried && step === "password" && !password
+          ? "Enter your password."
+          : null;
 
   const providers = authProviders();
+  const PROVIDER_NAMES: Record<OAuthProvider, string> = { google: "Google", github: "GitHub" };
+
+  function noteFor(result: EmailStatus | null): {
+    ok: boolean;
+    text: string;
+    actions: { label: string; run: () => void }[];
+  } | null {
+    if (!checksEmail || emailError || !result || result.status === "unknown") return null;
+    const linked = result.status === "exists" ? providers.filter((p) => result.providers.includes(p)) : [];
+    const providerActions = linked.map((p) => ({
+      label: `Continue with ${PROVIDER_NAMES[p]}`,
+      run: () => void onProvider(p),
+    }));
+    const codeAction = { label: "Email me a code", run: () => void sendCode() };
+    const how = linked.length
+      ? `It signs in with ${linked.map((p) => PROVIDER_NAMES[p]).join(" or ")}, or with a code we email you.`
+      : "It signs in with a code we email you.";
+    if (result.status === "none") {
+      if (intent === "sign-up") return { ok: true, text: "This email is free to use.", actions: [] };
+      return {
+        ok: false,
+        text: "No Groundwork account uses this email.",
+        actions: [{ label: "Create an account with it", run: () => go("create", "sign-up") }],
+      };
+    }
+    if (intent === "sign-up" && step === "email") {
+      return {
+        ok: false,
+        text: "An account already uses this email.",
+        actions: [
+          ...(result.password ? [{ label: "Sign in instead", run: () => go("password", "sign-in") }] : []),
+          ...providerActions,
+          codeAction,
+        ],
+      };
+    }
+    if (!result.password) {
+      return {
+        ok: false,
+        text:
+          step === "forgot"
+            ? `This account has no password to reset. ${how}`
+            : `This account does not use a password. ${how}`,
+        actions: [...providerActions, codeAction],
+      };
+    }
+    if (step === "forgot") return null;
+    return { ok: true, text: "Account found. Continue to enter your password.", actions: [] };
+  }
+
+  const note = noteFor(status);
+  const suggestion = checksEmail || step === "email" ? (emailError ? null : emailSuggestion(email)) : null;
   const showProviders = step === "email" && intent !== "code" && providers.length > 0;
   const showAside = step !== "welcome";
   const side: Side = intent === "sign-up" ? "right" : "left";
@@ -760,6 +876,40 @@ export function AuthDialog({
                       autoFocus
                       inputMode="email"
                       maxLength={254}
+                      onBlur={() => setTouched((t) => ({ ...t, email: email.trim().length > 0 }))}
+                      hint={
+                        suggestion ? (
+                          <>
+                            Did you mean{" "}
+                            <button type="button" className={styles.textLink} onClick={() => setEmail(suggestion)}>
+                              {suggestion}
+                            </button>
+                            ?
+                          </>
+                        ) : undefined
+                      }
+                      after={
+                        note && (
+                          <div className={note.ok ? styles.emailOk : styles.emailIssue} role="status">
+                            <p>{note.text}</p>
+                            {note.actions.length > 0 && (
+                              <div className={styles.emailActions}>
+                                {note.actions.map((action) => (
+                                  <button
+                                    key={action.label}
+                                    type="button"
+                                    className={styles.emailAction}
+                                    disabled={busy !== null}
+                                    onClick={action.run}
+                                  >
+                                    {action.label}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      }
                     />
                   )}
 
@@ -791,6 +941,7 @@ export function AuthDialog({
                         value={name}
                         onChange={setName}
                         error={nameError}
+                        onBlur={() => setTouched((t) => ({ ...t, name: name.trim().length > 0 }))}
                         autoComplete="name"
                         autoFocus
                         maxLength={60}
@@ -803,6 +954,7 @@ export function AuthDialog({
                         error={passwordError}
                         autoComplete="new-password"
                         strengthHints={[email, name]}
+                        onBlur={() => setTouched((t) => ({ ...t, password: password.length > 0 }))}
                       />
                     </>
                   )}

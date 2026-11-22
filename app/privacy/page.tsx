@@ -44,6 +44,12 @@ export default function PrivacyPage() {
             signals for that check. It sets no cookie for this site.
           </p>
           <p>
+            When you type an email on the sign-in or sign-up form, the site asks whether an account already uses it, so
+            it can tell you before you try a password. To stop anyone checking addresses in bulk, each check is counted
+            against a one-way hash of your IP address. Those counts are deleted after an hour and never store the email
+            you typed.
+          </p>
+          <p>
             While you are signed in, the browser copies your learning data to your account so it follows you: chapter
             progress and review marks, quiz and check results, interview confidence marks, mock interview history,
             boards, saved whiteboard parts and code drafts. Settings that belong to one device, such as the theme, font,
