@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type PointerEvent } from "react";
 import { authProviders, type AuthMode } from "@/lib/account/config";
 import { codeProblem, emailProblem, nameProblem, passwordProblem } from "@/lib/account/errors";
 import { markOnboardingDone } from "@/lib/account/onboarding";
@@ -116,6 +116,14 @@ function Field({
 
 type Step = "email" | "password" | "create" | "code" | "forgot" | "confirm" | "reset" | "welcome";
 type Intent = "sign-in" | "sign-up" | "code";
+type Side = "left" | "right";
+
+const ASIDE_COPY: Record<Side, { kicker: string; title: string }> = {
+  left: { kicker: "Welcome back", title: "Your notebook is where you left it" },
+  right: { kicker: "Optional, and free", title: "Your notebook, on every device" },
+};
+
+const TILT_LIMIT = 0.5;
 
 const RESEND_SECONDS = 60;
 
@@ -216,26 +224,29 @@ function SyncDoodle() {
   );
 }
 
-function Aside() {
+function Aside({ side }: { side: Side }) {
+  const copy = ASIDE_COPY[side];
   return (
     <aside className={styles.aside} aria-label="What an account adds">
-      <p className={styles.asideKicker}>Optional, and free</p>
-      <p className={styles.asideTitle}>Your notebook, on every device</p>
-      <SyncDoodle />
-      <ul className={styles.benefits}>
-        {BENEFITS.map((b) => (
-          <li key={b.title}>
-            <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" className={styles.benefitTick}>
-              <path d="M3 8.5 6.5 12 13 4.5" />
-            </svg>
-            <span>
-              <strong>{b.title}</strong>
-              <span className={styles.benefitBody}>{b.body}</span>
-            </span>
-          </li>
-        ))}
-      </ul>
-      <p className={styles.asideNote}>Every chapter and exercise still works without an account.</p>
+      <div key={side} className={styles.asideContent}>
+        <p className={styles.asideKicker}>{copy.kicker}</p>
+        <p className={styles.asideTitle}>{copy.title}</p>
+        <SyncDoodle />
+        <ul className={styles.benefits}>
+          {BENEFITS.map((b) => (
+            <li key={b.title}>
+              <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" className={styles.benefitTick}>
+                <path d="M3 8.5 6.5 12 13 4.5" />
+              </svg>
+              <span>
+                <strong>{b.title}</strong>
+                <span className={styles.benefitBody}>{b.body}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className={styles.asideNote}>Every chapter and exercise still works without an account.</p>
+      </div>
     </aside>
   );
 }
@@ -462,6 +473,26 @@ export function AuthDialog({
   const providers = authProviders();
   const showProviders = step === "email" && intent !== "code" && providers.length > 0;
   const showAside = step !== "welcome";
+  const side: Side = intent === "sign-up" ? "right" : "left";
+
+  function tilt(e: PointerEvent<HTMLDialogElement>) {
+    const dialog = ref.current;
+    if (!dialog || !showAside || e.pointerType !== "mouse") return;
+    const box = dialog.getBoundingClientRect();
+    const x = (e.clientX - box.left) / box.width - 0.5;
+    const y = (e.clientY - box.top) / box.height - 0.5;
+    if (Math.abs(x) > TILT_LIMIT || Math.abs(y) > TILT_LIMIT) {
+      resetTilt();
+      return;
+    }
+    dialog.style.setProperty("--px", x.toFixed(3));
+    dialog.style.setProperty("--py", y.toFixed(3));
+  }
+
+  function resetTilt() {
+    ref.current?.style.removeProperty("--px");
+    ref.current?.style.removeProperty("--py");
+  }
   const lead = leadFor(step, intent);
   const submitLabel: Record<Step, string> = {
     email: intent === "code" ? "Email me a code" : "Continue",
@@ -479,17 +510,20 @@ export function AuthDialog({
       ref={ref}
       className={showAside ? `${styles.dialog} ${styles.dialogWide}` : styles.dialog}
       aria-labelledby={titleId}
+      data-side={showAside ? side : undefined}
+      onPointerMove={tilt}
+      onPointerLeave={resetTilt}
       onClose={onClose}
       onClick={(e) => {
         if (e.target === ref.current) onClose();
       }}
     >
-      <div className={showAside ? styles.shell : undefined}>
-        {showAside && <Aside />}
+      <button type="button" className={styles.close} aria-label="Close" onClick={onClose}>
+        ×
+      </button>
+      <div className={showAside ? styles.shell : undefined} data-side={showAside ? side : undefined}>
+        {showAside && <Aside side={side} />}
         <div className={styles.inner}>
-          <button type="button" className={styles.close} aria-label="Close" onClick={onClose}>
-            ×
-          </button>
           <div key={step + intent} className={`${styles.body} ${styles.stepIn}`}>
             <h2 id={titleId} className={styles.title}>
               {titleFor(step, intent)}
