@@ -11,7 +11,8 @@
     "package-lock.json",
     "tsconfig.tsbuildinfo",
     ".vercel/**",
-    ".claude/**"
+    ".claude/**",
+    ".env.example"
   ],
   "ignoreRegExpList": ["/<code>[\\s\\S]*?<\\/code>/g", "/<pre>[\\s\\S]*?<\\/pre>/g"],
   "dictionaryDefinitions": [

@@ -1,5 +1,6 @@
 "use client";
 
+import { SignInGate } from "@/components/account/SignInGate";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { fetchStages, prefetchStages, whenIdle } from "@/app/mock/useStageBanks";
 import { loadRoom } from "@/app/mock/preload";
@@ -276,13 +277,15 @@ export function Lobby({
         </div>
       </Band>
 
-      <ReadinessBoard
-        no="03"
-        history={history}
-        available={catalog.stages.map((s) => s.id)}
-        stageTitle={(id) => stages[id]?.title ?? id}
-        onPractise={practise}
-      />
+      <SignInGate feature="mock-history" compact>
+        <ReadinessBoard
+          no="03"
+          history={history}
+          available={catalog.stages.map((s) => s.id)}
+          stageTitle={(id) => stages[id]?.title ?? id}
+          onPractise={practise}
+        />
+      </SignInGate>
 
       <RoundsDecoded no="04" stages={catalog.stages} config={config} onPractise={practise} />
       <HowScored no="05" />

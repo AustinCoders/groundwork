@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { AuthHost } from "@/components/account/AuthHost";
 import { ErrorReporter } from "@/components/ErrorReporter";
 import { RouteFade } from "@/components/RouteFade";
 import { fontVariables } from "@/lib/fonts";
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             )}
           />
         </TopicsNavProvider>
+        <AuthHost />
         <ErrorReporter />
         <NavTrail />
         <Analytics />

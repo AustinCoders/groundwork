@@ -1,5 +1,6 @@
 "use client";
 
+import { SignInGate } from "@/components/account/SignInGate";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -107,32 +108,34 @@ export function BoardMenu({
           <h2 id="wb-boards" className={styles.menuH}>
             Boards
           </h2>
-          <ul className={styles.boardList}>
-            {boards.map((b) => (
-              <li key={b.id} data-current={b.id === current?.id || undefined}>
-                <button
-                  type="button"
-                  onClick={act(() => onOpen(b.id))}
-                  aria-current={b.id === current?.id || undefined}
-                >
-                  <span>{b.name}</span>
-                  <span className={styles.boardMeta}>
-                    {b.count} ·{" "}
-                    {new Date(b.updatedAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className={styles.boardDelete}
-                  aria-label={`Delete ${b.name}`}
-                  title={`Delete ${b.name}`}
-                  onClick={act(() => onDelete(b.id))}
-                >
-                  ×
-                </button>
-              </li>
-            ))}
-          </ul>
+          <SignInGate feature="boards" compact>
+            <ul className={styles.boardList}>
+              {boards.map((b) => (
+                <li key={b.id} data-current={b.id === current?.id || undefined}>
+                  <button
+                    type="button"
+                    onClick={act(() => onOpen(b.id))}
+                    aria-current={b.id === current?.id || undefined}
+                  >
+                    <span>{b.name}</span>
+                    <span className={styles.boardMeta}>
+                      {b.count} ·{" "}
+                      {new Date(b.updatedAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.boardDelete}
+                    aria-label={`Delete ${b.name}`}
+                    title={`Delete ${b.name}`}
+                    onClick={act(() => onDelete(b.id))}
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </SignInGate>
           <button type="button" className={styles.newBoard} onClick={act(onNew)}>
             + New board
           </button>

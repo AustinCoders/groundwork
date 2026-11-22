@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { SignInGate } from "@/components/account/SignInGate";
 import { PageFrame } from "@/components/frame/PageFrame";
 import { Foot, FootLink, TopicPage } from "@/components/topic/TopicKit";
 import { useConfidence } from "@/lib/interviewConfidence";
@@ -104,40 +105,42 @@ export function ReviewView({ chapters }: { chapters: ReviewChapter[] }) {
       skipLabel="Skip to the review list"
       scan={`${due.length}:${upcoming.length}`}
     >
-      <TopicPage accent="blue">
-        <ReviewHero
-          loaded={loaded}
-          now={now}
-          numbers={{ due: due.length, scheduled: upcoming.length, read, kept }}
-          featured={nextRow}
-          nextDay={nextDay}
-          shaky={shaky}
-          onStart={() => setSession(true)}
-        />
-        {loaded && read === 0 && <StartBand no={no("start")} />}
-        {loaded && showDue && (
-          <DueBand
-            no={no("due")}
-            rows={due}
-            again={again}
-            clearedNow={clearedNow}
-            nextRow={upcoming[0] ?? null}
+      <SignInGate feature="review">
+        <TopicPage accent="blue">
+          <ReviewHero
+            loaded={loaded}
             now={now}
-            onRemember={remember}
-            onAgain={markAgain}
-            onUndo={undoAgain}
+            numbers={{ due: due.length, scheduled: upcoming.length, read, kept }}
+            featured={nextRow}
+            nextDay={nextDay}
+            shaky={shaky}
+            onStart={() => setSession(true)}
           />
-        )}
-        {loaded && upcoming.length > 0 && <ScheduleBand no={no("schedule")} rows={upcoming} days={days} now={now} />}
-        {loaded && reviewed.length > 0 && <RecentBand no={no("recent")} rows={reviewed} now={now} />}
-        <SpacingBand no={no("spacing")} />
-        <Foot>
-          <FootLink href="/progress">Your progress</FootLink>
-          <FootLink href="/interview">Interview book</FootLink>
-          <FootLink href="/mock">Mock interview</FootLink>
-          <FootLink href="/">All topics</FootLink>
-        </Foot>
-      </TopicPage>
+          {loaded && read === 0 && <StartBand no={no("start")} />}
+          {loaded && showDue && (
+            <DueBand
+              no={no("due")}
+              rows={due}
+              again={again}
+              clearedNow={clearedNow}
+              nextRow={upcoming[0] ?? null}
+              now={now}
+              onRemember={remember}
+              onAgain={markAgain}
+              onUndo={undoAgain}
+            />
+          )}
+          {loaded && upcoming.length > 0 && <ScheduleBand no={no("schedule")} rows={upcoming} days={days} now={now} />}
+          {loaded && reviewed.length > 0 && <RecentBand no={no("recent")} rows={reviewed} now={now} />}
+          <SpacingBand no={no("spacing")} />
+          <Foot>
+            <FootLink href="/progress">Your progress</FootLink>
+            <FootLink href="/interview">Interview book</FootLink>
+            <FootLink href="/mock">Mock interview</FootLink>
+            <FootLink href="/">All topics</FootLink>
+          </Foot>
+        </TopicPage>
+      </SignInGate>
     </PageFrame>
   );
 }

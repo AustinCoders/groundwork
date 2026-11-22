@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { SignInGate } from "@/components/account/SignInGate";
 import { PageFrame } from "@/components/frame/PageFrame";
 import { Confetti } from "@/components/practice/Confetti";
 import { Foot, FootLink, TopicPage } from "@/components/topic/TopicKit";
@@ -111,34 +112,36 @@ export function ProgressView({ tracks }: { tracks: TopicTrack[] }) {
       scan={statsKey.length}
     >
       <Confetti fire={leveledUp} />
-      <TopicPage accent="blue">
-        <ProgressHero
-          loaded={loaded}
-          stats={stats}
-          leveledUp={leveledUp}
-          earned={earned.size}
-          badge={next}
-          primary={primary}
-          secondary={secondary}
-        />
-        <NextBand no="01" loaded={loaded} steps={steps} />
-        <ActivityBand no="02" loaded={loaded} days={days} />
-        <TopicsBand no="03" loaded={loaded} rows={topicOnly} />
-        <InterviewBand
-          no="04"
-          loaded={loaded}
-          rounds={{ n: book?.n ?? 0, total: book?.ids.length ?? 0 }}
-          counts={counts}
-        />
-        <BadgesBand no="05" loaded={loaded} stats={stats} wall={wall} earned={earned} next={next} />
-        <JokeNote />
-        <Foot>
-          <FootLink href="/review">Review</FootLink>
-          <FootLink href="/interview">Interview book</FootLink>
-          <FootLink href="/mock">Mock interview</FootLink>
-          <FootLink href="/">All topics</FootLink>
-        </Foot>
-      </TopicPage>
+      <SignInGate feature="progress">
+        <TopicPage accent="blue">
+          <ProgressHero
+            loaded={loaded}
+            stats={stats}
+            leveledUp={leveledUp}
+            earned={earned.size}
+            badge={next}
+            primary={primary}
+            secondary={secondary}
+          />
+          <NextBand no="01" loaded={loaded} steps={steps} />
+          <ActivityBand no="02" loaded={loaded} days={days} />
+          <TopicsBand no="03" loaded={loaded} rows={topicOnly} />
+          <InterviewBand
+            no="04"
+            loaded={loaded}
+            rounds={{ n: book?.n ?? 0, total: book?.ids.length ?? 0 }}
+            counts={counts}
+          />
+          <BadgesBand no="05" loaded={loaded} stats={stats} wall={wall} earned={earned} next={next} />
+          <JokeNote />
+          <Foot>
+            <FootLink href="/review">Review</FootLink>
+            <FootLink href="/interview">Interview book</FootLink>
+            <FootLink href="/mock">Mock interview</FootLink>
+            <FootLink href="/">All topics</FootLink>
+          </Foot>
+        </TopicPage>
+      </SignInGate>
     </PageFrame>
   );
 }

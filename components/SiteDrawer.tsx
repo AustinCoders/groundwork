@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal, flushSync } from "react-dom";
 import { FocusTrap } from "@/components/FocusTrap";
+import { AccountChip } from "@/components/account/AccountChip";
 import { Appearance } from "@/components/menu/Appearance";
 import { ContinueCard } from "@/components/menu/ContinueCard";
 import { MenuIcon } from "@/components/menu/MenuIcon";
@@ -26,22 +27,6 @@ const MENU_BUTTON = "button[data-menu-button]";
 
 function topicBases(t: TopicNav): string[] {
   return [`/${(t.notes || "notes.html").replace(/\.html$/, "")}`, `/level/${t.id}`];
-}
-
-function SignIn() {
-  return (
-    <button
-      type="button"
-      className={styles.signIn}
-      aria-disabled="true"
-      aria-label="Sign in, coming soon"
-      onClick={(e) => e.preventDefault()}
-    >
-      <MenuIcon name="user" size={15} />
-      <span>Sign in</span>
-      <span className={styles.soonTag}>soon</span>
-    </button>
-  );
 }
 
 function DrawerBody({
@@ -248,7 +233,7 @@ export function SiteDrawer({
                   </span>
                   <span className={styles.brandName}>{SITE_NAME}</span>
                 </Link>
-                <SignIn />
+                <AccountChip onNavigate={onClose} />
                 <CloseButton label="Close the menu" onClose={onClose} />
               </div>
             }
@@ -283,7 +268,7 @@ export function SiteDrawer({
               </button>
             )}
             <p className={styles.footNote}>
-              Your progress stays in this browser; no account needed.{" "}
+              Your progress is saved in this browser; sign in to sync it across devices.{" "}
               <Link href="/architecture" onClick={onClose}>
                 How this is built
               </Link>{" "}

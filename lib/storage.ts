@@ -151,6 +151,22 @@ function emitProgressChange(): void {
   progressListeners.forEach((fn) => fn());
 }
 
+export function announceStoredChanges(keys: readonly string[]): void {
+  if (typeof window === "undefined" || keys.length === 0) return;
+  for (const key of keys) {
+    let newValue: string | null = null;
+    try {
+      newValue = localStorage.getItem(key);
+    } catch {
+      newValue = null;
+    }
+    try {
+      window.dispatchEvent(new StorageEvent("storage", { key, newValue, storageArea: localStorage }));
+    } catch {}
+  }
+  emitProgressChange();
+}
+
 export function dayKey(date: number = Date.now()): string {
   const d = new Date(date);
   const y = d.getFullYear();
