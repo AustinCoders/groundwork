@@ -38,8 +38,8 @@ describe("search index", () => {
     }
   });
 
-  it("keeps every topic's index under its gzip budget, 85 KB, 140 KB for System Design and 300 KB for DSA", () => {
-    const budgetKb: Record<string, number> = { dsa: 300, "system-design": 140 };
+  it("keeps every topic's index under its gzip budget, 85 KB, 140 KB for System Design, 160 KB for React and 300 KB for DSA", () => {
+    const budgetKb: Record<string, number> = { dsa: 300, "system-design": 140, react: 160 };
     for (const topicId of written) {
       const gzip = gzipSync(JSON.stringify(buildSearchIndex(topicId))).length;
       const limit = budgetKb[topicId] ?? 85;
