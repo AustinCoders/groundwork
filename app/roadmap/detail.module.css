@@ -1,0 +1,132 @@
+.detail {
+  display: grid;
+  gap: 10px;
+  padding: 16px 18px;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 2px solid var(--route);
+  border-radius: 12px;
+  text-align: left;
+}
+
+.detailHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detailTitle {
+  flex: 1;
+  margin: 0;
+  font-size: var(--t-title);
+  line-height: 1.2;
+}
+
+.close {
+  min-height: 40px;
+  padding: 0 14px;
+  font: inherit;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--sheet-2);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.close:hover {
+  border-color: var(--ink-soft);
+}
+
+.close:focus-visible,
+.open:focus-visible,
+.levels a:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.detailStatus {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.detailStatus[data-status="doing"] {
+  color: var(--primary);
+}
+
+.detailStatus[data-status="done"] {
+  color: var(--success);
+}
+
+.detailWhy {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.detailMeta {
+  margin: 0;
+  font-size: var(--t-meta);
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.outlineNote {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: var(--t-meta);
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--sheet-2);
+  border-left: 4px solid var(--caution);
+  border-radius: 0 8px 8px 0;
+}
+
+.levels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.levels a {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 9px 12px;
+  color: var(--ink);
+  text-decoration: none;
+  background: var(--sheet-2);
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+}
+
+.levels a:hover {
+  border-color: var(--ink-soft);
+}
+
+.levels small {
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+}
+
+.open {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 18px;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--on-primary);
+  background: var(--primary);
+  border-radius: 12px;
+}
