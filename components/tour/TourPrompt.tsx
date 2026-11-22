@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { FontPicker, ThemePicker } from "@/components/ThemeFontPicker";
 import { focusLeftBehind, focusMenuPill } from "@/components/tour/menuPill";
 import { rememberTourSeen } from "@/components/tour/tourStore";
 import { isEditableTarget } from "@/lib/menuShortcut";
@@ -30,6 +31,11 @@ export function TourPrompt({ onStart, onClose }: { onStart: () => void; onClose:
       <span className={styles.promptTape} aria-hidden="true" />
       <p className={styles.promptTitle}>First time here?</p>
       <p className={styles.promptText}>Take a 30-second tour of what is here and where everything lives.</p>
+      <div className={styles.promptLook} role="group" aria-label="Make it yours">
+        <span className={styles.promptLookLabel}>Make it yours</span>
+        <ThemePicker compact />
+        <FontPicker compact />
+      </div>
       <div className={styles.promptActions}>
         <button type="button" className={styles.primary} onClick={onStart}>
           Start the tour

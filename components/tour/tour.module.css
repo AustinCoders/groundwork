@@ -50,6 +50,43 @@
   margin-top: 8px;
 }
 
+.promptLook {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+
+.promptLookLabel {
+  margin-right: 2px;
+  font-size: var(--t-kicker);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pencil);
+}
+
+.lookStage {
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  width: min(100%, 520px);
+  margin: auto;
+  padding: 8px 12px;
+}
+
+.lookHeading {
+  margin: 10px 2px 2px;
+  font-size: var(--t-kicker);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pencil);
+}
+
 @media (min-width: 1101px) {
   .prompt {
     right: 88px;
@@ -57,7 +94,8 @@
     display: grid;
     grid-template-areas:
       "title actions"
-      "text actions";
+      "text actions"
+      "look look";
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     column-gap: 16px;
@@ -77,6 +115,10 @@
   .promptText {
     grid-area: text;
     line-height: 1.35;
+  }
+
+  .promptLook {
+    grid-area: look;
   }
 
   .promptActions {

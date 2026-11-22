@@ -185,14 +185,19 @@ describe("whether to offer the tour", () => {
 });
 
 describe("the tour's slides", () => {
-  it("are five, each with real text and one composed stage", () => {
-    expect(SLIDES).toHaveLength(5);
+  it("are six, each with real text and one composed stage", () => {
+    expect(SLIDES).toHaveLength(6);
     for (const slide of SLIDES) {
       expect(slide.title.length, slide.id).toBeGreaterThan(10);
       expect(slide.lead.length, slide.id).toBeGreaterThan(60);
       expect(slide.stage, slide.id).toBeTruthy();
     }
-    expect(new Set(SLIDES.map((slide) => slide.id)).size).toBe(5);
+    expect(new Set(SLIDES.map((slide) => slide.id)).size).toBe(6);
+  });
+
+  it("open on the look of the site, with every theme and handwriting", () => {
+    expect(SLIDES[0].id).toBe("look");
+    expect(SLIDES[0].lead).toMatch(/Appearance/);
   });
 
   it("send every action to a page the tour does not cover", () => {

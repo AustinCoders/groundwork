@@ -1,3 +1,4 @@
+import { AppearancePicker } from "@/components/AppearancePicker";
 import menuButton from "@/components/MenuButton.module.css";
 import { TopIcon } from "@/components/practice/TopIcon";
 import { Card, Compose, Remark, Tag } from "@/components/topic/Compose";
@@ -186,7 +187,22 @@ function MenuStage() {
   );
 }
 
+function LookStage() {
+  return (
+    <div className={styles.lookStage}>
+      <AppearancePicker idPrefix="tour-look" headingClass={styles.lookHeading} />
+    </div>
+  );
+}
+
 export const SLIDES: Slide[] = [
+  {
+    id: "look",
+    label: "Make it yours",
+    title: "Choose how your notebook looks.",
+    lead: "Pick a paper colour and a handwriting style. The whole site changes as you click, and you can change both later from the Menu under Appearance.",
+    stage: <LookStage />,
+  },
   {
     id: "topics",
     label: "Topics and levels",
