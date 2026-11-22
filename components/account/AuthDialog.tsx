@@ -124,6 +124,7 @@ const ASIDE_COPY: Record<Side, { kicker: string; title: string }> = {
 };
 
 const TILT_LIMIT = 0.5;
+const SLIDE_MS = 650;
 
 const RESEND_SECONDS = 60;
 
@@ -228,9 +229,11 @@ function Aside({ side }: { side: Side }) {
   const copy = ASIDE_COPY[side];
   return (
     <aside className={styles.aside} aria-label="What an account adds">
-      <div key={side} className={styles.asideContent}>
-        <p className={styles.asideKicker}>{copy.kicker}</p>
-        <p className={styles.asideTitle}>{copy.title}</p>
+      <div className={styles.asideContent}>
+        <div key={side} className={styles.asideHead}>
+          <p className={styles.asideKicker}>{copy.kicker}</p>
+          <p className={styles.asideTitle}>{copy.title}</p>
+        </div>
         <SyncDoodle />
         <ul className={styles.benefits}>
           {BENEFITS.map((b) => (
@@ -371,6 +374,10 @@ export function AuthDialog({
   const [busy, setBusy] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
+  const pointer = useRef<{ x: number; y: number } | null>(null);
+  const frame = useRef(0);
+  const frozenUntil = useRef(0);
+  const [slid, setSlid] = useState(false);
 
   useEffect(() => {
     const dialog = ref.current;
@@ -379,6 +386,8 @@ export function AuthDialog({
     dialog.querySelector<HTMLInputElement>("input[type=email], input[type=text], input[type=password]")?.focus();
   }, []);
 
+  useEffect(() => () => window.cancelAnimationFrame(frame.current), []);
+
   useEffect(() => {
     if (cooldown <= 0) return;
     const id = window.setTimeout(() => setCooldown((c) => c - 1), 1000);
@@ -386,6 +395,9 @@ export function AuthDialog({
   }, [cooldown]);
 
   function go(nextStep: Step, nextIntent?: Intent) {
+    const slides = ((nextIntent ?? intent) === "sign-up") !== (intent === "sign-up");
+    if (slides) frozenUntil.current = performance.now() + SLIDE_MS;
+    setSlid(slides);
     setStep(nextStep);
     if (nextIntent) setIntent(nextIntent);
     setTried(false);
@@ -477,22 +489,32 @@ export function AuthDialog({
 
   function tilt(e: PointerEvent<HTMLDialogElement>) {
     const dialog = ref.current;
-    if (!dialog || !showAside || e.pointerType !== "mouse") return;
-    const box = dialog.getBoundingClientRect();
-    const x = (e.clientX - box.left) / box.width - 0.5;
-    const y = (e.clientY - box.top) / box.height - 0.5;
-    if (Math.abs(x) > TILT_LIMIT || Math.abs(y) > TILT_LIMIT) {
-      resetTilt();
-      return;
-    }
-    dialog.style.setProperty("--px", x.toFixed(3));
-    dialog.style.setProperty("--py", y.toFixed(3));
+    if (!dialog || !showAside || e.pointerType !== "mouse" || performance.now() < frozenUntil.current) return;
+    const x = (e.clientX - dialog.offsetLeft) / dialog.offsetWidth - 0.5;
+    const y = (e.clientY - dialog.offsetTop) / dialog.offsetHeight - 0.5;
+    const outside = Math.abs(x) > TILT_LIMIT || Math.abs(y) > TILT_LIMIT;
+    pointer.current = outside ? null : { x, y };
+    if (frame.current) return;
+    frame.current = window.requestAnimationFrame(() => {
+      frame.current = 0;
+      const at = pointer.current;
+      if (at) {
+        dialog.dataset.tilt = "";
+        dialog.style.setProperty("--px", at.x.toFixed(3));
+        dialog.style.setProperty("--py", at.y.toFixed(3));
+      } else {
+        resetTilt();
+      }
+    });
   }
 
   function resetTilt() {
+    pointer.current = null;
+    if (ref.current) delete ref.current.dataset.tilt;
     ref.current?.style.removeProperty("--px");
     ref.current?.style.removeProperty("--py");
   }
+
   const lead = leadFor(step, intent);
   const submitLabel: Record<Step, string> = {
     email: intent === "code" ? "Email me a code" : "Continue",
@@ -524,7 +546,7 @@ export function AuthDialog({
       <div className={showAside ? styles.shell : undefined} data-side={showAside ? side : undefined}>
         {showAside && <Aside side={side} />}
         <div className={styles.inner}>
-          <div key={step + intent} className={`${styles.body} ${styles.stepIn}`}>
+          <div key={step + intent} className={`${styles.body} ${slid ? styles.sideIn : styles.stepIn}`}>
             <h2 id={titleId} className={styles.title}>
               {titleFor(step, intent)}
             </h2>
