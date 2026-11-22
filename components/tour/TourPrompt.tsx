@@ -1,14 +1,16 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { FontPicker, ThemePicker } from "@/components/ThemeFontPicker";
+import { LookDialog } from "@/components/tour/LookDialog";
 import { focusLeftBehind, focusMenuPill } from "@/components/tour/menuPill";
 import { rememberTourSeen } from "@/components/tour/tourStore";
 import { isEditableTarget } from "@/lib/menuShortcut";
 import styles from "./tour.module.css";
 
 export function TourPrompt({ onStart, onClose }: { onStart: () => void; onClose: () => void }) {
+  const [looking, setLooking] = useState(false);
+  const closeLook = useCallback(() => setLooking(false), []);
   const skip = useCallback(() => {
     const hadFocus = document.activeElement?.closest("[data-tour-prompt]") != null;
     rememberTourSeen();
@@ -33,9 +35,16 @@ export function TourPrompt({ onStart, onClose }: { onStart: () => void; onClose:
       <p className={styles.promptText}>Take a 30-second tour of what is here and where everything lives.</p>
       <div className={styles.promptLook} role="group" aria-label="Make it yours">
         <span className={styles.promptLookLabel}>Make it yours</span>
-        <ThemePicker compact />
-        <FontPicker compact />
+        <button type="button" className={styles.promptLookButton} onClick={() => setLooking(true)}>
+          <span className={styles.promptSwatch} aria-hidden="true">
+            {["red", "orange", "green", "blue", "purple"].map((c) => (
+              <span key={c} style={{ background: `var(--c-${c})` }} />
+            ))}
+          </span>
+          Theme and handwriting
+        </button>
       </div>
+      {looking && <LookDialog onClose={closeLook} />}
       <div className={styles.promptActions}>
         <button type="button" className={styles.primary} onClick={onStart}>
           Start the tour

@@ -1,7 +1,7 @@
 "use client";
 
 import { useFontChoice, useThemeChoice } from "@/components/ThemeFontPicker";
-import { FONT_ITEMS, THEME_ITEMS, type FontValue } from "@/lib/storage";
+import { FONT_ITEMS, THEME_ITEMS, type FontValue, type ThemeValue } from "@/lib/storage";
 import styles from "./AppearancePicker.module.css";
 
 export const FONT_FAMILIES: Record<FontValue, string> = {
@@ -21,10 +21,14 @@ export function AppearancePicker({
   idPrefix,
   headingClass,
   only,
+  onPreviewTheme,
+  onPreviewFont,
 }: {
   idPrefix: string;
   headingClass?: string;
   only?: "theme" | "font";
+  onPreviewTheme?: (theme: ThemeValue | null) => void;
+  onPreviewFont?: (font: FontValue | null) => void;
 }) {
   const [theme, chooseTheme] = useThemeChoice();
   const [font, chooseFont] = useFontChoice();
@@ -39,6 +43,10 @@ export function AppearancePicker({
           aria-checked={theme === t.value}
           className={styles.opt}
           onClick={() => chooseTheme(t.value)}
+          onPointerEnter={() => onPreviewTheme?.(t.value)}
+          onPointerLeave={() => onPreviewTheme?.(null)}
+          onFocus={() => onPreviewTheme?.(t.value)}
+          onBlur={() => onPreviewTheme?.(null)}
         >
           <span className={styles.swatch} data-theme={t.value} aria-hidden="true">
             <span className={styles.swatchLine}>
@@ -66,6 +74,10 @@ export function AppearancePicker({
           aria-checked={font === f.value}
           className={styles.opt}
           onClick={() => chooseFont(f.value)}
+          onPointerEnter={() => onPreviewFont?.(f.value)}
+          onPointerLeave={() => onPreviewFont?.(null)}
+          onFocus={() => onPreviewFont?.(f.value)}
+          onBlur={() => onPreviewFont?.(null)}
         >
           <span className={styles.sample} style={{ fontFamily: FONT_FAMILIES[f.value] }} aria-hidden="true">
             Aa
