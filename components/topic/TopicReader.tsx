@@ -2,6 +2,8 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { ChapterSources } from "@/components/chapter/ChapterSources";
+import type { ChapterSource } from "@/lib/sourceKinds";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { CodeLanguageNote } from "@/components/dsa/CodeLanguageNote";
 import { EndPopup } from "@/components/check/EndPopup";
@@ -57,6 +59,7 @@ export function TopicReader({
   islands,
   toc,
   diagrams,
+  sources = [],
   exercises,
   levelExerciseTotal,
   completion,
@@ -80,6 +83,7 @@ export function TopicReader({
   islands?: ReactNode[];
   toc: TocItem[];
   diagrams: number;
+  sources?: ChapterSource[];
   exercises: PracticeLink[];
   byline?: { author: string; updated: string };
   levelExerciseTotal: number;
@@ -282,6 +286,8 @@ export function TopicReader({
             done={isDone}
             hasCheck={requiresCheck(completion) && hasCheck}
           />
+
+          <ChapterSources sources={sources} />
 
           <ChapterEndScene
             num={chapter.num}

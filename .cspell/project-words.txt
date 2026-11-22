@@ -1038,3 +1038,14 @@ upsells
 wipro
 wordle
 zepto
+RELNOTES
+adoc
+gitrevisions
+gitformat
+DIRC
+onbranch
+hasconfig
+gitcredentials
+refspecs
+repositorys
+tutorialspoint

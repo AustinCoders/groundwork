@@ -34,6 +34,7 @@ import { COMPANY_DSA } from "@/content/system-design/company-questions/dsa-index
 import { withHeadingIds } from "@/lib/headingToc";
 import type { SeriesCard, SeriesPart } from "@/components/chapter/types";
 import type { LevelId } from "@/content/types";
+import { chapterSources } from "@/content/sources";
 
 export function TopicCoverPage({ topicId }: { topicId: string }) {
   const basePath = notesHref(topicId);
@@ -220,6 +221,7 @@ export async function TopicChapterPage({ topicId, chapterId }: { topicId: string
         )}
         toc={toc}
         diagrams={diagrams}
+        sources={chapterSources(topicId, chapter.id)}
         exercises={exercises}
         levelExerciseTotal={exercisesForLevel(cards[cardIndex].levels[0], topicId).length}
         completion={t?.completion}

@@ -1,3 +1,4 @@
+import { chapterSources } from "@/content/sources";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ChapterView } from "@/components/series/ChapterView";
@@ -45,6 +46,7 @@ export default async function Page({ params }: { params: Promise<{ section: stri
       toc={toc}
       chapters={cards}
       byline={{ author: "Akshat", updated: "October 2026" }}
+      sources={chapterSources("git", s.id)}
       diagrams={(s.body.match(/<svg[^>]*class="dg"/g) ?? []).length}
     />
   );

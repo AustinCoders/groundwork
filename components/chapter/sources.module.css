@@ -1,0 +1,58 @@
+.sources {
+  margin: 40px 0 8px;
+  padding: 20px 22px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--sheet);
+}
+
+.sources h2 {
+  margin: 0;
+  font-size: var(--t-title);
+  color: var(--ink);
+}
+
+.sub {
+  margin: 6px 0 14px;
+  font-size: var(--t-meta);
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.sources ul {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sources a {
+  display: grid;
+  gap: 2px;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.sources a:hover .label,
+.sources a:focus-visible .label {
+  text-decoration: underline;
+}
+
+.kind {
+  font-family: var(--font-mono);
+  font-size: var(--t-kicker);
+  color: var(--ink-soft);
+}
+
+.label {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.sources li p {
+  margin: 2px 0 0;
+  font-size: var(--t-meta);
+  line-height: 1.5;
+  color: var(--ink);
+}

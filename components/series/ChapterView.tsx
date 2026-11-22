@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { ChapterSources } from "@/components/chapter/ChapterSources";
+import type { ChapterSource } from "@/lib/sourceKinds";
 import { useCallback, useMemo, useState, useEffect } from "react";
 import { topicKit } from "@/components/topic/TopicKit";
 import { TopicFrame, type FrameTopic } from "@/components/topic/TopicFrame";
@@ -39,6 +41,7 @@ export function ChapterView({
   chapters,
   diagrams,
   byline,
+  sources = [],
 }: {
   topic: FrameTopic;
   seriesTitle: string;
@@ -52,6 +55,7 @@ export function ChapterView({
   chapters: SeriesCard<string>[];
   diagrams: number;
   byline?: { author: string; updated: string };
+  sources?: ChapterSource[];
 }) {
   const mounted = useMounted();
   const [railOpen, setRailOpen] = useState(false);
@@ -165,6 +169,8 @@ export function ChapterView({
           {toc.length > 2 && <ChapterInlineToc toc={toc} />}
 
           <Prose html={html} bodyRef={bodyRef} codeLabel={codeLabelFor(basePath.replace(/^\//, ""))} />
+
+          <ChapterSources sources={sources} />
 
           <ChapterEndScene
             num={chapter.num}
