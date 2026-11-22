@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { PageFrame } from "@/components/frame/PageFrame";
-import { TopicPage } from "@/components/topic/TopicKit";
 import { pageMetadata } from "@/lib/metadata";
 import { AccountView } from "./AccountView";
 
@@ -13,10 +12,8 @@ export const metadata: Metadata = pageMetadata({
 
 export default function AccountPage() {
   return (
-    <PageFrame title="Account" mark="◉" accent="blue" skipLabel="Skip to your account">
-      <TopicPage accent="blue">
-        <AccountView />
-      </TopicPage>
+    <PageFrame title="Account" mark="◉" accent="blue" layout="reader" skipLabel="Skip to your account">
+      <AccountView />
     </PageFrame>
   );
 }

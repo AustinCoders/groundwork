@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ConfirmDialog } from "@/components/Modal";
 import { SignInGate } from "@/components/account/SignInGate";
 import { initials } from "@/components/account/AccountChip";
-import { Band } from "@/components/topic/TopicKit";
+import { Band, TopicPage } from "@/components/topic/TopicKit";
 import { authProviders, type OAuthProviderId } from "@/lib/account/config";
 import { codeProblem, emailProblem, nameProblem, passwordChecks, passwordProblem } from "@/lib/account/errors";
 import {
@@ -779,7 +779,9 @@ function Signed() {
 export function AccountView() {
   return (
     <SignInGate feature="account">
-      <Signed />
+      <TopicPage accent="blue">
+        <Signed />
+      </TopicPage>
     </SignInGate>
   );
 }
