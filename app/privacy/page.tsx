@@ -50,13 +50,16 @@ export default function PrivacyPage() {
             you typed.
           </p>
           <p>
-            The resume lab reads the PDF or Word file you choose inside your browser. The file is never uploaded and no
-            AI service sees it. If you keep the result, your account stores what was read from it (your roles, bullets,
-            projects and skills) with the questions and fixes, and the marks you make. Your phone number, email and
-            personal details such as date of birth are left out. You can keep five, and deleting one removes it for
-            good. If you upload before signing in, the text read from the file stays in this browser for 30 minutes so
-            the result is waiting after you sign in, and is removed once it is opened or the time runs out. A job
-            description you paste is read in your browser too; a saved result keeps only the skills it asks for.
+            The resume lab reads the PDF or Word file you choose inside your browser; the file itself is never uploaded
+            and no AI service sees it. Before you sign in, nothing is sent: the text read from the file stays in this
+            browser for 30 minutes so it is waiting after you sign in, and is removed once it is opened or the time runs
+            out. Once you are signed in, that text, and any job description you paste, is sent to our server to build
+            the questions and fixes, used for that one request and not written down anywhere. We count how many checks
+            your account runs in a day, to stop abuse, and keep only the time of each check for a day. If you keep a
+            result, your account stores what was read (your roles, bullets, projects and skills) with the questions and
+            fixes, and the marks you make; your phone number, email and personal details such as date of birth are left
+            out, and from a job description only the skills it asks for. You can keep five, and deleting one removes it
+            for good.
           </p>
           <p>
             While you are signed in, the browser copies your learning data to your account so it follows you: chapter

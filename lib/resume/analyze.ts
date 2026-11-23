@@ -1,10 +1,12 @@
 import { buildFixes } from "./fixes";
 import { parseResume } from "./parse";
 import { buildQuestions } from "./questions";
+import { JD_LIMIT } from "./limits";
 import { skillById, skillsIn } from "./skills";
 import type { Catalogue, ResumeAnalysis, SkillStudy, YearMonth } from "./types";
 
-export const JD_LIMIT = 8000;
+export { JD_LIMIT };
+export { forStorage } from "./forStorage";
 
 export interface AnalyzeInput {
   lines: string[];
@@ -61,18 +63,5 @@ export function analyzeResume(input: AnalyzeInput): ResumeAnalysis {
     study,
     jdSkills,
     missing,
-  };
-}
-
-export function forStorage(analysis: ResumeAnalysis): ResumeAnalysis {
-  return {
-    ...analysis,
-    parsed: {
-      ...analysis.parsed,
-      email: analysis.parsed.email ? "on file" : null,
-      phone: analysis.parsed.phone ? "on file" : null,
-      sections: analysis.parsed.sections.map((s) => ({ ...s, lines: [] })),
-    },
-    fixes: analysis.fixes.map((f) => (f.id === "personal" ? { ...f, quotes: [] } : f)),
   };
 }

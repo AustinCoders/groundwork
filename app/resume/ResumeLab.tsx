@@ -3,15 +3,16 @@
 import { useCallback, useEffect, useId, useRef, useState, type DragEvent } from "react";
 import { openAuth } from "@/lib/account/config";
 import { useAccount } from "@/lib/account/session";
-import { JD_LIMIT, analyzeResume, forStorage } from "@/lib/resume/analyze";
 import { ExtractError, MAX_FILE_BYTES, MAX_PAGES, extractFile, fileKind, type Extracted } from "@/lib/resume/extract";
-import { skillById } from "@/lib/resume/skills";
+import { forStorage } from "@/lib/resume/forStorage";
+import { JD_LIMIT } from "@/lib/resume/limits";
 import { PENDING_MINUTES, clearPending, readPending, savePending } from "@/lib/resume/pending";
+import { peekResume, type ResumePeek } from "@/lib/resume/peek";
+import { RemoteError, analyseOnServer } from "@/lib/resume/remote";
 import {
   MAX_SAVED,
   deleteResume,
   listResumes,
-  loadCatalogue,
   openResume,
   saveMarks,
   saveResume,
@@ -23,12 +24,13 @@ import type { ResumeAnalysis } from "@/lib/resume/types";
 import { Results } from "./Results";
 import styles from "./resume.module.css";
 
-type Stage = "idle" | "reading" | "thinking" | "saving";
+type Stage = "idle" | "reading" | "peeking" | "thinking" | "saving";
 
 const STAGE_LABEL: Record<Stage, string> = {
   idle: "",
   reading: "Reading the file…",
   thinking: "Matching it against 300+ interview questions…",
+  peeking: "Reading the sections…",
   saving: "Saving to your account…",
 };
 
@@ -64,16 +66,9 @@ function fileProblem(file: File): string | null {
   return null;
 }
 
-async function analyse(read: Extracted, jd: string): Promise<ResumeAnalysis> {
-  const catalogue = await loadCatalogue();
-  return analyzeResume({
-    lines: read.lines,
-    pages: read.pages,
-    wideGaps: read.wideGaps,
-    links: read.links,
-    jd,
-    catalogue,
-  });
+function problemOf(caught: unknown): string {
+  if (caught instanceof ExtractError || caught instanceof RemoteError) return caught.message;
+  return FILE_PROBLEM;
 }
 
 function plural(count: number, one: string, many = `${one}s`): string {
@@ -164,62 +159,70 @@ function StageButton({
   );
 }
 
-function Locked({ title, analysis, onForget }: { title: string; analysis: ResumeAnalysis; onForget: () => void }) {
-  const high = analysis.fixes.filter((fix) => fix.severity === "high").length;
-  const skills = analysis.parsed.skills.slice(0, 8);
+function Locked({
+  title,
+  peek,
+  accountsOff,
+  onForget,
+}: {
+  title: string;
+  peek: ResumePeek;
+  accountsOff: boolean;
+  onForget: () => void;
+}) {
+  const facts = [
+    plural(peek.pages, "page"),
+    peek.roles > 0 ? plural(peek.roles, "role") : null,
+    peek.years ? `about ${peek.years} years of experience` : null,
+    peek.projects > 0 ? plural(peek.projects, "project") : null,
+    peek.bullets > 0 ? plural(peek.bullets, "bullet") : null,
+  ].filter(Boolean);
   return (
     <section className={styles.lockCard} aria-labelledby="resume-locked-title">
       <p className={styles.kicker}>Read in your browser · {title}</p>
       <h2 id="resume-locked-title" className={styles.lockTitle}>
-        Your result is ready. Sign in to open it.
+        {accountsOff ? "Your resume is read." : "Your resume is read. Sign in to get your questions."}
       </h2>
-      <div className={styles.lockStats}>
-        <p>
-          <strong>{analysis.questions.length}</strong>
-          <span>{analysis.questions.length === 1 ? "interview question" : "interview questions"}</span>
-        </p>
-        <p>
-          <strong>{analysis.fixes.length}</strong>
-          <span>
-            {analysis.fixes.length === 1 ? "fix" : "fixes"}
-            {high > 0 ? `, ${high} important` : " to make"}
-          </span>
-        </p>
-        <p>
-          <strong>{analysis.study.length}</strong>
-          <span>{analysis.study.length === 1 ? "skill to prepare" : "skills to prepare"}</span>
-        </p>
-      </div>
-      {skills.length > 0 && (
+      <p className={styles.lockFacts}>We found {facts.join(", ")}.</p>
+      {peek.skills.length > 0 && (
         <div className={styles.skillRow} aria-label="Skills we found">
-          {skills.map((id) => (
-            <span key={id} className={styles.skillChip}>
-              {skillById(id)?.name ?? id}
+          {peek.skills.slice(0, 10).map((name) => (
+            <span key={name} className={styles.skillChip}>
+              {name}
             </span>
           ))}
+          {peek.skills.length > 10 && <span className={styles.skillMore}>+{peek.skills.length - 10} more</span>}
         </div>
       )}
-      <div className={styles.lockPeek} aria-hidden="true">
-        {[0, 1, 2].map((row) => (
-          <span key={row} className={styles.lockLine} />
-        ))}
-      </div>
-      <div className={styles.introActions}>
-        <button type="button" className={styles.primary} onClick={() => openAuth("sign-up", "/resume")}>
-          Create a free account to see it
-        </button>
-        <button type="button" className={styles.ghost} onClick={() => openAuth("sign-in", "/resume")}>
-          Sign in
-        </button>
-      </div>
-      <p className={styles.note}>
-        After you sign in you can also paste the job description of the company you are applying to, and the questions
-        and fixes change to match it. What was read stays in this browser for {PENDING_MINUTES} minutes so it is waiting
-        for you after you sign in.{" "}
-        <button type="button" className={styles.textBtn} onClick={onForget}>
-          Remove it now
-        </button>
-      </p>
+      <ul className={styles.lockList}>
+        <li>The questions an interviewer will ask about your own bullets, numbers, roles and gaps</li>
+        <li>Real interview questions for each skill above, with model answers</li>
+        <li>The fixes worth making before you apply, and where to prepare</li>
+        <li>Paste a company&apos;s job description and all of it matches that job</li>
+      </ul>
+      {accountsOff ? (
+        <p className={styles.note}>
+          Sign-in is not set up on this copy of the site, so the questions cannot be built here.
+        </p>
+      ) : (
+        <>
+          <div className={styles.introActions}>
+            <button type="button" className={styles.primary} onClick={() => openAuth("sign-up", "/resume")}>
+              Create a free account
+            </button>
+            <button type="button" className={styles.ghost} onClick={() => openAuth("sign-in", "/resume")}>
+              Sign in
+            </button>
+          </div>
+          <p className={styles.note}>
+            Nothing has been sent anywhere yet. What was read stays in this browser for {PENDING_MINUTES} minutes so it
+            is waiting for you after you sign in.{" "}
+            <button type="button" className={styles.textBtn} onClick={onForget}>
+              Remove it now
+            </button>
+          </p>
+        </>
+      )}
     </section>
   );
 }
@@ -228,24 +231,24 @@ function Guest({ sample, accountsOff }: { sample: ResumeAnalysis; accountsOff: b
   const [file, setFile] = useState<File | null>(null);
   const [stage, setStage] = useState<Stage>("idle");
   const [error, setError] = useState<string | null>(null);
-  const [preview, setPreview] = useState<{ title: string; analysis: ResumeAnalysis } | null>(null);
-  const [marks, setMarks] = useState<Marks>({});
+  const [preview, setPreview] = useState<{ title: string; peek: ResumePeek } | null>(null);
   const [sampleMarks, setSampleMarks] = useState<Marks>({});
 
   useEffect(() => {
-    if (accountsOff) return;
-    const waiting = readPending();
-    if (!waiting) return;
     let live = true;
-    void analyse(waiting.read, "")
-      .then((analysis) => {
-        if (live) setPreview({ title: waiting.title, analysis });
-      })
-      .catch(() => undefined);
+    void Promise.resolve().then(() => {
+      const waiting = readPending();
+      if (!live || !waiting) return;
+      try {
+        setPreview({ title: waiting.title, peek: peekResume(waiting.read) });
+      } catch {
+        clearPending();
+      }
+    });
     return () => {
       live = false;
     };
-  }, [accountsOff]);
+  }, []);
 
   function pick(next: File | undefined) {
     setError(null);
@@ -261,18 +264,17 @@ function Guest({ sample, accountsOff }: { sample: ResumeAnalysis; accountsOff: b
     try {
       setStage("reading");
       const extracted = await extractFile(file);
-      setStage("thinking");
-      const analysis = await analyse(extracted, "");
+      setStage("peeking");
+      const peek = peekResume(extracted);
       const title = titleOf(file);
       if (!accountsOff) savePending(title, extracted);
-      setPreview({ title, analysis });
-      setMarks({});
+      setPreview({ title, peek });
       setFile(null);
       window.requestAnimationFrame(() =>
         document.getElementById("resume-guest-result")?.scrollIntoView({ behavior: "smooth", block: "start" })
       );
     } catch (caught) {
-      setError(caught instanceof ExtractError ? caught.message : FILE_PROBLEM);
+      setError(problemOf(caught));
     } finally {
       setStage("idle");
     }
@@ -283,25 +285,16 @@ function Guest({ sample, accountsOff }: { sample: ResumeAnalysis; accountsOff: b
     setPreview(null);
   }
 
-  function toggle(set: (fn: (now: Marks) => Marks) => void) {
-    return (id: string, mark: "known" | "fixed" | null) =>
-      set((now) => {
-        const next = { ...now };
-        if (mark) next[id] = mark;
-        else delete next[id];
-        return next;
-      });
-  }
-
   return (
     <>
       <div className={styles.introCard}>
         <ol className={styles.steps}>
           <li>
-            <span>1</span>Upload your resume as a PDF or Word file. No account needed, and it is read in your browser.
+            <span>1</span>Upload your resume as a PDF or Word file. No account needed to start.
           </li>
           <li>
-            <span>2</span>Sign in to open the result: the questions your resume invites, fixes, and where to prepare.
+            <span>2</span>Sign in to get the questions your resume invites, the fixes worth making, and where to
+            prepare.
           </li>
           <li>
             <span>3</span>Paste the job description of the company you are applying to, and the result matches it.
@@ -319,23 +312,12 @@ function Guest({ sample, accountsOff }: { sample: ResumeAnalysis; accountsOff: b
             </p>
           )}
           <StageButton stage={stage} disabled={!file} label="Read my resume" onClick={() => void read()} />
-          <p className={styles.note}>
-            Free, no AI service involved. The file never leaves your browser.
-            {accountsOff ? " Sign-in is not available on this copy of the site, so nothing is saved." : ""}
-          </p>
+          <p className={styles.note}>Free, and no AI service sees it. The file is read in your browser.</p>
         </div>
 
         <div id="resume-guest-result" className={styles.main}>
-          {preview && accountsOff ? (
-            <>
-              <p className={styles.resultTitle}>
-                {preview.title}
-                <span className={styles.unsaved}>not saved</span>
-              </p>
-              <Results analysis={preview.analysis} marks={marks} onMark={toggle(setMarks)} />
-            </>
-          ) : preview ? (
-            <Locked title={preview.title} analysis={preview.analysis} onForget={forget} />
+          {preview ? (
+            <Locked title={preview.title} peek={preview.peek} accountsOff={accountsOff} onForget={forget} />
           ) : (
             <div className={styles.emptyResult}>
               <p className={styles.emptyTitle}>What you will get</p>
@@ -351,7 +333,19 @@ function Guest({ sample, accountsOff }: { sample: ResumeAnalysis; accountsOff: b
       <p id="resume-sample" className={styles.sampleLabel}>
         Below is the real result for a sample resume and job description. Everything in it works, but nothing is saved.
       </p>
-      <Results analysis={sample} marks={sampleMarks} sample onMark={toggle(setSampleMarks)} />
+      <Results
+        analysis={sample}
+        marks={sampleMarks}
+        sample
+        onMark={(id, mark) =>
+          setSampleMarks((now) => {
+            const next = { ...now };
+            if (mark) next[id] = mark;
+            else delete next[id];
+            return next;
+          })
+        }
+      />
     </>
   );
 }
@@ -438,6 +432,8 @@ export function ResumeLab({ sample }: { sample: ResumeAnalysis }) {
   const [current, setCurrent] = useState<Current | null>(null);
   const [marks, setMarks] = useState<Marks>({});
   const [confirming, setConfirming] = useState<string | null>(null);
+  const [restoring, setRestoring] = useState(false);
+  const [restoreError, setRestoreError] = useState<string | null>(null);
   const marksTimer = useRef(0);
   const nextUid = useRef(0);
   const signedIn = account.status === "in" && account.mfa !== "needed";
@@ -457,24 +453,35 @@ export function ResumeLab({ sample }: { sample: ResumeAnalysis }) {
       if (result.ok) setSaved(result.value);
       else setError(result.error);
     });
-    const waiting = readPending();
-    if (waiting) {
-      void analyse(waiting.read, "")
-        .then((analysis) => {
-          if (!live) return;
-          clearPending();
-          setCurrent({ uid: ++nextUid.current, id: null, title: waiting.title, analysis, read: waiting.read, jd: "" });
-          setMarks({});
-          setNotice("Here is the resume you uploaded before signing in. Save it to keep it in your account.");
-        })
-        .catch(() => undefined);
-    }
+    if (readPending()) void restore(() => live);
     return () => {
       live = false;
     };
   }, [signedIn]);
 
   useEffect(() => () => window.clearTimeout(marksTimer.current), []);
+
+  async function restore(live: () => boolean = () => true) {
+    const waiting = readPending();
+    if (!waiting) {
+      setRestoreError(null);
+      return;
+    }
+    setRestoring(true);
+    setRestoreError(null);
+    try {
+      const analysis = await analyseOnServer(waiting.read, "");
+      if (!live()) return;
+      clearPending();
+      setCurrent({ uid: ++nextUid.current, id: null, title: waiting.title, analysis, read: waiting.read, jd: "" });
+      setMarks({});
+      setNotice("Here is the resume you uploaded before signing in. Save it to keep it in your account.");
+    } catch (caught) {
+      if (live()) setRestoreError(problemOf(caught));
+    } finally {
+      if (live()) setRestoring(false);
+    }
+  }
 
   function pick(next: File | undefined) {
     setError(null);
@@ -503,7 +510,7 @@ export function ResumeLab({ sample }: { sample: ResumeAnalysis }) {
       setStage("reading");
       const extracted = await extractFile(file);
       setStage("thinking");
-      const analysis = await analyse(extracted, "");
+      const analysis = await analyseOnServer(extracted, "");
       const title = titleOf(file);
       let id: string | null = null;
       if (keep) {
@@ -517,7 +524,7 @@ export function ResumeLab({ sample }: { sample: ResumeAnalysis }) {
         document.getElementById("resume-result")?.scrollIntoView({ behavior: "smooth", block: "start" })
       );
     } catch (caught) {
-      setError(caught instanceof ExtractError ? caught.message : FILE_PROBLEM);
+      setError(problemOf(caught));
     } finally {
       setStage("idle");
     }
@@ -542,7 +549,7 @@ export function ResumeLab({ sample }: { sample: ResumeAnalysis }) {
     setError(null);
     setNotice(null);
     try {
-      const analysis = await analyse(current.read, jd);
+      const analysis = await analyseOnServer(current.read, jd);
       const next: Current = { ...current, analysis, jd: jd.trim() };
       setCurrent(next);
       if (next.id) {
@@ -556,8 +563,8 @@ export function ResumeLab({ sample }: { sample: ResumeAnalysis }) {
             : "Matched. Your resume covers every skill we spotted in the job description."
           : "Removed the job description."
       );
-    } catch {
-      setError("Could not match the job description. Try again.");
+    } catch (caught) {
+      setError(caught instanceof RemoteError ? caught.message : "Could not match the job description. Try again.");
     } finally {
       setTailoring(false);
     }
@@ -652,7 +659,8 @@ export function ResumeLab({ sample }: { sample: ResumeAnalysis }) {
             onClick={() => void check()}
           />
           <p className={styles.note}>
-            Read in your browser. No AI service sees your resume. Add a job description after it is read.
+            No AI service sees your resume. The text read from it is checked on our server and not kept unless you save
+            the result. Add a job description after it is read.
           </p>
         </div>
 
@@ -722,6 +730,35 @@ export function ResumeLab({ sample }: { sample: ResumeAnalysis }) {
             <Tailor key={current.uid} current={current} busy={tailoring} onApply={(jd) => void tailor(jd)} />
             <Results key={current.uid} analysis={current.analysis} marks={marks} onMark={mark} />
           </>
+        ) : restoring ? (
+          <div className={styles.emptyResult} aria-busy="true">
+            <p className={styles.emptyTitle}>
+              <span className={styles.spinner} aria-hidden="true" /> Building your questions…
+            </p>
+            <p>This is the resume you uploaded before signing in.</p>
+          </div>
+        ) : restoreError ? (
+          <div className={styles.emptyResult}>
+            <p className={styles.emptyTitle}>Could not open the resume you uploaded</p>
+            <p className={styles.error} role="alert">
+              {restoreError}
+            </p>
+            <div className={styles.introActions}>
+              <button type="button" className={styles.primary} onClick={() => void restore()}>
+                Try again
+              </button>
+              <button
+                type="button"
+                className={styles.ghost}
+                onClick={() => {
+                  clearPending();
+                  setRestoreError(null);
+                }}
+              >
+                Upload a different file
+              </button>
+            </div>
+          </div>
         ) : (
           <div className={styles.emptyResult}>
             <p className={styles.emptyTitle}>Your questions will appear here</p>

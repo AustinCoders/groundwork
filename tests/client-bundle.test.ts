@@ -80,3 +80,45 @@ describe("the browser bundle", () => {
     ).toEqual([]);
   });
 });
+
+const SERVER_ONLY = new Set([
+  "lib/resume/analyze.ts",
+  "lib/resume/questions.ts",
+  "lib/resume/fixes.ts",
+  "lib/resume/catalogue.ts",
+]);
+
+function serverOnlyPath(start: string): string[] | null {
+  const via = new Map<string, string | null>([[start, null]]);
+  const queue = [start];
+  for (let at = 0; at < queue.length; at++) {
+    const file = queue[at];
+    if (SERVER_ONLY.has(file)) {
+      const path: string[] = [];
+      for (let step: string | null = file; step; step = via.get(step) ?? null) path.unshift(step);
+      return path;
+    }
+    for (const next of imports.get(file) ?? []) {
+      if (!via.has(next)) {
+        via.set(next, file);
+        queue.push(next);
+      }
+    }
+  }
+  return null;
+}
+
+describe("the resume lab lock", () => {
+  it("keeps the question and fix builder out of every client component", () => {
+    const offenders = clientFiles
+      .map((file) => serverOnlyPath(file))
+      .filter((path): path is string[] => path !== null)
+      .map((path) => path.join(" -> "));
+    expect(offenders, "the resume engine runs only in /api/resume/analyze, behind sign-in").toEqual([]);
+  });
+
+  it("does not publish the question catalogue as a static file", () => {
+    expect(existsSync("app/resume/catalogue.json")).toBe(false);
+    expect(existsSync("public/resume/catalogue.json")).toBe(false);
+  });
+});

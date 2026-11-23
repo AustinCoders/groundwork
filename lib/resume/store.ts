@@ -1,6 +1,6 @@
 import { connectAccount } from "@/lib/account/session";
 import { isPlainObject } from "@/lib/storage";
-import type { Catalogue, ResumeAnalysis } from "./types";
+import type { ResumeAnalysis } from "./types";
 
 export type Mark = "known" | "fixed";
 export type Marks = Record<string, Mark>;
@@ -49,23 +49,6 @@ export function isAnalysis(value: unknown): value is ResumeAnalysis {
     Array.isArray(value.fixes) &&
     Array.isArray(value.study)
   );
-}
-
-let catalogue: Promise<Catalogue> | null = null;
-
-export function loadCatalogue(): Promise<Catalogue> {
-  if (!catalogue) {
-    catalogue = fetch("/resume/catalogue.json")
-      .then((response) => {
-        if (!response.ok) throw new Error(String(response.status));
-        return response.json() as Promise<Catalogue>;
-      })
-      .catch((error) => {
-        catalogue = null;
-        throw error;
-      });
-  }
-  return catalogue;
 }
 
 export async function listResumes(): Promise<StoreResult<SavedResume[]>> {
