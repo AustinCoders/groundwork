@@ -155,6 +155,7 @@ html[data-font="marker"] {
   --primary-soft: color-mix(in srgb, var(--primary) 16%, var(--sheet));
   --success-soft: color-mix(in srgb, var(--success) 16%, var(--sheet));
   --danger-soft: color-mix(in srgb, var(--danger) 16%, var(--sheet));
+  --qr-bg: #ffffff;
   --caution-soft: color-mix(in srgb, var(--caution) 16%, var(--sheet));
   --info-soft: color-mix(in srgb, var(--info) 16%, var(--sheet));
 

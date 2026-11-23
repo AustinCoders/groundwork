@@ -448,6 +448,7 @@ export interface TotpEnrollment {
   factorId: string;
   qr: string;
   secret: string;
+  uri: string | null;
 }
 
 export interface TotpFactor {
@@ -485,7 +486,11 @@ export function startTotp(): Promise<Result<TotpEnrollment>> {
       friendlyName: `Authenticator ${new Date().toISOString().slice(0, 16)}`,
     });
     if (error || !data) return { ok: false, error: friendlyAuthError(error) };
-    return { ok: true, value: { factorId: data.id, qr: qrDataUrl(data.totp.qr_code), secret: data.totp.secret } };
+    const uri = typeof data.totp.uri === "string" && data.totp.uri.startsWith("otpauth://totp/") ? data.totp.uri : null;
+    return {
+      ok: true,
+      value: { factorId: data.id, qr: qrDataUrl(data.totp.qr_code), secret: data.totp.secret, uri },
+    };
   });
 }
 

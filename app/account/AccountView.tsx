@@ -393,6 +393,7 @@ function TwoStep() {
   const [error, setError] = useState<string | null>(null);
   const [asking, setAsking] = useState(false);
   const [reload, setReload] = useState(0);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -446,6 +447,17 @@ function TwoStep() {
     else setError(result.error);
   }
 
+  async function copyKey() {
+    if (!enrollment) return;
+    try {
+      await navigator.clipboard.writeText(enrollment.secret);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  }
+
   const on = (factors?.length ?? 0) > 0;
 
   return (
@@ -454,10 +466,17 @@ function TwoStep() {
         <p className={styles.meta}>Checking…</p>
       ) : on ? (
         <>
-          <p className={styles.meta}>
-            <span className={styles.dot} data-state="idle" aria-hidden="true" /> On since{" "}
-            {new Date(factors[0].createdAt).toLocaleDateString(undefined, { dateStyle: "medium" })}. Each time you sign
-            in, you also type a code from your authenticator app.
+          <div className={styles.twoStepHead}>
+            <span className={styles.stateBadge} data-on="true">
+              <span className={styles.dot} data-state="idle" aria-hidden="true" />
+              On
+            </span>
+            <span className={styles.meta}>
+              Since {new Date(factors[0].createdAt).toLocaleDateString(undefined, { dateStyle: "medium" })}
+            </span>
+          </div>
+          <p className={styles.body}>
+            Each time you sign in, you also type the 6&#8209;digit code from your authenticator app.
           </p>
           <div className={styles.row}>
             <button
@@ -472,60 +491,100 @@ function TwoStep() {
         </>
       ) : enrollment ? (
         <form
+          className={styles.setup}
           noValidate
           onSubmit={(e) => {
             e.preventDefault();
             void confirm(code);
           }}
         >
-          <ol className={styles.steps}>
-            <li>
-              Open an authenticator app such as Google Authenticator, Microsoft Authenticator, 1Password or Authy.
-            </li>
-            <li>Scan this code, or type the key under it.</li>
-          </ol>
-          <div className={styles.qrRow}>
+          <div className={styles.qrSide}>
             <span
               className={styles.qr}
               role="img"
               aria-label="QR code to add Groundwork to your authenticator app"
               style={{ backgroundImage: `url("${enrollment.qr}")` }}
             />
-            <div>
-              <span className={styles.label}>Key</span>
-              <code className={styles.secret}>{groups(enrollment.secret)}</code>
-            </div>
+            {enrollment.uri && (
+              <a className={styles.openApp} href={enrollment.uri}>
+                On this phone? Open it in your authenticator app
+              </a>
+            )}
           </div>
-          <label className={styles.field}>
-            <span className={styles.label}>Code the app shows</span>
-            <input
-              className={styles.input}
-              value={code}
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={6}
-              onChange={(e) => {
-                const digits = e.target.value.replace(/\D/g, "").slice(0, 6);
-                setCode(digits);
-                setError(null);
-                if (digits.length === 6 && !busy) void confirm(digits);
-              }}
-            />
-          </label>
-          <div className={styles.row}>
-            <button type="submit" className={`${styles.btn} ${styles.primary}`} disabled={busy}>
-              {busy ? "Checking…" : "Turn on"}
-            </button>
-            <button type="button" className={styles.btn} disabled={busy} onClick={() => setEnrollment(null)}>
-              Cancel
-            </button>
-          </div>
+          <ol className={styles.setupSteps}>
+            <li>
+              <span className={styles.stepNo} aria-hidden="true">
+                1
+              </span>
+              <div>
+                <p className={styles.stepTitle}>Open an authenticator app on your phone</p>
+                <p className={styles.meta}>
+                  Google Authenticator, Microsoft Authenticator, Authy or 1Password all work.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span className={styles.stepNo} aria-hidden="true">
+                2
+              </span>
+              <div>
+                <p className={styles.stepTitle}>Tap + in the app and scan the QR code</p>
+                <p className={styles.meta}>Cannot scan it? Choose to enter a key instead and type this one:</p>
+                <div className={styles.keyRow}>
+                  <code className={styles.secret}>{groups(enrollment.secret)}</code>
+                  <button type="button" className={styles.smallBtn} onClick={() => void copyKey()}>
+                    {copied ? "Copied" : "Copy"}
+                  </button>
+                </div>
+              </div>
+            </li>
+            <li>
+              <span className={styles.stepNo} aria-hidden="true">
+                3
+              </span>
+              <div className={styles.codeStep}>
+                <label className={styles.stepTitle} htmlFor="two-step-code">
+                  Type the 6&#8209;digit code it shows
+                </label>
+                <input
+                  id="two-step-code"
+                  className={`${styles.input} ${styles.codeInput}`}
+                  value={code}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  placeholder="123456"
+                  maxLength={6}
+                  aria-invalid={error ? true : undefined}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, "").slice(0, 6);
+                    setCode(digits);
+                    setError(null);
+                    if (digits.length === 6 && !busy) void confirm(digits);
+                  }}
+                />
+                <div className={styles.row}>
+                  <button type="submit" className={`${styles.btn} ${styles.primary}`} disabled={busy}>
+                    {busy ? "Checking…" : "Turn on"}
+                  </button>
+                  <button type="button" className={styles.btn} disabled={busy} onClick={() => setEnrollment(null)}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </li>
+          </ol>
         </form>
       ) : (
         <>
-          <p className={styles.meta}>
-            Off. Turn it on and signing in also needs a code from an app on your phone, so a stolen password alone is
-            not enough.
+          <div className={styles.twoStepHead}>
+            <span className={styles.stateBadge}>
+              <span className={styles.dot} aria-hidden="true" />
+              Off
+            </span>
+          </div>
+          <p className={styles.body}>
+            Turn it on and every sign-in also asks for a 6&#8209;digit code from an app on your phone, so a stolen
+            password alone is not enough.
           </p>
           <div className={styles.row}>
             <button type="button" className={`${styles.btn} ${styles.primary}`} disabled={busy} onClick={begin}>
