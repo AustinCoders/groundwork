@@ -118,6 +118,13 @@ export async function saveMarks(id: string, marks: Marks): Promise<StoreResult<n
   return error ? failure(error, "Could not save your progress on this resume.") : { ok: true, value: null };
 }
 
+export async function updateAnalysis(id: string, analysis: ResumeAnalysis): Promise<StoreResult<null>> {
+  const db = await connectAccount();
+  if (!db) return { ok: false, error: "Accounts are not available right now." };
+  const { error } = await db.from("resume_docs").update({ analysis }).eq("id", id);
+  return error ? failure(error, "Could not update the saved result.") : { ok: true, value: null };
+}
+
 export async function deleteResume(id: string): Promise<StoreResult<null>> {
   const db = await connectAccount();
   if (!db) return { ok: false, error: "Accounts are not available right now." };

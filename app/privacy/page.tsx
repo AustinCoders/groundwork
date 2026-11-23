@@ -54,7 +54,9 @@ export default function PrivacyPage() {
             AI service sees it. If you keep the result, your account stores what was read from it (your roles, bullets,
             projects and skills) with the questions and fixes, and the marks you make. Your phone number, email and
             personal details such as date of birth are left out. You can keep five, and deleting one removes it for
-            good.
+            good. If you upload before signing in, the text read from the file stays in this browser for 30 minutes so
+            the result is waiting after you sign in, and is removed once it is opened or the time runs out. A job
+            description you paste is read in your browser too; a saved result keeps only the skills it asks for.
           </p>
           <p>
             While you are signed in, the browser copies your learning data to your account so it follows you: chapter
