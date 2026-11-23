@@ -6,10 +6,10 @@ import styles from "./rail.module.css";
 const STOPS = [
   { id: "shelf", label: "Topics" },
   { id: "practice", label: "Practice" },
+  { id: "resume", label: "Resume lab" },
   { id: "how", label: "How it works" },
   { id: "paths", label: "Paths" },
   { id: "loop", label: "Interview book" },
-  { id: "resume", label: "Resume lab" },
   { id: "faq", label: "FAQ" },
   { id: "cta", label: "Start here" },
 ];

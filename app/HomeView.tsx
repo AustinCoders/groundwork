@@ -35,13 +35,14 @@ import { progress } from "@/lib/storage";
 import { SITE_NAME } from "@/lib/site";
 import styles from "./home.module.css";
 
-const NAV: { href: string; label: string; icon: NavIconName }[] = [
+const NAV: { href: string; label: string; icon: NavIconName; minor?: "phone" | "small" }[] = [
   { href: "#shelf", label: "Topics", icon: "topics" },
   { href: "#practice", label: "Practice", icon: "practice" },
+  { href: "#resume", label: "Resume lab", icon: "resume" },
   { href: "#how", label: "How it works", icon: "how" },
-  { href: "#paths", label: "Paths", icon: "paths" },
+  { href: "#paths", label: "Paths", icon: "paths", minor: "small" },
   { href: "#loop", label: "Interview book", icon: "book" },
-  { href: "#faq", label: "FAQ", icon: "faq" },
+  { href: "#faq", label: "FAQ", icon: "faq", minor: "phone" },
 ];
 
 const HOME_LERP = 0.14;
@@ -427,7 +428,7 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
           </Link>
           <nav ref={navRef} className={styles.navLinks} aria-label="Sections">
             {NAV.map((item) => (
-              <a key={item.href} href={item.href} title={item.label}>
+              <a key={item.href} href={item.href} title={item.label} data-nav-minor={item.minor}>
                 <NavIcon name={item.icon} />
                 <span className={styles.navText}>{item.label}</span>
               </a>
@@ -482,6 +483,15 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
                   Prepare for an interview
                 </Link>
               </div>
+              <Link href="/resume" className={styles.heroNew}>
+                <span className={styles.heroNewTag}>✦ New</span>
+                <span>
+                  Resume lab: the questions your resume{"\u00a0"}invites{"\u00a0"}
+                  <span className={styles.btnArrow} aria-hidden="true">
+                    →
+                  </span>
+                </span>
+              </Link>
               <dl className={styles.heroStats}>
                 {[
                   { n: stats.writtenChapters, s: "", l: "chapters" },
@@ -547,12 +557,30 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
             </div>
           </section>
 
+          <section className={styles.section} id="resume" aria-labelledby="resume-h" data-scene>
+            <div className={styles.pin} data-pin-box>
+              <ResumeScene
+                questions={50}
+                head={
+                  <Head
+                    no="03"
+                    label="Resume lab"
+                    id="resume-h"
+                    sub="Upload your resume and see the questions it invites: about your own bullets and numbers, your roles and gaps, and every skill you list."
+                  >
+                    <Words text="Your resume, their questions." />
+                  </Head>
+                }
+              />
+            </div>
+          </section>
+
           <section className={styles.section} id="how" aria-labelledby="how-h" data-scene>
             <div className={styles.pin} data-pin-box>
               <HowScene
                 head={
                   <Head
-                    no="03"
+                    no="04"
                     label="How it works"
                     id="how-h"
                     sub="Most prep is either too shallow or too scattered. Here, the explanation, the practice and the interview sit in one place, in the right order."
@@ -579,7 +607,7 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
                 soon={soon}
                 head={
                   <Head
-                    no="04"
+                    no="05"
                     label="Paths"
                     id="paths-h"
                     size="sm"
@@ -613,31 +641,13 @@ export function HomeView({ stats, tally, ready, soon, languages, interview, book
                 total={interview.rounds}
                 head={
                   <Head
-                    no="05"
+                    no="06"
                     label="The interview book"
                     id="loop-h"
                     size="sm"
                     sub={`Pick a stage, then a round, to see what it is really testing, the wrong answer that loses the room, and a question you will get. These are the ${bookRounds.length} core rounds of the ${interview.rounds} in the whole book.`}
                   >
                     <Words text="From the first call to the offer, round by round." />
-                  </Head>
-                }
-              />
-            </div>
-          </section>
-
-          <section className={styles.section} id="resume" aria-labelledby="resume-h" data-scene>
-            <div className={styles.pin} data-pin-box>
-              <ResumeScene
-                questions={50}
-                head={
-                  <Head
-                    no="06"
-                    label="Resume lab"
-                    id="resume-h"
-                    sub="Upload your resume and see the questions it invites: about your own bullets and numbers, your roles and gaps, and every skill you list."
-                  >
-                    <Words text="Your resume, their questions." />
                   </Head>
                 }
               />

@@ -103,12 +103,14 @@ a.title:hover {
 
 .links {
   display: flex;
+  flex: none;
   gap: 4px;
   margin-left: auto;
 }
 
 .links a {
   padding: 7px 12px;
+  white-space: nowrap;
   font-size: 14.5px;
   color: var(--ink-soft);
   text-decoration: none;
@@ -240,6 +242,33 @@ a.title:hover {
     min-height: var(--header-h);
     padding-block: 8px;
   }
+}
+
+.top[data-fit="icons"] .links {
+  gap: 2px;
+}
+
+.top[data-fit="icons"] .links a {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+
+.top[data-fit="icons"] .linkGlyph {
+  display: block;
+  font-size: var(--t-control);
+  line-height: 1;
+}
+
+.top[data-fit="icons"] .linkText {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .brand:focus-visible,

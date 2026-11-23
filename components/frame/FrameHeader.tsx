@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { CSSProperties, ReactNode } from "react";
+import { useLayoutEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import { MenuButton } from "@/components/MenuButton";
 import { AccountMenu } from "@/components/account/AccountMenu";
 import { BackButton } from "@/components/practice/BackButton";
@@ -61,6 +61,27 @@ export function FrameHeader({
   className?: string;
 }) {
   const pathname = usePathname();
+  const headerRef = useRef<HTMLElement>(null);
+  const hasLinks = links.length > 0;
+  useLayoutEffect(() => {
+    const header = headerRef.current;
+    if (!header || !hasLinks) return;
+    const fit = () => {
+      header.dataset.fit = "text";
+      const text = header.querySelector<HTMLElement>(`.${CSS.escape(styles.titleText)}`);
+      const squeezed = header.scrollWidth > header.clientWidth + 1;
+      const clipped = text ? text.scrollWidth > text.clientWidth + 1 : false;
+      header.dataset.fit = squeezed || clipped ? "icons" : "text";
+    };
+    fit();
+    const watch = new ResizeObserver(fit);
+    watch.observe(header);
+    const account = header.querySelector<HTMLElement>(`.${CSS.escape(styles.account)}`);
+    if (account) watch.observe(account);
+    const actionsBox = header.querySelector<HTMLElement>(`.${CSS.escape(styles.actions)}`);
+    if (actionsBox) watch.observe(actionsBox);
+    return () => watch.disconnect();
+  }, [hasLinks, title, links.length]);
   const titleClass = mark ? `${styles.title} ${styles.titleMarked}` : styles.title;
   const titleContent = mark ? (
     <>
@@ -81,7 +102,7 @@ export function FrameHeader({
     .join(" ");
 
   return (
-    <header className={headerClass} style={{ viewTransitionName: "gw-header" }}>
+    <header ref={headerRef} className={headerClass} style={{ viewTransitionName: "gw-header" }}>
       <BackButton
         variant="bar"
         className="head-back"

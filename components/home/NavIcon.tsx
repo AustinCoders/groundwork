@@ -1,4 +1,4 @@
-export type NavIconName = "topics" | "practice" | "how" | "paths" | "book" | "faq";
+export type NavIconName = "topics" | "practice" | "resume" | "how" | "paths" | "book" | "faq";
 
 const PATHS: Record<NavIconName, string[]> = {
   topics: [
@@ -6,6 +6,7 @@ const PATHS: Record<NavIconName, string[]> = {
     "M20 5.5A1.5 1.5 0 0 0 18.5 4H13v15h5.5a1.5 1.5 0 0 1 1.5 1.5z",
   ],
   practice: ["M8 8 4 12l4 4", "M16 8l4 4-4 4", "M13.5 5 10.5 19"],
+  resume: ["M6 3h8l4 4v14H6z", "M14 3v4h4", "M9 12h6", "M9 15h6", "M9 18h3"],
   how: ["M12 3v3", "M12 18v3", "M3 12h3", "M18 12h3", "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"],
   paths: ["M6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z", "M18 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z", "M6 15V12a4 4 0 0 1 4-4h6"],
   book: ["M7 4h10a2 2 0 0 1 2 2v14l-7-3-7 3V6a2 2 0 0 1 2-2z", "M9 9h6", "M9 12h4"],
