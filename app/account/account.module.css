@@ -1058,13 +1058,38 @@
 
 .panel {
   display: grid;
-  gap: 16px;
+  gap: 18px;
+  padding: clamp(18px, 2.6vw, 28px);
   scroll-margin-top: calc(var(--bar-h, 60px) + 20px);
+  background: color-mix(in srgb, var(--sheet) 40%, var(--paper));
+  border: 1.5px solid var(--line);
+  border-radius: 22px;
+}
+
+.panel[data-tone="danger"] {
+  border-color: color-mix(in srgb, var(--danger) 35%, var(--line));
 }
 
 .panelHead {
   display: grid;
-  gap: 4px;
+  gap: 6px;
+  padding: 0 2px;
+}
+
+@media (max-width: 480px) {
+  .panel {
+    gap: 14px;
+    padding: 18px 12px 14px;
+    border-radius: 18px;
+  }
+
+  .panelHead {
+    padding: 0 4px;
+  }
+
+  .panel .card {
+    padding: 16px;
+  }
 }
 
 .panelTitle {
