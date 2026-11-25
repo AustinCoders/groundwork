@@ -310,61 +310,107 @@ function People({ tracks }: { tracks: TopicTrack[] }) {
   if (!data.me.on) {
     return (
       <div className={styles.page}>
-        <section className={`${styles.card} ${styles.join}`} aria-labelledby="people-join">
-          <span className={styles.joinMark} aria-hidden="true">
-            ⚇
-          </span>
-          <h1 id="people-join" className={styles.title}>
-            Study with friends
-          </h1>
-          <p className={styles.lead}>
-            Connect with other developers, see each other&apos;s streaks, send a clap when they finish a hard chapter
-            and find out who studied most this week.
-          </p>
-          <ul className={styles.facts}>
-            <li>
-              <strong>Your connections see</strong> your name, username, headline, role, avatar, level, XP, streak,
-              chapters, exercises and the last four weeks of activity.
-            </li>
-            <li>
-              <strong>Never</strong> your email, photo, resume, plan, interview date or scores.
-            </li>
-            <li>
-              <strong>Requests need a yes.</strong> Nobody joins your list unless you accept. You can remove, block or
-              report anyone, any time.
-            </li>
-            <li>
-              <strong>No messages.</strong> Just cheers. You can leave whenever you want.
-            </li>
-          </ul>
-          {!username ? (
-            <div className={styles.callout}>
-              <p>Pick a username first. It is how friends find you.</p>
-              <Link className={styles.btnPrimary} href="/account/profile#profile-public">
-                Choose a username
-              </Link>
-            </div>
-          ) : (
-            <>
-              <label className={styles.check}>
-                <input type="checkbox" checked={findable} onChange={(e) => setFindable(e.target.checked)} />
-                <span>
-                  Let people find me by searching <span className={styles.mono}>@{username}</span> and in suggestions
-                </span>
-              </label>
-              <div className={styles.row}>
+        <section className={styles.joinHero} aria-labelledby="people-join">
+          <div className={styles.joinText}>
+            <p className={styles.kicker}>People</p>
+            <h1 id="people-join" className={styles.joinTitle}>
+              Study with friends
+            </h1>
+            <p className={styles.joinLead}>
+              Connect with other developers, keep each other&apos;s streaks alive, send a clap after a hard chapter and
+              see who studied most this week.
+            </p>
+            {!username ? (
+              <div className={styles.callout}>
+                <p>Pick a username first. It is how friends find you.</p>
+                <Link className={styles.btnPrimary} href="/account/profile#profile-public">
+                  Choose a username
+                </Link>
+              </div>
+            ) : (
+              <div className={styles.joinAction}>
                 <button
                   type="button"
-                  className={styles.btnPrimary}
+                  className={`${styles.btnPrimary} ${styles.btnLarge}`}
                   disabled={busy !== null || !mine}
                   onClick={() => void join()}
                 >
                   {busy === "join" ? "Joining…" : "Join connections"}
                 </button>
+                <label className={styles.check}>
+                  <input type="checkbox" checked={findable} onChange={(e) => setFindable(e.target.checked)} />
+                  <span>
+                    Let people find me as <span className={styles.mono}>@{username}</span>
+                  </span>
+                </label>
               </div>
-            </>
-          )}
-          {status}
+            )}
+            {status}
+          </div>
+          <div className={styles.joinArt} aria-hidden="true">
+            <div className={styles.artCard}>
+              <p className={styles.artTitle}>This week</p>
+              {[
+                { name: "Ravi", n: 27, mark: "🏆", color: "green" },
+                { name: "You", n: 18, mark: "2", color: "purple", me: true },
+                { name: "Meera", n: 11, mark: "3", color: "orange" },
+              ].map((row) => (
+                <div key={row.name} className={styles.artRow} data-me={row.me || undefined}>
+                  <span className={styles.artRank}>{row.mark}</span>
+                  <span className={styles.artDot} style={{ "--avatar": `var(--c-${row.color})` } as CSSProperties}>
+                    {row.name[0]}
+                  </span>
+                  <span className={styles.artName}>{row.name}</span>
+                  <span className={styles.artCount}>{row.n}</span>
+                </div>
+              ))}
+            </div>
+            <div className={styles.artCheer}>
+              <span>👏</span> Ravi clapped for you
+            </div>
+          </div>
+        </section>
+
+        <ul className={styles.features}>
+          {[
+            { mark: "🤝", title: "Requests need a yes", text: "Nobody joins your list unless you accept them." },
+            { mark: "🏆", title: "A weekly board", text: "Chapters and problems done in the last seven days." },
+            { mark: "👏", title: "Cheers, not chat", text: "Clap, keep-it-up and nudge. No messages to manage." },
+            { mark: "🛡", title: "You stay in control", text: "Remove, block or report anyone. Leave any time." },
+          ].map((f) => (
+            <li key={f.title} className={styles.feature}>
+              <span className={styles.featureMark} aria-hidden="true">
+                {f.mark}
+              </span>
+              <p className={styles.featureTitle}>{f.title}</p>
+              <p className={styles.featureText}>{f.text}</p>
+            </li>
+          ))}
+        </ul>
+
+        <section className={styles.privacy} aria-labelledby="people-privacy">
+          <h2 id="people-privacy" className={styles.privacyTitle}>
+            What your connections see
+          </h2>
+          <div className={styles.privacyCols}>
+            <div>
+              <p className={styles.privacyHead} data-kind="yes">
+                Shared with connections
+              </p>
+              <p className={styles.privacyText}>
+                Name, username, headline, role, avatar, level, XP, streak, chapter and problem counts, your daily goal,
+                this week&apos;s challenge and the last four weeks of activity.
+              </p>
+            </div>
+            <div>
+              <p className={styles.privacyHead} data-kind="no">
+                Never shared
+              </p>
+              <p className={styles.privacyText}>
+                Your email, photo, resume, interview plan and date, company list and scores.
+              </p>
+            </div>
+          </div>
         </section>
       </div>
     );
@@ -386,375 +432,387 @@ function People({ tracks }: { tracks: TopicTrack[] }) {
 
       {status && <div className={styles.toast}>{status}</div>}
 
-      {data.incoming.length > 0 && (
-        <section className={`${styles.card} ${styles.attention}`} aria-labelledby="people-requests">
-          <h2 id="people-requests" className={styles.title}>
-            Requests <span className={styles.count}>{data.incoming.length}</span>
-          </h2>
-          <ul className={styles.list}>
-            {data.incoming.map((face) => (
-              <li key={face.username} className={styles.person}>
-                <Face face={face} />
-                <Who face={face} today={today} />
-                <div className={styles.actions}>
-                  <button
-                    type="button"
-                    className={styles.btnPrimary}
-                    disabled={busy !== null}
-                    onClick={() =>
-                      void act(
-                        `accept:${face.username}`,
-                        () => respondConnection(face.username, true),
-                        `You and ${face.name} are connected.`
-                      )
-                    }
-                  >
-                    Accept
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.btn}
-                    disabled={busy !== null}
-                    onClick={() => void act(`decline:${face.username}`, () => respondConnection(face.username, false))}
-                  >
-                    Decline
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.btnQuiet}
-                    disabled={busy !== null}
-                    onClick={() => setReporting({ username: face.username, name: face.name })}
-                  >
-                    Report
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      <section className={styles.card} aria-labelledby="people-board">
-        <h2 id="people-board" className={styles.title}>
-          This week
-        </h2>
-        <p className={styles.hint}>Chapters read and exercises solved in the last seven days.</p>
-        {data.connections.length === 0 ? (
-          <p className={styles.empty}>Connect with a friend and your weekly board starts here.</p>
-        ) : (
-          <ol className={styles.board}>
-            {board.map((row, i) => (
-              <li key={row.me ? "me" : row.username} className={styles.boardRow} data-me={row.me || undefined}>
-                <span className={styles.rank}>{i === 0 && row.week > 0 ? "🏆" : i + 1}</span>
-                <span className={styles.boardName}>{row.name}</span>
-                <span className={styles.boardStreak} title="Day streak">
-                  🔥 {row.streak}
-                </span>
-                <span className={styles.boardWeek}>
-                  <strong>{row.week}</strong> done
-                </span>
-              </li>
-            ))}
-          </ol>
-        )}
-      </section>
-
-      {data.cheers.length > 0 && (
-        <section className={styles.card} aria-labelledby="people-cheers">
-          <h2 id="people-cheers" className={styles.title}>
-            Cheers for you
-          </h2>
-          <ul className={styles.feed}>
-            {data.cheers.slice(0, 10).map((c) => {
-              const mark = CHEERS.find((x) => x.kind === c.kind)?.mark ?? "👏";
-              const isNew = fresh.has(`${c.username}:${c.kind}:${c.at}`);
-              return (
-                <li key={`${c.username}:${c.kind}:${c.at}`} className={styles.feedItem} data-new={isNew || undefined}>
-                  <span className={styles.feedMark} aria-hidden="true">
-                    {mark}
-                  </span>
-                  <span>
-                    <strong>{c.name}</strong> {RECEIVED[c.kind]}
-                  </span>
-                  <span className={styles.when}>{isNew ? "new" : ago(c.at, now)}</span>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      )}
-
-      <section className={styles.card} aria-labelledby="people-list">
-        <h2 id="people-list" className={styles.title}>
-          Your connections <span className={styles.count}>{data.connections.length}</span>
-        </h2>
-        {data.connections.length === 0 ? (
-          <p className={styles.empty}>No connections yet. Search for a friend&apos;s username below.</p>
-        ) : (
-          <ul className={styles.list}>
-            {data.connections.map((face) => (
-              <li key={face.username} className={styles.person}>
-                <Face face={face} />
-                <Who face={face} today={today} />
-                <div className={styles.actions}>
-                  {CHEERS.map((c) => (
-                    <button
-                      key={c.kind}
-                      type="button"
-                      className={styles.cheer}
-                      disabled={busy !== null}
-                      aria-label={`${c.label}: send ${face.name} a cheer`}
-                      title={c.label}
-                      onClick={() =>
-                        void act(
-                          `cheer:${face.username}:${c.kind}`,
-                          () => cheer(face.username, c.kind),
-                          `You ${c.done} ${face.name}.`
-                        )
-                      }
-                    >
-                      <span aria-hidden="true">{c.mark}</span>
-                    </button>
-                  ))}
-                  <details className={styles.more}>
-                    <summary className={styles.moreBtn} aria-label={`More for ${face.name}`}>
-                      ⋯
-                    </summary>
-                    <div className={styles.menu}>
+      <div className={styles.columns}>
+        <div className={styles.main}>
+          {data.incoming.length > 0 && (
+            <section className={`${styles.card} ${styles.attention}`} aria-labelledby="people-requests">
+              <h2 id="people-requests" className={styles.title}>
+                Requests <span className={styles.count}>{data.incoming.length}</span>
+              </h2>
+              <ul className={styles.list}>
+                {data.incoming.map((face) => (
+                  <li key={face.username} className={styles.person}>
+                    <Face face={face} />
+                    <Who face={face} today={today} />
+                    <div className={styles.actions}>
                       <button
                         type="button"
-                        onClick={(e) => {
-                          closeMenu(e.currentTarget);
-                          setPending({ kind: "remove", username: face.username, name: face.name });
-                        }}
+                        className={styles.btnPrimary}
+                        disabled={busy !== null}
+                        onClick={() =>
+                          void act(
+                            `accept:${face.username}`,
+                            () => respondConnection(face.username, true),
+                            `You and ${face.name} are connected.`
+                          )
+                        }
                       >
-                        Remove
+                        Accept
                       </button>
                       <button
                         type="button"
-                        onClick={(e) => {
-                          closeMenu(e.currentTarget);
-                          setPending({ kind: "block", username: face.username, name: face.name });
-                        }}
+                        className={styles.btn}
+                        disabled={busy !== null}
+                        onClick={() =>
+                          void act(`decline:${face.username}`, () => respondConnection(face.username, false))
+                        }
                       >
-                        Block
+                        Decline
                       </button>
                       <button
                         type="button"
-                        onClick={(e) => {
-                          closeMenu(e.currentTarget);
-                          setReporting({ username: face.username, name: face.name });
-                        }}
+                        className={styles.btnQuiet}
+                        disabled={busy !== null}
+                        onClick={() => setReporting({ username: face.username, name: face.name })}
                       >
                         Report
                       </button>
                     </div>
-                  </details>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
-      <section className={styles.card} aria-labelledby="people-find">
-        <h2 id="people-find" className={styles.title}>
-          Find people
-        </h2>
-        <label className={styles.searchLabel} htmlFor="people-search">
-          Search by username
-        </label>
-        <div className={styles.search}>
-          <span className={styles.at} aria-hidden="true">
-            @
-          </span>
-          <input
-            id="people-search"
-            className={styles.input}
-            type="search"
-            value={query}
-            maxLength={30}
-            autoComplete="off"
-            autoCapitalize="none"
-            spellCheck={false}
-            placeholder="username"
-            onChange={(e) => {
-              setQuery(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
-              setResults(null);
-            }}
-          />
-        </div>
-        {shown === null ? (
-          typed.length >= 2 ? (
-            <p className={styles.hint} aria-live="polite">
-              {searching ? "Searching…" : " "}
-            </p>
-          ) : (
-            suggested.length > 0 && (
-              <>
-                <h3 className={styles.sub}>People you may know</h3>
-                <ul className={styles.list}>
-                  {suggested.map((face) => (
-                    <li key={face.username} className={styles.person}>
-                      <Face face={face} />
-                      <Who face={face} today={today} />
-                      <div className={styles.actions}>
+          <section className={styles.card} aria-labelledby="people-board">
+            <h2 id="people-board" className={styles.title}>
+              This week
+            </h2>
+            <p className={styles.hint}>Chapters read and exercises solved in the last seven days.</p>
+            {data.connections.length === 0 ? (
+              <p className={styles.empty}>Connect with a friend and your weekly board starts here.</p>
+            ) : (
+              <ol className={styles.board}>
+                {board.map((row, i) => (
+                  <li key={row.me ? "me" : row.username} className={styles.boardRow} data-me={row.me || undefined}>
+                    <span className={styles.rank}>{i === 0 && row.week > 0 ? "🏆" : i + 1}</span>
+                    <span className={styles.boardName}>{row.name}</span>
+                    <span className={styles.boardStreak} title="Day streak">
+                      🔥 {row.streak}
+                    </span>
+                    <span className={styles.boardWeek}>
+                      <strong>{row.week}</strong> done
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </section>
+
+          <section className={styles.card} aria-labelledby="people-list">
+            <h2 id="people-list" className={styles.title}>
+              Your connections <span className={styles.count}>{data.connections.length}</span>
+            </h2>
+            {data.connections.length === 0 ? (
+              <p className={styles.empty}>No connections yet. Search for a friend&apos;s username below.</p>
+            ) : (
+              <ul className={styles.list}>
+                {data.connections.map((face) => (
+                  <li key={face.username} className={styles.person}>
+                    <Face face={face} />
+                    <Who face={face} today={today} />
+                    <div className={styles.actions}>
+                      {CHEERS.map((c) => (
+                        <button
+                          key={c.kind}
+                          type="button"
+                          className={styles.cheer}
+                          disabled={busy !== null}
+                          aria-label={`${c.label}: send ${face.name} a cheer`}
+                          title={c.label}
+                          onClick={() =>
+                            void act(
+                              `cheer:${face.username}:${c.kind}`,
+                              () => cheer(face.username, c.kind),
+                              `You ${c.done} ${face.name}.`
+                            )
+                          }
+                        >
+                          <span aria-hidden="true">{c.mark}</span>
+                        </button>
+                      ))}
+                      <details className={styles.more}>
+                        <summary className={styles.moreBtn} aria-label={`More for ${face.name}`}>
+                          ⋯
+                        </summary>
+                        <div className={styles.menu}>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              closeMenu(e.currentTarget);
+                              setPending({ kind: "remove", username: face.username, name: face.name });
+                            }}
+                          >
+                            Remove
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              closeMenu(e.currentTarget);
+                              setPending({ kind: "block", username: face.username, name: face.name });
+                            }}
+                          >
+                            Block
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              closeMenu(e.currentTarget);
+                              setReporting({ username: face.username, name: face.name });
+                            }}
+                          >
+                            Report
+                          </button>
+                        </div>
+                      </details>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className={styles.card} aria-labelledby="people-find">
+            <h2 id="people-find" className={styles.title}>
+              Find people
+            </h2>
+            <label className={styles.searchLabel} htmlFor="people-search">
+              Search by username
+            </label>
+            <div className={styles.search}>
+              <span className={styles.at} aria-hidden="true">
+                @
+              </span>
+              <input
+                id="people-search"
+                className={styles.input}
+                type="search"
+                value={query}
+                maxLength={30}
+                autoComplete="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                placeholder="username"
+                onChange={(e) => {
+                  setQuery(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
+                  setResults(null);
+                }}
+              />
+            </div>
+            {shown === null ? (
+              typed.length >= 2 ? (
+                <p className={styles.hint} aria-live="polite">
+                  {searching ? "Searching…" : " "}
+                </p>
+              ) : (
+                suggested.length > 0 && (
+                  <>
+                    <h3 className={styles.sub}>People you may know</h3>
+                    <ul className={styles.list}>
+                      {suggested.map((face) => (
+                        <li key={face.username} className={styles.person}>
+                          <Face face={face} />
+                          <Who face={face} today={today} />
+                          <div className={styles.actions}>
+                            <button
+                              type="button"
+                              className={styles.btn}
+                              disabled={busy !== null}
+                              onClick={() =>
+                                void act(
+                                  `request:${face.username}`,
+                                  () => requestConnection(face.username),
+                                  `Request sent to ${face.name}.`
+                                )
+                              }
+                            >
+                              Connect
+                            </button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )
+              )
+            ) : shown.length === 0 ? (
+              <p className={styles.empty} aria-live="polite">
+                Nobody found for @{typed}. Usernames are exact from the start, like @{typed.slice(0, 3)}…
+              </p>
+            ) : (
+              <ul className={styles.list} aria-live="polite">
+                {shown.map((face) => (
+                  <li key={face.username} className={styles.person}>
+                    <Face face={face} />
+                    <Who face={face} today={today} />
+                    <div className={styles.actions}>
+                      {face.relation === "connected" ? (
+                        <span className={styles.tag}>Connected</span>
+                      ) : face.relation === "sent" ? (
+                        <span className={styles.tag}>Requested</span>
+                      ) : (
                         <button
                           type="button"
-                          className={styles.btn}
+                          className={face.relation === "received" ? styles.btnPrimary : styles.btn}
                           disabled={busy !== null}
                           onClick={() =>
                             void act(
                               `request:${face.username}`,
                               () => requestConnection(face.username),
-                              `Request sent to ${face.name}.`
+                              face.relation === "received"
+                                ? `You and ${face.name} are connected.`
+                                : `Request sent to ${face.name}.`
                             )
                           }
                         >
-                          Connect
+                          {face.relation === "received" ? "Accept" : "Connect"}
                         </button>
-                      </div>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
+        <aside className={styles.side}>
+          {data.cheers.length > 0 && (
+            <section className={styles.card} aria-labelledby="people-cheers">
+              <h2 id="people-cheers" className={styles.title}>
+                Cheers for you
+              </h2>
+              <ul className={styles.feed}>
+                {data.cheers.slice(0, 10).map((c) => {
+                  const mark = CHEERS.find((x) => x.kind === c.kind)?.mark ?? "👏";
+                  const isNew = fresh.has(`${c.username}:${c.kind}:${c.at}`);
+                  return (
+                    <li
+                      key={`${c.username}:${c.kind}:${c.at}`}
+                      className={styles.feedItem}
+                      data-new={isNew || undefined}
+                    >
+                      <span className={styles.feedMark} aria-hidden="true">
+                        {mark}
+                      </span>
+                      <span>
+                        <strong>{c.name}</strong> {RECEIVED[c.kind]}
+                      </span>
+                      <span className={styles.when}>{isNew ? "new" : ago(c.at, now)}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+
+          {data.outgoing.length > 0 && (
+            <section className={styles.card} aria-labelledby="people-sent">
+              <h2 id="people-sent" className={styles.title}>
+                Sent requests <span className={styles.count}>{data.outgoing.length}</span>
+              </h2>
+              <ul className={styles.plain}>
+                {data.outgoing.map((o) => (
+                  <li key={o.username} className={styles.plainRow}>
+                    <span>
+                      {o.name} <span className={styles.handle}>@{o.username}</span>
+                    </span>
+                    <span className={styles.when}>{ago(o.since, now)}</span>
+                    <button
+                      type="button"
+                      className={styles.btnQuiet}
+                      disabled={busy !== null}
+                      onClick={() => setPending({ kind: "cancel", username: o.username, name: o.name })}
+                    >
+                      Cancel
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          <section className={styles.card} aria-labelledby="people-settings">
+            <h2 id="people-settings" className={styles.title}>
+              Your settings
+            </h2>
+            <label className={styles.check}>
+              <input
+                type="checkbox"
+                checked={data.me.discoverable}
+                disabled={busy !== null}
+                onChange={(e) => {
+                  const on = e.target.checked;
+                  void act(
+                    "findable",
+                    () => setDiscoverable(on),
+                    on ? "People can find you again." : "You are hidden from search and suggestions."
+                  );
+                }}
+              />
+              <span>
+                Let people find me by searching <span className={styles.mono}>@{data.me.username}</span> and in
+                suggestions
+              </span>
+            </label>
+            <p className={styles.hint}>
+              Your card updates on its own when you open your progress page.
+              {data.me.at ? ` Last updated ${ago(data.me.at, now)}.` : ""}
+            </p>
+            <div className={styles.row}>
+              <button
+                type="button"
+                className={styles.btn}
+                disabled={busy !== null || !mine}
+                onClick={() => mine && void act("card", () => publishNetworkCard(mine), "Your card is up to date.")}
+              >
+                Update my card now
+              </button>
+              <button
+                type="button"
+                className={styles.btnDanger}
+                disabled={busy !== null}
+                onClick={() => setPending({ kind: "leave", username: "", name: "" })}
+              >
+                Leave connections
+              </button>
+            </div>
+            {data.blocked.length > 0 && (
+              <details className={styles.blocked}>
+                <summary>Blocked people ({data.blocked.length})</summary>
+                <ul className={styles.plain}>
+                  {data.blocked.map((b) => (
+                    <li key={b.username} className={styles.plainRow}>
+                      <span>
+                        {b.name} <span className={styles.handle}>@{b.username}</span>
+                      </span>
+                      <button
+                        type="button"
+                        className={styles.btnQuiet}
+                        disabled={busy !== null}
+                        onClick={() =>
+                          void act(`unblock:${b.username}`, () => unblockPerson(b.username), `${b.name} is unblocked.`)
+                        }
+                      >
+                        Unblock
+                      </button>
                     </li>
                   ))}
                 </ul>
-              </>
-            )
-          )
-        ) : shown.length === 0 ? (
-          <p className={styles.empty} aria-live="polite">
-            Nobody found for @{typed}. Usernames are exact from the start, like @{typed.slice(0, 3)}…
-          </p>
-        ) : (
-          <ul className={styles.list} aria-live="polite">
-            {shown.map((face) => (
-              <li key={face.username} className={styles.person}>
-                <Face face={face} />
-                <Who face={face} today={today} />
-                <div className={styles.actions}>
-                  {face.relation === "connected" ? (
-                    <span className={styles.tag}>Connected</span>
-                  ) : face.relation === "sent" ? (
-                    <span className={styles.tag}>Requested</span>
-                  ) : (
-                    <button
-                      type="button"
-                      className={face.relation === "received" ? styles.btnPrimary : styles.btn}
-                      disabled={busy !== null}
-                      onClick={() =>
-                        void act(
-                          `request:${face.username}`,
-                          () => requestConnection(face.username),
-                          face.relation === "received"
-                            ? `You and ${face.name} are connected.`
-                            : `Request sent to ${face.name}.`
-                        )
-                      }
-                    >
-                      {face.relation === "received" ? "Accept" : "Connect"}
-                    </button>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {data.outgoing.length > 0 && (
-        <section className={styles.card} aria-labelledby="people-sent">
-          <h2 id="people-sent" className={styles.title}>
-            Sent requests <span className={styles.count}>{data.outgoing.length}</span>
-          </h2>
-          <ul className={styles.plain}>
-            {data.outgoing.map((o) => (
-              <li key={o.username} className={styles.plainRow}>
-                <span>
-                  {o.name} <span className={styles.handle}>@{o.username}</span>
-                </span>
-                <span className={styles.when}>{ago(o.since, now)}</span>
-                <button
-                  type="button"
-                  className={styles.btnQuiet}
-                  disabled={busy !== null}
-                  onClick={() => setPending({ kind: "cancel", username: o.username, name: o.name })}
-                >
-                  Cancel
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      <section className={styles.card} aria-labelledby="people-settings">
-        <h2 id="people-settings" className={styles.title}>
-          Your settings
-        </h2>
-        <label className={styles.check}>
-          <input
-            type="checkbox"
-            checked={data.me.discoverable}
-            disabled={busy !== null}
-            onChange={(e) => {
-              const on = e.target.checked;
-              void act(
-                "findable",
-                () => setDiscoverable(on),
-                on ? "People can find you again." : "You are hidden from search and suggestions."
-              );
-            }}
-          />
-          <span>
-            Let people find me by searching <span className={styles.mono}>@{data.me.username}</span> and in suggestions
-          </span>
-        </label>
-        <p className={styles.hint}>
-          Your card updates on its own when you open your progress page.
-          {data.me.at ? ` Last updated ${ago(data.me.at, now)}.` : ""}
-        </p>
-        <div className={styles.row}>
-          <button
-            type="button"
-            className={styles.btn}
-            disabled={busy !== null || !mine}
-            onClick={() => mine && void act("card", () => publishNetworkCard(mine), "Your card is up to date.")}
-          >
-            Update my card now
-          </button>
-          <button
-            type="button"
-            className={styles.btnDanger}
-            disabled={busy !== null}
-            onClick={() => setPending({ kind: "leave", username: "", name: "" })}
-          >
-            Leave connections
-          </button>
-        </div>
-        {data.blocked.length > 0 && (
-          <details className={styles.blocked}>
-            <summary>Blocked people ({data.blocked.length})</summary>
-            <ul className={styles.plain}>
-              {data.blocked.map((b) => (
-                <li key={b.username} className={styles.plainRow}>
-                  <span>
-                    {b.name} <span className={styles.handle}>@{b.username}</span>
-                  </span>
-                  <button
-                    type="button"
-                    className={styles.btnQuiet}
-                    disabled={busy !== null}
-                    onClick={() =>
-                      void act(`unblock:${b.username}`, () => unblockPerson(b.username), `${b.name} is unblocked.`)
-                    }
-                  >
-                    Unblock
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </details>
-        )}
-      </section>
+              </details>
+            )}
+          </section>
+        </aside>
+      </div>
 
       {pending && (
         <ConfirmDialog
