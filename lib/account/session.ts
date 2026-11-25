@@ -26,6 +26,12 @@ export type Goal = "learn" | "interview" | "switch" | "upskill";
 export type Experience = "beginner" | "intermediate" | "advanced";
 export type TargetRole = "frontend" | "backend" | "fullstack" | "other";
 
+export interface EmailPrefs {
+  weekly: boolean;
+  plan: boolean;
+  news: boolean;
+}
+
 export interface Profile {
   displayName: string;
   goal: Goal | null;
@@ -33,6 +39,10 @@ export interface Profile {
   targetRole: TargetRole | null;
   plan: "free" | "pro";
   planExpiresAt: string | null;
+  username: string | null;
+  isPublic: boolean;
+  publicAt: string | null;
+  emails: EmailPrefs | null;
 }
 
 export interface AccountUser {
@@ -142,16 +152,32 @@ function toProfile(row: unknown, fallbackName: string): Profile {
     targetRole: pick<TargetRole>(r.target_role, ROLES),
     plan: r.plan === "pro" ? "pro" : "free",
     planExpiresAt: typeof r.plan_expires_at === "string" ? r.plan_expires_at : null,
+    username: typeof r.username === "string" && r.username ? r.username : null,
+    isPublic: r.is_public === true,
+    publicAt: typeof r.public_at === "string" ? r.public_at : null,
+    emails:
+      typeof r.email_weekly === "boolean"
+        ? { weekly: r.email_weekly, plan: r.email_plan === true, news: r.email_news === true }
+        : null,
   };
 }
 
+const PROFILE_COLUMNS = "display_name, goal, experience, target_role, plan, plan_expires_at";
+const PROFILE_PLUS_COLUMNS = `${PROFILE_COLUMNS}, username, is_public, public_at, email_weekly, email_plan, email_news`;
+
 async function loadProfile(db: SupabaseClient, user: AccountUser) {
-  const { data } = await db
-    .from("profiles")
-    .select("display_name, goal, experience, target_role, plan, plan_expires_at")
-    .eq("id", user.id)
-    .maybeSingle();
+  const plus = await db.from("profiles").select(PROFILE_PLUS_COLUMNS).eq("id", user.id).maybeSingle();
+  const { data } = plus.error
+    ? await db.from("profiles").select(PROFILE_COLUMNS).eq("id", user.id).maybeSingle()
+    : plus;
   if (state.user?.id === user.id) set({ profile: toProfile(data, user.name) });
+}
+
+export function reloadProfile(): Promise<void> {
+  return withClient(async (db) => {
+    if (state.user) await loadProfile(db, state.user);
+    return { ok: true, value: undefined };
+  }).then(() => undefined);
 }
 
 async function mfaState(db: SupabaseClient): Promise<MfaState> {

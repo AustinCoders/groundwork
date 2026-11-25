@@ -64,9 +64,22 @@ export default function PrivacyPage() {
           <p>
             While you are signed in, the browser copies your learning data to your account so it follows you: chapter
             progress and review marks, quiz and check results, interview confidence marks, mock interview history,
-            boards, saved whiteboard parts and code drafts. Settings that belong to one device, such as the theme, font,
-            text size and narrator, stay in the browser. Database rules let each account read and change only its own
-            rows.
+            boards, saved whiteboard parts, code drafts, and your interview plan (the date, daily goal, target companies
+            and how you rated your skills). Settings that belong to one device, such as the theme, font, text size and
+            narrator, stay in the browser. Database rules let each account read and change only its own rows.
+          </p>
+          <p>
+            A public profile is off unless you turn it on. When you do, your browser publishes a card to your account
+            with your name, headline, location, links, level, streak, topic progress, badges and a six-month calendar,
+            and anyone with your link can see it. It never includes your email, photo, resume, interview plan or
+            readiness score. Turning it off removes the card and the link stops working. The share buttons open LinkedIn
+            or X in a new tab with your link filled in; nothing is sent to them until you post.
+          </p>
+          <p>
+            To show you where your account is signed in, the site keeps a short log of sign-ins and account changes
+            (turning two-step on or off, changing your email or password, connecting Google or GitHub) with the time,
+            the IP address and the browser it came from. Only you can see it, from your account page, and each entry is
+            deleted after 90 days. Your email choices are stored with your account; all of them start off.
           </p>
           <p>
             On the <Link href="/account">account page</Link> you can download everything saved, erase it, sign out and

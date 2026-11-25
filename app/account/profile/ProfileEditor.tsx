@@ -22,6 +22,8 @@ import {
   type TargetRole,
 } from "@/lib/account/session";
 import { PhotoCropper } from "./PhotoCropper";
+import { PublicSection } from "./PublicSection";
+import type { TopicTrack } from "@/app/progress/progressModel";
 import styles from "./profile.module.css";
 
 interface Draft extends EditableExtras {
@@ -55,7 +57,7 @@ function Counter({ value, max }: { value: string; max: number }) {
   );
 }
 
-function Editor() {
+function Editor({ tracks }: { tracks: TopicTrack[] }) {
   const { user, profile, photo } = useAccount();
   const [picked, setPicked] = useState<File | null>(null);
   const [photoBusy, setPhotoBusy] = useState(false);
@@ -443,6 +445,7 @@ function Editor() {
               {problems.website && <span className={styles.error}>{problems.website}</span>}
             </label>
           </section>
+          <PublicSection tracks={tracks} />
 
           <div
             className={styles.bar}
@@ -476,15 +479,15 @@ function Editor() {
   );
 }
 
-export function ProfileEditor() {
+export function ProfileEditor({ tracks }: { tracks: TopicTrack[] }) {
   return (
     <SignInGate feature="account">
-      <EditorWhenLoaded />
+      <EditorWhenLoaded tracks={tracks} />
     </SignInGate>
   );
 }
 
-function EditorWhenLoaded() {
+function EditorWhenLoaded({ tracks }: { tracks: TopicTrack[] }) {
   const { profile } = useAccount();
-  return <Editor key={profile ? "loaded" : "empty"} />;
+  return <Editor key={profile ? "loaded" : "empty"} tracks={tracks} />;
 }

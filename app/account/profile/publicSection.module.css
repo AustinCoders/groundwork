@@ -1,0 +1,130 @@
+.soon {
+  margin: 0;
+  padding: 12px 14px;
+  font-size: var(--t-meta);
+  color: var(--ink);
+  background: var(--caution-soft);
+  border-radius: 12px;
+}
+
+.claim {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.prefix {
+  display: grid;
+  place-items: center;
+  padding: 0 10px;
+  font-family: var(--font-mono);
+  font-size: var(--t-meta);
+  color: var(--pencil);
+  background: var(--sheet-2);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+}
+
+.username {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+}
+
+.bad {
+  margin: -8px 0 0;
+  font-size: var(--t-meta);
+  color: var(--danger);
+}
+
+.state {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--sheet-2);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+}
+
+.state[data-on] {
+  background: var(--success-soft);
+  border-color: transparent;
+}
+
+.state > div:first-child {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.stateTitle {
+  margin: 0;
+  font-size: var(--t-body);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn,
+.btnPrimary,
+.btnDanger {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: var(--t-meta);
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+}
+
+.btnPrimary {
+  color: var(--on-primary);
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.btnDanger {
+  color: var(--danger);
+}
+
+.btn:disabled,
+.btnPrimary:disabled,
+.btnDanger:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn:focus-visible,
+.btnPrimary:focus-visible,
+.btnDanger:focus-visible,
+.link:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.share {
+  display: grid;
+  gap: 10px;
+}
+
+.link {
+  font-family: var(--font-mono);
+  font-size: var(--t-body);
+  font-weight: 700;
+  color: var(--primary);
+  overflow-wrap: anywhere;
+}

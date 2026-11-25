@@ -41,6 +41,7 @@ import { useProgressValue } from "@/lib/hooks";
 import { Completeness } from "@/components/account/Completeness";
 import type { CompanyChoice } from "@/lib/profile/companies";
 import { PlanPanel } from "./PlanPanel";
+import { EmailPanel, SecurityPanel } from "./SafetyPanels";
 import styles from "./account.module.css";
 
 const GOALS: { value: Goal; label: string }[] = [
@@ -623,6 +624,8 @@ const SECTIONS = [
   { id: "account-look", label: "Look and feel", icon: "✎" },
   { id: "account-sign-in", label: "Ways to sign in", icon: "⇄" },
   { id: "account-two-step", label: "Two-step sign-in", icon: "⛨" },
+  { id: "account-security", label: "Sign-in activity", icon: "⚿" },
+  { id: "account-emails", label: "Emails", icon: "✉" },
   { id: "account-sync", label: "Sync and data", icon: "↻" },
   { id: "account-session", label: "Sign out", icon: "⏻" },
   { id: "account-delete", label: "Delete account", icon: "✕" },
@@ -968,6 +971,22 @@ function Signed({ companies }: { companies: CompanyChoice[] }) {
             sub="A second check from an app on your phone. Optional."
           >
             <TwoStep />
+          </Panel>
+
+          <Panel
+            id="account-security"
+            title="Sign-in activity"
+            sub="Where your account is signed in right now, and the latest sign-ins and changes."
+          >
+            <SecurityPanel />
+          </Panel>
+
+          <Panel
+            id="account-emails"
+            title="Emails"
+            sub="Choose what Groundwork may email you about. All off unless you turn them on."
+          >
+            <EmailPanel />
           </Panel>
 
           <Panel

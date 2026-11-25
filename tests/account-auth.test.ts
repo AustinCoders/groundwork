@@ -13,6 +13,10 @@ const blank: Profile = {
   targetRole: null,
   plan: "free",
   planExpiresAt: null,
+  username: null,
+  isPublic: false,
+  publicAt: null,
+  emails: null,
 };
 
 describe("passwordStrength", () => {

@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SignInGate } from "@/components/account/SignInGate";
 import { PageFrame } from "@/components/frame/PageFrame";
 import { Confetti } from "@/components/practice/Confetti";
 import { Foot, FootLink, TopicPage } from "@/components/topic/TopicKit";
 import { continueCard } from "@/lib/continueCard";
+import { publishPublicCard } from "@/lib/account/publicProfile";
+import { useAccount } from "@/lib/account/session";
+import { cardIsStale, currentCard } from "@/lib/profile/cardNow";
 import { computeStats, earnedBadges, recentActivity, type Stats } from "@/lib/gamification";
 import { useClientValue, useProgressValue } from "@/lib/hooks";
 import { useConfidence } from "@/lib/interviewConfidence";
@@ -57,6 +60,17 @@ function useLevelUp(level: number): boolean {
   return celebrate;
 }
 
+function useFreshPublicCard(tracks: TopicTrack[], loaded: boolean): void {
+  const { user, profile } = useAccount();
+  const tried = useRef(false);
+  useEffect(() => {
+    if (tried.current || !loaded || !user || !profile?.isPublic) return;
+    if (!cardIsStale(profile.publicAt, Date.now())) return;
+    tried.current = true;
+    void publishPublicCard(currentCard(user, profile, tracks));
+  }, [loaded, user, profile, tracks]);
+}
+
 function useActivity(): DayCount[] {
   const key = useProgressValue(() => JSON.stringify(recentActivity(HEATMAP_DAYS)), "");
   return useMemo(() => (key ? JSON.parse(key) : []) as DayCount[], [key]);
@@ -88,6 +102,7 @@ export function ProgressView({
   const guides = useGuidesNav();
   const topics = useTopicsNav().filter((t) => !guides.some((g) => g.id === t.id));
   const loaded = statsKey !== "";
+  useFreshPublicCard(tracks, loaded);
 
   const earned = useMemo(() => new Set(earnedBadges(stats).map((b) => b.id)), [stats]);
   const wall = useMemo(() => badgeWall(earned), [earned]);

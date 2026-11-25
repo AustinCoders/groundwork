@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageFrame } from "@/components/frame/PageFrame";
 import { pageMetadata } from "@/lib/metadata";
+import { topicTracks } from "@/lib/profile/topicTracks";
 import { ProfileEditor } from "./ProfileEditor";
 
 export const metadata: Metadata = pageMetadata({
@@ -20,7 +21,7 @@ export default function ProfilePage() {
       back={{ href: "/account", label: "Account" }}
       skipLabel="Skip to your profile"
     >
-      <ProfileEditor />
+      <ProfileEditor tracks={topicTracks()} />
     </PageFrame>
   );
 }
