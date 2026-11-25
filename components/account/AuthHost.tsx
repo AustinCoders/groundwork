@@ -27,8 +27,8 @@ export function AuthHost() {
     return () => window.removeEventListener(OPEN_AUTH_EVENT, onOpen);
   }, []);
 
-  const { status, user, profile, mfa } = useAccount();
-  const askCode = status === "in" && mfa === "needed";
+  const { status, user, profile } = useAccount();
+  const askCode = status === "verify";
   const askWelcome =
     !open && !askCode && status === "in" && user !== null && needsOnboarding(profile) && !onboardingDone(user.id);
 

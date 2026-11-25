@@ -436,7 +436,7 @@ export function ResumeLab({ sample }: { sample: ResumeAnalysis }) {
   const [restoreError, setRestoreError] = useState<string | null>(null);
   const marksTimer = useRef(0);
   const nextUid = useRef(0);
-  const signedIn = account.status === "in" && account.mfa !== "needed";
+  const signedIn = account.status === "in";
 
   const refresh = useCallback(async () => {
     const result = await listResumes();

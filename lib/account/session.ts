@@ -20,7 +20,7 @@ import { extrasToMetadata, readExtras, type EditableExtras, type ProfileExtras }
 import { isSyncedKey } from "@/lib/account/syncRules";
 import { isPlainObject } from "@/lib/storage";
 
-export type AccountStatus = "off" | "loading" | "out" | "in";
+export type AccountStatus = "off" | "loading" | "out" | "in" | "verify";
 
 export type Goal = "learn" | "interview" | "switch" | "upskill";
 export type Experience = "beginner" | "intermediate" | "advanced";
@@ -226,12 +226,14 @@ async function handleSession(db: SupabaseClient, event: AuthChangeEvent | "INITI
   const user = toUser(session.user);
   const mfa = await mfaState(db);
   const changed = state.user?.id !== user.id;
-  set({ status: "in", user, mfa, profile: changed ? null : state.profile });
   if (mfa === "needed") {
+    set({ status: "verify", user: null, mfa, profile: null, photo: null });
     if (syncingFor) stopSync();
     syncingFor = null;
+    photoFor = null;
     return;
   }
+  set({ status: "in", user, mfa, profile: changed ? null : state.profile });
   if (photoFor !== user.extras.avatarPath) void loadPhoto(db, user);
   const fresh = syncingFor !== user.id;
   if (changed || fresh || event === "USER_UPDATED") void loadProfile(db, user);

@@ -100,7 +100,7 @@ export function CallbackView() {
 
   useEffect(() => {
     if (!params || params.error || recovery) return;
-    if (account.status === "in") router.replace(params.next);
+    if (account.status === "in" || account.status === "verify") router.replace(params.next);
   }, [account.status, params, recovery, router]);
 
   if (params?.error) {
@@ -122,7 +122,11 @@ export function CallbackView() {
   if (account.status === "in" && recovery && params)
     return <NewPassword next={params.next === "/" ? "/account" : params.next} />;
 
-  if (account.status !== "in" && (account.status === "out" || account.status === "off" || waited)) {
+  if (
+    account.status !== "in" &&
+    account.status !== "verify" &&
+    (account.status === "out" || account.status === "off" || waited)
+  ) {
     return (
       <section className={styles.status}>
         <h1>Almost there</h1>
