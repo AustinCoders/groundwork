@@ -1,3 +1,5 @@
+import { frozenDays } from "@/lib/profile/freeze";
+import { readPlan } from "@/lib/profile/planData";
 import { activity, dayKey, progress } from "@/lib/storage";
 
 export interface Stats {
@@ -30,17 +32,20 @@ export function computeStats(): Stats {
 
   const log = activity.all();
   const activeDays = Object.keys(log).length;
+  const now = Date.now();
+  const frozen = frozenDays(log, readPlan().freezes, now);
+  const on = (day: string) => Boolean(log[day]) || frozen.has(day);
 
   let streak = 0;
   const oneDay = 24 * 60 * 60 * 1000;
-  let cursor = Date.now();
-  if (!log[dayKey(cursor)]) cursor -= oneDay;
-  while (log[dayKey(cursor)]) {
+  let cursor = now;
+  if (!on(dayKey(cursor))) cursor -= oneDay;
+  while (on(dayKey(cursor))) {
     streak += 1;
     cursor -= oneDay;
   }
 
-  const days = Object.keys(log).sort();
+  const days = [...new Set([...Object.keys(log), ...frozen])].sort();
   let bestStreak = 0;
   let run = 0;
   let prevTime: number | null = null;

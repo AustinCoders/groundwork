@@ -1,0 +1,92 @@
+.box {
+  display: grid;
+  gap: 10px;
+  padding: 16px 18px;
+  background: var(--sheet);
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+}
+
+.box[data-complete] {
+  background: var(--success-soft);
+  border-color: transparent;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--t-body);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.count {
+  font-size: var(--t-meta);
+  font-variant-numeric: tabular-nums;
+  color: var(--pencil);
+}
+
+.track {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  background: var(--sheet-2);
+  border-radius: 999px;
+}
+
+.fill {
+  display: block;
+  width: var(--pct, 0%);
+  height: 100%;
+  background: var(--primary);
+  border-radius: inherit;
+  transition: width 0.5s ease;
+}
+
+.box[data-complete] .fill {
+  background: var(--success);
+}
+
+.next {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  align-items: center;
+  margin: 0;
+  font-size: var(--t-meta);
+  color: var(--ink-soft);
+}
+
+.chip {
+  padding: 4px 10px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+  background: var(--primary-soft);
+  border-radius: 999px;
+}
+
+.chip:hover {
+  text-decoration: underline;
+}
+
+.chip:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.more {
+  color: var(--pencil);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fill {
+    transition: none;
+  }
+}

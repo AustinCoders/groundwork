@@ -29,6 +29,8 @@ import { CompanyCard } from "./CompanyCard";
 import { RevealRoot } from "./RevealRoot";
 import { RoundGuide } from "./RoundGuide";
 import { ShaderHero } from "./ShaderHero";
+import { YourCompanies } from "./YourCompanies";
+import { companyChoices } from "@/lib/profile/companies";
 import { companyViews, exerciseOf } from "./data";
 import { Diagram } from "./Diagram";
 import { HeroArt } from "./HeroArt";
@@ -333,6 +335,7 @@ export default function Page() {
           sub="Each page lays out the rounds in order, what gets asked in each, and the questions to practise."
           count={`${views.length} companies`}
         >
+          <YourCompanies companies={companyChoices()} />
           {(["global", "india"] as const).map((group) => (
             <div className={styles.companyGroup} key={group} data-reveal="">
               <p className={styles.companyGroupLabel}>

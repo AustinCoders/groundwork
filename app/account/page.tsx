@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageFrame } from "@/components/frame/PageFrame";
 import { pageMetadata } from "@/lib/metadata";
+import { companyChoices } from "@/lib/profile/companies";
 import { AccountView } from "./AccountView";
 
 export const metadata: Metadata = pageMetadata({
@@ -13,7 +14,7 @@ export const metadata: Metadata = pageMetadata({
 export default function AccountPage() {
   return (
     <PageFrame title="Account" mark="◉" accent="blue" layout="reader" skipLabel="Skip to your account">
-      <AccountView />
+      <AccountView companies={companyChoices()} />
     </PageFrame>
   );
 }

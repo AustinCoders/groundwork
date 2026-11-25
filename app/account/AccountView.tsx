@@ -38,6 +38,9 @@ import {
 } from "@/lib/account/session";
 import { computeStats, recentActivity, type Stats } from "@/lib/gamification";
 import { useProgressValue } from "@/lib/hooks";
+import { Completeness } from "@/components/account/Completeness";
+import type { CompanyChoice } from "@/lib/profile/companies";
+import { PlanPanel } from "./PlanPanel";
 import styles from "./account.module.css";
 
 const GOALS: { value: Goal; label: string }[] = [
@@ -616,6 +619,7 @@ type Pending = "erase" | "delete" | "sign-out-clear" | "everywhere" | null;
 
 const SECTIONS = [
   { id: "account-profile", label: "Profile", icon: "◉" },
+  { id: "account-plan", label: "Interview plan", icon: "◎" },
   { id: "account-look", label: "Look and feel", icon: "✎" },
   { id: "account-sign-in", label: "Ways to sign in", icon: "⇄" },
   { id: "account-two-step", label: "Two-step sign-in", icon: "⛨" },
@@ -702,7 +706,7 @@ function Panel({
   );
 }
 
-function Signed() {
+function Signed({ companies }: { companies: CompanyChoice[] }) {
   const account = useAccount();
   const sync = useSyncStatus();
   const active = useActiveSection();
@@ -910,6 +914,7 @@ function Signed() {
 
         <div className={styles.sections}>
           <Panel id="account-profile" title="About you" sub="Used to suggest where to start. Optional.">
+            <Completeness compact />
             <Link href="/account/profile" className={styles.profileLink} prefetch={false}>
               <span aria-hidden="true">✎</span>
               <span>
@@ -923,6 +928,14 @@ function Signed() {
               profile={account.profile}
               fallbackName={user.name}
             />
+          </Panel>
+
+          <Panel
+            id="account-plan"
+            title="Interview plan"
+            sub="Your interview date, a daily goal, the companies you are aiming for and how sure you are of your skills."
+          >
+            <PlanPanel companies={companies} />
           </Panel>
 
           <Panel
@@ -1119,10 +1132,10 @@ function Signed() {
   );
 }
 
-export function AccountView() {
+export function AccountView({ companies }: { companies: CompanyChoice[] }) {
   return (
     <SignInGate feature="account">
-      <Signed />
+      <Signed companies={companies} />
     </SignInGate>
   );
 }

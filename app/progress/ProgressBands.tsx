@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Tape } from "@/components/home/Stage";
-import { Band, CardKicker, List, ProgressMeter, Row, Step, Steps, Wrap, topicKit } from "@/components/topic/TopicKit";
+import { Band, CardKicker, List, ProgressMeter, Row, Wrap, topicKit } from "@/components/topic/TopicKit";
 import { useScrollRegions } from "@/components/reader/scrollRegions";
 import { BADGES, type Badge, type Stats } from "@/lib/gamification";
 import { plural } from "@/lib/format";
@@ -15,7 +15,6 @@ import {
   weekTotal,
   type Confidence,
   type DayCount,
-  type NextStep,
   type TopicRow,
 } from "./progressModel";
 import kit from "@/app/mock/mockKit.module.css";
@@ -24,27 +23,6 @@ import styles from "./bands.module.css";
 function bodyClass(loaded: boolean, className?: string): string | undefined {
   if (loaded) return className;
   return className ? `${className} ${topicKit.pending}` : topicKit.pending;
-}
-
-export function NextBand({ no, loaded, steps }: { no: string; loaded: boolean; steps: NextStep[] }) {
-  return (
-    <Band
-      no={no}
-      id="next-h"
-      sectionId="next"
-      label="What to do next"
-      title="Pick up the next small thing"
-      sub="Worth a few minutes right now, from what you have read, what is due and what you marked shaky."
-    >
-      <div className={bodyClass(loaded)}>
-        <Steps label="Next steps" count={steps.length}>
-          {steps.map((step, k) => (
-            <Step key={step.key} no={k + 1} title={step.title} body={step.body} href={step.href} action={step.action} />
-          ))}
-        </Steps>
-      </div>
-    </Band>
-  );
 }
 
 function Heatmap({ days }: { days: DayCount[] }) {

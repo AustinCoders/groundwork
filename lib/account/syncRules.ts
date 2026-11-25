@@ -32,6 +32,7 @@ const EXACT: Record<string, MergeStrategy> = {
   "groundwork:whiteboard:parts": { kind: "list", time: null, order: "desc", cap: 40 },
   "groundwork:playground:project": LATEST,
   "groundwork:resume": LATEST,
+  "groundwork:plan": LATEST,
 };
 
 const PREFIXES: [string, MergeStrategy][] = [

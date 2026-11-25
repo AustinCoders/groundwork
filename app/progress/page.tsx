@@ -5,6 +5,8 @@ import { chapterMetas, topics } from "@/lib/content";
 import { GIT_PROGRESS_PREFIX } from "@/lib/gitSeries";
 import { bookRounds } from "@/lib/interviewBook";
 import { pageMetadata } from "@/lib/metadata";
+import { baseTracks } from "@/lib/profile/roleTracks";
+import { skillInfo } from "@/lib/profile/skillInfo";
 import { onShelf } from "@/lib/topicShelf";
 
 export const metadata: Metadata = pageMetadata({
@@ -44,5 +46,5 @@ export default function ProgressPage() {
     href: "/interview",
     ids: bookRounds().map((r) => r.id),
   });
-  return <ProgressView tracks={tracks} />;
+  return <ProgressView tracks={tracks} roles={baseTracks()} skills={skillInfo()} />;
 }

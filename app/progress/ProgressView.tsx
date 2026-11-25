@@ -13,16 +13,16 @@ import { plural } from "@/lib/format";
 import { progress } from "@/lib/storage";
 import { readResume, type Resume } from "@/lib/resume";
 import { useGuidesNav, useTopicsNav } from "@/lib/topicNav";
-import { ActivityBand, BadgesBand, InterviewBand, JokeNote, NextBand, TopicsBand } from "./ProgressBands";
+import { ActivityBand, BadgesBand, InterviewBand, JokeNote, TopicsBand } from "./ProgressBands";
+import { ReadinessBand, TodayBand, type SkillInfo } from "./PlanBands";
+import type { BaseTracks } from "@/lib/profile/roleTracks";
 import { ProgressHero, type HeroAction } from "./ProgressHero";
 import {
   badgeWall,
   confidenceCounts,
   DEFAULT_STATS,
   HEATMAP_DAYS,
-  keepGoingWith,
   nextBadge,
-  nextSteps,
   topicRows,
   type DayCount,
   type TopicTrack,
@@ -67,7 +67,15 @@ function useSavedResume(): Resume | null {
   return useMemo(() => (key ? (JSON.parse(key) as Resume | null) : null), [key]);
 }
 
-export function ProgressView({ tracks }: { tracks: TopicTrack[] }) {
+export function ProgressView({
+  tracks,
+  roles,
+  skills,
+}: {
+  tracks: TopicTrack[];
+  roles: BaseTracks;
+  skills: SkillInfo;
+}) {
   const statsKey = useProgressValue(() => JSON.stringify(computeStats()), "");
   const stats = useMemo(() => (statsKey ? (JSON.parse(statsKey) as Stats) : DEFAULT_STATS), [statsKey]);
   const doneKey = useProgressValue(() => Object.keys(progress.all().chapters).join(","), "");
@@ -88,7 +96,6 @@ export function ProgressView({ tracks }: { tracks: TopicTrack[] }) {
   const rows = useMemo(() => topicRows(tracks, done), [tracks, done]);
   const topicOnly = rows.filter((t) => t.id !== "interview");
   const book = rows.find((t) => t.id === "interview");
-  const steps = useMemo(() => nextSteps(dueCount, keepGoingWith(rows), counts), [dueCount, rows, counts]);
 
   const card = continueCard(resume, topics, guides);
   const primary: HeroAction | null = card
@@ -123,16 +130,17 @@ export function ProgressView({ tracks }: { tracks: TopicTrack[] }) {
             primary={primary}
             secondary={secondary}
           />
-          <NextBand no="01" loaded={loaded} steps={steps} />
-          <ActivityBand no="02" loaded={loaded} days={days} />
-          <TopicsBand no="03" loaded={loaded} rows={topicOnly} />
+          <ReadinessBand no="01" loaded={loaded} tracks={roles} skillInfo={skills} />
+          <TodayBand no="02" loaded={loaded} tracks={roles} />
+          <ActivityBand no="03" loaded={loaded} days={days} />
+          <TopicsBand no="04" loaded={loaded} rows={topicOnly} />
           <InterviewBand
-            no="04"
+            no="05"
             loaded={loaded}
             rounds={{ n: book?.n ?? 0, total: book?.ids.length ?? 0 }}
             counts={counts}
           />
-          <BadgesBand no="05" loaded={loaded} stats={stats} wall={wall} earned={earned} next={next} />
+          <BadgesBand no="06" loaded={loaded} stats={stats} wall={wall} earned={earned} next={next} />
           <JokeNote />
           <Foot>
             <FootLink href="/review">Review</FootLink>

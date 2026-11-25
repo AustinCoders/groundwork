@@ -5,6 +5,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { AvatarFace, initials } from "@/components/account/AccountChip";
 import { ART_NAMES, AvatarArt } from "@/components/account/AvatarArt";
 import { Choice } from "@/components/account/Choice";
+import { Completeness } from "@/components/account/Completeness";
 import { SignInGate } from "@/components/account/SignInGate";
 import { GOALS, LEVELS, ROLES } from "@/components/account/profileOptions";
 import { avatarStyle } from "@/lib/account/avatar";
@@ -228,6 +229,7 @@ function Editor() {
             void save();
           }}
         >
+          <Completeness />
           <section className={styles.card} aria-labelledby="profile-look">
             <h2 id="profile-look" className={styles.cardTitle}>
               Photo, character and colour
