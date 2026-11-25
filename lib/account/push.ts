@@ -2,9 +2,6 @@ import { isPlainObject } from "@/lib/storage";
 import { friendlyAuthError } from "./errors";
 import { connectAccount } from "./session";
 
-export const VAPID_PUBLIC_KEY =
-  "BHfgSxw9cbw-PCOkW3Wix-4y8ojkaty8bZ77YD1nN4yoOJ-E0D22ipapRte94FAJR4w-hfD-_c3ZwBrWmxFlxBU";
-
 export interface PushPrefs {
   mocks: boolean;
   goal: boolean;
@@ -40,6 +37,19 @@ function keyBytes(base64: string): Uint8Array<ArrayBuffer> {
   return out;
 }
 
+function sameKey(a: ArrayBuffer | null | undefined, b: Uint8Array<ArrayBuffer>): boolean {
+  if (!a || a.byteLength !== b.byteLength) return false;
+  const view = new Uint8Array(a);
+  return view.every((value, i) => value === b[i]);
+}
+
+async function publicKey(): Promise<string> {
+  const db = await connectAccount();
+  if (!db) return "";
+  const { data } = await db.rpc("push_public_key");
+  return typeof data === "string" ? data : "";
+}
+
 async function registration(): Promise<ServiceWorkerRegistration> {
   const existing = await navigator.serviceWorker.getRegistration("/");
   return existing ?? navigator.serviceWorker.register("/sw.js", { scope: "/" });
@@ -72,11 +82,17 @@ export async function turnOnPush(prefs: PushPrefs): Promise<{ ok: boolean; error
   if (permission !== "granted")
     return { ok: false, error: "Notifications are blocked for this site in your browser settings." };
   try {
+    const key = await publicKey();
+    if (!key) return { ok: false, error: "Notifications are not set up on the site yet. Try again later." };
+    const serverKey = keyBytes(key);
     const reg = await registration();
     await navigator.serviceWorker.ready;
-    const sub =
-      (await reg.pushManager.getSubscription()) ??
-      (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(VAPID_PUBLIC_KEY) }));
+    let sub = await reg.pushManager.getSubscription();
+    if (sub && !sameKey(sub.options.applicationServerKey, serverKey)) {
+      await sub.unsubscribe();
+      sub = null;
+    }
+    sub ??= await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: serverKey });
     return await savePush(sub, prefs);
   } catch {
     return { ok: false, error: "Could not turn on notifications on this device. Try again." };
