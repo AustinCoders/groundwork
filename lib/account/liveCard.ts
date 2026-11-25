@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useProgressValue } from "@/lib/hooks";
 import { currentCard } from "@/lib/profile/cardNow";
 import { activity, dayKey, solvedOn } from "@/lib/storage";
+import { shareMilestones } from "./feedMilestones";
 import { networkCardDue, publishNetworkCard } from "./network";
 import type { AccountUser, Profile } from "./session";
 
@@ -26,7 +27,9 @@ export function useLiveNetworkCard(user: AccountUser | null, profile: Profile | 
       void networkCardDue(now, MIN_GAP_MS).then((due) => {
         if (!due) return;
         lastSent = Date.now();
-        void publishNetworkCard(currentCard(user, profile, []));
+        void publishNetworkCard(currentCard(user, profile, [])).then((r) => {
+          if (r.ok) void shareMilestones();
+        });
       });
     }, WAIT_MS);
     return () => window.clearTimeout(timer);

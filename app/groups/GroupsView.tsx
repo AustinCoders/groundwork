@@ -22,6 +22,7 @@ import { currentCard } from "@/lib/profile/cardNow";
 import { useToday } from "@/lib/profile/useStudy";
 import { SITE_URL } from "@/lib/site";
 import people from "@/app/people/people.module.css";
+import { GroupGoal, GroupRace, GroupToday } from "./GroupExtras";
 import styles from "./groups.module.css";
 
 type Note = { ok: boolean; text: string } | null;
@@ -275,6 +276,8 @@ function Groups({ tracks }: { tracks: TopicTrack[] }) {
                       </div>
                     )}
 
+                    <GroupToday group={group} />
+                    <GroupGoal group={group} myWeek={meRow?.week ?? 0} today={today} busy={busy} act={act} />
                     <p className={people.sub}>This week</p>
                     <ol className={people.board}>
                       {board.map((row, i) => (
@@ -305,6 +308,8 @@ function Groups({ tracks }: { tracks: TopicTrack[] }) {
                         </li>
                       ))}
                     </ol>
+
+                    <GroupRace group={group} busy={busy} act={act} />
 
                     {link && (
                       <div className={styles.invite}>

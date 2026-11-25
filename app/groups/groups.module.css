@@ -129,3 +129,90 @@ li.ownerRow {
     grid-template-columns: 28px minmax(0, 1fr) auto 30px;
   }
 }
+
+.goal,
+.race {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--sheet-2);
+  border-radius: 14px;
+}
+
+.goalForm,
+.raceForm {
+  display: grid;
+  gap: 8px;
+}
+
+.goalBar {
+  display: flex;
+  height: 14px;
+  overflow: hidden;
+  background: var(--sheet);
+  border-radius: 999px;
+}
+
+.goalBar span {
+  height: 100%;
+  border-right: 2px solid var(--sheet);
+}
+
+.today {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+}
+
+.today p {
+  margin: 0;
+  font-size: var(--t-meta);
+  color: var(--ink);
+}
+
+.raceRow {
+  display: grid;
+  grid-template-columns: minmax(0, 120px) minmax(0, 1fr) 44px;
+  gap: 10px;
+  align-items: center;
+  font-size: var(--t-meta);
+  color: var(--ink);
+}
+
+.raceRow > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.raceRow strong {
+  font-family: var(--font-mono);
+  text-align: right;
+}
+
+.raceRow[data-lead] > span:first-child {
+  font-weight: 700;
+}
+
+.raceBar {
+  height: 12px;
+  overflow: hidden;
+  background: var(--sheet);
+  border-radius: 999px;
+}
+
+.raceBar span {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+  border-radius: inherit;
+}
+
+.raceBar[data-them] span {
+  background: var(--caution);
+}
+
+.raceInput {
+  display: flex;
+  gap: 8px;
+}

@@ -36,6 +36,8 @@ export interface NetworkFace {
   goal: number | null;
   challenge: CardChallenge | null;
   daily: CardDaily | null;
+  mentor: boolean;
+  mentorNote: string;
 }
 
 function readChallenge(value: unknown): CardChallenge | null {
@@ -111,6 +113,8 @@ export function readFace(value: unknown): NetworkFace | null {
     goal: value.goal === 1 || value.goal === 3 || value.goal === 5 || value.goal === 8 ? value.goal : null,
     challenge: readChallenge(value.challenge),
     daily: readDaily(value.daily),
+    mentor: value.mentor === true,
+    mentorNote: value.mentor === true ? text(value.mentorNote, 120) : "",
   };
 }
 

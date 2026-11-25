@@ -66,6 +66,9 @@ export const NOTE_KINDS = [
   "mock_declined",
   "mock_cancelled",
   "mock_scored",
+  "race_invite",
+  "race_accepted",
+  "invite_joined",
 ] as const;
 
 export type NoteKind = (typeof NOTE_KINDS)[number];
@@ -133,6 +136,9 @@ const NOTE_TEXT: Record<NoteKind, string> = {
   mock_declined: "can't make the mock interview",
   mock_cancelled: "cancelled a mock interview",
   mock_scored: "sent your mock interview feedback",
+  race_invite: "challenged your group to a race this week",
+  race_accepted: "accepted your group race",
+  invite_joined: "joined with your invite link",
 };
 
 export function noteText(note: Note): string {
@@ -141,7 +147,8 @@ export function noteText(note: Note): string {
 
 export function noteHref(note: Note): string {
   if (note.kind.startsWith("mock_") && note.ref) return `/mock/peer/${note.ref}`;
-  if (note.kind.startsWith("group_")) return note.ref ? `/groups#group-${note.ref}` : "/groups";
+  if (note.kind.startsWith("group_") || note.kind.startsWith("race_"))
+    return note.ref ? `/groups#group-${note.ref}` : "/groups";
   if (note.kind.startsWith("buddy_")) return "/people#people-buddy";
   return "/people";
 }
@@ -185,6 +192,7 @@ export interface StudyGroup {
   role: "owner" | "member" | "pending";
   code: string | null;
   count: number;
+  goal: number;
   members: GroupMember[];
   pending: NetworkFace[];
 }
@@ -210,6 +218,7 @@ export function readGroups(value: unknown): StudyGroup[] {
         role,
         code: typeof g.code === "string" && /^[a-z0-9]{10}$/.test(g.code) ? g.code : null,
         count: typeof g.count === "number" ? Math.max(0, Math.min(20, Math.floor(g.count))) : members.length,
+        goal: typeof g.goal === "number" && g.goal > 0 ? Math.min(5000, Math.floor(g.goal)) : 0,
         members,
         pending: faces(g.pending).slice(0, 50),
       };
@@ -406,3 +415,183 @@ export const scorePeer = (id: string, score: PeerScore) =>
     },
     status
   );
+
+export function readRaceSide(value: unknown): {
+  id: string | null;
+  name: string;
+  members: { name: string; me: boolean; heat: number[]; heatEnd: string }[];
+} {
+  const v = isPlainObject(value) ? value : {};
+  const members = (Array.isArray(v.members) ? v.members : []).filter(isPlainObject).map((m) => ({
+    name: text(m.name, 60),
+    me: m.me === true,
+    heat: Array.isArray(m.heat)
+      ? m.heat.slice(-28).map((n) => (typeof n === "number" && n >= 0 ? Math.min(99, Math.floor(n)) : 0))
+      : [],
+    heatEnd: typeof m.heatEnd === "string" && /^\d{4}-\d{2}-\d{2}$/.test(m.heatEnd) ? m.heatEnd : "",
+  }));
+  return {
+    id: typeof v.id === "string" && UUID.test(v.id) ? v.id : null,
+    name: text(v.name, 60) || "Another group",
+    members: members.slice(0, 20),
+  };
+}
+
+export interface Race {
+  id: string;
+  week: string;
+  status: "pending" | "accepted";
+  incoming: boolean;
+  us: ReturnType<typeof readRaceSide>;
+  them: ReturnType<typeof readRaceSide>;
+}
+
+export function readRaces(value: unknown): Race[] {
+  return (Array.isArray(value) ? value : [])
+    .filter(isPlainObject)
+    .map((r): Race | null => {
+      if (typeof r.id !== "string" || !UUID.test(r.id)) return null;
+      if (typeof r.week !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(r.week)) return null;
+      const status = r.status === "accepted" ? "accepted" : r.status === "pending" ? "pending" : null;
+      if (!status) return null;
+      return {
+        id: r.id,
+        week: r.week,
+        status,
+        incoming: r.incoming === true,
+        us: readRaceSide(r.us),
+        them: readRaceSide(r.them),
+      };
+    })
+    .filter((r): r is Race => r !== null)
+    .slice(0, 4);
+}
+
+export const loadRaces = (groupId: string) => call("race_board", { group_id: groupId }, readRaces);
+export const inviteRace = (groupId: string, code: string) => call("race_invite", { group_id: groupId, code }, status);
+export const answerRace = (raceId: string, accept: boolean) => call("race_answer", { race_id: raceId, accept }, status);
+export const setGroupGoal = (groupId: string, goal: number) =>
+  call("group_set_goal", { group_id: groupId, goal }, status);
+
+export const FEED_KINDS = [
+  { id: "topic", label: "When I finish a topic" },
+  { id: "streak", label: "Streak milestones (7, 30, 100 days…)" },
+  { id: "level", label: "When I level up" },
+  { id: "challenge", label: "When I finish the weekly challenge" },
+  { id: "badge", label: "When I earn a badge" },
+] as const;
+
+export type FeedKind = (typeof FEED_KINDS)[number]["id"];
+
+export interface FeedItem {
+  id: number;
+  kind: FeedKind;
+  text: string;
+  at: string;
+  me: boolean;
+  who: NoteActor;
+}
+
+function feedText(kind: FeedKind, data: Record<string, unknown>): string | null {
+  if (kind === "topic") {
+    const topic = text(data.topic, 60);
+    return topic ? `finished the ${topic} topic` : null;
+  }
+  if (kind === "streak") {
+    const days = typeof data.days === "number" ? Math.floor(data.days) : 0;
+    return days >= 7 && days <= 5000 ? `hit a ${days}-day streak` : null;
+  }
+  if (kind === "level") {
+    const level = typeof data.level === "number" ? Math.floor(data.level) : 0;
+    return level >= 2 && level <= 999 ? `reached level ${level}` : null;
+  }
+  if (kind === "challenge") {
+    const title = text(data.title, 60);
+    return title ? `finished this week's challenge: ${title}` : null;
+  }
+  const badge = text(data.badge, 60);
+  return badge ? `earned the ${badge} badge` : null;
+}
+
+export function readFeed(value: unknown): FeedItem[] {
+  return (Array.isArray(value) ? value : [])
+    .filter(isPlainObject)
+    .map((f): FeedItem | null => {
+      const kind = FEED_KINDS.find((k) => k.id === f.kind)?.id;
+      const at = when(f.at);
+      const who = readActor(f.who);
+      if (!kind || !at || !who || typeof f.id !== "number" || !isPlainObject(f.data)) return null;
+      const line = feedText(kind, f.data);
+      return line ? { id: f.id, kind, text: line, at, me: f.me === true, who } : null;
+    })
+    .filter((f): f is FeedItem => f !== null)
+    .slice(0, 50);
+}
+
+export const loadFeed = () => call("network_feed", undefined, readFeed);
+export const postFeed = (kind: FeedKind, data: Record<string, string | number>) =>
+  call("feed_post", { kind, data }, status);
+export const loadMentors = () =>
+  call("network_mentors", undefined, (d) =>
+    Array.isArray(d) ? d.map(readFace).filter((f): f is NetworkFace => f !== null) : []
+  );
+
+export const INVITE_CODE = /^[a-z0-9]{10}$/;
+export const INVITE_KEY = "groundwork:invite-code";
+
+export const loadInviteCode = (fresh: boolean) =>
+  call("network_invite_code", { fresh }, (d) =>
+    isPlainObject(d) && typeof d.code === "string" && INVITE_CODE.test(d.code) ? d.code : null
+  );
+export const redeemInvite = (code: string) =>
+  call("network_redeem", { code }, (d) => ({
+    status: status(d),
+    name: isPlainObject(d) && typeof d.name === "string" && NAME.test(d.name) ? d.name : null,
+  }));
+export const previewInvite = (code: string) =>
+  call("invite_preview", { code }, (d) => {
+    const v = isPlainObject(d) ? d : {};
+    const name = text(v.name, 60);
+    return name
+      ? {
+          name,
+          color: AVATAR_COLORS.find((c) => c === v.color) ?? ("blue" as const),
+          art: isAvatarArt(v.art) ? v.art : "",
+          level: typeof v.level === "number" ? Math.max(1, Math.floor(v.level)) : 1,
+        }
+      : null;
+  });
+
+export async function updateSocialPrefs(row: {
+  feed_off?: string[];
+  mentor?: boolean;
+  mentor_note?: string;
+}): Promise<NetResult<null>> {
+  const db = await connectAccount();
+  if (!db) return { ok: false, error: "Accounts are not available right now." };
+  const { data: auth } = await db.auth.getUser();
+  const id = auth.user?.id;
+  if (!id) return { ok: false, error: "Sign in first." };
+  const { error } = await db.from("profiles").update(row).eq("id", id);
+  return error ? { ok: false, ...problem(error) } : { ok: true, value: null };
+}
+
+export async function loadSocialPrefs(): Promise<
+  NetResult<{ feedOff: FeedKind[]; mentor: boolean; mentorNote: string } | null>
+> {
+  const db = await connectAccount();
+  if (!db) return { ok: false, error: "Accounts are not available right now." };
+  const { data: auth } = await db.auth.getUser();
+  const id = auth.user?.id;
+  if (!id) return { ok: false, error: "Sign in first." };
+  const { data, error } = await db.from("profiles").select("feed_off, mentor, mentor_note").eq("id", id).maybeSingle();
+  if (error) {
+    if (error.code === "42703") return { ok: true, value: null };
+    return { ok: false, ...problem(error) };
+  }
+  const v: Record<string, unknown> = isPlainObject(data) ? data : {};
+  const off = Array.isArray(v.feed_off)
+    ? v.feed_off.filter((k: unknown): k is FeedKind => FEED_KINDS.some((f) => f.id === k))
+    : [];
+  return { ok: true, value: { feedOff: off, mentor: v.mentor === true, mentorNote: text(v.mentor_note, 120) } };
+}

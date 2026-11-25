@@ -45,6 +45,8 @@ const reportingOrigin = sentryOrigin() || "";
 
 const accountsOrigin = accountOrigin();
 
+const realtimeOrigin = accountsOrigin.replace(/^https:/, "wss:");
+
 const captchaOrigin = captchaSiteKey() ? CAPTCHA_ORIGIN : "";
 
 const csp = [
@@ -56,7 +58,7 @@ const csp = [
   "font-src 'self' https://fonts.gstatic.com data:",
   `img-src 'self' data: blob: ${accountsOrigin}`.trim(),
   "media-src 'self' blob:",
-  `connect-src 'self' ${runtimeOrigins} ${reportingOrigin} ${accountsOrigin} ${captchaOrigin}`
+  `connect-src 'self' ${runtimeOrigins} ${reportingOrigin} ${accountsOrigin} ${realtimeOrigin} ${captchaOrigin}`
     .trim()
     .replace(/\s+/g, " "),
   `frame-src 'self' blob: ${captchaOrigin}`.trim(),

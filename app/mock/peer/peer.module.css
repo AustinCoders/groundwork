@@ -349,3 +349,60 @@
   color: var(--ink);
   white-space: pre-wrap;
 }
+
+.trend {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trend li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px auto;
+  gap: 10px;
+  align-items: center;
+  font-size: var(--t-meta);
+  color: var(--ink);
+}
+
+.trendLabel {
+  min-width: 0;
+}
+
+.spark {
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  height: 22px;
+}
+
+.spark span {
+  flex: 1;
+  min-height: 3px;
+  background: var(--primary);
+  border-radius: 2px;
+  opacity: 0.85;
+}
+
+.spark span:last-child {
+  opacity: 1;
+}
+
+.trendValue {
+  display: inline-flex;
+  gap: 6px;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.change {
+  font-size: 0.72rem;
+  color: var(--danger);
+}
+
+.change[data-up] {
+  color: var(--success);
+}

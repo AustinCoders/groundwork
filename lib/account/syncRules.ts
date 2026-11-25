@@ -36,6 +36,7 @@ const EXACT: Record<string, MergeStrategy> = {
   "groundwork:solved-on": { kind: "record" },
   "groundwork:challenges": { kind: "record" },
   "groundwork:cards": { kind: "record" },
+  "groundwork:feed-posted": { kind: "record" },
 };
 
 const PREFIXES: [string, MergeStrategy][] = [

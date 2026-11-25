@@ -1101,3 +1101,13 @@ okhttp
 abcdefghjkmnpqrstuvwxyz
 rowtype
 Jitsi
+VCALENDAR
+PRODID
+CALSCALE
+VEVENT
+DTSTAMP
+DTSTART
+DTEND
+VALARM
+webpush
+pubname

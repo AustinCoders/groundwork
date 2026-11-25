@@ -43,6 +43,7 @@ import type { CompanyChoice } from "@/lib/profile/companies";
 import { BACKUP_USED_KEY } from "@/lib/account/backupCodes";
 import { BackupCodes } from "./BackupCodes";
 import { PlanPanel } from "./PlanPanel";
+import { PushPanel } from "./PushPanel";
 import { EmailPanel, SecurityPanel } from "./SafetyPanels";
 import styles from "./account.module.css";
 
@@ -652,6 +653,7 @@ const SECTIONS = [
   { id: "account-two-step", label: "Two-step sign-in", icon: "⛨" },
   { id: "account-security", label: "Sign-in activity", icon: "⚿" },
   { id: "account-emails", label: "Emails", icon: "✉" },
+  { id: "account-notifications", label: "Notifications", icon: "🔔" },
   { id: "account-sync", label: "Sync and data", icon: "↻" },
   { id: "account-session", label: "Sign out", icon: "⏻" },
   { id: "account-delete", label: "Delete account", icon: "✕" },
@@ -1013,6 +1015,14 @@ function Signed({ companies }: { companies: CompanyChoice[] }) {
             sub="Choose what Groundwork may email you about. All off unless you turn them on."
           >
             <EmailPanel />
+          </Panel>
+
+          <Panel
+            id="account-notifications"
+            title="Notifications"
+            sub="Reminders and news on this phone or computer, even when Groundwork is closed."
+          >
+            <PushPanel />
           </Panel>
 
           <Panel

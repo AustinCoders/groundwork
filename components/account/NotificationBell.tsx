@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { avatarStyle } from "@/lib/account/avatar";
 import { useLiveNetworkCard } from "@/lib/account/liveCard";
-import { useAccount } from "@/lib/account/session";
+import { connectAccount, useAccount } from "@/lib/account/session";
 import { loadNotes, noteHref, noteText, readAllNotes, type NoteList } from "@/lib/account/social";
 import { useClientValue } from "@/lib/hooks";
 import { AvatarArt } from "./AvatarArt";
@@ -92,7 +92,28 @@ export function NotificationBell() {
     };
     const timer = window.setInterval(tick, POLL_MS);
     window.addEventListener("focus", tick);
+    let gone = false;
+    let stop: (() => void) | null = null;
+    void connectAccount().then((db) => {
+      if (!db || gone) return;
+      const channel = db
+        .channel(`notes:${userId}`)
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
+          () => void refresh(userId)
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
+          () => void refresh(userId)
+        )
+        .subscribe();
+      stop = () => void db.removeChannel(channel);
+    });
     return () => {
+      gone = true;
+      stop?.();
       window.clearInterval(timer);
       window.removeEventListener("focus", tick);
     };

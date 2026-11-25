@@ -6,6 +6,7 @@ import { PageFrame } from "@/components/frame/PageFrame";
 import { Confetti } from "@/components/practice/Confetti";
 import { Foot, FootLink, TopicPage } from "@/components/topic/TopicKit";
 import { continueCard } from "@/lib/continueCard";
+import { shareMilestones } from "@/lib/account/feedMilestones";
 import { networkCardDue, publishNetworkCard } from "@/lib/account/network";
 import { publishPublicCard } from "@/lib/account/publicProfile";
 import { useAccount } from "@/lib/account/session";
@@ -80,6 +81,8 @@ function useFreshNetworkCard(tracks: TopicTrack[], loaded: boolean): void {
     tried.current = true;
     void networkCardDue(Date.now(), REPUBLISH_AFTER_MS).then((due) => {
       if (due) void publishNetworkCard(currentCard(user, profile, tracks));
+      const card = currentCard(user, profile, tracks);
+      if (due) void shareMilestones(card.topics.map((t) => ({ id: t.id, name: t.name, pct: t.pct })));
     });
   }, [loaded, user, profile, tracks]);
 }

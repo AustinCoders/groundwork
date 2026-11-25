@@ -36,8 +36,9 @@ import { useClientValue } from "@/lib/hooks";
 import { currentCard } from "@/lib/profile/cardNow";
 import { ROLE_TITLE } from "@/lib/profile/roles";
 import type { RoleId } from "@/lib/profile/roleTracks";
-import { dayKey } from "@/lib/storage";
-import { loadBuddy, type BuddyView } from "@/lib/account/social";
+import { dayKey, store } from "@/lib/storage";
+import { INVITE_CODE, INVITE_KEY, loadBuddy, redeemInvite, type BuddyView } from "@/lib/account/social";
+import { FeedPanel, MentorsPanel, MoreSettings } from "./SocialPanels";
 import { BuddyPanel, ChallengePanel, DailyPanel } from "./StudyPanels";
 import styles from "./people.module.css";
 
@@ -120,6 +121,7 @@ function Who({ face, today }: { face: NetworkFace; today: string }) {
     <div className={styles.who}>
       <p className={styles.name}>
         {face.name} <span className={styles.handle}>@{face.username}</span>
+        {face.mentor && <span className={styles.mentorTag}>Mentor</span>}
       </p>
       {(face.headline || face.role) && (
         <p className={styles.headline}>{face.headline || ROLE_TITLE[face.role as RoleId]}</p>
@@ -267,6 +269,16 @@ function People({ tracks }: { tracks: TopicTrack[] }) {
   async function join() {
     if (!user || !mine) return;
     await act("join", () => joinNetwork(mine, findable), "You're in. Find a friend by their username below.");
+    const saved = store.get<unknown>(INVITE_KEY, null);
+    const code = saved && typeof saved === "object" && "code" in saved ? String((saved as { code: unknown }).code) : "";
+    if (INVITE_CODE.test(code)) {
+      const result = await redeemInvite(code);
+      store.remove(INVITE_KEY);
+      if (result.ok && result.value.status === "connected") {
+        setNote({ ok: true, text: "You're in, and connected with the friend who invited you." });
+        await reload();
+      }
+    }
   }
 
   async function confirmPending() {
@@ -517,6 +529,8 @@ function People({ tracks }: { tracks: TopicTrack[] }) {
             )}
           </section>
 
+          <FeedPanel now={now} reloadKey={searchTick} />
+
           <section className={styles.card} aria-labelledby="people-list">
             <h2 id="people-list" className={styles.title}>
               Your connections <span className={styles.count}>{data.connections.length}</span>
@@ -589,6 +603,8 @@ function People({ tracks }: { tracks: TopicTrack[] }) {
               </ul>
             )}
           </section>
+
+          <MentorsPanel busy={busy !== null} act={act} />
 
           <section className={styles.card} aria-labelledby="people-find">
             <h2 id="people-find" className={styles.title}>
@@ -840,6 +856,7 @@ function People({ tracks }: { tracks: TopicTrack[] }) {
               </details>
             )}
           </section>
+          <MoreSettings busy={busy !== null} act={act} />
         </aside>
       </div>
 

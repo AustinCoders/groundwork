@@ -17,6 +17,9 @@ import {
   type PeerTopic,
 } from "@/lib/account/social";
 import { useClientValue } from "@/lib/hooks";
+import { downloadIcs, nextWeekAt } from "@/lib/peerCalendar";
+import { SITE_URL } from "@/lib/site";
+import { PeerHistory } from "./PeerHistory";
 import people from "@/app/people/people.module.css";
 import styles from "./peer.module.css";
 
@@ -35,6 +38,18 @@ const STATUS: Record<string, { ok: boolean; text: string }> = {
   limit: { ok: false, text: "That is a lot of invites for one day. Try tomorrow." },
   not_found: { ok: false, text: "That mock is not there any more." },
 };
+
+export function calendarFor(m: PeerMock) {
+  return {
+    id: m.id,
+    at: m.at,
+    minutes: m.minutes,
+    title: `Mock interview: ${TOPIC_LABEL[m.topic]} with ${m.other?.name ?? "a friend"}`,
+    link: m.link,
+    note: m.note,
+    pageUrl: `${SITE_URL}/mock/peer/${m.id}`,
+  };
+}
 
 export const TOPIC_LABEL = Object.fromEntries(PEER_TOPICS.map((t) => [t.id, t.label])) as Record<PeerTopic, string>;
 
@@ -201,9 +216,14 @@ function Peers() {
                       {m.status === "invited" ? (
                         <span className={people.tag}>Waiting for them</span>
                       ) : (
-                        <Link href={`/mock/peer/${m.id}`} className={people.btnPrimary}>
-                          Open
-                        </Link>
+                        <>
+                          <Link href={`/mock/peer/${m.id}`} className={people.btnPrimary}>
+                            Open
+                          </Link>
+                          <button type="button" className={people.btn} onClick={() => downloadIcs(calendarFor(m))}>
+                            Add to calendar
+                          </button>
+                        </>
                       )}
                       <button
                         type="button"
@@ -229,15 +249,25 @@ function Peers() {
                 {past.map((m) => (
                   <li key={m.id} className={styles.mock}>
                     <MockLine mock={m} />
-                    <Link href={`/mock/peer/${m.id}`} className={people.btn}>
-                      {m.interviewer
-                        ? m.scored
-                          ? "See your scorecard"
-                          : "Fill in the scorecard"
-                        : m.scored
-                          ? "Read your feedback"
-                          : "Waiting for feedback"}
-                    </Link>
+                    <div className={people.row}>
+                      <Link href={`/mock/peer/${m.id}`} className={people.btn}>
+                        {m.interviewer
+                          ? m.scored
+                            ? "See your scorecard"
+                            : "Fill in the scorecard"
+                          : m.scored
+                            ? "Read your feedback"
+                            : "Waiting for feedback"}
+                      </Link>
+                      {m.other && (
+                        <Link
+                          className={people.btnQuiet}
+                          href={`/mock/peer?with=${m.other.username}&topic=${m.topic}&role=${m.interviewer ? "ask" : "answer"}&at=${encodeURIComponent(nextWeekAt(m.at, now))}&minutes=${m.minutes}`}
+                        >
+                          Same time next week
+                        </Link>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -245,6 +275,7 @@ function Peers() {
           )}
         </div>
         <aside className={people.side}>
+          <PeerHistory mocks={mocks} />
           {member ? (
             <InviteForm
               connections={connections}
@@ -295,15 +326,19 @@ function MockLine({ mock }: { mock: PeerMock }) {
   );
 }
 
-function startFromUrl(): { name: string; topic: PeerTopic; ask: boolean } {
-  if (typeof window === "undefined") return { name: "", topic: "javascript", ask: false };
+function startFromUrl(): { name: string; topic: PeerTopic; ask: boolean; at: string; minutes: number } {
+  if (typeof window === "undefined") return { name: "", topic: "javascript", ask: false, at: "", minutes: 45 };
   const params = new URLSearchParams(window.location.search);
   const withName = params.get("with") ?? "";
   const withTopic = PEER_TOPICS.find((t) => t.id === params.get("topic"))?.id ?? "javascript";
+  const at = Date.parse(params.get("at") ?? "");
+  const minutes = Number(params.get("minutes"));
   return {
     name: /^[a-z0-9-]{3,30}$/.test(withName) ? withName : "",
     topic: withTopic,
     ask: params.get("role") === "ask",
+    at: Number.isFinite(at) && at > Date.now() ? localInput(at) : "",
+    minutes: minutes === 30 || minutes === 60 ? minutes : 45,
   };
 }
 
@@ -330,8 +365,8 @@ function InviteForm({
 }) {
   const [start] = useState(startFromUrl);
   const [name, setName] = useState(start.name);
-  const [at, setAt] = useState("");
-  const [minutes, setMinutes] = useState(45);
+  const [at, setAt] = useState(start.at);
+  const [minutes, setMinutes] = useState(start.minutes);
   const [topic, setTopic] = useState<PeerTopic>(start.topic);
   const [interviewThem, setInterviewThem] = useState(start.ask);
   const [link, setLink] = useState("");

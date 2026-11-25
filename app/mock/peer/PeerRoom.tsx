@@ -19,7 +19,8 @@ import {
 import { useClientValue } from "@/lib/hooks";
 import { isPlainObject } from "@/lib/storage";
 import people from "@/app/people/people.module.css";
-import { TOPIC_LABEL, whenText } from "./PeerView";
+import { downloadIcs } from "@/lib/peerCalendar";
+import { calendarFor, TOPIC_LABEL, whenText } from "./PeerView";
 import styles from "./peer.module.css";
 
 interface Question {
@@ -170,14 +171,19 @@ function Room({ id }: { id: string }) {
         ) : (
           mock.link &&
           !time.over && (
-            <a
-              className={`${people.btnPrimary} ${people.btnLarge}`}
-              href={mock.link}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Join the call ↗
-            </a>
+            <div className={people.row}>
+              <a
+                className={`${people.btnPrimary} ${people.btnLarge}`}
+                href={mock.link}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Join the call ↗
+              </a>
+              <button type="button" className={people.btn} onClick={() => downloadIcs(calendarFor(mock))}>
+                Add to calendar
+              </button>
+            </div>
           )
         )}
         {error && (

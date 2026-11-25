@@ -1073,3 +1073,51 @@
     transition: none;
   }
 }
+
+.feedFace {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  overflow: hidden;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--on-primary);
+  background: var(--avatar, var(--primary));
+  border-radius: 10px;
+}
+
+.mentorTag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--success);
+  vertical-align: middle;
+  background: var(--success-soft);
+  border-radius: 999px;
+}
+
+.inviteLink {
+  padding: 10px 12px;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono);
+  font-size: var(--t-meta);
+  color: var(--ink);
+  background: var(--sheet-2);
+  border-radius: 10px;
+}
+
+.switches {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mentorForm {
+  display: grid;
+  gap: 8px;
+}
