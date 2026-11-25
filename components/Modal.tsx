@@ -163,3 +163,78 @@ export function NameDialog({
     </Shell>
   );
 }
+
+export interface ReportChoice {
+  id: string;
+  label: string;
+}
+
+export function ReportDialog({
+  title,
+  reasons,
+  onSubmit,
+  onClose,
+}: {
+  title: string;
+  reasons: readonly ReportChoice[];
+  onSubmit: (reason: string, note: string) => void;
+  onClose: () => void;
+}) {
+  const noteId = useId();
+  const [reason, setReason] = useState("");
+  const [note, setNote] = useState("");
+  return (
+    <Shell onClose={onClose}>
+      {(titleId) => (
+        <form
+          method="dialog"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!reason) return;
+            onSubmit(reason, note.trim().slice(0, 500));
+            onClose();
+          }}
+        >
+          <h2 id={titleId} className={styles.title}>
+            {title}
+          </h2>
+          <fieldset className={styles.choices}>
+            <legend className={styles.label}>What is wrong?</legend>
+            {reasons.map((r) => (
+              <label key={r.id} className={styles.choice}>
+                <input
+                  type="radio"
+                  name="report-reason"
+                  value={r.id}
+                  checked={reason === r.id}
+                  onChange={() => setReason(r.id)}
+                />
+                {r.label}
+              </label>
+            ))}
+          </fieldset>
+          <label htmlFor={noteId} className={styles.label}>
+            Anything else? (optional)
+          </label>
+          <textarea
+            id={noteId}
+            className={`${styles.input} ${styles.area}`}
+            value={note}
+            maxLength={500}
+            rows={3}
+            onChange={(e) => setNote(e.target.value)}
+          />
+          <p className={styles.hint}>We read every report. They never see who sent it.</p>
+          <div className={styles.actions}>
+            <button type="button" className={styles.btn} onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className={`${styles.btn} ${styles.danger}`} disabled={!reason}>
+              Send report
+            </button>
+          </div>
+        </form>
+      )}
+    </Shell>
+  );
+}

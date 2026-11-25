@@ -240,6 +240,12 @@ export function AccountMenu({ compact }: { compact?: boolean }) {
               </span>
               <span className={styles.itemText}>Resume lab</span>
             </Link>
+            <Link href="/people" role="menuitem" className={styles.item} prefetch={false} onClick={() => close(false)}>
+              <span className={styles.icon} aria-hidden="true">
+                ⚇
+              </span>
+              <span className={styles.itemText}>People</span>
+            </Link>
             <button
               type="button"
               role="menuitem"

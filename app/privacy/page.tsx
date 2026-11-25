@@ -76,6 +76,15 @@ export default function PrivacyPage() {
             or X in a new tab with your link filled in; nothing is sent to them until you post.
           </p>
           <p>
+            Connections are off unless you join. When you do, your browser keeps a smaller card on your account with
+            your name, username, headline, role, avatar, level, XP, streak, chapter and exercise counts and the last
+            four weeks of activity. Only signed-in members can see it, and only through search, suggestions or a
+            request; turn off search and suggestions and only people you are connected with see it (someone who already
+            knows your exact username can still send you a request). Requests, connections, blocks, cheers and reports
+            are stored with both accounts. Reports are read by us and never shown to the person reported. Cheers older
+            than 60 days are deleted. There are no messages. Leaving removes the card at once.
+          </p>
+          <p>
             To show you where your account is signed in, the site keeps a short log of sign-ins and account changes
             (turning two-step on or off, changing your email or password, connecting Google or GitHub) with the time,
             the IP address and the browser it came from. Only you can see it, from your account page, and each entry is

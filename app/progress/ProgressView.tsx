@@ -6,9 +6,10 @@ import { PageFrame } from "@/components/frame/PageFrame";
 import { Confetti } from "@/components/practice/Confetti";
 import { Foot, FootLink, TopicPage } from "@/components/topic/TopicKit";
 import { continueCard } from "@/lib/continueCard";
+import { networkCardDue, publishNetworkCard } from "@/lib/account/network";
 import { publishPublicCard } from "@/lib/account/publicProfile";
 import { useAccount } from "@/lib/account/session";
-import { cardIsStale, currentCard } from "@/lib/profile/cardNow";
+import { cardIsStale, currentCard, REPUBLISH_AFTER_MS } from "@/lib/profile/cardNow";
 import { computeStats, earnedBadges, recentActivity, type Stats } from "@/lib/gamification";
 import { useClientValue, useProgressValue } from "@/lib/hooks";
 import { useConfidence } from "@/lib/interviewConfidence";
@@ -71,6 +72,18 @@ function useFreshPublicCard(tracks: TopicTrack[], loaded: boolean): void {
   }, [loaded, user, profile, tracks]);
 }
 
+function useFreshNetworkCard(tracks: TopicTrack[], loaded: boolean): void {
+  const { user, profile } = useAccount();
+  const tried = useRef(false);
+  useEffect(() => {
+    if (tried.current || !loaded || !user || !profile?.username) return;
+    tried.current = true;
+    void networkCardDue(Date.now(), REPUBLISH_AFTER_MS).then((due) => {
+      if (due) void publishNetworkCard(currentCard(user, profile, tracks));
+    });
+  }, [loaded, user, profile, tracks]);
+}
+
 function useActivity(): DayCount[] {
   const key = useProgressValue(() => JSON.stringify(recentActivity(HEATMAP_DAYS)), "");
   return useMemo(() => (key ? JSON.parse(key) : []) as DayCount[], [key]);
@@ -103,6 +116,7 @@ export function ProgressView({
   const topics = useTopicsNav().filter((t) => !guides.some((g) => g.id === t.id));
   const loaded = statsKey !== "";
   useFreshPublicCard(tracks, loaded);
+  useFreshNetworkCard(tracks, loaded);
 
   const earned = useMemo(() => new Set(earnedBadges(stats).map((b) => b.id)), [stats]);
   const wall = useMemo(() => badgeWall(earned), [earned]);

@@ -5,7 +5,7 @@ import { useAccount } from "@/lib/account/session";
 import { GateHero } from "./GateHero";
 import styles from "./account.module.css";
 
-export type GatedFeature = "progress" | "review" | "mock-history" | "boards" | "account";
+export type GatedFeature = "progress" | "review" | "mock-history" | "boards" | "account" | "people";
 
 const COPY: Record<GatedFeature, { mark: string; title: string; body: string }> = {
   progress: {
@@ -27,6 +27,11 @@ const COPY: Record<GatedFeature, { mark: string; title: string; body: string }> 
     mark: "▱",
     title: "Sign in to see your saved boards",
     body: "Your saved boards are kept with your account. You can still draw on this board without one.",
+  },
+  people: {
+    mark: "⚇",
+    title: "Sign in to study with friends",
+    body: "Connect with other developers, see each other's streaks and cheer each other on. Connections live in your account.",
   },
   account: {
     mark: "◉",

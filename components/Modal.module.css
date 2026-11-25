@@ -194,3 +194,34 @@
     transition: none;
   }
 }
+
+.choices {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 0;
+  border: 0;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  font-size: var(--t-body);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.choice input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+}
+
+.area {
+  min-height: 84px;
+  font-family: inherit;
+  padding: 10px 14px;
+  resize: vertical;
+}
