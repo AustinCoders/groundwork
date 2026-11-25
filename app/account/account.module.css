@@ -1311,3 +1311,13 @@
     transition: none;
   }
 }
+
+.notice {
+  margin: 0;
+  padding: 12px 14px;
+  font-size: var(--t-meta);
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--caution-soft);
+  border-radius: 12px;
+}

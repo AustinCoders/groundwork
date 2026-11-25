@@ -37,9 +37,11 @@ import {
   type TotpFactor,
 } from "@/lib/account/session";
 import { computeStats, recentActivity, type Stats } from "@/lib/gamification";
-import { useProgressValue } from "@/lib/hooks";
+import { useClientValue, useProgressValue } from "@/lib/hooks";
 import { Completeness } from "@/components/account/Completeness";
 import type { CompanyChoice } from "@/lib/profile/companies";
+import { BACKUP_USED_KEY } from "@/lib/account/backupCodes";
+import { BackupCodes } from "./BackupCodes";
 import { PlanPanel } from "./PlanPanel";
 import { EmailPanel, SecurityPanel } from "./SafetyPanels";
 import styles from "./account.module.css";
@@ -389,6 +391,20 @@ function groups(secret: string): string {
   return secret.replace(/(.{4})/g, "$1 ").trim();
 }
 
+function readBackupUsed(): boolean {
+  try {
+    return sessionStorage.getItem(BACKUP_USED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function clearBackupUsed() {
+  try {
+    sessionStorage.removeItem(BACKUP_USED_KEY);
+  } catch {}
+}
+
 function TwoStep() {
   const [factors, setFactors] = useState<TotpFactor[] | null>(null);
   const [enrollment, setEnrollment] = useState<TotpEnrollment | null>(null);
@@ -398,6 +414,8 @@ function TwoStep() {
   const [asking, setAsking] = useState(false);
   const [reload, setReload] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [justOn, setJustOn] = useState(false);
+  const usedBackup = useClientValue(readBackupUsed, false);
 
   useEffect(() => {
     let live = true;
@@ -435,6 +453,8 @@ function TwoStep() {
     setBusy(false);
     if (result.ok) {
       setEnrollment(null);
+      setJustOn(true);
+      clearBackupUsed();
       setReload((n) => n + 1);
     } else setError(result.error);
   }
@@ -492,6 +512,7 @@ function TwoStep() {
               Turn off
             </button>
           </div>
+          <BackupCodes fresh={justOn} />
         </>
       ) : enrollment ? (
         <form
@@ -586,6 +607,11 @@ function TwoStep() {
               Off
             </span>
           </div>
+          {usedBackup && (
+            <p className={styles.notice} role="status">
+              You signed in with a backup code, so two-step sign-in is off now. Set it up again with your new phone.
+            </p>
+          )}
           <p className={styles.body}>
             Turn it on and every sign-in also asks for a 6&#8209;digit code from an app on your phone, so a stolen
             password alone is not enough.

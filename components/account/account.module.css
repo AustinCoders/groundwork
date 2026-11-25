@@ -1364,3 +1364,8 @@
     animation: none;
   }
 }
+
+.backup {
+  display: grid;
+  gap: 10px;
+}

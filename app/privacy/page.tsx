@@ -88,7 +88,9 @@ export default function PrivacyPage() {
             To show you where your account is signed in, the site keeps a short log of sign-ins and account changes
             (turning two-step on or off, changing your email or password, connecting Google or GitHub) with the time,
             the IP address and the browser it came from. Only you can see it, from your account page, and each entry is
-            deleted after 90 days. Your email choices are stored with your account; all of them start off.
+            deleted after 90 days. Your email choices are stored with your account; all of them start off. Backup codes
+            for two-step sign-in are kept only as one-way hashes, so nobody, us included, can read them back; using one
+            deletes them all and switches two-step off.
           </p>
           <p>
             On the <Link href="/account">account page</Link> you can download everything saved, erase it, sign out and

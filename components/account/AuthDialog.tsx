@@ -26,6 +26,7 @@ import {
 } from "@/lib/account/session";
 import { lastSignInMethod, rememberSignInMethod, type SignInMethod } from "@/lib/account/lastMethod";
 import { isCommonPassword } from "@/lib/account/strength";
+import { cleanBackupCode, formatBackupCode, redeemBackupCode } from "@/lib/account/backupCodes";
 import { Captcha, type CaptchaHandle } from "./Captcha";
 import { Choice } from "./Choice";
 import { PasswordField } from "./PasswordField";
@@ -336,6 +337,7 @@ export function AuthDialog({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
+  const [backup, setBackup] = useState<string | null>(null);
   const [tried, setTried] = useState(false);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [lookup, setLookup] = useState<{ email: string; result: EmailStatus } | null>(null);
@@ -632,7 +634,10 @@ export function AuthDialog({
     ref.current?.style.removeProperty("--py");
   }
 
-  const lead = leadFor(step, intent);
+  const lead =
+    step === "mfa" && backup !== null
+      ? "Type one of the ten backup codes you saved when you turned on two-step sign-in."
+      : leadFor(step, intent);
   const submitLabel: Record<Step, string> = {
     email: intent === "code" ? "Email me a code" : "Continue",
     password: "Sign in",
@@ -687,55 +692,125 @@ export function AuthDialog({
               <Welcome onDone={onClose} />
             ) : step === "mfa" ? (
               <>
-                <form
-                  noValidate
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    void verify(code);
-                  }}
-                >
-                  <Field
-                    label="Authenticator code"
-                    type="text"
-                    value={code}
-                    onChange={(v) => {
-                      const digits = v.replace(/\D/g, "").slice(0, 6);
-                      setCode(digits);
-                      setFormError(null);
-                      if (digits.length === 6 && busy === null) void verify(digits);
+                {backup === null && (
+                  <>
+                    <form
+                      noValidate
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        void verify(code);
+                      }}
+                    >
+                      <Field
+                        label="Authenticator code"
+                        type="text"
+                        value={code}
+                        onChange={(v) => {
+                          const digits = v.replace(/\D/g, "").slice(0, 6);
+                          setCode(digits);
+                          setFormError(null);
+                          if (digits.length === 6 && busy === null) void verify(digits);
+                        }}
+                        error={null}
+                        autoComplete="one-time-code"
+                        inputMode="numeric"
+                        autoFocus
+                        maxLength={6}
+                        code
+                      />
+                      {formError && (
+                        <p className={styles.formError} role="alert">
+                          {formError}
+                        </p>
+                      )}
+                      <button type="submit" className={styles.submit} disabled={busy !== null}>
+                        {busy === "submit" ? (
+                          <>
+                            <span className={styles.spinner} aria-hidden="true" />
+                            Checking…
+                          </>
+                        ) : (
+                          submitLabel.mfa
+                        )}
+                      </button>
+                    </form>
+                  </>
+                )}
+                {backup === null ? (
+                  <p className={styles.switch}>
+                    Lost your phone?{" "}
+                    <button
+                      type="button"
+                      className={styles.textLink}
+                      disabled={busy !== null}
+                      onClick={() => {
+                        setBackup("");
+                        setFormError(null);
+                      }}
+                    >
+                      Use a backup code
+                    </button>
+                  </p>
+                ) : (
+                  <form
+                    noValidate
+                    className={styles.backup}
+                    aria-label="Sign in with a backup code"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      void run("backup", () => redeemBackupCode(backup));
                     }}
-                    error={null}
-                    autoComplete="one-time-code"
-                    inputMode="numeric"
-                    autoFocus
-                    maxLength={6}
-                    code
-                  />
-                  {formError && (
-                    <p className={styles.formError} role="alert">
-                      {formError}
+                  >
+                    <Field
+                      label="Backup code"
+                      type="text"
+                      value={backup}
+                      onChange={(v) => {
+                        setBackup(formatBackupCode(v));
+                        setFormError(null);
+                      }}
+                      error={null}
+                      autoComplete="off"
+                      autoFocus
+                      maxLength={14}
+                    />
+                    <p className={styles.fine}>
+                      Using one switches two-step sign-in off, so you can set it up again on your new phone.
                     </p>
-                  )}
-                  <button type="submit" className={styles.submit} disabled={busy !== null}>
-                    {busy === "submit" ? (
-                      <>
-                        <span className={styles.spinner} aria-hidden="true" />
-                        Checking…
-                      </>
-                    ) : (
-                      submitLabel.mfa
+                    {formError && (
+                      <p className={styles.formError} role="alert">
+                        {formError}
+                      </p>
                     )}
-                  </button>
-                </form>
-                <p className={styles.switch}>
-                  Lost your phone?{" "}
+                    <button
+                      type="submit"
+                      className={styles.submit}
+                      disabled={busy !== null || cleanBackupCode(backup).length !== 12}
+                    >
+                      {busy === "backup" ? "Checking…" : "Use backup code"}
+                    </button>
+                    <p className={styles.switch}>
+                      Found your phone?{" "}
+                      <button
+                        type="button"
+                        className={styles.textLink}
+                        disabled={busy !== null}
+                        onClick={() => {
+                          setBackup(null);
+                          setFormError(null);
+                        }}
+                      >
+                        Use the app code
+                      </button>
+                    </p>
+                  </form>
+                )}
+                <p className={styles.fine}>
+                  No app and no backup code?{" "}
                   <button type="button" className={styles.textLink} disabled={busy !== null} onClick={onClose}>
                     Sign out
-                  </button>
-                </p>
-                <p className={styles.fine}>
-                  Without the app you cannot finish signing in. Write to help@austincoders.com from this email address
-                  and we will help.
+                  </button>{" "}
+                  and write to help@austincoders.com from this email address. We will help.
                 </p>
               </>
             ) : step === "confirm" ? (
