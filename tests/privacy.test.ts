@@ -47,6 +47,10 @@ const NOT_CALLED: Record<string, { only: string; why: string }> = {
     only: "lib/profile/publicCard.ts",
     why: "the link to a GitHub profile on a public page, never fetched",
   },
+  "meet.google.com": {
+    only: "app/mock/peer/PeerView.tsx",
+    why: "an example call link shown as a form placeholder, never fetched",
+  },
   "127.0.0.1": { only: "playwright.config.ts", why: "the end-to-end test server" },
   "www.w3.org": { only: "lib/whiteboard/exporter.ts", why: "the SVG namespace, never fetched" },
   "fonts.googleapis.com": { only: "next.config.ts", why: "allowed by the CSP; next/font serves the fonts itself" },

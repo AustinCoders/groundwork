@@ -2,6 +2,8 @@
   position: relative;
   display: inline-flex;
   flex: none;
+  gap: 8px;
+  align-items: center;
 }
 
 .pending {

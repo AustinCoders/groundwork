@@ -1,5 +1,9 @@
 import type { PublicCard } from "@/lib/profile/publicCard";
 import { isPlainObject } from "@/lib/storage";
+import { cardExtras } from "@/lib/profile/cardExtras";
+import type { CardDaily } from "@/lib/profile/daily";
+import type { CardChallenge } from "@/lib/profile/weekly";
+import { isPlainObject as isObject } from "@/lib/storage";
 import { AVATAR_COLORS, isAvatarArt } from "./profileExtras";
 import { friendlyAuthError } from "./errors";
 import { connectAccount } from "./session";
@@ -29,6 +33,28 @@ export interface NetworkFace {
   at: string | null;
   since: string | null;
   relation: Relation | null;
+  goal: number | null;
+  challenge: CardChallenge | null;
+  daily: CardDaily | null;
+}
+
+function readChallenge(value: unknown): CardChallenge | null {
+  if (!isObject(value) || typeof value.week !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value.week)) return null;
+  if (typeof value.id !== "string" || !/^[a-z0-9-]{2,20}$/.test(value.id)) return null;
+  const count =
+    typeof value.count === "number" && Number.isFinite(value.count)
+      ? Math.max(0, Math.min(999, Math.floor(value.count)))
+      : 0;
+  const target =
+    typeof value.target === "number" && Number.isFinite(value.target)
+      ? Math.max(1, Math.min(99, Math.floor(value.target)))
+      : 1;
+  return { week: value.week, id: value.id, count, target };
+}
+
+function readDaily(value: unknown): CardDaily | null {
+  if (!isObject(value) || typeof value.day !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value.day)) return null;
+  return { day: value.day, done: value.done === true };
 }
 
 export interface NetworkOverview {
@@ -82,6 +108,9 @@ export function readFace(value: unknown): NetworkFace | null {
     at: when(value.at),
     since: when(value.since),
     relation,
+    goal: value.goal === 1 || value.goal === 3 || value.goal === 5 || value.goal === 8 ? value.goal : null,
+    challenge: readChallenge(value.challenge),
+    daily: readDaily(value.daily),
   };
 }
 
@@ -187,8 +216,11 @@ async function updateOwn(row: Record<string, unknown>): Promise<NetResult<null>>
   return { ok: true, value: null };
 }
 
-export function networkCard(card: PublicCard) {
+export function networkCard(card: PublicCard, extras = cardExtras()) {
   return {
+    goal: extras.goal,
+    challenge: extras.challenge,
+    daily: extras.daily,
     v: 1,
     name: card.name,
     headline: card.headline,

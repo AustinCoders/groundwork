@@ -10,6 +10,7 @@ import { computeStats, type Stats } from "@/lib/gamification";
 import { useProgressValue } from "@/lib/hooks";
 import { progress } from "@/lib/storage";
 import { AvatarFace } from "./AccountChip";
+import { NotificationBell } from "./NotificationBell";
 import styles from "./menu.module.css";
 
 type Overlay = "look" | null;
@@ -117,6 +118,7 @@ export function AccountMenu({ compact }: { compact?: boolean }) {
 
   return (
     <div className={styles.root} ref={root}>
+      <NotificationBell />
       <button
         ref={trigger}
         type="button"

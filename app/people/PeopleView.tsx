@@ -37,6 +37,8 @@ import { currentCard } from "@/lib/profile/cardNow";
 import { ROLE_TITLE } from "@/lib/profile/roles";
 import type { RoleId } from "@/lib/profile/roleTracks";
 import { dayKey } from "@/lib/storage";
+import { loadBuddy, type BuddyView } from "@/lib/account/social";
+import { BuddyPanel, ChallengePanel, DailyPanel } from "./StudyPanels";
 import styles from "./people.module.css";
 
 type Note = { ok: boolean; text: string } | null;
@@ -76,6 +78,8 @@ const STATUS: Record<string, { ok: boolean; text: string }> = {
   limit: { ok: false, text: "That is a lot for one day. Try again tomorrow." },
   already: { ok: false, text: "You already sent that one today. Try again tomorrow." },
   not_connected: { ok: false, text: "You can only cheer people you are connected with." },
+  buddy_sent: { ok: true, text: "Asked. They will see it in their notifications." },
+  buddy_active: { ok: true, text: "You are study buddies now." },
 };
 
 function nowMinute(): number {
@@ -158,6 +162,7 @@ function People({ tracks }: { tracks: TopicTrack[] }) {
   const [findable, setFindable] = useState(true);
   const [fresh, setFresh] = useState<Set<string>>(new Set());
   const [searchTick, setSearchTick] = useState(0);
+  const [buddy, setBuddy] = useState<BuddyView | null>(null);
 
   const apply = useCallback((result: NetResult<NetworkOverview>) => {
     if (result.ok) {
@@ -172,8 +177,9 @@ function People({ tracks }: { tracks: TopicTrack[] }) {
   const reload = useCallback(async () => {
     const view = apply(await loadOverview());
     if (view?.me.on) {
-      const more = await suggestPeople();
+      const [more, pair] = await Promise.all([suggestPeople(), loadBuddy()]);
       if (more.ok) setSuggested(more.value);
+      setBuddy(pair.ok ? pair.value : null);
     }
   }, [apply]);
 
@@ -190,8 +196,10 @@ function People({ tracks }: { tracks: TopicTrack[] }) {
         void markCheersSeen();
       }
       if (view.me.on) {
-        const more = await suggestPeople();
-        if (live && more.ok) setSuggested(more.value);
+        const [more, pair] = await Promise.all([suggestPeople(), loadBuddy()]);
+        if (!live) return;
+        if (more.ok) setSuggested(more.value);
+        if (pair.ok) setBuddy(pair.value);
       }
     });
     return () => {
@@ -686,6 +694,27 @@ function People({ tracks }: { tracks: TopicTrack[] }) {
           </section>
         </div>
         <aside className={styles.side}>
+          {buddy && (
+            <BuddyPanel buddy={buddy} connections={data.connections} today={today} busy={busy !== null} act={act} />
+          )}
+          <ChallengePanel connections={data.connections} />
+          <DailyPanel connections={data.connections} />
+          <nav className={styles.card} aria-label="More ways to study together">
+            <Link href="/groups" className={styles.navRow} prefetch={false}>
+              <span aria-hidden="true">👥</span>
+              <span>
+                <strong>Study groups</strong>
+                <span className={styles.hint}>Up to 20 people with their own weekly board</span>
+              </span>
+            </Link>
+            <Link href="/mock/peer" className={styles.navRow} prefetch={false}>
+              <span aria-hidden="true">🎙</span>
+              <span>
+                <strong>Mock interview with a friend</strong>
+                <span className={styles.hint}>Book a time, take turns, get a scorecard</span>
+              </span>
+            </Link>
+          </nav>
           {data.cheers.length > 0 && (
             <section className={styles.card} aria-labelledby="people-cheers">
               <h2 id="people-cheers" className={styles.title}>

@@ -85,6 +85,15 @@ export default function PrivacyPage() {
             than 60 days are deleted. There are no messages. Leaving removes the card at once.
           </p>
           <p>
+            Connections can also pair up as study buddies, join study groups of up to 20 people and book mock interviews
+            with each other. A buddy and the members of your groups see the same small card as your connections. A mock
+            interview keeps the time, topic, the call link you paste (Google Meet, Zoom, Teams, Jitsi, Whereby or
+            Discord), an optional note and the interviewer&rsquo;s scorecard, and only the two people in it can see it;
+            the call itself happens on that service, not here. The bell at the top lists requests, cheers and group and
+            mock interview news for 60 days. The day you solve each problem is kept with your progress so the daily
+            problem and the weekly challenge can count it.
+          </p>
+          <p>
             To show you where your account is signed in, the site keeps a short log of sign-ins and account changes
             (turning two-step on or off, changing your email or password, connecting Google or GitHub) with the time,
             the IP address and the browser it came from. Only you can see it, from your account page, and each entry is

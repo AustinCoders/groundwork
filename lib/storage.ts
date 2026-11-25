@@ -8,6 +8,7 @@ export const KEYS = {
   code: "jsnotes:code:",
   narration: "jsnotes:narration",
   activity: "jsnotes:activity",
+  solvedOn: "groundwork:solved-on",
   soundEnabled: "jsnotes:sound-enabled",
 } as const;
 
@@ -183,6 +184,30 @@ function recordActivity(): void {
   emitProgressChange();
 }
 
+const SOLVED_ON_CAP = 400;
+
+export function sanitizeSolvedOn(value: unknown): Record<string, string> {
+  if (!isPlainObject(value)) return {};
+  const entries = Object.entries(value)
+    .filter(
+      (entry): entry is [string, string] =>
+        entry[0] !== "__proto__" && entry[0].length <= 120 && typeof entry[1] === "string" && DAY_KEY.test(entry[1])
+    )
+    .sort((a, b) => (a[1] < b[1] ? 1 : a[1] > b[1] ? -1 : 0))
+    .slice(0, SOLVED_ON_CAP);
+  return Object.fromEntries(entries) as Record<string, string>;
+}
+
+function recordSolvedOn(id: string): void {
+  const data = sanitizeSolvedOn(store.get<unknown>(KEYS.solvedOn, null));
+  data[id] = dayKey();
+  store.set(KEYS.solvedOn, sanitizeSolvedOn(data));
+}
+
+export function solvedOn(): Record<string, string> {
+  return sanitizeSolvedOn(store.get<unknown>(KEYS.solvedOn, null));
+}
+
 export const activity = {
   all(): Record<string, number> {
     return readActivity();
@@ -246,6 +271,7 @@ export const progress = {
     if (solved) data.exercises[id] = true;
     else delete data.exercises[id];
     store.set(KEYS.progress, data);
+    if (solved) recordSolvedOn(id);
     if (solved && !wasSolved) recordActivity();
     emitProgressChange();
     return solved;
